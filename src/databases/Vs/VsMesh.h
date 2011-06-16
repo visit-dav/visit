@@ -36,9 +36,9 @@ public:
   bool isCompMajor();
   
   virtual bool isUniformMesh() { return false; }
-  virtual bool isUnstructuredMesh() { return false; }
   virtual bool isRectilinearMesh() { return false; }
   virtual bool isStructuredMesh() { return false; }
+  virtual bool isUnstructuredMesh() { return false; }
   
   virtual std::string getShortName();
   virtual std::string getPath();
@@ -54,7 +54,7 @@ public:
   
   std::string getAxisLabel(unsigned int axis);
   
-  virtual size_t getMeshDims(std::vector<int>* dims, bool useStride, std::vector<int> stride) = 0;
+  virtual void getMeshDataDims(std::vector<int>& dims) = 0;
   
   void setMDMesh(VsMDMesh* mdMesh, int dNumber);
   int getDomainNumber();

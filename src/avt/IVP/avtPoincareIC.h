@@ -78,11 +78,15 @@ public:
     
     iteration = 0;
 
+    safetyFactor = 0;
+
     toroidalWinding = 0;
     poloidalWinding = 0;
 
-    toroidalHarmonic = 0;
-    poloidalHarmonic = 0;
+    poloidalWindingP = 0;
+
+    toroidalResonance = 0;
+    poloidalResonance = 0;
 
     windingGroupOffset = 0;
     islands = 0;
@@ -141,11 +145,14 @@ public:
 
   unsigned int iteration;
 
+  double safetyFactor;
+
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;
+  unsigned int poloidalWindingP;
 
-  unsigned int toroidalHarmonic;
-  unsigned int poloidalHarmonic;
+  unsigned int toroidalResonance;
+  unsigned int poloidalResonance;
 
   std::vector< std::pair< unsigned int, unsigned int > > windingPairs;
 

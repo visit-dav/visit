@@ -29,7 +29,9 @@ public:
   static VsRectilinearMesh* buildRectilinearMesh(VsH5Group* group);
   
   virtual std::string getKind();
-  virtual size_t getMeshDims(std::vector<int>* dims, bool useStride, std::vector<int> stride);
+
+  virtual void getMeshDataDims(std::vector<int>& dims);
+  virtual void getNumMeshDims(std::vector<int>& dims);
 
 private:
   VsRectilinearMesh(VsH5Group* group);

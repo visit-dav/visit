@@ -48,6 +48,7 @@
 #include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 
+
 #define ELEMENT_SIZE_2D 7
 #define SCALAR_SIZE_2D 20
 
@@ -90,6 +91,12 @@ avtM3DC1Field::avtM3DC1Field( float *elementsPtr,
   tElements = nelms / nplanes;
 
   findElementNeighbors();
+
+//   int el = 1280;
+
+//   cerr << "Neighbors " << neighbors[3*el + 0] << "  "
+//        << neighbors[3*el + 1] << "  "
+//        << neighbors[3*el + 2] << endl;
 }
 
 
@@ -162,8 +169,9 @@ bool avtM3DC1Field::IsInside(const double& t, const avtVector& x) const
 // ****************************************************************************
 void avtM3DC1Field::findElementNeighbors()
 {
-  v_entry *vert_list = 0;
-  edge    *edge_list = 0;
+  std::vector< vertex > vertexList;
+  std::multimap< int, edge > edgeListMap;
+
   float   *ptr;
   double  x[3], y[3], co, sn;
   int     el, vert, tri[3], vlen;
@@ -184,22 +192,6 @@ void avtM3DC1Field::findElementNeighbors()
     fputs("Insufficient memory in findElementNeighbors.\n", stderr);
     exit(1);
   }
-
-  /* Allocate, initialize temporary hash tables */
-  vert_list = (v_entry *)malloc(3 * tElements * sizeof(v_entry));
-  if (vert_list == NULL) {
-    fputs("Insufficient memory in findElementNeighbors.\n", stderr);
-    exit(1);
-  }
-  vlen = 0;
-  edge_list = (edge *)malloc(3 * tElements * sizeof(edge));
-  if (edge_list == NULL) {
-    fputs("Insufficient memory in findElementNeighbors.\n", stderr);
-    exit(1);
-  }
-
-  for (vert=0; vert<3*tElements; vert++)
-    edge_list[vert].n = 0;
 
   /* Loop over elements, finding vertices, edges, neighbors */
 
@@ -224,10 +216,11 @@ void avtM3DC1Field::findElementNeighbors()
     y[2] = y[0] + ptr[1]*sn + ptr[2]*co;
 
     for (vert=0; vert<3; vert++)
-      register_vert(vert_list, &vlen, x[vert], y[vert], tri+vert);
-
+      tri[vert] = register_vert(vertexList, x[vert], y[vert]);
+    
     for (vert=0; vert<3; vert++)
-      add_edge(edge_list, tri, vert, el, neighbors);
+      add_edge(edgeListMap, tri, vert, el, neighbors);
+
   } /* end loop el */
 
 //   fprintf(stderr, "%d / %d unique vertices\n", vlen, 3*tElements);
@@ -246,9 +239,6 @@ void avtM3DC1Field::findElementNeighbors()
 
 //   fprintf(stderr, "R bounds: %lf, %lf\nz bounds: %lf, %lf\n",
 //           Rmin, Rmax, zmin, zmax);
-  
-  free(vert_list);
-  free(edge_list);
 }
 
 
@@ -259,25 +249,32 @@ void avtM3DC1Field::findElementNeighbors()
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtM3DC1Field::register_vert(v_entry *vlist, int *len,
-                                     double x, double y, int *index)
+int avtM3DC1Field::register_vert(std::vector< vertex > &vlist,
+                                 double x, double y)
 {
   const double tol=2.5e-13;
-  double dx, dy;
-  int    vert;
 
-  for (vert=0; vert<(*len); vert++) {
-    dx = x - vlist[vert].x;  dy = y - vlist[vert].y;
-    if (dx*dx + dy*dy < tol) { /* Found in list! */
-      *index = vert;
-      return;
+  for( int i=0; i<vlist.size(); i++ )
+  {
+    double dx = x - vlist[i].x;
+    double dy = y - vlist[i].y;
+
+    // Are the two points with the tollerance?
+    if (dx*dx + dy*dy < tol)
+    {
+      return i;
     }
   }
 
-  /* Vertex not found -> add to end */
-  vlist[*len].x = x;  vlist[*len].y = y;
-  *index = *len;
-  ++(*len);
+  // Vertex not found so add to list.
+  vertex vert;
+
+  vert.x = x;
+  vert.y = y;
+
+  vlist.push_back( vert );
+
+  return vlist.size() - 1;
 }
 
 
@@ -288,31 +285,50 @@ void avtM3DC1Field::register_vert(v_entry *vlist, int *len,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtM3DC1Field::add_edge(edge *list, int *tri,
-                                int side, int el, int *nlist)
+void avtM3DC1Field::add_edge(std::multimap< int, edge > &edgeListMap,
+                             int *vertexIndexs,
+                             int side, int element, int *neighborList)
 {
-  int  i, v1, v2, vo;
-  edge *ed;
+  int v0, v1, key, vertex;
 
-  /* Sort the vertices */
-  v1 = tri[side];  v2 = tri[(side+1)%3];
-  if (v1 < v2) { ed = list+v1;  vo = v2; }
-  else         { ed = list+v2;  vo = v1; }
+  // Use the smallest vertex index as the key.
+  v0 = vertexIndexs[side];
+  v1 = vertexIndexs[(side+1)%3];
 
-  /* See if this edge is already present */
-  for (i=0; i<ed->n; i++)
-    if (ed->o[i].v == vo) {           /* It is! Update the neighbor table. */
-      nlist[3*el + side] = ed->o[i].el0;
-      nlist[3*ed->o[i].el0 + ed->o[i].side] = el;
+  // The edge list key is based on the vertex index which is unique.
+  if (v0 < v1) { key = v0;  vertex = v1; }
+  else         { key = v1;  vertex = v0; }
+
+  // Find all of the edges with that key (i.e. edges that start with
+  // the same vertex).
+  std::pair<std::multimap<int,edge>::iterator,
+            std::multimap<int,edge>::iterator>
+    ret = edgeListMap.equal_range(key);
+
+  // For all the edges returned find one with the ssame second vertex
+  for (std::multimap<int, edge>::iterator  it=ret.first; it!=ret.second; ++it)
+  {
+    if( vertex == it->second.vertex )
+    {
+      // If the edge is present update the neighbor table.
+      neighborList[3*element + side] = it->second.element;
+      neighborList[3*it->second.element + it->second.side] = element;
+        
       return;
     }
+  }
 
-  /* The edge was not present; add it. */
-  ed->o[ed->n].v = vo;
-  ed->o[ed->n].el0 = el;
-  ed->o[ed->n].side = side;
-  ed->n++;
+  // No with either the first vertex index or no edge with the second
+  // vertex index so create a new edge.
+  edge newEdge;
+  
+  newEdge.vertex = vertex;
+  newEdge.side = side;
+  newEdge.element = element;
+  
+  edgeListMap.insert( std::pair< int, edge >( key, newEdge ) );
 }
+
 
 // ****************************************************************************
 //  Method: get_tri_coords2D
@@ -615,10 +631,10 @@ void avtM3DC1Field::interpBcomps(float *B, double *x,
     // Add in the equalibrium if was subtracted out.
     if( eqsubtract )
     {
-      *B_r =  -interpdz(psi0, element, xieta) / x[0] -
+      *B_r = -interpdz(psi0, element, xieta) / x[0] -
         interpdRdPhi(f0, element, xieta);
 
-      *B_z =   interpdR(psi0, element, xieta) / x[0] -
+      *B_z =  interpdR(psi0, element, xieta) / x[0] -
         interpdzdPhi(f0, element, xieta);
 
       *B_phi = interp(I0, element, xieta) / x[0];

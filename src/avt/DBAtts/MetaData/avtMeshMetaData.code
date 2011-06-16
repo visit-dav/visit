@@ -541,13 +541,17 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "Logical bounds are: (";
-        for (int j = 0 ; j < std::min(topologicalDimension, 3) ; j++)
+        if( meshType == AVT_POINT_MESH )
+            out << logicalBounds[0];
+        else
         {
-            out << logicalBounds[j];
-            if(j < topologicalDimension-1)
-                out << ", ";
+          for (int j = 0 ; j < std::min(topologicalDimension, 3) ; j++)
+          {
+              out << logicalBounds[j];
+              if(j < topologicalDimension-1)
+                  out << ", ";
+          }
         }
-        out << ")" << endl;
     }
     else
     {
@@ -779,4 +783,3 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
     atts.SetNamescheme(base_string);
     this->blockNameScheme = atts;
 }
-

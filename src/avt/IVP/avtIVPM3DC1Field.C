@@ -69,7 +69,7 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
   f0(0), psi0(0), fnr(0), fni(0), psinr(0), psini(0),
   I0(0), f(0), psi(0), I(0),
   eqsubtract(0), linflag(0), tmode(0), bzero(0), rzero(0), F0(0),
-  nelms(0), element_dimension(0), nplanes(0)
+  nelms(0), element_dimension(0), nplanes(0), reparameterize(false)
 {
   // Pick off all of the data stored with the vtk field.
   // Get the numver of elements for checking the validity of the data.
@@ -405,8 +405,9 @@ bool avtIVPM3DC1Field::IsInside(const double& t, const avtVector& x) const
 // ****************************************************************************
 void avtIVPM3DC1Field::findElementNeighbors()
 {
-  v_entry *vert_list = 0;
-  edge    *edge_list = 0;
+  std::vector< vertex > vertexList;
+  std::multimap< int, edge > edgeListMap;
+
   float   *ptr;
   double  x[3], y[3], co, sn;
   int     el, vert, tri[3], vlen;
@@ -427,22 +428,6 @@ void avtIVPM3DC1Field::findElementNeighbors()
     fputs("Insufficient memory in findElementNeighbors.\n", stderr);
     exit(1);
   }
-
-  /* Allocate, initialize temporary hash tables */
-  vert_list = (v_entry *)malloc(3 * tElements * sizeof(v_entry));
-  if (vert_list == NULL) {
-    fputs("Insufficient memory in findElementNeighbors.\n", stderr);
-    exit(1);
-  }
-  vlen = 0;
-  edge_list = (edge *)malloc(3 * tElements * sizeof(edge));
-  if (edge_list == NULL) {
-    fputs("Insufficient memory in findElementNeighbors.\n", stderr);
-    exit(1);
-  }
-
-  for (vert=0; vert<3*tElements; vert++)
-    edge_list[vert].n = 0;
 
   /* Loop over elements, finding vertices, edges, neighbors */
 
@@ -467,10 +452,11 @@ void avtIVPM3DC1Field::findElementNeighbors()
     y[2] = y[0] + ptr[1]*sn + ptr[2]*co;
 
     for (vert=0; vert<3; vert++)
-      register_vert(vert_list, &vlen, x[vert], y[vert], tri+vert);
-
+      tri[vert] = register_vert(vertexList, x[vert], y[vert]);
+    
     for (vert=0; vert<3; vert++)
-      add_edge(edge_list, tri, vert, el, neighbors);
+      add_edge(edgeListMap, tri, vert, el, neighbors);
+
   } /* end loop el */
 
 //   fprintf(stderr, "%d / %d unique vertices\n", vlen, 3*tElements);
@@ -489,9 +475,6 @@ void avtIVPM3DC1Field::findElementNeighbors()
 
 //   fprintf(stderr, "R bounds: %lf, %lf\nz bounds: %lf, %lf\n",
 //           Rmin, Rmax, zmin, zmax);
-  
-  free(vert_list);
-  free(edge_list);
 }
 
 
@@ -502,25 +485,32 @@ void avtIVPM3DC1Field::findElementNeighbors()
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DC1Field::register_vert(v_entry *vlist, int *len,
-                                     double x, double y, int *index)
+int avtIVPM3DC1Field::register_vert(std::vector< vertex > &vlist,
+                                    double x, double y)
 {
   const double tol=2.5e-13;
-  double dx, dy;
-  int    vert;
 
-  for (vert=0; vert<(*len); vert++) {
-    dx = x - vlist[vert].x;  dy = y - vlist[vert].y;
-    if (dx*dx + dy*dy < tol) { /* Found in list! */
-      *index = vert;
-      return;
+  for( int i=0; i<vlist.size(); i++ )
+  {
+    double dx = x - vlist[i].x;
+    double dy = y - vlist[i].y;
+
+    // Are the two points with the tollerance?
+    if (dx*dx + dy*dy < tol)
+    {
+      return i;
     }
   }
 
-  /* Vertex not found -> add to end */
-  vlist[*len].x = x;  vlist[*len].y = y;
-  *index = *len;
-  ++(*len);
+  // Vertex not found so add to list.
+  vertex vert;
+
+  vert.x = x;
+  vert.y = y;
+
+  vlist.push_back( vert );
+
+  return vlist.size() - 1;
 }
 
 
@@ -531,31 +521,51 @@ void avtIVPM3DC1Field::register_vert(v_entry *vlist, int *len,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DC1Field::add_edge(edge *list, int *tri,
-                                int side, int el, int *nlist)
+void
+avtIVPM3DC1Field::add_edge(std::multimap< int, edge > &edgeListMap,
+                             int *vertexIndexs,
+                             int side, int element, int *neighborList)
 {
-  int  i, v1, v2, vo;
-  edge *ed;
+  int v0, v1, key, vertex;
 
-  /* Sort the vertices */
-  v1 = tri[side];  v2 = tri[(side+1)%3];
-  if (v1 < v2) { ed = list+v1;  vo = v2; }
-  else         { ed = list+v2;  vo = v1; }
+  // Use the smallest vertex index as the key.
+  v0 = vertexIndexs[side];
+  v1 = vertexIndexs[(side+1)%3];
 
-  /* See if this edge is already present */
-  for (i=0; i<ed->n; i++)
-    if (ed->o[i].v == vo) {           /* It is! Update the neighbor table. */
-      nlist[3*el + side] = ed->o[i].el0;
-      nlist[3*ed->o[i].el0 + ed->o[i].side] = el;
+  // The edge list key is based on the vertex index which is unique.
+  if (v0 < v1) { key = v0;  vertex = v1; }
+  else         { key = v1;  vertex = v0; }
+
+  // Find all of the edges with that key (i.e. edges that start with
+  // the same vertex).
+  std::pair<std::multimap<int,edge>::iterator,
+            std::multimap<int,edge>::iterator>
+    ret = edgeListMap.equal_range(key);
+
+  // For all the edges returned find one with the ssame second vertex
+  for (std::multimap<int, edge>::iterator  it=ret.first; it!=ret.second; ++it)
+  {
+    if( vertex == it->second.vertex )
+    {
+      // If the edge is present update the neighbor table.
+      neighborList[3*element + side] = it->second.element;
+      neighborList[3*it->second.element + it->second.side] = element;
+        
       return;
     }
+  }
 
-  /* The edge was not present; add it. */
-  ed->o[ed->n].v = vo;
-  ed->o[ed->n].el0 = el;
-  ed->o[ed->n].side = side;
-  ed->n++;
+  // No with either the first vertex index or no edge with the second
+  // vertex index so create a new edge.
+  edge newEdge;
+  
+  newEdge.vertex = vertex;
+  newEdge.side = side;
+  newEdge.element = element;
+  
+  edgeListMap.insert( std::pair< int, edge >( key, newEdge ) );
 }
+
 
 // ****************************************************************************
 //  Method: get_tri_coords2D
@@ -680,7 +690,9 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
     }
 
     if (flag0 || flag1 || flag2)
+    {
       return -1;
+    }
     else
       break;
 
@@ -756,6 +768,10 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
   // NOTE: Assumes the point is in cylindrical coordiantes.
   double pt[3] = { p[0], p[1], p[2] };
 
+//   pt[0] = 3.75;
+//   pt[1] = 133.0/180*3.1415;
+//   pt[2] = 0.75;
+
   /* Find the element containing the point; get local coords xi,eta */
   double *xieta = new double[element_dimension];
   int    element;
@@ -778,9 +794,63 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
 
   delete [] xieta;
 
+  if( reparameterize )
+    reparameterizeBcomps( p, vec );
+
   return vec;
 }
 
+
+// ****************************************************************************
+//  Method: avtIVPSolver::reparametrizeBcomps
+//
+//  Purpose:
+//      Reparametrize the B components
+//
+//  Programmer: Nathan Ferraro
+//  Creation:   May 25, 2011
+//
+// ****************************************************************************
+/*
+  dphi = change in toroidal angle
+
+  dy = distance traveled in toroidal direction
+  dR = distance traveled in radial direction
+
+  By definition : dR/dy = B_R / B_Phi
+
+  In cylindrical coordinates,
+  dy = R*dphi    --->    dy/dphi = R
+
+  So: dR/dphi = (dR/dy)*(dy/dphi) = (B_R / B_Phi) * R
+
+  Thus : dR = (B_R / B_phi)*R * dphi
+
+  same for dZ.  Note that the units only work out correctly with the
+  factor of R there.
+
+  Below 
+*/
+
+void avtIVPM3DC1Field::reparameterizeBcomps( const avtVector &p,
+                                             avtVector &v ) const
+{
+  avtVector pv;
+
+  if( v.y == 0.0 )
+  {
+    pv.x = pv.z = 0;
+  }
+  else
+  {
+    pv.x = v.x / v.y * p.x; // r
+    pv.z = v.z / v.y * p.x; // z
+  }
+
+  pv.y = 1;                 // phi
+
+  v = pv;
+}
 
 
 // ****************************************************************************
@@ -890,12 +960,16 @@ void avtIVPM3DC1Field::interpBcomps(float *B, double *x,
   {
     // B = grad(psi) x grad (phi) + grad_perp d(f)/zi + I grad(phi)
 
+    // B_R   = -(dpsi/dZ)/R - (d2f/dRdphi)
+    // B_Z   =  (dpsi/dR)/R - (d2f/dZdphi)
+    // B_Phi =  I/R
+
     // Add in the equalibrium if it was subtracted out.
     if( eqsubtract )
     {
-      *B_r =  -interpdz(psi0, element, xieta) / x[0] -
+      *B_r = -interpdz(psi0, element, xieta) / x[0] -
         interpdRdPhi(f0, element, xieta);
-      *B_z =   interpdR(psi0, element, xieta) / x[0] -
+      *B_z =  interpdR(psi0, element, xieta) / x[0] -
         interpdzdPhi(f0, element, xieta);
       *B_phi = interp(I0, element, xieta) / x[0];
     }
@@ -907,11 +981,25 @@ void avtIVPM3DC1Field::interpBcomps(float *B, double *x,
     }
 
     // Add in the perturbed parts.
-    *B_r +=  -interpdz(psi, element, xieta) / x[0] -
+    *B_r += -interpdz(psi, element, xieta) / x[0] -
       interpdRdPhi(f, element, xieta);
-    *B_z +=   interpdR(psi, element, xieta) / x[0] -
+    *B_z +=  interpdR(psi, element, xieta) / x[0] -
       interpdzdPhi(f, element, xieta);
     *B_phi += interp(I, element, xieta) / x[0];
+
+//     std::cerr << std::endl;
+
+//     std::cerr << "-(dpsi/dZ)/R = " << -interpdz(psi, element, xieta) / x[0] << std::endl;
+//     std::cerr << "-(dpsi/dR)/R = " <<  interpdR(psi, element, xieta) / x[0] << std::endl;
+    
+//     std::cerr << "F/R = " << interp(I, element, xieta) / x[0] << std::endl;
+
+//     std::cerr << "-(d2f/dRdphi) = " << -interpdRdPhi(f, element, xieta) << std::endl;
+//     std::cerr << "-(d2f/dZdphi) = " << -interpdzdPhi(f, element, xieta) << std::endl;
+
+//     std::cerr << "B = " << *B_r << "  " <<  *B_z << "  " <<  *B_phi <<  std::endl;
+  
+//     std::cerr << std::endl;
   }
 }
 
@@ -1073,8 +1161,8 @@ float avtIVPM3DC1Field::interpdz(float *var, int el, double *lcoords) const
 float avtIVPM3DC1Field::interpdPhi(float *var, int el, double *lcoords) const
 {
   float *a = var + scalar_size*el;
-  double xi = lcoords[0], eta = lcoords[1], zi = lcoords[2];
-  double val = 0;
+  double xi = lcoords[0], eta = lcoords[1];
+  double val;
 
   if( element_dimension == 2 )
   {
@@ -1084,6 +1172,8 @@ float avtIVPM3DC1Field::interpdPhi(float *var, int el, double *lcoords) const
   {
     double zi = lcoords[2];
     double zi_q = 1;
+
+    val = 0;
 
     // For skipping q = 0;
     a += scalar_size/4;
@@ -1346,7 +1436,7 @@ void avtIVPM3DC1Field::interpdXdPhi(float *var, int el, double *lcoords,
 
 
 // ****************************************************************************
-//  Method: interpdR interpolation in dRdPhi
+//  Method: interpdRdPhi interpolation in dRdPhi
 //
 //  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
@@ -1369,7 +1459,7 @@ float avtIVPM3DC1Field::interpdRdPhi(float *var, int el, double *lcoords) const
 
 
 // ****************************************************************************
-//  Method: interpdz interpolation in dzdPhi
+//  Method: interpdzdPhi interpolation in dzdPhi
 //
 //  Creationist: Joshua Breslau
 //  Creation:   20 November 2009

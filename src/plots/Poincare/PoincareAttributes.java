@@ -97,16 +97,19 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int OPACITY_COLORTABLE = 1;
 
     public final static int DATAVALUE_SOLID = 0;
-    public final static int DATAVALUE_ORIGINALVALUE = 1;
-    public final static int DATAVALUE_INPUTORDER = 2;
-    public final static int DATAVALUE_POINTINDEX = 3;
-    public final static int DATAVALUE_PLANE = 4;
-    public final static int DATAVALUE_WINDINGORDER = 5;
-    public final static int DATAVALUE_WINDINGPOINTORDER = 6;
-    public final static int DATAVALUE_WINDINGPOINTORDERMODULO = 7;
-    public final static int DATAVALUE_TOROIDALWINDINGS = 8;
-    public final static int DATAVALUE_POLOIDALWINDINGS = 9;
-    public final static int DATAVALUE_SAFETYFACTOR = 10;
+    public final static int DATAVALUE_SAFETYFACTORQ = 1;
+    public final static int DATAVALUE_SAFETYFACTORP = 2;
+    public final static int DATAVALUE_SAFETYFACTORQ_NOTP = 3;
+    public final static int DATAVALUE_SAFETYFACTORP_NOTQ = 4;
+    public final static int DATAVALUE_TOROIDALWINDINGS = 5;
+    public final static int DATAVALUE_POLOIDALWINDINGSQ = 6;
+    public final static int DATAVALUE_POLOIDALWINDINGSP = 7;
+    public final static int DATAVALUE_FIELDLINEINDEX = 8;
+    public final static int DATAVALUE_POINTINDEX = 9;
+    public final static int DATAVALUE_PLANEINDEX = 10;
+    public final static int DATAVALUE_WINDINGGROUP = 11;
+    public final static int DATAVALUE_WINDINGPOINTORDER = 12;
+    public final static int DATAVALUE_WINDINGPOINTORDERMODULO = 13;
 
     public final static int STREAMLINEALGORITHMTYPE_LOADONDEMAND = 0;
     public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
@@ -165,7 +168,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
         singleColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
-        dataValue = DATAVALUE_SAFETYFACTOR;
+        dataValue = DATAVALUE_SAFETYFACTORQ;
         showOPoints = false;
         OPointMaxIterations = 2;
         showXPoints = false;
@@ -236,7 +239,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
         singleColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
-        dataValue = DATAVALUE_SAFETYFACTOR;
+        dataValue = DATAVALUE_SAFETYFACTORQ;
         showOPoints = false;
         OPointMaxIterations = 2;
         showXPoints = false;
@@ -1244,26 +1247,32 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + indent + "dataValue = ";
         if(dataValue == DATAVALUE_SOLID)
             str = str + "DATAVALUE_SOLID";
-        if(dataValue == DATAVALUE_ORIGINALVALUE)
-            str = str + "DATAVALUE_ORIGINALVALUE";
-        if(dataValue == DATAVALUE_INPUTORDER)
-            str = str + "DATAVALUE_INPUTORDER";
+        if(dataValue == DATAVALUE_SAFETYFACTORQ)
+            str = str + "DATAVALUE_SAFETYFACTORQ";
+        if(dataValue == DATAVALUE_SAFETYFACTORP)
+            str = str + "DATAVALUE_SAFETYFACTORP";
+        if(dataValue == DATAVALUE_SAFETYFACTORQ_NOTP)
+            str = str + "DATAVALUE_SAFETYFACTORQ_NOTP";
+        if(dataValue == DATAVALUE_SAFETYFACTORP_NOTQ)
+            str = str + "DATAVALUE_SAFETYFACTORP_NOTQ";
+        if(dataValue == DATAVALUE_TOROIDALWINDINGS)
+            str = str + "DATAVALUE_TOROIDALWINDINGS";
+        if(dataValue == DATAVALUE_POLOIDALWINDINGSQ)
+            str = str + "DATAVALUE_POLOIDALWINDINGSQ";
+        if(dataValue == DATAVALUE_POLOIDALWINDINGSP)
+            str = str + "DATAVALUE_POLOIDALWINDINGSP";
+        if(dataValue == DATAVALUE_FIELDLINEINDEX)
+            str = str + "DATAVALUE_FIELDLINEINDEX";
         if(dataValue == DATAVALUE_POINTINDEX)
             str = str + "DATAVALUE_POINTINDEX";
-        if(dataValue == DATAVALUE_PLANE)
-            str = str + "DATAVALUE_PLANE";
-        if(dataValue == DATAVALUE_WINDINGORDER)
-            str = str + "DATAVALUE_WINDINGORDER";
+        if(dataValue == DATAVALUE_PLANEINDEX)
+            str = str + "DATAVALUE_PLANEINDEX";
+        if(dataValue == DATAVALUE_WINDINGGROUP)
+            str = str + "DATAVALUE_WINDINGGROUP";
         if(dataValue == DATAVALUE_WINDINGPOINTORDER)
             str = str + "DATAVALUE_WINDINGPOINTORDER";
         if(dataValue == DATAVALUE_WINDINGPOINTORDERMODULO)
             str = str + "DATAVALUE_WINDINGPOINTORDERMODULO";
-        if(dataValue == DATAVALUE_TOROIDALWINDINGS)
-            str = str + "DATAVALUE_TOROIDALWINDINGS";
-        if(dataValue == DATAVALUE_POLOIDALWINDINGS)
-            str = str + "DATAVALUE_POLOIDALWINDINGS";
-        if(dataValue == DATAVALUE_SAFETYFACTOR)
-            str = str + "DATAVALUE_SAFETYFACTOR";
         str = str + "\n";
         str = str + boolToString("showOPoints", showOPoints, indent) + "\n";
         str = str + intToString("OPointMaxIterations", OPointMaxIterations, indent) + "\n";

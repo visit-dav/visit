@@ -66,9 +66,9 @@ class avtDatabaseWriter;
 class VsGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
 {
   public:
-    virtual const char* GetName() const;
-    virtual const char* GetVersion() const;
-    virtual const char* GetID() const;
+    virtual const char *GetName() const;
+    virtual const char *GetVersion() const;
+    virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
     virtual bool  HasWriter() const;
     virtual std::vector<std::string> GetDefaultFilePatterns() const;
@@ -79,19 +79,9 @@ class VsGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
 class VsCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual VsGeneralPluginInfo
 {
   public:
-        VsCommonPluginInfo();
     virtual DatabaseType              GetDatabaseType();
-    virtual avtDatabase* SetupDatabase(const char * const* list,
-                    int nList, int nBlock);
-    virtual DBOptionsAttributes *  GetReadOptions() const;
-    virtual void SetReadOptions(DBOptionsAttributes* opts);
-    const static int defaultStride;
-
-  private:
-          std::vector<int> settings;
-          static std::string strideSettingAxis1_Name;
-          static std::string strideSettingAxis2_Name;
-          static std::string strideSettingAxis3_Name;
+    virtual avtDatabase              *SetupDatabase(const char * const *list,
+                                                    int nList, int nBlock);
 };
 
 class VsMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual VsCommonPluginInfo
@@ -104,8 +94,7 @@ class VsMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public v
 class VsEnginePluginInfo : public virtual EngineDatabasePluginInfo, public virtual VsCommonPluginInfo
 {
   public:
-    virtual avtDatabaseWriter* GetWriter(void);
+    virtual avtDatabaseWriter        *GetWriter(void);
 };
 
 #endif
-

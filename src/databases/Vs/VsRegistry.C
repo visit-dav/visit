@@ -899,19 +899,19 @@ int VsRegistry::numExpressions() {
   return allExpressions.size();
 }
 
-void VsRegistry::createComponents(bool useStride, std::vector<int> stride) {
+void VsRegistry::createComponents() {
   VsLog::debugLog() <<"VsRegistry::createComponents() - Entering" <<std::endl;
   
   std::map<std::string, VsMDVariable*>::const_iterator it;
   for (it = allMDVariables.begin(); it != allMDVariables.end(); ++it) {
     VsLog::debugLog() <<"VsRegistry::createComponents() - Creating components for MD Variable " <<it->first <<std::endl;
-    it->second->createComponents(useStride, stride);
+    it->second->createComponents();
   }
 
   std::map<std::string, VsVariable*>::const_iterator it2;
   for (it2 = allVariables.begin(); it2 != allVariables.end(); ++it2) {
     VsLog::debugLog() <<"VsRegistry::createComponents() - Creating components for Variable " <<it2->first <<std::endl;
-    it2->second->createComponents(useStride, stride);
+    it2->second->createComponents();
   }
 
   std::map<std::string, VsVariableWithMesh*>::const_iterator it3;

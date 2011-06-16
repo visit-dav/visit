@@ -76,4 +76,3 @@ void VsH5Dataset::write() {
   
   VsLog::debugLog() << offset<<getFullName() <<"(" <<getId() <<")" <<std::endl;
 }
-

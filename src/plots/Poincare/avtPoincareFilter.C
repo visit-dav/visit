@@ -74,16 +74,19 @@ using namespace std;
 #define SIGN(x) ((x) < 0.0 ? -1 : 1)
 
 static const int DATA_None = 0;
-static const int DATA_OriginalValue = 1;
-static const int DATA_InputOrder = 2;
-static const int DATA_PointIndex = 3;
-static const int DATA_Plane = 4;
-static const int DATA_WindingOrder = 5;
-static const int DATA_WindingPointOrder = 6;
-static const int DATA_WindingPointOrderModulo = 7;
-static const int DATA_ToroidalWindings = 8;
-static const int DATA_PoloidalWindings = 9;
-static const int DATA_SafetyFactor = 10;
+static const int DATA_SafetyFactorQ = 1;
+static const int DATA_SafetyFactorP = 2;
+static const int DATA_SafetyFactorQ_NotP = 3;
+static const int DATA_SafetyFactorP_NotQ = 4;
+static const int DATA_ToroidalWindings = 5;
+static const int DATA_PoloidalWindingsQ = 6;
+static const int DATA_PoloidalWindingsP = 7;
+static const int DATA_FieldlineOrder = 8;
+static const int DATA_PointOrder = 9;
+static const int DATA_PlaneOrder = 10;
+static const int DATA_WindingGroupOrder = 11;
+static const int DATA_WindingPointOrder = 12;
+static const int DATA_WindingPointOrderModulo = 13;
 
 // ****************************************************************************
 //  Method: CreateSphere
@@ -163,7 +166,7 @@ avtPoincareFilter::avtPoincareFilter() :
     overlaps(1),
 
     is_curvemesh(1),
-    dataValue(DATA_SafetyFactor),
+    dataValue(DATA_SafetyFactorQ),
 
     showOPoints( false ),
     OPointMaxIterations(2),
@@ -349,7 +352,9 @@ avtPoincareFilter::Execute()
     vector<avtIntegralCurve *> ics;
     GetTerminatedIntegralCurves(ics);
 
-    avtDataTree *dt = CreatePoincareOutput( ics );
+    avtDataTree *dt = new avtDataTree();
+    
+    CreatePoincareOutput( dt, ics );
     SetOutputDataTree(dt);
 }
 
@@ -613,10 +618,9 @@ avtPoincareFilter::ClassifyStreamlines(vector<avtIntegralCurve *> &ics)
                << poincare_ic->properties.toroidalWinding << ","
                << poincare_ic->properties.poloidalWinding
                << "  (" << safetyFactor << ")"
-               << "  toroidalHarmonic = "
-               << poincare_ic->properties.toroidalHarmonic
-               << "  poloidalHarmonic = "
-               << poincare_ic->properties.poloidalHarmonic
+               << "  toroidal/poloidal Resonance = "
+               << poincare_ic->properties.toroidalResonance << ","
+               << poincare_ic->properties.poloidalResonance
                << "  windingGroupOffset = "
                << poincare_ic->properties.windingGroupOffset
                << "  islands = " << poincare_ic->properties.islands
@@ -717,16 +721,15 @@ void realDFTamp( vector< double > &g, vector< double > &G )
 //    Replaced cerr/cout with debug5.
 //
 // ****************************************************************************
-avtDataTree *
-avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
+void
+avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
+                                         vector<avtIntegralCurve *> &ic)
 {
     FusionPSE::FieldlineLib FLlib;
     FLlib.verboseFlag = verboseFlag;
 
     debug5 << "Creating output " << endl;
 
-    avtDataTree *dt = new avtDataTree();
-    
     for ( int i=0; i<ic.size(); ++i )
     {
         avtPoincareIC * poincare_ic = (avtPoincareIC *) ic[i];
@@ -739,8 +742,9 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 
         unsigned int toroidalWinding    = properties.toroidalWinding;
         unsigned int poloidalWinding    = properties.poloidalWinding;
-        unsigned int toroidalHarmonic   = properties.toroidalHarmonic;
-        unsigned int poloidalHarmonic   = properties.poloidalHarmonic;
+        unsigned int poloidalWindingP   = properties.poloidalWindingP;
+        unsigned int toroidalResonance   = properties.toroidalResonance;
+        unsigned int poloidalResonance   = properties.poloidalResonance;
         unsigned int windingGroupOffset = properties.windingGroupOffset;
         unsigned int islands            = properties.islands;
         unsigned int islandGroups       = properties.islandGroups;
@@ -758,7 +762,7 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
                << poincare_ic->points[0].z << " >  "
                << toroidalWinding << "," << poloidalWinding << " ("
                << (double) toroidalWinding / (double) poloidalWinding << ")  "
-               << toroidalHarmonic << "," << poloidalHarmonic << "  ";
+               << toroidalResonance << "," << poloidalResonance << "  ";
 
           if( type == FieldlineProperties::RATIONAL )
             cerr << "rational surface  ";
@@ -771,7 +775,7 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 
           else if( type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
             cerr << islands << " islands around "
-                 << islandGroups << "islandGroups ";
+                 << islandGroups << " islandGroups ";
 
           else if( type == FieldlineProperties::CHAOTIC )
             cerr << "chaotic  ";
@@ -1294,15 +1298,37 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
         {
             double color_value;
             
-            if( dataValue == DATA_OriginalValue ||
-                dataValue == DATA_InputOrder )
+            if( dataValue == DATA_FieldlineOrder )
                 color_value = poincare_ic->id;
             else if( dataValue == DATA_ToroidalWindings )
                 color_value = toroidalWinding;
-            else if( dataValue == DATA_PoloidalWindings )
+            else if( dataValue == DATA_PoloidalWindingsQ )
                 color_value = poloidalWinding;
-            else if( dataValue == DATA_SafetyFactor )
+            else if( dataValue == DATA_PoloidalWindingsP )
+                color_value = poloidalWindingP;
+            else if( dataValue == DATA_SafetyFactorQ )
                 color_value = (double) toroidalWinding / (double) poloidalWinding;
+            else if( dataValue == DATA_SafetyFactorP )
+            {
+              if( poloidalWindingP )
+                color_value = (double) toroidalWinding / (double) poloidalWindingP;
+              else
+                color_value = (double) toroidalWinding / (double) poloidalWinding;
+            }
+            else if( dataValue == DATA_SafetyFactorQ_NotP )
+            {
+              if( poloidalWinding == poloidalWindingP )
+                color_value = (double) toroidalWinding / (double) poloidalWinding;
+              else
+                continue;
+            }
+            else if( dataValue == DATA_SafetyFactorP_NotQ )
+            {
+              if( poloidalWindingP != poloidalWinding )
+                color_value = (double) toroidalWinding / (double) poloidalWindingP;
+              else
+                continue;
+            }
             else
               color_value = 0;
 
@@ -1369,7 +1395,7 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 
             if( show1DPlots )
               drawPeriodicity( dt, tempPts,
-                               toroidalHarmonic,
+                               toroidalResonance,
 //                             tempPts.size(),
                                nnodes, islands, poloidalWinding,
                                dataValue, color_value, true );
@@ -1377,7 +1403,7 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
             
             if( show1DPlots )
               drawPeriodicity( dt, ridgelinePts,
-                               poloidalHarmonic,
+                               poloidalResonance,
 //                             ridgelinePts.size(),
                                nnodes, islands, poloidalWinding,
                                dataValue, color_value, true );
@@ -1561,8 +1587,6 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
         cerr << endl << endl << "count " << ic.size() << endl << endl;
 
     debug5 << "Finished creating output " << endl;
-    
-    return dt;
 }
 
 // ****************************************************************************
@@ -1603,7 +1627,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
       // Loop through each plane
       for( unsigned int p=0; p<nplanes; ++p ) 
       {
-        if( color == DATA_Plane )
+        if( color == DATA_PlaneOrder )
             color_value = p;
         
         //Create groups that represent the toroidial groups.
@@ -1620,7 +1644,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
         {
             unsigned int j = jj % toroidalWindings;
 
-            if( color == DATA_WindingOrder )
+            if( color == DATA_WindingGroupOrder )
                 color_value = j;
             
             // Use the first point in each toroidial group
@@ -1633,7 +1657,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
 
             cells->InsertCellPoint(j);
 
-            if( color == DATA_PointIndex )
+            if( color == DATA_PointOrder )
               color_value = (i*toroidalWindings+j)*nplanes + p;
             else if( color == DATA_WindingPointOrder )
               color_value = i;
@@ -1661,13 +1685,13 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
     {
         for( unsigned int p=0; p<nplanes; ++p ) 
         {
-            if( color == DATA_Plane )
+            if( color == DATA_PlaneOrder )
                 color_value = p;
             
             // Loop through each toroidial group
             for( unsigned int j=0; j<toroidalWindings; ++j ) 
             {
-                if( color == DATA_WindingOrder )
+                if( color == DATA_WindingGroupOrder )
                     color_value = j;
 
                 unsigned int npts;
@@ -1683,7 +1707,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
                     double pt[3] =
                       { nodes[p][j][i].x, nodes[p][j][i].y, nodes[p][j][i].z };
                     
-                    if( color == DATA_PointIndex )
+                    if( color == DATA_PointOrder )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
                     else if( color == DATA_WindingPointOrder )
                       color_value = i;
@@ -1703,13 +1727,13 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
     {
         for( unsigned int p=0; p<nplanes; ++p ) 
         {
-            if( color == DATA_Plane )
+            if( color == DATA_PlaneOrder )
                 color_value = p;
             
             // Loop through each toroidial group
             for( unsigned int j=0; j<toroidalWindings; ++j ) 
             {
-                if( color == DATA_WindingOrder )
+                if( color == DATA_WindingGroupOrder )
                     color_value = j;
                 
                 //Create groups that represent the toroidial groups.
@@ -1728,7 +1752,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
                     
                     cells->InsertNextCell(1, (vtkIdType*) &i);
                     
-                    if( color == DATA_PointIndex )
+                    if( color == DATA_PointOrder )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
                     else if( color == DATA_WindingPointOrder )
                       color_value = i;
@@ -1815,7 +1839,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
         // Loop through each plane
         for( unsigned int p=0; p<nplanes; ++p ) 
         {
-            if( color == DATA_Plane )
+            if( color == DATA_PlaneOrder )
               color_value = p;
         
             // Loop through each toroidial group
@@ -1829,7 +1853,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
               cells->InsertNextCell(nodes[p][j].size()+(offset?1:0));
               scalars->Allocate    (nodes[p][j].size()+(offset?1:0));
             
-              if( color == DATA_WindingOrder )
+              if( color == DATA_WindingGroupOrder )
                 color_value = j;
             
               // Loop through each point in toroidial group
@@ -1842,7 +1866,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
 
                   cells->InsertCellPoint(i);
 
-                  if( color == DATA_PointIndex )
+                  if( color == DATA_PointOrder )
                     color_value = (i*toroidalWindings+j)*nplanes + p;
                   else if( color == DATA_WindingPointOrder )
                     color_value = i;
@@ -1867,7 +1891,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
                 
                 cells->InsertCellPoint(ii);
 
-                if( color == DATA_PointIndex )
+                if( color == DATA_PointOrder )
                   color_value = (ii*toroidalWindings+j)*nplanes + p;
                 else if( color == DATA_WindingPointOrder )
                   color_value = ii;
@@ -1903,7 +1927,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
         // Loop through each plane
         for( unsigned int p=0; p<nplanes; ++p ) 
         {
-          if( color == DATA_Plane )
+          if( color == DATA_PlaneOrder )
             color_value = p;
           
           // Loop through each toroidial group
@@ -1911,7 +1935,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
           {
 //          unsigned int bb = 0;
 
-            if( color == DATA_WindingOrder )
+            if( color == DATA_WindingGroupOrder )
               color_value = j;
             
             for( unsigned int n=0; n<nnodes; ++n ) 
@@ -1938,7 +1962,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
 
                 cells->InsertCellPoint(cc);
 
-                if( color == DATA_PointIndex )
+                if( color == DATA_PointOrder )
                   color_value = (i*toroidalWindings+j)*nplanes + p;
                 else if( color == DATA_WindingPointOrder )
                   color_value = i;
@@ -1963,7 +1987,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
                 
                 cells->InsertCellPoint(cc);
                 
-                if( color == DATA_PointIndex )
+                if( color == DATA_PointOrder )
                   color_value = (i*toroidalWindings+j)*nplanes + p;
                 else if( color == DATA_WindingPointOrder )
                   color_value = i;
@@ -1996,13 +2020,13 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
     {
         for( unsigned int p=0; p<nplanes; ++p ) 
         {
-            if( color == DATA_Plane )
+            if( color == DATA_PlaneOrder )
                 color_value = p;
             
             // Loop through each toroidial group
             for( unsigned int j=0; j<toroidalWindings; ++j ) 
             {
-                if( color == DATA_WindingOrder )
+                if( color == DATA_WindingGroupOrder )
                     color_value = j;
 
                 // Loop through each point in toroidial group
@@ -2011,7 +2035,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
                     double pt[3] =
                       { nodes[p][j][i].x, nodes[p][j][i].y, nodes[p][j][i].z };
                     
-                    if( color == DATA_PointIndex )
+                    if( color == DATA_PointOrder )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
                     else if( color == DATA_WindingPointOrder )
                       color_value = i;
@@ -2031,13 +2055,13 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
     {
         for( unsigned int p=0; p<nplanes; ++p ) 
         {
-            if( color == DATA_Plane )
+            if( color == DATA_PlaneOrder )
                 color_value = p;
             
             // Loop through each toroidial group
             for( unsigned int j=0; j<toroidalWindings; ++j ) 
             {
-                if( color == DATA_WindingOrder )
+                if( color == DATA_WindingGroupOrder )
                     color_value = j;
 
                 //Create groups that represent the toroidial groups.
@@ -2056,7 +2080,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
                   
                     cells->InsertNextCell(1, (vtkIdType*) &i);
                   
-                    if( color == DATA_PointIndex )
+                    if( color == DATA_PointOrder )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
                     else if( color == DATA_WindingPointOrder )
                       color_value = i;
@@ -2153,7 +2177,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
     // Loop through each toroidial group
     for( unsigned int j=0; j<toroidalWindings; ++j )
     {
-        if( color == DATA_WindingOrder )
+        if( color == DATA_WindingGroupOrder )
             color_value = j;
 
         // Loop through each plane.
@@ -2178,7 +2202,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
             
             unsigned int jj = nplanes * j + p;
             
-            if( color == DATA_Plane )
+            if( color == DATA_PlaneOrder )
                 color_value = jj;
             
             // Loop through each point in toroidial group.
@@ -2190,7 +2214,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
                 points_ptr[n1*3+1] = nodes[p][k][i].y;
                 points_ptr[n1*3+2] = nodes[p][k][i].z;
 
-                if( color == DATA_PointIndex )
+                if( color == DATA_PointOrder )
                     color_value = (i*toroidalWindings+j)*nplanes + p;
                 else if( color == DATA_WindingPointOrder )
                     color_value = i;
@@ -2223,7 +2247,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
             points_ptr[n1*3+1] = nodes[p][k][0].y;
             points_ptr[n1*3+2] = nodes[p][k][0].z;
             
-            if( color == DATA_PointIndex )
+            if( color == DATA_PointOrder )
               color_value = (i*toroidalWindings+j)*nplanes + p;
             else if( color == DATA_WindingPointOrder )
               color_value = i;
@@ -2238,7 +2262,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
     // the torus.
     unsigned int j = 0;
     
-    if( color == DATA_WindingOrder )
+    if( color == DATA_WindingGroupOrder )
         color_value = j;
     
     // Add in the first toroidal group from the first plane to complete
@@ -2263,7 +2287,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
     
     unsigned int jj = nplanes * toroidalWindings;
     
-    if( color == DATA_Plane )
+    if( color == DATA_PlaneOrder )
         color_value = jj;
     
     // Loop through each point in toroidial group.
@@ -2288,7 +2312,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
         points_ptr[n1*3+1] = nodes[p][k][i].y;
         points_ptr[n1*3+2] = nodes[p][k][i].z;
 
-        if( color == DATA_PointIndex )
+        if( color == DATA_PointOrder )
             color_value = (i*toroidalWindings+j)*nplanes + p;
         else if( color == DATA_WindingPointOrder )
           color_value = i;
@@ -2311,7 +2335,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
     points_ptr[n1*3+1] = nodes[p][k][0].y;
     points_ptr[n1*3+2] = nodes[p][k][0].z;
     
-    if( color == DATA_PointIndex )
+    if( color == DATA_PointOrder )
       color_value = (i*toroidalWindings+j)*nplanes + p;
     else if( color == DATA_WindingPointOrder )
       color_value = i;
@@ -2392,9 +2416,9 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
     
       cells->InsertCellPoint(cc);
 
-      if( color == DATA_PointIndex )
+      if( color == DATA_PointOrder )
         color_value = i;
-      else if( color == DATA_WindingOrder )
+      else if( color == DATA_WindingGroupOrder )
         color_value = i / poloidalWindings;
       else if( color == DATA_WindingPointOrder )
         color_value = i % poloidalWindings;
@@ -2435,9 +2459,9 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
       else
         pt[0] = nodes[i].x;
           
-      if( color == DATA_PointIndex )
+      if( color == DATA_PointOrder )
         color_value = i;
-      else if( color == DATA_WindingOrder )
+      else if( color == DATA_WindingGroupOrder )
         color_value = i / poloidalWindings;
       else if( color == DATA_WindingPointOrder )
         color_value = i % poloidalWindings;
@@ -2475,9 +2499,9 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
 
       cells->InsertNextCell(1, (vtkIdType*) &i);
       
-      if( color == DATA_PointIndex )
+      if( color == DATA_PointOrder )
         color_value = i;
-      else if( color == DATA_WindingOrder )
+      else if( color == DATA_WindingGroupOrder )
         color_value = i / poloidalWindings;
       else if( color == DATA_WindingPointOrder )
         color_value = i % poloidalWindings;

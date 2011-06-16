@@ -115,16 +115,19 @@ public:
     enum DataValue
     {
         Solid,
-        OriginalValue,
-        InputOrder,
-        PointIndex,
-        Plane,
-        WindingOrder,
-        WindingPointOrder,
-        WindingPointOrderModulo,
+        SafetyFactorQ,
+        SafetyFactorP,
+        SafetyFactorQ_NotP,
+        SafetyFactorP_NotQ,
         ToroidalWindings,
-        PoloidalWindings,
-        SafetyFactor
+        PoloidalWindingsQ,
+        PoloidalWindingsP,
+        FieldlineIndex,
+        PointIndex,
+        PlaneIndex,
+        WindingGroup,
+        WindingPointOrder,
+        WindingPointOrderModulo
     };
     enum StreamlineAlgorithmType
     {

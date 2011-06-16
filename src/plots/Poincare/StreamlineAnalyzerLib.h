@@ -81,11 +81,15 @@ public:
     
     iteration = 0;
 
+    safetyFactor = 0;
+
     toroidalWinding = 0;
     poloidalWinding = 0;
 
-    toroidalHarmonic = 0;
-    poloidalHarmonic = 0;
+    poloidalWinding2 = 0;
+
+    toroidalResonance = 0;
+    poloidalResonance = 0;
 
     windingGroupOffset = 0;
     islands = 0;
@@ -142,10 +146,13 @@ public:
 
   AnalysisState analysisState;
 
+  double safetyFactor;
+
   unsigned int iteration;
 
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;
+  unsigned int poloidalWindingP;
 
   unsigned int toroidalPeriod;
   unsigned int poloidalPeriod;
@@ -186,7 +193,7 @@ public:
 
   void convexHull( vector< pair< Point, unsigned int > > &hullPts,
                    unsigned int &m,
-                   unsigned int toroidalWinding,
+                   unsigned int npts,
                    int dir );
 
   bool hullCheck( vector< Point > &points,
@@ -200,8 +207,8 @@ public:
                     unsigned int &freq,
                     unsigned int minGCD = 1 );
 
-  unsigned int HarmonicCheck( vector< pair< unsigned int, double > > &stats,
-                              unsigned int baseHarmonic,
+  unsigned int ResonanceCheck( vector< pair< unsigned int, double > > &stats,
+                              unsigned int baseResonance,
                               unsigned int max_samples = 3 );
 
   Point circle(Point &pt1, Point &pt2, Point &pt3);

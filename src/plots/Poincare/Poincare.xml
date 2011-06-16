@@ -51,16 +51,19 @@
       </Enum>
       <Enum name="DataValue">
         Solid
-        OriginalValue
-        InputOrder
-        PointIndex
-        Plane
-        WindingOrder
+        SafetyFactorQ
+        SafetyFactorP
+        SafetyFactorQ_NotP
+        SafetyFactorP_NotQ
+        ToroidalWindings
+        PoloidalWindingsQ
+        PoloidalWindingsP
+        FieldlineOrder
+        PointOrder
+        PlaneOrder
+        WindingGroupOrder
         WindingPointOrder
         WindingPointOrderModulo
-        ToroidalWindings
-        PoloidalWindings
-        SafetyFactor
       </Enum>
       <Enum name="StreamlineAlgorithmType">
         LoadOnDemand
@@ -184,7 +187,7 @@
         Default
       </Field>
       <Field name="dataValue" label="dataValue" type="enum" subtype="DataValue">
-        SafetyFactor
+        SafetyFactorQ
       </Field>
       <Field name="showOPoints" label="Detect O Points" type="bool">
         false

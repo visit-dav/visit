@@ -154,7 +154,7 @@ void VsMDVariable::write() {
 }
 
 
-size_t VsMDVariable::getNumComps(bool useStride, std::vector<int> stride) {
+size_t VsMDVariable::getNumComps() {
   VsLog::debugLog() << "VsMDVariable::getNumComps() - Entering for variable " <<getFullName() <<std::endl;
 
   if (numComponents == -1) {
@@ -168,7 +168,7 @@ size_t VsMDVariable::getNumComps(bool useStride, std::vector<int> stride) {
         <<i <<"?  Returning 0." <<std::endl;
         return 0;
       }
-      int comps = varMeta->getNumComps(useStride, stride);
+      int comps = varMeta->getNumComps();
       
       //first time through the loop we just initialize the comparison variable
       if (numComponents == -1) {
@@ -190,10 +190,10 @@ size_t VsMDVariable::getNumComps(bool useStride, std::vector<int> stride) {
   return numComponents;
 }
 
-void VsMDVariable::createComponents(bool useStride, std::vector<int> stride) {
+void VsMDVariable::createComponents() {
   VsLog::debugLog() <<"VsMDVariable::createComponents() - Entering" <<std::endl;
       
-  size_t numComps = getNumComps(useStride, stride);
+  size_t numComps = getNumComps();
   if (numComps > 1) {
     for (size_t i = 0; i < numComps; i++) {
       registry->registerComponent(getFullName(), i, getLabel(i));

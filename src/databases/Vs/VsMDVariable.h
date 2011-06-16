@@ -44,8 +44,8 @@ public:
    * Order is important (block 0 = blocks[0], etc)*/
   std::vector<VsVariable*> blocks;  //TODO make private
 
-  void createComponents(bool useStride, std::vector<int> stride);
-  size_t getNumComps(bool useStride, std::vector<int> stride);
+  void createComponents();
+  size_t getNumComps();
   
 private:
   int numComponents;

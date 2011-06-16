@@ -40,14 +40,19 @@ bool VsVariable::isZonal() {
   return (centering == VsSchema::zonalCenteringKey);
 }
 
+bool VsVariable::isFortranOrder() {
+  return ((indexOrder == VsSchema::compMinorFKey) ||
+          (indexOrder == VsSchema::compMajorFKey));
+}
+
 bool VsVariable::isCompMinor() {
   return ((indexOrder == VsSchema::compMinorCKey) ||
-      (indexOrder == VsSchema::compMinorFKey));
+          (indexOrder == VsSchema::compMinorFKey));
 }
 
 bool VsVariable::isCompMajor() {
   return ((indexOrder == VsSchema::compMajorCKey) ||
-      (indexOrder == VsSchema::compMajorFKey));
+          (indexOrder == VsSchema::compMajorFKey));
 }
 
 // Get dims
@@ -193,14 +198,14 @@ bool VsVariable::initialize() {
   return true;
 }
 
-size_t VsVariable::getNumComps(bool useStride, std::vector<int> stride) {
+size_t VsVariable::getNumComps() {
   VsLog::debugLog() << "VsVariable::getNumComps(): Entering." << std::endl;
   
   std::vector<int> dataDims = getDims();
 
   //load the mesh dimensions
   std::vector<int> meshDims;
-  meshMeta->getMeshDims(&meshDims, useStride, stride);
+  meshMeta->getMeshDataDims(meshDims);
   
   //did we get a reasonable value?
   if (meshDims.empty()) {
@@ -293,12 +298,12 @@ dimwarn:
   
 }
 
-void VsVariable::createComponents(bool useStride, std::vector<int> stride) {
+void VsVariable::createComponents() {
   //Name & register components
   VsLog::debugLog() <<"VsVariable::createComponents() - Creating component names." <<std::endl;
   
   // Number of component of the var                                                                                                         
-  size_t numComps = getNumComps(useStride, stride);
+  size_t numComps = getNumComps();
   
   //Note that single-component variables just use the base variable name
   //I.E. instead of a singleton named "var_0", we just call it "var"

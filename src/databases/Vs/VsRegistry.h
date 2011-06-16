@@ -118,7 +118,7 @@ public:
   std::string getComponentName(std::string varName, int componentNumber);
   std::string getOldComponentName(std::string varName, int componentIndex);
   void registerComponent(std::string varName, int componentNumber, std::string userSuppliedName);
-  void createComponents(bool useStride, std::vector<int> stride);
+  void createComponents();
 
   //Time
   bool hasTime() { return (timeValue != -1); }
