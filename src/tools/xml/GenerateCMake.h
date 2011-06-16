@@ -1050,12 +1050,12 @@ class CMakeGeneratorPlugin : public Plugin
             // or private.
             if(installpublic)
             {
-               out << "SET(VISIT_PLUGIN_DIR " << visitplugdirpub << ")" << endl;
+               out << "SET(VISIT_PLUGIN_DIR " << qvisitplugdirpub << ")" << endl;
             }
 
             if(installprivate)
             {
-               out << "SET(VISIT_PLUGIN_DIR " << visitplugdirpri << ")" << endl;
+               out << "SET(VISIT_PLUGIN_DIR " << qvisitplugdirpri << ")" << endl;
             }
         }
 

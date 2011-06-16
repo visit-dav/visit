@@ -1299,14 +1299,19 @@ PluginManager::GetPluginInitializationErrors()
 // Creation:   Wed Jun 17 16:26:31 PDT 2009
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jun 15 15:13:42 PDT 2011
+//   Print the path being added to the pluginDirs to the logs.
+//
 // ****************************************************************************
 
 void
 AddUniquePluginDir(stringVector &pluginDirs, const std::string &path)
 {
     if(std::find(pluginDirs.begin(), pluginDirs.end(), path) == pluginDirs.end())
+    {
+        debug1 << "Adding plugin search path: " << path << endl;
         pluginDirs.push_back(path);
+    }
 }
 
 // ****************************************************************************

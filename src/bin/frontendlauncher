@@ -116,6 +116,10 @@ exec perl -x $0 ${1+"$@"};
 #    Gunther H. Weber, Mon Oct  4 14:49:52 PDT 2010
 #    If running as MacOS app bundle change directory to user's home direcotry.
 #
+#    Brad Whitlock, Wed Jun 15 17:15:45 PDT 2011
+#    Set VISITPLUGINVERSION environment variable so we'll know even in 
+#    development versions, the version to use for private plugins.
+#
 ###############################################################################
 
 
@@ -349,6 +353,25 @@ if (-d "$visitdir/exe")
     # because development trees don't have version directories.
     $ver = "";
 
+    # The version that we use for plugins. Since we have a development
+    # version, let's try to get the version from the VERSION file.
+    $visitpluginver = "";
+    if (-e "$visitdir/VERSION")
+    {
+        # In source build
+        chomp( $visitplugindir = `cat $visitdir/VERSION`);
+    }
+    if(-e "$visitdir/include/visit-config.h")
+    {
+        # Out of source build
+        chomp( $verline = `grep VISIT_VERSION $visitdir/include/visit-config.h`);
+        if($verline ne "")
+        {
+           $verline = substr($verline, 23, -1);
+        }
+        $visitpluginver = $verline;
+    }
+    
     # We want to make sure we know if we are trying to launch a public
     # version from under a development version.  Keep track of this.
     # (Note -- don't add it on our own if we're launching a tool.)
@@ -452,12 +475,17 @@ else
 
     # The actual visit directory is now version-specific
     $visitdir = "$visitdir/$ver";
+
+    # The version that we use for plugins. It will always match $ver for
+    # installed versions.
+    $visitpluginver = $ver;
 }
 
 # -----------------------------------------------------------------------------
 #     Set the environment variables needed for the internal visit launcher
 # -----------------------------------------------------------------------------
 $ENV{VISITVERSION} = $ver;
+$ENV{VISITPLUGINVERSION} = $visitpluginver;
 $ENV{VISITPROGRAM} = $progname;
 $ENV{VISITDIR}     = $visitdir;
 
