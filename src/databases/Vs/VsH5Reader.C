@@ -374,13 +374,6 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
       err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET,
                                 &(start[0]), &(stride[0]), &(count[0]), NULL);
 
-    for (unsigned int i = 0; i<ndims; i++)
-      cerr << "src i = " << i
-           << ", start = " << start[i]
-           << ", count = " << count[i]
-           << ", stride = " << stride[i]
-           << std::endl;
-
     VsLog::debugLog() << methodSig
                       << "After selecting the hyperslab, err is " <<err << endl;
 
@@ -410,13 +403,6 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
 
       H5Sselect_hyperslab(memspace, H5S_SELECT_SET,
                           &(destStart[0]), &(destStride[0]), &(destCount[0]), NULL);
-
-      for (unsigned int i = 0; i<mdims; i++)
-        cerr << "dest i = " << i
-             << ", start = " << destStart[i]
-             << ", count = " << destCount[i]
-             << ", stride = " << destStride[i]
-             << std::endl;
     }
 
     // Read data
