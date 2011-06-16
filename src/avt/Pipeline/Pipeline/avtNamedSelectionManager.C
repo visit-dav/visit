@@ -110,6 +110,27 @@ avtNamedSelectionManager::GetInstance(void)
 }
 
 // ****************************************************************************
+// Method: avtNamedSelectionManager::MaximumSelectionSize
+//
+// Purpose: 
+//   Returns the upper limit on the size of selections we're allowed to create.
+//
+// Returns:    The upper limit on selections we're allowed to create.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 16 09:54:19 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+avtNamedSelectionManager::MaximumSelectionSize()
+{
+    return 50000000;
+}
+
+// ****************************************************************************
 //  Method: avtNamedSelectionManager::CreateNamedSelection
 //
 //  Purpose:
@@ -284,7 +305,7 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
     int numTotal = 0;
     for (i = 0 ; i < PAR_Size() ; i++)
         numTotal += numPerProc[i];
-    if (numTotal > 1000000)
+    if (numTotal > MaximumSelectionSize())
     {
         EXCEPTION1(VisItException, "You have selected too many zones in your "
                    "named selection.  Disallowing ... no selection created");
