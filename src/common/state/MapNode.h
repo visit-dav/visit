@@ -100,7 +100,7 @@ class STATE_API MapNode : public Variant
     void                 RemoveEntry(const std::string &);
     bool                 HasEntry(const std::string &) const;
     void                 GetEntryNames(stringVector &) const;
-    int                  GetNumEntries() const {return entries.size();}
+    int                  GetNumEntries() const {return (int)entries.size();}
     void                 Reset();
 
     virtual std::string  ToXML() const;

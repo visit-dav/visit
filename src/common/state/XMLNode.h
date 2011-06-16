@@ -81,7 +81,7 @@ class STATE_API XMLNode
     bool     DeleteAttribute(const std::string &);
     void     GetAttributeNames(stringVector &) const;
     
-    bool     HasChildren()    const { return children.size() > 0; }
+    bool     HasChildren()    const { return !children.empty(); }
     int      GetNumChildren() const { return children.size(); } 
     
     XMLNode *AddChild(const std::string  &);
