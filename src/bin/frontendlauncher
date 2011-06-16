@@ -359,15 +359,15 @@ if (-d "$visitdir/exe")
     if (-e "$visitdir/VERSION")
     {
         # In source build
-        chomp( $visitplugindir = `cat $visitdir/VERSION`);
+        chomp( $visitpluginver = `cat $visitdir/VERSION`);
     }
-    if(-e "$visitdir/include/visit-config.h")
+    elsif(-e "$visitdir/include/visit-config.h")
     {
         # Out of source build
-        chomp( $verline = `grep VISIT_VERSION $visitdir/include/visit-config.h`);
+        chomp( $verline = `fgrep VISIT_VERSION $visitdir/include/visit-config.h`);
         if($verline ne "")
         {
-           $verline = substr($verline, 23, -1);
+            $verline =~ s/^.*\"(.*)\".*$/$1/;
         }
         $visitpluginver = $verline;
     }

@@ -103,6 +103,8 @@ class PIPELINE_API avtNamedSelectionManager
 
     const SelectionProperties *GetSelectionProperties(const std::string &selName) const;
 
+    static int MaximumSelectionSize();
+
   protected:
     static avtNamedSelectionManager    *instance;
     std::vector<avtNamedSelection *>    selList;
