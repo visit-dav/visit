@@ -40,6 +40,7 @@
 
 SET(LIBSIM_SOURCES
 VisItControlInterface_V2.c 
+SimUI.c
 SimV2Tracing.c
 VisItFortran.c
 VisIt_CommandMetaData.c

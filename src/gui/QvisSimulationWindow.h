@@ -68,6 +68,7 @@ class QvisUiLoader;
 class EngineList;
 class StatusAttributes;
 class avtSimulationCommandSpecification;
+class SimulationUIValues;
 
 // ****************************************************************************
 // Class: QvisSimulationWindow
@@ -107,6 +108,8 @@ public:
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
 
     void ConnectStatusAttributes(StatusAttributes *s);
+    void ConnectSimulationUIValues(SimulationUIValues *s);
+
     void SetNewMetaData(const QualifiedFilename &qf,
                         const avtDatabaseMetaData *md);
 private:
@@ -128,10 +131,8 @@ private:
     QString GetUIFileDirectory() const;
     QString GetUIFile(const QString &key) const;
     void CreateCommandUI();
-    void UpdateCustomUI(const avtDatabaseMetaData *md);
     void UpdateSimulationUI(const avtDatabaseMetaData *md);
-    void UpdateUIComponent(QWidget *window, const avtSimulationCommandSpecification *cmd);
-    void SpecialWidgetUpdate(const avtSimulationCommandSpecification *cmd);
+    void UpdateUIComponent(QWidget *window, const QString &name, const QString &value, bool e);
 
     void ViewerSendCMD ( int simIndex, QString cmd);
     QColor getColor(const QString &color) const;
@@ -154,6 +155,7 @@ private:
     EngineList           *engines;
     StatusAttributes     *statusAtts;
     avtDatabaseMetaData  *metadata;
+    SimulationUIValues   *uiValues;
     Subject              *caller;
     QString               activeEngine;
 

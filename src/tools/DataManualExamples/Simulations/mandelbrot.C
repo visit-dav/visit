@@ -320,6 +320,12 @@ simulate_one_timestep(simulation_data *sim)
         }
     }
 
+    /* Update some UI elements */
+    VisItUI_setValueI("LEVELS", sim->max_levels, 1);
+    VisItUI_setValueI("REFINEMENTRATIO", sim->refinement_ratio, 1);
+    VisItUI_setValueI("SAVEIMAGES", sim->savingFiles, 1);
+    VisItUI_setValueI("UPDATEPLOTS", sim->autoupdate?1:0, 1);
+
     ++sim->cycle;
     sim->time += (M_PI / 30.);
 }
@@ -456,9 +462,81 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
             VisItUpdatePlots();
         }
     }
+    else
+    {
+        fprintf(stderr, "cmd=%s, args=%s\n", cmd, args);
+    }
 }
 
 void read_input_deck(void) { }
+
+void
+ui_step_clicked(void *cbdata)
+{
+    simulation_data *sim = (simulation_data *)cbdata;
+    printf("ui_step_clicked\n");
+    simulate_one_timestep(sim);
+}
+
+void
+ui_halt_clicked(void *cbdata)
+{
+    simulation_data *sim = (simulation_data *)cbdata;
+    printf("ui_halt_clicked\n");
+    sim->runMode = SIM_STOPPED;
+    VisItTimeStepChanged();
+}
+
+void
+ui_run_clicked(void *cbdata)
+{
+    simulation_data *sim = (simulation_data *)cbdata;
+    printf("ui_run_clicked\n");
+    sim->runMode = SIM_RUNNING;
+    VisItTimeStepChanged();
+}
+
+void
+ui_reset_clicked(void *cbdata)
+{
+    simulation_data *sim = (simulation_data *)cbdata;
+    printf("ui_reset_clicked\n");
+    patch_dtor(&sim->patch);
+    simulation_data_ctor(sim);
+}
+
+void
+ui_levels_changed(int value, void *cbdata)
+{
+    simulation_data *sim = (simulation_data *)cbdata;
+    printf("ui_levels_changed: %d\n", value);
+    sim->max_levels = value;
+}
+
+void
+ui_ratio_changed(int value, void *cbdata)
+{
+    simulation_data *sim = (simulation_data *)cbdata;
+    printf("ui_ratio_changed: %d\n", value);
+    sim->refinement_ratio = value;
+}
+
+void
+ui_saveimages_changed(int value, void *cbdata)
+{
+    simulation_data *sim = (simulation_data *)cbdata;
+    printf("ui_saveimages_changed: %d\n", value);
+    sim->savingFiles = value;
+}
+
+void
+ui_updateplots_changed(int value, void *cbdata)
+{
+    simulation_data *sim = (simulation_data *)cbdata;
+    printf("ui_updateplots_changed: %d\n", value);
+    sim->autoupdate = value;
+}
+
 
 /******************************************************************************
  *
@@ -478,6 +556,16 @@ void mainloop(void)
     // Set up some simulation data.
     simulation_data sim;
     simulation_data_ctor(&sim);
+
+    /* Register some ui actions */
+    VisItUI_clicked("STEP", ui_step_clicked, &sim);
+    VisItUI_clicked("HALT", ui_halt_clicked, &sim);
+    VisItUI_clicked("RUN", ui_run_clicked, &sim);
+    VisItUI_clicked("RESET", ui_reset_clicked, &sim);
+    VisItUI_valueChanged("LEVELS", ui_levels_changed, &sim);
+    VisItUI_valueChanged("REFINEMENTRATIO", ui_ratio_changed, &sim);
+    VisItUI_stateChanged("SAVEIMAGES", ui_saveimages_changed, &sim);
+    VisItUI_stateChanged("UPDATEPLOTS", ui_updateplots_changed, &sim);
 
     /* If we're not running by default then simulate once there's something
      * once VisIt connects.
@@ -576,7 +664,7 @@ int main(int argc, char **argv)
     VisItInitializeSocketAndDumpSimFile("mandelbrot",
         "Demonstrates creating the Mandelbrot set on an AMR mesh",
         "/path/to/where/sim/was/started",
-        NULL, NULL, NULL);
+        NULL, "mandelbrot.ui", NULL);
 
     /* Read input problem setup, geometry, data. */
     read_input_deck();

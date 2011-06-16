@@ -37,7 +37,7 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-Wno-deprecated -fno-common -fexceptions -fvisibility=hidden")
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-fno-common -fexceptions -fvisibility=hidden")
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-Wno-deprecated -fno-common -fexceptions -fvisibility=hidden")
 
 ##

@@ -105,6 +105,9 @@ public class ViewerState
             Register(attsClientInformation);
         attsClientInformationList = new ClientInformationList();
             Register(attsClientInformationList);
+        attsSimulationUIValues = new SimulationUIValues();
+            Register(attsSimulationUIValues);
+
         attsPluginManagerAttributes = new PluginManagerAttributes();
             Register(attsPluginManagerAttributes);
         attsAppearanceAttributes = new AppearanceAttributes();
@@ -195,6 +198,8 @@ public class ViewerState
     public ClientMethod              GetClientMethod() { return attsClientMethod; }
     public ClientInformation         GetClientInformation() { return attsClientInformation; }
     public ClientInformationList     GetClientInformationList() { return attsClientInformationList; }
+    public SimulationUIValues        GetSimulationUIValues() { return attsSimulationUIValues; }
+
     public PluginManagerAttributes   GetPluginManagerAttributes() { return attsPluginManagerAttributes; }
     public AppearanceAttributes      GetAppearanceAttributes() { return attsAppearanceAttributes; }
     public GlobalAttributes          GetGlobalAttributes() { return attsGlobalAttributes; }
@@ -358,6 +363,8 @@ public class ViewerState
     private ClientMethod             attsClientMethod;
     private ClientInformation        attsClientInformation;
     private ClientInformationList    attsClientInformationList;
+    private SimulationUIValues       attsSimulationUIValues;
+
     private PluginManagerAttributes  attsPluginManagerAttributes;
     private AppearanceAttributes     attsAppearanceAttributes;
     private GlobalAttributes         attsGlobalAttributes;
