@@ -53,6 +53,7 @@
 #include <avtDatasetExaminer.h>
 #include <avtHistogramSpecification.h>
 #include <avtMetaData.h>
+#include <avtNamedSelectionManager.h>
 #include <avtParallel.h>
 #include <avtTimeLoopCollectorFilter.h>
 
@@ -680,8 +681,10 @@ CQFilter::GlobalizeSelection(
     // sizes over all processors.
     int nCellsTotal = (int)selection.size();
     SumIntAcrossAllProcessors(nCellsTotal);
-    if(nCellsTotal > 1000000)
+    if(nCellsTotal > avtNamedSelectionManager::MaximumSelectionSize())
     {
+        debug5 << "The number of total cells (" << nCellsTotal
+               << ") is above the allowed limit." << endl;
         return false;
     }
 

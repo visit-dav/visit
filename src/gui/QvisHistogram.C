@@ -235,6 +235,8 @@ QvisHistogram::paintEvent(QPaintEvent *e)
     QvisAbstractOpacityBar::paintEvent(e);
 
     QPainter p(this);
+
+    // Draw selection lines
     if(selectionEnabled)
     {
         // Now draw some indicator lines.
@@ -253,6 +255,16 @@ QvisHistogram::paintEvent(QPaintEvent *e)
         p.setPen(selection==1 ? brightred : darkred);
         p.drawLine(x, contentsRect().top(),
                    x, contentsRect().top() + contentsRect().height());
+    }
+
+    // If there is no data, draw "No data" string across the widget.
+    if(histTexture == 0)
+    {
+        p.setPen(Qt::white);
+        p.drawText(contentsRect().x(), contentsRect().y(),
+                   contentsRect().width(), contentsRect().height(),
+                   Qt::AlignCenter | Qt::AlignVCenter,
+                   tr("No data"));
     }
 
 #if 0

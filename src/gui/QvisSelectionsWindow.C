@@ -1817,7 +1817,7 @@ QvisSelectionsWindow::histogramTypeChanged(int value)
     }
 
     Apply();
-    //UpdateHistogram();
+    UpdateHistogram(0,0,0,0,false); // invalidate the histogram
     UpdateHistogramTitle();
 
     cqHistogramVariableButton->setEnabled(!selectionProps.GetVariables().empty());
