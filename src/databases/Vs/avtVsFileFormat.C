@@ -22,7 +22,6 @@
 
 // std includes
 #include <cstring>
-#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <stdlib.h>
@@ -325,8 +324,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
     // Adjust for the data selections which are ZONAL.
     if( haveDataSelections = ProcessDataSelections(mins, maxs, strides) )
     {
-//      VsLog::debugLog()
-      cerr
+      VsLog::debugLog()
         << "Have a logical zonal selection for mesh "<< endl
         << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
         << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
@@ -593,7 +591,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
       }
     }
 
-    cerr
+    VsLog::debugLog() << methodSig
       << "Have a zonal inclusive selection for uniform mesh "<< endl
       << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
       << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
@@ -615,7 +613,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
       gdims[i] = 1;
     }
 
-    cerr <<  "Grid dims predicted "
+    VsLog::debugLog() <<  "Grid dims predicted "
          << gdims[0] << "  " << gdims[1] << "  " << gdims[2] << "  " << endl;
 
     VsLog::debugLog() << methodSig << "Getting lower bounds for mesh." << endl;
@@ -668,12 +666,6 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
       lowerBounds[splitAxis] += startCell * delta;
       upperBounds[splitAxis] = lowerBounds[splitAxis] + nCells * delta;
 
-//       cout << "After adjust: Proc=" << PAR_Rank()
-//         << " start=" << startCell << " nCells=" << nCells
-//         << " delta=" << delta
-//         << " lowerBound=" << lowerBounds[splitAxis]
-//         << " upperBound=" << upperBounds[splitAxis] << endl;
-
       numCells[splitAxis] = nCells;
       idims[splitAxis] = nCells + 1; // FIXME: May depend on centering
     }
@@ -699,14 +691,11 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
       if (idims[i] > 1)
         delta = (upperBounds[i] - lowerBounds[i]) / (idims[i]-1);
 
-      VsLog::debugLog() << methodSig << "delta is : " << delta << endl;
-
       int cc = 0;
       int j = mins[i];
 
       while( j <= maxs[i] )
       {
-        cerr << j << " ";
         double temp = lowerBounds[i] + j*delta;
         coords[i]->InsertTuple(cc, &temp);
         ++cc;
@@ -718,13 +707,10 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
       // NO PARTIAL CELLS FOR NOW
       if( j % strides[i] == 0 )
       {
-        cerr << "index last node " << j << endl;
         double temp = lowerBounds[i] + j*delta;
         coords[i]->InsertTuple(cc, &temp);
         ++cc;
       }
-      else
-        cerr << endl;
     }
 
     // Unused axii
@@ -852,7 +838,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       }
     }
 
-    cerr
+    VsLog::debugLog() << methodSig
       << "Have a zonal inclusive selection for rectilinear mesh "<< endl
       << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
       << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
@@ -874,7 +860,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       gdims[i] = 1;
     }
 
-    cerr <<  "Grid dims predicted "
+    VsLog::debugLog() <<  "Grid dims predicted "
          << gdims[0] << "  " << gdims[1] << "  " << gdims[2] << "  " << endl;
 
     vector<vtkDataArray*> coords(vsdim);
@@ -953,7 +939,6 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
         while( j <= maxs[i] )
         {
-          cerr << j << " ";
           double temp = dblDataPtr[j];
           coords[i]->InsertTuple(cc, &temp);
           ++cc;
@@ -965,13 +950,10 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
         // NO PARTIAL CELLS FOR NOW
         if( j % strides[i] == 0 )
         {
-          cerr << "index last node " << j << endl;
           double temp = dblDataPtr[j];
           coords[i]->InsertTuple(cc, &temp);
           ++cc;
         }
-        else
-          cerr << endl;
 
         delete [] dblDataPtr;
 
@@ -981,7 +963,6 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
         while( j <= maxs[i] )
         {
-          cerr << j << " ";
           float temp = fltDataPtr[j];
           coords[i]->InsertTuple(cc, &temp);
           ++cc;
@@ -993,13 +974,10 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
         // NO PARTIAL CELLS FOR NOW
         if( j % strides[i] == 0 )
         {
-          cerr << "index last node " << j << endl;
           float temp = fltDataPtr[j];
           coords[i]->InsertTuple(cc, &temp);
           ++cc;
         }
-        else
-          cerr << endl;
 
         delete [] fltDataPtr;
       }
@@ -1162,7 +1140,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
       }
     }
 
-    cerr
+    VsLog::debugLog() << methodSig
       << "Have a zonal inclusive selection for structured mesh "<< endl
       << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
       << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
@@ -1190,7 +1168,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
       numPoints *= gdims[i];
     }
 
-    cerr <<  "Grid dims predicted "
+    VsLog::debugLog() <<  "Grid dims predicted "
          << gdims[0] << "  " << gdims[1] << "  " << gdims[2] << "  " << endl;
 
     VsLog::debugLog() << methodSig
@@ -1441,7 +1419,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       if( maxs[0] < mins[0] )
         mins[0] = 0;
 
-      cerr
+      VsLog::debugLog() << methodSig
         << "Have a zonal inclusive selection for unstructured point mesh "<< endl
         << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "   << endl;
       
@@ -1711,7 +1689,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       if( maxs[0] < mins[0] )
         mins[0] = 0;
 
-      cerr
+      VsLog::debugLog() << methodSig
         << "Have a zonal inclusive selection for unstructured mesh cells " << endl
         << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "   << endl;
       
@@ -1988,7 +1966,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
       if( maxs[0] < mins[0] )
         mins[0] = 0;
 
-      cerr
+      VsLog::debugLog() << methodSig
         << "Have a zonal inclusive selection for variable with mesh "<< endl
         << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "   << endl;
     }
@@ -2383,7 +2361,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
     if( haveDataSelections = ProcessDataSelections(mins, maxs, strides) )
     {
-      cerr << "have a data selection for a variable "<< endl
+      VsLog::debugLog() << "have a data selection for a variable "<< endl
            << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
            << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
            << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
@@ -2573,12 +2551,6 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       return NULL;
     }
 
-    cerr << "var dims (" << varDims.size() << ")  " << varDims[0] << "  ";
-    if( varDims.size() >= 2 ) cerr << varDims[1] << "  ";
-    if( varDims.size() >= 3 ) cerr << varDims[2] << "  ";
-    if( varDims.size() == 4 ) cerr << varDims[3]; cerr << endl;
-
-
     // The variable dims should reflect the topological dims plus one
     // more dimension for the spatial dimension of the variable.
     size_t vsdim = numTopologicalDims + 1;
@@ -2621,7 +2593,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     }
 
     if( haveDataSelections )
-      cerr
+      VsLog::debugLog() << methodSig
         << "Have a zonal inclusive selection for getting a variable "<< endl
         << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
         << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
@@ -2646,12 +2618,6 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     {
       vdims[i] = 1;
     }
-
-    cerr <<  "Variable dims predicted " << vdims[0] << "  ";
-    if( vdims.size() >= 2 ) cerr << vdims[1] << "  ";
-    if( vdims.size() >= 3 ) cerr << vdims[2] << "  ";
-    if( vdims.size() == 4 ) cerr << vdims[3]; cerr << endl;
-
 
     VsLog::debugLog() << methodSig
                       << "Total number of variable is " << numVariables << endl;
