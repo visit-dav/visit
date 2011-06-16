@@ -715,6 +715,10 @@ $0 = shift @ARGV;
 #    Eric Brugger, Tue May 24 11:05:30 PDT 2011
 #    I added support for the aprun launch method.
 #
+#    Brad Whitlock, Thu Jun 16 09:07:40 PDT 2011
+#    Get the plugin version number from VISITPLUGINVERSION environment variable
+#    which is now set in frontendlauncher.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2524,15 +2528,15 @@ if($os eq "darwin")
 # Set up plugin search paths in the correct order
 if ($IsRunningOnJaguar_ORNL)
 {
-    $visitprivateplugins = "/lustre/widow1/scratch/$ENV{USER}/.visit/$ver/$archdir/plugins";
+    $visitprivateplugins = "/lustre/widow1/scratch/$ENV{USER}/.visit/$ENV{VISITPLUGINVERSION}/$archdir/plugins";
     $visitprivateplugins_old = "/lustre/widow1/scratch/$ENV{USER}/.visit/$archdir/plugins";
 }
 else
 {
-    $visitprivateplugins = "$ENV{HOME}/.visit/$ver/$archdir/plugins";
+    $visitprivateplugins = "$ENV{HOME}/.visit/$ENV{VISITPLUGINVERSION}/$archdir/plugins";
     $visitprivateplugins_old = "$ENV{HOME}/.visit/$archdir/plugins";
 }
-if ($ver eq "")
+if ($ENV{VISITPLUGINVERSION} eq "")
 {
     $visitprivateplugins = $visitprivateplugins_old;
 }
