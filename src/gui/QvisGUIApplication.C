@@ -3493,6 +3493,7 @@ QvisGUIApplication::WindowFactory(int i)
                                               windowNames[i], tr("Simulations"),
                                               mainWin->GetNotepad());
           swin->ConnectStatusAttributes(GetViewerState()->GetStatusAttributes());
+          swin->ConnectSimulationUIValues(GetViewerState()->GetSimulationUIValues());
           const QualifiedFilename &qf = fileServer->GetOpenFile();
           swin->SetNewMetaData(qf,fileServer->GetMetaData(qf, GetStateForSource(qf),
                                                          !FileServerList::ANY_STATE,
