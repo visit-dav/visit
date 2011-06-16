@@ -138,6 +138,7 @@ SILArrayAttributes.java
 SILAttributes.java 
 SILMatrixAttributes.java 
 SILRestrictionAttributes.java 
+SimulationUIValues.java
 SaveSubWindowAttributes.java
 SaveSubWindowsAttributes.java
 SaveWindowAttributes.java 

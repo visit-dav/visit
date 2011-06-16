@@ -78,6 +78,7 @@
 #include <SaveWindowAttributes.h>
 #include <SelectionList.h>
 #include <SelectionProperties.h>
+#include <SimulationUIValues.h>
 #include <StatusAttributes.h>
 #include <SILRestrictionAttributes.h>
 #include <SyncAttributes.h>

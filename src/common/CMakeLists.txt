@@ -266,6 +266,7 @@ state/SelectionList.C
 state/SelectionProperties.C
 state/SelectionSummary.C
 state/SelectionVariableSummary.C
+state/SimulationUIValues.C
 state/SILArrayAttributes.C
 state/SILAttributes.C
 state/SILMatrixAttributes.C

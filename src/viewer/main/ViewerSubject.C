@@ -104,6 +104,7 @@
 #include <SelectionSummary.h>
 #include <SILRestrictionAttributes.h>
 #include <SimulationCommand.h>
+#include <SimulationUIValues.h>
 #include <SingleAttributeConfigManager.h>
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
@@ -9716,6 +9717,9 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
 //   Changed the interface to ReplaceDatabase to support option for only 
 //   replacing active plots.
 //
+//   Brad Whitlock, Sun Feb 27 21:12:17 PST 2011
+//   I added the SetUI command.
+//
 // ****************************************************************************
 
 void
@@ -9751,6 +9755,33 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         std::string cmd("INTERNALSYNC");
         std::string args(command.substr(13, command.size()-1));
         ViewerEngineManager::Instance()->SendSimulationCommand(key, cmd, args);
+    }
+    else if(command.substr(0,5) == "SetUI")
+    {
+        stringVector s = SplitValues(command, ':');
+
+        // s[0] = SetUI
+        // s[1] = "i" or "s"
+        // s[2] = name
+        // s[3] = value
+        // s[4] = enabled
+
+        // Send the new values to the client so they can be used to update
+        // the custom sim window there.
+        GetViewerState()->GetSimulationUIValues()->SetHost(key.OriginalHostName());
+        GetViewerState()->GetSimulationUIValues()->SetSim(key.SimName());
+        GetViewerState()->GetSimulationUIValues()->SetName(s[2]);
+#if 0
+        if(s[1] == "i")
+        {
+            int ival = atoi(s[3].c_str());
+            GetState()->GetSimulationUIValues()->SetIvalue(ival);
+        }
+        else
+#endif
+            GetViewerState()->GetSimulationUIValues()->SetSvalue(s[3]);
+        GetViewerState()->GetSimulationUIValues()->SetEnabled(s[4] == "1");
+        GetViewerState()->GetSimulationUIValues()->Notify();
     }
 }
 

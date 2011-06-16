@@ -91,6 +91,9 @@ SimCommandSlots::SimCommandSlots(ViewerProxy *theViewer,
 //   Brad Whitlock, Tue Jul  8 11:16:09 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Sun Feb 27 14:08:32 PST 2011
+//   Reorder command string.
+//
 // ****************************************************************************
 
 int SimCommandSlots::SendCMD(QString sig, const QObject *ui, QString value)
@@ -112,9 +115,13 @@ int SimCommandSlots::SendCMD(QString sig, const QObject *ui, QString value)
     string host = engines->GetEngines()[simIndex];
     string sim  = engines->GetSimulationName()[simIndex];
 
-    QString cmd = sig + ";" + ui->objectName().toStdString().c_str() + ";" + ui->metaObject()->className() + ";" +
-                  ui->parent()->objectName().toStdString().c_str() + ";" + value;
+    QString cmd = QString("UI;%1;%2;%3;%4").arg(ui->objectName())
+                                     .arg(ui->metaObject()->className())
+                                     .arg(sig)
+                                     .arg(value);
+
     viewer->GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString());
+
     return 0;
 }
 
@@ -168,7 +175,7 @@ void SimCommandSlots::ValueChangedHandler(int index)
     else
         debug5 << "unknown signaler" << endl;
     QString value = QString::number(index);
-    SendCMD("valueChanged()", ui, value);
+    SendCMD("valueChanged(int)", ui, value);
 }
 
 // ****************************************************************************
@@ -197,7 +204,7 @@ void SimCommandSlots::ValueChangedHandler(const QTime &theTime)
     else
         debug5 << "unknown signaler" << endl;
     QString value = theTime.toString();
-    SendCMD("valueChanged()", ui, value);
+    SendCMD("valueChanged(QTime)", ui, value);
 }
 
 // ****************************************************************************
@@ -226,7 +233,7 @@ void SimCommandSlots::ValueChangedHandler(const QDate &theDate)
     else
         debug5 << "unknown signaler" << endl;
     QString value = theDate.toString();
-    SendCMD("valueChanged()", ui, value);
+    SendCMD("valueChanged(QDate)", ui, value);
 }
 
 // ****************************************************************************
@@ -254,9 +261,8 @@ void SimCommandSlots::StateChangedHandler(int OnOff)
     }
     else
         debug5 << "unknown signaler" << endl;
-    QString value;
-    value.number(OnOff);
-    SendCMD("valueChanged()", ui, value);
+    QString value(QString::number(OnOff ? 1 : 0));
+    SendCMD("stateChanged(int)", ui, value);
 }
 
 // ****************************************************************************
@@ -291,7 +297,7 @@ void SimCommandSlots::CurrentChangedHandler(int row, int col)
     else
         debug5 << "unknown signaler" << endl;
     QString value = QString::number(row) + ";" + QString::number(col) + ";" + tvalue;
-    SendCMD("currentChanged()", ui, value);
+    SendCMD("currentChanged(int,int)", ui, value);
 }
 
 
@@ -327,7 +333,7 @@ void SimCommandSlots::ValueChangedHandler(int row, int col)
     else
         debug5 << "unknown signaler" << endl;
     QString value = QString::number(row) + ";" + QString::number(col) + ";" + tvalue;
-    SendCMD("valueChanged()", ui, value);
+    SendCMD("valueChanged(int,int)", ui, value);
 }
 
 // ****************************************************************************
@@ -357,7 +363,7 @@ void SimCommandSlots::ActivatedHandler(int index)
     else
         debug5 << "unknown signaler" << endl;
     QString value = QString::number(index);
-    SendCMD("activate()", ui, value);
+    SendCMD("activated(int)", ui, value);
 }
 
 // ****************************************************************************
@@ -386,5 +392,5 @@ void SimCommandSlots::TextChangedHandler(const QString &newText)
     }
     else
         debug5 << "unknown signaler" << endl;
-    SendCMD("textChanged()", ui, newText);
+    SendCMD("textChanged(QString)", ui, newText);
 }

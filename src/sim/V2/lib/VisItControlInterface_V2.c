@@ -39,6 +39,7 @@
 #include "VisItControlInterface_V2.h"
 #include "SimV2Tracing.h"
 #include "DeclareDataCallbacks.h"
+#include "SimUI.h"
 
 #ifdef _WIN32
 #if _MSC_VER < 1600
@@ -499,6 +500,8 @@ visit_do_sync(int id)
 * Date:       Thu Mar 26 13:28:11 PDT 2009
 *
 * Modifications:
+*   Brad Whitlock, Sun Feb 27 16:17:24 PST 2011
+*   Handle UI commands.
 *
 ******************************************************************************/
 
@@ -513,7 +516,29 @@ visit_handle_command_callback(const char *cmd, const char *args, void *cbdata)
     }
     else if(visit_command_callback != NULL)
     {
-        (*visit_command_callback)(cmd, args, visit_command_callback_data);
+        if(strncmp(cmd, "UI;", 3) == 0)
+        {
+            char *cmd2, *args2;
+            cmd2 = (char*)malloc(strlen(cmd) + 1 - 3);
+            strcpy(cmd2, cmd + 3);
+            args2 = cmd2;
+            while(*args2 != ';')
+                args2++;
+            *args2++ = '\0';
+
+            /* Try and call user-defined slot functions */
+            if(sim_ui_handle(cmd2, args2) == 0)
+            {
+                /* As a backup, call the regular command function. */
+                (*visit_command_callback)(cmd2, args2, visit_command_callback_data);
+            }
+
+            free(cmd2);
+        }
+        else
+        {
+            (*visit_command_callback)(cmd, args, visit_command_callback_data);
+        }
     }
 }
 
@@ -3202,3 +3227,89 @@ VISIT_DEBUG_FUNCTION(2)
 VISIT_DEBUG_FUNCTION(3)
 VISIT_DEBUG_FUNCTION(4)
 VISIT_DEBUG_FUNCTION(5)
+
+/***************************************************************************/
+int
+VisItUI_clicked(const char *name, void (*cb)(void*), void *cbdata)
+{
+    int retval = VISIT_ERROR;
+    sim_ui_element *e = NULL;
+    LIBSIM_API_ENTER(VisItUI_clicked);
+    if((e = sim_ui_get(name)) != NULL)
+    {
+        e->slot_clicked = cb;
+        e->slot_clicked_data = cbdata;
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_clicked);
+    return retval;
+}
+
+int
+VisItUI_stateChanged(const char *name, void (*cb)(int,void*), void *cbdata)
+{
+    int retval = VISIT_ERROR;
+    sim_ui_element *e = NULL;
+    LIBSIM_API_ENTER(VisItUI_stateChanged);
+    if((e = sim_ui_get(name)) != NULL)
+    {
+        e->slot_stateChanged = cb;
+        e->slot_stateChanged_data = cbdata;
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_stateChanged);
+    return retval;
+}
+
+int
+VisItUI_valueChanged(const char *name, void (*cb)(int,void*), void *cbdata)
+{
+    int retval = VISIT_ERROR;
+    sim_ui_element *e = NULL;
+    LIBSIM_API_ENTER(VisItUI_valueChanged);
+    if((e = sim_ui_get(name)) != NULL)
+    {
+        e->slot_valueChanged = cb;
+        e->slot_valueChanged_data = cbdata;
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_valueChanged);
+    return retval;
+}
+/***************************************************************************/
+
+int
+VisItUI_setValueI(const char *name, int value, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setValueI);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        char cmd[500];
+        sprintf(cmd, "SetUI:i:%s:%d:%d", name, value, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_setValueI)
+    return retval;
+}
+
+int
+VisItUI_setValueS(const char *name, const char *value, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setValueS);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        char cmd[500];
+        sprintf(cmd, "SetUI:s:%s:%s:%d", name, value, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_setValueS)
+    return retval;
+}

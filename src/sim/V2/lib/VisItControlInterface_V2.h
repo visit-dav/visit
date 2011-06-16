@@ -1022,6 +1022,14 @@ int VisItSetWriteMesh(int (*cb)(const char *, int, int, visit_handle, visit_hand
  * ****************************************************************************/
 int VisItSetWriteVariable(int (*cb)(const char *, const char *, int, visit_handle, visit_handle, void *), void *cbdata);
 
+/* UI-related functions */
+int VisItUI_clicked(const char *name, void (*cb)(void*), void *cbdata);
+int VisItUI_stateChanged(const char *name, void (*cb)(int,void*), void *cbdata);
+int VisItUI_valueChanged(const char *name, void (*cb)(int,void*), void *cbdata);
+
+int VisItUI_setValueI(const char *name, int value, int enabled);
+int VisItUI_setValueS(const char *name, const char *value, int enabled);
+
 #ifdef __cplusplus
 }
 #endif

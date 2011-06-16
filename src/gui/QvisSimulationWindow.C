@@ -66,6 +66,7 @@
 
 #include <DebugStream.h>
 #include <EngineList.h>
+#include <SimulationUIValues.h>
 #include <StatusAttributes.h>
 #include <ViewerProxy.h>
 #include <avtSimulationInformation.h>
@@ -118,6 +119,7 @@ QvisSimulationWindow::QvisSimulationWindow(EngineList *engineList,
     caller = engines;
     statusAtts = 0;
     metadata = new avtDatabaseMetaData;
+    uiValues = NULL;
     DynamicCommandsWin = NULL;
     uiLoader = new QvisUiLoader;
     stripCharts = 0;
@@ -151,6 +153,10 @@ QvisSimulationWindow::~QvisSimulationWindow()
     // Detach from the status atts if they are still around.
     if (statusAtts)
         statusAtts->Detach(this);
+
+    // Detach from the sim ui values
+    if (uiValues)
+        uiValues->Detach(this);
 
     delete stripCharts;
 }
@@ -379,6 +385,109 @@ QvisSimulationWindow::GetUIFile(const QString &key) const
     return retval;
 }
 
+static void
+ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
+{
+    // Connect up handlers to all signals based on component type.
+    const QObjectList &GUI_Objects = obj->children();
+    for (int i = 0; i < GUI_Objects.size(); ++i)
+    {
+        QObject *ui = GUI_Objects[i];
+        const QMetaObject *mo = ui->metaObject();
+#if 0
+        const QMetaObject *ccmo = cc->metaObject();
+        for(int m = 0; m < uimo->methodCount(); ++m)
+        {
+            QMetaMethod uimm = uimo->method(m);
+            if(uimm.methodType() == QMetaMethod::Signal)
+            {
+                for(int n = 0; n < ccmo->methodCount(); ++n)
+                {
+                    QMetaMethod ccmm = ccmo->method(n);
+                    if(ccmm.methodType() == QMetaMethod::Slot &&
+                       strcmp(uimm.signature(), ccmm.signature()) == 0)
+                    {
+                        connect(ui, uimm.signature(),
+                                cc, ccmm.signature());
+                    }
+                }
+            }
+        }
+
+                
+            if(mm.methodType() == QMetaMethod::Method)
+                qDebug("    %d: method: %s", m, mm.signature());
+            else if(mm.methodType() == QMetaMethod::Signal)
+                qDebug("    %d: signal: %s", m, mm.signature());
+            else if(mm.methodType() == QMetaMethod::Slot)
+                qDebug("    %d: slot:   %s", m, mm.signature());
+            else if(mm.methodType() == QMetaMethod::Constructor)
+                qDebug("    %d: ctor:   %s", m, mm.signature());
+        }
+#endif
+        if (mo->indexOfSignal("clicked()") != -1)
+        {
+//qDebug("connect %s clicked()\n", ui->objectName().toStdString().c_str());
+            QObject::connect(ui, SIGNAL(clicked()),
+                    cc, SLOT(ClickedHandler()));
+        }
+
+        if (mo->indexOfSignal("valueChanged(int)") != -1)
+        {
+//qDebug("connect %s valueChanged(int)\n", ui->objectName().toStdString().c_str());
+            QObject::connect(ui, SIGNAL(valueChanged(int)),
+                             cc, SLOT(ValueChangedHandler(int)));
+        }
+
+        if (mo->indexOfSignal("valueChanged(const QDate&)") != -1)
+        {
+            QObject::connect(ui, SIGNAL(valueChanged(const QDate&)),
+                    cc, SLOT(ValueChangedHandler(const QDate &)));
+        }
+
+        if (mo->indexOfSignal("valueChanged(const QTime&)") != -1)
+        {
+            QObject::connect(ui, SIGNAL(valueChanged(const QTime&)),
+                    cc, SLOT(ValueChangedHandler(const QTime &)));
+        }
+
+        if (mo->indexOfSignal("stateChanged(int)") != -1)
+        {
+//qDebug("connect %s stateChanged(int)\n", ui->objectName().toStdString().c_str());
+            QObject::connect(ui, SIGNAL(stateChanged(int)),
+                    cc, SLOT(StateChangedHandler(int)));
+        }
+
+        if (mo->indexOfSignal("activated(int)") != -1)
+        {
+//qDebug("connect %s activated(int)\n", ui->objectName().toStdString().c_str());
+            QObject::connect(ui, SIGNAL(activated(int)),
+                    cc, SLOT(ActivatedHandler(int)));
+        }
+
+        if (mo->indexOfSignal("textChanged(const QString&)") != -1)
+        {
+            QObject::connect(ui, SIGNAL(textChanged(const QString &)),
+                    cc, SLOT(TextChangedHandler(const QString&)));
+        }
+
+        if (mo->indexOfSignal("currentChanged(int,int)") != -1)
+        {
+            QObject::connect(ui, SIGNAL(currentChanged(int, int)),
+                    cc, SLOT(CurrentChangedHandler(int, int)));       
+        }
+
+        if (mo->indexOfSignal("valueChanged(int,int)") != -1)
+        {
+            QObject::connect(ui, SIGNAL(valueChanged(int, int)),
+                    cc, SLOT(ValueChangedHandler(int, int)));
+        }
+
+        // We've hooked up signals for this object, now do its children.
+        ConnectUIChildren(ui, cc);
+    }
+}
+
 // ****************************************************************************
 // Method: void QvisSimulationWindow::CreateCommandUI
 //
@@ -404,10 +513,11 @@ QvisSimulationWindow::GetUIFile(const QString &key) const
 //   Qt 4.
 //
 // ****************************************************************************
-
+#include <QMetaMethod>
 void
 QvisSimulationWindow::CreateCommandUI()
 {
+//qDebug("QvisSimulationWindow::CreateCommandUI");
     // Try and get the name of the UI file.
     QString fname(GetUIFile(activeEngine));
     if(fname.isEmpty())
@@ -420,7 +530,7 @@ QvisSimulationWindow::CreateCommandUI()
     }
     
     debug5 << "UI_DIR = " << fname.toStdString() << endl;
-
+//qDebug("QvisSimulationWindow::CreateCommandUI: creating ui");
     // Dynamically create the custom UI be reading in it's xml file.
     int simindex = simCombo->currentIndex();
     int index = simulationToEngineListMap[simindex];
@@ -428,7 +538,7 @@ QvisSimulationWindow::CreateCommandUI()
         engines, index);
     QFile uiFile(fname);
     if(uiFile.open(QIODevice::ReadOnly))
-        DynamicCommandsWin = uiLoader->load(&uiFile, this);
+        DynamicCommandsWin = uiLoader->load(&uiFile, NULL);
     
     // If creation failed then jump out 
     if (DynamicCommandsWin == NULL)
@@ -441,46 +551,13 @@ QvisSimulationWindow::CreateCommandUI()
         Error(msg);
         return;
     }
-     
-    const QObjectList &GUI_Objects = DynamicCommandsWin->children();
+//qDebug("QvisSimulationWindow::CreateCommandUI: hooking up ui");
 
-    // Connect up handlers to all signals based on component type.
-    for (int i = 0; i < GUI_Objects.size(); ++i)
-    {
-        QObject *ui = GUI_Objects[i];
-        const QMetaObject *mo = ui->metaObject();       
-        if (mo->indexOfSignal("clicked()") != -1)
-            connect(ui, SIGNAL(clicked()), CommandConnections,
-                   SLOT(ClickedHandler()));
-        if (mo->indexOfSignal("valueChanged(int)") != -1)
-            connect(ui, SIGNAL(valueChanged(int)), CommandConnections,
-                    SLOT(ValueChangedHandler(int)));
-        if (mo->indexOfSignal("valueChanged(const QDate&)") != -1)
-            connect(ui, SIGNAL(valueChanged(const QDate&)), CommandConnections,
-                    SLOT(ValueChangedHandler(const QDate &)));
-        if (mo->indexOfSignal("valueChanged(const QTime&)") != -1)
-            connect(ui, SIGNAL(valueChanged(const QTime&)), CommandConnections,
-                    SLOT(ValueChangedHandler(const QTime &)));
-        if (mo->indexOfSignal("stateChanged(int)") != -1)
-            connect(ui, SIGNAL(stateChanged(int)), CommandConnections,
-                    SLOT(StateChangedHandler(int)));
-        if (mo->indexOfSignal("activated(int)") != -1)
-            connect(ui, SIGNAL(activated(int)), CommandConnections,
-                    SLOT(ActivatedHandler(int)));
-        if (mo->indexOfSignal("textChanged(const QString&)") != -1)
-            connect(ui, SIGNAL(textChanged(const QString &)),
-                    CommandConnections,
-                    SLOT(TextChangedHandler(const QString&)));
-        if (mo->indexOfSignal("currentChanged(int,int)") != -1)
-            connect(ui, SIGNAL(currentChanged(int, int)), CommandConnections,
-                    SLOT(CurrentChangedHandler(int, int)));       
-        if (mo->indexOfSignal("valueChanged(int,int)") != -1)
-            connect(ui, SIGNAL(valueChanged(int, int)), CommandConnections,
-                    SLOT(ValueChangedHandler(int, int)));
-            //connect(ui, SIGNAL(dialMoved(int)), CommandConnections,
-            //        SLOT(valueChangedHandler(int)));
-    }
-
+    // Hook up the widget and its children to the command connections
+    // object which will translate its signals into commands that we
+    // will send to the simulation.
+    ConnectUIChildren(DynamicCommandsWin, CommandConnections);
+  
     // enable custom command UI button
     debug5 << "enabling custom command button" << endl;
     simCommands->setButtonEnabled(CUSTOM_BUTTON, true);
@@ -539,6 +616,7 @@ QvisSimulationWindow::SubjectRemoved(Subject *TheRemovedSubject)
         statusAtts = 0;
 }
 
+#if 0
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateCustomUIComponent
 //
@@ -574,166 +652,116 @@ void
 QvisSimulationWindow::UpdateUIComponent (QWidget *window, 
     const avtSimulationCommandSpecification *cmd)
 {
-    if(window == NULL)
-        return;
 
-    QObject *ui = NULL;
-    ui  = window->findChild<QWidget *>(QString(cmd->GetName().c_str()));
+}
+#endif
+
+void
+QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name, const QString &value, bool e)
+{
+    QObject *ui  = window->findChild<QWidget *>(name);
     if (ui)
     {
-        debug5 << "Looking up component = " << cmd->GetName().c_str() << endl;
+        debug5 << "Looking up component = " << name.toStdString().c_str() << endl;
 
         // Block signals so updating the user interface does not cause a
         // command to go back to the simulation.
         ui->blockSignals(true);
 
+        if (ui->inherits("QWidget"))
+            ((QWidget *)ui)->setEnabled(e);
+
         if (ui->inherits("QLabel"))
         {
-            debug5 << "found label " << cmd->GetName().c_str() << " text = "
-                   << cmd->GetText().c_str() << endl;
-            const QString label(cmd->GetText().c_str());
-            ((QLabel*)ui)->setText(label );
-        }
-
-        // just set the generic button attributes. more specific attributes will be set latter
-        if (ui->inherits("QAbstractButton"))
-        {
-            debug5 << "found button " << cmd->GetName().c_str() << " text = "
-                   << cmd->GetText().c_str() << endl;
-            const QString label(cmd->GetText().c_str());
-            ((QAbstractButton*)ui)->setText(label );
-            ((QAbstractButton*)ui)->setEnabled(cmd->GetEnabled());
-        }
-
-        if (ui->inherits("QPushButton"))
-        {
-            debug5 << "found button" << cmd->GetName().c_str() << " text = "
-                   << cmd->GetText().c_str() << endl;
-            const QString label(cmd->GetText().c_str());
-            ((QPushButton*)ui)->setText(label);
-            ((QPushButton*)ui)->setEnabled(cmd->GetEnabled()); 
-        }
-
-        if (ui->inherits("QTabWidget"))
-        {
-            debug5 << "found button " << cmd->GetName().c_str() << " text = "
-                   << cmd->GetText().c_str() << endl;
-            ((QTabWidget*)ui)->setEnabled(cmd->GetEnabled());
+            debug5 << "found label " << name.toStdString() << " text = "
+                   << value.toStdString() << endl;
+            ((QLabel*)ui)->setText(value);
         }
 
         if (ui->inherits( "QLineEdit"))
         {
-            debug5 << "found button " << cmd->GetName().c_str() << " text = "
-                   << cmd->GetText().c_str() << endl;
-            const QString label(cmd->GetText().c_str());
-            ((QLineEdit*)ui)->setText(label );
-            ((QLineEdit*)ui)->setEnabled(cmd->GetEnabled());
+            debug5 << "found button " << name.toStdString() << " text = "
+                   << value.toStdString() << endl;
+            ((QLineEdit*)ui)->setText(value );
         }
 
         if (ui->inherits("QRadioButton"))
         {
-            debug5 << "found button " << cmd->GetName().c_str() << " text = "
-                   << cmd->GetText().c_str() << endl;
-            const QString label(cmd->GetText().c_str());
-            ((QRadioButton*)ui)->setText(label);
-            ((QRadioButton*)ui)->setChecked(cmd->GetIsOn());
-            ((QRadioButton*)ui)->setEnabled(cmd->GetEnabled());
+            debug5 << "found button " << name.toStdString() << " text = "
+                   << value.toStdString() << endl;
+            ((QRadioButton*)ui)->setChecked(value=="1");
         }
 
         if (ui->inherits("QProgressBar"))
         {
-            debug5 << "found ProgressBar " << cmd->GetName().c_str()
-                   << " value = " << cmd->GetText().c_str() << endl;
-            const QString label(cmd->GetValue().c_str());
-            ((QProgressBar*)ui)->setValue(label.toInt());
+            debug5 << "found ProgressBar " << name.toStdString()
+                   << " value = " << value.toStdString() << endl;
+            ((QProgressBar*)ui)->setValue(value.toInt());
         }
 
         if (ui->inherits("QSpinBox"))
         {
-            debug5 << "found QSpinBox " << cmd->GetName().c_str() << " value = "
-                   << cmd->GetValue().c_str() << endl;
-            const QString label(cmd->GetValue().c_str());
-            ((QSpinBox*)ui)->setValue(label.toInt());
-            ((QSpinBox*)ui)->setEnabled(cmd->GetEnabled());
+            debug5 << "found QSpinBox " << name.toStdString() << " value = "
+                   << value.toStdString() << endl;
+            ((QSpinBox*)ui)->setValue(value.toInt());
         }
  
         if (ui->inherits("QDial"))
         {
-            debug5 << "found QDial " << cmd->GetName().c_str() << " value = "
-                   << cmd->GetValue().c_str() << endl;
-            const QString label(cmd->GetValue().c_str());
-            ((QDial*)ui)->setValue(label.toInt());
-            ((QDial*)ui)->setEnabled(cmd->GetEnabled());
+            debug5 << "found QDial " << name.toStdString() << " value = "
+                   << value.toStdString() << endl;
+            ((QDial*)ui)->setValue(value.toInt());
         }
 
         if (ui->inherits("QSlider"))
         {
-            debug5 << "found QSlider " << cmd->GetName().c_str() << " value = "
-                   << cmd->GetValue().c_str() << endl;
-            const QString label(cmd->GetValue().c_str());
-            ((QSlider*)ui)->setValue(label.toInt());
-            ((QSlider*)ui)->setEnabled(cmd->GetEnabled());
+            debug5 << "found QSlider " << name.toStdString() << " value = "
+                   << value.toStdString() << endl;
+            ((QSlider*)ui)->setValue(value.toInt());
         }
 
         if (ui->inherits("QTextEdit"))
         {
-            debug5 << "found QTextEdit " << cmd->GetName().c_str()
-                   << " text = " << cmd->GetText().c_str() << endl;
-            const QString message(cmd->GetText().c_str());
-            // we need a way to keep from repeating whatever is
-            // in the text field without deleting the command channel.
-            // For now use a minus sign to say don't append the line
-            // again. I'll add special commands to handle this case
-            // in general in the next release.
-            if ( message != "" )
-                 ((QTextEdit*)ui)->append(message);
-            ((QTextEdit*)ui)->setEnabled(cmd->GetEnabled());
+            debug5 << "found QTextEdit " << name.toStdString()
+                   << " text = " << value.toStdString() << endl;
+            ((QTextEdit*)ui)->setText(value);
         }
 
         if ( ui->inherits ( "QLineEdit"))
         {
-            debug5 << "found QTextEdit " << cmd->GetName().c_str()
-                   << " text = " << cmd->GetText().c_str() << endl;
-            const QString label(cmd->GetText().c_str());
-            ((QLineEdit*)ui)->setText(label);
-            ((QLineEdit*)ui)->setEnabled(cmd->GetEnabled());
+            debug5 << "found QTextEdit " << name.toStdString()
+                   << " text = " << value.toStdString() << endl;
+            ((QLineEdit*)ui)->setText(value);
         }
 
         if ( ui->inherits ( "QLCDNumber"))
         {
-            debug5 << "found QLCDNumber " << cmd->GetName().c_str()
-                   << " value = " << cmd->GetValue().c_str() << endl;
-            const QString label(cmd->GetValue().c_str());
-            ((QLCDNumber*)ui)->display(label);
-            ((QLCDNumber*)ui)->setEnabled(cmd->GetEnabled());
+            debug5 << "found QLCDNumber " << name.toStdString()
+                   << " value = " << value.toStdString() << endl;
+            ((QLCDNumber*)ui)->display(value);
         }
 
         if ( ui->inherits ( "QTimeEdit"))
         {
-            debug5 << "found QTimeEdit " << cmd->GetName().c_str()
-                   << " text = " << cmd->GetText().c_str() << endl;
-            const QString label(cmd->GetText().c_str());
-            QTime time1 = QTime::fromString(cmd->GetText().c_str());
+            debug5 << "found QTimeEdit " << name.toStdString()
+                   << " text = " << value.toStdString() << endl;
+            QTime time1 = QTime::fromString(value);
             ((QTimeEdit*)ui)->setTime(time1);
-            ((QTimeEdit*)ui)->setEnabled(cmd->GetEnabled());
         }
 
         if (ui->inherits("QDateEdit"))
         {
-            debug5 << "found QTDateEdit " << cmd->GetName().c_str()
-                   << " text = " << cmd->GetText().c_str() << endl;
-            const QString label(cmd->GetText().c_str());
-            QDate date = QDate::fromString( label );
+            debug5 << "found QDateEdit " << name.toStdString()
+                   << " value = " << value.toStdString() << endl;
+            QDate date = QDate::fromString( value );
             ((QDateEdit*)ui)->setDate(date);
-            ((QDateEdit*)ui)->setEnabled(cmd->GetEnabled());
         }
+
         if (ui->inherits("QCheckBox"))
         {
-            debug5 << "found QCheckBox " << cmd->GetName().c_str()
-                   << " value = " << cmd->GetValue().c_str() << endl;
-            //const QString label(cmd->GetValue().c_str());
-            ((QCheckBox*)ui)->setEnabled(cmd->GetEnabled());
-            ((QCheckBox*)ui)->setChecked(cmd->GetIsOn());
+            debug5 << "found QCheckBox " << name.toStdString()
+                   << " value = " << value.toStdString() << endl;
+            ((QCheckBox*)ui)->setChecked(value=="1");
         }
 
         // Unblock signals.
@@ -741,7 +769,7 @@ QvisSimulationWindow::UpdateUIComponent (QWidget *window,
     }
     else
         debug5 << "could not find UI component named "
-               << cmd->GetName().c_str() << endl;
+               << name.toStdString() << endl;
 }
 
 // ****************************************************************************
@@ -767,6 +795,16 @@ QvisSimulationWindow::ConnectStatusAttributes(StatusAttributes *s)
     {
         statusAtts = s;
         statusAtts->Attach(this);
+    }
+}
+
+void
+QvisSimulationWindow::ConnectSimulationUIValues(SimulationUIValues *s)
+{
+    if (s)
+    {
+        uiValues = s;
+        uiValues->Attach(this);
     }
 }
 
@@ -944,7 +982,17 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
             }
         }
     }
-   
+
+    if(caller == uiValues || doAll)
+    {
+        if(DynamicCommandsWin != 0)
+        {
+            UpdateUIComponent(DynamicCommandsWin, 
+                uiValues->GetName().c_str(),
+                uiValues->GetSvalue().c_str(), 
+                uiValues->GetEnabled());
+        }
+    }
 }
 
 // ****************************************************************************
@@ -1171,15 +1219,6 @@ QvisSimulationWindow::UpdateInformation()
             break;
         }
 
-        // If we've not created a dynamic commands window already and we can get a
-        // decent-looking UI filename, enabled the custom command button
-        // so we can create a window when that button is clicked.
-        if(DynamicCommandsWin == NULL)
-        {
-            QString fname(GetUIFile(activeEngine));
-            simCommands->setButtonEnabled(CUSTOM_BUTTON, !fname.isEmpty());
-        }
-
         // Update command buttons
         for (int c=0; c<NUM_GENERIC_BUTTONS; c++)
         {
@@ -1204,13 +1243,25 @@ QvisSimulationWindow::UpdateInformation()
                 }
             }
         }
+
+        // If we've not created a dynamic commands window already and we can get a
+        // decent-looking UI filename, enabled the custom command button
+        // so we can create a window when that button is clicked.
+        simCommands->setCustomButton(CUSTOM_BUTTON);
+        if(DynamicCommandsWin == NULL)
+        {
+            QString fname(GetUIFile(activeEngine));
+            simCommands->setButtonEnabled(CUSTOM_BUTTON, !fname.isEmpty());
+        }
+
         // update ui component information from the meta data
-        UpdateCustomUI(md);
+//        UpdateCustomUI(md);
         UpdateSimulationUI(md);
         simInfo->setEnabled(true);
     }
 }
 
+#if 0
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateCustomUI
 //
@@ -1243,6 +1294,7 @@ QvisSimulationWindow::UpdateCustomUI (const avtDatabaseMetaData *md)
         UpdateUIComponent (DynamicCommandsWin,&(md->GetSimInfo().GetCustomCommands(c)));
     }
 }
+#endif
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateSimulationUI
@@ -1271,12 +1323,12 @@ QvisSimulationWindow::UpdateSimulationUI (const avtDatabaseMetaData *md)
     // loop thru all command updates and updates the matching UI component.
     for (int c=NUM_GENERIC_BUTTONS; c<numCommands; c++)
     {
-        UpdateUIComponent (this,&(md->GetSimInfo().GetGenericCommands(c)));
-        SpecialWidgetUpdate (&(md->GetSimInfo().GetGenericCommands(c)));
+//        UpdateUIComponent (this,&(md->GetSimInfo().GetGenericCommands(c)));
+//        SpecialWidgetUpdate (&(md->GetSimInfo().GetGenericCommands(c)));
     }
 }
 
-
+#if 0
 // ****************************************************************************
 // Method: QvisSimulationWindow::SpecialWidgetUpdate
 //
@@ -1344,6 +1396,7 @@ QvisSimulationWindow::SpecialWidgetUpdate (const avtSimulationCommandSpecificati
          }
     }
 }
+#endif
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::AddStatusEntry
