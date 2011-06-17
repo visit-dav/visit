@@ -917,6 +917,8 @@ avtMeshMetaData::UnsetExtents()
 //  Creationist: Allen Sanderson
 //  Creation:    March 3, 2011
 //
+//    Mark C. Miller, Tue Apr 19 14:46:23 PDT 2011
+//    Set logical bounds to integer value '0' and not '0.0'.
 // ****************************************************************************
 
 void
@@ -927,7 +929,7 @@ avtMeshMetaData::SetBounds(const int *bounds)
         hasLogicalBounds = false;
         for (int i = 0 ; i < std::min(topologicalDimension, 3) ; i++)
         {
-            logicalBounds[i] = 0.0;  
+            logicalBounds[i] = 0;  
         }
     }
     else
