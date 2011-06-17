@@ -112,10 +112,10 @@ std::string VsUnstructuredMesh::getPolygonsDatasetName()  {
   std::string polygonsName;
   getStringAttribute(VsSchema::Unstructured::vsPolygons, &polygonsName);
   if (!polygonsName.empty()) {
-    return polygonsName;
+    return makeCanonicalName(getFullName(), polygonsName);
   }
 
-  return VsSchema::Unstructured::defaultPolygonsName;
+  return makeCanonicalName(getFullName(), VsSchema::Unstructured::defaultPolygonsName);
 }
 
 VsH5Dataset* VsUnstructuredMesh::getPolygonsDataset()  {
@@ -132,10 +132,10 @@ std::string VsUnstructuredMesh::getPolyhedraDatasetName()  {
   std::string polyhedraName;
   getStringAttribute(VsSchema::Unstructured::vsPolyhedra, &polyhedraName);
   if (!polyhedraName.empty()) {
-    return polyhedraName;
+    return makeCanonicalName(getFullName(), polyhedraName);
   }
 
-  return VsSchema::Unstructured::defaultPolyhedraName;
+  return makeCanonicalName(getFullName(), VsSchema::Unstructured::defaultPolyhedraName);
 }
 
 VsH5Dataset* VsUnstructuredMesh::getPolyhedraDataset()  {
