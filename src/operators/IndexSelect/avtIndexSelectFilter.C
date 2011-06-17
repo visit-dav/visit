@@ -267,7 +267,7 @@ avtIndexSelectFilter::PrepareFilters(int groupIndices[3], int *amri)
     voi[0] = (minmax[0] - bi[0] < 0 ? 0 : minmax[0] - bi[0]);
     voi[1] = (minmax[1] < 0 ? 1000000   : minmax[1] - bi[0]);
     if (atts.GetDim() == IndexSelectAttributes::TwoD ||
-            atts.GetDim() == IndexSelectAttributes::ThreeD)
+        atts.GetDim() == IndexSelectAttributes::ThreeD)
     {
         voi[2] = (minmax[2] - bi[1] < 0 ? 0 : minmax[2] - bi[1]);
         voi[3] = (minmax[3] < 0 ? 1000000   : minmax[3] - bi[1]);
@@ -287,6 +287,7 @@ avtIndexSelectFilter::PrepareFilters(int groupIndices[3], int *amri)
         voi[4] = 0;
         voi[5] = 1000000;
     }
+
     curvilinearFilter->SetVOI(voi);
     rectilinearFilter->SetVOI(voi);
     int sampleRate[3];
@@ -957,6 +958,7 @@ avtIndexSelectFilter::ModifyContract(avtContract_p spec)
         vec[2] = -1;
     else
         vec[2] = atts.GetZMax()-1;
+
     sel->SetStops(vec);
     vec[0] = atts.GetXIncr();
     vec[1] = atts.GetYIncr();

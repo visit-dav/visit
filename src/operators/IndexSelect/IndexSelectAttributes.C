@@ -94,6 +94,7 @@ IndexSelectAttributes::Dimension_FromString(const std::string &s, IndexSelectAtt
 
 void IndexSelectAttributes::Init()
 {
+    maxDim = ThreeD;
     dim = TwoD;
     xAbsMax = -1;
     xMin = 0;
@@ -134,6 +135,7 @@ void IndexSelectAttributes::Init()
 
 void IndexSelectAttributes::Copy(const IndexSelectAttributes &obj)
 {
+    maxDim = obj.maxDim;
     dim = obj.dim;
     xAbsMax = obj.xAbsMax;
     xMin = obj.xMin;
@@ -310,7 +312,8 @@ bool
 IndexSelectAttributes::operator == (const IndexSelectAttributes &obj) const
 {
     // Create the return value
-    return ((dim == obj.dim) &&
+    return ((maxDim == obj.maxDim) &&
+            (dim == obj.dim) &&
             (xAbsMax == obj.xAbsMax) &&
             (xMin == obj.xMin) &&
             (xMax == obj.xMax) &&
@@ -472,6 +475,7 @@ IndexSelectAttributes::NewInstance(bool copy) const
 void
 IndexSelectAttributes::SelectAll()
 {
+    Select(ID_maxDim,             (void *)&maxDim);
     Select(ID_dim,                (void *)&dim);
     Select(ID_xAbsMax,            (void *)&xAbsMax);
     Select(ID_xMin,               (void *)&xMin);
@@ -522,6 +526,12 @@ IndexSelectAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     bool addToParent = false;
     // Create a node for IndexSelectAttributes.
     DataNode *node = new DataNode("IndexSelectAttributes");
+
+    if(completeSave || !FieldsEqual(ID_maxDim, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxDim", Dimension_ToString(maxDim)));
+    }
 
     if(completeSave || !FieldsEqual(ID_dim, &defaultObject))
     {
@@ -673,6 +683,22 @@ IndexSelectAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("maxDim")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetMaxDim(Dimension(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            Dimension value;
+            if(Dimension_FromString(node->AsString(), value))
+                SetMaxDim(value);
+        }
+    }
     if((node = searchNode->GetNode("dim")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -730,6 +756,13 @@ IndexSelectAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+IndexSelectAttributes::SetMaxDim(IndexSelectAttributes::Dimension maxDim_)
+{
+    maxDim = maxDim_;
+    Select(ID_maxDim, (void *)&maxDim);
+}
 
 void
 IndexSelectAttributes::SetDim(IndexSelectAttributes::Dimension dim_)
@@ -867,6 +900,12 @@ IndexSelectAttributes::SetSubsetName(const std::string &subsetName_)
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+IndexSelectAttributes::Dimension
+IndexSelectAttributes::GetMaxDim() const
+{
+    return Dimension(maxDim);
+}
 
 IndexSelectAttributes::Dimension
 IndexSelectAttributes::GetDim() const
@@ -1034,6 +1073,7 @@ IndexSelectAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
+    case ID_maxDim:             return "maxDim";
     case ID_dim:                return "dim";
     case ID_xAbsMax:            return "xAbsMax";
     case ID_xMin:               return "xMin";
@@ -1077,6 +1117,7 @@ IndexSelectAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
+    case ID_maxDim:             return FieldType_enum;
     case ID_dim:                return FieldType_enum;
     case ID_xAbsMax:            return FieldType_int;
     case ID_xMin:               return FieldType_int;
@@ -1120,6 +1161,7 @@ IndexSelectAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
+    case ID_maxDim:             return "enum";
     case ID_dim:                return "enum";
     case ID_xAbsMax:            return "int";
     case ID_xMin:               return "int";
@@ -1165,6 +1207,11 @@ IndexSelectAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_maxDim:
+        {  // new scope
+        retval = (maxDim == obj.maxDim);
+        }
+        break;
     case ID_dim:
         {  // new scope
         retval = (dim == obj.dim);

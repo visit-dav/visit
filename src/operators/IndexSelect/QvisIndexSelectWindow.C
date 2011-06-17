@@ -142,13 +142,12 @@ QvisIndexSelectWindow::~QvisIndexSelectWindow()
 void
 QvisIndexSelectWindow::CreateWindowContents()
 {
-    QGridLayout *wholeLayout = new QGridLayout();
-    topLayout->addLayout(wholeLayout);
     QGridLayout *mainLayout = new QGridLayout();
-    wholeLayout->addLayout(mainLayout, 0, 0, 1, 4);
+    topLayout->addLayout(mainLayout);
 
+    int row = 0;
 
-    mainLayout->addWidget(new QLabel(tr("Dimension"), central),0,0);
+    mainLayout->addWidget(new QLabel(tr("Dimension"), central), row ,0);
     QWidget *dimWidget = new QWidget(central);
     dim = new QButtonGroup(dimWidget);
     QHBoxLayout *dimLayout = new QHBoxLayout(dimWidget);
@@ -164,36 +163,32 @@ QvisIndexSelectWindow::CreateWindowContents()
     dim->addButton(dimDimensionThreeD,2);
     connect(dim, SIGNAL(buttonClicked(int)),
             this, SLOT(dimChanged(int)));
-    mainLayout->addWidget(dimWidget, 0,1,1,2);
+    mainLayout->addWidget(dimWidget, row, 1, 1, 3);
 
-    QGridLayout *labelLayout = new QGridLayout();
+    ++row;
 
+    QLabel *indexLabel = new QLabel(tr("  "), central);
+    mainLayout->addWidget(indexLabel, row, 0); 
     QLabel *minLabel = new QLabel(tr("Min"), central);
-    minLabel->setAlignment(Qt::AlignRight);
-    labelLayout->addWidget(minLabel, 0, 1); 
+    mainLayout->addWidget(minLabel, row, 1); 
     QLabel *maxLabel = new QLabel(tr("Max"), central);
-    maxLabel->setAlignment(Qt::AlignRight);
-    labelLayout->addWidget(maxLabel, 0, 2); 
+    mainLayout->addWidget(maxLabel, row, 2); 
     QLabel *incrLabel = new QLabel(tr("Incr"), central);
-    incrLabel->setAlignment(Qt::AlignRight);
-    labelLayout->addWidget(incrLabel, 0, 3); 
+    mainLayout->addWidget(incrLabel, row, 3); 
     QLabel *wrapLabel = new QLabel(tr("Wrap"), central);
-    wrapLabel->setAlignment(Qt::AlignRight);
-    labelLayout->addWidget(wrapLabel, 0, 4); 
+    mainLayout->addWidget(wrapLabel, row, 4); 
 
-    wholeLayout->addLayout(labelLayout, 1, 0, 1, 4 );
+    ++row;
 
     // 
     // Create the oneD spinBoxes
     //
-    oneDWidget = new QWidget(central); 
-    QGridLayout *oneDLayout = new QGridLayout(oneDWidget);
-    oneDLabel = new QLabel(tr("I"), oneDWidget);
+    oneDLabel = new QLabel(tr("I"), central);
     oneDLabel->setAlignment(Qt::AlignCenter);
-    oneDLayout->addWidget(oneDLabel, 0, 0);
+    mainLayout->addWidget(oneDLabel, row, 0);
 
     // Set Up Min
-    oneDMin = new QSpinBox(oneDWidget);
+    oneDMin = new QSpinBox(central);
     if( atts->GetXAbsMax() == -1 )
       oneDMin->setRange(0,MAX_VAL);
     else
@@ -201,11 +196,10 @@ QvisIndexSelectWindow::CreateWindowContents()
     oneDMin->setSingleStep(1);
     connect(oneDMin, SIGNAL(valueChanged(int)),
              this, SLOT(oneDMinChanged(int)));
-    oneDLayout->addWidget(oneDMin, 0, 1);
-    oneDLayout->addItem(new QSpacerItem(5, 5), 0, 2);
+    mainLayout->addWidget(oneDMin, row, 1);
 
     // Set Up Max
-    oneDMax = new QSpinBox(oneDWidget);
+    oneDMax = new QSpinBox(central);
     oneDMax->setSingleStep(1);
     if( atts->GetXAbsMax() == -1 )
     {
@@ -220,11 +214,10 @@ QvisIndexSelectWindow::CreateWindowContents()
     oneDMax->setValue(atts->GetXMax());
     connect(oneDMax, SIGNAL(valueChanged(int)),
              this, SLOT(oneDMaxChanged(int)));
-    oneDLayout->addWidget(oneDMax, 0, 3);
-    oneDLayout->addItem(new QSpacerItem(5, 5), 0, 4);
+    mainLayout->addWidget(oneDMax, row, 2);
 
     // Set Up Incr
-    oneDIncr = new QSpinBox(oneDWidget);
+    oneDIncr = new QSpinBox(central);
     if( atts->GetXAbsMax() == -1 )
       oneDIncr->setRange(1,MAX_VAL);
     else
@@ -232,28 +225,26 @@ QvisIndexSelectWindow::CreateWindowContents()
     oneDIncr->setSingleStep(1);
     connect(oneDIncr, SIGNAL(valueChanged(int)),
              this, SLOT(oneDIncrChanged(int)));
-    oneDLayout->addWidget(oneDIncr, 0, 5);
+    mainLayout->addWidget(oneDIncr, row, 3);
 
     // Set up wrap
     oneDWrap = new QCheckBox(tr(""), central);
     oneDWrap->setChecked(false);
     connect(oneDWrap, SIGNAL(toggled(bool)),
             this, SLOT(oneDWrapToggled(bool)));
-    oneDLayout->addWidget(oneDWrap, 0, 6);
+    mainLayout->addWidget(oneDWrap, row, 4);
 
-    wholeLayout->addWidget(oneDWidget, 2,0, 1,4);
+    ++row;
 
     // 
     // Create the twoD spinBoxes
     // 
-    twoDWidget = new QWidget(central); 
-    QGridLayout *twoDLayout = new QGridLayout(twoDWidget);
-    twoDLabel = new QLabel(tr("J"), twoDWidget);
+    twoDLabel = new QLabel(tr("J"), central);
     twoDLabel->setAlignment(Qt::AlignCenter);
-    twoDLayout->addWidget(twoDLabel, 0, 0);
+    mainLayout->addWidget(twoDLabel, row, 0);
 
     // Set Up Min
-    twoDMin = new QSpinBox(twoDWidget);
+    twoDMin = new QSpinBox(central);
     if( atts->GetZAbsMax() == -1 )
       twoDMin->setRange(0,MAX_VAL);
     else
@@ -261,11 +252,10 @@ QvisIndexSelectWindow::CreateWindowContents()
     twoDMin->setSingleStep(1);
     connect(twoDMin, SIGNAL(valueChanged(int)),
              this, SLOT(twoDMinChanged(int)));
-    twoDLayout->addWidget(twoDMin, 0, 1);
-    twoDLayout->addItem(new QSpacerItem(5, 5), 0, 2);
+    mainLayout->addWidget(twoDMin, row, 1);
 
     // Set Up Max
-    twoDMax = new QSpinBox(twoDWidget);
+    twoDMax = new QSpinBox(central);
     twoDMax->setSingleStep(1);
     if( atts->GetZAbsMax() == -1 )
     {
@@ -280,11 +270,10 @@ QvisIndexSelectWindow::CreateWindowContents()
     twoDMax->setValue(atts->GetYMax());
     connect(twoDMax, SIGNAL(valueChanged(int)),
              this, SLOT(twoDMaxChanged(int)));
-    twoDLayout->addWidget(twoDMax, 0, 3);
-    twoDLayout->addItem(new QSpacerItem(5, 5), 0, 4);
+    mainLayout->addWidget(twoDMax, row, 2);
 
     // Set Up Incr
-    twoDIncr = new QSpinBox(twoDWidget);
+    twoDIncr = new QSpinBox(central);
     if( atts->GetZAbsMax() == -1 )
       twoDIncr->setRange(1,MAX_VAL);
     else
@@ -292,29 +281,26 @@ QvisIndexSelectWindow::CreateWindowContents()
     twoDIncr->setSingleStep(1);
     connect(twoDIncr, SIGNAL(valueChanged(int)),
              this, SLOT(twoDIncrChanged(int)));
-    twoDLayout->addWidget(twoDIncr, 0, 5);
+    mainLayout->addWidget(twoDIncr, row, 3);
 
     // Set up wrap
     twoDWrap = new QCheckBox(tr(""), central);
     twoDWrap->setChecked(false);
     connect(twoDWrap, SIGNAL(toggled(bool)),
             this, SLOT(twoDWrapToggled(bool)));
-    twoDLayout->addWidget(twoDWrap, 0, 6);
+    mainLayout->addWidget(twoDWrap, row, 4);
 
-    wholeLayout->addWidget(twoDWidget, 3,0, 1,4);
+    ++row;
 
     // 
     // Create the threeD spinBoxes
     // 
-    threeDWidget = new QWidget(central); 
-
-    QGridLayout *threeDLayout = new QGridLayout(threeDWidget);
-    threeDLabel = new QLabel(tr("K"), threeDWidget);
+    threeDLabel = new QLabel(tr("K"), central);
     threeDLabel->setAlignment(Qt::AlignCenter);
-    threeDLayout->addWidget(threeDLabel, 0, 0);
+    mainLayout->addWidget(threeDLabel, row, 0);
 
     // Set Up Min
-    threeDMin = new QSpinBox(threeDWidget);
+    threeDMin = new QSpinBox(central);
     if( atts->GetZAbsMax() == -1 )
       threeDMin->setRange(0,MAX_VAL);
     else
@@ -322,11 +308,10 @@ QvisIndexSelectWindow::CreateWindowContents()
     threeDMin->setSingleStep(1);
     connect(threeDMin, SIGNAL(valueChanged(int)),
              this, SLOT(threeDMinChanged(int)));
-    threeDLayout->addWidget(threeDMin, 0, 1);
-    threeDLayout->addItem(new QSpacerItem(5, 5), 0, 2);
+    mainLayout->addWidget(threeDMin, row, 1);
 
     // Set Up Max
-    threeDMax = new QSpinBox(threeDWidget);
+    threeDMax = new QSpinBox(central);
     threeDMax->setSingleStep(1);
     if( atts->GetZAbsMax() == -1 )
     {
@@ -341,11 +326,10 @@ QvisIndexSelectWindow::CreateWindowContents()
     threeDMax->setValue(atts->GetZMax());
     connect(threeDMax, SIGNAL(valueChanged(int)),
              this, SLOT(threeDMaxChanged(int)));
-    threeDLayout->addWidget(threeDMax, 0, 3);
-    threeDLayout->addItem(new QSpacerItem(5, 5), 0, 4);
+    mainLayout->addWidget(threeDMax, row, 2);
 
     // Set Up Incr
-    threeDIncr = new QSpinBox(threeDWidget);
+    threeDIncr = new QSpinBox(central);
     if( atts->GetZAbsMax() == -1 )
       threeDIncr->setRange(1,MAX_VAL);
     else
@@ -353,23 +337,26 @@ QvisIndexSelectWindow::CreateWindowContents()
     threeDIncr->setSingleStep(1);
     connect(threeDIncr, SIGNAL(valueChanged(int)),
              this, SLOT(threeDIncrChanged(int)));
-    threeDLayout->addWidget(threeDIncr, 0, 5);
+    mainLayout->addWidget(threeDIncr, row, 3);
 
     // Set up wrap
     threeDWrap = new QCheckBox(tr(""), central);
     threeDWrap->setChecked(false);
     connect(threeDWrap, SIGNAL(toggled(bool)),
             this, SLOT(threeDWrapToggled(bool)));
-    threeDLayout->addWidget(threeDWrap, 0, 6);
+    mainLayout->addWidget(threeDWrap, row, 4);
 
-    wholeLayout->addWidget(threeDWidget, 4,0, 1,4);
+    ++row;
+
+    QGridLayout *wholeLayout = new QGridLayout();
+    topLayout->addLayout(wholeLayout);
 
     // Set up whole collection
     useWholeCollection = new QCheckBox(tr("Use Whole Collection"), central);
     useWholeCollection->setChecked(false);
     connect(useWholeCollection, SIGNAL(toggled(bool)),
             this, SLOT(useWholeCollectionToggled(bool)));
-    wholeLayout->addWidget(useWholeCollection, 5,0, 1,1);
+    wholeLayout->addWidget(useWholeCollection, 5,0);
 
     //
     // silSet (category/subset)
@@ -383,7 +370,7 @@ QvisIndexSelectWindow::CreateWindowContents()
             this, SLOT(categoryChanged(const QString &)));
     connect(silSet, SIGNAL(subsetChanged(const QString &)),
             this, SLOT(subsetChanged(const QString &)));
-    wholeLayout->addWidget(silSet, 5,2, 1,2);
+    wholeLayout->addWidget(silSet, 5,1);
 }
 
 
@@ -428,16 +415,26 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case IndexSelectAttributes::ID_dim:
-            if (atts->GetDim() == IndexSelectAttributes::TwoD ||
-                atts->GetDim() == IndexSelectAttributes::ThreeD)
-                twoDWidget->setEnabled(true);
-            else
-                twoDWidget->setEnabled(false);
-            if (atts->GetDim() == IndexSelectAttributes::ThreeD)
-                threeDWidget->setEnabled(true);
-            else
-                threeDWidget->setEnabled(false);
-            dim->button(atts->GetDim())->setChecked(true);
+            {
+              bool twoD = (atts->GetDim() == IndexSelectAttributes::TwoD ||
+                           atts->GetDim() == IndexSelectAttributes::ThreeD);
+
+              twoDLabel->setEnabled(twoD);
+              twoDMin->setEnabled(twoD);
+              twoDMax->setEnabled(twoD);
+              twoDIncr->setEnabled(twoD);
+              twoDWrap->setEnabled(twoD);
+
+              bool threeD = (atts->GetDim() == IndexSelectAttributes::ThreeD);
+
+              threeDLabel->setEnabled(threeD);
+              threeDMin->setEnabled(threeD);
+              threeDMax->setEnabled(threeD);
+              threeDIncr->setEnabled(threeD);
+              threeDWrap->setEnabled(threeD);
+
+              dim->button(atts->GetDim())->setChecked(true);
+            }
             break;
           case IndexSelectAttributes::ID_xMin:
             oneDMin->blockSignals(true);
@@ -763,9 +760,13 @@ QvisIndexSelectWindow::GetCurrentValues(int which_widget)
 void
 QvisIndexSelectWindow::dimChanged(int val)
 {
-    if(val != atts->GetDim())
+    if(val != atts->GetDim() && val <= atts->GetMaxDim() )
     {
         atts->SetDim(IndexSelectAttributes::Dimension(val));
+        Apply();
+    }
+    else if( val > atts->GetMaxDim() )
+    {
         Apply();
     }
 }
