@@ -405,6 +405,10 @@
 #     Mark C. Miller, Thu Jun 16 22:33:16 PDT 2011
 #     Fixed a number of cases where ITAPS related directory logic was not
 #     including 'itaps/$ITAPS_VERSION' to specify the path.
+#
+#     Eric Brugger, Fri Jun 17 13:19:14 PDT 2011
+#     I changed the visit version number to 2.3.0.
+#
 # *****************************************************************************
 
 
@@ -735,17 +739,17 @@ fi
 # release tag.
 ############################################################################
 
-export VISIT_VERSION=${VISIT_VERSION:-"2.2.2"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.3.0"}
 
 ####
 # Trunk:
 ####
-export SVN_SOURCE_PATH="trunk/src"
+#export SVN_SOURCE_PATH="trunk/src"
 
 ###
 # Release:
 ###
-#export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
+export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
 
 if [[ "$OPSYS" != "Darwin" ]]; then
     WGET_MINOR_VERSION=$(wget --version| head -n 1|cut -d. -f 2)
