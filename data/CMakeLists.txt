@@ -215,6 +215,7 @@ SET(streak_SOURCES streak.C pdbdatabase_link.C)
 SET(SILO_TARGETS
 arbpoly
 bigsil
+bounce
 csg
 emptydomains
 fullframe
