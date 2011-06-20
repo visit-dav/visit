@@ -370,6 +370,16 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
     }
 
     /**
+     * Sets the data path directory.
+     *
+     * @param path An absolute path to the "data" directory.
+     */
+    public void SetDataPath(String path)
+    {
+        dataPath = path;
+    }
+
+    /**
      * Adds extra arguments to the viewer's command line so you can
      * launch VisIt with arguments that you provide.
      *

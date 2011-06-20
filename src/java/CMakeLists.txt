@@ -45,6 +45,9 @@
 #   Brad Whitlock, Fri Jan 28 11:13:40 PST 2011
 #   Add EventLoop object.
 #
+#   Brad Whitlock, Mon Jun 20 15:44:41 PDT 2011
+#   Add SelectionVariableSummary and SelectionSummary.
+#
 #****************************************************************************/
 
 PROJECT(JavaClient Java)
@@ -144,6 +147,8 @@ SaveSubWindowsAttributes.java
 SaveWindowAttributes.java 
 SelectionList.java
 SelectionProperties.java
+SelectionSummary.java
+SelectionVariableSummary.java
 StatusAttributes.java 
 SyncAttributes.java 
 View2DAttributes.java 
