@@ -8038,6 +8038,18 @@ function build_xdmf
         XDMF_SHARED_LIBS="ON"
         LIBEXT="${SO_EXT}"
     fi
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        # Work around build problems on Mac.
+        XDMF_ZLIB_OPTIONS="-DXDMF_SYSTEM_ZLIB:BOOL=OFF"
+        cd Utilities/vtklibxml2
+        rm CML.*
+        mv CMakeLists.txt CML.0
+        sed "s/SET(LIBXML2_LIBS \"\")/SET(LIBXML2_LIBS \"vtkzlib\")/g" CML.0 > CML.1
+        sed "s/SET(WITH_MODULES 1)/SET(WITH_MODULES 0)/g" CML.1 > CMakeLists.txt
+        cd ../..
+    else
+        XDMF_ZLIB_OPTIONS="-DXDMF_SYSTEM_ZLIB:BOOL=ON"
+    fi
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
         -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
@@ -8047,10 +8059,10 @@ function build_xdmf
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
         -DBUILD_TESTING:BOOL=OFF \
         -DXDMF_BUILD_MPI:BOOL=OFF \
-        -DXDMF_BUILD_UTILS:BOOL=OFF \
         -DXDMF_BUILD_VTK:BOOL=OFF \
+        -DXDMF_BUILD_UTILS:BOOL=OFF \
+        ${XDMF_ZLIB_OPTIONS}\
         -DXDMF_SYSTEM_HDF5:BOOL=ON \
-        -DXDMF_SYSTEM_ZLIB:BOOL=ON \
         .
 
     if [[ $? != 0 ]] ; then
