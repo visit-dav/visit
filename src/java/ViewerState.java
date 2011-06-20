@@ -61,6 +61,9 @@ import java.util.Vector;
 //   Brad Whitlock, Thu Aug 26 10:39:25 PDT 2010
 //   I added SelectionList.
 //
+//   Brad Whitlock, Mon Jun 20 15:10:20 PDT 2011
+//   I added SelectionProperties and SimulationUIValues.
+//
 // ****************************************************************************
 /**
  * ViewerState contains all of the state objects that make up the 
@@ -178,6 +181,8 @@ public class ViewerState
             Register(attsLogRPC);
         attsFileOpenOptions = new FileOpenOptions();
             Register(attsFileOpenOptions);
+        attsSelectionProperties = new SelectionProperties();
+            Register(attsSelectionProperties);
         attsSelectionList = new SelectionList();
             Register(attsSelectionList);
     }
@@ -235,6 +240,7 @@ public class ViewerState
     public MeshManagementAttributes  GetMeshManagementAttributes() { return attsMeshManagementAttributes; }
     public ViewerRPC                 GetLogRPC() { return attsLogRPC; }
     public FileOpenOptions           GetFileOpenOptions() { return attsFileOpenOptions; }
+    public SelectionProperties       GetSelectionProperties() { return attsSelectionProperties; }
     public SelectionList             GetSelectionList() { return attsSelectionList; }
 
     /**
@@ -400,6 +406,7 @@ public class ViewerState
     private MeshManagementAttributes attsMeshManagementAttributes;
     private ViewerRPC                attsLogRPC;
     private FileOpenOptions          attsFileOpenOptions;
+    private SelectionProperties      attsSelectionProperties;
     private SelectionList            attsSelectionList;
 
     private Vector objVector;

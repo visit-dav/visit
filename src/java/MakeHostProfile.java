@@ -71,7 +71,7 @@ public class MakeHostProfile extends RunViewer
     protected void work(String[] args)
     {
         // Change these for your remote system.
-        String host = new String("zeus.llnl.gov");
+        String host = new String("edge.llnl.gov");
         String user = new String("whitlocb");
         String remotevisitPath = new String("/usr/gapps/visit");
 

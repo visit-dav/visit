@@ -109,6 +109,11 @@ public class RunViewer
                 viewer.SetBinPath(args[i + 1]);
                 ++i;
             }
+            else if(args[i].equals("-datapath") && ((i + 1) < args.length))
+            {
+                viewer.SetDataPath(args[i + 1]);
+                ++i;
+            }
             else if(args[i].equals("-help"))
             {
                 printUsage();
