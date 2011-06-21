@@ -1160,7 +1160,7 @@ $fullusage = "$usage
         -valgrind <args> <comp>
                              Run valgrind with <args> on component <comp>.
                              Default <args> is --tool=memcheck --error-limit=no
-                             --num-callers=64.
+                             --num-callers=50.
         -strace <args> <comp>
                              Run strace with <args> on component <comp>.
                              Default <args> is -ttt -T.
@@ -3793,7 +3793,7 @@ sub generate_args_valgrind {
     if(scalar(@args_vg) != 0) {
         push(@cmd, @args_vg);
     } else {
-        push(@cmd, "--tool=memcheck", "--error-limit=no", "--num-callers=64");
+        push(@cmd, "--tool=memcheck", "--error-limit=no", "--num-callers=50");
     }
     return @cmd;
 }
