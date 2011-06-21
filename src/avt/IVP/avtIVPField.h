@@ -1,4 +1,4 @@
-/*****************************************************************************
+ /*****************************************************************************
 *
 * Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
@@ -126,5 +126,3 @@ class IVP_API avtIVPField
 };
 
 #endif
-
-

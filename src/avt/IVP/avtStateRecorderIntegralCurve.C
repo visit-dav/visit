@@ -130,8 +130,8 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
                                                const avtIVPStep& step,
                                                double t)
 {
-    avtVector p = step.GetP(t);
-    
+  avtVector p = step.GetP(t);
+
     /*
     //If the step is within tolerance of the previous step, just overwrite the last step
     //with this step.

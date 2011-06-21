@@ -37,67 +37,55 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtIVPSolver.C                               //
+//                            avtIVPFlashField.h                             //
 // ************************************************************************* //
 
-#include <avtIVPSolver.h>
-#include <avtIVPStateHelper.h>
+#ifndef AVT_IVP_FLASH_FIELD_H
+#define AVT_IVP_FLASH_FIELD_H
+
+#include "avtIVPVTKField.h"
+
+#include <vtkDataSet.h>
+#include <vtkPointData.h>
+
+#include <ivp_exports.h>
+
+#include <map>
+#include <vector> 
 
 
 // ****************************************************************************
-//  Method: avtIVPSolver::GetState
+//  Class:  avtIVPFlashField
 //
 //  Purpose:
-//      Gets the state of the IVP solver.
+//    A wrapper class to allow the use of vtkDataSets as IVP fields for 
+//    streamline integration. Uses vtkInterpolatedVelocityField on top of 
+//    the supplied vtkDataSet. 
 //
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
+//  Programmer:  Allen Sanderson
+//  Creation:    20 Nov 2009
 //
 // ****************************************************************************
 
-avtIVPSolver::avtIVPSolver() : convertToCartesian(0), convertToCylindrical(0)
+class IVP_API avtIVPFlashField: public avtIVPVTKField
 {
-}
+ protected:
 
+ public:
+  avtIVPFlashField( vtkDataSet* ds, avtCellLocator* loc, double fact ); 
 
-// ****************************************************************************
-//  Method: avtIVPSolver::GetState
-//
-//  Purpose:
-//      Gets the state of the IVP solver.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
+  ~avtIVPFlashField();
 
-void
-avtIVPSolver::GetState( avtIVPState& state )
-{
-    avtIVPStateHelper aiss(avtIVPStateHelper::GET, 0);
-    this->AcceptStateVisitor(aiss);
+  avtVector operator()( const double &t, const avtVector &v ) const;
 
-    state.allocate(aiss.size());
-    
-    aiss.Reset(avtIVPStateHelper::GET, state._data);
-    this->AcceptStateVisitor(aiss);
-}
+  avtVector ConvertToCartesian(const avtVector& pt) const;
+  avtVector ConvertToCylindrical(const avtVector& pt) const;
 
+  float factor;
 
-// ****************************************************************************
-//  Method: avtIVPSolver::PutState
-//
-//  Purpose:
-//      Sets the state of the IVP solver.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
+  // 3D Variables variables on the mesh
+  vtkDataArray *B_vtkDataArray;    // Magnetic field conponents
+  vtkDataArray *E_vtkDataArray;    // Electric field conponents
+};
 
-void 
-avtIVPSolver::PutState(const avtIVPState& state)
-{
-    avtIVPStateHelper aiss(avtIVPStateHelper::PUT, state._data);
-    this->AcceptStateVisitor(aiss);
-}
+#endif

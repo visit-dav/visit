@@ -558,5 +558,3 @@ avtIntegralCurve::DomainCompare(const avtIntegralCurve *icA,
 {
     return icA->domain < icB->domain;
 }
-
-

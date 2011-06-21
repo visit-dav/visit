@@ -482,5 +482,3 @@ inline std::ostream& operator<<( std::ostream& out,
 }
 
 #endif
-
-
