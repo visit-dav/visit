@@ -88,6 +88,8 @@ avtIVPEuler::avtIVPEuler() : vCur(0,0,0)
     t = 0.0;
     d = 0.0;
     numStep = 0;
+
+    order = 2; // Highest order ODE that the integrator can support.
 }
 
 // ****************************************************************************
@@ -372,19 +374,19 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     avtIVPSolver::Result res = avtIVPSolver::OK;
     avtVector yNew, vNew;
 
-    if( field->GetOrder() == 1 )
-    {
-      vCur = (*field)(t,yCur);
-
-      yNew = yCur + vCur * h;     // New position
-    }
-    else if( field->GetOrder() == 2 )
+    if( field->GetOrder() == 2 )
     {
       avtVector aCur = (*field)(t,yCur,vCur);
 
       vNew = vCur + aCur * h;  // New velocity
 
       yNew = yCur + vNew * h;  // New position
+    }
+    else  //if( field->GetOrder() == 1 )
+    {
+      vCur = (*field)(t,yCur);
+
+      yNew = yCur + vCur * h;     // New position
     }
 
     if( res == avtIVPSolver::OK )

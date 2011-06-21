@@ -1929,6 +1929,9 @@ avtPICSFilter::IntegrateDomain(avtIntegralCurve *ic,
     if (ic->status == avtIntegralCurve::STATUS_OK)
     {
         avtIVPField* field = GetFieldForDomain(ic->domain, ds);
+
+        if (field->GetOrder() > solver->order)
+          EXCEPTION1(ImproperUseException, "The selected integrator does not support field order. Choose another integrator. ");
         
         //pcFilter = this;
         //ic->SetPostStepCallback(&PostStepCB);
