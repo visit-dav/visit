@@ -46,6 +46,10 @@
 #   Eric Brugger, Fri Mar 25 10:20:22 PDT 2011
 #   Added cielo.
 #
+#   Eric Brugger, Tue Jun 21 15:06:05 PDT 2011
+#   I removed the code to swap out the xt-mpt module with the xt-mpich2
+#   module on cielo since the xt-mpich2 module was now the default.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -332,7 +336,7 @@ then
       echo "Building on cielo"
       scp cielo red-fta05.lanl.gov:cielo_buildit
       scp $dist.tar.gz red-fta05.lanl.gov:cielo_$dist.tar.gz
-      ssh red-fta05.lanl.gov "ssh ci-fe2 'chmod 750 cielo_buildit;module swap PrgEnv-pgi PrgEnv-gnu;module swap xt-mpt xt-mpich2;./cielo_buildit'" &
+      ssh red-fta05.lanl.gov "ssh ci-fe2 'chmod 750 cielo_buildit;module swap PrgEnv-pgi PrgEnv-gnu;./cielo_buildit'" &
    fi
 fi
 
