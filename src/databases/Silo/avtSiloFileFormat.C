@@ -7775,6 +7775,10 @@ ConvertToFloat(int silotype, void *data, int nels)
 //    Mark C. Miller, Wed Sep  8 14:09:33 PDT 2010
 //    Fix initialization of vals arrays to go over nnodes or nzones depending
 //    on whether ugrid is present.
+//
+//    Mark C. Miller, Tue Jun 21 11:03:03 PDT 2011
+//    Fixed indexing problem with use of 'nvals++' inside of loops over
+//    components.
 // ****************************************************************************
 
 template <typename T>
@@ -7837,14 +7841,16 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
                         {
                             haveVisitedPoint[ptId] = true;
                             for (int k = 0; k < uv->nvals; k++)
-                                newvals[k][(int)ptId] = ((T**)uv->vals)[k][nvals++];
+                                newvals[k][(int)ptId] = ((T**)uv->vals)[k][nvals];
+                            nvals++;
                         }
                     }
                 }
                 else // zone-centered case
                 {
                     for (j = 0; j < uv->nvals; j++)
-                        newvals[j][i] = ((T**)uv->vals)[j][nvals++];
+                        newvals[j][i] = ((T**)uv->vals)[j][nvals];
+                    nvals++;
                 }
             }
         }
@@ -7870,7 +7876,8 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
                                 {
                                     haveVisitedPoint[ptId] = true;
                                     for (int k = 0; k < uv->nvals; k++)
-                                        newvals[k][(int)ptId] = ((T**)uv->vals)[k][nvals++];
+                                        newvals[k][(int)ptId] = ((T**)uv->vals)[k][nvals];
+                                    nvals++;
                                 }
                             }
                         }
@@ -7884,7 +7891,8 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
                                 {
                                     haveVisitedPoint[ptId] = true;
                                     for (int k = 0; k < uv->nvals; k++)
-                                        newmixvals[k][(int)ptId] = ((T**)uv->mixvals)[k][nmixvals++];
+                                        newmixvals[k][(int)ptId] = ((T**)uv->mixvals)[k][nmixvals];
+                                    nmixvals++;
                                 }
                             }
                         }
@@ -7894,12 +7902,14 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
                         if (restrictToMats.size() == 1) // single material optimization
                         {
                             for (j = 0; j < uv->nvals; j++)
-                                newmixvals[j][mix_idx] = ((T**)uv->vals)[j][nvals++];
+                                newmixvals[j][mix_idx] = ((T**)uv->vals)[j][nvals];
+                            nvals++;
                         }
                         else // multiple material case
                         {
                             for (j = 0; j < uv->nvals; j++)
-                                newmixvals[j][mix_idx] = ((T**)uv->mixvals)[j][nmixvals++];
+                                newmixvals[j][mix_idx] = ((T**)uv->mixvals)[j][nmixvals];
+                            nmixvals++;
                         }
                     }
                 }
