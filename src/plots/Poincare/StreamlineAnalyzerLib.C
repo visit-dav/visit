@@ -2673,7 +2673,6 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         toroidalResonance = 1;
         poloidalResonance = 1;
       }
-
     }
   }
 
@@ -2694,13 +2693,24 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
        type == FieldlineProperties::ISLAND_CHAIN ||
        type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS ) &&
 
-      toroidalResonance > 1 ) // && poloidalResonance >= 1 ) // Always true.
+      ( (toroidalResonance > 1 /* && poloidalResonance >= 1 */) || // Always true.
+        
+        (toroidalWinding == poloidalWinding &&
+         toroidalResonance == poloidalResonance &&
+         toroidalResonance == 1) ) )
   {
     // Set the windings to reflect the resonances which is the number
     // of islands.
-    toroidalWinding  = toroidalResonance;
-    poloidalWinding  = poloidalResonance;
-    poloidalWindingP = poloidalResonance;
+    if( toroidalWinding == poloidalWinding )
+    {
+      poloidalWindingP = poloidalWinding;
+    }
+    else
+    {
+      toroidalWinding  = toroidalResonance;
+      poloidalWinding  = poloidalResonance;
+      poloidalWindingP = poloidalResonance;
+    }
 
     // The number of islands is always the toroidal resonance.
     islands = toroidalResonance;
@@ -2794,8 +2804,30 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
       unsigned int nnodesPlus1 = nnodes + 1;
 
+      // For a 1:1 island the nnodes will get stuck in a local minimum
+      // of 1,2, or 3. At least that is our observation. As such, add
+      // points to see if the analysis can get out of the local
+      // minimum.
+      if( type == FieldlineProperties::ISLAND_CHAIN &&
+          toroidalWinding == poloidalWinding && nnodes <= 5 )
+      {
+        nnodes = poloidal_puncture_pts.size() / toroidalWinding / 2;
+
+        analysisState = FieldlineProperties::ADDING_POINTS;
+
+        nPuncturesNeeded = poloidal_puncture_pts.size() + 4;
+
+        if( verboseFlag )
+          cerr << "Local minimum, not enough puncture points; "
+               << "need " << nPuncturesNeeded << " "
+               << "have " << poloidal_puncture_pts.size() << " "
+               << "asking for " << nPuncturesNeeded << " puncture points"
+               << endl;
+      }
+
+
       // Try to get at least four points per island.
-      if( nnodes < 4 )
+      else if( nnodes < 4 )
       {
         analysisState = FieldlineProperties::ADDING_POINTS;
 
@@ -2815,27 +2847,6 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
                  << "asking for " << nPuncturesNeeded << " puncture points"
                  << endl;
         }
-      }
-
-      // For a 1:1 island the nnodes will get stuck in a local minimum
-      // of 1,2, or 3. At least that is our observation. As such, add
-      // points to see if the analysis can get out of the local
-      // minimum.
-      else if( type == FieldlineProperties::ISLAND_CHAIN &&
-               toroidalWinding == 1 && poloidalWinding == 1 && nnodes <= 5 )
-      {
-        nnodes = poloidal_puncture_pts.size() / toroidalWinding / 2;
-
-        analysisState = FieldlineProperties::ADDING_POINTS;
-
-        nPuncturesNeeded = poloidal_puncture_pts.size() + 4;
-
-        if( verboseFlag )
-          cerr << "Local minimum, not enough puncture points; "
-               << "need " << nPuncturesNeeded << " "
-               << "have " << poloidal_puncture_pts.size() << " "
-               << "asking for " << nPuncturesNeeded << " puncture points"
-               << endl;
       }
 
       // Get enough points so that the full toroidal and poloidal
@@ -2912,6 +2923,101 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     }
 
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
+
+
+    if( analysisState == FieldlineProperties::COMPLETED &&
+        toroidalWinding == poloidalWinding &&
+        type == FieldlineProperties::ISLAND_CHAIN )
+    {
+      vector< pair< Point, unsigned int > > hullPts;
+      
+      hullPts.resize( toroidalWinding+1 );
+      
+      for(unsigned int i=0; i<toroidalWinding; ++i )
+      {
+        hullPts[i] =
+          pair< Point, unsigned int >( poloidal_puncture_pts[i], i );
+      }
+      
+      unsigned int m = 0; // starting index
+      
+      convexHull( hullPts, m, toroidalWinding, 1 );
+
+      if( m != toroidalWinding )
+      {
+        if( verboseFlag )
+          cerr << "The surface does not have a convex hull, "
+               << toroidalWinding-m << " point(s) are missing."
+               << endl; 
+      }
+      
+      map< unsigned int, unsigned int > offsets;
+      map< unsigned int, unsigned int >::iterator ic;
+      
+      unsigned int offset;
+      
+      // Find all the differences and count each one.
+      for(unsigned int i=0; i<toroidalWinding; ++i )
+      {
+        offset = ( (hullPts[i                    ].second -
+                    hullPts[(i+1)%toroidalWinding].second) +
+                   toroidalWinding ) % toroidalWinding;
+        
+        // Find this offset in the list.
+        ic = offsets.find( offset );
+        
+        // Not found, new offset.
+        if( ic == offsets.end() )
+          offsets.insert( pair<int, int>( offset, 1) );
+        // Found this difference, increment the count.
+        else
+          (*ic).second++;
+      }
+
+      if( offsets.size() != 1 )
+        if( verboseFlag )
+          cerr << "Multiple offsets  ";
+
+      // Find the difference that occurs most often.
+      unsigned int nMatches = 0;
+      
+      ic = offsets.begin();
+      
+      while( ic != offsets.end() )
+      {
+        if( offsets.size() != 1 )
+          if( verboseFlag && (*ic).second > 1 )
+            cerr << (*ic).first << " (" << (*ic).second << ")  ";
+
+        if( nMatches < (*ic).second )
+        {
+          offset = (*ic).first;
+          nMatches = (*ic).second;
+        }
+
+        ++ic;
+      }
+
+      if( offsets.size() != 1 )
+        if( verboseFlag )
+          cerr << endl;
+
+      // Secondary angle around the nonaxisymmetric island.
+      if( offset != 1 && offset != toroidalWinding-1 )
+      {
+        poloidalWindingP = Blankinship( toroidalWinding, offset );
+        
+        if( verboseFlag )
+          cerr << "Secondary poloidal rotation  "
+               << toroidalWinding << "," << poloidalWindingP << "  "
+               << "with offset " << offset << endl;
+      }
+      else
+        poloidalWindingP = poloidalWinding;
+    }
+    else
+      poloidalWindingP = poloidalWinding;
+
   }
 
   // Check to see if the fieldline is periodic. I.e. on a rational
@@ -3097,97 +3203,6 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       else
         analysisState = FieldlineProperties::COMPLETED;
     }
-
-    if( toroidalWinding == poloidalWinding )
-    {
-      vector< pair< Point, unsigned int > > hullPts;
-      
-      hullPts.resize( toroidalWinding+1 );
-      
-      for(unsigned int i=0; i<toroidalWinding; ++i )
-      {
-        hullPts[i] =
-          pair< Point, unsigned int >( poloidal_puncture_pts[i], i );
-      }
-      
-      unsigned int m = 0; // starting index
-      
-      convexHull( hullPts, m, toroidalWinding, 1 );
-
-      if( m != toroidalWinding )
-      {
-        if( verboseFlag )
-          cerr << "The surface does not have a convex hull, "
-               << toroidalWinding-m << " point(s) are missing."
-               << endl; 
-      }
-      
-      map< unsigned int, unsigned int > offsets;
-      map< unsigned int, unsigned int >::iterator ic;
-      
-      unsigned int offset;
-      
-      // Find all the differences and count each one.
-      for(unsigned int i=0; i<toroidalWinding; ++i )
-      {
-        offset = ( (hullPts[i                    ].second -
-                    hullPts[(i+1)%toroidalWinding].second) +
-                   toroidalWinding ) % toroidalWinding;
-        
-        // Find this offset in the list.
-        ic = offsets.find( offset );
-        
-        // Not found, new offset.
-        if( ic == offsets.end() )
-          offsets.insert( pair<int, int>( offset, 1) );
-        // Found this difference, increment the count.
-        else
-          (*ic).second++;
-      }
-
-      if( offsets.size() != 1 )
-        if( verboseFlag )
-          cerr << "Multiple offsets  ";
-
-      // Find the difference that occurs most often.
-      unsigned int nMatches = 0;
-      
-      ic = offsets.begin();
-      
-      while( ic != offsets.end() )
-      {
-        if( offsets.size() != 1 )
-          if( verboseFlag && (*ic).second > 1 )
-            cerr << (*ic).first << " (" << (*ic).second << ")  ";
-
-        if( nMatches < (*ic).second )
-        {
-          offset = (*ic).first;
-          nMatches = (*ic).second;
-        }
-
-        ++ic;
-      }
-
-      if( offsets.size() != 1 )
-        if( verboseFlag )
-          cerr << endl;
-
-      // Secondary angle around the nonaxisymmetric island.
-      if( offset != 1 && offset != toroidalWinding-1 )
-      {
-        poloidalWindingP = Blankinship( toroidalWinding, offset );
-        
-        if( verboseFlag )
-          cerr << "Secondary poloidal rotation  "
-               << toroidalWinding << "," << poloidalWindingP << "  "
-               << "with offset " << offset << endl;
-      }
-      else
-        poloidalWindingP = poloidalWinding;
-    }
-    else
-      poloidalWindingP = poloidalWinding;
   }
 
   // The user has set the toroidal winding get the poloidal winding
