@@ -1070,10 +1070,13 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
           case PoincareAttributes::ID_analysis:
             analysisButtonGroup->blockSignals(true);
             analysisButtonGroup->button((int)atts->GetAnalysis())->setChecked(true);
-            if(atts->GetAnalysis() != 0)
+            if(atts->GetAnalysis() == 0)
             {
-              showLines->setChecked(atts->GetAnalysis());
-              showPoints->setChecked(!atts->GetAnalysis());
+              showLines->setChecked(false);
+              showPoints->setChecked(true);
+
+              atts->SetShowLines(false);
+              atts->SetShowPoints(false);
             }
 
             analysisButtonGroup->blockSignals(false);
@@ -1249,6 +1252,13 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             break;
           case PoincareAttributes::ID_showLines:
             showLines->blockSignals(true);
+
+            if(atts->GetAnalysis() == 0)
+            {
+              showLines->setChecked(false);
+              atts->SetShowLines(false);
+            }
+
             showLines->setChecked(atts->GetShowLines());
             lineWidthLabel->setEnabled( (atts->GetShowLines() == true ) );
             lineStyleLabel->setEnabled( (atts->GetShowLines() == true ) );
