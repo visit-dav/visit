@@ -66,13 +66,27 @@ public:
         SpecifiedPoint,
         SpecifiedLine
     };
+    enum FieldType
+    {
+        Default,
+        M3DC12DField,
+        M3DC13DField,
+        NIMRODField,
+        FlashField
+    };
     enum IntegrationType
     {
+        Euler,
         DormandPrince,
         AdamsBashforth,
-        M3DC12DIntegrator,
-        M3DC13DIntegrator,
-        NIMRODIntegrator
+        Reserved_3,
+        Reserved_4,
+        M3DC12DIntegrator
+    };
+    enum SizeType
+    {
+        Absolute,
+        FractionOfBBox
     };
     enum CoordinateSystem
     {
@@ -122,10 +136,10 @@ public:
         ToroidalWindings,
         PoloidalWindingsQ,
         PoloidalWindingsP,
-        FieldlineIndex,
-        PointIndex,
-        PlaneIndex,
-        WindingGroup,
+        FieldlineOrder,
+        PointOrder,
+        PlaneOrder,
+        WindingGroupOrder,
         WindingPointOrder,
         WindingPointOrderModulo
     };
@@ -186,11 +200,17 @@ public:
     void SetLineStart(const double *lineStart_);
     void SetLineEnd(const double *lineEnd_);
     void SetPointDensity(int pointDensity_);
+    void SetFieldType(FieldType fieldType_);
+    void SetFieldConstant(double fieldConstant_);
     void SetIntegrationType(IntegrationType integrationType_);
     void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
     void SetMaxStepLength(double maxStepLength_);
+    void SetLimitMaximumTimestep(bool limitMaximumTimestep_);
+    void SetMaxTimeStep(double maxTimeStep_);
     void SetRelTol(double relTol_);
-    void SetAbsTol(double absTol_);
+    void SetAbsTolSizeType(SizeType absTolSizeType_);
+    void SetAbsTolAbsolute(double absTolAbsolute_);
+    void SetAbsTolBBox(double absTolBBox_);
     void SetAnalysis(AnalysisType analysis_);
     void SetMaximumToroidalWinding(int maximumToroidalWinding_);
     void SetOverrideToroidalWinding(int overrideToroidalWinding_);
@@ -247,11 +267,17 @@ public:
     const double         *GetLineEnd() const;
           double         *GetLineEnd();
     int                  GetPointDensity() const;
+    FieldType            GetFieldType() const;
+    double               GetFieldConstant() const;
     IntegrationType      GetIntegrationType() const;
     CoordinateSystem     GetCoordinateSystem() const;
     double               GetMaxStepLength() const;
+    bool                 GetLimitMaximumTimestep() const;
+    double               GetMaxTimeStep() const;
     double               GetRelTol() const;
-    double               GetAbsTol() const;
+    SizeType             GetAbsTolSizeType() const;
+    double               GetAbsTolAbsolute() const;
+    double               GetAbsTolBBox() const;
     AnalysisType         GetAnalysis() const;
     int                  GetMaximumToroidalWinding() const;
     int                  GetOverrideToroidalWinding() const;
@@ -306,10 +332,20 @@ public:
 protected:
     static std::string SourceType_ToString(int);
 public:
+    static std::string FieldType_ToString(FieldType);
+    static bool FieldType_FromString(const std::string &, FieldType &);
+protected:
+    static std::string FieldType_ToString(int);
+public:
     static std::string IntegrationType_ToString(IntegrationType);
     static bool IntegrationType_FromString(const std::string &, IntegrationType &);
 protected:
     static std::string IntegrationType_ToString(int);
+public:
+    static std::string SizeType_ToString(SizeType);
+    static bool SizeType_FromString(const std::string &, SizeType &);
+protected:
+    static std::string SizeType_ToString(int);
 public:
     static std::string CoordinateSystem_ToString(CoordinateSystem);
     static bool CoordinateSystem_FromString(const std::string &, CoordinateSystem &);
@@ -385,11 +421,17 @@ public:
         ID_lineStart,
         ID_lineEnd,
         ID_pointDensity,
+        ID_fieldType,
+        ID_fieldConstant,
         ID_integrationType,
         ID_coordinateSystem,
         ID_maxStepLength,
+        ID_limitMaximumTimestep,
+        ID_maxTimeStep,
         ID_relTol,
-        ID_absTol,
+        ID_absTolSizeType,
+        ID_absTolAbsolute,
+        ID_absTolBBox,
         ID_analysis,
         ID_maximumToroidalWinding,
         ID_overrideToroidalWinding,
@@ -445,11 +487,17 @@ private:
     double         lineStart[3];
     double         lineEnd[3];
     int            pointDensity;
+    int            fieldType;
+    double         fieldConstant;
     int            integrationType;
     int            coordinateSystem;
     double         maxStepLength;
+    bool           limitMaximumTimestep;
+    double         maxTimeStep;
     double         relTol;
-    double         absTol;
+    int            absTolSizeType;
+    double         absTolAbsolute;
+    double         absTolBBox;
     int            analysis;
     int            maximumToroidalWinding;
     int            overrideToroidalWinding;
@@ -496,6 +544,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiiidddiiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidiidbddiddiiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
 
 #endif

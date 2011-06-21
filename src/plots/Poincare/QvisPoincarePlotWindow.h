@@ -100,6 +100,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
   protected:
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
+    void UpdateFieldAttributes();
     void UpdateIntegrationAttributes();
     void UpdateAlgorithmAttributes();
     void UpdateMeshTypeAttributes();
@@ -113,10 +114,15 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void minPuncturesChanged(int val);
     void maxPuncturesChanged(int val);
     void puncturePlaneChanged(int val);
+    void fieldTypeChanged(int val);
+    void fieldConstantProccessText();
     void integrationTypeChanged(int val);
     void maxStepLengthProcessText();
+    void limitMaxTimeStepChanged(bool val);
+    void maxTimeStepProcessText();
     void relTolProcessText();
     void absTolProcessText();
+    void absTolSizeTypeChanged(int);
     void coordinateButtonGroupChanged(int val);
     void analysisChanged(int val);
     void maximumToroidalWindingChanged(int val);
@@ -174,11 +180,29 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLineEdit *lineStart;
     QLineEdit *lineEnd;
     QSpinBox  *pointDensity;
-    QWidget   *integrationType;
-    QComboBox *integrationTypeCombo;
+    QComboBox *fieldType;
+    QLabel    *fieldConstantLabel;
+    QLineEdit *fieldConstant;
+
+    QComboBox *integrationType;
+    QLabel *integrationTypeLabel;
+    QCheckBox *limitMaxTimeStep;
     QLineEdit *maxStepLength;
+    QLabel    *maxStepLengthLabel;
+    QLineEdit *maxTimeStep;
+    QLineEdit *maxSteps;
+    QCheckBox *limitMaxTime;
+    QLineEdit *maxTime;
+    QCheckBox *limitMaxDistance;
+    QLineEdit *maxDistance;
     QLineEdit *relTol;
+    QLabel    *relTolLabel;
     QLineEdit *absTol;
+    QComboBox *absTolSizeType;
+    QLabel    *absTolLabel;
+    QCheckBox *forceNodal;
+
+
     QButtonGroup *coordinateButtonGroup;
     QWidget      *analysis;
     QButtonGroup *analysisButtonGroup;
@@ -233,12 +257,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *lineStartLabel;
     QLabel *lineEndLabel;
     QLabel *pointDensityLabel;
-    QLabel *integrationTypeLabel;
-    QLabel *maxStepLengthLabel;
-    QLabel *relTolLabel;
-    QLabel *absTolLabel;
-    QLabel    *forceNodalLabel;
-    QCheckBox *forceNodal;
+
     QLabel *analysisLabel;
     QLabel *maximumToroidalWindingLabel;
     QLabel *overrideToroidalWindingLabel;

@@ -182,9 +182,43 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     }
     SNPRINTF(tmpStr, 1000, "%spointDensity = %d\n", prefix, atts->GetPointDensity());
     str += tmpStr;
-    const char *integrationType_names = "DormandPrince, AdamsBashforth, M3DC12DIntegrator, M3DC13DIntegrator, NIMRODIntegrator";
+    const char *fieldType_names = "Default, M3DC12DField, M3DC13DField, NIMRODField, FlashField";
+    switch (atts->GetFieldType())
+    {
+      case PoincareAttributes::Default:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sDefault  # %s\n", prefix, prefix, fieldType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::M3DC12DField:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sM3DC12DField  # %s\n", prefix, prefix, fieldType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::M3DC13DField:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sM3DC13DField  # %s\n", prefix, prefix, fieldType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::NIMRODField:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::FlashField:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sFlashField  # %s\n", prefix, prefix, fieldType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sfieldConstant = %g\n", prefix, atts->GetFieldConstant());
+    str += tmpStr;
+    const char *integrationType_names = "Euler, DormandPrince, AdamsBashforth, Reserved_3, Reserved_4, "
+        "M3DC12DIntegrator";
     switch (atts->GetIntegrationType())
     {
+      case PoincareAttributes::Euler:
+          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sEuler  # %s\n", prefix, prefix, integrationType_names);
+          str += tmpStr;
+          break;
       case PoincareAttributes::DormandPrince:
           SNPRINTF(tmpStr, 1000, "%sintegrationType = %sDormandPrince  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
@@ -193,16 +227,16 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           SNPRINTF(tmpStr, 1000, "%sintegrationType = %sAdamsBashforth  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
+      case PoincareAttributes::Reserved_3:
+          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sReserved_3  # %s\n", prefix, prefix, integrationType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Reserved_4:
+          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sReserved_4  # %s\n", prefix, prefix, integrationType_names);
+          str += tmpStr;
+          break;
       case PoincareAttributes::M3DC12DIntegrator:
           SNPRINTF(tmpStr, 1000, "%sintegrationType = %sM3DC12DIntegrator  # %s\n", prefix, prefix, integrationType_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::M3DC13DIntegrator:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sM3DC13DIntegrator  # %s\n", prefix, prefix, integrationType_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::NIMRODIntegrator:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sNIMRODIntegrator  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       default:
@@ -226,9 +260,33 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
 
     SNPRINTF(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
     str += tmpStr;
+    if(atts->GetLimitMaximumTimestep())
+        SNPRINTF(tmpStr, 1000, "%slimitMaximumTimestep = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%slimitMaximumTimestep = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smaxTimeStep = %g\n", prefix, atts->GetMaxTimeStep());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%srelTol = %g\n", prefix, atts->GetRelTol());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sabsTol = %g\n", prefix, atts->GetAbsTol());
+    const char *absTolSizeType_names = "Absolute, FractionOfBBox";
+    switch (atts->GetAbsTolSizeType())
+    {
+      case PoincareAttributes::Absolute:
+          SNPRINTF(tmpStr, 1000, "%sabsTolSizeType = %sAbsolute  # %s\n", prefix, prefix, absTolSizeType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::FractionOfBBox:
+          SNPRINTF(tmpStr, 1000, "%sabsTolSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, absTolSizeType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sabsTolAbsolute = %g\n", prefix, atts->GetAbsTolAbsolute());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
     const char *analysis_names = "None, Normal";
     switch (atts->GetAnalysis())
@@ -334,8 +392,8 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     const char *dataValue_names = "Solid, SafetyFactorQ, SafetyFactorP, SafetyFactorQ_NotP, SafetyFactorP_NotQ, "
-        "ToroidalWindings, PoloidalWindingsQ, PoloidalWindingsP, FieldlineIndex, "
-        "PointIndex, PlaneIndex, WindingGroup, WindingPointOrder, "
+        "ToroidalWindings, PoloidalWindingsQ, PoloidalWindingsP, FieldlineOrder, "
+        "PointOrder, PlaneOrder, WindingGroupOrder, WindingPointOrder, "
         "WindingPointOrderModulo";
     switch (atts->GetDataValue())
     {
@@ -371,20 +429,20 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           SNPRINTF(tmpStr, 1000, "%sdataValue = %sPoloidalWindingsP  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case PoincareAttributes::FieldlineIndex:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sFieldlineIndex  # %s\n", prefix, prefix, dataValue_names);
+      case PoincareAttributes::FieldlineOrder:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sFieldlineOrder  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case PoincareAttributes::PointIndex:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPointIndex  # %s\n", prefix, prefix, dataValue_names);
+      case PoincareAttributes::PointOrder:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPointOrder  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case PoincareAttributes::PlaneIndex:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPlaneIndex  # %s\n", prefix, prefix, dataValue_names);
+      case PoincareAttributes::PlaneOrder:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPlaneOrder  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case PoincareAttributes::WindingGroup:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingGroup  # %s\n", prefix, prefix, dataValue_names);
+      case PoincareAttributes::WindingGroupOrder:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingGroupOrder  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::WindingPointOrder:
@@ -889,6 +947,64 @@ PoincareAttributes_GetPointDensity(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PoincareAttributes_SetFieldType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the fieldType in the object.
+    if(ival >= 0 && ival < 5)
+        obj->data->SetFieldType(PoincareAttributes::FieldType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid fieldType value was given. "
+                        "Valid values are in the range of [0,4]. "
+                        "You can also use the following names: "
+                        "Default, M3DC12DField, M3DC13DField, NIMRODField, FlashField"
+                        ".");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetFieldType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetFieldType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetFieldConstant(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the fieldConstant in the object.
+    obj->data->SetFieldConstant(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetFieldConstant(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetFieldConstant());
+    return retval;
+}
+
+/*static*/ PyObject *
 PoincareAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -898,15 +1014,15 @@ PoincareAttributes_SetIntegrationType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the integrationType in the object.
-    if(ival >= 0 && ival < 5)
+    if(ival >= 0 && ival < 6)
         obj->data->SetIntegrationType(PoincareAttributes::IntegrationType(ival));
     else
     {
         fprintf(stderr, "An invalid integrationType value was given. "
-                        "Valid values are in the range of [0,4]. "
+                        "Valid values are in the range of [0,5]. "
                         "You can also use the following names: "
-                        "DormandPrince, AdamsBashforth, M3DC12DIntegrator, M3DC13DIntegrator, NIMRODIntegrator"
-                        ".");
+                        "Euler, DormandPrince, AdamsBashforth, Reserved_3, Reserved_4, "
+                        "M3DC12DIntegrator.");
         return NULL;
     }
 
@@ -980,6 +1096,54 @@ PoincareAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PoincareAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the limitMaximumTimestep in the object.
+    obj->data->SetLimitMaximumTimestep(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetLimitMaximumTimestep(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetLimitMaximumTimestep()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the maxTimeStep in the object.
+    obj->data->SetMaxTimeStep(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetMaxTimeStep(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxTimeStep());
+    return retval;
+}
+
+/*static*/ PyObject *
 PoincareAttributes_SetRelTol(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -1004,7 +1168,40 @@ PoincareAttributes_GetRelTol(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetAbsTol(PyObject *self, PyObject *args)
+PoincareAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the absTolSizeType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetAbsTolSizeType(PoincareAttributes::SizeType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid absTolSizeType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Absolute, FractionOfBBox.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetAbsTolSizeType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAbsTolSizeType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
@@ -1012,18 +1209,42 @@ PoincareAttributes_SetAbsTol(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the absTol in the object.
-    obj->data->SetAbsTol(dval);
+    // Set the absTolAbsolute in the object.
+    obj->data->SetAbsTolAbsolute(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetAbsTol(PyObject *self, PyObject *args)
+PoincareAttributes_GetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTol());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolAbsolute());
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the absTolBBox in the object.
+    obj->data->SetAbsTolBBox(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetAbsTolBBox(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolBBox());
     return retval;
 }
 
@@ -1566,8 +1787,8 @@ PoincareAttributes_SetDataValue(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,13]. "
                         "You can also use the following names: "
                         "Solid, SafetyFactorQ, SafetyFactorP, SafetyFactorQ_NotP, SafetyFactorP_NotQ, "
-                        "ToroidalWindings, PoloidalWindingsQ, PoloidalWindingsP, FieldlineIndex, "
-                        "PointIndex, PlaneIndex, WindingGroup, WindingPointOrder, "
+                        "ToroidalWindings, PoloidalWindingsQ, PoloidalWindingsP, FieldlineOrder, "
+                        "PointOrder, PlaneOrder, WindingGroupOrder, WindingPointOrder, "
                         "WindingPointOrderModulo.");
         return NULL;
     }
@@ -2164,16 +2385,28 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetLineEnd", PoincareAttributes_GetLineEnd, METH_VARARGS},
     {"SetPointDensity", PoincareAttributes_SetPointDensity, METH_VARARGS},
     {"GetPointDensity", PoincareAttributes_GetPointDensity, METH_VARARGS},
+    {"SetFieldType", PoincareAttributes_SetFieldType, METH_VARARGS},
+    {"GetFieldType", PoincareAttributes_GetFieldType, METH_VARARGS},
+    {"SetFieldConstant", PoincareAttributes_SetFieldConstant, METH_VARARGS},
+    {"GetFieldConstant", PoincareAttributes_GetFieldConstant, METH_VARARGS},
     {"SetIntegrationType", PoincareAttributes_SetIntegrationType, METH_VARARGS},
     {"GetIntegrationType", PoincareAttributes_GetIntegrationType, METH_VARARGS},
     {"SetCoordinateSystem", PoincareAttributes_SetCoordinateSystem, METH_VARARGS},
     {"GetCoordinateSystem", PoincareAttributes_GetCoordinateSystem, METH_VARARGS},
     {"SetMaxStepLength", PoincareAttributes_SetMaxStepLength, METH_VARARGS},
     {"GetMaxStepLength", PoincareAttributes_GetMaxStepLength, METH_VARARGS},
+    {"SetLimitMaximumTimestep", PoincareAttributes_SetLimitMaximumTimestep, METH_VARARGS},
+    {"GetLimitMaximumTimestep", PoincareAttributes_GetLimitMaximumTimestep, METH_VARARGS},
+    {"SetMaxTimeStep", PoincareAttributes_SetMaxTimeStep, METH_VARARGS},
+    {"GetMaxTimeStep", PoincareAttributes_GetMaxTimeStep, METH_VARARGS},
     {"SetRelTol", PoincareAttributes_SetRelTol, METH_VARARGS},
     {"GetRelTol", PoincareAttributes_GetRelTol, METH_VARARGS},
-    {"SetAbsTol", PoincareAttributes_SetAbsTol, METH_VARARGS},
-    {"GetAbsTol", PoincareAttributes_GetAbsTol, METH_VARARGS},
+    {"SetAbsTolSizeType", PoincareAttributes_SetAbsTolSizeType, METH_VARARGS},
+    {"GetAbsTolSizeType", PoincareAttributes_GetAbsTolSizeType, METH_VARARGS},
+    {"SetAbsTolAbsolute", PoincareAttributes_SetAbsTolAbsolute, METH_VARARGS},
+    {"GetAbsTolAbsolute", PoincareAttributes_GetAbsTolAbsolute, METH_VARARGS},
+    {"SetAbsTolBBox", PoincareAttributes_SetAbsTolBBox, METH_VARARGS},
+    {"GetAbsTolBBox", PoincareAttributes_GetAbsTolBBox, METH_VARARGS},
     {"SetAnalysis", PoincareAttributes_SetAnalysis, METH_VARARGS},
     {"GetAnalysis", PoincareAttributes_GetAnalysis, METH_VARARGS},
     {"SetMaximumToroidalWinding", PoincareAttributes_SetMaximumToroidalWinding, METH_VARARGS},
@@ -2321,18 +2554,35 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetLineEnd(self, NULL);
     if(strcmp(name, "pointDensity") == 0)
         return PoincareAttributes_GetPointDensity(self, NULL);
+    if(strcmp(name, "fieldType") == 0)
+        return PoincareAttributes_GetFieldType(self, NULL);
+    if(strcmp(name, "Default") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Default));
+    if(strcmp(name, "M3DC12DField") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::M3DC12DField));
+    if(strcmp(name, "M3DC13DField") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::M3DC13DField));
+    if(strcmp(name, "NIMRODField") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::NIMRODField));
+    if(strcmp(name, "FlashField") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::FlashField));
+
+    if(strcmp(name, "fieldConstant") == 0)
+        return PoincareAttributes_GetFieldConstant(self, NULL);
     if(strcmp(name, "integrationType") == 0)
         return PoincareAttributes_GetIntegrationType(self, NULL);
+    if(strcmp(name, "Euler") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Euler));
     if(strcmp(name, "DormandPrince") == 0)
         return PyInt_FromLong(long(PoincareAttributes::DormandPrince));
     if(strcmp(name, "AdamsBashforth") == 0)
         return PyInt_FromLong(long(PoincareAttributes::AdamsBashforth));
+    if(strcmp(name, "Reserved_3") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Reserved_3));
+    if(strcmp(name, "Reserved_4") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Reserved_4));
     if(strcmp(name, "M3DC12DIntegrator") == 0)
         return PyInt_FromLong(long(PoincareAttributes::M3DC12DIntegrator));
-    if(strcmp(name, "M3DC13DIntegrator") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::M3DC13DIntegrator));
-    if(strcmp(name, "NIMRODIntegrator") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::NIMRODIntegrator));
 
     if(strcmp(name, "coordinateSystem") == 0)
         return PoincareAttributes_GetCoordinateSystem(self, NULL);
@@ -2343,10 +2593,23 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "maxStepLength") == 0)
         return PoincareAttributes_GetMaxStepLength(self, NULL);
+    if(strcmp(name, "limitMaximumTimestep") == 0)
+        return PoincareAttributes_GetLimitMaximumTimestep(self, NULL);
+    if(strcmp(name, "maxTimeStep") == 0)
+        return PoincareAttributes_GetMaxTimeStep(self, NULL);
     if(strcmp(name, "relTol") == 0)
         return PoincareAttributes_GetRelTol(self, NULL);
-    if(strcmp(name, "absTol") == 0)
-        return PoincareAttributes_GetAbsTol(self, NULL);
+    if(strcmp(name, "absTolSizeType") == 0)
+        return PoincareAttributes_GetAbsTolSizeType(self, NULL);
+    if(strcmp(name, "Absolute") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Absolute));
+    if(strcmp(name, "FractionOfBBox") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::FractionOfBBox));
+
+    if(strcmp(name, "absTolAbsolute") == 0)
+        return PoincareAttributes_GetAbsTolAbsolute(self, NULL);
+    if(strcmp(name, "absTolBBox") == 0)
+        return PoincareAttributes_GetAbsTolBBox(self, NULL);
     if(strcmp(name, "analysis") == 0)
         return PoincareAttributes_GetAnalysis(self, NULL);
     if(strcmp(name, "None") == 0)
@@ -2425,14 +2688,14 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PoincareAttributes::PoloidalWindingsQ));
     if(strcmp(name, "PoloidalWindingsP") == 0)
         return PyInt_FromLong(long(PoincareAttributes::PoloidalWindingsP));
-    if(strcmp(name, "FieldlineIndex") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::FieldlineIndex));
-    if(strcmp(name, "PointIndex") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::PointIndex));
-    if(strcmp(name, "PlaneIndex") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::PlaneIndex));
-    if(strcmp(name, "WindingGroup") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::WindingGroup));
+    if(strcmp(name, "FieldlineOrder") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::FieldlineOrder));
+    if(strcmp(name, "PointOrder") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::PointOrder));
+    if(strcmp(name, "PlaneOrder") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::PlaneOrder));
+    if(strcmp(name, "WindingGroupOrder") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::WindingGroupOrder));
     if(strcmp(name, "WindingPointOrder") == 0)
         return PyInt_FromLong(long(PoincareAttributes::WindingPointOrder));
     if(strcmp(name, "WindingPointOrderModulo") == 0)
@@ -2543,16 +2806,28 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetLineEnd(self, tuple);
     else if(strcmp(name, "pointDensity") == 0)
         obj = PoincareAttributes_SetPointDensity(self, tuple);
+    else if(strcmp(name, "fieldType") == 0)
+        obj = PoincareAttributes_SetFieldType(self, tuple);
+    else if(strcmp(name, "fieldConstant") == 0)
+        obj = PoincareAttributes_SetFieldConstant(self, tuple);
     else if(strcmp(name, "integrationType") == 0)
         obj = PoincareAttributes_SetIntegrationType(self, tuple);
     else if(strcmp(name, "coordinateSystem") == 0)
         obj = PoincareAttributes_SetCoordinateSystem(self, tuple);
     else if(strcmp(name, "maxStepLength") == 0)
         obj = PoincareAttributes_SetMaxStepLength(self, tuple);
+    else if(strcmp(name, "limitMaximumTimestep") == 0)
+        obj = PoincareAttributes_SetLimitMaximumTimestep(self, tuple);
+    else if(strcmp(name, "maxTimeStep") == 0)
+        obj = PoincareAttributes_SetMaxTimeStep(self, tuple);
     else if(strcmp(name, "relTol") == 0)
         obj = PoincareAttributes_SetRelTol(self, tuple);
-    else if(strcmp(name, "absTol") == 0)
-        obj = PoincareAttributes_SetAbsTol(self, tuple);
+    else if(strcmp(name, "absTolSizeType") == 0)
+        obj = PoincareAttributes_SetAbsTolSizeType(self, tuple);
+    else if(strcmp(name, "absTolAbsolute") == 0)
+        obj = PoincareAttributes_SetAbsTolAbsolute(self, tuple);
+    else if(strcmp(name, "absTolBBox") == 0)
+        obj = PoincareAttributes_SetAbsTolBBox(self, tuple);
     else if(strcmp(name, "analysis") == 0)
         obj = PoincareAttributes_SetAnalysis(self, tuple);
     else if(strcmp(name, "maximumToroidalWinding") == 0)
