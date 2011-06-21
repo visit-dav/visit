@@ -241,6 +241,4 @@ class avtPoincareFilter : public avtStreamlineFilter
 
 //     std::map< long int, ICHelper > fieldlines;
 };
-
-
 #endif

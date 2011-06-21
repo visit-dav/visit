@@ -154,10 +154,16 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
 
             puncturePlane != obj.puncturePlane ||
 
+            fieldType != obj.fieldType ||
+            fieldConstant != obj.fieldConstant ||
             integrationType != obj.integrationType ||
             maxStepLength != obj.maxStepLength ||
+            limitMaximumTimestep != obj.limitMaximumTimestep ||
+            maxTimeStep != obj.maxTimeStep ||
             relTol != obj.relTol ||
-            absTol != obj.absTol);
+            absTolSizeType != obj.absTolSizeType ||
+            absTolAbsolute != obj.absTolAbsolute ||
+            absTolBBox != obj.absTolBBox);
 }
 
 Function: PoincareAttsRequireRecalculation
@@ -213,4 +219,3 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            showLines != obj.showLines ||
            showPoints != obj.showPoints;
 }
-

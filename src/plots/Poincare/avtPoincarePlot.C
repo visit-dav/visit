@@ -375,6 +375,9 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 
 #ifdef ENGINE
 
+    poincareFilter->SetFieldType(atts.GetFieldType());
+    poincareFilter->SetFieldConstant(atts.GetFieldConstant());
+
     poincareFilter->SetMaxPunctures(atts.GetMaxPunctures());
     
     vtkPlane *intPlane = vtkPlane::New();
@@ -424,16 +427,24 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetStreamlineAlgorithm(STREAMLINE_PARALLEL_OVER_DOMAINS,
                                            10, 3, 1);
     poincareFilter->SetMaxStepLength(atts.GetMaxStepLength());
-    poincareFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol(), false);
 
+    double absTol = 0.;
+    bool doBBox = (atts.GetAbsTolSizeType() ==
+                   PoincareAttributes::FractionOfBBox);
+    if (doBBox)
+        absTol = atts.GetAbsTolBBox();
+    else
+        absTol = atts.GetAbsTolAbsolute();
+    poincareFilter->SetTolerances(atts.GetRelTol(), absTol, doBBox);
     
     poincareFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
                                            atts.GetMaxStreamlineProcessCount(),
                                            atts.GetMaxDomainCacheSize(),
                                            atts.GetWorkGroupSize());
 
-    if (atts.GetIntegrationType() == PoincareAttributes::M3DC13DIntegrator ||
-//      atts.GetIntegrationType() == PoincareAttributes::NIMRODIntegrator ||
+    if (atts.GetFieldType() == PoincareAttributes::M3DC12DField ||
+        atts.GetFieldType() == PoincareAttributes::M3DC13DField ||
+//      atts.GetIntegrationType() == PoincareAttributes::NIMRODField ||
         0 )
       poincareFilter->ConvertToCartesian( true );
     else
