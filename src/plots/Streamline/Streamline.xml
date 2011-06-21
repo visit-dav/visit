@@ -68,12 +68,20 @@
         MasterSlave
         VisItSelects
       </Enum>
+      <Enum name="FieldType">
+        Default
+        M3DC12DField
+        M3DC13DField
+        NIMRODField
+        FlashField
+      </Enum>
       <Enum name="IntegrationType">
+        Euler
         DormandPrince
         AdamsBashforth
+        Reserved_3
+        Reserved_4
         M3DC12DIntegrator
-        M3DC13DIntegrator
-        NIMRODIntegrator
       </Enum>
       <Enum name="OpacityType">
         FullyOpaque
@@ -231,6 +239,12 @@
       </Field>
       <Field name="absTolBBox" label="AbsTolBBox" type="double" enabler="absTolSizeType:FractionOfBBox">
         0.000001
+      </Field>
+      <Field name="fieldType" label="Field" type="enum" subtype="FieldType">
+        Default
+      </Field>
+      <Field name="fieldConstant" label="Constant" type="double" subtype="FieldConstant">
+        1.0
       </Field>
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         DormandPrince

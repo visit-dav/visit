@@ -178,9 +178,12 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void UpdateSourceAttributes();
     void TurnOffSourceAttributes();
     void UpdateAlgorithmAttributes();
+    void UpdateFieldAttributes();
     void UpdateIntegrationAttributes();
   private slots:
     void sourceTypeChanged(int val);
+    void fieldTypeChanged(int val);
+    void fieldConstantProccessText();
     void integrationTypeChanged(int val);
     void streamlineAlgorithmChanged(int val);
     void directionTypeChanged(int val);
@@ -377,6 +380,9 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QCheckBox *pathlineOverrideStartingTimeFlag;
     QLineEdit *pathlineOverrideStartingTime;
     QButtonGroup *pathlineCMFEButtonGroup;
+    QComboBox *fieldType;
+    QLabel    *fieldConstantLabel;
+    QLineEdit *fieldConstant;
     QComboBox *integrationType;
     QLabel    *slAlgoLabel;
     QComboBox *slAlgo;

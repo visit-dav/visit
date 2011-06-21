@@ -477,6 +477,9 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
 
     streamlineFilter->SetPathlines(atts.GetPathlines(), atts.GetPathlinesOverrideStartingTimeFlag(), atts.GetPathlinesOverrideStartingTime(), atts.GetPathlinesCMFE());
 
+    streamlineFilter->SetFieldType(atts.GetFieldType());
+    streamlineFilter->SetFieldConstant(atts.GetFieldConstant());
+
     streamlineFilter->SetIntegrationType(atts.GetIntegrationType());
     streamlineFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
                                              atts.GetMaxStreamlineProcessCount(),

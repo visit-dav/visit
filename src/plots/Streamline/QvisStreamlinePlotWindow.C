@@ -498,7 +498,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     samplingLayout->addWidget(sampleDistance[2], sRow, 5);
     sRow++;
 
-    // Create the direction of integration. NOte the location is row
+    // Create the direction of integration. Note the location is row
     // 100 which is silly but Qt will shrink the layout so that it is
     // moved up appropriately.
     sourceLayout->addWidget(new QLabel(tr("Streamline direction"), central),
@@ -513,22 +513,55 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 
 
 
+    // Create the field group box.
+    QGroupBox *fieldGroup = new QGroupBox(central);
+    fieldGroup->setTitle(tr("Field"));
+    mainLayout->addWidget(fieldGroup, 6, 0, 1, 1);
+//    mainLayout->setStretchFactor(fieldGroup, 100);
+    QGridLayout *fieldLayout = new QGridLayout(fieldGroup);
+    fieldLayout->setMargin(5);
+    fieldLayout->setSpacing(10);
+
+
+    fieldLayout->addWidget( new QLabel(tr("Field"), fieldGroup), 0,0);
+    fieldType = new QComboBox(fieldGroup);
+    fieldType->addItem(tr("Default"));
+    fieldType->addItem(tr("M3D-C1 2D"));
+    fieldType->addItem(tr("M3D-C1 3D"));
+    fieldType->addItem(tr("NIMROD"));
+    fieldType->addItem(tr("Flash"));
+    connect(fieldType, SIGNAL(activated(int)),
+            this, SLOT(fieldTypeChanged(int)));
+    fieldLayout->addWidget(fieldType, 0,1);
+    
+
+    // Create the field constant text field.
+    fieldConstantLabel = new QLabel(tr("Constant"), fieldGroup);
+    fieldConstant = new QLineEdit(fieldGroup);
+    connect(fieldConstant, SIGNAL(returnPressed()), this,
+            SLOT(fieldConstantProccessText()));
+    fieldLayout->addWidget(fieldConstantLabel, 0,2);
+    fieldLayout->addWidget(fieldConstant, 0,3);
+
+
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
     integrationGroup->setTitle(tr("Integration"));
-    mainLayout->addWidget(integrationGroup, 6, 0, 4, 2);
+    mainLayout->addWidget(integrationGroup, 7, 0, 5, 2);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
     integrationLayout->setMargin(5);
     integrationLayout->setSpacing(10);
 
+
     integrationLayout->addWidget( new QLabel(tr("Integrator"), integrationGroup), 0,0);
     integrationType = new QComboBox(integrationGroup);
+    integrationType->addItem(tr("Forward Euler (Single-step)"));
     integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
-    integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D data only)"));
-    integrationType->addItem(tr("M3D-C1 3D Integrator (M3D-C1 3D data only)"));
-//    integrationType->addItem(tr("NIMROD Integrator (NIMROD data only)"));
+    integrationType->addItem(tr("Unused"));
+    integrationType->addItem(tr("Unused"));
+    integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationType, 0,1);
@@ -581,13 +614,13 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 
     forceNodal = new QCheckBox(tr("Force node centering"), integrationGroup);
     connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
-    integrationLayout->addWidget(forceNodal, 7, 0);
+    integrationLayout->addWidget(forceNodal, 9, 0);
 
 
     // Create the termination group box.
     QGroupBox *terminationGroup = new QGroupBox(central);
     terminationGroup->setTitle(tr("Termination"));
-    mainLayout->addWidget(terminationGroup, 10, 0, 2, 2);
+    mainLayout->addWidget(terminationGroup, 12, 0, 2, 2);
 //    mainLayout->setStretchFactor(terminationGroup, 100);
     QGridLayout *terminationLayout = new QGridLayout(terminationGroup);
     terminationLayout->setMargin(5);
@@ -1957,6 +1990,39 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 absTol->setText(temp);
             }
             break;
+        case StreamlineAttributes::ID_fieldType:
+            // Update lots of widget visibility and enabled states.
+            UpdateFieldAttributes();
+
+            fieldType->blockSignals(true);
+            fieldType->setCurrentIndex(streamAtts->GetFieldType());
+            fieldType->blockSignals(false);
+
+            integrationType->blockSignals(true);
+            if (streamAtts->GetFieldType() == StreamlineAttributes::M3DC12DField)
+            {
+              streamAtts->SetIntegrationType(StreamlineAttributes::M3DC12DIntegrator);
+              integrationType->setCurrentIndex(StreamlineAttributes::M3DC12DIntegrator);
+              UpdateIntegrationAttributes();
+            }
+            else if (streamAtts->GetFieldType() == StreamlineAttributes::NIMRODField)
+            {
+              streamAtts->SetIntegrationType(StreamlineAttributes::AdamsBashforth);
+              integrationType->setCurrentIndex(StreamlineAttributes::AdamsBashforth);
+              UpdateIntegrationAttributes();
+            }
+            else if (streamAtts->GetIntegrationType() == StreamlineAttributes::M3DC12DIntegrator) 
+            {
+              streamAtts->SetIntegrationType(StreamlineAttributes::DormandPrince);
+              integrationType->setCurrentIndex(StreamlineAttributes::DormandPrince);
+              UpdateIntegrationAttributes();
+            }
+            integrationType->blockSignals(false);
+
+            break;
+        case StreamlineAttributes::ID_fieldConstant:
+            fieldConstant->setText(DoubleToQString(streamAtts->GetFieldConstant()));
+            break;
         case StreamlineAttributes::ID_integrationType:
             // Update lots of widget visibility and enabled states.
             UpdateIntegrationAttributes();
@@ -1964,11 +2030,26 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             integrationType->blockSignals(true);
             integrationType->setCurrentIndex(streamAtts->GetIntegrationType());
             integrationType->blockSignals(false);
+
+            fieldType->blockSignals(true);
+            if (streamAtts->GetIntegrationType() == StreamlineAttributes::M3DC12DIntegrator)
+            {
+              streamAtts->SetFieldType(StreamlineAttributes::M3DC12DField);
+              fieldType->setCurrentIndex(StreamlineAttributes::M3DC12DField);
+              UpdateFieldAttributes();
+            }
+            else if (streamAtts->GetFieldType() == StreamlineAttributes::M3DC12DField)
+            {
+              streamAtts->SetFieldType(StreamlineAttributes::Default);
+              fieldType->setCurrentIndex(StreamlineAttributes::Default);
+              UpdateFieldAttributes();
+            }
+            fieldType->blockSignals(false);
+
             break;
         case StreamlineAttributes::ID_streamlineAlgorithmType:
             // Update lots of widget visibility and enabled states.
             UpdateAlgorithmAttributes();
-
             slAlgo->blockSignals(true);
             slAlgo->setCurrentIndex(streamAtts->GetStreamlineAlgorithmType());
             slAlgo->blockSignals(false);
@@ -2504,6 +2585,55 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     }
 }
 
+
+// ****************************************************************************
+// Method: QvisStreamlinePlotWindow::UpdateFieldAttributes
+//
+// Purpose: 
+//   Updates the widgets for the various field types.
+//
+// Programmer: Dave Pugmire
+// Creation:   Thu Jul 31 14:41:00 EDT 2008
+//
+// ****************************************************************************
+
+void
+QvisStreamlinePlotWindow::UpdateFieldAttributes()
+{
+    switch( streamAtts->GetFieldType() )
+    {
+    case StreamlineAttributes::M3DC12DField:
+      if( streamAtts->GetIntegrationType() ==
+          StreamlineAttributes::M3DC12DIntegrator )
+      {
+        fieldConstantLabel->setEnabled(true);
+        fieldConstant->setEnabled(true);
+      }
+      else
+      {
+        fieldConstantLabel->setEnabled(false);
+        fieldConstant->setEnabled(false);
+      }
+      break;
+
+    case StreamlineAttributes::NIMRODField:
+      fieldConstantLabel->setEnabled(false);
+      fieldConstant->setEnabled(false);
+      break;
+
+    case StreamlineAttributes::FlashField:
+      fieldConstantLabel->setEnabled(true);
+      fieldConstant->setEnabled(true);
+      break;
+
+    default:
+      fieldConstantLabel->setEnabled(false);
+      fieldConstant->setEnabled(false);
+      break;
+    }
+}
+
+
 // ****************************************************************************
 // Method: QvisStreamlinePlotWindow::UpdateIntegrationAttributes
 //
@@ -2535,9 +2665,15 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
     relTolLabel->hide();
     absTol->hide();
     absTolLabel->hide();
+    absTolSizeType->hide();
 
     switch( streamAtts->GetIntegrationType() )
     {
+    case StreamlineAttributes::Euler:
+        maxStepLength->show();
+        maxStepLengthLabel->show();
+      break;
+
     case StreamlineAttributes::DormandPrince:
         limitMaxTimeStep->show();
         maxTimeStep->show();
@@ -2545,16 +2681,16 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
         relTolLabel->show();
         absTol->show();
         absTolLabel->show();
+        absTolSizeType->show();
         break;
 
     case StreamlineAttributes::AdamsBashforth:
     case StreamlineAttributes::M3DC12DIntegrator:
-    case StreamlineAttributes::M3DC13DIntegrator:
-    case StreamlineAttributes::NIMRODIntegrator:
         maxStepLength->show();
         maxStepLengthLabel->show();
         absTol->show();
         absTolLabel->show();
+        absTolSizeType->show();
         break;
     }
 }
@@ -2580,9 +2716,12 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
 void
 QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
 {
-    bool useLoadOnDemand = streamAtts->GetStreamlineAlgorithmType() == StreamlineAttributes::LoadOnDemand;
-    bool useStaticDomains = streamAtts->GetStreamlineAlgorithmType() == StreamlineAttributes::ParallelStaticDomains;
-    bool useMasterSlave = streamAtts->GetStreamlineAlgorithmType() == StreamlineAttributes::MasterSlave;
+    bool useLoadOnDemand = (streamAtts->GetStreamlineAlgorithmType() ==
+                            StreamlineAttributes::LoadOnDemand);
+    bool useStaticDomains = (streamAtts->GetStreamlineAlgorithmType() ==
+                             StreamlineAttributes::ParallelStaticDomains);
+    bool useMasterSlave = (streamAtts->GetStreamlineAlgorithmType() ==
+                           StreamlineAttributes::MasterSlave);
     
     //Turn off everything.
     maxDomainCacheLabel->hide();
@@ -2665,6 +2804,20 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
     QString msg, temp;
+
+    // Do fieldConstant
+    if(which_widget == StreamlineAttributes::ID_fieldConstant || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(fieldConstant, val))
+            streamAtts->SetFieldConstant(val);
+        else
+        {
+            ResettingError(tr("field constant"),
+                DoubleToQString(streamAtts->GetFieldConstant()));
+            streamAtts->SetFieldConstant(streamAtts->GetFieldConstant());
+        }
+    }
 
     // Do stepLength
     if(which_widget == StreamlineAttributes::ID_maxStepLength || doAll)
@@ -3057,11 +3210,14 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
     if(which_widget == StreamlineAttributes::ID_phiScaling || doAll)
     {
         double val;
-        if(LineEditGetDouble(phiScaling, val) && val != 0)
+        LineEditGetDouble(phiScaling, val);
+        if(LineEditGetDouble(phiScaling, val) && val >= 0)
             streamAtts->SetPhiScaling(val);
         else
         {
-            ResettingError(tr("phi factor"),
+          cerr << "phi scaling (" << val << ")" << endl;
+
+            ResettingError(tr("phi scaling"),
                 DoubleToQString(streamAtts->GetPhiScaling()));
             streamAtts->SetPhiScaling(streamAtts->GetPhiScaling());
         }
@@ -3449,9 +3605,29 @@ QvisStreamlinePlotWindow::directionTypeChanged(int val)
 }   
 
 void
-QvisStreamlinePlotWindow::integrationTypeChanged(int val)
+QvisStreamlinePlotWindow::fieldTypeChanged(int val)
  {
-    if(val != streamAtts->GetIntegrationType())
+    if(val != streamAtts->GetFieldType())
+    {
+        streamAtts->SetFieldType(StreamlineAttributes::FieldType(val));
+        Apply();
+    }
+}   
+
+void
+QvisStreamlinePlotWindow::fieldConstantProccessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_fieldConstant);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::integrationTypeChanged(int val)
+{
+    if( val == 3 || val == 4)
+        Apply();
+    
+    else if(val != streamAtts->GetIntegrationType())
     {
         streamAtts->SetIntegrationType(StreamlineAttributes::IntegrationType(val));
         Apply();

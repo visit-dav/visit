@@ -228,6 +228,8 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         terminateByTime != obj.terminateByTime ||
         termTime != obj.termTime ||
         streamlineDirection != obj.streamlineDirection ||
+        fieldType != obj.fieldType ||
+        fieldConstant != obj.fieldConstant ||
         integrationType != obj.integrationType ||
         coordinateSystem != obj.coordinateSystem ||
         phiScalingFlag != obj.phiScalingFlag ||
