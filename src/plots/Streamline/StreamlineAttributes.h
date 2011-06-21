@@ -113,13 +113,22 @@ public:
         MasterSlave,
         VisItSelects
     };
+    enum FieldType
+    {
+        Default,
+        M3DC12DField,
+        M3DC13DField,
+        NIMRODField,
+        FlashField
+    };
     enum IntegrationType
     {
+        Euler,
         DormandPrince,
         AdamsBashforth,
-        M3DC12DIntegrator,
-        M3DC13DIntegrator,
-        NIMRODIntegrator
+        Reserved_3,
+        Reserved_4,
+        M3DC12DIntegrator
     };
     enum OpacityType
     {
@@ -230,6 +239,8 @@ public:
     void SetAbsTolSizeType(SizeType absTolSizeType_);
     void SetAbsTolAbsolute(double absTolAbsolute_);
     void SetAbsTolBBox(double absTolBBox_);
+    void SetFieldType(FieldType fieldType_);
+    void SetFieldConstant(double fieldConstant_);
     void SetIntegrationType(IntegrationType integrationType_);
     void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
     void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_);
@@ -344,6 +355,8 @@ public:
     SizeType             GetAbsTolSizeType() const;
     double               GetAbsTolAbsolute() const;
     double               GetAbsTolBBox() const;
+    FieldType            GetFieldType() const;
+    double               GetFieldConstant() const;
     IntegrationType      GetIntegrationType() const;
     StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
     int                  GetMaxStreamlineProcessCount() const;
@@ -456,6 +469,11 @@ public:
 protected:
     static std::string StreamlineAlgorithmType_ToString(int);
 public:
+    static std::string FieldType_ToString(FieldType);
+    static bool FieldType_FromString(const std::string &, FieldType &);
+protected:
+    static std::string FieldType_ToString(int);
+public:
     static std::string IntegrationType_ToString(IntegrationType);
     static bool IntegrationType_FromString(const std::string &, IntegrationType &);
 protected:
@@ -537,6 +555,8 @@ public:
         ID_absTolSizeType,
         ID_absTolAbsolute,
         ID_absTolBBox,
+        ID_fieldType,
+        ID_fieldConstant,
         ID_integrationType,
         ID_streamlineAlgorithmType,
         ID_maxStreamlineProcessCount,
@@ -642,6 +662,8 @@ private:
     int            absTolSizeType;
     double         absTolAbsolute;
     double         absTolBBox;
+    int            fieldType;
+    double         fieldConstant;
     int            integrationType;
     int            streamlineAlgorithmType;
     int            maxStreamlineProcessCount;
@@ -715,6 +737,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdiibdsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdidsdddi"
+#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddidiiiiibbdiibdsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdidsdddi"
 
 #endif
