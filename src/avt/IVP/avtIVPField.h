@@ -98,11 +98,15 @@ class IVP_API avtIVPField
         }
     };
 
-                         avtIVPField() {}
+                         avtIVPField() : order(1) {}
     virtual             ~avtIVPField() {}
 
     virtual avtVector    operator()(const double& t, 
                                     const avtVector& x) const = 0;
+
+    virtual avtVector    operator()(const double& t, 
+                                    const avtVector& x, 
+                                    const avtVector& v) const = 0;
 
     virtual avtVector ConvertToCartesian(const avtVector& pt) const = 0;
     virtual avtVector ConvertToCylindrical(const avtVector& pt) const = 0;
@@ -123,6 +127,12 @@ class IVP_API avtIVPField
     virtual void         GetExtents( double  extents[6] ) const = 0;
     virtual bool         HasGhostZones() const = 0;
     virtual bool         VelocityIsInstantaneous(void) { return true; };
+
+    virtual void         SetOrder( unsigned int val ) { order = val; };
+    virtual unsigned int GetOrder() { return order; };
+
+ protected:
+    unsigned int order;
 };
 
 #endif

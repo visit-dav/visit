@@ -97,7 +97,13 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
     ~avtIVPVTKTimeVaryingField();
 
     // avtIVPField interface
-    virtual avtVector operator()(const double& t, const avtVector &pt) const;
+    virtual avtVector operator()(const double& t,
+                                 const avtVector &pt) const;
+
+    virtual avtVector operator()(const double& t,
+                                 const avtVector &pt,
+                                 const avtVector &vel) const
+    { return avtVector(0,0,0); };
 
     virtual avtVector ConvertToCartesian(const avtVector& pt) const;
     virtual avtVector ConvertToCylindrical(const avtVector& pt) const;
@@ -145,5 +151,3 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
 };
 
 #endif
-
-
