@@ -55,7 +55,8 @@
 //
 // ****************************************************************************
 
-avtIVPSolver::avtIVPSolver() : convertToCartesian(0), convertToCylindrical(0)
+avtIVPSolver::avtIVPSolver() : convertToCartesian(0), convertToCylindrical(0),
+                               order(1)
 {
 }
 

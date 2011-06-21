@@ -102,8 +102,6 @@ class IVP_API avtIVPEuler: public avtIVPSolver
     double t, d;
     avtVector yCur;
     avtVector vCur;
-
-    unsigned int order;
 };
 
 #endif

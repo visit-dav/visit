@@ -454,6 +454,8 @@ class IVP_API avtIVPSolver
     bool convertToCartesian;
     bool convertToCylindrical;
 
+    unsigned int order;
+
 protected:
     virtual void    AcceptStateVisitor(avtIVPStateHelper& sv) = 0;
 };
