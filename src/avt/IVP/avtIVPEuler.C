@@ -47,13 +47,9 @@
 #include <limits>
 #include <cmath>
 
+#include <avtIVPFlashField.h>
+
 static const double epsilon = std::numeric_limits<double>::epsilon();
-
-// constants for the A-B scheme.
-static const double bashforth[] = { 1901.0, -2774.0, 2616.0, -1274.0, 251.0 };
-static const double divisor = 1.0 / 720.0;
-
-#define NSTEPS sizeof(bashforth)/sizeof(bashforth[0])
 
 // helper function
 // returns a with the same sign as b
@@ -84,7 +80,7 @@ static inline double sign( const double& a, const double& b )
 //
 // ****************************************************************************
 
-avtIVPEuler::avtIVPEuler()
+avtIVPEuler::avtIVPEuler() : vCur(0,0,0)
 {
     // set (somewhat) reasonable defaults
     tol = 1e-8;
@@ -92,8 +88,6 @@ avtIVPEuler::avtIVPEuler()
     t = 0.0;
     d = 0.0;
     numStep = 0;
-    degenerate_iterations = 0;
-    stiffness_eps = tol / 1000.0;
 }
 
 // ****************************************************************************
@@ -270,7 +264,6 @@ void
 avtIVPEuler::SetTolerances(const double& relt, const double& abst)
 {
     tol = abst;
-    stiffness_eps = tol / 1000.0;
 }
 
 // ****************************************************************************
@@ -316,7 +309,6 @@ avtIVPEuler::Reset(const double& t_start, const avtVector &y_start)
     d = 0.0;
     numStep = 0;
 
-    degenerate_iterations = 0;
     yCur = y_start;
     h = h_max;
 }
@@ -377,12 +369,23 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
         return avtIVPSolver::STEPSIZE_UNDERFLOW;
 
-    avtIVPSolver::Result res= avtIVPSolver::OK;
-    avtVector yNew = yCur;
+    avtIVPSolver::Result res = avtIVPSolver::OK;
+    avtVector yNew, vNew;
 
-    avtVector f = (*field)(t,yCur);
+    if( field->GetOrder() == 1 )
+    {
+      vCur = (*field)(t,yCur);
 
-    yNew = yCur + f * h;
+      yNew = yCur + vCur * h;     // New position
+    }
+    else if( field->GetOrder() == 2 )
+    {
+      avtVector aCur = (*field)(t,yCur,vCur);
+
+      vNew = vCur + aCur * h;  // New velocity
+
+      yNew = yCur + vNew * h;  // New position
+    }
 
     if( res == avtIVPSolver::OK )
     {
@@ -404,6 +407,7 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
         numStep++;
 
         yCur = yNew;
+        vCur = vNew;
         t = t+h;
 
         if( last )
@@ -438,13 +442,9 @@ avtIVPEuler::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
     aiss.Accept(numStep)
         .Accept(tol)
-        .Accept(degenerate_iterations)
-        .Accept(stiffness_eps)
         .Accept(h)
         .Accept(h_max)
         .Accept(t)
         .Accept(d)
-        .Accept(yCur)
-        .Accept(ys[0])
-        .Accept(ys[1]);
+        .Accept(yCur);
 }

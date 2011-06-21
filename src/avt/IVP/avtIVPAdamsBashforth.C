@@ -560,7 +560,5 @@ avtIVPAdamsBashforth::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(history[1])
         .Accept(history[2])
         .Accept(history[3])
-        .Accept(history[4])
-        .Accept(ys[0])
-        .Accept(ys[1]);
+        .Accept(history[4]);
 }

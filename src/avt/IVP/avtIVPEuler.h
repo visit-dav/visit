@@ -100,10 +100,10 @@ class IVP_API avtIVPEuler: public avtIVPSolver
     double tol;
     double h, h_max;
     double t, d;
-    int degenerate_iterations;
-    double stiffness_eps;
     avtVector yCur;
-    avtVector ys[2];
+    avtVector vCur;
+
+    unsigned int order;
 };
 
 #endif

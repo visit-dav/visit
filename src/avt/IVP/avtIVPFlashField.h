@@ -62,8 +62,8 @@
 //    streamline integration. Uses vtkInterpolatedVelocityField on top of 
 //    the supplied vtkDataSet. 
 //
-//  Programmer:  Allen Sanderson
-//  Creation:    20 Nov 2009
+//  Creationist: Allen Sanderson
+//  Creation:   20 June 2011
 //
 // ****************************************************************************
 
@@ -76,7 +76,9 @@ class IVP_API avtIVPFlashField: public avtIVPVTKField
 
   ~avtIVPFlashField();
 
-  avtVector operator()( const double &t, const avtVector &v ) const;
+  avtVector operator()( const double &t,
+                        const avtVector &p,
+                        const avtVector &v ) const;
 
   avtVector ConvertToCartesian(const avtVector& pt) const;
   avtVector ConvertToCylindrical(const avtVector& pt) const;

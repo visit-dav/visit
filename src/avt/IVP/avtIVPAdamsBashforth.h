@@ -137,7 +137,6 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     avtVector history[ADAMS_BASHFORTH_NSTEPS];
     avtVector dhistory[ADAMS_BASHFORTH_NSTEPS];
     avtVector yCur;
-    avtVector ys[2];
 };
 
 #endif

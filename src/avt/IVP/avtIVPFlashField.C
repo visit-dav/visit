@@ -51,8 +51,8 @@
 // ****************************************************************************
 //  Method: avtIVPFlashField constructor
 //
-//  Creationist: Joshua Breslau
-//  Creation:   20 November 2009
+//  Creationist: Allen Sanderson
+//  Creation:   20 June 2011
 //
 // ****************************************************************************
 
@@ -60,8 +60,10 @@ avtIVPFlashField::avtIVPFlashField( vtkDataSet* dataset,
                                     avtCellLocator* locator,
                                     double fact) : 
   avtIVPVTKField( dataset, locator ),
-  B_vtkDataArray(0), E_vtkDataArray(0), factor(fact)
+  B_vtkDataArray(0), E_vtkDataArray(0), factor(1.0/fact)
 {
+  order = 2;
+
   if( velCellBased )
   {
     B_vtkDataArray = dataset->GetCellData()->GetArray("B");
@@ -75,12 +77,14 @@ avtIVPFlashField::avtIVPFlashField( vtkDataSet* dataset,
 
   if( B_vtkDataArray == 0 )
   {
-    EXCEPTION1( ImproperUseException, "avtIVPFlashField: Can't locate 'B' vectors to interpolate." );
+    EXCEPTION1( ImproperUseException,
+                "avtIVPFlashField: Can't locate 'B' vectors to interpolate." );
   }
 
   if( E_vtkDataArray == 0 )
   {
-    EXCEPTION1( ImproperUseException, "avtIVPFlashField: Can't locate 'E' vectors to interpolate." );
+    EXCEPTION1( ImproperUseException,
+                "avtIVPFlashField: Can't locate 'E' vectors to interpolate." );
   }
 }
 
@@ -88,8 +92,8 @@ avtIVPFlashField::avtIVPFlashField( vtkDataSet* dataset,
 // ****************************************************************************
 //  Method: avtIVPFlashField destructor
 //
-//  Creationist: Joshua Breslau
-//  Creation:   20 November 2009
+//  Creationist: Allen Sanderson
+//  Creation:   20 June 2011
 //
 // ****************************************************************************
 
@@ -103,15 +107,17 @@ avtIVPFlashField::~avtIVPFlashField()
 //
 //  Evaluates the velocity via the Lorentz force.
 //
-//  Programmer: Allen Sanderson
-//  Creation:   June 24, 2011
+//  Creationist: Allen Sanderson
+//  Creation:   20 June 2011
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 avtVector
-avtIVPFlashField::operator()( const double &t, const avtVector &p ) const
+avtIVPFlashField::operator()( const double &t,
+                              const avtVector &p,
+                              const avtVector &v ) const
 {
   if( !FindCell( t, p ) )
     throw Undefined();
@@ -119,7 +125,7 @@ avtIVPFlashField::operator()( const double &t, const avtVector &p ) const
   avtVector B = FindValue(B_vtkDataArray);
   avtVector E = FindValue(E_vtkDataArray);
 
-  avtVector vec = factor * (E + Cross(p, B) );
+  avtVector vec = factor * (E + Cross(v, B) );
 
   return vec;
 }
@@ -131,8 +137,8 @@ avtIVPFlashField::operator()( const double &t, const avtVector &p ) const
 //  Purpose: Converts the coordinates from local cylindrical to
 //      cartesian coordinates
 //
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
+//  Creationist: Allen Sanderson
+//  Creation:   20 June 2011
 //
 // ****************************************************************************
 
@@ -148,8 +154,8 @@ avtIVPFlashField::ConvertToCartesian(const avtVector& pt) const
 //  Purpose: Converts the coordinates from local cylindrical to
 //      cartesian coordinates
 //
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
+//  Creationist: Allen Sanderson
+//  Creation:   20 June 2011
 //
 // ****************************************************************************
 
