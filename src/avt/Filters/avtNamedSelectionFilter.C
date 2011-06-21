@@ -95,6 +95,10 @@ avtNamedSelectionFilter::~avtNamedSelectionFilter()
 //  Programmer: Hank Childs
 //  Creation:   February 2, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Mon Jun 20 17:06:33 PST 2011
+//    Delete the copied dataset so we don't leak memory.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -155,6 +159,7 @@ avtNamedSelectionFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     rv->Update();
     ManageMemory(rv);
     thres->Delete();
+    ds->Delete();
  
     return rv;
 }
