@@ -63,12 +63,13 @@
 // ****************************************************************************
 
 avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset, 
-                                    avtCellLocator* locator ) : 
+                                    avtCellLocator* locator,
+                                    double fact) : 
   avtIVPVTKField( dataset, locator ),
   elements(0), neighbors(0),
   f0(0), psi0(0), fnr(0), fni(0), psinr(0), psini(0),
   I0(0), f(0), psi(0), I(0),
-  eqsubtract(0), linflag(0), tmode(0), bzero(0), rzero(0), F0(0),
+  eqsubtract(0), linflag(0), tmode(0), bzero(0), rzero(0), F0(0), factor(fact),
   nelms(0), element_dimension(0), nplanes(0), reparameterize(false)
 {
   // Pick off all of the data stored with the vtk field.
@@ -156,10 +157,10 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
     // Vector values from the field.
     if( linflag )
     {
-      psinr = SetDataPointer( ds, fltVar, "hidden/psi",             nelms, scalar_size );
-      psini = SetDataPointer( ds, fltVar, "hidden/psi_i",           nelms, scalar_size );
-      fnr   = SetDataPointer( ds, fltVar, "hidden/f",               nelms, scalar_size );
-      fni   = SetDataPointer( ds, fltVar, "hidden/f_i",             nelms, scalar_size );
+      psinr = SetDataPointer( ds, fltVar, "hidden/psi",             nelms, scalar_size, factor );
+      psini = SetDataPointer( ds, fltVar, "hidden/psi_i",           nelms, scalar_size, factor );
+      fnr   = SetDataPointer( ds, fltVar, "hidden/f",               nelms, scalar_size, factor );
+      fni   = SetDataPointer( ds, fltVar, "hidden/f_i",             nelms, scalar_size, factor );
     }
   }
   else //if( element_size == ELEMENT_SIZE_3D )
@@ -264,7 +265,8 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
                                         const type var,
                                         const char* varname,
                                         const int ntuples,
-                                        const int ncomponents )
+                                        const int ncomponents,
+                                        double factor )
 {
   vtkDataArray *array;
   int XX;
@@ -330,7 +332,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
     for( int i=0; i<ntuples; ++i )
       for( int j=0; j<ncomponents; ++j )
-        newptr[i*ncomponents+j] = ptr[i*XX*ncomponents+j];
+        newptr[i*ncomponents+j] = factor * ptr[i*XX*ncomponents+j];
 
     return newptr;
   }
@@ -340,7 +342,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
     for( int i=0; i<ntuples; ++i )
       for( int j=0; j<ncomponents; ++j )
-        newptr[i*ncomponents+j] = ptr[i*XX*ncomponents+j];
+        newptr[i*ncomponents+j] = factor * ptr[i*XX*ncomponents+j];
 
     return newptr;
   }
@@ -350,7 +352,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
     for( int i=0; i<ntuples; ++i )
       for( int j=0; j<ncomponents; ++j )
-        newptr[i*ncomponents+j] = ptr[i*XX*ncomponents+j];
+        newptr[i*ncomponents+j] = factor * ptr[i*XX*ncomponents+j];
 
     return newptr;
   }

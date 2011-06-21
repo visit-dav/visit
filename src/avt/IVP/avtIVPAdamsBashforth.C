@@ -53,8 +53,6 @@ static const double epsilon = std::numeric_limits<double>::epsilon();
 static const double bashforth[] = { 1901.0, -2774.0, 2616.0, -1274.0, 251.0 };
 static const double divisor = 1.0 / 720.0;
 
-#define NSTEPS sizeof(bashforth)/sizeof(bashforth[0])
-
 // helper function
 // returns a with the same sign as b
 static inline double sign( const double& a, const double& b )
@@ -92,7 +90,6 @@ avtIVPAdamsBashforth::avtIVPAdamsBashforth()
     t = 0.0;
     d = 0.0;
     numStep = 0;
-    initialized = 0;
     degenerate_iterations = 0;
     stiffness_eps = tol / 1000.0;
 }
@@ -320,13 +317,6 @@ avtIVPAdamsBashforth::Reset(const double& t_start, const avtVector &y_start)
     degenerate_iterations = 0;
     yCur = y_start;
     h = h_max;
-    initialized = 0;
-
-    history[0] = yCur;
-    history[1] = yCur;
-    history[2] = yCur;
-    history[3] = yCur;
-    history[4] = yCur;
 }
 
 
@@ -352,8 +342,8 @@ avtIVPAdamsBashforth::Reset(const double& t_start, const avtVector &y_start)
 void
 avtIVPAdamsBashforth::OnExitDomain()
 {
-    initialized = 0;
 }
+
 
 // ****************************************************************************
 //  Method: avtIVPAdamsBashforth::RK4Step
@@ -414,7 +404,7 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
     // Calculate the predictor using the Adams-Bashforth formula
     yNew = yCur;
 
-    for (size_t i = 0; i < NSTEPS; i++)
+    for (size_t i = 0; i < ADAMS_BASHFORTH_NSTEPS; i++)
         yNew += h*divisor*bashforth[i] * history[i];
 
     return avtIVPSolver::OK;
@@ -487,15 +477,13 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
     avtVector yNew = yCur;
 
     // Use a fourth-order Runga Kutta integration to seed the Adams-Bashforth.
-    if( initialized < NSTEPS )
+    if( numStep < ADAMS_BASHFORTH_NSTEPS )
     {
         // Save the first vector values in the history. 
-        if( initialized == 0 )
+        if( numStep == 0 )
             history[0] = (*field)(t,yCur);
-
+         
         res = RK4Step( field, yNew );
-        
-        ++initialized;
     }
     else
         res = ABStep( field, yNew );
@@ -573,7 +561,6 @@ avtIVPAdamsBashforth::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(history[2])
         .Accept(history[3])
         .Accept(history[4])
-        .Accept(initialized)
         .Accept(ys[0])
         .Accept(ys[1]);
 }

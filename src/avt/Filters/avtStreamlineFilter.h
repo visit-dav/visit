@@ -344,8 +344,4 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
                                       { return RestoreSequenceAssembleUniformly; };
 
 };
-
-
 #endif
-
-

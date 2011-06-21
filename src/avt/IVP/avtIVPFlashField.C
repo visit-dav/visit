@@ -37,67 +37,124 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtIVPSolver.C                               //
+//                             avtIVPFlashField.C                            //
 // ************************************************************************* //
 
-#include <avtIVPSolver.h>
-#include <avtIVPStateHelper.h>
+#include "avtIVPFlashField.h"
+
+#include <DebugStream.h>
+
+#include <vtkCellData.h>
+#include <vtkIntArray.h>
+#include <vtkFloatArray.h>
+
+// ****************************************************************************
+//  Method: avtIVPFlashField constructor
+//
+//  Creationist: Joshua Breslau
+//  Creation:   20 November 2009
+//
+// ****************************************************************************
+
+avtIVPFlashField::avtIVPFlashField( vtkDataSet* dataset, 
+                                    avtCellLocator* locator,
+                                    double fact) : 
+  avtIVPVTKField( dataset, locator ),
+  B_vtkDataArray(0), E_vtkDataArray(0), factor(fact)
+{
+  if( velCellBased )
+  {
+    B_vtkDataArray = dataset->GetCellData()->GetArray("B");
+    E_vtkDataArray = dataset->GetCellData()->GetArray("E");
+  }
+  else
+  {
+    B_vtkDataArray = dataset->GetPointData()->GetArray("B");
+    E_vtkDataArray = dataset->GetPointData()->GetArray("E");
+  }
+
+  if( B_vtkDataArray == 0 )
+  {
+    EXCEPTION1( ImproperUseException, "avtIVPFlashField: Can't locate 'B' vectors to interpolate." );
+  }
+
+  if( E_vtkDataArray == 0 )
+  {
+    EXCEPTION1( ImproperUseException, "avtIVPFlashField: Can't locate 'E' vectors to interpolate." );
+  }
+}
 
 
 // ****************************************************************************
-//  Method: avtIVPSolver::GetState
+//  Method: avtIVPFlashField destructor
 //
-//  Purpose:
-//      Gets the state of the IVP solver.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
+//  Creationist: Joshua Breslau
+//  Creation:   20 November 2009
 //
 // ****************************************************************************
 
-avtIVPSolver::avtIVPSolver() : convertToCartesian(0), convertToCylindrical(0)
+avtIVPFlashField::~avtIVPFlashField()
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPSolver::GetState
+//  Method: avtIVPFlashField::operator
 //
-//  Purpose:
-//      Gets the state of the IVP solver.
+//  Evaluates the velocity via the Lorentz force.
 //
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
+//  Programmer: Allen Sanderson
+//  Creation:   June 24, 2011
+//
+//  Modifications:
 //
 // ****************************************************************************
 
-void
-avtIVPSolver::GetState( avtIVPState& state )
+avtVector
+avtIVPFlashField::operator()( const double &t, const avtVector &p ) const
 {
-    avtIVPStateHelper aiss(avtIVPStateHelper::GET, 0);
-    this->AcceptStateVisitor(aiss);
+  if( !FindCell( t, p ) )
+    throw Undefined();
 
-    state.allocate(aiss.size());
-    
-    aiss.Reset(avtIVPStateHelper::GET, state._data);
-    this->AcceptStateVisitor(aiss);
+  avtVector B = FindValue(B_vtkDataArray);
+  avtVector E = FindValue(E_vtkDataArray);
+
+  avtVector vec = factor * (E + Cross(p, B) );
+
+  return vec;
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPSolver::PutState
+//  Method: avtIVPFlashField::ConvertToCartesian
 //
-//  Purpose:
-//      Sets the state of the IVP solver.
+//  Purpose: Converts the coordinates from local cylindrical to
+//      cartesian coordinates
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
 // ****************************************************************************
 
-void 
-avtIVPSolver::PutState(const avtIVPState& state)
+avtVector 
+avtIVPFlashField::ConvertToCartesian(const avtVector& pt) const
 {
-    avtIVPStateHelper aiss(avtIVPStateHelper::PUT, state._data);
-    this->AcceptStateVisitor(aiss);
+  return avtVector(pt[0]*cos(pt[1]), pt[0]*sin(pt[1]), pt[2] );
+}
+
+// ****************************************************************************
+//  Method: avtIVPFlashField::ConvertToCylindrical
+//
+//  Purpose: Converts the coordinates from local cylindrical to
+//      cartesian coordinates
+//
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
+//
+// ****************************************************************************
+
+avtVector 
+avtIVPFlashField::ConvertToCylindrical(const avtVector& pt) const
+{
+  return pt;
 }

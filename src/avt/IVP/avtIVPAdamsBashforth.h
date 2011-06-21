@@ -46,6 +46,8 @@
 #include <avtIVPSolver.h>
 #include <ivp_exports.h>
 
+#define ADAMS_BASHFORTH_NSTEPS 5
+
 // ****************************************************************************
 //  Class: avtIVPAdamsBashforth
 //
@@ -132,10 +134,10 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     double t, d;
     int degenerate_iterations;
     double stiffness_eps;
-    avtVector history[5];
+    avtVector history[ADAMS_BASHFORTH_NSTEPS];
+    avtVector dhistory[ADAMS_BASHFORTH_NSTEPS];
     avtVector yCur;
     avtVector ys[2];
-    int initialized;
 };
 
 #endif

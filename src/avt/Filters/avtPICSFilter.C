@@ -85,10 +85,11 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPVTKTimeVaryingField.h>
 #include <avtIVPDopri5.h>
 #include <avtIVPAdamsBashforth.h>
+#include <avtIVPEuler.h>
 #include <avtIVPM3DC1Integrator.h>
 #include <avtIVPM3DC1Field.h>
-#include <avtIVPNIMRODIntegrator.h>
 #include <avtIVPNIMRODField.h>
+#include <avtIVPFlashField.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
@@ -145,6 +146,9 @@ avtPICSFilter::avtPICSFilter()
     seedTime0 = 0.0;
     icAlgo = NULL;
     emptyDataset = false;
+
+    fieldType = STREAMLINE_FIELD_DEFAULT;
+    fieldConstant = 1.0;
 
     maxStepLength = 0.;
     integrationDirection = VTK_INTEGRATE_FORWARD;
@@ -549,6 +553,52 @@ avtPICSFilter::DomainLoaded(DomainType &domain) const
 #endif
     
     return true;
+}
+
+
+// ****************************************************************************
+// Method: avtPICSFilter::SetFieldType
+//
+// Purpose: 
+//   Sets value for specialized fields.
+//
+// Arguments:
+//   field : The new field type.
+//
+// Programmer: Christoph Garth
+// Creation:   Mon Feb 25 16:14:44 PST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtPICSFilter::SetFieldType(int field)
+{
+    fieldType = field;
+}
+
+
+// ****************************************************************************
+// Method: avtPICSFilter::SetFieldConstant
+//
+// Purpose: 
+//   Sets a constant value for specialized fields.
+//
+// Arguments:
+//   val : The value of the constant.
+//
+// Programmer: Christoph Garth
+// Creation:   Mon Feb 25 16:14:44 PST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtPICSFilter::SetFieldConstant(double val)
+{
+    fieldConstant = val;
 }
 
 
@@ -1468,11 +1518,21 @@ avtPICSFilter::GetFieldForDomain( const DomainType &domain, vtkDataSet *ds )
     }
     else
     {
-      if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_2D_INTEGRATOR ||
-          integrationType == STREAMLINE_INTEGRATE_M3D_C1_3D_INTEGRATOR)
-        return new avtIVPM3DC1Field(ds, *locator);
-       else if (integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR)
+      if( fieldType == STREAMLINE_FIELD_M3D_C1_2D )
+        return new avtIVPM3DC1Field(ds, *locator, fieldConstant );
+
+      else if( fieldType == STREAMLINE_FIELD_M3D_C1_3D )
+      {
+        avtIVPM3DC1Field *field = new avtIVPM3DC1Field(ds, *locator, 1.0);
+        field->reparameterize = true;
+        return field;
+      }
+      else if( fieldType == STREAMLINE_FIELD_NIMROD )
          return new avtIVPNIMRODField(ds, *locator);
+
+      else if( fieldType == STREAMLINE_FIELD_FLASH )
+        return new avtIVPFlashField(ds, *locator, fieldConstant );
+
       else
         return new avtIVPVTKField(ds, *locator);
     }
@@ -2057,6 +2117,11 @@ avtPICSFilter::PreExecute(void)
         absTolToUse = l*absTol;
     }
     // Create the solver. --Get from user prefs.
+    if (integrationType == STREAMLINE_INTEGRATE_EULER)
+    {
+        solver = new avtIVPEuler;
+        solver->SetMaximumStepSize(maxStepLength);
+    }
     if (integrationType == STREAMLINE_INTEGRATE_DORMAND_PRINCE)
     {
         solver = new avtIVPDopri5;
@@ -2069,26 +2134,15 @@ avtPICSFilter::PreExecute(void)
         solver->SetMaximumStepSize(maxStepLength);
         solver->SetTolerances(relTol, absTolToUse);
     }
-    else if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_2D_INTEGRATOR)
+    else if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_2D)
     {
         solver = new avtIVPM3DC1Integrator;
         solver->SetMaximumStepSize(maxStepLength);
         solver->SetTolerances(relTol, absTolToUse);
     }
-    else if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_3D_INTEGRATOR)
-    {
-        solver = new avtIVPAdamsBashforth;
-        solver->SetMaximumStepSize(maxStepLength);
-        solver->SetTolerances(relTol, absTolToUse);
-    }
-    else if (integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR)
-    {
-        solver = new avtIVPAdamsBashforth;
-        solver->SetMaximumStepSize(maxStepLength);
-        solver->SetTolerances(relTol, absTolToUse);
-    }
 
-    solver->convertToCartesian = convertToCartesian;
+    if( solver )
+      solver->convertToCartesian = convertToCartesian;
 }
 
 
@@ -2324,15 +2378,14 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 
             avtVector seedPt;
 
-            if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_2D_INTEGRATOR )
+            if( fieldType == STREAMLINE_FIELD_M3D_C1_2D )
             {
               // Convert the seed to cylindrical coordiantes.
               seedPt.x = sqrt(pts[i].x*pts[i].x+pts[i].y*pts[i].y);
               seedPt.y = 0; //atan2( pts[i].y, pts[i].x );
               seedPt.z = pts[i].z;
             }
-            else if (integrationType ==
-                     STREAMLINE_INTEGRATE_M3D_C1_3D_INTEGRATOR)
+            else if( fieldType == STREAMLINE_FIELD_M3D_C1_3D )
             {
               // Convert the seed to cylindrical coordinates
               seedPt.x = sqrt(pts[i].x*pts[i].x+pts[i].y*pts[i].y);
@@ -2435,7 +2488,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
     avtDataRequest_p out_dr = new avtDataRequest(in_contract->GetDataRequest());
     out_dr->SetVelocityFieldMustBeContinuous(true);
 
-    if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_2D_INTEGRATOR )
+    if ( fieldType == STREAMLINE_FIELD_M3D_C1_2D )
     {
         // Add in the other fields that the M3D 2D Interpolation needs
         // for doing their Newton's Metod.
@@ -2464,7 +2517,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         out_dr->AddSecondaryVariable("hidden/psi");    // /time_XXX/fields/psi
         out_dr->AddSecondaryVariable("hidden/psi_i");  // /time_XXX/fields/psi_i
     }
-    else if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_3D_INTEGRATOR )
+    else if ( fieldType == STREAMLINE_FIELD_M3D_C1_3D )
     {
         // Add in the other fields that the M3D 3D Interpolation needs.
 
@@ -2488,33 +2541,26 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         out_dr->AddSecondaryVariable("hidden/psi");  // /time_XXX/fields/psi
         out_dr->AddSecondaryVariable("hidden/I");    // /time_XXX/fields/I
     }
-    else if ( integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR )
+    else if ( fieldType == STREAMLINE_FIELD_NIMROD )
     {
-        // Add in the other fields that the M3D Interpolation needs
-        // for doing their Newton's Metod.
+        // Add in the other fields that the NIMROD Interpolation needs
 
         // Assume the user has selected B as the primary variable.
         // Which is ignored.
 
-        // Single variables stored as attributes on the header
-        out_dr->AddSecondaryVariable("hidden/header/nplanes"); // /nplanes
-        out_dr->AddSecondaryVariable("hidden/header/linear");  // /linear
-        out_dr->AddSecondaryVariable("hidden/header/ntor");    // /ntor
-        
-        out_dr->AddSecondaryVariable("hidden/header/bzero");    // /bzero
-        out_dr->AddSecondaryVariable("hidden/header/rzero");    // /rzero
+        // Fourier series grid and data stored on the original mesh
+//        out_dr->AddSecondaryVariable("hidden/grid_fourier_series");  // grid
+//        out_dr->AddSecondaryVariable("hidden/data_fourier_series");  // data
+    }
+    else if ( fieldType == STREAMLINE_FIELD_FLASH )
+    {
+        // Add in the other fields that the Flash Interpolation needs
 
-        // The mesh - N elements x 7
-        out_dr->AddSecondaryVariable("hidden/elements"); // /time_000/mesh/elements
+        // Assume the user has selected B as the primary variable.
+        // Which is ignored.
 
-        // Variables on the mesh - N elements x 20
-        out_dr->AddSecondaryVariable("hidden/equilibrium/f");  // /equilibrium/fields/f
-        out_dr->AddSecondaryVariable("hidden/equilibrium/psi");// /equilibrium/fields/psi
-
-        out_dr->AddSecondaryVariable("hidden/f");      // /time_XXX/fields/f
-        out_dr->AddSecondaryVariable("hidden/f_i");    // /time_XXX/fields/f_i
-        out_dr->AddSecondaryVariable("hidden/psi");    // /time_XXX/fields/psi
-        out_dr->AddSecondaryVariable("hidden/psi_i");  // /time_XXX/fields/psi_i
+        out_dr->AddSecondaryVariable("B");  // Magnetic Field
+        out_dr->AddSecondaryVariable("E");  // Eletric Field
     }
 
     if (doPathlines)

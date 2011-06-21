@@ -60,16 +60,23 @@
 class DomainType;
 class avtICAlgorithm;
 
+#define STREAMLINE_FIELD_DEFAULT 0
+#define STREAMLINE_FIELD_M3D_C1_2D 1
+#define STREAMLINE_FIELD_M3D_C1_3D 2
+#define STREAMLINE_FIELD_NIMROD 3
+#define STREAMLINE_FIELD_FLASH 4
+
+#define STREAMLINE_INTEGRATE_EULER 0
+#define STREAMLINE_INTEGRATE_DORMAND_PRINCE 1
+#define STREAMLINE_INTEGRATE_ADAMS_BASHFORTH 2
+//#define STREAMLINE_INTEGRATE_UNUSED 3
+//#define STREAMLINE_INTEGRATE_UNUSED 4
+#define STREAMLINE_INTEGRATE_M3D_C1_2D 5
+
 #define STREAMLINE_TERMINATE_DISTANCE 0
 #define STREAMLINE_TERMINATE_TIME 1
 #define STREAMLINE_TERMINATE_STEPS 2
 #define STREAMLINE_TERMINATE_INTERSECTIONS 3
-
-#define STREAMLINE_INTEGRATE_DORMAND_PRINCE 0
-#define STREAMLINE_INTEGRATE_ADAMS_BASHFORTH 1
-#define STREAMLINE_INTEGRATE_M3D_C1_2D_INTEGRATOR 2
-#define STREAMLINE_INTEGRATE_M3D_C1_3D_INTEGRATOR 3
-#define STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR 4
 
 #define STREAMLINE_SERIAL                0
 #define STREAMLINE_PARALLEL_OVER_DOMAINS 1
@@ -163,25 +170,30 @@ class AVTFILTERS_API avtPICSFilter :
     virtual CommunicationPattern    GetCommunicationPattern() = 0;
 
     // Methods to set the filter's attributes.
-    void                      SetMaxStepLength(double len);
-    void                      SetPathlines(bool pathlines, bool overrideTime, double time0, int _pathlineCMFE);
-    void                      SetIntegrationType(int algo);
-    void                      SetStreamlineAlgorithm(int algo, int maxCnt,
-                                                     int domainCache,
-                                                     int workGrpSz);
-    void                      SetTolerances(double reltol, double abstol, bool isFraction);
+    void SetFieldType(int val);
+    void SetFieldConstant(double val);
+    void SetMaxStepLength(double len);
+    void SetPathlines(bool pathlines, bool overrideTime,
+                      double time0, int _pathlineCMFE);
+    void SetIntegrationType(int algo);
+    void SetStreamlineAlgorithm(int algo, int maxCnt,
+                                int domainCache,
+                                int workGrpSz);
+    void SetTolerances(double reltol, double abstol, bool isFraction);
 
-    void                      SetIntegrationDirection(int dir);
+    void SetIntegrationDirection(int dir);
 
-    void                      InitializeLocators(void);
-    void                      UpdateProgress(int amt, int total)
-                                 { avtFilter::UpdateProgress(amt, total); };
+    void InitializeLocators(void);
+    void UpdateProgress(int amt, int total)
+    {
+      avtFilter::UpdateProgress(amt, total);
+    };
 
-    virtual void              ReleaseData(void);
-    virtual void              UpdateDataObjectInfo(void);
+    virtual void ReleaseData(void);
+    virtual void UpdateDataObjectInfo(void);
 
-    void                      ConvertToCartesian(bool val) { convertToCartesian = val; };
-    bool                      PostStepCallback();
+    void         ConvertToCartesian(bool val) { convertToCartesian = val; };
+    bool         PostStepCallback();
 
 
   protected:
@@ -194,6 +206,9 @@ class AVTFILTERS_API avtPICSFilter :
     int    integrationDirection;
     int    dataSpatialDimension;
     bool   convertToCartesian;
+
+    int    fieldType;
+    double fieldConstant;
 
     avtICAlgorithm *icAlgo;
 
