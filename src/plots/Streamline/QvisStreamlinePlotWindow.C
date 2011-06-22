@@ -557,6 +557,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationLayout->addWidget( new QLabel(tr("Integrator"), integrationGroup), 0,0);
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Forward Euler (Single-step)"));
+    integrationType->addItem(tr("Leapfrog (Single-step)"));
     integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
     integrationType->addItem(tr("Unused"));
@@ -2670,6 +2671,7 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
     switch( streamAtts->GetIntegrationType() )
     {
     case StreamlineAttributes::Euler:
+    case StreamlineAttributes::Leapfrog:
         maxStepLength->show();
         maxStepLengthLabel->show();
       break;
@@ -3624,7 +3626,7 @@ QvisStreamlinePlotWindow::fieldConstantProccessText()
 void
 QvisStreamlinePlotWindow::integrationTypeChanged(int val)
 {
-    if( val == 3 || val == 4)
+    if(val == 4) // Unused 
         Apply();
     
     else if(val != streamAtts->GetIntegrationType())

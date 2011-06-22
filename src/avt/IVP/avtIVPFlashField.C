@@ -145,7 +145,7 @@ avtIVPFlashField::operator()( const double &t,
 avtVector 
 avtIVPFlashField::ConvertToCartesian(const avtVector& pt) const
 {
-  return avtVector(pt[0]*cos(pt[1]), pt[0]*sin(pt[1]), pt[2] );
+  return pt;
 }
 
 // ****************************************************************************
@@ -162,5 +162,5 @@ avtIVPFlashField::ConvertToCartesian(const avtVector& pt) const
 avtVector 
 avtIVPFlashField::ConvertToCylindrical(const avtVector& pt) const
 {
-  return pt;
+  return avtVector(sqrt(pt[0]*pt[0]+pt[1]*pt[1]), atan2(pt[1], pt[0]), pt[2] );
 }

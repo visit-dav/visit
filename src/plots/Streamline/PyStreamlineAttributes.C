@@ -419,12 +419,16 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
 
     SNPRINTF(tmpStr, 1000, "%sfieldConstant = %g\n", prefix, atts->GetFieldConstant());
     str += tmpStr;
-    const char *integrationType_names = "Euler, DormandPrince, AdamsBashforth, Reserved_3, Reserved_4, "
+    const char *integrationType_names = "Euler, Leapfrog, DormandPrince, AdamsBashforth, Reserved_4, "
         "M3DC12DIntegrator";
     switch (atts->GetIntegrationType())
     {
       case StreamlineAttributes::Euler:
           SNPRINTF(tmpStr, 1000, "%sintegrationType = %sEuler  # %s\n", prefix, prefix, integrationType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::Leapfrog:
+          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sLeapfrog  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case StreamlineAttributes::DormandPrince:
@@ -433,10 +437,6 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
       case StreamlineAttributes::AdamsBashforth:
           SNPRINTF(tmpStr, 1000, "%sintegrationType = %sAdamsBashforth  # %s\n", prefix, prefix, integrationType_names);
-          str += tmpStr;
-          break;
-      case StreamlineAttributes::Reserved_3:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sReserved_3  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case StreamlineAttributes::Reserved_4:
@@ -2103,7 +2103,7 @@ StreamlineAttributes_SetIntegrationType(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid integrationType value was given. "
                         "Valid values are in the range of [0,5]. "
                         "You can also use the following names: "
-                        "Euler, DormandPrince, AdamsBashforth, Reserved_3, Reserved_4, "
+                        "Euler, Leapfrog, DormandPrince, AdamsBashforth, Reserved_4, "
                         "M3DC12DIntegrator.");
         return NULL;
     }
@@ -4221,12 +4221,12 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetIntegrationType(self, NULL);
     if(strcmp(name, "Euler") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::Euler));
+    if(strcmp(name, "Leapfrog") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Leapfrog));
     if(strcmp(name, "DormandPrince") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::DormandPrince));
     if(strcmp(name, "AdamsBashforth") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::AdamsBashforth));
-    if(strcmp(name, "Reserved_3") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::Reserved_3));
     if(strcmp(name, "Reserved_4") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::Reserved_4));
     if(strcmp(name, "M3DC12DIntegrator") == 0)

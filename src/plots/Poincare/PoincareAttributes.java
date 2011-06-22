@@ -73,9 +73,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int FIELDTYPE_FLASHFIELD = 4;
 
     public final static int INTEGRATIONTYPE_EULER = 0;
-    public final static int INTEGRATIONTYPE_DORMANDPRINCE = 1;
-    public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 2;
-    public final static int INTEGRATIONTYPE_RESERVED_3 = 3;
+    public final static int INTEGRATIONTYPE_LEAPFROG = 1;
+    public final static int INTEGRATIONTYPE_DORMANDPRINCE = 2;
+    public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 3;
     public final static int INTEGRATIONTYPE_RESERVED_4 = 4;
     public final static int INTEGRATIONTYPE_M3DC12DINTEGRATOR = 5;
 
@@ -1303,12 +1303,12 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + indent + "integrationType = ";
         if(integrationType == INTEGRATIONTYPE_EULER)
             str = str + "INTEGRATIONTYPE_EULER";
+        if(integrationType == INTEGRATIONTYPE_LEAPFROG)
+            str = str + "INTEGRATIONTYPE_LEAPFROG";
         if(integrationType == INTEGRATIONTYPE_DORMANDPRINCE)
             str = str + "INTEGRATIONTYPE_DORMANDPRINCE";
         if(integrationType == INTEGRATIONTYPE_ADAMSBASHFORTH)
             str = str + "INTEGRATIONTYPE_ADAMSBASHFORTH";
-        if(integrationType == INTEGRATIONTYPE_RESERVED_3)
-            str = str + "INTEGRATIONTYPE_RESERVED_3";
         if(integrationType == INTEGRATIONTYPE_RESERVED_4)
             str = str + "INTEGRATIONTYPE_RESERVED_4";
         if(integrationType == INTEGRATIONTYPE_M3DC12DINTEGRATOR)

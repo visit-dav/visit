@@ -86,6 +86,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPDopri5.h>
 #include <avtIVPAdamsBashforth.h>
 #include <avtIVPEuler.h>
+#include <avtIVPLeapfrog.h>
 #include <avtIVPM3DC1Integrator.h>
 #include <avtIVPM3DC1Field.h>
 #include <avtIVPNIMRODField.h>
@@ -2125,7 +2126,12 @@ avtPICSFilter::PreExecute(void)
         solver = new avtIVPEuler;
         solver->SetMaximumStepSize(maxStepLength);
     }
-    if (integrationType == STREAMLINE_INTEGRATE_DORMAND_PRINCE)
+    else if (integrationType == STREAMLINE_INTEGRATE_LEAPFROG)
+    {
+        solver = new avtIVPLeapfrog;
+        solver->SetMaximumStepSize(maxStepLength);
+    }
+    else if (integrationType == STREAMLINE_INTEGRATE_DORMAND_PRINCE)
     {
         solver = new avtIVPDopri5;
         solver->SetMaximumStepSize(maxStepLength);
