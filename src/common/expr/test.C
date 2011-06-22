@@ -59,7 +59,7 @@
 int
 main(int argc, char *argv[])
 {
-    if (argc<2) {cerr<<"needs an argument\n"; exit(-1);}
+    if (argc<2) {cerr<<"needs an argument\n"; exit(-1);} // HOOKS_IGNORE
 
     Parser *parser = new ExprParser(new ExprNodeFactory());
     ExprParser::SetErrorMessageTarget(ExprParser::EMT_CONSOLE);

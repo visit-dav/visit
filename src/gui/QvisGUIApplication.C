@@ -420,7 +420,7 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
         break;
     case QtFatalMsg:
         debug1 << "Qt: Fatal: " << msg << endl;
-        abort();
+        abort(); // HOOKS_IGNORE
         break;
     }
 }

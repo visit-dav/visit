@@ -522,7 +522,7 @@ LauncherApplication::AlarmHandler(int)
 {
     debug1 << "Launcher exited due to an inactivity timeout of "
            << LauncherApplication::Instance()->timeout << " minutes." << endl;
-    exit(0);
+    exit(0); // HOOKS_IGNORE
 }
 
 // ****************************************************************************
@@ -821,7 +821,7 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs,
         {
           case -1:
             // Could not fork.
-            exit(-1);
+            exit(-1); // HOOKS_IGNORE
             break;
           case 0:
               {
@@ -833,7 +833,7 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs,
                       close(k);
                   }
                   CreateSocketBridge((void*)ports);
-                  exit(0);
+                  exit(0); // HOOKS_IGNORE
                   break;
               }
           default:
@@ -947,14 +947,14 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
     // Create a pipe.
     int f_des[2];
     if(pipe(f_des) == -1)
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
 #endif
 
     switch (remoteProgramPid = fork())
     {
     case -1:
         // Could not fork.
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
         break;
     case 0:
         // Close stdin and any other file descriptors.
@@ -974,7 +974,7 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
         if (remoteProgram.size() > 0 && remoteProgram[0] == '~')
             remoteProgram = ExpandUserPath(remoteProgram);
         execvp(remoteProgram.c_str(), args);
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
         break;   // OCD
     default:
 #ifdef CAPTURE_CHILD_OUTPUT

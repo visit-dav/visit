@@ -2249,7 +2249,7 @@ Engine::AlarmHandler(int signal)
 #ifdef PARALLEL
     PAR_Exit();
 #endif
-    exit(0);
+    exit(0); // HOOKS_IGNORE
 }
 
 // ****************************************************************************
@@ -2281,9 +2281,8 @@ Engine::NewHandler(void)
 #ifdef PARALLEL
     MPI_Abort(VISIT_MPI_COMM, 18);
 #else
-    abort();
+    abort(); // HOOKS_IGNORE
 #endif
-
 }
 
 // ****************************************************************************

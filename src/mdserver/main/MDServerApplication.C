@@ -151,7 +151,7 @@ MDServerApplication::AlarmHandler(int signal)
 {
     debug1 << "MDSERVER exited due to an inactivity timeout of "
            << MDServerApplication::Instance()->timeout << " minutes." << endl;
-    exit(0);
+    exit(0); // HOOKS_IGNORE
 }
 
 // ****************************************************************************

@@ -134,7 +134,7 @@ static void
 NewHandler(void)
 {
     debug1 << "This component has run out of memory." << endl;
-    abort();
+    abort(); // HOOKS_IGNORE
 }
 
 // ****************************************************************************
@@ -352,7 +352,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
                 cerr << "SVN revision is unknown!" << endl;
             else
                 cerr << "Built from revision " << visitcommon::SVNVersion() << endl;
-            exit(0);
+            exit(0); // HOOKS_IGNORE
         }
     }
 
