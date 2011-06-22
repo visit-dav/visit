@@ -719,6 +719,9 @@ $0 = shift @ARGV;
 #    Get the plugin version number from VISITPLUGINVERSION environment variable
 #    which is now set in frontendlauncher.
 #
+#    Brad Whitlock, Wed Jun 22 09:04:14 PDT 2011
+#    Allow 64-bit Mac to launch the 32-bit executable if it is present.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2165,7 +2168,8 @@ for ($os) {
                         push @supportedarchs, "darwin-i386";
                     }
                     else {
-                        push @supportedarchs, "darwin-x86_64";
+                        # Prefer the 64-bit executable but back up to the 32-bit one.
+                        push @supportedarchs, "darwin-x86_64", "darwin-i386";
                     }
                 }
                 else {
