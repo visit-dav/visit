@@ -327,6 +327,106 @@ CommunicationHeader::GetTypeRepresentation() const
     return rep;
 }
 
+#ifndef _WIN32
+// ****************************************************************************
+// Method: more_random_srand
+//
+// Purpose: 
+//   Calls srand48 with more random seed value.
+//
+// Arguments:
+//
+// Returns:    True on success; false on failure.
+//
+// Note:       
+//
+// Programmer: Vern Staats
+// Creation:   Thu May 12 12:58:56 PDT 2011
+//
+// Modifications:
+//   Brad Whitlock, Wed Jun 22 09:20:14 PDT 2011
+//   I moved this code into this new function and replaced all the damn abort
+//   calls with code that returns false.
+//
+// ****************************************************************************
+
+static bool
+more_random_srand()
+{
+    // 20110314 VRS was:  srand48(long(time(0)));
+    // 20110316 VRS use /dev/urandom as the random number seed,
+    //   but we need to communicate it to the child processes.
+    //   Re-use cached seed if time(0) is within delta of cached time.
+    //   Set delta = 2 seconds to avoid probably rare intermittent failure
+    //   in original code when viewer and mdserver fall on opposite sides
+    //   of a second.
+    struct seed_ {
+        long    value;
+        time_t  updated;
+        };
+    void    *seedp = (void *) -1;
+    char    *seed_path = NULL;
+    key_t    seed_shm_key = -1;
+    int     seed_shd_id;
+    //    Create a directory or file path for ftok()
+    if ((seed_path = getcwd((char *) NULL, (size_t) PATH_MAX)) == NULL)  {
+        debug1 << "Error reading current dir for ftok()" << endl;
+        return false;
+    }
+    seed_shm_key = ftok(seed_path, (int) getuid());
+    if (seed_shm_key == -1)  {
+        debug1 << "Error creating seed_shm_key with ftok()" << endl;
+        return false;
+    }
+    if (seed_path != NULL)  {
+        free(seed_path);
+        seed_path = NULL;
+    }
+    seed_shd_id = shmget(seed_shm_key, sizeof(struct seed_), IPC_CREAT | 0600);
+    if (seed_shd_id == -1)  {
+        debug1 << "Error getting shared memory with shmget()" << endl;
+        return false;
+    }
+    seedp = shmat(seed_shd_id, (const void *) NULL, 0);
+    if (seedp == (void *) -1)  {
+        debug1 << "Error attaching shared memory with shmat()" << endl;
+        return false;
+    }
+
+    time_t seed_max_delta = 2;
+    time_t seed_now = time(0);
+    if (seed_now == (time_t) -1)  {
+        debug1 << "Error getting current time" << endl;
+        return false;
+    }
+    if (((struct seed_ *)seedp)->value == 0  || 
+        ((struct seed_ *)seedp)->value == -1  ||
+        ((struct seed_ *)seedp)->updated == 0  ||
+        seed_now - ((struct seed_ *)seedp)->updated > seed_max_delta)  {
+        int r = open("/dev/urandom", O_RDONLY);
+        if (r == -1)  {
+            debug1 << "Error opening /dev/urandom" << endl;
+            close(r);
+            return false;
+        }
+        if (read(r, (void *) &((struct seed_ *)seedp)->value,
+                       sizeof(((struct seed_ *)seedp)->value))
+                    != sizeof(((struct seed_ *)seedp)->value))  {
+            debug1 << "Error reading /dev/urandom" << endl;
+            close(r);
+            return false;
+        }
+        else  {
+            ((struct seed_ *)seedp)->updated = seed_now;
+        }
+        close(r);
+    }
+    srand48((long) ((struct seed_ *)seedp)->value);
+    if (seedp != (void *) -1)  (void) shmdt((const void *) seedp);
+    return true;
+}
+#endif
+
 // ****************************************************************************
 // Method: CommunicationHeader::CreateRandomKey
 //
@@ -358,6 +458,10 @@ CommunicationHeader::GetTypeRepresentation() const
 //   I added code that uses /dev/urandom to get a random seed instead of
 //   srand. This creates a more random key.
 //
+//   Brad Whitlock, Wed Jun 22 09:23:29 PDT 2011
+//   I moved the new srand code into its own routine so I can test if it fails
+//   instead of having it abort. If it fails, we initialize using time.
+//
 // ****************************************************************************
 
 std::string
@@ -367,76 +471,11 @@ CommunicationHeader::CreateRandomKey(int len)
 #if defined(_WIN32)
     srand((unsigned)time(0));
 #else
-    // 20110314 VRS was:  srand48(long(time(0)));
-    // 20110316 VRS use /dev/urandom as the random number seed,
-    //   but we need to communicate it to the child processes.
-    //   Re-use cached seed if time(0) is within delta of cached time.
-    //   Set delta = 2 seconds to avoid probably rare intermittent failure
-    //   in original code when viewer and mdserver fall on opposite sides
-    //   of a second.
-    struct seed_ {
-        long    value;
-        time_t  updated;
-        };
-    void    *seedp = (void *) -1;
-    char    *seed_path = NULL;
-    key_t    seed_shm_key = -1;
-    int     seed_shd_id;
-    //    Create a directory or file path for ftok()
-    if ((seed_path = getcwd((char *) NULL, (size_t) PATH_MAX)) == NULL)  {
-        debug1 << "Error reading current dir for ftok()" << endl;
-        abort();
+    if(!more_random_srand())
+    {
+        // The really random way didn't work. Seed based on time.
+        srand48((long)time(0));
     }
-    seed_shm_key = ftok(seed_path, (int) getuid());
-    if (seed_shm_key == -1)  {
-        debug1 << "Error creating seed_shm_key with ftok()" << endl;
-        abort();
-    }
-    if (seed_path != NULL)  {
-        free(seed_path);
-        seed_path = NULL;
-    }
-    seed_shd_id = shmget(seed_shm_key, sizeof(struct seed_), IPC_CREAT | 0600);
-    if (seed_shd_id == -1)  {
-        debug1 << "Error getting shared memory with shmget()" << endl;
-        abort();
-    }
-    seedp = shmat(seed_shd_id, (const void *) NULL, 0);
-    if (seedp == (void *) -1)  {
-        debug1 << "Error attaching shared memory with shmat()" << endl;
-        abort();
-    }
-
-    time_t seed_max_delta = 2;
-    time_t seed_now = time(0);
-    if (seed_now == (time_t) -1)  {
-        debug1 << "Error getting current time" << endl;
-        abort();
-    }
-    if (((struct seed_ *)seedp)->value == 0  || 
-        ((struct seed_ *)seedp)->value == -1  ||
-        ((struct seed_ *)seedp)->updated == 0  ||
-        seed_now - ((struct seed_ *)seedp)->updated > seed_max_delta)  {
-        int r = open("/dev/urandom", O_RDONLY);
-        if (r == -1)  {
-            debug1 << "Error opening /dev/urandom" << endl;
-            close(r);
-            abort();
-        }
-        if (read(r, (void *) &((struct seed_ *)seedp)->value,
-                       sizeof(((struct seed_ *)seedp)->value))
-                    != sizeof(((struct seed_ *)seedp)->value))  {
-            debug1 << "Error reading /dev/urandom" << endl;
-            close(r);
-            abort();
-        }
-        else  {
-            ((struct seed_ *)seedp)->updated = seed_now;
-        }
-        close(r);
-    }
-    srand48((long) ((struct seed_ *)seedp)->value);
-    if (seedp != (void *) -1)  (void) shmdt((const void *) seedp);
 #endif
 
     std::string key;
