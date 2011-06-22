@@ -59,7 +59,7 @@
 #include <snprintf.h>
 #include <math.h>
 
-const int avtGDALFileFormat::n_zones_per_dom = 20000;
+const int avtGDALFileFormat::n_zones_per_dom = 5000000;
 bool avtGDALFileFormat::gdalInit = false;
 
 // ****************************************************************************
@@ -184,6 +184,11 @@ avtGDALFileFormat::GetDataset()
 //   I undid Jeremy's addition of %dx%d to the lower resolution mesh name
 //   since that was a string to be used in a print statement, not a format
 //   specifier.
+//
+//   Brad Whitlock, Wed Jun 22 11:55:38 PDT 2011
+//   I changed the code so we create various resolutions down to 100x100 pixels
+//   instead of stopping once we hit 1 domain. I did this so I can preserve
+//   the various resolutions while still having larger domains.
 //
 // ****************************************************************************
 
@@ -395,7 +400,7 @@ avtGDALFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         ysize /= 2;
         scale *= 2;
         ++resolution;
-    } while(newMesh.numDomains > 1);
+    } while(xsize > 100 && ysize > 100);
 
     bool haveRed = false, haveGreen = false, haveBlue = false;
     if(meshInfo.size() == 1)
