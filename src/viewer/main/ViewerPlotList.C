@@ -6624,12 +6624,12 @@ PthreadCreate(pthread_t *new_thread_ID, const pthread_attr_t *attr,
     if (!new_thread_ID)
     {
         printf("TID cannot be NULL.\n");
-        abort();
+        abort(); // ABORT_HOOK_OK
     }
     if (err = pthread_create(new_thread_ID, attr, start_func, arg))
     {
         printf("%s\n", strerror(err));
-        abort();
+        abort(); // ABORT_HOOK_OK
     }
 }
 #endif
@@ -6657,7 +6657,7 @@ PthreadAttrInit(pthread_attr_t *attr)
     if (err = pthread_attr_init(attr))
     {
         printf("%s\n", strerror(err));
-        abort();
+        abort(); // ABORT_HOOK_OK
     }
 }
 #endif

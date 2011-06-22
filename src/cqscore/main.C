@@ -65,11 +65,11 @@ int main( int argc, char **argv )
     catch (const char *s)
     {
         cerr << "ERROR: " << s << endl;
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
     }
     catch (const QString &s)
     {
         cerr << "ERROR: " << s << endl;
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
     }
 }

@@ -18,7 +18,6 @@
 
 
 export PATH=/bin:/usr/bin
-export AUTOCONF_VERSION_NUMBER=2.59
 export VISIT_GROUP_NAME=visitdev
 export hadError=0
 

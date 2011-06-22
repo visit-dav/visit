@@ -135,7 +135,7 @@ InitialConnectionHandler(int)
     debug1 << "MDSERVER: Could not connect to client in allotted time. "
               "The client may no longer wish to connect so this program "
               "will exit." << endl;
-    exit(0);
+    exit(0); // HOOKS_IGNORE
 }
 #endif
 

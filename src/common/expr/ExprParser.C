@@ -74,7 +74,7 @@ ExprParser::ExprParser(ExprNodeFactory *f) : Parser(), factory(f)
     if (!G->Initialize())
     {
         cerr << "Error in initializion of Expression Grammar!\n";
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
     }
 
     SetGrammar(G);

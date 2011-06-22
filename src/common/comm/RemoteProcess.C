@@ -137,7 +137,7 @@ static map<int, bool> childDied;
 static void
 catch_dead_child(int sig)
 {
-    // assert (sig == SIGCHLD);
+    // assert (sig == SIGCHLD); HOOKS_IGNORE
     int status;
     int pid;
     pid = wait(&status);
@@ -2140,7 +2140,7 @@ RemoteProcess::LaunchRemote(bool useGateway, const std::string &gatewayHost,
     {
     case -1:
         // Could not fork.
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
         break;
     case 0:
         // Do not close stdout, stderr, because ssh will fail if
@@ -2152,7 +2152,7 @@ RemoteProcess::LaunchRemote(bool useGateway, const std::string &gatewayHost,
         }
         execvp(SecureShell(), argv);
         close(0); close(1); close(2);
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
         break;   // OCD
     default:
         break;
@@ -2270,7 +2270,7 @@ RemoteProcess::LaunchLocal(const stringVector &args)
     {
     case -1:
         // Could not fork.
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
         break;
     case 0:
         // Close stdin and any other file descriptors.
@@ -2289,7 +2289,7 @@ RemoteProcess::LaunchLocal(const stringVector &args)
                 cerr << argv[i] << " ";
             cerr << endl;
         }
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
         break;   // OCD
     default:
         break;

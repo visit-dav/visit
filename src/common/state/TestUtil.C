@@ -78,7 +78,7 @@ TestUtil::TestUtil(int argc, char *argv[],
             cout << "usage: " << argv[0] << " [-v] [-help]" << endl;
             cout << "    -v    = print verbose output" << endl;
             cout << "    -help = print usage and exit" << endl;
-            exit(0);
+            exit(0); // HOOKS_IGNORE
         }
     }
 

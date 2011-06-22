@@ -325,7 +325,7 @@ class TestParser : public Parser
 int
 main(int argc, char *argv[])
 {
-    if (argc<2) {cerr<<"needs an argument\n"; exit(-1);}
+    if (argc<2) {cerr<<"needs an argument\n"; exit(-1);} // HOOKS_IGNORE
 
     Parser *parser = new TestParser();
 

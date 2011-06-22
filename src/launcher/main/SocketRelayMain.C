@@ -63,7 +63,7 @@ int main(int argc, const char* argv[])
     if (argc != 3)
     {
         std::cerr << "Error: Usage " << argv[0] << " <remoteHost> <remotePort>" << std::endl;
-        exit(1);
+        exit(1); // HOOKS_IGNORE
     }
 
     const char *remoteHost = argv[1];
@@ -82,7 +82,7 @@ int main(int argc, const char* argv[])
     {
         case -1:
             // Could not fork.
-            exit(-1);
+            exit(-1); // HOOKS_IGNORE
             break;
         case 0:
             {
@@ -95,7 +95,7 @@ int main(int argc, const char* argv[])
                 }
                 SocketBridge bridge(newlocalport, remotePort, remoteHost);
                 bridge.Bridge();
-                exit(0);
+                exit(0); // HOOKS_IGNORE
                 break;
             }
         default:

@@ -77,7 +77,7 @@ Dictionary::AddTerminal(Symbol *s)
     if (nsymbols > MAXSYMBOLS)
     {
         cerr << "Too many symbols! Increase MAXSYMBOLS" << endl;
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
     }
     allterminals[s->GetTerminalType()] = s;
     return index;
@@ -103,7 +103,7 @@ Dictionary::AddNonTerminal(Symbol *s)
     if (nsymbols > MAXSYMBOLS)
     {
         cerr << "Too many symbols! Increase MAXSYMBOLS" << endl;
-        exit(-1);
+        exit(-1); // HOOKS_IGNORE
     }
     allnonterminals[s->GetDisplayString()] = s;
     return index;

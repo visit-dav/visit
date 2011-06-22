@@ -102,7 +102,7 @@ int main(int argc, char **argv)
         const std::string spaces = "/spaces/in the/path";
         std::string s = lgl_one + ":" + lgl + ":" + abs + ":" + spaces;
         std::vector<std::string> splitstr = split(s, ':');
-        assert(splitstr.size() == 4);
+        assert(splitstr.size() == 4); // HOOKS_IGNORE
         if(splitstr[0] != lgl_one) { falseNegatives.push_back(__LINE__); }
         if(splitstr[1] != lgl)     { falseNegatives.push_back(__LINE__); }
         if(splitstr[2] != abs)     { falseNegatives.push_back(__LINE__); }
@@ -115,12 +115,12 @@ int main(int argc, char **argv)
     {
         std::string s = "::::";
         std::vector<std::string> splitstr = split(s, ':');
-        assert(splitstr.size() == 4);
+        assert(splitstr.size() == 4); // HOOKS_IGNORE
     }
     {
         std::string s = "a:b:c:";
         std::vector<std::string> splitstr = split(s, ':');
-        assert(splitstr.size() == 3);
+        assert(splitstr.size() == 3); // HOOKS_IGNORE
         if(splitstr[0] != "a") { falsePositives.push_back(__LINE__); }
         if(splitstr[1] != "b") { falsePositives.push_back(__LINE__); }
         if(splitstr[2] != "c") { falsePositives.push_back(__LINE__); }
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
     {
         std::string no_colon = "test";
         std::vector<std::string> splitstr = split(no_colon, ':');
-        assert(splitstr.size() == 1);
+        assert(splitstr.size() == 1); // HOOKS_IGNORE
         if(splitstr[0] != no_colon) { falsePositives.push_back(__LINE__); }
     }
 
