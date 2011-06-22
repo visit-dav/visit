@@ -400,7 +400,7 @@ avtGDALFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         ysize /= 2;
         scale *= 2;
         ++resolution;
-    } while(xsize > 100 && ysize > 100);
+    } while(xsize*ysize >= 5000);
 
     bool haveRed = false, haveGreen = false, haveBlue = false;
     if(meshInfo.size() == 1)
