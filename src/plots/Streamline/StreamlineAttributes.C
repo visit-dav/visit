@@ -357,8 +357,8 @@ StreamlineAttributes::FieldType_FromString(const std::string &s, StreamlineAttri
 //
 
 static const char *IntegrationType_strings[] = {
-"Euler", "DormandPrince", "AdamsBashforth", 
-"Reserved_3", "Reserved_4", "M3DC12DIntegrator"
+"Euler", "Leapfrog", "DormandPrince", 
+"AdamsBashforth", "Reserved_4", "M3DC12DIntegrator"
 };
 
 std::string

@@ -124,9 +124,9 @@ public:
     enum IntegrationType
     {
         Euler,
+        Leapfrog,
         DormandPrince,
         AdamsBashforth,
-        Reserved_3,
         Reserved_4,
         M3DC12DIntegrator
     };

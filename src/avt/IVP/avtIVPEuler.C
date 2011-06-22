@@ -448,5 +448,6 @@ avtIVPEuler::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(h_max)
         .Accept(t)
         .Accept(d)
-        .Accept(yCur);
+        .Accept(yCur)
+        .Accept(vCur);
 }

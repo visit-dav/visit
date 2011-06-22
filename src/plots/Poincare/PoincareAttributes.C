@@ -122,8 +122,8 @@ PoincareAttributes::FieldType_FromString(const std::string &s, PoincareAttribute
 //
 
 static const char *IntegrationType_strings[] = {
-"Euler", "DormandPrince", "AdamsBashforth", 
-"Reserved_3", "Reserved_4", "M3DC12DIntegrator"
+"Euler", "Leapfrog", "DormandPrince", 
+"AdamsBashforth", "Reserved_4", "M3DC12DIntegrator"
 };
 
 std::string
@@ -3606,3 +3606,4 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            showLines != obj.showLines ||
            showPoints != obj.showPoints;
 }
+
