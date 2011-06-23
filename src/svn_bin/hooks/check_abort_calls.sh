@@ -39,12 +39,16 @@ while read fline; do
     # be permitted. The grep, below, eliminates those cases from consideration.
     #
     case $fname in
+        */src/tools/*|\
+        */src/cqscore/*|\
+        */src/third_party_builtin/*|\
+        */src/bin/internallauncher|\
+        */src/svn_bin/*)
+            # Skip these files and directories
+            continue
+            ;;
         trunk/*)
             # Do not skip (continue) these
-            ;;
-        */tools/*)
-            # Skip anything in tools directory
-            continue
             ;;
         *)
             # Skip anything not on trunk
@@ -52,16 +56,16 @@ while read fline; do
             ;;
     esac
 
-    svnlook cat -t $TXN $REPOS $fname | grep -v '^#[[:space:]]*include' | grep -v HOOKS_IGNORE | cpp - 2>&1 | grep -q '[[:space:]]\(assert\|abort\|exit\)[[:space:]]*(' 1>/dev/null 2>&1
+    svnlook cat -t $TXN $REPOS $fname | grep -v '^#[[:space:]]*include' | grep -v HOOKS_IGNORE | cpp - 2>&1 | grep -q '[[:space:]]\(abort\|exit\)[[:space:]]*(' 1>/dev/null 2>&1
     commitFileAbortCalls=$?
     if test $commitFileAbortCalls -ne 0; then
-        svnlook cat -t $TXN $REPOS $fname | grep -v '^#[[:space:]]*include' | grep -v HOOKS_IGNORE | cpp -DPARALLEL - 2>&1 | grep -q '[[:space:]]\(assert\|abort\|exit\)[[:space:]]*(' 1>/dev/null 2>&1
+        svnlook cat -t $TXN $REPOS $fname | grep -v '^#[[:space:]]*include' | grep -v HOOKS_IGNORE | cpp -DPARALLEL - 2>&1 | grep -q '[[:space:]]\(abort\|exit\)[[:space:]]*(' 1>/dev/null 2>&1
         commitFileAbortCalls=$?
     fi
 
     # If the file we're committing has #warnings, reject it
     if test $commitFileAbortCalls -eq 0; then
-        log "File \"$fname\" appears to contain assert()/abort()/exit() calls"
+        log "File \"$fname\" appears to contain abort()/exit() calls"
         log "    outside of a conditional #ifdef DEBUG block."
         log "Please remove them before committing."
         exit 1

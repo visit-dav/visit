@@ -3317,7 +3317,7 @@ re_compile_fastmap (struct re_pattern_buffer *bufp)
 
 
     default:
-          abort (); /* We have listed all the cases.  */
+          abort (); /* We have listed all the cases.  HOOKS_IGNORE */
         } /* switch *p++ */
 
       /* Getting here means we have found the possible starting
@@ -5032,7 +5032,7 @@ re_match_2_internal (
 #endif /* not emacs */
 
         default:
-          abort ();
+          abort (); /* HOOKS_IGNORE */
     }
       continue;  /* Successfully executed one pattern command; keep going.  */
 
@@ -5662,7 +5662,7 @@ regerror (
        to this routine.  If we are given anything else, or if other regex
        code generates an invalid error code, then the program has a bug.
        Dump core so we can fix it.  */
-    abort ();
+    abort (); /* HOOKS_IGNORE */
 
   msg = gettext (re_error_msgid[errcode]);
 
