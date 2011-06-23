@@ -52,7 +52,7 @@
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
-#include <vtkUnStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <avtExtents.h>
 
