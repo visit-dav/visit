@@ -8026,8 +8026,8 @@ function build_xdmf
     rm CML.*
     mv CMakeLists.txt CML.0
     H5DIR=$(echo "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" | sed "s/\//\\\\\//g")
-    sed "s/  hdf5/  hdf5  $H5DIR\/lib/g" CML.0 > CML.1
-    sed "s/H5Ipublic.h/H5Ipublic.h $H5DIR\/include/g" CML.1 > CMakeLists.txt
+    sed "s/  hdf5/  hdf5  $H5DIR\/lib NO_DEFAULT_PATH/g" CML.0 > CML.1
+    sed "s/H5Ipublic.h/H5Ipublic.h $H5DIR\/include NO_DEFAULT_PATH/g" CML.1 > CMakeLists.txt
 
     # Configure Xdmf
     info "Executing CMake on Xdmf"
@@ -8092,8 +8092,11 @@ function build_xdmf
     # Patch up the library names on Darwin
     if [[ "$DO_STATIC_BUILD" != "yes" && "$OPSYS" == "Darwin" ]]; then
         LIBDIR="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}/lib"
-        install_name_tool -change libvtklibxml2.dylib $LIBDIR/libvtklibxml2.dylib -id $LIBDIR/libXdmf.dylib $LIBDIR/libXdmf.dylib 
-        install_name_tool -id $LIBDIR/libvtklibxml2.dylib $LIBDIR/libvtklibxml2.dylib 
+        install_name_tool -change libvtklibxml2.dylib $LIBDIR/libvtklibxml2.dylib \
+                          -change libvtkzlib.dylib $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/libvtkzlib.dylib \
+                          -id $LIBDIR/libXdmf.dylib $LIBDIR/libXdmf.dylib 
+        install_name_tool -change libvtkzlib.dylib $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/libvtkzlib.dylib \
+                          -id $LIBDIR/libvtklibxml2.dylib $LIBDIR/libvtklibxml2.dylib 
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
