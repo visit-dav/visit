@@ -1,5 +1,8 @@
 #include "CubeReader.h"
 
+#include <InvalidFilesException.h>
+
+
 CubeReader::CubeReader(const char* fname) {
 
   // default units are in angstorms..
@@ -15,13 +18,12 @@ CubeReader::CubeReader(const char* fname) {
   
   filename = string(fname);
   file.open(fname);
-  if (!file) {
-    cout << "WARNING: unable to open file"<<endl;
-    return;
+  if (!file){
+     EXCEPTION1(InvalidFilesException, "Fild could not be opened.");
+  }else{
+     readMetaData(true); //read meta data and keep the file open
+     file.close();
   }
-
-  readMetaData(true); //read meta data and keep the file open
-  file.close();
 }
 
 CubeReader::~CubeReader() {
@@ -363,11 +365,12 @@ void CubeReader::GetOrbitalValues(float* vals, const char* varname) {
   // corresponding to the offset
   FILE *file;
   file = fopen(filename.c_str(),"r");
+  // Check if the open file branch was successful
   if (!file){
-    cout<<"WARNING: could not open file"<<endl;
-    exit(1);
+     EXCEPTION1(InvalidFilesException, "Fild could not be opened.");
   }
-    
+
+  
   char header[1024];
   for (int i=0; i<6; i++)
     fgets(header, 1024, file);
@@ -430,8 +433,7 @@ void CubeReader::GetGridValues(float* vals) {
   FILE *file;
   file = fopen(filename.c_str(),"r");
   if (!file){
-    cout<<"WARNING: could not open file"<<endl;
-    exit(1);
+     EXCEPTION1(InvalidFilesException, "Fild could not be opened.");
   }
     
   char header[1024];
