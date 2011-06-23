@@ -811,7 +811,7 @@ main(int argc, char *argv[])
     if (!VisItSetupEnvironment())
     {
         printf("Error: couldn't set up enviroment using visit command\n");
-        exit(0);
+        exit(0); /* HOOKS_IGNORE */
     }
     printf("Version VisIt simulation lib running with: %s\n", VisItGetVersion());
 #ifdef PARALLEL
@@ -822,7 +822,7 @@ main(int argc, char *argv[])
     if (par_size == 1)
     {
         printf("Probably not using mpirun; try again!!!!!!\n");
-        exit(0);
+        exit(0); /* HOOKS_IGNORE */
     }
 
     VisItSetBroadcastIntFunction(visit_broadcast_int_callback);
