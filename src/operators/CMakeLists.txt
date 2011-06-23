@@ -45,6 +45,9 @@
 #   Hank Childs, Fri Sep 24 08:16:10 PDT 2010
 #   Add SurfaceNormal, Flux, and ConnectedComponents operators.
 #
+#   Brad Whitlock, Wed Jun 22 15:25:18 PDT 2011
+#   I added the Extrude operator.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
@@ -72,6 +75,7 @@ DualMesh
 Edge
 Elevate
 ExternalSurface
+Extrude
 Flux
 IndexSelect
 InverseGhostZone
