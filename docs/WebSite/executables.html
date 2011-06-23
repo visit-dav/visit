@@ -17,7 +17,7 @@
 <meta name="keywords" content="visualization, qualitative, quantitative, analysis, distributed, parallel, tera-scale, rectilinear, curvilinear, structured, unstructured, mesh, grid, finite element, hydrodynamics, python, java, unix, irix, tru64, aix, linux, solaris, windows 98, windows xp, open source contour, vector, volume visualization, streamlines">
 <meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
 <meta http-equiv="Expires" content="never">
-<meta name="date" content="2011-06-20">
+<meta name="date" content="2011-06-24">
 <meta name="Author" content="Eric Brugger">
 
 <!-- InstanceEndEditable --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
@@ -446,6 +446,8 @@ function MM_initTimelines() { //v4.0
 
           <th><font color="#333366" face="verdana, arial, helvetica, sans-serif">platform</font></th>
 
+          <th><font color="#333366" face="verdana, arial, helvetica, sans-serif">architecture</font></th>
+
           <th bgcolor="#ccccff"><font color="#333366" face="verdana, arial, helvetica, sans-serif">executable</font></th>
 
         </tr>
@@ -454,21 +456,17 @@ function MM_initTimelines() { //v4.0
 
           <td>Linux - x86 32 bit<br>Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br>Will work on most Linux x86 systems.</td>
 
+          <td>linux-intel</td>
+
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-rhel3.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
 
         </tr>
 
         <tr bgcolor="#ffffff">
 
-          <td>Linux - x86 32 bit<br>Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-89.0.16.ELsmp, gcc 3.4.6<br>Will work on most Linux x86 systems.</td>
-
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-rhel4.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
-
-        </tr>
-
-        <tr bgcolor="#ffffff">
-
           <td>Linux - x86_64 64 bit<br>Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
+
+          <td>linux-x86_64</td>
 
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-x86_64-ubuntu8.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
 
@@ -478,6 +476,8 @@ function MM_initTimelines() { //v4.0
 
           <td>Linux - x86_64 64 bit<br>Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br>Will work on most Linux x86_64 systems.</td>
 
+          <td>linux-x86_64</td>
+
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-x86_64-rhel4.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
 
         </tr>
@@ -485,6 +485,8 @@ function MM_initTimelines() { //v4.0
         <tr bgcolor="#ffffff">
 
           <td>Linux - x86_64 64 bit<br>Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br>Will work on most Linux x86_64 systems.</td>
+
+          <td>linux-x86_64</td>
 
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-x86_64.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
 
@@ -494,6 +496,8 @@ function MM_initTimelines() { //v4.0
 
           <td>Linux - x86_64 64 bit<br>Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
 
+          <td>linux-x86_64</td>
+
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-euclid.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
 
         </tr>
@@ -501,6 +505,8 @@ function MM_initTimelines() { //v4.0
         <tr bgcolor="#ffffff">
 
           <td>Windows (Xp / Vista / 7) 32 bit<br>MSVC9, Visual Studio 2008</td>
+
+          <td></td>
 
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2.3.0.exe"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
 
@@ -510,6 +516,8 @@ function MM_initTimelines() { //v4.0
 
           <td>Windows (Xp / Vista / 7) 64 bit<br>MSVC9, Visual Studio 2008</td>
 
+          <td></td>
+
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2.3.0_x64.exe"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
 
         </tr>
@@ -517,6 +525,8 @@ function MM_initTimelines() { //v4.0
         <tr bgcolor="#ffffff">
 
           <td>Mac OS X - Intel<br>Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
+
+          <td>darwin-i386</td>
 
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/VisIt-2.3.0-i386-installer.dmg"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
 
@@ -526,6 +536,8 @@ function MM_initTimelines() { //v4.0
 
           <td>Mac OS X - Intel 64 bit<br>Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
 
+          <td>darwin-x86_64</td>
+
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/VisIt-2.3.0-x86_64-installer.dmg"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
 
         </tr>
@@ -533,6 +545,8 @@ function MM_initTimelines() { //v4.0
         <tr bgcolor="#ffffff">
 
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
+
+          <td></td>
 
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/jvisit2.3.0.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
 
@@ -2836,7 +2850,7 @@ END: not built yet
 
     <span class="body_text">Updated: 
 
-    <!-- #begindate format:am1 -->June 20, 2011<!-- #enddate -->
+    <!-- #begindate format:am1 -->June 24, 2011<!-- #enddate -->
 
     </span></p>
 
