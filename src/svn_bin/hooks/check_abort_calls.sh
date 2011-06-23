@@ -6,6 +6,11 @@
 # Programmer: Mark C. Miller
 # Created:    Wed Jun 22 09:57:42 PDT 2011
 #
+# Modifications:
+#
+#   Mark C. Miller, Wed Jun 22 17:20:09 PDT 2011
+#   Check -DPARALLEL code too
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -49,6 +54,10 @@ while read fline; do
 
     svnlook cat -t $TXN $REPOS $fname | grep -v '^#[[:space:]]*include' | grep -v HOOKS_IGNORE | cpp - 2>&1 | grep -q '[[:space:]]\(assert\|abort\|exit\)[[:space:]]*(' 1>/dev/null 2>&1
     commitFileAbortCalls=$?
+    if test $commitFileAbortCalls -ne 0; then
+        svnlook cat -t $TXN $REPOS $fname | grep -v '^#[[:space:]]*include' | grep -v HOOKS_IGNORE | cpp -DPARALLEL - 2>&1 | grep -q '[[:space:]]\(assert\|abort\|exit\)[[:space:]]*(' 1>/dev/null 2>&1
+        commitFileAbortCalls=$?
+    fi
 
     # If the file we're committing has #warnings, reject it
     if test $commitFileAbortCalls -eq 0; then
