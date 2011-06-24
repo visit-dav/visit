@@ -266,6 +266,11 @@
 #    Eric Brugger, Mon May 16 14:46:53 PDT 2011
 #    I added host profiles for glory and redsky.
 #
+#    Eric Brugger, Fri Jun 24 09:23:13 PDT 2011
+#    I replaced several "find $dir -exec chgrp $group {} \;" commands
+#    with a single "chgrp -R $group $dir1 $dir2" command, since the
+#    find version is extremely slow on some systems.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -775,9 +780,7 @@ fi
 # Set the group ownership properly
 #
 if [ "$group_ownership" != "none" ]; then
-    find "$dir"/bin -exec chgrp $group_ownership {} \;
-    find "$dir"/data -exec chgrp $group_ownership {} \;
-    find "$dir"/$version+ -exec chgrp $group_ownership {} \;
+    chgrp -R $group_ownership "$dir"/bin "$dir"/data "$dir"/$version+
 fi
 
 #
