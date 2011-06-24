@@ -60,6 +60,9 @@
 #   Add preprocessor definitions for Windows.
 #   Add VISIT_PYTHON_SCRIPTING.
 #
+#   Brad Whitlock, Thu Jun 23 17:03:35 PDT 2011
+#   Fix python library extension for Mac.
+#
 #****************************************************************************/
 
 ##
@@ -171,7 +174,7 @@ SET(QT_MOC_EXECUTABLE        ${VISIT_BINARY_DIR}/moc)
 
 # Set up Python
 SET(PYTHON_INCLUDE_PATH      ${VISIT_INCLUDE_DIR}/python/include/python@PYTHON_VERSION@)
-SET(PYTHON_LIBRARY           ${VISIT_LIBRARY_DIR}/libpython@PYTHON_VERSION@.so)
+SET(PYTHON_LIBRARY           ${VISIT_LIBRARY_DIR}/libpython@PYTHON_VERSION@@VISIT_PLUGIN_EXTENSION@)
 
 # Set up SLIVR
 SET(SLIVR_INCLUDE_DIR 
