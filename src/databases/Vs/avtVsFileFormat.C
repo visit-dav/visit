@@ -54,6 +54,9 @@
 
 #include <avtVsFileFormat.h>
 
+// #define PARALLEL 1
+// #define VIZSCHEMA_DECOMPOSE_DOMAINS 1
+
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
 #include <avtParallel.h>
 #endif
@@ -346,7 +349,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
     // we get a request for (MdMesh, 0), we change the name to
     // coreMesh and proceed normally
 
-    //Check for MD mesh
+    // Check for MD mesh
     VsLog::debugLog() << methodSig << "Looking for MD mesh with name "
                       << meshName << endl;
 
@@ -368,7 +371,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
                         << endl;
     }
 
-    //Did we succeed in loading mesh data from MD mesh?
+    // Did we succeed in loading mesh data from MD mesh?
     if (meta == NULL) {
       VsLog::debugLog() << methodSig << "Trying to find regular mesh named: "
                         << meshName << endl;
@@ -388,18 +391,6 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
                               haveDataSelections, mins, maxs, strides);
       }
 
-#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-      // Don't know how to decompose any other type of mesh -> load it
-      // on proc 0 only
-      if (PAR_Rank() > 0) {
-        VsLog::debugLog() << methodSig
-          << "In parallel mode on processor " << PAR_Rank
-          << " and mesh is not uniform.  "
-          << "Returning NULL, mesh will be loaded on processor 0 only."
-          << endl;
-        return NULL;
-      }
-#endif
       // Rectilinear Mesh
       if (meta->isRectilinearMesh()) {
         VsLog::debugLog() << methodSig
@@ -415,6 +406,19 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
         return getStructuredMesh(static_cast<VsStructuredMesh*>(meta),
                                  haveDataSelections, mins, maxs, strides);
       }
+
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
+      // Don't know how to decompose any other type of mesh -> load it
+      // on proc 0 only
+      if (PAR_Rank() > 0) {
+        VsLog::debugLog() << methodSig
+          << "In parallel mode on processor " << PAR_Rank
+          << " and mesh is not uniform.  "
+          << "Returning NULL, mesh will be loaded on processor 0 only."
+          << endl;
+        return NULL;
+      }
+#endif
 
       // Unstructured Mesh
       if (meta->isUnstructuredMesh()) {
@@ -564,6 +568,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     // Number of nodes is equal to number of cells plus one
     for (size_t i = 0; i < numTopologicalDims; ++i) 
       idims[i] = numCells[i]+1;
+
     // Set unused dims to 1
     for (size_t i = numTopologicalDims; i < vsdim; ++i)
       idims[i] = 1;
@@ -591,6 +596,13 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
       }
     }
 
+    for (size_t i=numTopologicalDims; i<vsdim; ++i)
+    {
+      mins[i] = 0;
+      maxs[i] = 1;
+      strides[i] = 1;
+    }
+
     VsLog::debugLog() << methodSig
       << "Have a zonal inclusive selection for uniform mesh "<< endl
       << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
@@ -598,6 +610,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
       << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
       << endl;
  
+    // Get the new number of node points.
     vector<int> gdims(vsdim);
 
     for (size_t i=0; i<numTopologicalDims; ++i)
@@ -616,49 +629,35 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     VsLog::debugLog() <<  "Grid dims predicted "
          << gdims[0] << "  " << gdims[1] << "  " << gdims[2] << "  " << endl;
 
-    VsLog::debugLog() << methodSig << "Getting lower bounds for mesh." << endl;
-    vector<float> lowerBounds;
-    uniformMesh->getLowerBounds(&lowerBounds);
-
-    VsLog::debugLog() << methodSig << "Getting upper bounds for mesh." << endl;
-    vector<float> upperBounds;
-    uniformMesh->getUpperBounds(&upperBounds);
-
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     VsLog::debugLog() << methodSig
-      << "Parallel & Decompose_Domains are defined, entering parallel code." << endl;
-    size_t splitAxis = 0;
-    size_t largestCount = numCells[splitAxis];
-
-    for (size_t currAxis = 1; currAxis < numTopologicalDims; ++currAxis) {
-      if (numCells[currAxis] > largestCount) {
-        splitAxis = currAxis;
-        largestCount = numCells[currAxis];
-      }
-    }
-
-    VsLog::debugLog() << methodSig
-                      << "Splitting along axis " << splitAxis << endl;
-
-    // FIXME: Figure out exact upper bounds/number of cells semantics
-
-    // Split along axis
-    size_t numCellsAlongSplitAxis = numCells[splitAxis]; // FIXME: May depend on centering
-    if (numCellsAlongSplitAxis) {
-      size_t numCellsPerPart = numCellsAlongSplitAxis / PAR_Size();
-      size_t numPartsWithAdditionalCell = numCellsAlongSplitAxis % PAR_Size();
-
-      size_t startCell, nCells;
-      if (PAR_Rank() < numPartsWithAdditionalCell)
+                      << "Parallel & Decompose_Domains are defined, "
+                      << "entering parallel code." << endl;
+    
+    for (size_t i=0; i<numTopologicalDims; ++i)
+    {
+      int numNodes = gdims[i];
+      
+      // Integer number of nodes per processor
+      size_t numNodesPerProc = numNodes / PAR_Size();
+      size_t numProcsWithExtraNode = numNodes % PAR_Size();
+      
+      // To get all of the nodes adjust the count by one for those
+      // processors that need an extra node.
+      if (PAR_Rank() < numProcsWithExtraNode)
       {
-        startCell = PAR_Rank() * (numCellsPerPart + 1);
-        nCells = numCellsPerPart + 1;
+        gdims[i] = numNodesPerProc + 1;
+        mins[i] = PAR_Rank() * (numNodesPerProc + 1) * strides[i];
+        maxs[i] = mins[i] + (numNodesPerProc) * strides[i];
       }
       else
       {
-        startCell = numPartsWithAdditionalCell * (numCellsPerPart + 1) +
-        (PAR_Rank() - numPartsWithAdditionalCell) * numCellsPerPart;
-        nCells = numCellsPerPart;
+        gdims[i] = numNodesPerProc;
+        // Processors w/extra node plus processors without extra node.
+        mins[i] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
+                   (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
+          strides[i];
+        maxs[i] = mins[i] + (numNodesPerProc-1) * strides[i];
       }
       // Adjust bounds
       float delta = (upperBounds[splitAxis] - lowerBounds[splitAxis]) /
@@ -669,9 +668,19 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
       numCells[splitAxis] = nCells;
       idims[splitAxis] = nCells + 1; // FIXME: May depend on centering
     }
+
     VsLog::debugLog() << methodSig
-      << "Parallel & Decompose_Domains are defined, exiting parallel code." << endl;
+                      << "Parallel & Decompose_Domains are defined, "
+                      << "exiting parallel code." << endl;
 #endif
+
+    VsLog::debugLog() << methodSig << "Getting lower bounds for mesh." << endl;
+    vector<float> lowerBounds;
+    uniformMesh->getLowerBounds(&lowerBounds);
+
+    VsLog::debugLog() << methodSig << "Getting upper bounds for mesh." << endl;
+    vector<float> upperBounds;
+    uniformMesh->getUpperBounds(&upperBounds);
 
     // Storage for mesh points in VisIt are spatially 3D. So create 3
     // coordinate arrays and fill in zero for the others.
@@ -838,6 +847,13 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       }
     }
 
+    for (size_t i=numTopologicalDims; i<vsdim; ++i)
+    {
+      mins[i] = 0;
+      maxs[i] = 1;
+      strides[i] = 1;
+    }
+
     VsLog::debugLog() << methodSig
       << "Have a zonal inclusive selection for rectilinear mesh "<< endl
       << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
@@ -845,6 +861,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
       << endl;
 
+    // Get the new number of node points.
     vector<int> gdims(vsdim);
 
     for (size_t i=0; i<numTopologicalDims; ++i)
@@ -862,6 +879,43 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
     VsLog::debugLog() <<  "Grid dims predicted "
          << gdims[0] << "  " << gdims[1] << "  " << gdims[2] << "  " << endl;
+
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
+    VsLog::debugLog() << methodSig
+                      << "Parallel & Decompose_Domains are defined, "
+                      << "entering parallel code." << endl;
+    
+    for (size_t i=0; i<numTopologicalDims; ++i)
+    {
+      int numNodes = gdims[i];
+      
+      // Integer number of nodes per processor
+      size_t numNodesPerProc = numNodes / PAR_Size();
+      size_t numProcsWithExtraNode = numNodes % PAR_Size();
+      
+      // To get all of the nodes adjust the count by one for those
+      // processors that need an extra node.
+      if (PAR_Rank() < numProcsWithExtraNode)
+      {
+        gdims[i] = numNodesPerProc + 1;
+        mins[i] = PAR_Rank() * (numNodesPerProc + 1) * strides[i];
+        maxs[i] = mins[i] + (numNodesPerProc) * strides[i];
+      }
+      else
+      {
+        gdims[i] = numNodesPerProc;
+        // Processors w/extra node plus processors without extra node.
+        mins[i] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
+                   (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
+            strides[i];
+        maxs[i] = mins[i] + (numNodesPerProc-1) * strides[i];
+      }
+    }
+    
+    VsLog::debugLog() << methodSig
+                      << "Parallel & Decompose_Domains are defined, "
+                      << "exiting parallel code." << endl;
+#endif
 
     vector<vtkDataArray*> coords(vsdim);
 
@@ -1138,6 +1192,13 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
                                    // number of cells
         strides[i] = 1;
       }
+    }
+
+    for (size_t i=numTopologicalDims; i<vsdim; ++i)
+    {
+      mins[i] = 0;
+      maxs[i] = 1;
+      strides[i] = 1;
     }
 
     VsLog::debugLog() << methodSig
@@ -1933,30 +1994,6 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     size_t numNodes = variableWithMesh->getNumPoints();
     size_t numSpatialDims = variableWithMesh->getNumSpatialDims();
 
-#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    VsLog::debugLog() << methodSig
-                      << "Parallel & Decompose_Domains are defined, "
-                      << "entering parallel code." << endl;
-    size_t numPartsPerProc = numNodes / PAR_Size();
-    size_t numProcsWithExtraPart = numNodes % PAR_Size();
-    size_t start, count;
-    if (PAR_Rank() < numProcsWithExtraPart)
-    {
-      start = PAR_Rank() * (numPartsPerProc+1);
-      count = numPartsPerProc + 1;
-    }
-    else
-    {
-      start = numProcsWithExtraPart * (numPartsPerProc + 1) +
-        (PAR_Rank() - numProcsWithExtraPart) * numPartsPerProc;
-      count = numPartsPerProc;
-    }
-    numNodes = count;
-    VsLog::debugLog() << methodSig
-                      << "Parallel & Decompose_Domains are defined, "
-                      << "exiting parallel code." << endl;
-#endif
-
     // Adjust for the data selections which are ZONAL.
     if (haveDataSelections)
     {
@@ -1983,6 +2020,36 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
 
     VsLog::debugLog() << methodSig << "There are " << numNodes
                       << " points." << endl;
+
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
+    VsLog::debugLog() << methodSig
+                      << "Parallel & Decompose_Domains are defined, "
+                      << "entering parallel code." << endl;
+
+    // Integer number of nodes per processor
+    size_t numNodesPerProc = numNodes / PAR_Size();
+    size_t numProcsWithExtraNode = numNodes % PAR_Size();
+
+    // To get all of the nodes adjust the count by one for those
+    // processors that need an extra node.
+    if (PAR_Rank() < numProcsWithExtraNode)
+    {
+      numNodes = numNodesPerProc + 1;
+      mins[0] = PAR_Rank() * (numNodesPerProc + 1)  * strides[0];
+    }
+    else
+    {
+      numNodes = numNodesPerProc;
+      // Processors w/extra node plus processors without extra node.
+      mins[0] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
+               (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
+        strides[0];
+    }
+
+    VsLog::debugLog() << methodSig
+                      << "Parallel & Decompose_Domains are defined, "
+                      << "exiting parallel code." << endl;
+#endif
 
     // Read in points
     //
@@ -2029,41 +2096,6 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     // Read in the data
     VsLog::debugLog() << methodSig << "Reading data." << endl;
 
-#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    err = reader->getVarWithMeshMesh(*meta, dataPtr, start, count);
-
-    if (err < 0) {
-      VsLog::debugLog() << methodSig
-        << "Call to getVarWithMeshMeta returned error: " << err << endl;
-      VsLog::debugLog() << methodSig << "Returning NULL." << endl;
-      return NULL;
-    } else {
-      VsLog::debugLog() << methodSig << "Mesh points read." << endl;
-    }
-
-    // If spatial dimension is less than 3, move coordinates to the
-    // correct position and set the extra dimensions to zero.
-    if (numSpatialDims < 3)
-    {
-      VsLog::debugLog() << methodSig << "Point spatial dimensionality ("
-                        << numSpatialDims << " is less than 3.  "
-                        << "Moving data into correct location." << endl;
-        
-      for (int i=numNodes-1; i>=0; --i)
-      {
-        unsigned char* destPtr =
-          (unsigned char*) dataPtr + i*3*dsize;
-        unsigned char* srcPtr =
-          (unsigned char*) dataPtr + i*numSpatialDims*dsize;
-      
-        memmove(destPtr, srcPtr, numSpatialDims*dsize);
-        destPtr += numSpatialDims*dsize;
-        memset(destPtr, 0, (3-numSpatialDims)*dsize);
-      }
-
-      VsLog::debugLog() << methodSig << "Data move succeeded." << endl;
-    }
-#else
     // Kind of grim but read each of the coordinate components in
     // using the generic reader.
 
@@ -2131,8 +2163,6 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
       }
     }
 
-#endif
-
     // create point mesh
     try {
       VsLog::debugLog() << methodSig << "Allocating " << numNodes
@@ -2180,121 +2210,64 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
 //
 //  Modifications:
 //
-vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& name) {
+vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName) {
 
-    stringstream sstr;
-    sstr << "avtVsFileFormat::getCurve(" << domain << ", " << name << ") - ";
-    string methodSig = sstr.str();
+    string methodSig("avtVsFileFormat::getCurve() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
-
     LoadData();
+
+    // Save the name in a temporary variable as it gets mucked with if
+    // searching for a component.
+    string name = requestedName;
 
     ///TODO: This method piggybacks on getVar and getMesh -
     ///       Could be made much more efficient
-    //1. get var
-    //2. get matching mesh
-    //3. create 2 coord arrays - x from mesh and y from var
-    //4. Combine coord arrays to form 1-d Rectilinear mesh
-    // (attempts to follow visit plugin Curve2d in /visit/src/databases/Curve2d/avtCurve2DFileFormat.C)
+    // 1. get var
+    // 2. get matching mesh
+    // 3. create 2 coord arrays - x from mesh and y from var
+    // 4. Combine coord arrays to form 1-d Rectilinear mesh
 
-    //retrieve var metadata and extract the mesh name
+    // Attempts to follow visit plugin Curve2d in
+    // ./visit/src/databases/Curve2d/avtCurve2DFileFormat.C
+
+    // Retrieve var metadata and extract the mesh name
     VsLog::debugLog() << methodSig << "Looking for variable metadata." << endl;
     VsVariable* varMeta = registry->getVariable(name);
+
     if (varMeta == NULL) {
       VsLog::debugLog() << methodSig
         << "No variable metadata found under name " << name << endl;
       VsLog::debugLog() << methodSig
         << "Looking for information in component registry." << endl;
 
-      //Is this a component?
-      //If so, we swap the component name with the "real" variable name
-      //And remember that we're a component
-      int componentIndex = 0;
+      // Is this variable a component?  If so, swap the component name
+      // with the "real" variable name and remember that it is a
+      // component.
+      bool isAComponent = false;
+      int componentIndex = -2; // No components
       NamePair foundName;
       registry->getComponentInfo(name, &foundName);
+
       if (!foundName.first.empty()) {
-        VsLog::debugLog() << methodSig
-          << "This is a component, and actually refers to variable "
-          << foundName.first << " and index " << foundName.second << endl;
+        name = foundName.first.c_str();
         varMeta = registry->getVariable(foundName.first);
-      }
-      
-      if (varMeta == NULL) {
+        componentIndex = foundName.second;
         VsLog::debugLog() << methodSig
-          << "Failed to find variable in component list.  Returning NULL." << endl;
-        return NULL;
+                          << "Found a component, which refers to variable "
+                          << name << " and index " << componentIndex << endl;
+        isAComponent = true;
       }
     }
 
-    VsLog::debugLog() << methodSig
-                      << "Found variable metadata." << name << endl;
-
-    string meshName = varMeta->getMeshName();
-    VsMesh* meshMeta = varMeta->getMesh();
-    if (meshMeta == NULL) {
+    if (varMeta == NULL) {
       VsLog::debugLog() << methodSig
-                        << "No mesh metadata found.  Returning NULL." << endl;
+                        << "Failed to find variable in component list.  "
+                        << "Returning NULL." << endl;
       return NULL;
     }
 
-    VsLog::debugLog() << methodSig
-                      << "Found all metadata, loading variable data." << endl;
-    vtkDataArray* varData = NULL;
-    try {
-      varData = GetVar(domain, name.c_str());
-    } catch (...) {
-      VsLog::debugLog() << methodSig
-        << "Caught exception from GetVar().  Returning NULL." << endl;
-      return NULL;
-    }
-
-    if (varData == NULL) {
-      VsLog::debugLog() << methodSig
-                        << "Failed to load var data.  Returning NULL." << endl;
-      return NULL;
-    }
-
-    VsLog::debugLog() << methodSig
-      << "Loaded variable data, trying to load mesh data." << endl;
-
-    vtkRectilinearGrid* meshData = NULL;
-    try {
-      meshData = (vtkRectilinearGrid*)GetMesh(domain, meshName.c_str());
-    } catch (...) {
-      VsLog::debugLog() << methodSig
-        << "Caught exception from GetMesh().  Returning NULL." << endl;
-      ///TODO: delete varData?
-      varData->Delete();
-      return NULL;
-    }
-
-    if (meshData == NULL) {
-      VsLog::debugLog() << methodSig
-                        << "Failed to load mesh data.  Returning NULL." << endl;
-      ///TODO: delete varData?
-      varData->Delete();
-      return NULL;
-    }
-
-    int numDims = meshMeta->getNumSpatialDims();
-    VsLog::debugLog() << methodSig << "Mesh has "
-                      << numDims << " dimensions" << endl;
-
-    //This used to be "varMeta->getLength()"
-    //Which is incorrect if the variable has multiple components
-    //Instead, we have to check the proper dimensional index
-    int nPts = 0;
-    if (varMeta->isCompMinor()) {
-      nPts = varMeta->getDims()[0];
-    } else {
-      nPts = varMeta->getDims()[1];
-    }
-
-    VsLog::debugLog() << methodSig
-                      << "Variable has " << nPts << " points." << endl;
-
-    // Create 1-D RectilinearGrid
     hid_t varDataType = varMeta->getType();
+
     if (isDoubleType(varDataType)) {
       VsLog::debugLog() << methodSig << "Var is 64-bit real" << endl;
     } else if (isFloatType(varDataType)) {
@@ -2308,6 +2281,61 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& name) {
       return NULL;
     }
 
+    vtkDataArray* varData = NULL;
+    try {
+      varData = GetVar(domain, requestedName.c_str());
+    } catch (...) {
+      VsLog::debugLog() << methodSig
+        << "Caught exception from GetVar().  Returning NULL." << endl;
+      return NULL;
+    }
+
+    if (varData == NULL) {
+      VsLog::debugLog() << methodSig
+                        << "Failed to load var data.  Returning NULL." << endl;
+      return NULL;
+    }
+
+    // Have the variable now get the mesh.
+    string meshName = varMeta->getMeshName();
+    VsMesh* meshMeta = varMeta->getMesh();
+
+    if (meshMeta == NULL) {
+      VsLog::debugLog() << methodSig
+                        << "No mesh metadata found.  Returning NULL." << endl;
+      return NULL;
+    }
+
+    vtkRectilinearGrid* meshData = NULL;
+    try {
+      meshData = (vtkRectilinearGrid*)GetMesh(domain, meshName.c_str());
+    } catch (...) {
+      VsLog::debugLog() << methodSig
+                        << "Caught exception from GetMesh().  Returning NULL."
+                        << endl;
+      varData->Delete();
+      return NULL;
+    }
+
+    if (meshData == NULL) {
+      VsLog::debugLog() << methodSig
+                        << "Failed to load mesh data.  Returning NULL." << endl;
+      varData->Delete();
+      return NULL;
+    }
+
+    // Get the number of points on the curve.
+    int nPts = 0;
+    if (varMeta->isCompMinor()) {
+      nPts = varMeta->getDims()[0];
+    } else {
+      nPts = varMeta->getDims()[1];
+    }
+
+    VsLog::debugLog() << methodSig
+                      << "Variable has " << nPts << " points." << endl;
+
+    // Create 1-D RectilinearGrid
     VsLog::debugLog() << methodSig << "Building Rectilinear grid." << endl;
     vtkFloatArray* vals = vtkFloatArray::New();
     vals->SetNumberOfComponents(1);
@@ -2316,20 +2344,13 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& name) {
 
     vtkRectilinearGrid* rg = vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
     rg->GetPointData()->SetScalars(vals);
-    vtkFloatArray* xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
 
-    VsLog::debugLog() << methodSig
-                      << "Retrieving X coordinates from mesh." << endl;
+    vtkFloatArray* xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
     vtkDataArray* meshXCoord = meshData->GetXCoordinates();
 
-    VsLog::debugLog() << methodSig << "Adding all points to curve" << endl;
     for (int i = 0; i < nPts; i++) {
       double* var_i = varData->GetTuple(i);
       double* mesh_i = meshXCoord->GetTuple(i);
-//       VsLog::debugLog() << methodSig << methodSig
-//                      << "Adding tuple[" << i << "] = ("
-//                      << mesh_i[0] << ", " << var_i[0] << ")" << endl;
-
       xc->SetValue(i, mesh_i[0]);
       vals->SetValue(i, var_i[0]);
     }
@@ -2582,14 +2603,21 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       {
         mins[i] = 0;
         
-        if( isZonal )
-          maxs[i] = varDims[i+isCompMajor] - 1;  // varDims - 2 = last cell index, not
-                                     // number of cells
-        else // is nodal
-          maxs[i] = varDims[i+isCompMajor] - 2;  // varDims - 1 = last cell index,
-                                     // not number of cells
+        if( isZonal ) // varDims - 2 = last cell index, not number of cells
+          maxs[i] = varDims[i+isCompMajor] - 1;  
+                                     
+        else // is nodal // varDims - 1 = last cell index, not number of cells
+          maxs[i] = varDims[i+isCompMajor] - 2;
+
         strides[i] = 1;
       }
+    }
+
+    for (size_t i=numTopologicalDims; i<vsdim; ++i)
+    {
+      mins[i] = 0;
+      maxs[i] = 1;
+      strides[i] = 1;
     }
 
     if( haveDataSelections )
@@ -2619,6 +2647,47 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       vdims[i] = 1;
     }
 
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
+    if (vmMeta || isAComponent) {
+      VsLog::debugLog() << methodSig
+                        << "Parallel & Decompose_Domains are defined, "
+                        << "entering parallel code." << endl;
+
+      numVariables = 1;
+
+      for (size_t i=0; i<numTopologicalDims; ++i)
+      {
+        int numNodes = vdims[i];
+
+        // Integer number of nodes per processor
+        size_t numNodesPerProc = numNodes / PAR_Size();
+        size_t numProcsWithExtraNode = numNodes % PAR_Size();
+      
+        // To get all of the nodes adjust the count by one for those
+        // processors that need an extra node.
+        if (PAR_Rank() < numProcsWithExtraNode)
+        {
+          vdims[i] = numNodesPerProc + 1;
+          mins[i] = PAR_Rank() * (numNodesPerProc + 1) * strides[i];
+        }
+        else
+        {
+          vdims[i] = numNodesPerProc;
+          // Processors w/extra node plus processors without extra node.
+          mins[i] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
+                      (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
+            strides[i];
+        }
+
+        numVariables *= vdims[i];
+      }
+
+      VsLog::debugLog() << methodSig
+                        << "Parallel & Decompose_Domains are defined, "
+                        << "exiting parallel code." << endl;
+    }
+#endif
+
     VsLog::debugLog() << methodSig
                       << "Total number of variable is " << numVariables << endl;
 
@@ -2639,150 +2708,39 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     float* fltDataPtr = 0;
     int* intDataPtr = 0;
 
-    // Components in Parallel and decomposed have other data allocation    
-    bool alloc = true;
-
-    if( isAComponent )
-    {
-#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-      alloc = false;
-#endif
-    }
-
     // Do the allocation here no matter the variable being read -
     // except for the case above.
-    if( alloc )
-    {
-      if (isDouble) {
-        dblDataPtr = new double[numVariables];
-        dataPtr = dblDataPtr;
-      }
-      else if (isFloat) {
-        fltDataPtr = new float[numVariables];
-        dataPtr = fltDataPtr;
-      }
-      else if (isInteger) {
-        intDataPtr = new int[numVariables];
-        dataPtr = intDataPtr;
-      }
-
-      if (!dataPtr) {
-        VsLog::debugLog() << methodSig
-                          << "Allocation failed, pointer is NULL.  "
-                          << "Returning NULL." << endl;
-        return NULL;
-      }
+    if (isDouble) {
+      dblDataPtr = new double[numVariables];
+      dataPtr = dblDataPtr;
+    }
+    else if (isFloat) {
+      fltDataPtr = new float[numVariables];
+      dataPtr = fltDataPtr;
+    }
+    else if (isInteger) {
+      intDataPtr = new int[numVariables];
+      dataPtr = intDataPtr;
+    }
+    
+    if (!dataPtr) {
+      VsLog::debugLog() << methodSig
+                        << "Allocation failed, pointer is NULL.  "
+                        << "Returning NULL." << endl;
+      return NULL;
     }
 
-    // Variable and mesh data.
-    if (vmMeta) {
+    // Variable and mesh data or a variable component.
+    if (vmMeta || isAComponent) {
       VsLog::debugLog() << methodSig << "Entering VarWithMesh section." << endl;
-
-#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-      VsLog::debugLog() << methodSig
-                        << "Parallel & Decompose_Domains are defined, "
-                        << "entering parallel code." << endl;
-      size_t numPartsPerProc = numVariables / PAR_Size();
-      size_t numProcsWithExtraPart = numVariables % PAR_Size();
-      size_t start, count;
-      if (PAR_Rank() < numProcsWithExtraPart) {
-        start = PAR_Rank() * (numPartsPerProc+1);
-        count = numPartsPerProc + 1;
-      }
-      else {
-        start = numProcsWithExtraPart * (numPartsPerProc + 1) +
-          (PAR_Rank() - numProcsWithExtraPart) * numPartsPerProc;
-        count = numPartsPerProc;
-      }
-      numVariables = count;
-      VsLog::debugLog() << methodSig
-        << "Parallel & Decompose_Domains are defined, exiting parallel code."
-                        << endl;
-      VsLog::debugLog() << methodSig << "Reading var with mesh data." << endl;
-
-      herr_t err = reader->getVarWithMeshComponent(name, componentIndex,
-                                                   dataPtr, start, count);
-#else
-      VsLog::debugLog() << methodSig << "Reading var with mesh data." << endl;
 
       herr_t err = reader->getDataSet(variableDataset, dataPtr,
                                       indexOrder, componentIndex,
                                       mins, &(vdims[0]), strides);
-#endif
+
       if (err < 0) {
         VsLog::debugLog() << methodSig
           << "GetVarWithMeshComponent returned error: " << err << endl;
-        VsLog::debugLog() << methodSig << "Returning NULL." << endl;
-        return NULL;
-      }
-    }
-
-    // Read a variable componment
-    else if (isAComponent) {
-      VsLog::debugLog() << methodSig << "Entering Component section." << endl;
-
-#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-      VsLog::debugLog() << methodSig
-                        << "Parallel & Decompose_Domains are defined, "
-                        << "entering parallel code." << endl;
-
-      size_t splitDims[numTopologicalDims];
-      dataPtr = reader->getVariableComponent(name, componentIndex,
-                                             PAR_Rank(), PAR_Size(), splitDims);
-      if (!dataPtr) return 0;
-
-      if (isDouble) {
-        dblDataPtr = dataPtr;
-      } else if (isFloat) {
-        fltDataPtr = dataPtr;
-      } else if (isInteger) {
-        intDataPtr = dataPtr;
-      }
-
-      VsLog::debugLog() << methodSig << "Original dimensions are";
-      for (size_t i=0; i<numTopologicalDims; ++i) {
-        VsLog::debugLog() << " " << dims[i];
-      }
-      numVariables = 1;
-      for (size_t i=0; i<numTopologicalDims; ++i) {
-        dims[i] = splitDims[i];
-        numVariables *= dims[i];
-      }
-      VsLog::debugLog() << endl;
-      VsLog::debugLog() << methodSig << "Dimensions after split are";
-      for (size_t i=0; i<numTopologicalDims; ++i) {
-        VsLog::debugLog() << " " << dims[i];
-      }
-      VsLog::debugLog() << " numVariables=" << numVariables << endl;
-      VsLog::debugLog() << methodSig
-                        << "Parallel & Decompose_Domains are defined, "
-                        << "exiting parallel code." << endl;
-#else
-      VsLog::debugLog() << methodSig
-                        << "Determining number of components for variable."
-                        << endl;
-
-      /* size_t nc = reader->getNumComps(nm);
-       if (!nc) {
-       VsLog::debugLog() << methodSig << "Number of components is zero for variable." << endl;
-       VsLog::debugLog() << methodSig << "Returning NULL." << endl;
-       return NULL;
-       } else {
-       VsLog::debugLog() << methodSig << "Variable has " << nc << " components." << endl;
-       }
-       */
-      //    numVariables = meta->getLength()/nc;
-      //changed from "new unsigned" to "new char" because unsigned is 4 bytes, char is 1
-
-      VsLog::debugLog() << methodSig << "Loading variable data." << endl;
-
-      herr_t err = reader->getDataSet(variableDataset, dataPtr,
-                                      indexOrder, componentIndex,
-                                      mins, &(vdims[0]), strides);
-
-      if (err < 0) {
-        VsLog::debugLog() << methodSig
-                          << "GetDataSet returned error: " << err << endl;
         VsLog::debugLog() << methodSig << "Returning NULL." << endl;
 
         if (isDouble)
@@ -2794,32 +2752,26 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
         return NULL;
       }
-#endif
     }
 
     // Read a regular variable
     else {
-      VsLog::debugLog() << methodSig
-                        << "Entering regular Variable section." << endl;
-
-#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-      // Don't know how to decompose this type of mesh -> load it on proc 0 only
-      if (PAR_Rank() > 0)
-      {
-        return NULL;
-      }
-#endif
       VsLog::debugLog() << methodSig << "Loading variable data." << endl;
 
       herr_t err;
-
+    
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
+      err = reader->getDataSet( variableDataset, dataPtr,
+                                meta->getIndexOrder(), -2, // -2 no components
+                                mins, &(vdims[0]), strides );
+#else
       if( haveDataSelections )
-        reader->getDataSet( variableDataset, dataPtr,
-                            meta->getIndexOrder(), -2, // -2 no components
-                            mins, &(vdims[0]), strides );
+        err = reader->getDataSet( variableDataset, dataPtr,
+                                  meta->getIndexOrder(), -2, // -2 no components
+                                  mins, &(vdims[0]), strides );
       else
-        reader->getDataSet( variableDataset, dataPtr );
-
+        err = reader->getDataSet( variableDataset, dataPtr );
+#endif
       if (err < 0) {
         VsLog::debugLog() << methodSig
                           << "GetDataSet returned error: " << err << endl;
