@@ -2815,7 +2815,9 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
         analysisState = FieldlineProperties::ADDING_POINTS;
 
-        nPuncturesNeeded = poloidal_puncture_pts.size() + 4;
+        nPuncturesNeeded = poloidal_puncture_pts.size() * 1.05;
+
+        if( nPuncturesNeeded < 5 ) nPuncturesNeeded = 5;
 
         if( verboseFlag )
           cerr << "Local minimum, not enough puncture points; "
@@ -3299,7 +3301,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       (analysisState != FieldlineProperties::COMPLETED ||
        analysisState != FieldlineProperties::TERMINATED) )
   {
-    cerr << "0 TERMINATING  " << nPuncturesNeeded << endl;
+    if( verboseFlag )
+      cerr << "0 TERMINATING  " << nPuncturesNeeded << endl;
 
     analysisState = FieldlineProperties::TERMINATED;
     fi.nPuncturesNeeded = 0;
@@ -3692,7 +3695,8 @@ FieldlineLib::fieldlineProperties2( vector< Point > &ptList,
       (analysisState != FieldlineProperties::COMPLETED ||
        analysisState != FieldlineProperties::TERMINATED) )
   {
-    cerr << "1 TERMINATING  " << nPuncturesNeeded << endl;
+    if( verboseFlag )
+      cerr << "1 TERMINATING  " << nPuncturesNeeded << endl;
 
     analysisState = FieldlineProperties::TERMINATED;
     fi.nPuncturesNeeded = 0;
