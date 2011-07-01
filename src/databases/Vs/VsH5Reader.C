@@ -3,6 +3,7 @@
 #include <InvalidFilesException.h>
 
 #if HDF5_VERSION_GE(1,8,1)
+
 /**
  *
  * @file        VsH5Reader.cpp
@@ -123,19 +124,24 @@ VsH5Reader::~VsH5Reader() {
 
 herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
                                void* data,
-                               std::string indexOrder,
-                               int components,
-                               int* srcMins,
-                               int* srcCounts,
-                               int* srcStrides,
-                               int  mdims,
-                               int* destSizes,
-                               int* destMins,
-                               int* destCounts,
-                               int* destStrides ) const
+                               // Use these variables for adjusting
+                               // the read memory space.
+                               std::string indexOrder, // Index ordering
+                               int components,   // Index for a component
+                               int* srcMins,     // start locations
+                               int* srcCounts,   // number of entries
+                               int* srcStrides,  // stride in memory
+
+                               // Use these variables for adjusting
+                               // the write memory space.
+                               int  mdims,               // spatial dims (rank)
+                               int* destSizes,           // overall memory size
+                               int* destMins,            // start locations
+                               int* destCounts,          // number of entries
+                               int* destStrides ) const  // stride in memory
 {
   // components = -2 No component array (i.e. scalar variable)
-  // components = -1 Component array present read all values.
+  // components = -1 Component array present but read all values.
   //                 (i.e. vector variable or point coordinates)
   // component >= 0  Component array present read single value at that index.
 
@@ -151,7 +157,7 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
   
   herr_t err = 0;
 
-  // No subset info so read all data.
+  // No index ordering info so read all data.
   if (indexOrder.length() == 0)
   {
     err = H5Dread(dataSet->getId(), dataSet->getType(),
@@ -402,7 +408,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
       memspace = H5Screate_simple(mdims, &(destSize[0]), NULL);
 
       H5Sselect_hyperslab(memspace, H5S_SELECT_SET,
-                          &(destStart[0]), &(destStride[0]), &(destCount[0]), NULL);
+                          &(destStart[0]), &(destStride[0]), &(destCount[0]),
+                          NULL);
     }
 
     // Read data
@@ -419,303 +426,6 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
   }
   
   VsLog::debugLog() << methodSig << "Returning " << err << "." << std::endl;
-  return err;
-}
-
-
-
-void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
-                                       size_t partnumber,
-                                       size_t numparts, size_t* splitDims)
-{
-  VsLog::debugLog() << "VsH5Reader::getVariableComponent(" <<name <<", " <<indx
-  <<", " <<partnumber <<", " <<numparts <<", splitDims): Entering." << std::endl;
-  
-  if (partnumber >= numparts) {
-    VsLog::debugLog() <<"VsH5Reader::getVariableComponent() - Variable has " <<numparts
-    <<"parts but we were asked for part number #" <<partnumber << endl;
-    VsLog::debugLog() <<"VsH5Reader::getVariableComponent() - returning NULL." << endl;
-    return NULL;
-  }
-  
-  VsVariable* meta = registry->getVariable(name);
-  if (!meta)
-  {
-    VsLog::debugLog() << "VsH5Reader::getVariableComponent(): error: var " <<
-    name << " has no metadata." << std::endl;
-    VsLog::debugLog() << "VsH5Reader::getVariableComponent(): Returning 0." << std::endl;
-    return 0;
-  }
-  
-  std::vector<int> dims = meta->getDims();
-  size_t rank = dims.size();
-  VsLog::debugLog() << "VsH5Reader::getVariableComponent(...): " << name <<
-  " has rank " << rank << "." << std::endl;
-  
-  std::vector<hsize_t> count(rank);
-  std::vector<hsize_t> start(rank);
-  hid_t dataspace = H5Dget_space(meta->getId());
-  
-  if (meta->isCompMajor())
-  {
-    for (size_t i = 1; i<rank; ++i)
-    {
-      count[i] = dims[i];
-      start[i] = 0;
-    }
-    count[0] = 1;
-    start[0] = indx;
-    
-  }
-  else
-  { //compMinor
-    for (size_t i = 0; i<(rank-1); ++i)
-    {
-      count[i] = dims[i];
-      start[i] = 0;
-    }
-    count[rank-1] = 1;
-    start[rank-1] = indx;
-  }
-  
-  // Diagnostic output
-  VsLog::debugLog() << "VsH5Reader::getVariableComponent() start =";
-  for (size_t i=0; i<rank; ++i) VsLog::debugLog() << " " << start[i];
-  VsLog::debugLog() << std::endl;
-  VsLog::debugLog() << "VsH5Reader::getVariableComponent() count =";
-  for (size_t i=0; i<rank; ++i) VsLog::debugLog() << " " << count[i];
-  VsLog::debugLog() << std::endl;
-  
-  if (numparts > 1)
-  {
-    // Determine along which axis to split
-    // NOTE: We assume that all spatial extents are larger than 1 so that we will
-    // never split along the "component direction"
-    size_t splitAxis = 0;
-    size_t largestCount = count[splitAxis];
-    
-    for (size_t currAxis = 1; currAxis < rank; ++currAxis)
-    {
-      if (count[currAxis] > largestCount)
-      {
-        splitAxis = currAxis;
-        largestCount = count[currAxis];
-      }
-    }
-    
-    // Split along axis
-    size_t numCellsAlongSplitAxis = count[splitAxis] - 1;
-    if (numCellsAlongSplitAxis)
-    {
-      size_t numCellsPerPart = numCellsAlongSplitAxis / numparts;
-      size_t numPartsWithAdditionalCell = numCellsAlongSplitAxis % numparts;
-      
-      if (partnumber < numPartsWithAdditionalCell)
-      {
-        start[splitAxis] = partnumber * (numCellsPerPart + 1);
-        count[splitAxis] = (numCellsPerPart + 1) + 1;
-      }
-      else
-      {
-        start[splitAxis] = numPartsWithAdditionalCell * (numCellsPerPart + 1) +
-        (partnumber - numPartsWithAdditionalCell) * numCellsPerPart;
-        count[splitAxis] = numCellsPerPart + 1;
-      }
-    }
-  }
-  
-  if (splitDims)
-  {
-    if (meta->isCompMajor())
-    {
-      for (size_t i = 0; i<(rank-1); ++i)
-      {
-        splitDims[i] = count[i+1];
-      }
-    }
-    else
-    { //compMinor
-      for (size_t i = 0; i<(rank-1); ++i)
-      {
-        splitDims[i] = count[i];
-      }
-    }
-  }
-  
-  // Select data
-  herr_t err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start[0], NULL,
-                                   &count[0], NULL);
-  if (err < 0)
-  {
-    VsLog::debugLog() << "VsH5Reader::getVariableComponent(): error " << err <<
-    " selecting hyperslab for variable '" << name << "'." << std::endl;
-    VsLog::debugLog() << "VsH5Reader::getVariableComponent(): Returning 0." << std::endl;
-    return 0;
-  }
-  
-  // Create memory space for the data
-  hid_t memspace = H5Screate_simple(rank, &count[0], NULL);
-  
-  // Allocate memory
-  hid_t type = meta->getType();
-  int numElems = 1;
-  for (size_t i = 0; i < rank; ++i) numElems *= count[i];
-  void* data = new unsigned char[numElems*H5Tget_size(type)];
-  
-  // Read data
-  err = H5Dread(meta->getId(), type, memspace, dataspace,
-                H5P_DEFAULT, data);
-  if (err < 0)
-  {
-    VsLog::debugLog() << "VsH5Reader::getVariableComponent(...): error " << err <<
-    " in reading variable '" << name << "'." << std::endl;
-    delete [] static_cast<unsigned char*>(data);
-    VsLog::debugLog() << "VsH5Reader::getVariableComponent(): Returning 0." << std::endl;
-    return 0;
-  }
-  
-  // Cleanup
-  H5Sclose(memspace);
-  H5Sclose(dataspace);
-  
-  // Return
-  VsLog::debugLog() << "VsH5Reader::getVariableComponent(): Returning data." << std::endl;
-  return data;
-}
-
-
-herr_t VsH5Reader::getVarWithMeshMesh(VsVariableWithMesh& meta, void* data,
-                                      size_t partStart, size_t partCount) const
-{
-  std::string methodSig("VsH5Reader::getVarWithMeshMesh() - ");
-
-  VsLog::debugLog() << methodSig << "Entering." << std::endl;
-  
-  std::vector<int> dims = meta.getDims();
-  size_t rank = dims.size();
-  if (rank != 2)
-  {
-    VsLog::debugLog() << methodSig << "don't know what to do if rank != 2" << std::endl;
-    VsLog::debugLog() << methodSig << "Returning 1." << std::endl;
-    return 1;
-  }
-  hsize_t count[2];
-  hsize_t start[2];
-  hid_t dataspace = H5Dget_space(meta.getId());
-  
-  if (meta.isCompMajor()) {
-    count[1] = partCount;
-    start[1] = partStart;
-    count[0] = meta.getNumSpatialDims();
-    start[0] = 0;
-  }
-  else {
-    count[0] = partCount;
-    start[0] = partStart;
-    count[1] = meta.getNumSpatialDims();
-    start[1] = 0;
-  }
-  
-  //WORK HERE - MARC - to select hyperslabs in correct order for spatialDims
-  VsLog::debugLog() << methodSig << "start =";
-  for (size_t i=0; i<rank; ++i) VsLog::debugLog() << " " << start[i];
-  VsLog::debugLog() << std::endl;
-  VsLog::debugLog() << methodSig << "count =";
-  for (size_t i=0; i<rank; ++i) VsLog::debugLog() << " " << count[i];
-  VsLog::debugLog() << std::endl;
-  
-  // Select data
-  herr_t err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL,
-                                   count, NULL);
-  // Create memory space for the data
-  hid_t memspace = H5Screate_simple(rank, count, NULL);
-  // Read data
-  err = 10 * err + H5Dread(meta.getId(), meta.getType(), memspace, dataspace,
-                           H5P_DEFAULT, data);
-  if (err < 0) {
-    VsLog::debugLog() << methodSig << "read error " << std::endl;
-  }
-  err = 10 * err + H5Sclose(memspace);
-  err = 10 * err + H5Sclose(dataspace);
-  VsLog::debugLog() << methodSig << "Returning cumulative error code: " <<err <<"." << std::endl;
-  return err;
-}
-
-
-herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
-                                           void* data, size_t partStart, size_t partCount) const {
-  VsLog::debugLog() << "VsH5Reader::getVarWithMeshComponent(" <<name <<", " <<idx <<", data, "
-  <<partStart <<", " <<partCount <<") - Entering." << std::endl;
-  
-  VsVariableWithMesh* meta = registry->getVariableWithMesh(name);
-  if (!meta) {
-    VsLog::debugLog() << "VsH5Reader::getVarWithMeshComponent(): error: " << name <<
-    " has no metadata." << std::endl;
-    VsLog::debugLog() << "VsH5Reader::getVarWithMeshComponent(): Returning 1." << std::endl;
-    return 1;
-  }
-  std::vector<int> dims = meta->getDims();
-  size_t rank = dims.size();
-  if (rank != 2)
-  {
-    VsLog::debugLog() << "VsH5Reader::getVarWithMeshComponent(): don't know what to do if rank != 2" << std::endl;
-    VsLog::debugLog() << "VsH5Reader::getVarWithMeshComponent(): Returning 1." << std::endl;
-    return 1;
-  }
-  hsize_t count[2];
-  hsize_t start[2];
-  hid_t dataspace = H5Dget_space(meta->getId());
-  
-  // Assert used to be this:
-  // assert(dims[dims.size()-1] >= (int)(meta->numSpatialDims+idx));
-  // But we decided that idx can be between 0 and dims[dims.size() - 1]
-  // And that we dont' need to take into account the spatial dims
-  // Because those are allowable components.
-  if ((int)idx > dims[dims.size()-1]) {
-    VsLog::debugLog() <<"VsH5Reader::getVarWithMeshComponent() - WARNING: failed assertion idx < dims[dims.size()-1]" << endl;
-    VsLog::debugLog() <<"dims.size() is " <<dims.size() << endl;
-    VsLog::debugLog() <<"dims[dims.size()-1] is " <<dims[dims.size() - 1] << endl;
-    VsLog::debugLog() <<"meta->numSpatialDims is " <<meta->getNumSpatialDims() << endl;
-    VsLog::debugLog() <<"idx is " <<idx << endl;
-    VsLog::debugLog() <<"VsH5Reader::getVarWithMeshComponent() - returning error 1." << endl;
-    return 1;
-  }
-  
-  if (meta->isCompMajor()) {
-    count[1] = partCount;
-    start[1] = partStart;
-    count[0] = 1;
-    start[0] = meta->getNumSpatialDims()+idx;
-  }
-  else { //compMinor
-    count[0] = partCount;
-    start[0] = partStart;
-    count[1] = 1;
-    start[1] = meta->getNumSpatialDims()+idx;
-  }
-  
-  VsLog::debugLog() << "VsH5Reader::getVarWithMeshComponent() - start =";
-  for (size_t i=0; i<rank; ++i) VsLog::debugLog() << " " << start[i];
-  VsLog::debugLog() << std::endl;
-  VsLog::debugLog() << "VsH5Reader::getVarWithMeshComponent() - count =";
-  for (size_t i=0; i<rank; ++i) VsLog::debugLog() << " " << count[i];
-  VsLog::debugLog() << std::endl;
-  
-  // Select data
-  herr_t err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL,
-                                   count, NULL);
-  // Create memory space for the data
-  hid_t memspace = H5Screate_simple(rank, count, NULL);
-  // Read data
-  err = 10 * err + H5Dread(meta->getId(), meta->getType(), memspace, dataspace,
-                           H5P_DEFAULT, data);
-  if (err < 0) {
-    VsLog::debugLog() << "VsH5Reader::getVarWithMeshComponent(...): error " << err <<
-    " reading variable '" << name << "'." << std::endl;
-  }
-  err = 10 * err + H5Sclose(memspace);
-  err = 10 * err + H5Sclose(dataspace);
-  VsLog::debugLog() << "VsH5Reader::getVarWithMeshComponent(): Returning cumulative error: " <<err <<"." << std::endl;
   return err;
 }
 
