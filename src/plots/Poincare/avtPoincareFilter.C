@@ -62,7 +62,7 @@
 #include <avtPoincareIC.h>
 #include <utility>
 
-#include "StreamlineAnalyzerLib.h"
+#include "FieldlineAnalyzerLib.h"
 
 #ifdef STRAIGHTLINE_SKELETON
 #include "skelet.h"
