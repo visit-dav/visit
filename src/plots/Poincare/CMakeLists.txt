@@ -33,7 +33,7 @@ SET(LIBE_SOURCES
 PoincareEnginePluginInfo.C
 avtPoincarePlot.C
 avtPoincareFilter.C
-StreamlineAnalyzerLib.C
+FieldlineAnalyzerLib.C
 #prim.C
 #skelet.C
 ${COMMON_SOURCES}
