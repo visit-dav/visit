@@ -131,6 +131,11 @@
       <Field name="fieldConstant" label="Constant" type="double" subtype="FieldConstant">
         1.0
       </Field>
+      <Field name="velocitySource" label="Starting velocity" type="doubleArray" length="3" enabler="fieldType:FlashField">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         AdamsBashforth
       </Field>

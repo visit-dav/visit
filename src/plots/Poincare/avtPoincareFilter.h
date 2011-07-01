@@ -147,7 +147,9 @@ class avtPoincareFilter : public avtStreamlineFilter
     virtual avtIntegralCurve *CreateIntegralCurve( const avtIVPSolver* model,
                                                    avtIntegralCurve::Direction,
                                                    const double& t_start,
-                                                   const avtVector &p_start, long ID );
+                                                   const avtVector &p_start,
+                                                   const avtVector &v_start,
+                                                   long ID );
 
   virtual void drawPoints( avtDataTree *dt,
                            vector < avtVector > &nodes );

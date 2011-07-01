@@ -211,6 +211,22 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
 
     SNPRINTF(tmpStr, 1000, "%sfieldConstant = %g\n", prefix, atts->GetFieldConstant());
     str += tmpStr;
+    {   const double *velocitySource = atts->GetVelocitySource();
+        SNPRINTF(tmpStr, 1000, "%svelocitySource = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", velocitySource[i]);
+            str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     const char *integrationType_names = "Euler, Leapfrog, DormandPrince, AdamsBashforth, Reserved_4, "
         "M3DC12DIntegrator";
     switch (atts->GetIntegrationType())
@@ -1001,6 +1017,60 @@ PoincareAttributes_GetFieldConstant(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFieldConstant());
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetVelocitySource(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double *dvals = obj->data->GetVelocitySource();
+    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 3)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the velocitySource in the object as modified.
+    obj->data->SelectVelocitySource();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetVelocitySource(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the velocitySource.
+    PyObject *retval = PyTuple_New(3);
+    const double *velocitySource = obj->data->GetVelocitySource();
+    for(int i = 0; i < 3; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(velocitySource[i]));
     return retval;
 }
 
@@ -2389,6 +2459,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetFieldType", PoincareAttributes_GetFieldType, METH_VARARGS},
     {"SetFieldConstant", PoincareAttributes_SetFieldConstant, METH_VARARGS},
     {"GetFieldConstant", PoincareAttributes_GetFieldConstant, METH_VARARGS},
+    {"SetVelocitySource", PoincareAttributes_SetVelocitySource, METH_VARARGS},
+    {"GetVelocitySource", PoincareAttributes_GetVelocitySource, METH_VARARGS},
     {"SetIntegrationType", PoincareAttributes_SetIntegrationType, METH_VARARGS},
     {"GetIntegrationType", PoincareAttributes_GetIntegrationType, METH_VARARGS},
     {"SetCoordinateSystem", PoincareAttributes_SetCoordinateSystem, METH_VARARGS},
@@ -2569,6 +2641,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "fieldConstant") == 0)
         return PoincareAttributes_GetFieldConstant(self, NULL);
+    if(strcmp(name, "velocitySource") == 0)
+        return PoincareAttributes_GetVelocitySource(self, NULL);
     if(strcmp(name, "integrationType") == 0)
         return PoincareAttributes_GetIntegrationType(self, NULL);
     if(strcmp(name, "Euler") == 0)
@@ -2810,6 +2884,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetFieldType(self, tuple);
     else if(strcmp(name, "fieldConstant") == 0)
         obj = PoincareAttributes_SetFieldConstant(self, tuple);
+    else if(strcmp(name, "velocitySource") == 0)
+        obj = PoincareAttributes_SetVelocitySource(self, tuple);
     else if(strcmp(name, "integrationType") == 0)
         obj = PoincareAttributes_SetIntegrationType(self, tuple);
     else if(strcmp(name, "coordinateSystem") == 0)

@@ -69,8 +69,10 @@ avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(
     const avtIVPSolver* model, 
     Direction dir,
     const double& t_start,
-    const avtVector &p_start, int ID) :
-    avtIntegralCurve(model, dir, t_start, p_start, ID), historyMask(mask)
+    const avtVector &p_start,
+    const avtVector &v_start,
+    int ID) :
+    avtIntegralCurve(model, dir, t_start, p_start, v_start, ID), historyMask(mask)
 {
     distance = 0.0;
     sequenceCnt = 0;
@@ -527,5 +529,3 @@ avtStateRecorderIntegralCurve::SameCurve(avtIntegralCurve *ic)
     avtStateRecorderIntegralCurve *sic = (avtStateRecorderIntegralCurve *) ic;
     return (id == sic->id) && (sequenceCnt == sic->sequenceCnt);
 }
-
-

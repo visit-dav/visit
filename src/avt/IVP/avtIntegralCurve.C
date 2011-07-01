@@ -103,11 +103,12 @@ avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model,
                                     Direction dir,
                                     const double& t_start,
                                     const avtVector &p_start, 
+                                    const avtVector &v_start, 
                                     long ID )
     : status(STATUS_OK), direction(dir), domain(-1), sortKey(0), id(ID)
 {
     ivp = model->Clone();
-    ivp->Reset( t_start, p_start );
+    ivp->Reset( t_start, p_start, v_start );
     counter = 0;
     encounteredNumericalProblems = false;
     postStepCallbackFunction = NULL;

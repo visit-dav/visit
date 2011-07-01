@@ -419,6 +419,22 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
 
     SNPRINTF(tmpStr, 1000, "%sfieldConstant = %g\n", prefix, atts->GetFieldConstant());
     str += tmpStr;
+    {   const double *velocitySource = atts->GetVelocitySource();
+        SNPRINTF(tmpStr, 1000, "%svelocitySource = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", velocitySource[i]);
+            str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     const char *integrationType_names = "Euler, Leapfrog, DormandPrince, AdamsBashforth, Reserved_4, "
         "M3DC12DIntegrator";
     switch (atts->GetIntegrationType())
@@ -2083,6 +2099,60 @@ StreamlineAttributes_GetFieldConstant(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFieldConstant());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetVelocitySource(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double *dvals = obj->data->GetVelocitySource();
+    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 3)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the velocitySource in the object as modified.
+    obj->data->SelectVelocitySource();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetVelocitySource(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the velocitySource.
+    PyObject *retval = PyTuple_New(3);
+    const double *velocitySource = obj->data->GetVelocitySource();
+    for(int i = 0; i < 3; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(velocitySource[i]));
     return retval;
 }
 
@@ -3928,6 +3998,8 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetFieldType", StreamlineAttributes_GetFieldType, METH_VARARGS},
     {"SetFieldConstant", StreamlineAttributes_SetFieldConstant, METH_VARARGS},
     {"GetFieldConstant", StreamlineAttributes_GetFieldConstant, METH_VARARGS},
+    {"SetVelocitySource", StreamlineAttributes_SetVelocitySource, METH_VARARGS},
+    {"GetVelocitySource", StreamlineAttributes_GetVelocitySource, METH_VARARGS},
     {"SetIntegrationType", StreamlineAttributes_SetIntegrationType, METH_VARARGS},
     {"GetIntegrationType", StreamlineAttributes_GetIntegrationType, METH_VARARGS},
     {"SetStreamlineAlgorithmType", StreamlineAttributes_SetStreamlineAlgorithmType, METH_VARARGS},
@@ -4217,6 +4289,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "fieldConstant") == 0)
         return StreamlineAttributes_GetFieldConstant(self, NULL);
+    if(strcmp(name, "velocitySource") == 0)
+        return StreamlineAttributes_GetVelocitySource(self, NULL);
     if(strcmp(name, "integrationType") == 0)
         return StreamlineAttributes_GetIntegrationType(self, NULL);
     if(strcmp(name, "Euler") == 0)
@@ -4538,6 +4612,8 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetFieldType(self, tuple);
     else if(strcmp(name, "fieldConstant") == 0)
         obj = StreamlineAttributes_SetFieldConstant(self, tuple);
+    else if(strcmp(name, "velocitySource") == 0)
+        obj = StreamlineAttributes_SetVelocitySource(self, tuple);
     else if(strcmp(name, "integrationType") == 0)
         obj = StreamlineAttributes_SetIntegrationType(self, tuple);
     else if(strcmp(name, "streamlineAlgorithmType") == 0)

@@ -606,6 +606,9 @@ void PoincareAttributes::Init()
     pointDensity = 1;
     fieldType = Default;
     fieldConstant = 1;
+    velocitySource[0] = 0;
+    velocitySource[1] = 0;
+    velocitySource[2] = 0;
     integrationType = AdamsBashforth;
     coordinateSystem = Cartesian;
     maxStepLength = 0.1;
@@ -696,6 +699,10 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     pointDensity = obj.pointDensity;
     fieldType = obj.fieldType;
     fieldConstant = obj.fieldConstant;
+    velocitySource[0] = obj.velocitySource[0];
+    velocitySource[1] = obj.velocitySource[1];
+    velocitySource[2] = obj.velocitySource[2];
+
     integrationType = obj.integrationType;
     coordinateSystem = obj.coordinateSystem;
     maxStepLength = obj.maxStepLength;
@@ -919,6 +926,11 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
     for(int i = 0; i < 3 && lineEnd_equal; ++i)
         lineEnd_equal = (lineEnd[i] == obj.lineEnd[i]);
 
+    // Compare the velocitySource arrays.
+    bool velocitySource_equal = true;
+    for(int i = 0; i < 3 && velocitySource_equal; ++i)
+        velocitySource_equal = (velocitySource[i] == obj.velocitySource[i]);
+
     // Create the return value
     return ((opacityType == obj.opacityType) &&
             (opacity == obj.opacity) &&
@@ -932,6 +944,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (pointDensity == obj.pointDensity) &&
             (fieldType == obj.fieldType) &&
             (fieldConstant == obj.fieldConstant) &&
+            velocitySource_equal &&
             (integrationType == obj.integrationType) &&
             (coordinateSystem == obj.coordinateSystem) &&
             (maxStepLength == obj.maxStepLength) &&
@@ -1162,6 +1175,7 @@ PoincareAttributes::SelectAll()
     Select(ID_pointDensity,              (void *)&pointDensity);
     Select(ID_fieldType,                 (void *)&fieldType);
     Select(ID_fieldConstant,             (void *)&fieldConstant);
+    Select(ID_velocitySource,            (void *)velocitySource, 3);
     Select(ID_integrationType,           (void *)&integrationType);
     Select(ID_coordinateSystem,          (void *)&coordinateSystem);
     Select(ID_maxStepLength,             (void *)&maxStepLength);
@@ -1314,6 +1328,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("fieldConstant", fieldConstant));
+    }
+
+    if(completeSave || !FieldsEqual(ID_velocitySource, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("velocitySource", velocitySource, 3));
     }
 
     if(completeSave || !FieldsEqual(ID_integrationType, &defaultObject))
@@ -1734,6 +1754,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("fieldConstant")) != 0)
         SetFieldConstant(node->AsDouble());
+    if((node = searchNode->GetNode("velocitySource")) != 0)
+        SetVelocitySource(node->AsDoubleArray());
     if((node = searchNode->GetNode("integrationType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -2068,6 +2090,15 @@ PoincareAttributes::SetFieldConstant(double fieldConstant_)
 {
     fieldConstant = fieldConstant_;
     Select(ID_fieldConstant, (void *)&fieldConstant);
+}
+
+void
+PoincareAttributes::SetVelocitySource(const double *velocitySource_)
+{
+    velocitySource[0] = velocitySource_[0];
+    velocitySource[1] = velocitySource_[1];
+    velocitySource[2] = velocitySource_[2];
+    Select(ID_velocitySource, (void *)velocitySource, 3);
 }
 
 void
@@ -2514,6 +2545,18 @@ PoincareAttributes::GetFieldConstant() const
     return fieldConstant;
 }
 
+const double *
+PoincareAttributes::GetVelocitySource() const
+{
+    return velocitySource;
+}
+
+double *
+PoincareAttributes::GetVelocitySource()
+{
+    return velocitySource;
+}
+
 PoincareAttributes::IntegrationType
 PoincareAttributes::GetIntegrationType() const
 {
@@ -2849,6 +2892,12 @@ PoincareAttributes::SelectLineEnd()
 }
 
 void
+PoincareAttributes::SelectVelocitySource()
+{
+    Select(ID_velocitySource, (void *)velocitySource, 3);
+}
+
+void
 PoincareAttributes::SelectSingleColor()
 {
     Select(ID_singleColor, (void *)&singleColor);
@@ -2896,6 +2945,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_pointDensity:              return "pointDensity";
     case ID_fieldType:                 return "fieldType";
     case ID_fieldConstant:             return "fieldConstant";
+    case ID_velocitySource:            return "velocitySource";
     case ID_integrationType:           return "integrationType";
     case ID_coordinateSystem:          return "coordinateSystem";
     case ID_maxStepLength:             return "maxStepLength";
@@ -2982,6 +3032,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_pointDensity:              return FieldType_int;
     case ID_fieldType:                 return FieldType_enum;
     case ID_fieldConstant:             return FieldType_double;
+    case ID_velocitySource:            return FieldType_doubleArray;
     case ID_integrationType:           return FieldType_enum;
     case ID_coordinateSystem:          return FieldType_enum;
     case ID_maxStepLength:             return FieldType_double;
@@ -3068,6 +3119,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_pointDensity:              return "int";
     case ID_fieldType:                 return "enum";
     case ID_fieldConstant:             return "double";
+    case ID_velocitySource:            return "doubleArray";
     case ID_integrationType:           return "enum";
     case ID_coordinateSystem:          return "enum";
     case ID_maxStepLength:             return "double";
@@ -3217,6 +3269,16 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_fieldConstant:
         {  // new scope
         retval = (fieldConstant == obj.fieldConstant);
+        }
+        break;
+    case ID_velocitySource:
+        {  // new scope
+        // Compare the velocitySource arrays.
+        bool velocitySource_equal = true;
+        for(int i = 0; i < 3 && velocitySource_equal; ++i)
+            velocitySource_equal = (velocitySource[i] == obj.velocitySource[i]);
+
+        retval = velocitySource_equal;
         }
         break;
     case ID_integrationType:
@@ -3537,6 +3599,9 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
     return (sourceType != obj.sourceType ||
             sourcePointsDiffer ||
             sourceLineDiffers ||
+
+            POINT_DIFFERS(velocitySource, obj.velocitySource) ||
+
             densityMatters ||
 
             minPunctures != obj.minPunctures ||

@@ -426,6 +426,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     //
     // Set the filter's attributes based on the plot attributes.
     //
+    streamlineFilter->SetVelocitySource(atts.GetVelocitySource());
 
     switch (atts.GetSourceType())
     {

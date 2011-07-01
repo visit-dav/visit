@@ -107,6 +107,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void Apply(bool ignore = false);
   private slots:
     void sourceTypeChanged(int val);
+    void velocitySourceProcessText();
     void pointSourceProcessText();
     void lineStartProcessText();
     void lineEndProcessText();
@@ -176,6 +177,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QButtonGroup *puncturePlaneButtonGroup;
     QWidget   *sourceType;
     QComboBox *sourceTypeCombo;
+    QLineEdit *velocitySource;
     QLineEdit *pointSource;
     QLineEdit *lineStart;
     QLineEdit *lineEnd;
@@ -253,6 +255,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *minPuncturesLabel;
     QLabel *maxPuncturesLabel;
     QLabel *sourceTypeLabel;
+    QLabel *velocitySourceLabel;
     QLabel *pointSourceLabel;
     QLabel *lineStartLabel;
     QLabel *lineEndLabel;

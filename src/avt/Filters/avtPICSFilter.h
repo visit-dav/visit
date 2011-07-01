@@ -164,9 +164,12 @@ class AVTFILTERS_API avtPICSFilter :
                                         const avtIVPSolver* model,
                                         avtIntegralCurve::Direction dir,
                                         const double& t_start,
-                                        const avtVector &p_start, long ID) = 0;
+                                        const avtVector &p_start,
+                                        const avtVector &v_start,
+                                        long ID) = 0;
 
     virtual std::vector<avtVector>  GetInitialLocations() = 0;
+    virtual std::vector<avtVector>  GetInitialVelocities() = 0;
     virtual CommunicationPattern    GetCommunicationPattern() = 0;
 
     // Methods to set the filter's attributes.
@@ -266,12 +269,15 @@ class AVTFILTERS_API avtPICSFilter :
 
     int                       GetNextCurveID(){ int id = MaxID; MaxID++; return id;}
     void                      CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
+                                                         std::vector<avtVector> &vels,
                                                          std::vector<avtIntegralCurve *> &ics,
                                                          std::vector<std::vector<int> > &ids);
     void                      GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *> &ics);
     void                      AddSeedPoint(avtVector &pt,
+                                           avtVector &vel,
                                            std::vector<avtIntegralCurve *> &ics);
     void                      AddSeedPoints(std::vector<avtVector> &pts,
+                                            std::vector<avtVector> &vels,
                                             std::vector<std::vector<avtIntegralCurve *> > &ics);
     void                      DeleteIntegralCurves(std::vector<int> &icIDs);
     virtual void              CreateIntegralCurveOutput(vector<avtIntegralCurve *> &ics) = 0;
@@ -299,4 +305,3 @@ class AVTFILTERS_API avtPICSFilter :
 };
 
 #endif
-

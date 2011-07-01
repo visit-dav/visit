@@ -241,11 +241,15 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
                                         const avtIVPSolver* model,
                                         avtIntegralCurve::Direction dir,
                                         const double& t_start,
-                                        const avtVector &p_start, long ID);
+                                        const avtVector &p_start,
+                                        const avtVector &v_start,
+                                        long ID);
 
     void                      SetTermination(int maxSteps, 
                                              bool doDistance, double maxDistance, 
                                              bool doTime, double maxTime);
+
+    void                      SetVelocitySource(const double *v);
 
     void                      SetPointSource(const double *p);
     void                      SetLineSource(const double *p0, const double *p1,
@@ -327,6 +331,8 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     bool      issueWarningForCriticalPoints;
     double    criticalPointThreshold;
 
+    avtVector seedVelocity;
+
     std::string             SeedInfoString() const;
 
     void                      GenerateSeedPointsFromPoint(std::vector<avtVector> &pts);
@@ -340,8 +346,9 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     unsigned char             GenerateAttributeFields() const;
 
     virtual std::vector<avtVector> GetInitialLocations(void);
+    virtual std::vector<avtVector> GetInitialVelocities(void);
     virtual CommunicationPattern   GetCommunicationPattern(void)
-                                      { return RestoreSequenceAssembleUniformly; };
+                                   { return RestoreSequenceAssembleUniformly; };
 
 };
 #endif

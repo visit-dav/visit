@@ -170,7 +170,9 @@ avtIVPDopri5::~avtIVPDopri5()
 // ****************************************************************************
 
 void 
-avtIVPDopri5::Reset(const double& t_start, const avtVector& y_start)
+avtIVPDopri5::Reset(const double& t_start,
+                    const avtVector& y_start,
+                    const avtVector& v_start)
 {
     h = h_init = 0.0;
     
