@@ -28,7 +28,7 @@
 
 
 /*
- *  StreamlineAnalyzerLib.cc:
+ *  FieldlineAnalyzerLib.cc:
  *
  *  Written by:
  *   Allen Sanderson
@@ -38,7 +38,7 @@
  *
  */
 
-#include <StreamlineAnalyzerLib.h>
+#include <FieldlineAnalyzerLib.h>
 
 #include <algorithm>
 #include <iostream>
@@ -1878,7 +1878,7 @@ FieldlineLib::getPunctures( vector< Point > &ptList,
   int bin = 0;
   
   // So to get the winding groups consistant start examining
-  // the streamline in the same place for each plane.
+  // the fieldline in the same place for each plane.
   Point lastPt, currPt = ptList[startIndex];
   double lastDist, currDist = planeN.dot( currPt ) - plane[3];
             

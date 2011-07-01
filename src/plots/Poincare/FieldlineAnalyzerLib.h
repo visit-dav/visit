@@ -28,7 +28,7 @@
 
 
 /*
- *  StreamlineAnalyzer.h:
+ *  FieldlineAnalyzer.h:
  *
  *  Written by:
  *   Allen Sanderson
@@ -38,8 +38,8 @@
  *
  */
 
-#if !defined(StreamlineAnalyzerLib_h)
-#define StreamlineAnalyzerLib_h
+#if !defined(FieldlineAnalyzerLib_h)
+#define FieldlineAnalyzerLib_h
 
 //#define STRAIGHTLINE_SKELETON 1
 
@@ -398,4 +398,4 @@ int chainHull_2D( vector< pair< Point, unsigned int > > &pts,
 
 } // End namespace FusionPSE
 
-#endif // StreamlineAnalyzerLib_h
+#endif // FieldlineAnalyzerLib_h
