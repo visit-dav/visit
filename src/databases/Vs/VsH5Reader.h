@@ -60,19 +60,31 @@ public:
    * Caller owns returned array and must allocate memory and delete it.
    * @param dataset - dataset
    * @param data - pointer to the data
-   * @param indexOrder - FORTRAN or C and Minor or Major
-   * @param components - -2 (no components) -1 (read all components)
-   * @param mins - optional mins (start) array for up to three dimension
-   * @param counts - optional counts array for up to three dimension
-   * @param strides - optional stride array for up to three dimension
+   * @param indexOrder - optional, FORTRAN or C and Minor or Major
+   * @param components - optional, -2 (no components) -1 (read all components)
+   * @param srcMins - optional, mins (start) array, up to three dimension
+   * @param srcCounts - optional, counts array, up to three dimension
+   * @param srcStrides - optional, stride array, up to three dimension
+
+   * @param mdims - optional, rank of the memory space
+   * @param destSizes - optional, memory size array, up to three dimension
+   * @param destMins - optional, mins (start) array, up to three dimension
+   * @param destCounts - optional, counts array, up to three dimension
+   * @param destStrides - optional, stride array, up to three dimension
    **/
   herr_t getDataSet( VsH5Dataset* dataset,
                      void* data,
+                     
+                     // Use these variables for adjusting
+                     // the read memory space.
                      std::string indexOrder = std::string(""),
                      int components = 0,
                      int* srcMins = 0,
                      int* srcCounts = 0,
                      int* srcStrides = 0,
+
+                     // Use these variables for adjusting
+                     // the write memory space.
                      int  mdims = 0,
                      int* destSizes = 0,
                      int* destMins = 0,

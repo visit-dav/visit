@@ -124,10 +124,9 @@ VsH5Reader::~VsH5Reader() {
 
 herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
                                void* data,
-                               std::string indexOrder,
-
                                // Use these variables for adjusting
                                // the read memory space.
+                               std::string indexOrder, // Index ordering
                                int components,   // Index for a component
                                int* srcMins,     // start locations
                                int* srcCounts,   // number of entries
@@ -135,8 +134,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
 
                                // Use these variables for adjusting
                                // the write memory space.
-                               int  mdims,               // spatial dims
-                               int* destSizes,           // over memory size
+                               int  mdims,               // spatial dims (rank)
+                               int* destSizes,           // overall memory size
                                int* destMins,            // start locations
                                int* destCounts,          // number of entries
                                int* destStrides ) const  // stride in memory
@@ -158,7 +157,7 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
   
   herr_t err = 0;
 
-  // No subset info so read all data.
+  // No index ordering info so read all data.
   if (indexOrder.length() == 0)
   {
     err = H5Dread(dataSet->getId(), dataSet->getType(),
@@ -409,7 +408,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
       memspace = H5Screate_simple(mdims, &(destSize[0]), NULL);
 
       H5Sselect_hyperslab(memspace, H5S_SELECT_SET,
-                          &(destStart[0]), &(destStride[0]), &(destCount[0]), NULL);
+                          &(destStart[0]), &(destStride[0]), &(destCount[0]),
+                          NULL);
     }
 
     // Read data

@@ -81,7 +81,7 @@
 using namespace std;
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::avtVsFileFormat
+//  Method: avtVsFileFormat::avtVsFileFormat
 //
 //  Purpose:
 //      Reads in the image.
@@ -150,7 +150,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm) :
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::~avtVsFileFormat
+//  Method: avtVsFileFormat::~avtVsFileFormat
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -307,7 +307,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::GetMesh
+//  Method: avtVsFileFormat::GetMesh
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -320,6 +320,13 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
 
 vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
 {
+    string methodSig("avtVsFileFormat::GetMesh() - ");
+    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    LoadData();
+
+    // Save the name in a temporary variable.
+    string meshName = name;
+
     bool haveDataSelections;
 
     int mins[3], maxs[3], strides[3];
@@ -334,13 +341,6 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
         << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
         << endl;
     }
-
-    stringstream sstr;
-    sstr << "avtVsFileFormat::GetMesh(" << domain << ", " << name << ") - ";
-    string methodSig = sstr.str();
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
-    string meshName = name;
-    LoadData();
 
     // The MD system works by filtering the requests directed to it
     // into the name of the appropriate subordinate mesh.  For
@@ -468,7 +468,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::getUniformMesh
+//  Method: avtVsFileFormat::getUniformMesh
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -752,7 +752,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::getRectilinearMesh
+//  Method: avtVsFileFormat::getRectilinearMesh
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -770,7 +770,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 {
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
-    
+
     string methodSig("avtVsFileFormat::getRectilinearMesh() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
     LoadData();
@@ -1070,7 +1070,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
   
 // *****************************************************************************
-//  Method: avtImageVileFormat::getStructuredMesh
+//  Method: avtVsFileFormat::getStructuredMesh
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -1086,6 +1086,9 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
                                                int* mins, int* maxs,
                                                int* strides)
 {
+    // TODO - make "cleanupAndReturnNull" label, and do a "go to"
+    // instead of just returning NULL all the time.
+
     string methodSig("avtVsFileFormat::getStructuredMesh() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
     LoadData();
@@ -1418,7 +1421,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::getUnstructuredMesh
+//  Method: avtVsFileFormat::getUnstructuredMesh
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -1434,11 +1437,10 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
                                      bool haveDataSelections,
                                      int* mins, int* maxs, int* strides)
 {
-    herr_t err;
-      
-    stringstream sstr;
-    sstr << "avtVsFileFormat::getUnstructuredMesh() - ";
-    string methodSig = sstr.str();
+    // TODO - make "cleanupAndReturnNull" label, and do a "go to"
+    // instead of just returning NULL all the time.
+
+    string methodSig("avtVsFileFormat::getUnstructuredMesh() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
     LoadData();
 
@@ -1594,6 +1596,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       VsLog::debugLog() << methodSig << "Using all-in-one method" << endl;
 
       VsH5Dataset* pointsDataset = unstructuredMesh->getPointsDataset();
+
+      herr_t err;
       
       if (unstructuredMesh->isPointMesh() && haveDataSelections)
       {
@@ -1788,6 +1792,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
     VsLog::debugLog() << methodSig << "Reading connectivity list data." << endl;
 
+    herr_t err;
+      
     if( haveDataSelections )
     {
       int srcMins[1] = {mins[0]};
@@ -1960,7 +1966,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
   
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::getPointMesh
+//  Method: avtVsFileFormat::getPointMesh
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -1975,6 +1981,9 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
                                           bool haveDataSelections,
                                           int* mins, int* maxs, int* strides)
 {
+    // TODO - make "cleanupAndReturnNull" label, and do a "go to"
+    // instead of just returning NULL all the time.
+
     string methodSig("avtVsFileFormat::getPointMesh() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
     LoadData();
@@ -2200,7 +2209,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::getCurve
+//  Method: avtVsFileFormat::getCurve
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -2210,7 +2219,10 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
 //
 //  Modifications:
 //
-vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName) {
+vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
+{
+    // TODO - make "cleanupAndReturnNull" label, and do a "go to"
+    // instead of just returning NULL all the time.
 
     string methodSig("avtVsFileFormat::getCurve() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
@@ -2377,6 +2389,14 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName) {
 
 vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 {
+    string methodSig("avtVsFileFormat::GetVar() - ");
+    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    LoadData();
+
+    // Save the name in a temporary variable as it gets mucked with if
+    // searching for a component.
+    string name = requestedName;
+
     bool haveDataSelections;
     int mins[3], maxs[3], strides[3];
 
@@ -2388,16 +2408,6 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
            << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
            << endl;
     }
-
-    // Save the name in a temporary variable as it gets mucked with if
-    // searching for a component.
-    string name = requestedName;
-
-    stringstream sstr;
-    sstr << "avtVsFileFormat::getVar(" << domain << ", " << name << ") - ";
-    string methodSig = sstr.str();
-
-    LoadData();
 
     // Is this variable a component?  If so, swap the component name
     // with the "real" variable name and remember that it is a
@@ -2427,23 +2437,23 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     // replace "name" with the name of that variable.
     VsLog::debugLog() << methodSig << "Checking for possible MD var." << endl;
     VsMDVariable* mdMeta = registry->getMDVariable(name);
-    if (mdMeta == NULL) {
-      VsLog::debugLog() << methodSig
-                        << "No MD Var or component found under the name: "
-                        << name << endl;
-    } else {
+    if (mdMeta) {
       VsLog::debugLog() << methodSig
                         << "Found MD metadata for this name: "
                         << name << endl;
 
-      if ((domain < 0) || (domain > mdMeta->blocks.size())) {
+      if (0 <= domain && domain < mdMeta->blocks.size()) {
+        meta = mdMeta->blocks[domain];
+        name = meta->getFullName();
+
+        if( meta )
+          variableDataset = registry->getDataset(meta->getFullName());
+
+      } else {
         VsLog::warningLog()
           << methodSig
           << "Requested domain number is out of bounds for this variable."
           << endl;
-      } else {
-        meta = mdMeta->blocks[domain];
-        name = meta->getFullName();
       }
     }
 
@@ -2689,12 +2699,10 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 #endif
 
     VsLog::debugLog() << methodSig
-                      << "Total number of variable is " << numVariables << endl;
+                      << "Total number of variables is " << numVariables << endl;
 
     VsLog::debugLog() << methodSig
-                      << "Variable " << name << " has dimensions = ";
-
-    VsLog::debugLog() << methodSig
+                      << "Variable " << name << " has dimensions = "
                       << ", numTopologicalDims = " << numTopologicalDims
                       << ", isComponent = " << isAComponent << "." << endl;
 
@@ -2989,7 +2997,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::FreeUpResources
+//  Method: avtVsFileFormat::FreeUpResources
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3008,7 +3016,7 @@ void avtVsFileFormat::FreeUpResources(void)
 
  
 // *****************************************************************************
-//  Method: avtImageVileFormat::RegisterExpressions
+//  Method: avtVsFileFormat::RegisterExpressions
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3021,9 +3029,7 @@ void avtVsFileFormat::FreeUpResources(void)
 
 void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
 {
-    stringstream sstr;
-    sstr << "avtVsFileFormat::RegisterExpressions() - ";
-    string methodSig = sstr.str();
+    string methodSig("avtVsFileFormat::RegisterExpressions() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
     LoadData();
 
@@ -3073,7 +3079,7 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::RegisterVars
+//  Method: avtVsFileFormat::RegisterVars
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3086,9 +3092,7 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
 {
-    stringstream sstr;
-    sstr << "avtVsFileFormat::RegisterVars() - ";
-    string methodSig = sstr.str();
+    string methodSig("avtVsFileFormat::RegisterVars() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
     LoadData();
 
@@ -3239,7 +3243,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::RegisterMeshes
+//  Method: avtVsFileFormat::RegisterMeshes
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3252,9 +3256,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 {
-    stringstream sstr;
-    sstr << "avtVsFileFormat::RegisterMeshes() - ";
-    string methodSig = sstr.str();
+    string methodSig("avtVsFileFormat::RegisterMeshes() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
     LoadData();
 
@@ -3432,7 +3434,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::RegisterMdVars
+//  Method: avtVsFileFormat::RegisterMdVars
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3445,9 +3447,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
 {
-    stringstream sstr;
-    sstr << "avtVsFileFormat::RegisterMdVars() - ";
-    string methodSig = sstr.str();
+    string methodSig("avtVsFileFormat::RegisterMdVars() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
     LoadData();
 
@@ -3536,7 +3536,7 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::RegisterMdMeshes
+//  Method: avtVsFileFormat::RegisterMdMeshes
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3549,9 +3549,7 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
 {
-    stringstream sstr;
-    sstr << "avtVsFileFormat::RegisterMdMeshes() - ";
-    string methodSig = sstr.str();
+    string methodSig("avtVsFileFormat::RegisterMdMeshes() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
     LoadData();
 
@@ -3608,7 +3606,7 @@ void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::RegisterVarsWithMesh
+//  Method: avtVsFileFormat::RegisterVarsWithMesh
 //
 //  Purpose:
 //      Register both the mesh and the associated variables
@@ -3621,9 +3619,7 @@ void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
 {
-    stringstream sstr;
-    sstr << "avtVsFileFormat::RegisterVarsWithMesh() - ";
-    string methodSig = sstr.str();
+    string methodSig("avtVsFileFormat::RegisterVarsWithMesh() - ");
     VsLog::debugLog() << methodSig << "Entering function." << endl;
     LoadData();
 
@@ -3721,7 +3717,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
    * only provided for reference and does nothing.
    */
 // *****************************************************************************
-//  Method: avtImageVileFormat::RegisterVarsWithMesh
+//  Method: avtVsFileFormat::RegisterVarsWithMesh
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3739,7 +3735,7 @@ void avtVsFileFormat::ActivateTimestep()
   
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::RegisterVarsWithMesh
+//  Method: avtVsFileFormat::RegisterVarsWithMesh
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3752,19 +3748,19 @@ void avtVsFileFormat::ActivateTimestep()
 
 void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
 {
+    string methodSig("avtVsFileFormat::UpdateCyclesAndTimes() - ");
+    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    LoadData();
+
     if (!md) {
-      VsLog::debugLog() << "avtVsFileFormat::UpdateCyclesAndTimes() - "
-                        << "md was NULL, returning." <<endl;
+      VsLog::debugLog() << methodSig << "md was NULL, returning." <<endl;
       return;
     }
 
-    LoadData();
-    
     // If we have time data, tell VisIt
     if (registry->hasTime()) {
-      VsLog::debugLog()
-        << "avtVsFileFormat::UpdateCyclesAndTimes() - This file supplies time: "
-        << registry->getTime() << endl;
+      VsLog::debugLog() << methodSig << "This file supplies time: "
+                        << registry->getTime() << endl;
       doubleVector times;
       times.push_back(registry->getTime());
       md->SetTimes(times);
@@ -3773,8 +3769,7 @@ void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
     
     //If we have step data, tell VisIt
     if (registry->hasStep()) {
-      VsLog::debugLog()
-        << "avtVsFileFormat::UpdateCyclesAndTimes() - This file supplies step: "
+      VsLog::debugLog() << methodSig << "This file supplies step: "
         << registry->getStep() << endl;
       intVector cycles;
       cycles.push_back(registry->getStep());
@@ -3785,7 +3780,7 @@ void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
   
   
 // *****************************************************************************
-//  Method: avtImageVileFormat::LoadData
+//  Method: avtVsFileFormat::LoadData
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3801,13 +3796,10 @@ void avtVsFileFormat::LoadData()
     if (reader)
       return;
 
-    string methodSig("avtVsFileFormat::LoadData() - ");
-
-    VsLog::debugLog() << methodSig << "loading data for file "
-                      << dataFileName << endl;
+    string methodSig("avtVsFileFormat::UpdateCyclesAndTimes() - ");
+    VsLog::debugLog() << methodSig << "Initializing VsH5Reader()" << endl;
 
     //Actually open the file & read metadata for the first time
-    VsLog::debugLog() << methodSig << "Initializing VsH5Reader()" << endl;
 
     try {
       reader = new VsH5Reader(dataFileName, registry);
@@ -3823,7 +3815,7 @@ void avtVsFileFormat::LoadData()
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::PopulateDatabaseMetaData
+//  Method: avtVsFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3846,6 +3838,7 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
     // NOTE that we can't decompose domains if we have MD meshes
     // So it's one or the other
     vector<string> names;
+
 #ifdef VIZSCHEMA_DECOMPOSE_DOMAINS
     VsLog::debugLog() << methodSig
                       << "Decompose_domains is defined.  Entering code block."
@@ -3896,7 +3889,7 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
 
 
 // *****************************************************************************
-//  Method: avtImageVileFormat::setAxisLabels
+//  Method: avtVsFileFormat::setAxisLabels
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3909,12 +3902,11 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::setAxisLabels(avtMeshMetaData* mmd)
 {
-    VsLog::debugLog()
-      << "avtVsFileFormat::setAxisLabels() - entering." << endl;
+    string methodSig("avtVsFileFormat::setAxisLabels() - ");
+    VsLog::debugLog() << methodSig << "Entering function." << endl;
 
     if (mmd == NULL) {
-      VsLog::debugLog()
-        << "avtVsFileFormat::setAxisLabels() - Input pointer was NULL?" << endl;
+      VsLog::debugLog() << methodSig << "Input pointer was NULL?" << endl;
       return;
     } else {
       VsMesh* mesh = registry->getMesh(mmd->name);
@@ -3929,58 +3921,137 @@ void avtVsFileFormat::setAxisLabels(avtMeshMetaData* mmd)
         mmd->zLabel = mesh->getAxisLabel(2);
       }
     }
-    VsLog::debugLog() << "avtVsFileFormat::setAxisLabels() - exiting." << endl;
+
+    VsLog::debugLog() << methodSig << "Exiting normally." << endl;
 }
 
-  bool avtVsFileFormat::ReturnsValidCycle() {
-    VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidCycle()  - entering" <<endl;
+
+// *****************************************************************************
+//  Method: avtVsFileFormat::ReturnsValidCycle
+//
+//  Purpose:
+//      How do you do the voododo that you do
+//
+//  Programmer: Marc Durant
+//  Creation:   June, 2010
+//
+//  Modifications:
+//
+
+bool avtVsFileFormat::ReturnsValidCycle()
+{
+    string methodSig("avtVsFileFormat::ReturnsValidCycle() - ");
+    VsLog::debugLog() << methodSig << "entering" << endl;
     LoadData();
 
-    if (registry->hasStep()) {
-      VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidCycle()  - returning TRUE." <<endl;
+    if (registry->hasStep())
+    {
+      VsLog::debugLog() << methodSig << "returning TRUE." << endl;
       return true;
     }
-    
-    VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidCycle()  - returning FALSE." <<endl;
-    return false;
-  }
+    else
+    {
+      VsLog::debugLog() << methodSig << "returning FALSE." << endl;
+      return false;
+    }
+}
 
-  int avtVsFileFormat::GetCycle() {
-    VsLog::debugLog() <<"avtVsFileFormat::GetCycle()  - entering" <<endl;
+
+// *****************************************************************************
+//  Method: avtVsFileFormat::GetCycle
+//
+//  Purpose:
+//      How do you do the voododo that you do
+//
+//  Programmer: Marc Durant
+//  Creation:   June, 2010
+//
+//  Modifications:
+//
+
+int avtVsFileFormat::GetCycle()
+{
+    string methodSig("avtVsFileFormat::GetCycle() - ");
+    VsLog::debugLog() << methodSig << "entering" << endl;
     LoadData();
 
-    if (registry->hasStep()) {
-      VsLog::debugLog() <<"avtVsFileFormat::GetCycle() - This file supplies cycle: " <<registry->getStep() <<std::endl;
+    if (registry->hasStep())
+    {
+      VsLog::debugLog() << methodSig << "This file supplies cycle: "
+                        << registry->getStep() << endl;
       return registry->getStep();
     }
+    else
+    {
+      VsLog::debugLog() << methodSig << "This file does not supply cycle.  "
+                        << "Returning INVALID_CYCLE." <<std::endl;
 
-    VsLog::debugLog() <<"avtVsFileFormat::GetCycle() - This file does not supply cycle.  Returning INVALID_CYCLE." <<std::endl;
-    return INVALID_CYCLE;
-  }
+      return INVALID_CYCLE;
+    }
+}
 
-  bool avtVsFileFormat::ReturnsValidTime() {
-    VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidTime()  - entering" <<endl;
+
+// *****************************************************************************
+//  Method: avtVsFileFormat::ReturnsValidTime
+//
+//  Purpose:
+//      How do you do the voododo that you do
+//
+//  Programmer: Marc Durant
+//  Creation:   June, 2010
+//
+//  Modifications:
+//
+
+bool avtVsFileFormat::ReturnsValidTime()
+{
+    string methodSig("avtVsFileFormat::ReturnsValidTime() - ");
+    VsLog::debugLog() << methodSig << "entering" << endl;
     LoadData();
 
-    if (registry->hasTime()) {
-      VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidTime()  - returning TRUE." <<endl;
+    if (registry->hasTime())
+    {
+      VsLog::debugLog() << methodSig << "returning TRUE." <<endl;
       return true;
     }
+    else
+    {
+      VsLog::debugLog() << methodSig << "returning FALSE." <<endl;
+      return false;
+    }
+}
 
-    VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidTime()  - returning FALSE." <<endl;
-    return false;
-  }
 
-  double avtVsFileFormat::GetTime() {
-    VsLog::debugLog() <<"avtVsFileFormat::GetTime()  - entering" <<endl;
+// *****************************************************************************
+//  Method: avtVsFileFormat::GetTime
+//
+//  Purpose:
+//      How do you do the voododo that you do
+//
+//  Programmer: Marc Durant
+//  Creation:   June, 2010
+//
+//  Modifications:
+//
+
+double avtVsFileFormat::GetTime()
+{
+    string methodSig("avtVsFileFormat::GetTime() - ");
+    VsLog::debugLog() << methodSig << "entering" << endl;
     LoadData();
 
-    if (registry->hasTime()) {
-      VsLog::debugLog() <<"avtVsFileFormat::GetTime() - This file supplies time: " <<registry->getTime() <<std::endl;
+    if (registry->hasTime())
+    {
+      VsLog::debugLog() << methodSig << "This file supplies time: "
+                        <<registry->getTime() << endl;
       return registry->getTime();
     }
+    else
+    {
+      VsLog::debugLog() << methodSig << "This file does not supply time.  "
+                        << "Returning INVALID_TIME." << endl;
+      return INVALID_TIME;
+    }
+}
 
-    VsLog::debugLog() <<"avtVsFileFormat::GetTime() - This file does not supply time.  Returning INVALID_TIME." <<std::endl;
-    return INVALID_TIME;
-  }
 #endif
