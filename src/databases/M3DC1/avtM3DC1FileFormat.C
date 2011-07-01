@@ -1158,6 +1158,15 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
       if ((element = m3dField.get_tri_coords2D(pt, element, xieta)) >= 0)
       {
         *varPtr++ = m3dField.interp(values, element, xieta);
+
+//      cout << i << "  " << element << "  "
+//           << pt[0] << "  " << pt[1] << "  " << pt[2] << "  "
+//           <<  m3dField.interp(values, element, xieta) << "  "
+//           <<  m3dField.interpdR(values, element, xieta) << "  "
+//           <<  m3dField.interpdz(values, element, xieta) << "  "
+//           <<  m3dField.interpdR2(values, element, xieta) << "  "
+//           <<  m3dField.interpdz2(values, element, xieta) << "  "
+//           <<  m3dField.interpdRdz(values, element, xieta) << endl;
       }
       else
       {
