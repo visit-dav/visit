@@ -152,6 +152,41 @@ avtIVPLeapfrog::SetCurrentY(const avtVector &newY)
 
 
 // ****************************************************************************
+//  Method: avtIVPLeapfrog::GetCurrentV
+//
+//  Purpose:
+//      Gets the current V.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+avtVector 
+avtIVPLeapfrog::GetCurrentV() const
+{
+    return vCur;
+}
+
+// ****************************************************************************
+//  Method: avtIVPLeapfrog::SetCurrentV
+//
+//  Purpose:
+//      Sets the current V.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+void
+avtIVPLeapfrog::SetCurrentV(const avtVector &newV)
+{
+    vCur = newV;
+}
+
+
+// ****************************************************************************
 //  Method: avtIVPLeapfrog::SetCurrentT
 //
 //  Purpose:
@@ -252,13 +287,16 @@ avtIVPLeapfrog::SetTolerances(const double& relt, const double& abst)
 // ****************************************************************************
 
 void 
-avtIVPLeapfrog::Reset(const double& t_start, const avtVector &y_start)
+avtIVPLeapfrog::Reset(const double& t_start,
+                      const avtVector &y_start,
+                      const avtVector &v_start)
 {
     t = t_start;
     d = 0.0;
     numStep = 0;
 
     yCur = y_start;
+    vCur = v_start;
     h = h_max;
 }
 

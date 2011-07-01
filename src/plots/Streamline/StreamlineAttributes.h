@@ -201,6 +201,7 @@ public:
     void SelectPointList();
     void SelectColorTableName();
     void SelectSingleColor();
+    void SelectVelocitySource();
     void SelectColoringVariable();
     void SelectOpacityVariable();
     void SelectVaryTubeRadiusVariable();
@@ -241,6 +242,7 @@ public:
     void SetAbsTolBBox(double absTolBBox_);
     void SetFieldType(FieldType fieldType_);
     void SetFieldConstant(double fieldConstant_);
+    void SetVelocitySource(const double *velocitySource_);
     void SetIntegrationType(IntegrationType integrationType_);
     void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
     void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_);
@@ -357,6 +359,8 @@ public:
     double               GetAbsTolBBox() const;
     FieldType            GetFieldType() const;
     double               GetFieldConstant() const;
+    const double         *GetVelocitySource() const;
+          double         *GetVelocitySource();
     IntegrationType      GetIntegrationType() const;
     StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
     int                  GetMaxStreamlineProcessCount() const;
@@ -557,6 +561,7 @@ public:
         ID_absTolBBox,
         ID_fieldType,
         ID_fieldConstant,
+        ID_velocitySource,
         ID_integrationType,
         ID_streamlineAlgorithmType,
         ID_maxStreamlineProcessCount,
@@ -664,6 +669,7 @@ private:
     double         absTolBBox;
     int            fieldType;
     double         fieldConstant;
+    double         velocitySource[3];
     int            integrationType;
     int            streamlineAlgorithmType;
     int            maxStreamlineProcessCount;
@@ -737,6 +743,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddidiiiiibbdiibdsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdidsdddi"
+#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddidDiiiiibbdiibdsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdidsdddi"
 
 #endif

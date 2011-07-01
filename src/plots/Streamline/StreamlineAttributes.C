@@ -692,6 +692,9 @@ void StreamlineAttributes::Init()
     absTolBBox = 1e-06;
     fieldType = Default;
     fieldConstant = 1;
+    velocitySource[0] = 0;
+    velocitySource[1] = 0;
+    velocitySource[2] = 0;
     integrationType = DormandPrince;
     streamlineAlgorithmType = VisItSelects;
     maxStreamlineProcessCount = 10;
@@ -837,6 +840,10 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     absTolBBox = obj.absTolBBox;
     fieldType = obj.fieldType;
     fieldConstant = obj.fieldConstant;
+    velocitySource[0] = obj.velocitySource[0];
+    velocitySource[1] = obj.velocitySource[1];
+    velocitySource[2] = obj.velocitySource[2];
+
     integrationType = obj.integrationType;
     streamlineAlgorithmType = obj.streamlineAlgorithmType;
     maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
@@ -1103,6 +1110,11 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
     for(int i = 0; i < 6 && boxExtents_equal; ++i)
         boxExtents_equal = (boxExtents[i] == obj.boxExtents[i]);
 
+    // Compare the velocitySource arrays.
+    bool velocitySource_equal = true;
+    for(int i = 0; i < 3 && velocitySource_equal; ++i)
+        velocitySource_equal = (velocitySource[i] == obj.velocitySource[i]);
+
     // Create the return value
     return ((sourceType == obj.sourceType) &&
             pointSource_equal &&
@@ -1139,6 +1151,7 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (absTolBBox == obj.absTolBBox) &&
             (fieldType == obj.fieldType) &&
             (fieldConstant == obj.fieldConstant) &&
+            velocitySource_equal &&
             (integrationType == obj.integrationType) &&
             (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
             (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
@@ -1498,6 +1511,7 @@ StreamlineAttributes::SelectAll()
     Select(ID_absTolBBox,                         (void *)&absTolBBox);
     Select(ID_fieldType,                          (void *)&fieldType);
     Select(ID_fieldConstant,                      (void *)&fieldConstant);
+    Select(ID_velocitySource,                     (void *)velocitySource, 3);
     Select(ID_integrationType,                    (void *)&integrationType);
     Select(ID_streamlineAlgorithmType,            (void *)&streamlineAlgorithmType);
     Select(ID_maxStreamlineProcessCount,          (void *)&maxStreamlineProcessCount);
@@ -1808,6 +1822,12 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     {
         addToParent = true;
         node->AddNode(new DataNode("fieldConstant", fieldConstant));
+    }
+
+    if(completeSave || !FieldsEqual(ID_velocitySource, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("velocitySource", velocitySource, 3));
     }
 
     if(completeSave || !FieldsEqual(ID_integrationType, &defaultObject))
@@ -2394,6 +2414,8 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("fieldConstant")) != 0)
         SetFieldConstant(node->AsDouble());
+    if((node = searchNode->GetNode("velocitySource")) != 0)
+        SetVelocitySource(node->AsDoubleArray());
     if((node = searchNode->GetNode("integrationType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -3004,6 +3026,15 @@ StreamlineAttributes::SetFieldConstant(double fieldConstant_)
 {
     fieldConstant = fieldConstant_;
     Select(ID_fieldConstant, (void *)&fieldConstant);
+}
+
+void
+StreamlineAttributes::SetVelocitySource(const double *velocitySource_)
+{
+    velocitySource[0] = velocitySource_[0];
+    velocitySource[1] = velocitySource_[1];
+    velocitySource[2] = velocitySource_[2];
+    Select(ID_velocitySource, (void *)velocitySource, 3);
 }
 
 void
@@ -3762,6 +3793,18 @@ StreamlineAttributes::GetFieldConstant() const
     return fieldConstant;
 }
 
+const double *
+StreamlineAttributes::GetVelocitySource() const
+{
+    return velocitySource;
+}
+
+double *
+StreamlineAttributes::GetVelocitySource()
+{
+    return velocitySource;
+}
+
 StreamlineAttributes::IntegrationType
 StreamlineAttributes::GetIntegrationType() const
 {
@@ -4259,6 +4302,12 @@ StreamlineAttributes::SelectSingleColor()
 }
 
 void
+StreamlineAttributes::SelectVelocitySource()
+{
+    Select(ID_velocitySource, (void *)velocitySource, 3);
+}
+
+void
 StreamlineAttributes::SelectColoringVariable()
 {
     Select(ID_coloringVariable, (void *)&coloringVariable);
@@ -4335,6 +4384,7 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_absTolBBox:                         return "absTolBBox";
     case ID_fieldType:                          return "fieldType";
     case ID_fieldConstant:                      return "fieldConstant";
+    case ID_velocitySource:                     return "velocitySource";
     case ID_integrationType:                    return "integrationType";
     case ID_streamlineAlgorithmType:            return "streamlineAlgorithmType";
     case ID_maxStreamlineProcessCount:          return "maxStreamlineProcessCount";
@@ -4462,6 +4512,7 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_absTolBBox:                         return FieldType_double;
     case ID_fieldType:                          return FieldType_enum;
     case ID_fieldConstant:                      return FieldType_double;
+    case ID_velocitySource:                     return FieldType_doubleArray;
     case ID_integrationType:                    return FieldType_enum;
     case ID_streamlineAlgorithmType:            return FieldType_enum;
     case ID_maxStreamlineProcessCount:          return FieldType_int;
@@ -4589,6 +4640,7 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_absTolBBox:                         return "double";
     case ID_fieldType:                          return "enum";
     case ID_fieldConstant:                      return "double";
+    case ID_velocitySource:                     return "doubleArray";
     case ID_integrationType:                    return "enum";
     case ID_streamlineAlgorithmType:            return "enum";
     case ID_maxStreamlineProcessCount:          return "int";
@@ -4896,6 +4948,16 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_fieldConstant:
         {  // new scope
         retval = (fieldConstant == obj.fieldConstant);
+        }
+        break;
+    case ID_velocitySource:
+        {  // new scope
+        // Compare the velocitySource arrays.
+        bool velocitySource_equal = true;
+        for(int i = 0; i < 3 && velocitySource_equal; ++i)
+            velocitySource_equal = (velocitySource[i] == obj.velocitySource[i]);
+
+        retval = velocitySource_equal;
         }
         break;
     case ID_integrationType:
@@ -5345,6 +5407,11 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
     // We need velocities for illuminate streamlines rendered as lines
     if (lightingFlag != obj.lightingFlag && obj.lightingFlag == true)
         return true;
+
+    if (POINT_DIFFERS(velocitySource, obj.velocitySource))
+    {
+        return true;
+    }
 
     //Check by source type.
     if ((sourceType == SpecifiedPoint) && POINT_DIFFERS(pointSource, obj.pointSource))

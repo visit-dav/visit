@@ -2278,10 +2278,15 @@ avtPICSFilter::PostExecute(void)
 void
 avtPICSFilter::GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *> &curves)
 {
-    std::vector<avtVector> seedPts = GetInitialLocations();
+    std::vector<avtVector> seedPts  = GetInitialLocations();
+    std::vector<avtVector> seedVels = GetInitialVelocities();
+
+    // Make sure the velocity list size matches the point list size.
+    for( int i=seedVels.size(); i<seedPts.size(); ++i )
+      seedVels.push_back( avtVector(0,0,0) );
 
     vector<vector<int> > ids;
-    CreateIntegralCurvesFromSeeds(seedPts, curves, ids);
+    CreateIntegralCurvesFromSeeds(seedPts, seedVels, curves, ids);
 }
 
 // ****************************************************************************
@@ -2297,6 +2302,7 @@ avtPICSFilter::GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *>
 
 void
 avtPICSFilter::AddSeedPoint(avtVector &pt,
+                            avtVector &vel,
                             std::vector<avtIntegralCurve *> &ics)
 {
     if (icAlgo == NULL)
@@ -2307,7 +2313,10 @@ avtPICSFilter::AddSeedPoint(avtVector &pt,
     std::vector<avtVector> pts;
     pts.push_back( pt );
 
-    CreateIntegralCurvesFromSeeds(pts, ics, ids);
+    std::vector<avtVector> vels;
+    vels.push_back( vel );
+
+    CreateIntegralCurvesFromSeeds(pts, vels, ics, ids);
     icAlgo->AddIntegralCurves(ics);
 }
 
@@ -2330,12 +2339,13 @@ avtPICSFilter::AddSeedPoint(avtVector &pt,
 
 void
 avtPICSFilter::AddSeedPoints(std::vector<avtVector> &pts,
+                             std::vector<avtVector> &vels,
                              std::vector<std::vector<avtIntegralCurve *> > &ics)
 {
     for (int i = 0; i < pts.size(); i++)
     {
         vector<avtIntegralCurve *> icsFromPt;
-        AddSeedPoint(pts[i], icsFromPt);
+        AddSeedPoint(pts[i], vels[i], icsFromPt);
         
         ics.push_back(icsFromPt);
     }
@@ -2369,6 +2379,7 @@ avtPICSFilter::AddSeedPoints(std::vector<avtVector> &pts,
 
 void
 avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
+                                             std::vector<avtVector> &vels,
                                              std::vector<avtIntegralCurve *> &curves,
                                              std::vector<std::vector<int> > &ids)
 {
@@ -2386,6 +2397,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
             DomainType dom(dl[j], seedTimeStep0);
 
             avtVector seedPt;
+            avtVector seedVel = vels[i];
 
             if( fieldType == STREAMLINE_FIELD_M3D_C1_2D )
             {
@@ -2410,7 +2422,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                 avtIntegralCurve *ic = 
                     CreateIntegralCurve(solver,
                                         avtIntegralCurve::DIRECTION_FORWARD,
-                                        seedTime0, seedPt, 
+                                        seedTime0, seedPt, seedVel, 
                                         GetNextCurveID());
 
                 ic->domain = dom;
@@ -2425,7 +2437,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                 avtIntegralCurve *ic = 
                     CreateIntegralCurve(solver,
                                         avtIntegralCurve::DIRECTION_BACKWARD,
-                                        seedTime0, seedPt, 
+                                        seedTime0, seedPt, seedVel,
                                         GetNextCurveID());
                 ic->domain = dom;
             

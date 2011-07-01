@@ -2817,10 +2817,11 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
         nPuncturesNeeded = poloidal_puncture_pts.size() * 1.05;
 
-        if( nPuncturesNeeded < 5 ) nPuncturesNeeded = 5;
+        if( nPuncturesNeeded - poloidal_puncture_pts.size() < 5 )
+          nPuncturesNeeded = poloidal_puncture_pts.size() + 5;
 
         if( verboseFlag )
-          cerr << "Local minimum, not enough puncture points; "
+          cerr << "Local minimum 0, not enough puncture points; "
                << "need " << nPuncturesNeeded << " "
                << "have " << poloidal_puncture_pts.size() << " "
                << "asking for " << nPuncturesNeeded << " puncture points"
@@ -3011,7 +3012,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         
         if( verboseFlag )
           cerr << "Secondary poloidal rotation  "
-               << toroidalWinding << "," << poloidalWindingP << "  "
+               << toroidalWinding << "," << poloidalWindingP << " ("
+               << ((float) toroidalWinding / (float) poloidalWindingP) << ")  "
                << "with offset " << offset << endl;
       }
       else
@@ -3601,10 +3603,13 @@ FieldlineLib::fieldlineProperties2( vector< Point > &ptList,
 
         analysisState = FieldlineProperties::ADDING_POINTS;
 
-        nPuncturesNeeded = poloidal_puncture_pts.size() + 4;
+        nPuncturesNeeded = poloidal_puncture_pts.size() * 1.05;
+
+        if( nPuncturesNeeded - poloidal_puncture_pts.size() < 5 )
+          nPuncturesNeeded = poloidal_puncture_pts.size() + 5;
 
         if( verboseFlag )
-          cerr << "Local minimum, not enough puncture points; "
+          cerr << "Local minimum 1, not enough puncture points; "
                << "need " << nPuncturesNeeded << " "
                << "have " << poloidal_puncture_pts.size() << " "
                << "asking for " << nPuncturesNeeded << " puncture points"

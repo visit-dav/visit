@@ -272,6 +272,11 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
     if (lightingFlag != obj.lightingFlag && obj.lightingFlag == true)
         return true;
 
+    if (POINT_DIFFERS(velocitySource, obj.velocitySource))
+    {
+        return true;
+    }
+
     //Check by source type.
     if ((sourceType == SpecifiedPoint) && POINT_DIFFERS(pointSource, obj.pointSource))
     {

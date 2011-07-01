@@ -91,7 +91,9 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     ~avtIVPAdamsBashforth();
 
     // begin a new IVP solution
-    virtual void     Reset( const double& t_start, const avtVector &y_start );
+    virtual void     Reset( const double& t_start,
+                            const avtVector &y_start,
+                            const avtVector& v_start = avtVector(0,0,0) );
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow

@@ -76,8 +76,10 @@ avtStreamlineIC::avtStreamlineIC(
     const avtIVPSolver* model, 
     Direction dir,
     const double& t_start,
-    const avtVector &p_start, int ID) :
-    avtStateRecorderIntegralCurve(mask, model, dir, t_start, p_start, ID)
+    const avtVector &p_start,
+    const avtVector &v_start,
+    int ID) :
+    avtStateRecorderIntegralCurve(mask, model, dir, t_start, p_start, v_start, ID)
 {
     numSteps = 0;
 
@@ -249,4 +251,3 @@ avtStreamlineIC::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, terminatedBecauseOfMaxSteps);
     buff.io(mode, speedAtTermination);
 }
-

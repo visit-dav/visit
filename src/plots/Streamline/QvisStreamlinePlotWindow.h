@@ -197,6 +197,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void relTolProcessText();
     void absTolProcessText();
     void absTolSizeTypeChanged(int);
+    void velocitySourceProcessText();
     void pointSourceProcessText();
     void lineStartProcessText();
     void lineEndProcessText();
@@ -305,6 +306,8 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QComboBox *absTolSizeType;
     QLabel    *absTolLabel;
     QCheckBox *forceNodal;
+    QLineEdit *velocitySource;
+    QLabel    *velocitySourceLabel;
     QLineEdit *pointSource;
     QLabel    *pointSourceLabel;
     QLineEdit *lineStart;

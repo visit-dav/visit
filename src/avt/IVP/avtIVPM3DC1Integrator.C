@@ -293,7 +293,9 @@ avtIVPM3DC1Integrator::SetTolerances(const double& relt, const double& abst)
 // ****************************************************************************
 
 void 
-avtIVPM3DC1Integrator::Reset(const double& t_start, const avtVector& y_start)
+avtIVPM3DC1Integrator::Reset(const double& t_start,
+                             const avtVector& y_start,
+                             const avtVector& v_start)
 {
     t = t_start;
     d = 0.0;

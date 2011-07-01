@@ -543,6 +543,15 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     fieldLayout->addWidget(fieldConstantLabel, 0,2);
     fieldLayout->addWidget(fieldConstant, 0,3);
 
+    // Create the widgets that specify a velocity source.
+    velocitySource = new QLineEdit(fieldGroup);
+    connect(velocitySource, SIGNAL(returnPressed()),
+            this, SLOT(velocitySourceProcessText()));
+    velocitySourceLabel = new QLabel(tr("Velocity"), fieldGroup);
+    velocitySourceLabel->setBuddy(velocitySource);
+    fieldLayout->addWidget(velocitySourceLabel, 1, 2);
+    fieldLayout->addWidget(velocitySource, 1, 3);
+
 
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
@@ -560,7 +569,6 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationType->addItem(tr("Leapfrog (Single-step)"));
     integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
-    integrationType->addItem(tr("Unused"));
     integrationType->addItem(tr("Unused"));
     integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
     connect(integrationType, SIGNAL(activated(int)),
@@ -733,7 +741,7 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
             this, SLOT(phiScalingToggled(bool)));
 
     phiScaling = new QLineEdit(coordinateGrp);
-    connect(pointSource, SIGNAL(returnPressed()),
+    connect(phiScaling, SIGNAL(returnPressed()),
             this, SLOT(phiScalingProcessText()));
     coordinateLayout->addWidget(phiScaling, 1, 1);
 
@@ -1485,6 +1493,9 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
         case StreamlineAttributes::ID_termTime:
             temp.setNum(streamAtts->GetTermTime(), 'g', 16);
             maxTime->setText(temp);
+            break;
+        case StreamlineAttributes::ID_velocitySource:
+            velocitySource->setText(DoublesToQString(streamAtts->GetVelocitySource(),3));
             break;
         case StreamlineAttributes::ID_pointSource:
             pointSource->setText(DoublesToQString(streamAtts->GetPointSource(),3));
@@ -2605,31 +2616,25 @@ QvisStreamlinePlotWindow::UpdateFieldAttributes()
     {
     case StreamlineAttributes::M3DC12DField:
       if( streamAtts->GetIntegrationType() ==
-          StreamlineAttributes::M3DC12DIntegrator )
-      {
-        fieldConstantLabel->setEnabled(true);
-        fieldConstant->setEnabled(true);
-      }
+          StreamlineAttributes::M3DC12DIntegrator ) 
+        TurnOn(fieldConstant, fieldConstantLabel);
       else
-      {
-        fieldConstantLabel->setEnabled(false);
-        fieldConstant->setEnabled(false);
-      }
-      break;
+        TurnOff(fieldConstant, fieldConstantLabel);
 
-    case StreamlineAttributes::NIMRODField:
-      fieldConstantLabel->setEnabled(false);
-      fieldConstant->setEnabled(false);
+      TurnOff(velocitySource, velocitySourceLabel);
+
       break;
 
     case StreamlineAttributes::FlashField:
-      fieldConstantLabel->setEnabled(true);
-      fieldConstant->setEnabled(true);
+      TurnOn(fieldConstant, fieldConstantLabel);
+      TurnOn(velocitySource, velocitySourceLabel);
       break;
 
+    case StreamlineAttributes::NIMRODField:
     default:
-      fieldConstantLabel->setEnabled(false);
-      fieldConstant->setEnabled(false);
+      TurnOff(fieldConstant, fieldConstantLabel);
+      TurnOff(velocitySource, velocitySourceLabel);
+
       break;
     }
 }
@@ -2939,6 +2944,20 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("absolute tolerance"),
                 DoubleToQString(streamAtts->GetAbsTolAbsolute()));
                 streamAtts->SetAbsTolAbsolute(streamAtts->GetAbsTolAbsolute());
+        }
+    }
+
+    // Do velocitySource
+    if(which_widget == StreamlineAttributes::ID_velocitySource || doAll)
+    {
+        double val[3];
+        if(LineEditGetDoubles(velocitySource, val, 3))
+            streamAtts->SetVelocitySource(val);
+        else
+        {
+            ResettingError(tr("velocity source"),
+                DoublesToQString(streamAtts->GetVelocitySource(), 3));
+            streamAtts->SetVelocitySource(streamAtts->GetVelocitySource());
         }
     }
 
@@ -4131,6 +4150,13 @@ void
 QvisStreamlinePlotWindow::forceNodalChanged(bool val)
 {
     streamAtts->SetForceNodeCenteredData(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::velocitySourceProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_velocitySource);
     Apply();
 }
 

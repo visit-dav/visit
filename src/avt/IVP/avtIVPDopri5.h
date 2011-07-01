@@ -88,7 +88,9 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
                      ~avtIVPDopri5();
 
     // begin a new IVP solution
-    virtual void     Reset( const double& t_start, const avtVector& y_start );
+    virtual void     Reset( const double& t_start,
+                            const avtVector& y_start,
+                            const avtVector& v_start = avtVector(0,0,0) );
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
@@ -145,5 +147,3 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
 };
 
 #endif
-
-

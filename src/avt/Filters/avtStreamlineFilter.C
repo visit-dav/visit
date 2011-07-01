@@ -191,7 +191,7 @@ static float random_11()
 //
 // ****************************************************************************
 
-avtStreamlineFilter::avtStreamlineFilter()
+avtStreamlineFilter::avtStreamlineFilter() : seedVelocity(0,0,0)
 {
     coloringMethod = STREAMLINE_COLOR_SPEED;
     displayMethod = STREAMLINE_DISPLAY_LINES;
@@ -356,7 +356,8 @@ avtStreamlineFilter::CreateIntegralCurve()
 
 void
 avtStreamlineFilter::SetTermination(int maxSteps_, bool doDistance_,
-                            double maxDistance_, bool doTime_, double maxTime_)
+                                    double maxDistance_,
+                                    bool doTime_, double maxTime_)
 {
     maxSteps = maxSteps_;
     doDistance = doDistance_;
@@ -388,13 +389,15 @@ avtIntegralCurve *
 avtStreamlineFilter::CreateIntegralCurve( const avtIVPSolver* model,
                                           const avtIntegralCurve::Direction dir,
                                           const double& t_start,
-                                          const avtVector &p_start, long ID ) 
+                                          const avtVector &p_start,
+                                          const avtVector &v_start,
+                                          long ID ) 
 {
     unsigned char attr = GenerateAttributeFields();
 
     avtStateRecorderIntegralCurve *rv = 
         new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, maxTime,
-                            attr, model, dir, t_start, p_start, ID);
+                            attr, model, dir, t_start, p_start, v_start, ID);
 
     return rv;
 }
@@ -487,6 +490,27 @@ void
 avtStreamlineFilter::SetDisplayMethod(int d)
 {
     displayMethod = d;
+}
+
+
+// ****************************************************************************
+// Method: avtStreamlineFilter::SetVelocitySource
+//
+// Purpose: 
+//   Sets the streamline point source.
+//
+// Arguments:
+//   vel : The velocity of the point.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 6 12:58:36 PDT 2002
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetVelocitySource(const double *p)
+{
+  seedVelocity.set(p);
 }
 
 
@@ -948,6 +972,28 @@ randMinus1_1()
 //  Purpose:
 //      Get the seed points out of the attributes.
 //
+//  Programmer: Hank Childs
+//  Creation:   June 5, 2008
+//
+// ****************************************************************************
+
+std::vector<avtVector>
+avtStreamlineFilter::GetInitialVelocities(void)
+{
+    std::vector<avtVector> seedVels;
+
+    seedVels.push_back( seedVelocity );
+
+    return seedVels;
+}
+
+
+ // ****************************************************************************
+//  Method: avtStreamlineFilter::GetInitialLocations
+//
+//  Purpose:
+//      Get the seed points out of the attributes.
+//
 //  Programmer: Hank Childs (harvested from GetStreamlinesFromInitialSeeds by
 //                           David Pugmire)
 //  Creation:   June 5, 2008
@@ -1148,7 +1194,9 @@ avtStreamlineFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
     }
     else
     {
-        float dX = (x1-x0)/(float)(sampleDensity[0]-1), dY = (y1-y0)/(float)(sampleDensity[1]-1);
+        float dX = (x1-x0)/(float)(sampleDensity[0]-1);
+        float dY = (y1-y0)/(float)(sampleDensity[1]-1);
+
         for (int x = 0; x < sampleDensity[0]; x++)
         {
             for (int y = 0; y < sampleDensity[1]; y++)

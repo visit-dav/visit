@@ -107,24 +107,6 @@ avtIVPEuler::~avtIVPEuler()
 
 
 // ****************************************************************************
-//  Method: avtIVPEuler::GetCurrentT
-//
-//  Purpose:
-//      Gets the current T.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-double 
-avtIVPEuler::GetCurrentT() const 
-{
-    return t;
-}
-
-
-// ****************************************************************************
 //  Method: avtIVPEuler::GetCurrentY
 //
 //  Purpose:
@@ -172,6 +154,59 @@ void
 avtIVPEuler::SetCurrentY(const avtVector &newY)
 {
     yCur = newY;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPEuler::GetCurrentV
+//
+//  Purpose:
+//      Gets the current V.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+avtVector 
+avtIVPEuler::GetCurrentV() const
+{
+    return vCur;
+}
+
+// ****************************************************************************
+//  Method: avtIVPEuler::SetCurrentV
+//
+//  Purpose:
+//      Sets the current V.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+void
+avtIVPEuler::SetCurrentV(const avtVector &newV)
+{
+    vCur = newV;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPEuler::GetCurrentT
+//
+//  Purpose:
+//      Gets the current T.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+double 
+avtIVPEuler::GetCurrentT() const 
+{
+    return t;
 }
 
 
@@ -305,13 +340,16 @@ avtIVPEuler::SetTolerances(const double& relt, const double& abst)
 // ****************************************************************************
 
 void 
-avtIVPEuler::Reset(const double& t_start, const avtVector &y_start)
+avtIVPEuler::Reset(const double& t_start,
+                   const avtVector &y_start,
+                   const avtVector &v_start)
 {
     t = t_start;
     d = 0.0;
     numStep = 0;
 
     yCur = y_start;
+    vCur = v_start;
     h = h_max;
 }
 

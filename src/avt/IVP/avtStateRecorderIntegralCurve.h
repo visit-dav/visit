@@ -117,7 +117,9 @@ public:
                                    const avtIVPSolver* model, 
                                    Direction dir,
                                    const double& t_start, 
-                                   const avtVector &p_start, int ID );
+                                   const avtVector &p_start,
+                                   const avtVector &v_start,
+                                   int ID );
 
     avtStateRecorderIntegralCurve();
     virtual ~avtStateRecorderIntegralCurve();
@@ -167,7 +169,4 @@ public:
                               avtIVPField* field );
 };
 
-
 #endif 
-
-

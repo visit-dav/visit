@@ -65,19 +65,25 @@ class IVP_API avtIVPEuler: public avtIVPSolver
     ~avtIVPEuler();
 
     // begin a new IVP solution
-    virtual void     Reset( const double& t_start, const avtVector &y_start );
+    virtual void     Reset( const double& t_start,
+                            const avtVector &y_start,
+                            const avtVector &v_start = avtVector(0,0,0) );
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
-    virtual Result   Step(avtIVPField* field, double t_max,
+    virtual Result   Step(avtIVPField* field,
+                          double t_max,
                           avtIVPStep* ivpstep = NULL);
+
     virtual void    OnExitDomain();
 
+    virtual double    GetCurrentT() const;
     virtual avtVector GetCurrentY() const;
-    virtual double   GetCurrentT() const;
+    virtual avtVector GetCurrentV() const;
 
-    virtual void     SetCurrentY( const avtVector &newY );
     virtual void     SetCurrentT( double newT );
+    virtual void     SetCurrentY( const avtVector &newY );
+    virtual void     SetCurrentV( const avtVector &newV );
 
     virtual void     SetNextStepSize( const double& h );
     virtual double   GetNextStepSize() const;

@@ -64,6 +64,11 @@
 
 using std::string;
 
+static void
+TurnOn(QWidget *w0, QWidget *w1=NULL);
+static void
+TurnOff(QWidget *w0, QWidget *w1=NULL);
+
 // ****************************************************************************
 // Method: QvisPoincarePlotWindow::QvisPoincarePlotWindow
 //
@@ -228,6 +233,16 @@ QvisPoincarePlotWindow::CreateWindowContents()
             SLOT(fieldConstantProccessText()));
     fieldLayout->addWidget(fieldConstantLabel, 0,2);
     fieldLayout->addWidget(fieldConstant, 0,3);
+
+
+    // Create the widgets that specify a velocity source.
+    velocitySource = new QLineEdit(fieldGroup);
+    connect(velocitySource, SIGNAL(returnPressed()),
+            this, SLOT(velocitySourceProcessText()));
+    velocitySourceLabel = new QLabel(tr("Velocity"), fieldGroup);
+    velocitySourceLabel->setBuddy(velocitySource);
+    fieldLayout->addWidget(velocitySourceLabel, 1, 2);
+    fieldLayout->addWidget(velocitySource, 1, 3);
 
 
     // Create the integration group box.
@@ -951,6 +966,9 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             sourceTypeCombo->setCurrentIndex((int)atts->GetSourceType());
             sourceTypeCombo->blockSignals(false);
             break;
+          case PoincareAttributes::ID_velocitySource:
+            velocitySource->setText(DoublesToQString(atts->GetVelocitySource(), 3));
+            break;
           case PoincareAttributes::ID_pointSource:
             pointSource->setText(DoublesToQString(atts->GetPointSource(), 3));
             break;
@@ -1365,6 +1383,20 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
 
+    // Do velocitySource
+    if(which_widget == PoincareAttributes::ID_velocitySource || doAll)
+    {
+        double val[3];
+        if(LineEditGetDoubles(velocitySource, val, 3))
+            atts->SetVelocitySource(val);
+        else
+        {
+            ResettingError(tr("Velocity Source"),
+                DoublesToQString(atts->GetVelocitySource(),3));
+            atts->SetVelocitySource(atts->GetVelocitySource());
+        }
+    }
+
     // Do pointSource
     if(which_widget == PoincareAttributes::ID_pointSource || doAll)
     {
@@ -1607,31 +1639,25 @@ QvisPoincarePlotWindow::UpdateFieldAttributes()
     {
     case PoincareAttributes::M3DC12DField:
       if( atts->GetIntegrationType() ==
-          PoincareAttributes::M3DC12DIntegrator )
-      {
-        fieldConstantLabel->setEnabled(true);
-        fieldConstant->setEnabled(true);
-      }
+          PoincareAttributes::M3DC12DIntegrator ) 
+        TurnOn(fieldConstant, fieldConstantLabel);
       else
-      {
-        fieldConstantLabel->setEnabled(false);
-        fieldConstant->setEnabled(false);
-      }
-      break;
+        TurnOff(fieldConstant, fieldConstantLabel);
 
-    case PoincareAttributes::NIMRODField:
-      fieldConstantLabel->setEnabled(false);
-      fieldConstant->setEnabled(false);
+      TurnOff(velocitySource, velocitySourceLabel);
+
       break;
 
     case PoincareAttributes::FlashField:
-      fieldConstantLabel->setEnabled(true);
-      fieldConstant->setEnabled(true);
+      TurnOn(fieldConstant, fieldConstantLabel);
+      TurnOn(velocitySource, velocitySourceLabel);
       break;
 
+    case PoincareAttributes::NIMRODField:
     default:
-      fieldConstantLabel->setEnabled(false);
-      fieldConstant->setEnabled(false);
+      TurnOff(fieldConstant, fieldConstantLabel);
+      TurnOff(velocitySource, velocitySourceLabel);
+
       break;
     }
 }
@@ -1856,6 +1882,14 @@ QvisPoincarePlotWindow::sourceTypeChanged(int val)
         atts->SetSourceType(PoincareAttributes::SourceType(val));
         Apply();
     }
+}
+
+
+void
+QvisPoincarePlotWindow::velocitySourceProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_velocitySource);
+    Apply();
 }
 
 
@@ -2363,4 +2397,36 @@ QvisPoincarePlotWindow::forceNodalChanged(bool val)
 {
     atts->SetForceNodeCenteredData(val);
     Apply();
+}
+
+
+
+static void
+TurnOn(QWidget *w0, QWidget *w1)
+{
+    if (w0)
+    {
+        w0->setEnabled(true);
+        w0->show();
+    }
+    if (w1)
+    {
+        w1->setEnabled(true);
+        w1->show();
+    }
+}
+
+static void
+TurnOff(QWidget *w0, QWidget *w1)
+{
+    if (w0)
+    {
+        w0->setEnabled(false);
+        w0->hide();
+    }
+    if (w1)
+    {
+        w1->setEnabled(false);
+        w1->hide();
+    }
 }

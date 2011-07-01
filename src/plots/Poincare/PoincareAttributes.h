@@ -186,6 +186,7 @@ public:
     void SelectPointSource();
     void SelectLineStart();
     void SelectLineEnd();
+    void SelectVelocitySource();
     void SelectSingleColor();
     void SelectColorTableName();
 
@@ -202,6 +203,7 @@ public:
     void SetPointDensity(int pointDensity_);
     void SetFieldType(FieldType fieldType_);
     void SetFieldConstant(double fieldConstant_);
+    void SetVelocitySource(const double *velocitySource_);
     void SetIntegrationType(IntegrationType integrationType_);
     void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
     void SetMaxStepLength(double maxStepLength_);
@@ -269,6 +271,8 @@ public:
     int                  GetPointDensity() const;
     FieldType            GetFieldType() const;
     double               GetFieldConstant() const;
+    const double         *GetVelocitySource() const;
+          double         *GetVelocitySource();
     IntegrationType      GetIntegrationType() const;
     CoordinateSystem     GetCoordinateSystem() const;
     double               GetMaxStepLength() const;
@@ -423,6 +427,7 @@ public:
         ID_pointDensity,
         ID_fieldType,
         ID_fieldConstant,
+        ID_velocitySource,
         ID_integrationType,
         ID_coordinateSystem,
         ID_maxStepLength,
@@ -489,6 +494,7 @@ private:
     int            pointDensity;
     int            fieldType;
     double         fieldConstant;
+    double         velocitySource[3];
     int            integrationType;
     int            coordinateSystem;
     double         maxStepLength;
@@ -544,6 +550,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidiidbddiddiiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidDiidbddiddiiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
 
 #endif

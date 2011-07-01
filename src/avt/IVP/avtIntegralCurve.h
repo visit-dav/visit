@@ -216,6 +216,7 @@ class IVP_API avtIntegralCurve
                       Direction dir, 
                       const double& t_start, 
                       const avtVector &p_start, 
+                      const avtVector &v_start, 
                       long ID );
 
     avtIntegralCurve();

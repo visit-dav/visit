@@ -147,6 +147,9 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
     return (sourceType != obj.sourceType ||
             sourcePointsDiffer ||
             sourceLineDiffers ||
+
+            POINT_DIFFERS(velocitySource, obj.velocitySource) ||
+
             densityMatters ||
 
             minPunctures != obj.minPunctures ||

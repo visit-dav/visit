@@ -71,7 +71,8 @@ public:
                     bool doTime, double maxTime,
                     unsigned char mask, const avtIVPSolver* model, 
                     Direction dir, const double& t_start, 
-                    const avtVector &p_start, int ID);
+                    const avtVector &p_start, const avtVector &v_start,
+                    int ID);
 
     avtStreamlineIC();
     virtual ~avtStreamlineIC();
@@ -103,7 +104,4 @@ public:
     double           speedAtTermination;
 };
 
-
 #endif 
-
-

@@ -276,13 +276,15 @@ avtIntegralCurve *
 avtPoincareFilter::CreateIntegralCurve( const avtIVPSolver* model,
                                         avtIntegralCurve::Direction dir,
                                         const double& t_start,
-                                        const avtVector &p_start, long ID ) 
+                                        const avtVector &p_start,
+                                        const avtVector &v_start,
+                                        long ID ) 
 {
     // need at least these three attributes
     unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
 
     avtPoincareIC *rv = new avtPoincareIC( attr, model, dir, 
-                                           t_start, p_start, ID );
+                                           t_start, p_start, v_start, ID );
 
     if (intersectObj)
         rv->SetIntersectionCriteria(intersectObj, maxIntersections);
@@ -749,8 +751,8 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         unsigned int toroidalWinding    = properties.toroidalWinding;
         unsigned int poloidalWinding    = properties.poloidalWinding;
         unsigned int poloidalWindingP   = properties.poloidalWindingP;
-        unsigned int toroidalResonance   = properties.toroidalResonance;
-        unsigned int poloidalResonance   = properties.poloidalResonance;
+        unsigned int toroidalResonance  = properties.toroidalResonance;
+        unsigned int poloidalResonance  = properties.poloidalResonance;
         unsigned int windingGroupOffset = properties.windingGroupOffset;
         unsigned int islands            = properties.islands;
         unsigned int islandGroups       = properties.islandGroups;
@@ -767,8 +769,13 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                << poincare_ic->points[0].y << " "
                << poincare_ic->points[0].z << " >  "
                << toroidalWinding << "," << poloidalWinding << " ("
-               << (double) toroidalWinding / (double) poloidalWinding << ")  "
+               << (float) toroidalWinding / (float) poloidalWinding << ")  "
                << toroidalResonance << "," << poloidalResonance << "  ";
+
+          if( poloidalWinding != poloidalWindingP )
+            cerr << toroidalWinding << "," << poloidalWindingP << " ("
+                 << (float) toroidalWinding / (float) poloidalWindingP << ")  ";
+
 
           if( type == FieldlineProperties::RATIONAL )
             cerr << "rational surface  ";
