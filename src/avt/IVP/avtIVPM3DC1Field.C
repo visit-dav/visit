@@ -48,6 +48,8 @@
 #include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 
+#include <InvalidVariableException.h>
+
 #define ELEMENT_SIZE_2D 7
 #define SCALAR_SIZE_2D 20
 
@@ -415,10 +417,10 @@ void avtIVPM3DC1Field::findElementNeighbors()
   int     el, vert, tri[3], vlen;
 
   /* Allocate, initialize neighbor table */
-  neighbors = (int *)malloc(3 * tElements * sizeof(int));
+  neighbors = (int *) malloc(3 * tElements * sizeof(int));
   if (neighbors == NULL) {
-    fputs("Insufficient memory in findElementNeighbors.\n", stderr);
-    exit(1);
+    EXCEPTION1( InvalidVariableException,
+                "M3DC1 findElementNeighbors - Insufficient memory for neighbors" );
   }
 
   for (el=0; el<3*tElements; el++)
@@ -427,8 +429,8 @@ void avtIVPM3DC1Field::findElementNeighbors()
   /* Allocate trig table */
   trigtable = (double *)malloc(2 * tElements * sizeof(double));
   if (trigtable == NULL) {
-    fputs("Insufficient memory in findElementNeighbors.\n", stderr);
-    exit(1);
+    EXCEPTION1( InvalidVariableException,
+                "M3DC1 findElementNeighbors - Insufficient memory for trigtable" );
   }
 
   /* Loop over elements, finding vertices, edges, neighbors */
@@ -692,9 +694,7 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
     }
 
     if (flag0 || flag1 || flag2)
-    {
       return -1;
-    }
     else
       break;
 
