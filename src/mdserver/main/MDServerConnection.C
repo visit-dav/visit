@@ -1787,12 +1787,14 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
 {
     int i, isave = 0, ipat = 0;
     const char *H5_ext = ".h5";
+    const char *VSH5_ext = ".vsh5";
     const char *CaleH5_ext = ".ch5";
     char pattern[256];
     for(i = 0; i < 256; ++i) pattern[i] = '\0';
 
     std::string searchstring;
     bool excludedH5 = false, excludedCaleH5 = false;
+    bool excludedVSH5 = false;
     if(extraSmartFileGrouping)
     {
         // Exclude the .h5 file extension from the numeric pattern search.
@@ -1806,6 +1808,11 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
         {
             searchstring = file.substr(0, file.size()-4);
             excludedCaleH5 = true;
+        }
+        else if(file.size() > 5 && (file.substr(file.size()-5, file.size()-1) == VSH5_ext))
+        {
+          searchstring = file.substr(0, file.size()-5);
+          excludedVSH5 = true;
         }
         else
             searchstring = file;
@@ -1859,6 +1866,8 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
 
     if(excludedH5)
         p += H5_ext;
+    if(excludedVSH5)
+        p += VSH5_ext;
     if(excludedCaleH5)
         p += CaleH5_ext;
 
