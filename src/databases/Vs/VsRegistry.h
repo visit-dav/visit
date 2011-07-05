@@ -123,8 +123,8 @@ public:
   //Time
   bool hasTime() { return (timeValue != -1); }
   double getTime() { return timeValue; }
-  bool hasStep() { return (step != -1); }
-  double getStep() { return step; }
+  bool hasCycle() { return (cycle != -1); }
+  double getCycle() { return cycle; }
     
 private:
   /**
@@ -157,7 +157,7 @@ private:
   // a value of -1 indicates no time data is available
   //Named timeValue because "time" is a typedef
   double timeValue;
-  int step;
+  int cycle;
   
   // a registry of user-specified component names and their mappings
   // first element of pair is the user-specified name

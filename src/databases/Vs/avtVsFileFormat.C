@@ -3616,7 +3616,6 @@ void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
 //
 //  Modifications:
 //
-
 void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
 {
     string methodSig("avtVsFileFormat::RegisterVarsWithMesh() - ");
@@ -3711,16 +3710,13 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
     VsLog::debugLog() << methodSig << "Exiting normally." << endl;
   }
 
-  /**
-   * Called to alert the database reader that VisIt is about to ask for data
-   * at this timestep.  Since this reader is single-time, this is 
-   * only provided for reference and does nothing.
-   */
 // *****************************************************************************
-//  Method: avtVsFileFormat::RegisterVarsWithMesh
+//  Method: avtVsFileFormat::ActivateTimestep
 //
 //  Purpose:
-//      How do you do the voododo that you do
+//   Called to alert the database reader that VisIt is about to ask for data
+//   at this timestep.  Since this reader is single-time, this is
+//   only provided for reference and does nothing.
 //
 //  Programmer: Marc Durant
 //  Creation:   June, 2010
@@ -3733,9 +3729,8 @@ void avtVsFileFormat::ActivateTimestep()
   LoadData();
 }
   
-
 // *****************************************************************************
-//  Method: avtVsFileFormat::RegisterVarsWithMesh
+//  Method: avtVsFileFormat::UpdateCyclesAndTimes
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3745,7 +3740,6 @@ void avtVsFileFormat::ActivateTimestep()
 //
 //  Modifications:
 //
-
 void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
 {
     string methodSig("avtVsFileFormat::UpdateCyclesAndTimes() - ");
@@ -3757,24 +3751,52 @@ void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
       return;
     }
 
+    int timeStep = 0;
+
+    //Extract timestep from filename
+    //First, get file name from full path
+    std::string fileName(dataFileName);
+    int lastSlash = fileName.find_last_of('/');
+    if (lastSlash == -1) {
+      lastSlash = fileName.find_last_of('\\');
+    }
+    VsLog::debugLog() <<methodSig <<"Last slash is " <<lastSlash <<std::endl;
+    if (lastSlash != -1) {
+      int nameLength = fileName.length() - (lastSlash + 1);
+      fileName = fileName.substr(lastSlash + 1, nameLength);
+    }
+    VsLog::debugLog() <<methodSig <<"Extracted filename is \"" <<fileName <<"\"" <<std::endl;
+  
+    //Timestep = the number between the last underscore and the first dot
+    int lastUnderscore = fileName.find_last_of('_');
+    VsLog::debugLog() <<methodSig <<"lastUnderscore is " <<lastUnderscore <<std::endl;
+    int firstDot = fileName.find_first_of('.');
+    VsLog::debugLog() <<methodSig <<"firstDot is " <<firstDot <<std::endl;
+    if ((lastUnderscore != -1) &&
+        (firstDot != -1) &&
+        (firstDot > lastUnderscore + 1)) {
+      std::string stepString = fileName.substr(lastUnderscore + 1, firstDot - (lastUnderscore + 1));
+      VsLog::debugLog() <<methodSig <<"StepString is \"" <<stepString <<"\"" <<std::endl;
+      timeStep = atoi(stepString.c_str());
+      VsLog::debugLog() <<methodSig <<"Converted to integer is \"" <<timeStep <<"\"" <<std::endl;
+    }
+
     // If we have time data, tell VisIt
     if (registry->hasTime()) {
       VsLog::debugLog() << methodSig << "This file supplies time: "
                         << registry->getTime() << endl;
-      doubleVector times;
-      times.push_back(registry->getTime());
-      md->SetTimes(times);
+
+      md->SetTime(timeStep, registry->getTime());
       md->SetTimeIsAccurate(true, registry->getTime());
     }
     
-    //If we have step data, tell VisIt
-    if (registry->hasStep()) {
-      VsLog::debugLog() << methodSig << "This file supplies step: "
-        << registry->getStep() << endl;
-      intVector cycles;
-      cycles.push_back(registry->getStep());
-      md->SetCycles(cycles);
-      md->SetCycleIsAccurate(true, registry->getStep());
+    //If we have cycle data, tell VisIt
+    if (registry->hasCycle()) {
+      VsLog::debugLog() << methodSig << "This file supplies cycle: "
+        << registry->getCycle() << endl;
+
+      md->SetCycle(timeStep, registry->getCycle());
+      md->SetCycleIsAccurate(true, registry->getCycle());
     }
 }
   
@@ -3944,7 +3966,7 @@ bool avtVsFileFormat::ReturnsValidCycle()
     VsLog::debugLog() << methodSig << "entering" << endl;
     LoadData();
 
-    if (registry->hasStep())
+    if (registry->hasCycle())
     {
       VsLog::debugLog() << methodSig << "returning TRUE." << endl;
       return true;
@@ -3975,11 +3997,11 @@ int avtVsFileFormat::GetCycle()
     VsLog::debugLog() << methodSig << "entering" << endl;
     LoadData();
 
-    if (registry->hasStep())
+    if (registry->hasCycle())
     {
       VsLog::debugLog() << methodSig << "This file supplies cycle: "
-                        << registry->getStep() << endl;
-      return registry->getStep();
+                        << registry->getCycle() << endl;
+      return registry->getCycle();
     }
     else
     {

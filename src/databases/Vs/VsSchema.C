@@ -99,7 +99,7 @@ std::string VsSchema::Unstructured::vsPoints2 = "vsPoints2";
 //Time
 std::string VsSchema::timeKey = "time";
 std::string VsSchema::timeAtt = "vsTime";
-std::string VsSchema::stepAtt = "vsStep";
+std::string VsSchema::cycleAtt = "vsStep";
 std::string VsSchema::timeGroupAtt = "vsTimeGroup";
 
 //Run info
