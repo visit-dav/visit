@@ -1,5 +1,5 @@
-<?xml version="@VERSION@"?>
-  <Plugin name="Vs" type="database" label="Vs Files" version="@VERSION@" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false">
+<?xml version="1.0"?>
+  <Plugin name="Vs" type="database" label="Vs Files" version="3.0.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false">
     <Files components="M">
       avtVsFileFormat.C
       VsFilter.C
