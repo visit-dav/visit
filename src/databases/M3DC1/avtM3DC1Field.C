@@ -48,6 +48,7 @@
 #include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 
+#include <InvalidVariableException.h>
 
 #define ELEMENT_SIZE_2D 7
 #define SCALAR_SIZE_2D 20
@@ -179,8 +180,8 @@ void avtM3DC1Field::findElementNeighbors()
   /* Allocate, initialize neighbor table */
   neighbors = (int *)malloc(3 * tElements * sizeof(int));
   if (neighbors == NULL) {
-    fputs("Insufficient memory in findElementNeighbors.\n", stderr);
-    exit(1);
+    EXCEPTION1( InvalidVariableException,
+                "M3DC1 findElementNeighbors - Insufficient memory for neighbors" );
   }
 
   for (el=0; el<3*tElements; el++)
@@ -189,8 +190,8 @@ void avtM3DC1Field::findElementNeighbors()
   /* Allocate trig table */
   trigtable = (double *)malloc(2 * tElements * sizeof(double));
   if (trigtable == NULL) {
-    fputs("Insufficient memory in findElementNeighbors.\n", stderr);
-    exit(1);
+    EXCEPTION1( InvalidVariableException,
+                "M3DC1 findElementNeighbors - Insufficient memory for trigtable" );
   }
 
   /* Loop over elements, finding vertices, edges, neighbors */
@@ -367,7 +368,7 @@ int avtM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
     while( phi < 0 )
       phi += 2.0*M_PI;
 
-    while( xin[1] > 2.0*M_PI )
+    while( phi >= 2.0*M_PI )
       phi -= 2.0*M_PI;
 
     xout[2] = phi - tri[8]; // tri[8] = phi0
@@ -479,7 +480,7 @@ int avtM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
     while( phi < 0 )
       phi += 2.0*M_PI;
 
-    while( xin[1] > 2.0*M_PI )
+    while( phi >= 2.0*M_PI )
       phi -= 2.0*M_PI;
 
     for( int i=0; i<nplanes; ++i )
@@ -569,7 +570,7 @@ avtM3DC1Field::operator()( const double &t, const avtVector &p ) const
 //
 // ****************************************************************************
 void avtM3DC1Field::interpBcomps(float *B, double *x,
-                                    int element, double *xieta) const
+                                 int element, double *xieta) const
 {
   float *B_r   = &(B[0]);
   float *B_z   = &(B[2]);
