@@ -21,7 +21,7 @@ Unix and Mac OS X:
         "version" will be 2.3.0 for the current distribution.
 
         "platform" will be one of the following:  aix, aix64, darwin-i386,
-        darwin-ppc, linux-altix, linux-ellipse, linux_rhel3, linux-x86_64,
+        darwin-ppc, linux-altix, linux-ellipse, linux-rhel3, linux-x86_64,
         linux-x86_64-ubuntu8 or linux-x86_64-fedora4 depending on the
         machine.  The one you use should match the name of the accompanying
         distribution file.
@@ -32,11 +32,11 @@ Unix and Mac OS X:
     For example
 
         chmod 755 visit-install2_3_0
-        ./visit-install2_3_0 2.3.0 linux_rhel3 /usr/local/visit
+        ./visit-install2_3_0 2.3.0 linux-rhel3 /usr/local/visit
 
-    will install the linux_rhel3, 2.3.0 version of visit in the directory
+    will install the linux-rhel3, 2.3.0 version of visit in the directory
     "/usr/local/visit".  Note that you will need to have the file
-    "visit2_3_0.linux_rhel3.tar.gz" present in the current directory for this
+    "visit2_3_0.linux-rhel3.tar.gz" present in the current directory for this
     to function properly.  You can install multiple binaries into the
     same directory.  For example, you could then execute
 
