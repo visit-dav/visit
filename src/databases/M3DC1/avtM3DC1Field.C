@@ -367,7 +367,7 @@ int avtM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
     while( phi < 0 )
       phi += 2.0*M_PI;
 
-    while( xin[1] > 2.0*M_PI )
+    while( phi >= 2.0*M_PI )
       phi -= 2.0*M_PI;
 
     xout[2] = phi - tri[8]; // tri[8] = phi0
@@ -479,7 +479,7 @@ int avtM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
     while( phi < 0 )
       phi += 2.0*M_PI;
 
-    while( xin[1] > 2.0*M_PI )
+    while( phi >= 2.0*M_PI )
       phi -= 2.0*M_PI;
 
     for( int i=0; i<nplanes; ++i )

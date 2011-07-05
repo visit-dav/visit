@@ -690,9 +690,7 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
     }
 
     if (flag0 || flag1 || flag2)
-    {
       return -1;
-    }
     else
       break;
 
