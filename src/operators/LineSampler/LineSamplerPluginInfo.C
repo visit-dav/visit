@@ -133,7 +133,7 @@ LineSamplerGeneralPluginInfo::GetID() const
 bool
 LineSamplerGeneralPluginInfo::EnabledByDefault() const
 {
-    return true;
+    return false;
 }
 
 // ****************************************************************************
