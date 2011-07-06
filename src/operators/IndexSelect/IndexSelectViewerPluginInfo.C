@@ -310,7 +310,6 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
        const avtMeshMetaData *mmd = md->GetMesh(plot->GetMeshName());
        if(mmd && mmd->hasLogicalBounds)
        {
-         cerr << mmd->meshType << "  " <<  AVT_POINT_MESH << endl;
            if( mmd->meshType == AVT_POINT_MESH ||
                mmd->meshType == AVT_UNSTRUCTURED_MESH)
            {
