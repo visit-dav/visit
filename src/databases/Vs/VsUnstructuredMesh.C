@@ -12,6 +12,10 @@
 #include "VsH5Group.h"
 #include "VsLog.h"
 
+#define __CLASS__ "VsUnstructuredMesh::"
+
+using namespace std;
+
 VsUnstructuredMesh::VsUnstructuredMesh(VsH5Group* group):VsMesh(group) {
   numPoints = 0;
   numCells = 0;
@@ -42,7 +46,8 @@ std::string VsUnstructuredMesh::getPointsDatasetName()  {
   }
 
   //if we didn't find vsPoints, try the default name
-  return makeCanonicalName(getFullName(), VsSchema::Unstructured::defaultPointsName);
+  return makeCanonicalName(getFullName(),
+                           VsSchema::Unstructured::defaultPointsName);
 }
 
 std::string VsUnstructuredMesh::getPointsDatasetName(int i)  {
@@ -56,9 +61,11 @@ std::string VsUnstructuredMesh::getPointsDatasetName(int i)  {
     case 2: attributeName = VsSchema::Unstructured::vsPoints2;
       break;
     default:
-      VsLog::debugLog() <<"VsUnstructuredMesh::getPointsDatasetName(" <<i <<") - requested index is out of range." <<std::endl;
+
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
+                        << "Requested index (" << i << ") is out of range."
+                        << endl;
       return "";
-      break;
   }
   
   std::string fullName;
@@ -292,13 +299,15 @@ VsUnstructuredMesh* VsUnstructuredMesh::buildUnstructuredMesh(VsH5Group* group) 
   bool success = newMesh->initialize();
   
   if (success) {
-    VsLog::debugLog() <<"VsUnstructuredMesh::buildUnstructuredMesh() - returning success." <<std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
+                      << "Returning success." << endl;
     return newMesh;
   }
 
   delete (newMesh);
   newMesh = NULL;
-  VsLog::debugLog() <<"VsUnstructuredMesh::buildUnstructuredMesh() - returning failure." <<std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
+                      << "Returning failure." << endl;
   return NULL;
 }
 
@@ -324,18 +333,20 @@ bool VsUnstructuredMesh::initialize() {
     splitPoints = true;
 
     //it's possible that we have multiple points datasets
-    VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - path = " <<getPath() <<std::endl;
-    VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - vsPoints0 = " <<getPointsDatasetName(0) <<std::endl;
-    VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - vsPoints1 = " <<getPointsDatasetName(1) <<std::endl;
-    VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - vsPoints2 = " <<getPointsDatasetName(2) <<std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
+                      << "Path = " <<getPath() << "  "
+                      << "vsPoints0 = " <<getPointsDatasetName(0) << "  "
+                      << "vsPoints1 = " <<getPointsDatasetName(1) << "  "
+                      << "vsPoints2 = " <<getPointsDatasetName(2) << endl;
     
     VsH5Dataset* points0 = getPointsDataset(0);
     VsH5Dataset* points1 = getPointsDataset(1);
     VsH5Dataset* points2 = getPointsDataset(2);
  
     if (!points0) {
-      VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - Unable to load points data." << std::endl;
-      VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - Returning false." <<std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
+                      << "Unable to load points data.  Returning false."
+                      << endl;
       return false;
     }
     
@@ -420,8 +431,8 @@ std::string VsUnstructuredMesh::getKind() {
 
 void VsUnstructuredMesh::getMeshDataDims(std::vector<int>& dims)
 {
-  VsLog::debugLog() << "VsUnstructuredMesh::getMeshDims(): Entering."
-                    << std::endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "entering" << endl;
   
   // Unstructured mesh is meshDataDims is: [#points][#spatialDims]
   dims.resize(2);
@@ -436,4 +447,7 @@ void VsUnstructuredMesh::getMeshDataDims(std::vector<int>& dims)
     dims[0] = numSpatialDims;
     dims[1] = numPoints;
   }
+
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "exiting" << endl;  
 }

@@ -14,6 +14,8 @@
 
 #include <string>
 
+#define __CLASS__ "VsUniformMesh::"
+
 using namespace std;
 
 
@@ -30,27 +32,23 @@ VsUniformMesh::~VsUniformMesh() {
 
 VsUniformMesh* VsUniformMesh::buildUniformMesh(VsH5Group* group)
 {
-  string methodSig("VsStructuredMesh::buildUniformMesh() - ");
-
   VsUniformMesh* newMesh = new VsUniformMesh(group);
   bool success = newMesh->initialize();
   
   if (success) {
-    VsLog::debugLog() << methodSig << "returning success." <<std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  " << "returning success." << endl;
     return newMesh;
   }
 
   delete (newMesh);
   newMesh = NULL;
-  VsLog::debugLog() << methodSig << "returning failure." <<std::endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  " << "returning failure." << endl;
   return NULL;
 }
 
 
 bool VsUniformMesh::initialize()
 {
-  string methodSig("VsStructuredMesh::initialize() - ");
-
   // ARS - Get the spatial dimensionality based on the lower and upper
   // bounds NOT the dimensionality of the topology.
 
@@ -61,21 +59,22 @@ bool VsUniformMesh::initialize()
   numCellsAtt = getAttribute(VsSchema::Uniform::numCells);
 
   if (!numCellsAtt) {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh is missing attribute: "
                       << VsSchema::Uniform::numCells << endl;
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Looking for deprecated attribute: "
                       << VsSchema::Uniform::numCells_deprecated << endl;
     numCellsAtt = getAttribute(VsSchema::Uniform::numCells_deprecated);
   }
 
   if (!numCellsAtt) {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh is also missing deprecated attribute: "
                       << VsSchema::Uniform::numCells_deprecated << endl;
-    VsLog::debugLog() << methodSig
-                      << "Unable to initialize mesh, returning failure." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Unable to initialize mesh, returning failure."
+                      << endl;
     return false;
   }
 
@@ -85,11 +84,12 @@ bool VsUniformMesh::initialize()
   if (!err) {
     numSpatialDims = dims.size();
   } else {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Unable to get dimensionality from attribute: "
                       << numCellsAtt->getShortName() << endl;
-    VsLog::errorLog() << methodSig
-                      << "Unable to initialize mesh, returning failure." << endl;
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Unable to initialize mesh, returning failure."
+                      << endl;
     return false;
   }
 
@@ -98,42 +98,44 @@ bool VsUniformMesh::initialize()
   // Lowerbounds is required
   lowerBoundsAtt = getAttribute(VsSchema::Uniform::lowerBounds);
   if (!lowerBoundsAtt) {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh is missing attribute: "
                       << VsSchema::Uniform::lowerBounds << endl;
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Looking for deprecated attribute: "
                       << VsSchema::Uniform::lowerBounds_deprecated << endl;
     lowerBoundsAtt = getAttribute(VsSchema::Uniform::lowerBounds_deprecated);
   }
 
   if (!lowerBoundsAtt) {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh is also missing deprecated attribute: "
                       << VsSchema::Uniform::lowerBounds_deprecated << endl;
-    VsLog::errorLog() << methodSig
-                      << "Unable to initialize mesh, returning failure." << endl;
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Unable to initialize mesh, returning failure."
+                      << endl;
     return false;
   }
   
   // Upperbounds is required
   upperBoundsAtt = getAttribute(VsSchema::Uniform::upperBounds);
   if (!upperBoundsAtt) {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh is missing attribute: "
                       << VsSchema::Uniform::upperBounds << endl;
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Looking for deprecated attribute: "
                       << VsSchema::Uniform::upperBounds_deprecated << endl;
     upperBoundsAtt = getAttribute(VsSchema::Uniform::upperBounds_deprecated);
   }
 
   if (!upperBoundsAtt) {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh is also missing deprecated attribute: "
                       << VsSchema::Uniform::upperBounds_deprecated << endl;
-    VsLog::errorLog() << methodSig
-                      << "Unable to initialize mesh, returning failure." << endl;
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Unable to initialize mesh, returning failure."
+                      << endl;
     return false;
   }
 
@@ -146,11 +148,12 @@ bool VsUniformMesh::initialize()
 
   if( err )
   {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Unable to get lower bounds from attribute: "
                       << lowerBoundsAtt->getShortName() << endl;
-    VsLog::errorLog() << methodSig
-                      << "Unable to initialize mesh, returning failure." << endl;
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Unable to initialize mesh, returning failure."
+                      << endl;
     numSpatialDims = -1;
     return false;
   }
@@ -162,22 +165,23 @@ bool VsUniformMesh::initialize()
 
   if( err )
   {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Unable to get upper bounds from attribute: "
                       << lowerBoundsAtt->getShortName() << endl;
-    VsLog::errorLog() << methodSig
-                      << "Unable to initialize mesh, returning failure." << endl;
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Unable to initialize mesh, returning failure."
+                      << endl;
     numSpatialDims = -1;
     return false;
   }
 
   if( numSpatialDims != dVals.size() )
   {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Lower and Upper spatial dimensions do not match: "
                       << numSpatialDims << "  " << dVals.size()
                       << endl;
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Unable to initialize mesh, returning failure."
                       << endl;
     numSpatialDims = -1;
@@ -187,20 +191,20 @@ bool VsUniformMesh::initialize()
   // StartCell is optional
   startCellAtt = getAttribute(VsSchema::Uniform::startCell);
   if (!startCellAtt) {
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh does not have optional attribute: "
                       << VsSchema::Uniform::startCell << endl;
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Looking for deprecated attribute: "
                       << VsSchema::Uniform::startCell_deprecated << endl;
     startCellAtt = getAttribute(VsSchema::Uniform::startCell_deprecated);
   }
 
   if (!startCellAtt) {
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh also does not have deprecated attribute: "
                       << VsSchema::Uniform::startCell_deprecated << endl;
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Using default start cell of 0." << endl;
   }
 
@@ -242,11 +246,14 @@ herr_t VsUniformMesh::getLowerBounds(std::vector<float>* fVals) {
   }
   
   if (err < 0) {
-    VsLog::debugLog() << "VsUniformMesh::getLowerBounds(): error " << err <<
-    " in reading attribute '" <<lowerBoundsAtt->getShortName() << "'." << std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Error " << err
+                      << " in reading attribute '"
+                      << lowerBoundsAtt->getShortName() << "'." <<  endl;
   }
   
-  VsLog::debugLog() << "VsUniformMesh::getLowerBounds() - Returning " <<err <<"." << std::endl;
+  VsLog::debugLog() << "VsUniformMesh::getLowerBounds() - Returning " << err
+                    << "." <<  endl;
   return err;
 }
 
@@ -267,37 +274,40 @@ herr_t VsUniformMesh::getUpperBounds(std::vector<float>* fVals) {
   }
   
   if (err < 0) {
-    VsLog::debugLog() << "VsUniformMesh::getUpperBounds(): error " << err <<
-    " in reading attribute '" << upperBoundsAtt->getShortName() << "'." << std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Error " << err
+                      << " in reading attribute '"
+                      << upperBoundsAtt->getShortName() << "'." <<  endl;
   }
   
-  VsLog::debugLog() << "VsUniformMesh::getUpperBounds() - Returning " <<err <<"." << std::endl;
   return err;
 }
 
 
 herr_t VsUniformMesh::getStartCell(std::vector<int>* startCell) {
   if (startCellAtt == NULL) {
-    VsLog::debugLog() << "VsUniformMesh::getStartCell() - Mesh does not have optional attribute: " << VsSchema::Uniform::startCell << std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Mesh does not have optional attribute: "
+                      << VsSchema::Uniform::startCell <<  endl;
     return -1;
   }
   
   herr_t err = startCellAtt->getIntVectorValue(startCell);
+
   if (err < 0) {
-    VsLog::debugLog() << "VsUniformMesh::getStartCell(): error " << err <<
-    " in reading attribute '" << startCellAtt->getShortName() << "'." << std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Error " << err
+                      << " in reading attribute '"
+                      << startCellAtt->getShortName() << "'." <<  endl;
   }
-  
-  VsLog::debugLog() << "VsUniformMesh::getStartCell() - Returning " <<err <<"." << std::endl;
   return err;
 }
 
 
 void VsUniformMesh::getMeshDataDims(std::vector<int>& dims)
 {
-  string methodSig("VsStructuredMesh::getMeshDims() - ");
-
-  VsLog::debugLog() << methodSig << "Entering." << std::endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Entering." <<  endl;
   
   // Read dims of totalNumCells attribute
   numCellsAtt->getIntVectorValue(&dims);

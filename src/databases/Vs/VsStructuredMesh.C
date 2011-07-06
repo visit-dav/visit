@@ -13,6 +13,8 @@
 
 #include <string>
 
+#define __CLASS__ "VsStructuredMesh::"
+
 using namespace std;
 
 
@@ -32,13 +34,16 @@ VsStructuredMesh* VsStructuredMesh::buildStructuredMesh(VsH5Dataset* dataset)
   bool success = newMesh->initialize();
   
   if (success) {
-    VsLog::debugLog() << methodSig << "returning success." <<endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "returning success." <<endl;
     return newMesh;
   }
   
   delete (newMesh);
   newMesh = NULL;
-  VsLog::debugLog() << methodSig << "returning failure." <<endl;
+
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "returning failure." <<endl;
   return NULL;
 }
 
@@ -47,7 +52,8 @@ bool VsStructuredMesh::initialize()
 {
   string methodSig("VsStructuredMesh::initialize() - ");
     
-  VsLog::debugLog() << methodSig << "Entering" <<endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Entering" <<endl;
 
   VsH5Dataset* dm = registry->getDataset(getFullName());
 
@@ -59,16 +65,18 @@ bool VsStructuredMesh::initialize()
 
   if (dims.empty())
   {
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
       << "Failed to create mesh because dataset->dims.size() is zero." << endl;
     return false;
   }
   else if( dims.size() == 1 )
   {
-    VsLog::warningLog() << methodSig << "Special 1D case." << endl
+    VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Special 1D case." << endl
       << "This file attempts to declare a 1D structured mesh with" << endl
       << "an array of size [numPoints] but with no spatial dimension." << endl
-      << "Whereas the normal dimensions would be [numPoints][spatialDim]" << endl
+      << "Whereas the normal dimensions would be [numPoints][spatialDim]"
+      << endl
       << "As such, assume the spatial dimenson is 1." << endl;
 
     numSpatialDims = 1;
@@ -81,10 +89,12 @@ bool VsStructuredMesh::initialize()
       numSpatialDims = dims[0];
   }
   
-  VsLog::debugLog() << methodSig
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Mesh has num spatial dims = " << numSpatialDims << endl;
     
-  VsLog::debugLog() << methodSig << "Success." << endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Exiting." << endl;
+
   return initializeRoot();
 }
 
@@ -96,17 +106,16 @@ std::string VsStructuredMesh::getKind() {
 
 void VsStructuredMesh::getMeshDataDims(std::vector<int>& dims)
 {
-  string methodSig("VsStructuredMesh::getMeshDims() - ");
-    
-  VsLog::debugLog() << methodSig << "Entering." << endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Entering." << endl;
   
   // Read dataset's dims
   VsH5Dataset* dm = registry->getDataset(getFullName());
 
   if (!dm) {
-    VsLog::errorLog() << methodSig << "Error: dataset " << getFullName()
-                      << " not found" << endl;
-    VsLog::errorLog() << methodSig << "Returning 0." << endl;
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Error: dataset " << getFullName()
+                      << " not found. Returning." << endl;
     return;
   }
  
@@ -132,6 +141,9 @@ void VsStructuredMesh::getMeshDataDims(std::vector<int>& dims)
       dims[0] = 1;
     }
   }
+
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Exiting." << endl;
 }
 
 
