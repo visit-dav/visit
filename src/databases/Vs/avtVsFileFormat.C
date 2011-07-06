@@ -80,6 +80,8 @@
 
 using namespace std;
 
+#define __CLASS__ "avtVsFileFormat::"
+
 // *****************************************************************************
 //  Method: avtVsFileFormat::avtVsFileFormat
 //
@@ -98,10 +100,10 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm) :
                       DebugStream::Stream4(),
                       DebugStream::Stream5());
 
-    string methodSig("avtVsFileFormat::constructor() - ");
-    
-    VsLog::debugLog() << methodSig << "entering" << endl;
-    VsLog::debugLog() << methodSig << "VizSchema Revision #742" << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "entering" << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "VizSchema Revision #742" << endl;
 
     //reader starts off empty
     reader = NULL;
@@ -113,39 +115,46 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm) :
 
     //check types
     if (isFloatType(H5T_NATIVE_FLOAT)) {
-      VsLog::debugLog() << methodSig << "float type checks out ok." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "float type checks out ok." << endl;
     } else {
-      string msg = methodSig +
-        "ERROR - H5T_NATIVE_FLOAT not recognized as a float.";
-      VsLog::debugLog() << msg << endl;
-      EXCEPTION1(InvalidDBTypeException, msg.c_str());
+      ostringstream msg;
+      msg << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+          << "ERROR - H5T_NATIVE_FLOAT not recognized as a float.";
+      VsLog::debugLog() << msg.str() << endl;
+      EXCEPTION1(InvalidDBTypeException, msg.str().c_str());
     }
     
     //check types
     if (isDoubleType(H5T_NATIVE_DOUBLE)) {
-      VsLog::debugLog() << methodSig << "double type checks out ok." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "double type checks out ok." << endl;
     } else {
-      string msg = methodSig +
-        "ERROR - H5T_NATIVE_DOUBLE not recognized as a double.";
-      VsLog::debugLog() << msg << endl;
-      EXCEPTION1(InvalidDBTypeException, msg.c_str());
+      ostringstream msg;
+      msg << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+          << "ERROR - H5T_NATIVE_DOUBLE not recognized as a double.";
+      VsLog::debugLog() << msg.str() << endl;
+      EXCEPTION1(InvalidDBTypeException, msg.str().c_str());
     }
 
     herr_t err = H5check();
 
     if (err < 0) {
-      string msg = methodSig +
-        "HDF5 version mismatch.  Vs reader built with " + H5_VERS_INFO + ".";
-      VsLog::debugLog() << msg << endl;
+      ostringstream msg;
+      msg << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+          << "HDF5 version mismatch.  Vs reader built with "
+          << H5_VERS_INFO << ".";
+      VsLog::debugLog() << msg.str() << endl;
 
-      EXCEPTION1(InvalidDBTypeException, msg.c_str());
+      EXCEPTION1(InvalidDBTypeException, msg.str().c_str());
     }
 
     //NOTE: We used to initialize the VsH5Reader object here
     //But now do it on demand in 'populateDatabaseMetaData'
     //To minimize I/O
 
-    VsLog::debugLog() << methodSig << "exiting" << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "exiting" << endl;
 }
 
 
@@ -163,7 +172,8 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm) :
 
 avtVsFileFormat::~avtVsFileFormat()
 {
-    VsLog::debugLog() << "avtVsFileFormat::destructor() - entering" << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "entering" << endl;
 
     if (reader != NULL) {
       delete reader;
@@ -175,7 +185,8 @@ avtVsFileFormat::~avtVsFileFormat()
       registry = NULL;
     }
     
-    VsLog::debugLog() << "avtVsFileFormat::destructor() - exiting" << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "exiting" << endl;
 }
 
 
@@ -302,6 +313,19 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
     composedSel.GetStops(maxs);
     composedSel.GetStrides(strides);
 
+    // If the user is a dumb ass and selects a dimention lower than
+    // the actual dimension the min, max, and stride will be zero. So
+    // fix it to be the full bounds and a stride of 1.
+    for (int i = 0; i < 3; i++)
+    {
+      if( strides[i] == 0 )
+      {
+        mins[i] = 0;
+        maxs[i] = -1;
+        strides[i] = 1;
+      }
+    }
+
     return retval;
 }
 
@@ -320,8 +344,8 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
 
 vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
 {
-    string methodSig("avtVsFileFormat::GetMesh() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     // Save the name in a temporary variable.
@@ -350,7 +374,8 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
     // coreMesh and proceed normally
 
     // Check for MD mesh
-    VsLog::debugLog() << methodSig << "Looking for MD mesh with name "
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Looking for MD mesh with name "
                       << meshName << endl;
 
     VsMDMesh* mdMeshMeta = registry->getMDMesh(meshName);
@@ -358,33 +383,36 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
 
     // Found an MD mesh with this name, try to load the mesh data from it
     if (mdMeshMeta != NULL) {
-      VsLog::debugLog() << methodSig << "Found MD mesh with that name."
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Found MD mesh with that name."
                         << endl;
       meshName = mdMeshMeta->getNameForBlock(domain);
 
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "Request for md mesh was filtered to regular mesh: "
         << meshName << endl;
       meta = mdMeshMeta->getBlock(domain);
     } else {
-      VsLog::debugLog() << methodSig << "No MD mesh with that name."
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "No MD mesh with that name."
                         << endl;
     }
 
     // Did we succeed in loading mesh data from MD mesh?
     if (meta == NULL) {
-      VsLog::debugLog() << methodSig << "Trying to find regular mesh named: "
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Trying to find regular mesh named: "
                         << meshName << endl;
       meta = registry->getMesh(meshName);
     }
 
     if (meta != NULL) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Found mesh named: " << meshName << endl;
 
       // Uniform Mesh
       if (meta->isUniformMesh()) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
           << "Trying to load & return uniform mesh" << endl;
 
         return getUniformMesh(static_cast<VsUniformMesh*>(meta),
@@ -393,16 +421,17 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
 
       // Rectilinear Mesh
       if (meta->isRectilinearMesh()) {
-        VsLog::debugLog() << methodSig
-          << "Trying to load & return rectilinear mesh." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Trying to load & return rectilinear mesh."
+                          << endl;
         return getRectilinearMesh(static_cast<VsRectilinearMesh*>(meta),
                                   haveDataSelections, mins, maxs, strides);
       }
       
       // Structured Mesh
       if (meta->isStructuredMesh()) {
-        VsLog::debugLog() << methodSig
-          << "Trying to load & return structured mesh" << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Trying to load & return structured mesh" << endl;
         return getStructuredMesh(static_cast<VsStructuredMesh*>(meta),
                                  haveDataSelections, mins, maxs, strides);
       }
@@ -411,7 +440,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
       // Don't know how to decompose any other type of mesh -> load it
       // on proc 0 only
       if (PAR_Rank() > 0) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
           << "In parallel mode on processor " << PAR_Rank
           << " and mesh is not uniform.  "
           << "Returning NULL, mesh will be loaded on processor 0 only."
@@ -422,45 +451,50 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
 
       // Unstructured Mesh
       if (meta->isUnstructuredMesh()) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
           << "Trying to load & return unstructured mesh" << endl;
+
         return getUnstructuredMesh(static_cast<VsUnstructuredMesh*>(meta),
                                    haveDataSelections, mins, maxs, strides);
       }
 
       // At this point we don't know what kind of mesh it is.
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Mesh has unknown type: " << meta->getKind()
                         << ".  Returning NULL." << endl;
       return NULL;
     }
 
     // Variable with mesh
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+
       << "Looking for Variable With Mesh with this name." << endl;
     VsVariableWithMesh* vmMeta = registry->getVariableWithMesh(name);
 
     if (vmMeta != NULL)
     {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+
         << "Found Variable With Mesh. Loading data and returning." << endl;
       return getPointMesh(vmMeta,
                           haveDataSelections, mins, maxs, strides);
     }
 
     // Curve
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Looking for Curve with this name." << endl;
+
     vtkDataArray* foundCurve = this->GetVar(domain, name);
 
     if (foundCurve != NULL)
     {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Trying to load & return curve." << endl;
+
       return getCurve(domain, name);
     }
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Failed to load data for name and domain number.  "
                       << "Returning NULL." << endl;
     return NULL;
@@ -483,8 +517,8 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
                                             bool haveDataSelections,
                                             int* mins, int* maxs, int* strides)
 {
-    string methodSig("avtVsFileFormat::getUniformMesh() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     // Read int data
@@ -492,24 +526,26 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     uniformMesh->getMeshDataDims(numCells); // Number of cells NOT nodes
 
     if (numCells.size() < 0) {
-      string msg = methodSig + "Could not get dimensions of the uniform mesh.";
-      VsLog::debugLog() << msg << endl;
-      throw out_of_range(msg.c_str());
+      ostringstream msg;
+      msg << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+          << "Could not get dimensions of the uniform mesh.";
+      VsLog::debugLog() << msg.str() << endl;
+      throw out_of_range(msg.str().c_str());
     }
 
     size_t numTopologicalDims = numCells.size();
 
     if (numTopologicalDims > 3) {
-      VsLog::debugLog() << methodSig
-        << "Error: numTopologicalDims of the mesh is larger than 3.  "
-        << "Returning NULL." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Error: numTopologicalDims of the mesh is larger than 3.  "
+                        << "Returning NULL." << endl;
       return NULL;
     }
 
     int numSpatialDims = uniformMesh->getNumSpatialDims();
 
     if (numSpatialDims > 3) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Error: numSpatialDims data is larger than 3.  "
                         << "Returning NULL." << endl;
       return NULL;
@@ -520,7 +556,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     // equal to the numTopologicalDims.
     if( numTopologicalDims > numSpatialDims )
     {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Error: The numTopologicalDims ("
                         << numTopologicalDims
                         << ") is greater than numSpatialDims ("
@@ -534,23 +570,24 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
 
     if (!isDoubleType(meshDataType) && !isFloatType(meshDataType))
     {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Error: hdf5 data type not handled: " << meshDataType
                         << "Returning NULL." << endl;
       return NULL;
     }
 
     // startCell
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Loading optional startCells attribute." << endl;
     vector<int> startCell;
     herr_t err = uniformMesh->getStartCell(&startCell);
     if (err < 0) {
-      VsLog::warningLog() << methodSig
-        << "Uniform mesh does not have starting cell position." << endl;
+      VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Uniform mesh does not have starting cell position."
+                          << endl;
     } else {
       // Adjust the box by startCell
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Adjusting numCells by startCells." << endl;
       for (size_t i = 0; i < numTopologicalDims; ++i)
         numCells[i] -= startCell[i];
@@ -560,7 +597,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     // is topologically 3D so the points must also be 3D.
     size_t vsdim = 3;
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Determining size of point arrays." << endl;
 
     vector<int> idims(vsdim);
@@ -596,15 +633,15 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
       }
     }
 
-    for (size_t i=numTopologicalDims; i<vsdim; ++i)
+    for (size_t i=numTopologicalDims; i<3; ++i)
     {
       mins[i] = 0;
       maxs[i] = 1;
       strides[i] = 1;
     }
 
-    VsLog::debugLog() << methodSig
-      << "Have a zonal inclusive selection for uniform mesh "<< endl
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+      << "Have a zonal inclusive selection for uniform mesh "
       << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
       << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
       << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
@@ -627,10 +664,12 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     }
 
     VsLog::debugLog() <<  "Grid dims predicted "
-         << gdims[0] << "  " << gdims[1] << "  " << gdims[2] << "  " << endl;
+                      << gdims[0] << "  " << gdims[1] << "  " << gdims[2]
+                      << endl;
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+
                       << "Parallel & Decompose_Domains are defined, "
                       << "entering parallel code." << endl;
     
@@ -669,22 +708,27 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
       idims[splitAxis] = nCells + 1; // FIXME: May depend on centering
     }
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Parallel & Decompose_Domains are defined, "
                       << "exiting parallel code." << endl;
 #endif
 
-    VsLog::debugLog() << methodSig << "Getting lower bounds for mesh." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Getting lower bounds for mesh." << endl;
+
     vector<float> lowerBounds;
     uniformMesh->getLowerBounds(&lowerBounds);
 
-    VsLog::debugLog() << methodSig << "Getting upper bounds for mesh." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Getting upper bounds for mesh." << endl;
+
     vector<float> upperBounds;
     uniformMesh->getUpperBounds(&upperBounds);
 
     // Storage for mesh points in VisIt are spatially 3D. So create 3
     // coordinate arrays and fill in zero for the others.
-    VsLog::debugLog() << methodSig << "Creating coordinate arrays." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Creating coordinate arrays." << endl;
 
     vector<vtkDataArray*> coords(vsdim);
 
@@ -731,22 +775,26 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     }
           
     // Create vtkRectilinearGrid
-    VsLog::debugLog() << methodSig << "Creating rectilinear grid." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Creating rectilinear grid." << endl;
     vtkRectilinearGrid* rgrid = vtkRectilinearGrid::New();
     rgrid->SetDimensions(&(gdims[0]));
 
     // Set grid data
-    VsLog::debugLog() << methodSig << "Adding coordinates to grid." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Adding coordinates to grid." << endl;
     rgrid->SetXCoordinates(coords[0]);
     rgrid->SetYCoordinates(coords[1]);
     rgrid->SetZCoordinates(coords[2]);
 
     // Cleanup local data
-    VsLog::debugLog() << methodSig << "Cleaning up." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Cleaning up." << endl;
     for (size_t i = 0; i<vsdim; ++i)
       coords[i]->Delete();
 
-    VsLog::debugLog() << methodSig << "Returning data." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Returning data." << endl;
     return rgrid;
 }
 
@@ -771,8 +819,8 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
 
-    string methodSig("avtVsFileFormat::getRectilinearMesh() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     // Get dimensions
@@ -780,10 +828,11 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     rectilinearMesh->getMeshDataDims(numNodes); // Number of nodes NOT cells
 
     if (numNodes.size() < 0) {
-      string msg = methodSig +
-        "Could not get dimensions of the rectilinear mesh.";
-      VsLog::debugLog() << msg << endl;
-      throw out_of_range(msg.c_str());
+      ostringstream msg;
+      msg << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+          << "Could not get dimensions of the rectilinear mesh.";
+      VsLog::debugLog() << msg.str() << endl;
+      throw out_of_range(msg.str().c_str());
     }
 
     // The numTopologicalDims and numSpatialDims are the same for
@@ -791,16 +840,16 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     size_t numTopologicalDims = numNodes.size();
 
     if (numTopologicalDims > 3) {
-      VsLog::debugLog() << methodSig
-        << "Error: numTopologicalDims of data is larger than 3.  "
-        << "Returning NULL." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Error: numTopologicalDims of data is larger than 3.  "
+                        << "Returning NULL." << endl;
       return NULL;
     }
 
     int numSpatialDims = rectilinearMesh->getNumSpatialDims();
 
     if (numSpatialDims > 3) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Error: numSpatialDims data is larger than 3.  "
                         << "Returning NULL." << endl;
       return NULL;
@@ -811,7 +860,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
     if (!isDoubleType(meshDataType) && !isFloatType(meshDataType))
     {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Error: hdf5 data type not handled: " << meshDataType
                         << "Returning NULL." << endl;
       return NULL;
@@ -821,7 +870,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     // is topologically 3D so the points must also be 3D.
     size_t vsdim = 3;
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Determining size of point arrays." << endl;
 
     // Adjust for the data selections which are ZONAL.
@@ -847,15 +896,15 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       }
     }
 
-    for (size_t i=numTopologicalDims; i<vsdim; ++i)
+    for (size_t i=numTopologicalDims; i<3; ++i)
     {
       mins[i] = 0;
       maxs[i] = 1;
       strides[i] = 1;
     }
 
-    VsLog::debugLog() << methodSig
-      << "Have a zonal inclusive selection for rectilinear mesh "<< endl
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+      << "Have a zonal inclusive selection for rectilinear mesh "
       << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
       << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
       << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
@@ -878,10 +927,11 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     }
 
     VsLog::debugLog() <<  "Grid dims predicted "
-         << gdims[0] << "  " << gdims[1] << "  " << gdims[2] << "  " << endl;
+                      << gdims[0] << "  " << gdims[1] << "  " << gdims[2]
+                      << endl;
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Parallel & Decompose_Domains are defined, "
                       << "entering parallel code." << endl;
     
@@ -912,7 +962,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       }
     }
     
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Parallel & Decompose_Domains are defined, "
                       << "exiting parallel code." << endl;
 #endif
@@ -925,11 +975,13 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       double* dblDataPtr;
       float* fltDataPtr;
 
-      VsLog::debugLog() << methodSig << "Loading data for axis " << i << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Loading data for axis " << i << endl;
       VsH5Dataset* axisData = rectilinearMesh->getAxisDataset(i);
 
       if (axisData == NULL) {
-        VsLog::debugLog() << methodSig << "Axis " << i
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Axis " << i
                           << " data not found. Returning NULL." << endl;
         return NULL;
       }
@@ -945,13 +997,14 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
         fltDataPtr = new float[numNodes[i]];
         dataPtr = fltDataPtr;
       } else {
-        VsLog::debugLog() << methodSig << "Unknown data type: "
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Unknown data type: "
                           << type << endl;
         return NULL;
       }
 
       if (!dataPtr) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Allocation failed, pointer is NULL."
                           << "Returning NULL." << endl;
         return NULL;
@@ -961,9 +1014,9 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       herr_t err = reader->getDataSet(axisData, dataPtr);
 
       if (err < 0) {
-        VsLog::debugLog() << methodSig
-                          << "GetDataSet returned error: " << err << endl;
-        VsLog::debugLog() << methodSig << "Returning NULL." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "GetDataSet returned error: " << err << "  "
+                          << "Returning NULL." << endl;
 
         if (isDoubleType(type))
           delete [] dblDataPtr;
@@ -975,7 +1028,8 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
       // Storage for mesh points in VisIt are spatially 3D. So create 3
       // coordinate arrays and fill in zero for the others.
-      VsLog::debugLog() << methodSig << "Creating coordinate arrays." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Creating coordinate arrays." << endl;
 
       // The mesh data type will the highest precision of all of the
       // axis data types. Declaring here allows the the mesh data type
@@ -1048,23 +1102,27 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     }
 
     // Create vtkRectilinearGrid
-    VsLog::debugLog() << methodSig << "Creating rectilinear grid." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Creating rectilinear grid." << endl;
     vtkRectilinearGrid* rgrid = vtkRectilinearGrid::New();
     rgrid->SetDimensions(&(gdims[0]));
   
     // Set grid data
-    VsLog::debugLog() << methodSig << "Adding coordinates to grid." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Adding coordinates to grid." << endl;
     rgrid->SetXCoordinates(coords[0]);
     rgrid->SetYCoordinates(coords[1]);
     rgrid->SetZCoordinates(coords[2]);
 
     // Cleanup local data
-    VsLog::debugLog() << methodSig << "Cleaning up." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Cleaning up." << endl;
     for (size_t i = 0; i < vsdim; ++i) {
       coords[i]->Delete();
     }
 
-    VsLog::debugLog() << methodSig << "Returning data." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Returning data." << endl;
     return rgrid;
 }
 
@@ -1089,8 +1147,8 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
 
-    string methodSig("avtVsFileFormat::getStructuredMesh() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     // Find points: Structured meshes are datasets, and the data is
@@ -1101,24 +1159,26 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
       registry->getDataset(structuredMesh->getFullName());
 
     if (pointsDataset == NULL) {
-      VsLog::debugLog() << methodSig << "Component '"
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Component '"
                         << structuredMesh->getFullName()
                         << "' not found.  Returning NULL." << endl;
       return NULL;
     }
 
     // Get dims of points array
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Determining dimension of points array." << endl;
 
     vector<int> numNodes;
     structuredMesh->getNumMeshDims(numNodes);  // Number of nodes NOT cells.
 
     if (numNodes.size() < 0) {
-      string msg = methodSig +
-        "Could not get dimensions of the structured mesh.";
-      VsLog::debugLog() << msg << endl;
-      throw out_of_range(msg.c_str());
+      ostringstream msg;
+      msg << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+          << "Could not get dimensions of the structured mesh.";
+      VsLog::debugLog() << msg.str() << endl;
+      throw out_of_range(msg.str().c_str());
     }
 
     // The numTopologicalDims and numSpatialDims can be different for
@@ -1126,7 +1186,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     size_t numTopologicalDims = numNodes.size();
 
     if (numTopologicalDims > 3) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Error: numTopologicalDims of data is larger than 3.  "
                         << "Returning NULL." << endl;
       return NULL;
@@ -1135,7 +1195,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     int numSpatialDims = structuredMesh->getNumSpatialDims();
 
     if (numSpatialDims > 3) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Error: numSpatialDims data is larger than 3.  "
                         << "Returning NULL." << endl;
       return NULL;
@@ -1146,7 +1206,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     // equal to the numTopologicalDims.
     if( numTopologicalDims > numSpatialDims )
     {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Error: The numTopologicalDims ("
                         << numTopologicalDims
                         << ") is greater than numSpatialDims ("
@@ -1160,7 +1220,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
 
     if (!isDoubleType(meshDataType) && !isFloatType(meshDataType))
     {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Error: hdf5 data type not handled: " << meshDataType
                         << "Returning NULL." << endl;
       return NULL;
@@ -1197,15 +1257,15 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
       }
     }
 
-    for (size_t i=numTopologicalDims; i<vsdim; ++i)
+    for (size_t i=numTopologicalDims; i<3; ++i)
     {
       mins[i] = 0;
       maxs[i] = 1;
       strides[i] = 1;
     }
 
-    VsLog::debugLog() << methodSig
-      << "Have a zonal inclusive selection for structured mesh "<< endl
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+      << "Have a zonal inclusive selection for structured mesh "
       << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
       << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
       << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
@@ -1233,13 +1293,12 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     }
 
     VsLog::debugLog() <<  "Grid dims predicted "
-         << gdims[0] << "  " << gdims[1] << "  " << gdims[2] << "  " << endl;
-
-    VsLog::debugLog() << methodSig
+                      << gdims[0] << "  " << gdims[1] << "  " << gdims[2] << "  "
                       << "Total number of points is " << numPoints << endl;
 
     // Read points and add in zero for any lacking dimension
-    VsLog::debugLog() << methodSig << "Reading in point data." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Reading in point data." << endl;
 
     size_t dsize = 0;
     void* dataPtr = 0;
@@ -1258,7 +1317,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     }
 
     if (!dataPtr) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Allocation failed, pointer is NULL.  "
                         << "Returning NULL." << endl;
       return NULL;
@@ -1277,7 +1336,8 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
 
     if (err < 0)
     {
-      VsLog::debugLog() << methodSig << "Error " << err
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Error " << err
                         << " while reading data.  Returning NULL." << endl;
       
       if (isDouble)
@@ -1292,7 +1352,8 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     // correct position and set the extra dimensions to zero.
     if (numSpatialDims < 3)
     {
-      VsLog::debugLog() << methodSig << "Point spatial dimensionality ("
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Point spatial dimensionality ("
                         << numSpatialDims << " is less than 3.  "
                         << "Moving data into correct location." << endl;
 
@@ -1308,14 +1369,17 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
         memset(destPtr, 0, (3-numSpatialDims)*dsize);
       }
 
-      VsLog::debugLog() << methodSig << "Data move succeeded." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Data move succeeded." << endl;
     }
 
     // Create the mesh and set its dimensions, including unused to zero
-    VsLog::debugLog() << methodSig << "Creating the mesh." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Creating the mesh." << endl;
 
     // Add the points, changing to C ordering
-    VsLog::debugLog() << methodSig << "Adding points to mesh." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Adding points to mesh." << endl;
 
     vtkPoints* vpoints = vtkPoints::New();
     if (isDouble) {
@@ -1329,13 +1393,15 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     //void* ptsPtr = vpoints->GetVoidPointer(0);
 
     // Step through by global C index to reverse
-    VsLog::debugLog() << methodSig << "Adding " << numPoints
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Adding " << numPoints
                       << " points with index order '"
                       << structuredMesh->getIndexOrder() << "'." << endl;
 
     // Using FORTRAN data ordering.
     if (structuredMesh->isFortranOrder()) {
-      VsLog::debugLog() << methodSig << "Using FORTRAN data ordering." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Using FORTRAN data ordering." << endl;
 
       if (isDouble) {
         for (size_t k = 0; k<numPoints; ++k) {
@@ -1350,7 +1416,8 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
 
     // Using C data ordering.
     else {
-      VsLog::debugLog() << methodSig << "Using C data ordering." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Using C data ordering." << endl;
       size_t indices[3] = {0, 0, 0};
 
       // Step through by global C index
@@ -1412,10 +1479,12 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     sgrid->SetPoints(vpoints);
 
     // Cleanup local data
-    VsLog::debugLog() << methodSig << "Cleaning up." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Cleaning up." << endl;
     vpoints->Delete();
 
-    VsLog::debugLog() << methodSig << "Returning data." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Returning data." << endl;
     return sgrid;
 }
 
@@ -1440,27 +1509,30 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
 
-    string methodSig("avtVsFileFormat::getUnstructuredMesh() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     // Check for points type
     hid_t type = unstructuredMesh->getDataType();
 
     if (!isDoubleType(type) && !isFloatType(type)) {
-      VsLog::debugLog() << methodSig
-                        << "Points data type not recognized:" << type << endl;
-      VsLog::debugLog() << methodSig << "Returning NULL" << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Points data type not recognized:" << type << "  "
+                        << "Returning NULL" << endl;
       return NULL;
     }
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Checking dimensionality of mesh." << endl;
+
     size_t numNodes = unstructuredMesh->getNumPoints();
     size_t numSpatialDims = unstructuredMesh->getNumSpatialDims();
 
     // Get ready to read in points
-    VsLog::debugLog() << methodSig << "Setting up data structures." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Setting up data structures." << endl;
+
     vtkUnstructuredGrid* ugridPtr = vtkUnstructuredGrid::New();
 
     // Create and set points while small so minimal memory usage
@@ -1482,9 +1554,10 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       if( maxs[0] < mins[0] )
         mins[0] = 0;
 
-      VsLog::debugLog() << methodSig
-        << "Have a zonal inclusive selection for unstructured point mesh "<< endl
-        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "   << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Have a zonal inclusive selection for unstructured point mesh "
+        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
+        << endl;
       
       // New number of nodes based on the above.
       numNodes = (maxs[0]-mins[0]+1) / strides[0];
@@ -1500,21 +1573,23 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       vpoints->SetDataTypeToFloat();
       dsize = sizeof(float);
     } else {
-      VsLog::debugLog() << methodSig << "Unknown data type: " << type << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Unknown data type: " << type << endl;
       return NULL;
     }
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "VPoints array will have " << numNodes << " points."
                       << endl;
     vpoints->SetNumberOfPoints(numNodes);
     void* dataPtr = vpoints->GetVoidPointer(0);
     if (!dataPtr) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Unable to allocate the points.  Cleaning up."
                         << endl;
       ugridPtr->Delete();
-      VsLog::debugLog() << methodSig << "Returning NULL." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Returning NULL." << endl;
       return NULL;
     }
 
@@ -1523,7 +1598,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     // Mesh points are in separate data sets.
     if (unstructuredMesh->usesSplitPoints())
     {
-      VsLog::debugLog() << methodSig << "Using split-points method" << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Using split-points method" << endl;
 
       // Kind of grim but read each of the coordinate components in
       // using the generic reader.
@@ -1553,7 +1629,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
                                         &destMins[0], &destMaxs[0], &destStrides[0] );
 
         if (err < 0) {
-          VsLog::debugLog() << methodSig
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Call to getDataSet returned error: "
                             << err << "Returning NULL." << endl;
           return NULL;
@@ -1564,7 +1640,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       // sure the remaing values are all zero.
       for (int i=numSpatialDims; i<3; ++i)
       {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Zeroing data at unused positions." << endl;
         
         if (isDoubleType(type)) {
@@ -1593,7 +1669,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     // Mesh points are in one data set.
     else
     {
-      VsLog::debugLog() << methodSig << "Using all-in-one method" << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Using all-in-one method" << endl;
 
       VsH5Dataset* pointsDataset = unstructuredMesh->getPointsDataset();
 
@@ -1614,7 +1691,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         err = reader->getDataSet(pointsDataset, dataPtr);
 
       if (err < 0) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Call to getDataSet returned error: "
                           << err << "Returning NULL." << endl;
         return NULL;
@@ -1624,7 +1701,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       // correct position and set the extra dimensions to zero.
       if (numSpatialDims < 3)
       {
-        VsLog::debugLog() << methodSig << "Point spatial dimensionality ("
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Point spatial dimensionality ("
                           << numSpatialDims << " is less than 3.  "
                           << "Moving data into correct location." << endl;
         
@@ -1640,7 +1718,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
           memset(destPtr, 0, (3-numSpatialDims)*dsize);
         }
 
-        VsLog::debugLog() << methodSig << "Data move succeeded." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Data move succeeded." << endl;
       }
     }
 
@@ -1648,11 +1727,9 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     // point mesh and we don't need to go any further
     if (unstructuredMesh->isPointMesh())
     {
-      VsLog::debugLog() << methodSig
-                        << "Mesh was registered as a point mesh." << endl;
-      VsLog::debugLog() << methodSig
-                        << "Because no connectivity data was found." << endl;
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Mesh was registered as a point mesh."      
+                        << "Because no connectivity data was found. "
                         << "Adding vertices as single points and returning."
                         << endl;
 
@@ -1711,21 +1788,23 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     }
 
     else {
-      VsLog::debugLog() << methodSig
-                        << "ERROR - unable to find connectivity dataset." << endl;
-      VsLog::debugLog() << methodSig
-                        << "ERROR - Returning points data without connectivity." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "ERROR - unable to find connectivity dataset. "
+                        << "Returning points data without connectivity."
+                        << endl;
       //we used to try to convert this into a pointMesh
       // but it never worked
       // So basically we're giving up here
       return ugridPtr;
     }
 
-    VsLog::debugLog() << methodSig << "Found connectivity data." << endl;
-    VsLog::debugLog() << methodSig
-                      << "haveConnectivityCount = " << haveConnectivityCount << endl;
-    VsLog::debugLog() << methodSig
-      << "Connectivity dataset name is " << connectivityDatasetName << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Found connectivity data. "
+                      << "Connectivity dataset name is "
+                      << connectivityDatasetName << "  "
+                      << "haveConnectivityCount = "
+                      << haveConnectivityCount
+                      << endl;
     
     VsH5Dataset* connectivityDataset =
       registry->getDataset(connectivityDatasetName);
@@ -1754,43 +1833,55 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       if( maxs[0] < mins[0] )
         mins[0] = 0;
 
-      VsLog::debugLog() << methodSig
-        << "Have a zonal inclusive selection for unstructured mesh cells " << endl
-        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "   << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Have a zonal inclusive selection for unstructured mesh cells "
+        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
+        << endl;
       
       // New number of cells based on the above.
       numCells = (maxs[0]-mins[0]+1) / strides[0];
     }
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "numCells = " << numCells
                       << ", numVerts = " << numVerts << "." << endl;
+
     size_t datasetLength = 1;
     for (size_t i =0; i< connectivityDims.size(); ++i)
       datasetLength *= connectivityDims[i];
 
     // Check for connectivity list type
     if (!isIntegerType( connectivityMeta->getType() )) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Indices are not integers. Cleaning up" << endl;
+
       ugridPtr->Delete();
-      VsLog::debugLog() << methodSig << "Returning NULL" << endl;
+
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Returning NULL" << endl;
+
       return NULL;
     }
 
     // Vertices
-    VsLog::debugLog() << methodSig << "Allocating space for " << datasetLength
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Allocating space for " << datasetLength
                       << " integers of connectivity data." << endl;
+
     int* vertices = new int[datasetLength];
     if (!vertices) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Unable to allocate vertices.  Cleaning up." << endl;
+
       ugridPtr->Delete();
-      VsLog::debugLog() << methodSig << "Returning NULL." << endl;
+
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Returning NULL." << endl;
       return NULL;
     }
 
-    VsLog::debugLog() << methodSig << "Reading connectivity list data." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Reading connectivity list data." << endl;
 
     herr_t err;
       
@@ -1809,41 +1900,43 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       err = reader->getDataSet(connectivityDataset, vertices);
     
     if (err < 0) {
-      VsLog::debugLog() << methodSig
-                        << "Call to getDataSet returned error: "
-                        << err << "Returning NULL." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Call to getDataSet returned error: " << err
+                        << "Returning NULL." << endl;
       return NULL;
     }
 
 
     try {
-      VsLog::debugLog() << methodSig << "Allocating " << numCells << " cells.  "
-        << "If old VTK and this fails, it will just abort." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Allocating " << numCells << " cells.  "
+                        << "If old VTK and this fails, it will just abort."
+                        << endl;
+
       ugridPtr->Allocate(numCells);
-      VsLog::debugLog() << methodSig << "Allocation succeeded." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Allocation succeeded." << endl;
     }
     // JRC: what goes here to detect failure to allocate?
     catch (vtkstd::bad_alloc) {
-      VsLog::debugLog() << methodSig
-                        << "Caught vtkstd::bad_alloc exception." << endl;
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Caught vtkstd::bad_alloc exception. "
                         << "Unable to allocate space for cells.  Cleaning up."
-      << endl;
+                        << "Returning NULL." << endl;
       delete [] vertices;
       ugridPtr->Delete();
-      VsLog::debugLog() << methodSig << "Returning NULL.";
       return NULL;
     } catch (...) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Unknown exception allocating cells.  Cleaning up."
-      << endl;
+                        << "Returning NULL." << endl;
       delete [] vertices;
       ugridPtr->Delete();
-      VsLog::debugLog() << methodSig << "Returning NULL.";
       return NULL;
     }
 
-    VsLog::debugLog() << methodSig << "Inserting cells into grid." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Inserting cells into grid." << endl;
     size_t k = 0;
     int warningCount = 0;
     int cellCount = 0;
@@ -1853,15 +1946,15 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     // Dealing with fixed length connectivity lists.
     if( haveConnectivityCount ) {
       cellVerts = haveConnectivityCount;
-      VsLog::debugLog() << methodSig << "Inserting " << cellVerts
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Inserting " << cellVerts
                         << " vertices into each cell." << endl;
     }
 
     for (size_t i = 0; i < numCells; ++i) {
       if (k >= datasetLength) {
-        VsLog::debugLog() << methodSig
-          << "While iterating over the vertices, the index variable 'k' went beyond the end of the array." << endl;
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+          << "While iterating over the vertices, the index variable 'k' went beyond the end of the array. "
           << "Existing cells will be returned but the loop is terminating now." << endl;
         break;
       }
@@ -1907,12 +2000,14 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         break;
         default:
         if (warningCount < 30) {
-          VsLog::debugLog() << methodSig
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Error: invalid number of vertices for cell #"
                             << cellCount << ": " << cellVerts << endl;
         } else if (warningCount == 30) {
-          VsLog::debugLog() << methodSig
-                            << "Exceeded maximum number of errors.  Error messages disabled for remaining cells." << endl;
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "Exceeded maximum number of errors.  "
+                            << "Error messages disabled for remaining cells."
+                            << endl;
         }
         ++warningCount;
         cellType = VTK_EMPTY_CELL;
@@ -1925,9 +2020,10 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         for (size_t j = 0; j < cellVerts; ++j) {
           verts[j] = (vtkIdType) vertices[k++];
           if ((verts[j] < 0) || (verts[j] >= numNodes)) {
-            VsLog::errorLog() << methodSig
+            VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
               << "ERROR in connectivity dataset - requested vertex number "
               << verts[j] << " exceeds number of vertices" << endl;
+
             verts[j] = 0;
           }
         }
@@ -1946,7 +2042,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         k--;
         for (size_t j = 0; j < numVerts; ++j) {
           if (warningCount < 30) {
-            VsLog::debugLog()<< methodSig << "WARNING: ADDING cell #"
+            VsLog::debugLog()<< __FILE__ << "  " << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                             << "WARNING: ADDING cell #"
                              << cellCount << " as cell: "
                              << vertices[k] << endl;
           }
@@ -1955,12 +2052,14 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         ugridPtr->InsertNextCell (VTK_POLYGON, numVerts, &verts[0]);
       }
     }
-
-    VsLog::debugLog() << methodSig << "Finished.  Cleaning up." << endl;
+    
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Finished.  Cleaning up." << endl;
     // Done, so clean up memory and return
     delete [] vertices;
 
-    VsLog::debugLog() << methodSig << "Returning data." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Returning data." << endl;
     return ugridPtr;
 }
   
@@ -1984,21 +2083,22 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
 
-    string methodSig("avtVsFileFormat::getPointMesh() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     hid_t type = variableWithMesh->getType();
 
     if (!isDoubleType(type) && !isFloatType(type)) {
-      VsLog::debugLog() << methodSig << "Unsupported data type: "
-                        << type << endl;
-      VsLog::debugLog() << methodSig << "Returning NULL." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Unsupported data type: " << type
+                        << "Returning NULL." << endl;
       return NULL;
     }
 
     // Get the number of values
-    VsLog::debugLog() << methodSig << "Getting the number of points." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Getting the number of points." << endl;
 
     size_t numNodes = variableWithMesh->getNumPoints();
     size_t numSpatialDims = variableWithMesh->getNumSpatialDims();
@@ -2012,9 +2112,10 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
       if( maxs[0] < mins[0] )
         mins[0] = 0;
 
-      VsLog::debugLog() << methodSig
-        << "Have a zonal inclusive selection for variable with mesh "<< endl
-        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "   << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Have a zonal inclusive selection for variable with mesh "
+        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
+        << endl;
     }
     else
     {
@@ -2027,11 +2128,12 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     // New number of nodes based on the above.
     numNodes = (maxs[0]-mins[0]+1) / strides[0];
 
-    VsLog::debugLog() << methodSig << "There are " << numNodes
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "There are " << numNodes
                       << " points." << endl;
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Parallel & Decompose_Domains are defined, "
                       << "entering parallel code." << endl;
 
@@ -2055,7 +2157,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
         strides[0];
     }
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Parallel & Decompose_Domains are defined, "
                       << "exiting parallel code." << endl;
 #endif
@@ -2063,7 +2165,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     // Read in points
     //
     // Create the unstructured meshPtr
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Creating the vtkUnstructuredGrid." << endl;
     vtkUnstructuredGrid* meshPtr = vtkUnstructuredGrid::New();
 
@@ -2078,32 +2180,34 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     if (isDoubleType(type)) {
       vpoints->SetDataTypeToDouble();
       dsize = sizeof(double);
-      VsLog::debugLog() << "Double data" << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Double data" << endl;
     }
     else if (isFloatType(type)) {
       vpoints->SetDataTypeToFloat();
       dsize = sizeof(float);
-      VsLog::debugLog() << "Float data" << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Float data" << endl;
     }
     
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Allocating for " << numNodes << " values." << endl;
     vpoints->SetNumberOfPoints(numNodes);
 
     void* dataPtr = vpoints->GetVoidPointer(0);
     if (!dataPtr) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Unable to allocate the points.  Cleaning up."
-      << endl;
+                        << "Returning NULL." << endl;
       meshPtr->Delete();
-      VsLog::debugLog() << methodSig << "Returning NULL." << endl;
       return NULL;
     }
 
     herr_t err;
 
     // Read in the data
-    VsLog::debugLog() << methodSig << "Reading data." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Reading data." << endl;
 
     // Kind of grim but read each of the coordinate components in
     // using the generic reader.
@@ -2136,7 +2240,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
                                &destMins[0], &destMaxs[0], &destStrides[0] );
 
       if (err < 0) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Call to getVarWithMeshMeta returned error: "
                           << err << "Returning NULL." << endl;
         return NULL;
@@ -2147,7 +2251,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     // sure the remaing value are all zero.
     for (int i=numSpatialDims; i<3; ++i)
     {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Zeroing data at unused positions." << endl;
 
       if (isDoubleType(type)) {
@@ -2174,26 +2278,25 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
 
     // create point mesh
     try {
-      VsLog::debugLog() << methodSig << "Allocating " << numNodes
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Allocating " << numNodes
         << " vertices.  If old VTK and this fails, it will just abort." << endl;
       meshPtr->Allocate(numNodes);
     } catch (vtkstd::bad_alloc) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Caught vtkstd::bad_alloc. Unable to allocate cells."
-      << "Cleaning up." << endl;
+                        << "Returning NULL." << endl;
       meshPtr->Delete();
-      VsLog::debugLog() << methodSig << "Returning NULL." << endl;
       return NULL;
     } catch (...) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Unknown exception. Unable to allocate cells."
-      << "Cleaning up." << endl;
+                        << "Returning NULL." << endl;
       meshPtr->Delete();
-      VsLog::debugLog() << methodSig << "Returning NULL." << endl;
       return NULL;
     }
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
       << "Allocation succeeded.  Setting mesh to connectivity 'VERTEX'." << endl;
     vtkIdType vertex;
     for (int i=0; i<numNodes; ++i) {
@@ -2202,7 +2305,8 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     }
 
     // Clean up memory
-    VsLog::debugLog() << methodSig << "Returning data." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Returning data." << endl;
 
     return meshPtr;
 }
@@ -2224,8 +2328,8 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
 
-    string methodSig("avtVsFileFormat::getCurve() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     // Save the name in a temporary variable as it gets mucked with if
@@ -2243,14 +2347,16 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
     // ./visit/src/databases/Curve2d/avtCurve2DFileFormat.C
 
     // Retrieve var metadata and extract the mesh name
-    VsLog::debugLog() << methodSig << "Looking for variable metadata." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Looking for variable metadata." << endl;
     VsVariable* varMeta = registry->getVariable(name);
 
     if (varMeta == NULL) {
-      VsLog::debugLog() << methodSig
-        << "No variable metadata found under name " << name << endl;
-      VsLog::debugLog() << methodSig
-        << "Looking for information in component registry." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "No variable metadata found under name "
+                        << name << "  "
+                        << "Looking for information in component registry."
+                        << endl;
 
       // Is this variable a component?  If so, swap the component name
       // with the "real" variable name and remember that it is a
@@ -2264,7 +2370,7 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
         name = foundName.first.c_str();
         varMeta = registry->getVariable(foundName.first);
         componentIndex = foundName.second;
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Found a component, which refers to variable "
                           << name << " and index " << componentIndex << endl;
         isAComponent = true;
@@ -2272,7 +2378,7 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
     }
 
     if (varMeta == NULL) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Failed to find variable in component list.  "
                         << "Returning NULL." << endl;
       return NULL;
@@ -2281,15 +2387,18 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
     hid_t varDataType = varMeta->getType();
 
     if (isDoubleType(varDataType)) {
-      VsLog::debugLog() << methodSig << "Var is 64-bit real" << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Var is 64-bit real" << endl;
     } else if (isFloatType(varDataType)) {
-      VsLog::debugLog() << methodSig << "Var is 32-bit real" << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Var is 32-bit real" << endl;
     } else if (isIntegerType(varDataType)) {
-      VsLog::debugLog() << methodSig << "Var is int" << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Var is int" << endl;
     } else {
-      VsLog::debugLog() << methodSig
-        << "Var is unknown type (known are double, float, int).  "
-        << "Returning NULL" << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Var is unknown type (known are double, float, int).  "
+                        << "Returning NULL" << endl;
       return NULL;
     }
 
@@ -2297,13 +2406,13 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
     try {
       varData = GetVar(domain, requestedName.c_str());
     } catch (...) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "Caught exception from GetVar().  Returning NULL." << endl;
       return NULL;
     }
 
     if (varData == NULL) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Failed to load var data.  Returning NULL." << endl;
       return NULL;
     }
@@ -2313,7 +2422,7 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
     VsMesh* meshMeta = varMeta->getMesh();
 
     if (meshMeta == NULL) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "No mesh metadata found.  Returning NULL." << endl;
       return NULL;
     }
@@ -2322,7 +2431,7 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
     try {
       meshData = (vtkRectilinearGrid*)GetMesh(domain, meshName.c_str());
     } catch (...) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Caught exception from GetMesh().  Returning NULL."
                         << endl;
       varData->Delete();
@@ -2330,7 +2439,7 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
     }
 
     if (meshData == NULL) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Failed to load mesh data.  Returning NULL." << endl;
       varData->Delete();
       return NULL;
@@ -2344,11 +2453,12 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
       nPts = varMeta->getDims()[1];
     }
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Variable has " << nPts << " points." << endl;
 
     // Create 1-D RectilinearGrid
-    VsLog::debugLog() << methodSig << "Building Rectilinear grid." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Building Rectilinear grid." << endl;
     vtkFloatArray* vals = vtkFloatArray::New();
     vals->SetNumberOfComponents(1);
     vals->SetNumberOfTuples(nPts);
@@ -2367,10 +2477,12 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
       vals->SetValue(i, var_i[0]);
     }
 
-    VsLog::debugLog() << methodSig << "Deleting temporary variables." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Deleting temporary variables." << endl;
     vals->Delete();
 
-    VsLog::debugLog() << methodSig << "Returning data." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Returning data." << endl;
     return rg;
 }
 
@@ -2389,8 +2501,8 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const string& requestedName)
 
 vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 {
-    string methodSig("avtVsFileFormat::GetVar() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     // Save the name in a temporary variable as it gets mucked with if
@@ -2402,7 +2514,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
     if( haveDataSelections = ProcessDataSelections(mins, maxs, strides) )
     {
-      VsLog::debugLog() << "have a data selection for a variable "<< endl
+      VsLog::debugLog() << "have a data selection for a variable "
            << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
            << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
            << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
@@ -2420,7 +2532,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     if (!foundName.first.empty()) {
       name = foundName.first.c_str();
       componentIndex = foundName.second;
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Found a component, which refers to variable "
                         << name << " and index " << componentIndex << endl;
       isAComponent = true;
@@ -2435,10 +2547,11 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     // It could be an MD variable if so, retrieve the md metadata,
     // look up the "real" variable name using the domain number, and
     // replace "name" with the name of that variable.
-    VsLog::debugLog() << methodSig << "Checking for possible MD var." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Checking for possible MD var." << endl;
     VsMDVariable* mdMeta = registry->getMDVariable(name);
     if (mdMeta) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Found MD metadata for this name: "
                         << name << endl;
 
@@ -2451,7 +2564,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
       } else {
         VsLog::warningLog()
-          << methodSig
+          << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
           << "Requested domain number is out of bounds for this variable."
           << endl;
       }
@@ -2459,7 +2572,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
     // No meta data so, look for a "regular" variable with this name.
     if (meta == NULL) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Looking for regular (non-md) variable." << endl;
       meta = registry->getVariable(name);
 
@@ -2469,7 +2582,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
     // No meta data so, look for a VarWithMesh with this name.
     if (meta == NULL) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Looking for VarWithMesh variable." << endl;
       vmMeta = registry->getVariableWithMesh(name);
 
@@ -2479,13 +2592,14 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
     // Haven't found metadata yet, so give up.
     if ((meta == NULL) && (vmMeta == NULL)) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "ERROR: Could not find metadata for name: "
                         << name << endl;
 // DEBUG CODE
 //       vector<string> varNames;
 //       registry->getAllVariableNames(varNames);
-//       VsLog::debugLog() << methodSig << "All available names = ";
+//       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+//                         << "All available names = ";
 //       for (unsigned int i = 0; i < varNames.size(); i++) {
 //         VsLog::debugLog() << varNames[i] << ", ";
 //       }
@@ -2537,15 +2651,17 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       string meshName = meta->getMeshName();
       VsMesh* meshMetaPtr = registry->getMesh(meshName);
 
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Mesh for variable is '" << meshName << "'." << endl;
-      VsLog::debugLog() << methodSig << "Getting metadata for mesh." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Getting metadata for mesh." << endl;
 
       if (!meshMetaPtr) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Metadata not found for mesh '" << meshName
                           << "'." << endl;
-        VsLog::debugLog() << methodSig << "Returning NULL" << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Returning NULL" << endl;
         return NULL;
       }
 
@@ -2560,7 +2676,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
       if( varDims.size() - (int) isAComponent < numTopologicalDims )
       {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Var and mesh do not have the spatial dimension"
                           << "Returning NULL." << endl;
         return NULL;
@@ -2577,8 +2693,9 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     bool isInteger = isIntegerType(varType);
 
     if (!isDoubleType && !isFloatType  && !isIntegerType) {
-      VsLog::debugLog() << methodSig << "Unknown data type:" << varType << endl;
-      VsLog::debugLog() << methodSig << "Returning NULL." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Unknown data type:" << varType << "  "
+                        << "Returning NULL." << endl;
       return NULL;
     }
 
@@ -2623,7 +2740,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       }
     }
 
-    for (size_t i=numTopologicalDims; i<vsdim; ++i)
+    for (size_t i=numTopologicalDims; i<3; ++i)
     {
       mins[i] = 0;
       maxs[i] = 1;
@@ -2631,8 +2748,8 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     }
 
     if( haveDataSelections )
-      VsLog::debugLog() << methodSig
-        << "Have a zonal inclusive selection for getting a variable "<< endl
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Have a zonal inclusive selection for getting a variable "
         << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
         << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
         << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
@@ -2659,7 +2776,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     if (vmMeta || isAComponent) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Parallel & Decompose_Domains are defined, "
                         << "entering parallel code." << endl;
 
@@ -2692,16 +2809,17 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
         numVariables *= vdims[i];
       }
 
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Parallel & Decompose_Domains are defined, "
                         << "exiting parallel code." << endl;
     }
 #endif
 
-    VsLog::debugLog() << methodSig
-                      << "Total number of variables is " << numVariables << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Total number of variables is " << numVariables
+                      << endl;
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Variable " << name << " has dimensions = "
                       << ", numTopologicalDims = " << numTopologicalDims
                       << ", isComponent = " << isAComponent << "." << endl;
@@ -2710,7 +2828,8 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     size_t varSize = H5Tget_size(varType);
 
     // Read in the data
-    VsLog::debugLog() << methodSig << "Reading in the data." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Reading in the data." << endl;
     void* dataPtr = 0;
     double* dblDataPtr = 0;
     float* fltDataPtr = 0;
@@ -2732,7 +2851,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     }
     
     if (!dataPtr) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Allocation failed, pointer is NULL.  "
                         << "Returning NULL." << endl;
       return NULL;
@@ -2740,16 +2859,17 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
     // Variable and mesh data or a variable component.
     if (vmMeta || isAComponent) {
-      VsLog::debugLog() << methodSig << "Entering VarWithMesh section." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Entering VarWithMesh section." << endl;
 
       herr_t err = reader->getDataSet(variableDataset, dataPtr,
                                       indexOrder, componentIndex,
                                       mins, &(vdims[0]), strides);
 
       if (err < 0) {
-        VsLog::debugLog() << methodSig
-          << "GetVarWithMeshComponent returned error: " << err << endl;
-        VsLog::debugLog() << methodSig << "Returning NULL." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "GetVarWithMeshComponent returned error: "
+                          << err << "  " << "Returning NULL." << endl;
 
         if (isDouble)
           delete [] dblDataPtr;
@@ -2764,7 +2884,8 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
     // Read a regular variable
     else {
-      VsLog::debugLog() << methodSig << "Loading variable data." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Loading variable data." << endl;
 
       herr_t err;
     
@@ -2781,9 +2902,9 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
         err = reader->getDataSet( variableDataset, dataPtr );
 #endif
       if (err < 0) {
-        VsLog::debugLog() << methodSig
-                          << "GetDataSet returned error: " << err << endl;
-        VsLog::debugLog() << methodSig << "Returning NULL." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "GetDataSet returned error: " << err << "  "
+                          << "Returning NULL." << endl;
 
         if (isDouble)
           delete [] dblDataPtr;
@@ -2796,12 +2917,13 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       }
     }
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
       << "Finished reading the data, building VTK structures." << endl;
 
     //DEBUG
     /*
-     VsLog::debugLog() << methodSig << "Dumping data: " << endl;
+     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Dumping data: " << endl;
      for (int i = 0; i < numVariables; i++) {
      if (H5Tequal(type, H5T_NATIVE_DOUBLE)) {
      VsLog::debugLog() << "data[" << i << "] = " << ((double*)data)[i] << endl;}
@@ -2810,22 +2932,26 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
      else if (H5Tequal(type, H5T_NATIVE_INT)) {
      VsLog::debugLog() << "data[" << i << "] = " << ((int*)data)[i] << endl;}
      }
-     VsLog::debugLog() << methodSig << "Finished dumping data. " << endl;
+     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Finished dumping data. " << endl;
      */
     //END DEBUG
 
     vtkDataArray* rv = 0;
 
     if (isDoubleType) {
-      VsLog::debugLog() << methodSig << "Declaring vtkDoubleArray." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Declaring vtkDoubleArray." << endl;
       rv = vtkDoubleArray::New();
     }
     else if (isFloatType) {
-      VsLog::debugLog() << methodSig << "Declaring vtkFloatArray." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Declaring vtkFloatArray." << endl;
       rv = vtkFloatArray::New();
     }
     else if (isIntegerType) {
-      VsLog::debugLog() << methodSig << "Declaring vtkIntArray." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Declaring vtkIntArray." << endl;
       rv = vtkIntArray::New();
     }
 
@@ -2839,13 +2965,13 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       indices[k] = 0;
 
     // Store data
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Storing " << numVariables << " data elements" << endl;
 
     // Attempt to reverse data in place
     //#define IN_PLACE
 #ifdef IN_PLACE
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Attempting to swap data in place." << endl;
     double* dblDataPtr = (double*) data;
     float* fltDataPtr = (float*) data;
@@ -2875,7 +3001,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
           intDataPtr[indx = intDataPtr[k];
           intDataPtr[k] = tmp;
         } else {
-          VsLog::debugLog() << methodSig
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Unknown data type: " << type << endl;
           return NULL;
         }
@@ -2904,19 +3030,23 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
         rv->SetTuple(k, &intDataPtr[k]);
       }
     } else {
-        VsLog::debugLog() << methodSig << "Unknown data type: " << type << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Unknown data type: " << type << endl;
         return NULL;
     }
 
-    VsLog::debugLog() << methodSig << "Done swapping data in place." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Done swapping data in place." << endl;
 #else
 
-    VsLog::debugLog() << methodSig
-       << "Swapping data into correct places, NOT using 'in place' code." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Swapping data into correct places, NOT using 'in place' code."
+                      << endl;
 
     // Using FORTRAN data ordering.
     if (isFortranOrder) {
-      VsLog::debugLog() << methodSig << "Using FORTRAN data ordering." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Using FORTRAN data ordering." << endl;
 
       if (isDoubleType) {
         for (size_t k = 0; k<numVariables; ++k) {
@@ -2935,7 +3065,8 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       }
     } else {
 
-      VsLog::debugLog() << methodSig << "Using C data ordering." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Using C data ordering." << endl;
 
       // Step through by global C index
       for (size_t k = 0; k<numVariables; ++k) {
@@ -2974,13 +3105,14 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       }
     }
 
-    VsLog::debugLog() << methodSig
-      << "Done swapping data into correct places, NOT using 'in place' code."
-      << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Done swapping data into correct places, NOT using 'in place' code."
+                      << endl;
 #endif
 
     // Done with data
-    VsLog::debugLog() << methodSig << "Cleaning up." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Cleaning up." << endl;
     delete [] indices;
 
     if (isDouble) {
@@ -2991,7 +3123,8 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       delete [] intDataPtr;
     }
 
-    VsLog::debugLog() << methodSig << "Returning data." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Returning data." << endl;
     return rv;
 }
 
@@ -3010,8 +3143,8 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
 void avtVsFileFormat::FreeUpResources(void)
 {
-    VsLog::debugLog() << "avtVsFileFormat::FreeUpResources() enter/exit."
-                      << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering/Exiting function." << endl;
 }
 
  
@@ -3029,19 +3162,20 @@ void avtVsFileFormat::FreeUpResources(void)
 
 void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
 {
-    string methodSig("avtVsFileFormat::RegisterExpressions() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     //get list of expressions from reader
     map<string, string>* expressions = registry->getAllExpressions();
     
     if (expressions->empty()) {
-      VsLog::debugLog() << methodSig
-        << "WARNING: No expressions found in file. Returning." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "WARNING: No expressions found in file. Returning."
+                        << endl;
       return;
     } else {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Found " << expressions->size()
                         << " expressions in file." << endl;
     }
@@ -3049,9 +3183,9 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
     //iterate over list of expressions, insert each one into database
     map<string, string>::const_iterator iv;
     for (iv = expressions->begin(); iv != expressions->end(); ++iv) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Adding expression " << iv->first << " = "
-      << iv->second << endl;
+                        << iv->second << endl;
       Expression e;
       e.SetName (iv->first);
 
@@ -3064,17 +3198,20 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
 
       // See if the expression is a vector
       if ((iv->second.size() > 0) && (iv->second[0] == '{')) {
-        VsLog::debugLog() << methodSig << "It is a vector expression." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "It is a vector expression." << endl;
         e.SetType(Expression::VectorMeshVar);
       }
       else {
-        VsLog::debugLog() << methodSig << "It is a scalar expression." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "It is a scalar expression." << endl;
         e.SetType(Expression::ScalarMeshVar);
       }
       md->AddExpression(&e);
     }
 
-    VsLog::debugLog() << methodSig << "Exiting normally." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Exiting normally." << endl;
 }
 
 
@@ -3092,8 +3229,8 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
 {
-    string methodSig("avtVsFileFormat::RegisterVars() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     // Get var names
@@ -3101,18 +3238,19 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
     registry->getAllVariableNames(names);
     
     if (names.empty()) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "WARNING: No variables were found in this file.  Returning." << endl;
       return;
     } else {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Found " << names.size()
                         << " variables in this file." << endl;
     }
 
     vector<string>::const_iterator it;
     for (it = names.begin(); it != names.end(); ++it) {
-      VsLog::debugLog() << methodSig << "Processing var: "<< *it << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Processing var: "<< *it << endl;
 
       //get metadata for var
       VsVariable* vMeta = registry->getVariable(*it);
@@ -3120,7 +3258,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
       //If this var is part of an MD var, we don't register it separately
       VsVariable* testForMD = registry->findSubordinateMDVar(*it);
       if (testForMD) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Var is part of an MD variable, "
                           << "will not be registered separately." << endl;
         continue;
@@ -3129,29 +3267,32 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
       // Name of the mesh of the var
       string mesh = vMeta->getMeshName();
       VsMesh* meshMeta = vMeta->getMesh();
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Var lives on mesh " << mesh << "." << endl;
 
       // Centering of the variable
       // Default is node centered data
       avtCentering centering = AVT_NODECENT;
       if (vMeta->isZonal()) {
-        VsLog::debugLog() << methodSig << "Var is zonal." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Var is zonal." << endl;
         centering = AVT_ZONECENT;
       } else {
-        VsLog::debugLog() << methodSig << "Var is nodal." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Var is nodal." << endl;
       }
 
       // 1-D variable?
-      VsLog::debugLog() << methodSig << "Determining if var is 1-D." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Determining if var is 1-D." << endl;
       int numSpatialDims = 3;
       if (meshMeta) {
         numSpatialDims = meshMeta->getNumSpatialDims();
       } else {
         numSpatialDims = 3;
-        VsLog::errorLog() << methodSig
+        VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Unable to load mesh for variable?" << endl;
-        VsLog::errorLog() << methodSig
+        VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Using numSpatialDims = 3, hope it's right!"
                           << endl;     
       }
@@ -3159,10 +3300,12 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
       //if this mesh is 1-D, we leave it for later (curves)
       bool isOneDVar = false;
       if (numSpatialDims == 1) {
-        VsLog::debugLog() << methodSig << "Var is 1-D." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Var is 1-D." << endl;
         isOneDVar = true;
       } else {
-        VsLog::debugLog() << methodSig << "Var is not 1-D." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Var is not 1-D." << endl;
         isOneDVar = false;
       }
 
@@ -3180,7 +3323,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
             string componentName = registry->getComponentName(*it, i);
   
             if (!componentName.empty()) {
-              VsLog::debugLog() << methodSig
+              VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                                 << "Adding curve component "
                                 << componentName << "." << endl;
               avtCurveMetaData* cmd =
@@ -3188,8 +3331,9 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
               cmd->hasDataExtents = false;
               md->Add(cmd);
             } else {
-              VsLog::debugLog() << methodSig
-                << "Unable to find match for curve variable in component registry." << endl;
+              VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                << "Unable to find match for curve variable in component registry."
+                                << endl;
             }
           }
         } else {
@@ -3210,7 +3354,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
           string componentName = registry->getComponentName(*it, i);
 
           if (!componentName.empty()) {
-            VsLog::debugLog() << methodSig
+            VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                               << "Adding variable component "
                               << componentName << "." << endl;
             avtScalarMetaData* smd =
@@ -3218,13 +3362,14 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
             smd->hasUnits = false;
             md->Add(smd);
           } else {
-            VsLog::debugLog() << methodSig << "Unable to find match for variable "
+            VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                              << "Unable to find match for variable "
                     << *it << "in component (" << i << ") registry." << endl;
           }
         }
       }
       else if (numComps == 1) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Adding single-component variable." << endl;
         avtScalarMetaData* smd =
           new avtScalarMetaData(*it, mesh.c_str(), centering);
@@ -3232,13 +3377,14 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
         md->Add(smd);
       }
       else {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Variable '" << *it
                           << "' has no components. Not being added." << endl;
       }
     }
 
-    VsLog::debugLog() << methodSig << "Exiting normally." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Exiting normally." << endl;
 }
 
 
@@ -3256,8 +3402,8 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 {
-    string methodSig("avtVsFileFormat::RegisterMeshes() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     // Number of mesh dims
@@ -3267,11 +3413,11 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
     vector<string> names;
     registry->getAllMeshNames(names);
     if (names.empty()) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "WARNING: no meshes were found in this file. Returning." << endl;
       return;
     } else {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Found " << names.size() << " meshes." << endl;
     }
 
@@ -3282,29 +3428,29 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
       //if this mesh is 1-D, we leave it for later (curves)
       if (mdims == 1) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
           << "Found 1-d mesh.  Skipping for now, will be added as a curve."
           << endl;
         continue;
       } else if ((mdims <= 0) || (mdims > 3)) {
-        VsLog::errorLog() << methodSig
-                          << "NumSpatialDims is out of range: " << mdims
-                          << endl;
-        VsLog::errorLog() << methodSig << "Skipping mesh." << endl;
+        VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "NumSpatialDims is out of range: " << mdims << "  "
+                          << "Skipping mesh." << endl;
         continue;
       }
       
       //If this mesh is part of an MD mesh, we don't register it separately
       VsMesh* testForMD = registry->findSubordinateMDMesh(*it);
       if (testForMD) {
-        VsLog::debugLog() << methodSig
-          << "Mesh is part of an MD mesh, will not be registered separately."
-          << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Mesh is part of an MD mesh, will not be registered separately."
+                          << endl;
         continue;
       }
       
-      VsLog::debugLog() << methodSig << "Found mesh '"
-      << *it << "' of kind '" << meta->getKind() << "'." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Found mesh '" << *it << "' of kind '"
+                        << meta->getKind() << "'." << endl;
 
       // Uniform Mesh
       if (meta->isUniformMesh()) {
@@ -3315,16 +3461,18 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         // operator requires 2-d data.  EXCEPT! then we can't plot 3-d
         // vectors on the 2-d data, so for now we continue to report 3
         // mdims = dims.size();
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Mesh's dimension = " << mdims << endl;
         if (mdims != 3) {
-          VsLog::debugLog() << methodSig
-            << "But reporting as dimension 3 to side-step VisIt bug." << endl;
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "But reporting as dimension 3 to side-step VisIt bug."
+                            << endl;
           mdims = 3;
         }
         
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Adding uniform mesh " << *it << "." << endl;
+
         // Add in the logical bounds of the mesh.
         vector<int> dims;
         static_cast<VsUniformMesh*>(meta)->getNumMeshDims(dims);
@@ -3337,15 +3485,15 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
             1, 1, 1, 0, mdims, mdims, AVT_RECTILINEAR_MESH);
         setAxisLabels(vmd);
         md->Add(vmd);
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Succeeded in adding mesh " << *it << "." << endl;
       }
 
       // Rectilinear Mesh
       else if (meta->isRectilinearMesh()) {
-        VsLog::debugLog() << methodSig
-                          << "Adding rectilinear mesh" << *it << "." << endl;
-        VsLog::debugLog() << methodSig << "MDims = " << mdims << "." << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Adding rectilinear mesh" << *it << ".  " 
+                          << "MDims = " << mdims << "." << endl;
 
         // Add in the logical bounds of the mesh.
         vector<int> dims;
@@ -3364,7 +3512,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
       // Structured Mesh
       else if (meta->isStructuredMesh()) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Adding structured mesh " << *it << "." << endl;
 
         // Add in the logical bounds of the mesh.
@@ -3388,7 +3536,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         //as point meshes
         VsUnstructuredMesh* unstructuredMesh = (VsUnstructuredMesh*)meta;
         if (unstructuredMesh->isPointMesh()) {
-          VsLog::debugLog() << methodSig
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Registering mesh " << it->c_str()
                             << " as AVT_POINT_MESH" << endl;
 
@@ -3403,11 +3551,11 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
           md->Add(vmd);
         }
         else {
-          VsLog::debugLog() << methodSig
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Registering mesh " << it->c_str()
                             << " as AVT_UNSTRUCTURED_MESH" << endl;
           mdims = meta->getNumSpatialDims();
-          VsLog::debugLog() << methodSig
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Adding unstructured mesh " << *it
                             << " with " << mdims
                             << " spatial dimensions." << endl;
@@ -3424,12 +3572,13 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         }
       }
       else {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Unrecognized mesh kind: " << meta->getKind()
                           << "." << endl;
       }
     }
-    VsLog::debugLog() << methodSig << "Exiting normally." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Exiting normally." << endl;
 }
 
 
@@ -3447,8 +3596,8 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
 {
-    string methodSig("avtVsFileFormat::RegisterMdVars() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     // Get vars names
@@ -3456,26 +3605,27 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
     registry->getAllMDVariableNames(names);
     
     if (names.empty()) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "WARNING: No MD variables were found in this file.  Returning."
         << endl;
       return;
     } else {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Found " << names.size()
                         << " MD variables in this file." << endl;
     }
 
     vector<string>::const_iterator it;
     for (it = names.begin(); it != names.end(); ++it) {
-      VsLog::debugLog() << methodSig << "Processing md var '"
-      << *it << "'." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Processing md var '"
+                        << *it << "'." << endl;
       VsMDVariable* vMeta = registry->getMDVariable(*it);
       
       // Name of the mesh of the var
       string mesh = vMeta->getMesh();
       string vscentering = vMeta->getCentering();
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "MD var lives on mesh " << mesh << "." << endl;
 
       //TODO: Mesh should either exist in an mdMesh, or separately in
@@ -3485,17 +3635,20 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
       // Default is node centered data
       avtCentering centering = AVT_NODECENT;
       if (vMeta->isZonal()) {
-        VsLog::debugLog() << methodSig << "Var is zonal" << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Var is zonal" << endl;
         centering = AVT_ZONECENT;
       } else {
-        VsLog::debugLog() << methodSig << "Var is nodal" << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Var is nodal" << endl;
       }
 
       // Number of component of the var
       size_t numComps = vMeta->getNumComps();
 
-      VsLog::debugLog() << methodSig << "Variable has " << numComps
-              << " components." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Variable has " << numComps
+                        << " components." << endl;
 
       if (numComps > 1) {
         for (size_t i = 0; i<numComps; ++i) {
@@ -3503,7 +3656,7 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
           string compName = registry->getComponentName(*it, i);
           
           if (!compName.empty()) {
-            VsLog::debugLog() << methodSig
+            VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                               << "Adding variable component " << compName
                               << "." << endl;
             avtScalarMetaData* smd = new avtScalarMetaData(compName.c_str(),
@@ -3511,14 +3664,14 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
             smd->hasUnits = false;
             md->Add(smd);
           } else {
-            VsLog::debugLog() << methodSig
+            VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                               << "Unable to find component name for var "
                               << *it << " and index " << i << endl;
           }
         }
       }
       else if (numComps == 1) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Adding single variable component " << *it
                           << "." << endl;
         avtScalarMetaData* smd =
@@ -3526,12 +3679,13 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
         smd->hasUnits = false;
         md->Add(smd);
       } else {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Variable '" << *it
                           << "' has no components. Not being added." << endl;
       }
     }
-    VsLog::debugLog() << methodSig << "Exiting normally." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Exiting normally." << endl;
 }
 
 
@@ -3549,47 +3703,52 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
 {
-    string methodSig("avtVsFileFormat::RegisterMdMeshes() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     vector<string> names;
     registry->getAllMDMeshNames(names);
     if (names.empty()) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "WARNING: no md meshes were found in this file. Returning" << endl;
       return;
     } else {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Found " << names.size()
                         << " MD meshes in this file." << endl;
     }
 
     vector<string>::const_iterator it;
     for (it = names.begin(); it != names.end(); ++it) {
-      VsLog::debugLog() << methodSig << " Adding md mesh '"
-      << *it << "'." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << " Adding md mesh '"
+                        << *it << "'." << endl;
 
       VsMDMesh* meta = registry->getMDMesh(*it);
       if (!meta) {
-        VsLog::debugLog() << methodSig << "Unable to find mesh " << *it << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Unable to find mesh " << *it << endl;
         continue;
       }
 
       avtMeshType meshType;
       string kind = meta->getMeshKind();
       if (meta->isUniformMesh()) {
-        VsLog::debugLog() << methodSig << "Mesh is rectilinear" << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Mesh is rectilinear" << endl;
         meshType = AVT_RECTILINEAR_MESH;
       } else if (meta->isUnstructuredMesh()) {
-        VsLog::debugLog() << methodSig << "Mesh is unstructured" << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Mesh is unstructured" << endl;
         meshType = AVT_UNSTRUCTURED_MESH;
       } else if (meta->isStructuredMesh()) {
-        VsLog::debugLog() << methodSig << "Mesh is structured" << endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Mesh is structured" << endl;
         meshType = AVT_CURVILINEAR_MESH;
       }
 
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Mesh has dimension " << meta->getNumSpatialDims()
                         << "." << endl;
 
@@ -3601,7 +3760,8 @@ void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
       md->Add(vmd);
     }
 
-    VsLog::debugLog() << methodSig << "Exiting normally." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Exiting normally." << endl;
 }
 
 
@@ -3616,31 +3776,30 @@ void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
 //
 //  Modifications:
 //
-
 void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
 {
-    string methodSig("avtVsFileFormat::RegisterVarsWithMesh() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     vector<string> names;
     registry->getAllVariableWithMeshNames(names);
     
     if (names.empty()) {
-      VsLog::debugLog()
-        << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "WARNING: no variables with mesh were found in this file. Returning."
         << endl;
       return;
     } else {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Found " << names.size()
                         << " variables with mesh in this file." << endl;
     }
 
     vector<string>::const_iterator it;
     for (it = names.begin(); it != names.end(); ++it) {
-      VsLog::debugLog() << methodSig << "Processing varWithMesh '"
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Processing varWithMesh '"
                         << *it << "'." << endl;
       VsVariableWithMesh* vMeta = registry->getVariableWithMesh(*it);
 
@@ -3648,10 +3807,11 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
       vector<int> dims;
       vMeta->getMeshDataDims(dims);
       if (dims.size() <= 0) {
-        string msg = methodSig +
-          "could not get dimensions of variable with mesh.";
-        VsLog::debugLog() << msg << endl;
-        throw out_of_range(msg.c_str());
+        ostringstream msg;
+        msg << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+            << "could not get dimensions of variable with mesh.";
+        VsLog::debugLog() << msg.str() << endl;
+        throw out_of_range(msg.str().c_str());
       }
 
       size_t lastDim = 0;
@@ -3661,7 +3821,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
         lastDim = dims[0];
 
       if (lastDim < vMeta->getNumSpatialDims()) {
-        VsLog::debugLog() << methodSig
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Error: for variable with mesh '" << *it
                           << "', numSpatialDims = "
                           << vMeta->getNumSpatialDims()
@@ -3682,7 +3842,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
         
         if (!compName.empty()) {
           //register with VisIt
-          VsLog::debugLog() << methodSig
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Adding variable component " << compName
                             << "." << endl;
           avtScalarMetaData* smd = new avtScalarMetaData(compName.c_str(),
@@ -3690,7 +3850,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
           smd->hasUnits = false;
           md->Add(smd);
         } else {
-          VsLog::debugLog() << methodSig
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Unable to get component name for variable "
                             << *it << " and index " << i << endl;
         }
@@ -3700,7 +3860,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
       // Add in the logical bounds of the mesh.
       int numNodes =  vMeta->getNumPoints();
       int bounds[3] = {numNodes,0,0};
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Adding point mesh for this variable." << endl;
       avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
           1, 1, 1, 0, vMeta->getNumSpatialDims(), 0, AVT_POINT_MESH);
@@ -3708,19 +3868,17 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
       md->Add(vmd);
     }
 
-    VsLog::debugLog() << methodSig << "Exiting normally." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Exiting normally." << endl;
   }
 
-  /**
-   * Called to alert the database reader that VisIt is about to ask for data
-   * at this timestep.  Since this reader is single-time, this is 
-   * only provided for reference and does nothing.
-   */
 // *****************************************************************************
-//  Method: avtVsFileFormat::RegisterVarsWithMesh
+//  Method: avtVsFileFormat::ActivateTimestep
 //
 //  Purpose:
-//      How do you do the voododo that you do
+//   Called to alert the database reader that VisIt is about to ask for data
+//   at this timestep.  Since this reader is single-time, this is
+//   only provided for reference and does nothing.
 //
 //  Programmer: Marc Durant
 //  Creation:   June, 2010
@@ -3733,9 +3891,8 @@ void avtVsFileFormat::ActivateTimestep()
   LoadData();
 }
   
-
 // *****************************************************************************
-//  Method: avtVsFileFormat::RegisterVarsWithMesh
+//  Method: avtVsFileFormat::UpdateCyclesAndTimes
 //
 //  Purpose:
 //      How do you do the voododo that you do
@@ -3745,36 +3902,79 @@ void avtVsFileFormat::ActivateTimestep()
 //
 //  Modifications:
 //
-
 void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
 {
-    string methodSig("avtVsFileFormat::UpdateCyclesAndTimes() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     if (!md) {
-      VsLog::debugLog() << methodSig << "md was NULL, returning." <<endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "md was NULL, returning." <<endl;
       return;
     }
 
-    // If we have time data, tell VisIt
+    int timeStep = 0;
+
+    // Extract timestep from filename
+    // First, get file name from full path
+    std::string fileName(dataFileName);
+    int lastSlash = fileName.find_last_of('/');
+    if (lastSlash == -1) {
+      lastSlash = fileName.find_last_of('\\');
+    }
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      <<"Last slash is " <<lastSlash <<std::endl;
+    if (lastSlash != -1) {
+      int nameLength = fileName.length() - (lastSlash + 1);
+      fileName = fileName.substr(lastSlash + 1, nameLength);
+    }
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      <<"Extracted filename is \"" <<fileName <<"\"" << endl;
+  
+    // Timestep = the number between the last underscore and the first dot
+    int lastUnderscore = fileName.find_last_of('_');
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      <<"lastUnderscore is " <<lastUnderscore << endl;
+
+    int firstDot = fileName.find_first_of('.');
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      <<"firstDot is " <<firstDot <<std::endl;
+
+    if ((lastUnderscore != -1) &&
+        (firstDot != -1) &&
+        (firstDot > lastUnderscore + 1)) {
+      std::string stepString = fileName.substr(lastUnderscore + 1,
+                                               firstDot - (lastUnderscore + 1));
+
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        <<"StepString is \"" <<stepString <<"\"" << endl;
+
+      timeStep = atoi(stepString.c_str());
+
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        <<"Converted to integer is \"" << timeStep << "\""
+                        << endl;
+    }
+
+    // If time data is present, tell VisIt
     if (registry->hasTime()) {
-      VsLog::debugLog() << methodSig << "This file supplies time: "
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "This file supplies time: "
                         << registry->getTime() << endl;
-      doubleVector times;
-      times.push_back(registry->getTime());
-      md->SetTimes(times);
+
+      md->SetTime(timeStep, registry->getTime());
       md->SetTimeIsAccurate(true, registry->getTime());
     }
     
-    //If we have step data, tell VisIt
-    if (registry->hasStep()) {
-      VsLog::debugLog() << methodSig << "This file supplies step: "
-        << registry->getStep() << endl;
-      intVector cycles;
-      cycles.push_back(registry->getStep());
-      md->SetCycles(cycles);
-      md->SetCycleIsAccurate(true, registry->getStep());
+    // If time cycle is present, tell VisIt
+    if (registry->hasCycle()) {
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "This file supplies cycle: "
+        << registry->getCycle() << endl;
+
+      md->SetCycle(timeStep, registry->getCycle());
+      md->SetCycleIsAccurate(true, registry->getCycle());
     }
 }
   
@@ -3796,8 +3996,8 @@ void avtVsFileFormat::LoadData()
     if (reader)
       return;
 
-    string methodSig("avtVsFileFormat::UpdateCyclesAndTimes() - ");
-    VsLog::debugLog() << methodSig << "Initializing VsH5Reader()" << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Initializing VsH5Reader()" << endl;
 
     //Actually open the file & read metadata for the first time
 
@@ -3805,12 +4005,15 @@ void avtVsFileFormat::LoadData()
       reader = new VsH5Reader(dataFileName, registry);
     }
     catch (invalid_argument& ex) {
-      string msg = methodSig + " Error initializing VsH5Reader: " + ex.what();
-      VsLog::debugLog() << msg << endl;
-      EXCEPTION1(InvalidDBTypeException, msg.c_str());
+        ostringstream msg;
+        msg << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+            << " Error initializing VsH5Reader: " << ex.what();
+      VsLog::debugLog() << msg.str() << endl;
+      EXCEPTION1(InvalidDBTypeException, msg.str().c_str());
     }
 
-    VsLog::debugLog() << "avtVsFileFormat::LoadData() - returning." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Exiting" << endl;
 }
 
 
@@ -3828,8 +4031,8 @@ void avtVsFileFormat::LoadData()
 
 void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
 {
-    string methodSig("avtVsFileFormat::PopulateDatabaseMetaData() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
     LoadData();
 
     // Tell visit that we can split meshes into subparts when running
@@ -3840,21 +4043,21 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
     vector<string> names;
 
 #ifdef VIZSCHEMA_DECOMPOSE_DOMAINS
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Decompose_domains is defined.  Entering code block."
                       << endl;
     if (registry->numMDMeshes() > 0) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "MD meshes are present in the data file.  "
                         << "Domain Decomposition is turned off." << endl;
       md->SetFormatCanDoDomainDecomposition(false);
     } else {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "NO MD meshes are present in the data file.  "
                         << "Domain Decomposition is turned on." << endl;
       md->SetFormatCanDoDomainDecomposition(true);
     }
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Decompose_domains is defined.  Exiting code block."
                       << endl;
 #endif
@@ -3871,10 +4074,10 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
 
     //add desperation last-ditch mesh if none exist in metadata
     if (md->GetNumMeshes() == 0 && md->GetNumCurves() == 0) {
-      VsLog::debugLog()
-        << methodSig
-        << "Warning: " << dataFileName
-        << " contains no mesh information. Creating default mesh." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Warning: " << dataFileName
+                        << " contains no mesh information. Creating default mesh."
+                        << endl;
       avtMeshMetaData* mmd =
         new avtMeshMetaData("ERROR_READING_FILE", 1, 1, 1, 0, 3, 3,
           AVT_RECTILINEAR_MESH);
@@ -3884,7 +4087,8 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
 
     UpdateCyclesAndTimes(md);
     
-    VsLog::debugLog() << methodSig << "Exiting normally." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Exiting normally." << endl;
 }
 
 
@@ -3902,11 +4106,12 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::setAxisLabels(avtMeshMetaData* mmd)
 {
-    string methodSig("avtVsFileFormat::setAxisLabels() - ");
-    VsLog::debugLog() << methodSig << "Entering function." << endl;
-
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Entering function." << endl;
+    
     if (mmd == NULL) {
-      VsLog::debugLog() << methodSig << "Input pointer was NULL?" << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Input pointer was NULL?" << endl;
       return;
     } else {
       VsMesh* mesh = registry->getMesh(mmd->name);
@@ -3922,7 +4127,8 @@ void avtVsFileFormat::setAxisLabels(avtMeshMetaData* mmd)
       }
     }
 
-    VsLog::debugLog() << methodSig << "Exiting normally." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Exiting normally." << endl;
 }
 
 
@@ -3940,18 +4146,20 @@ void avtVsFileFormat::setAxisLabels(avtMeshMetaData* mmd)
 
 bool avtVsFileFormat::ReturnsValidCycle()
 {
-    string methodSig("avtVsFileFormat::ReturnsValidCycle() - ");
-    VsLog::debugLog() << methodSig << "entering" << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "entering" << endl;
     LoadData();
 
-    if (registry->hasStep())
+    if (registry->hasCycle())
     {
-      VsLog::debugLog() << methodSig << "returning TRUE." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "returning TRUE." << endl;
       return true;
     }
     else
     {
-      VsLog::debugLog() << methodSig << "returning FALSE." << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "returning FALSE." << endl;
       return false;
     }
 }
@@ -3971,19 +4179,21 @@ bool avtVsFileFormat::ReturnsValidCycle()
 
 int avtVsFileFormat::GetCycle()
 {
-    string methodSig("avtVsFileFormat::GetCycle() - ");
-    VsLog::debugLog() << methodSig << "entering" << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "entering" << endl;
     LoadData();
 
-    if (registry->hasStep())
+    if (registry->hasCycle())
     {
-      VsLog::debugLog() << methodSig << "This file supplies cycle: "
-                        << registry->getStep() << endl;
-      return registry->getStep();
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "This file supplies cycle: "
+                        << registry->getCycle() << endl;
+      return registry->getCycle();
     }
     else
     {
-      VsLog::debugLog() << methodSig << "This file does not supply cycle.  "
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "This file does not supply cycle.  "
                         << "Returning INVALID_CYCLE." <<std::endl;
 
       return INVALID_CYCLE;
@@ -4005,18 +4215,20 @@ int avtVsFileFormat::GetCycle()
 
 bool avtVsFileFormat::ReturnsValidTime()
 {
-    string methodSig("avtVsFileFormat::ReturnsValidTime() - ");
-    VsLog::debugLog() << methodSig << "entering" << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "entering" << endl;
     LoadData();
 
     if (registry->hasTime())
     {
-      VsLog::debugLog() << methodSig << "returning TRUE." <<endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "returning TRUE." <<endl;
       return true;
     }
     else
     {
-      VsLog::debugLog() << methodSig << "returning FALSE." <<endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "returning FALSE." <<endl;
       return false;
     }
 }
@@ -4036,19 +4248,21 @@ bool avtVsFileFormat::ReturnsValidTime()
 
 double avtVsFileFormat::GetTime()
 {
-    string methodSig("avtVsFileFormat::GetTime() - ");
-    VsLog::debugLog() << methodSig << "entering" << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "entering" << endl;
     LoadData();
 
     if (registry->hasTime())
     {
-      VsLog::debugLog() << methodSig << "This file supplies time: "
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "This file supplies time: "
                         <<registry->getTime() << endl;
       return registry->getTime();
     }
     else
     {
-      VsLog::debugLog() << methodSig << "This file does not supply time.  "
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "This file does not supply time.  "
                         << "Returning INVALID_TIME." << endl;
       return INVALID_TIME;
     }

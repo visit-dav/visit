@@ -37,26 +37,28 @@
 #include "VsLog.h"
 #include "VsRegistry.h"
 
+#define __CLASS__ "VsH5Reader::"
+
 using namespace std;
 
 int VsH5Reader::numInstances = 0;
 
 VsH5Reader::VsH5Reader(const std::string& nm, VsRegistry* r) {
 
-  string methodSig("VsH5Reader::VsH5Reader() - ");
-
   numInstances++;
-  VsLog::debugLog() << methodSig << "This VsH5Reader is #"
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "This VsH5Reader is #"
                     << numInstances << endl;
 
-  VsLog::debugLog() << methodSig
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "VsH5Reader::VsH5Reader(" << nm << ") entering." << endl;
 
   if (numInstances > 1) {
-    VsLog::warningLog() << methodSig
+    VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
       << "Warning!  More than one concurrent copy of VsH5Reader." << endl;
     VsLog::warningLog()
-      << methodSig << "Warning!  Debug messages may be interleaved." << endl;
+      << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+      << "Warning!  Debug messages may be interleaved." << endl;
   }
 
   registry = r;
@@ -64,7 +66,7 @@ VsH5Reader::VsH5Reader(const std::string& nm, VsRegistry* r) {
   // Read metadata
   fileData = VsFilter::readFile(registry, nm);
   if (!fileData) {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Unable to load metadata from file." << endl;
     EXCEPTION1(InvalidFilesException, nm.c_str());
   }
@@ -99,26 +101,28 @@ VsH5Reader::VsH5Reader(const std::string& nm, VsRegistry* r) {
       (registry->numVariablesWithMesh() == 0) &&
       (registry->numMDMeshes() == 0) &&
       (registry->numMDVariables() == 0)) {
-    VsLog::errorLog() << methodSig
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "file format not recognized." << endl;
     EXCEPTION1(InvalidFilesException, nm.c_str());
   }
   
-  VsLog::debugLog() << methodSig << "exiting." << std::endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "exiting." << std::endl;
 }
 
 
 VsH5Reader::~VsH5Reader() {
-  string methodSig("VsH5Reader::~VsH5Reader() - ");
 
-  VsLog::debugLog() << methodSig << "Entering." << std::endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Entering." << std::endl;
   
   if (fileData) {
     delete (fileData);
     fileData = NULL;
   }
   
-  VsLog::debugLog() << methodSig << "Exiting." << endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Exiting." << endl;
 }
 
 
@@ -148,11 +152,13 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
   string methodSig("VsH5Reader::getVariable() - ");
 
   if (dataSet == NULL) {
-    VsLog::debugLog() << methodSig << "Requested dataset is null?" << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Requested dataset is null?" << endl;
     return -1;
   }
   
-  VsLog::debugLog() << methodSig << dataSet->getFullName() << " - Entering."
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << dataSet->getFullName() << " - Entering."
                     << std::endl;
   
   herr_t err = 0;
@@ -164,7 +170,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
                   H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
 
     if (err < 0) {
-      VsLog::debugLog() << methodSig << "Error " << err
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Error " << err
                         << " in reading variable " << dataSet->getFullName()
                         << "." << std::endl;
       return err;
@@ -179,7 +186,7 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
     int ndims = H5Sget_simple_extent_ndims(dataspace);
 
     if (ndims == 0) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Unable to load dimensions for variable."
                         << "Returning -1." << endl;
       return -1;
@@ -190,12 +197,13 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
     int ndim = H5Sget_simple_extent_dims(dataspace, &(dims[0]), NULL);
 
     if( ndim != ndims ) {
-      VsLog::debugLog() << methodSig
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Data dimensions not match. " << endl;
       return -1;
     }
 
-    VsLog::debugLog() << methodSig << "about to set up arguments." << endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "about to set up arguments." << endl;
 
     std::vector<hsize_t> count(ndims);
     std::vector<hsize_t> start(ndims);
@@ -217,7 +225,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
           count[1] = (hsize_t) srcCounts[base-i];
           stride[1] = (hsize_t) srcStrides[base-i];
           
-          VsLog::debugLog() << methodSig << "For i = " << i
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "For i = " << i
                             << ", start = " << start[i]
                             << ", count = " << count[i]
                             << ", stride = " << stride[i]
@@ -236,7 +245,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
           count[i+1] = (hsize_t) srcCounts[base-i];
           stride[i+1] = (hsize_t) srcStrides[base-i];
           
-          VsLog::debugLog() << methodSig << "For i = " << i
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "For i = " << i
                             << ", start = " << start[i+1]
                             << ", count = " << count[i+1]
                             << ", stride = " << stride[i+1]
@@ -269,7 +279,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
           count[i] = (hsize_t) srcCounts[base-i];
           stride[i] = (hsize_t) srcStrides[base-i];
           
-          VsLog::debugLog() << methodSig << "For i = " << i
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "For i = " << i
                             << ", start = " << start[i]
                             << ", count = " << count[i]
                             << ", stride = " << stride[i]
@@ -304,7 +315,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
           count[i] = (hsize_t) srcCounts[i];
           stride[i] = (hsize_t) srcStrides[i];
           
-          VsLog::debugLog() << methodSig << "For i = " << i
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "For i = " << i
                             << ", start = " << start[i]
                             << ", count = " << count[i]
                             << ", stride = " << stride[i]
@@ -321,7 +333,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
           count[i+1] = (hsize_t) srcCounts[i];
           stride[i+1] = (hsize_t) srcStrides[i];
           
-          VsLog::debugLog() << methodSig << "For i = " << i
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "For i = " << i
                             << ", start = " << start[i+1]
                             << ", count = " << count[i+1]
                             << ", stride = " << stride[i+1]
@@ -352,7 +365,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
           count[i] = (hsize_t) srcCounts[i];
           stride[i] = (hsize_t) srcStrides[i];
           
-          VsLog::debugLog() << methodSig << "For i = " << i
+          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "For i = " << i
                             << ", start = " << start[i]
                             << ", count = " << count[i]
                             << ", stride = " << stride[i]
@@ -380,7 +394,7 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
       err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET,
                                 &(start[0]), &(stride[0]), &(count[0]), NULL);
 
-    VsLog::debugLog() << methodSig
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "After selecting the hyperslab, err is " <<err << endl;
 
     // Create memory space for the data
@@ -417,7 +431,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
                   H5P_DEFAULT, data);
 
     if (err < 0) {
-      VsLog::debugLog() << methodSig << ": error " << err
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << ": error " << err
                         << " in reading dataset." << std::endl;
     }
 
@@ -425,7 +440,8 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
     err = H5Sclose(dataspace);
   }
   
-  VsLog::debugLog() << methodSig << "Returning " << err << "." << std::endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Returning " << err << "." << std::endl;
   return err;
 }
 

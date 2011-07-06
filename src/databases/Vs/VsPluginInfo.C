@@ -95,7 +95,7 @@ VsGeneralPluginInfo::GetName() const
 const char *
 VsGeneralPluginInfo::GetVersion() const
 {
-    return "@VERSION@";
+    return "3.0.0";
 }
 
 // ****************************************************************************
@@ -114,7 +114,7 @@ VsGeneralPluginInfo::GetVersion() const
 const char *
 VsGeneralPluginInfo::GetID() const
 {
-    return "Vs_@VERSION@";
+    return "Vs_3.0.0";
 }
 // ****************************************************************************
 //  Method: VsGeneralPluginInfo::EnabledByDefault
