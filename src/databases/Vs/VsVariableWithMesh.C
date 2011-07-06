@@ -16,6 +16,10 @@
 #include <map>
 #include <vector>
 
+#define __CLASS__ "VsStructuredMesh::"
+
+using namespace std;
+
 VsVariableWithMesh::VsVariableWithMesh(VsH5Dataset* data):
   VsRegistryObject(data->registry) {
   indexOrder = VsSchema::compMinorCKey;
@@ -108,11 +112,13 @@ VsH5Attribute* VsVariableWithMesh::getAttribute(const std::string name) {
 }
 
 std::string VsVariableWithMesh::getStringAttribute(const std::string name) {
+
+  std::string result("");
+
   VsH5Attribute* foundAtt = getAttribute(name);
-  if (foundAtt == NULL)
-    return "";
-  std::string result = "";
-  foundAtt->getStringValue(&result);
+  if (foundAtt)
+    foundAtt->getStringValue(&result);
+
   return result;
 }
 //retrieve a particular spatial dimension index from the list
@@ -126,21 +132,24 @@ int VsVariableWithMesh::getSpatialDim(size_t index) {
 }
 
 void VsVariableWithMesh::write() {
-  VsLog::debugLog() << getFullName() <<std::endl;
-  VsLog::debugLog() << "    numSpatialDims  = " << getNumSpatialDims() << std::endl;
-  VsLog::debugLog() << "    spatialIndices = [";
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << getFullName() << "  "
+                    << "indexOrder = " << indexOrder << "  "
+                    << "numSpatialDims  = " << getNumSpatialDims() << "  "
+                    << "spatialIndices = [";
+
   for (unsigned int i = 0; i < getNumSpatialDims(); i++) {
     VsLog::debugLog() << spatialIndices[i];
     if (i + 1 < getNumSpatialDims()) {
       VsLog::debugLog() <<", ";
     }
   }
-  VsLog::debugLog() <<"]" <<std::endl;
-  VsLog::debugLog() << "    indexOrder = " << indexOrder << std::endl;
+  VsLog::debugLog() <<"]" << endl;
 }
 
 bool VsVariableWithMesh::initialize() {
-  VsLog::debugLog() <<"VsVariableWithMesh::buildVariable() entering." <<std::endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << " entering." << endl;
 
   //We have two ways of specifying information for varWithMesh:
   // 1. VsSpatialIndices indicates which columns contain spatial data (synergia style)
@@ -151,25 +160,29 @@ bool VsVariableWithMesh::initialize() {
   
   VsH5Attribute* spatialIndicesAtt = getAttribute(VsSchema::spatialIndicesAtt);
   if (spatialIndicesAtt) {
-    VsLog::debugLog() <<"VsVariableWithMesh::buildVariable(): found spatialIndices, trying synergia style" <<std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "found spatialIndices, trying synergia style" << endl;
     std::vector<int> in;
     herr_t err = spatialIndicesAtt->getIntVectorValue(&in);
     if (!err) {
       numDimsSet = true;
       this->spatialIndices = in;
-      VsLog::debugLog() <<"VsVariableWithMesh::buildVariable(): Saved attribute in vm" <<std::endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Saved attribute in vm" << endl;
     }
   }
 
   //NOTE: We load indexOrder regardless of whether we're in synergia style or not
   VsH5Attribute* indexOrderAtt = getAttribute(VsSchema::indexOrderAtt);
   if (indexOrderAtt) {
-    VsLog::debugLog() <<"VsVariableWithMesh::buildVariable(): found indexOrder." <<std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "found indexOrder." << endl;
     herr_t err = indexOrderAtt->getStringValue(&(this->indexOrder));
     if (err < 0) {
-      VsLog::debugLog() << "VsH5Reader::makeVariableWithMeshMeta(...): '" <<
-      getFullName() << "' error getting optional attribute '" <<
-      VsSchema::indexOrderAtt << "'." << std::endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << getFullName()
+                        << "' error getting optional attribute '"
+                        << VsSchema::indexOrderAtt << "'." << endl;
     }
   }
       
@@ -178,20 +191,30 @@ bool VsVariableWithMesh::initialize() {
   //We then construct a spatialIndices array containing [0, 1, ..., numSpatialDims - 1]
   //So for a 3-d mesh we have [0, 1, 2]
   if (!numDimsSet) {
-    VsLog::debugLog() <<"VsVariableWithMesh::buildVariable(): did not find spatialIndices, trying regular style." <<std::endl;
-    VsLog::debugLog() <<"VsVariableWithMesh::buildVariable(): Looking for attribute: " <<VsSchema::numSpatialDimsAtt <<std::endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "did not find spatialIndices, trying regular style."
+                        << endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Looking for attribute: "
+                        << VsSchema::numSpatialDimsAtt << endl;
+
     VsH5Attribute* numDimsAtt = getAttribute(VsSchema::numSpatialDimsAtt);
     if (!numDimsAtt) {
-      VsLog::warningLog() <<"VsVariableWithMesh::buildVariable(): Did not find attribute: " <<VsSchema::numSpatialDimsAtt <<std::endl;
-      VsLog::warningLog() <<"VsVariableWithMesh::buildVariable(): Looking for deprecated attribute: " <<VsSchema::numSpatialDimsAtt_deprecated <<std::endl;
+
+      VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Did not find attribute: "
+                          << VsSchema::numSpatialDimsAtt << "  "
+                          << "Looking for deprecated attribute: "
+                          << VsSchema::numSpatialDimsAtt_deprecated << endl;
       numDimsAtt = getAttribute(VsSchema::numSpatialDimsAtt_deprecated);
     }
     if (numDimsAtt) {
       std::vector<int> in;
       herr_t err = numDimsAtt->getIntVectorValue(&in);
       if (err < 0) {
-        VsLog::debugLog() <<"VsVariableWithMesh::buildVariable(): VarWithMesh " <<getFullName();
-        VsLog::debugLog() <<" does not have attribute " <<VsSchema::numSpatialDimsAtt <<"." <<std::endl;
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << getFullName() << " does not have attribute "
+                          << VsSchema::numSpatialDimsAtt << "." << endl;
         return false;
       }
       int numSpatialDims = in[0];
@@ -203,15 +226,21 @@ bool VsVariableWithMesh::initialize() {
       }
         
       numDimsSet = true;
-      VsLog::debugLog() << "VsVariableWithMesh::buildVariable(): numSpatialDims = " << this->getNumSpatialDims() << "." << std::endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "numSpatialDims = " << this->getNumSpatialDims() << "."
+                        << endl;
     } else {
-      VsLog::warningLog() <<"VsVariableWithMesh::buildVariable(): Did not find deprecated attribute either: " <<VsSchema::numSpatialDimsAtt_deprecated <<std::endl;
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Did not find deprecated attribute either: "
+                        << VsSchema::numSpatialDimsAtt_deprecated << endl;
     }
   }
   
   // Check that all set as needed
   if (!numDimsSet) {
-    VsLog::debugLog() <<"VsVariableWithMesh::buildVariable(): Unable to determine spatial dimensions for var " <<getFullName() <<std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Unable to determine spatial dimensions for var "
+                      << getFullName() << endl;
     return false;
   }
 
@@ -260,7 +289,8 @@ VsVariableWithMesh* VsVariableWithMesh::buildObject(VsH5Dataset* dataset) {
 size_t VsVariableWithMesh::getNumComps() {
   std::vector<int> dims = getDims();
   if (dims.size() <= 0) {
-    VsLog::errorLog() <<"VsVariableWithMesh::createComponents() - unable to get dimensions of variable?" << std::endl;
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Unable to get dimensions of variable?" << endl;
     return 0;
   }
 
@@ -273,7 +303,8 @@ size_t VsVariableWithMesh::getNumComps() {
 }
 
 void VsVariableWithMesh::createComponents() {
-  VsLog::debugLog() <<"VsVariableWithMesh::createComponents() - Entering" << std::endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Entering" << endl;
   
   size_t numComps = getNumComps();
   
@@ -281,5 +312,6 @@ void VsVariableWithMesh::createComponents() {
     registry->registerComponent(getFullName(), i, getLabel(i));
   }
 
-  VsLog::debugLog() <<"VsVariableWithMesh::createComponents() - Returning" << std::endl;
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Returning" << endl;
 }
