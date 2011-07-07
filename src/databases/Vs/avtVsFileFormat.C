@@ -1010,7 +1010,10 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
         return NULL;
       }
 
-      // Read in the point data
+      // Read in the point data. NOTE: Even when doing index selecting
+      // or in parallel mode read in all of te data. As for the grid
+      // there is not that much data. When building the mesh the
+      // correct nodes are used.
       herr_t err = reader->getDataSet(axisData, dataPtr);
 
       if (err < 0) {
@@ -1366,6 +1369,12 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     // Read in the data
     herr_t err;
 
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
+      err = reader->getDataSet( pointsDataset, dataPtr,
+                                // -1 read all coordinate components
+                                structuredMesh->getIndexOrder(), -1,
+                                mins, &(gdims[0]), strides );
+#else
     if( haveDataSelections )
       err = reader->getDataSet( pointsDataset, dataPtr,
                                 // -1 read all coordinate components
@@ -1373,6 +1382,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
                                 mins, &(gdims[0]), strides );
     else
       err = reader->getDataSet( pointsDataset, dataPtr );
+#endif
 
     if (err < 0)
     {
