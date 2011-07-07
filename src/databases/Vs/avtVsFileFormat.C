@@ -54,8 +54,8 @@
 
 #include <avtVsFileFormat.h>
 
-// #define PARALLEL 1
-// #define VIZSCHEMA_DECOMPOSE_DOMAINS 1
+//#define PARALLEL 1
+//#define VIZSCHEMA_DECOMPOSE_DOMAINS 1
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
 #include <avtParallel.h>
@@ -669,43 +669,40 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-
                       << "Parallel & Decompose_Domains are defined, "
                       << "entering parallel code." << endl;
+
+    // Get the axis with greatest number of nodes.
+    int splitAxis = 0;
     
     for (size_t i=0; i<numTopologicalDims; ++i)
     {
-      int numNodes = gdims[i];
-      
-      // Integer number of nodes per processor
-      size_t numNodesPerProc = numNodes / PAR_Size();
-      size_t numProcsWithExtraNode = numNodes % PAR_Size();
-      
-      // To get all of the nodes adjust the count by one for those
-      // processors that need an extra node.
-      if (PAR_Rank() < numProcsWithExtraNode)
+      if( gdims[splitAxis] < gdims[i] )
       {
-        gdims[i] = numNodesPerProc + 1;
-        mins[i] = PAR_Rank() * (numNodesPerProc + 1) * strides[i];
-        maxs[i] = mins[i] + (numNodesPerProc) * strides[i];
+        splitAxis = i;
       }
-      else
-      {
-        gdims[i] = numNodesPerProc;
-        // Processors w/extra node plus processors without extra node.
-        mins[i] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
-                   (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
-          strides[i];
-        maxs[i] = mins[i] + (numNodesPerProc-1) * strides[i];
-      }
-      // Adjust bounds
-      float delta = (upperBounds[splitAxis] - lowerBounds[splitAxis]) /
-        numCellsAlongSplitAxis;
-      lowerBounds[splitAxis] += startCell * delta;
-      upperBounds[splitAxis] = lowerBounds[splitAxis] + nCells * delta;
-
-      numCells[splitAxis] = nCells;
-      idims[splitAxis] = nCells + 1; // FIXME: May depend on centering
+    }
+    
+    // Integer number of nodes per processor
+    size_t numNodesPerProc = gdims[splitAxis] / PAR_Size();
+    size_t numProcsWithExtraNode = gdims[splitAxis] % PAR_Size();
+    
+    // To get all of the nodes adjust the count by one for those
+    // processors that need an extra node.
+    if (PAR_Rank() < numProcsWithExtraNode)
+    {
+      gdims[splitAxis] = numNodesPerProc + 1;
+      mins[splitAxis] = PAR_Rank() * (numNodesPerProc + 1) * strides[splitAxis];
+      maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc) * strides[splitAxis];
+    }
+    else
+    {
+      gdims[splitAxis] = numNodesPerProc;
+      // Processors w/extra node plus processors without extra node.
+      mins[splitAxis] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
+                 (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
+        strides[splitAxis];
+      maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc-1) * strides[splitAxis];
     }
 
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -935,31 +932,37 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
                       << "Parallel & Decompose_Domains are defined, "
                       << "entering parallel code." << endl;
     
+    // Get the axis with greatest number of nodes.
+    int splitAxis = 0;
+    
     for (size_t i=0; i<numTopologicalDims; ++i)
     {
-      int numNodes = gdims[i];
-      
-      // Integer number of nodes per processor
-      size_t numNodesPerProc = numNodes / PAR_Size();
-      size_t numProcsWithExtraNode = numNodes % PAR_Size();
-      
-      // To get all of the nodes adjust the count by one for those
-      // processors that need an extra node.
-      if (PAR_Rank() < numProcsWithExtraNode)
+      if( gdims[splitAxis] < gdims[i] )
       {
-        gdims[i] = numNodesPerProc + 1;
-        mins[i] = PAR_Rank() * (numNodesPerProc + 1) * strides[i];
-        maxs[i] = mins[i] + (numNodesPerProc) * strides[i];
+        splitAxis = i;
       }
-      else
-      {
-        gdims[i] = numNodesPerProc;
-        // Processors w/extra node plus processors without extra node.
-        mins[i] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
-                   (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
-            strides[i];
-        maxs[i] = mins[i] + (numNodesPerProc-1) * strides[i];
-      }
+    }
+  
+    // Integer number of nodes per processor
+    size_t numNodesPerProc = gdims[splitAxis] / PAR_Size();
+    size_t numProcsWithExtraNode = gdims[splitAxis] % PAR_Size();
+      
+    // To get all of the nodes adjust the count by one for those
+    // processors that need an extra node.
+    if (PAR_Rank() < numProcsWithExtraNode)
+    {
+      gdims[splitAxis] = numNodesPerProc + 1;
+      mins[splitAxis] = PAR_Rank() * (numNodesPerProc + 1) * strides[splitAxis];
+      maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc) * strides[splitAxis];
+    }
+    else
+    {
+      gdims[splitAxis] = numNodesPerProc;
+      // Processors w/extra node plus processors without extra node.
+      mins[splitAxis] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
+                 (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
+        strides[splitAxis];
+      maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc-1) * strides[splitAxis];
     }
     
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -2780,34 +2783,42 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
                         << "Parallel & Decompose_Domains are defined, "
                         << "entering parallel code." << endl;
 
+      // Get the axis with greatest number of nodes.
+      int splitAxis = 0;
+    
+      for (size_t i=0; i<numTopologicalDims; ++i)
+      {
+        if( vdims[splitAxis] < vdims[i] )
+        {
+          splitAxis = i;
+        }
+      }
+      
+      // Integer number of nodes per processor
+      size_t numNodesPerProc = vdims[splitAxis] / PAR_Size();
+      size_t numProcsWithExtraNode = vdims[splitAxis] % PAR_Size();
+      
+      // To get all of the nodes adjust the count by one for those
+      // processors that need an extra node.
+      if (PAR_Rank() < numProcsWithExtraNode)
+      {
+        vdims[splitAxis] = numNodesPerProc + 1;
+        mins[splitAxis] =
+          PAR_Rank() * (numNodesPerProc + 1) * strides[splitAxis];
+      }
+      else
+      {
+        vdims[splitAxis] = numNodesPerProc;
+        // Processors w/extra node plus processors without extra node.
+        mins[splitAxis] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
+                   (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
+          strides[splitAxis];
+      }
+      
       numVariables = 1;
 
       for (size_t i=0; i<numTopologicalDims; ++i)
-      {
-        int numNodes = vdims[i];
-
-        // Integer number of nodes per processor
-        size_t numNodesPerProc = numNodes / PAR_Size();
-        size_t numProcsWithExtraNode = numNodes % PAR_Size();
-      
-        // To get all of the nodes adjust the count by one for those
-        // processors that need an extra node.
-        if (PAR_Rank() < numProcsWithExtraNode)
-        {
-          vdims[i] = numNodesPerProc + 1;
-          mins[i] = PAR_Rank() * (numNodesPerProc + 1) * strides[i];
-        }
-        else
-        {
-          vdims[i] = numNodesPerProc;
-          // Processors w/extra node plus processors without extra node.
-          mins[i] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
-                      (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
-            strides[i];
-        }
-
         numVariables *= vdims[i];
-      }
 
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Parallel & Decompose_Domains are defined, "
