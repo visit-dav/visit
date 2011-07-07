@@ -515,6 +515,9 @@ avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
 //    In support of multiple-variable time picks, create an output Tree instead
 //    of a single grid.
 //
+//    Kathleen Bonnell, Thu Jul  7 11:26:31 PDT 2011
+//    Fixed incorrect generation of warning when nResults > 2.
+//
 // ****************************************************************************
 
 void
@@ -592,15 +595,15 @@ avtQueryOverTimeFilter::CreateFinalOutput()
             "number of timestates.  Curve being created may be missing "
             "some values.  Please contact a VisIt developer."); 
     }
-    else if (nResultsToStore > 1 && qRes.size() % 2 != 0)
+    else if (nResultsToStore > 1 && qRes.size() % nResultsToStore != 0)
     {
         debug4 << "QueryOverTime ERROR, number of results (" 
-               << qRes.size() << ") is not a multiple of 2 and "
-               << "therefore cannot generate x,y pairs." << endl;
+               << qRes.size() << ") is not a multiple of " << nResultsToStore
+               << "and therefore cannot generate x,y pairs." << endl;
         avtCallback::IssueWarning(
-            "\nQueryOverTime error, number of results is not multiple "
-            "of 2. Curve being created may be missing some values. "
-            " Please contact a VisIt developer."); 
+            "\nQueryOverTime error, number of results is incorrect.  "
+            "Curve being created may be missing some values.  "
+            "Please contact a VisIt developer."); 
     }
     if (skippedTimes.size() != 0)
     {
