@@ -41,16 +41,18 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 ##
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER mpicc)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER mpiCC)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -O2 -fvisibility=hidden")
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -O2 -fvisibility=hidden")
-SET(VISIT_MPI_CXX_FLAGS "-I/sw/analysis-x64/ompi/1.2.6/sl5_gcc4.2.0/include")
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 
-##Parallel options
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/sw/analysis-x64/ompi/1.2.6/sl5_gcc4.2.0/include -pthread")
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-pthread -L/sw/analysis-x64/ompi/1.2.6/sl5_gcc4.2.0/lib -Wl,--export-dynamic")
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpi_cxx mpi open-rte open-pal dl nsl util m dl)
+##
+## Parallel Build Setup.
+##
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
+## (configured w/ mpi compiler wrapper)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /sw/analysis-x64/ompi/1.4.2/centos5.5_gnu4.4.4/bin/mpicxx TYPE STRING)
+
 
 ##############################################################
 ##
