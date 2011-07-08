@@ -262,7 +262,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
         }
         else if (string(selList[i]->GetType()) == "Spatial Box Data Selection")
         {
-          cerr << __LINE__ << endl;
+//          cerr << __LINE__ << endl;
 
             avtSpatialBoxSelection *sel =
               (avtSpatialBoxSelection *) *(selList[i]);
