@@ -271,6 +271,10 @@
 #    with a single "chgrp -R $group $dir1 $dir2" command, since the
 #    find version is extremely slow on some systems.
 #
+#    Eric Brugger, Fri Jul  8 14:28:46 PDT 2011
+#    I modified the script to accept the version number in either the
+#    form X.Y.Z or X_Y_Z.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -354,7 +358,7 @@ if [ "$beta" = "true" ]; then
    fi
 fi
 
-version="$1";
+version=`echo $1 | tr "_" "."`
 base=`echo visit$version | tr "." "_"`
 platform="$2"
 dir="$3"
