@@ -94,7 +94,7 @@ using namespace std;
 //  Modifications:
 //
 avtVsFileFormat::avtVsFileFormat(const char* dfnm) :
-  avtSTMDFileFormat(&dfnm, 1), dataFileName(dfnm)
+  avtSTMDFileFormat(&dfnm, 1), dataFileName(dfnm), haveReadWholeData(false)
 {
     VsLog::initialize(DebugStream::Stream3(),
                       DebugStream::Stream4(),
@@ -205,7 +205,9 @@ avtVsFileFormat::~avtVsFileFormat()
 bool
 avtVsFileFormat::CanCacheVariable(const char *var)
 {
-    return false;
+//  cerr << var << endl;
+
+    return haveReadWholeData;
 }
 
 
@@ -260,6 +262,8 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
         }
         else if (string(selList[i]->GetType()) == "Spatial Box Data Selection")
         {
+          cerr << __LINE__ << endl;
+
             avtSpatialBoxSelection *sel =
               (avtSpatialBoxSelection *) *(selList[i]);
 
@@ -348,23 +352,28 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
                       << "Entering function." << endl;
     LoadData();
 
-    // Save the name in a temporary variable.
+    // Save the name in a temporary variable as it gets mucked with if
+    // searching for a MD mesh.
     string meshName = name;
 
     bool haveDataSelections;
-
     int mins[3], maxs[3], strides[3];
 
     // Adjust for the data selections which are ZONAL.
     if( haveDataSelections = ProcessDataSelections(mins, maxs, strides) )
     {
       VsLog::debugLog()
+        << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "Have a logical zonal selection for mesh "<< endl
         << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
         << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
         << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
         << endl;
+
+      haveReadWholeData = false;
     }
+    else
+      haveReadWholeData = true;
 
     // The MD system works by filtering the requests directed to it
     // into the name of the appropriate subordinate mesh.  For
@@ -2465,14 +2474,21 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     bool haveDataSelections;
     int mins[3], maxs[3], strides[3];
 
+    // Adjust for the data selections which are ZONAL.
     if( haveDataSelections = ProcessDataSelections(mins, maxs, strides) )
     {
-      VsLog::debugLog() << "have a data selection for a variable "
-           << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
-           << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
-           << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
-           << endl;
+      VsLog::debugLog()
+        << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "have a data selection for a variable "
+        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
+        << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
+        << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
+        << endl;
+
+      haveReadWholeData = false;
     }
+    else
+      haveReadWholeData = true;
 
     // Is this variable a component?  If so, swap the component name
     // with the "real" variable name and remember that it is a

@@ -164,6 +164,8 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   /** Ensure data has been read **/
   void LoadData();
 
+  bool haveReadWholeData;
+
   private:
   /**
    * A counter to track the number of avtVsFileFormat objects in existence
