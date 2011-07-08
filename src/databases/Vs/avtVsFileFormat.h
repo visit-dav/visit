@@ -202,6 +202,14 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   void RegisterVars(avtDatabaseMetaData* md);
   void RegisterMdVars(avtDatabaseMetaData* md);
   void RegisterExpressions(avtDatabaseMetaData* md);
+
+  void GetParallelDecomp( int numTopologicalDims,
+                          vector<int> &dims,
+                          int *mins,
+                          int *maxs,
+                          int *strides,
+                          bool adjustForNodes = true );
+
 #else
   avtVsFileFormat(const char* dfnm) : avtSTMDFileFormat(&dfnm, 1) {;};
 #endif
