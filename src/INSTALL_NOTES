@@ -9,9 +9,11 @@ by the Windows installation instructions.
 
 Unix and Mac OS X:
 
-1.  Run the visit-install script to install visit.  Note that it can
-    create a new distribution directory or update an existing distribution.
-    This is handled automatically.
+1.  Run the visit-install script to install visit.  If you have built your
+    own visit binary distribution, you can find the visit-install script
+    in the svn_bin directory.  The visit-install script can create a new
+    distribution directory or update an existing distribution.  This is
+    handled automatically.
 
         chmod 755 visit-install2_3_0
         ./visit-install2_3_0 "version" "platform" "directory"
