@@ -653,6 +653,56 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     for (size_t i=numTopologicalDims; i<vsdim; ++i)
       gdims[i] = 1;
 
+   
+//     // Get the axis with greatest number of nodes.
+//     int splitAxis = 0;
+    
+//     for (size_t i=0; i<numTopologicalDims; ++i)
+//     {
+//       if( gdims[splitAxis] < gdims[i] )
+//         splitAxis = i;
+//     }
+
+//     int PAR_Size = 2;
+
+//     // Integer number of nodes per processor
+//     size_t numNodesPerProc = gdims[splitAxis] / PAR_Size;
+//     size_t numProcsWithExtraNode = gdims[splitAxis] % PAR_Size;
+    
+//     cerr << "gdims[splitAxis] = " << gdims[splitAxis] << endl;
+//     cerr << "numNodesPerProc = " << gdims[splitAxis] / PAR_Size << endl;;
+//     cerr << "numProcsWithExtraNode = " << gdims[splitAxis] % PAR_Size << endl;
+    
+//     for( int PAR_Rank=0; PAR_Rank<PAR_Size; ++PAR_Rank )
+//     {
+//       cerr << "PAR_Rank = " << PAR_Rank << "  ";
+
+//       // To get all of the nodes adjust the count by one for those
+//       // processors that need an extra node.
+//       if (PAR_Rank < numProcsWithExtraNode)
+//       {
+//      cerr << "gdims[splitAxis] = " << numNodesPerProc + 2 << "  ";
+//      cerr << "mins[splitAxis] = " << PAR_Rank * (numNodesPerProc + 1) * strides[splitAxis] << "  ";
+//      cerr << "maxs[splitAxis] = " << PAR_Rank * (numNodesPerProc + 1) * strides[splitAxis] +
+
+//        (numNodesPerProc+1) * strides[splitAxis] << endl;
+//       }
+//       else
+//       {
+//      cerr << "gdims[splitAxis] = " << numNodesPerProc + 1 << "  ";
+//      // Processors w/extra node plus processors without extra node.
+//      cerr << "mins[splitAxis] = " << (numProcsWithExtraNode * (numNodesPerProc + 1) +
+//                         (PAR_Rank - numProcsWithExtraNode) * numNodesPerProc) *
+//        strides[splitAxis] << "  ";
+//      cerr << "maxs[splitAxis] = " << (numProcsWithExtraNode * (numNodesPerProc + 1) +
+//                         (PAR_Rank - numProcsWithExtraNode) * numNodesPerProc) *
+//        strides[splitAxis] +
+
+//        (numNodesPerProc) * strides[splitAxis] << endl;
+//       }
+//     }
+
+
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Parallel & Decompose_Domains are defined, "
@@ -675,18 +725,21 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     // processors that need an extra node.
     if (PAR_Rank() < numProcsWithExtraNode)
     {
-      gdims[splitAxis] = numNodesPerProc + 1;
+      gdims[splitAxis] = numNodesPerProc + 2;
       mins[splitAxis] = PAR_Rank() * (numNodesPerProc + 1) * strides[splitAxis];
-      maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc) * strides[splitAxis];
+      maxs[splitAxis] = mins[splitAxis] +
+        (numNodesPerProc+1) * strides[splitAxis];
     }
     else
     {
-      gdims[splitAxis] = numNodesPerProc;
+      gdims[splitAxis] = numNodesPerProc + 1;
+
       // Processors w/extra node plus processors without extra node.
       mins[splitAxis] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
                  (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
         strides[splitAxis];
-      maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc-1) * strides[splitAxis];
+      maxs[splitAxis] = mins[splitAxis] +
+        (numNodesPerProc) * strides[splitAxis];
     }
 
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -944,18 +997,20 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     // processors that need an extra node.
     if (PAR_Rank() < numProcsWithExtraNode)
     {
-      gdims[splitAxis] = numNodesPerProc + 1;
+      gdims[splitAxis] = numNodesPerProc + 2;
       mins[splitAxis] = PAR_Rank() * (numNodesPerProc + 1) * strides[splitAxis];
-      maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc) * strides[splitAxis];
+      maxs[splitAxis] = mins[splitAxis] +
+        (numNodesPerProc + 1) * strides[splitAxis];
     }
     else
     {
-      gdims[splitAxis] = numNodesPerProc;
+      gdims[splitAxis] = numNodesPerProc + 1;
       // Processors w/extra node plus processors without extra node.
       mins[splitAxis] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
                  (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
         strides[splitAxis];
-      maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc-1) * strides[splitAxis];
+      maxs[splitAxis] = mins[splitAxis] +
+        (numNodesPerProc) * strides[splitAxis];
     }
     
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -1312,12 +1367,12 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     // processors that need an extra node.
     if (PAR_Rank() < numProcsWithExtraNode)
     {
-      gdims[splitAxis] = numNodesPerProc + 1;
+      gdims[splitAxis] = numNodesPerProc + 2;
       mins[splitAxis] = PAR_Rank() * (numNodesPerProc + 1) * strides[splitAxis];
     }
     else
     {
-      gdims[splitAxis] = numNodesPerProc;
+      gdims[splitAxis] = numNodesPerProc + 1;
       // Processors w/extra node plus processors without extra node.
       mins[splitAxis] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
                  (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
@@ -2202,12 +2257,12 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     // processors that need an extra node.
     if (PAR_Rank() < numProcsWithExtraNode)
     {
-      gdims[0] = numNodesPerProc + 1;
+      gdims[0] = numNodesPerProc + 2;
       mins[0] = PAR_Rank() * (numNodesPerProc + 1) * strides[0];
     }
     else
     {
-      gdims[0] = numNodesPerProc;
+      gdims[0] = numNodesPerProc + 1;
       // Processors w/extra node plus processors without extra node.
       mins[0] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
                (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
@@ -2866,13 +2921,13 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       // processors that need an extra node.
       if (PAR_Rank() < numProcsWithExtraNode)
       {
-        vdims[splitAxis] = numNodesPerProc + 1;
+        vdims[splitAxis] = numNodesPerProc + 2;
         mins[splitAxis] =
           PAR_Rank() * (numNodesPerProc + 1) * strides[splitAxis];
       }
       else
       {
-        vdims[splitAxis] = numNodesPerProc;
+        vdims[splitAxis] = numNodesPerProc + 1;
         // Processors w/extra node plus processors without extra node.
         mins[splitAxis] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
                    (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
