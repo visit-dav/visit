@@ -4087,8 +4087,8 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
   // Integer number of cells per processor
   size_t numNodes = dims[splitAxis];
   size_t numCells = (maxs[splitAxis]-mins[splitAxis]) / strides[splitAxis] + 1;
-  size_t numCellsPerProc = numCells / (PAR_Size()+4);
-  size_t numProcsWithExtraCell = numCells % (PAR_Size()+4);
+  size_t numCellsPerProc = numCells / (PAR_Size());
+  size_t numProcsWithExtraCell = numCells % (PAR_Size());
 
   if( PAR_Rank() == 0 )
   {
@@ -4103,7 +4103,7 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
                       << "numProcsWithExtraCell = " << numProcsWithExtraCell
                       << endl;
     
-    for( int i=0; i<(PAR_Size()+4); ++i )
+    for( int i=0; i<(PAR_Size()); ++i )
     {
       int min, max;
 
