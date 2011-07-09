@@ -1,4 +1,4 @@
-#include <hdf5.h>
+ #include <hdf5.h>
 #include <visit-hdf5.h>
 #if HDF5_VERSION_GE(1,8,1)
 /**
@@ -54,11 +54,8 @@
 
 #include <avtVsFileFormat.h>
 
-#define PARALLEL 1
-#define VIZSCHEMA_DECOMPOSE_DOMAINS 1
-
-// int PAR_Size() { return 5; };
-// int PAR_Rank() { return 0; };
+//#define PARALLEL 1
+//#define VIZSCHEMA_DECOMPOSE_DOMAINS 1
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
 #include <avtParallel.h>
@@ -208,9 +205,10 @@ avtVsFileFormat::~avtVsFileFormat()
 bool
 avtVsFileFormat::CanCacheVariable(const char *var)
 {
-//  cerr << var << endl;
+//  VsLog::debugLog() << var << endl;
 
-    return haveReadWholeData;
+//    return haveReadWholeData;
+  return false;
 }
 
 
@@ -254,7 +252,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
 
     for (int i = 0; i < selList.size(); i++)
     {
-      ///         cerr << __LINE__ << endl;
+      ///         VsLog::debugLog() << __LINE__ << endl;
 
         if (string(selList[i]->GetType()) == "Logical Data Selection")
         {
@@ -267,7 +265,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
         }
         else if (string(selList[i]->GetType()) == "Spatial Box Data Selection")
         {
-//          cerr << __LINE__ << endl;
+//          VsLog::debugLog() << __LINE__ << endl;
 
             avtSpatialBoxSelection *sel =
               (avtSpatialBoxSelection *) *(selList[i]);
@@ -369,7 +367,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
     {
       VsLog::debugLog()
         << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-        << "Have a logical zonal selection for mesh "<< endl
+        << "Have a logical zonal selection for mesh  "
         << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
         << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
         << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
@@ -4029,7 +4027,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
     {
       VsLog::debugLog()
         << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-        << "Have a zonal inclusive selection for getting a variable ";
+        << "Have a zonal inclusive selection  ";
 
       for (size_t i=0; i<numTopologicalDims; ++i)
       {
@@ -4112,7 +4110,7 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
       if (i < numProcsWithExtraCell)
       {
         min = i * (numCellsPerProc + 1) * strides[splitAxis];
-        max = min + (numCellsPerProc) * strides[splitAxis];
+        max = min + (numCellsPerProc + 1) * strides[splitAxis] - 1;
       }
       else
       {
@@ -4121,7 +4119,7 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
                (i - numProcsWithExtraCell) * numCellsPerProc) *
           strides[splitAxis];
         
-        max = min + (numCellsPerProc-1) * strides[splitAxis];
+        max = min + (numCellsPerProc) * strides[splitAxis] - 1;
       }
       
       // Number of cells plus one if the cell topology is greater than one.
@@ -4142,7 +4140,7 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
   if (PAR_Rank() < numProcsWithExtraCell)
   {
     mins[splitAxis] = PAR_Rank() * (numCellsPerProc + 1) * strides[splitAxis];
-    maxs[splitAxis] = mins[splitAxis] + (numCellsPerProc) * strides[splitAxis];
+    maxs[splitAxis] = mins[splitAxis] + (numCellsPerProc +1) * strides[splitAxis] - 1;
   }
   else
   {
@@ -4151,7 +4149,7 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
                        (PAR_Rank() - numProcsWithExtraCell) * numCellsPerProc) *
       strides[splitAxis];
     
-    maxs[splitAxis] = mins[splitAxis] + (numCellsPerProc-1) * strides[splitAxis];
+    maxs[splitAxis] = mins[splitAxis] + (numCellsPerProc) * strides[splitAxis] - 1;
   }
 
   // Number of cells plus one if the cell topology is greater than
