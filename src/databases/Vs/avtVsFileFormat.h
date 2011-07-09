@@ -205,6 +205,15 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   void RegisterMdVars(avtDatabaseMetaData* md);
   void RegisterExpressions(avtDatabaseMetaData* md);
 
+  void GetSelectionBounds( int numTopologicalDims,
+                           vector<int> &numCells,
+                           vector<int> &gdims,
+                           int *mins,
+                           int *maxs,
+                           int *strides,
+                           bool haveDataSelections,
+                           bool adjustForNodes = true );
+
   void GetParallelDecomp( int numTopologicalDims,
                           vector<int> &dims,
                           int *mins,
