@@ -54,8 +54,11 @@
 
 #include <avtVsFileFormat.h>
 
-//#define PARALLEL 1
-//#define VIZSCHEMA_DECOMPOSE_DOMAINS 1
+#define PARALLEL 1
+#define VIZSCHEMA_DECOMPOSE_DOMAINS 1
+
+// int PAR_Size() { return 5; };
+// int PAR_Rank() { return 0; };
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
 #include <avtParallel.h>
@@ -4041,7 +4044,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
                       <<  "Grid dims ";
 
     for (size_t i=0; i<numTopologicalDims; ++i)
-      VsLog::debugLog() << gdims[0] << "  ";
+      VsLog::debugLog() << gdims[i] << "  ";
     
     VsLog::debugLog() << endl;
 }
@@ -4067,9 +4070,14 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
                                          bool adjustForNodes )
 {
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
+
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Parallel & Decompose_Domains are defined, "
+                    << "entering parallel code." << endl;
+  
   // Get the axis with greatest number of nodes.
   int splitAxis = 0;
-    
+
   for (size_t i=0; i<numTopologicalDims; ++i)
   {
     if( dims[splitAxis] < dims[i] )
@@ -4079,27 +4087,25 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
   // Integer number of cells per processor
   size_t numNodes = dims[splitAxis];
   size_t numCells = (maxs[splitAxis]-mins[splitAxis]) / strides[splitAxis] + 1;
-  size_t numCellsPerProc = numCells / PAR_Size();
-  size_t numProcsWithExtraCell = numCells % PAR_Size();
+  size_t numCellsPerProc = numCells / (PAR_Size()+4);
+  size_t numProcsWithExtraCell = numCells % (PAR_Size()+4);
 
   if( PAR_Rank() == 0 )
   {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "splitAxis = " << splitAxis << endl
-                      << "min = " << mins[splitAxis] << endl
-                      << "max = " << maxs[splitAxis] << endl
-                      << "numCells = " << numCells << endl
-                      << "numNodes = " << numNodes << endl
-
-                      << "numCellsPerProc = " << numCellsPerProc << endl
+                      << "splitAxis = " << splitAxis << "  "
+                      << "min = " << mins[splitAxis] << "  "
+                      << "max = " << maxs[splitAxis] << "  "
+                      << "strides = " << strides[splitAxis] << "  "
+                      << "numCells = " << numCells << "  "
+                      << "numNodes = " << numNodes << "  "
+                      << "numCellsPerProc = " << numCellsPerProc << "  "
                       << "numProcsWithExtraCell = " << numProcsWithExtraCell
                       << endl;
     
-    for( int i=0; i<PAR_Size(); ++i )
+    for( int i=0; i<(PAR_Size()+4); ++i )
     {
       int min, max;
-
-      VsLog::debugLog() << "i = " << i << "  ";
 
       // To get all of the cells adjust the count by one for those
       // processors that need an extra cell.
@@ -4123,16 +4129,14 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
       numNodes = numCells + (adjustForNodes ? 1 : 0);
       
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Predicted bounds for processor " << i << "  "
                         << "min = " << min << "  max = " << max << "  "
+                        << "strides = " << strides[splitAxis] << "  "
                         << "cells = " << numCells << "  "
                         << "nodes = " << numNodes << endl;
     }
   }
 
-  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Parallel & Decompose_Domains are defined, "
-                    << "entering parallel code." << endl;
-  
   // To get all of the cells adjust the count by one for those
   // processors that need an extra cell.
   if (PAR_Rank() < numProcsWithExtraCell)
@@ -4158,6 +4162,14 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
   
   dims[splitAxis] = numNodes;
   
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Actual bounds for processor " << PAR_Rank() << "  "
+                    << "min = " << mins[splitAxis] << "  "
+                    << "max = " << maxs[splitAxis] << "  "
+                    << "strides = " << strides[splitAxis] << "  "
+                    << "cells = " << numCells << "  "
+                    << "nodes = " << numNodes << endl;
+
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Parallel & Decompose_Domains are defined, "
                     << "exiting parallel code." << endl;
