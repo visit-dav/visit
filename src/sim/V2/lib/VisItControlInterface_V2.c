@@ -245,39 +245,42 @@ ReadKey(const char *ver, const char *key, char **keyval)
 static void
 GetVisItDirectory(char *visitdir, int maxlen)
 {
-    char *visitpath = 0;
-    char visitversion[10];
-    int major, minor, patch;
-    int haveVISITHOME = 0;
-
-    /* Iterate through a few probable versions and keep the most up to date one */
-    for(major = 2; major <= 4; ++major)
-        for(minor = (major==2?2:0); minor <= 12; ++minor)
-            for(patch = 0; patch < 5; ++patch)
-            {
-                char curversion[10], *path = NULL;
-                SNPRINTF(curversion, 10, "%d.%d.%d", major, minor, patch);
-                if(ReadKey(curversion, "VISITHOME", &path))
-                {
-                    strcpy(visitversion, curversion);
-                    if(visitpath != NULL)
-                        free(visitpath);
-                    visitpath = path;
-                    haveVISITHOME = 1;
-                }
-            }
-    if(haveVISITHOME)
-    {
-        SNPRINTF(visitdir, maxlen, "%s", visitpath);
-        free(visitpath);
-    }
-    else if(visit_directory != NULL)
+    if(visit_directory != NULL)
     {
         SNPRINTF(visitdir, maxlen, "%s", visit_directory);
     }
     else
     {
-        visitdir[0] = '\0';
+        char *visitpath = 0;
+        char visitversion[10];
+        int major, minor, patch;
+        int haveVISITHOME = 0;
+
+        /* Iterate through a few probable versions and keep the most up to date one */
+        for(major = 2; major <= 4; ++major)
+            for(minor = (major==2?2:0); minor <= 12; ++minor)
+                for(patch = 0; patch < 5; ++patch)
+                {
+                    char curversion[10], *path = NULL;
+                    SNPRINTF(curversion, 10, "%d.%d.%d", major, minor, patch);
+                    if(ReadKey(curversion, "VISITHOME", &path))
+                    {
+                        strcpy(visitversion, curversion);
+                        if(visitpath != NULL)
+                            free(visitpath);
+                        visitpath = path;
+                        haveVISITHOME = 1;
+                    }
+                }
+        if(haveVISITHOME)
+        {
+            SNPRINTF(visitdir, maxlen, "%s", visitpath);
+            free(visitpath);
+        }
+        else
+        {
+            visitdir[0] = '\0';
+        }
     }
 }
 #else
