@@ -94,7 +94,7 @@ using namespace std;
 //  Modifications:
 //
 avtVsFileFormat::avtVsFileFormat(const char* dfnm) :
-  avtSTMDFileFormat(&dfnm, 1), dataFileName(dfnm), haveReadWholeData(false)
+  avtSTMDFileFormat(&dfnm, 1), dataFileName(dfnm), haveReadWholeData(true)
 {
     VsLog::initialize(DebugStream::Stream3(),
                       DebugStream::Stream4(),
@@ -205,10 +205,9 @@ avtVsFileFormat::~avtVsFileFormat()
 bool
 avtVsFileFormat::CanCacheVariable(const char *var)
 {
-//  VsLog::debugLog() << var << endl;
+  //  cerr << this << "  " << var << endl;
 
-//    return haveReadWholeData;
-  return false;
+    return haveReadWholeData;
 }
 
 
@@ -252,7 +251,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
 
     for (int i = 0; i < selList.size(); i++)
     {
-      ///         VsLog::debugLog() << __LINE__ << endl;
+//      VsLog::debugLog() << __LINE__ << endl;
 
         if (string(selList[i]->GetType()) == "Logical Data Selection")
         {
