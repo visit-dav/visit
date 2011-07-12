@@ -79,8 +79,6 @@
 
 #include <visit-config.h>
 
-using     std::string;
-
 static int CellTypeToNodeCount[17] =
      {0, 0, 0, 3, 4, 4, 5, 6, 8, 3, 6, 8, 10, 13, 15, 20, 0};
 
@@ -216,7 +214,7 @@ avtVisItXdmfFileFormat::OpenFile(const char *n)
     else
     {
         int lastSlash = fname.find_last_of(VISIT_SLASH_STRING);
-        if (lastSlash == string::npos)
+        if (lastSlash == std::string::npos)
         {
             strcpy(name, n);
         }
@@ -967,10 +965,10 @@ avtVisItXdmfFileFormat::AddVarInfo(bool topGrid, int iBlock, VarInfo *varInfo)
 DataItem *
 avtVisItXdmfFileFormat::ParseDataItem()
 {
-    string    dimensions;
-    string    numberType;
-    string    precision;
-    string    format;
+    std::string    dimensions;
+    std::string    numberType;
+    std::string    precision;
+    std::string    format;
     char     *cdata=NULL;
     int       cdataOffset=0;
     int       cdataLength=0;
@@ -982,20 +980,20 @@ avtVisItXdmfFileFormat::ParseDataItem()
     {
         if (strcmp(xdmfParser.GetAttributeName(), "DIMENSIONS") == 0)
         {
-            dimensions = string(xdmfParser.GetAttributeValueAsUpper());
+            dimensions = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
         else if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
                  strcmp(xdmfParser.GetAttributeName(), "NUMBERTYPE") == 0)
         {
-            numberType = string(xdmfParser.GetAttributeValueAsUpper());
+            numberType = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
         else if (strcmp(xdmfParser.GetAttributeName(), "PRECISION") == 0)
         {
-            precision = string(xdmfParser.GetAttributeValueAsUpper());
+            precision = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
         else if (strcmp(xdmfParser.GetAttributeName(), "FORMAT") == 0)
         {
-            format = string(xdmfParser.GetAttributeValueAsUpper());
+            format = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
     }
 
@@ -1148,9 +1146,9 @@ avtVisItXdmfFileFormat::ParseDataItem()
 // ****************************************************************************
 
 void
-avtVisItXdmfFileFormat::ParseTopology(string &topologyType,
-    string &numberOfElements, string &nodesPerElement, string &baseOffset,
-    string &order, DataItem **topologyData)
+avtVisItXdmfFileFormat::ParseTopology(std::string &topologyType,
+    std::string &numberOfElements, std::string &nodesPerElement, std::string &baseOffset,
+    std::string &order, DataItem **topologyData)
 {
     //
     // Process the attributes in the start tag.
@@ -1160,24 +1158,24 @@ avtVisItXdmfFileFormat::ParseTopology(string &topologyType,
         if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
             strcmp(xdmfParser.GetAttributeName(), "TOPOLOGYTYPE") == 0)
         {
-            topologyType = string(xdmfParser.GetAttributeValueAsUpper());
+            topologyType = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
         else if (strcmp(xdmfParser.GetAttributeName(), "NUMBEROFELEMENTS") == 0 ||
                  strcmp(xdmfParser.GetAttributeName(), "DIMENSIONS") == 0)
         {
-            numberOfElements = string(xdmfParser.GetAttributeValueAsUpper());
+            numberOfElements = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
         else if (strcmp(xdmfParser.GetAttributeName(), "NODESPERELEMENT") == 0)
         {
-            nodesPerElement = string(xdmfParser.GetAttributeValueAsUpper());
+            nodesPerElement = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
         else if (strcmp(xdmfParser.GetAttributeName(), "BASEOFFSET") == 0)
         {
-            baseOffset = string(xdmfParser.GetAttributeValueAsUpper());
+            baseOffset = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
         else if (strcmp(xdmfParser.GetAttributeName(), "ORDER") == 0)
         {
-            order = string(xdmfParser.GetAttributeValueAsUpper());
+            order = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
     }
 
@@ -1237,7 +1235,7 @@ avtVisItXdmfFileFormat::ParseTopology(string &topologyType,
 // ****************************************************************************
 
 void
-avtVisItXdmfFileFormat::ParseGeometry(string &geometryType, int &nDataItem,
+avtVisItXdmfFileFormat::ParseGeometry(std::string &geometryType, int &nDataItem,
     DataItem **geometryData)
 {
     //
@@ -1248,7 +1246,7 @@ avtVisItXdmfFileFormat::ParseGeometry(string &geometryType, int &nDataItem,
         if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
             strcmp(xdmfParser.GetAttributeName(), "GEOMETRYTYPE") == 0)
         {
-            geometryType = string(xdmfParser.GetAttributeValueAsUpper());
+            geometryType = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
     }
 
@@ -1305,11 +1303,11 @@ avtVisItXdmfFileFormat::ParseGeometry(string &geometryType, int &nDataItem,
 
 VarInfo *
 avtVisItXdmfFileFormat::ParseAttribute(int iDomain, int iGrid,
-    const string &gridName)
+    const std::string &gridName)
 {
-    string    attributeName;
-    string    attributeType;
-    string    center;
+    std::string    attributeName;
+    std::string    attributeType;
+    std::string    center;
     DataItem *varData=NULL;
     
     //
@@ -1319,16 +1317,16 @@ avtVisItXdmfFileFormat::ParseAttribute(int iDomain, int iGrid,
     {
         if (strcmp(xdmfParser.GetAttributeName(), "NAME") == 0)
         {
-            attributeName = string(xdmfParser.GetAttributeValue());
+            attributeName = std::string(xdmfParser.GetAttributeValue());
         }
         else if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
                  strcmp(xdmfParser.GetAttributeName(), "ATTRIBUTETYPE") == 0)
         {
-            attributeType = string(xdmfParser.GetAttributeValueAsUpper());
+            attributeType = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
         else if (strcmp(xdmfParser.GetAttributeName(), "CENTER") == 0)
         {
-            center = string(xdmfParser.GetAttributeValueAsUpper());
+            center = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
     }
 
@@ -1474,8 +1472,8 @@ avtVisItXdmfFileFormat::ParseAttribute(int iDomain, int iGrid,
 // ****************************************************************************
 
 void
-avtVisItXdmfFileFormat::ParseGridInformation(string &baseIndex,
-    string &ghostOffsets)
+avtVisItXdmfFileFormat::ParseGridInformation(std::string &baseIndex,
+    std::string &ghostOffsets)
 {
     bool haveBaseIndex = false;
     bool haveGhostOffsets = false;
@@ -1495,9 +1493,9 @@ avtVisItXdmfFileFormat::ParseGridInformation(string &baseIndex,
         else if (strcmp(xdmfParser.GetAttributeName(), "VALUE") == 0)
         {
             if (haveBaseIndex)
-                baseIndex = string(xdmfParser.GetAttributeValueAsUpper());
+                baseIndex = std::string(xdmfParser.GetAttributeValueAsUpper());
             else if (haveGhostOffsets)
-                ghostOffsets = string(xdmfParser.GetAttributeValueAsUpper());
+                ghostOffsets = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
     }
 
@@ -1531,13 +1529,13 @@ avtVisItXdmfFileFormat::ParseGridInformation(string &baseIndex,
 // ****************************************************************************
 
 void
-avtVisItXdmfFileFormat::ParseTime(string &time)
+avtVisItXdmfFileFormat::ParseTime(std::string &time)
 {
     while (xdmfParser.GetNextAttribute())
     {
         if (strcmp(xdmfParser.GetAttributeName(), "VALUE") == 0)
         {
-            time = string(xdmfParser.GetAttributeValueAsUpper());
+            time = std::string(xdmfParser.GetAttributeValueAsUpper());
         }
     }
 
@@ -1599,24 +1597,24 @@ avtVisItXdmfFileFormat::ParseTime(string &time)
 // ****************************************************************************
 
 void
-avtVisItXdmfFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
+avtVisItXdmfFileFormat::ParseUniformGrid(std::vector<MeshInfo*> &meshList,
     int iDomain, int iGrid, bool topGrid,
-    const string &gridName)
+    const std::string &gridName)
 {
-    string    topologyType;
-    string    numberOfElements;
-    string    nodesPerElement;
-    string    baseOffset;
-    string    order;
+    std::string    topologyType;
+    std::string    numberOfElements;
+    std::string    nodesPerElement;
+    std::string    baseOffset;
+    std::string    order;
     DataItem *topologyData = NULL;
-    string    geometryType;
+    std::string    geometryType;
     int       nMeshData;
     DataItem *meshData[3];
     VarInfo  *varInfo = NULL;
-    vector<VarInfo*> varList;
-    string    baseIndex;
-    string    ghostOffsets;
-    string    time;
+    std::vector<VarInfo*> varList;
+    std::string    baseIndex;
+    std::string    ghostOffsets;
+    std::string    time;
 
     //
     // Process the elements of the grid.
@@ -1953,10 +1951,10 @@ avtVisItXdmfFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
 // ****************************************************************************
 
 void
-avtVisItXdmfFileFormat::ParseGrid(vector<MeshInfo*> &meshList,
-    int iDomain, int iGrid, string &gridName, bool topGrid)
+avtVisItXdmfFileFormat::ParseGrid(std::vector<MeshInfo*> &meshList,
+    int iDomain, int iGrid, std::string &gridName, bool topGrid)
 {
-    string    gridType;
+    std::string    gridType;
 
     //
     // If this is the top grid then we want both the name and grid type
@@ -1974,12 +1972,12 @@ avtVisItXdmfFileFormat::ParseGrid(vector<MeshInfo*> &meshList,
         {
             if (strcmp(xdmfParser.GetAttributeName(), "NAME") == 0)
             {
-                gridName = string(xdmfParser.GetAttributeValue());
+                gridName = std::string(xdmfParser.GetAttributeValue());
             }
             else if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
                      strcmp(xdmfParser.GetAttributeName(), "GRIDTYPE") == 0)
             {
-                gridType = string(xdmfParser.GetAttributeValueAsUpper());
+                gridType = std::string(xdmfParser.GetAttributeValueAsUpper());
             }
         }
 
@@ -2017,7 +2015,7 @@ avtVisItXdmfFileFormat::ParseGrid(vector<MeshInfo*> &meshList,
             if (strcmp(xdmfParser.GetAttributeName(), "TYPE") == 0 ||
                 strcmp(xdmfParser.GetAttributeName(), "GRIDTYPE") == 0)
             {
-                gridType = string(xdmfParser.GetAttributeValueAsUpper());
+                gridType = std::string(xdmfParser.GetAttributeValueAsUpper());
             }
         }
     }
@@ -2131,7 +2129,7 @@ avtVisItXdmfFileFormat::ParseGrid(vector<MeshInfo*> &meshList,
 void
 avtVisItXdmfFileFormat::ParseDomain(int iDomain)
 {
-    string    domainName;
+    std::string    domainName;
 
     //
     // Process the attributes in the start tag.
@@ -2140,7 +2138,7 @@ avtVisItXdmfFileFormat::ParseDomain(int iDomain)
     {
         if (strcmp(xdmfParser.GetAttributeName(), "NAME") == 0)
         {
-            domainName = string(xdmfParser.GetAttributeValue());
+            domainName = std::string(xdmfParser.GetAttributeValue());
         }
     }
 
@@ -2170,7 +2168,7 @@ avtVisItXdmfFileFormat::ParseDomain(int iDomain)
         {
             if (strcmp(xdmfParser.GetElementName(), "GRID") == 0)
             {
-                string gridName;
+                std::string gridName;
 
                 ParseGrid(fileMeshList, iDomain, iGrid, gridName, true);
 
