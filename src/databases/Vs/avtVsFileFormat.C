@@ -2845,7 +2845,8 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
     LoadData();
 
     //get list of expressions from reader
-    map<std::string, std::string>* expressions = registry->getAllExpressions();
+    std::map<std::string, std::string>* expressions =
+      registry->getAllExpressions();
     
     if (expressions->empty()) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -2859,7 +2860,7 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
     }
 
     //iterate over list of expressions, insert each one into database
-    map<std::string, std::string>::const_iterator iv;
+    std::map<std::string, std::string>::const_iterator iv;
     for (iv = expressions->begin(); iv != expressions->end(); ++iv) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Adding expression " << iv->first << " = "
