@@ -59,6 +59,10 @@
 
 #include <snprintf.h>
 
+#include <string>
+#include <vector>
+
+
 // ****************************************************************************
 //  Method: avtMultiCurveFilter constructor
 //
@@ -264,7 +268,7 @@ avtMultiCurveFilter::Execute(void)
     //
     // Get the domain ids.
     //
-    vector<int> domains;
+    std::vector<int> domains;
     tree->GetAllDomainIds(domains);
 
     //
@@ -360,7 +364,7 @@ avtMultiCurveFilter::Execute(void)
     // Create the data sets and labels for each of the curves.
     //
     vtkDataSet **out_ds = new vtkDataSet*[ny];
-    vector<string> labels;
+    std::vector<std::string> labels;
 
     //
     // Calculate the scale. If the user has specified the Y axis range use

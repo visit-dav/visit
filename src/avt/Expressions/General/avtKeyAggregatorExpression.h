@@ -45,6 +45,9 @@
 
 #include <avtExpressionFilter.h>
 
+#include <string>
+#include <vector>
+
 class vtkDataArray;
 class vtkFloatArray;
 
@@ -89,15 +92,15 @@ class EXPRESSION_API avtKeyAggregatorExpression : public avtExpressionFilter
     virtual void              Execute(void);
 
   private:
-    int                       FindMaxKey(vector<vtkDataArray*> &key_arrays);
+    int                       FindMaxKey(std::vector<vtkDataArray*> &key_arrays);
 
-    void                      Aggregate(vector<vtkDataArray*>   &key_arrays,
-                                        vector<vtkDataArray*> &val_arrays,
+    void                      Aggregate(std::vector<vtkDataArray*>   &key_arrays,
+                                        std::vector<vtkDataArray*> &val_arrays,
                                         int num_keys, int num_val_comps,
-                                        vector<float> &key_results);
+                                        std::vector<float> &key_results);
 
     vtkFloatArray            *CreateResultArray(vtkDataArray *keys,
-                                                vector<float> &key_results,
+                                                std::vector<float> &key_results,
                                                 int num_val_comps);
 
     std::vector<std::string>  inputVarNames;

@@ -35,10 +35,6 @@
 #include <arch.h>
 // pour gcc 2.96:
 #include <stdio.h>
-using std::istream;
-using std::ostream;
-using std::cerr;
-using std::endl;
 
 class Motcle;
 
@@ -60,8 +56,8 @@ public:
   operator const char *() const { return s_.c_str(); }
   virtual Nom & operator=(const char * nom) { s_ = nom; return *this; }
   virtual entier longueur() const { return s_.length()+1; /*ATTENTION: +1 pour compatibilite avec Trio_U*/ }
-  virtual void read(istream & is) { is >> s_; }
-  virtual void write(ostream & os) const { os << s_; }
+  virtual void read(std::istream & is) { is >> s_; }
+  virtual void write(std::ostream & os) const { os << s_; }
   virtual int operator==(const char * s) const { return (s_ == s); }
   virtual int operator!=(const char * s) const { return !operator==(s); }
   virtual Nom & operator+=(const char * n) { s_ += n; return *this; }
@@ -95,7 +91,7 @@ public:
 typedef LataVector<Motcle> Motcles;
 typedef LataVector<Nom> Noms;
 
-istream & operator>>(istream & is, Nom & nom);
-ostream & operator<<(ostream & os, const Nom & nom);
+std::istream & operator>>(std::istream & is, Nom & nom);
+std::ostream & operator<<(std::ostream & os, const Nom & nom);
 
 #endif

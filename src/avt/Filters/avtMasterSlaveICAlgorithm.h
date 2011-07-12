@@ -45,6 +45,8 @@
 
 #include "avtParICAlgorithm.h"
 
+#include <vector>
+
 #ifdef PARALLEL
 
 class SlaveInfo;
@@ -310,16 +312,16 @@ class SlaveInfo
     void AddIC(int icDomain, int domCache);
     void LoadDom( int icDomain );
     void RemoveIC( int dom );
-    void Update( vector<int> &status, bool debug=false );
+    void Update( std::vector<int> &status, bool debug=false );
     void Reset() { justUpdated = false; }
     void Debug();
 
     bool justUpdated, initialized;
     int canGive, canAccept, icCount, icLoadedCount, icOOBCount, rank;
     int domLoadedCount;
-    vector<int> domainCnt;
-    vector<bool> domainLoaded;
-    vector<int> domainHistory;
+    std::vector<int> domainCnt;
+    std::vector<bool> domainLoaded;
+    std::vector<int> domainHistory;
 };
 
 #endif

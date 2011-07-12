@@ -121,6 +121,9 @@
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
 #include <StackTimer.h>
+
+#include <vtkImageData.h>
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -128,15 +131,11 @@
 #include <TimingsManager.h>
 #include <SaveWindowAttributes.h>
 
-#include <set>
-#include <map>
 #include <algorithm>
-
 #include <climits>
-
-#include <vtkImageData.h>
-
-using std::set;
+#include <map>
+#include <string>
+#include <vector>
 
 //
 // Static functions.
@@ -571,7 +570,7 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 // ****************************************************************************
 
 NetnodeDB *
-NetworkManager::GetDBFromCache(const string &filename, int time,
+NetworkManager::GetDBFromCache(const std::string &filename, int time,
     const char *format, bool treatAllDBsAsTimeVarying, 
     bool fileMayHaveUnloadedPlugin, bool ignoreExtents)
 {
@@ -856,9 +855,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 // ****************************************************************************
 
 void
-NetworkManager::StartNetwork(const string &format,
-                             const string &filename,
-                             const string &var,
+NetworkManager::StartNetwork(const std::string &format,
+                             const std::string &filename,
+                             const std::string &var,
                              int time,
                              const CompactSILRestrictionAttributes &atts,
                              const MaterialAttributes &matopts,
@@ -868,7 +867,7 @@ NetworkManager::StartNetwork(const string &format,
 {
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
-    string leaf = ParsingExprList::GetRealVariable(var);
+    std::string leaf = ParsingExprList::GetRealVariable(var);
 
     // Make empty strings behave as though no format was specified.
     const char *defaultFormat = 0;
@@ -988,8 +987,8 @@ NetworkManager::StartNetwork(const string &format,
 // ****************************************************************************
 
 void
-NetworkManager::DefineDB(const string &dbName, const string &dbPath,
-    const stringVector &files, int time, const string &format)
+NetworkManager::DefineDB(const std::string &dbName, const std::string &dbPath,
+    const stringVector &files, int time, const std::string &format)
 {
     //
     // We gotta have a load balancer
@@ -1171,7 +1170,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
 //
 // ****************************************************************************
 void
-NetworkManager::AddFilter(const string &filtertype,
+NetworkManager::AddFilter(const std::string &filtertype,
                           const AttributeGroup *atts,
                           const unsigned int nInputs)
 {
@@ -1249,8 +1248,8 @@ NetworkManager::AddFilter(const string &filtertype,
 // ****************************************************************************
 
 void
-NetworkManager::MakePlot(const string &plotName, const string &pluginID, 
-    const AttributeGroup *atts, const vector<double> &dataExtents)
+NetworkManager::MakePlot(const std::string &plotName, const std::string &pluginID, 
+    const AttributeGroup *atts, const std::vector<double> &dataExtents)
 {
     if (workingNet == NULL)
     {
@@ -2058,8 +2057,8 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
     {
         workingNet = NULL;
         UseNetwork(plotIds[i]);
-        if (string(workingNet->GetPlot()->GetName()) != "MeshPlot" &&
-            string(workingNet->GetPlot()->GetName()) != "LabelPlot")
+        if (std::string(workingNet->GetPlot()->GetName()) != "MeshPlot" &&
+            std::string(workingNet->GetPlot()->GetName()) != "LabelPlot")
         {
             hasNonMeshPlots = true;
             break;
@@ -4251,7 +4250,7 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
 
     wrtr->SetContractToUse(networkCache[id]->GetContract());
     
-    string qualFilename;
+    std::string qualFilename;
     if (atts->GetDirname() == "")
         qualFilename = atts->GetFilename();
     else
@@ -4357,7 +4356,7 @@ NetworkManager::CloneNetwork(const int id)
     //
     if (workingNet != NULL)
     {
-        string error = "Unable to clone an open network.";
+        std::string error = "Unable to clone an open network.";
         debug1 << error.c_str() << endl;
         EXCEPTION1(ImproperUseException,error);
     }
@@ -4372,7 +4371,7 @@ NetworkManager::CloneNetwork(const int id)
 
     if (networkCache[id] == NULL)
     {
-        string error = "Asked to clone a network that has already been cleared.";
+        std::string error = "Asked to clone a network that has already been cleared.";
         debug1 << error.c_str() << endl;
         EXCEPTION1(ImproperUseException, error);
     }
@@ -4439,7 +4438,7 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 {
     if (workingNet == NULL)
     {
-        string error =  "Adding a filter to a non-existent network." ;
+        std::string error =  "Adding a filter to a non-existent network." ;
         EXCEPTION1(ImproperUseException, error);
     }
 
@@ -4712,7 +4711,7 @@ const
 
     this->FormatDebugImage(tmpName, 256, fmt);
 
-    string dump_image = avtDebugDumpOptions::GetDumpDirectory() + tmpName +
+    std::string dump_image = avtDebugDumpOptions::GetDumpDirectory() + tmpName +
                         ".png";
 
     fileWriter->SetFormat(SaveWindowAttributes::PNG);
@@ -5479,7 +5478,7 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
         }
 
         if(hasNonMeshPlots &&
-           string(workingNetSaved->GetPlot()->GetName()) == "MeshPlot")
+           std::string(workingNetSaved->GetPlot()->GetName()) == "MeshPlot")
         {
            const AttributeSubject *meshAtts = workingNetSaved->
                  GetPlot()->SetOpaqueMeshIsAppropriate(false);
@@ -5767,7 +5766,7 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
     if (this->r_mgmt.needToSetUpWindowContents)
     {
         // determine any networks with no data
-        vector<int> networksWithNoData;
+        std::vector<int> networksWithNoData;
 
         for (size_t i = 0; i < plotIds.size(); i++)
         {
@@ -5777,7 +5776,7 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
         // issue warning messages for plots with no data
         if (networksWithNoData.size() > 0)
         {
-            string msg = "The plot(s) with id(s) = ";
+            std::string msg = "The plot(s) with id(s) = ";
             for (size_t i = 0; i < networksWithNoData.size(); i++)
             {
                 char tmpStr[32];
@@ -5877,7 +5876,7 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
             avtCallback::IssueWarning(msg);
             issuedWarning = false;
         }
-        vector<avtPlot_p> imageBasedPlots_tmp;
+        std::vector<avtPlot_p> imageBasedPlots_tmp;
         imageBasedPlots_tmp.push_back(imageBasedPlots[0]);
         imageBasedPlots = imageBasedPlots_tmp;
     }

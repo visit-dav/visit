@@ -42,8 +42,6 @@
     
 #include <avtAMRFileFormat.h>
 
-#include <string>
-
 #include <vtkCellType.h>
 
 #include <vtkFloatArray.h>
@@ -60,6 +58,7 @@
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
 
+#include <string>
 
 using     std::string;
 

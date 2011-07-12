@@ -55,6 +55,8 @@
 #include <IncompatibleDomainListsException.h>
 #include <DebugStream.h>
 
+#include <vector>
+
 
 // ****************************************************************************
 //  Method: avtDatasetOnDemandFilter constructor
@@ -184,7 +186,7 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
 
     debug5<<"     Update->GetDomain "<<domainId<<" time= "<<timeStep<<endl;
     avtContract_p new_contract = new avtContract(firstContract);
-    vector<int> domains;
+    std::vector<int> domains;
     domains.push_back(domainId);
     new_contract->GetDataRequest()->GetRestriction()->TurnOnAll();
     new_contract->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
@@ -428,7 +430,7 @@ avtDatasetOnDemandFilter::GetLoadedDomains(std::vector<std::vector<int> > &domai
     std::list<DomainCacheEntry>::const_iterator it;
     for ( it = domainQueue.begin(); it != domainQueue.end(); it++ )
     {
-        vector<int> dom(2);
+        std::vector<int> dom(2);
         dom[0] = it->domainID;
         dom[1] = it->timeStep;
         domains.push_back(dom);
@@ -478,7 +480,7 @@ avtDatasetOnDemandFilter::ModifyContract(avtContract_p in_contract)
     {
         // Turn off the processing of all data
         // ... send in an empty domains list
-        vector<int> domains;
+        std::vector<int> domains;
         out_contract->GetDataRequest()->GetRestriction()
                                                    ->RestrictDomains(domains);
     }

@@ -48,8 +48,6 @@
 #ifndef AVT_Velodyne_FILE_FORMAT_H
 #define AVT_Velodyne_FILE_FORMAT_H
 
-#include <map>
-using std::map;
 #include <vector>
 #include <string>
 #include <vtkPoints.h>

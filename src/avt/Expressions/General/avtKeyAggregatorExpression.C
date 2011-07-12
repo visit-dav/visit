@@ -68,10 +68,15 @@
 #include <TimingsManager.h>
 #include <Utility.h>
 
-
 #ifdef PARALLEL
   #include <mpi.h>
 #endif
+
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
 
 // ****************************************************************************
 //  Method: avtKeyAggregatorExpression constructor

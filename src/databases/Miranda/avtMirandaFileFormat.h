@@ -48,8 +48,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
 class DBOptionsAttributes;
 
 
@@ -109,22 +107,22 @@ class avtMirandaFileFormat : public avtMTMDFileFormat
     int                    iBlockSize[3];
     int                    iNumBlocks[3];
     
-    vector<string>         aVarNames;
-    vector<int>            aVarNumComps;
-    vector<vector<float> > aVarMinMax;    // Current Miranda dumps write min/max
+    std::vector<std::string> aVarNames;
+    std::vector<int>         aVarNumComps;
+    std::vector<std::vector<float> > aVarMinMax;    // Current Miranda dumps write min/max
                                           // of last timestep, so for now this 
                                           // is almost unused.
 
-    vector<string>         aMatNames;     // Material names. Size is 0 if there
+    std::vector<std::string> aMatNames;     // Material names. Size is 0 if there
                                           // is no material set. If present, the
                                           // material set comes after all vars.
-    vector<int>            aCycles;
-    vector<double>         aSimTimes;
+    std::vector<int>       aCycles;
+    std::vector<double>    aSimTimes;
     
-    string                 fileTemplate;
-    string                 gridTemplate;
+    std::string            fileTemplate;
+    std::string            gridTemplate;
 
-    vector<int>            domainMap;     // has 3-int tuple for each block--
+    std::vector<int>       domainMap;     // has 3-int tuple for each block--
                                           // domain index to i,j,k block.
 
     int                    iFileOrder[3]; // 2,1,0; or 0,1,2; or another permutation

@@ -47,6 +47,9 @@
 #include <avtDataTreeIterator.h>
 #include <WellBoreAttributes.h>
 
+#include <string>
+#include <vector>
+
 class vtkCellArray;
 class vtkFloatArray;
 class vtkPoints;
@@ -94,7 +97,7 @@ class avtWellBoreFilter : public avtSIMODataTreeIterator
     bool                      GetPoint(int [3], const std::vector<int> &,
                                   int &);
     vtkPolyData              *CreateWell(const std::vector<int> &, int &,
-                                  const string &, float *, float *, float *,
+                                  const std::string &, float *, float *, float *,
                                   float *, int [3], int [3]);
     void                      AddWellSegment(vtkPoints *, vtkFloatArray *,
                                   vtkCellArray *, vtkCellArray *, int &,

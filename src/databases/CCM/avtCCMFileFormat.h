@@ -47,9 +47,8 @@
 #include <ccmio.h>
 #include <vectortypes.h>
 #include <map>
-
-using std::string;
-using std::vector;
+#include <string>
+#include <vector>
 
 class vtkCellArray;
 class vtkIdList;
@@ -106,7 +105,7 @@ public:
     virtual vtkDataArray  *GetVectorVar(int, const char *);
     virtual bool           CanCacheVariable(const char *);
     virtual void           RegisterVariableList(const char *,
-                                                const vector<CharStrRef> &);
+                                                const std::vector<CharStrRef> &);
 
 
 protected:
@@ -193,7 +192,7 @@ protected:
                                     vtkPoints *points, vtkUnstructuredGrid *ugrid);
     void              TesselateCells2D(const int, const CellInfoVector &civ, 
                                        vtkPoints *points, vtkUnstructuredGrid *ugrid);
-    void              GetCellMapData(const int, const string &, intVector &);
+    void              GetCellMapData(const int, const std::string &, intVector &);
 
 
     void              ReadCellInfo(int dom, const char *meshname,
@@ -212,7 +211,7 @@ protected:
     CCMIOError        ccmErr;
     VarFieldMap       varsToFields;
     stringVector      varsOnSubmesh;
-    string            activeVisItVar;
+    std::string       activeVisItVar;
 
     DataArrayVector   originalCells; 
 

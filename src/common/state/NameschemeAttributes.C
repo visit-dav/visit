@@ -42,6 +42,14 @@
 // This is a hack to work around fact that we cannot define variables
 // of arbitrary type, like a map, in the state object itself. So, we
 // do it using a map with key being the object's this pointer.
+#include <map>
+#include <string>
+#include <vector>
+
+using std::map;
+using std::string;
+using std::vector;
+
 static map<const void*, Namescheme*> nameschemesMap;
 static map<const void*, bool> getNameCalledMap;
 

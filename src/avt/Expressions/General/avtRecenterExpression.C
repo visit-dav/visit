@@ -54,6 +54,8 @@
 #include <DebugStream.h>
 #include <ExpressionException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtRecenterExpression constructor
@@ -148,12 +150,12 @@ avtRecenterExpression::ProcessArguments(ArgsExpr *args,
     {
         ArgExpr *secondArg = (*arguments)[1];
         ExprParseTreeNode *secondTree = secondArg->GetExpr();
-        string secondType = secondTree->GetTypeName();
+        std::string secondType = secondTree->GetTypeName();
 
         // Check for argument passed as string
         if (secondType == "StringConst")
         {
-            string sval = dynamic_cast<StringConstExpr*>(secondTree)->GetValue();
+            std::string sval = dynamic_cast<StringConstExpr*>(secondTree)->GetValue();
 
             if (sval == "toggle")
                 recenterMode = Toggle;

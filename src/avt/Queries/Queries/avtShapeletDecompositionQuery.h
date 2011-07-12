@@ -45,6 +45,7 @@
 #include <query_exports.h>
 #include <avtDatasetQuery.h>
 #include <avtShapeletDecompResult.h>
+
 #include <string>
 
 class vtkDataSet;
@@ -92,7 +93,7 @@ class QUERY_API avtShapeletDecompositionQuery: public avtDatasetQuery
   private:
     double                     ComputeError(vtkRectilinearGrid *a,
                                             vtkRectilinearGrid *b,
-                                            const string &var_name);
+                                            const std::string &var_name);
 
     int                        nmax;
     double                     beta;

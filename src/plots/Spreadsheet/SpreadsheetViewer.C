@@ -37,9 +37,6 @@
 *****************************************************************************/
 #include <SpreadsheetViewer.h>
 
-#include <float.h>
-#include <cassert>
-
 #include <QApplication>
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -99,6 +96,12 @@
 
 #include <Subject.h>
 #include <SpreadsheetAttributes.h>
+
+#include <float.h>
+
+#include <cassert>
+#include <string>
+#include <vector>
 
 #define plotAtts ((SpreadsheetAttributes *)plot->GetPlotAtts())
 
@@ -2054,8 +2057,8 @@ SpreadsheetViewer::selectPickPoints()
             }
 
             // Now, go through the old picks 
-            const vector<double>& pastPicks = plotAtts->GetPastPicks();
-            const vector<string>& pastPickLetters = plotAtts->GetPastPickLetters();
+            const std::vector<double>& pastPicks = plotAtts->GetPastPicks();
+            const std::vector<std::string>& pastPickLetters = plotAtts->GetPastPickLetters();
             int numOldPicks = pastPicks.size() / 2;
             int old_ijk[3];
             for (int i = 0 ; i < numOldPicks ; i++)
@@ -2526,7 +2529,7 @@ SpreadsheetViewer::postNotify()
     //
     // See what was active before we update the attributes.
     //
-    vector<int> activePlots;
+    std::vector<int> activePlots;
     PlotList *plist = plot->GetViewerState()->GetPlotList();
     int nplots = plist->GetNumPlots();
     for (int i = 0 ; i < nplots ; i++)

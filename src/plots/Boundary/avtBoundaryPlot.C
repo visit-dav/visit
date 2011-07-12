@@ -42,8 +42,6 @@
 
 #include <avtBoundaryPlot.h>
 
-#include <algorithm>
-
 #include <BoundaryAttributes.h>
 
 #include <avtColorTables.h>
@@ -62,8 +60,15 @@
 #include <LineAttributes.h>
 #include <maptypes.h>
 
+#include <algorithm>
+#include <string>
+#include <utility>
+#include <vector>
+
 using std::sort;
+using std::string;
 using std::pair;
+using std::vector;
 
 
 // ****************************************************************************
@@ -281,7 +286,7 @@ avtBoundaryPlot::SetColorTable(const char *ctName)
     {
         // If the color table is "Default" or is the color table that is being
         // changed, set the colors.
-        bool usesCT = (atts.GetColorTableName() == std::string(ctName));
+        bool usesCT = (atts.GetColorTableName() == string(ctName));
         if (usesCT || atts.GetColorTableName() == "Default")
         {
             SetColors();

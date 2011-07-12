@@ -54,8 +54,6 @@
 
 #include <vector>
 
-using std::vector;
-
 class vtkDataArray;
 
 class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
@@ -65,10 +63,10 @@ class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
     vtkTypeRevisionMacro(vtkEnumThreshold,vtkUnstructuredGridAlgorithm);
     void PrintSelf(ostream& os, vtkIndent indent);
 
-    void SetEnumerationRanges(const vector<double>&);
-    void SetEnumerationValues(const vector<int> &vals);
+    void SetEnumerationRanges(const std::vector<double>&);
+    void SetEnumerationValues(const std::vector<int> &vals);
 
-    void SetEnumerationSelection(const vector<bool>&);
+    void SetEnumerationSelection(const std::vector<bool>&);
 
     void SetAlwaysExcludeRange(double min, double max);
     void SetAlwaysIncludeRange(double min, double max);
@@ -118,17 +116,17 @@ class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
     double            alwaysIncludeMin;
     double            alwaysIncludeMax;
 
-    vector<double>    enumerationRanges;
-    int               lastRangeBin;
+    std::vector<double>    enumerationRanges;
+    int                    lastRangeBin;
 
-    vector<int>       enumerationValues;
-    unsigned char    *enumerationMap;
+    std::vector<int>       enumerationValues;
+    unsigned char         *enumerationMap;
 
     unsigned long long selectedEnumMask;
 
-    int                  pascalsTriangleN;
-    int                  pascalsTriangleR;
-    vector<vector<int> > pascalsTriangleMap;
+    int                            pascalsTriangleN;
+    int                            pascalsTriangleR;
+    std::vector<std::vector<int> > pascalsTriangleMap;
 
     bool              returnEmptyIfAllCellsKept;
     bool              allCellsKeptInLastRequestData;

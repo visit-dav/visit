@@ -47,9 +47,6 @@
 
 #include <avtPixieFileFormat.h>
 
-#include <algorithm>
-#include <string>
-
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
@@ -76,6 +73,9 @@
 #include <hdf5.h>
 #include <visit-hdf5.h>
 
+#include <algorithm>
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtPixie constructor
@@ -1633,7 +1633,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
 {
     // Silo files have a ".." group.  Don't process that....  Ideally we
     // might detect and skip hard links, but this doesn't come up often.
-    if (string(name)=="..")
+    if (std::string(name)=="..")
         return 0;
 
     hid_t                   obj;

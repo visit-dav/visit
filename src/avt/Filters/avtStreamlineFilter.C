@@ -105,6 +105,9 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <mpi.h>
 #endif
 
+#include <string>
+#include <vector>
+
 static float random01()
 {
     return (float)rand()/(float)RAND_MAX;
@@ -424,7 +427,7 @@ avtStreamlineFilter::CreateIntegralCurve( const avtIVPSolver* model,
 // ****************************************************************************
 
 void
-avtStreamlineFilter::SetColoringMethod(int m, const string &var)
+avtStreamlineFilter::SetColoringMethod(int m, const std::string &var)
 {
     coloringMethod = m;
     coloringVariable = var;
@@ -838,7 +841,7 @@ avtStreamlineFilter::SeedInfoString() const
     else
         sprintf(buff, "%s", "UNKNOWN");
     
-    string str = buff;
+    std::string str = buff;
     return str;
 }
 
@@ -1035,7 +1038,7 @@ avtStreamlineFilter::GetInitialLocations(void)
     //Check for 2D input.
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
     {
-        vector<avtVector>::iterator it;
+        std::vector<avtVector>::iterator it;
         for (it = seedPts.begin(); it != seedPts.end(); it++)
             (*it)[2] = 0.0f;
     }
@@ -1159,7 +1162,7 @@ avtStreamlineFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
         if (!fill)
         {
             // There are 4 sides. Create a vector that we will shuffle each time.
-            vector<int> sides(4);
+            std::vector<int> sides(4);
             for (int i = 0; i < 4; i++)
                 sides[i] = i;
 
@@ -1467,7 +1470,7 @@ avtStreamlineFilter::GenerateSeedPointsFromBox(std::vector<avtVector> &pts)
         else
         {
             // There are 6 faces. Create a vector that we will shuffle each time.
-            vector<int> faces(6);
+            std::vector<int> faces(6);
             for (int i = 0; i < 6; i++)
                 faces[i] = i;
             

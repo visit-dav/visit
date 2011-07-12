@@ -48,8 +48,6 @@
 #include <mpi.h>
 #endif 
 
-#include <algorithm>
-
 #include <vtkAppendPolyData.h>
 #include <vtkCell.h>
 #include <vtkCellArray.h>
@@ -77,8 +75,10 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 
+#include <algorithm>
+#include <vector>
 
-using     std::string;
+using std::vector;
 
 
 static int IntersectLineWithRevolvedSegment(const double *line_pt,
@@ -460,7 +460,7 @@ avtLineScanFilter::PostExecute(void)
 #ifdef PARALLEL
     int  i, j;
     int nprocs = PAR_Size();
-    std::vector<int> ncells(nprocs, 0);
+    vector<int> ncells(nprocs, 0);
     for (i = 0 ; i < nLeaves ; i++)
     {
         vtkIntArray *lineId = (vtkIntArray *) 

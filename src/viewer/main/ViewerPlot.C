@@ -42,7 +42,6 @@
 
 #include <ViewerPlot.h>
 
-#include <string.h>
 #include <snprintf.h>
 
 #include <avtActor.h>
@@ -89,6 +88,11 @@
 #include <InvalidVariableException.h>
 #include <Expression.h>
 
+#include <string.h>
+
+#include <string>
+#include <vector>
+
 extern ViewerSubject *viewerSubject;   // FIX_ME This is a hack.
 
 //
@@ -102,7 +106,7 @@ extern ViewerSubject *viewerSubject;   // FIX_ME This is a hack.
 //
 avtActor_p ViewerPlot::nullActor((avtActor *)0);
 avtDataObjectReader_p ViewerPlot::nullReader((avtDataObjectReader *)0);
-vector<double> ViewerPlot::nullDataExtents;
+std::vector<double> ViewerPlot::nullDataExtents;
 int ViewerPlot::numPlotsCreated = 0;
 
 // ****************************************************************************
@@ -1641,7 +1645,7 @@ ViewerPlot::SetVariableName(const std::string &name)
     OperatorPluginManager *oPM = GetOperatorPluginManager();
     for (int j = 0; j < oPM->GetNEnabledPlugins(); j++)
     {
-        const string &mesh = GetMeshName();
+        const std::string &mesh = GetMeshName();
         std::string id = oPM->GetEnabledID(j);
         CommonOperatorPluginInfo *info = oPM->GetCommonPluginInfo(id);
         const avtDatabaseMetaData *md = GetMetaData();

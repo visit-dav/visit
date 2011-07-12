@@ -42,7 +42,6 @@
 
 #include <float.h>
 #include <snprintf.h>
-#include <string.h>
 
 #include <avtDataObjectQuery.h>
 #include <avtQueryFactory.h>
@@ -69,8 +68,8 @@
 #include <DebugStream.h>
 #include <MapNode.h>
 
-using std::string;
-
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtQueryOverTimeFilter constructor
@@ -446,15 +445,15 @@ avtQueryOverTimeFilter::UpdateDataObjectInfo(void)
             }
             if (useVarForYAxis)
             {
-                string yl = outAtts.GetVariableName();
+                std::string yl = outAtts.GetVariableName();
                 outAtts.SetYLabel(yl);
                 outAtts.SetYUnits(outAtts.GetVariableUnits(yl.c_str()));
             }
         }
         else 
         {
-            string xl = atts.GetQueryAtts().GetVariables()[0] + "(t)";
-            string yl = atts.GetQueryAtts().GetVariables()[1] + "(t)";
+            std::string xl = atts.GetQueryAtts().GetVariables()[0] + "(t)";
+            std::string yl = atts.GetQueryAtts().GetVariables()[1] + "(t)";
             outAtts.SetXLabel(xl);
             outAtts.SetYLabel(yl);
             outAtts.SetXUnits(atts.GetQueryAtts().GetXUnits());
@@ -545,8 +544,8 @@ avtQueryOverTimeFilter::CreateFinalOutput()
                                                               : maxIterations);
             }
 
-            vector<double> finalQRes(nResults, 0.);
-            vector<double> finalTimes(nResults, 0.);
+            std::vector<double> finalQRes(nResults, 0.);
+            std::vector<double> finalTimes(nResults, 0.);
             int index = 0;
             for (int j = 0 ; j < maxIterations ; j++)
             {

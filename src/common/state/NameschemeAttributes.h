@@ -46,10 +46,6 @@
 #include <Namescheme.h>
 #include <vector>
 #include <snprintf.h>
-using std::map;
-using std::string;
-using std::vector;
-
 
 // ****************************************************************************
 // Class: NameschemeAttributes
@@ -140,12 +136,12 @@ public:
 
     // User-defined methods
     void AddExternalArray(const char *name, const int *data, int len);
-    void AddExternalArray(const string &name, const vector<int> &data);
+    void AddExternalArray(const std::string &name, const std::vector<int> &data);
     void SetAllNames(const char *const *const names, int count);
     void SetName(int i, const char *name);
-    void SetName(int i, const string &n);
+    void SetName(int i, const std::string &n);
     const char *GetName(int n) const;
-    void SetAllNames(const vector<string> &names);
+    void SetAllNames(const std::vector<std::string> &names);
     void CheckIfGetNameCalled();
 
     // IDs that can be used to identify fields in case statements

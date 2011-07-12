@@ -53,7 +53,8 @@
 #define H5_USE_16_API
 #include <hdf5.h>
 
-using std::string;
+#include <string>
+
 class parallelBuffer;
 
 // ****************************************************************************
@@ -86,8 +87,8 @@ class avtGTCFileFormat : public avtSTMDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
     void                   ReadVariable( int domain, int varIdx, int varDim, float **ptrVar );
     
-    string                 IndexToVarName( int idx ) const;
-    int                    VarNameToIndex( const string &var ) const;
+    std::string            IndexToVarName( int idx ) const;
+    int                    VarNameToIndex( const std::string &var ) const;
     hid_t                  fileHandle, particleHandle;
     int                    nVars, nTotalPoints, nPoints;
     bool                   initialized;

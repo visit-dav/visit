@@ -59,6 +59,7 @@
 #include <DebugStream.h>
 #include <VisItException.h>
 
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtIndividualRayLengthDistributionQuery constructor
@@ -234,7 +235,7 @@ avtIndividualRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         EXCEPTION0(ImproperUseException);
         
     int npts = pd->GetNumberOfPoints();
-    vector<bool> usedPoint(npts, false);
+    std::vector<bool> usedPoint(npts, false);
     
     vtkDataArray *arr = pd->GetCellData()->GetArray(varname.c_str());
 

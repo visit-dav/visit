@@ -42,7 +42,6 @@
 #include <QTextStream>
 
 #include <vector>
-using std::vector;
 
 // ****************************************************************************
 //  Class:  EnumType
@@ -67,7 +66,7 @@ using std::vector;
 class EnumType
 {
   public:
-    static vector<EnumType*> enums;
+    static std::vector<EnumType*> enums;
     static EnumType *FindEnum(const QString &s)
     {
         EnumType *e = NULL;
@@ -84,7 +83,7 @@ class EnumType
     }
   public:
     QString         type;
-    vector<QString> values;
+    std::vector<QString> values;
   public:
     EnumType(const QString &s) : type(s) 
     { 

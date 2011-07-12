@@ -39,6 +39,12 @@
 
 #include "MultiresFileReader.h"
 
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
 /* ========================================================================= */
 
 MultiresFileReader::MultiresFileReader() 

@@ -114,15 +114,15 @@
 #include <avtParallel.h>
 #endif
 
-#include <string>
-#include <vector>
 #include <map>
 #include <set>
+#include <string>
+#include <vector>
 
-using std::string;
-using std::vector;
 using std::map;
 using std::set;
+using std::string;
+using std::vector;
 using std::ostringstream;
 using namespace SiloDBOptions;
 

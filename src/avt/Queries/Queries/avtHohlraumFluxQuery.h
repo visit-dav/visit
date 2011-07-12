@@ -46,6 +46,9 @@
 #include <query_exports.h>
 #include <avtLineScanQuery.h>
 
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 //  Class: avtDistanceFromBoundaryQuery
 //

@@ -49,6 +49,9 @@
 
 #include <cstring>
 
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 //  Method: avtDatasetToSamplePointsFilter constructor
 //
@@ -148,8 +151,8 @@ avtDatasetToSamplePointsFilter::PreExecute(void)
 
     if (!leaveAsIs)
     {
-        vector<string> varnames;
-        vector<int>    varsize;
+        std::vector<std::string> varnames;
+        std::vector<int>    varsize;
         int realNVars = 0;
         for (int i = 0 ; i < vl.nvars ; i++)
         {

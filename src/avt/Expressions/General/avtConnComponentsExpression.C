@@ -81,6 +81,9 @@
   #include <mpi.h>
 #endif
 
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 //  Method: avtConnComponentsExpression constructor
 //
@@ -173,7 +176,7 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
     {
         ArgExpr *second_arg= (*arguments)[1];
         ExprParseTreeNode *second_tree= second_arg->GetExpr();
-        string second_type = second_tree->GetTypeName();
+        std::string second_type = second_tree->GetTypeName();
 
         // check for arg passed as integer
         if((second_type == "IntegerConst"))
@@ -194,7 +197,7 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
         // check for arg passed as string
         else if((second_type == "StringConst"))
         {
-            string sval =
+            std::string sval =
                         dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
 
             if(sval == "true")
@@ -285,7 +288,7 @@ avtConnComponentsExpression::Execute()
     vtkDataSet **data_sets = tree->GetAllLeaves(nsets);
 
     // get dataset domain ids
-    vector<int> domain_ids;
+    std::vector<int> domain_ids;
     tree->GetAllDomainIds(domain_ids);
 
     // check for ghosts
@@ -356,10 +359,10 @@ avtConnComponentsExpression::Execute()
     avtDataTree_p *leaves = new avtDataTree_p[nsets];
 
     // vectors to hold result sets and their component labels
-    vector<vtkDataSet *>  result_sets;
-    vector<vtkIntArray *> result_arrays;
+    std::vector<vtkDataSet *>  result_sets;
+    std::vector<vtkIntArray *> result_arrays;
     // vector to hold the number of components per set
-    vector<int> results_num_comps;
+    std::vector<int> results_num_comps;
 
     result_sets.resize(nsets);
     result_arrays.resize(nsets);
@@ -801,8 +804,8 @@ avtConnComponentsExpression::SingleSetLabel(vtkDataSet *data_set,
 int
 avtConnComponentsExpression::MultiSetResolve(int num_comps,
                                             const BoundarySet &bset,
-                                            const vector<vtkDataSet*> &sets,
-                                            const vector<vtkIntArray*> &labels)
+                                            const std::vector<vtkDataSet*> &sets,
+                                            const std::vector<vtkIntArray*> &labels)
 {
     // loop indices
     int i,j,k;
@@ -820,8 +823,8 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
     UnionFind union_find(num_comps,true);
 
     // vectors to hold boundary query results
-    vector<int> src_cells;
-    vector<int> can_cells;
+    std::vector<int> src_cells;
+    std::vector<int> can_cells;
     int src_label, can_label;
 
     int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
@@ -837,7 +840,7 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
     // loop over all sets
     for( i = 0; i < nsets; i++)
     {
-        vector<int> possible_matches;
+        std::vector<int> possible_matches;
         double bounds[6];
         sets[i]->GetBounds(bounds);
         double lower[3];
@@ -943,10 +946,10 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
 void
 avtConnComponentsExpression::MultiSetList(int num_comps,
                                          const BoundarySet &bset,
-                                         const vector<vtkDataSet*> &sets,
-                                         const vector<vtkIntArray*> &labels,
-                                         vector<int> &u_src,
-                                         vector<int> &u_des)
+                                         const std::vector<vtkDataSet*> &sets,
+                                         const std::vector<vtkIntArray*> &labels,
+                                         std::vector<int> &u_src,
+                                         std::vector<int> &u_des)
 {
     // loop indices
     int i,j,k;
@@ -973,8 +976,8 @@ avtConnComponentsExpression::MultiSetList(int num_comps,
     UnionFind union_find(num_comps,true);
 
     // vectors to hold boundary query results
-    vector<int> src_cells;
-    vector<int> can_cells;
+    std::vector<int> src_cells;
+    std::vector<int> can_cells;
     int src_label, can_label;
 
     int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
@@ -990,7 +993,7 @@ avtConnComponentsExpression::MultiSetList(int num_comps,
     // loop over all sets
     for( i = 0; i < nsets; i++)
     {
-        vector<int> possible_matches;
+        std::vector<int> possible_matches;
         double bounds[6];
         sets[i]->GetBounds(bounds);
         double lower[3];
@@ -1066,7 +1069,7 @@ avtConnComponentsExpression::MultiSetList(int num_comps,
 // ****************************************************************************
 int
 avtConnComponentsExpression::GlobalLabelShift
-(int num_local_comps, const vector<vtkIntArray*> &labels)
+(int num_local_comps, const std::vector<vtkIntArray*> &labels)
 {
     // in the serial case the is no shift and the number of labels 
     // is unchanged
@@ -1161,8 +1164,8 @@ avtConnComponentsExpression::GlobalLabelShift
 int
 avtConnComponentsExpression::GlobalResolve(int num_comps,
                                       BoundarySet &bset,
-                                      const vector<vtkDataSet*> &local_sets,
-                                      const vector<vtkIntArray*> &local_labels)
+                                      const std::vector<vtkDataSet*> &local_sets,
+                                      const std::vector<vtkIntArray*> &local_labels)
 {
 #ifdef PARALLEL
     int t0 = visitTimer->StartTimer();
@@ -1175,8 +1178,8 @@ avtConnComponentsExpression::GlobalResolve(int num_comps,
     SpatialPartition     spart;
 
     // vectors used to access the relocated datasets and their label arrays
-    vector<vtkDataSet*>  sets;
-    vector<vtkIntArray*> labels;
+    std::vector<vtkDataSet*>  sets;
+    std::vector<vtkIntArray*> labels;
 
     // get the id of the local processor
     int procid = PAR_Rank();
@@ -1216,7 +1219,7 @@ avtConnComponentsExpression::GlobalResolve(int num_comps,
     }
 
     // list the union operations required to resolve the relocated data
-    vector<int> union_src, union_des;
+    std::vector<int> union_src, union_des;
     MultiSetList(num_comps,bset, sets, labels,  union_src,union_des);
 
     // perform global union using the listed union operations
@@ -1258,9 +1261,9 @@ avtConnComponentsExpression::GlobalResolve(int num_comps,
 // ****************************************************************************
 int
 avtConnComponentsExpression::GlobalUnion(int num_comps,
-                                      const vector<int> &u_src,
-                                      const vector<int> &u_des,
-                                      const vector<vtkIntArray*> &local_labels)
+                                      const std::vector<int> &u_src,
+                                      const std::vector<int> &u_des,
+                                      const std::vector<vtkIntArray*> &local_labels)
 {
 #ifdef PARALLEL
     // loop indices
@@ -1929,7 +1932,7 @@ avtConnComponentsExpression::BoundarySet::Clear()
 //  Creation:   January  25, 2007
 //
 // ****************************************************************************
-vector<vtkDataSet *>
+std::vector<vtkDataSet *>
 avtConnComponentsExpression::BoundarySet::GetMeshes() const
 {
     return meshes;
@@ -1988,14 +1991,14 @@ void
 avtConnComponentsExpression::BoundarySet::GetIntersectionSet(
                                        int src_mesh_index,
                                        int can_mesh_index,
-                                       vector<int> &src_cells,
-                                       vector<int> &can_cells ) const
+                                       std::vector<int> &src_cells,
+                                       std::vector<int> &can_cells ) const
 {
     int i, j, k;
     double src_bounds[6], can_bounds[6], isect_bounds[6], src_cell_bounds[6];
     double lb[3],ub[3];
-    vector<int> src_isect_cells;
-    vector<int> can_isect_cells;
+    std::vector<int> src_isect_cells;
+    std::vector<int> can_isect_cells;
     int nsrc_isect_cells, ncan_isect_cells;
 
     // clear result vectors
@@ -2284,7 +2287,7 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
     }
 
     // used to hold which processor a cell needs to be sent to 
-    vector<int> proc_list;
+    std::vector<int> proc_list;
 
     // get number of local meshes
     int nmeshes = meshes.size();
@@ -2994,7 +2997,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
     bool keepGoing = (nProcs > 1);
 
     int t3 = visitTimer->StartTimer();
-    vector<vtkDataSet *> meshes = bset.GetMeshes();
+    std::vector<vtkDataSet *> meshes = bset.GetMeshes();
     int total_cells = 0;
     for (i = 0 ; i < meshes.size() ; i++)
     {

@@ -43,9 +43,10 @@
 #ifndef AVT_BOUNDARY_FILTER_H
 #define AVT_BOUNDARY_FILTER_H
 
-
 #include <avtSIMODataTreeIterator.h>
 #include <BoundaryAttributes.h>
+
+#include <string>
 
 
 // ****************************************************************************
@@ -80,7 +81,7 @@ class avtBoundaryFilter : public avtSIMODataTreeIterator
   protected:
     BoundaryAttributes    plotAtts;
 
-    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, string);
+    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
     virtual void          UpdateDataObjectInfo(void);
     virtual avtContract_p
                           ModifyContract(avtContract_p);

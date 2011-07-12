@@ -51,8 +51,6 @@
 
 class vtkDataSet;
 
-using std::vector;
-
 // ****************************************************************************
 //  Class: avtRemoveCellsFilter
 //
@@ -82,7 +80,7 @@ class avtRemoveCellsFilter : public avtPluginDataTreeIterator
   protected:
     RemoveCellsAttributes   atts;
     
-    void ParseAtts(int domain, vector<int> &cells);
+    void ParseAtts(int domain, std::vector<int> &cells);
     
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
 

@@ -61,6 +61,7 @@
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 
+#include <vector>
 
 typedef void(*xformFunc)(double *, const double *);
 static vtkDataSet *CreateNewDataset(vtkDataSet *in_ds, vtkPoints *newPts);
@@ -678,7 +679,7 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
 vtkDataSet *
 avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    vector<vtkDataSet *> deleteList;
+    std::vector<vtkDataSet *> deleteList;
 
     CoordSystem ct_current = inputSys;
 

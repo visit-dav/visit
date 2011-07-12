@@ -42,9 +42,6 @@
 
 #include <avtAggregateRayLengthDistributionQuery.h>
 
-#include <stdio.h>
-#include <math.h>
-
 #include <vtkCellData.h>
 #include <vtkExecutive.h>
 #include <vtkIdList.h>
@@ -59,6 +56,10 @@
 #include <DebugStream.h>
 #include <VisItException.h>
 
+#include <stdio.h>
+#include <math.h>
+
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtAggregateRayLengthDistributionQuery constructor
@@ -247,7 +248,7 @@ avtAggregateRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         EXCEPTION0(ImproperUseException);
 
     int npts = pd->GetNumberOfPoints();
-    vector<bool> usedPoint(npts, false);
+    std::vector<bool> usedPoint(npts, false);
 
     // This may be NULL, but, if so, we will just treat it as uniform density.
     vtkDataArray *arr = pd->GetCellData()->GetArray(varname.c_str());
@@ -259,15 +260,15 @@ avtAggregateRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
     UpdateProgress(extraMsg*currentNode+2*extraMsg/3, totalProg);
     int lastMilestone = 0;
 
-    vector<double> pts;
-    vector<double> mass;
-    vector<int>    seg_lineid;
+    std::vector<double> pts;
+    std::vector<double> mass;
+    std::vector<int>    seg_lineid;
 
     // create a mapping of pts to their segment id
     // this avoids reconstructing the segment id in the second loop
     // where there are a different number of 'continues' that can
     // undermine the indexing.
-    vector<int>    pts_segid(npts,-1);
+    std::vector<int>    pts_segid(npts,-1);
 
     // When we determine which line segments are on one side of another,
     // we need to examine the other segments.  But we only want to consider
@@ -282,7 +283,7 @@ avtAggregateRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
     // way too big (100,500 entries with the first 100,000 empty),
     // or we have to do some clever indexing.  So we are doing
     // some clever indexing.  In this case, hashing.
-    vector< vector<int> >    hashed_lineid_lookup(1000);
+    std::vector< std::vector<int> >    hashed_lineid_lookup(1000);
 
     for (int i = 0 ; i < npts ; i++)
     {
@@ -342,7 +343,7 @@ avtAggregateRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
 
 
     // usedPoint.resize(npts,false) doesn't reset the vector values.
-    usedPoint = vector<bool>(npts,false);
+    usedPoint = std::vector<bool>(npts,false);
 
     for (int i = 0 ; i < npts ; i++)
     {

@@ -38,14 +38,13 @@
 
 #include <stdio.h>
 #include <string>
-using std::string;
 
-string
+std::string
 i2s(int i)
 {
     char tmp[1000];
     sprintf(tmp, "%d", i);
-    return string(tmp);
+    return std::string(tmp);
 }
 
 char
@@ -66,19 +65,19 @@ toUpper(char c)
         return c;
 }
 
-string
-toUpper(string s)
+std::string
+toUpper(std::string s)
 {
     for (int i=0; i<s.length(); i++)
         s[i] = toUpper(s[i]);
     return s;
 }
 
-string
-findWord(const string &s)
+std::string
+findWord(const std::string &s)
 {
     int i=0;
-    string foo("");
+    std::string foo("");
     while (s.length() > i && (s[i] == ' ' || s[i] == 0x08 || s[i] == '\t' || s[i] == '\n'))
         i++;
     while (s.length() > i && (s[i] != ' ' && s[i] != 0x08 && s[i] != '\t' && s[i] != '\n'))
@@ -89,11 +88,11 @@ findWord(const string &s)
     return foo;
 }
 
-string
-stripWord(string &s)
+std::string
+stripWord(std::string &s)
 {
     int i = 0;
-    string foo("");
+    std::string foo("");
     while (s.length() > i && (s[i] == ' ' || s[i] == 0x08 || s[i] == '\t' || s[i] == '\n'))
         i++;
     int len=0;

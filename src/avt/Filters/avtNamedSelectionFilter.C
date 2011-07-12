@@ -52,6 +52,8 @@
 #include <avtNamedSelectionManager.h>
 #include <avtSILRestriction.h>
 
+#include <vector>
+
 
 // ****************************************************************************
 //  Method: avtNamedSelectionFilter constructor
@@ -132,7 +134,7 @@ avtNamedSelectionFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     }
 
     avtZoneIdNamedSelection *zins = (avtZoneIdNamedSelection *) ns;
-    vector<int> ids;
+    std::vector<int> ids;
     int ncells = in_ds->GetNumberOfCells();
     zins->GetMatchingIds(ptr, ncells, ids);
 
@@ -190,7 +192,7 @@ avtNamedSelectionFilter::ModifyContract(avtContract_p contract)
         EXCEPTION1(VisItException, "The named selection was not valid");
     }
 
-    vector<int> domains;
+    std::vector<int> domains;
     bool useList = ns->GetDomainList(domains);
     if (useList)
     {

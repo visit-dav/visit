@@ -61,6 +61,8 @@
 #include <InvalidVariableException.h>
 #include <snprintf.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtConnComponentsCentroidQuery constructor
@@ -195,7 +197,7 @@ avtConnComponentsCentroidQuery::PostExecute(void)
         msg += buff;
 
         // pack values into a a single vector for query output
-        vector<double> result_vec(nComps *3);
+        std::vector<double> result_vec(nComps *3);
 
         for(int i=0;i<nComps;i++)
         {
@@ -213,7 +215,7 @@ avtConnComponentsCentroidQuery::PostExecute(void)
         }
 
     
-        string format  =  "Component %d [%d cells] Centroid = (" 
+        std::string format  =  "Component %d [%d cells] Centroid = (" 
                             + queryAtts.GetFloatFormat()  +","
                             + queryAtts.GetFloatFormat()  +","
                             + queryAtts.GetFloatFormat()  +")\n";

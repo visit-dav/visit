@@ -60,6 +60,9 @@
 #include <avtCallback.h>
 #include <Utility.h>
 
+#include <map>
+#include <string>
+
 //
 // Global variables.
 //
@@ -1009,7 +1012,7 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
             // We use the data argument to pass in a pointer to the connection
             // progress window.
             typedef struct {
-                string h; int p; string k;
+                std::string h; int p; std::string k;
                 ViewerConnectionProgressDialog *d;
                 bool tunnel;} SimData;
             SimData *simData = (SimData*)data;

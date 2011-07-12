@@ -917,6 +917,7 @@ avtMeshMetaData::UnsetExtents()
 //  Creationist: Allen Sanderson
 //  Creation:    March 3, 2011
 //
+//  Modifications:
 //    Mark C. Miller, Tue Apr 19 14:46:23 PDT 2011
 //    Set logical bounds to integer value '0' and not '0.0'.
 // ****************************************************************************
@@ -935,17 +936,9 @@ avtMeshMetaData::SetBounds(const int *bounds)
     else
     {
         hasLogicalBounds = true;
-        if( meshType == AVT_POINT_MESH || meshType == AVT_UNSTRUCTURED_MESH)
+        for (int i = 0 ; i < std::min(topologicalDimension, 3) ; i++)
         {
-          cerr << endl << "Setting bounds ..............." << endl;
-            logicalBounds[0] = bounds[0];
-        }
-        else
-        {
-          for (int i = 0 ; i < std::min(topologicalDimension, 3) ; i++)
-          {
             logicalBounds[i] = bounds[i];
-          }
         }
     }
 }
@@ -1181,8 +1174,7 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "Logical bounds are: (";
-
-        if( meshType == AVT_POINT_MESH || meshType == AVT_UNSTRUCTURED_MESH)
+        if( meshType == AVT_POINT_MESH )
             out << logicalBounds[0];
         else
         {
@@ -1193,8 +1185,6 @@ avtMeshMetaData::Print(ostream &out, int indent) const
                   out << ", ";
           }
         }
-
-        out << ")" << endl;
     }
     else
     {
@@ -1202,7 +1192,6 @@ avtMeshMetaData::Print(ostream &out, int indent) const
         {
           case AVT_RECTILINEAR_MESH:
           case AVT_CURVILINEAR_MESH:
-          case AVT_UNSTRUCTURED_MESH:
           case AVT_POINT_MESH:
             Indent(out, indent);
             out << "The logical bounds are not set." << endl;
@@ -1362,14 +1351,14 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
     this->blockOrigin = origin;
     this->groupOrigin = origin;
 
-    vector<int> groupIds(nlevels+1);
+    std::vector<int> groupIds(nlevels+1);
     groupIds[0] = 0;
     for (i = 1 ; i < nlevels+1 ; i++)
     {
         groupIds[i] = groupIds[i-1] + patchesPerLevel[i-1];
     }
     this->groupIdsBasedOnRange = groupIds;
-    vector<int> numbelow(nlevels);
+    std::vector<int> numbelow(nlevels);
     numbelow[0] = 0;
     for (i = 1 ; i < nlevels ; i++)
         numbelow[i] = numbelow[i-1]+patchesPerLevel[i-1];
@@ -1424,3 +1413,4 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
     atts.SetNamescheme(base_string);
     this->blockNameScheme = atts;
 }
+

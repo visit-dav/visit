@@ -40,6 +40,9 @@
 #ifndef _CONFIG_FILE_READER_H_
 #define _CONFIG_FILE_READER_H_
 
+#include <string>
+#include <vector>
+
 /**
  *  This class reads in text files and parses it into sections.
  *  Each section has identifiers and values.  The syntax for
@@ -88,23 +91,23 @@ public:  // helper methods
     virtual void        asciiDump       (FILE* outfile=stdout);
 
 protected:  // builder methods used by parser
-    virtual void        addSection      (string sectionName);
-    virtual void        addIdentifier   (string identifier);
-    virtual void        addValue        (string value);
+    virtual void        addSection      (std::string sectionName);
+    virtual void        addIdentifier   (std::string identifier);
+    virtual void        addValue        (std::string value);
 
 private:   // helper function
     void                readFile        (FILE* infile);
 
 protected: // members
-    string  mFilename;
+    std::string  mFilename;
     bool    mWaitingForValue;
     class Section { public:
-        Section(string name):name(name){}
-        string          name;
-        vector<string>  identifiers;
-        vector<string>  values;
+        Section(std::string name):name(name){}
+        std::string               name;
+        std::vector<std::string>  identifiers;
+        std::vector<std::string>  values;
     };
-    vector<Section> mSections;
+    std::vector<Section> mSections;
 
     bool mWarningsThrowExceptions;
     bool mErrorsThrowExceptions;

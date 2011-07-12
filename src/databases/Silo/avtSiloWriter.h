@@ -51,9 +51,6 @@
 
 #include <silo.h>
 
-using std::map;
-using std::string;
-using std::vector;
 
 class vtkCellData;
 class vtkDataSetAttributes;
@@ -122,10 +119,10 @@ avtSiloWriter : public virtual avtDatabaseWriter
     virtual       ~avtSiloWriter();
 
   protected:
-    string         stem;
-    string         dir;
-    string         meshname;
-    string         matname;
+    std::string         stem;
+    std::string         dir;
+    std::string         meshname;
+    std::string         matname;
     int            nblocks;
     int            driver;
     int            nmeshes;
@@ -133,36 +130,36 @@ avtSiloWriter : public virtual avtDatabaseWriter
     DBoptlist     *optlist;
     bool           singleFile;
     bool           checkSums;
-    string         compressionParams;
+    std::string         compressionParams;
 
     // places to hold args passed in WriteHeaders
     const avtDatabaseMetaData *headerDbMd;
-    vector<string>             headerScalars;
-    vector<string>             headerVectors;
-    vector<string>             headerMaterials;
+    std::vector<std::string>             headerScalars;
+    std::vector<std::string>             headerVectors;
+    std::vector<std::string>             headerMaterials;
 
     // storage for per-block info to be written in DBPutMulti... calls 
-    vector<double>               spatialMins;
-    vector<double>               spatialMaxs;
-    vector<int>                  zoneCounts;
-    map<string,vector<double> > dataMins;
-    map<string,vector<double> > dataMaxs;
+    std::vector<double>               spatialMins;
+    std::vector<double>               spatialMaxs;
+    std::vector<int>                  zoneCounts;
+    std::map<std::string,std::vector<double> > dataMins;
+    std::map<std::string,std::vector<double> > dataMaxs;
 
     virtual bool   CanHandleMaterials(void) { return true; };
 
-    virtual void   OpenFile(const string &, int);
+    virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
-                                vector<string> &, 
-                                vector<string> &,
-                                vector<string> &);
+                                std::vector<std::string> &, 
+                                std::vector<std::string> &,
+                                std::vector<std::string> &);
     virtual void   WriteChunk(vtkDataSet *, int);
     virtual void   CloseFile(void);
 
     void           ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *,
                                       int *);
-    void           ConstructMultivar(DBfile *dbfile, const string &,
+    void           ConstructMultivar(DBfile *dbfile, const std::string &,
                                      const avtMeshMetaData *, int *);
-    void           ConstructMultimat(DBfile *dbfile, const string &,
+    void           ConstructMultimat(DBfile *dbfile, const std::string &,
                                      const avtMeshMetaData *);
     void           ConstructChunkOptlist(const avtDatabaseMetaData *);
 

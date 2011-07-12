@@ -60,9 +60,6 @@ class vtkDataArray;
 class vtkUnstructuredGrid;
 class vtkFloatArray;
 
-using std::vector;
-using std::map;
-
 // ****************************************************************************
 //  Class: avtMiliFileFormat
 //
@@ -115,8 +112,8 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     
     virtual const char   *GetType(void) { return "Mili File Format"; };
     
-    virtual void          GetCycles(vector<int> &);
-    virtual void          GetTimes(vector<double> &);
+    virtual void          GetCycles(std::vector<int> &);
+    virtual void          GetTimes(std::vector<double> &);
     virtual int           GetNTimesteps(void);
  
     virtual vtkDataSet   *GetMesh(int, int, const char *);
@@ -137,50 +134,50 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     char *famroot;
     char *fampath;
     
-    vector<Famid>         dbid;
+    std::vector<Famid>    dbid;
     int                   ntimesteps;
     int                   ndomains;
     int                   nmeshes;
     bool                  setTimesteps;
-    vector<double>        times;
+    std::vector<double>   times;
 
-    map<int, int>         warn_map;
-    vector<bool>          validateVars;
-    vector<bool>          readMesh;
+    std::map<int, int>    warn_map;
+    std::vector<bool>     validateVars;
+    std::vector<bool>     readMesh;
     int                   dims;
 
     int                                   *free_nodes;
     int                                    free_nodes_ts;
     int                                    num_free_nodes;
 
-    vector<vector<int> >                   nnodes;
-    vector<vector<int> >                   ncells;
-    vector<vector<vtkUnstructuredGrid *> > connectivity;
+    std::vector<std::vector<int> >         nnodes;
+    std::vector<std::vector<int> >         ncells;
+    std::vector<std::vector<vtkUnstructuredGrid *> > connectivity;
 
-    vector<vector< Subrecord > >           sub_records;
-    vector<vector< int > >                 sub_record_ids;
+    std::vector<std::vector< Subrecord > > sub_records;
+    std::vector<std::vector< int > >       sub_record_ids;
 
-    vector<vector< std::string > >         element_group_name;
-    vector<vector< int > >                 connectivity_offset;
-    vector<vector< int > >                 group_mesh_associations;
+    std::vector<std::vector< std::string > >    element_group_name;
+    std::vector<std::vector< int > >            connectivity_offset;
+    std::vector<std::vector< int > >            group_mesh_associations;
 
-    vector< std::string >                  known_param_arrays;
-    vector< std::string >                  vars;
-    vector< avtCentering >                 centering;
-    vector< vector< vector<bool> > >       vars_valid;
-    vector< vector< vector<int> > >        var_size;
-    vector< avtVarType >                   vartype;
-    vector< int >                          var_dimension;
-    vector< int >                          var_mesh_associations;
+    std::vector< std::string >                  known_param_arrays;
+    std::vector< std::string >                  vars;
+    std::vector< avtCentering >                 centering;
+    std::vector< std::vector< std::vector<bool> > > vars_valid;
+    std::vector< std::vector< std::vector<int> > >  var_size;
+    std::vector< avtVarType >                   vartype;
+    std::vector< int >                          var_dimension;
+    std::vector< int >                          var_mesh_associations;
 
-    vector<int>                            nmaterials;
-    vector<vector< avtMaterial * > >       materials;
+    std::vector<int>                            nmaterials;
+    std::vector<std::vector< avtMaterial * > >  materials;
 
     void                  IssueWarning(const char *msg, int key);
     void                  ReadMesh(int dom);
     void                  ValidateVariables(int dom);
-    avtMaterial *         ConstructMaterials(vector< vector<int*> >&,
-                                            vector< vector<int> > &, int);
+    avtMaterial *         ConstructMaterials(std::vector< std::vector<int*> >&,
+                                            std::vector< std::vector<int> > &, int);
     int                   GetVariableIndex(const char *);
     int                   GetVariableIndex(const char *, int mesh_id);
     void                  GetSizeInfoForGroup(const char *, int &, int &, int);

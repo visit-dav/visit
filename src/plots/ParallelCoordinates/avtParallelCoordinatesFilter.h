@@ -117,7 +117,7 @@ public:
 
 protected:
     virtual avtContract_p       ModifyContract(avtContract_p);
-    virtual avtDataTree_p       ExecuteDataTree(vtkDataSet *, int, string);
+    virtual avtDataTree_p       ExecuteDataTree(vtkDataSet *, int, std::string);
 
     virtual void                UpdateDataObjectInfo(void);
     virtual void                PreExecute(void);
@@ -142,8 +142,8 @@ private:
     void                        DrawContext(int ts);
     void                        DrawFocusHistograms(int ts);
     void                        PrepareForArrayVariable();
-    string                      ConvertExtentsToCondition();
-    string                      ConvertNamedSelectionToCondition();
+    std::string                 ConvertExtentsToCondition();
+    std::string                 ConvertNamedSelectionToCondition();
 
     ParallelCoordinatesAttributes parCoordsAtts;
     

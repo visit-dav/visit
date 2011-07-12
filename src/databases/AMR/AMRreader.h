@@ -7,7 +7,6 @@
 #include <math.h>
 
 #include <string>
-using std::string;
 
 #include <hdf5.h>
 
@@ -75,7 +74,7 @@ class AMRreader
 
 
  protected:
-  string  filename_;
+  std::string  filename_;
   int     ncycle_; // number of cycles
   double  tttttt_;   // simulation time
 

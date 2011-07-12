@@ -51,6 +51,10 @@
 
 #include <climits>
 
+#include <set>
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 //  Method: avtMoleculeFilter constructor
 //
@@ -309,13 +313,13 @@ avtMoleculeFilter::PreExecute()
 void
 avtMoleculeFilter::PostExecute()
 {
-    vector<string> labels;
+    std::vector<std::string> labels;
 
     if (name == "element" ||
         (name.length()>7 && name.substr(0,7) == "element") ||
         (name.length()>8 && name.substr(name.length()-8)=="/element"))
     {
-        for (set<int>::iterator it = used_values.begin();
+        for (std::set<int>::iterator it = used_values.begin();
              it != used_values.end();
              it++)
         {
@@ -349,7 +353,7 @@ avtMoleculeFilter::PostExecute()
     else
     {
         char nm[256];
-        for (set<int>::iterator it = used_values.begin();
+        for (std::set<int>::iterator it = used_values.begin();
              it != used_values.end();
              it++)
         {

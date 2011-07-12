@@ -51,6 +51,8 @@
 #include <QueryOverTimeAttributes.h>
 #include <SILRestrictionAttributes.h>
 
+#include <string>
+
 class vtkRectilinearGrid;
 
 // ****************************************************************************
@@ -124,7 +126,7 @@ class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
     doubleVector          times;
     bool                  success;
     bool                  finalOutputCreated;
-    string                label;
+    std::string           label;
 
     bool                  useTimeForXAxis;
     bool                  useVarForYAxis;

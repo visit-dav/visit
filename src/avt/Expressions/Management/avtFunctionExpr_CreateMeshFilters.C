@@ -46,6 +46,8 @@
 #include <avtSurfaceNormalExpression.h>
 #include <avtZoneTypeExpression.h>
 
+#include <string>
+
 // ****************************************************************************
 // Method: avtFunctionExpr::CreateMeshFilters
 //
@@ -76,7 +78,7 @@
 // ****************************************************************************
 
 avtExpressionFilter *
-avtFunctionExpr::CreateMeshFilters(const string &functionName) const
+avtFunctionExpr::CreateMeshFilters(const std::string &functionName) const
 {
     if (functionName == "surface_normal" || 
         functionName == "point_surface_normal")

@@ -49,6 +49,8 @@
 #include <avtLevelsMapper.h>
 #include <avtLookupTable.h>
 
+#include <DebugStream.h>
+
 #include <math.h>
 #include <limits.h>
 #include <float.h>
@@ -56,7 +58,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <DebugStream.h>
+#include <string>
+#include <vector>
 
 static const unsigned char multi_timestep_ctx_colors[PCP_MAX_TIMESTEPS*3] =
 {

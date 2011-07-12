@@ -78,7 +78,7 @@ class EXPRESSION_API avtApplyEnumerationExpression
     virtual int               NumVariableArguments(void) { return 1; };
 
   protected:
-    vector<double>            enumeratedValues;
+    std::vector<double>       enumeratedValues;
 
     virtual void              UpdateDataObjectInfo(void);
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);

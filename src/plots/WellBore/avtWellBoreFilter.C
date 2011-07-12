@@ -57,6 +57,9 @@
 
 #include <DebugStream.h>
 
+#include <string>
+#include <vector>
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -182,8 +185,8 @@ avtWellBoreFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
     }
 
     int nWellBores = atts.GetNWellBores();
-    const vector<int> wellBores = atts.GetWellBores();
-    const vector<string> wellNames = atts.GetWellNames();
+    const std::vector<int> wellBores = atts.GetWellBores();
+    const std::vector<std::string> wellNames = atts.GetWellNames();
 
     if (nWellBores <= 0)
     {
@@ -209,7 +212,7 @@ avtWellBoreFilter::ExecuteDataTree(vtkDataSet *inDS, int domain,
     // Create the data sets and labels for each of the well bores.
     //
     vtkDataSet **out_ds = new vtkDataSet*[nWellBores];
-    vector<string> labels;
+    std::vector<std::string> labels;
 
     int iWellBore = 0;
     for (int i = 0; i < nWellBores; i++)
@@ -365,7 +368,7 @@ avtWellBoreFilter::GetPoint(int p[3], const std::vector<int> &wellBores,
 
 vtkPolyData *
 avtWellBoreFilter::CreateWell(const std::vector<int> &wellBores,
-    int &iWellBore, const string &wellName, float *xpts, float *ypts,
+    int &iWellBore, const std::string &wellName, float *xpts, float *ypts,
     float *zpts, float *pts, int baseIndex[3], int dims[3])
 {
     WellBoreAttributes::WellRenderingMode renderingMode =

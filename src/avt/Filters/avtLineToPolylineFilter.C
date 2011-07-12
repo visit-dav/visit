@@ -41,9 +41,6 @@
 // ************************************************************************* //
 
 #include <avtLineToPolylineFilter.h>
-#include <map>
-#include <set>
-#include <deque>
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -55,6 +52,9 @@
 #include <DebugStream.h>
 #include <VisItException.h>
 #include <TimingsManager.h>
+
+#include <set>
+#include <deque>
 
 // ****************************************************************************
 //  Method: avtLineToPolylineFilter constructor
@@ -149,7 +149,7 @@ struct edge
 };
 
 vtkDataSet *
-avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, string)
+avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 {
     if (inDS->GetDataObjectType() != VTK_POLY_DATA)
     {

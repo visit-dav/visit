@@ -42,6 +42,8 @@
 #include <avtMeanFilterExpression.h>
 #include <avtMedianFilterExpression.h>
 
+#include <string>
+
 // ****************************************************************************
 // Method: avtFunctionExpr::CreateImageProcessingFilters
 //
@@ -63,7 +65,7 @@
 // ****************************************************************************
 
 avtExpressionFilter *
-avtFunctionExpr::CreateImageProcessingFilters(const string &functionName) const
+avtFunctionExpr::CreateImageProcessingFilters(const std::string &functionName) const
 {
     avtExpressionFilter *f = 0;
 

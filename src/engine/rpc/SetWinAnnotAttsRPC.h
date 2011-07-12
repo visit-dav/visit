@@ -40,19 +40,15 @@
 #define SET_WINANNOT_ATTS_RPC_H
 #include <engine_rpc_exports.h>
 
-#include <string>
-#include <vector>
-
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
 #include <VisItRPC.h>
 #include <VisualCueList.h>
 #include <WindowAttributes.h>
 
-class AttributeGroup;
+#include <string>
 
-using std::string;
-using std::vector;
+class AttributeGroup;
 
 // ****************************************************************************
 //  Class:  SetWinAnnotAttsRPC
@@ -98,11 +94,11 @@ public:
     void operator()(const WindowAttributes*,
                     const AnnotationAttributes*,
                     const AnnotationObjectList*,
-                    const string,
+                    const std::string,
                     const VisualCueList*,
                     const int*,
                     const double*,
-                    const string,
+                    const std::string,
                     const int);
 
     // Property selection methods
@@ -112,33 +108,33 @@ public:
     void SetWindowAtts(const WindowAttributes*);
     void SetAnnotationAtts(const AnnotationAttributes*);
     void SetAnnotationObjectList(const AnnotationObjectList*);
-    void SetExtentTypeString(const string);
+    void SetExtentTypeString(const std::string);
     void SetVisualCueList(const VisualCueList*);
     void SetFrameAndState(const int*);
     void SetViewExtents(const double*);
-    void SetChangedCtName(const string);
+    void SetChangedCtName(const std::string);
     void SetWindowID(int);
 
     // Property getting methods
     const WindowAttributes &GetWindowAtts() const;
     const AnnotationAttributes &GetAnnotationAtts() const;
     const AnnotationObjectList &GetAnnotationObjectList() const;
-    const string &GetExtentTypeString() const;
+    const std::string &GetExtentTypeString() const;
     const VisualCueList &GetVisualCueList() const;
     const int* GetFrameAndState() const;
     const double *GetViewExtents() const;
-    const string &GetChangedCtName() const;
+    const std::string &GetChangedCtName() const;
     const int GetWindowID() const;
 
 private:
     WindowAttributes win;
     AnnotationAttributes annot;
     AnnotationObjectList aolist;
-    string extstr;
+    std::string extstr;
     VisualCueList cuelist;
     int fands[7];
     double vexts[6];
-    string ctname;
+    std::string ctname;
     int windowID;
 };
 

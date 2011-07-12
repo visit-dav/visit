@@ -9,11 +9,10 @@
 #ifndef VELODYNE_READER_HPP
 #define VELODYNE_READER_HPP
 
-#include <set>
-using std::set;
-#include <string>
-using std::string;
 #include <hdf5.h>
+
+#include <set>
+#include <string>
 
 // ****************************************************************************
 // Class: VelodyneReader
@@ -61,7 +60,7 @@ class VelodyneReader
   int GetNumMaterials() const { return nmmat; }
   int GetNumCycles() const { return ncycle; }
   float GetSimuTime() const { return time; }
-  const string& GetMaterialTitle(int ind) const { return mat_titles[ind-1]; }
+  const std::string& GetMaterialTitle(int ind) const { return mat_titles[ind-1]; }
 
   int GetDataSetInfo( int run, int grp,
               char* name, int strlen,
@@ -72,7 +71,7 @@ class VelodyneReader
 
   int GetMeshSize( int grp ) const;
   int readMeshMaterialSet( int grp );
-  const set<int>& GetMeshMatInfo( int grp ) const;
+  const std::set<int>& GetMeshMatInfo( int grp ) const;
 
   int readMeshIntArray( int grp, const char* name,
             int bufsz, int* val,
@@ -100,7 +99,7 @@ class VelodyneReader
   int readHVarray( hid_t gpid, int ind, 
            int bufsz, float* buf, 
            int* ndim=NULL, int* rdms=NULL );
-  int getMaterialSet( hid_t gpid, const char* matname, set<int>& mset );
+  int getMaterialSet( hid_t gpid, const char* matname, std::set<int>& mset );
 
 
  protected:
@@ -112,14 +111,14 @@ class VelodyneReader
   int ncycle; // number of cycles
   float time;   // simulation time
 
-  set<int> mat_solid;
-  set<int> mat_shell;
-  set<int> mat_surface;
-  set<int> mat_particle;
-  set<int> mat_sph;
-  set<int> mat_null;
+  std::set<int> mat_solid;
+  std::set<int> mat_shell;
+  std::set<int> mat_surface;
+  std::set<int> mat_particle;
+  std::set<int> mat_sph;
+  std::set<int> mat_null;
 
-  string*  mat_titles;
+  std::string*  mat_titles;
 
   int nhhv,nshv,nsphhv;
 

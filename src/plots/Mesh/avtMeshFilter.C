@@ -56,6 +56,7 @@
 #include <ImproperUseException.h>
 #include <DebugStream.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Method: avtMeshFilter constructor
@@ -197,7 +198,7 @@ avtMeshFilter::~avtMeshFilter()
 // ****************************************************************************
 
 avtDataTree_p
-avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
+avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
 {
     avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
     int topoDim = datts.GetTopologicalDimension();
@@ -480,7 +481,7 @@ avtMeshFilter::ModifyContract(avtContract_p spec)
     }
     else
     {
-        string pointVar = atts.GetPointSizeVar();
+        std::string pointVar = atts.GetPointSizeVar();
         avtDataRequest_p dataRequest = spec->GetDataRequest();
 
         //

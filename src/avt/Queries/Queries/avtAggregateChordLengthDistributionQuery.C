@@ -42,9 +42,6 @@
 
 #include <avtAggregateChordLengthDistributionQuery.h>
 
-#include <stdio.h>
-#include <math.h>
-
 #include <vtkCellData.h>
 #include <vtkIdList.h>
 #include <vtkPolyData.h>
@@ -56,6 +53,10 @@
 
 #include <DebugStream.h>
 
+#include <stdio.h>
+#include <math.h>
+
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtAggregateChordLengthDistributionQuery constructor
@@ -227,7 +228,7 @@ avtAggregateChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         EXCEPTION0(ImproperUseException);
         
     int npts = pd->GetNumberOfPoints();
-    vector<bool> usedPoint(npts, false);
+    std::vector<bool> usedPoint(npts, false);
     
     pd->BuildLinks();
     pd->BuildCells();
@@ -246,8 +247,8 @@ avtAggregateChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
     // or we have to do some clever indexing.  So we are doing
     // some clever indexing.  In this case, hashing.
     int hashSize = 10000;
-    vector< vector<int> >    hashed_lineid_lookup(hashSize);
-    vector< vector<double> > hashed_segment_length(hashSize);
+    std::vector< std::vector<int> >    hashed_lineid_lookup(hashSize);
+    std::vector< std::vector<double> > hashed_segment_length(hashSize);
 
     for (int i = 0 ; i < npts ; i++)
     {
@@ -299,7 +300,7 @@ avtAggregateChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
 
     for (int i = 0 ; i < hashSize ; i++)
     {
-        vector<int> already_considered;
+        std::vector<int> already_considered;
         for (int j = 0 ; j < hashed_lineid_lookup[i].size() ; j++)
         {
              bool alreadyDoneLineId = false;

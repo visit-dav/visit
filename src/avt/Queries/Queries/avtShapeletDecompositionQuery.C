@@ -60,6 +60,8 @@
 
 #include <MapNode.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: avtShapeletDecompositionQuery constructor
 //
@@ -131,7 +133,7 @@ avtShapeletDecompositionQuery::PostExecute(void)
 {
     std::string msg = "";
     char buff[256];
-    string float_format = queryAtts.GetFloatFormat();
+    std::string float_format = queryAtts.GetFloatFormat();
     if(decompResult)
     {
         msg = "Shapelet decomposition using beta(";
@@ -224,7 +226,7 @@ avtShapeletDecompositionQuery::Execute(vtkDataSet *ds, const int dom)
     }
     
     // make sure this is a zonal varaible
-    string var = queryAtts.GetVariables()[0];
+    std::string var = queryAtts.GetVariables()[0];
     
     
     vtkDataArray *vals = rgrid->GetCellData()->GetArray(var.c_str());
@@ -282,7 +284,7 @@ avtShapeletDecompositionQuery::Execute(vtkDataSet *ds, const int dom)
 double
 avtShapeletDecompositionQuery::ComputeError(vtkRectilinearGrid *a,
                                             vtkRectilinearGrid *b,
-                                            const string &var_name)
+                                            const std::string &var_name)
 {
     vtkDataArray *a_arr = a->GetCellData()->GetArray(var_name.c_str());
     vtkDataArray *b_arr = b->GetCellData()->GetArray(var_name.c_str());

@@ -49,10 +49,6 @@
 #include <string>
 #include <vector>
 
-using std::map;
-using std::string;
-using std::vector;
-
 struct TimeHeader_t
 {
     double time;
@@ -111,18 +107,18 @@ class avtClawFileFormat : public avtMTMDFileFormat
     void                   GetFilenames();
 
   private:
-    string                 rootDir;
-    string                 timeScanf;
-    string                 gridScanf;
-    string                 timeRegex;
-    string                 gridRegex;
-    string                 cycleRegex;
-    string                 optMode;
-    vector<string>         timeFilenames;
-    vector<string>         gridFilenames;
-    vector<TimeHeader_t>   timeHeaders;
-    vector<vector<GridHeader_t> > gridHeaders;
-    vector<map<int, GridHeader_t> > gridHeaderMaps;
+    std::string                 rootDir;
+    std::string                 timeScanf;
+    std::string                 gridScanf;
+    std::string                 timeRegex;
+    std::string                 gridRegex;
+    std::string                 cycleRegex;
+    std::string                 optMode;
+    std::vector<std::string>    timeFilenames;
+    std::vector<std::string>    gridFilenames;
+    std::vector<TimeHeader_t>   timeHeaders;
+    std::vector<std::vector<GridHeader_t> > gridHeaders;
+    std::vector<std::map<int, GridHeader_t> > gridHeaderMaps;
 };
 
 

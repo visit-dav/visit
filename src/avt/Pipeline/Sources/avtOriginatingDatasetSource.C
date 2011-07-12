@@ -55,6 +55,8 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
+#include <vector>
+
 
 // ****************************************************************************
 //  Method: avtOriginatingDatasetSource constructor
@@ -149,7 +151,7 @@ avtOriginatingDatasetSource::FetchData(avtDataRequest_p spec)
     {
         int nleaves = 0;
         vtkDataSet **ds = tree->GetAllLeaves(nleaves);
-        vector<int> domains;
+        std::vector<int> domains;
         tree->GetAllDomainIds(domains);
         verifier.VerifyDatasets(nleaves, ds, domains);
         delete [] ds;

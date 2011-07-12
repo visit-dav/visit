@@ -45,6 +45,8 @@
 
 #include <avtExpressionFilter.h>
 
+#include <vector>
+
 class     vtkDataArray;
 class     vtkIntArray;
 class     vtkDataSet;
@@ -163,15 +165,15 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
         void                  Finalize();
         void                  Clear();
 
-        vector<vtkDataSet *>  GetMeshes() const;
+        std::vector<vtkDataSet *>  GetMeshes() const;
 
         void                  GetBounds(double *) const;
 
 
         void                  GetIntersectionSet(int,
                                                  int,
-                                                 vector<int> &,
-                                                 vector<int> &) const;
+                                                 std::vector<int> &,
+                                                 std::vector<int> &) const;
 
         bool                  GetBoundsIntersection(double *,
                                                     double *,
@@ -182,8 +184,8 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
 
 
       protected:
-        vector<vtkDataSet *>       meshes;
-        vector<avtIntervalTree *>  itrees;
+        std::vector<vtkDataSet *>       meshes;
+        std::vector<avtIntervalTree *>  itrees;
 
         bool                       empty;
         double                     bounds[6];
@@ -240,28 +242,28 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
 
     virtual int               MultiSetResolve(int,
                                               const BoundarySet &,
-                                              const vector<vtkDataSet*> &,
-                                              const vector<vtkIntArray*> &);
+                                              const std::vector<vtkDataSet*> &,
+                                              const std::vector<vtkIntArray*> &);
 
     virtual void              MultiSetList(int,
                                            const BoundarySet &,
-                                           const vector<vtkDataSet*> &,
-                                           const vector<vtkIntArray*> &,
-                                           vector<int> &,
-                                           vector<int> &);
+                                           const std::vector<vtkDataSet*> &,
+                                           const std::vector<vtkIntArray*> &,
+                                           std::vector<int> &,
+                                           std::vector<int> &);
 
     virtual int               GlobalLabelShift(int,
-                                               const vector<vtkIntArray*> &);
+                                               const std::vector<vtkIntArray*> &);
 
     virtual int               GlobalResolve(int,
                                             BoundarySet &,
-                                            const vector<vtkDataSet*> &,
-                                            const vector<vtkIntArray*> &);
+                                            const std::vector<vtkDataSet*> &,
+                                            const std::vector<vtkIntArray*> &);
 
     virtual int               GlobalUnion(int,
-                                          const vector<int>&,
-                                          const vector<int>&,
-                                          const vector<vtkIntArray*> &);
+                                          const std::vector<int>&,
+                                          const std::vector<int>&,
+                                          const std::vector<vtkIntArray*> &);
 
     virtual void              ShiftLabels(vtkIntArray *, int);
 };

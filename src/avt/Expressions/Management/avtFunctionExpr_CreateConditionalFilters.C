@@ -48,6 +48,8 @@
 #include <avtTestLessThanOrEqualToExpression.h>
 #include <avtTestNotEqualToExpression.h>
 
+#include <string>
+
 // ****************************************************************************
 // Method: avtFunctionExpr::CreateConditionalFilters
 //
@@ -69,7 +71,7 @@
 // ****************************************************************************
 
 avtExpressionFilter *
-avtFunctionExpr::CreateConditionalFilters(const string &functionName) const
+avtFunctionExpr::CreateConditionalFilters(const std::string &functionName) const
 {
     avtExpressionFilter *f = 0;
 

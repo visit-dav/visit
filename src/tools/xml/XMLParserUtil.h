@@ -42,7 +42,6 @@
 #include <QTextStream>
 
 #include <vector>
-using std::vector;
 
 // ****************************************************************************
 //  Methods for text manipulation.
@@ -58,7 +57,7 @@ using std::vector;
 class UniqueStringList
 {
   public:
-    vector<QString> strings;
+    std::vector<QString> strings;
     void AddString(const QString &s)
     {
         bool found = false;
@@ -79,10 +78,10 @@ class UniqueStringList
     }
 };
 
-inline vector<QString>
+inline std::vector<QString>
 SplitValues(const QString &buff)
 {
-    vector<QString> output;
+    std::vector<QString> output;
     
     buff.trimmed();
     QString tmp="";
@@ -110,7 +109,7 @@ SplitValues(const QString &buff)
 }
 
 inline QString
-JoinValues(const vector<QString> &strs, char j)
+JoinValues(const std::vector<QString> &strs, char j)
 {
     QString output;
     
@@ -125,7 +124,7 @@ JoinValues(const vector<QString> &strs, char j)
 }
 
 inline QString
-JoinValues(const vector<QString> &strs, QString &j)
+JoinValues(const std::vector<QString> &strs, QString &j)
 {
     QString output;
     
@@ -257,7 +256,7 @@ WriteCloseTag(QTextStream &out, const QString &tag, QString &indent)
 }
 
 inline void
-WriteValues(QTextStream &out, const vector<QString> &values, QString &indent)
+WriteValues(QTextStream &out, const std::vector<QString> &values, QString &indent)
 {
     indent += "  ";
     for (size_t i=0; i<values.size(); i++)

@@ -43,9 +43,6 @@
 #include <string.h>
 #include <visitstream.h>
 #include <string>
-#include <deque>
-using std::string;
-using std::deque;
 
 #include "Token.h"
 

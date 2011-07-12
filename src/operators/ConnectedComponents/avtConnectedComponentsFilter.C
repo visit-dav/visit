@@ -46,6 +46,9 @@
 #include <ExpressionList.h>
 #include <ParsingExprList.h>
 
+#include <string>
+#include <vector>
+
 
 // ****************************************************************************
 //  Method: avtConnectedComponentsFilter constructor
@@ -198,7 +201,7 @@ avtConnectedComponentsFilter::GetCustomExpressions(std::vector<Expression> &elis
     SNPRINTF(fullname, 1024, "operators/ConnectedComponents/%s", varname.c_str());
     exp.SetName(fullname);
     char defn[1024];
-    string gzopt = "\"true\"";
+    std::string gzopt = "\"true\"";
     if (!atts.GetEnableGhostNeighborsOptimization())
         gzopt  = "\"false\"";
     SNPRINTF(defn, 1024, "conn_components(%s,%s)", varname.c_str(),gzopt.c_str());

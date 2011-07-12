@@ -116,9 +116,6 @@
 class vtkPolyData;
 class vtkUnstructuredGrid;
 
-using std::map;
-using std::vector;
-
 #define VTK_CSG_GRID 20
 
 class VISIT_VTK_API vtkCSGGrid : public vtkDataSet
@@ -334,7 +331,7 @@ protected:
   // These are storage of the binary partition tree unstructured grid
   // and bitfield for the boundary tags for the multipass algorithm.
   vtkUnstructuredGrid *multipassProcessedGrid;
-  vector<FixedLengthBitField<16> > *multipassTags;
+  std::vector<FixedLengthBitField<16> > *multipassTags;
 
 
 
@@ -371,7 +368,7 @@ public:
     Box(double x, double X,
         double y, double Y,
         double z, double Z,
-        const vector<int>& _zids,
+        const std::vector<int>& _zids,
         double g000, double g001, double g010, double g011,
         double g100, double g101, double g110, double g111)
         : x0(x),y0(y),z0(z),x1(X),y1(Y),z1(Z),
@@ -381,7 +378,7 @@ public:
     FuncState EvalBoxStateOfBoundary(const double *const a, double tol) const;
 
     bool IsFlatEnough2(const double *const a, int bndId, double tol);
-    bool CanBeCut2(const double *const a, map<int,int>, double tol);
+    bool CanBeCut2(const double *const a, std::map<int,int>, double tol);
 
     static FuncState ValState2(double val)
         { return val > 0.0 ? GT_ZERO :  LT_ZERO; };
@@ -426,9 +423,9 @@ public:
         }
     };
 
-    vector<Box*> Subdivide() const
+    std::vector<Box*> Subdivide() const
     {
-        vector<Box*> retval;
+        std::vector<Box*> retval;
         double halfx = (x0 + x1) / 2.0;
         double halfy = (y0 + y1) / 2.0;
         double halfz = (z0 + z1) / 2.0;
@@ -469,9 +466,9 @@ public:
 
         return retval;
     }
-    vector<Box*> SubdivideX() const
+    std::vector<Box*> SubdivideX() const
     {
-        vector<Box*> retval;
+        std::vector<Box*> retval;
         double halfx = (x0 + x1) / 2.0;
 
         Box* box0 = new Box(x0, halfx, y0, y1, z0, z1, zids,
@@ -486,9 +483,9 @@ public:
 
         return retval;
     }
-    vector<Box*> SubdivideY() const
+    std::vector<Box*> SubdivideY() const
     {
-        vector<Box*> retval;
+        std::vector<Box*> retval;
         double halfy = (y0 + y1) / 2.0;
 
         Box* box0 = new Box(x0, x1, y0, halfy, z0, z1, zids,
@@ -503,9 +500,9 @@ public:
 
         return retval;
     }
-    vector<Box*> SubdivideZ() const
+    std::vector<Box*> SubdivideZ() const
     {
-        vector<Box*> retval;
+        std::vector<Box*> retval;
         double halfz = (z0 + z1) / 2.0;
 
         Box* box0 = new Box(x0, x1, y0, y1, z0, halfz, zids,
@@ -596,7 +593,7 @@ public:
     double x0,y0,z0,x1,y1,z1;
     double f000,f001,f010,f011,f100,f101,f110,f111;
     double tmp[3];
-    vector<int> zids;
+    std::vector<int> zids;
 };
 
 class coord_t {
@@ -647,7 +644,7 @@ else
 }
 };
 
-typedef map<coord_t,int,coordcomp> coordmap_t;
+typedef std::map<coord_t,int,coordcomp> coordmap_t;
 
 static bool AddCutZones(vtkUnstructuredGrid *cutBox, vtkPoints *points,
                    vtkUnstructuredGrid *ugrid,
@@ -656,33 +653,33 @@ static void MakeMeshZone(const Box *aBox, vtkPoints *points,
                    vtkUnstructuredGrid *ugrid,
                    coordmap_t& nodemap);
 bool MakeMeshZonesByCuttingBox4(const Box *aBox,
-                   const map<int,int>& boundaryToStateMap,
-                   map<int,int>& boundaryToSenseMap, int zoneId,
+                   const std::map<int,int>& boundaryToStateMap,
+                   std::map<int,int>& boundaryToSenseMap, int zoneId,
                    vtkPoints *points, vtkUnstructuredGrid *ugrid,
                    coordmap_t& nodemap);
 bool MakeMeshZonesByCuttingBox2(const Box *aBox,
-                   const map<int,int>& boundaryToStateMap,
-                   map<int,int>& boundaryToSenseMap, int zoneId,
+                   const std::map<int,int>& boundaryToStateMap,
+                   std::map<int,int>& boundaryToSenseMap, int zoneId,
                    vtkPoints *points, vtkUnstructuredGrid *ugrid,
                    coordmap_t& nodemap);
 static void MakeMeshZonesByCuttingBox(const Box *aBox,
-                   map<vtkImplicitFunction*,Box::FuncState> funcToStateMap,
-                   vector<RegionOp> senses,
+                   std::map<vtkImplicitFunction*,Box::FuncState> funcToStateMap,
+                   std::vector<RegionOp> senses,
                    vtkPoints *points, vtkUnstructuredGrid *ugrid,
                    coordmap_t& nodemap);
-void AddBoundariesForZone2(int, vector<int> *bnds, vector<int> *senses);
+void AddBoundariesForZone2(int, std::vector<int> *bnds, std::vector<int> *senses);
 void AddBoundariesForZone(vtkImplicitFunction *func,
-                           vector<vtkImplicitFunction*> *bnds,
-                           vector<RegionOp> *senses);
+                           std::vector<vtkImplicitFunction*> *bnds,
+                           std::vector<RegionOp> *senses);
 int EvalBoxStateOfRegion(const Box *const curBox, int regId,
-map<int,int>& boundaryToStateMap, double tol);
+std::map<int,int>& boundaryToStateMap, double tol);
 
 double tmpFloats[32];                       // temporary storage to help satisfy interface
                                      //    requirements of vtkDataSet
 
 vtkPlanes *Universe;                       // The "universe" set (a maximally sized box)
 
-map<vtkImplicitFunction *, vtkIdType> funcMap;
+std::map<vtkImplicitFunction *, vtkIdType> funcMap;
 
 vtkImplicitFunction *GetBoundaryFunc(vtkIdType id) const;
 vtkImplicitFunction *GetRegionFunc(vtkIdType id) const;

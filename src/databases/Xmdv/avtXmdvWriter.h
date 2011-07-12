@@ -45,9 +45,10 @@
 
 #include <avtDatabaseWriter.h>
 
-#include <string>
 #include <visitstream.h>
 
+#include <string>
+#include <vector>
 
 class DBOptionsAttributes;
 
@@ -85,8 +86,8 @@ avtXmdvWriter : virtual public avtDatabaseWriter
   protected:
     std::string    stem;
     bool           onlyOneBlock;
-    vector<string> scalars;
-    vector<string> vectors;
+    std::vector<std::string> scalars;
+    std::vector<std::string> vectors;
     bool           varsAreNodal;
     avtCentering   varCentering;
     bool           writeOutCoordinates;

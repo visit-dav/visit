@@ -47,6 +47,8 @@
 
 #include <avtCurveComparisonQuery.h>
 
+#include <string>
+
 class     avtDatasetSink;
 
 

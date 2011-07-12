@@ -83,6 +83,8 @@
 #include <LightList.h>
 #include <WindowInformation.h>
 
+#include <string>
+
 #define SLEN 5000
 
 //
@@ -1284,8 +1286,8 @@ static std::string log_DatabaseQueryRPC(ViewerRPC *rpc)
     //
 
     qName = rpc->GetQueryName();
-    if( (qName.find("Chord Length Dist") != string::npos) ||
-        (qName.find("Ray Length Dist") != string::npos)
+    if( (qName.find("Chord Length Dist") != std::string::npos) ||
+        (qName.find("Ray Length Dist") != std::string::npos)
     )
     {
         SNPRINTF(str, SLEN,"Query(\"%s\", %d, %d, %g, %g)\n",

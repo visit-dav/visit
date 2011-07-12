@@ -54,6 +54,7 @@
 
 #include <BadIndexException.h>
 
+#include <string>
 
 
 // ****************************************************************************
@@ -676,7 +677,7 @@ avtVectorGlyphMapper::ColorByMagOn(void)
 // ****************************************************************************
 
 void
-avtVectorGlyphMapper::ColorByScalarOn(const string &sn)
+avtVectorGlyphMapper::ColorByScalarOn(const std::string &sn)
 {
     colorByMag = false;
     colorByScalar = true;

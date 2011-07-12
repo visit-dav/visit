@@ -48,6 +48,7 @@
 #include <avtConnComponentsQuery.h>
 
 #include <string>
+#include <vector>
 
 class vtkDataSet;
 
@@ -78,7 +79,7 @@ class QUERY_API avtConnComponentsVariableQuery
   protected:
     
     std::string                     variableName;
-    vector<double>                  sumPerComp;
+    std::vector<double>             sumPerComp;
 
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);

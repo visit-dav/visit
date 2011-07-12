@@ -47,6 +47,7 @@
 
 #include <avtWeightedVariableSummationQuery.h>
 
+#include <string>
 
 class     avtCurvatureExpression;
 

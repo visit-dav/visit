@@ -48,7 +48,7 @@
 #include <avtConnComponentsQuery.h>
 
 #include <string>
-
+#include <vector>
 
 class avtEdgeLength;
 class avtRevolvedVolume;
@@ -115,27 +115,27 @@ class QUERY_API avtConnComponentsSummaryQuery
 
     std::string                variableName;
 
-    vector<int>                nCellsPerComp;
-    vector<int>                nProcsPerComp;
+    std::vector<int>           nCellsPerComp;
+    std::vector<int>           nProcsPerComp;
 
-    vector<double>             xCentroidPerComp;
-    vector<double>             yCentroidPerComp;
-    vector<double>             zCentroidPerComp;
+    std::vector<double>        xCentroidPerComp;
+    std::vector<double>        yCentroidPerComp;
+    std::vector<double>        zCentroidPerComp;
 
     // for computing per component bounds
-    vector<double>             xMinPerComp;
-    vector<double>             xMaxPerComp;
-    vector<double>             yMinPerComp;
-    vector<double>             yMaxPerComp;
-    vector<double>             zMinPerComp;
-    vector<double>             zMaxPerComp;
+    std::vector<double>        xMinPerComp;
+    std::vector<double>        xMaxPerComp;
+    std::vector<double>        yMinPerComp;
+    std::vector<double>        yMaxPerComp;
+    std::vector<double>        zMinPerComp;
+    std::vector<double>        zMaxPerComp;
 
-    vector<double>             lengthPerComp;
-    vector<double>             areaPerComp;
-    vector<double>             volPerComp;
+    std::vector<double>        lengthPerComp;
+    std::vector<double>        areaPerComp;
+    std::vector<double>        volPerComp;
 
-    vector<double>             sumPerComp;
-    vector<double>             wsumPerComp;
+    std::vector<double>        sumPerComp;
+    std::vector<double>        wsumPerComp;
 
     bool                       findLength;
     bool                       findArea;
@@ -147,8 +147,8 @@ class QUERY_API avtConnComponentsSummaryQuery
     virtual avtDataObject_p    ApplyFilters(avtDataObject_p);
     virtual void               VerifyInput(void);
 
-    virtual void               SaveComponentResults(string fname);
-    virtual void               PrepareComponentResults(vector<double> &);
+    virtual void               SaveComponentResults(std::string fname);
+    virtual void               PrepareComponentResults(std::vector<double> &);
 };
 
 

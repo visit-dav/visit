@@ -53,9 +53,6 @@
 
 class vtkFloatArray;
 
-using std::string;
-using std::vector;
-
 // ****************************************************************************
 //  Class: avtVistaAle3dFileFormat
 //
@@ -128,7 +125,7 @@ class avtVistaAle3dFileFormat : public avtVistaFileFormat
 
     int                  numMaterials;
     std::vector<int>     materialNumbers;
-    std::vector<string>  materialNames;
+    std::vector<std::string>  materialNames;
     int                 *materialNumbersArray;
     const char         **materialNamesArray;
 

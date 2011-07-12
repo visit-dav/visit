@@ -47,9 +47,8 @@
 
 #include <ContourOpAttributes.h>
 #include <avtSIMODataTreeIterator.h>
+#include <string>
 #include <vector>
-
-using std::string;
 
 class vtkCellDataToPointData;
 class vtkVisItContourFilter;
@@ -130,7 +129,7 @@ class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
 
     virtual avtContract_p
                                ModifyContract(avtContract_p);
-    virtual avtDataTree_p      ExecuteDataTree(vtkDataSet *, int, string);
+    virtual avtDataTree_p      ExecuteDataTree(vtkDataSet *, int, std::string);
 
     virtual void               UpdateDataObjectInfo(void);
     virtual void               PreExecute(void);

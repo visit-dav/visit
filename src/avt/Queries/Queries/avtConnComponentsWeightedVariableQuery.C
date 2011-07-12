@@ -65,7 +65,8 @@
 #include <InvalidDimensionsException.h>
 #include <snprintf.h>
 
-
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtConnComponentsWeightedVariableQuery constructor
@@ -143,7 +144,7 @@ avtConnComponentsWeightedVariableQuery::PreExecute(void)
     avtConnComponentsQuery::PreExecute();
 
     // prepare component arrays
-    sumPerComp = vector<double>(nComps,0.0);
+    sumPerComp = std::vector<double>(nComps,0.0);
 
 }
 
@@ -191,7 +192,7 @@ avtConnComponentsWeightedVariableQuery::PostExecute(void)
 
         msg += buff;
 
-        string format  =  "Component %d Weighted Sum = (" 
+        std::string format  =  "Component %d Weighted Sum = (" 
                               + queryAtts.GetFloatFormat() +")\n";
 
         for(int i=0;i<nComps;i++)

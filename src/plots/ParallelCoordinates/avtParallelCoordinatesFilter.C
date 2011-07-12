@@ -43,19 +43,7 @@
 
 #include <PlotInfoAttributes.h>
 
-#include <limits.h>
-#include <float.h>
-#include <math.h>
-#include <string.h>
-#ifndef _WIN32
-#include <unistd.h>
-#endif
 #include <visitstream.h>
-
-#include <sys/types.h>
-
-#include <vector>
-#include <string>
 
 #include <vtkDataSet.h>
 #include <vtkCellArray.h>
@@ -84,14 +72,28 @@
 #include <InvalidDimensionsException.h>
 #include <TimingsManager.h>
 
+#include <limits.h>
+#include <float.h>
+#include <math.h>
+#include <string.h>
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+#include <sys/types.h>
+
+#include <vector>
+#include <string>
+
+using std::string;
+using std::vector;
 
 static void
 UpdateLimitsWithAllHSTimeSteps(int axis,
-                              const std::vector<avtHistogramSpecification*> &h,
+                              const vector<avtHistogramSpecification*> &h,
                               double &varmin, double &varmax);
 static void
 CheckHistograms(int axis,
-                const std::vector<avtHistogramSpecification*> &h);
+                const vector<avtHistogramSpecification*> &h);
 
 // ****************************************************************************
 //  Method: avtParallelCoordinatesFilter
@@ -774,19 +776,19 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
     // variable that is plotted for a given cell, by convention, is the average
     // value of that variable over all vertices of the cell.  (mb)
 
-    const std::string pipeVariableName = pipelineVariable;
+    const string pipeVariableName = pipelineVariable;
 
     int axisNum;
     int tupleCount, tupleNum, componentCount;
     int cellVertexCount, vertexNum, valueNum;
     bool arrayIsCellData, dataBadOrMissing;
-    std::string arrayName;
+    string arrayName;
     vtkDataArray *dataArray;
     vtkIdList *pointIdList;
     float *arrayValues;
     float valueSum;
     
-    std::vector<float *> varArrayValues;
+    vector<float *> varArrayValues;
     boolVector           varIsCellData;
     intVector            varComponentCounts;
 
@@ -1561,7 +1563,7 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
 void
 avtParallelCoordinatesFilter::DrawHistogram(int ts, bool focus)
 {
-    std::vector<avtHistogramSpecification*> &hist = 
+    vector<avtHistogramSpecification*> &hist = 
         (focus ? histogramsForSelectedRegion : histograms);       
 
     int timer1 = visitTimer->StartTimer();
@@ -2059,10 +2061,10 @@ avtParallelCoordinatesFilter::PrepareForArrayVariable()
 //
 // ****************************************************************************
 
-std::string   
+string   
 avtParallelCoordinatesFilter::ConvertExtentsToCondition()
 {
-    std::string condition;
+    string condition;
     axisCount = parCoordsAtts.GetScalarAxisNames().size();
     stringVector curAxisVarNames = parCoordsAtts.GetScalarAxisNames();
     int numberOfConditions = 0;
@@ -2149,7 +2151,7 @@ avtParallelCoordinatesFilter::ConvertNamedSelectionToCondition(void)
 
 avtNamedSelection *
 avtParallelCoordinatesFilter::CreateNamedSelection(avtContract_p c, 
-                                                   const std::string &selName)
+                                                   const string &selName)
 {
     debug1 << "Start avtParallelCoordinatesFilter::CreateNamedSelection" << endl;
     avtNamedSelection *rv = NULL;
@@ -2183,7 +2185,7 @@ avtParallelCoordinatesFilter::CreateNamedSelection(avtContract_p c,
 avtNamedSelection *
 avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
                                                    avtContract_p c,
-                                                   const std::string &selName)
+                                                   const string &selName)
 {
     if (! GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
@@ -2194,7 +2196,7 @@ avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
 
     int  j;
 
-    std::vector<avtDataSelection *> drs;
+    vector<avtDataSelection *> drs;
     stringVector curAxisVarNames = parCoordsAtts.GetScalarAxisNames();
     for (j = 0 ; j < axisCount ; j++)
     {
@@ -2237,7 +2239,7 @@ avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
 
 avtNamedSelection *
 avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
-    avtContract_p c, const std::string &selName)
+    avtContract_p c, const string &selName)
 {
     int  i;
 
@@ -2246,8 +2248,8 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
 
     avtDataTree_p tree = GetInputDataTree();
 
-    std::vector<int> doms;
-    std::vector<int> zones;
+    vector<int> doms;
+    vector<int> zones;
     int nleaves = 0;
     vtkDataSet **leaves = tree->GetAllLeaves(nleaves);
     stringVector curAxisVarNames = parCoordsAtts.GetScalarAxisNames();
@@ -2257,13 +2259,13 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
         int tupleCount, componentCount;
         int cellVertexCount, vertexNum, valueNum;
         bool arrayIsCellData, dataBadOrMissing;
-        std::string arrayName;
+        string arrayName;
         vtkDataArray *dataArray;
         vtkIdList *pointIdList = vtkIdList::New();
         float *arrayValues;
         float valueSum;
         
-        std::vector<float *> varArrayValues;
+        vector<float *> varArrayValues;
         boolVector           varIsCellData;
         intVector            varComponentCounts;
         int cellCount       = leaves[i]->GetNumberOfCells();
@@ -2455,7 +2457,7 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
 // ****************************************************************************
 void
 UpdateLimitsWithAllHSTimeSteps(int axis,
-                              const std::vector<avtHistogramSpecification*> &h,
+                              const vector<avtHistogramSpecification*> &h,
                               double &varmin, double &varmax)
 {
     for (int ts = 0; ts < h.size(); ts++)
@@ -2499,7 +2501,7 @@ UpdateLimitsWithAllHSTimeSteps(int axis,
 // ****************************************************************************
 void
 CheckHistograms(int axisCount,
-                const std::vector<avtHistogramSpecification*> &h)
+                const vector<avtHistogramSpecification*> &h)
 {
     for (int ts = 0; ts < h.size(); ts++)
     {

@@ -58,10 +58,6 @@
 #define H5_USE_16_API
 #include <hdf5.h>
 
-using std::string;
-using std::vector;
-using std::map;
-
 class avtMaterial;
 class avtSpecies;
 
@@ -136,7 +132,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     void                  PopulateDatabaseMetaData(avtDatabaseMetaData *);
     void                  PopulateIOInformation(avtIOInformation &ioInfo);
     void                  RegisterVariableList(const char *,
-                                               const vector<CharStrRef> &);
+                                               const std::vector<CharStrRef> &);
 
     hid_t                 OpenFile(const char *fileName);
     void                  CloseFile(int f);
@@ -190,15 +186,15 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     } matinfo_t;
 
     vtkDataSet                 ***cached_patches;
-    string                        file_name;
-    string                        dir_name;
+    std::string                   file_name;
+    std::string                   dir_name;
     bool                          have_read_metadata_file;
 
-    string                        grid_type;
+    std::string                   grid_type;
 
     int                           time_step_number;
     double                        time;
-    string                        time_dump;
+    std::string                   time_dump;
 
     double                       *xlo;
     double                       *dx;
@@ -218,28 +214,28 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     int                          *var_num_components;
     int                          *var_num_ghosts;
     int                           var_max_ghosts[3];
-    string                       *var_names;
-    map<string, var_t>            var_names_num_components;
+    std::string                   *var_names;
+    std::map<std::string, var_t>   var_names_num_components;
 
     bool                          has_mats;
     bool                          inferVoidMaterial;
     int                           num_mats;
-    string                       *mat_names;
+    std::string                   *mat_names;
     int                          *mat_num_ghosts;
     int                           num_mat_vars;
     int                          *mat_var_num_components;
-    string                       *mat_var_names;
-    map<string, var_t>            mat_var_names_num_components;
-    map<string, matinfo_t*>       mat_names_matinfo;
-    map<string, map<string, matinfo_t*> > mat_var_names_matinfo;
+    std::string                   *mat_var_names;
+    std::map<std::string, var_t>   mat_var_names_num_components;
+    std::map<std::string, matinfo_t*> mat_names_matinfo;
+    std::map<std::string, std::map<std::string, matinfo_t*> > mat_var_names_matinfo;
     matinfo_t                    *sparse_mat_info;
 
     bool                          has_specs;
     int                           num_spec_vars;
-    string                       *spec_var_names;
+    std::string                  *spec_var_names;
     int                          *nmatspec;
-    map<string, string*>          mat_specs;
-    map<string, map<string, matinfo_t*> > mat_specs_matinfo;
+    std::map<std::string, std::string*> mat_specs;
+    std::map<std::string, std::map<std::string, matinfo_t*> > mat_specs_matinfo;
 
     var_extents_t               **var_extents; 
     patch_extents_t              *patch_extents;
@@ -255,14 +251,14 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     bool                          has_ghost;
     bool                          ghosting_is_consistent;
 
-    string                        active_visit_var_name;
-    string                        last_visit_var_name;
+    std::string                   active_visit_var_name;
+    std::string                   last_visit_var_name;
     int                           last_patch;
 
     int                           num_exprs;
-    string                       *expr_keys;
-    string                       *expr_types;
-    string                       *expr_defns;
+    std::string                  *expr_keys;
+    std::string                  *expr_types;
+    std::string                  *expr_defns;
 
     hid_t                        *h5files;
 
@@ -316,16 +312,16 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     void            ReadMaterialInfo(hid_t &h5_file);
     avtMaterial    *ReadSparseMaterialData(int patch, const int *matnos,
                         const char **matnames);
-    float          *ReadMatSpecFractions(int, string, string="");
-    void            ConvertVolumeFractionFields(vector<int> matIds, float **vfracs,
+    float          *ReadMatSpecFractions(int, std::string, std::string="");
+    void            ConvertVolumeFractionFields(std::vector<int> matIds, float **vfracs,
                         int ncells, int* &matfield, int &mixlen, int* &mix_mat,
                         int* &mix_next, int* &mix_zone, float* &mix_vf);
     char            DebugMixedMaterials(int ncells, int* &matfield, int* &mix_next,
                         int* &mix_mat, float* &mix_vf, int* &mix_zone);
 
     void            ReadSpeciesInfo(hid_t &h5_file);
-    void            ConvertMassFractionFields(vector<int> matIds,
-                        vector<float**> sfracs, int ncells, avtMaterial *mat,
+    void            ConvertMassFractionFields(std::vector<int> matIds,
+                        std::vector<float**> sfracs, int ncells, avtMaterial *mat,
                         int* &speclist, int &nspecies_mf, float* &species_mf,
                         int* &mixList);
 
@@ -366,7 +362,7 @@ class UniqueSpeciesMF
           Index() : idx(-1) {}
       };
 
-      map<unsigned int,Index> vmap;
+      std::map<unsigned int,Index> vmap;
 
       bool dataRetrieved;
 

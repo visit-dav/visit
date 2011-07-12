@@ -51,13 +51,16 @@
 #include <avtFeatureEdgesFilter.h>
 #include <avtLineToPolylineFilter.h>
 
+#include <LineAttributes.h>
+#include <InvalidColortableException.h>
+
 #include <math.h>
 #include <limits.h>
 #include <float.h>
 #include <stdio.h>
 
-#include <LineAttributes.h>
-#include <InvalidColortableException.h>
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtContourPlot constructor
@@ -285,7 +288,7 @@ avtContourPlot::SetAtts(const AttributeGroup *a)
 // ****************************************************************************
 
 void
-avtContourPlot::GetDataExtents(vector<double> &extents)
+avtContourPlot::GetDataExtents(std::vector<double> &extents)
 {
     double min, max;
 
@@ -439,9 +442,9 @@ avtContourPlot::SetColors()
         // Detect if we're using the default color table or a color table
         // that does not exist anymore.
         //
-        string ctName(atts.GetColorTableName());
+        std::string ctName(atts.GetColorTableName());
         if(ctName == "Default")
-            ctName = string(ct->GetDefaultDiscreteColorTable());
+            ctName = std::string(ct->GetDefaultDiscreteColorTable());
         else if(!ct->ColorTableExists(ctName.c_str()))
         {
             delete [] colors;
@@ -858,7 +861,7 @@ avtContourPlot::CustomizeBehavior(void)
 void
 avtContourPlot::CustomizeMapper(avtDataObjectInformation &info)
 {
-    vector<string> isoValues;
+    std::vector<std::string> isoValues;
     info.GetAttributes().GetLabels(isoValues);
 
     if (!isoValues.empty())

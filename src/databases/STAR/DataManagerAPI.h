@@ -42,8 +42,6 @@
 
 #include <string>
 #include <vector>
-using std::string;
-using std::vector;
 
 #include "StarObject.h"
 
@@ -68,19 +66,19 @@ public:  // api
     virtual float           fileVersion         () const=0;
     virtual int             numFiles            () const=0;
     virtual int             numResolutions      () const=0;
-    virtual string          gridFilename        () const=0;
-    virtual vector<int>     timeStepList        () const=0;
+    virtual std::string     gridFilename        () const=0;
+    virtual std::vector<int> timeStepList        () const=0;
 
     // data rank: scalars, vectors, or tensors
     virtual int             numVariables        () const=0;
-    virtual string          variableNameAt      (int index) const=0;
-    virtual int             indexOfVariableName (const string& name) const=0;
-    virtual bool            isScalar            (const string& name) const=0;
-    virtual char            isVectorComponent   (const string& name) const=0;
-    virtual bool            isVector            (const string& name) const=0;
-    virtual bool            isTensor            (const string& name) const=0;
+    virtual std::string     variableNameAt      (int index) const=0;
+    virtual int             indexOfVariableName (const std::string& name) const=0;
+    virtual bool            isScalar            (const std::string& name) const=0;
+    virtual char            isVectorComponent   (const std::string& name) const=0;
+    virtual bool            isVector            (const std::string& name) const=0;
+    virtual bool            isTensor            (const std::string& name) const=0;
     virtual int             numVectorExpressions() const=0;
-    virtual string          vectorExpressionAt  (int index) const=0;
+    virtual std::string     vectorExpressionAt  (int index) const=0;
 
     // data size and structure
     virtual int             width               (int resolution) const=0;
@@ -93,7 +91,7 @@ public:  // api
     virtual bool            hasMaxVal           () const=0;
     virtual float           minVal              () const=0;
     virtual float           maxVal              () const=0;
-    virtual const float*    rawData             (const string& varName,
+    virtual const float*    rawData             (const std::string& varName,
                                                  int resolution,
                                                  int fileindex,
                                                  int chunkIndex)=0;
@@ -107,7 +105,7 @@ public:  // api
         { return depth(resolution)/numZchunks(resolution); }
 
     // better descriptions of the attributes (for the ones we know about)
-    virtual string          longScalarNameFor   (const string& scalar) const {
+    virtual std::string     longScalarNameFor   (const std::string& scalar) const {
         if(scalar=="rr")  return "Plasma number density [cm**-3]";
         if(scalar=="pp")  return "Plasma pressure [pPa]";
         if(scalar=="vx")  return "Plasma velocity, x-component [km/s]";
@@ -121,13 +119,13 @@ public:  // api
         if(scalar=="xjy") return "Current density, z-component [micro-A/m**2]";
         return "unknown scalar";
     }
-    virtual string          longVectorNameFor(const string& vector) const {
+    virtual std::string     longVectorNameFor(const std::string& vector) const {
         if(vector == "v")  return "Plasma velocity [km/s]";
         if(vector == "b")  return "Magnetic field [nT]";
         if(vector == "xj") return "Current density [micro-A/m**2]";
         return "unknown vector";
     }
-    virtual string          longTensorNameFor   (const string& tensor) const {
+    virtual std::string     longTensorNameFor   (const std::string& tensor) const {
         return "error: tensors not supported yet";
     }
 

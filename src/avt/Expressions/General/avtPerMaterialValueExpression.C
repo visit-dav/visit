@@ -61,6 +61,11 @@
 #include <ExpressionException.h>
 #include <ImproperUseException.h>
 #include <visitstream.h>
+
+#include <sstream>
+#include <string>
+#include <vector>
+
 using std::ostringstream;
 
 // ****************************************************************************
@@ -318,7 +323,7 @@ avtPerMaterialValueExpression::ProcessArguments(ArgsExpr *args,
     // get material id or name
     ArgExpr *sec_arg= (*arguments)[1];
     avtExprNode *sec_tree= dynamic_cast<avtExprNode*>(sec_arg->GetExpr());
-    string type = sec_tree->GetTypeName();
+    std::string type = sec_tree->GetTypeName();
     
     if (type == "IntegerConst")
     {

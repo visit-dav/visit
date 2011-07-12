@@ -52,6 +52,8 @@
 
 #include <ExpressionException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtSymmEvalExpression constructor
@@ -149,7 +151,7 @@ avtSymmEvalExpression::ProcessArguments(ArgsExpr *args,
     // Now go through the third argument, which should be a list.
     ArgExpr *thirdarg = (*arguments)[2];
     ExprParseTreeNode *thirdTree = thirdarg->GetExpr();
-    string type = thirdTree->GetTypeName();
+    std::string type = thirdTree->GetTypeName();
     if (type != "List")
         EXCEPTION2(ExpressionException, outputVariableName, badSyntaxMsg);
 
@@ -169,7 +171,7 @@ avtSymmEvalExpression::ProcessArguments(ArgsExpr *args,
     for (i = 0 ; i < elems->size() ; i++)
     {
         ExprNode *item = (*elems)[i]->GetItem();
-        string type = item->GetTypeName();
+        std::string type = item->GetTypeName();
         bool negate = false;
         if (type == "Unary")
         {

@@ -534,7 +534,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     void                       EnumScalarSelect(avtDatasetCollection &,
                                                 const boolVector &,
                                                 const avtDatabaseMetaData*,
-                                                const string &);
+                                                const std::string &);
     void                       CreateOriginalZones(avtDatasetCollection &,
                                                    intVector &, 
                                                    avtSourceFromDatabase *);

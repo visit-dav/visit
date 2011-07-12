@@ -42,7 +42,6 @@
 
 #include <avtGTCFileFormat.h>
 
-#include <string>
 #include <snprintf.h>
 
 #include <vtkCellType.h>
@@ -69,6 +68,9 @@
 #include <mpi.h>
 #include <avtParallel.h>
 #endif
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtGTCFileFormat constructor
@@ -261,7 +263,7 @@ avtGTCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Add scalar variables.
     for ( int i = 3; i < nVars; i++ )
     {
-        string var = IndexToVarName( i );
+        std::string var = IndexToVarName( i );
         if ( var != "" )
             AddScalarVarToMetaData(md, var, meshname, AVT_NODECENT);        
     }
@@ -471,10 +473,10 @@ avtGTCFileFormat::GetVectorVar(int domain,const char *varname)
 //
 // ****************************************************************************
 
-string
+std::string
 avtGTCFileFormat::IndexToVarName( int idx ) const
 {
-    string var = "";
+    std::string var = "";
     if ( idx == 3 )
         var = "v_par";
     else if ( idx == 4 )
@@ -501,7 +503,7 @@ avtGTCFileFormat::IndexToVarName( int idx ) const
 // ****************************************************************************
 
 int
-avtGTCFileFormat::VarNameToIndex( const string &var ) const
+avtGTCFileFormat::VarNameToIndex( const std::string &var ) const
 {
     if ( var == "v_par" )
         return 3;

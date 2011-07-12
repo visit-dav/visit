@@ -42,8 +42,6 @@
 
 #include <avtFilledBoundaryPlot.h>
 
-#include <algorithm>
-
 #include <FilledBoundaryAttributes.h>
 
 #include <avtColorTables.h>
@@ -62,8 +60,15 @@
 #include <LineAttributes.h>
 #include <maptypes.h>
 
+#include <algorithm>
+#include <string>
+#include <utility>
+#include <vector>
+
 using std::sort;
+using std::string;
 using std::pair;
+using std::vector;
 
 
 // ****************************************************************************

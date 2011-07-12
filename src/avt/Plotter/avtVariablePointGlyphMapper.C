@@ -49,6 +49,8 @@
 
 #include <vtkVisItDataSetMapper.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: avtVariablePointGlyphMapper constructor
 //
@@ -319,7 +321,7 @@ avtVariablePointGlyphMapper::ColorBySingleColor(const unsigned char col[3])
 // ****************************************************************************
 
 void
-avtVariablePointGlyphMapper::ScaleByVar(const string &sname)
+avtVariablePointGlyphMapper::ScaleByVar(const std::string &sname)
 {
     if (sname == "" || sname == "\0")
     {

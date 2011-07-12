@@ -60,6 +60,8 @@
 
 #include <ExpressionException.h>
 
+#include <vector>
+
 // ****************************************************************************
 //  Method: avtStrainGreenLagrangeExpression constructor
 //
@@ -112,7 +114,7 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds)
                                      // deformation gradient.
     double strain[6];                // Calculated strain.
     int i, j, k;
-    vector<int> cellsToIgnore;
+    std::vector<int> cellsToIgnore;
     double avgTensor[9];             // ghost zone value
     int nTensors = 0;                // number of tensors in average
     

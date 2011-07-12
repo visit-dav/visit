@@ -49,6 +49,8 @@
 #include <ExprPipelineState.h>
 #include <snprintf.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: avtConstantFunctionExpression constructor
 //
@@ -185,6 +187,6 @@ avtConstantFunctionExpression::ProcessArguments(ArgsExpr *args,
 
     char strrep[30];
     SNPRINTF(strrep, 30, "'%e'", value);
-    state->PushName(string(strrep));    
+    state->PushName(std::string(strrep));    
 }
 

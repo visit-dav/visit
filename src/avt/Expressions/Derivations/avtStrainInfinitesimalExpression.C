@@ -60,6 +60,8 @@
 
 #include <ExpressionException.h>
 
+#include <vector>
+
 // ****************************************************************************
 //  Method: avtStrainInfinitesimalExpression constructor
 //
@@ -114,7 +116,7 @@ avtStrainInfinitesimalExpression::DeriveVariable(vtkDataSet *in_ds)
                                      // deformation gradient.
     double strain[6];                // Calculated strain.
     int i, j, k;
-    vector<int> cellsToIgnore;
+    std::vector<int> cellsToIgnore;
     double avgTensor[9];             // ghost zone value
     int nTensors;                    // number of tensors in average
     // Let's get the points from the input dataset.

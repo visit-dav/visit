@@ -46,6 +46,8 @@
 
 #include <avtMacroExpressionFilter.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Class: avtCurveExpression
@@ -81,7 +83,7 @@ class EXPRESSION_API avtCurveExpression : public avtMacroExpressionFilter
     const int                 IsXFunc(const char *var) const;
     const bool                ValidFunctionName(const char *func);
     int                       xvar;
-    string                    function;
+    std::string               function;
 };
 
 

@@ -47,9 +47,6 @@
 
 #include <query_exports.h>
 
-#include <string>
-#include <vector>
-
 class vtkDataSet;
 class vtkCell;
 

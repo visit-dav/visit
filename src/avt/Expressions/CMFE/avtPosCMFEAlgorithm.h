@@ -48,6 +48,9 @@
 #include <avtDataTree.h>
 #include <avtIntervalTree.h>
 
+#include <string>
+#include <vector>
+
 class     vtkCell;
 class     vtkDataArray;
 class     vtkDataSet;
@@ -131,20 +134,20 @@ class EXPRESSION_API avtPosCMFEAlgorithm
         int                   num_datasets;
         int                   num_rgrids;
         int                   rgrid_start;
-        vector<float *>       pt_list;
-        vector<int>           pt_list_size;
-        vector<float *>       rgrid_pts;
-        vector<int>           rgrid_pts_size;
+        std::vector<float *>  pt_list;
+        std::vector<int>      pt_list_size;
+        std::vector<float *>  rgrid_pts;
+        std::vector<int>      rgrid_pts_size;
         int                  *map_to_ds;
         int                  *ds_start;
         float                *vals;
 
-        vector<float *>       orig_pt_list;
-        vector<int>           orig_pt_list_size;
-        vector<float *>       orig_rgrid_pts;
-        vector<int>           orig_rgrid_pts_size;
-        vector<int>           pt_list_came_from;
-        vector<int>           rgrid_came_from;
+        std::vector<float *>  orig_pt_list;
+        std::vector<int>      orig_pt_list_size;
+        std::vector<float *>  orig_rgrid_pts;
+        std::vector<int>      orig_rgrid_pts_size;
+        std::vector<int>      pt_list_came_from;
+        std::vector<int>      rgrid_came_from;
 
         void                  GetProcessorsForGrid(int, std::vector<int> &,
                                                    std::vector<float> &,
@@ -159,7 +162,7 @@ class EXPRESSION_API avtPosCMFEAlgorithm
         virtual      ~FastLookupGrouping();
 
         void          AddMesh(vtkDataSet *);
-        vector<vtkDataSet *>   GetMeshes(void) { return meshes; };
+        std::vector<vtkDataSet *>   GetMeshes(void) { return meshes; };
         void          ClearAllInputMeshes(void);
         void          Finalize();
         void          RelocateDataUsingPartition(SpatialPartition &);
@@ -172,7 +175,7 @@ class EXPRESSION_API avtPosCMFEAlgorithm
         std::string            varname;
         bool                   isNodal;
         int                    nZones;
-        vector<vtkDataSet *>   meshes;
+        std::vector<vtkDataSet *> meshes;
         avtIntervalTree       *itree;
         int                   *map_to_ds;
         int                   *ds_start;

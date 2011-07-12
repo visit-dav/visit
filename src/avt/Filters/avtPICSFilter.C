@@ -111,6 +111,10 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <mpi.h>
 #endif
 
+#include <vector>
+
+using std::vector;
+
 avtPICSFilter *pcFilter = NULL;
 bool PostStepCB(void)
 {

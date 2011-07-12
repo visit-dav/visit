@@ -47,6 +47,7 @@
 
 #include <avtGeneralQuery.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Class: avtCycleQuery

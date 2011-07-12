@@ -37,7 +37,6 @@
 *****************************************************************************/
 
 #include <visitstream.h>
-#include <algorithm>
 
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
@@ -73,6 +72,10 @@
 // occurs with gcc-3.0.4 and on aix systems the conflict occurs with
 // gcc-3.1.
 #include <PF3DFileFormat.h>
+
+#include <algorithm>
+#include <string>
+#include <vector>
 
 #define BOF_KEY  "BOF"
 #define FILE_KEY "PDBFileObject"
@@ -2162,14 +2165,14 @@ PF3DFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 
     if(nGroups > 0)
     {
-        vector<vector<int> > groups;
+        std::vector<std::vector<int> > groups;
         for(int i = 0; i < nGroups; ++i)
         {
             int grp_size = master.Get_grp_size(i);
             const long *grp_members = master.Get_grp_members(i);
             if(grp_size > 0 && grp_members != 0)
             {
-                vector<int> thisGroup;
+                std::vector<int> thisGroup;
                 debug4 << mName << "Adding I/O group " << i << " {";
 
                 for(int j = 0; j < grp_size; ++j)

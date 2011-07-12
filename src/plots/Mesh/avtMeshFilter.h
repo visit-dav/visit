@@ -47,6 +47,8 @@
 #include <avtSIMODataTreeIterator.h>
 #include <MeshAttributes.h>
 
+#include <string>
+
 class vtkExtractEdges;
 class vtkGeometryFilter;
 class vtkLinesFromOriginalCells;
@@ -96,7 +98,7 @@ class avtMeshFilter : public avtSIMODataTreeIterator
     MeshAttributes             atts;
     bool                       keepNodeZone;
 
-    virtual avtDataTree_p      ExecuteDataTree(vtkDataSet *, int, string);
+    virtual avtDataTree_p      ExecuteDataTree(vtkDataSet *, int, std::string);
     virtual void               UpdateDataObjectInfo(void);
     virtual avtContract_p     
                                ModifyContract(avtContract_p spec);

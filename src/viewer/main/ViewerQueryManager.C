@@ -40,14 +40,8 @@
 //                          ViewerQueryManager.C                             //
 // ************************************************************************* //
 
-#include <stdio.h>
-#include <math.h>
-#include <float.h>
-#include <snprintf.h>
-#include <string>
-
 #include <ViewerQueryManager.h>
-
+#include <snprintf.h>
 #include <avtColorTables.h>
 #include <avtDatabaseMetaData.h>
 #include <avtToolInterface.h>
@@ -83,10 +77,20 @@
 #include <ViewerWindowManager.h>
 #include <GlobalLineoutAttributes.h>
 #include <VisItException.h>
-
 #include <ViewerSubject.h>
 extern ViewerSubject *viewerSubject;
 
+#include <float.h>
+#include <math.h>
+#include <stdio.h>
+
+#include <set>
+#include <string>
+#include <vector>
+
+using std::set;
+using std::string;
+using std::vector;
 
 // File wide modifications:
 //   Brad Whitlock, Tue Jan 27 16:41:32 PST 2004
@@ -117,10 +121,6 @@ extern ViewerSubject *viewerSubject;
 #define QUERY_UNKNOWN_VAR           0x0400
 
 
-
-
-using std::vector;
-using std::string;
 
 //
 // Storage for static data elements.

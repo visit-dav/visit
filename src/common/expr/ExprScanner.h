@@ -44,8 +44,6 @@
 #include <visitstream.h>
 #include <string>
 #include <deque>
-using std::string;
-using std::deque;
 
 #include <Scanner.h>
 #include <ExprToken.h>
@@ -121,11 +119,11 @@ class EXPR_API ExprScanner : public Scanner
     // All state for scanning
     std::string      text;
     int              state;
-    deque<ScanState> scanstate;
+    std::deque<ScanState> scanstate;
 
     int              pos;
     int              lastacceptstate;
-    string           lastacceptstring;
+    std::string      lastacceptstring;
     int              lastacceptpos;
 
 };

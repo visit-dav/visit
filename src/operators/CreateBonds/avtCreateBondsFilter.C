@@ -55,10 +55,17 @@
 #include <vtkMatrix4x4.h>
 #include <vtkMath.h>
 
-#include <map>
 #include <float.h>
-using std::pair;
+
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
 using std::map;
+using std::pair;
+using std::string;
+using std::vector;
 
 // ****************************************************************************
 //  Method: avtCreateBondsFilter constructor
@@ -272,7 +279,7 @@ ShouldAtomsBeBonded(double dmin, double dmax,
 //
 // ****************************************************************************
 vtkDataSet *
-avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, string)
 {
     vtkGeometryFilter *geom = NULL;
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)

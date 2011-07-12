@@ -54,11 +54,14 @@
 #include <avtPythonFilterEnvironment.h>
 #include <PyContract.h>
 
+#include <string>
+#include <vector>
+
 // Helper for throwing an Exception Expression when things go wrong.
 #define PYEXPR_ERROR(msg) \
 {  \
-  string emsg(msg); \
-  string pyerr=""; \
+  std::string emsg(msg); \
+  std::string pyerr=""; \
   if(pyEnv->FetchPythonError(pyerr))\
      emsg += "\nPython Environment Error:\n" + pyerr;\
   CleanUp(); \
@@ -318,7 +321,7 @@ avtPythonExpression::ProcessArguments(ArgsExpr *args,
     pyScript = "";
 
     ExprParseTreeNode *last_node =  ((*arguments)[nargs-1])->GetExpr();
-    string last_node_type = last_node ->GetTypeName();
+    std::string last_node_type = last_node ->GetTypeName();
 
 
     if(last_node_type != "StringConst")
@@ -351,7 +354,7 @@ avtPythonExpression::ProcessArguments(ArgsExpr *args,
     for(int i=0;i< nargs-1;i++)
     {
         ExprParseTreeNode *node =  ((*arguments)[i])->GetExpr();
-        string node_type = node->GetTypeName();
+        std::string node_type = node->GetTypeName();
         PyObject *py_arg = NULL;
 
         if(node_type == "IntegerConst")
@@ -368,7 +371,7 @@ avtPythonExpression::ProcessArguments(ArgsExpr *args,
         }
         else if(node_type == "StringConst")
         {
-            string sval = dynamic_cast<StringConstExpr*>(node)->GetValue();
+            std::string sval = dynamic_cast<StringConstExpr*>(node)->GetValue();
             // create Py_STRING
             py_arg = PyString_FromString(sval.c_str());
         }
@@ -406,7 +409,7 @@ avtPythonExpression::ProcessArguments(ArgsExpr *args,
             if(node_type == "Var")
             {
                 PathExpr *path_expr= dynamic_cast<VarExpr*>(node)->GetVar();
-                string text =path_expr->GetFullpath();
+                std::string text =path_expr->GetFullpath();
                 PyObject *py_txt = PyString_FromString(text.c_str());
                 if(PyList_Append(py_vars_list,py_txt) == -1)
                     PYEXPR_ERROR("avtPythonExpression::ProcessArguments Error - "
@@ -441,7 +444,7 @@ avtPythonExpression::Execute()
     // ProcessArguments is called - set it here so the filter can use the 
     // the proper output name.
     //
-    pyEnv->Filter()->SetAttribute("output_var_name",string(outputVariableName));
+    pyEnv->Filter()->SetAttribute("output_var_name",std::string(outputVariableName));
 
     // get input data tree to obtain datasets
     avtDataTree_p tree = GetInputDataTree();
@@ -452,7 +455,7 @@ avtPythonExpression::Execute()
     vtkDataSet **data_sets = tree->GetAllLeaves(nsets);
 
     // get dataset domain ids
-    vector<int> domain_ids;
+    std::vector<int> domain_ids;
     tree->GetAllDomainIds(domain_ids);
 
     // create a tuple holding to hold the datasets
@@ -547,8 +550,8 @@ avtPythonExpression::Execute()
 
     // check that the lists are the correct size?
 
-    vector<vtkDataSet*> res_dsets;
-    vector<int>         res_domids;
+    std::vector<vtkDataSet*> res_dsets;
+    std::vector<int>         res_domids;
     
     // process all local sets
     for(int i = 0; i < nsets ; i++)

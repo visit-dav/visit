@@ -52,6 +52,8 @@
 #include <ColorAttribute.h>
 #include <InvalidColortableException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtMultiCurvePlot constructor
@@ -280,7 +282,7 @@ avtMultiCurvePlot::CustomizeBehavior(void)
     mNode = behavior->GetInfo().GetAttributes().GetPlotInformation().GetData().GetEntry("LegendMessage");
     if (mNode != NULL)
     {
-        const string message = mNode->GetEntry("message")->AsString();
+        const std::string message = mNode->GetEntry("message")->AsString();
         levelsLegend->SetMessage(message.c_str());
     }
 
@@ -483,8 +485,8 @@ avtMultiCurvePlot::SetLegend(bool on)
 avtContract_p
 avtMultiCurvePlot::EnhanceSpecification(avtContract_p spec)
 {
-    string mv = atts.GetMarkerVariable();
-    string iv = atts.GetIdVariable();
+    std::string mv = atts.GetMarkerVariable();
+    std::string iv = atts.GetIdVariable();
     if (mv == "default" && iv == "default")
     {
         return spec;

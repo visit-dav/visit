@@ -41,7 +41,7 @@
 #define _MULTI_RES_FILE_READER_H_
 
 #include <string>
-using std::string;
+#include <vector>
 
 #define DEBUG_TO_STDERR
 
@@ -96,20 +96,20 @@ public:  // api implemented from MetadataAPI
     virtual float           fileVersion     () const {return mFileVersion;}
     virtual int             numFiles        () const {return 1;}
     virtual int             numResolutions  () const {return mNumResolutions;}
-    virtual string          gridFilename    () const;
-    virtual vector<int>     timeStepList    () const;
+    virtual std::string     gridFilename    () const;
+    virtual std::vector<int> timeStepList    () const;
 
     // data rank: scalars, vectors, or tensors
     virtual int             numVariables        () const {return 1;}
-    virtual string          variableNameAt      (int index) const;
-    virtual int             indexOfVariableName (const string& name="") const
+    virtual std::string     variableNameAt      (int index) const;
+    virtual int             indexOfVariableName (const std::string& name="") const
                                                     {return 0;}
-    virtual bool            isScalar            (const string& name="") const;
-    virtual char            isVectorComponent   (const string& name="") const;
-    virtual bool            isVector            (const string& name="") const;
-    virtual bool            isTensor            (const string& name="") const;
+    virtual bool            isScalar            (const std::string& name="") const;
+    virtual char            isVectorComponent   (const std::string& name="") const;
+    virtual bool            isVector            (const std::string& name="") const;
+    virtual bool            isTensor            (const std::string& name="") const;
     virtual int             numVectorExpressions() const {return 0;}
-    virtual string          vectorExpressionAt  (int index) const {return "";}
+    virtual std::string     vectorExpressionAt  (int index) const {return "";}
 
     // data size and structure
     virtual int             width               (int resolution) const;
@@ -122,11 +122,11 @@ public:  // api implemented from MetadataAPI
     virtual bool            hasMaxVal           () const {return mHasMaxVal;}
     virtual float           minVal              () const {return mMinVal;}
     virtual float           maxVal              () const {return mMaxVal;}
-    virtual const float*    rawData             (const string& varName,
+    virtual const float*    rawData             (const std::string& varName,
                                                  int resolution,
                                                  int fileIndex,
                                                  int chunkIndex);
-    virtual void            freeRawDataMemory   (const string& varName="",
+    virtual void            freeRawDataMemory   (const std::string& varName="",
                                                  int fileIndex=0);
 
 public:
@@ -137,14 +137,14 @@ public:
 private: // helper functions
     void        loadDataFromFile        ();
     float       parseVersionNumber      (const char* line);
-    string      parseGridFilename       (const char* line);
-    string      parseDataFilename       (const char* line);
-    string      parseDataType           (const char* line);
-    string      parseDataRank           (const char* line);
-    string      parseVariableName       (const char* line);
-    vector<int> parseNumXchunks         (const char* line);
-    vector<int> parseNumYchunks         (const char* line);
-    vector<int> parseNumZchunks         (const char* line);
+    std::string parseGridFilename       (const char* line);
+    std::string parseDataFilename       (const char* line);
+    std::string parseDataType           (const char* line);
+    std::string parseDataRank           (const char* line);
+    std::string parseVariableName       (const char* line);
+    std::vector<int> parseNumXchunks    (const char* line);
+    std::vector<int> parseNumYchunks    (const char* line);
+    std::vector<int> parseNumZchunks    (const char* line);
     float       parseMinVal             (const char* line);
     float       parseMaxVal             (const char* line);
     int         parseNumResolutions     (const char* line);
@@ -164,25 +164,25 @@ public: static int main(int argc, char** argv);
 
 private: // members
     float*          mDataBuffer;        // ptr to all data resolutions
-    vector<long long> mOffsets;         // byte offset to each resolution
-    vector<float*>  mRawDataPtrs;       // ptr to data array for each res
-    vector<int>     mWidths;            // size (width) for each res
-    vector<int>     mHeights;           // size (height) for each res
-    vector<int>     mDepths;            // size (depth) for each res
-    vector<int>     mChunkSizes;        // num elements per chunk per res
+    std::vector<long long> mOffsets;         // byte offset to each resolution
+    std::vector<float*>  mRawDataPtrs;       // ptr to data array for each res
+    std::vector<int> mWidths;            // size (width) for each res
+    std::vector<int> mHeights;           // size (height) for each res
+    std::vector<int> mDepths;            // size (depth) for each res
+    std::vector<int> mChunkSizes;        // num elements per chunk per res
     int             mHeaderSize;        // size (bytes) of file metadata
-    string          mFilename;          // name of 'mrd' file.
-    string          mGridFilename;      // name of grid file in header
-    string          mDataFilename;      // data file name if different
+    std::string     mFilename;          // name of 'mrd' file.
+    std::string     mGridFilename;      // name of grid file in header
+    std::string     mDataFilename;      // data file name if different
     int             mNumResolutions;    // number of resolutions in the file
     int             mNumErrorDataSets;  // number of error data resolutions 
     float           mFileVersion;       // version of the 'mrd' file read
-    string          mDataType;          // must be "float", else bad will be
-    string          mDataRank;          // "scalar", "vector", "tensor"
-    vector<int>     mNumXchunks;        // number of chunks along 'width' axis
-    vector<int>     mNumYchunks;        // number of chunks along 'height' axis
-    vector<int>     mNumZchunks;        // number of chunks along 'depth' axis
-    string          mVariableName;      // scalar or vector name
+    std::string     mDataType;          // must be "float", else bad will be
+    std::string     mDataRank;          // "scalar", "vector", "tensor"
+    std::vector<int> mNumXchunks;        // number of chunks along 'width' axis
+    std::vector<int> mNumYchunks;        // number of chunks along 'height' axis
+    std::vector<int> mNumZchunks;        // number of chunks along 'depth' axis
+    std::string     mVariableName;      // scalar or vector name
     float           mMinVal;            // min of entire MR dataset
     float           mMaxVal;            // max val of entire MR dataset
     bool            mHasMinVal;         // flag indicates if min val in file

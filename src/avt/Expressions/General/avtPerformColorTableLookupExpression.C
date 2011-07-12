@@ -51,6 +51,9 @@
 
 #include <ExpressionException.h>
 
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 //  Method: avtPerformColorTableLookupExpression constructor
 //
@@ -144,7 +147,7 @@ avtPerformColorTableLookupExpression::ProcessArguments(ArgsExpr *args,
     // Parse the color table argument
     ArgExpr *second_arg= (*arguments)[1];
     ExprParseTreeNode *second_tree= second_arg->GetExpr();
-    string second_type = second_tree->GetTypeName();
+    std::string second_type = second_tree->GetTypeName();
 
     if ((second_type == "StringConst"))
         mLUTName = dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
@@ -159,10 +162,10 @@ avtPerformColorTableLookupExpression::ProcessArguments(ArgsExpr *args,
         // Parse the color table argument
         ArgExpr *third_arg = (*arguments)[2];
         ExprParseTreeNode *third_tree= third_arg->GetExpr();
-        string third_type = third_tree->GetTypeName();
+        std::string third_type = third_tree->GetTypeName();
         if ((third_type == "StringConst"))
         {
-            string mapping =  dynamic_cast<StringConstExpr*>(third_tree)->GetValue();
+            std::string mapping =  dynamic_cast<StringConstExpr*>(third_tree)->GetValue();
             if (mapping == "id")
                 mLUTMapping = Identity;
             else if (mapping == "log")
@@ -202,7 +205,7 @@ avtPerformColorTableLookupExpression::ProcessArguments(ArgsExpr *args,
             {
                 ArgExpr *fourth_arg = (*arguments)[3];
                 ExprParseTreeNode *fourth_tree= fourth_arg->GetExpr();
-                string fourth_type = fourth_tree->GetTypeName();
+                std::string fourth_type = fourth_tree->GetTypeName();
                 if (fourth_type == "FloatConst")
                 {
                     mSkew = dynamic_cast<FloatConstExpr*>(fourth_tree)->GetValue();

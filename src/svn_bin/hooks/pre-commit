@@ -97,8 +97,11 @@ runhook_sh "check_dos.sh"
 # Check for #warning compiler directives
 runhook_sh "check_pound_warning.sh"
 
-# Check for assert/abort/exit calls 
+# Check for abort/exit calls 
 runhook_sh "check_abort_calls.sh"
+
+# Check for using statements in header files
+runhook_sh "check_using_stmts.sh"
 
 # Clean up
 rm -f ${FLIST}

@@ -29,6 +29,9 @@
 
 #include <Motcle.h>
 #include <string.h>
+#include <istream>
+#include <ostream>
+#include <string>
 Nom & Nom::majuscule()
 {
   const int n = longueur()-1; 
@@ -120,13 +123,13 @@ Motcles noms_to_motcles(const Noms & a)
   return b;
 }
 
-istream & operator>>(istream & is, Nom & nom)
+std::istream & operator>>(std::istream & is, Nom & nom)
 { 
   nom.read(is);
   return is; 
 }
 
-ostream & operator<<(ostream & os, const Nom & nom)
+std::ostream & operator<<(std::ostream & os, const Nom & nom)
 { 
   nom.write(os); 
   return os; 

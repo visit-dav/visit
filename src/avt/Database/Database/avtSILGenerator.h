@@ -101,7 +101,7 @@ class DATABASE_API avtSILGenerator
                                    bool useSILArrays,
                                    SILCategoryRole cat = SIL_DOMAIN,
                                    bool onlyCreateSets = false);
-    vector<int>         AddGroups(avtSIL *, int, int, int, const std::string &,
+    std::vector<int>    AddGroups(avtSIL *, int, int, int, const std::string &,
                                   const std::string &);
     void                AddGroupCollections(avtSIL *, int, int,
                                   const std::vector<int> &,

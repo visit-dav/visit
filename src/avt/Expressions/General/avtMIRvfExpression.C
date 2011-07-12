@@ -61,6 +61,8 @@
 #include <ExpressionException.h>
 #include <ImproperUseException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtMIRvfExpression constructor
@@ -418,7 +420,7 @@ avtMIRvfExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     // Pull off the fourth argument and see if it's a string or a list.
     ArgExpr *fourtharg = (*arguments)[3];
     ExprParseTreeNode *fourthTree = fourtharg->GetExpr();
-    string type = fourthTree->GetTypeName();
+    std::string type = fourthTree->GetTypeName();
     if ((type != "IntegerConst") && (type != "StringConst") && (type != "List"))
     {
         debug5 << "avtMIRvfExpression: Second argument is not a constant or a list: " << type.c_str() << endl;
@@ -469,7 +471,7 @@ avtMIRvfExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
             else
             {
                 ExprNode *item = (*elems)[i]->GetItem();
-                string type = item->GetTypeName();
+                std::string type = item->GetTypeName();
                 if (type != "IntegerConst" && type != "StringConst")
                 {
                     debug5 << "avtMIRvfExpression: List element is not an "
@@ -511,7 +513,7 @@ avtMIRvfExpression::AddMaterial(ConstExpr *c)
 {
     if (c->GetConstantType() == ConstExpr::String)
     {
-        string matname = dynamic_cast<StringConstExpr*>(c)->GetValue();
+        std::string matname = dynamic_cast<StringConstExpr*>(c)->GetValue();
         matNames.push_back(matname);
     }
     else // c->GetConstantType() == ConstExpr::Integer

@@ -51,10 +51,6 @@
 #include <string>
 #include <vector>
 
-using std::map;
-using std::string;
-using std::vector;
-
 // Macro to simplify allocation of an iMesh 'array' of specific
 // size, N
 #define IMESH_ADEFN(TN,ON,N)                    \
@@ -155,23 +151,23 @@ namespace avtITAPS_CUtility
     extern char** entTypes;
     extern char** entTopologies;
     extern char** itapsDataTypeNames;
-    extern map<string, int> messageCounts;
+    extern std::map<std::string, int> messageCounts;
     extern const char *supressMessage;
 
     void ITAPSErrorCleanupHelper(void *first, ...);
     void InitDataTypeNames();
-    string VisIt_iMesh_getTagName(iMesh_Instance theMesh, iBase_TagHandle theTag);
+    std::string VisIt_iMesh_getTagName(iMesh_Instance theMesh, iBase_TagHandle theTag);
     int ITAPSEntityTopologyToVTKZoneType(int ztype);
     int VTKZoneTypeToITAPSEntityTopology(int ztype);
     void TraverseSetHierarchy(iMesh_Instance aMesh, int level, int memberId,
         bool isEntitySet, iBase_EntityHandle eh, iBase_EntitySetHandle esh, bool debugOff,
         HandleThisSet handleSetCb, void *handleSetCb_data);
     void GetTagsForEntity(iMesh_Instance aMesh, bool isEntitySet,
-        iBase_EntityHandle eh, iBase_EntitySetHandle esh, vector<string> &tagNames, vector<int> &tagTypes,
-        vector<int> &tagSizes, vector<string> &tagVals, int level);
+        iBase_EntityHandle eh, iBase_EntitySetHandle esh, std::vector<std::string> &tagNames, std::vector<int> &tagTypes,
+        std::vector<int> &tagSizes, std::vector<std::string> &tagVals, int level);
     bool GetTopLevelSets(iMesh_Instance ima, int level, int memidx, bool ises,
         iBase_EntityHandle eh, iBase_EntitySetHandle esh, void *cb_data);
     int GetTagStuff(iMesh_Instance ima, iBase_EntitySetHandle set,
-        int ent_type, string name, int *type, int *nvals, void **vals);
+        int ent_type, std::string name, int *type, int *nvals, void **vals);
 }
 #endif

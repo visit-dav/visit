@@ -43,13 +43,6 @@
 #include <avtNASTRANFileFormat.h>
 #include <avtNASTRANOptions.h>
 
-#include <errno.h>
-#include <map>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <string>
-#include <limits.h>
-
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -84,8 +77,18 @@
 #include <vtkUnstructuredGridRelevantPointsFilter.h>
 #endif
 
-using     std::string;
-using     std::map;
+#include <errno.h>
+#include <limits.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <map>
+#include <string>
+#include <vector>
+
+using std::map;
+using std::string;
+using std::vector;
 
 #define ALL_LINES -1
 #define INVALID_MAT_ID -INT_MAX

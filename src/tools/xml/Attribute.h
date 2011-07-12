@@ -38,11 +38,13 @@
 
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
-#include <set>
 #include <QFile>
 #include <QTextStream>
 #include "AttributeBase.h"
 #include "Field.h"
+
+#include <set>
+#include <vector>
 
 // ****************************************************************************
 //  Class:  Attribute
@@ -109,7 +111,7 @@
 class Attribute : public AttributeBase
 {
   public:
-    vector<Field*> fields;
+    std::vector<Field*> fields;
   public:
     Attribute(const QString &n, const QString &p, const QString &f,
               const QString &e, const QString &ei, const QString &bc)

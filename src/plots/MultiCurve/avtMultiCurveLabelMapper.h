@@ -46,6 +46,8 @@
 #include <avtDecorationsMapper.h>
 #include <ColorAttributeList.h>
 
+#include <vector>
+
 class     vtkDataSet;
 
 
@@ -92,7 +94,7 @@ class avtMultiCurveLabelMapper : public avtDecorationsMapper
     double                     scale;
 
     ColorAttributeList         cal;
-    vector<int>                colors;
+    std::vector<int>           colors;
 
     virtual void               CustomizeMappers(void);
     virtual void               SetDatasetInput(vtkDataSet *, int);

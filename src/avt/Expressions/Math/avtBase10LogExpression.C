@@ -51,6 +51,8 @@
 
 #include <ExpressionException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtBase10LogExpression constructor
@@ -135,7 +137,7 @@ avtBase10LogExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                     out->SetComponent(i, j, defaultErrorValue);
                 else
                 {
-                    string msg = "you cannot take the logarithm of values";
+                    std::string msg = "you cannot take the logarithm of values";
                     msg += "<=0.  You might want to try log10(var, ";
                     msg +=  "some-default-numeric-value).";
                     EXCEPTION2(ExpressionException, outputVariableName,
@@ -199,7 +201,7 @@ avtBase10LogExpression::ProcessArguments(ArgsExpr *args,
         }
         else
         {
-            string error_msg = "avtBase10LogExpression: "
+            std::string error_msg = "avtBase10LogExpression: "
                                "Invalid second argument."
                                "Should be float or int";
             debug5 << error_msg << endl;

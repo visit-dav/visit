@@ -55,6 +55,8 @@
 #include <DebugStream.h>
 #include <InvalidLimitsException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtPseudocolorPlot constructor
@@ -583,7 +585,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
 
     if (varname != NULL)
     {
-        glyphMapper->ColorByScalarOn(string(varname));
+        glyphMapper->ColorByScalarOn(std::string(varname));
     }
 
     SetScaling(atts.GetScaling(), atts.GetSkewFactor());
@@ -606,7 +608,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
 // ****************************************************************************
 
 void
-avtPseudocolorPlot::GetDataExtents(vector<double> &extents)
+avtPseudocolorPlot::GetDataExtents(std::vector<double> &extents)
 {
     double min, max;
 
@@ -1098,7 +1100,7 @@ avtPseudocolorPlot::EnhanceSpecification(avtContract_p spec)
     avtContract_p rv = spec;
     if (topoDim == 0)
     {
-        string pointVar = atts.GetPointSizeVar();
+        std::string pointVar = atts.GetPointSizeVar();
         avtDataRequest_p dataRequest = spec->GetDataRequest();
 
         //

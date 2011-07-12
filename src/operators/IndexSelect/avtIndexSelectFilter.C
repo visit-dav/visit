@@ -72,6 +72,8 @@
 #include <InvalidVariableException.h>
 #include <snprintf.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtIndexSelectFilter constructor
@@ -822,8 +824,8 @@ avtIndexSelectFilter::ModifyContract(avtContract_p spec)
 
     if (!atts.GetUseWholeCollection() && !skipSILRestriction) 
     {
-        string category = atts.GetCategoryName();
-        string subset = atts.GetSubsetName();
+        std::string category = atts.GetCategoryName();
+        std::string subset = atts.GetSubsetName();
         avtSILRestriction_p silr = spec->GetDataRequest()->GetRestriction();
         avtSILRestriction_p old_values = new avtSILRestriction(silr);
         avtSILRestrictionTraverser trav(old_values);

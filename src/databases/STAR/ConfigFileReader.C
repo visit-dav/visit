@@ -43,6 +43,12 @@
 #include "StarObject.h"
 #include "ConfigFileReader.h"
 
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
 static const char*  GLOBAL_SECTION_NAME = "$global$";
 
 /* ========================================================================= */

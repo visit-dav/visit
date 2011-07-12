@@ -43,14 +43,14 @@
 #ifndef AVT_XRAY_FILTER_H
 #define AVT_XRAY_FILTER_H
 
-
-#include <string>
-
 #include <filters_exports.h>
 #include <avtDatasetToDatasetFilter.h>
 #include <avtVector.h>
 
 #include <vtkPolyData.h>
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Class: avtXRayFilter
@@ -159,10 +159,10 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     virtual void                    PostExecute(void);
 
     virtual void                    CartesianExecute(vtkDataSet *, int &,
-                                        vector<double>&, vector<int>&,
+                                        std::vector<double>&, std::vector<int>&,
                                         float **&);
     virtual void                    CylindricalExecute(vtkDataSet *, int &,
-                                        vector<double>&, vector<int>&,
+                                        std::vector<double>&, std::vector<int>&,
                                         float **&);
 
   private:
@@ -170,7 +170,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                         int &, int *&, double *&, float **&);
 
     void                            RedistributeLines(int, int *,
-                                        vector<double> *, vector<int> *,
+                                        std::vector<double> *, std::vector<int> *,
                                         int,  float ***, int &, int *&,
                                         double *&, float **&);
 

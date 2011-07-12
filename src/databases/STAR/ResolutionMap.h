@@ -42,6 +42,8 @@
 
 #include "StarObject.h"
 
+#include <vector>
+
 /**
  *      An adaptive resolution map assumes a chunked data format
  *      and maps each chunk int he dataset to a resolution.
@@ -70,7 +72,7 @@ public:  // api
 private:
     int                 mNumChunks;
     int                 mNumResolutions;
-    vector<int>         mResolutionMap;         // index is chunk number
+    std::vector<int>    mResolutionMap;         // index is chunk number
 
 private: // disable copy constructor and operator=
     ResolutionMap(ResolutionMap&);

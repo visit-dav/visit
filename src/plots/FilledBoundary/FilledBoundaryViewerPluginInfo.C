@@ -44,6 +44,10 @@
 #include <QApplication>
 #include <avtFilledBoundaryPlot.h>
 
+#include <set>
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -439,11 +443,11 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
     avtDatabaseMetaData *nonConstmd = const_cast <avtDatabaseMetaData *>(md);
 
-    string vn(plot->GetVariableName());
+    std::string vn(plot->GetVariableName());
 
     const avtMaterialMetaData *mat = NULL;
 
-    string meshName = nonConstmd->MeshForVar(vn);
+    std::string meshName = nonConstmd->MeshForVar(vn);
     avtMeshMetaData *mesh = 
         const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
 
@@ -451,8 +455,8 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     stringVector       sv;
     stringVector       matColors;
     stringVector::const_iterator pos;
-    set<int> groupSet;
-    vector<int> gIDS;
+    std::set<int> groupSet;
+    std::vector<int> gIDS;
     char temp[512];
 
     // 

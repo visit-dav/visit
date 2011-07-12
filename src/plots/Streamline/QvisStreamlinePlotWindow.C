@@ -61,8 +61,12 @@
 #include <QvisOpacitySlider.h>
 #include <QListWidget>
 #include <QFileDialog>
+
 #include <stdio.h>
+
 #include <iostream>
+#include <string>
+#include <vector>
 
 static void
 TurnOn(QWidget *w0, QWidget *w1=NULL);
@@ -3144,7 +3148,7 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             QListWidgetItem *item = pointList->item(i);
             if (item)
             {
-                string str = item->text().toLatin1().data();
+                std::string str = item->text().toLatin1().data();
                 sscanf(str.c_str(), "%lf %lf %lf", &x, &y, &z);
                 points.push_back(x);
                 points.push_back(y);
@@ -4378,7 +4382,7 @@ void
 QvisStreamlinePlotWindow::readPoints()
 {
     QString res = QFileDialog::getOpenFileName(NULL, tr("Open text file"), ".");
-    string filename = res.toLatin1().data();
+    std::string filename = res.toLatin1().data();
 
     if (filename == "")
         return;

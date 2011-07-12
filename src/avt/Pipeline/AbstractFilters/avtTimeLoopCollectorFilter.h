@@ -79,7 +79,7 @@ class PIPELINE_API avtTimeLoopCollectorFilter
     virtual void             Execute(void);
     virtual void             CreateFinalOutput(void);
     virtual void             ReleaseData(void);
-    virtual avtDataTree_p    ExecuteAllTimesteps(vector<avtDataTree_p> &) = 0;
+    virtual avtDataTree_p    ExecuteAllTimesteps(std::vector<avtDataTree_p> &) = 0;
 };
 
 

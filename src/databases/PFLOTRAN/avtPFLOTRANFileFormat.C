@@ -42,8 +42,6 @@
 
 #include <avtPFLOTRANFileFormat.h>
 
-#include <algorithm>
-#include <string>
 #include <DebugStream.h>
 #include <snprintf.h>
 
@@ -70,10 +68,17 @@
 #include <avtParallel.h>
 #endif
 
-using std::string;
+#include <algorithm>
+#include <map>
+#include <string>
+#include <vector>
 
-static std::string coordNames[3] = { "X [m]", "Y [m]", "Z [m]" };
-static std::string vecNames[3] = { "X-", "Y-", "Z-" };
+using std::map;
+using std::string;
+using std::vector;
+
+static string coordNames[3] = { "X [m]", "Y [m]", "Z [m]" };
+static string vecNames[3] = { "X-", "Y-", "Z-" };
 
 // ****************************************************************************
 //  Method: avtPFLOTRANFileFormat constructor
@@ -752,7 +757,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
 #endif
 
     // Set the time information.
-    std::vector<double> t;
+    vector<double> t;
     for(int i=0;i<nTime;i++)
         t.push_back(times[i].first);
     md->SetTimes(t);

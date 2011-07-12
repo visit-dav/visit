@@ -55,6 +55,8 @@
 
 #include <cstring>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: avtScatterPlot constructor
 //
@@ -872,10 +874,10 @@ avtScatterPlot::EnhanceSpecification(avtContract_p contract_in)
     avtContract_p rv = contract_in;
     avtDataRequest_p datareq_in = contract_in->GetDataRequest();
 
-    string var1(atts.GetVar1());
-    string var2(atts.GetVar2());
-    string var3(atts.GetVar3());
-    string var4(atts.GetVar4());
+    std::string var1(atts.GetVar1());
+    std::string var2(atts.GetVar2());
+    std::string var3(atts.GetVar3());
+    std::string var4(atts.GetVar4());
     bool addVar1 = false, addVar2 = false, addVar3 = false, addVar4 = false;
 
     // if var1 isn't set, read from contract (supports cli use)

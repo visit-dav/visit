@@ -47,10 +47,9 @@
 #include <avtDatasetQuery.h>
 #include <avtConnComponentsQuery.h>
 
-#include <string>
+#include <vector>
 
 class avtVMetricArea;
-
 class vtkDataSet;
 
 
@@ -80,7 +79,7 @@ class QUERY_API avtConnComponentsAreaQuery : public avtConnComponentsQuery
   protected:
 
     avtVMetricArea                 *areaFilter;
-    vector<double>                  areaPerComp;
+    std::vector<double>             areaPerComp;
 
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);

@@ -52,6 +52,8 @@
 #include <DebugStream.h>
 #include <PickVarInfo.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: avtLocateAndPickNodeQuery Constructor
 //
@@ -166,7 +168,7 @@ avtLocateAndPickNodeQuery::PerformQuery(QueryAttributes *qa)
         {
             // Special indication that the pick point should not be displayed.
             double cp[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
-            string msg;
+            std::string msg;
             pickAtts.SetCellPoint(cp);
             pickAtts.CreateOutputString(msg);
             qa->SetResultsMessage(msg);

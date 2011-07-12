@@ -62,6 +62,9 @@
 #include <float.h>
 #include <stdio.h>
 
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 //  Method: avtXRayImageQuery::avtXRayImageQuery
 //
@@ -437,7 +440,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         if (outputType >=0 && outputType <= 4)
         {
-            string msg = "";
+            std::string msg = "";
             const char *exts[5] = {"bmp", "jpeg", "png", "tif", "bof"};
             char buf[512];
     

@@ -61,6 +61,12 @@
 #include <QvisDBOptionsDialog.h>
 #include <QvisPluginManagerAttributesDataModel.h>
 
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
 // ****************************************************************************
 //  Method: QvisPluginWindow::QvisPluginWindow
 //
@@ -1124,7 +1130,7 @@ QvisPluginWindow::getCurrentlySelectedPreferredIndex()
 // ****************************************************************************
 
 bool
-QvisPluginWindow::preferredOptionsContainsID(const std::string &id)
+QvisPluginWindow::preferredOptionsContainsID(const string &id)
 {
     for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
     {

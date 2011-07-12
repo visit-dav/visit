@@ -51,6 +51,7 @@
 
 #include <ExpressionException.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Method: avtMeanFilterExpression constructor
@@ -153,7 +154,7 @@ avtMeanFilterExpression::ProcessArguments(ArgsExpr *args,
         // Parse the color table argument
         ArgExpr *add_arg = (*arguments)[i];
         ExprParseTreeNode *add_tree= add_arg->GetExpr();
-        string add_type = add_tree->GetTypeName();
+        std::string add_type = add_tree->GetTypeName();
         if ((add_type == "IntegerConst"))
         {
             width[i-1] =  dynamic_cast<IntegerConstExpr*>(add_tree)->GetValue();

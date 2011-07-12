@@ -56,6 +56,7 @@
 
 #include <DebugStream.h>
 
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtIndividualChordLengthDistributionQuery constructor
@@ -230,7 +231,7 @@ avtIndividualChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         EXCEPTION0(ImproperUseException);
         
     int npts = pd->GetNumberOfPoints();
-    vector<bool> usedPoint(npts, false);
+    std::vector<bool> usedPoint(npts, false);
     
     pd->BuildLinks();
     pd->BuildCells();

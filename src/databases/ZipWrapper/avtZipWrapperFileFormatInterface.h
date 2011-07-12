@@ -51,9 +51,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
-
 class avtZipWrapperFileFormat;
 class DBOptionsAttributes;
 class CommonDatabasePluginInfo;
@@ -170,10 +167,10 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
                                        const DBOptionsAttributes *readOpts);
       static void                  Finalize();
       static void                  CleanUpAtExit();
-      static vector<avtZipWrapperFileFormatInterface*>
+      static std::vector<avtZipWrapperFileFormatInterface*>
                                    objList;
-      static string                tmpDir;
-      static string                decompCmd;
+      static std::string                tmpDir;
+      static std::string                decompCmd;
       static int                   maxDecompressedFiles;
 
       int                          procNum;
@@ -188,15 +185,15 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
       avtFileFormatInterface      *dummyInterface;
 
       DatabasePluginManager       *pluginManager;
-      vector<vector<string> >      inputFileList;
+      std::vector<std::vector<std::string> >      inputFileList;
       int                          inputFileListSize;
       int                          inputFileBlockCount;
       int                          nTimesteps;
       int                          dbType;
-      string                       pluginId;
+      std::string                       pluginId;
       bool                         realPluginWasLoadedByMe;
 
-      MRUCache<string, avtFileFormatInterface*, MRUCache_CallbackDelete, 20>
+      MRUCache<std::string, avtFileFormatInterface*, MRUCache_CallbackDelete, 20>
                                    decompressedFilesCache;
 };
 

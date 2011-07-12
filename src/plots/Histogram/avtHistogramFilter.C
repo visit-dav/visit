@@ -42,8 +42,6 @@
 
 #include <avtHistogramFilter.h>
 
-#include <float.h>
-
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataArray.h>
@@ -63,6 +61,13 @@
 #include <BadCellException.h>
 #include <ImproperUseException.h>
 
+#include <float.h>
+
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
 
 // ****************************************************************************
 //  Method: avtHistogramFilter constructor
@@ -555,7 +560,7 @@ avtHistogramFilter::PostExecute(void)
 // ****************************************************************************
 
 vtkDataSet *
-avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int chunk, std::string)
+avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int chunk, string)
 {
     if (atts.GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
     {

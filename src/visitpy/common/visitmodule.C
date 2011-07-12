@@ -46,6 +46,8 @@
 #endif
 #include <snprintf.h>
 #include <map>
+#include <string>
+#include <vector>
 
 #define THREADS
 
@@ -8553,7 +8555,7 @@ visit_GetQueryOutputObject(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
-    string xml_string = qa->GetXmlResult();
+    std::string xml_string = qa->GetXmlResult();
     XMLNode xml_node(xml_string);
     MapNode node(xml_node);
     return PyMapNode_Wrap(node);
@@ -10892,7 +10894,7 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
             PyErr_SetString(VisItError, err_msg.str().c_str());
             return NULL;
         }
-        string py_script((std::istreambuf_iterator<char>(ifs)),
+        std::string py_script((std::istreambuf_iterator<char>(ifs)),
                           std::istreambuf_iterator<char>());
         vars.push_back(py_script);
     }
@@ -10974,8 +10976,8 @@ visit_DefinePythonExpression(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    string expr_name(var_name);
-    string py_script="";
+    std::string expr_name(var_name);
+    std::string py_script="";
 
     if(source_text != NULL)
     {
@@ -10997,7 +10999,7 @@ visit_DefinePythonExpression(PyObject *self, PyObject *args, PyObject *kwargs)
             PyErr_SetString(VisItError, err_msg.str().c_str());
             return NULL;
         }
-        py_script = string((std::istreambuf_iterator<char>(ifs)),
+        py_script = std::string((std::istreambuf_iterator<char>(ifs)),
                           std::istreambuf_iterator<char>());
     }
 
@@ -11007,8 +11009,8 @@ visit_DefinePythonExpression(PyObject *self, PyObject *args, PyObject *kwargs)
     py_script = StringHelpers::Replace(py_script,"\n","\\n");
     py_script = StringHelpers::Replace(py_script," ","\\s");
 
-    string expr_def = "py(";
-    vector<string>::iterator itr;
+    std::string expr_def = "py(";
+    std::vector<std::string>::iterator itr;
     for( itr =expr_args.begin() ; itr != expr_args.end(); ++itr)
         expr_def += *itr + ",";
     expr_def += "\"";
@@ -13658,8 +13660,8 @@ visit_LoadUltra(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
 
-    string parserFile = string(getenv("VISITULTRAHOME")) +
-                        string("/ultraparse.py");
+    std::string parserFile = std::string(getenv("VISITULTRAHOME")) +
+                        std::string("/ultraparse.py");
 
     PyObject *argTuple = PyTuple_New(1);
     PyTuple_SetItem(argTuple, 0, PyString_FromString(parserFile.c_str()));
@@ -16069,7 +16071,7 @@ InitializeModule()
 #ifndef _WIN32
     const char *logName = "visitlog.py";
 #else
-    string vud = GetUserVisItDirectory() + "\\visitlog.py";
+    std::string vud = GetUserVisItDirectory() + "\\visitlog.py";
     const char *logName = vud.c_str();
 #endif
     if(!LogFile_Open(logName))

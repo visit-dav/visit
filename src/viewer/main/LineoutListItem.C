@@ -40,7 +40,6 @@
 //                          LineoutListItem.C                                //
 // ************************************************************************* //
 
-#include <float.h>
 #include <LineoutListItem.h>
 
 #include <avtToolInterface.h>
@@ -55,6 +54,9 @@
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
 
+#include <float.h>
+
+#include <vector>
 
 // ****************************************************************************
 //  Method: LineoutListItem Constructor
@@ -703,7 +705,7 @@ LineoutListItem::Update(Subject *TheChangedSubject)
                  {
                      int newf = origPlotQueryInfo->GetNewFrameIndex();
                      int oldf = origPlotQueryInfo->GetOldFrameIndex();
-                     vector<ViewerQuery_p> addme;
+                     std::vector<ViewerQuery_p> addme;
                      for (i = 0; i < nQueries; i++)
                      {
                          if (queries[i]->MatchTimeState(oldf))

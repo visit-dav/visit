@@ -49,6 +49,8 @@
 
 #include <vtkVisItDataSetMapper.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: avtLevelsPointGlyphMapper constructor
 //
@@ -215,7 +217,7 @@ avtLevelsPointGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 // ****************************************************************************
 
 void
-avtLevelsPointGlyphMapper::ScaleByVar(const string &sname)
+avtLevelsPointGlyphMapper::ScaleByVar(const std::string &sname)
 {
     if (sname == "" || sname == "\0")
     {

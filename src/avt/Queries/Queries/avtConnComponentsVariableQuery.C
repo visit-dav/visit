@@ -62,7 +62,7 @@
 #include <InvalidDimensionsException.h>
 #include <snprintf.h>
 
-
+#include <string>
 
 // ****************************************************************************
 //  Method: avtConnComponentsVariableQuery constructor
@@ -162,7 +162,7 @@ avtConnComponentsVariableQuery::PostExecute(void)
 
         msg += buff;
 
-        string format  =  "Component %d Sum = (" 
+        std::string format  =  "Component %d Sum = (" 
                                   + queryAtts.GetFloatFormat() +")\n";
     
         for(int i=0;i<nComps;i++)

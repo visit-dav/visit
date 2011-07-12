@@ -44,8 +44,6 @@
 
 #include <visit-config.h>
 
-#include <string>
-
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
@@ -80,7 +78,11 @@
 #include <hdf5.h>
 #endif
 
+#include <string>
+#include <vector>
+
 using std::string;
+using std::vector;
 
 void avtEnzoFileFormat::Grid::PrintRecursive(vector<Grid> &grids, int level)
 {

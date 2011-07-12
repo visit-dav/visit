@@ -43,7 +43,6 @@
 #include <avtDistanceFromBoundaryQuery.h>
 
 #include <snprintf.h>
-#include <math.h>
 
 #include <vtkCellData.h>
 #include <vtkExecutive.h>
@@ -61,6 +60,10 @@
 
 #include <DebugStream.h>
 
+#include <math.h>
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtDistanceFromBoundaryQuery constructor
@@ -211,7 +214,7 @@ avtDistanceFromBoundaryQuery::PostExecute(void)
     const char *mass_string = (didVolume ? "volume" : 
                               (didRVolume ? "revolved volume" : 
                               (didSA ? "area" : "mass")));
-    string format =  "The distribution of %s over distance from the boundary "
+    std::string format =  "The distribution of %s over distance from the boundary "
                      "has been outputted as an "
                      "Ultra file (%s), which can then be imported into VisIt."
                      "  The total %s considered was " 
@@ -288,7 +291,7 @@ avtDistanceFromBoundaryQuery::ExecuteLineScan(vtkPolyData *pd)
         EXCEPTION0(ImproperUseException);
         
     int npts = pd->GetNumberOfPoints();
-    vector<bool> usedPoint(npts, false);
+    std::vector<bool> usedPoint(npts, false);
     
     vtkDataArray *arr = pd->GetCellData()->GetArray(varname.c_str());
 

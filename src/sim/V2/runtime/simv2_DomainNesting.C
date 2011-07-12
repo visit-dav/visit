@@ -4,6 +4,8 @@
 
 #include <simv2_DomainNesting.h>
 
+#include <vector>
+
 struct VisIt_DomainNesting : public VisIt_ObjectBase
 {
     VisIt_DomainNesting();
@@ -112,11 +114,11 @@ simv2_DomainNesting_set_nestingForPatch(visit_handle h, int patch, int level,
     VisIt_DomainNesting *obj = GetObject(h);
     if(obj != NULL && obj->nesting != NULL)
     {
-        vector<int> cp;
+        std::vector<int> cp;
         for(int i = 0; i < nChildPatches; ++i)
             cp.push_back(childPatches[i]);
 
-        vector<int> logExts(6,0);
+        std::vector<int> logExts(6,0);
         logExts[0] = extents[0];
         logExts[1] = extents[1];
         logExts[2] = (obj->nDimensions == 3) ? extents[2] : 0;

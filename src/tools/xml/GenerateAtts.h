@@ -48,8 +48,6 @@
 #include <time.h>
 #include "Field.h"
 
-using std::vector;
-
 #define GENERATOR_NAME "xml2atts"
 
 // ****************************************************************************
@@ -1622,7 +1620,7 @@ class AttsFieldFactory
 class AttsGeneratorAttribute : public GeneratorBase
 {
   public:
-    vector<AttsGeneratorField*> fields;
+    std::vector<AttsGeneratorField*> fields;
   public:
     AttsGeneratorAttribute(const QString &n, const QString &p, const QString &f,
                            const QString &e, const QString &ei, const QString &bc)

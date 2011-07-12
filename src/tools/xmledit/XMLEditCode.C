@@ -51,6 +51,8 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 
+#include <vector>
+
 // ****************************************************************************
 //  Constructor:  XMLEditCode::XMLEditCode
 //
@@ -490,7 +492,7 @@ XMLEditCode::codelistDel()
         return;
 
     Code *c = a->codes[index];
-    vector<Code*> newlist;
+    std::vector<Code*> newlist;
     for (size_t i=0; i<a->codes.size(); i++)
     {
         if (a->codes[i] != c)

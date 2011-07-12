@@ -62,6 +62,7 @@
 #include <InvalidDimensionsException.h>
 #include <snprintf.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Method: avtConnComponentsAreaQuery constructor
@@ -162,7 +163,7 @@ avtConnComponentsAreaQuery::PostExecute(void)
         {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
 
         msg += buff;
-        string format  =  "Component %d Area = (" 
+        std::string format  =  "Component %d Area = (" 
                               + queryAtts.GetFloatFormat() +")\n";
         for(int i=0;i<nComps;i++)
         {

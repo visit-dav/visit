@@ -37,7 +37,6 @@
 *****************************************************************************/
 
 #include <visit-config.h>
-#include <stdlib.h>
 #include <snprintf.h>
 #include <ViewerFileServer.h>
 
@@ -74,7 +73,11 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
+#include <stdlib.h>
+
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #define ANY_STATE -1
 
@@ -1432,7 +1435,7 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
 
         // We don't use a gateway when launching an MD server, just the VCL
         bool useGateway = false;
-        string gatewayHost = "";
+        std::string gatewayHost = "";
 
         // Create a connection progress dialog and hook it up to the
         // mdserver proxy.
@@ -1626,7 +1629,7 @@ ViewerFileServer::SendFileOpenOptions(const std::string &host)
         // DB plugin list with data from this machine.  Revert to the
         // old one after we have the initial set.
 
-        string oldhost = dbPluginInfoAtts->GetHost();
+        std::string oldhost = dbPluginInfoAtts->GetHost();
         UpdateDBPluginInfo(host);
         if (oldhost != "")
             UpdateDBPluginInfo(oldhost);
@@ -3150,10 +3153,10 @@ ViewerFileServer::DetermineRealVarType(const std::string &host,
     ExpressionList expressionList;
     GetAllExpressions(expressionList, host, db, state);
     Expression *exp = expressionList[var.c_str()];
-    string realVar = var;
+    std::string realVar = var;
     if (exp != NULL)
     {
-        string realVar = ParsingExprList::GetRealVariable(var);
+        std::string realVar = ParsingExprList::GetRealVariable(var);
         if (realVar != var)
             exp = NULL;
     }
@@ -3345,11 +3348,11 @@ ViewerFileServer::SetSimulationMetaData(const std::string &host,
 
         if(name == dbName)
         {
-            string host = pos->second->GetSimInfo().GetHost();
+            std::string host = pos->second->GetSimInfo().GetHost();
             int    port = pos->second->GetSimInfo().GetPort();
-            string key  = pos->second->GetSimInfo().GetSecurityKey();
-            vector<string> onames = pos->second->GetSimInfo().GetOtherNames();
-            vector<string> ovalues= pos->second->GetSimInfo().GetOtherValues();
+            std::string key  = pos->second->GetSimInfo().GetSecurityKey();
+            std::vector<std::string> onames = pos->second->GetSimInfo().GetOtherNames();
+            std::vector<std::string> ovalues= pos->second->GetSimInfo().GetOtherValues();
 
             *(pos->second) = md;
             pos->second->GetSimInfo().SetHost(host);

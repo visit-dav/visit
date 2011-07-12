@@ -42,8 +42,6 @@
 
 #include <avtDataBinningFilter.h>
 
-#include <float.h>
-
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
@@ -53,6 +51,10 @@
 #include <avtExtents.h>
 #include <avtParallel.h>
 
+#include <float.h>
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtDataBinningFilter constructor
@@ -167,7 +169,7 @@ void
 avtDataBinningFilter::Execute(void)
 {
     ConstructDataBinningAttributes dba = atts.CreateConstructionAtts();
-    vector<double> bb = dba.GetBinBoundaries();
+    std::vector<double> bb = dba.GetBinBoundaries();
     if (! atts.GetDim1SpecifyRange())
     {
         std::string v1name = atts.GetDim1Var();
@@ -443,7 +445,7 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
         // In this case we generate a curve, so create a sensible
         // axis name for the output var.
         DataBinningAttributes::ReductionOperator rop_id = atts.GetReductionOperator();
-        string rop_str = DataBinningAttributes::ReductionOperator_ToString(rop_id);
+        std::string rop_str = DataBinningAttributes::ReductionOperator_ToString(rop_id);
         if( ! (rop_id == DataBinningAttributes::Count ||
                rop_id == DataBinningAttributes::RMS ||
                rop_id == DataBinningAttributes::PDF) )

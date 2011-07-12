@@ -43,13 +43,13 @@
 #ifndef AVT_ZoneDump_FILTER_H
 #define AVT_ZoneDump_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
 #include <ZoneDumpAttributes.h>
 
+#include <string>
+#include <vector>
 
 class vtkDataSet;
-
 
 // ****************************************************************************
 //  Class: avtZoneDumpFilter
@@ -103,7 +103,7 @@ class avtZoneDumpFilter : public avtPluginDataTreeIterator
 
         virtual   ~ZoneInfo();
 
-        void       Print(ostream &os, const string &sep = " ") const;
+        void       Print(ostream &os, const std::string &sep = " ") const;
 
         void       Pack(unsigned char *);
         void       Unpack(unsigned char *);
@@ -132,9 +132,9 @@ class avtZoneDumpFilter : public avtPluginDataTreeIterator
     void                  GetOriginalLogicalIndices(vtkDataSet *ds,
                                                    int zone,
                                                    int ijk[3]);
-    void                  SaveOutput(const string &, vector<ZoneInfo> &);
+    void                  SaveOutput(const std::string &, std::vector<ZoneInfo> &);
 
-    vector<ZoneInfo>      zones;
+    std::vector<ZoneInfo>      zones;
 
 };
 

@@ -41,7 +41,14 @@
 
 #include <cmath>
 
+#include <ImproperUseException.h>
 #include "MultiresGrid.h"
+
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
 
 // class static global list of all grids, one for each resolution
 vector<MultiresGrid*> MultiresGrid::mGrids;
@@ -432,8 +439,13 @@ MultiresGrid* MultiresGrid::atResolution(int resolution) const
     BOUNDS_CHECK(resolution,0,mGrids.size());
 
     if(resolution<0||(unsigned)resolution>mGrids.size())
+    {
+        EXCEPTION0(ImproperUseException);
+#if 0
         exit(fprintf(stderr,"ERROR: resolution=%d, BOUNDS_CHECK didn't work\n",
                     resolution));
+#endif
+    }
 
     return mGrids[resolution];
 }

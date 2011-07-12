@@ -485,8 +485,6 @@ QvisSubsetWindow::ClearPanelsToTheRight(int index)
 void
 QvisSubsetWindow::UpdatePanels(int index, bool panels_after)
 {
-    avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
-    
     int npanels = panels.count();
     
     int start = 0;

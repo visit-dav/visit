@@ -42,6 +42,7 @@
 
 #include <avtPseudocolorFilter.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Method: avtPseudocolorFilter constructor
@@ -114,7 +115,7 @@ avtPseudocolorFilter::SetPlotAtts(const PseudocolorAttributes *atts)
 // ****************************************************************************
 
 vtkDataSet *
-avtPseudocolorFilter::ExecuteData(vtkDataSet *inDS, int, string)
+avtPseudocolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 {
     return inDS;
 }
@@ -165,7 +166,7 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
 
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
 
-    string pointVar = plotAtts.GetPointSizeVar();
+    std::string pointVar = plotAtts.GetPointSizeVar();
     avtDataRequest_p dataRequest = new avtDataRequest(
                                        contract->GetDataRequest());
 

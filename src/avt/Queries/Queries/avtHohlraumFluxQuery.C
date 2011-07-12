@@ -52,7 +52,8 @@
 #include <visitstream.h>
 #include <snprintf.h>
 
-
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtHohlraumFluxQuery::avtHohlraumFluxQuery
@@ -274,7 +275,7 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
         EXCEPTION0(ImproperUseException);
 
     int npts = output->GetNumberOfPoints();
-    vector<bool> usedPoint(npts, false);
+    std::vector<bool> usedPoint(npts, false);
 
     //Get the field variables
     vtkDataArray *absorbtivityBins;
@@ -670,9 +671,9 @@ avtHohlraumFluxQuery::PostExecute(void)
     }
 
    
-    string msg    = "";
-    string format ="";
-    string floatFormat = queryAtts.GetFloatFormat();
+    std::string msg    = "";
+    std::string format ="";
+    std::string floatFormat = queryAtts.GetFloatFormat();
     char buf[512];
         
     SNPRINTF(buf,512,"The hohlraum flux query over %d energy groups "

@@ -724,14 +724,14 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
     this->blockOrigin = origin;
     this->groupOrigin = origin;
 
-    vector<int> groupIds(nlevels+1);
+    std::vector<int> groupIds(nlevels+1);
     groupIds[0] = 0;
     for (i = 1 ; i < nlevels+1 ; i++)
     {
         groupIds[i] = groupIds[i-1] + patchesPerLevel[i-1];
     }
     this->groupIdsBasedOnRange = groupIds;
-    vector<int> numbelow(nlevels);
+    std::vector<int> numbelow(nlevels);
     numbelow[0] = 0;
     for (i = 1 ; i < nlevels ; i++)
         numbelow[i] = numbelow[i-1]+patchesPerLevel[i-1];

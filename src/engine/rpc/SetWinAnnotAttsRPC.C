@@ -39,6 +39,9 @@
 #include "SetWinAnnotAttsRPC.h"
 #include <DebugStream.h>
 
+#include <string>
+
+using std::string;
 
 // ****************************************************************************
 //  Constructor: SetWinAnnotAttsRPC::SetWinAnnotAttsRPC

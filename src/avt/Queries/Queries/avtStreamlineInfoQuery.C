@@ -48,11 +48,13 @@
 #include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkCellArray.h>
-#include <string>
 #include <NonQueryableInputException.h>
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
+
+#include <string>
+#include <vector>
 
 
 // ****************************************************************************
@@ -231,7 +233,7 @@ avtStreamlineInfoQuery::Execute(vtkDataSet *data, const int chunk)
         segptr++; //Now segptr points at vtx0.
         
         float arcLen = 0.0;
-        vector<float> steps;
+        std::vector<float> steps;
         
         //Seed point.
         points->GetPoint(segptr[0], p0);

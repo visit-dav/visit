@@ -59,6 +59,14 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
+#include <set>
+#include <string>
+#include <vector>
+
+using std::set;
+using std::string;
+using std::vector;
+
 
 // ****************************************************************************
 //  Method: avtDataTree constructor (empty tree)

@@ -51,10 +51,6 @@
 #include <avtSIL.h>
 
 
-using std::string;
-using std::map;
-using std::vector;
-
 // Forward declarations.
 class avtDatabaseMetaData;
 class MessageAttributes;
@@ -222,16 +218,16 @@ class GUI_API FileServerList : public AttributeSubject
 {
     typedef struct
     {
-        string    path;
+        std::string    path;
         MDServerProxy *server;
     } ServerInfo;
 
     // The '50' sets the *initial* number of slots in the MRU cache. It can
     // always be increased or decreased with a call to numslots(int n).
     // Note that the cache itself knows how to delete its entries
-    typedef std::map<string, ServerInfo *> ServerMap;
-    typedef MRUCache<string, avtDatabaseMetaData*, MRUCache_Delete, 50> FileMetaDataMap;
-    typedef MRUCache<string, avtSIL*, MRUCache_Delete, 50> SILMap;
+    typedef std::map<std::string, ServerInfo *> ServerMap;
+    typedef MRUCache<std::string, avtDatabaseMetaData*, MRUCache_Delete, 50> FileMetaDataMap;
+    typedef MRUCache<std::string, avtSIL*, MRUCache_Delete, 50> SILMap;
 
 public:
     static const bool ANY_STATE;
@@ -246,11 +242,11 @@ public:
     virtual bool CreateNode(DataNode *, bool, bool);
     virtual void SetFromNode(DataNode *);
 
-    void SetHost(const string &host);
-    void SetPath(const string &path);
-    void SetFilter(const string &filter);
+    void SetHost(const std::string &host);
+    void SetPath(const std::string &path);
+    void SetFilter(const std::string &filter);
     void SetAppliedFileList(const QualifiedFilenameVector &newFiles,
-                            const vector<int>& timeStates=vector<int>(0));
+                            const std::vector<int>& timeStates=std::vector<int>(0));
     void SetUseCurrentDirectory(bool val);
     void SetAutomaticFileGrouping(bool val);
     void SetSmartFileGrouping(bool val);
@@ -269,16 +265,16 @@ public:
     void OverlayFile(const QualifiedFilename &filename);
     void CloseFile();
     void ClearFile(const QualifiedFilename &filename, bool forgetPlugin);
-    void SetFilePlugin(const QualifiedFilename &filename, const string &plugin);
-    void CreateGroupList(const string &filename,
+    void SetFilePlugin(const QualifiedFilename &filename, const std::string &plugin);
+    void CreateGroupList(const std::string &filename,
                          const stringVector &groupList);
 
-    const string &GetHost() const;
-    const string &GetPath() const;
-          string GetHomePath();
-          string ExpandPath(const string &p);
+    const std::string &GetHost() const;
+    const std::string &GetPath() const;
+          std::string GetHomePath();
+          std::string ExpandPath(const std::string &p);
           stringVector GetRecentHosts() const;
-    const string &GetFilter() const;
+    const std::string &GetFilter() const;
     const MDServerProxy::FileList &GetFileList() const;
     const QualifiedFilenameVector &GetAppliedFileList();
           QualifiedFilenameVector GetFilteredFileList();
@@ -293,25 +289,25 @@ public:
     bool GetCreateTimeDerivativeExpressions() const;
     bool GetCreateVectorMagnitudeExpressions() const;
 
-    const stringVector &GetRecentPaths(const string &host) const;
-    void AddPathToRecentList(const string &host, const string &path);
+    const stringVector &GetRecentPaths(const std::string &host) const;
+    void AddPathToRecentList(const std::string &host, const std::string &path);
     void ClearRecentPathList();
 
     const QualifiedFilename &GetOpenFile() const;
     const avtSIL *GetSIL(const QualifiedFilename &f,
                          int timeState, bool anyStateOk,
-                         bool dontGetNew, string *key = 0);
+                         bool dontGetNew, std::string *key = 0);
     const avtDatabaseMetaData *GetMetaData(const QualifiedFilename &filename,
                                            int timeState, bool anyStateOk,
-                                           bool dontGetNew, string *key = 0);
+                                           bool dontGetNew, std::string *key = 0);
     char GetSeparator();
-    char GetSeparator(const string &host);
-    string GetSeparatorString();
-    string GetSeparatorString(const string &host);
+    char GetSeparator(const std::string &host);
+    std::string GetSeparatorString();
+    std::string GetSeparatorString(const std::string &host);
     bool HaveOpenedFile(const QualifiedFilename &filename);
 
     int GetFileIndex(const QualifiedFilename &fileName);
-    QualifiedFilename QualifiedName(const string &fileName);
+    QualifiedFilename QualifiedName(const std::string &fileName);
     stringVector GetVirtualFileDefinition(const QualifiedFilename &) const;
     int GetVirtualFileDefinitionSize(const QualifiedFilename &) const;
 
@@ -354,22 +350,22 @@ private:
     virtual void SelectAll();
     const avtSIL *GetSILEx(const QualifiedFilename &f,
                          int timeState, bool anyStateOk,
-                         bool dontGetNew, string *key = 0);
+                         bool dontGetNew, std::string *key = 0);
     const avtDatabaseMetaData *GetMetaDataEx(const QualifiedFilename &filename,
                                            int timeState, bool anyStateOk,
-                                           bool dontGetNew, string *key = 0);
+                                           bool dontGetNew, std::string *key = 0);
 
-    void StartServer(const string &host);
-    void CloseServer(const string &host);
+    void StartServer(const std::string &host);
+    void CloseServer(const std::string &host);
     void OpenAndGetMetaData(const QualifiedFilename &filename, int timeState,
                             int action);
-    void ParseFilterString(const string &, stringVector &);
-    bool FileMatchesFilterList(const string &, const stringVector &);
+    void ParseFilterString(const std::string &, stringVector &);
+    bool FileMatchesFilterList(const std::string &, const stringVector &);
     bool FileMatchesFilter(const char *filter, const char *str, int &index);
     void Error(const char *message);
     void Warning(const char *message);
-    string EncodePath(const string &path);
-    string DecodePath(const string &path);
+    std::string EncodePath(const std::string &path);
+    std::string DecodePath(const std::string &path);
     void DefineVirtualFiles();
 private:
     bool hostFlag;                  // attribute 0
@@ -385,9 +381,9 @@ private:
 
     // Information about the open md servers.
     ServerMap   servers;
-    string      activeHost;
+    std::string      activeHost;
     bool        connectingServer;
-    string      filter;
+    std::string      filter;
     bool        forceReadAllCyclesTimes;
     bool        treatAllDBsAsTimeVarying;
 

@@ -46,9 +46,7 @@
 
 #include <avtDatasetQuery.h>
 
-#include <string>
 #include <map>
-
 
 class vtkDataSet;
 class vtkGeometryFilter;

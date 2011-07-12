@@ -45,8 +45,9 @@
 
 #include <database_exports.h>
 
-#include <vector>
 #include <list>
+#include <string>
+#include <vector>
 
 #include <void_ref_ptr.h>
 
@@ -431,7 +432,7 @@ class DATABASE_API avtDatabase
     void                        PopulateDataObjectInformation(avtDataObject_p&,
                                                   const char *,
                                                   int,
-                                                  const vector<bool> &selsApplied,
+                                                  const std::vector<bool> &selsApplied,
                                                   avtDataRequest_p =NULL);
     bool                        GetExtentsFromAuxiliaryData(avtDataRequest_p spec,
                                                             const char *var,

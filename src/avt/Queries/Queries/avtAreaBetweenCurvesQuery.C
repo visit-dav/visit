@@ -45,6 +45,8 @@
 #include <snprintf.h>
 #include <Utility.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtAreaBetweenCurvesQuery::avtAreaBetweenCurvesQuery
@@ -90,9 +92,9 @@ double
 avtAreaBetweenCurvesQuery::CompareCurves(int n1, const float *x1, const float *y1,
                               int n2, const float *x2, const float *y2)
 {
-    vector<float>  newCurve1Vals;
-    vector<float>  newCurve2Vals;
-    vector<float>  usedX;
+    std::vector<float>  newCurve1Vals;
+    std::vector<float>  newCurve2Vals;
+    std::vector<float>  usedX;
     PutOnSameXIntervals(n1, x1, y1, n2, x2, y2, usedX, newCurve1Vals,
                         newCurve2Vals);
 
@@ -134,7 +136,7 @@ std::string
 avtAreaBetweenCurvesQuery::CreateMessage(double area)
 {
     char msg[1024];
-    string format = "The area between the curves is " 
+    std::string format = "The area between the curves is " 
                      + queryAtts.GetFloatFormat() +".";
     SNPRINTF(msg,1024,format.c_str(), area);
     std::string m = msg;

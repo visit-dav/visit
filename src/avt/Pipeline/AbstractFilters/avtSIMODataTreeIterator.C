@@ -51,6 +51,8 @@
 #include <IncompatibleDomainListsException.h>
 #include <DebugStream.h>
 
+#include <string>
+
 
 // ****************************************************************************
 //  Method: avtSIMODataTreeIterator constructor
@@ -211,7 +213,7 @@ avtSIMODataTreeIterator::Execute(avtDataTree_p inDT)
         //
         vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
         int dom = inDT->GetDataRepresentation().GetDomain();
-        string label = inDT->GetDataRepresentation().GetLabel();
+        std::string label = inDT->GetDataRepresentation().GetLabel();
   
         //
         // Setting the source to NULL for the input will break the 

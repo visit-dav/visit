@@ -62,6 +62,7 @@
 #include <avtTanExpression.h>
 #include <avtTanhExpression.h>
 
+#include <string>
 
 // ****************************************************************************
 // Method: avtFunctionExpr::CreateMathFilters
@@ -88,7 +89,7 @@
 // ****************************************************************************
 
 avtExpressionFilter *
-avtFunctionExpr::CreateMathFilters(const string &functionName) const
+avtFunctionExpr::CreateMathFilters(const std::string &functionName) const
 {
     avtExpressionFilter *f = 0;
 

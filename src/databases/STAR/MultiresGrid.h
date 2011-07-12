@@ -44,6 +44,9 @@
 
 #include "StarObject.h"
 
+#include <string>
+#include <vector>
+
 /**
  *      MultiresGrid is used to store the locations of the 
  *      data values stored in a block of data.  This is used for 
@@ -123,8 +126,8 @@ public:  // api
     
 protected:  // members
     int                             mResolution;    // resolution (0 is high)
-    string                          mFilename;
-    static vector<MultiresGrid*>    mGrids;         // array of resolutions
+    std::string                     mFilename;
+    static std::vector<MultiresGrid*> mGrids;         // array of resolutions
     const float*                    mXcoords;
     const float*                    mYcoords;
     const float*                    mZcoords;

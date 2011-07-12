@@ -45,6 +45,8 @@
 
 #include <avtSIMODataTreeIterator.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Class: avtLabelSubsetsFilter
 //
@@ -73,7 +75,7 @@ class avtLabelSubsetsFilter : public avtSIMODataTreeIterator
 
     void                  SetNeedMIR(bool val) { needMIR = val; };
   protected:
-    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, string);
+    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
     virtual avtContract_p
                           ModifyContract(avtContract_p);
 

@@ -42,8 +42,6 @@
 
 #include <avtLAMMPSDumpFileFormat.h>
 
-#include <string>
-
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
@@ -61,7 +59,11 @@
 #include <AtomicProperties.h>
 
 #include <sstream>
+#include <string>
+#include <vector>
+
 using std::istringstream;
+using std::string;
 
 
 // ****************************************************************************
@@ -492,7 +494,7 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
         vars[v].resize(nAtoms[timestep]);
     }
 
-    vector<double> tmpVars(nVars);
+    std::vector<double> tmpVars(nVars);
     int tmpID, tmpSpecies;
 
     char buff[1000];

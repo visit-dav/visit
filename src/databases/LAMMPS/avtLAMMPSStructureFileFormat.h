@@ -10,7 +10,6 @@
 #include <avtFileFormatInterface.h>
 
 #include <vector>
-using std::vector;
 
 #define MAX_LAMMPS_STRUCTURE_VARS 6
 
@@ -58,11 +57,11 @@ class avtLAMMPSStructureFileFormat : public avtMTSDFileFormat
     int                            nVars;
     int                            nAtoms;
 
-    vector< vector<int> >          s; //species index
-    vector< vector<float> >        x;
-    vector< vector<float> >        y;
-    vector< vector<float> >        z;
-    vector< vector<float> >        v[MAX_LAMMPS_STRUCTURE_VARS];
+    std::vector< std::vector<int> >          s; //species index
+    std::vector< std::vector<float> >        x;
+    std::vector< std::vector<float> >        y;
+    std::vector< std::vector<float> >        z;
+    std::vector< std::vector<float> >        v[MAX_LAMMPS_STRUCTURE_VARS];
 
     virtual void    PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     void            OpenFileAtBeginning();
