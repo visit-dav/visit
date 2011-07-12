@@ -2471,7 +2471,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
 
     // Temporary array for cell counts as the selection is ZONAL.
-    std::vector<int> numCells(1);
+    std::vector<int> numCells(numTopologicalDims);
 
     for (size_t i=0; i<numTopologicalDims; ++i)
     {
