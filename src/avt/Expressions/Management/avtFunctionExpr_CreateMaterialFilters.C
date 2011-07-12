@@ -45,6 +45,8 @@
 #include <avtPerMaterialValueExpression.h>
 #include <avtSpecMFExpression.h>
 
+#include <string>
+
 // ****************************************************************************
 // Method: avtFunctionExpr::CreateMaterialFilters
 //
@@ -69,7 +71,7 @@
 // ****************************************************************************
 
 avtExpressionFilter *
-avtFunctionExpr::CreateMaterialFilters(const string &functionName) const
+avtFunctionExpr::CreateMaterialFilters(const std::string &functionName) const
 {
     avtExpressionFilter *f = 0;
 

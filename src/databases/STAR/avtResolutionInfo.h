@@ -42,8 +42,7 @@
 
 #include "avtDataSelection.h"
 
-#include <string>
-using std::string;
+#include <vector>
 
 //   This class is used to record information about how 
 //   many resolutions are available, and the size of each 
@@ -69,11 +68,11 @@ public:
 
         mSizes[resolution] = DataSize(width, height, depth);
     }
-    virtual vector<DataSize>& sizes() { return mSizes; }
+    virtual std::vector<DataSize>& sizes() { return mSizes; }
     virtual int               numResolutions() { return (int)mSizes.size(); }
 
 private:
-    vector<DataSize> mSizes;
+    std::vector<DataSize> mSizes;
 };
 
 #endif // _AVT_RESOLUTION_INFO_H_

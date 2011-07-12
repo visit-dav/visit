@@ -47,6 +47,8 @@
 
 #include <avtDatasetQuery.h>
 
+#include <string>
+
 class     vtkPolyData;
 class     vtkIntArray;
 class     avtLineScanFilter;

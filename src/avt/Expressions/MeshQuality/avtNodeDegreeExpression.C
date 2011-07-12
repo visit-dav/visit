@@ -42,8 +42,6 @@
 
 #include <avtNodeDegreeExpression.h>
 
-#include <vector>
-
 #include <vtkCell.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
@@ -51,6 +49,7 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtNodeDegreeExpression constructor
@@ -106,7 +105,7 @@ avtNodeDegreeExpression::~avtNodeDegreeExpression()
 // ****************************************************************************
 
 inline int
-VIntFind(const vector<int>&v, int val)
+VIntFind(const std::vector<int>&v, int val)
 {
     for (int i = 0; i < v.size(); i++)
         if (v[i] == val)
@@ -181,7 +180,7 @@ avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
     // the points in connectivity[P]. A point is not connected to itself.
     // Therefore, the degree of that node is connectivity[P].size().
     // But first we have to construct the list.
-    vector<vector<int> > connectivity(nPoints); 
+    std::vector<std::vector<int> > connectivity(nPoints); 
 
     int nCells = in_ds->GetNumberOfCells();
     for (i = 0 ; i < nCells ; i++)

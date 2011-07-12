@@ -48,6 +48,8 @@
 
 #include <VectorAttributes.h>
 
+#include <string>
+
 class     vtkVectorGlyph;
 
 class     avtGhostZoneFilter;

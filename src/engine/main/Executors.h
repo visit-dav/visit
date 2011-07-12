@@ -88,6 +88,8 @@
 #include <UpdatePlotAttsRPC.h>
 #include <UseNetworkRPC.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: RPCExecutor<QuitRPC>::Execute
 //
@@ -291,7 +293,7 @@ RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
     debug2 << "Executing PrepareOperatorRPC: " << rpc->GetID().c_str() << endl;
     TRY 
     {
-        string id = rpc->GetID().c_str();
+        std::string id = rpc->GetID().c_str();
 
         if (!netmgr->GetOperatorPluginManager()->PluginAvailable(id))
         {
@@ -409,7 +411,7 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
     debug2 << "Executing PreparePlotRPC: " << rpc->GetID().c_str() << endl;
     TRY
     {
-        string id = rpc->GetID().c_str();
+        std::string id = rpc->GetID().c_str();
 
         if (!netmgr->GetPlotPluginManager()->PluginAvailable(id))
         {
@@ -550,7 +552,7 @@ RPCExecutor<PrepareUpdatePlotAttsRPC>::Execute(PrepareUpdatePlotAttsRPC *rpc)
     {
         Engine         *engine = Engine::Instance();
         NetworkManager *netmgr = engine->GetNetMgr();
-        string id = rpc->GetID().c_str();
+        std::string id = rpc->GetID().c_str();
 
         if (!netmgr->GetPlotPluginManager()->PluginAvailable(id))
         {

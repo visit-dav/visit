@@ -39,10 +39,11 @@
 #ifndef MINMAXINFO_H
 #define MINMAXINFO_H
 #include <query_exports.h>
-#include <string>
 #include <AttributeSubject.h>
 
 #include <avtMatrix.h>
+
+#include <string>
 
 // ****************************************************************************
 // Class: MinMaxInfo

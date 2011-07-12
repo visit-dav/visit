@@ -57,6 +57,8 @@
 
 #include <ExpressionException.h>
 
+#include <string>
+#include <vector>
 
 GetDataBinningCallback avtApplyDataBinningExpression::getDataBinningCallback = NULL;
 void                  *avtApplyDataBinningExpression::getDataBinningCallbackArgs = NULL;
@@ -150,7 +152,7 @@ avtApplyDataBinningExpression::ProcessArguments(ArgsExpr *args,
 
     ArgExpr *secondarg = (*arguments)[1];
     ExprParseTreeNode *secondTree = secondarg->GetExpr();
-    string type = secondTree->GetTypeName();
+    std::string type = secondTree->GetTypeName();
     if (type != "Var")
     {
         EXCEPTION2(ExpressionException, outputVariableName,

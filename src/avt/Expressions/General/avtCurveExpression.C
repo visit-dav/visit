@@ -48,6 +48,9 @@
 #include <ExpressionException.h>
 #include <avtExprNode.h>
 
+#include <string>
+#include <vector>
+
 static const char* yFuncs[] = {
 "sin",
 "asin",
@@ -249,7 +252,7 @@ avtCurveExpression::ProcessArguments(ArgsExpr *args,
     // First arg should be a function name.
     ArgExpr *first_arg = (*arguments)[0];
     ExprParseTreeNode *first_tree = first_arg->GetExpr();
-    string arg_type = first_tree->GetTypeName();
+    std::string arg_type = first_tree->GetTypeName();
     if (arg_type != "StringConst")
     {
         EXCEPTION2(ExpressionException, outputVariableName, 

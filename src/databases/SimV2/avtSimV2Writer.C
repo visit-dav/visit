@@ -62,6 +62,9 @@
 #include <simv2_UnstructuredMesh.h>
 #include <simv2_VariableData.h>
 
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 // Method: avtSimV2Writer::avtSimV2Writer
 //
@@ -1143,7 +1146,7 @@ avtSimV2Writer::WriteDataArrays(vtkDataSet *ds, int chunk)
             else
             {
                 EXCEPTION1(ImproperUseException,
-                           string("Couldn't find array ")+varList[v]+".");
+                           std::string("Couldn't find array ")+varList[v]+".");
             }
         }
     }
@@ -1190,7 +1193,7 @@ avtSimV2Writer::WriteDataArraysConditionally(vtkDataSet *ds, int chunk,
             else
             {
                 EXCEPTION1(ImproperUseException,
-                           string("Couldn't find array ")+varList[v]+".");
+                           std::string("Couldn't find array ")+varList[v]+".");
             }
         }
     }

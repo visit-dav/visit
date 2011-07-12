@@ -52,6 +52,8 @@
 
 #include <ExpressionException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtCoordinateExtremaExpression constructor
@@ -232,11 +234,11 @@ avtCoordinateExtremaExpression::ProcessArguments(ArgsExpr *args,
 
     ArgExpr *second_arg= (*arguments)[1];
     ExprParseTreeNode *second_tree= second_arg->GetExpr();
-    string second_type = second_tree->GetTypeName();
+    std::string second_type = second_tree->GetTypeName();
 
     if ((second_type == "StringConst"))
     {
-        string sval =
+        std::string sval =
                     dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
 
         if (sval == "X")

@@ -50,9 +50,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
-
 class avtMeshMetaData;
 class DBOptionsAttributes;
 class vtkCellData;
@@ -87,11 +84,11 @@ class avtITAPS_CWriter : public virtual avtDatabaseWriter
 
     virtual bool   CanHandleMaterials(void) { return true; };
 
-    virtual void   OpenFile(const string &, int);
+    virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
-                                vector<string> &, 
-                                vector<string> &,
-                                vector<string> &);
+                                std::vector<std::string> &, 
+                                std::vector<std::string> &,
+                                std::vector<std::string> &);
     virtual void   WriteChunk(vtkDataSet *, int);
     virtual void   CloseFile(void);
 
@@ -104,10 +101,10 @@ class avtITAPS_CWriter : public virtual avtDatabaseWriter
     enum iMesh_EntityTopology VTKZoneTypeToITAPS_MOABZoneType(int);
 
   private:
-    string         stem;
-    string         dir;
-    string         saveOptions;
-    string         formatExtension;
+    std::string    stem;
+    std::string    dir;
+    std::string    saveOptions;
+    std::string    formatExtension;
     bool           simplexify;
     bool           addFacesFor3DEnts;
     bool           preventDupsToiMesh;

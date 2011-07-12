@@ -50,7 +50,9 @@
 #include <avtPlot.h>
 #include <EngineKey.h>
 #include <ExpressionList.h>
+
 #include <string>
+#include <vector>
 
 // Forward declarations
 class AttributeSubject;
@@ -575,7 +577,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
 
     static avtActor_p             nullActor;
     static avtDataObjectReader_p  nullReader;
-    static vector<double>         nullDataExtents;
+    static std::vector<double>    nullDataExtents;
     static int                    numPlotsCreated;
 
     int                    clonedNetworkId;

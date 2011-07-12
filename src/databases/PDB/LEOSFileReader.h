@@ -39,17 +39,14 @@
 #ifndef LEOS_FILE_FORMAT_H
 #define LEOS_FILE_FORMAT_H
 #include <PDBReader.h>
+#include <map>
 #include <string>
-#include <vector>
 #include <void_ref_ptr.h>
 
 class vtkDataArray;
 class vtkDataSet;
 class avtDatabaseMetaData;
 class DBOptionsAttributes;
-
-using std::string;
-using std::map;
 
 // ****************************************************************************
 // Class: LEOSFileReader
@@ -90,23 +87,23 @@ protected:
         int xdim;      // size in x (obtained directly from PDB variable)
         int ydim;      // size in y (obtained directly from PDB variable)
 
-        string vName;  // name of PDB symbol containing variable data
-        string vUnits; // units of variable data
+        std::string vName;  // name of PDB symbol containing variable data
+        std::string vUnits; // units of variable data
 
-        string xName;  // name of PDB symbol containing x-axis data
-        string xUnits; // units of x-axis data
-        string xSize;  // name of PDB symbol containing size in x
+        std::string xName;  // name of PDB symbol containing x-axis data
+        std::string xUnits; // units of x-axis data
+        std::string xSize;  // name of PDB symbol containing size in x
 
-        string yName;  // name of PDB symbol containing y-axis data
-        string yUnits; // units of y-axis data
-        string ySize;  // name of PDB symbol containing size in y
+        std::string yName;  // name of PDB symbol containing y-axis data
+        std::string yUnits; // units of y-axis data
+        std::string ySize;  // name of PDB symbol containing size in y
     } eosVarInfo_t ;
 
     // useful method to populate eos variable info map
     static void   SetMapEntry(eosVarInfo_t &info, int ndims,
-                      string vName, string vUnits,
-                      string xName, string xUnits, string xSize,
-                      string yName, string yUnits, string ySize);
+                      std::string vName, std::string vUnits,
+                      std::string xName, std::string xUnits, std::string xSize,
+                      std::string yName, std::string yUnits, std::string ySize);
 
     virtual bool  IdentifyFormat();
 
@@ -120,8 +117,8 @@ protected:
     void          ValidateVariableInfoAssumptions(eosVarInfo_t &mapInfo,
                       eosVarInfo_t &fileInfo, const char *fullVarName);
 
-    bool          ReadMaterialInfo(const char *matDirName, string &matName,
-                      string &matForm);
+    bool          ReadMaterialInfo(const char *matDirName, std::string &matName,
+                      std::string &matForm);
     bool          ReadVariableInfo(const char *matDirName, const char *varDirName,
                       eosVarInfo_t &varInfo);
     bool          AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirName, 
@@ -131,20 +128,20 @@ protected:
                       const char *contents);
     void          ReadFileAndPopulateMetaData(avtDatabaseMetaData *md);
 
-    vtkDataSet   *GetCurve(const string matDirName, const string varName,
+    vtkDataSet   *GetCurve(const std::string matDirName, const std::string varName,
                       const eosVarInfo_t& varInfo);
 
     // maps an LEOS mesh or variable name to its cooresponding PDB directory
-    map<string, string> matDirMap;
+    std::map<std::string, std::string> matDirMap;
 
     // maps LEOS material name to the named used in the plugin
-    map<string, string> matNameMap;
+    std::map<std::string, std::string> matNameMap;
 
     // stores meta-data knowledge of each equation-of-state (eos) variable
-    map<string, eosVarInfo_t> eosVarInfoMap;
+    std::map<std::string, eosVarInfo_t> eosVarInfoMap;
 
     // stores list of variables for which assumptions turned out to be wrong
-    map<string, bool> invalidVarMap;
+    std::map<std::string, bool> invalidVarMap;
 
     // used to control how much PDB work we do during PopulateDatabaseMetaData 
     int           tryHardLevel;

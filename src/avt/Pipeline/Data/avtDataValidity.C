@@ -48,6 +48,10 @@
 
 #include <cstring>
 
+#include <string>
+
+using std::string;
+
 // ****************************************************************************
 //  Method: avtDataValidity constructor
 //

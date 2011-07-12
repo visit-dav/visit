@@ -41,15 +41,7 @@
 // ************************************************************************* //
 
 #include <ViewerWindow.h> 
-
-#include <float.h>
-#include <math.h> 
-#include <stdio.h> 
 #include <snprintf.h>
-#include <string>
-#include <map>
-using std::string;
-
 #include <avtColorTables.h>
 #include <avtDataObjectReader.h>
 #include <avtWholeImageCompositerWithZ.h>
@@ -88,6 +80,14 @@ using std::string;
 #include <DebugStream.h>
 
 #include <Utility.h>
+
+#include <float.h>
+#include <math.h> 
+#include <stdio.h> 
+
+#include <map>
+#include <string>
+#include <vector>
 
 //
 // Local macros.
@@ -6423,7 +6423,7 @@ ViewerWindow::SendWindowEnvironmentToEngine(const EngineKey &ek)
     AnnotationAttributes annotAtts(*GetAnnotationAttributes());
     AnnotationObjectList annotObjs;
     UpdateAnnotationObjectList(annotObjs);
-    string extStr(avtExtentType_ToString(GetViewExtentsType())); 
+    std::string extStr(avtExtentType_ToString(GetViewExtentsType())); 
     VisualCueList visCues;
     UpdateVisualCueList(visCues);
     int fns[7];
@@ -7031,7 +7031,7 @@ void
 ViewerWindow::UpdateVisualCueList(VisualCueList& visCues) const
 {
     // get visual cues from the vis window
-    vector<const VisualCueInfo*> cuesVec;
+    std::vector<const VisualCueInfo*> cuesVec;
     visWindow->GetVisualCues(VisualCueInfo::Unknown, cuesVec);
 
     // use VisualCueList's method to set from a vector of VisualCueInfo* 

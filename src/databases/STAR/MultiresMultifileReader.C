@@ -41,6 +41,12 @@
 #include "ConfigFileReader.h"
 #include "MultiresFileReader.h"
 
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
 /* ========================================================================= */
 /**
  *      Constructs an empty MultiresMultifileReader object.  To read in 

@@ -58,6 +58,8 @@
 #include <avtParallel.h>
 #include <avtIdentifierSelection.h>
 
+#include <map>
+#include <string>
 
 // ****************************************************************************
 //  Method: avtPersistentParticlesFilter constructor
@@ -770,7 +772,7 @@ avtPersistentParticlesFilter::ModifyContract(avtContract_p in_contract)
        out_contract->GetDataRequest()->AddSecondaryVariable( atts.GetTraceVariableY().c_str() );
     if( atts.GetTraceVariableZ() != "default")
        out_contract->GetDataRequest()->AddSecondaryVariable( atts.GetTraceVariableZ().c_str() );
-    mainVariable = string( out_contract->GetDataRequest()->GetVariable());
+    mainVariable = std::string( out_contract->GetDataRequest()->GetVariable());
     SetContract(out_contract);
     return out_contract;
 }

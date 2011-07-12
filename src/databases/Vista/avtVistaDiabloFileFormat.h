@@ -54,9 +54,6 @@ class vtkDataArray;
 class vtkDataSet;
 class vtkFloatArray;
 
-using std::string;
-using std::vector;
-
 // ****************************************************************************
 //  Class: avtVistaDiabloFileFormat
 //
@@ -97,11 +94,11 @@ class avtVistaDiabloFileFormat : public avtVistaFileFormat
 
     typedef struct _fieldInfo
     {
-        string         visitVarName;
-        string         meshName;
+        std::string    visitVarName;
+        std::string    meshName;
         avtVarType     varType;
         avtCentering   centering;
-        vector<string> compNames;
+        std::vector<std::string> compNames;
     } FieldInfo_t;
 
     vtkFloatArray       *ReadVar(int domain, const char *visitName);
@@ -110,7 +107,7 @@ class avtVistaDiabloFileFormat : public avtVistaFileFormat
 
     int                  numPieces;
     Node               **pieceNodes;
-    vector<vector<FieldInfo_t> > fieldInfos;
+    std::vector<std::vector<FieldInfo_t> > fieldInfos;
 
     int                  spatialDim;
 };

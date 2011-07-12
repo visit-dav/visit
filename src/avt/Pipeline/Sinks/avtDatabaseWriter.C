@@ -51,6 +51,9 @@
 
 #include <NoInputException.h>
 
+#include <string>
+#include <vector>
+
 
 // ****************************************************************************
 //  Method: avtDatabaseWriter constructor
@@ -370,7 +373,7 @@ avtDatabaseWriter::Write(const std::string &filename,
                         continue;
                     bool shouldAdd = false;
                     bool canAdd = false;
-                    string varname = expr->GetName();
+                    std::string varname = expr->GetName();
                     //
                     // We only want the expressions that correspond to the 
                     // mesh we are operating on.  If there is more than one 

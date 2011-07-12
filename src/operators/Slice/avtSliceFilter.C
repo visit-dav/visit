@@ -74,6 +74,9 @@
 
 #include <snprintf.h>
 
+#include <string>
+#include <vector>
+
 using     std::vector;
 
 
@@ -975,7 +978,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
           point[0] = FLT_MAX;
           point[1] = FLT_MAX;
           point[2] = FLT_MAX;
-          string var = src->GetFullDataRequest()->GetVariable();
+          std::string var = src->GetFullDataRequest()->GetVariable();
           int    ts  = src->GetFullDataRequest()->GetTimestep();
           bool success = src->QueryCoords(var, domain, zone, ts, point, true,
                          false, atts.GetMeshName().c_str());
@@ -1041,7 +1044,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
           point[0] = DBL_MAX;
           point[1] = DBL_MAX;
           point[2] = DBL_MAX;
-          string var = src->GetFullDataRequest()->GetVariable();
+          std::string var = src->GetFullDataRequest()->GetVariable();
           int    ts  = src->GetFullDataRequest()->GetTimestep();
           bool success = src->QueryCoords(var, domain, node, ts, point, false,
                          false, atts.GetMeshName().c_str());

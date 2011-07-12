@@ -48,6 +48,8 @@
 #include <avtTerminatingDatasetSink.h>
 #include <avtDrawable.h>
 
+#include <vector>
+#include <string>
 
 class   vtkActor;
 class   vtkDataObjectCollection;
@@ -187,7 +189,7 @@ class PLOTTER_API avtMapper : public avtTerminatingDatasetSink
     virtual vtkDataSet        *InsertFilters(vtkDataSet *, int dom);
 
     virtual vtkDataSetMapper  *CreateMapper(void);
-    virtual void               SetLabels(vector<string> &, bool);
+    virtual void               SetLabels(std::vector<std::string> &, bool);
 };
 
 

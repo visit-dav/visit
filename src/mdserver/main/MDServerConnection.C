@@ -48,6 +48,8 @@
 #endif
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include <visit-config.h> // To get the version number
 #include <snprintf.h>
@@ -160,7 +162,7 @@ RPCExecutor<CreateGroupListRPC>::Execute(CreateGroupListRPC *rpc)
 
     out << "# VisIt group file, version " << VISIT_VERSION << endl;
 
-    std::vector<string>::iterator i;
+    std::vector<std::string>::iterator i;
     for(i=rpc->groupList.begin();i!=rpc->groupList.end();i++)
         out << i->c_str() << endl;
 
@@ -266,7 +268,7 @@ MDServerConnection::MDServerConnection(MDServerApplication *a, int *argc,
 
     int total = visitTimer->StartTimer();
     int timeid = visitTimer->StartTimer();
-    string connectStr("Connecting to client");
+    std::string connectStr("Connecting to client");
 
     for (int i = 0; i < *argc; i++)
     {
@@ -2801,10 +2803,10 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 // ****************************************************************************
 
 avtDatabase *
-MDServerConnection::GetDatabase(string file, int timeState,
+MDServerConnection::GetDatabase(std::string file, int timeState,
                                 bool forceReadAllCyclesAndTimes,
                                 std::vector<std::string> &plugins,
-                                string forcedFileType_,
+                                std::string forcedFileType_,
                                 bool treatAllDBsAsTimeVarying)
 {
     //
@@ -2822,7 +2824,7 @@ MDServerConnection::GetDatabase(string file, int timeState,
         treatAllDBsAsTimeVarying ||
         (timeState != currentDatabaseTimeState && currentDatabaseHasInvariantMD))
     {
-        string timerMessage(string("Time to open ") + file);
+        std::string timerMessage(std::string("Time to open ") + file);
         int    timeid = visitTimer->StartTimer();
         debug2 << "MDServerConnection::GetDatabase: Need to get a new database"
                << ". file=" << file.c_str()

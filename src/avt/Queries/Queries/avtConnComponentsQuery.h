@@ -46,8 +46,6 @@
 
 #include <avtDatasetQuery.h>
 
-#include <string>
-
 class vtkDataSet;
 class avtConnComponentsExpression;
 

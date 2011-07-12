@@ -45,6 +45,8 @@
 
 #include <avtExpressionFilter.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Class: avtSymmEvalExpression
@@ -71,7 +73,7 @@ class EXPRESSION_API avtSymmEvalExpression : public avtExpressionFilter
     virtual void              AddInputVariableName(const char *);
 
   protected:
-    vector<double>            inputParameters;
+    std::vector<double>       inputParameters;
     std::vector<std::string>  varnames;
 
     virtual void              Execute(void);

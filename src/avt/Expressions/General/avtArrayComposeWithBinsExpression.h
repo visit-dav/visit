@@ -79,7 +79,7 @@ class EXPRESSION_API avtArrayComposeWithBinsExpression
 
   protected:
     int                       nvars;
-    vector<double>            binRanges;
+    std::vector<double>       binRanges;
 
     virtual void              UpdateDataObjectInfo(void);
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);

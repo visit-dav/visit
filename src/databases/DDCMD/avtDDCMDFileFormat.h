@@ -48,9 +48,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
-
 // ****************************************************************************
 //  Class: avtDDCMDFileFormat
 //
@@ -157,8 +154,8 @@ class avtDDCMDFileFormat : public avtSTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
   protected:
-    string                 fname;
-    vector<string>         subnames;
+    std::string            fname;
+    std::vector<std::string> subnames;
     int                    nXFileBlocks, nYFileBlocks, nZFileBlocks, nBlocks;
 
     // Global header information
@@ -174,7 +171,7 @@ class avtDDCMDFileFormat : public avtSTMDFileFormat
     char                 **typeNames;
 
     // Mesh information
-    string                 coordsUnit;
+    std::string            coordsUnit;
     int                    nDims;
     int                    nXMesh, nYMesh, nZMesh;
     int                    nXMeshBlocks, nYMeshBlocks, nZMeshBlocks;
@@ -187,7 +184,7 @@ class avtDDCMDFileFormat : public avtSTMDFileFormat
     int                    nXBlock, nYBlock, nZBlock;
     int                    nZonesBlock;
     int                    nVarsBlock;
-    string                *varNamesBlock;
+    std::string           *varNamesBlock;
     float                **varsBlock;
     float                 *coordsBlock;
     unsigned              *pinfoBlock;
@@ -201,7 +198,7 @@ class avtDDCMDFileFormat : public avtSTMDFileFormat
     int                    pinfoSize, xSize, ySize, zSize;
     char                   pinfoType, xType, yType, zType;
     int                    nVars;
-    string                *varNames;
+    std::string           *varNames;
     float                **varValues;
     int                   *varOffsets;
     int                   *varSizes;
@@ -233,12 +230,12 @@ class avtDDCMDFileFormat : public avtSTMDFileFormat
                                const char *);
     void                   DetermineProcessorReadOffset(const DDCMDHeader *,
                                const char *);
-    vector<DDCMDHeader*>   ReadHeader();
+    std::vector<DDCMDHeader*>   ReadHeader();
     void                   ParseCGridHeader(const DDCMDHeader *);
     void                   ParseAtomHeader(const DDCMDHeader *);
-    void                   ReadCGridData(const DDCMDHeader *, const string &);
-    void                   ReadAtomData(const DDCMDHeader *, const string &);
-    void                   ReadData(vector<DDCMDHeader*> &);
+    void                   ReadCGridData(const DDCMDHeader *, const std::string &);
+    void                   ReadAtomData(const DDCMDHeader *, const std::string &);
+    void                   ReadData(std::vector<DDCMDHeader*> &);
     vtkDataSet            *GetPointMesh();
     vtkDataSet            *GetRectilinearMesh();
     vtkDataArray          *GetPointVar(const char *);

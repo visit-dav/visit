@@ -51,6 +51,8 @@
 #include <QCheckBox>
 #include <QListWidget>
 
+#include <vector>
+
 // ****************************************************************************
 //  Constructor:  XMLEditConstants::XMLEditConstants
 //
@@ -518,7 +520,7 @@ XMLEditConstants::constantlistDel()
         return;
 
     Constant *c = a->constants[index];
-    vector<Constant*> newlist;
+    std::vector<Constant*> newlist;
     for (size_t i=0; i<a->constants.size(); i++)
     {
         if (a->constants[i] != c)

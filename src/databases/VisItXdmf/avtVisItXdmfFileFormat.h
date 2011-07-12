@@ -58,9 +58,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
-
 class vtkPoints;
 class vtkUnstructuredGrid;
 
@@ -126,7 +123,7 @@ class MeshInfo
                                  CELL_MIXED};
 
     // Data elements for the struct.
-    string             name;
+    std::string             name;
     avtMeshType        type;
     CellType           cellType;
     int                baseOffset;
@@ -135,7 +132,7 @@ class MeshInfo
 
     // For Multimeshes.
     int                nBlocks;
-    vector<MeshInfo*>  blockList;
+    std::vector<MeshInfo*>  blockList;
 
     // For normal meshes.
     GeometryType       geometryType;
@@ -170,8 +167,8 @@ class VarInfo
     enum               VariableType {TYPE_SCALAR, TYPE_VECTOR, TYPE_TENSOR};
 
     // Data elements for the class.
-    string             name;
-    string             meshName;
+    std::string             name;
+    std::string             meshName;
     VariableType       variableType;
     avtCentering       centering;
     int                varDimension;
@@ -180,7 +177,7 @@ class VarInfo
 
     // For Multivars.
     int                nBlocks;
-    vector<VarInfo*>   blockList;
+    std::vector<VarInfo*>   blockList;
 
     // For normal variables.
     double            *extents;
@@ -193,7 +190,7 @@ class DomainInfo
                        DomainInfo() {};
     virtual           ~DomainInfo() {};
 
-    string             name;
+    std::string             name;
     int                nGrids;
 };
 
@@ -270,15 +267,15 @@ class avtVisItXdmfFileFormat : public avtSTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
   protected:
-    string                 fname;
+    std::string                 fname;
     XDMFParser             xdmfParser;
 
     bool                   fileRead;
 
-    vector<MeshInfo*>      fileMeshList;
-    vector<VarInfo*>       fileVarList;
+    std::vector<MeshInfo*>      fileMeshList;
+    std::vector<VarInfo*>       fileVarList;
 
-    vector<DomainInfo*>    fileDomainList;
+    std::vector<DomainInfo*>    fileDomainList;
 
     char                   filename[1024], datasetname[1024];
 
@@ -295,16 +292,16 @@ class avtVisItXdmfFileFormat : public avtSTMDFileFormat
     int                    ReadDataItem(DataItem *, void *, int, int);
     void                   AddVarInfo(bool, int, VarInfo *);
     DataItem              *ParseDataItem();
-    void                   ParseTopology(string &, string &, string &,
-                               string &, string &, DataItem **);
-    void                   ParseTime(string &);
-    void                   ParseGeometry(string &, int &, DataItem **);
-    VarInfo               *ParseAttribute(int, int, const string &);
-    void                   ParseGridInformation(string &, string &);
-    void                   ParseUniformGrid(vector<MeshInfo*> &, int,
-                               int, bool, const string &);
-    void                   ParseGrid(vector<MeshInfo*> &, int, int,
-                               string &, bool);
+    void                   ParseTopology(std::string &, std::string &, std::string &,
+                               std::string &, std::string &, DataItem **);
+    void                   ParseTime(std::string &);
+    void                   ParseGeometry(std::string &, int &, DataItem **);
+    VarInfo               *ParseAttribute(int, int, const std::string &);
+    void                   ParseGridInformation(std::string &, std::string &);
+    void                   ParseUniformGrid(std::vector<MeshInfo*> &, int,
+                               int, bool, const std::string &);
+    void                   ParseGrid(std::vector<MeshInfo*> &, int, int,
+                               std::string &, bool);
     void                   ParseDomain(int);
     void                   ParseXdmf();
     void                   ParseXMLFile(void);

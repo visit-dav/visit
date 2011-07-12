@@ -70,6 +70,8 @@
 #include <snprintf.h>
 #include <TimingsManager.h>
 
+#include <string>
+#include <vector>
 
 //
 // Function Prototypes
@@ -206,7 +208,7 @@ avtVolumeFilter::Execute(void)
         }
     }
 
-    std::string s = string(primaryVariable);
+    std::string s = std::string(primaryVariable);
     std::vector<VISIT_LONG_LONG> numvals(numValsInHist, 0);
     int t1 = visitTimer->StartTimer();
     avtDatasetExaminer::CalculateHistogram(ds, s, minmax[0], minmax[1], numvals);
@@ -848,7 +850,7 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     }
     else if (atts.GetScaling() == VolumeAttributes::Log)
     {
-        string exprName = (string)"log_" + (string)var;
+        std::string exprName = (std::string)"log_" + (std::string)var;
         char exprDef[128];
         if (atts.GetUseColorVarMin())
         {

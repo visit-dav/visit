@@ -58,6 +58,9 @@
 
 #include <DebugStream.h>
 
+#include <string>
+#include <vector>
+
 
 // ****************************************************************************
 //  Method: avtShiftCenteringFilter constructor
@@ -184,7 +187,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     if (centeringTarget == AVT_NODECENT)
     {
         int nArray = inDS->GetCellData()->GetNumberOfArrays();
-        vector<string> arraysToSwap;
+        std::vector<std::string> arraysToSwap;
         
         for (i = 0 ; i < nArray ; i++)
         {
@@ -193,7 +196,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             if (dt == VTK_UNSIGNED_CHAR || dt == VTK_INT ||
                 dt == VTK_UNSIGNED_INT)
             {
-                string arr_name(arr->GetName());
+                std::string arr_name(arr->GetName());
                 if(arr_name != "avtGhostZones" && 
                    arr_name != "avtGhostNodes" && 
                    arr_name != "avtOriginalCellNumbers")
@@ -298,7 +301,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         // Detect if there are any integer type arrays and make them be floats for
         // recenting.
         int nArray = inDS->GetPointData()->GetNumberOfArrays();
-        vector<string> arraysToSwap;
+        std::vector<std::string> arraysToSwap;
         
         for (i = 0 ; i < nArray ; i++)
         {
@@ -307,7 +310,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             if (dt == VTK_UNSIGNED_CHAR || dt == VTK_INT ||
                 dt == VTK_UNSIGNED_INT)
             {
-                string arr_name(arr->GetName());
+                std::string arr_name(arr->GetName());
                 if(arr_name != "avtGhostZones" && 
                    arr_name != "avtGhostNodes" )
                     arraysToSwap.push_back(arr_name);

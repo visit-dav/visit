@@ -43,8 +43,9 @@
 #ifndef AVT_STREAMLINE_INFO_QUERY_H
 #define AVT_STREAMLINE_INFO_QUERY_H
 #include <query_exports.h>
-#include <vector>
 #include <avtDatasetQuery.h>
+
+#include <vector>
 
 
 // ****************************************************************************

@@ -48,6 +48,8 @@
 
 #include <MinMaxInfo.h>
 
+#include <string>
+
 class avtMatrix;
 class vtkDataArray;
 class vtkDataSet;

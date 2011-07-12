@@ -43,7 +43,6 @@
 #include "avtDataSelection.h"
 
 #include <string>
-using std::string;
 
 //
 //   Used to send general purpose commands as strings
@@ -61,11 +60,11 @@ public:
     virtual const char*  GetType() const { return "avtResolutionCommand"; }
 
     // added functionality
-    virtual void         setCommand(string cmd) { mCommand = cmd; }
-    virtual string       command() { return mCommand; }
+    virtual void         setCommand(std::string cmd) { mCommand = cmd; }
+    virtual std::string  command() { return mCommand; }
 
 private:
-    string mCommand;
+    std::string mCommand;
 };
 
 #endif // _AVT_RESOLUTION_COMMAND_H_

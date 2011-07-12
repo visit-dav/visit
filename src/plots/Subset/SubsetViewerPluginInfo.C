@@ -39,10 +39,22 @@
 // ************************************************************************* //
 //  File: SubsetViewerPluginInfo.C
 // ************************************************************************* //
-
 #include <SubsetPluginInfo.h>
 #include <QApplication>
 #include <avtSubsetPlot.h>
+#include <avtColorTables.h>
+#include <avtDatabaseMetaData.h>
+#include <avtTypes.h>
+#include <ViewerPlot.h>
+#include <DebugStream.h>
+#include <InvalidVariableException.h>
+#include <Subset.xpm>
+
+#include <stdio.h>
+
+#include <set>
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Function:  GetViewerInfo
@@ -346,7 +358,6 @@ SubsetViewerPluginInfo::GetMenuName() const
 //
 // ****************************************************************************
 
-#include <Subset.xpm>
 const char **
 SubsetViewerPluginInfo::XPMIconData() const
 {
@@ -405,21 +416,6 @@ SubsetViewerPluginInfo::XPMIconData() const
 //    Add support for groups based on ranges.
 //
 // ****************************************************************************
-#include <stdio.h>
-
-#include <avtColorTables.h>
-#include <avtDatabaseMetaData.h>
-#include <avtTypes.h>
-#include <set>
-
-#include <ViewerPlot.h>
-
-#include <DebugStream.h>
-#include <InvalidVariableException.h>
-
-using std::string;
-using std::set;
-
 void
 SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
     ViewerPlot *plot)
@@ -438,20 +434,20 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
     avtDatabaseMetaData *nonConstmd = const_cast <avtDatabaseMetaData *>(md);
 
-    string vn(plot->GetVariableName());
+    std::string vn(plot->GetVariableName());
 
     const avtMaterialMetaData *mat = NULL;
     const avtScalarMetaData *smd = NULL;
 
-    string meshName = nonConstmd->MeshForVar(vn);
+    std::string meshName = nonConstmd->MeshForVar(vn);
     avtMeshMetaData *mesh = 
         const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
 
 
     stringVector       sv;
     stringVector::const_iterator pos;
-    set<int> groupSet;
-    vector<int> gIDS;
+    std::set<int> groupSet;
+    std::vector<int> gIDS;
     char temp[512];
 
     // 

@@ -45,6 +45,8 @@
 #include <snprintf.h>
 #include <Utility.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtL2NormBetweenCurvesQuery::avtL2NormBetweenCurvesQuery
@@ -120,9 +122,9 @@ double
 avtL2NormBetweenCurvesQuery::CompareCurves(int n1, const float *x1,
                      const float *y1, int n2, const float *x2, const float *y2)
 {
-    vector<float>  newCurve1Vals;
-    vector<float>  newCurve2Vals;
-    vector<float>  usedX;
+    std::vector<float>  newCurve1Vals;
+    std::vector<float>  newCurve2Vals;
+    std::vector<float>  usedX;
     PutOnSameXIntervals(n1, x1, y1, n2, x2, y2, usedX, newCurve1Vals,
                         newCurve2Vals);
 
@@ -172,7 +174,7 @@ std::string
 avtL2NormBetweenCurvesQuery::CreateMessage(double l2norm)
 {
     char msg[1024];
-    string format = "The L2Norm between the two curves is " 
+    std::string format = "The L2Norm between the two curves is " 
                     + queryAtts.GetFloatFormat() +".";
     SNPRINTF(msg,1024,format.c_str(), l2norm);
     std::string m = msg;

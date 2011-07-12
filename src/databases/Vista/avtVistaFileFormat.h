@@ -49,8 +49,6 @@
 #include <avtSTMDFileFormat.h>
 #include <avtFileFormatInterface.h>
 
-using std::string;
-
 // used in STL maps where we need to control initialization of
 // value upon first reference into the map
 template<class T, T ival=0>
@@ -153,8 +151,8 @@ class avtVistaFileFormat : public avtSTMDFileFormat
     VistaFormatType      formatType;
 
     static const int     MASTER_FILE_INDEX;
-    string               masterFileName;
-    string               masterDirName;
+    std::string          masterFileName;
+    std::string          masterDirName;
 
     int                  numChunks;
     int                 *chunkToFileMap;

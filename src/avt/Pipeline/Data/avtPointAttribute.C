@@ -53,6 +53,10 @@
 
 #include <ImproperUseException.h>
 
+#include <string>
+
+using std::string;
+
 
 // ****************************************************************************
 //  Method: avtPointAttribute constructor

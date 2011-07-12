@@ -61,6 +61,8 @@
 #include <InvalidDimensionsException.h>
 #include <snprintf.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtConnComponentsLengthQuery constructor
@@ -112,7 +114,7 @@ avtConnComponentsLengthQuery::PreExecute(void)
     avtConnComponentsQuery::PreExecute();
 
     // prepare component arrays
-    lengthPerComp = vector<double>(nComps,0.0);
+    lengthPerComp = std::vector<double>(nComps,0.0);
 }
 
 
@@ -152,7 +154,7 @@ avtConnComponentsLengthQuery::PostExecute(void)
         {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
 
         msg += buff;
-        string format  =  "Component %d Length = (" 
+        std::string format  =  "Component %d Length = (" 
                               + queryAtts.GetFloatFormat() +")\n";
         for(int i=0;i<nComps;i++)
         {

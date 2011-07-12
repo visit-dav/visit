@@ -7,9 +7,6 @@
 #include <string>
 #include <visitstream.h>
 
-using std::vector;
-using std::string;
-
 // ****************************************************************************
 //  Class:  avtHistogramSpecification
 //
@@ -76,67 +73,67 @@ class PIPELINE_API avtHistogramSpecification {
     //
 
     // N-D, regular
-    bool SpecifyHistogram(int                           timestep,
-                          const vector<string>          &variables,
-                          const vector<int>             &numBins,
-                          const vector<double>          &begin,
-                          const vector<double>          &end,
-                          const string                  &condition = string(),
-                          bool                          exact = true);
+    bool SpecifyHistogram(int                            timestep,
+                          const std::vector<std::string> &variables,
+                          const std::vector<int>         &numBins,
+                          const std::vector<double>      &begin,
+                          const std::vector<double>      &end,
+                          const std::string              &condition = std::string(),
+                          bool                           exact = true);
 
     // N-D, irregular
     bool SpecifyHistogram(int                            timestep,
-                          const vector<string>          &variables,
-                          const vector<vector<double> > &bounds,
-                          const string                  &condition = string(),
-                          bool                          exact = true);
+                          const std::vector<std::string> &variables,
+                          const std::vector<std::vector<double> > &bounds,
+                          const std::string              &condition = std::string(),
+                          bool                           exact = true);
     
     // N-D histogram. The number of bins are know but the bounds are unknown.
-    bool SpecifyHistogram(int                           timestep,
-                          const vector<string>          &variables,
-                          const vector<int>             &numBins,
-                          const string                  &condition = string(),
-                          bool                          exact = true ,
-                          bool                          regular = false);
+    bool SpecifyHistogram(int                            timestep,
+                          const std::vector<std::string> &variables,
+                          const std::vector<int>         &numBins,
+                          const std::string              &condition = std::string(),
+                          bool                           exact = true ,
+                          bool                           regular = false);
      
 
     // 1-D, regular (convenience)
     bool SpecifyHistogram(int                            timestep,
-                          const string                  &variable0,
+                          const std::string             &variable0,
                           int                            numBins0,
                           double                         begin0,
                           double                         end0,
-                          const string                  &condition = string(),
+                          const std::string            &condition = std::string(),
                           bool                          exact = true);
     
     // 1-D, bounds unknown (convenience)
     bool SpecifyHistogram(int                            timestep,
-                          const string                  &variable0,
+                          const std::string             &variable0,
                           int                            numBins0,
-                          const string                  &condition = string(),
+                          const std::string             &condition = std::string(),
                           bool                          exact = true,
                           bool                          regular = false);
 
     // 2-D, regular (convenience)
     bool SpecifyHistogram(int                            timestep,
-                          const string                  &variable0,
+                          const std::string             &variable0,
                           int                            numBins0,
                           double                         begin0,
                           double                         end0,
-                          const string                  &variable1,
+                          const std::string             &variable1,
                           int                            numBins1,
                           double                         begin1,
                           double                         end1,
-                          const string                  &condition = string(),
+                          const std::string             &condition = std::string(),
                           bool                          exact = true);
     
     //2-D, bounds unkown (convenience)
     bool SpecifyHistogram(int                            timestep,
-                          const string                  &variable0,
+                          const std::string             &variable0,
                           int                            numBins0,
-                          const string                  &variable1,
+                          const std::string             &variable1,
                           int                            numBins1,
-                          const string                  &condition = string(),
+                          const std::string             &condition = std::string(),
                           bool                          exact = true,
                           bool                          regular=false);
 
@@ -144,18 +141,18 @@ class PIPELINE_API avtHistogramSpecification {
     // Functions to ask for the specification of the histogram
     int                       GetTimestep()       const;
     bool                      IsRegularBinning()  const;
-    const vector<string>     &GetVariables()      const;
-    const vector<int>        &GetNumberOfBins()   const;
-    string                    GetCondition()      const;
+    const std::vector<std::string> &GetVariables()      const;
+    const std::vector<int>    &GetNumberOfBins()   const;
+    std::string               GetCondition()      const;
     bool                      GetConditionExact() const;
     
     // Functions to ask for the actual histogram data
-    vector< vector<double> > &GetBounds();
+    std::vector< std::vector<double> > &GetBounds();
     VISIT_LONG_LONG          *GetCounts();
 
     // Function to set the actual histogram data
     void                      SetCounts(VISIT_LONG_LONG *counts);
-    void                      SetCounts(const vector<unsigned int>& counts );
+    void                      SetCounts(const std::vector<unsigned int>& counts );
     
     // Additional functions provided for convenience
     int  GetDimensionality()      const;
@@ -180,17 +177,17 @@ private:
     int   cm_Timestep;
     
     // The dimensionality of the histogram is defined by cm_Variables.size()
-    vector<string> cm_Variables;
+    std::vector<std::string> cm_Variables;
     
     // Define the condition for the histogram
-    string cm_Condition;
+    std::string cm_Condition;
     
     // Define whether the conditions are exact of if FastBit can modify it
     // to comply with FastBit bin boundaries
     bool cm_ConditionExact;
 
     // Define the number of bins for each histogram
-    vector<int> cm_NumberOfBins;
+    std::vector<int> cm_NumberOfBins;
 
     // True if the binning is known to be regular
     bool cm_RegularBinning;
@@ -200,7 +197,7 @@ private:
     //
 
     // Define the bounds of the bins of the histogram
-    vector< vector<double> > cm_Bounds;    
+    std::vector< std::vector<double> > cm_Bounds;    
     
     //Are the bounds specified
     bool cm_BoundsSpecified;

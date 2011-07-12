@@ -48,6 +48,7 @@
 #include <avtConnComponentsQuery.h>
 
 #include <string>
+#include <vector>
 
 class avtEdgeLength;
 class avtRevolvedVolume;
@@ -94,7 +95,7 @@ class QUERY_API avtConnComponentsWeightedVariableQuery
     avtVMetricVolume               *volumeFilter;
 
     std::string                     variableName;
-    vector<double>                  sumPerComp;
+    std::vector<double>             sumPerComp;
 
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);

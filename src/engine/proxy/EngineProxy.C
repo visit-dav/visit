@@ -61,6 +61,12 @@
 
 #include <stdio.h>
 
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
 // ****************************************************************************
 //  Method: EngineProxy constructor
 //
@@ -393,7 +399,7 @@ EngineProxy::ExtractEngineInformation()
 //   
 // ****************************************************************************
 
-std::string
+string
 EngineProxy::GetComponentName() const
 {
     return "compute engine";
@@ -598,7 +604,7 @@ EngineProxy::ApplyOperator(const string &name, const AttributeSubject *atts)
 //
 // ****************************************************************************
 int
-EngineProxy::MakePlot(const std::string &plotName, const string &pluginID,
+EngineProxy::MakePlot(const string &plotName, const string &pluginID,
     const AttributeSubject *atts, const vector<double> &extents, int winID)
 {
     int id;
@@ -898,7 +904,7 @@ EngineProxy::ClearCache()
 }
 
 void
-EngineProxy::ClearCache(const std::string &filename)
+EngineProxy::ClearCache(const string &filename)
 {
     clearCacheRPC(filename, false);
 }
@@ -931,7 +937,7 @@ EngineProxy::ClearCache(const std::string &filename)
 // ****************************************************************************
 
 void
-EngineProxy::OpenDatabase(const std::string &format, const std::string &file,
+EngineProxy::OpenDatabase(const string &format, const string &file,
                           int time, bool createMeshQualityExpressions,
                           bool createTimeDerivativeExpressions,
                           bool ignoreExtents)
@@ -968,8 +974,8 @@ EngineProxy::OpenDatabase(const std::string &format, const std::string &file,
 // ****************************************************************************
 
 void
-EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
-    const std::string &wholeDBName, const std::string &pathToFiles, 
+EngineProxy::DefineVirtualDatabase(const string &fileFormat,
+    const string &wholeDBName, const string &pathToFiles, 
     const stringVector &files, int time, bool createMeshQualityExpressions,
     bool createTimeDerivativeExpressions)
 {
@@ -1185,7 +1191,7 @@ EngineProxy::Status(const char *message)
 // ****************************************************************************
 
 void
-EngineProxy::Status(int percent, int curStage, const std::string &curStageName,
+EngineProxy::Status(int percent, int curStage, const string &curStageName,
    int maxStage)
 {
     statusAtts->SetClearStatus(false);
@@ -1378,7 +1384,7 @@ EngineProxy::StartQuery(const bool flag, const int nid)
 // ****************************************************************************
 
 void 
-EngineProxy::Query(const std::vector<int> &nid, const QueryAttributes *atts,
+EngineProxy::Query(const vector<int> &nid, const QueryAttributes *atts,
                    QueryAttributes &retAtts)
 {
     queryRPC(nid, atts);
@@ -1590,8 +1596,8 @@ EngineProxy::BlockForNamedSelectionOperation()
 // ****************************************************************************
 
 void
-EngineProxy::ApplyNamedSelection(const std::vector<std::string> &ids, 
-                                 const std::string selName)
+EngineProxy::ApplyNamedSelection(const vector<string> &ids, 
+                                 const string selName)
 {
     namedSelectionRPC.ApplyNamedSelection(ids, selName);
 
@@ -1652,7 +1658,7 @@ EngineProxy::CreateNamedSelection(int id, const SelectionProperties &props)
 // ****************************************************************************
 
 void
-EngineProxy::DeleteNamedSelection(const std::string selName)
+EngineProxy::DeleteNamedSelection(const string selName)
 {
     namedSelectionRPC.DeleteNamedSelection(selName);
 
@@ -1680,7 +1686,7 @@ EngineProxy::DeleteNamedSelection(const std::string selName)
 // ****************************************************************************
 
 void
-EngineProxy::LoadNamedSelection(const std::string selName)
+EngineProxy::LoadNamedSelection(const string selName)
 {
     namedSelectionRPC.LoadNamedSelection(selName);
 
@@ -1708,7 +1714,7 @@ EngineProxy::LoadNamedSelection(const std::string selName)
 // ****************************************************************************
 
 void
-EngineProxy::SaveNamedSelection(const std::string selName)
+EngineProxy::SaveNamedSelection(const string selName)
 {
     namedSelectionRPC.SaveNamedSelection(selName);
 
@@ -1923,7 +1929,7 @@ EngineProxy::UpdateExpressions(const ExpressionList &expressions)
 // ****************************************************************************
 
 void
-EngineProxy::ExecuteSimulationControlCommand(const std::string &cmd)
+EngineProxy::ExecuteSimulationControlCommand(const string &cmd)
 {
     simulationCommandRPC(cmd, "");
 }
@@ -1944,8 +1950,8 @@ EngineProxy::ExecuteSimulationControlCommand(const std::string &cmd)
 // ****************************************************************************
 
 void
-EngineProxy::ExecuteSimulationControlCommand(const std::string &cmd,
-                                             const std::string &arg)
+EngineProxy::ExecuteSimulationControlCommand(const string &cmd,
+                                             const string &arg)
 {
     simulationCommandRPC(cmd, arg);
 }

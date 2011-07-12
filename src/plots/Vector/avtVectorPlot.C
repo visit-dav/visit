@@ -56,6 +56,8 @@
 
 #include <InvalidLimitsException.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: avtVectorPlot constructor
 //
@@ -762,9 +764,9 @@ avtVectorPlot::ReleaseData(void)
 // ****************************************************************************
 
 void
-avtVectorPlot::ComputeMagVarName(const string &vn)
+avtVectorPlot::ComputeMagVarName(const std::string &vn)
 {
-    magVarName = vn + string("_AVT_mag");
+    magVarName = vn + std::string("_AVT_mag");
 }
 
 // ****************************************************************************

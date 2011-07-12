@@ -48,6 +48,7 @@
 #include <avtGeneralQuery.h>
 #include <QueryAttributes.h>
 
+#include <string>
 #include <vector>
 
 // ****************************************************************************

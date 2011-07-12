@@ -38,6 +38,9 @@
 
 #include <CreateGroupListRPC.h>
 
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 // Method: CreateGroupListRPC::CreateGroupListRPC
 //
@@ -78,7 +81,7 @@ CreateGroupListRPC::CreateGroupListRPC() : NonBlockingRPC("ss*")
 // ****************************************************************************
 
 void
-CreateGroupListRPC::operator()(const string f, vector<string> gl)
+CreateGroupListRPC::operator()(const std::string f, std::vector<std::string> gl)
 {
     filename = f;
     groupList = gl;

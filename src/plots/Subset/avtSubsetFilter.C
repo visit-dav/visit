@@ -54,7 +54,11 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
+#include <string>
+#include <vector>
 
+using std::string;
+using std::vector;
 
 // ****************************************************************************
 //  Method: avtSubsetFilter constructor

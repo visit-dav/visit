@@ -72,6 +72,9 @@
 #include <vtkTriangleFilter.h>
 #include <vtkVisItSTLWriter.h>
 
+#include <string>
+#include <vector>
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -1527,7 +1530,7 @@ avtOpenGLStreamlineRenderer::InitColors()
     avtColorTables *ct = avtColorTables::Instance();
     
     if (colorTableName == "Default")
-        colorTableName = string(ct->GetDefaultContinuousColorTable());
+        colorTableName = std::string(ct->GetDefaultContinuousColorTable());
 
     // Make sure color table exists.
     if (!ct->ColorTableExists(colorTableName.c_str()))
@@ -1541,7 +1544,7 @@ avtOpenGLStreamlineRenderer::InitColors()
     //Fill in the colorTable.
     unsigned char rgb[3] = {0,0,0};
     
-    vector<unsigned char>::iterator iter = colorTable.begin();
+    std::vector<unsigned char>::iterator iter = colorTable.begin();
     if (ct->IsDiscrete(colorTableName.c_str()))
     {
         for (int i = 0; i < numColors; i++)
@@ -1558,7 +1561,7 @@ avtOpenGLStreamlineRenderer::InitColors()
         unsigned char *rgb = ct->GetSampledColors(colorTableName.c_str(), numColors);
         if (rgb)
         {
-            vector<unsigned char>::iterator iter = colorTable.begin();
+            std::vector<unsigned char>::iterator iter = colorTable.begin();
             for (int i = 0; i < numColors; i++)
             {
                 *iter++ = rgb[i*3 +0];

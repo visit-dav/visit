@@ -45,6 +45,8 @@
 
 #include <avtStreamlineFilter.h>
 
+#include <vector>
+
 class avtStateRecorderIntegralCurve;
 
 // ****************************************************************************
@@ -106,7 +108,7 @@ class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
       phiScalingFlag = flag; phiScaling = pf;}
 
   protected:
-    void                      CreateIntegralCurveOutput(vector<avtIntegralCurve *> &streamlines);
+    void                      CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &streamlines);
     float                     ComputeCorrelationDistance(int idx,  avtStateRecorderIntegralCurve *ic,
                                                          double angTol, double minDist);
 

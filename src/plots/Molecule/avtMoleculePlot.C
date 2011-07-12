@@ -51,16 +51,22 @@
 #include <avtFeatureEdgesFilter.h>
 #include <avtUserDefinedMapper.h>
 #include <avtMoleculeFilter.h>
- #include <AtomicProperties.h>
+#include <AtomicProperties.h>
+
+#include <DebugStream.h>
+#include <LineAttributes.h>
+#include <InvalidColortableException.h>
 
 #include <math.h>
 #include <limits.h>
 #include <float.h>
 #include <stdio.h>
 
-#include <DebugStream.h>
-#include <LineAttributes.h>
-#include <InvalidColortableException.h>
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
 
 // ****************************************************************************
 //  Method: avtMoleculePlot constructor

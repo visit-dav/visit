@@ -48,6 +48,8 @@
 
 #include <TimingsManager.h>
 
+#include <vector>
+
 
 // ****************************************************************************
 //  Method: avtStructuredChunkDataTreeIterator constructor
@@ -129,7 +131,7 @@ avtStructuredChunkDataTreeIterator::ExecuteDataTree(vtkDataSet *in_ds, int domai
     }
 
     int ncells = in_ds->GetNumberOfCells();
-    vector<avtStructuredMeshChunker::ZoneDesignation> designation(ncells);
+    std::vector<avtStructuredMeshChunker::ZoneDesignation> designation(ncells);
     // cell-dims
     dims[0] -= 1;
     dims[1] -= 1;
@@ -139,7 +141,7 @@ avtStructuredChunkDataTreeIterator::ExecuteDataTree(vtkDataSet *in_ds, int domai
     visitTimer->StopTimer(t0, "Structured Chunk DataTreeIterator: Getting assignments");
     
     vtkUnstructuredGrid *ugrid = NULL;
-    vector<vtkDataSet *> grids;
+    std::vector<vtkDataSet *> grids;
 
     int t1 = visitTimer->StartTimer();
     avtStructuredMeshChunker::ChunkStructuredMesh(in_ds, designation,

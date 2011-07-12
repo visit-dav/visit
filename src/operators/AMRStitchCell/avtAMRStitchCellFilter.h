@@ -49,6 +49,9 @@
 
 #include <vtkType.h>
 
+#include <string>
+#include <vector>
+
 class vtkDataSet;
 class vtkRectilinearGrid;
 
@@ -86,7 +89,7 @@ class avtAMRStitchCellFilter :  public virtual avtSIMODataTreeIterator,
     virtual avtContract_p ModifyContract(avtContract_p);
     virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
     vtkDataSet           *CreateStitchCells(vtkRectilinearGrid*, int, int,
-                              int[3], int[3], const vector<int>&, const vtkIdType*);
+                              int[3], int[3], const std::vector<int>&, const vtkIdType*);
     vtkDataSet           *CreateDualGrid(vtkRectilinearGrid*, int, int, int[3],
                               const vtkIdType*);
     vtkDataArray         *ContractDual(vtkDataArray *coords);

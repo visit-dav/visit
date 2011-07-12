@@ -3,15 +3,16 @@ Prefix:
 // This is a hack to work around fact that we cannot define variables
 // of arbitrary type, like a map, in the state object itself. So, we
 // do it using a map with key being the object's this pointer.
-static map<const void*, Namescheme*> nameschemesMap;
-static map<const void*, bool> getNameCalledMap;
-Postfix:
+#include <map>
+#include <string>
+#include <vector>
 
-Code: NameschemeAttributes.h
-Prefix:
 using std::map;
 using std::string;
 using std::vector;
+
+static map<const void*, Namescheme*> nameschemesMap;
+static map<const void*, bool> getNameCalledMap;
 Postfix:
 
 Code: ~NameschemeAttributes
@@ -53,7 +54,7 @@ void NameschemeAttributes::AddExternalArray(const char * name, const int *data, 
 }
 
 Function: AddExternalArray2
-Declaration: void AddExternalArray(const string &name, const vector<int> &data);
+Declaration: void AddExternalArray(const std::string &name, const std::vector<int> &data);
 Definition:
 // ****************************************************************************
 // See AddExternalArray
@@ -110,7 +111,7 @@ void NameschemeAttributes::SetName(int i, const char *name)
 }
 
 Function: SetName2
-Declaration: void SetName(int i, const string &n);
+Declaration: void SetName(int i, const std::string &n);
 Definition:
 // ****************************************************************************
 // See SetName
@@ -216,7 +217,7 @@ const char *NameschemeAttributes::GetName(int n) const
 }
 
 Function: SetAllNames2
-Declaration: void SetAllNames(const vector<string> &names);
+Declaration: void SetAllNames(const std::vector<std::string> &names);
 Definition:
 // ****************************************************************************
 // See SetAllNames

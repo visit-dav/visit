@@ -40,7 +40,6 @@
 //                                avtExprNode.C                              //
 // ************************************************************************* //
 
-#include <stdio.h>
 #include <ExpressionException.h>
 #include <ExprToken.h>
 #include <ExprPipelineState.h>
@@ -95,6 +94,11 @@
 #ifdef VISIT_PYTHON_FILTERS
 #include <avtPythonExpression.h>
 #endif
+
+#include <stdio.h>
+
+#include <string>
+#include <vector>
 
 using std::string;
 
@@ -759,7 +763,7 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
     // of arguments off the stack and store them on a stack.
     int nvars = f->NumVariableArguments();
     string argsText;
-    vector<string> inputStack;
+    std::vector<string> inputStack;
     int i;
     for (i = 0; i < nvars; i++)
     {

@@ -48,6 +48,7 @@
 #include <ParsingExprList.h>
 #include <snprintf.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Method: avtOriginalDataSpatialExtentsQuery constructor
@@ -97,7 +98,7 @@ avtOriginalDataSpatialExtentsQuery::ApplyFilters(avtDataObject_p inData)
     avtDataRequest_p dataRequest = inData->GetOriginatingSource()->
         GetGeneralContract()->GetDataRequest();
 
-    string dbVar = ParsingExprList::GetRealVariable(
+    std::string dbVar = ParsingExprList::GetRealVariable(
                        queryAtts.GetVariables()[0]);
     avtDataRequest_p new_dataRequest = new avtDataRequest(dataRequest,
                                                                 dbVar.c_str());
@@ -137,8 +138,8 @@ avtOriginalDataSpatialExtentsQuery::PerformQuery(QueryAttributes *qA)
     queryAtts = *qA;
     Init(); 
 
-    string floatFormat = queryAtts.GetFloatFormat();
-    string format ="";
+    std::string floatFormat = queryAtts.GetFloatFormat();
+    std::string format ="";
     UpdateProgress(0, 0);
 
     avtDataObject_p dob = ApplyFilters(GetInput());

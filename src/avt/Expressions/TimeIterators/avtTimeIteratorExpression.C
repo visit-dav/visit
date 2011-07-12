@@ -57,6 +57,8 @@
 
 #include <snprintf.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtTimeIteratorExpression constructor
@@ -130,12 +132,12 @@ avtTimeIteratorExpression::ProcessArguments(ArgsExpr *args,
         tree->CreateFilters(state);
     }
 
-    vector<int> timecontrols;
+    std::vector<int> timecontrols;
     for (i = NumberOfVariables() ; i < nargs ; i++)
     {
         ArgExpr *arg= (*arguments)[i];
         ExprParseTreeNode *tree= arg->GetExpr();
-        string argtype = tree->GetTypeName();
+        std::string argtype = tree->GetTypeName();
         // check for arg passed as integer
         if (argtype == "IntegerConst")
         {

@@ -45,6 +45,7 @@
 
 #include <avtStreamlineFilter.h>
 
+#include <vector>
 
 class avtPoincareIC;
 
@@ -116,7 +117,7 @@ class avtPoincareFilter : public avtStreamlineFilter
 
     void SetShowCurves( unsigned int val ) { is_curvemesh = val; }
 
-    void SetClipPlanes( vector< double > planeAngles ) {
+    void SetClipPlanes( std::vector< double > planeAngles ) {
       planes = planeAngles; }
 
     void SetDataValue( unsigned int val ) { dataValue = val; }
@@ -143,7 +144,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     virtual void PreExecute(void);
     virtual void PostExecute(void);
     virtual void UpdateDataObjectInfo(void);
-    virtual void GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic);
+    virtual void GetIntegralCurvePoints(std::vector<avtIntegralCurve *> &ic);
     virtual avtIntegralCurve *CreateIntegralCurve( const avtIVPSolver* model,
                                                    avtIntegralCurve::Direction,
                                                    const double& t_start,
@@ -152,10 +153,10 @@ class avtPoincareFilter : public avtStreamlineFilter
                                                    long ID );
 
   virtual void drawPoints( avtDataTree *dt,
-                           vector < avtVector > &nodes );
+                           std::vector < avtVector > &nodes );
 
   virtual void drawRationalCurve( avtDataTree *dt,
-                                  vector< vector < vector < avtVector > > > &nodes,
+                                  std::vector< std::vector < std::vector < avtVector > > > &nodes,
                                   unsigned int nnodes,
                                   unsigned int islands,
                                   unsigned int skip,
@@ -163,7 +164,7 @@ class avtPoincareFilter : public avtStreamlineFilter
                                   double color_value );
   
   virtual void drawIrrationalCurve( avtDataTree *dt,
-                                    vector< vector < vector < avtVector > > > &nodes,
+                                    std::vector< std::vector < std::vector < avtVector > > > &nodes,
                                     unsigned int nnodes,
                                     unsigned int islands,
                                     unsigned int skip,
@@ -173,7 +174,7 @@ class avtPoincareFilter : public avtStreamlineFilter
                                     bool modulo = false);
   
   virtual void drawSurface( avtDataTree *dt,
-                            vector< vector < vector < avtVector > > > &nodes,
+                            std::vector< std::vector < std::vector < avtVector > > > &nodes,
                             unsigned int nnodes,
                             unsigned int islands,
                             unsigned int skip,
@@ -182,7 +183,7 @@ class avtPoincareFilter : public avtStreamlineFilter
                             bool modulo = false);
 
   virtual void drawPeriodicity( avtDataTree *dt,
-                                vector < avtVector > &nodes,
+                                std::vector < avtVector > &nodes,
                                 unsigned int period,
                                 unsigned int nnodes,
                                 unsigned int islands,
@@ -192,9 +193,9 @@ class avtPoincareFilter : public avtStreamlineFilter
                                 bool ptFlag );
 
     // Poincare filter methods.
-    bool ClassifyStreamlines(vector<avtIntegralCurve *> &ic);
+    bool ClassifyStreamlines(std::vector<avtIntegralCurve *> &ic);
     void CreatePoincareOutput(avtDataTree *dt,
-                              vector<avtIntegralCurve *> &ic);
+                              std::vector<avtIntegralCurve *> &ic);
 
     void CreateIntegralCurveOutput(std::vector<avtIntegralCurve*,
                                    std::allocator<avtIntegralCurve*> >&) {};

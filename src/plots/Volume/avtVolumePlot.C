@@ -42,9 +42,6 @@
 
 #include "avtVolumePlot.h"
 
-#include <limits.h>
-#include <math.h>
-
 #include <avtCallback.h>
 #include <avtVolumeRenderer.h>
 #include <avtLookupTable.h>
@@ -59,6 +56,11 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <LostConnectionException.h>
+
+#include <limits.h>
+#include <math.h>
+
+#include <string>
 
 // ****************************************************************************
 //  Method: avtVolumePlot constructor
@@ -660,7 +662,7 @@ avtVolumePlot::CustomizeBehavior(void)
 avtContract_p
 avtVolumePlot::EnhanceSpecification(avtContract_p spec)
 {
-    string ov = atts.GetOpacityVariable();
+    std::string ov = atts.GetOpacityVariable();
     if (ov == "default")
     {
         return spec;

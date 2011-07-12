@@ -52,6 +52,8 @@
 
 #include <ExpressionException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtNaturalLogExpression constructor
@@ -136,7 +138,7 @@ avtNaturalLogExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                     out->SetComponent(i, j, defaultErrorValue);
                 else
                 {
-                    string msg = "you cannot take the logarithm of values";
+                    std::string msg = "you cannot take the logarithm of values";
                     msg += "<=0.  You might want to try ln(var, ";
                     msg +=  "some-default-numeric-value).";
                     EXCEPTION2(ExpressionException, outputVariableName,
@@ -198,7 +200,7 @@ avtNaturalLogExpression::ProcessArguments(ArgsExpr *args,
         }
         else
         {
-            string error_msg = "avtNaturalLogExpression: "
+            std::string error_msg = "avtNaturalLogExpression: "
                                "Invalid second argument."
                                "Should be float or int";
             debug5 << error_msg << endl;

@@ -53,6 +53,9 @@
 #include <VisWinAxes3D.h>
 #include <float.h>
 
+#include <string>
+#include <vector>
+
 
 // ****************************************************************************
 //  Method: VisWinAxes3D constructor
@@ -574,11 +577,11 @@ VisWinAxes3D::UpdateView()
 // ****************************************************************************
 
 void
-VisWinAxes3D::UpdatePlotList(vector<avtActor_p> &list)
+VisWinAxes3D::UpdatePlotList(std::vector<avtActor_p> &list)
 {
     int nActors = list.size();
-    string x, y, z;
-    string xt, yt, zt;
+    std::string x, y, z;
+    std::string xt, yt, zt;
 
     for (int i = 0 ; i < nActors ; i++)
     {

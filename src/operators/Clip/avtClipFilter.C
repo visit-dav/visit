@@ -65,6 +65,8 @@
 #include <TimingsManager.h>
 #include <maptypes.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtClipFilter constructor
@@ -409,8 +411,8 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
     if (atts.GetFuncType() == ClipAttributes::Plane)
     {
         // Set up the planes.
-        vector<vtkPlane*> planes;
-        vector<vtkPlane*> inversePlanes;
+        std::vector<vtkPlane*> planes;
+        std::vector<vtkPlane*> inversePlanes;
         if (atts.GetPlane1Status() == true)
         {
             vtkPlane *plane = vtkPlane::New();
@@ -529,7 +531,7 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
         }
 
         // Delete the planes
-        vector<vtkPlane*>::iterator it;
+        std::vector<vtkPlane*>::iterator it;
         for(it = planes.begin(); it != planes.end(); it++)
             (*it)->Delete();
         for(it = inversePlanes.begin(); it != inversePlanes.end(); it++)

@@ -68,7 +68,8 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 
-
+#include <string>
+#include <vector>
 
 
 // ****************************************************************************
@@ -354,7 +355,7 @@ avtCracksClipperFilter::ModifyContract(avtContract_p contract)
     ExpressionList *elist = ParsingExprList::Instance()->GetList();
     Expression *e = new Expression();
 
-    string edef = string("volume2(<") + data.GetMeshname() + string(">)");
+    std::string edef = std::string("volume2(<") + data.GetMeshname() + std::string(">)");
     e->SetName("cracks_vol");
     e->SetDefinition(edef.c_str());
     e->SetType(Expression::ScalarMeshVar);

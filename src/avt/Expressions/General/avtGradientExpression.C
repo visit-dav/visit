@@ -43,7 +43,6 @@
 #include <avtGradientExpression.h>
 
 #include <math.h>
-#include <vector>
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
@@ -63,6 +62,8 @@
 #include <DebugStream.h>
 #include <ExpressionException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtGradientExpression constructor
@@ -179,7 +180,7 @@ avtGradientExpression::ProcessArguments(ArgsExpr *args,
     {
         ArgExpr *second_arg= (*arguments)[1];
         ExprParseTreeNode *second_tree= second_arg->GetExpr();
-        string second_type = second_tree->GetTypeName();
+        std::string second_type = second_tree->GetTypeName();
 
         // check for arg passed as integer
         if((second_type == "IntegerConst"))
@@ -196,7 +197,7 @@ avtGradientExpression::ProcessArguments(ArgsExpr *args,
         // check for arg passed as string
         else if((second_type == "StringConst"))
         {
-            string sval =
+            std::string sval =
                         dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
 
             if(sval == "sample")

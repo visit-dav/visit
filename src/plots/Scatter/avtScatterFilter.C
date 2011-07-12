@@ -61,6 +61,9 @@
 //#include <visitstream.h>
 //#include <avtDataAttributes.h>
 
+#include <string>
+#include <vector>
+
 #define SCATTER_FLOAT_MIN -1e+37
 #define SCATTER_FLOAT_MAX  1e+37
 
@@ -197,7 +200,7 @@ avtScatterFilter::PreExecute(void)
              colorExtents[0] << ", " << colorExtents[1] << endl;
     }
 
-    thisProcsSpatialExtents = vector<double>(6,0.0);
+    thisProcsSpatialExtents = std::vector<double>(6,0.0);
 }
 
 // ****************************************************************************
@@ -419,7 +422,7 @@ avtScatterFilter::PostExecute(void)
     avtDataTreeIterator::PostExecute();
     avtDataAttributes &out_datts = GetOutput()->GetInfo().GetAttributes();
 
-    string color_var = "";
+    std::string color_var = "";
     if (atts.GetVar1Role() == ScatterAttributes::Color)
         color_var = atts.GetVar1();
     if (atts.GetVar2Role() == ScatterAttributes::Color)
@@ -1491,7 +1494,7 @@ avtScatterFilter::ModifyContract(avtContract_p spec)
             {
                 double minval = var[i].useMin ? var[i].min : SCATTER_FLOAT_MIN;
                 double maxval = var[i].useMax ? var[i].max : SCATTER_FLOAT_MAX;
-                vector<int> dl;
+                std::vector<int> dl;
                 it->GetElementsListFromRange(&minval, &maxval, dl);
                 rv->GetDataRequest()->GetRestriction()->RestrictDomains(dl);
             }

@@ -42,12 +42,8 @@
 
 #include <avtMiliFileFormat.h>
 
-#include <vector>
-#include <string>
-using std::getline;
 #include <snprintf.h>
 #include <visitstream.h>
-#include <set>
 
 extern "C" {
 #include <mili_enum.h>
@@ -76,9 +72,16 @@ extern "C" {
 #include <InvalidVariableException.h>
 #include <UnexpectedValueException.h>
 
-using std::vector;
-using std::string;
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+
+using std::getline;
 using std::ifstream;
+using std::pair;
+using std::string;
+using std::vector;
 
 static const char *free_nodes_str = "free_nodes";
 static const char *no_free_nodes_str = "no_free_nodes";

@@ -53,9 +53,6 @@
 #include <VisualCueList.h>
 #include <WindowAttributes.h>
 
-using std::vector;
-using std::string;
-
 // ****************************************************************************
 //  Datatype: ExternalRenderRequestInfo 
 //
@@ -91,19 +88,19 @@ using std::string;
 
 typedef struct _ExternalRenderRequestInfo
 {
-    vector<std::string>                   plotNames;
-    vector<const char*>                   pluginIDsList;
-    vector<EngineKey>                     engineKeysList;
-    vector<int>                           plotIdsList;
-    vector<const AttributeSubject *>      attsList;
+    std::vector<std::string>              plotNames;
+    std::vector<const char*>              pluginIDsList;
+    std::vector<EngineKey>                engineKeysList;
+    std::vector<int>                      plotIdsList;
+    std::vector<const AttributeSubject *> attsList;
     WindowAttributes                      winAtts;
     AnnotationAttributes                  annotAtts;
     AnnotationObjectList                  annotObjs;
-    string                                extStr;
+    std::string                           extStr;
     VisualCueList                         visCues;
     int                                   frameAndState[7];
     double                                viewExtents[6];
-    string                                lastChangedCtName;
+    std::string                           lastChangedCtName;
     bool                                  leftEye;
 } ExternalRenderRequestInfo;
 

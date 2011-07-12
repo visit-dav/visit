@@ -39,14 +39,7 @@
 // ************************************************************************* //
 //                            avtVistaAle3dFileFormat.C                      //
 // ************************************************************************* //
-
-#include <stdarg.h>
-#include <stdio.h>
-
 #include <snprintf.h>
-
-#include <string>
-#include <map>
 
 #include <StringHelpers.h>
 #include <avtVistaAle3dFileFormat.h>
@@ -70,8 +63,16 @@
 
 #include <visit-config.h>
 
-using std::string;
+#include <stdarg.h>
+#include <stdio.h>
+
+#include <map>
+#include <string>
+#include <vector>
+
 using std::map;
+using std::string;
+using std::vector;
 
 static char tempStr[1024];
 

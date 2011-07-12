@@ -43,14 +43,15 @@
 #include <avtSpreadsheetFilter.h>
 
 #include <vtkDataSet.h>
-#include <string>
-
 #include <InvalidSetException.h>
 #include <InvalidVariableException.h>
 
 #include <avtExtents.h>
 #include <avtSILRestrictionTraverser.h>
 #include <DebugStream.h>
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtSpreadsheetFilter constructor
@@ -206,7 +207,7 @@ avtSpreadsheetFilter::ModifyContract(avtContract_p spec)
     rv->GetDataRequest()->SetNeedNativePrecision(true);
 
     // Add double to the permissible types
-    vector<int> adTypes;
+    std::vector<int> adTypes;
     adTypes.push_back(VTK_FLOAT);
     adTypes.push_back(VTK_DOUBLE);
     rv->GetDataRequest()->UpdateAdmissibleDataTypes(adTypes);

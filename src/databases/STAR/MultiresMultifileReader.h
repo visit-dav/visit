@@ -41,7 +41,6 @@
 #define _MULTIRES_MULTIFILE_READER_H_
 
 #include <string>
-using std::string;
 
 #define DEBUG_TO_STDERR
 
@@ -73,18 +72,18 @@ public:  // api
     virtual float           fileVersion     () const {return mFileVersion;}
     virtual int             numFiles        () const;
     virtual int             numResolutions  () const;
-    virtual string          gridFilename    () const;
-    virtual vector<int>     timeStepList    () const;
+    virtual std::string          gridFilename    () const;
+    virtual std::vector<int>     timeStepList    () const;
 
     // data rank: scalars, vectors, tensors
     virtual int             numVariables        () const;
-    virtual string          variableNameAt      (int index) const;
-    virtual bool            isScalar            (const string& name) const;
-    virtual char            isVectorComponent   (const string& name) const;
-    virtual bool            isVector            (const string& name) const;
-    virtual bool            isTensor            (const string& name) const;
+    virtual std::string          variableNameAt      (int index) const;
+    virtual bool            isScalar            (const std::string& name) const;
+    virtual char            isVectorComponent   (const std::string& name) const;
+    virtual bool            isVector            (const std::string& name) const;
+    virtual bool            isTensor            (const std::string& name) const;
     virtual int             numVectorExpressions() const;
-    virtual string          vectorExpressionAt  (int index) const;
+    virtual std::string          vectorExpressionAt  (int index) const;
 
     // data size and structure
     virtual int             width               (int resolution) const;
@@ -99,7 +98,7 @@ public:  // api
     virtual float           maxVal              () const {return 0.0;}
 
     // data access
-    virtual const float*    rawData             (const string& varName,
+    virtual const float*    rawData             (const std::string& varName,
                                                  int resolution,
                                                  int fileIndex,
                                                  int chunkIndex=0);
@@ -107,14 +106,14 @@ public:
     virtual void            parseFile           (const char* filename);
 
 private: // helper functions
-    int                     indexOfVariableName (const string& name) const;
-    string                  getFilename         (const string& variableName,
+    int                     indexOfVariableName (const std::string& name) const;
+    std::string                  getFilename         (const std::string& variableName,
                                                  int fileIndex);
-    MultiresFileReader*     findInCache         (const string& variableName,
+    MultiresFileReader*     findInCache         (const std::string& variableName,
                                                  int fileIndex);
     void                    addToCache          (MultiresFileReader* mf);
     float                   parseFileVersion    (const char* filename);
-    void                    freeRawDataMemory   (const string& variableName,
+    void                    freeRawDataMemory   (const std::string& variableName,
                                                  int fileIndex);
 
 // test functionality
@@ -122,21 +121,21 @@ public: static int TEST(int argc, char** argv);
 
 private: // inner data structures
     struct Variable { 
-        Variable(string name, int rank, char component) :
+        Variable(std::string name, int rank, char component) :
             name(name), rank(rank), component(component) {}
-        string name;
+        std::string name;
         int rank;        // 0-scalar, 1-vector, 2-tensor
         char component;  // 'x','y', or 'z', if part of a vector
     };
 
 private: // members
-    string                  mFilename;      // name of 'mrm' file.
+    std::string                  mFilename;      // name of 'mrm' file.
     float                   mFileVersion;   // version of the 'mrm' file read
     ConfigFileReader*       mFileReader;    // class to parse text config file
-    vector<Variable>        mVariables;     // all variables and components
-    vector<string>          mVectorExpressions;// vectors made up of components
-    vector<                                 // keep track of all data files
-      vector<MultiresFileReader*> > mCache; // indexing: [varIndex][fileIndex]
+    std::vector<Variable>   mVariables;     // all variables and components
+    std::vector<std::string> mVectorExpressions;// vectors made up of components
+    std::vector<                                 // keep track of all data files
+      std::vector<MultiresFileReader*> > mCache; // indexing: [varIndex][fileIndex]
 
 private: // disable copy constructor and operator=
     MultiresMultifileReader(MultiresMultifileReader&);

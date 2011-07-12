@@ -41,10 +41,9 @@
 #include <mdsrpc_exports.h>
 
 #include <VisItRPC.h>
-#include <string>
 
-using std::string;
-using std::vector;
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 // Class: CreateGroupListRPC
@@ -70,7 +69,7 @@ public:
     CreateGroupListRPC();
 
     // Invokation method
-    void operator()(const string, vector<string>);
+    void operator()(const std::string, std::vector<std::string>);
 
     // Property selection methods
     virtual void SelectAll();
@@ -78,8 +77,8 @@ public:
     virtual const std::string TypeName() const;
 
     // Access methods
-    string filename;
-    vector<string> groupList;
+    std::string filename;
+    std::vector<std::string> groupList;
 };
 
 

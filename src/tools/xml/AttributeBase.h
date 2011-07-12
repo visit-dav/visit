@@ -37,14 +37,14 @@
 *****************************************************************************/
 #ifndef ATTRIBUTE_BASE_H
 #define ATTRIBUTE_BASE_H
-#include <vector>
-
 #include <QTextStream>
 #include "Function.h"
 #include "Code.h"
 #include "Constant.h"
 #include "CodeFile.h"
 #include "Include.h"
+
+#include <vector>
 
 // ****************************************************************************
 // Class: AttributeBase
@@ -76,10 +76,10 @@ public:
     bool               keyframe;
     QString            exportAPI;
     QString            exportInclude;
-    vector<Function*>  functions;
-    vector<Constant*>  constants;
-    vector<Include*>   includes;
-    vector<Code*>      codes;
+    std::vector<Function*>  functions;
+    std::vector<Constant*>  constants;
+    std::vector<Include*>   includes;
+    std::vector<Code*>      codes;
     CodeFile          *codeFile;
     bool               custombase;
     QString            baseClass;

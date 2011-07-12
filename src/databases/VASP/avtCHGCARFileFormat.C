@@ -42,9 +42,6 @@
 
 #include <avtCHGCARFileFormat.h>
 
-#include <float.h>
-#include <string>
-
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkRectilinearGrid.h>
@@ -64,11 +61,16 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
-#include <sstream>
 
 #ifdef PARALLEL
 #include <avtParallel.h>
 #endif
+
+#include <float.h>
+
+#include <sstream>
+#include <string>
+#include <vector>
 
 using     std::string;
 
@@ -232,7 +234,7 @@ avtCHGCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     AddScalarVarToMetaData(md, "charge", "mesh", AVT_NODECENT);
 
-    vector<int> cycles;
+    std::vector<int> cycles;
     for (int i=0; i<ntimesteps; i++)
         cycles.push_back(i);
     md->SetCycles(cycles);
@@ -913,14 +915,14 @@ avtCHGCARFileFormat::ReadAllMetaData()
 //
 // ****************************************************************************
 bool
-avtCHGCARFileFormat::Identify(const std::string &filename)
+avtCHGCARFileFormat::Identify(const string &filename)
 {
     // strip off all leading paths
     int pos = filename.length()-1;
     while (pos>=0 && filename[pos]!='/' && filename[pos]!='\\')
         pos--;
 
-    std::string fn;
+    string fn;
     if (pos >= 0)
         fn = filename.substr(pos+1);
     else

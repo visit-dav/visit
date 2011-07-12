@@ -44,6 +44,8 @@
 #include <PythonInterpreter.h>
 #include <avtGhostData.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Modifications:
 //
@@ -1394,7 +1396,7 @@ DataRequest_SetDesiredGhostDataType(PyObject *self, PyObject *args)
     }
     else if(PyString_Check(py_obj))
     {
-        string sval(PyString_AsString(py_obj));
+        std::string sval(PyString_AsString(py_obj));
         if(sval == "NO_GHOST_DATA")
             val = NO_GHOST_DATA;
         else if(sval == "GHOST_NODE_DATA")

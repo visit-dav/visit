@@ -57,6 +57,9 @@
 #include <dlfcn.h>
 #endif
 
+#include <string>
+#include <vector>
+
 #ifndef __APPLE__
 #ifndef MDSERVER
 extern "C" VisIt_SimulationWriterCallback visitWriterCallbacks;
@@ -1262,7 +1265,7 @@ avtSimV1WriterWriter::WriteDataArrays(vtkDataSet *ds, int chunk)
                 else
                 {
                     EXCEPTION1(ImproperUseException,
-                               string("Couldn't find array ")+varList[v]+".");
+                               std::string("Couldn't find array ")+varList[v]+".");
                 }
             }
         }
@@ -1316,7 +1319,7 @@ avtSimV1WriterWriter::WriteDataArraysConditionally(vtkDataSet *ds, int chunk,
                 else
                 {
                     EXCEPTION1(ImproperUseException,
-                               string("Couldn't find array ")+varList[v]+".");
+                               std::string("Couldn't find array ")+varList[v]+".");
                 }
             }
         }

@@ -43,7 +43,6 @@
 #include <avtMassDistributionQuery.h>
 
 #include <snprintf.h>
-#include <math.h>
 
 #include <vtkCellData.h>
 #include <vtkExecutive.h>
@@ -61,6 +60,10 @@
 
 #include <DebugStream.h>
 
+#include <math.h>
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtMassDistributionQuery constructor
@@ -212,7 +215,7 @@ avtMassDistributionQuery::PostExecute(void)
                               (didRVolume ? "revolved volume" : 
                               (didSA ? "area" : "mass")));
     
-    string format = "The %s distribution has been outputted as an "             
+    std::string format = "The %s distribution has been outputted as an "             
              "Ultra file (%s), which can then be imported into VisIt.  The"
              " total %s considered was " + queryAtts.GetFloatFormat() +"\n";
     SNPRINTF(msg,1024,format.c_str(),
@@ -284,7 +287,7 @@ avtMassDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         EXCEPTION0(ImproperUseException);
         
     int npts = pd->GetNumberOfPoints();
-    vector<bool> usedPoint(npts, false);
+    std::vector<bool> usedPoint(npts, false);
     
     vtkDataArray *arr = pd->GetCellData()->GetArray(varname.c_str());
 

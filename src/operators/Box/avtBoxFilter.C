@@ -60,7 +60,8 @@
 
 #include <DebugStream.h>
 
-using std::string;
+#include <string>
+#include <vector>
 
 // Define the VTK filter here.
 
@@ -595,7 +596,7 @@ avtBoxFilter::Equivalent(const AttributeGroup *a)
 // ****************************************************************************
 
 vtkDataSet *
-avtBoxFilter::ExecuteData(vtkDataSet *in_ds, int, string)
+avtBoxFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
     //
     // If the selection this filter exists to create has already been handled,
@@ -915,7 +916,7 @@ avtBoxFilter::ModifyContract(avtContract_p spec)
 
     if (it != NULL)
     {
-        vector<int> dl;
+        std::vector<int> dl;
         it->GetElementsListFromRange(mins, maxs, dl);
         rv->GetDataRequest()->GetRestriction()->RestrictDomains(dl);
     }

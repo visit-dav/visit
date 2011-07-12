@@ -55,10 +55,12 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <snprintf.h>
+
 #include <set>
+#include <string>
+#include <vector>
 
 using     std::string;
-using     std::set;
 
 
 // ****************************************************************************
@@ -365,7 +367,7 @@ avtSummationQuery::PostExecute(void)
     string floatFormat = queryAtts.GetFloatFormat();
 
     char buf[1024];
-    std::string str;
+    string str;
     if (CalculateAverage())
         str += "The average value of ";
     else
@@ -524,14 +526,14 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
             }
         }
     }
-    set<int> summedElements;
+    std::set<int> summedElements;
 
     int nvalues = arr->GetNumberOfTuples();
     int ncomps  = arr->GetNumberOfComponents();
 
     if(sums.size() == 0)
     {
-        sums = vector<double>(ncomps,0.0);
+        sums = std::vector<double>(ncomps,0.0);
     }
     else if(sums.size() != ncomps)
     {

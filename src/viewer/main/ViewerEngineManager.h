@@ -49,9 +49,11 @@
 #include <vectortypes.h>
 #include <EngineKey.h>
 #include <MachineProfile.h>
-#include <map>
-
 #include <ExternalRenderRequestInfo.h>
+
+#include <map>
+#include <string>
+#include <vector>
 
 // Forward declarations.
 class AttributeSubject;
@@ -324,7 +326,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ConnectSim(const EngineKey &ek,
                     const std::vector<std::string> &arguments,
                     const std::string &simHost, int simPort,
-                    const string &simSecurityKey);
+                    const std::string &simSecurityKey);
     void SendSimulationCommand(const EngineKey &ek,
                                const std::string &command,
                                const std::string &argument);
@@ -389,7 +391,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                        const AttributeSubject *atts);
     bool MakePlot(const EngineKey &ek, const std::string &plotName,
                   const std::string &pluginID,
-                  const AttributeSubject *atts, const vector<double> &,
+                  const AttributeSubject *atts, const std::vector<double> &,
                   int winID, int *networkId);
     bool UpdatePlotAttributes(const EngineKey &ek, const std::string &name,
                               int id, const AttributeSubject *atts);

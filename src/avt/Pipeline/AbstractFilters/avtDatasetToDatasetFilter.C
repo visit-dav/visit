@@ -47,6 +47,8 @@
 #include <avtCommonDataFunctions.h>
 #include <DebugStream.h>
 
+#include <vector>
+
 // ****************************************************************************
 //  Method: avtDatasetToDatasetFilter constructor
 //
@@ -272,7 +274,7 @@ avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
         {
             haveVariable = true;
         }
-        const vector<CharStrRef> &var2nd = ds->GetSecondaryVariables();
+        const std::vector<CharStrRef> &var2nd = ds->GetSecondaryVariables();
         for (int i = 0; i < var2nd.size(); i++)
         {
             const char *v2 = *(var2nd[i]);
@@ -313,7 +315,7 @@ avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
             haveVariable = true;
         }
 
-        const vector<CharStrRef> &var2nd = ds->GetSecondaryVariables();
+        const std::vector<CharStrRef> &var2nd = ds->GetSecondaryVariables();
         for (int j = 0; j < var2nd.size(); j++)
         {
             const char *v2 = *(var2nd[j]);

@@ -44,6 +44,9 @@
 #include <QApplication>
 #include <avtParallelCoordinatesPlot.h>
 
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -281,7 +284,7 @@ ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
             fn->GetName() != "array_compose_with_bins")
             return;
         ArgsExpr *argsExpr = fn->GetArgsExpr();
-        vector<ArgExpr*> *args = argsExpr ? argsExpr->GetArgs() : NULL;
+        std::vector<ArgExpr*> *args = argsExpr ? argsExpr->GetArgs() : NULL;
         if (!args)
             return;
         for (size_t i=0; i<args->size(); i++)

@@ -54,15 +54,11 @@
 
 class     DBOptionsAttributes;
 
-using std::map;
-using std::string;
-using std::vector;
-
 typedef struct _VisItEntitySetInfo {
     int domainId;
     unsigned int groupId;
     int matId;
-    vector<string> varNames;
+    std::vector<std::string> varNames;
 } VisItEntitySetInfo_t;
 
 // ****************************************************************************
@@ -107,10 +103,10 @@ class avtITAPS_CFileFormat : public avtSTMDFileFormat
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
     virtual vtkDataArray  *GetNodalSubsetVar(int, const char *,
-                               const vector<iBase_EntitySetHandle> &theSets);
+                               const std::vector<iBase_EntitySetHandle> &theSets);
 
   private:
-      string               vmeshFileName;
+      std::string               vmeshFileName;
       iMesh_Instance       itapsMesh;
       iBase_EntitySetHandle rootSet;
       int                  geomDim;
@@ -118,19 +114,19 @@ class avtITAPS_CFileFormat : public avtSTMDFileFormat
       int                  numOfType[iBase_ALL_TYPES];
       iBase_EntityType     domToEntType[iBase_ALL_TYPES];
       bool                 haveMixedElementMesh;
-      vector<iBase_TagHandle>    primitiveTagHandles[iBase_ALL_TYPES];
-      map<iBase_EntitySetHandle,VisItEntitySetInfo_t> esMap;
+      std::vector<iBase_TagHandle>    primitiveTagHandles[iBase_ALL_TYPES];
+      std::map<iBase_EntitySetHandle,VisItEntitySetInfo_t> esMap;
 
-      map<string, vector<iBase_EntitySetHandle> > topLevelSets;
-      vector<iBase_EntitySetHandle> domainSets;
+      std::map<std::string, std::vector<iBase_EntitySetHandle> > topLevelSets;
+      std::vector<iBase_EntitySetHandle> domainSets;
       int                           domainEntType;
 
-      vector<string> rootTagNames;
-      vector<int>    rootTagTypes;
-      vector<int>    rootTagSizes;
-      vector<string> rootTagVals;
+      std::vector<std::string> rootTagNames;
+      std::vector<int>    rootTagTypes;
+      std::vector<int>    rootTagSizes;
+      std::vector<std::string> rootTagVals;
 
-      map<string, vector<vector<int> > > pascalsTriangleMaps;
+      std::map<std::string, std::vector<std::vector<int> > > pascalsTriangleMaps;
 
 };
 

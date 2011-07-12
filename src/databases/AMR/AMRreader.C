@@ -1,8 +1,11 @@
     
-#include <string.h>
 
 #include <DebugStream.h>
 #include <AMRreader.h>
+
+#include <string.h>
+
+#include <string>
 
 const char* AMRreader::amr_grpname="AMR";
 const char* AMRreader::amr_dimname="BlockDim";
@@ -449,7 +452,7 @@ GetBlockVariable( int bid, int vid, float* dat )
 int AMRreader::
 GetInterfaceVariable( int vid, void* dat ) 
 {
-  string vname;
+  std::string vname;
   hid_t  mtype;
   switch(vid) {
   case(i_coor):  vname = intf_coor_name;  mtype=H5T_NATIVE_FLOAT;  break;

@@ -46,7 +46,6 @@
 #include <database_exports.h>
 
 #include <vector>
-using std::vector;
 
 class vtkDataSet;
 
@@ -79,11 +78,11 @@ class DATABASE_API avtDomainNesting
                  avtDomainNesting() {};
     virtual      ~avtDomainNesting() {} ;
 
-    virtual bool ApplyGhost(vector<int> domainList, vector<int> allDomainList,
-                            vector<vtkDataSet*> meshes) = 0;
+    virtual bool ApplyGhost(std::vector<int> domainList, std::vector<int> allDomainList,
+                            std::vector<vtkDataSet*> meshes) = 0;
 
-    virtual bool ConfirmMesh(vector<int> &, vector<vtkDataSet*> &) = 0;
-    virtual vector<int> GetRatiosForLevel(int level, int dom) = 0;
+    virtual bool ConfirmMesh(std::vector<int> &, std::vector<vtkDataSet*> &) = 0;
+    virtual std::vector<int> GetRatiosForLevel(int level, int dom) = 0;
 };
 
 #endif

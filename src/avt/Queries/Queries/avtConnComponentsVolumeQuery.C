@@ -62,6 +62,8 @@
 #include <InvalidDimensionsException.h>
 #include <snprintf.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: avtConnComponentsVolumeQuery constructor
 //
@@ -169,7 +171,7 @@ avtConnComponentsVolumeQuery::PostExecute(void)
 
         msg += buff;
     
-        string format  =  "Component %d Volume = (" 
+        std::string format  =  "Component %d Volume = (" 
                                   + queryAtts.GetFloatFormat() +")\n";
     
         for(int i=0;i<nComps;i++)

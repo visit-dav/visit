@@ -102,8 +102,8 @@ class vtkDataArray;
 
 typedef struct {
     int         level;
-    vector<int> childDomains;
-    vector<int> logicalExtents;
+    std::vector<int> childDomains;
+    std::vector<int> logicalExtents;
     int childBoundingBox[6];
 } avtNestedDomainInfo_t; 
 
@@ -114,33 +114,33 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
                          : avtDomainNesting(),
                          numDimensions(3),
                          domainNesting(std::vector<avtNestedDomainInfo_t>(nDoms)),
-                         levelRatios(vector< vector<int> >(nLevels)) {} ;
+                         levelRatios(std::vector< std::vector<int> >(nLevels)) {} ;
         virtual      ~avtStructuredDomainNesting() {} ;
 
         static void   Destruct(void*);
 
-        bool          ApplyGhost(vector<int> domainList,
-                                 vector<int> allDomainList,
-                                 vector<vtkDataSet*> meshes); 
+        bool          ApplyGhost(std::vector<int> domainList,
+                                 std::vector<int> allDomainList,
+                                 std::vector<vtkDataSet*> meshes); 
 
         void          SetNumDimensions(int numDims)
                           {numDimensions = numDims; };
 
-        void          SetLevelRefinementRatios(int level, vector<int> ratios)
+        void          SetLevelRefinementRatios(int level, std::vector<int> ratios)
                           { levelRatios[level] = ratios; };
 
         void          SetNestingForDomain(int dom, int level,
-                                          vector<int> childDomains,
-                                          vector<int> exts)
+                                          std::vector<int> childDomains,
+                                          std::vector<int> exts)
                           { domainNesting[dom].level          = level;
                             domainNesting[dom].childDomains   = childDomains;
                             domainNesting[dom].logicalExtents = exts; }
-        void          GetNestingForDomain(int dom, vector<int> &exts,
-                            vector<int> &childDomains, vector<int> &childExts);
+        void          GetNestingForDomain(int dom, std::vector<int> &exts,
+                            std::vector<int> &childDomains, std::vector<int> &childExts);
 
-        vector<int>   GetRatiosForLevel(int level, int dom);
+        std::vector<int>   GetRatiosForLevel(int level, int dom);
 
-        virtual bool  ConfirmMesh(vector<int> &, vector<vtkDataSet*> &);
+        virtual bool  ConfirmMesh(std::vector<int> &, std::vector<vtkDataSet*> &);
 
         void          ComputeChildBoundingBox(int domain);
         bool          InsideChildBoundingBox(int domain, int ijk[6]);
@@ -150,22 +150,22 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
         void          GetChildrenForLogicalRange(int domain, int ijk[6],
                                                  std::vector<int> &children,
                                                  std::vector<int> &chExts);
-        vector<int>   GetDomainChildren(int domain);
+        std::vector<int>   GetDomainChildren(int domain);
         int           GetDomainLevel(int domain);
-        vector<int>   GetDomainLogicalExtents(int domain);
+        std::vector<int>   GetDomainLogicalExtents(int domain);
         int           GetNumberOfChildren(int domain);
         size_t        GetNumberOfDomains() const;
 
     protected:
 
-        void          GetSelectedDescendents(const vector<int>& allDomainList,
-                          int dom, vector<int>& selectedDescendents,
-                          const vector<bool>& lookup) const;
+        void          GetSelectedDescendents(const std::vector<int>& allDomainList,
+                          int dom, std::vector<int>& selectedDescendents,
+                          const std::vector<bool>& lookup) const;
 
         int numDimensions;
 
-        vector<avtNestedDomainInfo_t> domainNesting; 
+        std::vector<avtNestedDomainInfo_t> domainNesting; 
 
-        vector< vector<int> > levelRatios; 
+        std::vector< std::vector<int> > levelRatios; 
 };
 #endif

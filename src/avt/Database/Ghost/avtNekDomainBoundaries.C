@@ -46,7 +46,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
 #include <float.h>
-#include <string.h>
+#include <vector>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -57,6 +57,8 @@
 #include <ImproperUseException.h>
 
 #include <TimingsManager.h>
+
+using std::vector;
 
 // ****************************************************************************
 //  Method:  avtNekDomainBoundaries::avtNekDomainBoundaries

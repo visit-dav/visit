@@ -44,6 +44,7 @@
 
 #include <snprintf.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Method: avtL2NormQuery::avtL2NormQuery
@@ -154,7 +155,7 @@ std::string
 avtL2NormQuery::CreateMessage(double l2norm)
 {
     char msg[1024];
-    string format = "The L2Norm is " + queryAtts.GetFloatFormat() + ".";
+    std::string format = "The L2Norm is " + queryAtts.GetFloatFormat() + ".";
     SNPRINTF(msg,1024,format.c_str(), l2norm);
     std::string m = msg;
     return m;

@@ -48,8 +48,6 @@
 #include <time.h>
 #include "Field.h"
 
-using std::vector;
-
 #define GENERATOR_NAME "xml2java"
 
 // ****************************************************************************
@@ -1677,7 +1675,7 @@ class JavaFieldFactory
 class JavaGeneratorAttribute : public GeneratorBase
 {
   public:
-    vector<JavaGeneratorField*> fields;
+    std::vector<JavaGeneratorField*> fields;
     QString pluginVersion;
     QString pluginName;
     QString pluginType;

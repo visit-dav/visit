@@ -63,6 +63,7 @@
 #include <avtVectorCrossProductExpression.h>
 #include <avtViscousStressExpression.h>
 
+#include <string>
 
 // ****************************************************************************
 // Method: avtFunctionExpr::CreateVectorMatrixFilters
@@ -85,7 +86,7 @@
 // ****************************************************************************
 
 avtExpressionFilter *
-avtFunctionExpr::CreateVectorMatrixFilters(const string &functionName) const
+avtFunctionExpr::CreateVectorMatrixFilters(const std::string &functionName) const
 {
     avtExpressionFilter *f = 0;
 

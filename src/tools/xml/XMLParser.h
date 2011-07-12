@@ -51,7 +51,6 @@
 #include "Include.h"
 
 #include <vector>
-using std::vector;
 
 enum ComponentTypes
 {
@@ -69,10 +68,10 @@ enum ComponentTypes
     COMP_ALL             = 0x400
 };
 
-inline vector<QString>
+inline std::vector<QString>
 ParseCharacters(const QString &buff)
 {
-    vector<QString> output;
+    std::vector<QString> output;
 
     // split one string into a list of strings when delimited by whitespace
     // or quotation marks, e.g.   <string1  "string two"  ""  string4>
@@ -246,7 +245,7 @@ class XMLParser : public QXmlDefaultHandler
     }
     bool characters(const QString& buff)
     {
-        vector<QString> strings = ParseCharacters(buff);
+        std::vector<QString> strings = ParseCharacters(buff);
 
         for(size_t i=0; i<strings.size(); i++)
         {
@@ -526,7 +525,7 @@ class XMLParser : public QXmlDefaultHandler
         else if (tag == "Files")
         {
             QString         comps1 = atts.value("components");
-            vector<QString> comps2 = SplitValues(comps1);
+            std::vector<QString> comps2 = SplitValues(comps1);
             int             comps3 = COMP_NONE;
 
             for (size_t i=0; i<comps2.size(); i++)
@@ -609,7 +608,7 @@ class XMLParser : public QXmlDefaultHandler
             else
             {
                 QString         comps         = atts.value("components");
-                vector<QString> comps_split   = SplitValues(comps);
+                std::vector<QString> comps_split   = SplitValues(comps);
                 int             comps_current = COMP_NONE;
 
                 for (size_t i=0; i<comps_split.size(); i++)
@@ -701,7 +700,7 @@ class XMLParser : public QXmlDefaultHandler
 
             if (!enabler.isNull())
             {
-                vector<QString> vals = SplitValues(enabler);
+                std::vector<QString> vals = SplitValues(enabler);
                 if (vals.size() < 2)
                     throw QString("enabler for field %1 requires a value").arg(name);
 
@@ -838,7 +837,7 @@ class XMLParser : public QXmlDefaultHandler
     Attribute      *currentAttribute;
     Plugin         *currentPlugin;
     QString         currentTag;
-    vector<QString> tagStack;
+    std::vector<QString> tagStack;
     FieldFactory   *fieldFactory;
 };
 

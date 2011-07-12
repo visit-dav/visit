@@ -44,6 +44,7 @@
 
 #include <snprintf.h>
 #include <string>
+#include <vector>
 #include <cstring>
 #include <limits>
 #include <algorithm>
@@ -1242,8 +1243,8 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     //
     int t0 = visitTimer->StartTimer();
     int totalPatches = 0;
-    vector<int> levelStart;
-    vector<int> levelEnd;
+    std::vector<int> levelStart;
+    std::vector<int> levelEnd;
     for (level = 0 ; level < num_levels ; level++)
     {
 
@@ -1264,7 +1265,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     //
     // Calculate what the refinement ratio is from one level to the next.
     //
-    vector<int> rr(dimension);
+    std::vector<int> rr(dimension);
     for (level = 0 ; level < num_levels ; level++)
     {
         if (level == 0)
@@ -1283,7 +1284,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     //
     // This multiplier will be needed to find out if patches are nested.
     //
-    vector<int> multiplier(num_levels);
+    std::vector<int> multiplier(num_levels);
     multiplier[num_levels-1] = 1;
     for (level = num_levels-2 ; level >= 0 ; level--)
     {
@@ -1328,7 +1329,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     // Calculate the child patches.
     //
     int t3 = visitTimer->StartTimer();
-    vector< vector<int> > childPatches(totalPatches);
+    std::vector< std::vector<int> > childPatches(totalPatches);
     for (level = num_levels-1 ; level > 0 ; level--)
     {
         int prev_level = level-1;
@@ -1369,7 +1370,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
                 min[2] = mp*lowK[patch];
                 max[2] = mp*hiK[patch];
             }
-            vector<int> list;
+            std::vector<int> list;
             coarse_levels.GetElementsListFromRange(min, max, list);
             for (int i = 0 ; i < list.size() ; i++)
             {
@@ -1405,7 +1406,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
         int my_level, local_patch;
         GetLevelAndLocalPatchNumber(i, my_level, local_patch);
 
-        vector<int> logExts(6);
+        std::vector<int> logExts(6);
         logExts[0] = lowI[i];
         logExts[3] = hiI[i]-1;
         logExts[1] = lowJ[i];
@@ -1547,7 +1548,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->groupPieceName = "level";
     mesh->containsExteriorBoundaryGhosts = allowedToUseGhosts && fileContainsGhosts;
     std::vector<int> groupIds(totalPatches);
-    std::vector<string> blockPieceNames(totalPatches);
+    std::vector<std::string> blockPieceNames(totalPatches);
     int levels_of_detail = 0;
     for (i = 0 ; i < totalPatches ; i++)
     {
@@ -1672,7 +1673,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (hasParticles)
     {
         // Add particle mesh
-        AddMeshToMetaData(md, string("particles"), AVT_POINT_MESH, 0, 1, 0, dimension, 0);
+        AddMeshToMetaData(md, std::string("particles"), AVT_POINT_MESH, 0, 1, 0, dimension, 0);
 
         for (std::vector<std::string>::iterator it = particleVarnames.begin();
                 it != particleVarnames.end(); ++it)
@@ -1780,9 +1781,9 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // 
     if (nMaterials)
     {
-        vector<string> mnames(nMaterials);
+        std::vector<std::string> mnames(nMaterials);
 
-        string matname;
+        std::string matname;
         matname = "materials";
         
         char str[32];
@@ -2977,7 +2978,7 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
         InitializeReader();
 
     int i;
-    vector<string> mnames(nMaterials);
+    std::vector<std::string> mnames(nMaterials);
     char str[32];
     for (i = 0; i < nMaterials; ++i)
     {
@@ -2986,8 +2987,8 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
     }
     
     // Get the material fractions
-    vector<double *> mats(nMaterials);
-    vector<vtkDoubleArray *> deleteList;
+    std::vector<double *> mats(nMaterials);
+    std::vector<vtkDoubleArray *> deleteList;
     int nCells = 0;
     for (i = 0; i <= nMaterials - 2; ++i)
     {
@@ -3012,11 +3013,11 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
     mats[nMaterials - 1] = addMatPtr;
 
     // Build the appropriate data structures
-    vector<int> material_list(nCells);
-    vector<int> mix_mat;
-    vector<int> mix_next;
-    vector<int> mix_zone;
-    vector<float> mix_vf;
+    std::vector<int> material_list(nCells);
+    std::vector<int> mix_mat;
+    std::vector<int> mix_next;
+    std::vector<int> mix_zone;
+    std::vector<float> mix_vf;
 
     for (i = 0; i < nCells; ++i)
     {

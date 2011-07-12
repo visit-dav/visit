@@ -11,8 +11,6 @@
 
 #include <string>
 #include <vector>
-using std::string;
-using std::vector;
 
 // ****************************************************************************
 //  Class: avtLAMMPSDumpFileFormat
@@ -71,9 +69,9 @@ class avtLAMMPSDumpFileFormat : public avtMTSDFileFormat
     bool                     xScaled,yScaled,zScaled;
     int                      xIndex, yIndex, zIndex;
     int                      speciesIndex, idIndex;
-    vector< vector<float> >  vars;
-    vector<int>              speciesVar;
-    vector< string >         varNames;
+    std::vector< std::vector<float> >  vars;
+    std::vector<int>              speciesVar;
+    std::vector< std::string >         varNames;
 
     virtual void    PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     void            OpenFileAtBeginning();

@@ -82,9 +82,9 @@
 #include <InvalidVariableException.h>
 #include <TimingsManager.h>
 
+#include <vector>
 
-using     std::string;
-
+using std::vector;
 
 static int IntersectLineWithRevolvedSegment(const double *line_pt,
                                             const double *, const double *, 

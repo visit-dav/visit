@@ -53,6 +53,8 @@
 
 #include <snprintf.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: avtWellBorePlot constructor
 //
@@ -392,9 +394,9 @@ avtWellBorePlot::SetColors()
         // Detect if we're using the default color table or a color table
         // that does not exist anymore.
         //
-        string ctName(atts.GetColorTableName());
+        std::string ctName(atts.GetColorTableName());
         if(ctName == "Default")
-            ctName = string(ct->GetDefaultDiscreteColorTable());
+            ctName = std::string(ct->GetDefaultDiscreteColorTable());
         else if(!ct->ColorTableExists(ctName.c_str()))
         {
             delete [] colors;

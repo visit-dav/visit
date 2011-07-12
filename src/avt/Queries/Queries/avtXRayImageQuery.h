@@ -47,6 +47,9 @@
 #include <avtDatasetQuery.h>
 #include <avtXRayFilter.h>
 
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 //  Class: avtXRayImageQuery
 //

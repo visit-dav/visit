@@ -67,6 +67,10 @@
 
 #include <climits>
 
+#include <string>
+#include <vector>
+
+using std::vector;
 
 // ****************************************************************************
 //  Method: avtConnComponentsSummaryQuery constructor
@@ -648,7 +652,7 @@ avtConnComponentsSummaryQuery::VerifyInput(void)
 // ****************************************************************************
 
 void
-avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
+avtConnComponentsSummaryQuery::SaveComponentResults(std::string fname)
 {
     // look index
     int i;
@@ -663,7 +667,7 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
     if(!outs.is_open())
     {
         sprintf(msg, "Unable to save component summary output to %s",fname.c_str());
-        SetResultMessage(string(msg));
+        SetResultMessage(std::string(msg));
         return;
     }
 

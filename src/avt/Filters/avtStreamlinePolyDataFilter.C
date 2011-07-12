@@ -56,6 +56,8 @@
 #include <avtStateRecorderIntegralCurve.h>
 #include <avtStreamlineIC.h>
 
+#include <vector>
+
 std::string avtStreamlinePolyDataFilter::colorvarArrayName = "colorVar";
 std::string avtStreamlinePolyDataFilter::paramArrayName = "params";
 std::string avtStreamlinePolyDataFilter::opacityArrayName = "opacity";
@@ -143,7 +145,7 @@ avtStreamlinePolyDataFilter::avtStreamlinePolyDataFilter():
 // ****************************************************************************
 
 void
-avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *> &ics)
+avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &ics)
 {
     debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
     int numICs = ics.size(), numPts = 0;

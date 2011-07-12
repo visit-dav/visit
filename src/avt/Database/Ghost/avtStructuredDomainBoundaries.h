@@ -48,6 +48,8 @@
 #include <avtDomainBoundaries.h>
 #include <visitstream.h>
 
+#include <vector>
+
 // Forward declaration.
 class DATABASE_API avtStructuredDomainBoundaries;
 
@@ -94,7 +96,7 @@ struct Boundary
 
     int              domain;
     int              expand[6];
-    vector<Neighbor> neighbors;
+    std::vector<Neighbor> neighbors;
     // old extents
     int              oldnextents[6];
     int              oldzextents[6];
@@ -113,7 +115,7 @@ struct Boundary
     // Creation methods
     void   SetExtents(int[6]);
     void   AddNeighbor(int,int,int[3],int[6]);
-    void   DeleteNeighbor(int, vector<Boundary> &);
+    void   DeleteNeighbor(int, std::vector<Boundary> &);
     void   Finish();
     // Utility methods
     bool   IsGhostZone(int,int);
@@ -149,15 +151,15 @@ class BoundaryHelperFunctions
 
     T   ***InitializeBoundaryData();
     void   FillBoundaryData(int, const T*, T***, bool, int=1);
-    void   FillMixedBoundaryData(int,avtMaterial*,const T*,T***,int***,int***,vector<int>&);
+    void   FillMixedBoundaryData(int,avtMaterial*,const T*,T***,int***,int***,std::vector<int>&);
     void   FillRectilinearBoundaryData(int, const T*, const T*, const T*, T***);
-    void   CommunicateBoundaryData(const vector<int>&, T***, bool, int=1);
-    void   CommunicateMixedBoundaryData(const vector<int>&,T***,int***,int***,vector< vector<int> > &);
+    void   CommunicateBoundaryData(const std::vector<int>&, T***, bool, int=1);
+    void   CommunicateMixedBoundaryData(const std::vector<int>&,T***,int***,int***,std::vector< std::vector<int> > &);
     void   CopyOldValues(int, const T*, T*, bool, int=1);
     void   CopyOldMixedValues(avtMaterial*,const T*, T*);
     void   CopyOldRectilinearValues(int, const T*, T*, int);
     void   SetNewBoundaryData(int, T***, T*, bool, int=1);
-    void   SetNewMixedBoundaryData(int,avtMaterial*,const vector< vector<int> >&,int***,T***,int***,int***,int*,T*,int*,int*,int*,int&);
+    void   SetNewMixedBoundaryData(int,avtMaterial*,const std::vector< std::vector<int> >&,int***,T***,int***,int***,int*,T*,int*,int*,int*,int&);
     void   SetNewRectilinearBoundaryData(int, T***, T*, T*, T*);
     void   FakeNonexistentBoundaryData(int, T*, bool, int=1);
     void   FreeBoundaryData(T***);
@@ -254,60 +256,60 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     void  GetNeighborPresence(int domain, bool *hasNeighbor, 
                               std::vector<int> &);
 
-    vector<Neighbor>                  GetNeighbors(int domain);
+    std::vector<Neighbor>                  GetNeighbors(int domain);
 
-    virtual vector<vtkDataArray*>     ExchangeScalar(vector<int>   domainNum,
+    virtual std::vector<vtkDataArray*>     ExchangeScalar(std::vector<int>   domainNum,
                                              bool                  isPointData,
-                                             vector<vtkDataArray*> scalars);
+                                             std::vector<vtkDataArray*> scalars);
 
-    virtual vector<vtkDataArray*>     ExchangeFloatVector(vector<int> domainNum,
+    virtual std::vector<vtkDataArray*>     ExchangeFloatVector(std::vector<int> domainNum,
                                             bool                   isPointData,
-                                            vector<vtkDataArray*>  vectors);
+                                            std::vector<vtkDataArray*>  vectors);
 
-    virtual vector<vtkDataArray*>     ExchangeIntVector(vector<int>  domainNum,
+    virtual std::vector<vtkDataArray*>     ExchangeIntVector(std::vector<int>  domainNum,
                                              bool                  isPointData,
-                                             vector<vtkDataArray*> vectors);
+                                             std::vector<vtkDataArray*> vectors);
 
-    virtual vector<avtMaterial*>      ExchangeMaterial(vector<int>   domainNum,
-                                              vector<avtMaterial*>   mats);
+    virtual std::vector<avtMaterial*>      ExchangeMaterial(std::vector<int>   domainNum,
+                                              std::vector<avtMaterial*>   mats);
 
-    virtual vector<avtMixedVariable*> ExchangeMixVar(vector<int>     domainNum,
-                                        const vector<avtMaterial*>   mats,
-                                        vector<avtMixedVariable*>    mixvars);
+    virtual std::vector<avtMixedVariable*> ExchangeMixVar(std::vector<int>     domainNum,
+                                        const std::vector<avtMaterial*>   mats,
+                                        std::vector<avtMixedVariable*>    mixvars);
 
-    virtual void                      CreateGhostNodes(vector<int>   domainNum,
-                                                    vector<vtkDataSet*> meshes,
-                                                    vector<int> &);
+    virtual void                      CreateGhostNodes(std::vector<int>   domainNum,
+                                                    std::vector<vtkDataSet*> meshes,
+                                                    std::vector<int> &);
 
     virtual bool                      RequiresCommunication(avtGhostDataType);
-    virtual bool                      ConfirmMesh(vector<int>      domainNum,
-                                               vector<vtkDataSet*> meshes);
+    virtual bool                      ConfirmMesh(std::vector<int>      domainNum,
+                                               std::vector<vtkDataSet*> meshes);
     virtual void                      ResetCachedMembers();
 
   private:
-    virtual vector<vtkDataArray*>     ExchangeFloatScalar(vector<int> domainNum,
+    virtual std::vector<vtkDataArray*>     ExchangeFloatScalar(std::vector<int> domainNum,
                                              bool                  isPointData,
-                                             vector<vtkDataArray*> scalars);
+                                             std::vector<vtkDataArray*> scalars);
 
-    virtual vector<vtkDataArray*>     ExchangeIntScalar(vector<int>  domainNum,
+    virtual std::vector<vtkDataArray*>     ExchangeIntScalar(std::vector<int>  domainNum,
                                              bool                  isPointData,
-                                             vector<vtkDataArray*> scalars);
+                                             std::vector<vtkDataArray*> scalars);
 
-    virtual vector<vtkDataArray*>     ExchangeUCharScalar(vector<int> domainNum,
+    virtual std::vector<vtkDataArray*>     ExchangeUCharScalar(std::vector<int> domainNum,
                                              bool                  isPointData,
-                                             vector<vtkDataArray*> scalars);
+                                             std::vector<vtkDataArray*> scalars);
 
 
   protected:
     // data
-    vector<Boundary> wholeBoundary;
-    vector<Boundary> boundary;
+    std::vector<Boundary> wholeBoundary;
+    std::vector<Boundary> boundary;
 
     // data for cases where neighbors can be computed
     bool shouldComputeNeighborsFromExtents;
-    vector<int>   extents;
-    vector<int>   levels;
-    vector<int>   domain2proc;
+    std::vector<int>   extents;
+    std::vector<int>   levels;
+    std::vector<int>   domain2proc;
 
     int           maxAMRLevel;
     bool          haveCalculatedBoundaries;
@@ -320,8 +322,8 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     BoundaryHelperFunctions<unsigned char> *bhf_uchar;
 
     // helper methods
-    vector<int> CreateDomainToProcessorMap(const vector<int>&);
-    void        CreateCurrentDomainBoundaryInformation(const vector<int>&);
+    std::vector<int> CreateDomainToProcessorMap(const std::vector<int>&);
+    void        CreateCurrentDomainBoundaryInformation(const std::vector<int>&);
     bool       *SetExistence(int, bool);
     void        CreateGhostZones(vtkDataSet *, vtkDataSet *, Boundary *);
 
@@ -337,8 +339,8 @@ class DATABASE_API avtCurvilinearDomainBoundaries
     avtCurvilinearDomainBoundaries(bool _canComputeNeighborsFromExtents = false) :
         avtStructuredDomainBoundaries(_canComputeNeighborsFromExtents) {;};
    
-    virtual vector<vtkDataSet*>    ExchangeMesh(vector<int>         domainNum,
-                                                vector<vtkDataSet*> meshes);
+    virtual std::vector<vtkDataSet*>    ExchangeMesh(std::vector<int> domainNum,
+                                                std::vector<vtkDataSet*> meshes);
 };
 
 
@@ -350,8 +352,8 @@ class DATABASE_API avtRectilinearDomainBoundaries
     avtRectilinearDomainBoundaries(bool _canComputeNeighborsFromExtents = false) :
         avtStructuredDomainBoundaries(_canComputeNeighborsFromExtents) {;};
 
-    virtual vector<vtkDataSet*>    ExchangeMesh(vector<int>         domainNum,
-                                                vector<vtkDataSet*> meshes);
+    virtual std::vector<vtkDataSet*>    ExchangeMesh(std::vector<int> domainNum,
+                                                std::vector<vtkDataSet*> meshes);
 };
 
 

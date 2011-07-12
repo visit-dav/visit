@@ -47,8 +47,9 @@
 
 #include <avtCurveComparisonQuery.h>
 
-class     avtDatasetSink;
+#include <string>
 
+class     avtDatasetSink;
 
 // ****************************************************************************
 //  Class: avtAreaBetweenCurvesQuery

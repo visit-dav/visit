@@ -49,13 +49,13 @@
 
 #include <avtSTMDFileFormat.h>
 
-#include <vector>
-
 #ifndef USING_AGG
 #include <AMRreader.h>
 #else
 #include <AMRreaderAgg.h>
 #endif
+
+#include <string>
 
 // ****************************************************************************
 //  Class: avtAMRFileFormat
@@ -114,7 +114,7 @@ class avtAMRFileFormat : public avtSTMDFileFormat
     static const std::string intf_name;
     static const std::string invalid_name;
 
-    static std::string composeName( const string& m, const string& v, const char app='/' );
+    static std::string composeName( const std::string& m, const std::string& v, const char app='/' );
     static void decomposeName( const std::string& s, std::string& m, std::string& v );
 
 

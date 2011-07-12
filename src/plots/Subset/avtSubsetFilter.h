@@ -47,6 +47,7 @@
 #include <avtSIMODataTreeIterator.h>
 #include <SubsetAttributes.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Class: avtSubsetFilter
@@ -87,7 +88,7 @@ class avtSubsetFilter : public avtSIMODataTreeIterator
   protected:
     SubsetAttributes      plotAtts;
 
-    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, string);
+    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
     virtual void          UpdateDataObjectInfo(void);
     virtual avtContract_p
                           ModifyContract(avtContract_p);

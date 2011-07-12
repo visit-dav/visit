@@ -189,8 +189,8 @@ class avtParICAlgorithm : public avtICAlgorithm
                                         std::vector<avtIntegralCurve*> &);
     void                      PrepareForSend(int tag, MemStream *buff, std::vector<unsigned char *> &buffList);
     static bool               PacketCompare(const unsigned char *a, const unsigned char *b);
-    void                      ProcessReceivedBuffers(vector<unsigned char*> &incomingBuffers,
-                                                     vector<std::pair<int, MemStream *> > &buffers);
+    void                      ProcessReceivedBuffers(std::vector<unsigned char*> &incomingBuffers,
+                                                     std::vector<std::pair<int, MemStream *> > &buffers);
 
     // Send/Recv buffer management structures.
     typedef std::pair<MPI_Request, int> RequestTagPair;

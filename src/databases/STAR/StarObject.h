@@ -60,10 +60,8 @@
 #include <typeinfo>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 #include <vector>
-using std::cerr;
-using std::vector;
-using std::string;
 
 /* ========================================================================= */
 /* ==                                MACROS                               == */
@@ -77,7 +75,7 @@ static char _msg_[2048];
 
 // if debug is on, tee the output to both the visit log and the console
 #if defined(DEBUG_ON) && defined(DEBUG_TO_STDERR)
-#define TEE_MSG(txt) cerr << txt << endl
+#define TEE_MSG(txt) std::cerr << txt << endl
 #else
 #define TEE_MSG(txt)
 #endif
@@ -100,19 +98,31 @@ static char _msg_[2048];
     TEE_MSG(_msg_);\
 }while(0)
 
+#if defined(DEBUG_ON)
 #define FATAL(fmt,...) do{\
     snprintf(_msg_, sizeof _msg_,"[FATAL ERROR:%s:%s:%d] " fmt,__func__,__FILE__, __LINE__,## __VA_ARGS__);\
     debug1 << _msg_ << endl;\
     TEE_MSG(_msg_);\
     exit(-1);\
 }while(0)
+#else
+#define FATAL(fmt,...) do{\
+    snprintf(_msg_, sizeof _msg_,"[FATAL ERROR:%s:%s:%d] " fmt,__func__,__FILE__, __LINE__,## __VA_ARGS__);\
+    debug1 << _msg_ << endl;\
+    TEE_MSG(_msg_);\
+}while(0)
+#endif
 
 #else
 
 #define INFO(fmt,...) fprintf(stderr,"[INFO] " fmt "\n",## __VA_ARGS__)
 #define WARNING(fmt,...) fprintf(stderr,"[WARNING] " fmt "\n",## __VA_ARGS__)
 #define ERROR(fmt,...) fprintf(stderr,"[ERROR] " fmt "\n",## __VA_ARGS__)
+#if defined(DEBUG_ON)
 #define FATAL(fmt,...) exit(-!!fprintf(stderr,"[FATAL ERROR] " fmt "\n",## __VA_ARGS__))
+#else
+#define FATAL(fmt,...) fprintf(stderr,"[FATAL ERROR] " fmt "\n",## __VA_ARGS__)
+#endif
 
 #endif // STAR_VISIT
 
@@ -243,7 +253,7 @@ virtual const char* className()
  *      returns the address and the name of the class.
  **/
 
-virtual string toString()
+virtual std::string toString()
 {
     char buf[1024];
 
@@ -308,9 +318,9 @@ virtual void notifyAll()
  *      @param max      maximum number of elements to put into the array
  **/
 
-static vector<string> split(string line, string delim=" \t\n")
+static std::vector<std::string> split(std::string line, std::string delim=" \t\n")
 {
-    vector<string> tokens;
+    std::vector<std::string> tokens;
 
     char* saveptr = NULL;
     char* copy = new char[line.length()+1];
@@ -374,7 +384,7 @@ static char* removeComment(char* line, int size, char commentChar)
  *      from the beginning or the end of the string.
  **/
 
-static void trim(string& line, string delim=" \t\n")
+static void trim(std::string& line, std::string delim=" \t\n")
 {
     // remove from the beginning
     while(line.length()>0 && strchr(delim.c_str(), line[0]) != NULL)
@@ -405,17 +415,17 @@ static void trim(string& line, string delim=" \t\n")
  *           jcd0004.mrm
  **/
 
-static vector<string> splitPathName(string fullpath)
+static std::vector<std::string> splitPathName(std::string fullpath)
 {
-    vector<string> pathPlusFile;  // the return value
-    string filename = "";
-    string pathname = fullpath;
+    std::vector<std::string> pathPlusFile;  // the return value
+    std::string filename = "";
+    std::string pathname = fullpath;
 
-    vector<string> dirnames = split(fullpath, "/");
+    std::vector<std::string> dirnames = split(fullpath, "/");
 
     if(dirnames.size()>0) {
         filename = dirnames[dirnames.size()-1];
-        pathname.erase(pathname.find(string("/")+filename));
+        pathname.erase(pathname.find(std::string("/")+filename));
     }
 
     pathPlusFile.push_back(pathname);
@@ -437,17 +447,17 @@ static vector<string> splitPathName(string fullpath)
  *             manipulated in place.
  **/
 
-static vector<string> splitFileName(string filename)
+static std::vector<std::string> splitFileName(std::string filename)
 {
-    vector<string> prefixPlusExtension;  // the return value
-    string extension = "";
-    string prefix = filename;
+    std::vector<std::string> prefixPlusExtension;  // the return value
+    std::string extension = "";
+    std::string prefix = filename;
 
-    vector<string> filenameParts = split(filename, ".");
+    std::vector<std::string> filenameParts = split(filename, ".");
 
     if(filenameParts.size()>0) {
         extension = filenameParts[filenameParts.size()-1];
-        prefix.erase(prefix.find(string(".")+extension));
+        prefix.erase(prefix.find(std::string(".")+extension));
     }
 
     prefixPlusExtension.push_back(prefix);
@@ -462,7 +472,7 @@ static vector<string> splitFileName(string filename)
  *      errors in parsing will return 0 and print a warning message.
  **/
 
-static long long toLong(string str)
+static long long toLong(std::string str)
 {
     const char* txt = str.c_str();
     long long value = 0;
@@ -497,7 +507,7 @@ static int toInt(char c)
 
     return toInt(str);
 }
-static int toInt(string str)
+static int toInt(std::string str)
 {
     const char* txt = str.c_str();
     int value = 0;
@@ -515,7 +525,7 @@ static int toInt(string str)
     return value;
 }
 
-static bool isInt(string str)
+static bool isInt(std::string str)
 {
     const char* txt = str.c_str();
     bool isInteger = false;
@@ -539,7 +549,7 @@ static bool isInt(string str)
  *      will return 0.0 and print a warning message.
  */
 
-static float toFloat(string str)
+static float toFloat(std::string str)
 {
     const char* txt = str.c_str();
     float value = 0.0;
@@ -608,17 +618,17 @@ static FILE* openFile(const char* name, const char* path=NULL)
     fileptr = fopen(name, mode);
 
     if(fileptr == NULL) {
-        vector<string> searchPaths;
+        std::vector<std::string> searchPaths;
         if(path != NULL)         searchPaths.push_back(path);
         if(DEFAULT_PATH != NULL) searchPaths.push_back(DEFAULT_PATH);
         if(HOME_DIR != NULL)     searchPaths.push_back(HOME_DIR);
         if(STARPATH != NULL)     searchPaths.push_back(STARPATH);
 
         for(unsigned i=0; i<searchPaths.size() && fileptr==NULL; i++) {
-            vector<string> tokens = split(searchPaths[i], ":");
+            std::vector<std::string> tokens = split(searchPaths[i], ":");
 
             for(unsigned i=0; i<tokens.size() && fileptr==NULL; i++) {
-                string filename = tokens[i] + "/" + name;
+                std::string filename = tokens[i] + "/" + name;
                 fileptr = fopen(filename.c_str(), mode);
 
                 //printf("tried '%s', FILE=%p\n",filename.c_str(),fileptr);
@@ -704,8 +714,8 @@ static void printStackTrace()
     system(command);
 
     for(unsigned i = 0; i < sz; ++i) {
-        string funcname = "";
-        vector<string> tokens = split(strings[i], " ()");
+        std::string funcname = "";
+        std::vector<std::string> tokens = split(strings[i], " ()");
 
         if(tokens.size()>=4)             // case 1: mac output format
             funcname = tokens[3];
@@ -749,7 +759,7 @@ static void segFaultHandler(int signal)
     fprintf(stderr,"\nCALL STACK (from TRACE macros):\n");
     Debug::printCallStack();
 #endif 
-    exit( -1 );
+    exit( -1 ); // HOOKS_IGNORE
 }
 
 /* ========================================================================= */

@@ -61,6 +61,9 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 // Method: avtLabelPlot constructor
 //

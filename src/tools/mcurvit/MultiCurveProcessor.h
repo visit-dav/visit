@@ -48,9 +48,6 @@ class VisItViewer;
 
 #include <stdio.h>
 
-using std::string;
-using std::vector;
-
 // ****************************************************************************
 // Class: MultiCurveProcessor
 //
@@ -80,10 +77,10 @@ public:
 
     void                   ProcessBatchFile(const char *, const char *);
 
-    void                   OpenDatabase(const string &);
-    void                   CreatePlot(const string &);
+    void                   OpenDatabase(const std::string &);
+    void                   CreatePlot(const std::string &);
     void                   FinishPlot();
-    void                   SaveWindow(const int, const string &);
+    void                   SaveWindow(const int, const std::string &);
 
 private slots:
     void execCommands();
@@ -91,8 +88,8 @@ private slots:
 private:
     void                   ReadInt(FILE *, int &, int &);
     void                   ReadDouble(FILE *, int &, double &);
-    void                   ReadString(FILE *, int &, string &);
-    void                   ReadQuotedString(FILE *, int &, string &);
+    void                   ReadString(FILE *, int &, std::string &);
+    void                   ReadQuotedString(FILE *, int &, std::string &);
     void                   ReadFile(const char *);
 
     VisItViewer           *viewer;
@@ -101,11 +98,11 @@ private:
 
     bool                   save;
     int                    saveFormat;
-    string                 openFile;
-    string                 saveFile;
-    vector<string>         plotVars;
+    std::string            openFile;
+    std::string            saveFile;
+    std::vector<std::string> plotVars;
 
-    vector<int>            commandList;
+    std::vector<int>       commandList;
     int                    iCommand;
     int                    iVar;
 };

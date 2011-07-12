@@ -52,10 +52,12 @@
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnsignedCharArray.h>
 
-
 #ifdef PARALLEL
   #include <mpi.h>
 #endif
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtZoneDumpFilter constructor
@@ -359,7 +361,7 @@ avtZoneDumpFilter::PostExecute()
     if(procid == 0 )
     {
         // unpack all rcvd zones
-        vector<ZoneInfo> rcv_zones(nrcv_zones);
+        std::vector<ZoneInfo> rcv_zones(nrcv_zones);
 
         unsigned char *rcv_msg_ptr = rcv_msg;
 
@@ -500,7 +502,7 @@ avtZoneDumpFilter::GetOriginalLogicalIndices(vtkDataSet *ds,
 // ****************************************************************************
 
 void
-avtZoneDumpFilter::SaveOutput(const string &fname, vector<ZoneInfo> &zones)
+avtZoneDumpFilter::SaveOutput(const std::string &fname, std::vector<ZoneInfo> &zones)
 {
     // loop index
     int i;
@@ -603,7 +605,7 @@ avtZoneDumpFilter::ZoneInfo::~ZoneInfo()
 // ****************************************************************************
 
 void
-avtZoneDumpFilter::ZoneInfo::Print(ostream &os, const string &sep) const
+avtZoneDumpFilter::ZoneInfo::Print(ostream &os, const std::string &sep) const
 {
     os << groupId  << sep
        << domainId << sep

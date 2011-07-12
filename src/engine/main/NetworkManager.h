@@ -48,9 +48,10 @@
 #include <VisualCueList.h>
 #include <WindowAttributes.h>
 #include <vectortypes.h>
-#include <string>
 #include <deque>
 #include <map>
+#include <string>
+#include <vector>
 #include <engine_main_exports.h>
 
 class AttributeGroup;
@@ -454,7 +455,7 @@ class ENGINE_MAIN_API NetworkManager
     void          ClearAllNetworks(void);
     void          ClearNetworksWithDatabase(const std::string &);
 
-    NetnodeDB*    GetDBFromCache(const string &filename, int time,
+    NetnodeDB*    GetDBFromCache(const std::string &filename, int time,
                                  const char * = NULL, bool=false,
                                  bool=false, bool=false);
     void          StartNetwork(const std::string&, const std::string &,

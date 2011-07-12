@@ -42,9 +42,6 @@
 
 #include "avtDataSelection.h"
 
-#include <string>
-using std::string;
-
 //   This class is used to record information about how 
 //   many resolutions are available, and the size of each 
 //   resolution.

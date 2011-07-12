@@ -61,6 +61,8 @@
 #include <ExpressionException.h>
 #include <ImproperUseException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtSpecMFExpression constructor
@@ -557,7 +559,7 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     // Pull off the second argument and see if it's a constant.
     ArgExpr *secondarg = (*arguments)[1];
     ExprParseTreeNode *secondTree = secondarg->GetExpr();
-    string secondtype = secondTree->GetTypeName();
+    std::string secondtype = secondTree->GetTypeName();
     if (secondtype != "IntegerConst" && secondtype != "StringConst")
     {
         debug5 << "avtSpecMFExpression: Second argument is not a string or integer constant: " << secondtype.c_str() << endl;
@@ -570,7 +572,7 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     // Pull off the third argument and see if it's a constant or a list.
     ArgExpr *thirdarg = (*arguments)[2];
     ExprParseTreeNode *thirdTree = thirdarg->GetExpr();
-    string thirdtype = thirdTree->GetTypeName();
+    std::string thirdtype = thirdTree->GetTypeName();
     if ((thirdtype != "IntegerConst") && (thirdtype != "StringConst") && (thirdtype != "List"))
     {
         debug5 << "avtSpecMFExpression: Third argument is not a string/int constant or a list: " << thirdtype.c_str() << endl;
@@ -621,7 +623,7 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
             else
             {
                 ExprNode *item = (*elems)[i]->GetItem();
-                string type = item->GetTypeName();
+                std::string type = item->GetTypeName();
                 if (type != "IntegerConst" && type != "StringConst")
                 {
                     debug5 << "avtSpecMFExpression: List element is not an "
@@ -643,7 +645,7 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     {
         ArgExpr *fourtharg = (*arguments)[3];
         ExprParseTreeNode *fourthTree = fourtharg->GetExpr();
-        string fourthtype = fourthTree->GetTypeName();
+        std::string fourthtype = fourthTree->GetTypeName();
         if ((fourthtype != "BooleanConst"))
         {
             EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFExpression: Fourth argument is not a constant boolean (true, false).");
@@ -674,7 +676,7 @@ avtSpecMFExpression::AddMaterial(ConstExpr *c)
 {
     if (c->GetConstantType() == ConstExpr::String)
     {
-        string matname = dynamic_cast<StringConstExpr*>(c)->GetValue();
+        std::string matname = dynamic_cast<StringConstExpr*>(c)->GetValue();
         matNames.push_back(matname);
     }
     else // c->GetConstantType() == ConstExpr::Integer
@@ -707,7 +709,7 @@ avtSpecMFExpression::AddSpecies(ConstExpr *c)
 {
     if (c->GetConstantType() == ConstExpr::String)
     {
-        string specname = dynamic_cast<StringConstExpr*>(c)->GetValue();
+        std::string specname = dynamic_cast<StringConstExpr*>(c)->GetValue();
         specNames.push_back(specname);
     }
     else // c->GetConstantType() == ConstExpr::Integer

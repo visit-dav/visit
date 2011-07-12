@@ -46,8 +46,6 @@
 #include "AMRStitchCellTesselations2D.h"
 #include "AMRStitchCellTesselations3D.h"
 
-#include <cassert>
-
 #include <DebugStream.h>
 
 #include <avtDataTree.h>
@@ -69,6 +67,10 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <cassert>
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtAMRStitchCellFilter constructor
@@ -236,7 +238,7 @@ avtAMRStitchCellFilter::PreExecute(void)
 // ****************************************************************************
 
 avtDataTree_p 
-avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string str)
+avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::string str)
 {
     vtkRectilinearGrid *rgrid = dynamic_cast<vtkRectilinearGrid*>(in_ds);
     if (!rgrid)
@@ -662,7 +664,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string st
 vtkDataSet *
 avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
         int domain, int level, int dims[3], int baseIdx[3],
-        const vector<int> &refinementRatio,
+        const std::vector<int> &refinementRatio,
         const vtkIdType* refinedInSameLevelDomain)
 {
     // Compute cell size for current level

@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 #include <sys/types.h>
-using std::string;
-using std::vector;
 
 // ****************************************************************************
 //  Class:  VisItPythonConnection
@@ -29,7 +27,7 @@ class VisItPythonConnection
                ~VisItPythonConnection();
 
     // Open the connection; uses VISITHOME or PATH to find visit.
-    bool        Open(vector<string> extraargs=vector<string>());
+    bool        Open(std::vector<std::string> extraargs=std::vector<std::string>());
     // Close the connection.  Sends EOF to the Python CLI as well.
     bool        Close();
     // Send a raw command.  This method appends the newline for you.
@@ -37,7 +35,7 @@ class VisItPythonConnection
     // Return true if we have a valid open connection.
     bool        IsOpen();
     // When a function returns an error (false), get the error string.
-    string      GetLastError();
+    std::string GetLastError();
 
   protected:
     bool        WriteString(const char *buff);
@@ -50,7 +48,7 @@ class VisItPythonConnection
     char       *readbuffer;
 
     pid_t       visitpid;
-    string      error;
+    std::string error;
 };
 
 #endif

@@ -45,6 +45,8 @@
 #include <avtValueAtExtremaExpression.h>
 #include <avtWhenConditionIsTrueExpression.h>
 
+#include <string>
+
 // ****************************************************************************
 // Method: avtFunctionExpr::CreateTimeAndValueFilters
 //
@@ -66,7 +68,7 @@
 // ****************************************************************************
 
 avtExpressionFilter *
-avtFunctionExpr::CreateTimeAndValueFilters(const string &functionName) const
+avtFunctionExpr::CreateTimeAndValueFilters(const std::string &functionName) const
 {
     avtExpressionFilter *f = 0;
 

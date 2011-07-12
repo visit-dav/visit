@@ -49,8 +49,10 @@
 #include <VisItInit.h>
 #include <InvalidExpressionException.h>
 #include <ParseException.h>
+#include <string>
 #include <vector>
 using std::vector;
+using std::string;
 
 ExprParser::ErrorMessageTarget ExprParser::errorMessageTarget = EMT_EXCEPTION;
 

@@ -51,6 +51,8 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 
+#include <vector>
+
 // ****************************************************************************
 //  Constructor:  XMLEditIncludes::XMLEditIncludes
 //
@@ -502,7 +504,7 @@ XMLEditIncludes::includelistDel()
         return;
 
     Include *n = a->includes[index];
-    vector<Include*> newlist;
+    std::vector<Include*> newlist;
     for (size_t i=0; i<a->includes.size(); i++)
     {
         if (a->includes[i] != n)

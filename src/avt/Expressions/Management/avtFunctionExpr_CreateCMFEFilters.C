@@ -47,6 +47,8 @@
 #include <avtSymmPointExpression.h>
 #include <avtSymmTransformExpression.h>
 
+#include <string>
+
 // ****************************************************************************
 // Method: avtFunctionExpr::CreateCMFEFilters
 //
@@ -68,7 +70,7 @@
 // ****************************************************************************
 
 avtExpressionFilter *
-avtFunctionExpr::CreateCMFEFilters(const string &functionName) const
+avtFunctionExpr::CreateCMFEFilters(const std::string &functionName) const
 {
     avtExpressionFilter *f = 0;
 

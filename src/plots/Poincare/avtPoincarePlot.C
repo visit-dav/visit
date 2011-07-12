@@ -56,6 +56,8 @@
 #include <DebugStream.h>
 #include <InvalidLimitsException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtPoincarePlot constructor
@@ -465,7 +467,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 
     poincareFilter->SetShowCurves( atts.GetMeshType() == 0 );
 
-    vector < double > planes;
+    std::vector < double > planes;
     unsigned int nplanes = atts.GetNumberPlanes();
 
     // Offset of M_PI/2.0 gives a Y normal but whether the
@@ -519,7 +521,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 
     if (varname != NULL)
     {
-        glyphMapper->ColorByScalarOn(string(varname));
+        glyphMapper->ColorByScalarOn(std::string(varname));
     }
 
     //SetScaling(atts.GetScaling(), atts.GetSkewFactor());
@@ -546,7 +548,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 // ****************************************************************************
 
 void
-avtPoincarePlot::GetDataExtents(vector<double> &extents)
+avtPoincarePlot::GetDataExtents(std::vector<double> &extents)
 {
     double min, max;
 

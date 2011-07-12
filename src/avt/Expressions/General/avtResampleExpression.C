@@ -57,6 +57,8 @@
 #include <DebugStream.h>
 #include <ExpressionException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtResampleExpression constructor
@@ -136,7 +138,7 @@ avtResampleExpression::ProcessArguments(ArgsExpr *args,
     {
         ArgExpr *samp = (*arguments)[i+1];
         ExprParseTreeNode *sampTree = samp->GetExpr();
-        string secondType = sampTree->GetTypeName();
+        std::string secondType = sampTree->GetTypeName();
         if (secondType == "IntegerConst")
         {
             int val = dynamic_cast<IntegerConstExpr*>(sampTree)->GetValue();
@@ -191,8 +193,8 @@ avtResampleExpression::Execute()
     int nLeaves;
     vtkDataSet **leaves = tree->GetAllLeaves(nLeaves);
     
-    string inputVarname = GetInput()->GetInfo().GetAttributes().GetVariableName();
-    string outputVarname = GetOutputVariableName();
+    std::string inputVarname = GetInput()->GetInfo().GetAttributes().GetVariableName();
+    std::string outputVarname = GetOutputVariableName();
     
     avtDataTree_p newTree = NULL;
     for (int i = 0; i < nLeaves; i++)

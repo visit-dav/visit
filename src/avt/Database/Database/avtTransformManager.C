@@ -1293,7 +1293,7 @@ avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const m
         EXCEPTION1(PointerNotInCacheException, *vr);
     }
     
-    string meshname = md->MeshForVar(vname);
+    std::string meshname = md->MeshForVar(vname);
     const avtMeshMetaData *mmd = md->GetMesh(meshname);
     if (mmd->meshType == AVT_CSG_MESH)
     {
@@ -1440,7 +1440,7 @@ avtTransformManager::AddVertexCellsToPointsOnlyDataset(avtDatabaseMetaData *md,
     for (i = 0; i < md->GetNumMeshes(); i++)
     {
         avtMeshMetaData &mmd = md->GetMeshes(i);
-        if (mmd.name == string(mname))
+        if (mmd.name == std::string(mname))
         {
             mmd.meshType = AVT_POINT_MESH;
             mmd.topologicalDimension = 0;
@@ -1635,7 +1635,7 @@ vtkDataSet *ds, int dom)
     for (i = 0; i < md->GetNumCurves(); i++)
     {
         cmd = md->GetCurve(i);
-        if (cmd->from1DScalarName == string(vname))
+        if (cmd->from1DScalarName == std::string(vname))
             break;
         cmd = 0;
     }

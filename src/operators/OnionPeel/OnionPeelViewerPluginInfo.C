@@ -43,6 +43,13 @@
 #include <OnionPeelPluginInfo.h>
 #include <QApplication>
 #include <OnionPeelAttributes.h>
+#include <avtSIL.h>
+#include <avtSILRestriction.h>
+#include <CompactSILRestrictionAttributes.h>
+#include <ViewerPlot.h>
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Function:  GetViewerInfo
@@ -191,10 +198,6 @@ OnionPeelViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 //    Update for new SIL interface.
 //
 // ****************************************************************************
-#include <avtSIL.h>
-#include <avtSILRestriction.h>
-#include <CompactSILRestrictionAttributes.h>
-#include <ViewerPlot.h>
 void
 OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                                               const ViewerPlot *plot,
@@ -208,11 +211,11 @@ OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     OnionPeelAttributes *opAtts = (OnionPeelAttributes*)atts;
 
 
-    string categoryName = opAtts->GetCategoryName();
-    string subsetName = opAtts->GetSubsetName();
-    string defaultName = "Whole";
-    string firstCategoryName = defaultName;
-    string firstSubsetName = defaultName;
+    std::string categoryName = opAtts->GetCategoryName();
+    std::string subsetName = opAtts->GetSubsetName();
+    std::string defaultName = "Whole";
+    std::string firstCategoryName = defaultName;
+    std::string firstSubsetName = defaultName;
 
     bool categoryNameValid = false;
     bool subsetNameValid = false;

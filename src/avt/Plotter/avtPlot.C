@@ -71,6 +71,9 @@
 
 #include <climits>
 
+#include <string>
+#include <vector>
+
 #define SIZECUTOFF 1000000
 
 
@@ -274,7 +277,7 @@ avtPlot::~avtPlot()
 // ****************************************************************************
 
 void
-avtPlot::SetDataExtents(const vector<double> &extents)
+avtPlot::SetDataExtents(const std::vector<double> &extents)
 {
     dataExtents = extents;
 }
@@ -292,7 +295,7 @@ avtPlot::SetDataExtents(const vector<double> &extents)
 // ****************************************************************************
 
 void
-avtPlot::GetDataExtents(vector<double> &extents)
+avtPlot::GetDataExtents(std::vector<double> &extents)
 {
     extents = dataExtents;
 }

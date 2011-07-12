@@ -61,6 +61,10 @@
 
 #include <DebugStream.h>
 
+#include <vector>
+
+using std::vector;
+
 static int qsort_compare_seglen(const void *a, const void *b);
 
 

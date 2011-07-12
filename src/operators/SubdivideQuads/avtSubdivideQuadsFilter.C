@@ -53,6 +53,8 @@
 
 #include <avtCallback.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: avtSubdivideQuadsFilter constructor
 //
@@ -176,7 +178,7 @@ avtSubdivideQuadsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                                                 // intuitive interface.
     bool   fanOut     = atts.GetFanOutPoints();
     bool   doTris     = atts.GetDoTriangles();
-    string var        = atts.GetVariable();
+    std::string var   = atts.GetVariable();
 
     if (maxSubdivs <= 1)
     {

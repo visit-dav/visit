@@ -55,6 +55,9 @@
 #include <InvalidColortableException.h>
 #include <maptypes.h>
 
+#include <string>
+#include <vector>
+
 // ****************************************************************************
 //  Method: avtTopologyPlot constructor
 //
@@ -355,7 +358,7 @@ avtTopologyPlot::SetAtts(const AttributeGroup *a)
 void 
 avtTopologyPlot::SetColors()
 {
-    vector < string > labels(4);
+    std::vector < std::string > labels(4);
     LevelColorMap levelColorMap;
 
     labels[0] = avtTopologyFilter::labelNames[0];

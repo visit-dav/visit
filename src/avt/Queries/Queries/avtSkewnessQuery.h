@@ -47,6 +47,7 @@
 
 #include <avtCurveQuery.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Class: avtSkewnessQuery

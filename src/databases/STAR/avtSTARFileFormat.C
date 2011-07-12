@@ -37,10 +37,6 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-// C++ includes
-#include <string>
-using std::string;
-
 // visit includes
 #include <avtSTARFileFormat.h>
 #include <avtDatabaseMetaData.h>
@@ -48,6 +44,7 @@ using std::string;
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <Expression.h>
+#include <ImproperUseException.h>
 #include <InvalidVariableException.h>
 
 // vtk includes
@@ -70,6 +67,13 @@ using std::string;
 #ifdef DO_TIMINGS
 #include <StackTimer.h>
 #endif
+
+// C++ includes
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
 
 /* ========================================================================= */
 /**
@@ -100,7 +104,7 @@ avtSTARFileFormat::avtSTARFileFormat(const char *filename)
     }
     else {
         ERROR("Unknown file extension in file '%s'", filename);
-        exit(-1);
+        EXCEPTION0(ImproperUseException);
     }
 
     int numResolutions = mDataManager->numResolutions();

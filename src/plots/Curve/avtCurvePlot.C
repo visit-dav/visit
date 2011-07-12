@@ -58,6 +58,8 @@
 
 #include <LineAttributes.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method: avtCurvePlot constructor
 //
@@ -322,7 +324,7 @@ avtCurvePlot::CustomizeBehavior(void)
     else if (varname != NULL)
     {
         // No designator set, so set it to the varname.
-        string s(varname);
+        std::string s(varname);
         decoMapper->SetLabel(s);
     }
 }

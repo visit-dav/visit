@@ -43,7 +43,6 @@
 #include <avtXmdvWriter.h>
 
 #include <snprintf.h>
-#include <vector>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -60,6 +59,8 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 
+#include <string>
+#include <vector>
 
 using     std::string;
 using     std::vector;

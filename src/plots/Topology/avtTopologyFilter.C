@@ -42,8 +42,6 @@
 
 #include <avtTopologyFilter.h>
 
-#include <math.h>
-
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
@@ -59,6 +57,13 @@
 
 #include <ImproperUseException.h>
 
+#include <math.h>
+
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
 
 const string avtTopologyFilter::labelNames[4] =
     { "min", "min plateau", "max plateau", "max" };
@@ -124,7 +129,7 @@ avtTopologyFilter::~avtTopologyFilter()
 // ****************************************************************************
 
 avtDataTree_p
-avtTopologyFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::string)
+avtTopologyFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string)
 {
     int jump;
     

@@ -66,13 +66,13 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
-#include <set>
-#include <deque>
-#include <algorithm>
-
-using     std::string;
-
 #include <avtParallel.h>
+
+#include <algorithm>
+#include <deque>
+#include <set>
+#include <string>
+#include <vector>
 
 #ifdef PARALLEL
 // If we're running in parallel then we can enable subdivision of single domains.
@@ -1184,7 +1184,7 @@ avtCCMFileFormat::ReadCellInfo(int dom, const char *meshname,
         {
             maxId = (maxId > cellInfo[j].id ? maxId : cellInfo[j].id);
         }
-        vector<bool> cellIsValid(maxId+1, false);
+        std::vector<bool> cellIsValid(maxId+1, false);
         for (j = 0 ; j < cellInfo.size() ; j++)
         {
             cellIsValid[cellInfo[j].id] = true;
@@ -1445,7 +1445,7 @@ avtCCMFileFormat::RegisterVariableList(const char *primaryVar,
 // ***************************************************************************
 
 void
-avtCCMFileFormat::GetCellMapData(const int domain, const string &var, 
+avtCCMFileFormat::GetCellMapData(const int domain, const std::string &var, 
     intVector &mapData)
 {
     int t1 = visitTimer->StartTimer();

@@ -43,10 +43,10 @@
 #ifndef AVT_FILLED_BOUNDARY_FILTER_H
 #define AVT_FILLED_BOUNDARY_FILTER_H
 
-
 #include <avtSIMODataTreeIterator.h>
 #include <FilledBoundaryAttributes.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Class: avtFilledBoundaryFilter
@@ -80,7 +80,7 @@ class avtFilledBoundaryFilter : public avtSIMODataTreeIterator
   protected:
     FilledBoundaryAttributes    plotAtts;
 
-    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, string);
+    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
     virtual void          UpdateDataObjectInfo(void);
     virtual avtContract_p
                           ModifyContract(avtContract_p);

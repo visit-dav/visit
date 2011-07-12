@@ -40,6 +40,8 @@
 #include <VisItException.h>
 #include <vtkStructuredGrid.h>
 
+#include <vector>
+
 #define BNDMIN(A,B) (((A) < (B)) ? (A) : (B))
 #define BNDMAX(A,B) (((A) > (B)) ? (A) : (B))
 
@@ -253,9 +255,9 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
 //
 // ****************************************************************************
 void
-Boundary::DeleteNeighbor(int d, vector<Boundary> &wholelist)
+Boundary::DeleteNeighbor(int d, std::vector<Boundary> &wholelist)
 {
-    vector<int> delete_list;
+    std::vector<int> delete_list;
     for (size_t i=0; i<neighbors.size(); i++)
         if (neighbors[i].domain == d)
             delete_list.push_back(i);

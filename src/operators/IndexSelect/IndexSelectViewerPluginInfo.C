@@ -43,6 +43,15 @@
 #include <IndexSelectPluginInfo.h>
 #include <QApplication>
 #include <IndexSelectAttributes.h>
+#include <avtSIL.h>
+#include <avtSILRestriction.h>
+#include <CompactSILRestrictionAttributes.h>
+#include <avtDatabaseMetaData.h>
+#include <avtMeshMetaData.h>
+#include <ViewerPlot.h>
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Function:  GetViewerInfo
@@ -188,12 +197,6 @@ IndexSelectViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 //    Update for new SIL interface.
 //
 // ****************************************************************************
-#include <avtSIL.h>
-#include <avtSILRestriction.h>
-#include <CompactSILRestrictionAttributes.h>
-#include <avtDatabaseMetaData.h>
-#include <avtMeshMetaData.h>
-#include <ViewerPlot.h>
 void
 IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                                               const ViewerPlot *plot,
@@ -206,11 +209,11 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 
     IndexSelectAttributes *isAtts = (IndexSelectAttributes*)atts;
 
-    string categoryName = isAtts->GetCategoryName();
-    string subsetName = isAtts->GetSubsetName();
-    string defaultName = "Whole";
-    string firstCategoryName = defaultName;
-    string firstSubsetName = defaultName;
+    std::string categoryName = isAtts->GetCategoryName();
+    std::string subsetName = isAtts->GetSubsetName();
+    std::string defaultName = "Whole";
+    std::string firstCategoryName = defaultName;
+    std::string firstSubsetName = defaultName;
 
     bool categoryNameValid = false;
     bool subsetNameValid = false;

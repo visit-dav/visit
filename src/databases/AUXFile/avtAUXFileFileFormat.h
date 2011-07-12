@@ -49,9 +49,6 @@
 
 #include <string>
 
-using std::string;
-
-
 // ****************************************************************************
 //  Class: avtAUXFileFileFormat
 //
@@ -84,7 +81,7 @@ class avtAUXFileFileFormat : public avtSTSDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
     bool                   fileRead;
-    string                 fileName;
+    std::string            fileName;
     char *                 fileBuf;
 
     int                    sizeX, sizeY;

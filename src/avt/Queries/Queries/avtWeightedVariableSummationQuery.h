@@ -47,6 +47,7 @@
 
 #include <avtSummationQuery.h>
 
+#include <string>
 
 class     avtBinaryMultiplyExpression;
 class     avtEdgeLength;

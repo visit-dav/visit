@@ -1,5 +1,11 @@
 #include "avtHistogramSpecification.h"
 
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
  /** \brief Standard constructor.*/
 avtHistogramSpecification::avtHistogramSpecification()
 {

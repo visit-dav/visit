@@ -47,6 +47,7 @@
 #include <avtDataTreeIterator.h>
 #include <PseudocolorAttributes.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Class: avtPseudocolorFilter

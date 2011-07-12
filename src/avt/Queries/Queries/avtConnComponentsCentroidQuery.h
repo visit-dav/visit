@@ -47,7 +47,7 @@
 #include <avtDatasetQuery.h>
 #include <avtConnComponentsQuery.h>
 
-#include <string>
+#include <vector>
 
 class vtkDataSet;
 class avtConnComponentExpression;
@@ -75,11 +75,11 @@ class QUERY_API avtConnComponentsCentroidQuery : public avtConnComponentsQuery
                                    { return "Finding component centroids."; };
 
   protected:
-    vector<int>                     nCellsPerComp;
+    std::vector<int>                nCellsPerComp;
 
-    vector<double>                  xCentroidPerComp;
-    vector<double>                  yCentroidPerComp;
-    vector<double>                  zCentroidPerComp;
+    std::vector<double>             xCentroidPerComp;
+    std::vector<double>             yCentroidPerComp;
+    std::vector<double>             zCentroidPerComp;
 
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);

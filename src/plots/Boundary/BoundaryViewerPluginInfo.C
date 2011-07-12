@@ -40,9 +40,20 @@
 //  File: BoundaryViewerPluginInfo.C
 // ************************************************************************* //
 
+#include <avtColorTables.h>
+#include <avtDatabaseMetaData.h>
+#include <avtBoundaryPlot.h>
+#include <avtTypes.h>
+#include <ViewerPlot.h>
+#include <DebugStream.h>
+#include <InvalidVariableException.h>
 #include <BoundaryPluginInfo.h>
 #include <QApplication>
-#include <avtBoundaryPlot.h>
+
+#include <stdio.h>
+
+#include <set>
+#include <vector>
 
 // ****************************************************************************
 //  Function:  GetViewerInfo
@@ -390,21 +401,6 @@ BoundaryViewerPluginInfo::XPMIconData() const
 //
 // ****************************************************************************
 
-#include <stdio.h>
-
-#include <avtColorTables.h>
-#include <avtDatabaseMetaData.h>
-#include <avtBoundaryPlot.h>
-#include <avtTypes.h>
-#include <set>
-
-#include <ViewerPlot.h>
-
-#include <DebugStream.h>
-#include <InvalidVariableException.h>
-
-using std::string;
-using std::set;
 
 void
 BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
@@ -424,19 +420,19 @@ BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
     avtDatabaseMetaData *nonConstmd = const_cast <avtDatabaseMetaData *>(md);
 
-    string vn(plot->GetVariableName());
+    std::string vn(plot->GetVariableName());
 
     const avtMaterialMetaData *mat = NULL;
 
-    string meshName = nonConstmd->MeshForVar(vn);
+    std::string meshName = nonConstmd->MeshForVar(vn);
     avtMeshMetaData *mesh = 
         const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
 
 
     stringVector       sv;
     stringVector::const_iterator pos;
-    set<int> groupSet;
-    vector<int> gIDS;
+    std::set<int> groupSet;
+    std::vector<int> gIDS;
     char temp[512];
 
     // 

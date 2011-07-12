@@ -47,7 +47,7 @@
 #include <avtDatasetQuery.h>
 #include <avtConnComponentsQuery.h>
 
-#include <string>
+#include <vector>
 
 class avtVMetricVolume;
 class avtRevolvedVolume;
@@ -83,7 +83,7 @@ class QUERY_API avtConnComponentsVolumeQuery : public avtConnComponentsQuery
     avtRevolvedVolume              *revolvedVolumeFilter;
     avtVMetricVolume               *volumeFilter;
 
-    vector<double>                  volPerComp;
+    std::vector<double>             volPerComp;
 
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);

@@ -42,15 +42,15 @@
 
 #include <avtMTMDFileFormat.h>
 
-// C++ includes
-#include <vector>
-using std::vector;
-
 #define DEBUG_TO_STDERR
 #define TRACE(...)
 
 // stardata includes
 #include "StarObject.h"
+
+// C++ includes
+#include <string>
+#include <vector>
 
 // class predeclarations
 class DataManagerAPI;
@@ -80,7 +80,7 @@ public: // 'structors
 
 public: // this class api
     virtual void            changeResolution(int resolution);
-    virtual void            processCommand(string command);
+    virtual void            processCommand(std::string command);
 
 public: // inherited from base class
     virtual void            GetCycles(std::vector<int> &);
@@ -99,8 +99,8 @@ public: // inherited from base class
     virtual vtkDataArray*   GetVectorVar(int, int, const char *);
 
     virtual void            RegisterDataSelections(
-                                     const vector<avtDataSelection_p>& sels,
-                                     vector<bool>* selectionsApplied);
+                                     const std::vector<avtDataSelection_p>& sels,
+                                     std::vector<bool>* selectionsApplied);
 
 protected: // called by parent class
     virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *,int);
@@ -113,9 +113,9 @@ private: // class data members
     int                 mNumFiles;                  // number of files
     int                 mFirstTimeStep;             // time value of first step
     int                 mTimeStepIncrement;         // stride between steps
-    string              mCurrentVarName;
+    std::string         mCurrentVarName;
     int                 mCurrentTimeState;
-    string              mFilename;                  // name of metadata file
+    std::string         mFilename;                  // name of metadata file
     DataManagerAPI*     mDataManager;               // multiple or single file
     MultiresGrid*       mMultiresGrid;              // locations of data vals
     ResolutionMap*      mResolutionMap;             // current resolution table

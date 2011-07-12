@@ -57,6 +57,8 @@
 #include <mpi.h>
 #endif
 
+#include <vector>
+
 class DomainType;
 class avtICAlgorithm;
 
@@ -280,8 +282,8 @@ class AVTFILTERS_API avtPICSFilter :
                                             std::vector<avtVector> &vels,
                                             std::vector<std::vector<avtIntegralCurve *> > &ics);
     void                      DeleteIntegralCurves(std::vector<int> &icIDs);
-    virtual void              CreateIntegralCurveOutput(vector<avtIntegralCurve *> &ics) = 0;
-    void                      GetTerminatedIntegralCurves(vector<avtIntegralCurve *> &ics);
+    virtual void              CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &ics) = 0;
+    void                      GetTerminatedIntegralCurves(std::vector<avtIntegralCurve *> &ics);
 
     virtual void              GetPathlineVelocityMeshVariables(avtDataRequest_p &dataRequest, std::string &velocity, std::string &mesh);
 

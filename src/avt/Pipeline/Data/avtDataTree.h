@@ -52,10 +52,6 @@
 
 #include <avtDataRepresentation.h>
 
-using std::vector;
-using std::string;
-using std::set;
- 
 class vtkDataSet;
 class avtDataTree;
 class avtWebpage;
@@ -134,7 +130,7 @@ class PIPELINE_API avtDataTree
   public:
                              avtDataTree();
                              avtDataTree(vtkDataSet *, int);
-                             avtDataTree(vtkDataSet *, int, string s);
+                             avtDataTree(vtkDataSet *, int, std::string s);
                              avtDataTree(avtDataRepresentation &);
                              avtDataTree(int, vtkDataSet **, int *);
                              avtDataTree(int, vtkDataSet **,std::vector<int>&);
@@ -168,14 +164,14 @@ class PIPELINE_API avtDataTree
     void                     Traverse(TraverseFunc, void *, bool &);
 
     vtkDataSet             **GetAllLeaves(int &);
-    void                     GetAllDomainIds(vector<int> &);
-    void                     GetAllLabels(vector<string> &);
-    void                     GetAllUniqueLabels(vector<string> &);
-    avtDataTree_p            PruneTree(const vector<int> &);
-    avtDataTree_p            PruneTree(const vector<int> &, vector<int> &);
-    avtDataTree_p            PruneTree(const vector<string> &);
-    avtDataTree_p            PruneTree(const string &);
-    avtDataTree_p            PruneTree(const vector<string> &, vector<string>&);
+    void                     GetAllDomainIds(std::vector<int> &);
+    void                     GetAllLabels(std::vector<std::string> &);
+    void                     GetAllUniqueLabels(std::vector<std::string> &);
+    avtDataTree_p            PruneTree(const std::vector<int> &);
+    avtDataTree_p            PruneTree(const std::vector<int> &, std::vector<int> &);
+    avtDataTree_p            PruneTree(const std::vector<std::string> &);
+    avtDataTree_p            PruneTree(const std::string &);
+    avtDataTree_p            PruneTree(const std::vector<std::string> &, std::vector<std::string>&);
 
     void                     WriteTreeStructure(ostream &, int indent = 0);
 
@@ -187,7 +183,7 @@ class PIPELINE_API avtDataTree
     avtDataRepresentation   *dataRep; 
 
     void                     AddLeafToList(vtkDataSet**, int &); 
-    void                     GetUniqueLabels(vector<string> &, set<string> &);
+    void                     GetUniqueLabels(std::vector<std::string> &, std::set<std::string> &);
 };
 
 

@@ -50,6 +50,7 @@
 #include <DebugStream.h>
 #include <avtCallback.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Method: avtCracksDensityFilter constructor
@@ -177,11 +178,11 @@ avtCracksDensityFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         return in_ds; 
     }
 
-    string massVar = atts.GetInMassVar();
+    std::string massVar = atts.GetInMassVar();
     vtkFloatArray *ems = (vtkFloatArray*)(in_ds->GetCellData()->GetArray(massVar.c_str()));
     if (ems == NULL)
     {
-        string msg = "Could not find mass varaible: " + massVar;
+        std::string msg = "Could not find mass varaible: " + massVar;
         msg += ".  Cannot calculate density.";
         avtCallback::IssueWarning(msg.c_str());
         return in_ds; 

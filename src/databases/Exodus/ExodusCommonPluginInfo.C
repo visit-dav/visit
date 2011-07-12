@@ -41,6 +41,8 @@
 #include <avtMTSDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 
+#include <string>
+
 // ****************************************************************************
 //  Method:  ExodusCommonPluginInfo::GetDatabaseType
 //
@@ -96,7 +98,7 @@ avtDatabase *
 ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
-    string file1 = list[0];
+    std::string file1 = list[0];
 
     bool containsManyFiles = false;
     if (nList == 1 &&

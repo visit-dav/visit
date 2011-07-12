@@ -47,10 +47,9 @@
 #include <avtDatasetQuery.h>
 #include <avtConnComponentsQuery.h>
 
-#include <string>
+#include <vector>
 
 class avtEdgeLength;
-
 class vtkDataSet;
 
 
@@ -80,7 +79,7 @@ class QUERY_API avtConnComponentsLengthQuery : public avtConnComponentsQuery
   protected:
 
     avtEdgeLength                  *lengthFilter;
-    vector<double>                  lengthPerComp;
+    std::vector<double>             lengthPerComp;
 
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);

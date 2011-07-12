@@ -67,6 +67,8 @@
 #include <avtVMetricVolume.h>
 #include <avtVMetricWarpage.h>
 
+#include <string>
+
 // ****************************************************************************
 // Method: avtFunctionExpr::CreateMeshQualityFilters
 //
@@ -94,7 +96,7 @@
 // ****************************************************************************
 
 avtExpressionFilter *
-avtFunctionExpr::CreateMeshQualityFilters(const string &functionName) const
+avtFunctionExpr::CreateMeshQualityFilters(const std::string &functionName) const
 {
     avtExpressionFilter *f = 0;
 

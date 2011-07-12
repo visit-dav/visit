@@ -45,6 +45,7 @@
 
 #include <avtSTMDFileFormat.h>
 
+#include <string>
 #include <vector>
 
 

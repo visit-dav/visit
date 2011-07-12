@@ -48,9 +48,6 @@
 #include <avtGhostData.h>
 #include <avtStreamingGhostGenerator.h>
 
-#include <vector>
-using std::vector;
-
 class vtkDataSet;
 class vtkDataArray;
 class avtMixedVariable;

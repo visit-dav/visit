@@ -63,6 +63,8 @@
 #include <ExpressionException.h>
 #include <ImproperUseException.h>
 
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtArrayDecomposeExpression constructor
@@ -191,7 +193,7 @@ avtArrayDecomposeExpression::ProcessArguments(ArgsExpr *args,
 
     ArgExpr *secondarg = (*arguments)[1];
     ExprParseTreeNode *secondTree = secondarg->GetExpr();
-    string type = secondTree->GetTypeName();
+    std::string type = secondTree->GetTypeName();
     if (type == "IntegerConst")
         index = dynamic_cast<IntegerConstExpr*>(secondTree)->GetValue();
     else

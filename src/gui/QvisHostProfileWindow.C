@@ -63,6 +63,8 @@
 
 #include <cstdlib>
 
+#include <string>
+
 #define HOST_PROFILE_SPACING 2
 
 // ****************************************************************************
@@ -3510,7 +3512,7 @@ QvisHostProfileWindow::copyMachineProfile()
     profiles->AddMachines(*currentMachine);
     currentMachine = (MachineProfile*)profiles->GetMachines()[
                                               profiles->GetNumMachines()-1];
-    currentMachine->SetHostNickname(string("Copy of ") +
+    currentMachine->SetHostNickname(std::string("Copy of ") +
                                     currentMachine->GetHostNickname());
     ReplaceLocalHost();
     Apply();

@@ -48,10 +48,6 @@
 #endif
 #include <float.h>
 
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <algorithm>
 
 #include <vtkCellArray.h>
 #include <vtkFloatArray.h>
@@ -88,7 +84,6 @@
 
 #define USE_SIMPLE_BLOCK_NUMBERING 1
 
-using     std::string;
 #ifndef STREQUAL
 #if defined(_WIN32) 
 #  define STREQUAL(a,b)              stricmp(a,b)
@@ -98,8 +93,18 @@ using     std::string;
 #endif
 
 #include <boost/cstdint.hpp>
-using boost::int64_t;
 
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
+
+using boost::int64_t;
+using std::map;
+using std::string;
+using std::vector;
 
 // ****************************************************************************
 // Notes on the format of each Nek variant--binary/ascii, 3D/2D, serial/parallel
@@ -446,7 +451,7 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
         {
             //This is an obsolete tag, ignore it, skipping the version number
             //as well.
-            std::string version;
+            string version;
             f >> version;
         }
         else
@@ -1012,13 +1017,13 @@ avtNek5000FileFormat::~avtNek5000FileFormat()
         aBlocksPerFile = NULL;
     }
 
-    std::map<PointerKey, float *, KeyCompare>::iterator it;
+    map<PointerKey, float *, KeyCompare>::iterator it;
     for (it = cachedData.begin() ; it != cachedData.end() ; it++)
         delete [] it->second;
-    std::map<int, avtIntervalTree *>::iterator it2;
+    map<int, avtIntervalTree *>::iterator it2;
     for (it2 = boundingBoxes.begin() ; it2 != boundingBoxes.end() ; it2++)
         delete it2->second;
-    std::map<PointerKey, avtIntervalTree *, KeyCompare>::iterator it3;
+    map<PointerKey, avtIntervalTree *, KeyCompare>::iterator it3;
     for (it3 = dataExtents.begin() ; it3 != dataExtents.end() ; it3++)
         delete it3->second;
 }
@@ -1213,7 +1218,7 @@ avtNek5000FileFormat::GetMesh(int /* timestate */, int domain, const char * /*me
         key.element = element;
         key.timestep = timestep;
     
-        std::map<PointerKey, float *, KeyCompare>::iterator it;
+        map<PointerKey, float *, KeyCompare>::iterator it;
         it = cachedData.find(key);
         float *pts = NULL;
         if (it == cachedData.end())
@@ -1552,7 +1557,7 @@ avtNek5000FileFormat::GetVar(int timestep, int domain, const char *varname)
         key.element = element;
         key.timestep = timestep;
     
-        std::map<PointerKey, float *, KeyCompare>::iterator it;
+        map<PointerKey, float *, KeyCompare>::iterator it;
         it = cachedData.find(key);
         float *v = NULL;
         bool shouldDelete = false;
@@ -1795,7 +1800,7 @@ avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname
         key.element = element;
         key.timestep = timestep;
     
-        std::map<PointerKey, float *, KeyCompare>::iterator it;
+        map<PointerKey, float *, KeyCompare>::iterator it;
         it = cachedData.find(key);
         float *v = NULL;
         bool shouldDelete = false;
@@ -2020,7 +2025,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
 // ****************************************************************************
 
 void           
-avtNek5000FileFormat::GetCycles(std::vector<int> &outCycles)
+avtNek5000FileFormat::GetCycles(vector<int> &outCycles)
 {
     UpdateCyclesAndTimes();
     outCycles = aCycles;
@@ -2039,7 +2044,7 @@ avtNek5000FileFormat::GetCycles(std::vector<int> &outCycles)
 // ****************************************************************************
 
 void           
-avtNek5000FileFormat::GetTimes(std::vector<double> &outTimes)
+avtNek5000FileFormat::GetTimes(vector<double> &outTimes)
 {
     UpdateCyclesAndTimes();
     outTimes = aTimes;
@@ -2200,7 +2205,7 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
 
     if (!bParFormat)
     {
-        std::string tString, cString;
+        string tString, cString;
         f >> dummy >> dummy >> dummy >> dummy >> tString >> cString >> v;  //skip #blocks and block size
         t = atof(tString.c_str());
         c = atoi(cString.c_str());
@@ -2234,12 +2239,12 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
 
     // If this file contains a mesh, the first variable codes after the 
     // cycle number will be X Y
-    if (v.find("X") != std::string::npos)
+    if (v.find("X") != string::npos)
         iTimestepsWithMesh[curTimestep] = true;
 
     // Nek has a bug where the time and cycle sometimes run together (e.g. 2.52000E+0110110 for
     // time 25.2, cycle 10110).  If that happens, then v will be Y
-    if (v.find("Y") != std::string::npos)
+    if (v.find("Y") != string::npos)
         iTimestepsWithMesh[curTimestep] = true;
 
     delete[] meshfilename;
@@ -2572,7 +2577,7 @@ avtIntervalTree *
 avtNek5000FileFormat::GetBoundingBoxIntervalTree(int timestep)
 {
     int t1 = visitTimer->StartTimer();
-    std::map<int,avtIntervalTree*>::const_iterator fit = boundingBoxes.find(timestep);
+    map<int,avtIntervalTree*>::const_iterator fit = boundingBoxes.find(timestep);
     if (fit != boundingBoxes.end())
         return fit->second;
 
@@ -2755,7 +2760,7 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
     key.var = var;
     key.element = -1;
     key.timestep = timestep;
-    std::map<PointerKey,avtIntervalTree*, KeyCompare>::const_iterator fit = dataExtents.find(key);
+    map<PointerKey,avtIntervalTree*, KeyCompare>::const_iterator fit = dataExtents.find(key);
     if (fit != dataExtents.end())
         return fit->second;
 
@@ -2973,8 +2978,8 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
 
 void
 avtNek5000FileFormat::RegisterDataSelections(
-                               const std::vector<avtDataSelection_p> &selList,
-                               std::vector<bool> *selectionsApplied)
+                               const vector<avtDataSelection_p> &selList,
+                               vector<bool> *selectionsApplied)
 {
     vector<vector<int> > domainsToUse(selList.size());
 
@@ -3041,8 +3046,8 @@ avtNek5000FileFormat::RegisterDataSelections(
         {
             avtIsolevelsSelection *sel = (avtIsolevelsSelection*)*(selList[i]);
 
-            std::string var = sel->GetVariable();
-            std::vector<double> isolevels = sel->GetIsolevels();
+            string var = sel->GetVariable();
+            vector<double> isolevels = sel->GetIsolevels();
 
             avtIntervalTree *itree = 
                               GetDataExtentsIntervalTree(curTimestep, 
@@ -3051,7 +3056,7 @@ avtNek5000FileFormat::RegisterDataSelections(
                 continue;
 
             double eqn[1] = { 1. };
-            std::vector<std::vector<int> > elemsForLevelJ(isolevels.size());
+            vector<vector<int> > elemsForLevelJ(isolevels.size());
             for (int j = 0 ; j < isolevels.size() ; j++)
             {
                 itree->GetElementsList(eqn, isolevels[j], elemsForLevelJ[j]);
@@ -3137,8 +3142,8 @@ avtNek5000FileFormat::RegisterDataSelections(
 
 void
 avtNek5000FileFormat::CombineElementLists(
-                      const std::vector<std::vector<int> > &lists,
-                      std::vector<int> &outlist, bool doUnion)
+                      const vector<vector<int> > &lists,
+                      vector<int> &outlist, bool doUnion)
 {
     int t1 = visitTimer->StartTimer();
 
@@ -3152,7 +3157,7 @@ avtNek5000FileFormat::CombineElementLists(
 
     if (doUnion)
     {
-        std::vector<bool> useElements(iNumBlocks, false);
+        vector<bool> useElements(iNumBlocks, false);
         for (i = 0 ; i < lists.size() ; i++)
         {
             for (j = 0 ; j < lists[i].size() ; j++)
@@ -3173,7 +3178,7 @@ avtNek5000FileFormat::CombineElementLists(
     }
     else
     {
-        std::vector<int> numHits(iNumBlocks, 0);
+        vector<int> numHits(iNumBlocks, 0);
         int numSelections = 0;
         for (i = 0 ; i < lists.size() ; i++)
         {
@@ -3221,8 +3226,8 @@ avtNek5000FileFormat::CombineElementLists(
 void
 avtNek5000FileFormat::ActivateTimestep(int ts)
 {
-    std::map<PointerKey, float *, KeyCompare>::iterator it;
-    std::map<PointerKey, float *, KeyCompare> new_cachedData;
+    map<PointerKey, float *, KeyCompare>::iterator it;
+    map<PointerKey, float *, KeyCompare> new_cachedData;
     for (it = cachedData.begin() ; it != cachedData.end() ; it++)
     {
         if (it->first.timestep != ts && it->first.var != "points")
@@ -3232,8 +3237,8 @@ avtNek5000FileFormat::ActivateTimestep(int ts)
     }
     cachedData = new_cachedData;
 
-    std::map<PointerKey, avtIntervalTree *, KeyCompare>::iterator it2;
-    std::map<PointerKey, avtIntervalTree *, KeyCompare> new_dataExtents;
+    map<PointerKey, avtIntervalTree *, KeyCompare>::iterator it2;
+    map<PointerKey, avtIntervalTree *, KeyCompare> new_dataExtents;
     for (it2 = dataExtents.begin() ; it2 != dataExtents.end() ; it2++)
     {
         if (it2->first.timestep != ts)

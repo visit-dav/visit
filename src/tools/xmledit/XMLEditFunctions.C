@@ -53,6 +53,8 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 
+#include <vector>
+
 // ****************************************************************************
 //  Constructor:  XMLEditFunctions::XMLEditFunctions
 //
@@ -602,7 +604,7 @@ XMLEditFunctions::functionlistDel()
         return;
 
     Function *f = a->functions[index];
-    vector<Function*> newlist;
+    std::vector<Function*> newlist;
     for (size_t i=0; i<a->functions.size(); i++)
     {
         if (a->functions[i] != f)

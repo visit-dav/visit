@@ -45,6 +45,8 @@
 
 #include <avtSIMODataTreeIterator.h>
 
+#include <string>
+
 class vtkCell;
 class vtkContourFilter;
 class vtkDataArray;
@@ -64,7 +66,7 @@ class vtkIdList;
 class avtTopologyFilter : public avtSIMODataTreeIterator
 {
   public:
-    static const string labelNames[4];
+    static const std::string labelNames[4];
       
                               avtTopologyFilter();
     virtual                  ~avtTopologyFilter();

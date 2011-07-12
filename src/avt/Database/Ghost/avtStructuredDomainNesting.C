@@ -56,6 +56,10 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 
+#include <vector>
+
+using std::vector;
+
 #define MAX_GHOST_LAYERS 2
 
 // ****************************************************************************

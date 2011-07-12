@@ -48,8 +48,6 @@
 #include "Field.h"
 #include <QRegExp>
 
-using std::vector;
-
 #define GENERATOR_NAME "xml2python"
 
 inline char toupper(char c)
@@ -2754,7 +2752,7 @@ class PythonFieldFactory
 class PythonGeneratorAttribute : public GeneratorBase
 {
   public:
-    vector<PythonGeneratorField*> fields;
+    std::vector<PythonGeneratorField*> fields;
     bool visitpy_api;
   public:
     PythonGeneratorAttribute(const QString &n, const QString &p, const QString &f,

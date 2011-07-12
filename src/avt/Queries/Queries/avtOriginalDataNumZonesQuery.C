@@ -45,6 +45,7 @@
 #include <avtOriginatingSource.h>
 #include <ParsingExprList.h>
 
+#include <string>
 
 // ****************************************************************************
 //  Method: avtOriginalDataNumZonesQuery constructor
@@ -99,7 +100,7 @@ avtOriginalDataNumZonesQuery::ApplyFilters(avtDataObject_p inData)
     avtDataRequest_p dataRequest = inData->GetOriginatingSource()->
         GetGeneralContract()->GetDataRequest();
 
-    string dbVar = ParsingExprList::GetRealVariable(
+    std::string dbVar = ParsingExprList::GetRealVariable(
                        queryAtts.GetVariables()[0]);
     avtDataRequest_p new_dataRequest = new avtDataRequest(dataRequest,
                                                                 dbVar.c_str());

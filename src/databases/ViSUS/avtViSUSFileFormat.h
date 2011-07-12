@@ -53,10 +53,6 @@
 #include <string>
 #include <vector>
 
-using std::map;
-using std::string;
-using std::vector;
-
 
 // ****************************************************************************
 //  Class: avtViSUSFileFormat
@@ -96,8 +92,8 @@ class avtViSUSFileFormat : public avtMTSDFileFormat
     virtual bool           CanCacheVariable(const char *var);
 
     virtual void           RegisterDataSelections(
-                               const vector<avtDataSelection_p> &selList,
-                               vector<bool> *selectionsApplied);
+                               const std::vector<avtDataSelection_p> &selList,
+                               std::vector<bool> *selectionsApplied);
 
   protected:
 
@@ -114,7 +110,7 @@ class avtViSUSFileFormat : public avtMTSDFileFormat
                                                       int *domCounts,
                                                       int *domIndices);
 
-    string fileName;
+    std::string fileName;
     IDX_file_descriptor idxFile;
     bool haveOpenedFile;
 
@@ -126,8 +122,8 @@ class avtViSUSFileFormat : public avtMTSDFileFormat
     double origin3D[3], gridSpacing3D[3];
 
     int minTimeIndex, maxTimeIndex;
-    vector<int> cycleVals;
-    vector<double> timeVals;
+    std::vector<int> cycleVals;
+    std::vector<double> timeVals;
 
     int dataDimension;
 
@@ -141,13 +137,13 @@ class avtViSUSFileFormat : public avtMTSDFileFormat
 
     int *fieldSampleSize;
 
-    map<string, int> fieldMap;
+    std::map<std::string, int> fieldMap;
 
     int procNum;
     int procCount;
 
-    vector<avtDataSelection_p> selList;
-    vector<bool>              *selsApplied;
+    std::vector<avtDataSelection_p> selList;
+    std::vector<bool>              *selsApplied;
 
 };
 

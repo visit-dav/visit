@@ -42,8 +42,6 @@
 
 #include <avtCylindricalRadiusExpression.h>
 
-#include <math.h>
-
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 
@@ -55,6 +53,11 @@
 
 #include <ExpressionException.h>
 #include <ImproperUseException.h>
+
+#include <math.h>
+
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtCylindricalRadiusExpression constructor
@@ -190,9 +193,9 @@ avtCylindricalRadiusExpression::ProcessArguments
     {
         ArgExpr *second_arg = (*arguments)[1];
         ExprParseTreeNode *second_tree = second_arg->GetExpr();
-        string arg_type = second_tree->GetTypeName();
+        std::string arg_type = second_tree->GetTypeName();
         
-        string error_msg = "avtCylindricalRadiusExpression: "
+        std::string error_msg = "avtCylindricalRadiusExpression: "
                            "Invalid second argument."
                            "Expected \"x\", \"y\", or \"z\"";
 
@@ -206,7 +209,7 @@ avtCylindricalRadiusExpression::ProcessArguments
         if (arg_type == "StringConst")
         {
             // string case
-            string val = dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
+            std::string val = dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
 
             if ( ! ( val == "x" || val == "y"  || val == "z"))
             {
