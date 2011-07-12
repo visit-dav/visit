@@ -18,14 +18,13 @@
 #ifndef VS_FILE_FORMAT_H
 #define VS_FILE_FORMAT_H
 
-#include <vector>
-using std::vector;
-
-
 //#include <VsH5Reader.h>
 #include <avtSTMDFileFormat.h>
 #include <hdf5.h>
 #include <visit-hdf5.h>
+
+#include <string>
+#include <vector>
 
 // Forward references to minimize compilation
 class vtkDataSet;
@@ -79,8 +78,8 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    * Get the data selections
    *
    */
-  virtual void RegisterDataSelections( const vector<avtDataSelection_p> &sels,
-                                       vector<bool> *selectionsApplied );
+  virtual void RegisterDataSelections( const std::vector<avtDataSelection_p> &sels,
+                                       std::vector<bool> *selectionsApplied );
 
   /**
    * Process the data selections
@@ -174,8 +173,8 @@ class avtVsFileFormat: public avtSTMDFileFormat {
 
   VsRegistry* registry;
 
-    vector<avtDataSelection_p> selList;
-    vector<bool>              *selsApplied;
+    std::vector<avtDataSelection_p> selList;
+    std::vector<bool>              *selsApplied;
 
   /**
    * Set the axis labels for a mesh.
@@ -206,8 +205,8 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   void RegisterExpressions(avtDatabaseMetaData* md);
 
   void GetSelectionBounds( int numTopologicalDims,
-                           vector<int> &numCells,
-                           vector<int> &gdims,
+                           std::vector<int> &numCells,
+                           std::vector<int> &gdims,
                            int *mins,
                            int *maxs,
                            int *strides,
@@ -215,7 +214,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
                            bool adjustForNodes = true );
 
   void GetParallelDecomp( int numTopologicalDims,
-                          vector<int> &dims,
+                          std::vector<int> &dims,
                           int *mins,
                           int *maxs,
                           int *strides,
