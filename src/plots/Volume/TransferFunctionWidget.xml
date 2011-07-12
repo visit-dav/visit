@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="TransferFunctionWidget" purpose="Widget for 2D transfer function" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="TransferFunctionWidget.code">
+  <Attribute name="TransferFunctionWidget" purpose="Widget for 2D transfer function" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="TransferFunctionWidget.code">
     <Enum name="WidgetType">
       Rectangle
       Triangle
