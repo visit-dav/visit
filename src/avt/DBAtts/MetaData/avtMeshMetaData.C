@@ -917,6 +917,10 @@ avtMeshMetaData::UnsetExtents()
 //  Creationist: Allen Sanderson
 //  Creation:    March 3, 2011
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jul 12 13:45:13 PDT 2011
+//    Removed cerr statement.
+//
 // ****************************************************************************
 
 void
@@ -935,7 +939,6 @@ avtMeshMetaData::SetBounds(const int *bounds)
         hasLogicalBounds = true;
         if( meshType == AVT_POINT_MESH || meshType == AVT_UNSTRUCTURED_MESH)
         {
-          cerr << endl << "Setting bounds ..............." << endl;
             logicalBounds[0] = bounds[0];
         }
         else
