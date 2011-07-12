@@ -20,7 +20,6 @@
 
 #define __CLASS__ "VsMesh::"
 
-using namespace std;
 
 VsMesh::VsMesh(VsH5Object* object):VsRegistryObject(object->registry) {
   numSpatialDims = -1;
@@ -28,7 +27,7 @@ VsMesh::VsMesh(VsH5Object* object):VsRegistryObject(object->registry) {
 
   if (!object) {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "object is null?" << endl;
+                      << "object is null?" << std::endl;
   }
   h5Object = object;
 
@@ -40,7 +39,7 @@ VsMesh::VsMesh(VsH5Object* object):VsRegistryObject(object->registry) {
 
 VsMesh::~VsMesh() {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << getFullName() << endl;
+                    << getFullName() << std::endl;
   registry->remove(this);
 }
 
@@ -64,7 +63,7 @@ void VsMesh::write() {
                     << getFullName() << "  "
                     << "Kind: " << getKind() << "  "
                     << "Index Order: " << indexOrder << "  "
-                    << "NumSpatialDims: " << numSpatialDims << endl;
+                    << "NumSpatialDims: " << numSpatialDims << std::endl;
 }
 
 size_t VsMesh::getNumSpatialDims() {
@@ -116,7 +115,7 @@ VsH5Attribute* VsMesh::getAttribute(std::string name) {
 VsMesh* VsMesh::buildObject(VsH5Dataset* dataset) {
   if (!dataset) {
     VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "dataset is null?  Returning null." << endl;
+                        << "dataset is null?  Returning null." << std::endl;
     return NULL;
   }
   
@@ -126,20 +125,20 @@ VsMesh* VsMesh::buildObject(VsH5Dataset* dataset) {
     VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Unable to find attribute " << VsSchema::kindAtt
                         << ".  Returning null for dataset: "
-                        << dataset->getFullName() << endl;
+                        << dataset->getFullName() << std::endl;
     return NULL;
   }
   
   std::string kind;
   kindAtt->getStringValue(&kind);
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Mesh dataset has kind: " <<kind << endl;
+                      << "Mesh dataset has kind: " <<kind << std::endl;
   
   if (kind == VsSchema::structuredMeshKey) {
     return VsStructuredMesh::buildStructuredMesh(dataset);
   } else {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Dataset is of unrecognized kind?" << endl;
+                      << "Dataset is of unrecognized kind?" << std::endl;
   }
     
   return NULL;
@@ -148,7 +147,7 @@ VsMesh* VsMesh::buildObject(VsH5Dataset* dataset) {
 VsMesh* VsMesh::buildObject(VsH5Group* group) {
   if (!group) {
     VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Group is null?  Returning null." << endl;
+                        << "Group is null?  Returning null." << std::endl;
     return NULL;
   }
   
@@ -158,14 +157,14 @@ VsMesh* VsMesh::buildObject(VsH5Group* group) {
     VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Unable to find attribute " << VsSchema::kindAtt
                         << ".  Returning null for group: "
-                        << group->getFullName() << endl;
+                        << group->getFullName() << std::endl;
     return NULL;
   }
   
   std::string kind;
   kindAtt->getStringValue(&kind);
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Mesh group has kind: " <<kind << endl;
+                    << "Mesh group has kind: " <<kind << std::endl;
 
   if ((kind == VsSchema::Uniform::key_deprecated) ||
       (kind == VsSchema::Uniform::key)) {
@@ -176,7 +175,7 @@ VsMesh* VsMesh::buildObject(VsH5Group* group) {
     return VsRectilinearMesh::buildRectilinearMesh(group);
   } else {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Group is of unrecognized kind?" << endl;
+                      << "Group is of unrecognized kind?" << std::endl;
   }
     
   return NULL;
@@ -184,12 +183,12 @@ VsMesh* VsMesh::buildObject(VsH5Group* group) {
 
 bool VsMesh::initializeRoot() {
   //herr_t VsMesh::initialize(VsGMeta* gm, VsMeshMeta& mm) const {
-  VsLog::debugLog() <<"VsMesh::initializeRoot() - Entering" << endl;
+  VsLog::debugLog() <<"VsMesh::initializeRoot() - Entering" << std::endl;
   
   if (!h5Object) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Failed to initialize mesh because h5Object is null."
-                      << endl;
+                      << std::endl;
     return false;
   }
 
@@ -215,13 +214,13 @@ bool VsMesh::initializeRoot() {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "IndexOrder is invalid: " << indexOrder
                       << ", using default value: " << VsSchema::compMinorCKey
-                      << endl;
+                      << std::endl;
     indexOrder = VsSchema::compMinorCKey;
   }
   
   // Done!
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Returning success" << endl;
+                    << "Returning success" << std::endl;
   return true;
 }
 
@@ -245,9 +244,10 @@ std::string VsMesh::getAxisLabel(unsigned int axis) {
     case 1: answer = "y"; break;
     case 2: answer = "z"; break;
     default:
-      VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "Requested axis  (" <<axis
-                          <<") number must be 0, 1, or 2." << endl;
+      VsLog::warningLog()
+        << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Requested axis  (" <<axis <<") number must be 0, 1, or 2."
+        << std::endl;
       break;
   }
   
