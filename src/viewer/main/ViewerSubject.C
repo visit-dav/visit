@@ -54,6 +54,7 @@
 
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h>
+#include <AnnotationObject.h>
 #include <AnnotationObjectList.h>
 #include <Appearance.h>
 #include <AppearanceAttributes.h>
@@ -6486,7 +6487,12 @@ ViewerSubject::SetDefaultAnnotationObjectList()
 // Creation:   Fri Nov 7 14:21:30 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 12 16:12:29 PDT 2011
+//   I changed this routine so we keep the legends from the current list and
+//   we add the default annotation object list to create list of objects that
+//   contains the legends and the defaults. This prevents us from losing the
+//   legends when we reset.
+//
 // ****************************************************************************
 
 void
@@ -6497,8 +6503,27 @@ ViewerSubject::ResetAnnotationObjectList()
 
     if(win != 0)
     {
+        AnnotationObjectList legendPlusDefault;
+
+        // Add the legends.
+        for(int i = 0; i < wMgr->GetAnnotationObjectList()->GetNumAnnotations(); ++i)
+        {
+            if(wMgr->GetAnnotationObjectList()->GetAnnotation(i).GetObjectType() ==
+               AnnotationObject::LegendAttributes)
+            {
+                legendPlusDefault.AddAnnotation(wMgr->GetAnnotationObjectList()->GetAnnotation(i));
+            }
+        }
+        // Add the defaults.
+        for(int i = 0; i < wMgr->GetDefaultAnnotationObjectList()->GetNumAnnotations(); ++i)
+            legendPlusDefault.AddAnnotation(wMgr->GetDefaultAnnotationObjectList()->GetAnnotation(i));
+
+        // We should add an optional bool array to CreateAnnotationObjectsFromList that
+        // lets us tell the routine whether to set the options for the newly created object.
+        // That would let us create annotation objects but not use the attributes we have 
+        // for them. The use case for that is resetting the legends to default values.
         win->DeleteAllAnnotationObjects();
-        win->CreateAnnotationObjectsFromList(*wMgr->GetDefaultAnnotationObjectList());
+        win->CreateAnnotationObjectsFromList(legendPlusDefault);
         wMgr->UpdateAnnotationObjectList();
     }
 }
