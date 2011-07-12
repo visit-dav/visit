@@ -14,14 +14,14 @@
 
 #define __CLASS__ "VsMesh::"
 
-using namespace std;
-
 
 VsMDMesh::VsMDMesh(VsMesh* firstMesh, std::string mdMeshName):
   VsRegistryObject(firstMesh->registry) {
-  //Note: MD meshes do not have a path.  Their name is exactly what is declared in the "vsMD" attribute
-  //This is because an MD mesh may be made up of meshes in different paths, and we would have to choose one over the other.
-  //So, to avoid conflicts, we just use the name as given
+  //Note: MD meshes do not have a path.  Their name is exactly what is
+  //declared in the "vsMD" attribute This is because an MD mesh may be
+  //made up of meshes in different paths, and we would have to choose
+  //one over the other.  So, to avoid conflicts, we just use the name
+  //as given
   numSpatialDims = firstMesh->getNumSpatialDims();
   indexOrder = firstMesh->getIndexOrder();
   kind = firstMesh->getKind();
@@ -40,9 +40,11 @@ void VsMDMesh::write()   {
                     << "Kind: " << kind << "  "
                     << "Index Order: " << indexOrder << "  "
                     << "NumSpatialDims: " << numSpatialDims << "  "
-                    << "Blocks:" << "  " << endl;
+                    << "Blocks:" << "  " << std::endl;
+
   for (unsigned int i = 0; i < blocks.size(); i++) {
-    VsLog::debugLog() << "Block #" << i << " = " << blocks[i]->getFullName() << endl;
+    VsLog::debugLog() << "Block #" << i << " = " << blocks[i]->getFullName()
+                      << std::endl;
   }
 }
 
@@ -52,14 +54,14 @@ bool VsMDMesh::addBlock(VsMesh* newBlock) {
                       << "Rejected new block " << newBlock->getFullName()
                       << " because indexOrder did not match - ("
                       << newBlock->getIndexOrder() << " vs "
-                      << indexOrder << ")" << endl;
+                      << indexOrder << ")" << std::endl;
     return false;
   }
   
   if (newBlock->getNumSpatialDims() != numSpatialDims) {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Rejected new block " << newBlock->getFullName()
-                    << " because numSpatialDims did not match" << endl;
+                    << " because numSpatialDims did not match" << std::endl;
     return false;
   }
   
@@ -67,7 +69,7 @@ bool VsMDMesh::addBlock(VsMesh* newBlock) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Rejected new block " << newBlock->getFullName()
                       << " because kind did not match (" << newBlock->getKind()
-                      << " vs " << kind << ")" << endl;
+                      << " vs " << kind << ")" << std::endl;
     return false;
   }
   

@@ -14,8 +14,6 @@
 
 #define __CLASS__ "VsUnstructuredMesh::"
 
-using namespace std;
-
 VsUnstructuredMesh::VsUnstructuredMesh(VsH5Group* group):VsMesh(group) {
   numPoints = 0;
   numCells = 0;
@@ -64,7 +62,7 @@ std::string VsUnstructuredMesh::getPointsDatasetName(int i)  {
 
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
                         << "Requested index (" << i << ") is out of range."
-                        << endl;
+                        << std::endl;
       return "";
   }
   
@@ -300,14 +298,14 @@ VsUnstructuredMesh* VsUnstructuredMesh::buildUnstructuredMesh(VsH5Group* group) 
   
   if (success) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
-                      << "Returning success." << endl;
+                      << "Returning success." << std::endl;
     return newMesh;
   }
 
   delete (newMesh);
   newMesh = NULL;
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
-                      << "Returning failure." << endl;
+                      << "Returning failure." << std::endl;
   return NULL;
 }
 
@@ -337,7 +335,7 @@ bool VsUnstructuredMesh::initialize() {
                       << "Path = " <<getPath() << "  "
                       << "vsPoints0 = " <<getPointsDatasetName(0) << "  "
                       << "vsPoints1 = " <<getPointsDatasetName(1) << "  "
-                      << "vsPoints2 = " <<getPointsDatasetName(2) << endl;
+                      << "vsPoints2 = " <<getPointsDatasetName(2) << std::endl;
     
     VsH5Dataset* points0 = getPointsDataset(0);
     VsH5Dataset* points1 = getPointsDataset(1);
@@ -346,7 +344,7 @@ bool VsUnstructuredMesh::initialize() {
     if (!points0) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
                       << "Unable to load points data.  Returning false."
-                      << endl;
+                      << std::endl;
       return false;
     }
     
@@ -432,7 +430,7 @@ std::string VsUnstructuredMesh::getKind() {
 void VsUnstructuredMesh::getMeshDataDims(std::vector<int>& dims)
 {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "entering" << endl;
+                    << "entering" << std::endl;
   
   // Unstructured mesh is meshDataDims is: [#points][#spatialDims]
   dims.resize(2);
@@ -449,5 +447,5 @@ void VsUnstructuredMesh::getMeshDataDims(std::vector<int>& dims)
   }
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "exiting" << endl;  
+                    << "exiting" << std::endl;  
 }

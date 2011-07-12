@@ -18,7 +18,6 @@
 
 #define __CLASS__ "VsStructuredMesh::"
 
-using namespace std;
 
 VsVariableWithMesh::VsVariableWithMesh(VsH5Dataset* data):
   VsRegistryObject(data->registry) {
@@ -144,77 +143,86 @@ void VsVariableWithMesh::write() {
       VsLog::debugLog() <<", ";
     }
   }
-  VsLog::debugLog() <<"]" << endl;
+  VsLog::debugLog() <<"]" << std::endl;
 }
 
 bool VsVariableWithMesh::initialize() {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << " entering." << endl;
+                    << " entering." << std::endl;
 
   //We have two ways of specifying information for varWithMesh:
-  // 1. VsSpatialIndices indicates which columns contain spatial data (synergia style)
-  // 2. Spatial information is in the first "vsNumSpatialDims" columns (regular style)
-  
-  //we start with synergia style, and drop through to regular style on any errors
+  // 1. VsSpatialIndices indicates which columns contain spatial data
+  // (synergia style)
+  // 2. Spatial information is in the first "vsNumSpatialDims" columns
+  // (regular style)
+  //we start with synergia style, and drop through to regular style on
+  //any errors
   bool numDimsSet = false;
   
   VsH5Attribute* spatialIndicesAtt = getAttribute(VsSchema::spatialIndicesAtt);
   if (spatialIndicesAtt) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "found spatialIndices, trying synergia style" << endl;
+                      << "found spatialIndices, trying synergia style"
+                      << std::endl;
+
     std::vector<int> in;
     herr_t err = spatialIndicesAtt->getIntVectorValue(&in);
     if (!err) {
       numDimsSet = true;
       this->spatialIndices = in;
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Saved attribute in vm" << endl;
+                      << "Saved attribute in vm" << std::endl;
     }
   }
 
-  //NOTE: We load indexOrder regardless of whether we're in synergia style or not
+  //NOTE: We load indexOrder regardless of whether we're in synergia
+  //style or not
   VsH5Attribute* indexOrderAtt = getAttribute(VsSchema::indexOrderAtt);
   if (indexOrderAtt) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "found indexOrder." << endl;
+                      << "found indexOrder." << std::endl;
     herr_t err = indexOrderAtt->getStringValue(&(this->indexOrder));
     if (err < 0) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << getFullName()
                         << "' error getting optional attribute '"
-                        << VsSchema::indexOrderAtt << "'." << endl;
+                        << VsSchema::indexOrderAtt << "'." << std::endl;
     }
   }
       
-  //we tried and failed to load spatialIndices synergia style
-  //so we drop back into the default - get the number of spatial dimensions
-  //We then construct a spatialIndices array containing [0, 1, ..., numSpatialDims - 1]
-  //So for a 3-d mesh we have [0, 1, 2]
+  //we tried and failed to load spatialIndices synergia style so we
+  //drop back into the default - get the number of spatial dimensions
+  //We then construct a spatialIndices array containing [0, 1, ...,
+  //numSpatialDims - 1] So for a 3-d mesh we have [0, 1, 2]
   if (!numDimsSet) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "did not find spatialIndices, trying regular style."
-                        << endl;
+                        << std::endl;
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Looking for attribute: "
-                        << VsSchema::numSpatialDimsAtt << endl;
+                        << VsSchema::numSpatialDimsAtt << std::endl;
 
     VsH5Attribute* numDimsAtt = getAttribute(VsSchema::numSpatialDimsAtt);
     if (!numDimsAtt) {
 
-      VsLog::warningLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "Did not find attribute: "
-                          << VsSchema::numSpatialDimsAtt << "  "
-                          << "Looking for deprecated attribute: "
-                          << VsSchema::numSpatialDimsAtt_deprecated << endl;
+      VsLog::warningLog()
+        << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Did not find attribute: "
+        << VsSchema::numSpatialDimsAtt << "  "
+        << "Looking for deprecated attribute: "
+        << VsSchema::numSpatialDimsAtt_deprecated << std::endl;
+
       numDimsAtt = getAttribute(VsSchema::numSpatialDimsAtt_deprecated);
     }
     if (numDimsAtt) {
       std::vector<int> in;
       herr_t err = numDimsAtt->getIntVectorValue(&in);
       if (err < 0) {
-        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << getFullName() << " does not have attribute "
-                          << VsSchema::numSpatialDimsAtt << "." << endl;
+        VsLog::debugLog()
+          << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+          << getFullName() << " does not have attribute "
+          << VsSchema::numSpatialDimsAtt << "." << std::endl;
+
         return false;
       }
       int numSpatialDims = in[0];
@@ -228,11 +236,11 @@ bool VsVariableWithMesh::initialize() {
       numDimsSet = true;
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "numSpatialDims = " << this->getNumSpatialDims() << "."
-                        << endl;
+                        << std::endl;
     } else {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Did not find deprecated attribute either: "
-                        << VsSchema::numSpatialDimsAtt_deprecated << endl;
+                        << VsSchema::numSpatialDimsAtt_deprecated << std::endl;
     }
   }
   
@@ -240,7 +248,7 @@ bool VsVariableWithMesh::initialize() {
   if (!numDimsSet) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Unable to determine spatial dimensions for var "
-                      << getFullName() << endl;
+                      << getFullName() << std::endl;
     return false;
   }
 
@@ -290,7 +298,7 @@ size_t VsVariableWithMesh::getNumComps() {
   std::vector<int> dims = getDims();
   if (dims.size() <= 0) {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Unable to get dimensions of variable?" << endl;
+                      << "Unable to get dimensions of variable?" << std::endl;
     return 0;
   }
 
@@ -304,7 +312,7 @@ size_t VsVariableWithMesh::getNumComps() {
 
 void VsVariableWithMesh::createComponents() {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Entering" << endl;
+                    << "Entering" << std::endl;
   
   size_t numComps = getNumComps();
   
@@ -313,5 +321,5 @@ void VsVariableWithMesh::createComponents() {
   }
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Returning" << endl;
+                    << "Returning" << std::endl;
 }
