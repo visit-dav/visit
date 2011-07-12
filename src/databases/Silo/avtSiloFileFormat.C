@@ -126,6 +126,7 @@ using std::vector;
 using std::ostringstream;
 using namespace SiloDBOptions;
 
+
 static void      ExceptionGenerator(char *);
 static char     *GenerateName(const char *, const char *, const char *);
 static string    PrepareDirName(const char *, const char *);
