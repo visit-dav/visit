@@ -112,6 +112,10 @@ public:
     const float       *GetPosition() const;
           float       *GetPosition();
 
+    // Persistence methods
+    virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
+    virtual void SetFromNode(DataNode *node);
+
     // Enum conversion functions
     static std::string WidgetType_ToString(WidgetType);
     static bool WidgetType_FromString(const std::string &, WidgetType &);
