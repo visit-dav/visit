@@ -551,6 +551,9 @@ ViewerWindowManager::SetGeometry(const char *windowGeometry)
 //    Brad Whitlock, Thu Jan 13 22:56:32 PST 2011
 //    I applied Cyrus' suggested fix for copying the sources. Looks good.
 //
+//    Gunther H. Weber, Fri Jul 15 16:54:05 PDT 2011
+//    Make cloned window same size as original window.
+//
 // ****************************************************************************
 
 void
@@ -577,11 +580,15 @@ ViewerWindowManager::AddWindow(bool copyAtts)
         ViewerWindow *src = windows[activeWindow];
         if (copyAtts || clientAtts->GetCloneWindowOnFirstRef())
         {
+            int w, h;
+            src->GetWindowSize(w, h);
+            dest->SetWindowSize(w,h);
+
             dest->CopyGeneralAttributes(src);
             dest->CopyAnnotationAttributes(src);
             dest->CopyLightList(src);
             dest->CopyViewAttributes(src);
-        
+
             StringStringMap nameMap = dest->GetPlotList()->CopyFrom(src->
                 GetPlotList(), true);
             dest->GetActionManager()->CopyFrom(src->GetActionManager());

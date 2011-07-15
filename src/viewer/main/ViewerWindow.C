@@ -565,7 +565,7 @@ ViewerWindow::GetWindowId() const
 //  Method: ViewerWindow::SetSize
 //
 //  Purpose: 
-//    Set the size of the window.
+//    Set the size of the renderable poriton of the window.
 //
 //  Arguments:
 //    width     The width of the window in pixels.
@@ -601,6 +601,27 @@ void
 ViewerWindow::GetSize(int &width, int &height)
 {
     visWindow->GetSize(width, height);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetWindowSize
+//
+// Purpose: 
+//   Set the size of the window.
+//
+// Arguments:
+//   width     The width of the window in pixels.
+//   height    The height of the window in pixels.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Fri Jul 15 13:58:45 PDT 2011
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetWindowSize(int width, int height)
+{
+    visWindow->SetWindowSize(width, height);
 }
 
 // ****************************************************************************

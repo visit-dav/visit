@@ -204,6 +204,9 @@ class VisWindowColleagueProxy;
 //    Dave Pugmire, Tue Aug 24 11:29:43 EDT 2010
 //    Add compact domains options.
 //
+//    Gunther H. Weber, Fri Jul 15 13:51:35 PDT 2011
+//    Add SetWindowSize().
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -254,6 +257,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     void                     SetSize(int, int);
     void                     GetSize(int&, int&);
+    virtual void             SetWindowSize(int, int);
     virtual void             GetWindowSize(int&, int&);
     void                     SetLocation(int, int);
     void                     GetLocation(int&, int&);

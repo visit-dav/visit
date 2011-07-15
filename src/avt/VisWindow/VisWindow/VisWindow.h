@@ -428,6 +428,9 @@ class VisitInteractor;
 //    Hank Childs, Fri Aug 27 15:27:25 PDT 2010
 //    Add explicit data members for 3D axis scaling.
 //
+//    Gunther H. Weber, Fri Jul 15 14:10:14 PDT 2011
+//    Added SetWindowSize().
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -462,6 +465,7 @@ public:
 
     void                 SetSize(int, int);
     void                 GetSize(int &, int &) const;
+    void                 SetWindowSize(int, int);
     void                 GetWindowSize(int &, int &) const;
     void                 GetCaptureRegion(int &, int &, int &, int &, bool);
     void                 SetLocation(int, int);
