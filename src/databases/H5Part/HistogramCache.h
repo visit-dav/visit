@@ -87,15 +87,15 @@ private:
             if( spec1->GetConditionExact() != spec2->GetConditionExact() )
                   return false;
             //Check the condition
-            string                c1   = spec1->GetCondition();
-            string                c2   = spec2->GetCondition();
+            std::string                c1   = spec1->GetCondition();
+            std::string                c2   = spec2->GetCondition();
             if( c1.compare(c2)!=0)
                   return false;
             //Check variables and numbre of bins
-            const vector<string>& var1 = spec1->GetVariables();
-            const vector<string>& var2 = spec2->GetVariables();
-            const vector<int>&    nb1  = spec1->GetNumberOfBins();
-            const vector<int>&    nb2  = spec2->GetNumberOfBins();
+            const std::vector<std::string>& var1 = spec1->GetVariables();
+            const std::vector<std::string>& var2 = spec2->GetVariables();
+            const std::vector<int>&    nb1  = spec1->GetNumberOfBins();
+            const std::vector<int>&    nb2  = spec2->GetNumberOfBins();
             for(unsigned int i=0 ; i<var1.size() ; ++i) {
                   if( var1[i].compare(var2[i]) != 0 )
                         return false;
@@ -105,8 +105,8 @@ private:
             
             //Test if the bounds are the same if specified
             if( spec1->BoundsSpecified() && spec2->BoundsSpecified() ){
-                  vector< vector<double> >& bounds1 = spec1->GetBounds();
-                  vector< vector<double> >& bounds2 = spec2->GetBounds();
+                  std::vector< std::vector<double> >& bounds1 = spec1->GetBounds();
+                  std::vector< std::vector<double> >& bounds2 = spec2->GetBounds();
                   for( unsigned int i=0 ; i<bounds1.size() ; ++i){
                         for( unsigned int j=0 ; j<bounds1[i].size() ; ++j){
                               if( bounds1[i][j] != bounds2[i][j] )
@@ -121,7 +121,7 @@ private:
       }
       
       int mMaxCacheSize;
-      vector<avtHistogramSpecification*> mCachedHistograms;
+      std::vector<avtHistogramSpecification*> mCachedHistograms;
 };
 
 

@@ -1839,10 +1839,10 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
     // Compute the hisogram
     int             timestep = spec->GetTimestep();
     bool      regularBinning = spec->IsRegularBinning();
-    vector<string> variables = spec->GetVariables();
-    vector<int>      numBins = spec->GetNumberOfBins();
+    std::vector<std::string> variables = spec->GetVariables();
+    std::vector<int>      numBins = spec->GetNumberOfBins();
     bool     boundsSpecified = spec->BoundsSpecified();
-    string         condition = spec->GetCondition();   
+    std::string         condition = spec->GetCondition();   
 
     int           boundsSize = spec->GetBounds().size();
     VISIT_LONG_LONG * counts = spec->GetCounts();
@@ -1906,8 +1906,8 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
     }  
 
     // Define the begin and end 
-    vector<double> begins;
-    vector<double> ends;
+    std::vector<double> begins;
+    std::vector<double> ends;
     begins.resize(variables.size());
     ends.resize(variables.size());
 
@@ -1935,7 +1935,7 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
 #endif
         for(int i=0; i<variables.size() ; i++)
         {
-            vector<int64_t> dims;
+            std::vector<int64_t> dims;
             BaseFileInterface::DataType type;
             reader.getVariableInformation(variables[i], timestep, dims, &type);
 
@@ -1989,7 +1989,7 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
     {
         if (variables.size()==1)
         {
-            vector<uint32_t> count;
+            std::vector<uint32_t> count;
 
             debug5 << "Asking reader for 1D histogram for timestep " << timestep;
             debug5 << " condition " << condition << " variables " << variables[0];
@@ -2017,7 +2017,7 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
         }
         else if (variables.size()==2)
         {
-            vector<uint32_t> count;
+            std::vector<uint32_t> count;
             double begin1 = begins[0];
             double end1 = ends[0];
 
@@ -2185,7 +2185,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
             debug5 << method << " Named Selection found"  << endl;
 
             avtIdentifierSelection *id = (avtIdentifierSelection*)drs[i];
-            const vector<double>& ids = id->GetIdentifiers();
+            const std::vector<double>& ids = id->GetIdentifiers();
 
             if (ids.size()>0)
             {
@@ -2314,7 +2314,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
 // ****************************************************************************
 
 void avtH5PartFileFormat::ConstructIdQueryString(
-        const vector<double>& identifiers, string& id_string)
+        const std::vector<double>& identifiers, std::string& id_string)
 {
     int t1 = visitTimer->StartTimer();
 
