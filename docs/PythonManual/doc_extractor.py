@@ -808,6 +808,19 @@ print >> output_fh, \
 \\usepackage{longtable}
 \\usepackage[colorlinks=true, linkcolor=blue]{hyperref}
 
+\\topmargin=20pt
+\\marginparwidth=10pt
+\\oddsidemargin=10pt
+\\marginparsep=0pt
+\\textwidth=450pt
+\\textheight=630pt
+
+\\usepackage{fancyhdr}
+\\setlength{\\headheight}{15.2pt}
+\\pagestyle{fancy}
+\\renewcommand{\\headrulewidth}{0.5pt}
+\\renewcommand{\\footrulewidth}{0.5pt}
+
 \\begin{document}
 \\begin{titlepage}
 \\begin{center}

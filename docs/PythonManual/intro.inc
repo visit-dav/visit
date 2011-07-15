@@ -1,4 +1,5 @@
 \chapter{Introduction to VisIt}
+
 \section{Overview}
 
 VisIt is a distributed, parallel, visualization tool for visualizing data defined on two and 
@@ -8,7 +9,7 @@ acceleration hardware of a local workstation. Another benefit of the distributed
 architecture is that VisIt can visualize the data where it is generated, eliminating the need 
 to move data. VisIt can be controlled by a Graphical User Interface (GUI) or through the 
 Python scripting language. More information about VisIt’s Graphical User Interface can 
-be found in the {\it VisIt User’s Manual}.
+be found in the {\it VisIt User's Manual}.
 
 \section{Manual chapters}
 
@@ -82,7 +83,28 @@ Python scripts.
 
 You can invoke VisIt’s command line interface from the command line by typing:
 \begin{verbatim}
-visit-cli 
+visit -cli 
+\end{verbatim}
+
+VisIt provides a separate Python module if you instead wish to include VisIt functions in an existing Python script. In that case, you must first import the VisIt module into Python and then call the Launch() function to make VisIt launch and dynamically load the rest of the VisIt functions into the Python namespace. VisIt adopts this somewhat unusual approach to module loading since the lightweight ``visit" front-end module can be installed as one of your Python's site packages yet still dynamically load the real control functions from different versions of VisIt selected by the user.
+
+If you do not install the visit.so module as a Python site package, you can tell the Python interpreter where it is located by appending a new path to the sys.path variable. Be sure to substitute the correct path to visit.so on your system.
+
+\begin{verbatim}
+import sys
+sys.path.append("/path/to/visit/<version>/<architecture>/lib")
+\end{verbatim}
+
+Here is how to import all functions into the global Python namespace:
+\begin{verbatim}
+from visit import *
+Launch()
+\end{verbatim}
+
+Here is how to import all functions into a ``visit" module namespace:
+\begin{verbatim}
+import visit
+visit.Launch()
 \end{verbatim}
 
 \section{Getting started}

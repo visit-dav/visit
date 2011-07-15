@@ -1,4 +1,5 @@
 \chapter{Python}
+
 \section{Overview}
 Python is a general purpose, interpreted, extensible, object-oriented scripting language 
 that was chosen for VisIt's scripting language due to its ease of use and flexibility. VisIt’s 
@@ -80,7 +81,7 @@ enclosing a comma-separated list of objects in parenthesis.
 # Create a tuple 
 a = (1,2,3,4,5) 
 print "The first value in a is:", a[0] 
-# See if 3 is in a using the “in” operator. 
+# See if 3 is in a using the "in" operator. 
 print "3 is in a:", 3 in a 
 # Create another tuple and add it to the first one to create c. 
 b = (6,7,8,9) 
@@ -167,15 +168,15 @@ reference the current item.
 
 \begin{verbatim}
 # Iterating through the characters of a string 
-for c in “characters”: 
+for c in "characters": 
    print c 
 
 # Iterating through a tuple 
-for value in (“VisIt”, “is”, “coolness”, “times”, 100): 
+for value in ("VisIt", "is", "coolness", "times", 100): 
    print value 
 
 # Iterating through a list 
-for value in [“VisIt”, “is”, “coolness”, “times”, 100): 
+for value in ["VisIt", "is", "coolness", "times", 100]: 
    print value 
 
 # Iterating through a range of numbers [0,N) created with range(N). 
@@ -185,7 +186,7 @@ for i in range(N):
 \end{verbatim}
 
 \subsection{While loop}
-Python provides a while loop that allows you to execute a loop body indefinitelfibasefion 
+Python provides a while loop that allows you to execute a loop body indefinitely based on 
 some condition. The while loop can be used for iteration but can also be used to execute 
 more complex types of loops. 
 
