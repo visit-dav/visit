@@ -1332,7 +1332,7 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p capturedImage,
 //  Method: VisWinRendering::SetSize
 //
 //  Purpose:
-//      Sets the size of the window.
+//      Sets the size of the renderable portion of the window.
 //
 //  Arguments:
 //      w       The desired width (in pixels) of the vis window.
@@ -1365,6 +1365,28 @@ VisWinRendering::SetSize(int w, int h)
 }
 
 // ****************************************************************************
+// Method: VisWinRendering::SetWindowSize
+//
+// Purpose: 
+//      Sets the size of the renderable portion of the window.
+//
+//  Arguments:
+//      w       The desired width (in pixels) of the vis window.
+//      h       The desired height (in pixels) of the vis window.
+//
+// Programmer: Gunther H. Weber
+// Creation:   July 15, 2011
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetWindowSize(int w, int h)
+{
+   SetSize(w,h);
+   Render();
+}
+
+// ****************************************************************************
 // Method: VisWinRendering::IsDirect
 //
 // Purpose: 
@@ -1386,7 +1408,7 @@ VisWinRendering::IsDirect(void)
 // Method: VisWinRendering::GetSize
 //
 // Purpose: 
-//   Returns the size of the renderable portion of thewindow.
+//   Returns the size of the renderable portion of the window.
 //
 // Arguments:
 //   w : A reference to an int that is used to return the window width.

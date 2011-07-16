@@ -18,12 +18,12 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_FILTERS ON)
 ##
 ## Specify the location of Mesa.
 ##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
 
 ##
 ## Specify the location of VTK.
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0g/${VISITARCH}/lib/vtk-5.0/)
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0i/${VISITARCH}/lib/vtk-5.0/)
 
 ##
 ## Specify the Qt4 binary dir. 
@@ -50,7 +50,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-fno-common -fexceptions -fvisibility=hidd
 VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS "-D_REENTRANT -DOMPI_SKIP_MPICXX")
 VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-D_REENTRANT -DOMPI_SKIP_MPICXX")
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup")
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS "-Wl,-u,_munmap -Wl,-multiply_defined,suppress -lmpi -lopen-rte -lopen-pal -lutil")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS "-Wl,-u,_munmap -Wl,-multiply_defined,suppress /usr/lib/libmpi.dylib /usr/lib/libopen-rte.dylib /usr/lib/libopen-pal.dylib /usr/lib/libutil.dylib")
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 
 ##############################################################
@@ -62,7 +62,7 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/2010.10.01/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/2011.04.28/${VISITARCH})
 
 ##
 ## FastBit
