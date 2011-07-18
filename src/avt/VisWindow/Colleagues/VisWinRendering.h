@@ -207,6 +207,9 @@ class VisWindowColleagueProxy;
 //    Gunther H. Weber, Fri Jul 15 13:51:35 PDT 2011
 //    Add SetWindowSize().
 //
+//    Gunther H. Weber, Mon Jul 18 16:18:04 PDT 2011
+//    Add ActivateWindow().
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -268,6 +271,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     virtual void             Hide() = 0;
     virtual void             Raise() = 0;
     virtual void             Lower() = 0;
+    virtual void             ActivateWindow() = 0;
     virtual bool             IsVisible() const { return true; };
 
     bool                     GetRealized() {return realized;};
