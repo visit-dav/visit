@@ -4511,6 +4511,10 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 //    Brad Whitlock, Fri Aug 13 16:38:06 PDT 2010
 //    Fix legend names.
 //
+//    Gunther H. Weber, Mon Jul 18 16:27:41 PDT 2011
+//    Activate window before raising it (otherwise MacOS will only
+//    raise the window briefly.
+//
 // ****************************************************************************
 
 void
@@ -4573,7 +4577,7 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
             dest->GetPlotList()->CopyFrom(src->GetPlotList(), false);
         }
     }
-    
+
     referenced[winIndex] = true;
 
     //
@@ -4583,6 +4587,9 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
 
     // Deiconify the activated window.
     windows[activeWindow]->DeIconify();
+ 
+    // Activate window in windowing system
+    windows[activeWindow]->ActivateWindow();
 
     // Raise the activated window.
     windows[activeWindow]->Raise();

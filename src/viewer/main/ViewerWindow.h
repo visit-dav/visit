@@ -469,6 +469,9 @@ class ViewerToolbar;
 //    Gunther H. Weber, Fri Jul 15 14:05:29 PDT 2011
 //    Added SetWindowSize.
 //
+//    Gunther H. Weber, Mon Jul 18 16:23:06 PDT 2011
+//    Added ActivateWindow.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -633,6 +636,7 @@ public:
     void Hide();
     void Raise();
     void Lower();
+    void ActivateWindow();
     bool GetRealized();
     void SetVisible(bool);
     bool IsVisible() const;
