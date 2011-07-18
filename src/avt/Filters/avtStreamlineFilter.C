@@ -1136,6 +1136,10 @@ avtStreamlineFilter::GenerateSeedPointsFromLine(std::vector<avtVector> &pts)
 //   Dave Pugmire, Wed Jun 23 16:44:36 EDT 2010
 //   Fix the centering.
 //
+//   Hank Childs, Sun Jul 17 17:02:36 PDT 2011
+//   Space the distance in the Y direction based on the second sample distance
+//   (we were doubling up the distance for the X-direction).
+//
 // ****************************************************************************
 
 void
@@ -1152,9 +1156,9 @@ avtStreamlineFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
                                                           X0, Y0, Z0, C0);
     
     float x0 = -(sampleDistance[0]/2.0);
-    float y0 = -(sampleDistance[0]/2.0);
+    float y0 = -(sampleDistance[1]/2.0);
     float x1 = (sampleDistance[0]/2.0);
-    float y1 = (sampleDistance[0]/2.0);
+    float y1 = (sampleDistance[1]/2.0);
 
     if (randomSamples)
     {

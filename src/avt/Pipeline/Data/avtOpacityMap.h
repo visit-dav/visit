@@ -140,6 +140,11 @@ class PIPELINE_API avtOpacityMap
 //    Hank Childs, Tue Feb 27 20:55:30 PST 2001
 //    Fix error in casting.
 //
+//    Hank Childs, Sun Jul 17 16:56:52 PDT 2011
+//    If the true data range is _really_ large, and the user set data range is
+//    small, then you can get overflows.  Set explicit checks for min and max,
+//    to prevent misclassification in the case of overflows.
+//
 // ****************************************************************************
 
 inline int
@@ -147,6 +152,14 @@ avtOpacityMap::Quantize(const double &val)
 {
     int index = (int) ((val-min)*multiplier); 
 
+    // This should be handled by the logic below ... but if we have
+    // a large range for the variable, but the user set's a narrow range
+    // of min/max, then we can have overflows that lead to bad pictures.
+    if (val < min)
+        return 0;
+    if (val > max)
+        return tableEntries-1;
+   
     //
     // The normal case -- what we calculated was in the range.
     //
