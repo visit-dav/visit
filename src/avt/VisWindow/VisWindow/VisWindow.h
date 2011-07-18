@@ -431,6 +431,9 @@ class VisitInteractor;
 //    Gunther H. Weber, Fri Jul 15 14:10:14 PDT 2011
 //    Added SetWindowSize().
 //
+//    Gunther H. Weber, Mon Jul 18 16:20:47 PDT 2011
+//    Qdded ActivateWindow().
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -492,6 +495,7 @@ public:
     void                 Hide();
     void                 Raise();
     void                 Lower();
+    void                 ActivateWindow();
     bool                 GetRealized();
     bool                 IsVisible() const;
 

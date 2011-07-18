@@ -3808,10 +3808,10 @@ ViewerWindow::Raise()
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::Raise
+// Method: ViewerWindow::Lower
 //
 // Purpose: 
-//   Raises the window.
+//   Lowers the window.
 //
 // Programmer: Sean Ahern
 // Creation:   Mon May 20 13:27:10 PDT 2002
@@ -3822,6 +3822,23 @@ void
 ViewerWindow::Lower()
 {
     visWindow->Lower();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::ActivateWindow
+//
+// Purpose: 
+//   Activates the window.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Mon Jul 18 16:22:41 PDT 2011
+//
+// ****************************************************************************
+
+void
+ViewerWindow::ActivateWindow()
+{
+    visWindow->ActivateWindow();
 }
 
 // ****************************************************************************

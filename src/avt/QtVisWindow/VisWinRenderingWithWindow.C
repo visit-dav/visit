@@ -280,6 +280,28 @@ VisWinRenderingWithWindow::Lower()
 }
 
 // ****************************************************************************
+//  Method: VisWinRenderingWithWindow::ActivateWindow
+//
+//  Purpose: 
+//      Activates the window.
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   Mon Jul 18 16:16:16 PDT 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+VisWinRenderingWithWindow::ActivateWindow()
+{
+    if (realized)
+    {
+        renWin->activateWindow();
+    }
+}
+
+
+// ****************************************************************************
 //  Method: VisWinRenderingWithWindow::Hide
 //
 //  Purpose: 

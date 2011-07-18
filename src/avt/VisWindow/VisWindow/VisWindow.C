@@ -1747,6 +1747,25 @@ VisWindow::Lower()
 }
 
 // ****************************************************************************
+// Method: VisWindow::ActivateWindow
+//
+// Purpose: 
+//   Activates the render window.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Mon Jul 18 16:20:29 PDT 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::ActivateWindow()
+{
+    rendering->ActivateWindow();
+}
+
+// ****************************************************************************
 // Method: VisWindow::Hide
 //
 // Purpose: 

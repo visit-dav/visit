@@ -88,6 +88,9 @@ class     vtkQtRenderWindowInteractor;
 //    Brad Whitlock, Mon Aug 18 14:44:46 PDT 2008
 //    Pass in the vtkQtRenderWindow that we'll be using.
 //
+//    Gunther H. Weber, Mon Jul 18 16:14:56 PDT 2011
+//    Added ActivateWindow method
+//
 // ****************************************************************************
 
 class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
@@ -106,6 +109,7 @@ class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
     virtual void                       Hide(void);
     virtual void                       Raise(void);
     virtual void                       Lower(void);
+    virtual void                       ActivateWindow(void);
     virtual bool                       IsVisible() const;
 
     virtual void                       SetResizeEvent(void(*callback)(void *), void *);

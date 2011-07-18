@@ -69,6 +69,9 @@ class     vtkRenderWindow;
 //      Tom Fogal, Wed Dec  9 15:44:56 MST 2009
 //      Define RealizeRenderWindow.
 //
+//      Gunther H. Weber, Mon Jul 18 16:18:35 PDT 2011
+//      Add ActivateWindow.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRenderingWithoutWindow : public VisWinRendering
@@ -84,6 +87,7 @@ class VISWINDOW_API VisWinRenderingWithoutWindow : public VisWinRendering
     virtual void                       Hide(void) {;};
     virtual void                       Raise(void) {;};
     virtual void                       Lower(void) {;};
+    virtual void                       ActivateWindow(void) {;};
 
     virtual void                       SetResizeEvent(void(*callback)(void *), void *){;};
     virtual void                       SetCloseCallback(void(*callback)(void *), void *)
