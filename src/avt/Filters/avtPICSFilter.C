@@ -1378,6 +1378,11 @@ avtPICSFilter::InitializeLocators(void)
 //  Programmer: David Camp
 //  Creation:   August 25, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jul 11 10:52:56 PDT 2011  
+//    Fix dangling pointer.
+//
 // ****************************************************************************
 
 void
@@ -1388,8 +1393,11 @@ avtPICSFilter::ReleaseData(void)
 
     for (int i = 0; i < dataSets.size(); i++)
     {
-        if(dataSets[i])
+        if (dataSets[i] != NULL)
+        {
             dataSets[i]->UnRegister(NULL);
+            dataSets[i] = NULL;
+        }
     }
 }
 
