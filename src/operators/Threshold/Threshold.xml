@@ -6,6 +6,10 @@
     <Attribute name="ThresholdAttributes" purpose="This class contains attributes for the threshold operator." persistent="true" exportAPI="" exportInclude="" codefile="Threshold.code" baseClass="ThresholdOpAttributes">
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
+      <Function name="CreateNode" user="false" member="true">
+      </Function>
+      <Function name="SetFromNode" user="false" member="true">
+      </Function>
       <Function name="ThresholdViewerPluginInfo::InitializeOperatorAtts" user="false" member="true">
       </Function>
       <Include file="header" quoted="false">

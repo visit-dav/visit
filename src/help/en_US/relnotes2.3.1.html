@@ -21,14 +21,15 @@ list of changes in release 2.3.</p>
 <li>When ray-casted volume rendering, data with a large true range, but a 
 small user-specified range, could result with incorrect pictures, due
 to overflows.</li>
-<li>A memory corruption in the streamline was fixed.  This problem would occur
-on repeated uses of the streamline plot.</li>
+<li>A memory corruption error in the Streamline plot was fixed.  This problem would occur
+on repeated uses of the Streamline plot.</li>
 <li>The plane seeding style for the Streamline plot
 was incorrectly being processed, resulting in all planes being square.  
 Rectangular planes are now correctly implemented.</li>
 <li>The path that is passed to Libsim's <i>VisItSetDirectory()</i> function is no longer ignored on Windows. This lets you specify the directory where VisIt is located instead of having Libsim locate the directory for the newest version of VisIt.</li>
 <li>2D transfer functions for the Volume plot now get saved to session files.</li>
 <li>Clicking the Reset button in the Annotation Window no longer causes VisIt to lose track of its legend annotation objects.</li>
+<li>The Threshold operator was not saving its attributes to session files.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.3.1</font></b></p>

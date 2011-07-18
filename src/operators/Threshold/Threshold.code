@@ -78,6 +78,133 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
+Function: CreateNode
+Declaration: virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
+Definition:
+// ****************************************************************************
+// Method: ThresholdAttributes::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can be saved to a config file.
+//
+// Note:       Copied from ThresholdOpAttributes in common/state.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    ThresholdOpAttributes defaultObject;
+    bool addToParent = false;
+    // Create a node for ThresholdOpAttributes.
+    DataNode *node = new DataNode("ThresholdAttributes");
+
+    if(completeSave || !FieldsEqual(ID_outputMeshType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("outputMeshType", outputMeshType));
+    }
+
+    if(completeSave || !FieldsEqual(ID_listedVarNames, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("listedVarNames", listedVarNames));
+    }
+
+    if(completeSave || !FieldsEqual(ID_zonePortions, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("zonePortions", zonePortions));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lowerBounds, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lowerBounds", lowerBounds));
+    }
+
+    if(completeSave || !FieldsEqual(ID_upperBounds, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("upperBounds", upperBounds));
+    }
+
+    if(completeSave || !FieldsEqual(ID_defaultVarName, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultVarName", defaultVarName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_defaultVarIsScalar, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultVarIsScalar", defaultVarIsScalar));
+    }
+
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+
+Function: SetFromNode
+Declaration: virtual void SetFromNode(DataNode *node);
+Definition:
+// ****************************************************************************
+// Method: ThresholdAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode representation of the object.
+//
+// Note:       Copied from ThresholdOpAttributes in common/state.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ThresholdAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ThresholdAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("outputMeshType")) != 0)
+        SetOutputMeshType(node->AsInt());
+    if((node = searchNode->GetNode("listedVarNames")) != 0)
+        SetListedVarNames(node->AsStringVector());
+    if((node = searchNode->GetNode("zonePortions")) != 0)
+        SetZonePortions(node->AsIntVector());
+    if((node = searchNode->GetNode("lowerBounds")) != 0)
+        SetLowerBounds(node->AsDoubleVector());
+    if((node = searchNode->GetNode("upperBounds")) != 0)
+        SetUpperBounds(node->AsDoubleVector());
+    if((node = searchNode->GetNode("defaultVarName")) != 0)
+        SetDefaultVarName(node->AsString());
+    if((node = searchNode->GetNode("defaultVarIsScalar")) != 0)
+        SetDefaultVarIsScalar(node->AsBool());
+}
+
 
 Target: xml2info
 Function: ThresholdViewerPluginInfo::InitializeOperatorAtts
