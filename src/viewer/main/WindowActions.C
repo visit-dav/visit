@@ -557,6 +557,7 @@ void
 SetActiveWindowAction::Setup()
 {
     args.SetWindowId(window->GetWindowId() + 1);
+    args.SetBoolFlag(true);
 }
 
 // ****************************************************************************
@@ -576,7 +577,8 @@ void
 SetActiveWindowAction::Execute()
 {
     int id = args.GetWindowId();
-    windowMgr->SetActiveWindow(id);
+    bool raiseWindow = args.GetBoolFlag();
+    windowMgr->SetActiveWindow(id, raiseWindow);
 }
 
 // ****************************************************************************
