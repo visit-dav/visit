@@ -213,7 +213,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
                            bool haveDataSelections,
                            bool isNodal = true );
 
-  void GetParallelDecomp( int numTopologicalDims,
+  bool GetParallelDecomp( int numTopologicalDims,
                           std::vector<int> &dims,
                           int *mins,
                           int *maxs,

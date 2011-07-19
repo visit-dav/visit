@@ -54,8 +54,8 @@
 
 #include <avtVsFileFormat.h>
 
-//#define PARALLEL 1
-//#define VIZSCHEMA_DECOMPOSE_DOMAINS 1
+#define PARALLEL 1
+#define VIZSCHEMA_DECOMPOSE_DOMAINS 1
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
 #include <avtParallel.h>
@@ -625,7 +625,8 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides );
+    if( !GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides ) )
+      return NULL; // No work for this processor.
 
     haveDataSelections = 1;
 #endif
@@ -784,7 +785,8 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides );
+    if( !GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides ) )
+      return NULL; // No work for this processor.
 
     haveDataSelections = 1;
 #endif
@@ -1046,7 +1048,8 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides );
+    if( !GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides ) )
+      return NULL; // No work for this processor.
 
     haveDataSelections = 1;
 #endif
@@ -1893,7 +1896,8 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
                         mins, maxs, strides, haveDataSelections, false );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    GetParallelDecomp( 1, gdims, mins, maxs, strides, 0 );
+    if( !GetParallelDecomp( 1, gdims, mins, maxs, strides, 0 ) )
+      return NULL; // No work for this processor.
 
     haveDataSelections = 1;
 #endif
@@ -2473,8 +2477,9 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     if (parallelRead)
     {
-      GetParallelDecomp( numTopologicalDims, vdims, mins, maxs, strides,
-                         (isZonal ? 0 : 1) );
+      if( !GetParallelDecomp( numTopologicalDims, vdims, mins, maxs, strides,
+                              !isZonal ) )
+        return NULL; // No work for this processor.
 
       haveDataSelections = 1;
     }
@@ -3960,14 +3965,22 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
         if( maxs[i] < mins[i] )
           mins[i] = 0;
 
-        if( isNodal && strides[i] )
+        if( strides[i] > 1 )
         {
-          int lastNode =
-            mins[i] + ((maxs[i] - mins[i]) / strides[i]) * strides[i];
-
-          // Make sure a complete stride can be taken
-          if( lastNode + strides[i] > maxs[i] )
-            maxs[i] = lastNode;
+          int lastNode = mins[i] + ((maxs[i] - mins[i]) / strides[i]) * strides[i];
+            
+          if( isNodal )
+          {
+            // Make sure a complete stride can be taken
+            if( lastNode + strides[i] > maxs[i] )
+              maxs[i] = lastNode;
+          }
+          else
+          {
+            // Make sure a complete stride can be taken
+            if( lastNode + strides[i] - 1 > maxs[i] - 1 )
+              maxs[i] = lastNode - 1;
+          }
         }
       }
     }
@@ -4033,7 +4046,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
 //  Modifications:
 //
 
-void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
+bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
                                          std::vector<int> &dims,
                                          int *mins,
                                          int *maxs,
@@ -4055,10 +4068,14 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
       splitAxis = i;
   }
 
-  // Integer number of cells per processor
+  splitAxis = 0;
+
+  // Integer number of nodes processor - note subtract off one node
+  // because to join sections the "next" node is always added in. Thus
+  // by default the last node will be added in.
   size_t numNodes = dims[splitAxis];
-  size_t numNodesPerProc = numNodes / (PAR_Size());
-  size_t numProcsWithExtraNode = numNodes % (PAR_Size());
+  size_t numNodesPerProc = (numNodes-1) / PAR_Size();
+  size_t numProcsWithExtraNode = (numNodes-1) % PAR_Size();
 
   if( PAR_Rank() == 0 )
   {
@@ -4085,7 +4102,7 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
           // To get the complete mesh (i.e. the overlay between one
           // section to the next) add one more node. But for zonal and
           // point based meshes it is not necessary.
-          (i < PAR_Size()-1 && isNodal ? 1 : 0);
+          (isNodal ? 0 : -1);
       }
       else
       {
@@ -4098,17 +4115,20 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
           // To get the complete mesh (i.e. the overlay between one
           // section to the next) add one more node. But for zonal and
           // point based meshes it is not necessary.
-          (i < PAR_Size()-1 && isNodal ? 1 : 0);
+          (isNodal ? 0 : -1);
       }
 
       // Number of nodes plus one if the node topology is greater than one.
       numNodes = (max-min) / strides[splitAxis] + 1;
-      
-      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Predicted bounds for processor " << i << "  "
-                        << "min = " << min << "  max = " << max << "  "
-                        << "strides = " << strides[splitAxis] << "  "
-                        << "nodes = " << numNodes << std::endl;
+      if( i == 0 || (i && numNodes > 1) )
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Predicted bounds for processor " << i << "  "
+                          << "min = " << min << "  max = " << max << "  "
+                          << "strides = " << strides[splitAxis] << "  "
+                          << "nodes = " << numNodes << std::endl;
+      else
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "No work for processor " << i << std::endl;
     }
   }
 
@@ -4121,7 +4141,7 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
       // To get the complete mesh (i.e. the overlay between one
       // section to the next) add one more node. But for zonal and
       // point based meshes it is not necessary.
-      (PAR_Rank() < PAR_Size()-1 && isNodal ? 1 : 0);
+      (isNodal ? 0 : -1);
   }
   else
   {
@@ -4131,10 +4151,8 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
       strides[splitAxis];
     
     maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc) * strides[splitAxis] +
-      // To get the complete mesh (i.e. the overlay between one
-      // section to the next) add one more node. But for zonal and
-      // point based meshes it is not necessary.
-      (PAR_Rank() < PAR_Size()-1 && isNodal ? 1 : 0);
+      
+      (isNodal ? 0 : -1);
   }
 
   // Number of nodes plus one if the node topology is greater than
@@ -4143,17 +4161,33 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
   numNodes = (maxs[splitAxis]-mins[splitAxis]) / strides[splitAxis] + 1;
   
   dims[splitAxis] = numNodes;
-  
-  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Actual bounds for processor " << PAR_Rank() << "  "
-                    << "min = " << mins[splitAxis] << "  "
-                    << "max = " << maxs[splitAxis] << "  "
-                    << "strides = " << strides[splitAxis] << "  "
-                    << "nodes = " << numNodes << std::endl;
+
+  bool work;
+
+  if( (PAR_Rank() == 0) || (PAR_Rank() && numNodes > 1) )
+  {
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Actual bounds for processor " << PAR_Rank() << "  "
+                      << "min = " << mins[splitAxis] << "  "
+                      << "max = " << maxs[splitAxis] << "  "
+                      << "strides = " << strides[splitAxis] << "  "
+                      << "nodes = " << numNodes << std::endl;
+  }
+  else
+  {
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "No work for processor " << PAR_Rank() << std::endl;
+  }
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Parallel & Decompose_Domains are defined, "
                     << "exiting parallel code." << std::endl;
+
+  // If not on processor 0 and if the porcessor has only one node
+  // skip it as it is slice which will have been drawn by the previous
+  // processor.
+  return( (PAR_Rank() == 0) || (PAR_Rank() && numNodes > 1) );
+
 #endif
 }
 #endif
