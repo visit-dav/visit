@@ -108,7 +108,8 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm) :
     
     //Initialize the registry for objects
     registry = new VsRegistry();
-    
+    curveNames.clear();
+
 //  LoadData();
 
     //check types
@@ -2881,7 +2882,10 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
       // component names with the user-specified labels.
       e.SetDefinition(iv->second);
 
-      // See if the expression is a std::vector
+      // What kind of variable should we register?
+      // By default we use scalar
+      e.SetType(Expression::ScalarMeshVar);
+
       if ((iv->second.size() > 0) && (iv->second[0] == '{')) {
         VsLog::debugLog()
           << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -2889,13 +2893,33 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
 
         e.SetType(Expression::VectorMeshVar);
       }
-      else {
+      else { //CURVE variable
+        //Although this is not universally true, we make the assumption that
+        //an expression defined on curve variables will be a curve expression
+        for (std::vector<std::string>::const_iterator it = curveNames.begin();
+             it != curveNames.end();
+             it++)
+        {
+          size_t foundIndex = std::string::npos;
+          foundIndex = iv->second.find(*it);
+          if (foundIndex != std::string::npos) {
+            VsLog::debugLog() <<methodSig <<"It is a curve expression." << std::endl;
+            VsLog::debugLog() <<methodSig <<"Because we found an embedded curve name: " <<*it <<std::endl;
+            e.SetType(Expression::CurveMeshVar);
+            //No need to stay in the loop
+            break;
+          }
+        }
+      }
+
+      //If we've still got scalar, tell the user
+      if (e.GetType() == Expression::ScalarMeshVar) {
         VsLog::debugLog()
           << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
           << "It is a scalar expression." << std::endl;
-
-        e.SetType(Expression::ScalarMeshVar);
       }
+
+      //Add the new expression to the metadata object
       md->AddExpression(&e);
     }
 
@@ -3017,6 +3041,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
                                 << componentName << "." << std::endl;
               avtCurveMetaData* cmd =
                 new avtCurveMetaData(componentName.c_str());
+              curveNames.push_back(componentName);
               cmd->hasDataExtents = false;
               md->Add(cmd);
             } else {
@@ -3029,6 +3054,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
           //When there is only one component, we don't create a component name
           //Instead, we just use the straight-up name
           avtCurveMetaData* cmd = new avtCurveMetaData(*it);
+          curveNames.push_back(*it);
           cmd->hasDataExtents = false;
           md->Add(cmd);
         }

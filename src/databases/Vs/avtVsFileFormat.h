@@ -171,10 +171,19 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    */
   static int instanceCounter;
 
+  /**
+   * A registry of all objects found in the data file
+   */
   VsRegistry* registry;
 
-    std::vector<avtDataSelection_p> selList;
-    std::vector<bool>              *selsApplied;
+  /** Some stuff to keep track of data selections */
+  std::vector<avtDataSelection_p> selList;
+  std::vector<bool>              *selsApplied;
+
+  /**
+   * Maintain a list of curve names so we can classify expressions better
+   */
+  std::vector<std::string> curveNames;
 
   /**
    * Set the axis labels for a mesh.
