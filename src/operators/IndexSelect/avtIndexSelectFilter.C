@@ -425,8 +425,10 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     {
         debug1 << "Bypassing IndexSelect operator because database plugin "
                   "claims to have applied the selection already" << endl;
+
+        out_ds = in_ds;
+
         successfullyExecuted = true;
-        return in_ds;
     }
     else if (GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
@@ -900,8 +902,7 @@ avtIndexSelectFilter::ModifyContract(avtContract_p spec)
     {
         rv->GetDataRequest()->SetNeedStructuredIndices(true);
     }
-    else if (rv->GetDataRequest()->
-                                       MustDoMaterialInterfaceReconstruction())
+    else if (rv->GetDataRequest()->MustDoMaterialInterfaceReconstruction())
     {
         rv->GetDataRequest()->SetNeedStructuredIndices(true);
     }
@@ -946,20 +947,26 @@ avtIndexSelectFilter::ModifyContract(avtContract_p spec)
     vec[1] = atts.GetYMin();
     vec[2] = atts.GetZMin();
     sel->SetStarts(vec);
-    // avtLogicalSelection's stops are inclusive
+
+    // IndexSelect is nodal based and is inclusive. As such, the user
+    // can have the min == max. Which would give a slice from a volume.
+
+    // avtLogicalSelection's stops are nodal and are inclusive
     // also, we need to deal with using '-1' to mean 'max'
     if (atts.GetXMax() == -1)
         vec[0] = -1;
     else
-        vec[0] = atts.GetXMax()-1;
+        vec[0] = atts.GetXMax();
+
     if (atts.GetYMax() == -1)
         vec[1] = -1;
     else
-        vec[1] = atts.GetYMax()-1;
+        vec[1] = atts.GetYMax();
+
     if (atts.GetZMax() == -1)
         vec[2] = -1;
     else
-        vec[2] = atts.GetZMax()-1;
+        vec[2] = atts.GetZMax();
 
     sel->SetStops(vec);
     vec[0] = atts.GetXIncr();
