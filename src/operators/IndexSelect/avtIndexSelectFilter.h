@@ -128,8 +128,7 @@ class avtIndexSelectFilter : public avtPluginDataTreeIterator
     virtual void                UpdateDataObjectInfo(void);
     virtual void                VerifyInput(void);
 
-    virtual avtContract_p
-                                ModifyContract(avtContract_p);
+    virtual avtContract_p       ModifyContract(avtContract_p);
     virtual bool                FilterUnderstandsTransformedRectMesh();
 
     virtual vtkDataSet *Replicate(vtkDataSet *in_ds, bool wrap[3] );

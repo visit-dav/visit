@@ -211,14 +211,14 @@ class avtVsFileFormat: public avtSTMDFileFormat {
                            int *maxs,
                            int *strides,
                            bool haveDataSelections,
-                           bool adjustForNodes = true );
+                           bool isNodal = true );
 
   void GetParallelDecomp( int numTopologicalDims,
                           std::vector<int> &dims,
                           int *mins,
                           int *maxs,
                           int *strides,
-                          bool adjustForNodes = true );
+                          bool isNodal = true );
 
 #else
   avtVsFileFormat(const char* dfnm) : avtSTMDFileFormat(&dfnm, 1) {;};

@@ -318,9 +318,9 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
            {
                isAtts->SetMaxDim(IndexSelectAttributes::OneD);
                isAtts->SetDim(IndexSelectAttributes::OneD);
-               isAtts->SetXAbsMax(mmd->logicalBounds[0]);
+               isAtts->SetXAbsMax(mmd->logicalBounds[0]-1);
                if( isAtts->GetXMax() == -1 )
-                   isAtts->SetXMax(mmd->logicalBounds[0]);
+                   isAtts->SetXMax(mmd->logicalBounds[0]-1);
            }
            else
            {
@@ -328,25 +328,25 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
              {
                  isAtts->SetMaxDim(IndexSelectAttributes::OneD);
                  isAtts->SetDim(IndexSelectAttributes::OneD);
-                 isAtts->SetXAbsMax(mmd->logicalBounds[0]);
+                 isAtts->SetXAbsMax(mmd->logicalBounds[0]-1);
                  if( isAtts->GetXMax() == -1 )
-                     isAtts->SetXMax(mmd->logicalBounds[0]);
+                     isAtts->SetXMax(mmd->logicalBounds[0]-1);
              }
              if( mmd->topologicalDimension >= 2 && mmd->logicalBounds[1] > 1 )
              {
                isAtts->SetMaxDim(IndexSelectAttributes::TwoD);
                isAtts->SetDim(IndexSelectAttributes::TwoD);
-               isAtts->SetYAbsMax(mmd->logicalBounds[1]);
+               isAtts->SetYAbsMax(mmd->logicalBounds[1]-1);
                if( isAtts->GetYMax() == -1 )
-                   isAtts->SetYMax(mmd->logicalBounds[1]);
+                   isAtts->SetYMax(mmd->logicalBounds[1]-1);
              }
              if( mmd->topologicalDimension >= 3 && mmd->logicalBounds[2] > 1 )
              {
                  isAtts->SetMaxDim(IndexSelectAttributes::ThreeD);
                  isAtts->SetDim(IndexSelectAttributes::ThreeD);
-                 isAtts->SetZAbsMax(mmd->logicalBounds[2]);
+                 isAtts->SetZAbsMax(mmd->logicalBounds[2]-1);
                  if( isAtts->GetZMax() == -1 )
-                     isAtts->SetZMax(mmd->logicalBounds[2]);
+                     isAtts->SetZMax(mmd->logicalBounds[2]-1);
               }
            }
        }
