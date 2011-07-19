@@ -382,6 +382,8 @@ F_VISITINITIALIZESIM(
  * Date:       Thu Mar 11 11:17:51 PST 2010
  *
  * Modifications:
+ *   Brad Whitlock, Tue Jul 19 09:18:40 PDT 2011
+ *   Set up parallel callbacks as suggested by Jens Henrik Goebbert.
  *
  *****************************************************************************/
 
@@ -389,6 +391,13 @@ FORTRAN
 F_VISITSETPARALLEL(int *val)
 {
     VisItSetParallel(*val);
+
+    if(*val)
+    {
+        VisItSetBroadcastIntFunction(f_visit_internal_broadcastintfunction);
+        VisItSetBroadcastStringFunction(f_visit_internal_broadcaststringfunction);
+    }
+
     return VISIT_OKAY;
 }
 
