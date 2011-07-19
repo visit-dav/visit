@@ -92,15 +92,15 @@ class QvisIndexSelectWindow : public QvisOperatorWindow
   private slots:
     void dimChanged(int val);
     void oneDMinChanged(int min);
-    void oneDMaxChanged(int max);
+    void oneDMaxChanged(int max = -1);
     void oneDIncrChanged(int incr);
     void oneDWrapToggled(bool val);
     void twoDMinChanged(int min);
-    void twoDMaxChanged(int max);
+    void twoDMaxChanged(int max = -1);
     void twoDIncrChanged(int incr);
     void twoDWrapToggled(bool val);
     void threeDMinChanged(int min);
-    void threeDMaxChanged(int max);
+    void threeDMaxChanged(int max = -1);
     void threeDIncrChanged(int incr);
     void threeDWrapToggled(bool val);
     void useWholeCollectionToggled(bool val);
@@ -135,7 +135,5 @@ class QvisIndexSelectWindow : public QvisOperatorWindow
     QvisSILSetSelector *silSet;
     IndexSelectAttributes *atts;
 };
-
-
 
 #endif
