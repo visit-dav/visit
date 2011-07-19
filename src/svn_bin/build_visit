@@ -1154,6 +1154,10 @@ function uncompress_untar
 #   Eric Brugger, Mon Jan 10 16:00:13 PST 2011                                #
 #   I made it always fall back to anonymous svn checkout.                     #
 #                                                                             #
+#   Eric Brugger, Tue Jul 19 10:19:50 PDT 2011                                #
+#   I made it use the anonymous svn site as the fallback download site        #
+#   instead of llnl's web site.                                               #
+#                                                                             #
 # *************************************************************************** #
 
 function download_file
@@ -1224,8 +1228,8 @@ function download_file
         rm -f $dfile
     fi
 
-    # Now try visit's 3rd_party.
-    try_download_file https://wci.llnl.gov/codes/visit/3rd_party/$dfile $dfile
+    # Now try the anonymous svn site with wget or curl.
+    try_download_file $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile $dfile
     if [[ $? == 0 ]] ; then
         return 0
     fi
