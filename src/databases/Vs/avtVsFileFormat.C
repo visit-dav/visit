@@ -3960,14 +3960,14 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
         if( maxs[i] < mins[i] )
           mins[i] = 0;
 
-        if( isNodal )
+        if( isNodal && strides[i] )
         {
           int lastNode =
             mins[i] + ((maxs[i] - mins[i]) / strides[i]) * strides[i];
-          
+
           // Make sure a complete stride can be taken
-          if( lastNode + strides[i] - 1 > maxs[i] )
-            maxs[i] = lastNode - 1;
+          if( lastNode + strides[i] > maxs[i] )
+            maxs[i] = lastNode;
         }
       }
     }
