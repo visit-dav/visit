@@ -576,11 +576,15 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     // VisIt downcasts to float, so go to float by default now.
     hid_t meshDataType = uniformMesh->getDataType();
 
-    if (!isDoubleType(meshDataType) && !isFloatType(meshDataType))
+    // Cache the data type because it's faster 
+    bool isDouble = isDoubleType(meshDataType);
+    bool isFloat = isFloatType(meshDataType);
+
+    if (!isDouble && !isFloat)
     {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Error: hdf5 data type not handled: " << meshDataType
-                        << "Returning NULL." << std::endl;
+                        << "Error: hdf5 mesh data type not handled: "
+                        << meshDataType << "Returning NULL." << std::endl;
       return NULL;
     }
 
@@ -649,9 +653,9 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
 
     for (size_t i=0; i<numSpatialDims; ++i)
     {
-       if( isDoubleType( meshDataType ) )
+       if( isDouble )
          coords[i] = vtkDoubleArray::New();
-       else if( isFloatType( meshDataType ) )
+       else if( isFloat )
          coords[i] = vtkFloatArray::New();
 
       // Delta
@@ -763,11 +767,15 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     // VisIt downcasts to float, so go to float by default now.
     hid_t meshDataType = rectilinearMesh->getDataType();
 
-    if (!isDoubleType(meshDataType) && !isFloatType(meshDataType))
+    // Cache the data type because it's faster 
+    bool isDouble = isDoubleType(meshDataType);
+    bool isFloat = isFloatType(meshDataType);
+
+    if (!isDouble && !isFloat)
     {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Error: hdf5 data type not handled: " << meshDataType
-                        << "Returning NULL." << std::endl;
+                        << "Error: hdf5 mesh data type not handled: "
+                        << meshDataType << "Returning NULL." << std::endl;
       return NULL;
     }
 
@@ -810,20 +818,20 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
         return NULL;
       }
 
-      hid_t type = axisData->getType();
+      hid_t axisDataType = axisData->getType();
 
       // Read points and add in zero for any lacking dimension
-      if (isDoubleType(type)) {
+      if( isDoubleType( axisDataType ) ) {
         dblDataPtr = new double[numNodes[i]];
         dataPtr = dblDataPtr;
       }
-      else if (isFloatType(type)) {
+      else if( isFloatType( axisDataType ) ) {
         fltDataPtr = new float[numNodes[i]];
         dataPtr = fltDataPtr;
       } else {
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "Unknown data type: "
-                          << type << std::endl;
+                          << "Unknown axis data type: "
+                          << axisDataType << std::endl;
         return NULL;
       }
 
@@ -845,9 +853,9 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
                           << "GetDataSet returned error: " << err << "  "
                           << "Returning NULL." << std::endl;
 
-        if (isDoubleType(type))
+        if( isDoubleType( axisDataType ) )
           delete [] dblDataPtr;
-        else if (isFloatType(type))
+        else if( isFloatType( axisDataType ) )
           delete [] fltDataPtr;
 
         return NULL;
@@ -861,20 +869,26 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       // The mesh data type will the highest precision of all of the
       // axis data types. Declaring here allows the the mesh data type
       // to be either float or double.
-      if( isDoubleType( meshDataType ) )
+      if( isDouble )
         coords[i] = vtkDoubleArray::New();
-      else if( isFloatType( meshDataType ) )
+      else if( isFloat )
         coords[i] = vtkFloatArray::New();
 
       int cc = 0;
 
-      if (isDoubleType(type)) {
+      if (isDouble) {
 
         int j = mins[i];
 
         while( j <= maxs[i] )
         {
-          double temp = dblDataPtr[j];
+          double temp;
+
+          if( isDoubleType( axisDataType ) )
+            temp = dblDataPtr[j];
+          else if( isFloatType( axisDataType ) ) 
+            temp = fltDataPtr[j];
+
           coords[i]->InsertTuple(cc, &temp);
           ++cc;
           j += strides[i];
@@ -882,13 +896,19 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
         delete [] dblDataPtr;
 
-      } else if (isFloatType(type)) {
+      } else if (isFloat) {
 
         int j = mins[i];
 
         while( j <= maxs[i] )
         {
-          float temp = fltDataPtr[j];
+          float temp;
+
+          if( isDoubleType( axisDataType ) ) 
+            temp = dblDataPtr[j];
+          else if( isFloatType( axisDataType ) ) 
+            temp = fltDataPtr[j];
+
           coords[i]->InsertTuple(cc, &temp);
           ++cc;
           j += strides[i];
@@ -903,9 +923,9 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     }
 
     for (int i=numTopologicalDims; i<vsdim; ++i) {
-      if( isDoubleType(meshDataType) )
+      if( isDouble )
         coords[i] = vtkDoubleArray::New();
-      else if( isFloatType(meshDataType) )
+      else if( isFloat )
         coords[i] = vtkFloatArray::New();
 
       coords[i]->SetNumberOfTuples(1);
@@ -1025,17 +1045,17 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     // VisIt downcasts to float, so go to float by default now.
     hid_t meshDataType = pointsDataset->getType();
 
-    if (!isDoubleType(meshDataType) && !isFloatType(meshDataType))
-    {
-      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Error: hdf5 data type not handled: " << meshDataType
-                        << "Returning NULL." << std::endl;
-      return NULL;
-    }
-
     // Cache the data type because it's faster 
     bool isDouble = isDoubleType(meshDataType);
     bool isFloat = isFloatType(meshDataType);
+
+    if (!isDouble && !isFloat) {
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Error: hdf5 mesh data type not handled: "
+                        << meshDataType << "Returning NULL." << std::endl;
+      return NULL;
+    }
+
 
     // Storage for meshes in VisIt, which is a vtkRectilinearGrid which
     // is topologically 3D so the points must also be 3D.
@@ -1275,12 +1295,16 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     LoadData();
 
     // Check for points type
-    hid_t type = unstructuredMesh->getDataType();
+    hid_t meshDataType = unstructuredMesh->getDataType();
 
-    if (!isDoubleType(type) && !isFloatType(type)) {
+    // Cache the data type because it's faster 
+    bool isDouble = isDoubleType(meshDataType);
+    bool isFloat = isFloatType(meshDataType);
+
+    if (!isDouble && !isFloat) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Points data type not recognized:" << type << "  "
-                        << "Returning NULL" << std::endl;
+                        << "Error: hdf5 mesh data type not handled: "
+                        << meshDataType << "Returning NULL." << std::endl;
       return NULL;
     }
 
@@ -1326,17 +1350,13 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
     // Allocate
     size_t dsize = 0;
-    if (isDoubleType(type)) {
+    if (isDouble) {
       vpoints->SetDataTypeToDouble();
       dsize = sizeof(double);
     }
-    else if (isFloatType(type)) {
+    else if (isFloat) {
       vpoints->SetDataTypeToFloat();
       dsize = sizeof(float);
-    } else {
-      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Unknown data type: " << type << std::endl;
-      return NULL;
     }
 
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -1404,7 +1424,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Zeroing data at unused positions." << std::endl;
         
-        if (isDoubleType(type)) {
+        if (isDouble) {
         
           double* dblDataPtr = &(((double*) dataPtr)[i]);
         
@@ -1414,7 +1434,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             dblDataPtr += 3;
           }
         }
-        else if (isFloatType(type)) {
+        else if (isFloat) {
         
           float* fltDataPtr = &(((float*) dataPtr)[i]);
         
@@ -1866,12 +1886,16 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
                       << "Entering function." << std::endl;
     LoadData();
 
-    hid_t type = variableWithMesh->getType();
+    hid_t meshDataType = variableWithMesh->getType();
 
-    if (!isDoubleType(type) && !isFloatType(type)) {
+    // Cache the data type because it's faster 
+    bool isDouble = isDoubleType(meshDataType);
+    bool isFloat = isFloatType(meshDataType);
+
+    if (!isDouble && !isFloat) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Unsupported data type: " << type
-                        << "Returning NULL." << std::endl;
+                        << "Error: hdf5 mesh data type not handled: "
+                        << meshDataType << "Returning NULL." << std::endl;
       return NULL;
     }
 
@@ -1918,13 +1942,13 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
 
     // Allocate
     size_t dsize = 0;
-    if (isDoubleType(type)) {
+    if (isDouble) {
       vpoints->SetDataTypeToDouble();
       dsize = sizeof(double);
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Double data" << std::endl;
     }
-    else if (isFloatType(type)) {
+    else if (isFloat) {
       vpoints->SetDataTypeToFloat();
       dsize = sizeof(float);
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -1995,8 +2019,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Zeroing data at unused positions." << std::endl;
 
-      if (isDoubleType(type)) {
-        
+      if (isDouble) {
         double* dblDataPtr = &(((double*) dataPtr)[i]);
         
         for (int j=0; j<numNodes[0]; ++j)
@@ -2005,8 +2028,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
           dblDataPtr += 3;
         }
       }
-      else if (isFloatType(type)) {
-        
+      else if (isFloat) {        
         float* fltDataPtr = &(((float*) dataPtr)[i]);
         
         for (int j=0; j<numNodes[0]; ++j)
@@ -2444,10 +2466,10 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     bool isFloat = isFloatType(varType);
     bool isInteger = isIntegerType(varType);
 
-    if (!isDoubleType && !isFloatType  && !isIntegerType) {
+    if (!isDouble && !isFloat && !isInteger) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Unknown data type:" << varType << "  "
-                        << "Returning NULL." << std::endl;
+                        << "Error: hdf5 variable data type not handled: "
+                        << varType << "Returning NULL." << std::endl;
       return NULL;
     }
 
@@ -2603,17 +2625,17 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
     vtkDataArray* rv = 0;
 
-    if (isDoubleType) {
+    if (isDouble) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Declaring vtkDoubleArray." << std::endl;
       rv = vtkDoubleArray::New();
     }
-    else if (isFloatType) {
+    else if (isFloat) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Declaring vtkFloatArray." << std::endl;
       rv = vtkFloatArray::New();
     }
-    else if (isIntegerType) {
+    else if (isInteger) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Declaring vtkIntArray." << std::endl;
       rv = vtkIntArray::New();
@@ -2681,15 +2703,15 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     }
 
     // Reversed in place so now can copy
-    if (isDoubleType)  {
+    if (isDouble)  {
       for (size_t k = 0; k<numVariables; ++k) {
         rv->SetTuple(k, &dblDataPtr[k]);
       }
-    } else if (isFloatType) {
+    } else if (isFloat) {
       for (size_t k = 0; k<numVariables; ++k) {
         rv->SetTuple(k, &fltDataPtr[k]);
       }
-    } else if (isIntegerType) {
+    } else if (isInteger) {
       for (size_t k = 0; k<numVariables; ++k) {
         rv->SetTuple(k, &intDataPtr[k]);
       }
@@ -2712,15 +2734,15 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "Using FORTRAN data ordering." << std::endl;
 
-      if (isDoubleType) {
+      if (isDouble) {
         for (size_t k = 0; k<numVariables; ++k) {
           rv->SetTuple(k, &dblDataPtr[k]);
         }
-      } else if (isFloatType) {
+      } else if (isFloat) {
         for (size_t k = 0; k<numVariables; ++k) {
           rv->SetTuple(k, &fltDataPtr[k]);
         }
-      } else if (isIntegerType) {
+      } else if (isInteger) {
         for (size_t k = 0; k<numVariables; ++k) {
           // Convert to float because SetTuple doesn't take ints
           float temp = intDataPtr[k];
