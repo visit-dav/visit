@@ -409,6 +409,10 @@
 #     Eric Brugger, Fri Jun 17 13:19:14 PDT 2011
 #     I changed the visit version number to 2.3.0.
 #
+#     Eric Brugger, Tue Jul 19 08:51:29 PDT 2011
+#     I added some flags to the qt configure line that speeds up the compile.
+#     The changes were provided by Jens Henrik.
+#
 # *****************************************************************************
 
 
@@ -3303,6 +3307,11 @@ function build_qt
     qt_flags="${qt_flags} -no-libtiff"
     qt_flags="${qt_flags} -no-libjpeg"
     qt_flags="${qt_flags} -no-webkit"
+    qt_flags="${qt_flags} -nomake docs" 
+    qt_flags="${qt_flags} -nomake examples" 
+    qt_flags="${qt_flags} -nomake demos" 
+    qt_flags="${qt_flags} -opensource" 
+    qt_flags="${qt_flags} -confirm-license"
     if [[ ${QT_VERSION} == 4.6.1 ]] ; then
         qt_flags="${qt_flags} -no-javascript-jit"
         qt_flags="${qt_flags} -no-script"
