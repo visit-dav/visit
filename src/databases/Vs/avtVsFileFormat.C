@@ -2903,8 +2903,10 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
           size_t foundIndex = std::string::npos;
           foundIndex = iv->second.find(*it);
           if (foundIndex != std::string::npos) {
-            VsLog::debugLog() <<methodSig <<"It is a curve expression." << std::endl;
-            VsLog::debugLog() <<methodSig <<"Because we found an embedded curve name: " <<*it <<std::endl;
+            VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                              <<"It is a curve expression." << std::endl;
+            VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                              <<"Because we found an embedded curve name: " <<*it <<std::endl;
             e.SetType(Expression::CurveMeshVar);
             //No need to stay in the loop
             break;
