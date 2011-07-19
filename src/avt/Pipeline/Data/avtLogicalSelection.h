@@ -51,11 +51,17 @@
 // ****************************************************************************
 //  Class: avtLogicalSelection
 //
-//  Purpose: Specify data selection by a zone-centric logical indexing scheme.
-//  That is, all logical coordinates are specified in terms of zones, not
-//  nodes. The starts and stops are inclusive. However, if strides are such
-//  that an integral number of strides from starts DOES NOT equal the
-//  associated value in stops, then stops is non-inclusive.
+//  Purpose: Specify data selection by a node-centric logical indexing
+//  scheme.  That is, all logical coordinates are specified in terms
+//  of nodes, not zones. The starts and stops are inclusive. However,
+//  if strides are such that an integral number of strides from starts
+//  DOES NOT equal the associated value in stops, then stops is
+//  non-inclusive.
+//
+//  Nodal based matches the IndexSelect operator functionality which
+//  is passed in VisIt. Internally a class can use it how it
+//  wants. For instance, ViSUS uses the bounds for zones instead of
+//  nodes.
 //
 //  The default is a 3D box of stride 1 spanning all possible indices.
 //

@@ -54,8 +54,8 @@
 
 #include <avtVsFileFormat.h>
 
-//#define PARALLEL 1
-//#define VIZSCHEMA_DECOMPOSE_DOMAINS 1
+#define PARALLEL 1
+#define VIZSCHEMA_DECOMPOSE_DOMAINS 1
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
 #include <avtParallel.h>
@@ -203,7 +203,7 @@ avtVsFileFormat::~avtVsFileFormat()
 bool
 avtVsFileFormat::CanCacheVariable(const char *var)
 {
-  //  cerr << this << "  " << var << std::endl;
+  //  VsLog::debugLog() << this << "  " << var << std::endl;
 
     return haveReadWholeData;
 }
@@ -249,8 +249,6 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
 
     for (int i = 0; i < selList.size(); i++)
     {
-//      VsLog::debugLog() << __LINE__ << std::endl;
-
         if (std::string(selList[i]->GetType()) == "Logical Data Selection")
         {
             avtLogicalSelection *sel = (avtLogicalSelection *) *(selList[i]);
@@ -260,52 +258,53 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
             (*selsApplied)[i] = true;
             retval = true;
         }
-        else if (std::string(selList[i]->GetType()) == "Spatial Box Data Selection")
-        {
-//          VsLog::debugLog() << __LINE__ << std::endl;
 
-            avtSpatialBoxSelection *sel =
-              (avtSpatialBoxSelection *) *(selList[i]);
+        // Cannot handle avtSpatialBoxSelection without knowing the mesh.
 
-            double dmins[3], dmaxs[3];
-            sel->GetMins(dmins);
-            sel->GetMaxs(dmaxs);
-            avtSpatialBoxSelection::InclusionMode imode =
-                sel->GetInclusionMode();
+//         else if (std::string(selList[i]->GetType()) == "Spatial Box Data Selection")
+//         {
+//             avtSpatialBoxSelection *sel =
+//               (avtSpatialBoxSelection *) *(Sellist[i]);
 
-            // we won't handle clipping of zones here
-            if ((imode != avtSpatialBoxSelection::Whole) &&
-                (imode != avtSpatialBoxSelection::Partial))
-            {
-                (*selsApplied)[i] = false;
-                continue;
-            }
+//             double dmins[3], dmaxs[3];
+//             sel->GetMins(dmins);
+//             sel->GetMaxs(dmaxs);
+//             avtSpatialBoxSelection::InclusionMode imode =
+//                 sel->GetInclusionMode();
 
-            int imins[3], imaxs[3];
-            for (int j = 0; j < 3; j++)
-            {
-                int imin = (int) dmins[j];
-                if (((double) imin < dmins[j]) &&
-                    (imode == avtSpatialBoxSelection::Whole))
-                    imin++;
+//             // we won't handle clipping of zones here
+//             if ((imode != avtSpatialBoxSelection::Whole) &&
+//                 (imode != avtSpatialBoxSelection::Partial))
+//             {
+//                 (*selsApplied)[i] = false;
+//                 continue;
+//             }
+
+//             int imins[3], imaxs[3];
+//             for (int j = 0; j < 3; j++)
+//             {
+//                 int imin = (int) dmins[j];
+//                 if (((double) imin < dmins[j]) &&
+//                     (imode == avtSpatialBoxSelection::Whole))
+//                     imin++;
                 
-                int imax = (int) dmaxs[j];
-                if (((double) imax < dmaxs[j]) &&
-                    (imode == avtSpatialBoxSelection::Partial))
-                    imax++;
+//                 int imax = (int) dmaxs[j];
+//                 if (((double) imax < dmaxs[j]) &&
+//                     (imode == avtSpatialBoxSelection::Partial))
+//                     imax++;
 
-                imins[j] = imin;
-                imaxs[j] = imax;
-            }
+//                 imins[j] = imin;
+//                 imaxs[j] = imax;
+//             }
 
-            avtLogicalSelection newSel;
-            newSel.SetStarts(imins);
-            newSel.SetStops(imaxs);
+//             avtLogicalSelection newSel;
+//             newSel.SetStarts(imins);
+//             newSel.SetStops(imaxs);
 
-            composedSel.Compose(newSel);
-            (*selsApplied)[i] = true;
-            retval = true;
-        }
+//             composedSel.Compose(newSel);
+//             (*selsApplied)[i] = true;
+//             retval = true;
+//         }
         else
         {
             // indicate we won't handle this selection
@@ -359,12 +358,12 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
     bool haveDataSelections;
     int mins[3], maxs[3], strides[3];
 
-    // Adjust for the data selections which are ZONAL.
+    // Adjust for the data selections which are NODAL.
     if( haveDataSelections = ProcessDataSelections(mins, maxs, strides) )
     {
       VsLog::debugLog()
         << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-        << "Have a logical zonal selection for mesh  "
+        << "Have a logical nodal selection for mesh  "
         << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
         << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
         << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
@@ -605,18 +604,29 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Determining size of point arrays." << std::endl;
 
+
     // Storage for meshes in VisIt, which is a vtkRectilinearGrid which
     // is topologically 3D so the points must also be 3D.
     size_t vsdim = 3;
     std::vector<int> gdims(vsdim);
 
-    // Adjust for the data selections which are ZONAL. If no selection
+    // Number of nodes is equal to number of cells plus one
+    std::vector<int> numNodes(vsdim);
+    for (size_t i = 0; i < numTopologicalDims; ++i) 
+      numNodes[i] = numCells[i]+1;
+
+    // Set unused dims to 1
+    for (size_t i=numTopologicalDims; i<vsdim; ++i)
+      numNodes[i] = 1;
+
+    // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numCells, gdims,
+    GetSelectionBounds( numTopologicalDims, numNodes, gdims,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides );
+    if( !GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides ) )
+      return NULL; // No work for this processor.
 
     haveDataSelections = 1;
 #endif
@@ -629,15 +639,6 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
 
     std::vector<float> upperBounds;
     uniformMesh->getUpperBounds(&upperBounds);
-
-    // Number of nodes is equal to number of cells plus one
-    std::vector<int> numNodes(vsdim);
-    for (size_t i = 0; i < numTopologicalDims; ++i) 
-      numNodes[i] = numCells[i]+1;
-
-    // Set unused dims to 1
-    for (size_t i=numTopologicalDims; i<vsdim; ++i)
-      numNodes[i] = 1;
 
     // Storage for mesh points in VisIt are spatially 3D. So create 3
     // coordinate arrays and fill in zero for the others.
@@ -669,15 +670,9 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
         j += strides[i];
       }
 
-      // Last node ... may form a partial cell.
-      j = maxs[i] + 1;
-      // NO PARTIAL CELLS FOR NOW
-      if( j % strides[i] == 0 )
-      {
-        double temp = lowerBounds[i] + j*delta;
-        coords[i]->InsertTuple(cc, &temp);
-        ++cc;
-      }
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Dumped " << cc << " nodes to the rectilinear grid."
+                        << std::endl;
     }
 
     // Unused axii
@@ -779,23 +774,19 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Determining size of point arrays." << std::endl;
 
-    // Temporary array for cell counts as the selection is ZONAL.
-    std::vector<int> numCells = numNodes;
-    for (size_t i=0; i<numTopologicalDims; ++i)
-      numCells[i] -= 1;
-
     // Storage for meshes in VisIt, which is a vtkRectilinearGrid which
     // is topologically 3D so the points must also be 3D.
     size_t vsdim = 3;
     std::vector<int> gdims(vsdim);
 
-    // Adjust for the data selections which are ZONAL. If no selection
+    // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numCells, gdims,
+    GetSelectionBounds( numTopologicalDims, numNodes, gdims,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides );
+    if( !GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides ) )
+      return NULL; // No work for this processor.
 
     haveDataSelections = 1;
 #endif
@@ -889,16 +880,6 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
           j += strides[i];
         }
 
-        // Last node ... may form a partial cell.
-        j = maxs[i] + 1;
-        // NO PARTIAL CELLS FOR NOW
-        if( j % strides[i] == 0 )
-        {
-          double temp = dblDataPtr[j];
-          coords[i]->InsertTuple(cc, &temp);
-          ++cc;
-        }
-
         delete [] dblDataPtr;
 
       } else if (isFloatType(type)) {
@@ -913,18 +894,12 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
           j += strides[i];
         }
 
-        // Last node ... may form a partial cell.
-        j = maxs[i] + 1;
-        // NO PARTIAL CELLS FOR NOW
-        if( j % strides[i] == 0 )
-        {
-          float temp = fltDataPtr[j];
-          coords[i]->InsertTuple(cc, &temp);
-          ++cc;
-        }
-
         delete [] fltDataPtr;
       }
+
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Dumped " << cc << " nodes to the rectilinear grid."
+                        << std::endl;
     }
 
     for (int i=numTopologicalDims; i<vsdim; ++i) {
@@ -1062,23 +1037,19 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     bool isDouble = isDoubleType(meshDataType);
     bool isFloat = isFloatType(meshDataType);
 
-    // Temporary array for cell counts as the selection is ZONAL.
-    std::vector<int> numCells = numNodes;
-    for (size_t i=0; i<numTopologicalDims; ++i)
-      numCells[i] -= 1;
-
     // Storage for meshes in VisIt, which is a vtkRectilinearGrid which
     // is topologically 3D so the points must also be 3D.
     size_t vsdim = 3;
     std::vector<int> gdims(vsdim);
 
-    // Adjust for the data selections which are ZONAL. If no selection
+    // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numCells, gdims,
+    GetSelectionBounds( numTopologicalDims, numNodes, gdims,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides );
+    if( !GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides ) )
+      return NULL; // No work for this processor.
 
     haveDataSelections = 1;
 #endif
@@ -1466,6 +1437,10 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
       herr_t err;
       
+      // If a point mesh and with data selections read in only the
+      // points needed. If any other structured mesh read in all of
+      // the points because it is not know which will be used to build
+      // the cells.
       if (unstructuredMesh->isPointMesh() && haveDataSelections)
       {
         int srcMins[1] = {mins[0]};
@@ -1528,6 +1503,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         vertex = i;
         ugridPtr->InsertNextCell(VTK_VERTEX, 1, &vertex);
       }
+
       return ugridPtr;
     }
 
@@ -1582,9 +1558,17 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
                         << "ERROR - unable to find connectivity dataset. "
                         << "Returning points data without connectivity."
                         << std::endl;
-      //we used to try to convert this into a pointMesh
-      // but it never worked
-      // So basically we're giving up here
+
+      // We used to try to convert this into a pointMesh but it never
+      // worked (Perhaps because the mesh was registered
+      // differently. So instead give up.
+
+//       vtkIdType vertex;
+//       for (int i=0; i<numNodes; ++i) {
+//         vertex = i;
+//         ugridPtr->InsertNextCell(VTK_VERTEX, 1, &vertex);
+//       }
+
       return ugridPtr;
     }
 
@@ -1613,7 +1597,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       numVerts = connectivityDims[1];
     }
 
-    // Adjust for the data selections which are ZONAL.
+    // Adjust for the data selections which are ZONAL which will limit
+    // which connections are read in.
     if( haveDataSelections )
     {
       if( maxs[0] < 0 || numCells - 1 < maxs[0] )
@@ -1674,7 +1659,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
                       << "Reading connectivity list data." << std::endl;
 
     herr_t err;
-      
+
+    // Here the connections are being read. So sub select if needed.
     if( haveDataSelections )
     {
       int srcMins[1] = {mins[0]};
@@ -1744,8 +1730,11 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     for (size_t i = 0; i < numCells; ++i) {
       if (k >= datasetLength) {
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-          << "While iterating over the vertices, the index variable 'k' went beyond the end of the array. "
-          << "Existing cells will be returned but the loop is terminating now." << std::endl;
+                          << "While iterating over the vertices, "
+                          << "the index variable 'k' "
+                          << "went beyond the end of the array. "
+                          << "Existing cells will be returned "
+                          << "but the loop is terminating now." << std::endl;
         break;
       }
 
@@ -1890,27 +1879,25 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Getting the number of points." << std::endl;
 
-    size_t numNodes = variableWithMesh->getNumPoints();
     size_t numSpatialDims = variableWithMesh->getNumSpatialDims();
-
     size_t numTopologicalDims = 1;
 
-    // Temporary array for cell counts as the selection is ZONAL.
-    std::vector<int> numCells(1);
-    numCells[0] = numNodes;
+    std::vector<int> numNodes(numTopologicalDims);
+    numNodes[0] = variableWithMesh->getNumPoints();
 
     // Storage for meshes in VisIt, which is a vtkRectilinearGrid which
     // is topologically 3D so the points must also be 3D.
     size_t vsdim = 1;
     std::vector<int> gdims(vsdim);
 
-    // Adjust for the data selections which are ZONAL. If no selection
+    // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numCells, gdims,
+    GetSelectionBounds( numTopologicalDims, numNodes, gdims,
                         mins, maxs, strides, haveDataSelections, false );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    GetParallelDecomp( 1, gdims, mins, maxs, strides, 0 );
+    if( !GetParallelDecomp( 1, gdims, mins, maxs, strides, 0 ) )
+      return NULL; // No work for this processor.
 
     haveDataSelections = 1;
 #endif
@@ -2012,7 +1999,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
         
         double* dblDataPtr = &(((double*) dataPtr)[i]);
         
-        for (int j=0; j<numNodes; ++j)
+        for (int j=0; j<numNodes[0]; ++j)
         {
           *dblDataPtr = 0;
           dblDataPtr += 3;
@@ -2022,7 +2009,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
         
         float* fltDataPtr = &(((float*) dataPtr)[i]);
         
-        for (int j=0; j<numNodes; ++j)
+        for (int j=0; j<numNodes[0]; ++j)
         {
           *fltDataPtr = 0;
           fltDataPtr += 3;
@@ -2033,9 +2020,9 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     // create point mesh
     try {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-        << "Allocating " << numNodes
+        << "Allocating " << numNodes[0]
         << " vertices.  If old VTK and this fails, it will just abort." << std::endl;
-      meshPtr->Allocate(numNodes);
+      meshPtr->Allocate(numNodes[0]);
     } catch (vtkstd::bad_alloc) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Caught vtkstd::bad_alloc. Unable to allocate cells."
@@ -2053,7 +2040,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
       << "Allocation succeeded.  Setting mesh to connectivity 'VERTEX'." << std::endl;
     vtkIdType vertex;
-    for (int i=0; i<numNodes; ++i) {
+    for (int i=0; i<numNodes[0]; ++i) {
       vertex = i;
       meshPtr->InsertNextCell(VTK_VERTEX, 1, &vertex);
     }
@@ -2265,7 +2252,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     bool haveDataSelections;
     int mins[3], maxs[3], strides[3];
 
-    // Adjust for the data selections which are ZONAL.
+    // Adjust for the data selections which are NODAL (typical) or ZONAL.
     if( haveDataSelections = ProcessDataSelections(mins, maxs, strides) )
     {
       VsLog::debugLog()
@@ -2465,37 +2452,34 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     }
 
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Variable " << name << " has dimensions = "
-                      << ", numTopologicalDims = " << numTopologicalDims
+                      << "Variable " << name << " has dimensions =";
+    for (size_t i=0; i<numTopologicalDims; ++i)
+      VsLog::debugLog() << " " << varDims[i+isCompMajor];
+    VsLog::debugLog() << ", numTopologicalDims = " << numTopologicalDims
                       << ", isComponent = " << isAComponent << "." << std::endl;
 
-
-    // Temporary array for cell counts as the selection is ZONAL.
-    std::vector<int> numCells(numTopologicalDims);
+    // Temporary array for variable counts as the selection is NODAL.
+    std::vector<int> numVars(numTopologicalDims);
 
     for (size_t i=0; i<numTopologicalDims; ++i)
-    {
-      if( isZonal )
-        numCells[i] = varDims[i+isCompMajor];
-      else
-        numCells[i] = varDims[i+isCompMajor] - 1;
-    }
+      numVars[i] = varDims[i+isCompMajor];
 
     // The variable dims should reflect the topological dims plus one
     // more dimension for the spatial dimension of the variable.
     size_t vsdim = numTopologicalDims;
     std::vector<int> vdims(vsdim+1);
 
-    // Adjust for the data selections which are ZONAL. If no selection
+    // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numCells, vdims,
+    GetSelectionBounds( numTopologicalDims, numVars, vdims,
                         mins, maxs, strides, haveDataSelections, !isZonal );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     if (parallelRead)
     {
-      GetParallelDecomp( numTopologicalDims, vdims, mins, maxs, strides,
-                         (isZonal ? 0 : 1) );
+      if( !GetParallelDecomp( numTopologicalDims, vdims, mins, maxs, strides,
+                              !isZonal ) )
+        return NULL; // No work for this processor.
 
       haveDataSelections = 1;
     }
@@ -3161,8 +3145,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         static_cast<VsUniformMesh*>(meta)->getNumMeshDims(dims);
         int bounds[3] = {1,1,1};
          for( int i=0; i<dims.size(); ++i )
-           bounds[i] = dims[i] - 1; // Subtract 1 because the logical
-                                    // bounds are zone centric.
+           bounds[i] = dims[i]; // Logical bounds are node centric.
 
         avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
             1, 1, 1, 0, mdims, mdims, AVT_RECTILINEAR_MESH);
@@ -3184,8 +3167,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         static_cast<VsRectilinearMesh*>(meta)->getNumMeshDims(dims);
         int bounds[3] = {1,1,1};
         for( int i=0; i<dims.size(); ++i )
-          bounds[i] = dims[i] - 1; // Subtract 1 because the logical
-                                   // bounds are zone centric.
+          bounds[i] = dims[i]; // Logical bounds are node centric.
 
         avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
             1, 1, 1, 0, mdims, mdims, AVT_RECTILINEAR_MESH);
@@ -3204,8 +3186,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         static_cast<VsStructuredMesh*>(meta)->getNumMeshDims(dims);
         int bounds[3] = {1,1,1};
         for( int i=0; i<dims.size(); ++i )
-          bounds[i] = dims[i] - 1; // Subtract 1 because the logical
-                                   // bounds are zone centric.
+          bounds[i] = dims[i]; // Logical bounds are node centric.
 
         avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
             1, 1, 1, 0, mdims, mdims, AVT_CURVILINEAR_MESH);
@@ -3245,8 +3226,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
           // Add in the logical bounds of the mesh which is the number
           // of cells.
-          int numCells =  unstructuredMesh->getNumCells();
-          int bounds[3] = {numCells,0,0};
+          int bounds[3] = {unstructuredMesh->getNumCells(), 0, 0};
 
           avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
               1, 1, 1, 0, mdims, mdims, AVT_UNSTRUCTURED_MESH);
@@ -3966,33 +3946,41 @@ double avtVsFileFormat::GetTime()
 //
 
 void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
-                                          std::vector<int> &numCells,
+                                          std::vector<int> &numNodes,
                                           std::vector<int> &gdims,
                                           int *mins,
                                           int *maxs,
                                           int *strides,
                                           bool haveDataSelections,
-                                          bool adjustForNodes )
+                                          bool isNodal )
 {
-    // Adjust for the data selections which are ZONAL.
+    // Adjust for the data selections which are NODAL (typically) or ZONAL.
     if( haveDataSelections )
     {
       for (size_t i=0; i<numTopologicalDims; ++i)
       {
-        if( maxs[i] < 0 || numCells[i] - 1 < maxs[i] )
-          maxs[i] = numCells[i] - 1;  // last cell index, not number of cells
+        if( maxs[i] < 0 || numNodes[i] - 1 < maxs[i] )
+          maxs[i] = numNodes[i] - 1;  // last node index, not number of nodes
 
         if( maxs[i] < mins[i] )
           mins[i] = 0;
 
-        if( adjustForNodes )
+        if( strides[i] > 1 )
         {
-          int lastCell =
-            mins[i] + ((maxs[i] - mins[i]) / strides[i]) * strides[i];
-          
-          // Make sure a complete stride can be taken
-          if( lastCell + strides[i] - 1 > maxs[i] )
-            maxs[i] = lastCell - 1;
+          int lastNode = mins[i] + ((maxs[i] - mins[i]) / strides[i]) * strides[i];
+            
+          if( isNodal )
+          {
+            // Make sure a complete stride can be taken
+            if( lastNode + strides[i] > maxs[i] )
+              maxs[i] = lastNode;
+          }
+          else
+          {
+            // Make sure a complete stride can be taken
+            if( lastNode + strides[i] - 1 > maxs[i] - 1 )
+              maxs[i] = lastNode - 1;
+          }
         }
       }
     }
@@ -4001,7 +3989,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
       for (size_t i=0; i<numTopologicalDims; ++i)
       {
         mins[i] = 0;
-        maxs[i] = numCells[i] - 1;  // last cell index, not number of cells
+        maxs[i] = numNodes[i] - 1;  // last node index, not number of nodes
         strides[i] = 1;
       }
     }
@@ -4016,12 +4004,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
     // Storage for meshes in VisIt, which is is topologically 3D so
     // the points must also be 3D.
     for (size_t i=0; i<numTopologicalDims; ++i)
-    {
-      gdims[i] = ((maxs[i]-mins[i]) / strides[i] + 1 +        // Number of cells
-//  COMMENTED OUT FOR NOW AS HDF5 DOES NOT HANDLE PARTIAL CELLS
-//                 ((maxs[i]-mins[i]+1)%strides[i] ? 1 : 0) + // Partial cell
-                   (adjustForNodes ? 1 : 0));                 // Last Node
-    }
+      gdims[i] = (maxs[i]-mins[i]) / strides[i] + 1;        // Number of nodes
 
     for (size_t i=numTopologicalDims; i<gdims.size(); ++i)
       gdims[i] = 1;
@@ -4030,7 +4013,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
     {
       VsLog::debugLog()
         << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-        << "Have a zonal inclusive selection  ";
+        << "Have a " << (isNodal ? "nodal" : "zonal") << " inclusive selection  ";
 
       for (size_t i=0; i<numTopologicalDims; ++i)
       {
@@ -4042,7 +4025,7 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
     }
 
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      <<  "Grid dims ";
+                      <<  "Dimensions ";
 
     for (size_t i=0; i<numTopologicalDims; ++i)
       VsLog::debugLog() << gdims[i] << "  ";
@@ -4063,12 +4046,12 @@ void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
 //  Modifications:
 //
 
-void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
+bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
                                          std::vector<int> &dims,
                                          int *mins,
                                          int *maxs,
                                          int *strides,
-                                         bool adjustForNodes )
+                                         bool isNodal )
 {
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
 
@@ -4085,11 +4068,14 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
       splitAxis = i;
   }
 
-  // Integer number of cells per processor
+  splitAxis = 0;
+
+  // Integer number of nodes processor - note subtract off one node
+  // because to join sections the "next" node is always added in. Thus
+  // by default the last node will be added in.
   size_t numNodes = dims[splitAxis];
-  size_t numCells = (maxs[splitAxis]-mins[splitAxis]) / strides[splitAxis] + 1;
-  size_t numCellsPerProc = numCells / (PAR_Size());
-  size_t numProcsWithExtraCell = numCells % (PAR_Size());
+  size_t numNodesPerProc = (numNodes-1) / PAR_Size();
+  size_t numProcsWithExtraNode = (numNodes-1) % PAR_Size();
 
   if( PAR_Rank() == 0 )
   {
@@ -4098,82 +4084,110 @@ void avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
                       << "min = " << mins[splitAxis] << "  "
                       << "max = " << maxs[splitAxis] << "  "
                       << "strides = " << strides[splitAxis] << "  "
-                      << "numCells = " << numCells << "  "
                       << "numNodes = " << numNodes << "  "
-                      << "numCellsPerProc = " << numCellsPerProc << "  "
-                      << "numProcsWithExtraCell = " << numProcsWithExtraCell
+                      << "numNodesPerProc = " << numNodesPerProc << "  "
+                      << "numProcsWithExtraNode = " << numProcsWithExtraNode
                       << std::endl;
     
-    for( int i=0; i<(PAR_Size()); ++i )
+    for( int i=0; i<PAR_Size(); ++i )
     {
       int min, max;
 
-      // To get all of the cells adjust the count by one for those
-      // processors that need an extra cell.
-      if (i < numProcsWithExtraCell)
+      // To get all of the nodes adjust the count by one for those
+      // processors that need an extra node.
+      if (i < numProcsWithExtraNode)
       {
-        min = i * (numCellsPerProc + 1) * strides[splitAxis];
-        max = min + (numCellsPerProc + 1) * strides[splitAxis] - 1;
+        min = i * (numNodesPerProc + 1) * strides[splitAxis];
+        max = min + (numNodesPerProc + 1) * strides[splitAxis] +
+          // To get the complete mesh (i.e. the overlay between one
+          // section to the next) add one more node. But for zonal and
+          // point based meshes it is not necessary.
+          (isNodal ? 0 : -1);
       }
       else
       {
-        // Processors w/extra cell plus processors without extra cell.
-        min = (numProcsWithExtraCell * (numCellsPerProc + 1) +
-               (i - numProcsWithExtraCell) * numCellsPerProc) *
+        // Processors w/extra node plus processors without extra node.
+        min = (numProcsWithExtraNode * (numNodesPerProc + 1) +
+               (i - numProcsWithExtraNode) * numNodesPerProc) *
           strides[splitAxis];
         
-        max = min + (numCellsPerProc) * strides[splitAxis] - 1;
+        max = min + (numNodesPerProc) * strides[splitAxis] +
+          // To get the complete mesh (i.e. the overlay between one
+          // section to the next) add one more node. But for zonal and
+          // point based meshes it is not necessary.
+          (isNodal ? 0 : -1);
       }
-      
-      // Number of cells plus one if the cell topology is greater than one.
-      numCells = (max-min) / strides[splitAxis] + 1;
-      numNodes = numCells + (adjustForNodes ? 1 : 0);
-      
-      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Predicted bounds for processor " << i << "  "
-                        << "min = " << min << "  max = " << max << "  "
-                        << "strides = " << strides[splitAxis] << "  "
-                        << "cells = " << numCells << "  "
-                        << "nodes = " << numNodes << std::endl;
+
+      // Number of nodes plus one if the node topology is greater than one.
+      numNodes = (max-min) / strides[splitAxis] + 1;
+      if( i == 0 || (i && numNodes > 1) )
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Predicted bounds for processor " << i << "  "
+                          << "min = " << min << "  max = " << max << "  "
+                          << "strides = " << strides[splitAxis] << "  "
+                          << "nodes = " << numNodes << std::endl;
+      else
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "No work for processor " << i << std::endl;
     }
   }
 
-  // To get all of the cells adjust the count by one for those
-  // processors that need an extra cell.
-  if (PAR_Rank() < numProcsWithExtraCell)
+  // To get all of the nodes adjust the count by one for those
+  // processors that need an extra node.
+  if (PAR_Rank() < numProcsWithExtraNode)
   {
-    mins[splitAxis] = PAR_Rank() * (numCellsPerProc + 1) * strides[splitAxis];
-    maxs[splitAxis] = mins[splitAxis] + (numCellsPerProc +1) * strides[splitAxis] - 1;
+    mins[splitAxis] = PAR_Rank() * (numNodesPerProc + 1) * strides[splitAxis];
+    maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc +1) * strides[splitAxis] +
+      // To get the complete mesh (i.e. the overlay between one
+      // section to the next) add one more node. But for zonal and
+      // point based meshes it is not necessary.
+      (isNodal ? 0 : -1);
   }
   else
   {
-    // Processors w/extra cell plus processors without extra cell.
-    mins[splitAxis] = (numProcsWithExtraCell * (numCellsPerProc + 1) +
-                       (PAR_Rank() - numProcsWithExtraCell) * numCellsPerProc) *
+    // Processors w/extra node plus processors without extra node.
+    mins[splitAxis] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
+                       (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
       strides[splitAxis];
     
-    maxs[splitAxis] = mins[splitAxis] + (numCellsPerProc) * strides[splitAxis] - 1;
+    maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc) * strides[splitAxis] +
+      
+      (isNodal ? 0 : -1);
   }
 
-  // Number of cells plus one if the cell topology is greater than
+  // Number of nodes plus one if the node topology is greater than
   // one.  Point data meshes or for zonal variable data are the
   // cases where one does need to adjust for nodes.
-  numCells = (maxs[splitAxis]-mins[splitAxis]) / strides[splitAxis] + 1;
-  numNodes = numCells + (adjustForNodes ? 1 : 0);
+  numNodes = (maxs[splitAxis]-mins[splitAxis]) / strides[splitAxis] + 1;
   
   dims[splitAxis] = numNodes;
-  
-  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Actual bounds for processor " << PAR_Rank() << "  "
-                    << "min = " << mins[splitAxis] << "  "
-                    << "max = " << maxs[splitAxis] << "  "
-                    << "strides = " << strides[splitAxis] << "  "
-                    << "cells = " << numCells << "  "
-                    << "nodes = " << numNodes << std::endl;
+
+  bool work;
+
+  if( (PAR_Rank() == 0) || (PAR_Rank() && numNodes > 1) )
+  {
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Actual bounds for processor " << PAR_Rank() << "  "
+                      << "min = " << mins[splitAxis] << "  "
+                      << "max = " << maxs[splitAxis] << "  "
+                      << "strides = " << strides[splitAxis] << "  "
+                      << "nodes = " << numNodes << std::endl;
+  }
+  else
+  {
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "No work for processor " << PAR_Rank() << std::endl;
+  }
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Parallel & Decompose_Domains are defined, "
                     << "exiting parallel code." << std::endl;
+
+  // If not on processor 0 and if the porcessor has only one node
+  // skip it as it is slice which will have been drawn by the previous
+  // processor.
+  return( (PAR_Rank() == 0) || (PAR_Rank() && numNodes > 1) );
+
 #endif
 }
 #endif
