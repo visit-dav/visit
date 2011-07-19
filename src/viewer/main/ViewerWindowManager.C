@@ -4445,7 +4445,8 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 //    Set the active window.
 //
 //  Arguments:
-//    windowId  The 1 origin window identifier.
+//    windowId      The 1 origin window identifier.
+//    raiseWindow   Flag specifying whether window should be raised
 //
 //  Programmer: Eric Brugger
 //  Creation:   September 13, 2000
@@ -4511,6 +4512,9 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 //    Brad Whitlock, Fri Aug 13 16:38:06 PDT 2010
 //    Fix legend names.
 //
+//    Gunther H. Weber, Mon Jul 11 11:57:06 PDT 2011
+//    Added flag indicating whether window should be raised.
+//
 //    Gunther H. Weber, Mon Jul 18 16:27:41 PDT 2011
 //    Activate window before raising it (otherwise MacOS will only
 //    raise the window briefly.
@@ -4518,7 +4522,7 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 // ****************************************************************************
 
 void
-ViewerWindowManager::SetActiveWindow(const int windowId)
+ViewerWindowManager::SetActiveWindow(const int windowId, const bool raiseWindow)
 {
     //
     // Check the window id.
@@ -4588,11 +4592,15 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
     // Deiconify the activated window.
     windows[activeWindow]->DeIconify();
  
-    // Activate window in windowing system
-    windows[activeWindow]->ActivateWindow();
 
-    // Raise the activated window.
-    windows[activeWindow]->Raise();
+    if (raiseWindow)
+    {
+        // Activate window in windowing system
+        windows[activeWindow]->ActivateWindow();
+
+        // Raise the activated window.
+        windows[activeWindow]->Raise();
+    }
 
     //
     // Update all of the client window attributes.

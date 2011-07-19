@@ -254,21 +254,27 @@ ViewerMethods::SetWindowLayout(int layout)
 //    Set the active window.
 //
 //  Arguments:
-//    windowId  The identifier of the window to make active.
+//    windowId      The identifier of the window to make active.
+//    raiseWindow   Flag specifying whether to raise window.
 //
 //  Programmer: Eric Brugger
 //  Creation:   August 17, 2000
 //
+// Modifications:
+//    Gunther H. Weber, Mon Jul 11 13:16:36 PDT 2011
+//    Added flag specifying whether to raise the window.
+//
 // ****************************************************************************
 
 void
-ViewerMethods::SetActiveWindow(int windowId)
+ViewerMethods::SetActiveWindow(int windowId, bool raiseWindow)
 {
     //
     // Set the rpc type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::SetActiveWindowRPC);
     state->GetViewerRPC()->SetWindowId(windowId);
+    state->GetViewerRPC()->SetBoolFlag(raiseWindow);
 
     //
     // Issue the RPC.

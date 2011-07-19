@@ -2269,11 +2269,13 @@ visit_SetActiveWindow(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     int activewin;
+    int raisewin = 1;
     if (!PyArg_ParseTuple(args, "i", &activewin))
-       return NULL;
+        if (!PyArg_ParseTuple(args, "ii", &activewin, &raisewin))
+            return NULL;
 
     MUTEX_LOCK();
-        GetViewerMethods()->SetActiveWindow(activewin);
+        GetViewerMethods()->SetActiveWindow(activewin, raisewin);
     MUTEX_UNLOCK();
 
     // Return the success value.

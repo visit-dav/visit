@@ -150,6 +150,9 @@ class ViewerState;
 //   Brad Whitlock, Tue Mar 29 11:05:58 PDT 2011
 //   Added a bool to SetPlotFollowsTime.
 //
+//   Gunther H. Weber, Mon Jul 11 13:12:35 PDT 2011
+//   Added flag to SetActiveWindow to specify whether to raise window.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -165,7 +168,7 @@ public:
     void CloneWindow();
     void DeleteWindow();
     void SetWindowLayout(int layout);
-    void SetActiveWindow(int windowId);
+    void SetActiveWindow(int windowId, bool raiseWindow = true);
     void IconifyAllWindows();
     void DeIconifyAllWindows();
     void ShowAllWindows();

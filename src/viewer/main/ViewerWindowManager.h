@@ -469,7 +469,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     void RedrawWindow(int windowIndex = -1);
     void ResetView(int windowIndex = -1);
     void SaveWindow(int windowIndex = -1);
-    void SetActiveWindow(const int windowId);
+    void SetActiveWindow(const int windowId, const bool raiseWindow = true);
     void SetAnimationAttsFromClient();
 
     void SetAnnotationAttsFromClient();
