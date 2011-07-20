@@ -239,6 +239,10 @@
 #    Add VISIT_FORCE_SSH_TUNNELING that always forces ssh tunneling for all
 #    data connections.
 #
+#    Gunther H. Weber, Wed Jul 20 15:32:26 PDT 2011
+#    Add support for creating a Mac App bundle by setting
+#    VISIT_CREATE_APPBUNDLE_PACKAGE to ON.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -438,7 +442,7 @@ OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
-
+OPTION(VISIT_CREATE_APPBUNDLE_PACKAGE "Create DMG file with Mac App bundle with make package" OFF) 
 
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
     IF(NOT DEFINED VISIT_${libvar})
@@ -1816,33 +1820,40 @@ INSTALL(FILES ${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake
 #          packages up a VisIt distribution.
 #-----------------------------------------------------------------------------
 
+CONFIGURE_FILE(${VISIT_SOURCE_DIR}/svn_bin/Info.plist.in
+               ${VISIT_BINARY_DIR}/svn_bin/Info.plist @ONLY IMMEDIATE)
+
 # temporarily turn this off on windows
 IF (NOT WIN32)
-SET(CPACK_PACKAGE_NAME "visit")
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VisIt ${VISIT_VERSION} is a parallel visualization and data analysis tool")
-SET(CPACK_PACKAGE_VENDOR "LLNS")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/help/en_US/copyright.html")
+    IF (APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
+        SET (CPACK_GENERATOR "Bundle")
 
-# We should probably parse ${VISIT_VERSION} into its component parts instead.
-SET(CPACK_PACKAGE_VERSION_MAJOR "2")
-SET(CPACK_PACKAGE_VERSION_MINOR "0")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
+        SET (CPACK_PACKAGE_FILE_NAME "VisIt-${VISIT_VERSION}")
+        SET (CPACK_BUNDLE_NAME "VisIt")
+        SET (CPACK_BUNDLE_ICON "${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns")
+        SET (CPACK_BUNDLE_PLIST "${VISIT_BINARY_DIR}/svn_bin/Info.plist")
+        SET (CPACK_BUNDLE_STARTUP_COMMAND "${VISIT_SOURCE_DIR}/svn_bin/LaunchVisItFromAppBundle.sh")
+    ELSE(APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
+        SET(CPACK_GENERATOR "TGZ")
 
-#IF(WIN32)
-#    SET(CPACK_PACKAGE_FILE_NAME "visit${VISIT_VERSION}")
-#    SET(CPACK_PACKAGE_INSTALL_DIRECTORY "VisIt ${VISIT_VERSION}")
-#
-#    SET(CPACK_GENERATOR "NSIS")
-#ELSE(WIN32)
-    STRING(REPLACE "." "_" UL_VERSION ${VISIT_VERSION})
-    SET(CPACK_PACKAGE_FILE_NAME "visit${UL_VERSION}.${VISIT_INSTALL_PLATFORM}")
+        SET(CPACK_PACKAGE_NAME "visit")
+        SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VisIt ${VISIT_VERSION} is a parallel visualization and data analysis tool")
+        SET(CPACK_PACKAGE_VENDOR "LLNS")
+        SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/help/en_US/copyright.html")
 
-    SET(CPACK_GENERATOR "TGZ")
-    IF(NOT APPLE)
-        SET(CPACK_STRIP_FILES TRUE)
-    ENDIF(NOT APPLE)
-#ENDIF(WIN32)
-INCLUDE(CPack)
+        # We should probably parse ${VISIT_VERSION} into its component parts instead.
+        SET(CPACK_PACKAGE_VERSION_MAJOR "2")
+        SET(CPACK_PACKAGE_VERSION_MINOR "0")
+        SET(CPACK_PACKAGE_VERSION_PATCH "0")
+
+        STRING(REPLACE "." "_" UL_VERSION ${VISIT_VERSION})
+        SET(CPACK_PACKAGE_FILE_NAME "visit${UL_VERSION}.${VISIT_INSTALL_PLATFORM}")
+
+        IF(NOT APPLE)
+            SET(CPACK_STRIP_FILES TRUE)
+        ENDIF(NOT APPLE)
+    ENDIF(APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
+    INCLUDE(CPack)
 ELSE (NOT WIN32)
     # create a custom target that will run our nsis scripts.
     # Make sure it won't run unless specifically called.
@@ -1872,9 +1883,9 @@ ELSE (NOT WIN32)
             ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD 
                 COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P ${VISIT_BINARY_DIR}/data/cmake_install.cmake)
         ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
- 
+
         SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
-        
+
         # source installer
         ADD_CUSTOM_COMMAND(OUTPUT visitdev${VISIT_VERSION}.exe
             COMMAND ${MAKENSIS} 
@@ -1888,5 +1899,3 @@ ELSE (NOT WIN32)
         SET_TARGET_PROPERTIES(_SRC_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
     ENDIF (${MAKENSIS_FOUND})
 ENDIF (NOT WIN32)
-
-
