@@ -2544,9 +2544,23 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
                << "Incorrect poloidal winding is " << mergedWindingPairs[i].poloidal
                << "  ";
 
-        // Low order offset which is an indication of what value to check.
+        // Low order Blankinship offset which is an indication of what
+        // value to check.
+
         unsigned int wMax;
         unsigned int windingGroupOffset;
+
+        // At the present time we believe this error only happens for
+        // cases where q < 1. As such, we can not directly use the
+        // Blankinship value as it is a low order value. Such that we
+        // believe that the correct poloidal winding for these cases
+        // will be mergedWindingPairs[i].toroidal + wMax. Where wMax
+        // is the lowestof the two possblie value.
+ 
+
+        // The best windingGroupOffset can be either either side
+        // i.e. the offset or toroidalWinding - offset. As such take
+        // the one that results in the lowest order Balnkinship value.
 
         if( Blankinship( mergedWindingPairs[i].toroidal,
                          toroidalStats2[0].first ) <
@@ -2565,7 +2579,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         wMax = Blankinship( mergedWindingPairs[i].toroidal,
                             windingGroupOffset );
         
-        int w;
+        unsigned int w;
 
         // Search through the possible choices to find an offset.
         // NOTE: ARS believes that the correct poloidal winding for
@@ -2575,38 +2589,31 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
           if( windingGroupOffset ==
               Blankinship( mergedWindingPairs[i].toroidal,
                            mergedWindingPairs[i].toroidal+w ) )
-            break;
-        }
-
-        if( w <= wMax )
-        {
-          mergedWindingPairs[i].poloidal += w;
-        
-          if( verboseFlag && (drawable || i < 10) )
-            cerr << "Correct poloidal winding is " << mergedWindingPairs[i].poloidal
-                 << endl;
-        }
-        else
-        {
-          if( verboseFlag && (drawable || i < 10) )
-            cerr << "Can not correct poloidal winding."
-                 << endl;
-
-          for( w=1; w<=wMax; ++w )
           {
-            cerr << "Checking poloidal value " << w;
+            mergedWindingPairs[i].poloidal = mergedWindingPairs[i].toroidal+w;
 
-            if( windingGroupOffset !=
-                Blankinship( mergedWindingPairs[i].toroidal,
-                             mergedWindingPairs[i].toroidal+w ) )
-            {
-              cerr << "  Failed  "
-                   << Blankinship( mergedWindingPairs[i].toroidal,
-                                   mergedWindingPairs[i].toroidal+w ) << endl;
-            }
-            else
-              cerr << endl;
+            if( verboseFlag && (drawable || i < 10) )
+              cerr << "Correct poloidal winding is "
+                   << mergedWindingPairs[i].poloidal
+                   << ( w == wMax ? " as predicted" : "" ) << endl;
+            break;
           }
+        }
+
+        if( w > wMax )
+        {
+          if( verboseFlag && (drawable || i < 10) )
+            cerr << "Can not correct poloidal winding." << endl;
+          
+//        for( w=1; w<=wMax; ++w )
+//        {
+//          if( verboseFlag && (drawable || i < 10) )
+//            cerr << "Checking poloidal value " << w;
+
+//          cerr << "  Failed  "
+//               << Blankinship( mergedWindingPairs[i].toroidal,
+//                               mergedWindingPairs[i].toroidal+w ) << endl;
+//        }
         }
       }
     }
