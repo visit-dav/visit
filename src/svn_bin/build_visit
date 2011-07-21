@@ -416,6 +416,20 @@
 #     Eric Brugger, Wed Jul 20 11:36:38 PDT 2011
 #     I changed the visit version number to 2.3.1.
 #
+#     Eric Brugger, Thu Jul 21 08:25:52 PDT 2011
+#     I changed the display of the last message so that the entire message
+#     was visible when the script is run in graphical mode. The message was
+#     about 20 lines and only the last line was being displayed. I added an
+#     info_box_large function that displays many lines and then used that
+#     to display the last message.
+#
+#     Eric Brugger, Thu Jul 21 11:44:14 PDT 2011
+#     I changed the behavior of the script when the user specifies the third
+#     party library directory and the directory doesn't exist. It used to
+#     print an error message and exit, now it prompts the user to determine
+#     if it should create the directory and only exits with an error if the
+#     user indicates that the script shouldn't create the directory.
+#
 # *****************************************************************************
 
 
@@ -953,6 +967,7 @@ export ICET_BUILD_DIR=${ICET_BUILD_DIR:-"IceT-1-0-0"}
 DLG="dialog"
 DLG_BACKTITLE="VisIt $VISIT_VERSION Build Process"
 DLG_HEIGHT="5"
+DLG_HEIGHT_TALL="25"
 DLG_WIDTH="60"
 DLG_WIDTH_WIDE="80"
 
@@ -1041,7 +1056,7 @@ function info_box
 # *************************************************************************** #
 # Function: info                                                              #
 #                                                                             #
-# Purpose: Given an informative message to the user.                          #
+# Purpose: Give an informative message to the user.                           #
 #                                                                             #
 # Programmer: Tom Fogal                                                       #
 # Date: Fri Oct  3 09:41:50 MDT 2008                                          #
@@ -1067,6 +1082,24 @@ function info
         # write message to log as well
         log "$@"
     fi
+}
+
+# *************************************************************************** #
+# Function: info_box_large                                                    #
+#                                                                             #
+# Purpose: Show a large information box with a message.                       #
+#                                                                             #
+# Programmer: Eric Brugger,                                                   #
+# Date: Thu Jul 21 08:25:52 PDT 2011                                          #
+#                                                                             #
+# *************************************************************************** #
+
+function info_box_large
+{
+    if [[ "$GRAPHICAL" == "yes" ]] ; then
+        $DLG --backtitle "$DLG_BACKTITLE" --infobox "$1" $DLG_HEIGHT_TALL $DLG_WIDTH
+    fi
+    return 0
 }
 
 # *************************************************************************** #
@@ -9858,8 +9891,32 @@ if [[ "$DOWNLOAD_ONLY" == "no" ]] ; then
                   "Bailing out."
          fi
       else
-         error "The location to install the third party libraries does not exist." \
-               "Bailing out"
+         if [[ "$GRAPHICAL" == "yes" ]] ; then
+             $DLG --backtitle "$DLG_BACKTITLE" --yesno "The third party library location does not exist. Create it?" 0 0
+             if [[ $? == 1 ]] ; then
+                 error "The third party library location does not exist." \
+                       "Bailing out."
+             else
+                 mkdir "$THIRD_PARTY_PATH"
+                 if [[ $? != 0 ]] ; then
+                    error "Unable to write files to the third party library location." \
+                          "Bailing out."
+                 fi
+             fi
+         else
+             info "The third party library location does not exist. Create it?"
+             read RESPONSE
+             if [[ "$RESPONSE" != "yes" ]] ; then
+                 error "The third party library location does not exist." \
+                       "Bailing out."
+             else
+                 mkdir "$THIRD_PARTY_PATH"
+                 if [[ $? != 0 ]] ; then
+                    error "Unable to write files to the third party library location." \
+                          "Bailing out."
+                 fi
+             fi
+         fi
       fi
    fi
 
@@ -10442,31 +10499,70 @@ if [[ "$DO_VISIT" == "yes" ]] ; then
     if [[ $? != 0 ]] ; then
         error "Unable to build or install VisIt.  Bailing out."
     fi
-    info "Done building VisIt"
+
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        info \
-        "You may now try to run VisIt by cd'ing into the src/bin"
+        VISIT_SRC_DIR="src"
     else
-        info \
-        "You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar*}/src/bin"
+        VISIT_SRC_DIR="${VISIT_FILE%.tar*}/src"
     fi
-    info "directory and invoking \"visit\"."
-    info
-    info "To create a binary distribution tarball from this build, cd to"
-    if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        info "${START_DIR}/src"
+
+FINISHED_MSG="Finished building VisIt.\n\n\
+You many now try to run VisIt by cd'ing into the \
+$VISIT_SRC_DIR/bin directory and invoking \"visit\".\n\n\
+To create a binary distribution tarball from this build, cd to \
+${START_DIR}/${VISIT_SRC_DIR}\n\
+then enter: \"make package\"\n\n\
+This will produce a tarball called visitVERSION.ARCH.tar.gz, where \
+VERSION is the version number, and ARCH is the OS architecure.\n\n\
+To install the above tarball in a directory called \"INSTALL_DIR_PATH\",\
+enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH\n\n\
+If you run into problems, contact visit-users@ornl.gov."
+
+    #
+    # Output the message indicating that we are finished. I couldn't get
+    # the imbedded newlines in the FINISHED_MSG to display properly so I
+    # am treating the graphical and console interfaces differently.
+    #
+    if test "${GRAPHICAL}" = "yes" ; then
+        if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
+            info_box_large "$FINISHED_MSG" 1>&3
+        else
+            info_box_large "$FINISHED_MSG"
+        fi
+        log "Finished building VisIt."
+        log
+        log "You many now try to run VisIt by cd'ing into the"
+        log "$VISIT_SRC_DIR/bin directory and invoking \"visit\""
+        log
+        log "To create a binary distribution tarball from this build, cd to"
+        log "${START_DIR}/${VISIT_SRC_DIR}"
+        log "then enter: \"make package\""
+        log
+        log "This will produce a tarball called visitVERSION.ARCH.tar.gz, where"
+        log "VERSION is the version number, and ARCH is the OS architecure."
+        log
+        log "To install the above tarball in a directory called \"INSTALL_DIR_PATH\""
+        log "enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
+        log
+        log "If you run into problems, contact visit-users@ornl.gov."
     else
-        info "${START_DIR}/${VISIT_FILE%.tar*}/src"
+        info "Finished building VisIt."
+        info
+        info "You many now try to run VisIt by cd'ing into the"
+        info "$VISIT_SRC_DIR/bin directory and invoking \"visit\""
+        info
+        info "To create a binary distribution tarball from this build, cd to"
+        info "${START_DIR}/${VISIT_SRC_DIR}"
+        info "then enter: \"make package\""
+        info
+        info "This will produce a tarball called visitVERSION.ARCH.tar.gz, where"
+        info "VERSION is the version number, and ARCH is the OS architecure."
+        info
+        info "To install the above tarball in a directory called \"INSTALL_DIR_PATH\""
+        info "enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
+        info
+        info "If you run into problems, contact visit-users@ornl.gov."
     fi
-    info "then enter: \"make package\""
-    info
-    info "This will produce a tarball called visitVERSION.ARCH.tar.gz, where"
-    info "VERSION is the version number, and ARCH is the OS architecure."
-    info
-    info "To install the above tarball in a directory called "INSTALL_DIR_PATH","
-    info "enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
-    info
-    info "If you run into problems, contact visit-users@ornl.gov"
 else
     if [[ $ANY_ERRORS == "no" ]] ; then
         info "Finished!"
