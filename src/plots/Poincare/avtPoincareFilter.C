@@ -68,9 +68,6 @@
 #include "skelet.h"
 #endif
 
-
-using namespace std;
-
 #define SIGN(x) ((x) < 0.0 ? -1 : 1)
 
 static const int DATA_None = 0;
@@ -423,7 +420,10 @@ avtPoincareFilter::ContinueExecute()
           if( poincare_ic->properties.iteration < OPointMaxIterations )
           {
             vector<avtIntegralCurve *> new_ics;
-            AddSeedPoint( poincare_ic->properties.OPoints[0], new_ics );
+            avtVector vec(0,0,0);
+
+            AddSeedPoint( poincare_ic->properties.OPoints[0], vec,
+                          new_ics );
           
             for( unsigned int j=0; j<new_ics.size(); j++ )
             {
@@ -662,18 +662,18 @@ avtPoincareFilter::ClassifyStreamlines(vector<avtIntegralCurve *> &ics)
 //
 // ****************************************************************************
 template< class T > int
-pairsortfirst( const pair < T, T > s0, const pair < T, T > s1 )
+pairsortfirst( const std::pair < T, T > s0, const std::pair < T, T > s1 )
 {
   return (s0.first > s1.first );
 }
 
 template< class T > int
-pairsortsecond( const pair < T, T > s0, const pair < T, T > s1 )
+pairsortsecond( const std::pair < T, T > s0, const std::pair < T, T > s1 )
 {
   return (s0.second > s1.second );
 }
 
-void realDFTamp( vector< double > &g, vector< double > &G )
+void realDFTamp( std::vector< double > &g, std::vector< double > &G )
 {
   unsigned int N = g.size();
 
@@ -1327,7 +1327,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
             
         cells->InsertNextCell(toroidalWindings+1);
         scalars->Allocate    (toroidalWindings+1);
-            
+
         // Loop through each toroidial group taking just the first
         // point from each group.
         for( unsigned int jj=0; jj<=toroidalWindings*skip; jj+=skip ) 

@@ -41,7 +41,7 @@
 #if !defined(FieldlineAnalyzerLib_h)
 #define FieldlineAnalyzerLib_h
 
-//#define STRAIGHTLINE_SKELETON 1
+#define STRAIGHTLINE_SKELETON 1
 
 #include <avtVector.h>
 #include <DebugStream.h>
@@ -50,8 +50,6 @@ typedef avtVector Point ;
 typedef avtVector Vector;
 
 #include <vector>
-
-using namespace std;
 
 struct WindingPair {
   unsigned int toroidal;
@@ -178,8 +176,6 @@ public:
 
 namespace FusionPSE {
 
-//using namespace SCIRun;
-
 class FieldlineLib
 {
 public:
@@ -191,23 +187,23 @@ public:
   int intersect( Point l0_p0, Point l0_p1,
                  Point l1_p0, Point l1_p1 );
 
-  void convexHull( vector< pair< Point, unsigned int > > &hullPts,
+  void convexHull( std::vector< std::pair< Point, unsigned int > > &hullPts,
                    unsigned int &m,
                    unsigned int npts,
                    int dir );
 
-  bool hullCheck( vector< Point > &points,
+  bool hullCheck( std::vector< Point > &points,
                   int &direction);
 
   unsigned int isPrime( unsigned int a );
 
   unsigned int GCD( unsigned int a, unsigned int b );
 
-  unsigned int GCD( vector< unsigned int > values,
+  unsigned int GCD( std::vector< unsigned int > values,
                     unsigned int &freq,
                     unsigned int minGCD = 1 );
 
-  unsigned int ResonanceCheck( vector< pair< unsigned int, double > > &stats,
+  unsigned int ResonanceCheck( std::vector< std::pair< unsigned int, double > > &stats,
                               unsigned int baseResonance,
                               unsigned int max_samples = 3 );
 
@@ -218,91 +214,90 @@ public:
   Point CalcCircle(Point &pt1, Point &pt2, Point &pt3);
 
   bool
-  IntersectCheck( vector< Point >& points,
+  IntersectCheck( std::vector< Point >& points,
                   unsigned int nbins,
                   unsigned int skip  );
 
   unsigned int Blankinship( unsigned int toroidalWinding,
                             unsigned int poloidalWinding,
-                            unsigned int offset = 1 );
+                            unsigned int skip   = 1 );
 
-  
-  void rotationalSumStats( vector< double > &rotationalSums,
+  void rotationalSumStats( std::vector< double > &rotationalSums,
                            double &averageRotationalSum,
                            double &stdDev );
   template< class TYPE >
-  void safetyFactorStats( vector< TYPE > &poloidalWindingCounts,
+  void safetyFactorStats( std::vector< TYPE > &poloidalWindingCounts,
                           double &averageSafetyFactor,
                           double &stdDev );
 
-  void SortWindingPairs( vector< WindingPair > &windingPairs,
+  void SortWindingPairs( std::vector< WindingPair > &windingPairs,
                          bool reverse = false );
 
-  void RankWindingPairs( vector< WindingPair > &windingPairs,
+  void RankWindingPairs( std::vector< WindingPair > &windingPairs,
                          bool LT = true );
 
-  void poloidalWindingCheck( vector< unsigned int > &poloidalWindingset,
-                             vector< WindingPair > &windingSetList );
+  void poloidalWindingCheck( std::vector< unsigned int > &poloidalWindingset,
+                             std::vector< WindingPair > &windingSetList );
 
   void
-  periodicityStats( vector< Point >& points,
-                    vector< pair< unsigned int, double > >& stats,
+  periodicityStats( std::vector< Point >& points,
+                    std::vector< std::pair< unsigned int, double > >& stats,
                     unsigned int max_period,
                     unsigned int checkType );
 
 
-  void thresholdStats( vector< pair< unsigned int, double > >& stats,
+  void thresholdStats( std::vector< std::pair< unsigned int, double > >& stats,
                        bool erase,
                        unsigned int checkType );
 
   double
-  calculateSumOfSquares( vector< Point >& poloidalWinding_points,
+  calculateSumOfSquares( std::vector< Point >& poloidalWinding_points,
                          unsigned int poloidalWinding,
                          unsigned int checkType );
 
   bool
-  rationalCheck( vector< Point >& points,
+  rationalCheck( std::vector< Point >& points,
                  unsigned int toroidalWinding,
                  unsigned int &nnodes,
                  float delta=0.01 );
 
   bool
-  islandChecks( vector< Point >& points,
+  islandChecks( std::vector< Point >& points,
                 unsigned int toroidalWinding,
                 unsigned int &islands,
                 unsigned int &nnodes,
                 bool &complete );
 
   void
-  getPunctures( vector< Point > &ptList,
+  getPunctures( std::vector< Point > &ptList,
                 Vector planeN,
-                vector< Point > &puncturePts );
+                std::vector< Point > &puncturePts );
 
   void
-  getFieldlineBaseValues( vector< Point > &ptList,
-                          vector< Point > &poloidal_puncture_pts,
-                          vector< Point > &ridgeline_points,
-                          vector< double > &rotationalSums,
-                          vector< unsigned int > &poloidalWindingCounts,
+  getFieldlineBaseValues( std::vector< Point > &ptList,
+                          std::vector< Point > &poloidal_puncture_pts,
+                          std::vector< Point > &ridgeline_points,
+                          std::vector< double > &rotationalSums,
+                          std::vector< unsigned int > &poloidalWindingCounts,
                           float &delta );
 
   void
-  GetBaseWindingPairs( vector< unsigned int > &poloidalWindingCounts,
-                       vector< Point > &poloidal_puncture_pts,
-                       vector< WindingPair > &baseWindingPairs,
+  GetBaseWindingPairs( std::vector< unsigned int > &poloidalWindingCounts,
+                       std::vector< Point > &poloidal_puncture_pts,
+                       std::vector< WindingPair > &baseWindingPairs,
                        double &windingPairConfidence,
                        unsigned int &toroidalWindingMax,
                        unsigned int &poloidalWindingMax,
                        unsigned int &windingNumberMatchIndex );
 
   void
-  GetPeriodWindingPairs( vector< WindingPair > &baseWindingPairs,
-                         vector< WindingPair > &periodWindingPairs,
-                         vector< pair< unsigned int, double > > &toroidalStats,
-                         vector< pair< unsigned int, double > > &poloidalStats );
+  GetPeriodWindingPairs( std::vector< WindingPair > &baseWindingPairs,
+                         std::vector< WindingPair > &periodWindingPairs,
+                         std::vector< std::pair< unsigned int, double > > &toroidalStats,
+                         std::vector< std::pair< unsigned int, double > > &poloidalStats );
 
   void
-  fieldlineProperties( vector< Point > &ptList,
+  fieldlineProperties( std::vector< Point > &ptList,
                        FieldlineProperties &properties,
                        unsigned int overrideToroidalWinding,
                        unsigned int overridePoloidalWinding,
@@ -311,16 +306,16 @@ public:
                        bool detectIslandCenters );
 
   void
-  fieldlineProperties2( vector< Point > &ptList,
+  fieldlineProperties2( std::vector< Point > &ptList,
                         FieldlineProperties &fi );
 
-  void findIslandCenters( vector< Point > &puncturePts,
+  void findIslandCenters( std::vector< Point > &puncturePts,
                           unsigned int toroialWinding,
                           unsigned int nnodes,
-                          vector< Point > &centers );
+                          std::vector< Point > &centers );
 
   unsigned int
-  islandProperties( vector< Point > &points,
+  islandProperties( std::vector< Point > &points,
                     Vector &baseCentroid,
                     unsigned int &startIndex,
                     unsigned int &middleIndex,
@@ -328,19 +323,19 @@ public:
                     unsigned int &nodes );
 
   unsigned int
-  surfaceOverlapCheck( vector< vector< Point > > &bins,
+  surfaceOverlapCheck( std::vector< std::vector< Point > > &bins,
                     unsigned int toroidalWinding,
                     unsigned int skip,
                     unsigned int &nnodes );
 
   unsigned int
-  surfaceGroupCheck( vector< vector< Point > > &bins,
+  surfaceGroupCheck( std::vector< std::vector< Point > > &bins,
                      unsigned int i,
                      unsigned int j,
                      unsigned int nnodes );
 
   unsigned int
-  removeOverlap( vector< vector < Point > > &bins,
+  removeOverlap( std::vector< std::vector < Point > > &bins,
                  unsigned int &nnodes,
                  unsigned int toroidalWinding,
                  unsigned int poloidalWinding,
@@ -348,7 +343,7 @@ public:
                  unsigned int island );
 
   unsigned int
-  smoothCurve( vector< vector < Point > > &bins,
+  smoothCurve( std::vector< std::vector < Point > > &bins,
                unsigned int &nnodes,
                unsigned int toroidalWinding,
                unsigned int poloidalWinding,
@@ -356,7 +351,7 @@ public:
                unsigned int island );
 
   unsigned int
-  mergeOverlap( vector< vector < Point > > &bins,
+  mergeOverlap( std::vector< std::vector < Point > > &bins,
                 unsigned int &nnodes,
                 unsigned int toroidalWinding,
                 unsigned int poloidalWinding,
@@ -370,30 +365,30 @@ public:
 class Otsu
 {
   // Compute the q values in the equation
-  double Px( unsigned int init, unsigned int end, vector< unsigned int > &histo);
+  double Px( unsigned int init, unsigned int end, std::vector< unsigned int > &histo);
 
   // Compute the mean values in the equation (mu)
-  double Mx( unsigned int init, unsigned int end, vector< unsigned int > &histo);
+  double Mx( unsigned int init, unsigned int end, std::vector< unsigned int > &histo);
 
-  // Find the maximum element in a vector
-  unsigned int findMaxVet( vector< double > &vet, double &maxVet);    
+  // Find the maximum element in a std::vector
+  unsigned int findMaxVet( std::vector< double > &vet, double &maxVet);    
   // Compute the histogram
-  void getHistogram( vector< pair< unsigned int, double > >& stats,
-                     vector< unsigned int > &histo );
+  void getHistogram( std::vector< std::pair< unsigned int, double > >& stats,
+                     std::vector< unsigned int > &histo );
 public:
   // find otsu threshold
-  void getOtsuThreshold2(vector< pair< unsigned int, double > >& stats,
+  void getOtsuThreshold2(std::vector< std::pair< unsigned int, double > >& stats,
                          double &threshold, double &maxVet );
 
 
   // find otsu threshold
-  void getOtsuThreshold3(vector< pair< unsigned int, double > >& stats,
+  void getOtsuThreshold3(std::vector< std::pair< unsigned int, double > >& stats,
                          double &threshold0, double &threshold1,
                          double &maxVet );
 };
 
-int chainHull_2D( vector< pair< Point, unsigned int > > &pts,
-                  vector< pair< Point, unsigned int > > &hullPts,
+int chainHull_2D( std::vector< std::pair< Point, unsigned int > > &pts,
+                  std::vector< std::pair< Point, unsigned int > > &hullPts,
                   int direction  );
 
 } // End namespace FusionPSE
