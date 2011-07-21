@@ -30,12 +30,18 @@ Rectangular planes are now correctly implemented.</li>
 <li>2D transfer functions for the Volume plot now get saved to session files.</li>
 <li>Clicking the Reset button in the Annotation Window no longer causes VisIt to lose track of its legend annotation objects.</li>
 <li>The Threshold operator was not saving its attributes to session files.</li>
+<li>The last message output by the build_visit script that contained instructions on running the newly built version of VisIt and creating a VisIt distribution did not appear when running in graphical mode. This has been corrected.</li>
+<li>The build_visit script now builds VisIt on Ubuntu 11.04.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.3.1</font></b></p>
 <ul>
 <li>The GDAL reader was changed so it creates much larger domains when it decomposes an image into strips. This change results in far fewer I/O operations and results in a substantial speed up when processing large images.</li>
 <li>The <i>visitsetparallel</i> function in the Fortran interface for Libsim was modified so it sets up parallel processing callback functions that can help it more efficiently set up the environment.</li>
+<li>If the user specified a third party library directory to the build_visit script other than "./visit" that did not exist, the script would print an error message and exit. Now it asks the user if it should create the directory and only exits if the user indicates it should not create the directory.</li>
+<li>The build_visit script now uses the VisIt anonymous svn site as the fallback download site instead of LLNL's web site.</li>
+<li>The build_visit script no longer builds several unused Qt packages in order to speed up compile time.</li>
+<li>The visit-install script now accepts the version number in either the form X.Y.Z or X_Y_Z.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous
