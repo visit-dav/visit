@@ -56,7 +56,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    *
    * @param dfnm the name of the data file
    */
-  avtVsFileFormat(const char* dfnm);
+  avtVsFileFormat(const char*, DBOptionsAttributes *);
 
   /**
    * Destructor
@@ -163,6 +163,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   /** Ensure data has been read **/
   void LoadData();
 
+  bool processDataSelections;
   bool haveReadWholeData;
 
   private:
