@@ -656,6 +656,9 @@ avtConnComponentsExpression::LabelGhostNeighbors(vtkDataSet *data_set)
 //    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
 //    Optimization & more timing info.
 //
+//    Jeremy Meredith, Thu Jul 21 16:45:48 EDT 2011
+//    Add support for single-point cells (VTK_VERTEX, essentially).
+//
 // ****************************************************************************
 vtkIntArray *
 avtConnComponentsExpression::SingleSetLabel(vtkDataSet *data_set,
@@ -726,15 +729,22 @@ avtConnComponentsExpression::SingleSetLabel(vtkDataSet *data_set,
             // get the point ids
             int j_id = ids->GetId(j);
 
-            for( k=0; k < j; k++)
+            if (nids == 1)
             {
-                int k_id = ids->GetId(k);
-
-                // make sure these ids are not already in the same component
-                if( union_find.Find(j_id) != union_find.Find(k_id) )
+                union_find.SetValid(j_id, true);
+            }
+            else
+            {
+                for( k=0; k < j; k++)
                 {
-                    // join the components connected to these two labels
-                    union_find.Union(j_id,k_id);
+                    int k_id = ids->GetId(k);
+
+                    // make sure these ids are not already in the same component
+                    if( union_find.Find(j_id) != union_find.Find(k_id) )
+                    {
+                        // join the components connected to these two labels
+                        union_find.Union(j_id,k_id);
+                    }
                 }
             }
         }
