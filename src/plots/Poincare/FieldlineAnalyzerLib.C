@@ -899,20 +899,22 @@ FieldlineLib::IntersectCheck( vector< Point >& points,
 
 unsigned int FieldlineLib::Blankinship( unsigned int toroidalWinding,
                                         unsigned int poloidalWinding,
-                                        unsigned int offset /* = 1 */ )
+                                        unsigned int skip    /* = 1 */ )
 {
+  unsigned int offset = GCD( toroidalWinding, poloidalWinding );
 
-  unsigned int skip;
+  if( toroidalWinding == poloidalWinding )
+    skip = 1;
 
-  if( toroidalWinding > 1 && poloidalWinding != 0 ) {
+  else if( toroidalWinding > 1 && poloidalWinding != 0 ) {
     //  To find the skip find the mutual primes via the
     //  Blankinship Algorithm.
-    for( skip=1; skip<toroidalWinding; skip++ )
+    for( ; skip<toroidalWinding; skip++ )
       if( (skip * poloidalWinding) % toroidalWinding == offset )
         break;
     
     if( skip == toroidalWinding )
-      skip = 1;
+      skip = 0;
     
   } else {
     skip = 0;
@@ -1130,85 +1132,99 @@ calculateSumOfSquares( vector< Point >& points,
 
   double sum = 0;
   double tSamples = 0;
-    
-  for( unsigned int i=0; i<period; ++i )
+
+  if( checkType == 4 )
   {
-    Vector centroid(0,0,0);
-    double length = 0;
-    double nSamples = 0;
-    
-    if( checkType != 2 )
+    // Get the sum of squares for each bin.
+    for( unsigned int j=0; j<points.size(); ++j )
     {
-      // Find the centroid of the points based on the period.
-      for( unsigned int j=i; j<points.size(); j+=period )
-      {
-        // Centroid or Z difference.
-        if( checkType == 0 || checkType == 1 )
-        {
-          centroid += points[j];
-          ++nSamples;
-        }
-
-        // Find the average length of the distance between points
-        // based on the period.
-        else if( checkType == 3 && j>period )
-        {
-          length += (points[j]-points[j-period]).length();
-          ++nSamples;
-        }
-      }
-      
-      if( checkType == 0 || checkType == 1 )
-        centroid /= (double) nSamples;
-      
-      else if( checkType == 3 )
-        length   /= (double) nSamples;
+      double len = (points[j]-points[(j+period)%points.size()]).length();
+      sum += len;
+      ++tSamples;
     }
-
-    if( checkType == 2 || nSamples > 1 )
+  }
+  else
+  {
+    for( unsigned int i=0; i<period; ++i )
     {
-      // Get the sum of squares for each bin.
-      for( unsigned int j=i; j<points.size(); j+=period )
+      Vector centroid(0,0,0);
+      double length = 0;
+      double nSamples = 0;
+    
+      if( checkType != 2 && checkType != 4 )
       {
-        // Centroid difference
-        if( checkType == 0 )
+        // Find the centroid of the points based on the period.
+        for( unsigned int j=i; j<points.size(); j+=period )
         {
-          Vector diff = points[j] - centroid;
-          sum += diff.length2();
-          ++tSamples;
-        }
-        // Z difference
-        else if( checkType == 1 )
-        {
-          double diff = points[j].z - centroid.z;
-          sum += (diff * diff);
-          ++tSamples;
-        }
+          // Centroid or Z difference.
+          if( checkType == 0 || checkType == 1 )
+          {
+            centroid += points[j];
+            ++nSamples;
+          }
 
-        // Length sum
-        else if( checkType == 2 && j>period )
-        {
-          double len = (points[j]-points[j-period]).length();
-          sum += len;
-          ++tSamples;
+          // Find the average length of the distance between points
+          // based on the period.
+          else if( checkType == 3 && j>period )
+          {
+            length += (points[j]-points[j-period]).length();
+            ++nSamples;
+          }
         }
+      
+        if( checkType == 0 || checkType == 1 )
+          centroid /= (double) nSamples;
+      
+        else if( checkType == 3 )
+          length   /= (double) nSamples;
+      }
 
-        // Length difference
-        else if( checkType == 3 && j>period )
+      if( checkType == 2 || nSamples > 1 )
+      {
+        // Get the sum of squares for each bin.
+        for( unsigned int j=i; j<points.size(); j+=period )
         {
-          double diff = (points[j]-points[j-period]).length() - length;
-          sum += (diff * diff);
-          ++tSamples;
+          // Centroid difference
+          if( checkType == 0 )
+          {
+            Vector diff = points[j] - centroid;
+            sum += diff.length2();
+            ++tSamples;
+          }
+          // Z difference
+          else if( checkType == 1 )
+          {
+            double diff = points[j].z - centroid.z;
+            sum += (diff * diff);
+            ++tSamples;
+          }
+
+          // Length sum
+          else if( checkType == 2 && j>period )
+          {
+            double len = (points[j]-points[j-period]).length();
+            sum += len;
+            ++tSamples;
+          }
+          
+          // Length difference
+          else if( checkType == 3 && j>period )
+          {
+            double diff = (points[j]-points[j-period]).length() - length;
+            sum += (diff * diff);
+            ++tSamples;
+          }
         }
       }
     }
   }
 
-  if( checkType != 2 )
-    return sum / tSamples;
-  else
+  if( checkType == 2 || checkType == 4 )
     return sum;
+  else
+    return sum / tSamples;
 }
+
 
 int
 compareSecond( const pair< unsigned int, double > s0,
@@ -2249,6 +2265,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
                                    bool detectIslandCenters )
 {
   vector< Point > poloidal_puncture_pts;
+  vector< Point > poloidal_puncture_pts2;
   vector< Point > ridgeline_points;
 
   vector< double > rotationalSums;
@@ -2396,6 +2413,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   }
 
   vector< pair< unsigned int, double > > toroidalStats;
+  vector< pair< unsigned int, double > > toroidalStats2;
   vector< pair< unsigned int, double > > poloidalStats;
 
   // Find the best toroidal periodicity. For a flux surface the period
@@ -2484,10 +2502,119 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     windingGroupOffset = Blankinship( mergedWindingPairs[i].toroidal,
                                       mergedWindingPairs[i].poloidal );
 
+
+    poloidal_puncture_pts2 = poloidal_puncture_pts;
+
+    poloidal_puncture_pts2.resize(mergedWindingPairs[i].toroidal);
+
     bool drawable = IntersectCheck( poloidal_puncture_pts,
                                     mergedWindingPairs[i].toroidal,
                                     windingGroupOffset );
 
+
+    if( drawable && mergedWindingPairs[i].toroidal >= 5 )
+    {
+      bool tmpVerboseFlag = verboseFlag;
+
+      verboseFlag = false;
+
+      periodicityStats( poloidal_puncture_pts2, toroidalStats2,
+                        mergedWindingPairs[i].toroidal/2, 4 );
+
+      verboseFlag = tmpVerboseFlag;
+
+      if( windingGroupOffset != toroidalStats2[0].first && 
+          windingGroupOffset != (mergedWindingPairs[i].toroidal -
+                                 toroidalStats2[0].first) )
+      {      
+        verboseFlag = false;
+        
+        if( verboseFlag && (drawable || i < 10) )
+          cerr << "Offset via "
+               << poloidal_puncture_pts2.size() << "  "
+               << "poloidal points, "
+               << "max period " << mergedWindingPairs[i].toroidal/2
+               << endl;
+
+        periodicityStats( poloidal_puncture_pts2, toroidalStats2,
+                          mergedWindingPairs[i].toroidal/2, 4 );
+        
+        verboseFlag = tmpVerboseFlag;
+
+        if( verboseFlag && (drawable || i < 10) )
+          cerr << "Rotational sum error, "
+               << "expected windingGroupOffset " << toroidalStats2[0].first
+               << " or " << mergedWindingPairs[i].toroidal - toroidalStats2[0].first
+               << " got " << windingGroupOffset << endl
+               << "Incorrect poloidal winding is " << mergedWindingPairs[i].poloidal
+               << "  ";
+
+        // Low order offset which is an indication of what value to check.
+        unsigned int wMax;
+        unsigned int windingGroupOffset;
+
+        if( Blankinship( mergedWindingPairs[i].toroidal,
+                         toroidalStats2[0].first ) <
+            Blankinship( mergedWindingPairs[i].toroidal,
+                         mergedWindingPairs[i].toroidal -
+                         toroidalStats2[0].first ) )
+        {
+          windingGroupOffset = toroidalStats2[0].first;
+        }
+        else
+        {
+          windingGroupOffset = (mergedWindingPairs[i].toroidal -
+                                toroidalStats2[0].first );
+        }
+
+        wMax = Blankinship( mergedWindingPairs[i].toroidal,
+                            windingGroupOffset );
+        
+        int w;
+
+        // Search through the possible choices to find an offset.
+        // NOTE: ARS believes that the correct poloidal winding for
+        // these cases will be mergedWindingPairs[i].toroidal + wMax
+        for( w=1; w<=wMax; ++w )
+        {
+          if( windingGroupOffset ==
+              Blankinship( mergedWindingPairs[i].toroidal,
+                           mergedWindingPairs[i].toroidal+w ) )
+            break;
+        }
+
+        if( w <= wMax )
+        {
+          mergedWindingPairs[i].poloidal += w;
+        
+          if( verboseFlag && (drawable || i < 10) )
+            cerr << "Correct poloidal winding is " << mergedWindingPairs[i].poloidal
+                 << endl;
+        }
+        else
+        {
+          if( verboseFlag && (drawable || i < 10) )
+            cerr << "Can not correct poloidal winding."
+                 << endl;
+
+          for( w=1; w<=wMax; ++w )
+          {
+            cerr << "Checking poloidal value " << w;
+
+            if( windingGroupOffset !=
+                Blankinship( mergedWindingPairs[i].toroidal,
+                             mergedWindingPairs[i].toroidal+w ) )
+            {
+              cerr << "  Failed  "
+                   << Blankinship( mergedWindingPairs[i].toroidal,
+                                   mergedWindingPairs[i].toroidal+w ) << endl;
+            }
+            else
+              cerr << endl;
+          }
+        }
+      }
+    }
 
     if( verboseFlag && (drawable || i < 10) )
       cerr << "Final "
@@ -4877,7 +5004,7 @@ FieldlineLib::findIslandCenters( vector < Point > &puncturePts,
     list<Skeleton::SkeletonLine>::iterator deleteSL;
       
     // Remove all of the points on the boundary while getting
-    // the cord length of the remains interior segments.
+    // the cord length of the remaining interior segments.
       
     double cordLength = 0;
     
