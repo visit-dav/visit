@@ -306,7 +306,7 @@ avtPoincareFilter::CreateIntegralCurve( const avtIVPSolver* model,
 // ****************************************************************************
 
 void
-avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ics)
+avtPoincareFilter::GetIntegralCurvePoints(std::vector<avtIntegralCurve *> &ics)
 {
     for ( int i=0; i<ics.size(); ++i )
     {
@@ -348,7 +348,7 @@ avtPoincareFilter::Execute()
 {
     avtStreamlineFilter::Execute();
 
-    vector<avtIntegralCurve *> ics;
+    std::vector<avtIntegralCurve *> ics;
     GetTerminatedIntegralCurves(ics);
 
     avtDataTree *dt = new avtDataTree();
@@ -378,14 +378,14 @@ avtPoincareFilter::ContinueExecute()
 {
     debug5 << "Continue execute " << endl;
 
-    vector<avtIntegralCurve *> ics;
+    std::vector<avtIntegralCurve *> ics;
     
     GetTerminatedIntegralCurves(ics);
     GetIntegralCurvePoints(ics);
 
     if (analysis && ! ClassifyStreamlines(ics))
     {
-      vector< int > ids_to_delete;
+      std::vector< int > ids_to_delete;
 
       // Because points are added the size will change so get the
       // inital size so that we do try to dao anything with the new
@@ -419,7 +419,7 @@ avtPoincareFilter::ContinueExecute()
 
           if( poincare_ic->properties.iteration < OPointMaxIterations )
           {
-            vector<avtIntegralCurve *> new_ics;
+            std::vector<avtIntegralCurve *> new_ics;
             avtVector vec(0,0,0);
 
             AddSeedPoint( poincare_ic->properties.OPoints[0], vec,
@@ -544,9 +544,9 @@ avtPoincareFilter::UpdateDataObjectInfo(void)
 // ****************************************************************************
 
 bool
-avtPoincareFilter::ClassifyStreamlines(vector<avtIntegralCurve *> &ics)
+avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
 {
-    FusionPSE::FieldlineLib FLlib;
+    FieldlineLib FLlib;
     FLlib.verboseFlag = verboseFlag;
 
     debug5 << "Classifying Fieldlines " << endl;
@@ -731,9 +731,9 @@ void realDFTamp( std::vector< double > &g, std::vector< double > &G )
 // ****************************************************************************
 void
 avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
-                                         vector<avtIntegralCurve *> &ic)
+                                         std::vector<avtIntegralCurve *> &ic)
 {
-    FusionPSE::FieldlineLib FLlib;
+    FieldlineLib FLlib;
     FLlib.verboseFlag = verboseFlag;
 
     debug5 << "Creating output " << endl;
@@ -758,7 +758,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         unsigned int islandGroups       = properties.islandGroups;
         unsigned int nnodes             = properties.nnodes;
 
-        vector< avtVector > &OPoints         = properties.OPoints;
+        std::vector< avtVector > &OPoints         = properties.OPoints;
 
         bool completeIslands = true;
 
@@ -984,7 +984,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                   
                 }
                 
-//              vector< pair< unsigned int, double > > stats;           
+//              std::vector< pair< unsigned int, double > > stats;           
 //              FLlib.periodicityStats( islandPts[j], stats, 2 );
               }
             }
@@ -1299,7 +1299,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
 
 void
 avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
-                                      vector< vector < vector < avtVector > > > &nodes,
+                                      std::vector< std::vector < std::vector < avtVector > > > &nodes,
                                       unsigned int nnodes,
                                       unsigned int islands,
                                       unsigned int skip,
@@ -1496,7 +1496,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
 
 void
 avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
-                                        vector< vector < vector < avtVector > > > &nodes,
+                                        std::vector< std::vector < std::vector < avtVector > > > &nodes,
                                         unsigned int nnodes,
                                         unsigned int islands,
                                         unsigned int skip,
@@ -1828,7 +1828,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
 
 void
 avtPoincareFilter::drawSurface( avtDataTree *dt,
-                                vector< vector < vector < avtVector > > > &nodes,
+                                std::vector< std::vector < std::vector < avtVector > > > &nodes,
                                 unsigned int nnodes,
                                 unsigned int islands,
                                 unsigned int skip,
@@ -2049,7 +2049,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
 
 void
 avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
-                                    vector < Point  > &nodes,
+                                    std::vector < Point  > &nodes,
                                     unsigned int period,
                                     unsigned int nnodes,
                                     unsigned int islands,
@@ -2245,7 +2245,7 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
 
 void
 avtPoincareFilter::drawPoints( avtDataTree *dt,
-                               vector < avtVector > &nodes ) 
+                               std::vector < avtVector > &nodes ) 
 {
   vtkAppendPolyData *append = vtkAppendPolyData::New();
 
