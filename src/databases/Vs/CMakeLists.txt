@@ -16,6 +16,7 @@ SET(LIBM_SOURCES
 VsMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtVsFileFormat.C
+avtVsOptions.C
 VsFilter.C
 VsH5Attribute.C
 VsH5Dataset.C
@@ -43,6 +44,7 @@ SET(LIBE_SOURCES
 VsEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtVsFileFormat.C
+avtVsOptions.C
 VsFilter.C
 VsH5Attribute.C
 VsH5Dataset.C

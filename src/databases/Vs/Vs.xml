@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
-  <Plugin name="Vs" type="database" label="Vs Files" version="3.0.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false">
+  <Plugin name="Vs" type="database" label="Vs Files" version="3.0.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="true">
     <Files components="M">
       avtVsFileFormat.C
+      avtVsOptions.C
       VsFilter.C
       VsH5Attribute.C
       VsH5Dataset.C
@@ -27,6 +28,7 @@
 
     <Files components="E">
       avtVsFileFormat.C
+      avtVsOptions.C
       VsFilter.C
       VsH5Attribute.C
       VsH5Dataset.C
