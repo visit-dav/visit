@@ -413,6 +413,9 @@
 #     I added some flags to the qt configure line that speeds up the compile.
 #     The changes were provided by Jens Henrik.
 #
+#     Eric Brugger, Wed Jul 20 11:36:38 PDT 2011
+#     I changed the visit version number to 2.3.1.
+#
 # *****************************************************************************
 
 
@@ -743,7 +746,7 @@ fi
 # release tag.
 ############################################################################
 
-export VISIT_VERSION=${VISIT_VERSION:-"2.3.0"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.3.1"}
 
 ####
 # Trunk:
