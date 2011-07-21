@@ -41,7 +41,7 @@
 #if !defined(FieldlineAnalyzerLib_h)
 #define FieldlineAnalyzerLib_h
 
-#define STRAIGHTLINE_SKELETON 1
+//#define STRAIGHTLINE_SKELETON 1
 
 #include <avtVector.h>
 #include <DebugStream.h>
@@ -173,8 +173,6 @@ public:
   std::vector< int > childIds;
 };
 #endif
-
-namespace FusionPSE {
 
 class FieldlineLib
 {
@@ -390,7 +388,5 @@ public:
 int chainHull_2D( std::vector< std::pair< Point, unsigned int > > &pts,
                   std::vector< std::pair< Point, unsigned int > > &hullPts,
                   int direction  );
-
-} // End namespace FusionPSE
 
 #endif // FieldlineAnalyzerLib_h
