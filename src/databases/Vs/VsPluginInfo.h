@@ -82,6 +82,8 @@ class VsCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtu
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+    virtual DBOptionsAttributes *GetReadOptions() const;
+    virtual DBOptionsAttributes *GetWriteOptions() const;
 };
 
 class VsMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual VsCommonPluginInfo

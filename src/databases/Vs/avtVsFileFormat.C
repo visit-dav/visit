@@ -46,13 +46,15 @@
 #include <InvalidDBTypeException.h>
 #include <VsPluginInfo.h>
 
+#include <DBOptionsAttributes.h>
 #include <avtLogicalSelection.h>
-#include <avtSpatialBoxSelection.h>
+//#include <avtSpatialBoxSelection.h>
 
 // definition of VISIT_VERSION
 #include <visit-config.h>
 
 #include <avtVsFileFormat.h>
+#include <avtVsOptions.h>
 
 #define PARALLEL 1
 #define VIZSCHEMA_DECOMPOSE_DOMAINS 1
@@ -91,8 +93,10 @@
 //
 //  Modifications:
 //
-avtVsFileFormat::avtVsFileFormat(const char* dfnm) :
-  avtSTMDFileFormat(&dfnm, 1), dataFileName(dfnm), haveReadWholeData(true)
+avtVsFileFormat::avtVsFileFormat(const char* filename,
+                                 DBOptionsAttributes *readOpts) :
+  avtSTMDFileFormat(&filename, 1), dataFileName(filename),
+  processDataSelections(false), haveReadWholeData(true)
 {
     VsLog::initialize(DebugStream::Stream3(),
                       DebugStream::Stream4(),
@@ -102,6 +106,19 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm) :
                       << "entering" << std::endl;
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "VizSchema Revision #742" << std::endl;
+
+    if (readOpts != NULL) {
+      for (int i=0; i<readOpts->GetNumberOfOptions(); ++i) {
+        if (readOpts->GetName(i) == "Process Data Selections in the Reader")
+          processDataSelections =
+            readOpts->GetBool("Process Data Selections in the Reader");
+      }
+    }
+    
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "VizSchema reader will "
+                      << (processDataSelections? "" : "not ")
+                      << "process data selections" << std::endl;
 
     //reader starts off empty
     reader = NULL;
@@ -204,9 +221,10 @@ avtVsFileFormat::~avtVsFileFormat()
 bool
 avtVsFileFormat::CanCacheVariable(const char *var)
 {
-  //  VsLog::debugLog() << this << "  " << var << std::endl;
+    // If processing the selections turn caching off.
+    return !processDataSelections;
 
-    return haveReadWholeData;
+//    return haveReadWholeData;
 }
 
 
@@ -245,6 +263,9 @@ bool
 avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
 {
     bool retval = false;
+
+    if( !processDataSelections )
+      return retval;
 
     avtLogicalSelection composedSel;
 
