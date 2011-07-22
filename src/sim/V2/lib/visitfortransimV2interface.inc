@@ -20,6 +20,8 @@
 !     VisIt's data callback functions.
 !
 ! Modifications:
+!   Brad Whitlock, Fri Jul 22 09:47:01 PDT 2011
+!   Expose visitdetectinputwithtimeout
 !
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -309,6 +311,11 @@
 !     returns int codes -5 through 3
       external visitdetectinput
       integer  visitdetectinput
+
+! visitdetectinputwithtimeout(int blocking, int micsec, int consoledesc)
+!     returns int codes -5 through 3
+      external visitdetectinputwithtimeout
+      integer  visitdetectinputwithtimeout
 
 ! visitdisconnect()
       external visitdisconnect
