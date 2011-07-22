@@ -55,7 +55,9 @@
 #include <avtDatabase.h>
 #include <sys/types.h>
 
-using     std::string;
+#include <map>
+#include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Method: avtEMSTDFileFormat::Identify
@@ -265,7 +267,7 @@ avtADIOSBasicFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
         } 
         else
         {
-            string meshName = GenerateMeshName(v->second);
+            std::string meshName = GenerateMeshName(v->second);
             avtScalarMetaData *smd = new avtScalarMetaData();
             
             smd->name = v->first;
@@ -409,11 +411,11 @@ avtADIOSBasicFileFormat::GetVectorVar(int timestate, int domain, const char *var
 //
 // ****************************************************************************
 
-string
+std::string
 avtADIOSBasicFileFormat::GenerateMeshName(const ADIOSVar &v)
 {
-    vector<int64_t> dimT, dims;
-    string meshname = "mesh_";
+    std::vector<int64_t> dimT, dims;
+    std::string meshname = "mesh_";
 
     for (int i=0; i<v.dim; i++)
     {
@@ -458,7 +460,7 @@ avtADIOSBasicFileFormat::Initialize()
     {
         ADIOSVar &v = (*vi).second;
         
-        string meshname = GenerateMeshName(v);
+        std::string meshname = GenerateMeshName(v);
         
         //Add mesh, if not found...
         if (meshes.find(meshname) == meshes.end())

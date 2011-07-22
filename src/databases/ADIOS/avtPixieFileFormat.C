@@ -57,8 +57,11 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 
-using     std::string;
-static string RemoveLeadingSlash(const string &str);
+#include <set>
+#include <string>
+#include <vector>
+
+static std::string RemoveLeadingSlash(const std::string &str);
 
 // ****************************************************************************
 //  Method: avtPixleFileFormat::Identify
@@ -182,7 +185,7 @@ avtPixieFileFormat::GetNTimesteps()
 void
 avtPixieFileFormat::GetCycles(std::vector<int> &cycles)
 {
-    string nm = "/itime";
+    std::string nm = "/itime";
     file->GetCycles(nm, cycles);
 }
 
@@ -200,7 +203,7 @@ avtPixieFileFormat::GetCycles(std::vector<int> &cycles)
 void
 avtPixieFileFormat::GetTimes(std::vector<double> &times)
 {
-    string nm = "/time";
+    std::string nm = "/time";
     file->GetTimes(nm, times);
 }
 
@@ -475,7 +478,7 @@ avtPixieFileFormat::GetVar(int timestate, int domain, const char *varname)
     if (vi == variables.end())
         EXCEPTION1(InvalidVariableException, varname);
 
-    string nm = vi->second.fileVarName;
+    std::string nm = vi->second.fileVarName;
     
     vtkFloatArray *arr = NULL;
     if ( !file->ReadVariable(nm, timestate, &arr))
@@ -539,7 +542,7 @@ avtPixieFileFormat::Initialize()
         return;
 
     int numTS = file->NumTimeSteps();
-    set<int> timestepsSet;
+    std::set<int> timestepsSet;
     ADIOSFileObject::varIter vi;
     
     for (vi = file->variables.begin(); vi != file->variables.end(); vi++)
@@ -550,12 +553,12 @@ avtPixieFileFormat::Initialize()
             continue;
 
         MeshInfo mi;
-        string meshname = GetVarMesh(v.name, mi);
+        std::string meshname = GetVarMesh(v.name, mi);
         
         VarInfo varInfo;
         varInfo.fileVarName = v.name;
         varInfo.mesh = meshname;
-        string varName = GetVarName(v.name, varInfo.isTimeVarying);
+        std::string varName = GetVarName(v.name, varInfo.isTimeVarying);
 
         if (meshes.find(meshname) == meshes.end())
         {
@@ -573,7 +576,7 @@ avtPixieFileFormat::Initialize()
             timestepsSet.insert(ts);
     }
 
-    set<int>::const_iterator it;
+    std::set<int>::const_iterator it;
     for (it=timestepsSet.begin(); it != timestepsSet.end(); it++)
         timecycles.push_back(*it);
     std::sort(timecycles.begin(), timecycles.end());
@@ -597,18 +600,18 @@ avtPixieFileFormat::Initialize()
 // ****************************************************************************
 
 bool
-avtPixieFileFormat::HasCoordinates(const string &varNm, string *coords)
+avtPixieFileFormat::HasCoordinates(const std::string &varNm, std::string *coords)
 {
     std::string::size_type index = varNm.rfind("/");
-    if (index == string::npos)
+    if (index == std::string::npos)
         return false;
 
-    string stub = varNm.substr(0,index);
+    std::string stub = varNm.substr(0,index);
     
     //Add the special sauce.
-    string c1Str = stub + "/coords/coord1";
-    string c2Str = stub + "/coords/coord2";
-    string c3Str = stub + "/coords/coord3";
+    std::string c1Str = stub + "/coords/coord1";
+    std::string c2Str = stub + "/coords/coord2";
+    std::string c3Str = stub + "/coords/coord3";
 
     if (file->GetStringAttr(c1Str, coords[0]) &&
         file->GetStringAttr(c2Str, coords[1]) &&
@@ -637,8 +640,8 @@ avtPixieFileFormat::HasCoordinates(const string &varNm, string *coords)
 bool
 avtPixieFileFormat::IsVariable(const std::string &vname)
 {
-    if (vname.find("/cells/") != string::npos ||
-        vname.find("/nodes/") != string::npos)
+    if (vname.find("/cells/") != std::string::npos ||
+        vname.find("/nodes/") != std::string::npos)
         return false;
     
     return true;
@@ -660,12 +663,12 @@ avtPixieFileFormat::IsVariable(const std::string &vname)
 //
 // ****************************************************************************
 
-string
+std::string
 avtPixieFileFormat::GetVarName(const std::string &vname, bool &isTimeVarying)
 {
     const std::string timePrefix("/Timestep_");
     std::string::size_type index;
-    string varname = vname;
+    std::string varname = vname;
     
     if (vname.substr(0, timePrefix.size()) == timePrefix)
     {
@@ -691,10 +694,10 @@ avtPixieFileFormat::GetVarName(const std::string &vname, bool &isTimeVarying)
 //
 // ****************************************************************************
 
-string
+std::string
 avtPixieFileFormat::GetVarMesh(const std::string &vname, MeshInfo &mi)
 {
-    string meshname;
+    std::string meshname;
     ADIOSFileObject::varIter vi = file->variables.find(vname);
     const ADIOSVar &v = vi->second;
 
@@ -758,10 +761,10 @@ avtPixieFileFormat::GetTimeStep(const std::string &vname, int &ts)
     return false;
 }
 
-static string
-RemoveLeadingSlash(const string &str)
+static std::string
+RemoveLeadingSlash(const std::string &str)
 {
-    string s;
+    std::string s;
     if (str[0] == '/')
         s = str.substr(1, str.size());
     else
