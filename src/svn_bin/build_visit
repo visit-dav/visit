@@ -1022,6 +1022,9 @@ function warn
 # Programmer: Tom Fogal                                                       #
 # Date: Fri Oct  3 09:37:51 MDT 2008                                          #
 #                                                                             #
+# Modifications:                                                              #
+#    Jeremy Meredith, Fri Jul 22 10:36:20 EDT 2011                            #
+#    Added a little more text to help users.                                  #
 # *************************************************************************** #
 
 function error
@@ -1030,7 +1033,9 @@ function error
     if test "${LOG_FILE}" != "/dev/tty" ; then
         warn "Error in build process.  See ${LOG_FILE} for more information."\
              "If the error is unclear, please include ${LOG_FILE} in a "\
-             "message to the visit-users list." 
+             "message to the visit-users@ornl.gov list.  You will probably "\
+             "need to compress the ${LOG_FILE} using a program like gzip "\
+             "so it will fit within the size limits for email attachments."
     fi
     exit 1
 }
