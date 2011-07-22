@@ -156,6 +156,11 @@ public:
 //
 //    Brad Whitlock, Wed May  7 16:39:34 PDT 2008
 //    Qt 4.
+//
+//    Jeremy Meredith, Fri Jul 22 13:33:49 EDT 2011
+//    Delete the QFile if we never call open on it; trying to use it anyway
+//    will cause a segfault.
+//
 // ****************************************************************************
 
 QFile *
@@ -194,6 +199,9 @@ Open(const QString &name_withoutpath)
                  <<"'," << Endl;
             cErr << "Info: you might want to give the -clobber flag." << Endl;
         }
+        if (file)
+            delete file;
+        file = NULL;
     }
     return file;
 }
