@@ -430,6 +430,10 @@
 #     if it should create the directory and only exits with an error if the
 #     user indicates that the script shouldn't create the directory.
 #
+#     Eric Brugger, Fri Jul 22 09:18:05 PDT 2011
+#     With Jean Favre's help, I modified the script so that it would build
+#     VisIt on Ubuntu 11.04.
+#
 # *****************************************************************************
 
 
@@ -3463,6 +3467,59 @@ function build_qt
 #                          Function 5, build_cmake                            #
 # *************************************************************************** #
 
+function apply_cmake_patch_1
+{
+   patch -p0 <<\EOF
+diff -c a/Modules/Platform/UnixPaths.cmake cmake-2.8.3/Modules/Platform/UnixPaths.cmake
+*** a/Modules/Platform/UnixPaths.cmake
+--- cmake-2.8.3/Modules/Platform/UnixPaths.cmake
+***************
+*** 67,72 ****
+--- 67,75 ----
+    /usr/pkg/lib
+    /opt/csw/lib /opt/lib
+    /usr/openwin/lib
++
++   # Ubuntu 11.04
++   /usr/lib/x86_64-linux-gnu
+    )
+
+  LIST(APPEND CMAKE_SYSTEM_PROGRAM_PATH
+***************
+*** 75,80 ****
+--- 78,86 ----
+
+  LIST(APPEND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
+    /lib /usr/lib /usr/lib32 /usr/lib64
++
++   # Ubuntu 11.04
++   /usr/lib/x86_64-linux-gnu
+    )
+
+  LIST(APPEND CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES
+EOF
+   if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 1 to cmake."
+        return 1
+   else
+        return 0
+   fi
+}
+
+
+function apply_cmake_patch
+{
+   info "Patching CMake . . ."
+
+   apply_cmake_patch_1
+   if [[ $? != 0 ]] ; then
+      return 1
+   fi
+
+   return 0
+}
+
+
 function build_cmake
 {
     #
@@ -3473,6 +3530,22 @@ function build_cmake
     if [[ $untarred_cmake == -1 ]] ; then
        warn "Unable to prepare CMake build directory. Giving Up!"
        return 1
+    fi
+
+    #
+    # Patch cmake
+    #
+    apply_cmake_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_cmake == 1 ]] ; then
+          warn "Giving up on CMake build because the patch failed."
+          return 1
+       else
+          warn "Patch failed, but continuing.  I believe that this script\n"\
+               "tried to apply a patch to an existing directory which had\n"\
+               "already been patched ... that is, that the patch is\n"\
+               "failing harmlessly on a second application."
+       fi
     fi
 
     #
@@ -8793,6 +8866,17 @@ function build_hostconf
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
+
+    #
+    # Patch for Ubuntu 11.04
+    #
+    if test -d "/usr/lib/x86_64-linux-gnu" ; then
+        rm -f $HOSTCONF.tmp
+        cat $HOSTCONF | sed "s/\/usr\/lib/\/usr\/lib\/x86_64-linux-gnu/" > $HOSTCONF.tmp
+        rm $HOSTCONF
+        mv $HOSTCONF.tmp $HOSTCONF
+    fi
+
     cd "$START_DIR"
     echo "Done creating $HOSTCONF"
     return 0
