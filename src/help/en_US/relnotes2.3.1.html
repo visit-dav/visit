@@ -29,12 +29,13 @@ Rectangular planes are now correctly implemented.</li>
 <li>The path that is passed to Libsim's <i>VisItSetDirectory()</i> function is no longer ignored on Windows. This lets you specify the directory where VisIt is located instead of having Libsim locate the directory for the newest version of VisIt.</li>
 <li>2D transfer functions for the Volume plot now get saved to session files.</li>
 <li>Clicking the Reset button in the Annotation Window no longer causes VisIt to lose track of its legend annotation objects.</li>
-<li>The Threshold operator now saves its attributes to session files.</li>
+<li>The Threshold operator once again saves its attributes to config files and session files.</li>
 <li>The last message output by the build_visit script that contained instructions on running the newly built version of VisIt and creating a VisIt distribution did not appear when running in graphical mode. This has been corrected.</li>
 <li>The build_visit script now builds VisIt on Ubuntu 11.04.</li>
 <li>Connected components now supports vertex cells.</li>
 <li>The Molecule plot now supports integer-valued fields.</li>
 <li>The Molecule plot now caps bond geometry correctly for cell-centered variables.</li>
+<li>The Xdmf reader plug-in works again in the 64-bit MacOS X version of VisIt.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.3.1</font></b></p>
@@ -45,6 +46,7 @@ Rectangular planes are now correctly implemented.</li>
 <li>The build_visit script now uses the VisIt anonymous svn site as the fallback download site instead of LLNL's web site.</li>
 <li>The build_visit script no longer builds several unused Qt packages in order to speed up compile time.</li>
 <li>The visit-install script now accepts the version number in either the form X.Y.Z or X_Y_Z.</li>
+<li>Libsim's Fortran interface now exposes the <i>visitdetectinputwithtimeout</i> function.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous
