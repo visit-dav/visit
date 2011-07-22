@@ -424,6 +424,9 @@ avtViSUSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //    Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
 //    Moved DomainDecomp functions to avtDatabase
 //
+//    Eric Brugger, Fri Jul 22 14:23:17 PDT 2011
+//    I corrected some compilation errors.
+//
 // ****************************************************************************
 void
 avtViSUSFileFormat::SetupDomainAndZoneIndexing(int *outputZoneCounts,
@@ -468,8 +471,8 @@ avtViSUSFileFormat::SetupDomainAndZoneIndexing(int *outputZoneCounts,
 
             int mins[3], maxs[3], strides[3];
 
-            sel->GetMins(mins);
-            sel->GetMaxs(maxs);
+            sel->GetStarts(mins);
+            sel->GetStops(maxs);
             sel->GetStrides(strides);
 
             // The avtLogicalSelection from IndexSelect is nodal based
@@ -484,7 +487,7 @@ avtViSUSFileFormat::SetupDomainAndZoneIndexing(int *outputZoneCounts,
               // max be equal (i.e. a slice in a volume). ViSUS is
               // zonal and does not allow a slice so check for that
               // case.
-              if( maxs[i] > 0 && min[i] != max[i] )
+              if( maxs[i] > 0 && mins[i] != maxs[i] )
                 maxs[i] -= 1;
             }
 
