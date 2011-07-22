@@ -290,6 +290,9 @@ SetColor3ubv(const unsigned char *c)
 //    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
 //    Added 2D mode.
 //
+//    Jeremy Meredith, Fri Jul 22 10:08:56 EDT 2011
+//    Support non-float primary arrays.
+//
 // ****************************************************************************
 
 void
@@ -297,21 +300,29 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
                                               const MoleculeAttributes &atts)
 {
     vtkPoints *points = data->GetPoints();
+    int numpoints = data->GetNumberOfPoints();
     int numverts = data->GetNumberOfVerts();
 
     vtkDataArray *primary = data->GetPointData()->GetScalars();
+    // TODO: allow cell-centered variables to (probably as an option)
+    //       be drawn on atoms; some use cases -- like connected components
+    //       -- do viably label both atoms and bonds.
     if (!primary)
     {
         // Let's just assume we don't want to plot the spheres for
         // a cell-centered variable
         return;
     }
-    if (primary && !primary->IsA("vtkFloatArray"))
-    {
-        debug4 << "avtOpenGLMoleculeRenderer: found a non-float array\n";
-        return;
-    }
     float *scalar = (float*)primary->GetVoidPointer(0);
+    vector<float> scalar_storage;
+    if (!primary->IsA("vtkFloatArray"))
+    {
+        int n = numpoints;
+        scalar_storage.resize(n);
+        for (int i=0; i<n; i++)
+            scalar_storage[i] = primary->GetComponent(i,0);
+        scalar = &(scalar_storage[0]);
+    }
 
     string primaryname = primary->GetName();
     bool primary_is_element = (primaryname == "element" ||
@@ -593,6 +604,11 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
 //    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
 //    Added 2D mode.
 //
+//    Jeremy Meredith, Fri Jul 22 10:08:56 EDT 2011
+//    Support non-float primary arrays.
+//    Correctly cap bonds when we're using a cell-centered variable,
+//    as we aren't currently drawing atoms in that case.
+//
 // ****************************************************************************
 
 void
@@ -603,6 +619,7 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
     int numpoints = data->GetNumberOfPoints();
     int numverts = data->GetNumberOfVerts();
     vtkCellArray *lines = data->GetLines();
+    int numlines = data->GetNumberOfLines();
     vtkIdType *segments = lines->GetPointer();
 
     bool primary_is_cell_centered = false;
@@ -617,12 +634,17 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
         // eh? no variable at all?  that's a logic error....
         EXCEPTION1(ImproperUseException, "Expected a variable of some sort.");
     }
-    if (primary && !primary->IsA("vtkFloatArray"))
-    {
-        debug4 << "avtOpenGLMoleculeRenderer: found a non-float array\n";
-        return;
-    }
+
     float *scalar = (float*)primary->GetVoidPointer(0);
+    vector<float> scalar_storage;
+    if (!primary->IsA("vtkFloatArray"))
+    {
+        int n = primary_is_cell_centered ? (numlines+numverts) : numpoints;
+        scalar_storage.resize(n);
+        for (int i=0; i<n; i++)
+            scalar_storage[i] = primary->GetComponent(i,0);
+        scalar = &(scalar_storage[0]);
+    }
 
     string primaryname = primary->GetName();
     bool primary_is_element = (primaryname == "element" ||
@@ -863,6 +885,14 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                         if (!hasVertex[otherAtom])
                         {
                             DrawCylinderCap(pt_a, pt_b, half,
+                                            radius,
+                                            atts.GetBondCylinderQuality());
+                        }
+                        // TODO: modify this next test if we allow drawing
+                        //       atoms with a primary cell-centered variable
+                        if (primary_is_cell_centered)
+                        {
+                            DrawCylinderCap(pt_0, pt_1, 1-half,
                                             radius,
                                             atts.GetBondCylinderQuality());
                         }
