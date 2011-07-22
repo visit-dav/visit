@@ -56,8 +56,8 @@
 #include <avtVsFileFormat.h>
 #include <avtVsOptions.h>
 
-#define PARALLEL 1
-#define VIZSCHEMA_DECOMPOSE_DOMAINS 1
+//#define PARALLEL 1
+//#define VIZSCHEMA_DECOMPOSE_DOMAINS 1
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
 #include <avtParallel.h>
