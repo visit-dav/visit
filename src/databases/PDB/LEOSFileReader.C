@@ -868,6 +868,10 @@ LEOSFileReader::IdentifyFormat()
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//
+//    Mark C. Miller, Mon Jul 25 16:43:19 PDT 2011
+//    Made it not fail if it can't get a formula
 // ****************************************************************************
 
 bool
@@ -890,9 +894,8 @@ LEOSFileReader::ReadMaterialInfo(const char *matDirName, string &matName,
     // collect the material formula (e.g. 'H2O' for water)
     resultStr = 0;
     sprintf(tmpStr,"/%smaterial_info/formula", matDirName);
-    if (!pdb->GetString(tmpStr, &resultStr))
-        return false;
-    matForm = RemoveSpaces(resultStr);
+    if (pdb->GetString(tmpStr, &resultStr))
+        matForm = RemoveSpaces(resultStr);
     delete [] resultStr;
 
     return true;
@@ -1040,6 +1043,9 @@ LEOSFileReader::ReadVariableInfo(const char *matDirName,
 //   Made the match for directory name use '==' operator and made it look for
 //   directories first prepended with "L" and then without.
 //
+//    Mark C. Miller, Mon Jul 25 16:44:08 PDT 2011
+//    Appended "/" to searchDirName to match the names of dirs as they are
+//    stored in topDirs
 // ****************************************************************************
 
 bool 
@@ -1093,7 +1099,7 @@ LEOSFileReader::ParseContentsAndPopulateMetaData(avtDatabaseMetaData *md,
         bool foundDir = false;
         for (int pass = 0; pass < 2; pass++)
         {
-            string searchDirName = (pass == 0 ? "L" : "") + matDirName;
+            string searchDirName = (pass == 0 ? "L" : "") + matDirName + "/";
             for (i = 0; i < numTopDirs; i++)
             {
                if (string(topDirs[i]) == searchDirName)
