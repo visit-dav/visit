@@ -4260,5 +4260,6 @@ bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
   return( (PAR_Rank() == 0) || (PAR_Rank() && numNodes > 1) );
 
 #endif
+  return false;
 }
 #endif
