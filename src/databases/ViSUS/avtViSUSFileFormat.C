@@ -441,7 +441,6 @@ avtViSUSFileFormat::SetupDomainAndZoneIndexing(int *outputZoneCounts,
 
     int firstInputZone[3];
     int lastInputZone[3];
-    int lastInputNode[3];
     int stepInputZones[3];
     for (int i = 0; i < 3; i++)
     {
@@ -522,7 +521,7 @@ avtViSUSFileFormat::SetupDomainAndZoneIndexing(int *outputZoneCounts,
 
             avtLogicalSelection newSel;
             newSel.SetStarts(firstInputZone);
-            newSel.SetStops(lastInputNode);
+            newSel.SetStops(lastInputZone);
 
             composedSel.Compose(newSel);
             (*selsApplied)[i] = true;
