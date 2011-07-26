@@ -79,7 +79,7 @@ VisIt_RectilinearMesh_setCoordsXYZ(visit_handle obj, visit_handle x, visit_handl
 int
 VisIt_RectilinearMesh_setBaseIndex(visit_handle obj, int base_index[3])
 {
-    VISIT_DYNAMIC_EXECUTE(RectilinearMesh_setCoords,
+    VISIT_DYNAMIC_EXECUTE(RectilinearMesh_setBaseIndex,
                     int (*)(visit_handle,int[3]), 
                     int (*cb)(visit_handle,int[3]), 
                     (*cb)(obj,base_index));
@@ -117,7 +117,7 @@ VisIt_RectilinearMesh_getRealIndices(visit_handle obj, int min[3], int max[3])
 int
 VisIt_RectilinearMesh_getBaseIndex(visit_handle obj, int base_index[3])
 {
-    VISIT_DYNAMIC_EXECUTE(RectilinearMesh_getCoords,
+    VISIT_DYNAMIC_EXECUTE(RectilinearMesh_getBaseIndex,
                     int (*)(visit_handle,int[3]), 
                     int (*cb)(visit_handle,int[3]), 
                     (*cb)(obj,base_index));
