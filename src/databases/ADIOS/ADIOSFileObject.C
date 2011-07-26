@@ -747,11 +747,12 @@ ADIOSFileObject::ReadVariable(const std::string &nm,
     uint64_t retval = adios_read_var_byid(gps[v.groupIdx], v.varid, start, count, readData);
     CloseGroup(v.groupIdx);
 
-    if (retval > 0 && convertData)
+    if (convertData)
     {
-        ConvertTo(data, ntuples, v.type, readData);
+        if (retval > 0)
+            ConvertTo(data, ntuples, v.type, readData);
+        free(readData);
     }
-    free(readData);
 
     return (retval > 0);
 }
