@@ -23,6 +23,9 @@
 !   Brad Whitlock, Fri Jul 22 09:47:01 PDT 2011
 !   Expose visitdetectinputwithtimeout
 !
+!   Brad Whitlock, Wed Jul 27 10:46:13 PDT 2011
+!   Add visitgetsockets.
+!
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 !... Commonly useful declarations
@@ -332,6 +335,10 @@
 ! visitgetlasterror(string dest, int ldest)
       external visitgetlasterror
       integer  visitgetlasterror
+
+! visitgetsockets(int lsocket, int csocket)
+      external visitgetsockets
+      integer  visitgetsockets
 
 ! visitinitializesim(
 !    string name, int lname,

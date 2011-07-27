@@ -343,6 +343,40 @@ int   VisItInitializeSocketAndDumpSimFile(const char *name,
 int   VisItDetectInput(int blocking, int consoledesc);
 int   VisItDetectInputWithTimeout(int blocking, int timeout_usec, int consoledesc);
 
+#ifndef _WIN32
+/*******************************************************************************
+* Function: VisItGetSockets
+*
+* Purpose:
+*   VisItDetectInput detects input from VisIt's listen socket, a client socket,
+*   and optionally, a console file descriptor. This function lets you obtain the
+*   file descriptors to which VisItDetectInput would have listened, allowing you
+*   to pass the socket descriptors to your own listening routines should you 
+*   need to do so.
+*
+* Arguments:
+*   lSocket : Pass the address of an integer that will contain the listen socket
+*             file descriptor. When the function returns, the address will contain
+*             the listen file descriptor or -1 if you should not ignore the
+*             result.
+*
+*   cSocket : Pass the address of an integer that will contain the client socket
+*             file descriptor. When the function returns, the address will contain
+*             the client file descriptor or -1 if you should not ignore the
+*             result.
+*
+* Returns:    VISIT_OKAY on success, VISIT_ERROR on failure.
+*
+* Note:       This function is not available on Windows because input is handled
+*             differently than on UNIX and VisItDetectInput should not be
+*             circumvented. In any case, only use this function if you REALLY
+*             know what you are doing. You should prefer using VisItDetectInput
+*             whenever possible.
+*
+*******************************************************************************/
+int VisItGetSockets(int *lSocket, int *eSocket);
+#endif
+
 /******************************************************************************
  * Function: VisItAttemptToCompleteConnection
  *
