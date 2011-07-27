@@ -74,6 +74,9 @@
 //    Added support for particle and grid file names.
 //    This is for support for the new "Packed AMR" format.
 //
+//    Jean Favre, Wed Jul 27 09:26:31 PDT 2011
+//    Implement method to handle data selections.
+//
 // ****************************************************************************
 
 class avtEnzoFileFormat : public avtSTMDFileFormat
@@ -144,7 +147,7 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
     std::string fnameH;
 
     int dimension;
-
+    int resolution; // for user selection of resolution
     std::vector<Grid> grids;
     int numGrids;
     int numLevels;
@@ -164,6 +167,8 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
     void UnifyGlobalExtents();
     void DetermineVariablesFromGridFile();
     void BuildDomainNesting();
+    void RegisterDataSelections(const std::vector<avtDataSelection_p>&,
+                                std::vector<bool>* applied);
 };
 
 

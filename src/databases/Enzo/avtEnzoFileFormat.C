@@ -58,7 +58,7 @@
 #include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
 #include <avtIntervalTree.h>
-
+#include <avtResolutionSelection.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <Expression.h>
@@ -1032,6 +1032,10 @@ avtEnzoFileFormat::FreeUpResources(void)
 //    Fixed obvious typo in particle velocity expression and made attempt
 //    (without test data in hand) to ensure expressions get specified
 //    correctly on 2D meshes.
+//
+//    Jean Favre, Wed Jul 27 09:29:46 PDT 2011
+//    Add support for resolution selection contract.
+//
 // ****************************************************************************
 
 void
@@ -1068,6 +1072,7 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->groupPieceName = "level";
     vector<int> groupIds(numGrids);
     vector<string> blockPieceNames(numGrids);
+    int levels_of_detail = 0;
     for (int i = 1; i <= numGrids; i++)
     {
         char tmpName[64];
@@ -1075,7 +1080,10 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         groupIds[i-1] = grids[i].level;
         blockPieceNames[i-1] = tmpName;
+        levels_of_detail = std::max(levels_of_detail, grids[i].level);
     }
+    mesh->LODs = levels_of_detail;
+    this->resolution = levels_of_detail; // current acceptable res = max res
     mesh->blockNames = blockPieceNames;
     mesh->numGroups = numLevels;
     mesh->groupIds = groupIds;
@@ -2027,6 +2035,7 @@ avtEnzoFileFormat::GetVectorVar(int domain, const char *varname)
 //    API change for avtIntervalTree.
 //
 // ****************************************************************************
+
 void *
 avtEnzoFileFormat::GetAuxiliaryData(const char *var, int dom, 
                                     const char * type, void *,
@@ -2054,4 +2063,34 @@ avtEnzoFileFormat::GetAuxiliaryData(const char *var, int dom,
 
     return ((void *) itree);
 }
+
+// ****************************************************************************
+//  Method:  avtEnzoFileFormat::RegisterDataSelections
+//
+//  Purpose:
+//      Tries to read requests for specific resolutions.
+//
+//  Programmer:  Jean Favre
+//  Creation:    July 27, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtEnzoFileFormat::RegisterDataSelections(const std::vector<avtDataSelection_p>& sels,
+                                          std::vector<bool>* applied)
+{
+    for(size_t i=0; i < sels.size(); ++i)
+    {
+        if(strcmp(sels[i]->GetType(), "avtResolutionSelection") == 0)
+        {
+            const avtResolutionSelection* sel =
+                static_cast<const avtResolutionSelection*>(*sels[i]);
+            this->resolution = sel->resolution();
+            (*applied)[i] = true;
+        }
+    }
+}
+
 
