@@ -347,6 +347,9 @@ avtTecplotFileFormat::GetNextToken()
 //    Removed distinction between allVariableNames and variableNames, since
 //    we treat even X/Y/Z coordinate arrays as normal variables, still.
 //
+//    Jeremy Meredith, Wed Jul 27 13:55:55 EDT 2011
+//    Add support for 'nvals*value' repetition format for values.
+//
 // ****************************************************************************
 vtkPoints*
 avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
@@ -377,6 +380,8 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
         allptr.push_back(ptr);
     }
 
+    int repeatCounter  = 0;
+    float currentValue = 0;
     for (i=0; i<numNodes; i++)
     {
         bool doneWithCellCentered = (i>=numElements);
@@ -385,29 +390,45 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
             if (variableCellCentered[v] && doneWithCellCentered)
                 continue;
 
-            string tok = GetNextToken();
-            if (tok.length()>0 && tok[0]=='#')
+            if (repeatCounter == 0)
             {
-                while (!next_char_eol)
+                string tok = GetNextToken();
+                if (tok.length()>0 && tok[0]=='#')
+                {
+                    while (!next_char_eol)
+                        tok = GetNextToken();
                     tok = GetNextToken();
-                tok = GetNextToken();
+                }
+
+                char *endptr;
+                const char *cptr;
+                repeatCounter   = 1;
+                currentValue    = strtof((cptr=tok.c_str()), &endptr);
+                int   numparsed = endptr-cptr;
+                int   toklen    = tok.length();
+                if (numparsed < toklen && tok[numparsed] == '*')
+                {
+                    currentValue  = atof(tok.substr(numparsed+1).c_str());
+                    repeatCounter = atoi(tok.substr(0,numparsed).c_str());
+                }
             }
 
-            float val = atof(tok.c_str());
             if (v==Xindex)
             {
-                pts[3*i + 0] = val;
+                pts[3*i + 0] = currentValue;
             }
             else if (v==Yindex)
             {
-                pts[3*i + 1] = val;
+                pts[3*i + 1] = currentValue;
             }
             else if (v==Zindex)
             {
-                pts[3*i + 2] = val;
+                pts[3*i + 2] = currentValue;
             }
 
-            allptr[v][i] = val;
+            allptr[v][i] = currentValue;
+
+            --repeatCounter;
         }
     }
 
@@ -439,8 +460,12 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
 //    Jeremy Meredith, Tue Oct 26 17:13:39 EDT 2010
 //    Added support for comments.
 //
+//    Jeremy Meredith, Wed May 18 13:23:11 EDT 2011
 //    Removed distinction between allVariableNames and variableNames, since
 //    we treat even X/Y/Z coordinate arrays as normal variables, still.
+//
+//    Jeremy Meredith, Wed Jul 27 13:55:55 EDT 2011
+//    Add support for 'nvals*value' repetition format for values.
 //
 // ****************************************************************************
 vtkPoints*
@@ -455,6 +480,8 @@ avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
         pts[i] = 0;
     }
 
+    int repeatCounter  = 0;
+    float currentValue = 0;
     for (int v = 0; v < numTotalVars; v++)
     {
         int numVals = (variableCellCentered[v] ? numElements : numNodes);
@@ -464,15 +491,32 @@ avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
         float *ptr = (float *) scalars->GetVoidPointer(0);
         for (int i=0; i<numVals; i++)
         {
-            string tok = GetNextToken();
-            if (tok.length()>0 && tok[0]=='#')
+            if (repeatCounter == 0)
             {
-                while (!next_char_eol)
+                string tok = GetNextToken();
+                if (tok.length()>0 && tok[0]=='#')
+                {
+                    while (!next_char_eol)
+                        tok = GetNextToken();
                     tok = GetNextToken();
-                tok = GetNextToken();
+                }
+
+                char *endptr;
+                const char *cptr;
+                repeatCounter   = 1;
+                currentValue    = strtof((cptr=tok.c_str()), &endptr);
+                int   numparsed = endptr-cptr;
+                int   toklen    = tok.length();
+                if (numparsed < toklen && tok[numparsed] == '*')
+                {
+                    currentValue  = atof(tok.substr(numparsed+1).c_str());
+                    repeatCounter = atoi(tok.substr(0,numparsed).c_str());
+                }
             }
 
-            ptr[i] = atof(tok.c_str());
+            ptr[i] = currentValue;
+
+            --repeatCounter;
         }
         vars[variableNames[v]].push_back(scalars);
 
