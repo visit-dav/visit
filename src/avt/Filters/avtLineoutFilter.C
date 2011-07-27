@@ -274,6 +274,9 @@ avtLineoutFilter::VerifyInput(void)
 //   Hank Childs, Thu Dec 30 22:42:23 PST 2010
 //   Add support for Lineout when it creates the output variable.
 //
+//   Brad Whitlock, Wed Jul 27 13:20:53 PDT 2011
+//   Fix trailing slash problem.
+//
 // ****************************************************************************
 
 
@@ -281,9 +284,10 @@ avtContract_p
 avtLineoutFilter::ModifyContract(avtContract_p in_contract)
 {
     avtContract_p rv;
-    if (strncmp(pipelineVariable, "operators/Lineout", strlen("operators/Lineout")) == 0)
+    const char *opLineout = "operators/Lineout/";
+    if (strncmp(pipelineVariable, opLineout, strlen(opLineout)) == 0)
     {
-        const char *var = pipelineVariable + strlen("operators/Lineout");
+        const char *var = pipelineVariable + strlen(opLineout);
         avtDataRequest_p dr = new avtDataRequest(in_contract->GetDataRequest(), var);
         rv = new avtContract(in_contract, dr);
     }
