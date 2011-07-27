@@ -45,7 +45,6 @@
 
 #include <avtSTMDFileFormat.h>
 
-#include <string>
 #include <vector>
 
 
@@ -145,7 +144,7 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
     std::string fnameH;
 
     int dimension;
-
+    int resolution; // for user selection of resolution
     std::vector<Grid> grids;
     int numGrids;
     int numLevels;
@@ -165,6 +164,8 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
     void UnifyGlobalExtents();
     void DetermineVariablesFromGridFile();
     void BuildDomainNesting();
+    void RegisterDataSelections(const std::vector<avtDataSelection_p>&,
+                                std::vector<bool>* applied);
 };
 
 
