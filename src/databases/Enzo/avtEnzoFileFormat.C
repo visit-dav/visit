@@ -1034,6 +1034,10 @@ avtEnzoFileFormat::FreeUpResources(void)
 //    Fixed obvious typo in particle velocity expression and made attempt
 //    (without test data in hand) to ensure expressions get specified
 //    correctly on 2D meshes.
+//
+//    Jean Favre, Wed Jul 27 09:29:46 PDT 2011
+//    Add support for resolution selection contract.
+//
 // ****************************************************************************
 
 void
@@ -2033,6 +2037,7 @@ avtEnzoFileFormat::GetVectorVar(int domain, const char *varname)
 //    API change for avtIntervalTree.
 //
 // ****************************************************************************
+
 void *
 avtEnzoFileFormat::GetAuxiliaryData(const char *var, int dom, 
                                     const char * type, void *,
@@ -2061,19 +2066,31 @@ avtEnzoFileFormat::GetAuxiliaryData(const char *var, int dom,
     return ((void *) itree);
 }
 
+// ****************************************************************************
+//  Method:  avtEnzoFileFormat::RegisterDataSelections
+//
+//  Purpose:
+//      Tries to read requests for specific resolutions.
+//
+//  Programmer:  Jean Favre
+//  Creation:    July 27, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
 void
-avtEnzoFileFormat::RegisterDataSelections(
-  const std::vector<avtDataSelection_p>& sels,
-  std::vector<bool>* applied)
+avtEnzoFileFormat::RegisterDataSelections(const std::vector<avtDataSelection_p>& sels,
+                                          std::vector<bool>* applied)
 {
-  for(size_t i=0; i < sels.size(); ++i)
+    for(size_t i=0; i < sels.size(); ++i)
     {
-    if(strcmp(sels[i]->GetType(), "avtResolutionSelection") == 0)
-      {
-      const avtResolutionSelection* sel =
-            static_cast<const avtResolutionSelection*>(*sels[i]);
-      this->resolution = sel->resolution();
-      (*applied)[i] = true;
-      }
+        if(strcmp(sels[i]->GetType(), "avtResolutionSelection") == 0)
+        {
+            const avtResolutionSelection* sel =
+                static_cast<const avtResolutionSelection*>(*sels[i]);
+            this->resolution = sel->resolution();
+            (*applied)[i] = true;
+        }
     }
 }
