@@ -169,7 +169,11 @@ WindowMetrics::WindowMetrics()
 // Creation:   Wed Jan 11 17:33:47 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 26 17:02:12 PST 2011
+//   Get the X11 extensions and look for 2 that are common on Macs and not
+//   elsewhere. If we think we're displaying to a Mac then limit one of our
+//   loops to once so we don't get stuck.
+//
 // ****************************************************************************
 
 void
@@ -181,6 +185,21 @@ WindowMetrics::MeasureScreen(bool waitForWM)
     //
     testWindow = new TestWin;
     testWindow->show();
+
+    //
+    // Try and determine if we're displaying X11 to a Mac.
+    //
+    int nExt = 0, appleDisplay = 0;
+    char **ext = XListExtensions(QX11Info::display(), &nExt);
+    for(int e = 0; e < nExt; ++e)
+    {
+        if(strcmp(ext[e], "Apple-DRI") == 0 ||
+           strcmp(ext[e], "Apple-WM") == 0)
+        {
+            appleDisplay++;
+        }
+    }
+    XFreeExtensionList(ext);
 
     //
     // Calculate the metrics
@@ -215,7 +234,8 @@ WindowMetrics::MeasureScreen(bool waitForWM)
             WaitForWindowManagerToMoveWindow(testWindow);
             CalculateTopLeft(testWindow, shiftX, shiftY);
         }
-        while (shiftX == preshiftX+100  &&  shiftY == preshiftY+100);
+        while ((shiftX == preshiftX+100  &&  shiftY == preshiftY+100) &&
+                appleDisplay == 0);
         // (sometimes we need to wait for more than one ConfigureNotify)
     }
     else
