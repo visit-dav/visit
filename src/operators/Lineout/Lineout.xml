@@ -37,6 +37,8 @@
       </Function>
       <Function name="Print" user="true" member="true">
       </Function>
+      <Function name="LineoutCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
+      </Function>
       <Function name="LineoutGUIPluginInfo::GetVariableTypes" user="false" member="true">
       </Function>
       <Function name="LineoutGUIPluginInfo::GetVariableMask" user="false" member="true">
