@@ -2606,6 +2606,46 @@ VisItReadConsole(int maxlen, char *buffer)
     return retval;
 }
 
+#ifndef _WIN32
+/*******************************************************************************
+*
+* Name: VisItGetSockets
+*
+* Purpose: Get the sockets that we should be select()'ing on.
+*
+* Author: Brad Whitlock, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
+*
+*******************************************************************************/
+int
+VisItGetSockets(VISIT_SOCKET *lSocket, VISIT_SOCKET *cSocket)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItGetSockets);
+
+    if(lSocket != NULL && cSocket != NULL)
+    {
+        /* If we're connected, select on the control socket */
+        *cSocket = (engineSocket >= 0) ? engineSocket : VISIT_INVALID_SOCKET;
+
+        /* If we're connected, do *not* select on the listen socket */
+        /* This forces us to have only one client at a time. */
+        if (engineSocket < 0 && listenSocket >= 0)
+            *lSocket = listenSocket;
+        else
+            *lSocket = VISIT_INVALID_SOCKET;
+
+        retval = VISIT_OKAY;
+    }
+
+    LIBSIM_API_LEAVE(VisItGetSockets);
+
+    return retval;
+}
+#endif
+
 /*******************************************************************************
 *
 * Name: VisItAttemptToCompleteConnection
