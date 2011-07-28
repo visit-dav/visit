@@ -66,6 +66,8 @@ void avtMeshMetaData::Init()
     logicalBounds[0] = 0;
     logicalBounds[1] = 0;
     logicalBounds[2] = 0;
+    hasNumberCells = false;
+    numberCells = 0;
     topologicalDimension = 3;
     xLabel = "X-Axis";
     yLabel = "Y-Axis";
@@ -160,6 +162,8 @@ void avtMeshMetaData::Copy(const avtMeshMetaData &obj)
     logicalBounds[1] = obj.logicalBounds[1];
     logicalBounds[2] = obj.logicalBounds[2];
 
+    hasNumberCells = obj.hasNumberCells;
+    numberCells = obj.numberCells;
     topologicalDimension = obj.topologicalDimension;
     xUnits = obj.xUnits;
     yUnits = obj.yUnits;
@@ -407,6 +411,8 @@ avtMeshMetaData::operator == (const avtMeshMetaData &obj) const
             (spatialDimension == obj.spatialDimension) &&
             (hasLogicalBounds == obj.hasLogicalBounds) &&
             logicalBounds_equal &&
+            (hasNumberCells == obj.hasNumberCells) &&
+            (numberCells == obj.numberCells) &&
             (topologicalDimension == obj.topologicalDimension) &&
             (xUnits == obj.xUnits) &&
             (yUnits == obj.yUnits) &&
@@ -597,6 +603,8 @@ avtMeshMetaData::SelectAll()
     Select(ID_spatialDimension,               (void *)&spatialDimension);
     Select(ID_hasLogicalBounds,               (void *)&hasLogicalBounds);
     Select(ID_logicalBounds,                  (void *)logicalBounds, 3);
+    Select(ID_hasNumberCells,                 (void *)&hasNumberCells);
+    Select(ID_numberCells,                    (void *)&numberCells);
     Select(ID_topologicalDimension,           (void *)&topologicalDimension);
     Select(ID_xUnits,                         (void *)&xUnits);
     Select(ID_yUnits,                         (void *)&yUnits);
@@ -950,6 +958,34 @@ avtMeshMetaData::UnsetBounds()
 }
 
 // ****************************************************************************
+//  Method: avtMeshMetaData::SetNumberCells
+//
+//  Purpose:
+//      Sets the number of cells for a mesh.
+//
+//  Arguments:
+//      numberCells     Number if mesh cells as < nCells >.
+//
+//  Creationist: Allen Sanderson
+//  Creation:    July 27, 2011
+//
+// ****************************************************************************
+
+void
+avtMeshMetaData::SetNumberCells(const int nCells)
+{
+    hasNumberCells = (nCells > 0);
+
+    numberCells = (nCells > 0 ? nCells : 0 );
+}
+
+void
+avtMeshMetaData::UnsetNumberCells()
+{
+    hasNumberCells = false;
+}
+
+// ****************************************************************************
 //  Method: avtMeshMetaData::Print
 //
 //  Purpose:
@@ -1044,37 +1080,37 @@ void
 avtMeshMetaData::Print(ostream &out, int indent) const
 {
     Indent(out, indent);
-    out << "Name = " << name.c_str() << endl;
+    out << "Name = " << name.c_str() << std::endl;
     if (name != originalName)
     {
         Indent(out, indent);
-        out << "Original Name = " << originalName.c_str() << endl;
+        out << "Original Name = " << originalName.c_str() << std::endl;
     }
     Indent(out, indent);
-    out << "Number of blocks = " << numBlocks << endl;
+    out << "Number of blocks = " << numBlocks << std::endl;
     Indent(out, indent);
-    out << "Block origin = " << blockOrigin << endl;
+    out << "Block origin = " << blockOrigin << std::endl;
     Indent(out, indent);
     out << "Cell origin = " << cellOrigin 
-        << " (origin within one block of the cells)." << endl;
+        << " (origin within one block of the cells)." << std::endl;
     Indent(out, indent);
     out << "Node origin = " << nodeOrigin 
-        << " (origin within one block of the nodes)." << endl;
+        << " (origin within one block of the nodes)." << std::endl;
     Indent(out, indent);
-    out << "Group origin = " << groupOrigin << endl;
+    out << "Group origin = " << groupOrigin << std::endl;
     Indent(out, indent);
-    out << "Title for domain hierarchy is " << blockTitle.c_str() << endl;
+    out << "Title for domain hierarchy is " << blockTitle.c_str() << std::endl;
     Indent(out, indent);
     out << "Title for individual piece in domain hierarchy is "
-        << blockPieceName.c_str() << endl;
+        << blockPieceName.c_str() << std::endl;
     if (blockNameScheme.GetNamescheme() != "")
     {
         Indent(out, indent);
-        out << "The name scheme is: " << blockNameScheme.GetNamescheme() << endl;
+        out << "The name scheme is: " << blockNameScheme.GetNamescheme() << std::endl;
     }
 
     Indent(out, indent);
-    out << "Number of groups = " << numGroups << endl;
+    out << "Number of groups = " << numGroups << std::endl;
     if(numGroups > 0)
     {
         Indent(out, indent);
@@ -1098,13 +1134,13 @@ avtMeshMetaData::Print(ostream &out, int indent) const
                     out << ", ";
             }
         }
-        out << endl;
+        out << std::endl;
     }
     Indent(out, indent);
-    out << "Title for group hierarchy is " << groupTitle.c_str() << endl;
+    out << "Title for group hierarchy is " << groupTitle.c_str() << std::endl;
     Indent(out, indent);
     out << "Title for individual piece in group hierarchy is "
-        << groupPieceName.c_str() << endl;
+        << groupPieceName.c_str() << std::endl;
 
     Indent(out, indent);
     out << "Mesh type is ";
@@ -1143,10 +1179,10 @@ avtMeshMetaData::Print(ostream &out, int indent) const
         out << "Unknown";
         break;
     }
-    out << "." << endl;
+    out << "." << std::endl;
 
     Indent(out, indent);
-    out << "Spatial Dimension = " << spatialDimension << endl;
+    out << "Spatial Dimension = " << spatialDimension << std::endl;
 
     if (hasSpatialExtents)
     {
@@ -1159,31 +1195,45 @@ avtMeshMetaData::Print(ostream &out, int indent) const
             if(j < spatialDimension-1)
                 out << ", ";
         }
-        out << ")" << endl;
+        out << ")" << std::endl;
     }
     else
     {
         Indent(out, indent);
-        out << "The spatial extents are not set." << endl;
+        out << "The spatial extents are not set." << std::endl;
     }
 
     Indent(out, indent);
-    out << "Topological Dimension = " << topologicalDimension << endl;
+    out << "Topological Dimension = " << topologicalDimension << std::endl;
 
     if (hasLogicalBounds)
     {
-        Indent(out, indent);
-        out << "Logical bounds are: (";
-        if( meshType == AVT_POINT_MESH )
-            out << logicalBounds[0];
-        else
+        switch (meshType)
         {
-          for (int j = 0 ; j < std::min(topologicalDimension, 3) ; j++)
-          {
+          case AVT_RECTILINEAR_MESH:
+          case AVT_CURVILINEAR_MESH:
+            Indent(out, indent);
+            out << "Logical nodal bounds are (";
+            for (int j = 0 ; j < std::min(topologicalDimension, 3) ; j++)
+            {
               out << logicalBounds[j];
               if(j < topologicalDimension-1)
                   out << ", ";
-          }
+            }
+            out << ")" << std::endl;
+            break;
+          case AVT_POINT_MESH:
+          case AVT_UNSTRUCTURED_MESH:
+            Indent(out, indent);
+            out << "Logical cell bound is (" << logicalBounds[0] << ")"
+                << std::endl;
+            break;
+
+//        Report nothing as the logical bounds are not applicable
+          default:
+            out << "The logical bounds are set but not applicable."
+                << std::endl;
+            break;
         }
     }
     else
@@ -1192,14 +1242,43 @@ avtMeshMetaData::Print(ostream &out, int indent) const
         {
           case AVT_RECTILINEAR_MESH:
           case AVT_CURVILINEAR_MESH:
-          case AVT_POINT_MESH:
             Indent(out, indent);
-            out << "The logical bounds are not set." << endl;
+            out << "The logical nodal bounds are not set." << std::endl;
+            break;
+          case AVT_POINT_MESH:
+          case AVT_UNSTRUCTURED_MESH:
+            Indent(out, indent);
+            out << "The logical cell bound are not set." << std::endl;
             break;
 
 //          Report nothing as the logical bounds are not applicable
 //          default:
-//            out << "The logical bounds are not applicable." << endl;
+//            out << "The logical bounds are not applicable." << std::endl;
+//            break;
+        }
+    }
+
+
+    if (hasNumberCells)
+    {
+        Indent(out, indent);
+        out << "Number of cells is " << numberCells << std::endl;
+    }
+    else
+    {
+        switch (meshType)
+        {
+          case AVT_UNSTRUCTURED_MESH:
+          case AVT_RECTILINEAR_MESH:
+          case AVT_CURVILINEAR_MESH:
+          case AVT_POINT_MESH:
+            Indent(out, indent);
+            out << "The number of cells is not set." << std::endl;
+            break;
+
+//          Report nothing as the number of cells is not applicable
+//          default:
+//            out << "The number of cells is not applicable." << std::endl;
 //            break;
         }
     }
@@ -1208,79 +1287,79 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     if (blockNames.size() == numBlocks)
     {
         Indent(out, indent);
-        out << "Block names: " << endl;
+        out << "Block names: " << std::endl;
         for (int i = 0 ; i < numBlocks ; i++)
         {
             Indent(out, indent);
-            out << "\t" << blockNames[i].c_str() << endl;
+            out << "\t" << blockNames[i].c_str() << std::endl;
         }
     }
     else
     {
         Indent(out, indent);
-        out << "There are no names set with the blocks." << endl;
+        out << "There are no names set with the blocks." << std::endl;
     }
 
     Indent(out, indent);
     out << "Disjoint elements " << (disjointElements ? "true" : "false") 
-        << endl;
+        << std::endl;
 
     Indent(out, indent);
-    out << "Contains ghost zones " << containsGhostZones << endl;
+    out << "Contains ghost zones " << containsGhostZones << std::endl;
 
     if (containsExteriorBoundaryGhosts)
     {
         Indent(out, indent);
-        out << "Contains ghost zones on the exterior boundary" << endl;
+        out << "Contains ghost zones on the exterior boundary" << std::endl;
     }
 
     Indent(out, indent);
-    out << "Contains original cells " << containsOriginalCells << endl;
+    out << "Contains original cells " << containsOriginalCells << std::endl;
 
     Indent(out, indent);
-    out << "Contains original nodes " << containsOriginalNodes << endl;
+    out << "Contains original nodes " << containsOriginalNodes << std::endl;
 
     Indent(out, indent);
     out << "Units =  x: \"" << xUnits.c_str()
         << "\", y: \"" << yUnits.c_str()
-        << "\", z: \"" << zUnits.c_str() << "\"." << endl;
+        << "\", z: \"" << zUnits.c_str() << "\"." << std::endl;
 
     Indent(out, indent);
     out << "Labels =  x: \"" << xLabel.c_str()
         << "\", y: \"" << yLabel.c_str()
-        << "\", z: \"" << zLabel.c_str() << "\"." << endl;
+        << "\", z: \"" << zLabel.c_str() << "\"." << std::endl;
 
     if (!validVariable)
     {
         Indent(out, indent);
-        out << "THIS IS NOT A VALID VARIABLE." << endl;
+        out << "THIS IS NOT A VALID VARIABLE." << std::endl;
     }
 
     if (loadBalanceScheme != LOAD_BALANCE_UNKNOWN)
     {
         Indent(out, indent);
         out << "HAS A SPECIFIC LOAD BALANCE SCHEME = "
-            << loadBalanceScheme << endl;
+            << loadBalanceScheme << std::endl;
     }
     if (meshCoordType == AVT_XY)
     {
         Indent(out, indent);
-        out << "Mesh coord type is XY" << endl;
+        out << "Mesh coord type is XY" << std::endl;
     }
     else if (meshCoordType == AVT_RZ)
     {
         Indent(out, indent);
-        out << "Mesh coord type is RZ" << endl;
+        out << "Mesh coord type is RZ" << std::endl;
     }
     else if (meshCoordType == AVT_ZR)
     {
         Indent(out, indent);
-        out << "Mesh coord type is ZR" << endl;
+        out << "Mesh coord type is ZR" << std::endl;
     }
 
     Indent(out, indent);
     out << "Mesh is primarily "
-        << (nodesAreCritical ? "point" : "cell") << "-based" << endl;
+        << (nodesAreCritical ? "point" : "cell") << "-based" << std::endl;
 
     for (int i=0; i<3; i++)
     {
@@ -1288,13 +1367,13 @@ avtMeshMetaData::Print(ostream &out, int indent) const
         out << "Unit cell vector #"<<i<<" is "
             << unitCellVectors[i*3+0] << " "
             << unitCellVectors[i*3+1] << " "
-            << unitCellVectors[i*3+2] << endl;
+            << unitCellVectors[i*3+2] << std::endl;
     }
 
     Indent(out, indent);
     out << "Rectilinear grids "
         << (rectilinearGridHasTransform ? "do " : "do not ")
-        << "have an implicit transform." << endl;
+        << "have an implicit transform." << std::endl;
     if (rectilinearGridHasTransform)
     {
         for (int i=0; i<4; i++)
@@ -1305,7 +1384,7 @@ avtMeshMetaData::Print(ostream &out, int indent) const
                 << rectilinearGridTransform[i*4+1] << " "
                 << rectilinearGridTransform[i*4+2] << " "
                 << rectilinearGridTransform[i*4+3] << " "
-                << "]" << endl;
+                << "]" << std::endl;
         }
     }
 }

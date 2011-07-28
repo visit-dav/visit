@@ -24,9 +24,15 @@
       false
     </Field>
     <Field name="logicalBounds" label="Logical bounds for structured meshes" type="intArray" length="3" access="public">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
+    </Field>
+    <Field name="hasNumberCells" label="Has number of cells" type="bool" access="public">
+      false
+    </Field>
+    <Field name="numberCells" label="Number of cells for a mesh" type="int" access="public">
+      0
     </Field>
     <Field name="topologicalDimension" label="Topological dimension" type="int" access="public">
       3
@@ -175,6 +181,10 @@
     <Function name="SetBounds" user="true" member="true">
     </Function>
     <Function name="UnsetBounds" user="true" member="true">
+    </Function>
+    <Function name="SetNumberCells" user="true" member="true">
+    </Function>
+    <Function name="UnsetNumberCells" user="true" member="true">
     </Function>
     <Function name="Print" user="true" member="true">
     </Function>
