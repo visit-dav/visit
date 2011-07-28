@@ -588,6 +588,10 @@ StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
 //    Should default to "0" for start, and only use "-1" for 
 //    the "all-slash-string" case.
 //
+//    Kathleen Biagas, Thu Jul 28 09:41:27 PDT 2011
+//    When searching the string, look for either type of slash char, but still
+//    use the sys-dependent VISIT_SLASH_STRING when setting in the empty buf.
+//
 // ****************************************************************************
 static const char *
 basename(const char *path, int& start)
@@ -618,12 +622,12 @@ basename(const char *path, int& start)
            return StaticStringBuf;
        }
 
-       // backup, skipping over all trailing VISIT_SLASH_CHAR chars
+       // backup, skipping over all trailing slash chars
        int j = n-1;
-       while ((j >= 0) && (path[j] == VISIT_SLASH_CHAR))
+       while ((j >= 0) && (path[j] == '/' || path[j] == '\\'))
            j--;
 
-       // deal with string consisting of all VISIT_SLASH_CHAR chars
+       // deal with string consisting of all slash chars
        if (j == -1)
        {
            start = -1;
@@ -631,9 +635,9 @@ basename(const char *path, int& start)
            return StaticStringBuf;
        }
 
-       // backup to just after next VISIT_SLASH_CHAR char
+       // backup to just after next slash char
        int i = j-1;
-       while ((i >= 0) && (path[i] != VISIT_SLASH_CHAR))
+       while ((i >= 0) && (path[i] != '/' && path[i] != '\\'))
            i--;
        i++;
        start = i;
@@ -668,6 +672,10 @@ StringHelpers::Basename(const char *path)
 //    returned from the above implementation of basename naturally.  Fixed
 //    a couple of the special cases as well.
 //
+//    Kathleen Biagas, Thu Jul 28 09:41:27 PDT 2011
+//    When searching the string, look for either type of slash char, but still
+//    use the sys-dependent VISIT_SLASH_STRING when setting in the empty buf.
+//
 // ****************************************************************************
 const char *
 StringHelpers::Dirname(const char *path)
@@ -692,7 +700,7 @@ StringHelpers::Dirname(const char *path)
         int i;
         for (i = 0; i < start; i++)
             StaticStringBuf[i] = path[i];
-        if (StaticStringBuf[i-1] == VISIT_SLASH_CHAR)
+        if (StaticStringBuf[i-1] == '/' || StaticStringBuf[i-1] == '\\')
             StaticStringBuf[i-1] = '\0';
        else
             StaticStringBuf[i] = '\0';
