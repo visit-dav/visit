@@ -530,6 +530,9 @@ avtCMFEExpression::Execute()
 //    Hank Childs, Tue Jun 13 13:10:11 PDT 2006
 //    Fix a typo in warning message.
 //
+//    Hank Childs, Thu Jul 28 04:54:09 PDT 2011
+//    Bad test for issuing warning when accessing bad time slices.
+//
 // ****************************************************************************
 
 int
@@ -622,7 +625,7 @@ avtCMFEExpression::GetTimestate(ref_ptr<avtDatabase> dbp)
                "non-existent time state when comparing databases.  VisIt "
                "is using the first time state in its place.");
     }
-    if (actualTimestep > 0 && actualTimestep > md->GetNumStates())
+    if (actualTimestep > 0 && actualTimestep >= md->GetNumStates())
     {
         actualTimestep = md->GetNumStates()-1;
         avtCallback::IssueWarning("You have instructed VisIt to use a "
