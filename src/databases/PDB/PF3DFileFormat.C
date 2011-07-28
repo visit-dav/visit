@@ -1770,6 +1770,10 @@ PF3DFileFormat::GetBOFKey(int realDomain, const char *varName) const
 //   Brad Whitlock, Thu Jun 22 16:46:22 PST 2006
 //   Added support for multiple domains in a file.
 //
+//   Eric Brugger, Thu Jul 28 11:45:26 PDT 2011
+//   I corrected an error in the decompression code for one of the compression
+//   schemes where "char *" was used instead of "unsigned char *".
+//
 // ****************************************************************************
 
 PF3DFileFormat::BOF *
@@ -1913,7 +1917,7 @@ PF3DFileFormat::GetBOF(int realDomain, const char *varName)
                     {
                         long N = dims[0] * dims[1] * dims[2];
                         float *fptr = new float[N];
-                        char *cptr = (char *)data;
+                        unsigned char *cptr = (unsigned char *)data;
 
                         retval = new BOF;
                         retval->size[0] = dims[0];
