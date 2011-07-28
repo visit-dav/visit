@@ -772,7 +772,7 @@ echo ""                                                              >> html/ind
 #
 # Make sure we'll get core files if we core
 #
-ulimit -c unlimited
+ulimit -c unlimited 2>/dev/null
 
 #
 #  loop over all tests, running them
