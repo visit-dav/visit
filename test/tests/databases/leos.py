@@ -17,7 +17,10 @@
 #    I replaced OpenDatabase with FindAnd... variant to deal with data
 #    we don't keep in repo.
 # ----------------------------------------------------------------------------
-
+OpenMDServer("localhost")
+readOptions=GetDefaultFileOpenOptions("PDB")
+readOptions["LEOS try harder level [set to 0, 1 or 2]"] = 1 
+SetDefaultFileOpenOptions("PDB", readOptions)
 
 (err, dbname) = FindAndOpenDatabase("sesame.pdb")
 if (err != 1): Exit(116) # Indicate skip
