@@ -96,6 +96,8 @@ public:
     void UnsetExtents();
     void SetBounds(const int *);
     void UnsetBounds();
+    void SetNumberCells(const int);
+    void UnsetNumberCells();
     void Print(ostream &, int = 0) const;
     void SetAMRInfo(const std::string &levelName, const std::string &patchName, int origin,const std::vector<int> &patchesPerLevel);
 
@@ -110,6 +112,8 @@ public:
         ID_spatialDimension,
         ID_hasLogicalBounds,
         ID_logicalBounds,
+        ID_hasNumberCells,
+        ID_numberCells,
         ID_topologicalDimension,
         ID_xUnits,
         ID_yUnits,
@@ -161,6 +165,8 @@ public:
     int                  spatialDimension;
     bool                 hasLogicalBounds;
     int                  logicalBounds[3];
+    bool                 hasNumberCells;
+    int                  numberCells;
     int                  topologicalDimension;
     std::string          xUnits;
     std::string          yUnits;
@@ -205,6 +211,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTMESHMETADATA_TMFS "ssbiiiibIissssssbDDiisss*aiissi*i*bibbbbibFFbDibbi"
+#define AVTMESHMETADATA_TMFS "ssbiiiibIbiissssssbDDiisss*aiissi*i*bibbbbibFFbDibbi"
 
 #endif
