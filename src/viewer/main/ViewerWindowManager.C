@@ -925,6 +925,11 @@ ViewerWindowManager::DeleteWindow()
 //    Brad Whitlock, Wed Apr 30 09:44:37 PDT 2008
 //    Added tr().
 //
+//    Hank Childs, Thu Jul 28 04:59:54 PDT 2011
+//    Make sure the new active window is DeIconified before deleting the
+//    current window.  Otherwise, Qt might decide there are no active
+//    windows and quit.
+//
 // ****************************************************************************
 
 void
@@ -968,6 +973,12 @@ ViewerWindowManager::DeleteWindow(ViewerWindow *win)
             break;
         }
     }
+
+    //
+    // Make sure this window is de-iconified.  If not, Qt might decide
+    // there are no active windows and quit.
+    //
+    windows[newWindowIndex]->DeIconify();
 
     //
     // Emit a signal to other objects that "win" is being deleted.

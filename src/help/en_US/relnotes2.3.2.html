@@ -18,9 +18,13 @@ list of changes in release 2.3.1.</p>
 
 <p><b><font size="4">Bugs fixed in version 2.3.2</font></b></p>
 <ul>
-<li>The <i>VisIt_RectilinearMesh_setBaseIndex</i> function in Libsim did not behave properly.</li>
-<li>VisIt could hang when displaying from a Linux computer to a MacOS X computer over X11.</li>
+<li>VisIt no longer hangs when displaying from a Linux computer to a MacOS X computer over X11.</li>
+<li>If you have a running session with multiple windows, and you restore a
+session with one window, VisIt no longer unexpectedly exits.</li>
 <li>Curve plots created via the <i>operators/Lineout</i> variable menu in a plot variable menu failed to plot if the variable name contained spaces.</li>
+<li>When you using cross-mesh field evaluations, VisIt now correctly issues
+a warning when accessing invalid time slices.</li>
+<li>The <i>VisIt_RectilinearMesh_setBaseIndex</i> function in Libsim did not behave properly.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.3.2</font></b></p>
