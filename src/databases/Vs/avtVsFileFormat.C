@@ -2479,7 +2479,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       // the data is zonal. Also no parallel reads for unstructured data.
       if( meshMetaPtr->isUnstructuredMesh() )
       {
-        haveDataSelections = isZonal;
+        haveDataSelections &= isZonal;
         parallelRead = false;
       }
     }
@@ -3145,7 +3145,8 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
     LoadData();
 
     // Number of mesh dims
-    int mdims;
+    int spatialDims;
+    int topologicalDims;
 
     // All meshes names
     std::vector<std::string> names;
@@ -3162,17 +3163,19 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
     std::vector<std::string>::const_iterator it;
     for (it = names.begin(); it != names.end(); ++it) {
       VsMesh* meta = registry->getMesh(*it);
-      mdims = meta->getNumSpatialDims();
+
+      spatialDims = meta->getNumSpatialDims();
 
       //if this mesh is 1-D, we leave it for later (curves)
-      if (mdims == 1) {
+      if (spatialDims == 1) {
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
           << "Found 1-d mesh.  Skipping for now, will be added as a curve."
           << std::endl;
         continue;
-      } else if ((mdims <= 0) || (mdims > 3)) {
+      } else if ((spatialDims <= 0) || (3 < spatialDims)) {
         VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "NumSpatialDims is out of range: " << mdims << "  "
+                          << "NumSpatialDims is out of range: "
+                          << spatialDims << "  "
                           << "Skipping mesh." << std::endl;
         continue;
       }
@@ -3190,6 +3193,11 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                         << "Found mesh '" << *it << "' of kind '"
                         << meta->getKind() << "'." << std::endl;
 
+      avtMeshType meshType = AVT_UNKNOWN_MESH;
+      std::vector<int> dims;
+      int bounds[3] = {1,1,1};
+      int numCells = 1;
+
       // Uniform Mesh
       if (meta->isUniformMesh()) {
         // 09.06.01 Marc Durant We used to report uniform cartesian
@@ -3198,52 +3206,47 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         // vstests, and is motivated because the VisIt Lineout
         // operator requires 2-d data.  EXCEPT! then we can't plot 3-d
         // std::vectors on the 2-d data, so for now we continue to report 3
-        // mdims = dims.size();
+        // spatialDimss = dims.size();
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "Mesh's dimension = " << mdims << std::endl;
-        if (mdims != 3) {
+                          << "Mesh's dimension = " << spatialDims << std::endl;
+        if (spatialDims != 3) {
           VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "But reporting as dimension 3 to side-step VisIt bug."
                             << std::endl;
-          mdims = 3;
+          spatialDims = 3;
         }
         
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Adding uniform mesh " << *it << "." << std::endl;
 
-        // Add in the logical bounds of the mesh.
-        std::vector<int> dims;
-        static_cast<VsUniformMesh*>(meta)->getNumMeshDims(dims);
-        int bounds[3] = {1,1,1};
-         for( int i=0; i<dims.size(); ++i )
-           bounds[i] = dims[i]; // Logical bounds are node centric.
+        meshType = AVT_RECTILINEAR_MESH;
+        topologicalDims = 3;
 
-        avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
-            1, 1, 1, 0, mdims, mdims, AVT_RECTILINEAR_MESH);
-        setAxisLabels(vmd);
-        md->Add(vmd);
-        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "Succeeded in adding mesh " << *it << "." << std::endl;
+        // Add in the logical bounds of the mesh.
+        static_cast<VsUniformMesh*>(meta)->getNumMeshDims(dims);
+        for( int i=0; i<dims.size(); ++i )
+        {
+          bounds[i] = dims[i]; // Logical bounds are node centric.
+          numCells *= (dims[i]-1);
+        }
       }
 
       // Rectilinear Mesh
       else if (meta->isRectilinearMesh()) {
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Adding rectilinear mesh" << *it << ".  " 
-                          << "MDims = " << mdims << "." << std::endl;
+                          << "spatialDims = " << spatialDims << "." << std::endl;
+
+        meshType = AVT_RECTILINEAR_MESH;
+        topologicalDims = 3;
 
         // Add in the logical bounds of the mesh.
-        std::vector<int> dims;
-        meta->getMeshDataDims(dims);
         static_cast<VsRectilinearMesh*>(meta)->getNumMeshDims(dims);
-        int bounds[3] = {1,1,1};
         for( int i=0; i<dims.size(); ++i )
+        {
           bounds[i] = dims[i]; // Logical bounds are node centric.
-
-        avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
-            1, 1, 1, 0, mdims, mdims, AVT_RECTILINEAR_MESH);
-        setAxisLabels(vmd);
-        md->Add(vmd);
+          numCells *= (dims[i]-1);
+        }
       }
 
       // Structured Mesh
@@ -3251,66 +3254,77 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Adding structured mesh " << *it << "." << std::endl;
 
-        // Add in the logical bounds of the mesh.
-        std::vector<int> dims;
-        meta->getMeshDataDims(dims);
-        static_cast<VsStructuredMesh*>(meta)->getNumMeshDims(dims);
-        int bounds[3] = {1,1,1};
-        for( int i=0; i<dims.size(); ++i )
-          bounds[i] = dims[i]; // Logical bounds are node centric.
+        meshType = AVT_CURVILINEAR_MESH;
+        topologicalDims = 3;
 
-        avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
-            1, 1, 1, 0, mdims, mdims, AVT_CURVILINEAR_MESH);
-        setAxisLabels(vmd);
-        md->Add(vmd);
+        // Add in the logical bounds of the mesh.
+        static_cast<VsRectilinearMesh*>(meta)->getNumMeshDims(dims);
+        for( int i=0; i<dims.size(); ++i )
+        {
+          bounds[i] = dims[i]; // Logical bounds are node centric.
+          numCells *= (dims[i]-1);
+        }
       }
 
       // Unstructured Mesh
       else if (meta->isUnstructuredMesh()) {
-        //Unstructured meshes without connectivity data are registered
-        //as point meshes
         VsUnstructuredMesh* unstructuredMesh = (VsUnstructuredMesh*)meta;
+
+        // Unstructured meshes without connectivity data are registered
+        // as point meshes
         if (unstructuredMesh->isPointMesh()) {
           VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Registering mesh " << it->c_str()
                             << " as AVT_POINT_MESH" << std::endl;
 
-          // Add in the logical bounds of the mesh which is the number
-          // of nodes.
-          int numNodes =  unstructuredMesh->getNumPoints();
-          int bounds[3] = {numNodes,0,0};
+          meshType = AVT_POINT_MESH;
+          topologicalDims = 3; //?????
 
-          avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
-              1, 1, 1, 0, mdims, 0, AVT_POINT_MESH);
-          setAxisLabels(vmd);
-          md->Add(vmd);
+          // Add in the logical bounds of the mesh.
+          numCells = unstructuredMesh->getNumPoints();
         }
         else {
           VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Registering mesh " << it->c_str()
                             << " as AVT_UNSTRUCTURED_MESH" << std::endl;
-          mdims = meta->getNumSpatialDims();
+
+          spatialDims = meta->getNumSpatialDims();
           VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Adding unstructured mesh " << *it
-                            << " with " << mdims
+                            << " with " << spatialDims
                             << " spatial dimensions." << std::endl;
 
-          // Add in the logical bounds of the mesh which is the number
-          // of cells.
-          int bounds[3] = {unstructuredMesh->getNumCells(), 0, 0};
+          meshType = AVT_UNSTRUCTURED_MESH;
+          topologicalDims = 3;
 
-          avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
-              1, 1, 1, 0, mdims, mdims, AVT_UNSTRUCTURED_MESH);
-          setAxisLabels(vmd);
-          md->Add(vmd);
+          // Add in the logical bounds of the mesh.
+          numCells = unstructuredMesh->getNumCells();
         }
+
+        bounds[0] = numCells;
+        bounds[1] = bounds[2] = 0;
       }
       else {
+
+        meshType = AVT_UNKNOWN_MESH;
+
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Unrecognized mesh kind: " << meta->getKind()
                           << "." << std::endl;
       }
+
+      if( meshType != AVT_UNKNOWN_MESH )
+      {
+        avtMeshMetaData* vmd =
+          new avtMeshMetaData(it->c_str(), 1, 1, 1, 0,
+                              spatialDims, topologicalDims, meshType);
+        vmd->SetBounds( bounds );
+        vmd->SetNumberCells( numCells );
+        setAxisLabels(vmd);
+        md->Add(vmd);
+      }
     }
+
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Exiting normally." << std::endl;
 }
@@ -3592,12 +3606,14 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
 
       // add var mesh
       // Add in the logical bounds of the mesh.
-      int numNodes =  vMeta->getNumPoints();
-      int bounds[3] = {numNodes,0,0};
+      int numCells =  vMeta->getNumPoints();
+      int bounds[3] = {numCells,0,0};
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Adding point mesh for this variable." << std::endl;
-      avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
+      avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
           1, 1, 1, 0, vMeta->getNumSpatialDims(), 0, AVT_POINT_MESH);
+      vmd->SetBounds( bounds );
+      vmd->SetNumberCells( numCells );
       setAxisLabels(vmd);
       md->Add(vmd);
     }
