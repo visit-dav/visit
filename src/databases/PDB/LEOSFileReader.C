@@ -588,6 +588,9 @@ LEOSFileReader::BuildVarInfoMap()
 //    Jeremy Meredith, Thu Aug 25 11:35:32 PDT 2005
 //    Added group origin to mesh metadata constructor.
 //
+//    Mark C. Miller, Wed Jul 27 21:26:48 PDT 2011
+//    Added map to avert re-read of material formula for each new variable
+//    of a material.
 // ****************************************************************************
 
 bool 
@@ -602,14 +605,20 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
     if ((matForm == 0) && (tryHardLevel > 0))
     {
         // collect the material formula (e.g. 'H2O' for water)
-        char tmpStr[256];
-        char *resultStr = 0;
-        sprintf(tmpStr,"/%smaterial_info/formula", matDirName);
-        if (pdb->GetString(tmpStr, &resultStr))
+        if (matFormulaMap.find(matName) != matFormulaMap.end())
+            matForm = matFormulaMap[matName].c_str();
+        else
         {
-           materialFormula = RemoveSpaces(resultStr);
-           matForm = materialFormula.c_str();
-           delete [] resultStr;
+            char tmpStr[256];
+            char *resultStr = 0;
+            sprintf(tmpStr,"/%smaterial_info/formula", matDirName);
+            if (pdb->GetString(tmpStr, &resultStr))
+            {
+               materialFormula = RemoveSpaces(resultStr);
+               matForm = materialFormula.c_str();
+               matFormulaMap[matName] = materialFormula;
+               delete [] resultStr;
+            }
         }
     }
 
@@ -872,6 +881,10 @@ LEOSFileReader::IdentifyFormat()
 //
 //    Mark C. Miller, Mon Jul 25 16:43:19 PDT 2011
 //    Made it not fail if it can't get a formula
+//
+//    Mark C. Miller, Wed Jul 27 21:26:48 PDT 2011
+//    Added map to avert re-read of material formula for each new variable
+//    of a material.
 // ****************************************************************************
 
 bool
@@ -892,11 +905,19 @@ LEOSFileReader::ReadMaterialInfo(const char *matDirName, string &matName,
     delete [] resultStr;
 
     // collect the material formula (e.g. 'H2O' for water)
-    resultStr = 0;
-    sprintf(tmpStr,"/%smaterial_info/formula", matDirName);
-    if (pdb->GetString(tmpStr, &resultStr))
-        matForm = RemoveSpaces(resultStr);
-    delete [] resultStr;
+    if (matFormulaMap.find(matName) != matFormulaMap.end())
+        matForm = matFormulaMap[matName];
+    else
+    {
+        resultStr = 0;
+        sprintf(tmpStr,"/%smaterial_info/formula", matDirName);
+        if (pdb->GetString(tmpStr, &resultStr))
+        {
+            matForm = RemoveSpaces(resultStr);
+            matFormulaMap[matName] = matForm;
+            delete [] resultStr;
+        }
+    }
 
     return true;
 }
@@ -1163,20 +1184,21 @@ LEOSFileReader::ParseContentsAndPopulateMetaData(avtDatabaseMetaData *md,
 //    Jeremy Meredith, Thu Aug  7 15:59:40 EDT 2008
 //    Assume PDB won't modify our string literals, so cast to char* as needed.
 //
+//    Mark C. Miller, Wed Jul 27 21:27:47 PDT 2011
+//    Moved declarations for strings for matName and matForm down into loop
+//    so we don't wind up accidentally re-using a value from a previous
+//    iteration.
 // ****************************************************************************
 
 void
 LEOSFileReader::ReadFileAndPopulateMetaData(avtDatabaseMetaData *md)
 {
-    int i, j;
-    string matName, matForm;
-
     //
     // Make sure we've read the top-level dirs
     //
     GetTopDirs();
 
-    for (i = 0; i < numTopDirs; i++)
+    for (int i = 0; i < numTopDirs; i++)
     {
 
         // skip dirs known NOT to be material dirs
@@ -1184,6 +1206,7 @@ LEOSFileReader::ReadFileAndPopulateMetaData(avtDatabaseMetaData *md)
             (strcmp(topDirs[i],"master/") == 0))
             continue;
 
+        string matName, matForm;
         if (ReadMaterialInfo(topDirs[i], matName, matForm))
         {
             int numVars = 0;
@@ -1191,7 +1214,7 @@ LEOSFileReader::ReadFileAndPopulateMetaData(avtDatabaseMetaData *md)
             char **varList = PD_ls(pdbPtr, topDirs[i], (char*)"Directory",
                                    &numVars);
 
-            for (j = 0; j < numVars; j++)
+            for (int j = 0; j < numVars; j++)
             {
                 // skip dirs known NOT to be eos variable dirs
                 if (strcmp(varList[j],"material_info/") == 0)

@@ -143,6 +143,9 @@ protected:
     // stores list of variables for which assumptions turned out to be wrong
     std::map<std::string, bool> invalidVarMap;
 
+    // Stores material name to Periodic table formula map
+    std::map<std::string, std::string> matFormulaMap;
+
     // used to control how much PDB work we do during PopulateDatabaseMetaData 
     int           tryHardLevel;
 
