@@ -1781,6 +1781,12 @@ MDServerConnection::FileMatchesFilterList(const std::string &fileName) const
 //   Brad Whitlock, Thu May  5 10:56:26 PDT 2011
 //   Allow files ending in .ch5 to be grouped.
 //
+//   Gunther H. Weber, Thu Jul 28 12:41:33 PDT 2011
+//   Allow files ending in .h5part and .hdf5 to be grouped. Allow files
+//   containg dimensionality .[23][dD] to be grouped. Revamped way in
+//   which extension is detected to make it easier to add additional
+//   extenstions.
+//
 // ****************************************************************************
 
 bool
@@ -1788,39 +1794,55 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
     int &digitLength) const
 {
     int i, isave = 0, ipat = 0;
-    const char *H5_ext = ".h5";
-    const char *VSH5_ext = ".vsh5";
-    const char *CaleH5_ext = ".ch5";
     char pattern[256];
     for(i = 0; i < 256; ++i) pattern[i] = '\0';
 
     std::string searchstring;
-    bool excludedH5 = false, excludedCaleH5 = false;
-    bool excludedVSH5 = false;
+    const char *excludedFileTypeExtensions[] =
+    {
+        ".h5", ".hdf5", ".vsh5", ".h5part", ".ch5", 0
+    };
+    int excludedFileTypeExtensionIdx = -1; // -1 -> None
+    const char *excludedDimensionExtensions[] =
+    {
+        ".2d", ".2D", ".3d", ".3D", 0
+    };
+    int excludedDimensionExtensionIdx = -1; // -1 -> None
+
+    searchstring = file;
     if(extraSmartFileGrouping)
     {
-        // Exclude the .h5 file extension from the numeric pattern search.
-        if(file.size() > 3 && file.substr(file.size()-3, file.size()-1) == H5_ext)
+        int currExtIdx = 0;
+        while (excludedFileTypeExtensions[currExtIdx])
         {
-            searchstring = file.substr(0, file.size()-3);
-            excludedH5 = true;
+            int extLen = strlen(excludedFileTypeExtensions[currExtIdx]);
+            if (searchstring.size() > extLen &&
+                searchstring.substr(
+                    searchstring.size()-extLen, searchstring.size()-1
+                                   ) == excludedFileTypeExtensions[currExtIdx])
+            {
+                searchstring = searchstring.substr(0, searchstring.size()-extLen);
+                excludedFileTypeExtensionIdx = currExtIdx;
+                break;
+            }
+            ++currExtIdx;
         }
-        // Exclude the .ch5 file extension from the numeric pattern match.
-        else if(file.size() > 4 && file.substr(file.size()-4, file.size()-1) == CaleH5_ext)
+        currExtIdx = 0;
+        while (excludedDimensionExtensions[currExtIdx])
         {
-            searchstring = file.substr(0, file.size()-4);
-            excludedCaleH5 = true;
+            int extLen = strlen(excludedDimensionExtensions[currExtIdx]);
+            if (searchstring.size() > extLen &&
+                searchstring.substr(
+                    searchstring.size()-extLen, searchstring.size()-1
+                                   ) == excludedDimensionExtensions[currExtIdx])
+            {
+                searchstring = searchstring.substr(0, searchstring.size()-extLen);
+                excludedDimensionExtensionIdx = currExtIdx;
+                break;
+            }
+            ++currExtIdx;
         }
-        else if(file.size() > 5 && (file.substr(file.size()-5, file.size()-1) == VSH5_ext))
-        {
-          searchstring = file.substr(0, file.size()-5);
-          excludedVSH5 = true;
-        }
-        else
-            searchstring = file;
     }
-    else
-        searchstring = file;
 
     /* Go up to the beginning of the digit string.  */
     for (i = 0; i < searchstring.size();)
@@ -1866,12 +1888,11 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
 
     p = std::string(pattern);
 
-    if(excludedH5)
-        p += H5_ext;
-    if(excludedVSH5)
-        p += VSH5_ext;
-    if(excludedCaleH5)
-        p += CaleH5_ext;
+    if (excludedDimensionExtensionIdx > 0)
+        p += excludedDimensionExtensions[excludedDimensionExtensionIdx];
+
+    if (excludedFileTypeExtensionIdx > 0)
+        p += excludedFileTypeExtensions[excludedFileTypeExtensionIdx];
 
     return (ipat > 0);
 }
