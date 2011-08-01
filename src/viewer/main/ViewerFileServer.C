@@ -2506,10 +2506,11 @@ ViewerFileServer::GetMostSuitableCorrelation(const stringVector &dbs) const
 std::string
 ViewerFileServer::CreateNewCorrelationName() const
 {
-    int index = 1;
+    int index = 0;
     char newName[100];
     do
     {
+        index++;
         SNPRINTF(newName, 100, "Correlation%02d", index);
     } while(databaseCorrelationList->FindCorrelation(newName) != 0);
 
