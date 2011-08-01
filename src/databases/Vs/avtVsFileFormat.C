@@ -3209,12 +3209,13 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         // spatialDimss = dims.size();
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Mesh's dimension = " << spatialDims << std::endl;
-        if (spatialDims != 3) {
-          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                            << "But reporting as dimension 3 to side-step VisIt bug."
-                            << std::endl;
-          spatialDims = 3;
-        }
+        // 11.08.01 MDurant We are no longer going to do this.  2d is 2d.
+        //if (spatialDims != 3) {
+        //  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        //                    << "But reporting as dimension 3 to side-step VisIt bug."
+        //                    << std::endl;
+        //  spatialDims = 3;
+        //}
         
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Adding uniform mesh " << *it << "." << std::endl;
