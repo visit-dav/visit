@@ -44,7 +44,10 @@
 #define AVT_LineSampler_FILTER_H
 
 
-#include <avtPluginDataTreeIterator.h>
+//#include <avtPluginDataTreeIterator.h>
+#include <avtPluginFilter.h>
+#include <avtExecuteThenTimeLoopFilter.h>
+
 #include <LineSamplerAttributes.h>
 
 class vtkTransform;
@@ -64,7 +67,8 @@ class vtkUnstructuredGrid;
 //
 // ****************************************************************************
 
-class avtLineSamplerFilter : public avtPluginDataTreeIterator
+class avtLineSamplerFilter : virtual public avtPluginFilter,
+                             virtual public avtExecuteThenTimeLoopFilter
 {
   public:
                          avtLineSamplerFilter();
@@ -80,12 +84,23 @@ class avtLineSamplerFilter : public avtPluginDataTreeIterator
     virtual bool         Equivalent(const AttributeGroup*);
 
   protected:
-    LineSamplerAttributes   atts;
+    LineSamplerAttributes atts;
+    int activeTimeStep;
+
+    virtual void ExamineContract(avtContract_p in_contract);
+    virtual void Execute(void);
+    virtual void Iterate(int, avtDataTree_p);
+    virtual void Finalize(void);
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
 
+    virtual vtkUnstructuredGrid* createPoint( avtVector startPoint,
+                                              avtVector stopPoint,
+                                              bool allocateScalars );
+  
     virtual vtkPolyData *createLine( avtVector startPoint,
-                                     avtVector stopPoint );
+                                     avtVector stopPoint,
+                                     bool allocateScalars );
   
     virtual vtkUnstructuredGrid *createCone( avtVector startPoint,
                                              avtVector stopPoint,
@@ -101,6 +116,10 @@ class avtLineSamplerFilter : public avtPluginDataTreeIterator
     void applyTransform( vtkTransform* transform, avtVector &point );
 
     void checkExtents( avtVector &startPoint, avtVector &stopPoint );
+
+    bool haveData;
+
+    vtkDataSet *composite_ds;
 };
 
 #endif
