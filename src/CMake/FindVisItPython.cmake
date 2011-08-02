@@ -66,6 +66,12 @@
 #   Kathleen Bonnell, Tue May 3 15:13:27 MST 2011
 #   Revert PY_MODULE_TYPE used in PYTHON_ADD_MODULE to MODULE.
 #
+#   Cyrus Harrison, Mon Aug  1 16:24:33 PDT 2011
+#   Include pyc & pyo files in install.
+#   Don't use 'visit*' pattern to exclude from install,
+#   this actually excluded parts of the std python lib.
+#   Instead use visit.*, visitmodule.* and visit_writer.*
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -316,10 +322,10 @@ IF(PYTHONLIBS_FOUND)
                     DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                           GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                           WORLD_READ WORLD_EXECUTE
-                    PATTERN "*.pyc" EXCLUDE
-                    PATTERN "*.pyo" EXCLUDE
                     PATTERN "lib-tk" EXCLUDE
-                    PATTERN "visit*" EXCLUDE
+                    PATTERN "visit.*" EXCLUDE
+                    PATTERN "visitmodule.*" EXCLUDE
+                    PATTERN "visit_writer.*" EXCLUDE
                     PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE
                 )
             ENDIF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
@@ -393,10 +399,10 @@ IF(PYTHONLIBS_FOUND)
                     DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                                           GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                                           WORLD_READ             WORLD_EXECUTE
-                    PATTERN "*.pyc"  EXCLUDE
-                    PATTERN "*.pyo"  EXCLUDE
                     PATTERN "lib-tk" EXCLUDE
-                    PATTERN "visit*" EXCLUDE
+                    PATTERN "visit.*" EXCLUDE
+                    PATTERN "visitmodule.*" EXCLUDE
+                    PATTERN "visit_writer.*" EXCLUDE
                     PATTERN ".svn"   EXCLUDE
                     PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE
                 )
