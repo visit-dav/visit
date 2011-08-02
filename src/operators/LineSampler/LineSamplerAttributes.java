@@ -59,21 +59,23 @@ import llnl.visit.Plugin;
 
 public class LineSamplerAttributes extends AttributeSubject implements Plugin
 {
-    private static int LineSamplerAttributes_numAdditionalAtts = 19;
+    private static int LineSamplerAttributes_numAdditionalAtts = 34;
 
     // Enum values
     public final static int COORDINATESYSTEM_CARTESIAN = 0;
     public final static int COORDINATESYSTEM_CYLINDRICAL = 1;
 
-    public final static int BEAMPROJECTION_PARALLEL = 0;
-    public final static int BEAMPROJECTION_DIVERGENT = 1;
+    public final static int ARRAYPROJECTION_PARALLEL = 0;
+    public final static int ARRAYPROJECTION_DIVERGENT = 1;
+    public final static int ARRAYPROJECTION_GRID = 2;
 
-    public final static int BEAMAXIS_R = 0;
-    public final static int BEAMAXIS_Z = 1;
+    public final static int ARRAYAXIS_R = 0;
+    public final static int ARRAYAXIS_Z = 1;
 
-    public final static int BEAMSHAPE_LINE = 0;
-    public final static int BEAMSHAPE_CYLINDER = 1;
-    public final static int BEAMSHAPE_CONE = 2;
+    public final static int BEAMSHAPE_POINT = 0;
+    public final static int BEAMSHAPE_LINE = 1;
+    public final static int BEAMSHAPE_CYLINDER = 2;
+    public final static int BEAMSHAPE_CONE = 3;
 
     public final static int VIEWDIMENSION_ONE = 0;
     public final static int VIEWDIMENSION_TWO = 1;
@@ -82,33 +84,57 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public final static int BEAMTYPE_TOPHAT = 0;
     public final static int BEAMTYPE_GAUSSIAN = 1;
 
+    public final static int CHANNELSAMPLING_SINGLECHANNELSAMPLING = 0;
+    public final static int CHANNELSAMPLING_SUMMATIONCHANNELSAMPLING = 1;
+
+    public final static int TOROIDALSAMPLING_SINGLETOROIDALSAMPLING = 0;
+    public final static int TOROIDALSAMPLING_SUMMATIONTOROIDALSAMPLING = 1;
+
+    public final static int TIMESAMPLING_CURRENTTIMESTEP = 0;
+    public final static int TIMESAMPLING_MULTIPLETIMESTEPS = 1;
+
 
     public LineSamplerAttributes()
     {
         super(LineSamplerAttributes_numAdditionalAtts);
 
         coordinateSystem = COORDINATESYSTEM_CYLINDRICAL;
-        beamShape = BEAMSHAPE_LINE;
-        radius = 0.1;
-        divergence = 1;
-        beamProjection = BEAMPROJECTION_PARALLEL;
-        nBeams = 5;
-        offset = 0.1;
-        angle = 5;
-        origin = new double[3];
-        origin[0] = 0;
-        origin[1] = 0;
-        origin[2] = 0;
-        beamAxis = BEAMAXIS_Z;
+        nArrays = 1;
+        nChannels = 5;
+        toroialArrayAngle = 5;
+        arrayProjection = ARRAYPROJECTION_PARALLEL;
+        channelOffset = 0.1;
+        channelAngle = 5;
+        nRows = 1;
+        rowOffset = 0.1;
+        arrayOrigin = new double[3];
+        arrayOrigin[0] = 0;
+        arrayOrigin[1] = 0;
+        arrayOrigin[2] = 0;
+        arrayAxis = ARRAYAXIS_Z;
         poloialAngle = 0;
         poloialRTilt = 0;
         poloialZTilt = 0;
         toroialAngle = 0;
         viewDimension = VIEWDIMENSION_THREE;
+        heightPlotScale = 1;
+        channelPlotOffset = 1;
+        arrayPlotOffset = 1;
+        timePlotScale = 1;
+        beamShape = BEAMSHAPE_LINE;
+        radius = 0.1;
+        divergence = 1;
         beamType = BEAMTYPE_TOPHAT;
         standardDeviation = 1;
         sampleDistance = 0.1;
         sampleArc = 10;
+        channelSampling = CHANNELSAMPLING_SINGLECHANNELSAMPLING;
+        toroidalSampling = TOROIDALSAMPLING_SINGLETOROIDALSAMPLING;
+        toroidalSamplingAngle = 1;
+        timeSampling = TIMESAMPLING_CURRENTTIMESTEP;
+        timeStepStart = 0;
+        timeStepStop = 0;
+        timeStepStride = 1;
     }
 
     public LineSamplerAttributes(int nMoreFields)
@@ -116,27 +142,42 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         super(LineSamplerAttributes_numAdditionalAtts + nMoreFields);
 
         coordinateSystem = COORDINATESYSTEM_CYLINDRICAL;
-        beamShape = BEAMSHAPE_LINE;
-        radius = 0.1;
-        divergence = 1;
-        beamProjection = BEAMPROJECTION_PARALLEL;
-        nBeams = 5;
-        offset = 0.1;
-        angle = 5;
-        origin = new double[3];
-        origin[0] = 0;
-        origin[1] = 0;
-        origin[2] = 0;
-        beamAxis = BEAMAXIS_Z;
+        nArrays = 1;
+        nChannels = 5;
+        toroialArrayAngle = 5;
+        arrayProjection = ARRAYPROJECTION_PARALLEL;
+        channelOffset = 0.1;
+        channelAngle = 5;
+        nRows = 1;
+        rowOffset = 0.1;
+        arrayOrigin = new double[3];
+        arrayOrigin[0] = 0;
+        arrayOrigin[1] = 0;
+        arrayOrigin[2] = 0;
+        arrayAxis = ARRAYAXIS_Z;
         poloialAngle = 0;
         poloialRTilt = 0;
         poloialZTilt = 0;
         toroialAngle = 0;
         viewDimension = VIEWDIMENSION_THREE;
+        heightPlotScale = 1;
+        channelPlotOffset = 1;
+        arrayPlotOffset = 1;
+        timePlotScale = 1;
+        beamShape = BEAMSHAPE_LINE;
+        radius = 0.1;
+        divergence = 1;
         beamType = BEAMTYPE_TOPHAT;
         standardDeviation = 1;
         sampleDistance = 0.1;
         sampleArc = 10;
+        channelSampling = CHANNELSAMPLING_SINGLECHANNELSAMPLING;
+        toroidalSampling = TOROIDALSAMPLING_SINGLETOROIDALSAMPLING;
+        toroidalSamplingAngle = 1;
+        timeSampling = TIMESAMPLING_CURRENTTIMESTEP;
+        timeStepStart = 0;
+        timeStepStop = 0;
+        timeStepStride = 1;
     }
 
     public LineSamplerAttributes(LineSamplerAttributes obj)
@@ -146,28 +187,43 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         int i;
 
         coordinateSystem = obj.coordinateSystem;
-        beamShape = obj.beamShape;
-        radius = obj.radius;
-        divergence = obj.divergence;
-        beamProjection = obj.beamProjection;
-        nBeams = obj.nBeams;
-        offset = obj.offset;
-        angle = obj.angle;
-        origin = new double[3];
-        origin[0] = obj.origin[0];
-        origin[1] = obj.origin[1];
-        origin[2] = obj.origin[2];
+        nArrays = obj.nArrays;
+        nChannels = obj.nChannels;
+        toroialArrayAngle = obj.toroialArrayAngle;
+        arrayProjection = obj.arrayProjection;
+        channelOffset = obj.channelOffset;
+        channelAngle = obj.channelAngle;
+        nRows = obj.nRows;
+        rowOffset = obj.rowOffset;
+        arrayOrigin = new double[3];
+        arrayOrigin[0] = obj.arrayOrigin[0];
+        arrayOrigin[1] = obj.arrayOrigin[1];
+        arrayOrigin[2] = obj.arrayOrigin[2];
 
-        beamAxis = obj.beamAxis;
+        arrayAxis = obj.arrayAxis;
         poloialAngle = obj.poloialAngle;
         poloialRTilt = obj.poloialRTilt;
         poloialZTilt = obj.poloialZTilt;
         toroialAngle = obj.toroialAngle;
         viewDimension = obj.viewDimension;
+        heightPlotScale = obj.heightPlotScale;
+        channelPlotOffset = obj.channelPlotOffset;
+        arrayPlotOffset = obj.arrayPlotOffset;
+        timePlotScale = obj.timePlotScale;
+        beamShape = obj.beamShape;
+        radius = obj.radius;
+        divergence = obj.divergence;
         beamType = obj.beamType;
         standardDeviation = obj.standardDeviation;
         sampleDistance = obj.sampleDistance;
         sampleArc = obj.sampleArc;
+        channelSampling = obj.channelSampling;
+        toroidalSampling = obj.toroidalSampling;
+        toroidalSamplingAngle = obj.toroidalSamplingAngle;
+        timeSampling = obj.timeSampling;
+        timeStepStart = obj.timeStepStart;
+        timeStepStop = obj.timeStepStop;
+        timeStepStride = obj.timeStepStride;
 
         SelectAll();
     }
@@ -186,31 +242,46 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     {
         int i;
 
-        // Compare the origin arrays.
-        boolean origin_equal = true;
-        for(i = 0; i < 3 && origin_equal; ++i)
-            origin_equal = (origin[i] == obj.origin[i]);
+        // Compare the arrayOrigin arrays.
+        boolean arrayOrigin_equal = true;
+        for(i = 0; i < 3 && arrayOrigin_equal; ++i)
+            arrayOrigin_equal = (arrayOrigin[i] == obj.arrayOrigin[i]);
 
         // Create the return value
         return ((coordinateSystem == obj.coordinateSystem) &&
-                (beamShape == obj.beamShape) &&
-                (radius == obj.radius) &&
-                (divergence == obj.divergence) &&
-                (beamProjection == obj.beamProjection) &&
-                (nBeams == obj.nBeams) &&
-                (offset == obj.offset) &&
-                (angle == obj.angle) &&
-                origin_equal &&
-                (beamAxis == obj.beamAxis) &&
+                (nArrays == obj.nArrays) &&
+                (nChannels == obj.nChannels) &&
+                (toroialArrayAngle == obj.toroialArrayAngle) &&
+                (arrayProjection == obj.arrayProjection) &&
+                (channelOffset == obj.channelOffset) &&
+                (channelAngle == obj.channelAngle) &&
+                (nRows == obj.nRows) &&
+                (rowOffset == obj.rowOffset) &&
+                arrayOrigin_equal &&
+                (arrayAxis == obj.arrayAxis) &&
                 (poloialAngle == obj.poloialAngle) &&
                 (poloialRTilt == obj.poloialRTilt) &&
                 (poloialZTilt == obj.poloialZTilt) &&
                 (toroialAngle == obj.toroialAngle) &&
                 (viewDimension == obj.viewDimension) &&
+                (heightPlotScale == obj.heightPlotScale) &&
+                (channelPlotOffset == obj.channelPlotOffset) &&
+                (arrayPlotOffset == obj.arrayPlotOffset) &&
+                (timePlotScale == obj.timePlotScale) &&
+                (beamShape == obj.beamShape) &&
+                (radius == obj.radius) &&
+                (divergence == obj.divergence) &&
                 (beamType == obj.beamType) &&
                 (standardDeviation == obj.standardDeviation) &&
                 (sampleDistance == obj.sampleDistance) &&
-                (sampleArc == obj.sampleArc));
+                (sampleArc == obj.sampleArc) &&
+                (channelSampling == obj.channelSampling) &&
+                (toroidalSampling == obj.toroidalSampling) &&
+                (toroidalSamplingAngle == obj.toroidalSamplingAngle) &&
+                (timeSampling == obj.timeSampling) &&
+                (timeStepStart == obj.timeStepStart) &&
+                (timeStepStop == obj.timeStepStop) &&
+                (timeStepStride == obj.timeStepStride));
     }
 
     public String GetName() { return "LineSampler"; }
@@ -223,144 +294,249 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
-    public void SetBeamShape(int beamShape_)
+    public void SetNArrays(int nArrays_)
     {
-        beamShape = beamShape_;
+        nArrays = nArrays_;
         Select(1);
     }
 
-    public void SetRadius(double radius_)
+    public void SetNChannels(int nChannels_)
     {
-        radius = radius_;
+        nChannels = nChannels_;
         Select(2);
     }
 
-    public void SetDivergence(double divergence_)
+    public void SetToroialArrayAngle(double toroialArrayAngle_)
     {
-        divergence = divergence_;
+        toroialArrayAngle = toroialArrayAngle_;
         Select(3);
     }
 
-    public void SetBeamProjection(int beamProjection_)
+    public void SetArrayProjection(int arrayProjection_)
     {
-        beamProjection = beamProjection_;
+        arrayProjection = arrayProjection_;
         Select(4);
     }
 
-    public void SetNBeams(int nBeams_)
+    public void SetChannelOffset(double channelOffset_)
     {
-        nBeams = nBeams_;
+        channelOffset = channelOffset_;
         Select(5);
     }
 
-    public void SetOffset(double offset_)
+    public void SetChannelAngle(double channelAngle_)
     {
-        offset = offset_;
+        channelAngle = channelAngle_;
         Select(6);
     }
 
-    public void SetAngle(double angle_)
+    public void SetNRows(int nRows_)
     {
-        angle = angle_;
+        nRows = nRows_;
         Select(7);
     }
 
-    public void SetOrigin(double[] origin_)
+    public void SetRowOffset(double rowOffset_)
     {
-        origin[0] = origin_[0];
-        origin[1] = origin_[1];
-        origin[2] = origin_[2];
+        rowOffset = rowOffset_;
         Select(8);
     }
 
-    public void SetOrigin(double e0, double e1, double e2)
+    public void SetArrayOrigin(double[] arrayOrigin_)
     {
-        origin[0] = e0;
-        origin[1] = e1;
-        origin[2] = e2;
-        Select(8);
-    }
-
-    public void SetBeamAxis(int beamAxis_)
-    {
-        beamAxis = beamAxis_;
+        arrayOrigin[0] = arrayOrigin_[0];
+        arrayOrigin[1] = arrayOrigin_[1];
+        arrayOrigin[2] = arrayOrigin_[2];
         Select(9);
+    }
+
+    public void SetArrayOrigin(double e0, double e1, double e2)
+    {
+        arrayOrigin[0] = e0;
+        arrayOrigin[1] = e1;
+        arrayOrigin[2] = e2;
+        Select(9);
+    }
+
+    public void SetArrayAxis(int arrayAxis_)
+    {
+        arrayAxis = arrayAxis_;
+        Select(10);
     }
 
     public void SetPoloialAngle(double poloialAngle_)
     {
         poloialAngle = poloialAngle_;
-        Select(10);
+        Select(11);
     }
 
     public void SetPoloialRTilt(double poloialRTilt_)
     {
         poloialRTilt = poloialRTilt_;
-        Select(11);
+        Select(12);
     }
 
     public void SetPoloialZTilt(double poloialZTilt_)
     {
         poloialZTilt = poloialZTilt_;
-        Select(12);
+        Select(13);
     }
 
     public void SetToroialAngle(double toroialAngle_)
     {
         toroialAngle = toroialAngle_;
-        Select(13);
+        Select(14);
     }
 
     public void SetViewDimension(int viewDimension_)
     {
         viewDimension = viewDimension_;
-        Select(14);
+        Select(15);
+    }
+
+    public void SetHeightPlotScale(double heightPlotScale_)
+    {
+        heightPlotScale = heightPlotScale_;
+        Select(16);
+    }
+
+    public void SetChannelPlotOffset(double channelPlotOffset_)
+    {
+        channelPlotOffset = channelPlotOffset_;
+        Select(17);
+    }
+
+    public void SetArrayPlotOffset(double arrayPlotOffset_)
+    {
+        arrayPlotOffset = arrayPlotOffset_;
+        Select(18);
+    }
+
+    public void SetTimePlotScale(double timePlotScale_)
+    {
+        timePlotScale = timePlotScale_;
+        Select(19);
+    }
+
+    public void SetBeamShape(int beamShape_)
+    {
+        beamShape = beamShape_;
+        Select(20);
+    }
+
+    public void SetRadius(double radius_)
+    {
+        radius = radius_;
+        Select(21);
+    }
+
+    public void SetDivergence(double divergence_)
+    {
+        divergence = divergence_;
+        Select(22);
     }
 
     public void SetBeamType(int beamType_)
     {
         beamType = beamType_;
-        Select(15);
+        Select(23);
     }
 
     public void SetStandardDeviation(double standardDeviation_)
     {
         standardDeviation = standardDeviation_;
-        Select(16);
+        Select(24);
     }
 
     public void SetSampleDistance(double sampleDistance_)
     {
         sampleDistance = sampleDistance_;
-        Select(17);
+        Select(25);
     }
 
     public void SetSampleArc(double sampleArc_)
     {
         sampleArc = sampleArc_;
-        Select(18);
+        Select(26);
+    }
+
+    public void SetChannelSampling(int channelSampling_)
+    {
+        channelSampling = channelSampling_;
+        Select(27);
+    }
+
+    public void SetToroidalSampling(int toroidalSampling_)
+    {
+        toroidalSampling = toroidalSampling_;
+        Select(28);
+    }
+
+    public void SetToroidalSamplingAngle(double toroidalSamplingAngle_)
+    {
+        toroidalSamplingAngle = toroidalSamplingAngle_;
+        Select(29);
+    }
+
+    public void SetTimeSampling(int timeSampling_)
+    {
+        timeSampling = timeSampling_;
+        Select(30);
+    }
+
+    public void SetTimeStepStart(int timeStepStart_)
+    {
+        timeStepStart = timeStepStart_;
+        Select(31);
+    }
+
+    public void SetTimeStepStop(int timeStepStop_)
+    {
+        timeStepStop = timeStepStop_;
+        Select(32);
+    }
+
+    public void SetTimeStepStride(int timeStepStride_)
+    {
+        timeStepStride = timeStepStride_;
+        Select(33);
     }
 
     // Property getting methods
     public int      GetCoordinateSystem() { return coordinateSystem; }
-    public int      GetBeamShape() { return beamShape; }
-    public double   GetRadius() { return radius; }
-    public double   GetDivergence() { return divergence; }
-    public int      GetBeamProjection() { return beamProjection; }
-    public int      GetNBeams() { return nBeams; }
-    public double   GetOffset() { return offset; }
-    public double   GetAngle() { return angle; }
-    public double[] GetOrigin() { return origin; }
-    public int      GetBeamAxis() { return beamAxis; }
+    public int      GetNArrays() { return nArrays; }
+    public int      GetNChannels() { return nChannels; }
+    public double   GetToroialArrayAngle() { return toroialArrayAngle; }
+    public int      GetArrayProjection() { return arrayProjection; }
+    public double   GetChannelOffset() { return channelOffset; }
+    public double   GetChannelAngle() { return channelAngle; }
+    public int      GetNRows() { return nRows; }
+    public double   GetRowOffset() { return rowOffset; }
+    public double[] GetArrayOrigin() { return arrayOrigin; }
+    public int      GetArrayAxis() { return arrayAxis; }
     public double   GetPoloialAngle() { return poloialAngle; }
     public double   GetPoloialRTilt() { return poloialRTilt; }
     public double   GetPoloialZTilt() { return poloialZTilt; }
     public double   GetToroialAngle() { return toroialAngle; }
     public int      GetViewDimension() { return viewDimension; }
+    public double   GetHeightPlotScale() { return heightPlotScale; }
+    public double   GetChannelPlotOffset() { return channelPlotOffset; }
+    public double   GetArrayPlotOffset() { return arrayPlotOffset; }
+    public double   GetTimePlotScale() { return timePlotScale; }
+    public int      GetBeamShape() { return beamShape; }
+    public double   GetRadius() { return radius; }
+    public double   GetDivergence() { return divergence; }
     public int      GetBeamType() { return beamType; }
     public double   GetStandardDeviation() { return standardDeviation; }
     public double   GetSampleDistance() { return sampleDistance; }
     public double   GetSampleArc() { return sampleArc; }
+    public int      GetChannelSampling() { return channelSampling; }
+    public int      GetToroidalSampling() { return toroidalSampling; }
+    public double   GetToroidalSamplingAngle() { return toroidalSamplingAngle; }
+    public int      GetTimeSampling() { return timeSampling; }
+    public int      GetTimeStepStart() { return timeStepStart; }
+    public int      GetTimeStepStop() { return timeStepStop; }
+    public int      GetTimeStepStride() { return timeStepStride; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -368,41 +544,71 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(0, buf))
             buf.WriteInt(coordinateSystem);
         if(WriteSelect(1, buf))
-            buf.WriteInt(beamShape);
+            buf.WriteInt(nArrays);
         if(WriteSelect(2, buf))
-            buf.WriteDouble(radius);
+            buf.WriteInt(nChannels);
         if(WriteSelect(3, buf))
-            buf.WriteDouble(divergence);
+            buf.WriteDouble(toroialArrayAngle);
         if(WriteSelect(4, buf))
-            buf.WriteInt(beamProjection);
+            buf.WriteInt(arrayProjection);
         if(WriteSelect(5, buf))
-            buf.WriteInt(nBeams);
+            buf.WriteDouble(channelOffset);
         if(WriteSelect(6, buf))
-            buf.WriteDouble(offset);
+            buf.WriteDouble(channelAngle);
         if(WriteSelect(7, buf))
-            buf.WriteDouble(angle);
+            buf.WriteInt(nRows);
         if(WriteSelect(8, buf))
-            buf.WriteDoubleArray(origin);
+            buf.WriteDouble(rowOffset);
         if(WriteSelect(9, buf))
-            buf.WriteInt(beamAxis);
+            buf.WriteDoubleArray(arrayOrigin);
         if(WriteSelect(10, buf))
-            buf.WriteDouble(poloialAngle);
+            buf.WriteInt(arrayAxis);
         if(WriteSelect(11, buf))
-            buf.WriteDouble(poloialRTilt);
+            buf.WriteDouble(poloialAngle);
         if(WriteSelect(12, buf))
-            buf.WriteDouble(poloialZTilt);
+            buf.WriteDouble(poloialRTilt);
         if(WriteSelect(13, buf))
-            buf.WriteDouble(toroialAngle);
+            buf.WriteDouble(poloialZTilt);
         if(WriteSelect(14, buf))
-            buf.WriteInt(viewDimension);
+            buf.WriteDouble(toroialAngle);
         if(WriteSelect(15, buf))
-            buf.WriteInt(beamType);
+            buf.WriteInt(viewDimension);
         if(WriteSelect(16, buf))
-            buf.WriteDouble(standardDeviation);
+            buf.WriteDouble(heightPlotScale);
         if(WriteSelect(17, buf))
-            buf.WriteDouble(sampleDistance);
+            buf.WriteDouble(channelPlotOffset);
         if(WriteSelect(18, buf))
+            buf.WriteDouble(arrayPlotOffset);
+        if(WriteSelect(19, buf))
+            buf.WriteDouble(timePlotScale);
+        if(WriteSelect(20, buf))
+            buf.WriteInt(beamShape);
+        if(WriteSelect(21, buf))
+            buf.WriteDouble(radius);
+        if(WriteSelect(22, buf))
+            buf.WriteDouble(divergence);
+        if(WriteSelect(23, buf))
+            buf.WriteInt(beamType);
+        if(WriteSelect(24, buf))
+            buf.WriteDouble(standardDeviation);
+        if(WriteSelect(25, buf))
+            buf.WriteDouble(sampleDistance);
+        if(WriteSelect(26, buf))
             buf.WriteDouble(sampleArc);
+        if(WriteSelect(27, buf))
+            buf.WriteInt(channelSampling);
+        if(WriteSelect(28, buf))
+            buf.WriteInt(toroidalSampling);
+        if(WriteSelect(29, buf))
+            buf.WriteDouble(toroidalSamplingAngle);
+        if(WriteSelect(30, buf))
+            buf.WriteInt(timeSampling);
+        if(WriteSelect(31, buf))
+            buf.WriteInt(timeStepStart);
+        if(WriteSelect(32, buf))
+            buf.WriteInt(timeStepStop);
+        if(WriteSelect(33, buf))
+            buf.WriteInt(timeStepStride);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -413,58 +619,103 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             SetCoordinateSystem(buf.ReadInt());
             break;
         case 1:
-            SetBeamShape(buf.ReadInt());
+            SetNArrays(buf.ReadInt());
             break;
         case 2:
-            SetRadius(buf.ReadDouble());
+            SetNChannels(buf.ReadInt());
             break;
         case 3:
-            SetDivergence(buf.ReadDouble());
+            SetToroialArrayAngle(buf.ReadDouble());
             break;
         case 4:
-            SetBeamProjection(buf.ReadInt());
+            SetArrayProjection(buf.ReadInt());
             break;
         case 5:
-            SetNBeams(buf.ReadInt());
+            SetChannelOffset(buf.ReadDouble());
             break;
         case 6:
-            SetOffset(buf.ReadDouble());
+            SetChannelAngle(buf.ReadDouble());
             break;
         case 7:
-            SetAngle(buf.ReadDouble());
+            SetNRows(buf.ReadInt());
             break;
         case 8:
-            SetOrigin(buf.ReadDoubleArray());
+            SetRowOffset(buf.ReadDouble());
             break;
         case 9:
-            SetBeamAxis(buf.ReadInt());
+            SetArrayOrigin(buf.ReadDoubleArray());
             break;
         case 10:
-            SetPoloialAngle(buf.ReadDouble());
+            SetArrayAxis(buf.ReadInt());
             break;
         case 11:
-            SetPoloialRTilt(buf.ReadDouble());
+            SetPoloialAngle(buf.ReadDouble());
             break;
         case 12:
-            SetPoloialZTilt(buf.ReadDouble());
+            SetPoloialRTilt(buf.ReadDouble());
             break;
         case 13:
-            SetToroialAngle(buf.ReadDouble());
+            SetPoloialZTilt(buf.ReadDouble());
             break;
         case 14:
-            SetViewDimension(buf.ReadInt());
+            SetToroialAngle(buf.ReadDouble());
             break;
         case 15:
-            SetBeamType(buf.ReadInt());
+            SetViewDimension(buf.ReadInt());
             break;
         case 16:
-            SetStandardDeviation(buf.ReadDouble());
+            SetHeightPlotScale(buf.ReadDouble());
             break;
         case 17:
-            SetSampleDistance(buf.ReadDouble());
+            SetChannelPlotOffset(buf.ReadDouble());
             break;
         case 18:
+            SetArrayPlotOffset(buf.ReadDouble());
+            break;
+        case 19:
+            SetTimePlotScale(buf.ReadDouble());
+            break;
+        case 20:
+            SetBeamShape(buf.ReadInt());
+            break;
+        case 21:
+            SetRadius(buf.ReadDouble());
+            break;
+        case 22:
+            SetDivergence(buf.ReadDouble());
+            break;
+        case 23:
+            SetBeamType(buf.ReadInt());
+            break;
+        case 24:
+            SetStandardDeviation(buf.ReadDouble());
+            break;
+        case 25:
+            SetSampleDistance(buf.ReadDouble());
+            break;
+        case 26:
             SetSampleArc(buf.ReadDouble());
+            break;
+        case 27:
+            SetChannelSampling(buf.ReadInt());
+            break;
+        case 28:
+            SetToroidalSampling(buf.ReadInt());
+            break;
+        case 29:
+            SetToroidalSamplingAngle(buf.ReadDouble());
+            break;
+        case 30:
+            SetTimeSampling(buf.ReadInt());
+            break;
+        case 31:
+            SetTimeStepStart(buf.ReadInt());
+            break;
+        case 32:
+            SetTimeStepStop(buf.ReadInt());
+            break;
+        case 33:
+            SetTimeStepStride(buf.ReadInt());
             break;
         }
     }
@@ -478,31 +729,27 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(coordinateSystem == COORDINATESYSTEM_CYLINDRICAL)
             str = str + "COORDINATESYSTEM_CYLINDRICAL";
         str = str + "\n";
-        str = str + indent + "beamShape = ";
-        if(beamShape == BEAMSHAPE_LINE)
-            str = str + "BEAMSHAPE_LINE";
-        if(beamShape == BEAMSHAPE_CYLINDER)
-            str = str + "BEAMSHAPE_CYLINDER";
-        if(beamShape == BEAMSHAPE_CONE)
-            str = str + "BEAMSHAPE_CONE";
+        str = str + intToString("nArrays", nArrays, indent) + "\n";
+        str = str + intToString("nChannels", nChannels, indent) + "\n";
+        str = str + doubleToString("toroialArrayAngle", toroialArrayAngle, indent) + "\n";
+        str = str + indent + "arrayProjection = ";
+        if(arrayProjection == ARRAYPROJECTION_PARALLEL)
+            str = str + "ARRAYPROJECTION_PARALLEL";
+        if(arrayProjection == ARRAYPROJECTION_DIVERGENT)
+            str = str + "ARRAYPROJECTION_DIVERGENT";
+        if(arrayProjection == ARRAYPROJECTION_GRID)
+            str = str + "ARRAYPROJECTION_GRID";
         str = str + "\n";
-        str = str + doubleToString("radius", radius, indent) + "\n";
-        str = str + doubleToString("divergence", divergence, indent) + "\n";
-        str = str + indent + "beamProjection = ";
-        if(beamProjection == BEAMPROJECTION_PARALLEL)
-            str = str + "BEAMPROJECTION_PARALLEL";
-        if(beamProjection == BEAMPROJECTION_DIVERGENT)
-            str = str + "BEAMPROJECTION_DIVERGENT";
-        str = str + "\n";
-        str = str + intToString("nBeams", nBeams, indent) + "\n";
-        str = str + doubleToString("offset", offset, indent) + "\n";
-        str = str + doubleToString("angle", angle, indent) + "\n";
-        str = str + doubleArrayToString("origin", origin, indent) + "\n";
-        str = str + indent + "beamAxis = ";
-        if(beamAxis == BEAMAXIS_R)
-            str = str + "BEAMAXIS_R";
-        if(beamAxis == BEAMAXIS_Z)
-            str = str + "BEAMAXIS_Z";
+        str = str + doubleToString("channelOffset", channelOffset, indent) + "\n";
+        str = str + doubleToString("channelAngle", channelAngle, indent) + "\n";
+        str = str + intToString("nRows", nRows, indent) + "\n";
+        str = str + doubleToString("rowOffset", rowOffset, indent) + "\n";
+        str = str + doubleArrayToString("arrayOrigin", arrayOrigin, indent) + "\n";
+        str = str + indent + "arrayAxis = ";
+        if(arrayAxis == ARRAYAXIS_R)
+            str = str + "ARRAYAXIS_R";
+        if(arrayAxis == ARRAYAXIS_Z)
+            str = str + "ARRAYAXIS_Z";
         str = str + "\n";
         str = str + doubleToString("poloialAngle", poloialAngle, indent) + "\n";
         str = str + doubleToString("poloialRTilt", poloialRTilt, indent) + "\n";
@@ -516,6 +763,22 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(viewDimension == VIEWDIMENSION_THREE)
             str = str + "VIEWDIMENSION_THREE";
         str = str + "\n";
+        str = str + doubleToString("heightPlotScale", heightPlotScale, indent) + "\n";
+        str = str + doubleToString("channelPlotOffset", channelPlotOffset, indent) + "\n";
+        str = str + doubleToString("arrayPlotOffset", arrayPlotOffset, indent) + "\n";
+        str = str + doubleToString("timePlotScale", timePlotScale, indent) + "\n";
+        str = str + indent + "beamShape = ";
+        if(beamShape == BEAMSHAPE_POINT)
+            str = str + "BEAMSHAPE_POINT";
+        if(beamShape == BEAMSHAPE_LINE)
+            str = str + "BEAMSHAPE_LINE";
+        if(beamShape == BEAMSHAPE_CYLINDER)
+            str = str + "BEAMSHAPE_CYLINDER";
+        if(beamShape == BEAMSHAPE_CONE)
+            str = str + "BEAMSHAPE_CONE";
+        str = str + "\n";
+        str = str + doubleToString("radius", radius, indent) + "\n";
+        str = str + doubleToString("divergence", divergence, indent) + "\n";
         str = str + indent + "beamType = ";
         if(beamType == BEAMTYPE_TOPHAT)
             str = str + "BEAMTYPE_TOPHAT";
@@ -525,29 +788,66 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("standardDeviation", standardDeviation, indent) + "\n";
         str = str + doubleToString("sampleDistance", sampleDistance, indent) + "\n";
         str = str + doubleToString("sampleArc", sampleArc, indent) + "\n";
+        str = str + indent + "channelSampling = ";
+        if(channelSampling == CHANNELSAMPLING_SINGLECHANNELSAMPLING)
+            str = str + "CHANNELSAMPLING_SINGLECHANNELSAMPLING";
+        if(channelSampling == CHANNELSAMPLING_SUMMATIONCHANNELSAMPLING)
+            str = str + "CHANNELSAMPLING_SUMMATIONCHANNELSAMPLING";
+        str = str + "\n";
+        str = str + indent + "toroidalSampling = ";
+        if(toroidalSampling == TOROIDALSAMPLING_SINGLETOROIDALSAMPLING)
+            str = str + "TOROIDALSAMPLING_SINGLETOROIDALSAMPLING";
+        if(toroidalSampling == TOROIDALSAMPLING_SUMMATIONTOROIDALSAMPLING)
+            str = str + "TOROIDALSAMPLING_SUMMATIONTOROIDALSAMPLING";
+        str = str + "\n";
+        str = str + doubleToString("toroidalSamplingAngle", toroidalSamplingAngle, indent) + "\n";
+        str = str + indent + "timeSampling = ";
+        if(timeSampling == TIMESAMPLING_CURRENTTIMESTEP)
+            str = str + "TIMESAMPLING_CURRENTTIMESTEP";
+        if(timeSampling == TIMESAMPLING_MULTIPLETIMESTEPS)
+            str = str + "TIMESAMPLING_MULTIPLETIMESTEPS";
+        str = str + "\n";
+        str = str + intToString("timeStepStart", timeStepStart, indent) + "\n";
+        str = str + intToString("timeStepStop", timeStepStop, indent) + "\n";
+        str = str + intToString("timeStepStride", timeStepStride, indent) + "\n";
         return str;
     }
 
 
     // Attributes
     private int      coordinateSystem;
-    private int      beamShape;
-    private double   radius;
-    private double   divergence;
-    private int      beamProjection;
-    private int      nBeams;
-    private double   offset;
-    private double   angle;
-    private double[] origin;
-    private int      beamAxis;
+    private int      nArrays;
+    private int      nChannels;
+    private double   toroialArrayAngle;
+    private int      arrayProjection;
+    private double   channelOffset;
+    private double   channelAngle;
+    private int      nRows;
+    private double   rowOffset;
+    private double[] arrayOrigin;
+    private int      arrayAxis;
     private double   poloialAngle;
     private double   poloialRTilt;
     private double   poloialZTilt;
     private double   toroialAngle;
     private int      viewDimension;
+    private double   heightPlotScale;
+    private double   channelPlotOffset;
+    private double   arrayPlotOffset;
+    private double   timePlotScale;
+    private int      beamShape;
+    private double   radius;
+    private double   divergence;
     private int      beamType;
     private double   standardDeviation;
     private double   sampleDistance;
     private double   sampleArc;
+    private int      channelSampling;
+    private int      toroidalSampling;
+    private double   toroidalSamplingAngle;
+    private int      timeSampling;
+    private int      timeStepStart;
+    private int      timeStepStop;
+    private int      timeStepStride;
 }
 

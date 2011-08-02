@@ -144,132 +144,129 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(coordinateSystemChanged(int)));
     mainLayout->addWidget(coordinateSystem, 0,1);
 
-    beamShapeLabel = new QLabel(tr("Beam shape"), central);
-    mainLayout->addWidget(beamShapeLabel,1,0);
-    beamShape = new QWidget(central);
-    beamShapeButtonGroup= new QButtonGroup(beamShape);
-    QHBoxLayout *beamShapeLayout = new QHBoxLayout(beamShape);
-    beamShapeLayout->setMargin(0);
-    beamShapeLayout->setSpacing(10);
-    QRadioButton *beamShapeBeamShapeLine = new QRadioButton(tr("Line"), beamShape);
-    beamShapeButtonGroup->addButton(beamShapeBeamShapeLine,0);
-    beamShapeLayout->addWidget(beamShapeBeamShapeLine);
-    QRadioButton *beamShapeBeamShapeCylinder = new QRadioButton(tr("Cylinder"), beamShape);
-    beamShapeButtonGroup->addButton(beamShapeBeamShapeCylinder,1);
-    beamShapeLayout->addWidget(beamShapeBeamShapeCylinder);
-    QRadioButton *beamShapeBeamShapeCone = new QRadioButton(tr("Cone"), beamShape);
-    beamShapeButtonGroup->addButton(beamShapeBeamShapeCone,2);
-    beamShapeLayout->addWidget(beamShapeBeamShapeCone);
-    connect(beamShapeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(beamShapeChanged(int)));
-    mainLayout->addWidget(beamShape, 1,1);
+    nArraysLabel = new QLabel(tr("Number of arrays"), central);
+    mainLayout->addWidget(nArraysLabel,1,0);
+    nArrays = new QLineEdit(central);
+    connect(nArrays, SIGNAL(returnPressed()),
+            this, SLOT(nArraysProcessText()));
+    mainLayout->addWidget(nArrays, 1,1);
 
-    radiusLabel = new QLabel(tr("Cylinder radius"), central);
-    mainLayout->addWidget(radiusLabel,2,0);
-    radius = new QLineEdit(central);
-    connect(radius, SIGNAL(returnPressed()),
-            this, SLOT(radiusProcessText()));
-    mainLayout->addWidget(radius, 2,1);
+    nChannelsLabel = new QLabel(tr("Number of channels"), central);
+    mainLayout->addWidget(nChannelsLabel,2,0);
+    nChannels = new QLineEdit(central);
+    connect(nChannels, SIGNAL(returnPressed()),
+            this, SLOT(nChannelsProcessText()));
+    mainLayout->addWidget(nChannels, 2,1);
 
-    divergenceLabel = new QLabel(tr("Cone divergence (degrees)"), central);
-    mainLayout->addWidget(divergenceLabel,3,0);
-    divergence = new QLineEdit(central);
-    connect(divergence, SIGNAL(returnPressed()),
-            this, SLOT(divergenceProcessText()));
-    mainLayout->addWidget(divergence, 3,1);
+    toroialArrayAngleLabel = new QLabel(tr("Toroidal angle (degrees) between arrays"), central);
+    mainLayout->addWidget(toroialArrayAngleLabel,3,0);
+    toroialArrayAngle = new QLineEdit(central);
+    connect(toroialArrayAngle, SIGNAL(returnPressed()),
+            this, SLOT(toroialArrayAngleProcessText()));
+    mainLayout->addWidget(toroialArrayAngle, 3,1);
 
-    nBeamsLabel = new QLabel(tr("Number of beams"), central);
-    mainLayout->addWidget(nBeamsLabel,4,0);
-    nBeams = new QLineEdit(central);
-    connect(nBeams, SIGNAL(returnPressed()),
-            this, SLOT(nBeamsProcessText()));
-    mainLayout->addWidget(nBeams, 4,1);
+    arrayProjectionLabel = new QLabel(tr("Array projection"), central);
+    mainLayout->addWidget(arrayProjectionLabel,4,0);
+    arrayProjection = new QWidget(central);
+    arrayProjectionButtonGroup= new QButtonGroup(arrayProjection);
+    QHBoxLayout *arrayProjectionLayout = new QHBoxLayout(arrayProjection);
+    arrayProjectionLayout->setMargin(0);
+    arrayProjectionLayout->setSpacing(10);
+    QRadioButton *arrayProjectionArrayProjectionParallel = new QRadioButton(tr("Parallel"), arrayProjection);
+    arrayProjectionButtonGroup->addButton(arrayProjectionArrayProjectionParallel,0);
+    arrayProjectionLayout->addWidget(arrayProjectionArrayProjectionParallel);
+    QRadioButton *arrayProjectionArrayProjectionDivergent = new QRadioButton(tr("Divergent"), arrayProjection);
+    arrayProjectionButtonGroup->addButton(arrayProjectionArrayProjectionDivergent,1);
+    arrayProjectionLayout->addWidget(arrayProjectionArrayProjectionDivergent);
+    QRadioButton *arrayProjectionArrayProjectionGrid = new QRadioButton(tr("Grid"), arrayProjection);
+    arrayProjectionButtonGroup->addButton(arrayProjectionArrayProjectionGrid,2);
+    arrayProjectionLayout->addWidget(arrayProjectionArrayProjectionGrid);
+    connect(arrayProjectionButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(arrayProjectionChanged(int)));
+    mainLayout->addWidget(arrayProjection, 4,1);
 
-    beamProjectionLabel = new QLabel(tr("Beam group projection"), central);
-    mainLayout->addWidget(beamProjectionLabel,5,0);
-    beamProjection = new QWidget(central);
-    beamProjectionButtonGroup= new QButtonGroup(beamProjection);
-    QHBoxLayout *beamProjectionLayout = new QHBoxLayout(beamProjection);
-    beamProjectionLayout->setMargin(0);
-    beamProjectionLayout->setSpacing(10);
-    QRadioButton *beamProjectionBeamProjectionParallel = new QRadioButton(tr("Parallel"), beamProjection);
-    beamProjectionButtonGroup->addButton(beamProjectionBeamProjectionParallel,0);
-    beamProjectionLayout->addWidget(beamProjectionBeamProjectionParallel);
-    QRadioButton *beamProjectionBeamProjectionDivergent = new QRadioButton(tr("Divergent"), beamProjection);
-    beamProjectionButtonGroup->addButton(beamProjectionBeamProjectionDivergent,1);
-    beamProjectionLayout->addWidget(beamProjectionBeamProjectionDivergent);
-    connect(beamProjectionButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(beamProjectionChanged(int)));
-    mainLayout->addWidget(beamProjection, 5,1);
+    channelOffsetLabel = new QLabel(tr("Parallel/Grid: Offset between channels"), central);
+    mainLayout->addWidget(channelOffsetLabel,5,0);
+    channelOffset = new QLineEdit(central);
+    connect(channelOffset, SIGNAL(returnPressed()),
+            this, SLOT(channelOffsetProcessText()));
+    mainLayout->addWidget(channelOffset, 5,1);
 
-    offsetLabel = new QLabel(tr("Offset between beams"), central);
-    mainLayout->addWidget(offsetLabel,6,0);
-    offset = new QLineEdit(central);
-    connect(offset, SIGNAL(returnPressed()),
-            this, SLOT(offsetProcessText()));
-    mainLayout->addWidget(offset, 6,1);
+    channelAngleLabel = new QLabel(tr("Divergent: Angle (degrees) between channels"), central);
+    mainLayout->addWidget(channelAngleLabel,6,0);
+    channelAngle = new QLineEdit(central);
+    connect(channelAngle, SIGNAL(returnPressed()),
+            this, SLOT(channelAngleProcessText()));
+    mainLayout->addWidget(channelAngle, 6,1);
 
-    angleLabel = new QLabel(tr("Angle between beams (degrees)"), central);
-    mainLayout->addWidget(angleLabel,7,0);
-    angle = new QLineEdit(central);
-    connect(angle, SIGNAL(returnPressed()),
-            this, SLOT(angleProcessText()));
-    mainLayout->addWidget(angle, 7,1);
+    nRowsLabel = new QLabel(tr("Grid: Number of rows"), central);
+    mainLayout->addWidget(nRowsLabel,7,0);
+    nRows = new QLineEdit(central);
+    connect(nRows, SIGNAL(returnPressed()),
+            this, SLOT(nRowsProcessText()));
+    mainLayout->addWidget(nRows, 7,1);
 
-    originLabel = new QLabel(tr("Origin"), central);
-    mainLayout->addWidget(originLabel,8,0);
-    origin = new QLineEdit(central);
-    connect(origin, SIGNAL(returnPressed()),
-            this, SLOT(originProcessText()));
-    mainLayout->addWidget(origin, 8,1);
+    rowOffsetLabel = new QLabel(tr("Grid: Offset between rows"), central);
+    mainLayout->addWidget(rowOffsetLabel,8,0);
+    rowOffset = new QLineEdit(central);
+    connect(rowOffset, SIGNAL(returnPressed()),
+            this, SLOT(rowOffsetProcessText()));
+    mainLayout->addWidget(rowOffset, 8,1);
 
-    beamAxisLabel = new QLabel(tr("Beam axis direction"), central);
-    mainLayout->addWidget(beamAxisLabel,9,0);
-    beamAxis = new QWidget(central);
-    beamAxisButtonGroup= new QButtonGroup(beamAxis);
-    QHBoxLayout *beamAxisLayout = new QHBoxLayout(beamAxis);
-    beamAxisLayout->setMargin(0);
-    beamAxisLayout->setSpacing(10);
-    QRadioButton *beamAxisBeamAxisR = new QRadioButton(tr("R"), beamAxis);
-    beamAxisButtonGroup->addButton(beamAxisBeamAxisR,0);
-    beamAxisLayout->addWidget(beamAxisBeamAxisR);
-    QRadioButton *beamAxisBeamAxisZ = new QRadioButton(tr("Z"), beamAxis);
-    beamAxisButtonGroup->addButton(beamAxisBeamAxisZ,1);
-    beamAxisLayout->addWidget(beamAxisBeamAxisZ);
-    connect(beamAxisButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(beamAxisChanged(int)));
-    mainLayout->addWidget(beamAxis, 9,1);
+    arrayOriginLabel = new QLabel(tr("Array origin"), central);
+    mainLayout->addWidget(arrayOriginLabel,9,0);
+    arrayOrigin = new QLineEdit(central);
+    connect(arrayOrigin, SIGNAL(returnPressed()),
+            this, SLOT(arrayOriginProcessText()));
+    mainLayout->addWidget(arrayOrigin, 9,1);
+
+    arrayAxisLabel = new QLabel(tr("Array axis direction"), central);
+    mainLayout->addWidget(arrayAxisLabel,10,0);
+    arrayAxis = new QWidget(central);
+    arrayAxisButtonGroup= new QButtonGroup(arrayAxis);
+    QHBoxLayout *arrayAxisLayout = new QHBoxLayout(arrayAxis);
+    arrayAxisLayout->setMargin(0);
+    arrayAxisLayout->setSpacing(10);
+    QRadioButton *arrayAxisArrayAxisR = new QRadioButton(tr("R"), arrayAxis);
+    arrayAxisButtonGroup->addButton(arrayAxisArrayAxisR,0);
+    arrayAxisLayout->addWidget(arrayAxisArrayAxisR);
+    QRadioButton *arrayAxisArrayAxisZ = new QRadioButton(tr("Z"), arrayAxis);
+    arrayAxisButtonGroup->addButton(arrayAxisArrayAxisZ,1);
+    arrayAxisLayout->addWidget(arrayAxisArrayAxisZ);
+    connect(arrayAxisButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(arrayAxisChanged(int)));
+    mainLayout->addWidget(arrayAxis, 10,1);
 
     poloialAngleLabel = new QLabel(tr("Poloidal angle (degrees)"), central);
-    mainLayout->addWidget(poloialAngleLabel,10,0);
+    mainLayout->addWidget(poloialAngleLabel,11,0);
     poloialAngle = new QLineEdit(central);
     connect(poloialAngle, SIGNAL(returnPressed()),
             this, SLOT(poloialAngleProcessText()));
-    mainLayout->addWidget(poloialAngle, 10,1);
+    mainLayout->addWidget(poloialAngle, 11,1);
 
     poloialRTiltLabel = new QLabel(tr("Poloidal plane R-tilt (degrees)"), central);
-    mainLayout->addWidget(poloialRTiltLabel,11,0);
+    mainLayout->addWidget(poloialRTiltLabel,12,0);
     poloialRTilt = new QLineEdit(central);
     connect(poloialRTilt, SIGNAL(returnPressed()),
             this, SLOT(poloialRTiltProcessText()));
-    mainLayout->addWidget(poloialRTilt, 11,1);
+    mainLayout->addWidget(poloialRTilt, 12,1);
 
     poloialZTiltLabel = new QLabel(tr("Poloidal plane Z-tilt (degrees)"), central);
-    mainLayout->addWidget(poloialZTiltLabel,12,0);
+    mainLayout->addWidget(poloialZTiltLabel,13,0);
     poloialZTilt = new QLineEdit(central);
     connect(poloialZTilt, SIGNAL(returnPressed()),
             this, SLOT(poloialZTiltProcessText()));
-    mainLayout->addWidget(poloialZTilt, 12,1);
+    mainLayout->addWidget(poloialZTilt, 13,1);
 
     toroialAngleLabel = new QLabel(tr("Toroidal angle (degrees)"), central);
-    mainLayout->addWidget(toroialAngleLabel,13,0);
+    mainLayout->addWidget(toroialAngleLabel,14,0);
     toroialAngle = new QLineEdit(central);
     connect(toroialAngle, SIGNAL(returnPressed()),
             this, SLOT(toroialAngleProcessText()));
-    mainLayout->addWidget(toroialAngle, 13,1);
+    mainLayout->addWidget(toroialAngle, 14,1);
 
     viewDimensionLabel = new QLabel(tr("View dimension"), central);
-    mainLayout->addWidget(viewDimensionLabel,14,0);
+    mainLayout->addWidget(viewDimensionLabel,15,0);
     viewDimension = new QWidget(central);
     viewDimensionButtonGroup= new QButtonGroup(viewDimension);
     QHBoxLayout *viewDimensionLayout = new QHBoxLayout(viewDimension);
@@ -286,10 +283,75 @@ QvisLineSamplerWindow::CreateWindowContents()
     viewDimensionLayout->addWidget(viewDimensionViewDimensionThree);
     connect(viewDimensionButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(viewDimensionChanged(int)));
-    mainLayout->addWidget(viewDimension, 14,1);
+    mainLayout->addWidget(viewDimension, 15,1);
+
+    heightPlotScaleLabel = new QLabel(tr("1D plot height scale"), central);
+    mainLayout->addWidget(heightPlotScaleLabel,16,0);
+    heightPlotScale = new QLineEdit(central);
+    connect(heightPlotScale, SIGNAL(returnPressed()),
+            this, SLOT(heightPlotScaleProcessText()));
+    mainLayout->addWidget(heightPlotScale, 16,1);
+
+    channelPlotOffsetLabel = new QLabel(tr("1D plot channel offset"), central);
+    mainLayout->addWidget(channelPlotOffsetLabel,17,0);
+    channelPlotOffset = new QLineEdit(central);
+    connect(channelPlotOffset, SIGNAL(returnPressed()),
+            this, SLOT(channelPlotOffsetProcessText()));
+    mainLayout->addWidget(channelPlotOffset, 17,1);
+
+    arrayPlotOffsetLabel = new QLabel(tr("1D plot array offset"), central);
+    mainLayout->addWidget(arrayPlotOffsetLabel,18,0);
+    arrayPlotOffset = new QLineEdit(central);
+    connect(arrayPlotOffset, SIGNAL(returnPressed()),
+            this, SLOT(arrayPlotOffsetProcessText()));
+    mainLayout->addWidget(arrayPlotOffset, 18,1);
+
+    timePlotScaleLabel = new QLabel(tr("1D plot time scaling"), central);
+    mainLayout->addWidget(timePlotScaleLabel,19,0);
+    timePlotScale = new QLineEdit(central);
+    connect(timePlotScale, SIGNAL(returnPressed()),
+            this, SLOT(timePlotScaleProcessText()));
+    mainLayout->addWidget(timePlotScale, 19,1);
+
+    beamShapeLabel = new QLabel(tr("Beam shape"), central);
+    mainLayout->addWidget(beamShapeLabel,20,0);
+    beamShape = new QWidget(central);
+    beamShapeButtonGroup= new QButtonGroup(beamShape);
+    QHBoxLayout *beamShapeLayout = new QHBoxLayout(beamShape);
+    beamShapeLayout->setMargin(0);
+    beamShapeLayout->setSpacing(10);
+    QRadioButton *beamShapeBeamShapePoint = new QRadioButton(tr("Point"), beamShape);
+    beamShapeButtonGroup->addButton(beamShapeBeamShapePoint,0);
+    beamShapeLayout->addWidget(beamShapeBeamShapePoint);
+    QRadioButton *beamShapeBeamShapeLine = new QRadioButton(tr("Line"), beamShape);
+    beamShapeButtonGroup->addButton(beamShapeBeamShapeLine,1);
+    beamShapeLayout->addWidget(beamShapeBeamShapeLine);
+    QRadioButton *beamShapeBeamShapeCylinder = new QRadioButton(tr("Cylinder"), beamShape);
+    beamShapeButtonGroup->addButton(beamShapeBeamShapeCylinder,2);
+    beamShapeLayout->addWidget(beamShapeBeamShapeCylinder);
+    QRadioButton *beamShapeBeamShapeCone = new QRadioButton(tr("Cone"), beamShape);
+    beamShapeButtonGroup->addButton(beamShapeBeamShapeCone,3);
+    beamShapeLayout->addWidget(beamShapeBeamShapeCone);
+    connect(beamShapeButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(beamShapeChanged(int)));
+    mainLayout->addWidget(beamShape, 20,1);
+
+    radiusLabel = new QLabel(tr("Cylinder radius"), central);
+    mainLayout->addWidget(radiusLabel,21,0);
+    radius = new QLineEdit(central);
+    connect(radius, SIGNAL(returnPressed()),
+            this, SLOT(radiusProcessText()));
+    mainLayout->addWidget(radius, 21,1);
+
+    divergenceLabel = new QLabel(tr("Cone divergence (degrees)"), central);
+    mainLayout->addWidget(divergenceLabel,22,0);
+    divergence = new QLineEdit(central);
+    connect(divergence, SIGNAL(returnPressed()),
+            this, SLOT(divergenceProcessText()));
+    mainLayout->addWidget(divergence, 22,1);
 
     beamTypeLabel = new QLabel(tr("Beam Type"), central);
-    mainLayout->addWidget(beamTypeLabel,15,0);
+    mainLayout->addWidget(beamTypeLabel,23,0);
     beamType = new QWidget(central);
     beamTypeButtonGroup= new QButtonGroup(beamType);
     QHBoxLayout *beamTypeLayout = new QHBoxLayout(beamType);
@@ -303,28 +365,107 @@ QvisLineSamplerWindow::CreateWindowContents()
     beamTypeLayout->addWidget(beamTypeBeamTypeGaussian);
     connect(beamTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(beamTypeChanged(int)));
-    mainLayout->addWidget(beamType, 15,1);
+    mainLayout->addWidget(beamType, 23,1);
 
     standardDeviationLabel = new QLabel(tr("Standard deviation"), central);
-    mainLayout->addWidget(standardDeviationLabel,16,0);
+    mainLayout->addWidget(standardDeviationLabel,24,0);
     standardDeviation = new QLineEdit(central);
     connect(standardDeviation, SIGNAL(returnPressed()),
             this, SLOT(standardDeviationProcessText()));
-    mainLayout->addWidget(standardDeviation, 16,1);
+    mainLayout->addWidget(standardDeviation, 24,1);
 
     sampleDistanceLabel = new QLabel(tr("Linear sample distance"), central);
-    mainLayout->addWidget(sampleDistanceLabel,17,0);
+    mainLayout->addWidget(sampleDistanceLabel,25,0);
     sampleDistance = new QLineEdit(central);
     connect(sampleDistance, SIGNAL(returnPressed()),
             this, SLOT(sampleDistanceProcessText()));
-    mainLayout->addWidget(sampleDistance, 17,1);
+    mainLayout->addWidget(sampleDistance, 25,1);
 
     sampleArcLabel = new QLabel(tr("Radial sample arc (degrees)"), central);
-    mainLayout->addWidget(sampleArcLabel,18,0);
+    mainLayout->addWidget(sampleArcLabel,26,0);
     sampleArc = new QLineEdit(central);
     connect(sampleArc, SIGNAL(returnPressed()),
             this, SLOT(sampleArcProcessText()));
-    mainLayout->addWidget(sampleArc, 18,1);
+    mainLayout->addWidget(sampleArc, 26,1);
+
+    channelSamplingLabel = new QLabel(tr("Channel sampling"), central);
+    mainLayout->addWidget(channelSamplingLabel,27,0);
+    channelSampling = new QWidget(central);
+    channelSamplingButtonGroup= new QButtonGroup(channelSampling);
+    QHBoxLayout *channelSamplingLayout = new QHBoxLayout(channelSampling);
+    channelSamplingLayout->setMargin(0);
+    channelSamplingLayout->setSpacing(10);
+    QRadioButton *channelSamplingChannelSamplingSingleChannelSampling = new QRadioButton(tr("SingleChannelSampling"), channelSampling);
+    channelSamplingButtonGroup->addButton(channelSamplingChannelSamplingSingleChannelSampling,0);
+    channelSamplingLayout->addWidget(channelSamplingChannelSamplingSingleChannelSampling);
+    QRadioButton *channelSamplingChannelSamplingSummationChannelSampling = new QRadioButton(tr("SummationChannelSampling"), channelSampling);
+    channelSamplingButtonGroup->addButton(channelSamplingChannelSamplingSummationChannelSampling,1);
+    channelSamplingLayout->addWidget(channelSamplingChannelSamplingSummationChannelSampling);
+    connect(channelSamplingButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(channelSamplingChanged(int)));
+    mainLayout->addWidget(channelSampling, 27,1);
+
+    toroidalSamplingLabel = new QLabel(tr("Toroidal sampling"), central);
+    mainLayout->addWidget(toroidalSamplingLabel,28,0);
+    toroidalSampling = new QWidget(central);
+    toroidalSamplingButtonGroup= new QButtonGroup(toroidalSampling);
+    QHBoxLayout *toroidalSamplingLayout = new QHBoxLayout(toroidalSampling);
+    toroidalSamplingLayout->setMargin(0);
+    toroidalSamplingLayout->setSpacing(10);
+    QRadioButton *toroidalSamplingToroidalSamplingSingleToroidalSampling = new QRadioButton(tr("SingleToroidalSampling"), toroidalSampling);
+    toroidalSamplingButtonGroup->addButton(toroidalSamplingToroidalSamplingSingleToroidalSampling,0);
+    toroidalSamplingLayout->addWidget(toroidalSamplingToroidalSamplingSingleToroidalSampling);
+    QRadioButton *toroidalSamplingToroidalSamplingSummationToroidalSampling = new QRadioButton(tr("SummationToroidalSampling"), toroidalSampling);
+    toroidalSamplingButtonGroup->addButton(toroidalSamplingToroidalSamplingSummationToroidalSampling,1);
+    toroidalSamplingLayout->addWidget(toroidalSamplingToroidalSamplingSummationToroidalSampling);
+    connect(toroidalSamplingButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(toroidalSamplingChanged(int)));
+    mainLayout->addWidget(toroidalSampling, 28,1);
+
+    toroidalSamplingAngleLabel = new QLabel(tr("Toroidal sampling angle (degrees)"), central);
+    mainLayout->addWidget(toroidalSamplingAngleLabel,29,0);
+    toroidalSamplingAngle = new QLineEdit(central);
+    connect(toroidalSamplingAngle, SIGNAL(returnPressed()),
+            this, SLOT(toroidalSamplingAngleProcessText()));
+    mainLayout->addWidget(toroidalSamplingAngle, 29,1);
+
+    timeSamplingLabel = new QLabel(tr("Time sampling"), central);
+    mainLayout->addWidget(timeSamplingLabel,30,0);
+    timeSampling = new QWidget(central);
+    timeSamplingButtonGroup= new QButtonGroup(timeSampling);
+    QHBoxLayout *timeSamplingLayout = new QHBoxLayout(timeSampling);
+    timeSamplingLayout->setMargin(0);
+    timeSamplingLayout->setSpacing(10);
+    QRadioButton *timeSamplingTimeSamplingCurrentTimeStep = new QRadioButton(tr("CurrentTimeStep"), timeSampling);
+    timeSamplingButtonGroup->addButton(timeSamplingTimeSamplingCurrentTimeStep,0);
+    timeSamplingLayout->addWidget(timeSamplingTimeSamplingCurrentTimeStep);
+    QRadioButton *timeSamplingTimeSamplingMultipleTimeSteps = new QRadioButton(tr("MultipleTimeSteps"), timeSampling);
+    timeSamplingButtonGroup->addButton(timeSamplingTimeSamplingMultipleTimeSteps,1);
+    timeSamplingLayout->addWidget(timeSamplingTimeSamplingMultipleTimeSteps);
+    connect(timeSamplingButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(timeSamplingChanged(int)));
+    mainLayout->addWidget(timeSampling, 30,1);
+
+    timeStepStartLabel = new QLabel(tr("Start time step"), central);
+    mainLayout->addWidget(timeStepStartLabel,31,0);
+    timeStepStart = new QLineEdit(central);
+    connect(timeStepStart, SIGNAL(returnPressed()),
+            this, SLOT(timeStepStartProcessText()));
+    mainLayout->addWidget(timeStepStart, 31,1);
+
+    timeStepStopLabel = new QLabel(tr("Stop time step"), central);
+    mainLayout->addWidget(timeStepStopLabel,32,0);
+    timeStepStop = new QLineEdit(central);
+    connect(timeStepStop, SIGNAL(returnPressed()),
+            this, SLOT(timeStepStopProcessText()));
+    mainLayout->addWidget(timeStepStop, 32,1);
+
+    timeStepStrideLabel = new QLabel(tr("Stride"), central);
+    mainLayout->addWidget(timeStepStrideLabel,33,0);
+    timeStepStride = new QLineEdit(central);
+    connect(timeStepStride, SIGNAL(returnPressed()),
+            this, SLOT(timeStepStrideProcessText()));
+    mainLayout->addWidget(timeStepStride, 33,1);
 
 }
 
@@ -366,41 +507,41 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 coordinateSystemButtonGroup->button((int)atts->GetCoordinateSystem())->setChecked(true);
             coordinateSystemButtonGroup->blockSignals(false);
             break;
-          case LineSamplerAttributes::ID_beamShape:
-            beamShapeButtonGroup->blockSignals(true);
-            if(beamShapeButtonGroup->button((int)atts->GetBeamShape()) != 0)
-                beamShapeButtonGroup->button((int)atts->GetBeamShape())->setChecked(true);
-            beamShapeButtonGroup->blockSignals(false);
+          case LineSamplerAttributes::ID_nArrays:
+            nArrays->setText(IntToQString(atts->GetNArrays()));
             break;
-          case LineSamplerAttributes::ID_radius:
-            radius->setText(DoubleToQString(atts->GetRadius()));
+          case LineSamplerAttributes::ID_nChannels:
+            nChannels->setText(IntToQString(atts->GetNChannels()));
             break;
-          case LineSamplerAttributes::ID_divergence:
-            divergence->setText(DoubleToQString(atts->GetDivergence()));
+          case LineSamplerAttributes::ID_toroialArrayAngle:
+            toroialArrayAngle->setText(DoubleToQString(atts->GetToroialArrayAngle()));
             break;
-          case LineSamplerAttributes::ID_beamProjection:
-            beamProjectionButtonGroup->blockSignals(true);
-            if(beamProjectionButtonGroup->button((int)atts->GetBeamProjection()) != 0)
-                beamProjectionButtonGroup->button((int)atts->GetBeamProjection())->setChecked(true);
-            beamProjectionButtonGroup->blockSignals(false);
+          case LineSamplerAttributes::ID_arrayProjection:
+            arrayProjectionButtonGroup->blockSignals(true);
+            if(arrayProjectionButtonGroup->button((int)atts->GetArrayProjection()) != 0)
+                arrayProjectionButtonGroup->button((int)atts->GetArrayProjection())->setChecked(true);
+            arrayProjectionButtonGroup->blockSignals(false);
             break;
-          case LineSamplerAttributes::ID_nBeams:
-            nBeams->setText(IntToQString(atts->GetNBeams()));
+          case LineSamplerAttributes::ID_channelOffset:
+            channelOffset->setText(DoubleToQString(atts->GetChannelOffset()));
             break;
-          case LineSamplerAttributes::ID_offset:
-            offset->setText(DoubleToQString(atts->GetOffset()));
+          case LineSamplerAttributes::ID_channelAngle:
+            channelAngle->setText(DoubleToQString(atts->GetChannelAngle()));
             break;
-          case LineSamplerAttributes::ID_angle:
-            angle->setText(DoubleToQString(atts->GetAngle()));
+          case LineSamplerAttributes::ID_nRows:
+            nRows->setText(IntToQString(atts->GetNRows()));
             break;
-          case LineSamplerAttributes::ID_origin:
-            origin->setText(DoublesToQString(atts->GetOrigin(), 3));
+          case LineSamplerAttributes::ID_rowOffset:
+            rowOffset->setText(DoubleToQString(atts->GetRowOffset()));
             break;
-          case LineSamplerAttributes::ID_beamAxis:
-            beamAxisButtonGroup->blockSignals(true);
-            if(beamAxisButtonGroup->button((int)atts->GetBeamAxis()) != 0)
-                beamAxisButtonGroup->button((int)atts->GetBeamAxis())->setChecked(true);
-            beamAxisButtonGroup->blockSignals(false);
+          case LineSamplerAttributes::ID_arrayOrigin:
+            arrayOrigin->setText(DoublesToQString(atts->GetArrayOrigin(), 3));
+            break;
+          case LineSamplerAttributes::ID_arrayAxis:
+            arrayAxisButtonGroup->blockSignals(true);
+            if(arrayAxisButtonGroup->button((int)atts->GetArrayAxis()) != 0)
+                arrayAxisButtonGroup->button((int)atts->GetArrayAxis())->setChecked(true);
+            arrayAxisButtonGroup->blockSignals(false);
             break;
           case LineSamplerAttributes::ID_poloialAngle:
             poloialAngle->setText(DoubleToQString(atts->GetPoloialAngle()));
@@ -420,6 +561,30 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 viewDimensionButtonGroup->button((int)atts->GetViewDimension())->setChecked(true);
             viewDimensionButtonGroup->blockSignals(false);
             break;
+          case LineSamplerAttributes::ID_heightPlotScale:
+            heightPlotScale->setText(DoubleToQString(atts->GetHeightPlotScale()));
+            break;
+          case LineSamplerAttributes::ID_channelPlotOffset:
+            channelPlotOffset->setText(DoubleToQString(atts->GetChannelPlotOffset()));
+            break;
+          case LineSamplerAttributes::ID_arrayPlotOffset:
+            arrayPlotOffset->setText(DoubleToQString(atts->GetArrayPlotOffset()));
+            break;
+          case LineSamplerAttributes::ID_timePlotScale:
+            timePlotScale->setText(DoubleToQString(atts->GetTimePlotScale()));
+            break;
+          case LineSamplerAttributes::ID_beamShape:
+            beamShapeButtonGroup->blockSignals(true);
+            if(beamShapeButtonGroup->button((int)atts->GetBeamShape()) != 0)
+                beamShapeButtonGroup->button((int)atts->GetBeamShape())->setChecked(true);
+            beamShapeButtonGroup->blockSignals(false);
+            break;
+          case LineSamplerAttributes::ID_radius:
+            radius->setText(DoubleToQString(atts->GetRadius()));
+            break;
+          case LineSamplerAttributes::ID_divergence:
+            divergence->setText(DoubleToQString(atts->GetDivergence()));
+            break;
           case LineSamplerAttributes::ID_beamType:
             beamTypeButtonGroup->blockSignals(true);
             if(beamTypeButtonGroup->button((int)atts->GetBeamType()) != 0)
@@ -434,6 +599,36 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             break;
           case LineSamplerAttributes::ID_sampleArc:
             sampleArc->setText(DoubleToQString(atts->GetSampleArc()));
+            break;
+          case LineSamplerAttributes::ID_channelSampling:
+            channelSamplingButtonGroup->blockSignals(true);
+            if(channelSamplingButtonGroup->button((int)atts->GetChannelSampling()) != 0)
+                channelSamplingButtonGroup->button((int)atts->GetChannelSampling())->setChecked(true);
+            channelSamplingButtonGroup->blockSignals(false);
+            break;
+          case LineSamplerAttributes::ID_toroidalSampling:
+            toroidalSamplingButtonGroup->blockSignals(true);
+            if(toroidalSamplingButtonGroup->button((int)atts->GetToroidalSampling()) != 0)
+                toroidalSamplingButtonGroup->button((int)atts->GetToroidalSampling())->setChecked(true);
+            toroidalSamplingButtonGroup->blockSignals(false);
+            break;
+          case LineSamplerAttributes::ID_toroidalSamplingAngle:
+            toroidalSamplingAngle->setText(DoubleToQString(atts->GetToroidalSamplingAngle()));
+            break;
+          case LineSamplerAttributes::ID_timeSampling:
+            timeSamplingButtonGroup->blockSignals(true);
+            if(timeSamplingButtonGroup->button((int)atts->GetTimeSampling()) != 0)
+                timeSamplingButtonGroup->button((int)atts->GetTimeSampling())->setChecked(true);
+            timeSamplingButtonGroup->blockSignals(false);
+            break;
+          case LineSamplerAttributes::ID_timeStepStart:
+            timeStepStart->setText(IntToQString(atts->GetTimeStepStart()));
+            break;
+          case LineSamplerAttributes::ID_timeStepStop:
+            timeStepStop->setText(IntToQString(atts->GetTimeStepStop()));
+            break;
+          case LineSamplerAttributes::ID_timeStepStride:
+            timeStepStride->setText(IntToQString(atts->GetTimeStepStride()));
             break;
         }
     }
@@ -460,87 +655,115 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
 
-    // Do radius
-    if(which_widget == LineSamplerAttributes::ID_radius || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(radius, val))
-            atts->SetRadius(val);
-        else
-        {
-            ResettingError(tr("Cylinder radius"),
-                DoubleToQString(atts->GetRadius()));
-            atts->SetRadius(atts->GetRadius());
-        }
-    }
-
-    // Do divergence
-    if(which_widget == LineSamplerAttributes::ID_divergence || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(divergence, val))
-            atts->SetDivergence(val);
-        else
-        {
-            ResettingError(tr("Cone divergence (degrees)"),
-                DoubleToQString(atts->GetDivergence()));
-            atts->SetDivergence(atts->GetDivergence());
-        }
-    }
-
-    // Do nBeams
-    if(which_widget == LineSamplerAttributes::ID_nBeams || doAll)
+    // Do nArrays
+    if(which_widget == LineSamplerAttributes::ID_nArrays || doAll)
     {
         int val;
-        if(LineEditGetInt(nBeams, val))
-            atts->SetNBeams(val);
+        if(LineEditGetInt(nArrays, val))
+            atts->SetNArrays(val);
         else
         {
-            ResettingError(tr("Number of beams"),
-                IntToQString(atts->GetNBeams()));
-            atts->SetNBeams(atts->GetNBeams());
+            ResettingError(tr("Number of arrays"),
+                IntToQString(atts->GetNArrays()));
+            atts->SetNArrays(atts->GetNArrays());
         }
     }
 
-    // Do offset
-    if(which_widget == LineSamplerAttributes::ID_offset || doAll)
+    // Do nChannels
+    if(which_widget == LineSamplerAttributes::ID_nChannels || doAll)
+    {
+        int val;
+        if(LineEditGetInt(nChannels, val))
+            atts->SetNChannels(val);
+        else
+        {
+            ResettingError(tr("Number of channels"),
+                IntToQString(atts->GetNChannels()));
+            atts->SetNChannels(atts->GetNChannels());
+        }
+    }
+
+    // Do toroialArrayAngle
+    if(which_widget == LineSamplerAttributes::ID_toroialArrayAngle || doAll)
     {
         double val;
-        if(LineEditGetDouble(offset, val))
-            atts->SetOffset(val);
+        if(LineEditGetDouble(toroialArrayAngle, val))
+            atts->SetToroialArrayAngle(val);
         else
         {
-            ResettingError(tr("Offset between beams"),
-                DoubleToQString(atts->GetOffset()));
-            atts->SetOffset(atts->GetOffset());
+            ResettingError(tr("Toroidal angle (degrees) between arrays"),
+                DoubleToQString(atts->GetToroialArrayAngle()));
+            atts->SetToroialArrayAngle(atts->GetToroialArrayAngle());
         }
     }
 
-    // Do angle
-    if(which_widget == LineSamplerAttributes::ID_angle || doAll)
+    // Do channelOffset
+    if(which_widget == LineSamplerAttributes::ID_channelOffset || doAll)
     {
         double val;
-        if(LineEditGetDouble(angle, val))
-            atts->SetAngle(val);
+        if(LineEditGetDouble(channelOffset, val))
+            atts->SetChannelOffset(val);
         else
         {
-            ResettingError(tr("Angle between beams (degrees)"),
-                DoubleToQString(atts->GetAngle()));
-            atts->SetAngle(atts->GetAngle());
+            ResettingError(tr("Parallel/Grid: Offset between channels"),
+                DoubleToQString(atts->GetChannelOffset()));
+            atts->SetChannelOffset(atts->GetChannelOffset());
         }
     }
 
-    // Do origin
-    if(which_widget == LineSamplerAttributes::ID_origin || doAll)
+    // Do channelAngle
+    if(which_widget == LineSamplerAttributes::ID_channelAngle || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(channelAngle, val))
+            atts->SetChannelAngle(val);
+        else
+        {
+            ResettingError(tr("Divergent: Angle (degrees) between channels"),
+                DoubleToQString(atts->GetChannelAngle()));
+            atts->SetChannelAngle(atts->GetChannelAngle());
+        }
+    }
+
+    // Do nRows
+    if(which_widget == LineSamplerAttributes::ID_nRows || doAll)
+    {
+        int val;
+        if(LineEditGetInt(nRows, val))
+            atts->SetNRows(val);
+        else
+        {
+            ResettingError(tr("Grid: Number of rows"),
+                IntToQString(atts->GetNRows()));
+            atts->SetNRows(atts->GetNRows());
+        }
+    }
+
+    // Do rowOffset
+    if(which_widget == LineSamplerAttributes::ID_rowOffset || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(rowOffset, val))
+            atts->SetRowOffset(val);
+        else
+        {
+            ResettingError(tr("Grid: Offset between rows"),
+                DoubleToQString(atts->GetRowOffset()));
+            atts->SetRowOffset(atts->GetRowOffset());
+        }
+    }
+
+    // Do arrayOrigin
+    if(which_widget == LineSamplerAttributes::ID_arrayOrigin || doAll)
     {
         double val[3];
-        if(LineEditGetDoubles(origin, val, 3))
-            atts->SetOrigin(val);
+        if(LineEditGetDoubles(arrayOrigin, val, 3))
+            atts->SetArrayOrigin(val);
         else
         {
-            ResettingError(tr("Origin"),
-                DoublesToQString(atts->GetOrigin(),3));
-            atts->SetOrigin(atts->GetOrigin());
+            ResettingError(tr("Array origin"),
+                DoublesToQString(atts->GetArrayOrigin(),3));
+            atts->SetArrayOrigin(atts->GetArrayOrigin());
         }
     }
 
@@ -600,6 +823,90 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do heightPlotScale
+    if(which_widget == LineSamplerAttributes::ID_heightPlotScale || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(heightPlotScale, val))
+            atts->SetHeightPlotScale(val);
+        else
+        {
+            ResettingError(tr("1D plot height scale"),
+                DoubleToQString(atts->GetHeightPlotScale()));
+            atts->SetHeightPlotScale(atts->GetHeightPlotScale());
+        }
+    }
+
+    // Do channelPlotOffset
+    if(which_widget == LineSamplerAttributes::ID_channelPlotOffset || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(channelPlotOffset, val))
+            atts->SetChannelPlotOffset(val);
+        else
+        {
+            ResettingError(tr("1D plot channel offset"),
+                DoubleToQString(atts->GetChannelPlotOffset()));
+            atts->SetChannelPlotOffset(atts->GetChannelPlotOffset());
+        }
+    }
+
+    // Do arrayPlotOffset
+    if(which_widget == LineSamplerAttributes::ID_arrayPlotOffset || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(arrayPlotOffset, val))
+            atts->SetArrayPlotOffset(val);
+        else
+        {
+            ResettingError(tr("1D plot array offset"),
+                DoubleToQString(atts->GetArrayPlotOffset()));
+            atts->SetArrayPlotOffset(atts->GetArrayPlotOffset());
+        }
+    }
+
+    // Do timePlotScale
+    if(which_widget == LineSamplerAttributes::ID_timePlotScale || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(timePlotScale, val))
+            atts->SetTimePlotScale(val);
+        else
+        {
+            ResettingError(tr("1D plot time scaling"),
+                DoubleToQString(atts->GetTimePlotScale()));
+            atts->SetTimePlotScale(atts->GetTimePlotScale());
+        }
+    }
+
+    // Do radius
+    if(which_widget == LineSamplerAttributes::ID_radius || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(radius, val))
+            atts->SetRadius(val);
+        else
+        {
+            ResettingError(tr("Cylinder radius"),
+                DoubleToQString(atts->GetRadius()));
+            atts->SetRadius(atts->GetRadius());
+        }
+    }
+
+    // Do divergence
+    if(which_widget == LineSamplerAttributes::ID_divergence || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(divergence, val))
+            atts->SetDivergence(val);
+        else
+        {
+            ResettingError(tr("Cone divergence (degrees)"),
+                DoubleToQString(atts->GetDivergence()));
+            atts->SetDivergence(atts->GetDivergence());
+        }
+    }
+
     // Do standardDeviation
     if(which_widget == LineSamplerAttributes::ID_standardDeviation || doAll)
     {
@@ -642,6 +949,62 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do toroidalSamplingAngle
+    if(which_widget == LineSamplerAttributes::ID_toroidalSamplingAngle || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(toroidalSamplingAngle, val))
+            atts->SetToroidalSamplingAngle(val);
+        else
+        {
+            ResettingError(tr("Toroidal sampling angle (degrees)"),
+                DoubleToQString(atts->GetToroidalSamplingAngle()));
+            atts->SetToroidalSamplingAngle(atts->GetToroidalSamplingAngle());
+        }
+    }
+
+    // Do timeStepStart
+    if(which_widget == LineSamplerAttributes::ID_timeStepStart || doAll)
+    {
+        int val;
+        if(LineEditGetInt(timeStepStart, val))
+            atts->SetTimeStepStart(val);
+        else
+        {
+            ResettingError(tr("Start time step"),
+                IntToQString(atts->GetTimeStepStart()));
+            atts->SetTimeStepStart(atts->GetTimeStepStart());
+        }
+    }
+
+    // Do timeStepStop
+    if(which_widget == LineSamplerAttributes::ID_timeStepStop || doAll)
+    {
+        int val;
+        if(LineEditGetInt(timeStepStop, val))
+            atts->SetTimeStepStop(val);
+        else
+        {
+            ResettingError(tr("Stop time step"),
+                IntToQString(atts->GetTimeStepStop()));
+            atts->SetTimeStepStop(atts->GetTimeStepStop());
+        }
+    }
+
+    // Do timeStepStride
+    if(which_widget == LineSamplerAttributes::ID_timeStepStride || doAll)
+    {
+        int val;
+        if(LineEditGetInt(timeStepStride, val))
+            atts->SetTimeStepStride(val);
+        else
+        {
+            ResettingError(tr("Stride"),
+                IntToQString(atts->GetTimeStepStride()));
+            atts->SetTimeStepStride(atts->GetTimeStepStride());
+        }
+    }
+
 }
 
 
@@ -663,11 +1026,35 @@ QvisLineSamplerWindow::coordinateSystemChanged(int val)
 
 
 void
-QvisLineSamplerWindow::beamShapeChanged(int val)
+QvisLineSamplerWindow::nArraysProcessText()
 {
-    if(val != atts->GetBeamShape())
+    GetCurrentValues(LineSamplerAttributes::ID_nArrays);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::nChannelsProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_nChannels);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::toroialArrayAngleProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_toroialArrayAngle);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::arrayProjectionChanged(int val)
+{
+    if(val != atts->GetArrayProjection())
     {
-        atts->SetBeamShape(LineSamplerAttributes::BeamShape(val));
+        atts->SetArrayProjection(LineSamplerAttributes::ArrayProjection(val));
         SetUpdate(false);
         Apply();
     }
@@ -675,71 +1062,51 @@ QvisLineSamplerWindow::beamShapeChanged(int val)
 
 
 void
-QvisLineSamplerWindow::radiusProcessText()
+QvisLineSamplerWindow::channelOffsetProcessText()
 {
-    GetCurrentValues(LineSamplerAttributes::ID_radius);
+    GetCurrentValues(LineSamplerAttributes::ID_channelOffset);
     Apply();
 }
 
 
 void
-QvisLineSamplerWindow::divergenceProcessText()
+QvisLineSamplerWindow::channelAngleProcessText()
 {
-    GetCurrentValues(LineSamplerAttributes::ID_divergence);
+    GetCurrentValues(LineSamplerAttributes::ID_channelAngle);
     Apply();
 }
 
 
 void
-QvisLineSamplerWindow::beamProjectionChanged(int val)
+QvisLineSamplerWindow::nRowsProcessText()
 {
-    if(val != atts->GetBeamProjection())
+    GetCurrentValues(LineSamplerAttributes::ID_nRows);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::rowOffsetProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_rowOffset);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::arrayOriginProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_arrayOrigin);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::arrayAxisChanged(int val)
+{
+    if(val != atts->GetArrayAxis())
     {
-        atts->SetBeamProjection(LineSamplerAttributes::BeamProjection(val));
-        SetUpdate(false);
-        Apply();
-    }
-}
-
-
-void
-QvisLineSamplerWindow::nBeamsProcessText()
-{
-    GetCurrentValues(LineSamplerAttributes::ID_nBeams);
-    Apply();
-}
-
-
-void
-QvisLineSamplerWindow::offsetProcessText()
-{
-    GetCurrentValues(LineSamplerAttributes::ID_offset);
-    Apply();
-}
-
-
-void
-QvisLineSamplerWindow::angleProcessText()
-{
-    GetCurrentValues(LineSamplerAttributes::ID_angle);
-    Apply();
-}
-
-
-void
-QvisLineSamplerWindow::originProcessText()
-{
-    GetCurrentValues(LineSamplerAttributes::ID_origin);
-    Apply();
-}
-
-
-void
-QvisLineSamplerWindow::beamAxisChanged(int val)
-{
-    if(val != atts->GetBeamAxis())
-    {
-        atts->SetBeamAxis(LineSamplerAttributes::BeamAxis(val));
+        atts->SetArrayAxis(LineSamplerAttributes::ArrayAxis(val));
         SetUpdate(false);
         Apply();
     }
@@ -791,6 +1158,66 @@ QvisLineSamplerWindow::viewDimensionChanged(int val)
 
 
 void
+QvisLineSamplerWindow::heightPlotScaleProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_heightPlotScale);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::channelPlotOffsetProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_channelPlotOffset);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::arrayPlotOffsetProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_arrayPlotOffset);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::timePlotScaleProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_timePlotScale);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::beamShapeChanged(int val)
+{
+    if(val != atts->GetBeamShape())
+    {
+        atts->SetBeamShape(LineSamplerAttributes::BeamShape(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisLineSamplerWindow::radiusProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_radius);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::divergenceProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_divergence);
+    Apply();
+}
+
+
+void
 QvisLineSamplerWindow::beamTypeChanged(int val)
 {
     if(val != atts->GetBeamType())
@@ -822,6 +1249,74 @@ void
 QvisLineSamplerWindow::sampleArcProcessText()
 {
     GetCurrentValues(LineSamplerAttributes::ID_sampleArc);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::channelSamplingChanged(int val)
+{
+    if(val != atts->GetChannelSampling())
+    {
+        atts->SetChannelSampling(LineSamplerAttributes::ChannelSampling(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisLineSamplerWindow::toroidalSamplingChanged(int val)
+{
+    if(val != atts->GetToroidalSampling())
+    {
+        atts->SetToroidalSampling(LineSamplerAttributes::ToroidalSampling(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisLineSamplerWindow::toroidalSamplingAngleProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_toroidalSamplingAngle);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::timeSamplingChanged(int val)
+{
+    if(val != atts->GetTimeSampling())
+    {
+        atts->SetTimeSampling(LineSamplerAttributes::TimeSampling(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisLineSamplerWindow::timeStepStartProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_timeStepStart);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::timeStepStopProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_timeStepStop);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::timeStepStrideProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_timeStepStride);
     Apply();
 }
 

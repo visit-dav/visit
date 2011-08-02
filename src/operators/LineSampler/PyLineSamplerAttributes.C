@@ -91,56 +91,45 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
           break;
     }
 
-    const char *beamShape_names = "Line, Cylinder, Cone";
-    switch (atts->GetBeamShape())
-    {
-      case LineSamplerAttributes::Line:
-          SNPRINTF(tmpStr, 1000, "%sbeamShape = %sLine  # %s\n", prefix, prefix, beamShape_names);
-          str += tmpStr;
-          break;
-      case LineSamplerAttributes::Cylinder:
-          SNPRINTF(tmpStr, 1000, "%sbeamShape = %sCylinder  # %s\n", prefix, prefix, beamShape_names);
-          str += tmpStr;
-          break;
-      case LineSamplerAttributes::Cone:
-          SNPRINTF(tmpStr, 1000, "%sbeamShape = %sCone  # %s\n", prefix, prefix, beamShape_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    SNPRINTF(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
+    SNPRINTF(tmpStr, 1000, "%snArrays = %d\n", prefix, atts->GetNArrays());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdivergence = %g\n", prefix, atts->GetDivergence());
+    SNPRINTF(tmpStr, 1000, "%snChannels = %d\n", prefix, atts->GetNChannels());
     str += tmpStr;
-    const char *beamProjection_names = "Parallel, Divergent";
-    switch (atts->GetBeamProjection())
+    SNPRINTF(tmpStr, 1000, "%storoialArrayAngle = %g\n", prefix, atts->GetToroialArrayAngle());
+    str += tmpStr;
+    const char *arrayProjection_names = "Parallel, Divergent, Grid";
+    switch (atts->GetArrayProjection())
     {
       case LineSamplerAttributes::Parallel:
-          SNPRINTF(tmpStr, 1000, "%sbeamProjection = %sParallel  # %s\n", prefix, prefix, beamProjection_names);
+          SNPRINTF(tmpStr, 1000, "%sarrayProjection = %sParallel  # %s\n", prefix, prefix, arrayProjection_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Divergent:
-          SNPRINTF(tmpStr, 1000, "%sbeamProjection = %sDivergent  # %s\n", prefix, prefix, beamProjection_names);
+          SNPRINTF(tmpStr, 1000, "%sarrayProjection = %sDivergent  # %s\n", prefix, prefix, arrayProjection_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::Grid:
+          SNPRINTF(tmpStr, 1000, "%sarrayProjection = %sGrid  # %s\n", prefix, prefix, arrayProjection_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%snBeams = %d\n", prefix, atts->GetNBeams());
+    SNPRINTF(tmpStr, 1000, "%schannelOffset = %g\n", prefix, atts->GetChannelOffset());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soffset = %g\n", prefix, atts->GetOffset());
+    SNPRINTF(tmpStr, 1000, "%schannelAngle = %g\n", prefix, atts->GetChannelAngle());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sangle = %g\n", prefix, atts->GetAngle());
+    SNPRINTF(tmpStr, 1000, "%snRows = %d\n", prefix, atts->GetNRows());
     str += tmpStr;
-    {   const double *origin = atts->GetOrigin();
-        SNPRINTF(tmpStr, 1000, "%sorigin = (", prefix);
+    SNPRINTF(tmpStr, 1000, "%srowOffset = %g\n", prefix, atts->GetRowOffset());
+    str += tmpStr;
+    {   const double *arrayOrigin = atts->GetArrayOrigin();
+        SNPRINTF(tmpStr, 1000, "%sarrayOrigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", origin[i]);
+            SNPRINTF(tmpStr, 1000, "%g", arrayOrigin[i]);
             str += tmpStr;
             if(i < 2)
             {
@@ -151,15 +140,15 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    const char *beamAxis_names = "R, Z";
-    switch (atts->GetBeamAxis())
+    const char *arrayAxis_names = "R, Z";
+    switch (atts->GetArrayAxis())
     {
       case LineSamplerAttributes::R:
-          SNPRINTF(tmpStr, 1000, "%sbeamAxis = %sR  # %s\n", prefix, prefix, beamAxis_names);
+          SNPRINTF(tmpStr, 1000, "%sarrayAxis = %sR  # %s\n", prefix, prefix, arrayAxis_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Z:
-          SNPRINTF(tmpStr, 1000, "%sbeamAxis = %sZ  # %s\n", prefix, prefix, beamAxis_names);
+          SNPRINTF(tmpStr, 1000, "%sarrayAxis = %sZ  # %s\n", prefix, prefix, arrayAxis_names);
           str += tmpStr;
           break;
       default:
@@ -193,6 +182,41 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%sheightPlotScale = %g\n", prefix, atts->GetHeightPlotScale());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%schannelPlotOffset = %g\n", prefix, atts->GetChannelPlotOffset());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sarrayPlotOffset = %g\n", prefix, atts->GetArrayPlotOffset());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stimePlotScale = %g\n", prefix, atts->GetTimePlotScale());
+    str += tmpStr;
+    const char *beamShape_names = "Point, Line, Cylinder, Cone";
+    switch (atts->GetBeamShape())
+    {
+      case LineSamplerAttributes::Point:
+          SNPRINTF(tmpStr, 1000, "%sbeamShape = %sPoint  # %s\n", prefix, prefix, beamShape_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::Line:
+          SNPRINTF(tmpStr, 1000, "%sbeamShape = %sLine  # %s\n", prefix, prefix, beamShape_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::Cylinder:
+          SNPRINTF(tmpStr, 1000, "%sbeamShape = %sCylinder  # %s\n", prefix, prefix, beamShape_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::Cone:
+          SNPRINTF(tmpStr, 1000, "%sbeamShape = %sCone  # %s\n", prefix, prefix, beamShape_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sdivergence = %g\n", prefix, atts->GetDivergence());
+    str += tmpStr;
     const char *beamType_names = "TopHat, Gaussian";
     switch (atts->GetBeamType())
     {
@@ -213,6 +237,59 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     SNPRINTF(tmpStr, 1000, "%ssampleDistance = %g\n", prefix, atts->GetSampleDistance());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssampleArc = %g\n", prefix, atts->GetSampleArc());
+    str += tmpStr;
+    const char *channelSampling_names = "SingleChannelSampling, SummationChannelSampling";
+    switch (atts->GetChannelSampling())
+    {
+      case LineSamplerAttributes::SingleChannelSampling:
+          SNPRINTF(tmpStr, 1000, "%schannelSampling = %sSingleChannelSampling  # %s\n", prefix, prefix, channelSampling_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::SummationChannelSampling:
+          SNPRINTF(tmpStr, 1000, "%schannelSampling = %sSummationChannelSampling  # %s\n", prefix, prefix, channelSampling_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *toroidalSampling_names = "SingleToroidalSampling, SummationToroidalSampling";
+    switch (atts->GetToroidalSampling())
+    {
+      case LineSamplerAttributes::SingleToroidalSampling:
+          SNPRINTF(tmpStr, 1000, "%storoidalSampling = %sSingleToroidalSampling  # %s\n", prefix, prefix, toroidalSampling_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::SummationToroidalSampling:
+          SNPRINTF(tmpStr, 1000, "%storoidalSampling = %sSummationToroidalSampling  # %s\n", prefix, prefix, toroidalSampling_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%storoidalSamplingAngle = %g\n", prefix, atts->GetToroidalSamplingAngle());
+    str += tmpStr;
+    const char *timeSampling_names = "CurrentTimeStep, MultipleTimeSteps";
+    switch (atts->GetTimeSampling())
+    {
+      case LineSamplerAttributes::CurrentTimeStep:
+          SNPRINTF(tmpStr, 1000, "%stimeSampling = %sCurrentTimeStep  # %s\n", prefix, prefix, timeSampling_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::MultipleTimeSteps:
+          SNPRINTF(tmpStr, 1000, "%stimeSampling = %sMultipleTimeSteps  # %s\n", prefix, prefix, timeSampling_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%stimeStepStart = %d\n", prefix, atts->GetTimeStepStart());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stimeStepStop = %d\n", prefix, atts->GetTimeStepStop());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stimeStepStride = %d\n", prefix, atts->GetTimeStepStride());
     str += tmpStr;
     return str;
 }
@@ -260,7 +337,7 @@ LineSamplerAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetBeamShape(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetNArrays(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
@@ -268,15 +345,87 @@ LineSamplerAttributes_SetBeamShape(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the beamShape in the object.
+    // Set the nArrays in the object.
+    obj->data->SetNArrays((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetNArrays(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetNArrays()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetNChannels(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the nChannels in the object.
+    obj->data->SetNChannels((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetNChannels(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetNChannels()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetToroialArrayAngle(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the toroialArrayAngle in the object.
+    obj->data->SetToroialArrayAngle(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetToroialArrayAngle(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetToroialArrayAngle());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetArrayProjection(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the arrayProjection in the object.
     if(ival >= 0 && ival < 3)
-        obj->data->SetBeamShape(LineSamplerAttributes::BeamShape(ival));
+        obj->data->SetArrayProjection(LineSamplerAttributes::ArrayProjection(ival));
     else
     {
-        fprintf(stderr, "An invalid beamShape value was given. "
+        fprintf(stderr, "An invalid arrayProjection value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "Line, Cylinder, Cone.");
+                        "Parallel, Divergent, Grid.");
         return NULL;
     }
 
@@ -285,15 +434,15 @@ LineSamplerAttributes_SetBeamShape(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetBeamShape(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetArrayProjection(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetBeamShape()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetArrayProjection()));
     return retval;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetRadius(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetChannelOffset(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
@@ -301,23 +450,23 @@ LineSamplerAttributes_SetRadius(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the radius in the object.
-    obj->data->SetRadius(dval);
+    // Set the channelOffset in the object.
+    obj->data->SetChannelOffset(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetRadius(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetChannelOffset(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetRadius());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetChannelOffset());
     return retval;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetDivergence(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetChannelAngle(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
@@ -325,23 +474,23 @@ LineSamplerAttributes_SetDivergence(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the divergence in the object.
-    obj->data->SetDivergence(dval);
+    // Set the channelAngle in the object.
+    obj->data->SetChannelAngle(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetDivergence(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetChannelAngle(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetDivergence());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetChannelAngle());
     return retval;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetBeamProjection(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetNRows(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
@@ -349,56 +498,23 @@ LineSamplerAttributes_SetBeamProjection(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the beamProjection in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetBeamProjection(LineSamplerAttributes::BeamProjection(ival));
-    else
-    {
-        fprintf(stderr, "An invalid beamProjection value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Parallel, Divergent.");
-        return NULL;
-    }
+    // Set the nRows in the object.
+    obj->data->SetNRows((int)ival);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetBeamProjection(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetNRows(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetBeamProjection()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetNRows()));
     return retval;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetNBeams(PyObject *self, PyObject *args)
-{
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the nBeams in the object.
-    obj->data->SetNBeams((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-LineSamplerAttributes_GetNBeams(PyObject *self, PyObject *args)
-{
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetNBeams()));
-    return retval;
-}
-
-/*static*/ PyObject *
-LineSamplerAttributes_SetOffset(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetRowOffset(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
@@ -406,51 +522,27 @@ LineSamplerAttributes_SetOffset(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the offset in the object.
-    obj->data->SetOffset(dval);
+    // Set the rowOffset in the object.
+    obj->data->SetRowOffset(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetOffset(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetRowOffset(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetOffset());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetRowOffset());
     return retval;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetAngle(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetArrayOrigin(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the angle in the object.
-    obj->data->SetAngle(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-LineSamplerAttributes_GetAngle(PyObject *self, PyObject *args)
-{
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetAngle());
-    return retval;
-}
-
-/*static*/ PyObject *
-LineSamplerAttributes_SetOrigin(PyObject *self, PyObject *args)
-{
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-
-    double *dvals = obj->data->GetOrigin();
+    double *dvals = obj->data->GetArrayOrigin();
     if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
     {
         PyObject     *tuple;
@@ -480,27 +572,27 @@ LineSamplerAttributes_SetOrigin(PyObject *self, PyObject *args)
             return NULL;
     }
 
-    // Mark the origin in the object as modified.
-    obj->data->SelectOrigin();
+    // Mark the arrayOrigin in the object as modified.
+    obj->data->SelectArrayOrigin();
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetOrigin(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetArrayOrigin(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the origin.
+    // Allocate a tuple the with enough entries to hold the arrayOrigin.
     PyObject *retval = PyTuple_New(3);
-    const double *origin = obj->data->GetOrigin();
+    const double *arrayOrigin = obj->data->GetArrayOrigin();
     for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(origin[i]));
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(arrayOrigin[i]));
     return retval;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetBeamAxis(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetArrayAxis(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
@@ -508,12 +600,12 @@ LineSamplerAttributes_SetBeamAxis(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the beamAxis in the object.
+    // Set the arrayAxis in the object.
     if(ival >= 0 && ival < 2)
-        obj->data->SetBeamAxis(LineSamplerAttributes::BeamAxis(ival));
+        obj->data->SetArrayAxis(LineSamplerAttributes::ArrayAxis(ival));
     else
     {
-        fprintf(stderr, "An invalid beamAxis value was given. "
+        fprintf(stderr, "An invalid arrayAxis value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "R, Z.");
@@ -525,10 +617,10 @@ LineSamplerAttributes_SetBeamAxis(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetBeamAxis(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetArrayAxis(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetBeamAxis()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetArrayAxis()));
     return retval;
 }
 
@@ -662,6 +754,183 @@ LineSamplerAttributes_GetViewDimension(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LineSamplerAttributes_SetHeightPlotScale(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the heightPlotScale in the object.
+    obj->data->SetHeightPlotScale(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetHeightPlotScale(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetHeightPlotScale());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetChannelPlotOffset(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the channelPlotOffset in the object.
+    obj->data->SetChannelPlotOffset(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetChannelPlotOffset(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetChannelPlotOffset());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetArrayPlotOffset(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the arrayPlotOffset in the object.
+    obj->data->SetArrayPlotOffset(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetArrayPlotOffset(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetArrayPlotOffset());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetTimePlotScale(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the timePlotScale in the object.
+    obj->data->SetTimePlotScale(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetTimePlotScale(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTimePlotScale());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetBeamShape(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the beamShape in the object.
+    if(ival >= 0 && ival < 4)
+        obj->data->SetBeamShape(LineSamplerAttributes::BeamShape(ival));
+    else
+    {
+        fprintf(stderr, "An invalid beamShape value was given. "
+                        "Valid values are in the range of [0,3]. "
+                        "You can also use the following names: "
+                        "Point, Line, Cylinder, Cone.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetBeamShape(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetBeamShape()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetRadius(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the radius in the object.
+    obj->data->SetRadius(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetRadius(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetRadius());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetDivergence(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the divergence in the object.
+    obj->data->SetDivergence(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetDivergence(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetDivergence());
+    return retval;
+}
+
+/*static*/ PyObject *
 LineSamplerAttributes_SetBeamType(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
@@ -766,30 +1035,227 @@ LineSamplerAttributes_GetSampleArc(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+LineSamplerAttributes_SetChannelSampling(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the channelSampling in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetChannelSampling(LineSamplerAttributes::ChannelSampling(ival));
+    else
+    {
+        fprintf(stderr, "An invalid channelSampling value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "SingleChannelSampling, SummationChannelSampling.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetChannelSampling(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetChannelSampling()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetToroidalSampling(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the toroidalSampling in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetToroidalSampling(LineSamplerAttributes::ToroidalSampling(ival));
+    else
+    {
+        fprintf(stderr, "An invalid toroidalSampling value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "SingleToroidalSampling, SummationToroidalSampling.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetToroidalSampling(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetToroidalSampling()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetToroidalSamplingAngle(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the toroidalSamplingAngle in the object.
+    obj->data->SetToroidalSamplingAngle(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetToroidalSamplingAngle(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetToroidalSamplingAngle());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetTimeSampling(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the timeSampling in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetTimeSampling(LineSamplerAttributes::TimeSampling(ival));
+    else
+    {
+        fprintf(stderr, "An invalid timeSampling value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "CurrentTimeStep, MultipleTimeSteps.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetTimeSampling(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeSampling()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetTimeStepStart(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the timeStepStart in the object.
+    obj->data->SetTimeStepStart((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetTimeStepStart(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStepStart()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetTimeStepStop(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the timeStepStop in the object.
+    obj->data->SetTimeStepStop((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetTimeStepStop(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStepStop()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetTimeStepStride(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the timeStepStride in the object.
+    obj->data->SetTimeStepStride((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetTimeStepStride(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStepStride()));
+    return retval;
+}
+
 
 
 PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"Notify", LineSamplerAttributes_Notify, METH_VARARGS},
     {"SetCoordinateSystem", LineSamplerAttributes_SetCoordinateSystem, METH_VARARGS},
     {"GetCoordinateSystem", LineSamplerAttributes_GetCoordinateSystem, METH_VARARGS},
-    {"SetBeamShape", LineSamplerAttributes_SetBeamShape, METH_VARARGS},
-    {"GetBeamShape", LineSamplerAttributes_GetBeamShape, METH_VARARGS},
-    {"SetRadius", LineSamplerAttributes_SetRadius, METH_VARARGS},
-    {"GetRadius", LineSamplerAttributes_GetRadius, METH_VARARGS},
-    {"SetDivergence", LineSamplerAttributes_SetDivergence, METH_VARARGS},
-    {"GetDivergence", LineSamplerAttributes_GetDivergence, METH_VARARGS},
-    {"SetBeamProjection", LineSamplerAttributes_SetBeamProjection, METH_VARARGS},
-    {"GetBeamProjection", LineSamplerAttributes_GetBeamProjection, METH_VARARGS},
-    {"SetNBeams", LineSamplerAttributes_SetNBeams, METH_VARARGS},
-    {"GetNBeams", LineSamplerAttributes_GetNBeams, METH_VARARGS},
-    {"SetOffset", LineSamplerAttributes_SetOffset, METH_VARARGS},
-    {"GetOffset", LineSamplerAttributes_GetOffset, METH_VARARGS},
-    {"SetAngle", LineSamplerAttributes_SetAngle, METH_VARARGS},
-    {"GetAngle", LineSamplerAttributes_GetAngle, METH_VARARGS},
-    {"SetOrigin", LineSamplerAttributes_SetOrigin, METH_VARARGS},
-    {"GetOrigin", LineSamplerAttributes_GetOrigin, METH_VARARGS},
-    {"SetBeamAxis", LineSamplerAttributes_SetBeamAxis, METH_VARARGS},
-    {"GetBeamAxis", LineSamplerAttributes_GetBeamAxis, METH_VARARGS},
+    {"SetNArrays", LineSamplerAttributes_SetNArrays, METH_VARARGS},
+    {"GetNArrays", LineSamplerAttributes_GetNArrays, METH_VARARGS},
+    {"SetNChannels", LineSamplerAttributes_SetNChannels, METH_VARARGS},
+    {"GetNChannels", LineSamplerAttributes_GetNChannels, METH_VARARGS},
+    {"SetToroialArrayAngle", LineSamplerAttributes_SetToroialArrayAngle, METH_VARARGS},
+    {"GetToroialArrayAngle", LineSamplerAttributes_GetToroialArrayAngle, METH_VARARGS},
+    {"SetArrayProjection", LineSamplerAttributes_SetArrayProjection, METH_VARARGS},
+    {"GetArrayProjection", LineSamplerAttributes_GetArrayProjection, METH_VARARGS},
+    {"SetChannelOffset", LineSamplerAttributes_SetChannelOffset, METH_VARARGS},
+    {"GetChannelOffset", LineSamplerAttributes_GetChannelOffset, METH_VARARGS},
+    {"SetChannelAngle", LineSamplerAttributes_SetChannelAngle, METH_VARARGS},
+    {"GetChannelAngle", LineSamplerAttributes_GetChannelAngle, METH_VARARGS},
+    {"SetNRows", LineSamplerAttributes_SetNRows, METH_VARARGS},
+    {"GetNRows", LineSamplerAttributes_GetNRows, METH_VARARGS},
+    {"SetRowOffset", LineSamplerAttributes_SetRowOffset, METH_VARARGS},
+    {"GetRowOffset", LineSamplerAttributes_GetRowOffset, METH_VARARGS},
+    {"SetArrayOrigin", LineSamplerAttributes_SetArrayOrigin, METH_VARARGS},
+    {"GetArrayOrigin", LineSamplerAttributes_GetArrayOrigin, METH_VARARGS},
+    {"SetArrayAxis", LineSamplerAttributes_SetArrayAxis, METH_VARARGS},
+    {"GetArrayAxis", LineSamplerAttributes_GetArrayAxis, METH_VARARGS},
     {"SetPoloialAngle", LineSamplerAttributes_SetPoloialAngle, METH_VARARGS},
     {"GetPoloialAngle", LineSamplerAttributes_GetPoloialAngle, METH_VARARGS},
     {"SetPoloialRTilt", LineSamplerAttributes_SetPoloialRTilt, METH_VARARGS},
@@ -800,6 +1266,20 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetToroialAngle", LineSamplerAttributes_GetToroialAngle, METH_VARARGS},
     {"SetViewDimension", LineSamplerAttributes_SetViewDimension, METH_VARARGS},
     {"GetViewDimension", LineSamplerAttributes_GetViewDimension, METH_VARARGS},
+    {"SetHeightPlotScale", LineSamplerAttributes_SetHeightPlotScale, METH_VARARGS},
+    {"GetHeightPlotScale", LineSamplerAttributes_GetHeightPlotScale, METH_VARARGS},
+    {"SetChannelPlotOffset", LineSamplerAttributes_SetChannelPlotOffset, METH_VARARGS},
+    {"GetChannelPlotOffset", LineSamplerAttributes_GetChannelPlotOffset, METH_VARARGS},
+    {"SetArrayPlotOffset", LineSamplerAttributes_SetArrayPlotOffset, METH_VARARGS},
+    {"GetArrayPlotOffset", LineSamplerAttributes_GetArrayPlotOffset, METH_VARARGS},
+    {"SetTimePlotScale", LineSamplerAttributes_SetTimePlotScale, METH_VARARGS},
+    {"GetTimePlotScale", LineSamplerAttributes_GetTimePlotScale, METH_VARARGS},
+    {"SetBeamShape", LineSamplerAttributes_SetBeamShape, METH_VARARGS},
+    {"GetBeamShape", LineSamplerAttributes_GetBeamShape, METH_VARARGS},
+    {"SetRadius", LineSamplerAttributes_SetRadius, METH_VARARGS},
+    {"GetRadius", LineSamplerAttributes_GetRadius, METH_VARARGS},
+    {"SetDivergence", LineSamplerAttributes_SetDivergence, METH_VARARGS},
+    {"GetDivergence", LineSamplerAttributes_GetDivergence, METH_VARARGS},
     {"SetBeamType", LineSamplerAttributes_SetBeamType, METH_VARARGS},
     {"GetBeamType", LineSamplerAttributes_GetBeamType, METH_VARARGS},
     {"SetStandardDeviation", LineSamplerAttributes_SetStandardDeviation, METH_VARARGS},
@@ -808,6 +1288,20 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetSampleDistance", LineSamplerAttributes_GetSampleDistance, METH_VARARGS},
     {"SetSampleArc", LineSamplerAttributes_SetSampleArc, METH_VARARGS},
     {"GetSampleArc", LineSamplerAttributes_GetSampleArc, METH_VARARGS},
+    {"SetChannelSampling", LineSamplerAttributes_SetChannelSampling, METH_VARARGS},
+    {"GetChannelSampling", LineSamplerAttributes_GetChannelSampling, METH_VARARGS},
+    {"SetToroidalSampling", LineSamplerAttributes_SetToroidalSampling, METH_VARARGS},
+    {"GetToroidalSampling", LineSamplerAttributes_GetToroidalSampling, METH_VARARGS},
+    {"SetToroidalSamplingAngle", LineSamplerAttributes_SetToroidalSamplingAngle, METH_VARARGS},
+    {"GetToroidalSamplingAngle", LineSamplerAttributes_GetToroidalSamplingAngle, METH_VARARGS},
+    {"SetTimeSampling", LineSamplerAttributes_SetTimeSampling, METH_VARARGS},
+    {"GetTimeSampling", LineSamplerAttributes_GetTimeSampling, METH_VARARGS},
+    {"SetTimeStepStart", LineSamplerAttributes_SetTimeStepStart, METH_VARARGS},
+    {"GetTimeStepStart", LineSamplerAttributes_GetTimeStepStart, METH_VARARGS},
+    {"SetTimeStepStop", LineSamplerAttributes_SetTimeStepStop, METH_VARARGS},
+    {"GetTimeStepStop", LineSamplerAttributes_GetTimeStepStop, METH_VARARGS},
+    {"SetTimeStepStride", LineSamplerAttributes_SetTimeStepStride, METH_VARARGS},
+    {"GetTimeStepStride", LineSamplerAttributes_GetTimeStepStride, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -843,36 +1337,33 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Cylindrical") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Cylindrical));
 
-    if(strcmp(name, "beamShape") == 0)
-        return LineSamplerAttributes_GetBeamShape(self, NULL);
-    if(strcmp(name, "Line") == 0)
-        return PyInt_FromLong(long(LineSamplerAttributes::Line));
-    if(strcmp(name, "Cylinder") == 0)
-        return PyInt_FromLong(long(LineSamplerAttributes::Cylinder));
-    if(strcmp(name, "Cone") == 0)
-        return PyInt_FromLong(long(LineSamplerAttributes::Cone));
-
-    if(strcmp(name, "radius") == 0)
-        return LineSamplerAttributes_GetRadius(self, NULL);
-    if(strcmp(name, "divergence") == 0)
-        return LineSamplerAttributes_GetDivergence(self, NULL);
-    if(strcmp(name, "beamProjection") == 0)
-        return LineSamplerAttributes_GetBeamProjection(self, NULL);
+    if(strcmp(name, "nArrays") == 0)
+        return LineSamplerAttributes_GetNArrays(self, NULL);
+    if(strcmp(name, "nChannels") == 0)
+        return LineSamplerAttributes_GetNChannels(self, NULL);
+    if(strcmp(name, "toroialArrayAngle") == 0)
+        return LineSamplerAttributes_GetToroialArrayAngle(self, NULL);
+    if(strcmp(name, "arrayProjection") == 0)
+        return LineSamplerAttributes_GetArrayProjection(self, NULL);
     if(strcmp(name, "Parallel") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Parallel));
     if(strcmp(name, "Divergent") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Divergent));
+    if(strcmp(name, "Grid") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Grid));
 
-    if(strcmp(name, "nBeams") == 0)
-        return LineSamplerAttributes_GetNBeams(self, NULL);
-    if(strcmp(name, "offset") == 0)
-        return LineSamplerAttributes_GetOffset(self, NULL);
-    if(strcmp(name, "angle") == 0)
-        return LineSamplerAttributes_GetAngle(self, NULL);
-    if(strcmp(name, "origin") == 0)
-        return LineSamplerAttributes_GetOrigin(self, NULL);
-    if(strcmp(name, "beamAxis") == 0)
-        return LineSamplerAttributes_GetBeamAxis(self, NULL);
+    if(strcmp(name, "channelOffset") == 0)
+        return LineSamplerAttributes_GetChannelOffset(self, NULL);
+    if(strcmp(name, "channelAngle") == 0)
+        return LineSamplerAttributes_GetChannelAngle(self, NULL);
+    if(strcmp(name, "nRows") == 0)
+        return LineSamplerAttributes_GetNRows(self, NULL);
+    if(strcmp(name, "rowOffset") == 0)
+        return LineSamplerAttributes_GetRowOffset(self, NULL);
+    if(strcmp(name, "arrayOrigin") == 0)
+        return LineSamplerAttributes_GetArrayOrigin(self, NULL);
+    if(strcmp(name, "arrayAxis") == 0)
+        return LineSamplerAttributes_GetArrayAxis(self, NULL);
     if(strcmp(name, "R") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::R));
     if(strcmp(name, "Z") == 0)
@@ -895,6 +1386,29 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Three") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Three));
 
+    if(strcmp(name, "heightPlotScale") == 0)
+        return LineSamplerAttributes_GetHeightPlotScale(self, NULL);
+    if(strcmp(name, "channelPlotOffset") == 0)
+        return LineSamplerAttributes_GetChannelPlotOffset(self, NULL);
+    if(strcmp(name, "arrayPlotOffset") == 0)
+        return LineSamplerAttributes_GetArrayPlotOffset(self, NULL);
+    if(strcmp(name, "timePlotScale") == 0)
+        return LineSamplerAttributes_GetTimePlotScale(self, NULL);
+    if(strcmp(name, "beamShape") == 0)
+        return LineSamplerAttributes_GetBeamShape(self, NULL);
+    if(strcmp(name, "Point") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Point));
+    if(strcmp(name, "Line") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Line));
+    if(strcmp(name, "Cylinder") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Cylinder));
+    if(strcmp(name, "Cone") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Cone));
+
+    if(strcmp(name, "radius") == 0)
+        return LineSamplerAttributes_GetRadius(self, NULL);
+    if(strcmp(name, "divergence") == 0)
+        return LineSamplerAttributes_GetDivergence(self, NULL);
     if(strcmp(name, "beamType") == 0)
         return LineSamplerAttributes_GetBeamType(self, NULL);
     if(strcmp(name, "TopHat") == 0)
@@ -908,6 +1422,35 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return LineSamplerAttributes_GetSampleDistance(self, NULL);
     if(strcmp(name, "sampleArc") == 0)
         return LineSamplerAttributes_GetSampleArc(self, NULL);
+    if(strcmp(name, "channelSampling") == 0)
+        return LineSamplerAttributes_GetChannelSampling(self, NULL);
+    if(strcmp(name, "SingleChannelSampling") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::SingleChannelSampling));
+    if(strcmp(name, "SummationChannelSampling") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::SummationChannelSampling));
+
+    if(strcmp(name, "toroidalSampling") == 0)
+        return LineSamplerAttributes_GetToroidalSampling(self, NULL);
+    if(strcmp(name, "SingleToroidalSampling") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::SingleToroidalSampling));
+    if(strcmp(name, "SummationToroidalSampling") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::SummationToroidalSampling));
+
+    if(strcmp(name, "toroidalSamplingAngle") == 0)
+        return LineSamplerAttributes_GetToroidalSamplingAngle(self, NULL);
+    if(strcmp(name, "timeSampling") == 0)
+        return LineSamplerAttributes_GetTimeSampling(self, NULL);
+    if(strcmp(name, "CurrentTimeStep") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::CurrentTimeStep));
+    if(strcmp(name, "MultipleTimeSteps") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::MultipleTimeSteps));
+
+    if(strcmp(name, "timeStepStart") == 0)
+        return LineSamplerAttributes_GetTimeStepStart(self, NULL);
+    if(strcmp(name, "timeStepStop") == 0)
+        return LineSamplerAttributes_GetTimeStepStop(self, NULL);
+    if(strcmp(name, "timeStepStride") == 0)
+        return LineSamplerAttributes_GetTimeStepStride(self, NULL);
 
     return Py_FindMethod(PyLineSamplerAttributes_methods, self, name);
 }
@@ -924,24 +1467,26 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "coordinateSystem") == 0)
         obj = LineSamplerAttributes_SetCoordinateSystem(self, tuple);
-    else if(strcmp(name, "beamShape") == 0)
-        obj = LineSamplerAttributes_SetBeamShape(self, tuple);
-    else if(strcmp(name, "radius") == 0)
-        obj = LineSamplerAttributes_SetRadius(self, tuple);
-    else if(strcmp(name, "divergence") == 0)
-        obj = LineSamplerAttributes_SetDivergence(self, tuple);
-    else if(strcmp(name, "beamProjection") == 0)
-        obj = LineSamplerAttributes_SetBeamProjection(self, tuple);
-    else if(strcmp(name, "nBeams") == 0)
-        obj = LineSamplerAttributes_SetNBeams(self, tuple);
-    else if(strcmp(name, "offset") == 0)
-        obj = LineSamplerAttributes_SetOffset(self, tuple);
-    else if(strcmp(name, "angle") == 0)
-        obj = LineSamplerAttributes_SetAngle(self, tuple);
-    else if(strcmp(name, "origin") == 0)
-        obj = LineSamplerAttributes_SetOrigin(self, tuple);
-    else if(strcmp(name, "beamAxis") == 0)
-        obj = LineSamplerAttributes_SetBeamAxis(self, tuple);
+    else if(strcmp(name, "nArrays") == 0)
+        obj = LineSamplerAttributes_SetNArrays(self, tuple);
+    else if(strcmp(name, "nChannels") == 0)
+        obj = LineSamplerAttributes_SetNChannels(self, tuple);
+    else if(strcmp(name, "toroialArrayAngle") == 0)
+        obj = LineSamplerAttributes_SetToroialArrayAngle(self, tuple);
+    else if(strcmp(name, "arrayProjection") == 0)
+        obj = LineSamplerAttributes_SetArrayProjection(self, tuple);
+    else if(strcmp(name, "channelOffset") == 0)
+        obj = LineSamplerAttributes_SetChannelOffset(self, tuple);
+    else if(strcmp(name, "channelAngle") == 0)
+        obj = LineSamplerAttributes_SetChannelAngle(self, tuple);
+    else if(strcmp(name, "nRows") == 0)
+        obj = LineSamplerAttributes_SetNRows(self, tuple);
+    else if(strcmp(name, "rowOffset") == 0)
+        obj = LineSamplerAttributes_SetRowOffset(self, tuple);
+    else if(strcmp(name, "arrayOrigin") == 0)
+        obj = LineSamplerAttributes_SetArrayOrigin(self, tuple);
+    else if(strcmp(name, "arrayAxis") == 0)
+        obj = LineSamplerAttributes_SetArrayAxis(self, tuple);
     else if(strcmp(name, "poloialAngle") == 0)
         obj = LineSamplerAttributes_SetPoloialAngle(self, tuple);
     else if(strcmp(name, "poloialRTilt") == 0)
@@ -952,6 +1497,20 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetToroialAngle(self, tuple);
     else if(strcmp(name, "viewDimension") == 0)
         obj = LineSamplerAttributes_SetViewDimension(self, tuple);
+    else if(strcmp(name, "heightPlotScale") == 0)
+        obj = LineSamplerAttributes_SetHeightPlotScale(self, tuple);
+    else if(strcmp(name, "channelPlotOffset") == 0)
+        obj = LineSamplerAttributes_SetChannelPlotOffset(self, tuple);
+    else if(strcmp(name, "arrayPlotOffset") == 0)
+        obj = LineSamplerAttributes_SetArrayPlotOffset(self, tuple);
+    else if(strcmp(name, "timePlotScale") == 0)
+        obj = LineSamplerAttributes_SetTimePlotScale(self, tuple);
+    else if(strcmp(name, "beamShape") == 0)
+        obj = LineSamplerAttributes_SetBeamShape(self, tuple);
+    else if(strcmp(name, "radius") == 0)
+        obj = LineSamplerAttributes_SetRadius(self, tuple);
+    else if(strcmp(name, "divergence") == 0)
+        obj = LineSamplerAttributes_SetDivergence(self, tuple);
     else if(strcmp(name, "beamType") == 0)
         obj = LineSamplerAttributes_SetBeamType(self, tuple);
     else if(strcmp(name, "standardDeviation") == 0)
@@ -960,6 +1519,20 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetSampleDistance(self, tuple);
     else if(strcmp(name, "sampleArc") == 0)
         obj = LineSamplerAttributes_SetSampleArc(self, tuple);
+    else if(strcmp(name, "channelSampling") == 0)
+        obj = LineSamplerAttributes_SetChannelSampling(self, tuple);
+    else if(strcmp(name, "toroidalSampling") == 0)
+        obj = LineSamplerAttributes_SetToroidalSampling(self, tuple);
+    else if(strcmp(name, "toroidalSamplingAngle") == 0)
+        obj = LineSamplerAttributes_SetToroidalSamplingAngle(self, tuple);
+    else if(strcmp(name, "timeSampling") == 0)
+        obj = LineSamplerAttributes_SetTimeSampling(self, tuple);
+    else if(strcmp(name, "timeStepStart") == 0)
+        obj = LineSamplerAttributes_SetTimeStepStart(self, tuple);
+    else if(strcmp(name, "timeStepStop") == 0)
+        obj = LineSamplerAttributes_SetTimeStepStop(self, tuple);
+    else if(strcmp(name, "timeStepStride") == 0)
+        obj = LineSamplerAttributes_SetTimeStepStride(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
