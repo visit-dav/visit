@@ -434,6 +434,9 @@
 #     With Jean Favre's help, I modified the script so that it would build
 #     VisIt on Ubuntu 11.04.
 #
+#     Gunther H. Weber, Mon Aug  1 17:12:29 PDT 2011
+#     Update to H5Part 1.6.3
+#
 # *****************************************************************************
 
 
@@ -885,10 +888,10 @@ export CFITSIO_VERSION=${CFITSIO_VERSION:-"3006"}
 export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION:-"3.0"}
 export CFITSIO_BUILD_DIR=${CFITSIO_BUILD_DIR:-"cfitsio"}
 
-export H5PART_VERSION=${H5PART_VERSION:-"1.6.2"}
+export H5PART_VERSION=${H5PART_VERSION:-"1.6.3"}
 export H5PART_FILE=${H5PART_FILE:-"H5Part-${H5PART_VERSION}.tar.gz"}
 export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION:-"1.6"}
-export H5PART_URL=${H5PART_URL:-"https://codeforge.lbl.gov/frs/download.php/191"}
+export H5PART_URL=${H5PART_URL:-"https://codeforge.lbl.gov/frs/download.php/338"}
 export H5PART_BUILD_DIR=${H5PART_BUILD_DIR:-"H5Part-${H5PART_VERSION}"}
 
 export FASTBIT_VERSION=${FASTBIT_VERSION:-"1.2.0"}
@@ -6946,6 +6949,12 @@ function build_cfitsio
 #  harmless when building H5Part against versions of HDF5 before 1.8 and
 #  necessary when building against versions of HDF5 1.8 or later. It tells
 #  HDF5 which version of the HDF5 API H5Part was implemented with.
+#
+#  Gunther H. Weber, Wed Jul 27 14:48:12 PDT 2011
+#  Adapted to H5Part 1.6.3 which can correctly build shared libraries, does
+#  not require -DH5_USE_16_API in CFLAGS and has a new way to pass path to
+#  HDF5.
+#
 # ***************************************************************************
 
 function build_h5part
@@ -6966,25 +6975,27 @@ function build_h5part
     if [[ "$DO_HDF5" == "yes" ]] ; then
        export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
        export SZIPROOT="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
-       WITHHDF5ARG="--with-hdf5path=$HDF5ROOT"
+       WITHHDF5ARG="--with-hdf5=$HDF5ROOT"
        HDF5DYLIB="-L$HDF5ROOT/lib -L$SZIPROOT/lib -lhdf5 -lsz -lz"
     else
-       WITHHDF5ARG="--without-hdf5path"
+       WITHHDF5ARG="--with-hdf5"
        HDF5DYLIB=""
     fi
     if [[ "$OPSYS" == "Darwin" ]]; then
        export DYLD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib":\
 "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":\
 $DYLD_LIBRARY_PATH
+       SOARG="--enable-shared"
     else
        export LD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib":\
 "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":\
 $LD_LIBRARY_PATH
+       SOARG=""
     fi
     info "Invoking command to configure H5Part"
     ./configure ${WITHHDF5ARG} ${OPTIONAL} CXX="$CXX_COMPILER" \
        CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       --prefix="$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH"
+       --prefix="$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH" ${SOARG}
     if [[ $? != 0 ]] ; then
        warn "H5Part configure failed.  Giving up"
        return 1
@@ -7010,36 +7021,13 @@ $LD_LIBRARY_PATH
 
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         #
-        # Make dynamic executable
+        # Make dynamic executable, need to patch up the install path and
+        # version information.
         #
         info "Creating dynamic libraries for H5Part . . ."
-
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/h5part/${H5PART_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
+        if [[ $ABS_PATH == "no" ]]; then
+            install_name_tool -id @executable_path/../lib/libH5Part.$SO_EXT $VISITDIR/h5part/$H5PART_VERSION/$VISITARCH/lib/libH5Part.$SO_EXT
         fi
-        VER=$(uname -r)
-        if (( ${VER%%.*} > 7 )) ; then
-           USEGCC="-lSystemStubs"
-        else
-           USEGCC="-lgcc"
-        fi
-##        /usr/bin/libtool -o libH5Part.$SO_EXT -dynamic src/libH5Part.a \
-##        -lSystem -headerpad_max_install_names \
-##        -install_name $INSTALLNAMEPATH/libH5Part.$SO_EXT \
-##        -compatibility_version $H5PART_COMPATIBILITY_VERSION \
-##        -current_version $H5PART_VERSION ${HDF5DYLIB} ${USEGCC}
-        gcc -o libH5Part.$SO_EXT -dynamiclib src/*.o -lSystem \
-           -Wl,-headerpad_max_install_names \
-           -Wl,-install_name,$INSTALLNAMEPATH/libH5Part.$SO_EXT \
-           -Wl,-compatibility_version,$H5PART_COMPATIBILITY_VERSION \
-           -Wl,-current_version,$H5PART_VERSION ${HDF5DYLIB}
-        if [[ $? != 0 ]] ; then
-           warn "Creating dynamic H5Part library failed.  Giving up"
-           return 1
-        fi
-        cp libH5Part.$SO_EXT "$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH/lib"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
