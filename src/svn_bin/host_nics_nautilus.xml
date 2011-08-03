@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
     <Field name="hostNickname" type="string">nautilus</Field>
-    <Field name="host" type="string">nautilus.nics.utk.edu</Field>
+    <Field name="host" type="string">login.nautilus.nics.utk.edu</Field>
     <Field name="hostAliases" type="string">nautilus</Field>
     <Field name="directory" type="string">/sw/analysis/visit/</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
