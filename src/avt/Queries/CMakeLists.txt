@@ -150,6 +150,8 @@ Queries/avtXRayImageQuery.C
 Queries/avtZoneCenterQuery.C
 Queries/MinMaxInfo.C
 Queries/avtStreamlineInfoQuery.C
+Queries/avtContourSpectrumQuery.C
+Queries/avtDetectRiverThresholdQuery.C
 )
 
 IF(VISIT_PYTHON_FILTERS)
@@ -229,3 +231,10 @@ IF(VISIT_PARALLEL)
     ENDIF(VISIT_PYTHON_FILTERS)
     VISIT_INSTALL_TARGETS(avtquery_par)
 ENDIF(VISIT_PARALLEL)
+
+IF(VISIT_REEBER_DIR)
+    FIND_PACKAGE (Boost REQUIRED COMPONENTS serialization)
+    TARGET_LINK_LIBRARIES(avtquery_ser ${Boost_SERIALIZATION_LIBRARY})
+    TARGET_LINK_LIBRARIES(avtquery_par ${Boost_SERIALIZATION_LIBRARY})
+    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR} ${VISIT_REEBER_DIR})
+ENDIF(VISIT_REEBER_DIR)

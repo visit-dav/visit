@@ -3929,6 +3929,9 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Population Statistics", dq, vr, ad, 1, 0, qo);
 
     queryTypes->AddQuery("Streamline Info", dq, misc_r, sli, 1, 0, qo);
+
+    queryTypes->AddQuery("Contour Spectrum", dq, vr, basic, 1, QUERY_SCALAR_VAR, qo);
+    queryTypes->AddQuery("Detect River Threshold", dq, vr, basic, 1, QUERY_SCALAR_VAR, qt);
     queryTypes->SelectAll();
 }
 

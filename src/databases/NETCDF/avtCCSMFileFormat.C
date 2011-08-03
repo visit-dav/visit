@@ -308,7 +308,7 @@ avtCCSM_STSD_FileFormat::GetCycle()
 {
     intVector cycles;
     reader->GetCycles(cycles);
-    return (cycles.size() > 0) ? cycles[0] : 0;
+    return (cycles.size() > 0) ? cycles[0] : avtFileFormat::INVALID_CYCLE;
 }
 
 double
@@ -316,7 +316,7 @@ avtCCSM_STSD_FileFormat::GetTime()
 {
     doubleVector times;
     reader->GetTimes(times);
-    return (times.size() > 0) ? times[0] : 0;
+    return (times.size() > 0) ? times[0] : avtFileFormat::INVALID_TIME;
 }
 
 void
