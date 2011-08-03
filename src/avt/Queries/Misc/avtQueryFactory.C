@@ -103,8 +103,6 @@
 #include <avtXRayImageQuery.h>
 #include <avtZoneCenterQuery.h>
 #include <avtStreamlineInfoQuery.h>
-#include <avtContourSpectrumQuery.h>
-#include <avtDetectRiverThresholdQuery.h>
 
 #include <visit-python-config.h>
 #ifdef VISIT_PYTHON_FILTERS
@@ -735,14 +733,6 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         avtStreamlineInfoQuery *slq = new avtStreamlineInfoQuery();
         slq->SetDumpSteps(qa->GetDumpSteps());
         query = slq;
-    }
-    else if (qname == "Contour Spectrum")
-    {
-        query = new avtContourSpectrumQuery();
-    }
-    else if (qname == "Detect River Threshold")
-    {
-        query = new avtDetectRiverThresholdQuery();
     }
 
     if (query == NULL && !foundAQuery)
