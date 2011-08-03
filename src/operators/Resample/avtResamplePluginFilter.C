@@ -164,9 +164,11 @@ avtResamplePluginFilter::SetAtts(const AttributeGroup *a)
     res_atts.SetArbitratorLessThan(atts.GetTieResolver() 
                                    != ResampleAttributes::smallest);
     res_atts.SetArbitratorVarName(atts.GetTieResolverVariable());
-    
+
     res_atts.SetDistributedResample(atts.GetDistributedResample());
     resampler = new avtResampleFilter(&res_atts);
+    if (atts.GetCellCenteredOutput())
+        resampler->MakeOutputCellCentered(true);
 }
 
 

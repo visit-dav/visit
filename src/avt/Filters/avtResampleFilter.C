@@ -70,7 +70,7 @@
 //
 
 static vtkRectilinearGrid  *CreateGrid(const double *, int, int, int,
-                                   int, int, int, int, bool);
+                                   int, int, int, int, bool, bool);
 static void                 CreateViewFromBounds(avtViewInfo &, const double *,
                                              double [3]);
 static vtkDataArray        *GetCoordinates(float, float, int, int, int);
@@ -432,7 +432,7 @@ avtResampleFilter::ResampleInput(void)
         if (PAR_Rank() == 0)
         {
             vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth,
-                                      0, width, 0, height, cellCenteredOutput);
+                                      0, width, 0, height, cellCenteredOutput, is3D);
             avtDataTree_p tree = new avtDataTree(rg, 0);
             rg->Delete();
             SetOutputDataTree(tree);
@@ -654,7 +654,7 @@ avtResampleFilter::ResampleInput(void)
     {
         vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth,
                                         width_start, width_end, height_start,
-                                        height_end, cellCenteredOutput);
+                                        height_end, cellCenteredOutput, is3D);
 
         if (doKernel)
         {
@@ -1092,11 +1092,14 @@ avtResampleFilter::UpdateDataObjectInfo(void)
 //    Hank Childs, Fri Jun  1 16:17:51 PDT 2007
 //    Add support for cell-centered data.
 //
+//    Gunther H. Weber, Wed Aug  3 11:55:02 PDT 2011
+//    Ensure that 2D data sets are 2D even for cell centered case
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
 CreateGrid(const double *bounds, int numX, int numY, int numZ, int minX,
-           int maxX, int minY, int maxY, bool cellCenteredOutput)
+           int maxX, int minY, int maxY, bool cellCenteredOutput, bool is3D)
 {
     vtkDataArray *xc = NULL;
     vtkDataArray *yc = NULL;
@@ -1112,12 +1115,19 @@ CreateGrid(const double *bounds, int numX, int numY, int numZ, int minX,
     int numY2 = (cellCenteredOutput ? numY+1 : numY);
     int maxY2 = (cellCenteredOutput ? maxY+1 : maxY);
     yc = GetCoordinates(bounds[2], height, numY2, minY, maxY2);
-    int numZ2 = (cellCenteredOutput ? numZ+1 : numZ);
-    zc = GetCoordinates(bounds[4], depth, numZ2, 0, numZ2);
-      
+    if (is3D)
+    {
+        int numZ2 = (cellCenteredOutput ? numZ+1 : numZ);
+        zc = GetCoordinates(bounds[4], depth, numZ2, 0, numZ2);
+    }
+    else
+    {
+        zc = GetCoordinates(bounds[4], depth, 1, 0, 1);
+    }
+
     vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
     if (cellCenteredOutput)
-        rv->SetDimensions(maxX-minX+1, maxY-minY+1, numZ+1);
+        rv->SetDimensions(maxX-minX+1, maxY-minY+1, is3D ? numZ+1 : 1);
     else
         rv->SetDimensions(maxX-minX, maxY-minY, numZ);
     rv->SetXCoordinates(xc);

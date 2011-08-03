@@ -110,6 +110,7 @@ public:
     void SetTieResolverVariable(const std::string &tieResolverVariable_);
     void SetDefaultValue(double defaultValue_);
     void SetDistributedResample(bool distributedResample_);
+    void SetCellCenteredOutput(bool cellCenteredOutput_);
 
     // Property getting methods
     bool              GetUseExtents() const;
@@ -128,6 +129,7 @@ public:
           std::string &GetTieResolverVariable();
     double            GetDefaultValue() const;
     bool              GetDistributedResample() const;
+    bool              GetCellCenteredOutput() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -166,6 +168,7 @@ public:
         ID_tieResolverVariable,
         ID_defaultValue,
         ID_distributedResample,
+        ID_cellCenteredOutput,
         ID__LAST
     };
 
@@ -185,11 +188,12 @@ private:
     std::string tieResolverVariable;
     double      defaultValue;
     bool        distributedResample;
+    bool        cellCenteredOutput;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RESAMPLEATTRIBUTES_TMFS "bddiddibddiisdb"
+#define RESAMPLEATTRIBUTES_TMFS "bddiddibddiisdbb"
 
 #endif

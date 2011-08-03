@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ResampleAttributes extends AttributeSubject implements Plugin
 {
-    private static int ResampleAttributes_numAdditionalAtts = 15;
+    private static int ResampleAttributes_numAdditionalAtts = 16;
 
     // Enum values
     public final static int TIERESOLVER_RANDOM = 0;
@@ -86,6 +86,7 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
         tieResolverVariable = new String("default");
         defaultValue = 0;
         distributedResample = true;
+        cellCenteredOutput = false;
     }
 
     public ResampleAttributes(int nMoreFields)
@@ -107,6 +108,7 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
         tieResolverVariable = new String("default");
         defaultValue = 0;
         distributedResample = true;
+        cellCenteredOutput = false;
     }
 
     public ResampleAttributes(ResampleAttributes obj)
@@ -128,6 +130,7 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
         tieResolverVariable = new String(obj.tieResolverVariable);
         defaultValue = obj.defaultValue;
         distributedResample = obj.distributedResample;
+        cellCenteredOutput = obj.cellCenteredOutput;
 
         SelectAll();
     }
@@ -159,7 +162,8 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
                 (tieResolver == obj.tieResolver) &&
                 (tieResolverVariable.equals(obj.tieResolverVariable)) &&
                 (defaultValue == obj.defaultValue) &&
-                (distributedResample == obj.distributedResample));
+                (distributedResample == obj.distributedResample) &&
+                (cellCenteredOutput == obj.cellCenteredOutput));
     }
 
     public String GetName() { return "Resample"; }
@@ -256,6 +260,12 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
         Select(14);
     }
 
+    public void SetCellCenteredOutput(boolean cellCenteredOutput_)
+    {
+        cellCenteredOutput = cellCenteredOutput_;
+        Select(15);
+    }
+
     // Property getting methods
     public boolean GetUseExtents() { return useExtents; }
     public double  GetStartX() { return startX; }
@@ -272,6 +282,7 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
     public String  GetTieResolverVariable() { return tieResolverVariable; }
     public double  GetDefaultValue() { return defaultValue; }
     public boolean GetDistributedResample() { return distributedResample; }
+    public boolean GetCellCenteredOutput() { return cellCenteredOutput; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -306,6 +317,8 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(defaultValue);
         if(WriteSelect(14, buf))
             buf.WriteBool(distributedResample);
+        if(WriteSelect(15, buf))
+            buf.WriteBool(cellCenteredOutput);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -357,6 +370,9 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
         case 14:
             SetDistributedResample(buf.ReadBool());
             break;
+        case 15:
+            SetCellCenteredOutput(buf.ReadBool());
+            break;
         }
     }
 
@@ -385,6 +401,7 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
         str = str + stringToString("tieResolverVariable", tieResolverVariable, indent) + "\n";
         str = str + doubleToString("defaultValue", defaultValue, indent) + "\n";
         str = str + boolToString("distributedResample", distributedResample, indent) + "\n";
+        str = str + boolToString("cellCenteredOutput", cellCenteredOutput, indent) + "\n";
         return str;
     }
 
@@ -405,5 +422,6 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
     private String  tieResolverVariable;
     private double  defaultValue;
     private boolean distributedResample;
+    private boolean cellCenteredOutput;
 }
 
