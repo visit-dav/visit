@@ -244,6 +244,10 @@ QvisResampleWindow::CreateWindowContents()
             this, SLOT(distributedResampleChanged(bool)));
     mainLayout->addWidget(distributedResample, 14,0,1,2);
 
+    cellCenteredOutput = new QCheckBox(tr("Make output cell centered"), central);
+    connect(cellCenteredOutput, SIGNAL(toggled(bool)),
+            this, SLOT(cellCenteredOutputChanged(bool)));
+    mainLayout->addWidget(cellCenteredOutput, 15,0,1,2);
 }
 
 
@@ -455,6 +459,11 @@ QvisResampleWindow::UpdateWindow(bool doAll)
             distributedResample->blockSignals(true);
             distributedResample->setChecked(atts->GetDistributedResample());
             distributedResample->blockSignals(false);
+            break;
+          case ResampleAttributes::ID_cellCenteredOutput:
+            cellCenteredOutput->blockSignals(true);
+            cellCenteredOutput->setChecked(atts->GetCellCenteredOutput());
+            cellCenteredOutput->blockSignals(false);
             break;
         }
     }
@@ -762,4 +771,9 @@ QvisResampleWindow::distributedResampleChanged(bool val)
     Apply();
 }
 
-
+void
+QvisResampleWindow::cellCenteredOutputChanged(bool val)
+{
+    atts->SetCellCenteredOutput(val);
+    Apply();
+}

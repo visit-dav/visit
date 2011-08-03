@@ -104,6 +104,7 @@ class QvisResampleWindow : public QvisOperatorWindow
     void tieResolverVariableChanged(const QString &varName);
     void defaultValueProcessText();
     void distributedResampleChanged(bool val);
+    void cellCenteredOutputChanged(bool val);
   private:
     QCheckBox *useExtents;
     QLineEdit *startX;
@@ -120,6 +121,7 @@ class QvisResampleWindow : public QvisOperatorWindow
     QvisVariableButton *tieResolverVariable;
     QLineEdit *defaultValue;
     QCheckBox *distributedResample;
+    QCheckBox *cellCenteredOutput;
     QLabel *startXLabel;
     QLabel *endXLabel;
     QLabel *samplesXLabel;

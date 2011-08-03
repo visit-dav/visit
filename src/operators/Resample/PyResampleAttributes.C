@@ -132,6 +132,11 @@ PyResampleAttributes_ToString(const ResampleAttributes *atts, const char *prefix
     else
         SNPRINTF(tmpStr, 1000, "%sdistributedResample = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetCellCenteredOutput())
+        SNPRINTF(tmpStr, 1000, "%scellCenteredOutput = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scellCenteredOutput = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -513,6 +518,30 @@ ResampleAttributes_GetDistributedResample(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ResampleAttributes_SetCellCenteredOutput(PyObject *self, PyObject *args)
+{
+    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the cellCenteredOutput in the object.
+    obj->data->SetCellCenteredOutput(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ResampleAttributes_GetCellCenteredOutput(PyObject *self, PyObject *args)
+{
+    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetCellCenteredOutput()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyResampleAttributes_methods[RESAMPLEATTRIBUTES_NMETH] = {
@@ -547,6 +576,8 @@ PyMethodDef PyResampleAttributes_methods[RESAMPLEATTRIBUTES_NMETH] = {
     {"GetDefaultValue", ResampleAttributes_GetDefaultValue, METH_VARARGS},
     {"SetDistributedResample", ResampleAttributes_SetDistributedResample, METH_VARARGS},
     {"GetDistributedResample", ResampleAttributes_GetDistributedResample, METH_VARARGS},
+    {"SetCellCenteredOutput", ResampleAttributes_SetCellCenteredOutput, METH_VARARGS},
+    {"GetCellCenteredOutput", ResampleAttributes_GetCellCenteredOutput, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -612,6 +643,8 @@ PyResampleAttributes_getattr(PyObject *self, char *name)
         return ResampleAttributes_GetDefaultValue(self, NULL);
     if(strcmp(name, "distributedResample") == 0)
         return ResampleAttributes_GetDistributedResample(self, NULL);
+    if(strcmp(name, "cellCenteredOutput") == 0)
+        return ResampleAttributes_GetCellCenteredOutput(self, NULL);
 
     return Py_FindMethod(PyResampleAttributes_methods, self, name);
 }
@@ -656,6 +689,8 @@ PyResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ResampleAttributes_SetDefaultValue(self, tuple);
     else if(strcmp(name, "distributedResample") == 0)
         obj = ResampleAttributes_SetDistributedResample(self, tuple);
+    else if(strcmp(name, "cellCenteredOutput") == 0)
+        obj = ResampleAttributes_SetCellCenteredOutput(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
