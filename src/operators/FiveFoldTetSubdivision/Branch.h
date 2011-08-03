@@ -1,6 +1,7 @@
 #ifndef _BRANCH_H_
 #define _BRANCH_H_
 
+#include <stdint.h>
 #include <cassert>
 #include <iostream>
 #include <vector>
