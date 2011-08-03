@@ -59,8 +59,8 @@
 #           FastBit  0.9.9    fastbit-b0.9.9.tar.gz  
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      --gdal
 #           H5part   1.6.0    H5Part-1.6.0.tar.gz    --h5part
-#           HDF4     4.2.5    hdf-4.2.5.tar.gz       --hdf4
-#           HDF5     1.8.4    hdf5-1.8.4.tar.gz      --hdf5
+#           HDF4     4.2.6    hdf-4.2.6.tar.gz       --hdf4
+#           HDF5     1.8.7    hdf5-1.8.7.tar.gz      --hdf5
 #           MDSplus  2.2      mdsplus-2.2-4.tar.gz
 #           Mili     1.10     mili-1.10a.tar.gz      --mili
 #           NetCDF   4.1.1    netcdf-4.1.1.tar.gz    --netcdf
@@ -437,6 +437,15 @@
 #     Gunther H. Weber, Mon Aug  1 17:12:29 PDT 2011
 #     Update to H5Part 1.6.3
 #
+#     Mark C. Miller, Wed Aug  3 10:08:25 PDT 2011
+#     Removed disablement of Fortran interface from Silo and HDF5. Added FCFLAGS
+#     and FC_COMPILER. Enabled fortran on H5Part and HDF4. Fortran interfaces
+#     are now built by fiat and there is currently no CL switch to disable this
+#     behavior. If that becomse necessary, we'll have to add it but I wanted
+#     to avoid adding more complexity. I also updated HDF4 and HDF5 libraries
+#     to current releases 4.2.6 and 1.8.7 respectively. I went ahead and added
+#     --without-libtool to gdal's configure to fix problems I see on RHEL5.
+#
 # *****************************************************************************
 
 
@@ -483,10 +492,12 @@ if [[ "$OPSYS" == "Darwin" ]]; then
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
+   export FC_COMPILER=${FC_COMPILER:-"gfortran"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CFLAGS=${CFLAGS:-"-fno-common -fexceptions"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
    export CXXFLAGS=${CXXFLAGS:-"-fno-common -fexceptions"}
+   export FCFLAGS=${FCFLAGS:-$CFLAGS}
    export MESA_TARGET=${MESA_TARGET:-"darwin"}
    export QT_PLATFORM=${QT_PLATFORM:-"macx-g++"}
 elif [[ "$OPSYS" == "Linux" ]]; then
@@ -500,6 +511,7 @@ elif [[ "$OPSYS" == "Linux" ]]; then
       export MESA_TARGET=${MESA_TARGET:-"linux"}
    elif [[ "$(uname -m)" == "x86_64" ]] ; then
       CFLAGS="$CFLAGS -m64 -fPIC"
+      FCFLAGS="$FCFLAGS -m64 -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
@@ -513,12 +525,14 @@ elif [[ "$OPSYS" == "Linux" ]]; then
    elif [[ "$(uname -m)" == "ppc64" ]] ; then
       if [[ "$C_COMPILER" == "xlc" ]] ; then
           CFLAGS="$CFLAGS -qpic"
+          FCFLAGS="$FCFLAGS -qpic"
           CXXFLAGS="$CXXFLAGS -qpic"
           export CXX_COMPILER=${CXX_COMPILER-"xlC"}
           export MESA_TARGET=${MESA_TARGET-"linux"}
           QT_PLATFORM="linux-xlc" #aix-xlc"
       else
           CFLAGS="$CFLAGS -fPIC"
+          FCFLAGS="$FCFLAGS -fPIC"
           if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
               C_OPT_FLAGS="$C_OPT_FLAGS -O2"
           fi
@@ -531,6 +545,7 @@ elif [[ "$OPSYS" == "Linux" ]]; then
       fi
    elif [[ "$(uname -m)" == "ia64" ]] ; then
       CFLAGS="$CFLAGS -fPIC"
+      FCFLAGS="$FCFLAGS -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
@@ -542,6 +557,7 @@ elif [[ "$OPSYS" == "Linux" ]]; then
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
+   export FC_COMPILER=${FC_COMPILER:-"gfortran"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
    export MESA_TARGET=${MESA_TARGET:-"linux"}
@@ -550,6 +566,7 @@ elif [[ "$OPSYS" == "AIX" ]]; then
    export ARCH="aix" # You can change this to say RHEL, SuSE, Fedora, etc.
    export SO_EXT="a"
    export C_COMPILER=${C_COMPILER:-"xlc"}
+   export FC_COMPILER=${FC_COMPILER:-"xlf"}
    export CXX_COMPILER=${CXX_COMPILER:-"xlC"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -564,6 +581,7 @@ elif [[ "$OPSYS" == "IRIX64" ]]; then
    export ARCH="irix64" # You can change this to say RHEL, SuSE, Fedora, etc.
    export SO_EXT="so"
    export C_COMPILER=${C_COMPILER:-"gcc"}
+   export FC_COMPILER=${FC_COMPILER:-"gfortran"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -573,6 +591,7 @@ elif [[ "$OPSYS" == "SunOS" ]]; then
    export ARCH=${ARCH:-"sunos5"}
    export SO_EXT="so"
    export C_COMPILER=${C_COMPILER:-"gcc"}
+   export FC_COMPILER=${FC_COMPILER:-"gfortran"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -584,6 +603,7 @@ else
    export SO_EXT="so"
    if [[ "$(uname -m)" == "x86_64" ]] ; then
       CFLAGS="$CFLAGS -m64 -fPIC"
+      FCFLAGS="$FCFLAGS -m64 -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
@@ -595,6 +615,7 @@ else
    fi
    if [[ "$(uname -m)" == "ia64" ]] ; then
       CFLAGS="$CFLAGS -fPIC"
+      FCFLAGS="$FCFLAGS -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
@@ -605,6 +626,7 @@ else
       QT_PLATFORM="linux-g++-64"
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
+   export FC_COMPILER=${FC_COMPILER:-"gfortran"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -836,17 +858,18 @@ export SZIP_VERSION=${SZIP_VERSION:-"2.1"}
 export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION:-"2.0"}
 export SZIP_BUILD_DIR=${SZIP_BUILD_DIR:-"szip-2.1"}
 
-export HDF5_VERSION=${HDF5_VERSION:-"1.8.4"}
+export HDF5_VERSION=${HDF5_VERSION:-"1.8.7"}
 export HDF5_FILE=${HDF5_FILE:-"hdf5-${HDF5_VERSION}.tar.gz"}
 export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION:-"1.8"}
 export HDF5_BUILD_DIR=${HDF5_BUILD_DIR:-"hdf5-${HDF5_VERSION}"}
 # Note: Versions of HDF5 1.6.5 and earlier DO NOT have last path component
 export HDF5_URL=${HDF5_URL:-"http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-${HDF5_VERSION}/src"}
 
-export HDF4_FILE=${HDF4_FILE:-"hdf-4.2.5.tar.gz"}
-export HDF4_VERSION=${HDF4_VERSION:-"4.2.5"}
+export HDF4_FILE=${HDF4_FILE:-"hdf-4.2.6.tar.gz"}
+export HDF4_VERSION=${HDF4_VERSION:-"4.2.6"}
 export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION:-"4.2"}
-export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"hdf-4.2.5"}
+export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"hdf-4.2.6"}
+export HDF4_URL=${HDF4_URL:-"http://www.hdfgroup.org/ftp/HDF/HDF_Current/src"}
 
 export MILI_FILE=${MILI_FILE:-"mili-1.10a.tar.gz"}
 export MILI_VERSION=${MILI_VERSION:-"1.10.0"}
@@ -1786,7 +1809,7 @@ function check_optional_3rdparty
     fi
     
     if [[ "$DO_HDF4" == "yes" ]] ; then
-        ensure_built_or_ready "hdf4" $HDF4_VERSION $HDF4_BUILD_DIR $HDF4_FILE http://www.hdfgroup.org/ftp/HDF/prev-releases
+        ensure_built_or_ready "hdf4" $HDF4_VERSION $HDF4_BUILD_DIR $HDF4_FILE $HDF4_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_HDF4="no"
@@ -2263,6 +2286,8 @@ function check_variables
            "CXXFLAGS"         "$CXXFLAGS"     "off" \
            "C_OPT_FLAGS"      "$C_OPT_FLAGS"       "off" \
            "CXX_OPT_FLAGS"    "$CXX_OPT_FLAGS"     "off" \
+           "FC_COMPILER"      "$FC_COMPILER"       "off" \
+           "FCFLAGS"          "$FCFLAGS"       "off" \
            "VISITARCH"        "$VISITARCHTMP"      "off" \
            "REVISION"         "$SVNREVISION"       "off" 2> tmp$$
            retval=$?
@@ -2321,6 +2346,18 @@ function check_variables
                            --no-cancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CXX_OPT_FLAGS" 2> tmp$$
                         CXX_OPT_FLAGS="$(cat tmp$$)"
+                        ;;
+                     FC_COMPILER)
+                        $DLG --backtitle "$DLG_BACKTITLE" \
+                           --no-cancel --inputbox \
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$FC_COMPILER" 2> tmp$$
+                        FC_COMPILER="$(cat tmp$$)"
+                        ;;
+                     FCFLAGS)
+                        $DLG --backtitle "$DLG_BACKTITLE" \
+                           --no-cancel --inputbox \
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$FCFLAGS" 2> tmp$$
+                        FCFLAGS="$(cat tmp$$)"
                         ;;
                      VISITARCH)
                         $DLG --backtitle "$DLG_BACKTITLE" \
@@ -4381,15 +4418,19 @@ function build_silo
 
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+        FC="$FC_COMPILER" F77="$FC_COMPILER" \
+        FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         \"$WITHHDF5ARG\" \"$WITHSZIPARG\" \"$WITHSILOQTARG\" \
-        --without-readline --disable-fortran"
+        --without-readline"
 
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+        FC="$FC_COMPILER" F77="$FC_COMPILER" \
+        FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" \
         --prefix="$VISITDIR/silo/$SILO_VERSION/$VISITARCH" \
         "$WITHHDF5ARG" "$WITHSZIPARG" "$WITHSILOQTARG" \
-        --without-readline --disable-fortran
+        --without-readline
 
     if [[ $? != 0 ]] ; then
        warn "Silo configure failed.  Giving up"
@@ -4615,11 +4656,13 @@ function build_hdf5
 
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+        FC="$FC_COMPILER" F77="$FC_COMPILER" FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" --enable-fortran \
         --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH\" \
         ${cf_szip}"
 
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+        FC="$FC_COMPILER" F77="$FC_COMPILER" FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" --enable-fortran \
         --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" \
         ${cf_szip} ${cf_darwin}
     if [[ $? != 0 ]] ; then
@@ -4630,7 +4673,6 @@ function build_hdf5
     #
     # Build HDF5
     #
-    info "Building HDF5 . . . (~5 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        warn "HDF5 build failed.  Giving up"
@@ -6052,10 +6094,11 @@ function build_hdf4
         CFLAGS="$CFLAGS $C_OPT_FLAGS" \
         CPPFLAGS="-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0 \
         -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0/vtkjpeg" \
+        FC="$FC_COMPILER" F77="$FC_COMPILER" FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" --enable-fortran \
         --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" \
         --with-jpeg="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH" \
         --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" \
-        --disable-fortran --disable-dependency-tracking
+        --disable-dependency-tracking
         if [[ $? != 0 ]] ; then
            warn "HDF4 configure failed.  Giving up"\
                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
@@ -6065,9 +6108,12 @@ function build_hdf4
     else
         export LD_LIBRARY_PATH="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib":"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
         ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" LIBS="-lm" --disable-fortran \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" LIBS="-lm" \
         CPPFLAGS="-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0 \
         -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0/vtkjpeg" \
+        FC="$FC_COMPILER" F77="$FC_COMPILER" FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" --enable-fortran \
+        FC="$FC_COMPILER" F77="$FC_COMPILER" \
+        FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" \
         --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" \
         --with-jpeg="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH" \
         --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
@@ -6595,7 +6641,8 @@ function build_gdal
        --with-png=internal --with-jpeg=internal \
        --with-libz=internal --with-netcdf=no \
        --with-pg=no --with-curl=no \
-       --without-jasper --without-python
+       --without-jasper --without-python \
+       --without-libtool
     if [[ $? != 0 ]] ; then
        warn "GDAL configure failed.  Giving up"
        return 1
@@ -6995,7 +7042,8 @@ $LD_LIBRARY_PATH
     info "Invoking command to configure H5Part"
     ./configure ${WITHHDF5ARG} ${OPTIONAL} CXX="$CXX_COMPILER" \
        CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       --prefix="$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH" ${SOARG}
+       --enable-fortran FC="$FC_COMPILER" F77="$FC_COMPILER" FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" \
+       --prefix="$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
        warn "H5Part configure failed.  Giving up"
        return 1
@@ -10219,7 +10267,7 @@ if [[ "$DO_HDF5" == "yes" ]] ; then
     if [[ $? == 0 ]] ; then
         info "Skipping HDF5 build.  HDF5 is already installed."
     else
-        info "Building HDF5 (~5 minutes)"
+        info "Building HDF5 (~15 minutes)"
         build_hdf5
         if [[ $? != 0 ]] ; then
             error "Unable to build or install HDF5.  Bailing out."
