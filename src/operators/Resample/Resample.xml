@@ -55,6 +55,7 @@
         true
       </Field>
       <Field name="cellCenteredOutput" label="Output cell centered data" type="bool">
+        false
       </Field>
       <Function name="SetValue1" user="true" member="true">
       </Function>
