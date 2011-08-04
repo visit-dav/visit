@@ -561,8 +561,7 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
             textHeight1SpinBox->prefix().length() : 0;
         int slen = (temp.indexOf(textHeight1SpinBox->suffix()) != -1) ? 
             textHeight1SpinBox->suffix().length() : 0;
-        temp = temp.mid(plen, temp.length() - plen - slen);
-        temp.simplified();
+        temp = temp.mid(plen, temp.length() - plen - slen).simplified();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -587,8 +586,7 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
             textHeight2SpinBox->prefix().length() : 0;
         int slen = (temp.indexOf(textHeight2SpinBox->suffix()) != -1) ? 
             textHeight2SpinBox->suffix().length() : 0;
-        temp = temp.mid(plen, temp.length() - plen - slen);
-        temp.simplified();
+        temp = temp.mid(plen, temp.length() - plen - slen).simplified();
         okay = !temp.isEmpty();
         if(okay)
         {

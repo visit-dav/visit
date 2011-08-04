@@ -455,7 +455,7 @@ static int GetLocalhostName(void)
         /* Couldn't get the full host entry; it's probably invalid */
         return FALSE;
     }
-    sprintf(localhost, localhostEnt->h_name);
+    sprintf(localhost, "%s", localhostEnt->h_name);
     return TRUE;
 }
 

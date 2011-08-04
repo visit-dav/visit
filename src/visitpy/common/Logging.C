@@ -2569,9 +2569,9 @@ SpontaneousStateLogger(const std::string &s)
 
         if(logFile != 0)
         {
-            fprintf(logFile, beginSpontaneousComment);
+            fprintf(logFile, "%s", beginSpontaneousComment);
             fprintf(logFile, "%s", s.c_str());
-            fprintf(logFile, endSpontaneousComment);
+            fprintf(logFile, "%s", endSpontaneousComment);
         }
 
         if(macroRecord)
@@ -2610,10 +2610,10 @@ SS_log_ViewAxisArray(const std::string &s)
 
         if(logFile != 0)
         {
-            fprintf(logFile, beginSpontaneousComment);
+            fprintf(logFile, "%s", beginSpontaneousComment);
             fprintf(logFile, "%s", s.c_str());
-            fprintf(logFile, v);
-            fprintf(logFile, endSpontaneousComment);
+            fprintf(logFile, "%s", v);
+            fprintf(logFile, "%s", endSpontaneousComment);
         }
 
         if(macroRecord)
@@ -2650,10 +2650,10 @@ SS_log_ViewCurve(const std::string &s)
 
         if(logFile != 0)
         {
-            fprintf(logFile, beginSpontaneousComment);
+            fprintf(logFile, "%s", beginSpontaneousComment);
             fprintf(logFile, "%s", s.c_str());
-            fprintf(logFile, v);
-            fprintf(logFile, endSpontaneousComment);
+            fprintf(logFile, "%s", v);
+            fprintf(logFile, "%s", endSpontaneousComment);
         }
 
         if(macroRecord)
@@ -2690,10 +2690,10 @@ SS_log_View2D(const std::string &s)
 
         if(logFile != 0)
         {
-            fprintf(logFile, beginSpontaneousComment);
+            fprintf(logFile, "%s", beginSpontaneousComment);
             fprintf(logFile, "%s", s.c_str());
-            fprintf(logFile, v);
-            fprintf(logFile, endSpontaneousComment);
+            fprintf(logFile, "%s", v);
+            fprintf(logFile, "%s", endSpontaneousComment);
         }
 
         if(macroRecord)
@@ -2730,10 +2730,10 @@ SS_log_View3D(const std::string &s)
 
         if(logFile != 0)
         {
-            fprintf(logFile, beginSpontaneousComment);
+            fprintf(logFile, "%s", beginSpontaneousComment);
             fprintf(logFile, "%s", s.c_str());
-            fprintf(logFile, v);
-            fprintf(logFile, endSpontaneousComment);
+            fprintf(logFile, "%s", v);
+            fprintf(logFile, "%s", endSpontaneousComment);
         }
 
         if(macroRecord)

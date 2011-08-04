@@ -137,6 +137,9 @@ QvisMessageDialog::DisplayMessage(MessageAttributes *messageAtts)
       case MessageAttributes::Information:
         severityLabel->setText(tr("Information"));
         break;
+      default:
+        severityLabel->setText("");
+        break;
     }
 
     // Set the message text.

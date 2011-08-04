@@ -208,7 +208,7 @@ SyntheticDiagnosticApp::SyntheticDiagnosticApp(VisItViewer *v) : QMainWindow()
      * sampling:
      *  beam type: all variations.
      *  std deviation:
-     * /
+     */
     
     
 

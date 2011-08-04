@@ -345,7 +345,7 @@ VisWinUserInfo::UpdateUserText()
         //
         // Get the user name.
         //
-        char *user = NULL;
+        const char *user = NULL;
 #if defined(_WIN32)
         char username[100];
         DWORD maxLen = 100;

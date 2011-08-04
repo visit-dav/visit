@@ -1972,6 +1972,8 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
                         break;
                     case ElementTypeNull:
                     case MIXED:
+                    case PYRA_13:
+                    case NFACE_n:
                         // What to do here?
                         break;
                     }

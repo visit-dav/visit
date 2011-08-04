@@ -1217,7 +1217,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
             oss << "<ul>";
             for (int i=0; i<data[fd]->GetNumberOfArrays(); i++)
             {
-                char *arr_type = "<unknown>";
+                const char *arr_type = "<unknown>";
                 switch (data[fd]->GetArray(i)->GetDataType())
                 {
                   case VTK_CHAR:
@@ -1270,7 +1270,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         }
     }
 
-    SNPRINTF(str,strsize,oss.str().c_str());
+    SNPRINTF(str,strsize,"%s",oss.str().c_str());
     return str;
 }
 

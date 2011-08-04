@@ -570,7 +570,7 @@ std::string avtXdmfFileFormat::GetFormattedExpressionName(std::string & attribut
         iter++;
     }
 
-    for (iter; iter != tokens.end(); ++iter) {
+    for (; iter != tokens.end(); ++iter) {
         formatted << "\\ " << *iter;
     }
 
@@ -746,7 +746,7 @@ int avtXdmfFileFormat::GetNumberOfCellComponents(XdmfGrid* grid, XdmfAttribute* 
         std::istream_iterator<std::string> end;
         std::vector<std::string> tokens(it, end);
         std::vector<std::string>::const_iterator iter = tokens.begin();
-        for (iter; iter != tokens.end(); ++iter) {
+        for (; iter != tokens.end(); ++iter) {
             int val = atoi((*iter).c_str());
             if (grid->GetTopology()->GetClass() == XDMF_STRUCTURED) {
                 if (val - 1 > 0) {
@@ -892,7 +892,7 @@ int avtXdmfFileFormat::GetNumberOfPoints(XdmfGrid * grid)
         std::istream_iterator<std::string> end;
         std::vector<std::string> tokens(it, end);
         std::vector<std::string>::const_iterator iter = tokens.begin();
-        for (iter; iter != tokens.end(); ++iter) {
+        for (; iter != tokens.end(); ++iter) {
             int val = atoi((*iter).c_str());
             if (val > 0) {
                 numPoints *= val;

@@ -6,9 +6,10 @@
 #include <iomanip> 
 #include <istream>
 #include "DebugStream.h"
+#include "stringutil.h"
 
 namespace rclib {
-  using namespace std;
+  using namespace std; //HOOKS_IGNORE
   template <class T>
     struct Point {
       /*!

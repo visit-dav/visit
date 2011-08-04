@@ -471,7 +471,7 @@ Streaker::FindMaterial(PDBFileObject *pdb, int *zDimensions, int zDims)
                        &nTotalElements, &dimensions, &nDims);
 
                 // Check whether ireg is the same size as zvar.
-                bool sameSize = nDims == nDims;
+                bool sameSize = nDims == zDims;
                 if(sameSize)
                 {
                     for(int k = 0; k < nDims; ++k)

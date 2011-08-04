@@ -1488,7 +1488,7 @@ QvisExpressionsWindow::ParsePythonExpression(const QString &expr_def,
         return false;
 
     res_args = edef.mid(start_idx,args_stop_idx - start_idx).trimmed();
-    res_script.trimmed();
+    res_script = res_script.trimmed();
 
     return true;
 }

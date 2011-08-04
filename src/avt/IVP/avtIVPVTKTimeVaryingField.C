@@ -78,7 +78,7 @@ avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkDataSet* dataset,
     if( ds )
         ds->Register( NULL );
 
-    if( velData[0] = ds->GetPointData()->GetVectors() )
+    if( (velData[0] = ds->GetPointData()->GetVectors()) )
     {
         velCellBased = false;
 
@@ -86,7 +86,7 @@ avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkDataSet* dataset,
             ds->GetPointData()
             ->GetArray( NextTimePrefix );
     }
-    else if( velData[0] = ds->GetCellData()->GetVectors() )
+    else if( (velData[0] = ds->GetCellData()->GetVectors()) )
     {
         velCellBased = true;
 
@@ -491,13 +491,13 @@ avtIVPVTKTimeVaryingField::SetScalarVariable(unsigned char index, const std::str
     vtkDataArray* data[2] = { NULL, NULL };
     bool cellBased;
 
-    if( data[0] = ds->GetPointData()->GetScalars( name.c_str() ) )
+    if( (data[0] = ds->GetPointData()->GetScalars( name.c_str() )) )
     {
         cellBased = false;
         data[1] = 
             ds->GetPointData()->GetArray( (NextTimePrefix+name).c_str() );
     }
-    else if( data[0] = ds->GetCellData()->GetScalars( name.c_str() ) )
+    else if( (data[0] = ds->GetCellData()->GetScalars( name.c_str() )) )
     {
         cellBased = true;
         data[1] = 

@@ -418,6 +418,9 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
     case QtWarningMsg:
         debug1 << "Qt: Warning: " << msg << endl;
         break;
+    case QtCriticalMsg:
+        debug1 << "Qt: Critical: " << msg << endl;
+        break;
     case QtFatalMsg:
         debug1 << "Qt: Fatal: " << msg << endl;
         abort(); // HOOKS_IGNORE

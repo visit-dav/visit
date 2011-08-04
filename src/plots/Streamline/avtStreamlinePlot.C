@@ -706,6 +706,9 @@ avtStreamlinePlot::UpdateMapperAndLegend()
       case StreamlineAttributes::ColorByVariable:
         varLegend->SetVarName(atts.GetColoringVariable().c_str());
         break;
+      default:
+        // ColorByCorrelationDistance
+        break;
     }
 }
 

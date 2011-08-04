@@ -512,7 +512,7 @@ PF3DFileFormat::Initialize()
         }
 
         // Read in nx, ny, nx
-        char *key = "nx";
+        const char *key = "nx";
         READ_VALUE(GetInteger, key, nx);
         key = "ny";
         READ_VALUE(GetInteger, key, ny);

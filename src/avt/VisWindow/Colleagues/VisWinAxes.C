@@ -677,20 +677,20 @@ VisWinAxes::UpdatePlotList(vector<avtActor_p> &list)
     }
 
     if(!userXUnits)
-        SNPRINTF(unitsX, 256, x.c_str());
+        SNPRINTF(unitsX, 256, "%s", x.c_str());
     if(!userYUnits)
-        SNPRINTF(unitsY, 256, y.c_str());
+        SNPRINTF(unitsY, 256, "%s", y.c_str());
     if(!userXTitle)
     {
         if (lx != "")
-            SNPRINTF(xTitle, 256, lx.c_str());
+            SNPRINTF(xTitle, 256, "%s", lx.c_str());
         else
             strcpy(xTitle, "X-Axis");
     }
     if(!userYTitle)
     {
         if (ly != "")
-            SNPRINTF(yTitle, 256, ly.c_str());
+            SNPRINTF(yTitle, 256, "%s", ly.c_str());
         else
             strcpy(yTitle, "Y-Axis");
     }

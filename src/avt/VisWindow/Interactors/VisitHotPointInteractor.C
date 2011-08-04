@@ -717,6 +717,9 @@ VisitHotPointInteractor::StartAxisParallelMode(INTERACTION_MODE mode)
         }
         newInteractor = pick;
         break;
+      default:
+        newInteractor = NULL;
+        break;
     }
 
     if (newInteractor == NULL)
