@@ -28,17 +28,13 @@
 #define VISIT_F77STRING   char*
 
 #define COPY_FORTRAN_STRING(dest, src, srclen) \
-    if (strcmp(visit_fstring_to_cstring(src,*srclen), VISIT_F77NULLSTRING) == 0)\
-        dest = NULL;\
-    else\
-        dest = visit_fstring_copy_string(visit_fstring_to_cstring(src,*srclen), *srclen);
+    dest = visit_fstring_copy_to_cstring(src,*srclen);
 
 #define ALLOC(T,N) (T*)malloc(sizeof(T) * (N))
 #define FREE(ptr)  if(ptr != NULL) free(ptr);
 
 extern const char *VISIT_F77NULLSTRING;
-char *visit_fstring_copy_string(const char *src, int len);
-char *visit_fstring_to_cstring(const char *ptr, int len);
+char *visit_fstring_copy_to_cstring(const char *src, int len);
 void visit_cstring_to_fstring(const char *src, char *dest, int len);
 
 #endif
