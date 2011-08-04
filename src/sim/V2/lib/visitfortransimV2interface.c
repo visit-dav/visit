@@ -744,7 +744,8 @@ F_VISITDEBUG1(const char *str, int *lstr)
 {
     char *f_str = NULL;
     COPY_FORTRAN_STRING(f_str, str, lstr);
-    VisItDebug1("%s", f_str);
+    if(f_str != NULL)
+        VisItDebug1("%s", f_str);
     FREE(f_str);
     return VISIT_OKAY;
 }
@@ -766,7 +767,8 @@ F_VISITDEBUG2(const char *str, int *lstr)
 {
     char *f_str = NULL;
     COPY_FORTRAN_STRING(f_str, str, lstr);
-    VisItDebug2("%s", f_str);
+    if(f_str != NULL)
+        VisItDebug2("%s", f_str);
     FREE(f_str);
     return VISIT_OKAY;
 }
@@ -788,7 +790,8 @@ F_VISITDEBUG3(const char *str, int *lstr)
 {
     char *f_str = NULL;
     COPY_FORTRAN_STRING(f_str, str, lstr);
-    VisItDebug3("%s", f_str);
+    if(f_str != NULL)
+        VisItDebug3("%s", f_str);
     FREE(f_str);
     return VISIT_OKAY;
 }
@@ -810,7 +813,8 @@ F_VISITDEBUG4(const char *str, int *lstr)
 {
     char *f_str = NULL;
     COPY_FORTRAN_STRING(f_str, str, lstr);
-    VisItDebug4("%s", f_str);
+    if(f_str != NULL)
+        VisItDebug4("%s", f_str);
     FREE(f_str);
     return VISIT_OKAY;
 }
@@ -832,7 +836,8 @@ F_VISITDEBUG5(const char *str, int *lstr)
 {
     char *f_str = NULL;
     COPY_FORTRAN_STRING(f_str, str, lstr);
-    VisItDebug5("%s", f_str);
+    if(f_str != NULL)
+        VisItDebug5("%s", f_str);
     FREE(f_str);
     return VISIT_OKAY;
 }

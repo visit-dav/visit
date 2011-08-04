@@ -54,7 +54,7 @@ ccc   local variables
       call simulationarguments()
       err = visitsetupenv()
       err = visitinitializesim("fupdateplots", 12,
-     . "Demonstrates visitupdateplots function", 39,
+     . "Demonstrates visitupdateplots function", 38,
      . "/no/useful/path", 15,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
