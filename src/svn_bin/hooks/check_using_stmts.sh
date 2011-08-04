@@ -32,6 +32,9 @@ while read fline; do
         */common/utility/visitstream.h)
             continue
             ;;
+        */database/paraDIS/RC_cpp_lib/*.h|*/database/paraDIS_tecplot/RC_cpp_lib/*.h)
+            continue
+            ;;
         trunk/src/*.h|branches/*/src/*.h)
             # Do not skip (continue) these
             ;;
