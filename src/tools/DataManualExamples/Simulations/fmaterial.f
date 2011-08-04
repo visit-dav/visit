@@ -54,7 +54,7 @@ ccc   local variables
       call simulationarguments()
       err = visitsetupenv()
       err = visitinitializesim("fmaterial", 9,
-     . "Demonstrates material data access function", 44,
+     . "Demonstrates material data access function", 42,
      . "/no/useful/path", 15,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
