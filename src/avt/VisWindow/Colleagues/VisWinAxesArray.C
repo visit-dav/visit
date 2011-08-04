@@ -500,9 +500,9 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
                 axes[k].xpos = k;
             axes[k].range[0] = extents[2*k+0];
             axes[k].range[1] = extents[2*k+1];
-            SNPRINTF(axes[k].title, 256,
+            SNPRINTF(axes[k].title, 256, "%s",
                      atts.GetVariableSubnames(var)[k].c_str());
-            SNPRINTF(axes[k].units, 256,
+            SNPRINTF(axes[k].units, 256, "%s",
                      atts.GetVariableUnits(var).c_str());
         }
         delete[] extents;
@@ -528,8 +528,8 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
 
                 atts.GetThisProcsOriginalDataExtents(var)->CopyTo(axes[axis].range);
                 axes[axis].xpos = axis;
-                SNPRINTF(axes[axis].title,256, var);
-                SNPRINTF(axes[axis].units,256, atts.GetVariableUnits(var).c_str());
+                SNPRINTF(axes[axis].title,256, "%s", var);
+                SNPRINTF(axes[axis].units,256, "%s", atts.GetVariableUnits(var).c_str());
             }
         }
     }

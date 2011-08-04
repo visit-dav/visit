@@ -54,6 +54,13 @@ static bool icDomainCompare(const avtIntegralCurve *icA,
     return icA->sortKey < icB->sortKey;
 }
 
+std::ostream &
+avtICAlgorithm::ICStatistics::operator << (std::ostream &out) const
+{
+    out<<this->nm<<" V: "<<this->value<<" "<<this->total<<" ["<<this->min<<", "<<this->max<<", "<<this->mean<<" : "<<this->sigma<<"]";
+    return out;
+}
+
 // ****************************************************************************
 //  Method: avtICAlgorithm::avtICAlgorithm
 //

@@ -832,7 +832,7 @@ QvisFileWindowBase::AddFileItem(QListWidget *parent, const QString &displayName,
         if(names.size() > (MAX_DISPLAYED_NAMES*2))
         {
             QString nFilesString;
-            nFilesString.sprintf("(%d total files)", names.size());
+            nFilesString.sprintf("(%d total files)", (int)names.size());
             itemText += QString("\n") + nFilesString;
 
             for(i = 0; i < MAX_DISPLAYED_NAMES; ++i)

@@ -87,7 +87,7 @@ GetObject(visit_handle h, const char *fname)
     }
     else
     {
-        SNPRINTF(tmp, 100, "An invalid handle was provided.", fname);
+        SNPRINTF(tmp, 100, "%s: An invalid handle was provided.", fname);
         VisItError(tmp);
     }
 

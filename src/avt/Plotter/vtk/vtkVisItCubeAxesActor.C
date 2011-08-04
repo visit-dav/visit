@@ -887,7 +887,7 @@ vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
       this->mustAdjustXValue = false;
 
       if (XUnits == NULL || XUnits[0] == '\0')
-        SNPRINTF(xTitle,64, this->XTitle);
+        SNPRINTF(xTitle,64, "%s", this->XTitle);
       else
         SNPRINTF(xTitle,64, "%s (%s)", this->XTitle, XUnits);
       }
@@ -924,7 +924,7 @@ vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
         }
       this->mustAdjustYValue = false;
       if (YUnits == NULL || YUnits[0] == '\0')
-        SNPRINTF(yTitle,64, this->YTitle);
+        SNPRINTF(yTitle,64, "%s", this->YTitle);
       else
         SNPRINTF(yTitle,64, "%s (%s)", this->YTitle, YUnits);
       }
@@ -962,7 +962,7 @@ vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
       this->mustAdjustZValue = false;
 
       if (ZUnits == NULL || ZUnits[0] == '\0')
-        SNPRINTF(zTitle,64, this->ZTitle);
+        SNPRINTF(zTitle,64, "%s", this->ZTitle);
       else
         SNPRINTF(zTitle,64, "%s (%s)", this->ZTitle, ZUnits);
       }

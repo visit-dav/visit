@@ -79,11 +79,11 @@ class UniqueStringList
 };
 
 inline std::vector<QString>
-SplitValues(const QString &buff)
+SplitValues(const QString &buff_input)
 {
     std::vector<QString> output;
     
-    buff.trimmed();
+    QString buff(buff_input.trimmed());
     QString tmp="";
     int len = buff.length();
     for (int i=0; i<len; i++)

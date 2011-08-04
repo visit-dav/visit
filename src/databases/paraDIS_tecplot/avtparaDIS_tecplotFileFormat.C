@@ -704,7 +704,6 @@ avtparaDIS_tecplotFileFormat::GetVar(const char *varname)
     string err = string("GetTecplotVar: rejected varname ") + varname +" because it does not begin with 'paraDIS_Tecplot_' or does not contain '_var_'";
     cerr << err << endl; 
     EXCEPTION1(VisItException, err.c_str()); 
-    return false; 
   }
   /*  Get the variable number. 
       Note that it does not matter if this is the line mesh or the 
@@ -723,7 +722,7 @@ avtparaDIS_tecplotFileFormat::GetVar(const char *varname)
   }
   if (varnum == mNumVars) {
     cerr << "Warning: possible malformed tecplot variable: Could not determine varnum from apparently valid tecplot variable name: " << varname <<endl;
-    return false; 
+    return NULL; 
   }
   debug4 << "Looking for varnum " << varnum << endl; 
 

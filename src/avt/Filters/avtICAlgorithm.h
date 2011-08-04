@@ -177,12 +177,7 @@ class avtICAlgorithm
         float value;
         std::string nm;
 
-        friend ostream& operator<<(std::ostream &out, const avtICAlgorithm::ICStatistics &s)
-        //friend ostream& operator<<(std::ostream &out)
-        {
-            out<<s.nm<<" V: "<<s.value<<" "<<s.total<<" ["<<s.min<<", "<<s.max<<", "<<s.mean<<" : "<<s.sigma<<"]";
-            return out;
-        }
+        ostream& operator<<(std::ostream &out) const;
     };
 
     virtual void              ReportStatistics();

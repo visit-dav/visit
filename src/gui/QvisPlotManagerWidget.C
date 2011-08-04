@@ -1039,7 +1039,7 @@ QvisPlotManagerWidget::UpdatePlotList()
         QualifiedFilename qualifiedFile(current.GetDatabaseName());
         int index = fileServer->GetFileIndex(qualifiedFile);
         if (globalAtts->GetSources().size() <= 1 && sourceVisible)
-            SNPRINTF(prefix, 200, "");
+            prefix[0] = '\0';
         else if (index < 0 ||  sourceVisible)
             SNPRINTF(prefix, 200, "%s:", qualifiedFile.filename.c_str());
         else

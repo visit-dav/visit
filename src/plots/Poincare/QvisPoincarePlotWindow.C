@@ -1722,6 +1722,9 @@ QvisPoincarePlotWindow::UpdateIntegrationAttributes()
         absTolLabel->show();
         absTolSizeType->show();
         break;
+
+    default:
+        break;
     }
 }
 

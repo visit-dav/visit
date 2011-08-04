@@ -483,7 +483,7 @@ VisWinAxesParallel::UpdatePlotList(vector<avtActor_p> &list)
             axes[i+1].xpos = i + 0.5;
             axes[i+1].range[0] = extents[0];
             axes[i+1].range[1] = extents[1];
-            SNPRINTF(axes[i+1].title, 256, labels[i].c_str());
+            SNPRINTF(axes[i+1].title, 256, "%s", labels[i].c_str());
         }
     }
 }

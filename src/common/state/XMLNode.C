@@ -304,7 +304,7 @@ XMLNode *
 XMLNode::TakeChild(int index)
 {
     if(index < 0 || index >= children.size())
-        return false;
+        return 0;
         
     XMLNode *child = children[index];
     children.erase(children.begin()+index);

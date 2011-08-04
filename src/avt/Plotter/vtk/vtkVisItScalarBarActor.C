@@ -683,12 +683,12 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
               }
             else
               {
-              sprintf(labelString, this->definedLabels[idx].c_str() );
+              sprintf(labelString, "%s", this->definedLabels[idx].c_str() );
               }
             } 
           else if (lv && la)
             {
-            sprintf(labelString, this->suppliedLabels[idx].c_str());
+            sprintf(labelString, "%s", this->suppliedLabels[idx].c_str());
             }
           else
             {
@@ -696,7 +696,7 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
             }
           }
         else // not using supplied labels
-          sprintf(labelString, this->definedLabels[idx].c_str());
+          sprintf(labelString, "%s", this->definedLabels[idx].c_str());
         this->LabelMappers[i]->SetInput(labelString);
         }
         break;

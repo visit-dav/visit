@@ -69,13 +69,13 @@ enum ComponentTypes
 };
 
 inline std::vector<QString>
-ParseCharacters(const QString &buff)
+ParseCharacters(const QString &buff_input)
 {
     std::vector<QString> output;
 
     // split one string into a list of strings when delimited by whitespace
     // or quotation marks, e.g.   <string1  "string two"  ""  string4>
-    buff.trimmed();
+    QString buff(buff_input.trimmed());
     bool quote=false;
     QString tmp="";
     for (int i=0; i<(int)buff.length(); i++)

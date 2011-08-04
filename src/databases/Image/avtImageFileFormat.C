@@ -369,7 +369,7 @@ avtImageFileFormat::ReadImageVolumeHeader(void)
                 "has %d slices, it can be decomposed for parallel across at most %d processors.\n"
                 "You are using %d processors and so %d of these are not adding any additional\n"
                 "parallel speedup to operations involving it.",
-                fname.c_str(), subImages.size(), subImages.size(), size, size-subImages.size()); 
+                fname.c_str(), (int)subImages.size(), (int)subImages.size(), size, (int)(size-subImages.size())); 
             if (!avtCallback::IssueWarning(msg))
                 cerr << msg << endl;
             haveIssuedProcWarning = true;

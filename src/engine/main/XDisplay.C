@@ -214,7 +214,7 @@ XDisplay::Connect()
         {
             // Our X server might have died.  Don't bother spinning
             // until we can connect if it's never going to start!
-            switch(waitpid(this->xserver, &status, WNOHANG) == -1)
+            switch(waitpid(this->xserver, &status, WNOHANG))
             {
             case -1:
                 debug1 << this->hostname << ": waitpid(" << this->xserver

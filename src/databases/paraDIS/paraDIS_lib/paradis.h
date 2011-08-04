@@ -148,8 +148,8 @@ namespace paraDIS {
     */ 
     bool operator <(const NodeID &other) const {
       return (mDomainID < other.mDomainID ||
-              mDomainID == other.mDomainID && 
-              mNodeID < other.mNodeID);
+              (mDomainID == other.mDomainID && 
+               mNodeID < other.mNodeID));
     }
     /*!
       Accessor function 
@@ -324,8 +324,8 @@ namespace paraDIS {
     bool operator <(const Neighbor&other) const {
       
       return mEndpoints[0] < other.mEndpoints[0] ||
-        mEndpoints[0] == other.mEndpoints[0] && 
-        mEndpoints[1] < other.mEndpoints[1]; 
+        (mEndpoints[0] == other.mEndpoints[0] && 
+         mEndpoints[1] < other.mEndpoints[1]); 
     }
     /*! 
       conversion of Neighbor to string

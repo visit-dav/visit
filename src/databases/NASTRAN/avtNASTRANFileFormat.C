@@ -219,7 +219,9 @@ avtNASTRANFileFormat::ActivateTimestep()
 //    Mark C. Miller, Mon May 11 14:21:22 PDT 2009
 //    Ok, I 'fixed' this funky logic again. The above 'fix' caused the alg.
 //    to basically completely fail.
+//
 // ****************************************************************************
+
 static float Getf(const char *s)
 {
     char *ends;
@@ -240,7 +242,7 @@ static float Getf(const char *s)
     bool haveSeenNumChars = false;
     while (!haveSeenNumChars || (*p != '-' && *p != '+' && *p != '\0'))
     {
-        if ('0' <= *p && *p <= '9' || *p == '.' || *p == '+' || *p == '-')
+        if (('0' <= *p && *p <= '9') || *p == '.' || *p == '+' || *p == '-')
             haveSeenNumChars = true;
         *q++ = *p++;
     }
@@ -1054,7 +1056,7 @@ avtNASTRANFileFormat::GetMaterial(const char *mat)
         char msg[256];
         SNPRINTF(msg, sizeof(msg), "Material count specified in read options, %d, "
             "does not match what is actually found in the file, %d",
-            matCountOpt, uniqMatIds.size());
+            matCountOpt, (int)uniqMatIds.size());
         EXCEPTION1(ImproperUseException, msg);
     }
 
