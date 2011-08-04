@@ -108,6 +108,7 @@ void ResampleAttributes::Init()
     tieResolver = random;
     defaultValue = 0;
     distributedResample = true;
+    cellCenteredOutput = false;
 
     ResampleAttributes::SelectAll();
 }
