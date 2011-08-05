@@ -78,6 +78,7 @@
 #include <InvalidVariableException.h>
 
 #include <sstream>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <algorithm>
 
