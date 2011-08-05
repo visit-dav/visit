@@ -23,6 +23,7 @@
 #include <iostream>    
 #include <fstream>    
 #include <algorithm>    
+#include <string>
 using std::cout;    
 using std::endl;    
 using std::max;    

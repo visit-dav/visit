@@ -13,6 +13,7 @@
 #include <iostream>    
 #include <sstream>    
 #include <vector>
+#include <string>
 using std::cout;    
 using std::endl;    
 using std::istringstream;    

@@ -9,6 +9,7 @@
  */    
     
 #include "SimpleSymbolTable.h"    
+#include <string>
     
 using std::string;
 
