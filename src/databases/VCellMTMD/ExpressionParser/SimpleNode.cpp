@@ -14,6 +14,7 @@
 #include <iostream>    
 #include <stdio.h>
 #include <vector>
+#include <string>
 using std::cout;    
 using std::endl;    
 using std::vector;

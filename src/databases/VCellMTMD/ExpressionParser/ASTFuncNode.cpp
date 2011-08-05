@@ -12,6 +12,7 @@
     
 #include <math.h>    
 #include <algorithm>    
+#include <string>
 using std::min;    
 using std::max;    
 using std::string;

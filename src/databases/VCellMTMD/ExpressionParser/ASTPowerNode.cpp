@@ -10,6 +10,7 @@
     
 #include <math.h>    
 #include <stdio.h>
+#include <string>
 
 #include "ASTPowerNode.h"    
 #include "RuntimeException.h"    

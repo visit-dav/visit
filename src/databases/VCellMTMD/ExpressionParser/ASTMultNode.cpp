@@ -17,6 +17,7 @@
 //#include "ParseException.h"    
     
 #include <sstream>    
+#include <string>
 using std::stringstream;    
 using std::string;
 using std::vector;

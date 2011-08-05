@@ -12,6 +12,7 @@
 #include "ExpressionException.h"    
 #include "ExpressionParserTreeConstants.h"    
 #include "StackMachine.h"    
+#include <string>
     
 using std::string;
 using std::vector;

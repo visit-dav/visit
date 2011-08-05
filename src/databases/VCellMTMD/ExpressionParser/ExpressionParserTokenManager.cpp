@@ -11,6 +11,7 @@
 #include <memory.h>    
 #include <stdlib.h>    
 #include <stdio.h>
+#include <string>
     
 #include "ExpressionParserTokenManager.h"    
 #include "RuntimeException.h"    

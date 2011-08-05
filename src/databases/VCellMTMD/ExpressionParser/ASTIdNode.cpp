@@ -19,6 +19,7 @@
 #include "SymbolTableEntry.h"    
 #include "StackMachine.h"    
 #include "ValueProxy.h"    
+#include <string>
     
 using namespace VCell;    
 using std::string;
