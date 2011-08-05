@@ -9,7 +9,8 @@
  */    
     
 #include <math.h>    
-    
+#include <stdio.h>
+
 #include "ASTPowerNode.h"    
 #include "RuntimeException.h"    
 #include "DivideByZeroException.h"    

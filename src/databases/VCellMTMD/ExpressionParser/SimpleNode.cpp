@@ -12,6 +12,7 @@
 #include <stdlib.h>    
 #include <typeinfo>    
 #include <iostream>    
+#include <stdio.h>
 #include <vector>
 using std::cout;    
 using std::endl;    
