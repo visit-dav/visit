@@ -68,6 +68,9 @@
 #   I added -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON to the cmake command
 #   for ellipse.
 #
+#   Eric Brugger, Fri Aug  5 09:48:13 PDT 2011
+#   I added kickit.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -109,6 +112,7 @@ esac
 # Parse the execute line, providing default values for error checking.
 #
 hoth=true
+kickit=true
 aztec=true
 alastor=false
 xchem=false
@@ -129,6 +133,7 @@ do
    case $1 in
       -none)
          hoth=false
+         kickit=false
          aztec=false
          alastor=false
          xchem=false
@@ -144,6 +149,14 @@ do
          ;;
       +hoth)
          hoth=true
+         shift
+         ;;
+      -kickit)
+         kickit=false
+         shift
+         ;;
+      +kickit)
+         kickit=true
          shift
          ;;
       -aztec)
@@ -217,6 +230,7 @@ then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
    echo "    hoth (B-Div, Linux),"
+   echo "    kickit (B-Div, Linux),"
    echo "    aztec (LC, Linux, x86_64),"
    echo "    alastor (LC, Linux, x86_64),"
    echo "    xchem (HEAF, Linux),"
@@ -285,6 +299,56 @@ then
       scp hoth hoth:hoth_buildit
       scp $dist.tar.gz hoth:hoth_$dist.tar.gz
       ssh hoth "chmod 750 hoth_buildit;./hoth_buildit" &
+   fi
+fi
+
+#
+# Build on kickit.
+#
+rm -f kickit
+cat <<EOF > kickit
+#!/bin/sh
+if test ! -e /scratch/$user ; then
+   mkdir /scratch/$user
+fi
+if test ! -e /scratch/$user/kickit ; then
+   mkdir /scratch/$user/kickit
+fi
+rm -rf /scratch/$user/kickit/visitbuild
+mkdir /scratch/$user/kickit/visitbuild
+mv kickit_$dist.tar.gz /scratch/$user/kickit/visitbuild/$dist.tar.gz
+cd /scratch/$user/kickit/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/usr/gapps/visit/thirdparty_shared/cmake/2.8.3/linux-i686_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make -j 4 >> ../../buildlog 2>&1
+make -j 4 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-intel.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on kickit"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $kickit = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on kickit"
+      scp kickit kickit:kickit_buildit
+      scp $dist.tar.gz kickit:kickit_$dist.tar.gz
+      ssh kickit "chmod 750 kickit_buildit;./kickit_buildit" &
    fi
 fi
 
@@ -673,5 +737,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth aztec alastor xchem euclid ellipse glory redsky
+   rm -f hoth kickit aztec alastor xchem euclid ellipse glory redsky
 fi
