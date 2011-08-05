@@ -110,6 +110,9 @@
 #    Oliver Ruebel, Thu May 12 11:30 PDT 2011
 #    I added a CUBE reader
 #
+#    Hank Childs, Thu Aug  4 13:22:36 PDT 2011
+#    Add VCell reader on behalf of Ed Boyce and UCHC team.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -270,6 +273,7 @@ TFT
 TSurf
 Tecplot
 VASP
+VCellMTMD
 VTK
 WavefrontOBJ
 XYZ
