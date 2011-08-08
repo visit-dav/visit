@@ -28,6 +28,7 @@ a warning when accessing invalid time slices.</li>
 <li>A bug was corrected in the Enzo reader that caused it to fail sometimes on Windows.</li>
 <li>A bug was corrected in the PF3D reader where the data was not being properly decompressed for one of the compression schemes."
 <li>Repeatedly passing character array variables with different string values to Libsim was broken. In the old scheme, arrays were assumed to contain the same contents and conversion to C-style strings under the covers would only happen once.</li>
+<li>A bug was corrected in the principal_tensor, principal_deviatoric_tensor and tensor_maximum_shear expressions, where a cutoff used to prevent numeric overflows and underflows was too argressive causing the expressions to calculate incorrect values for small values.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.3.2</font></b></p>
