@@ -103,6 +103,9 @@ avtPrincipalTensorExpression::~avtPrincipalTensorExpression()
 //    Hank Childs, Fri Jun  9 14:22:43 PDT 2006
 //    Comment out currently unused variable.
 //
+//    Eric Brugger, Mon Aug  8 09:29:25 PDT 2011
+//    I reduced the tolerance on invariant1 to be less restrictive.
+//
 // ****************************************************************************
 
 void
@@ -132,7 +135,7 @@ avtPrincipalTensorExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
             double princ0 = 0.;
             double princ1 = 0.;
             double princ2 = 0.;
-            if (invariant1 >= 1e-7)
+            if (invariant1 >= 1e-100)
             {
                 double alpha = -0.5*sqrt(27./invariant1)
                                   *invariant2/invariant1;
