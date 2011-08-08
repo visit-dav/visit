@@ -9,7 +9,7 @@
 class Branch
 {
     public:
-        typedef uint64_t IdxT;
+        typedef boost::uint64_t IdxT;
         typedef double ValueT;
         IdxT extremum;
         ValueT extremumVal;
