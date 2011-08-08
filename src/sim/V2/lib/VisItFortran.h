@@ -28,7 +28,7 @@
 #define VISIT_F77STRING   char*
 
 #define COPY_FORTRAN_STRING(dest, src, srclen) \
-    dest = visit_fstring_copy_to_cstring(src,*srclen);
+    dest = visit_fstring_copy_to_cstring(src,((srclen==NULL)?0:(*srclen)));
 
 #define ALLOC(T,N) (T*)malloc(sizeof(T) * (N))
 #define FREE(ptr)  if(ptr != NULL) free(ptr);

@@ -1735,14 +1735,28 @@ void  VisItSetParallelRank(int pr)
 *  Brad Whitlock, Fri Jul 25 15:33:37 PDT 2008
 *  Trace information.
 *
+*  Brad Whitlock, Mon Aug  8 10:37:58 PDT 2011
+*  NULL checks.
+*
 *******************************************************************************/
 void VisItSetDirectory(char *d)
 {
-   LIBSIM_API_ENTER1(VisItSetDirectory, "dir=%s", d);
-   if (!visit_directory)
-      visit_directory = (char*)(malloc(1000));
-   strcpy(visit_directory, d);
-   LIBSIM_API_LEAVE(VisItSetDirectory);
+    LIBSIM_API_ENTER1(VisItSetDirectory, "dir=%s", ((d!=NULL)?d:"NULL"));
+    if(d != NULL)
+    {
+        if (visit_directory == NULL)
+            visit_directory = (char*)(malloc(1000));
+
+        if(visit_directory != NULL)
+            strcpy(visit_directory, d);
+    }
+    else
+    {
+        if(visit_directory != NULL)
+            free(visit_directory);
+        visit_directory = NULL;
+    }
+    LIBSIM_API_LEAVE(VisItSetDirectory);
 }
 
 /*******************************************************************************
@@ -1754,15 +1768,28 @@ void VisItSetDirectory(char *d)
 * Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*  Brad Whitlock, Mon Aug  8 10:37:58 PDT 2011
+*  NULL checks.
 *
 *******************************************************************************/
 void VisItSetOptions(char *o)
 {
-   LIBSIM_API_ENTER1(VisItSetOptions, "options=%s", o);
-   if (!visit_options)
-      visit_options = (char*)(malloc(1000));
-   strcpy(visit_options, o);
-   LIBSIM_API_LEAVE(VisItSetOptions);
+    LIBSIM_API_ENTER1(VisItSetOptions, "options=%s", ((o!=NULL)?o:"NULL"));
+    if(o != NULL)
+    {
+        if (visit_options == NULL)
+            visit_options = (char*)(malloc(1000));
+
+        if(visit_options != NULL)
+            strcpy(visit_options, o);
+    }
+    else
+    {
+        if(visit_options != NULL)
+            free(visit_options);
+        visit_options = NULL;
+    }
+    LIBSIM_API_LEAVE(VisItSetOptions);
 }
 
 /*******************************************************************************
@@ -2924,19 +2951,26 @@ void VisItUpdatePlots(void)
 *  Brad Whitlock, Fri Jul 25 16:00:32 PDT 2008
 *  Trace information.
 *
+*  Brad Whitlock, Mon Aug  8 10:51:11 PDT 2011
+*  NULL checks.
+*
 *******************************************************************************/
 void VisItExecuteCommand(const char *command)
 {
     LIBSIM_API_ENTER(VisItExecuteCommand);
     /* Make sure the function exists before using it. */
-    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    if (engine && callbacks != NULL && callbacks->control.execute_command &&
+        command != NULL)
     {
         char *cmd2 = NULL;
         LIBSIM_MESSAGE("Calling visit_execute_command");
         cmd2 = (char *)malloc(strlen(command) + 1 + 10);
-        sprintf(cmd2, "Interpret:%s", command);
-        (*callbacks->control.execute_command)(engine, cmd2);
-        free(cmd2);
+        if(cmd2 != NULL)
+        {
+            sprintf(cmd2, "Interpret:%s", command);
+            (*callbacks->control.execute_command)(engine, cmd2);
+            free(cmd2);
+        }
 
         if(visit_sync_enabled)
             VisItSynchronize();
@@ -3060,7 +3094,10 @@ char *VisItGetLastError()
 ******************************************************************************/
 void VisItOpenTraceFile(const char *filename)
 {
-    simv2_set_trace_file(fopen(filename, "wt"));
+    LIBSIM_API_ENTER(VisItOpenTraceFile);
+    if(filename != NULL)
+        simv2_set_trace_file(fopen(filename, "wt"));
+    LIBSIM_API_LEAVE(VisItOpenTraceFile);
 }
 
 /******************************************************************************
@@ -3077,7 +3114,9 @@ void VisItOpenTraceFile(const char *filename)
 ******************************************************************************/
 void VisItCloseTraceFile(void)
 {
+    LIBSIM_API_ENTER(VisItCloseTraceFile);
     simv2_set_trace_file(NULL);
+    LIBSIM_API_LEAVE(VisItCloseTraceFile);
 }
 
 /******************************************************************************

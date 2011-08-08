@@ -14,15 +14,20 @@ char *visit_fstring_copy_to_cstring(const char *src, int len)
         newstr = NULL;
     else
     {
-        char *cptr = NULL;
         newstr = (char *)malloc(len+1);
-        memcpy(newstr, src, len);
-        newstr[len] = '\0';
+        if(newstr != NULL)
+        {
+            char *cptr = NULL;
+            memcpy(newstr, src, len);
+            newstr[len] = '\0';
 
-        /* Fortran can add spaces to the end of long strings so remove the spaces */
-        cptr = newstr + len - 1;
-        while(cptr >= newstr && *cptr == ' ')
-            *cptr-- = '\0';
+            /* Fortran can add spaces to the end of long strings 
+             * so remove the spaces 
+             */
+            cptr = newstr + len - 1;
+            while(cptr >= newstr && *cptr == ' ')
+                *cptr-- = '\0';
+        }
     }
 
     return newstr;
