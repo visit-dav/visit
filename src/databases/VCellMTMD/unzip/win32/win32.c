@@ -111,7 +111,7 @@
                                unsigned ef_len);    
 #endif    
     
-#if (defined(USE_EF_UT_TIME) || defined(NT_TZBUG_WORKAROUND) || \    
+#if (defined(USE_EF_UT_TIME) || defined(NT_TZBUG_WORKAROUND) || \
      defined(TIMESTAMP))    
    static void utime2FileTime(time_t ut, FILETIME *pft);    
    static int FStampIsLocTime(__GPRO__ const char *path);    
@@ -554,7 +554,7 @@ static int show_NTFileTime(FILE *hdo, char *TTmsg, int isloc, FILETIME *pft)
 #endif /* DEBUG_TIME */    
 /* end of TIME_DEBUG insertion */    
     
-#if (defined(USE_EF_UT_TIME) || defined(NT_TZBUG_WORKAROUND) || \    
+#if (defined(USE_EF_UT_TIME) || defined(NT_TZBUG_WORKAROUND) || \
      defined(TIMESTAMP))    
     
 #ifndef IZ_USE_INT64    
@@ -666,7 +666,7 @@ static int FStampIsLocTime(__GPRO__ const char *path)
 #  define UTIME_1980_JAN_01_00_00   315532800L    
 #  define UTIME_BOUNDCHECK_1(utimval)    
 #  define UTIME_BOUNDCHECK_N(utimval)    
-#  define NT_TZBUG_PRECOMPENSATE(ut, pft) \    
+#  define NT_TZBUG_PRECOMPENSATE(ut, pft) \
      if (fs_uses_loctime) NTtzbugWorkaround(ut, pft);    
     
    /* nonzero if `y' is a leap year, else zero */    
@@ -2070,9 +2070,9 @@ int checkdir(__G__ char *pathcomp, int flag)
                 return MPN_ERR_TOOLONG;    
             }    
             if (MKDIR(G.buildpathFAT, 0777) == -1) { /* create the directory */    
-                Info(slide, 1, ((char *)slide,    
-                  "checkdir error:  cannot create %s\n\    
-                 unable to process %s.\n",    
+                Info(slide, 1, ((char *)slide, 
+                  "checkdir error:  cannot create %s\n\
+                 unable to process %s.\n", 
                   FnFilter2(G.buildpathFAT), FnFilter1(G.filename)));    
                 free(G.buildpathHPFS);    
                 free(G.buildpathFAT);    
@@ -2082,7 +2082,7 @@ int checkdir(__G__ char *pathcomp, int flag)
             G.created_dir = TRUE;    
         } else if (!S_ISDIR(G.statbuf.st_mode)) {    
             Info(slide, 1, ((char *)slide,    
-              "checkdir error:  %s exists but is not directory\n   \    
+              "checkdir error:  %s exists but is not directory\n   \
               unable to process %s.\n",    
               FnFilter2(G.buildpathFAT), FnFilter1(G.filename)));    
             free(G.buildpathHPFS);    
@@ -2141,7 +2141,7 @@ int checkdir(__G__ char *pathcomp, int flag)
             if ((G.endHPFS-G.buildpathHPFS) >= FILNAMSIZ) {    
                 *--G.endHPFS = '\0';    
                 Info(slide, 1, ((char *)slide,    
-                  "checkdir warning:  path too long; truncating\n \    
+                  "checkdir warning:  path too long; truncating\n \
                   %s\n                -> %s\n",    
                   FnFilter1(G.filename), FnFilter2(G.buildpathHPFS)));    
                 error = MPN_INF_TRUNC;   /* filename truncated */    

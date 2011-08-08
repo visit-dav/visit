@@ -148,8 +148,8 @@
 #    define TIME_ZONE_ID_INVALID  (DWORD)0xFFFFFFFFL    
 #  endif    
 #endif    
-#if (defined(__ENVARGS_C) || defined(__EXTRACT_C) || defined(__UNZIP_C) || \    
-     defined(ZCRYPT_INTERNAL))    
+#if (defined(__ENVARGS_C) || defined(__EXTRACT_C) || defined(__UNZIP_C) || \
+  defined(ZCRYPT_INTERNAL))    
 #  include <windows.h>    
 #  ifdef __RSXNT__    
 #    include "../win32/rsxntwin.h"    
@@ -256,15 +256,15 @@
 #define STR_TO_ISO    
     
 /* Static variables that we have to add to Uz_Globs: */    
-#define SYSTEM_SPECIFIC_GLOBALS \    
-    int created_dir, renamed_fullpath, fnlen;\    
-    unsigned nLabelDrive;\    
-    char lastRootPath[4];\    
-    int lastVolOldFAT, lastVolLocTim;\    
-    char *rootpath, *buildpathHPFS, *buildpathFAT, *endHPFS, *endFAT;\    
-    ZCONST char *wildname;\    
-    char *dirname, matchname[FILNAMSIZ];\    
-    int rootlen, have_dirname, dirnamelen, notfirstcall;\    
+#define SYSTEM_SPECIFIC_GLOBALS \
+    int created_dir, renamed_fullpath, fnlen;\
+    unsigned nLabelDrive;\
+    char lastRootPath[4];\
+    int lastVolOldFAT, lastVolLocTim;\
+    char *rootpath, *buildpathHPFS, *buildpathFAT, *endHPFS, *endFAT;\
+    ZCONST char *wildname;\
+    char *dirname, matchname[FILNAMSIZ];\
+    int rootlen, have_dirname, dirnamelen, notfirstcall;\
     zvoid *wild_dir;    
     
 /* created_dir, renamed_fullpath, fnlen, and nLabelDrive are used by   */    
