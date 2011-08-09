@@ -20,6 +20,9 @@
 #    Hank Childs, Thu Apr 23 15:22:52 PDT 2009
 #    Fix some mistakes with "==" getting translated to "-ne".
 #
+#    Jeremy Meredith, Tue Aug  9 16:09:28 EDT 2011
+#    Updated repository to be at new location.
+#
 # *****************************************************************************
 
 
@@ -42,7 +45,7 @@ fi
 ##
 ##
 
-VISIT_SVN_REPO=svn+ssh://${SVN_NERSC_NAME}@svn.nersc.gov/svn/visit
+VISIT_SVN_REPO=svn+ssh://${SVN_NERSC_NAME}@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit
 VISIT_SVN_BRANCHES=${VISIT_SVN_REPO}/branches
 VISIT_SVN_TRUNK=${VISIT_SVN_REPO}/trunk
 VISIT_SVN_TAGS=${VISIT_SVN_REPO}/tags
