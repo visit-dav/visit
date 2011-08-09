@@ -33,7 +33,7 @@ function run_sh()
    fi
 }
 
-echo "To: ping+yrkzjtud@cia.vc" | /usr/sbin/sendmail -t
+env -i ${REPOS}/hooks/ciabot_svn.py ${REPOS} ${REV} &
 
 # handle automatic installation of updated/new hooks. Should probably
 # remain first.
