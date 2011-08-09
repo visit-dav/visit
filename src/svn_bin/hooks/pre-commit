@@ -103,6 +103,9 @@ runhook_sh "check_abort_calls.sh"
 # Check for using statements in header files
 runhook_sh "check_using_stmts.sh"
 
+# test new hook
+runhook_sh "count_test.sh"
+
 # Clean up
 rm -f ${FLIST}
 
