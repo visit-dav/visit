@@ -130,7 +130,7 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
         chgrp $VISIT_GROUP_NAME $REPOS/hooks/$bf 1>/dev/null 2>&1
         chmod u+rwX,g+rwX,o+rX $REPOS/hooks/$bf  1>/dev/null 2>&1
     else
-	log "UN-installing hook script $bf from $REPOS/hooks/$bf"
+        log "UN-installing hook script $bf from $REPOS/hooks/$bf"
         rm -f $REPOS/hooks/$bf 1>/dev/null 2>&1
     fi
 
