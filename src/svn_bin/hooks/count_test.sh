@@ -157,6 +157,5 @@ while read fline; do
     fi # if test $commitFileTabCount -gt 0
 
 done < $FLIST
-
 # all is well!
 exit 0
