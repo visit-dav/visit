@@ -106,6 +106,7 @@ runhook_sh "check_using_stmts.sh"
 # test new hook
 runhook_sh "count_test.sh"
 
+
 # Clean up
 rm -f ${FLIST}
 
