@@ -103,9 +103,6 @@ runhook_sh "check_abort_calls.sh"
 # Check for using statements in header files
 runhook_sh "check_using_stmts.sh"
 
-# Check for newlines (test)
-runhook_sh "check_newlines.sh"
-
 # Clean up
 rm -f ${FLIST}
 
