@@ -241,9 +241,13 @@
 #
 #    Jeremy Meredith, Tue Aug  9 11:36:34 EDT 2011
 #    Removed Sean from list of devs always getting results.
+#
+#    Jeremy Meredith, Tue Aug  9 17:19:55 EDT 2011
+#    Updated the subversion host/path.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
-svnHost=svn.nersc.gov
+svnHost=portal-auth.nersc.gov
 rootTestDir=/project/projectdirs/visit/test/trunk
 errorLogFile=$rootTestDir/testLogFile_$dateTag
 modifiersFile=$rootTestDir/nersc_repo_modifiers_since_last_pass

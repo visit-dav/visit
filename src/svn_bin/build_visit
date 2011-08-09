@@ -446,6 +446,9 @@
 #     to current releases 4.2.6 and 1.8.7 respectively. I went ahead and added
 #     --without-libtool to gdal's configure to fix problems I see on RHEL5.
 #
+#     Jeremy Meredith, Tue Aug  9 17:19:55 EDT 2011
+#     Updated the subversion host/path.
+#
 # *****************************************************************************
 
 
@@ -777,9 +780,9 @@ fi
 export SVN_ANON_ROOT_PATH="http://portal.nersc.gov/svn/visit"
 # Setup svn path: use SVN_NERSC_NAME if set
 if test -z "$SVN_NERSC_NAME" ; then
-    export SVN_REPO_ROOT_PATH="svn+ssh://svn.nersc.gov/svn/visit"
+    export SVN_REPO_ROOT_PATH="svn+ssh://portal-auth.nersc.gov/project/projectdirs/visit/svn/visit"
 else
-    export SVN_REPO_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@svn.nersc.gov/svn/visit"
+    export SVN_REPO_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit"
 fi
 
 ############################################################################
