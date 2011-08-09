@@ -239,6 +239,8 @@
 #    Eric Brugger, Thu May 27 17:04:35 PDT 2010
 #    Removed the partial skips for arbpoly.
 #
+#    Jeremy Meredith, Tue Aug  9 11:36:34 EDT 2011
+#    Removed Sean from list of devs always getting results.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -253,7 +255,6 @@ touch $errorLogFile
 
 # list of users who want email every night with the log file
 logrecipients="miller86@llnl.gov hankchilds@gmail.com jsmeredith@ornl.gov"
-logrecipients="${logrecipients} ahern@ornl.gov"
 
 eqzero() {
     if test "$1" = "0"; then
