@@ -27,7 +27,7 @@
 #   Mark C. Miller, Wed Feb  2 09:58:10 PST 2011
 #   Made it so installation warning is issued only once in presence of
 #   changes to multiple hooks.
-#
+#   
 ##############################################################################
 
 REPOS="$1"
@@ -136,4 +136,4 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
 
 done
 
-exit $hadError 
+exit $hadError
