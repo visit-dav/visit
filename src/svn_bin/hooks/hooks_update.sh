@@ -27,7 +27,7 @@
 #   Mark C. Miller, Wed Feb  2 09:58:10 PST 2011
 #   Made it so installation warning is issued only once in presence of
 #   changes to multiple hooks.
-#   
+#
 ##############################################################################
 
 REPOS="$1"
@@ -67,13 +67,13 @@ by another developer before committing."
 
     case ${f} in
         trunk/src/svn_bin/hooks/hook_common.sh)
-	    hookCommonFile=$f
+        hookCommonFile=$f
             ;;
         trunk/src/svn_bin/hooks/pre-commit)
-	    preCommitFile=$f
+        preCommitFile=$f
             ;;
         trunk/src/svn_bin/hooks/post-commit)
-	    postCommitFile=$f
+        postCommitFile=$f
             ;;
         trunk/src/svn_bin/hooks/*)
             hookFiles="$hookFiles $f"
@@ -110,8 +110,8 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     #
     if test ! -e $REPOS/hooks/$bf; then
         if test -z "$preCommitFile" -a -z "$postCommitFile"; then
-	    log "Committed a hook script without also updating pre- or post-commit meta scripts" 1>&2
-	fi
+        log "Committed a hook script without also updating pre- or post-commit meta scripts" 1>&2
+    fi
     fi
 
     #
@@ -128,7 +128,7 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     if test -s $REPOS/hooks/$bf; then
         log "Installing hook script $bf to $REPOS/hooks/$bf"
         chgrp $VISIT_GROUP_NAME $REPOS/hooks/$bf 1>/dev/null 2>&1
-        chmod u+rwX,g+rwX,o+rX $REPOS/hooks/$bf  1>/dev/null 2>&1
+        chmod u+rwX,g+rwX,o+rX $REPOS/hooks/$bf 1>/dev/null 2>&1
     else
         log "UN-installing hook script $bf from $REPOS/hooks/$bf"
         rm -f $REPOS/hooks/$bf 1>/dev/null 2>&1
