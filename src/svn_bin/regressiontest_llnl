@@ -123,9 +123,13 @@
 #
 #    Mark C. Miller, Mon Apr 12 22:40:12 PDT 2010
 #    Replaced mpich path with path to 1.2.7p1 mpich.
+#
+#    Jeremy Meredith, Tue Aug  9 17:19:55 EDT 2011
+#    Updated the subversion host/path.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
-svnHost=svn.nersc.gov
+svnHost=portal-auth.nersc.gov
 rootTestDir=/groups/visit/miller/nersc_repo_test/trunk
 errorLogFile=$rootTestDir/testLogFile_$dateTag
 modifiersFile=$rootTestDir/nersc_repo_modifiers_since_last_pass

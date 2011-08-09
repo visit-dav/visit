@@ -5,7 +5,7 @@ cd visit_run_tests
 
 # Get the latest version of the scripts
 rm -rf svn_bin
-svn co svn+ssh://brugger@svn.nersc.gov/svn/visit/trunk/src/svn_bin
+svn co svn+ssh://brugger@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src/svn_bin
 cd svn_bin
 
 # Run the test suite.

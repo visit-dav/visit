@@ -34,7 +34,7 @@
 
 if [ "$SVN_NERSC_NAME" = "" ] ; then
    echo "You must define the environment variable SVN_NERSC_NAME to use these scripts."
-   echo "This should be your username on svn.nersc.gov"
+   echo "This should be your username on portal-auth.nersc.gov"
    exit 1
 fi
 
