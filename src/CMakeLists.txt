@@ -239,6 +239,9 @@
 #    Add VISIT_FORCE_SSH_TUNNELING that always forces ssh tunneling for all
 #    data connections.
 #
+#    Kathleen Biagas, Mon Aug 8 08:08:42 MST 2011
+#    Use VISIT_3RDPARTY_DEP for all libdep vars. 
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -500,9 +503,9 @@ VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include a
 VISIT_3RDPARTY_VAR(CCMIO_DIR     "Path containing the CCMIO library's include and lib")
 VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
 VISIT_3RDPARTY_VAR(CGNS_DIR      "Path containing the CGNS library's include and lib")
-VISIT_3RDPARTY_VAR(CGNS_LIBDEP   "CGNS library dependencies")
+VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
 VISIT_3RDPARTY_VAR(EXODUSII_DIR  "Path containing the ExodusII library's include and lib")
-VISIT_3RDPARTY_VAR(EXODUSII_LIBDEP "ExodusII library dependencies")
+VISIT_3RDPARTY_DEP(EXODUSII_LIBDEP "ExodusII library dependencies")
 VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the Fastbit library's include and lib")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
 VISIT_3RDPARTY_VAR(HDF4_DIR      "Path containing the HDF4 library's include and lib")
@@ -510,15 +513,15 @@ VISIT_3RDPARTY_DEP(HDF4_LIBDEP   "HDF4 library dependencies")
 VISIT_3RDPARTY_VAR(HDF5_DIR      "Path containing the HDF5 library's include and lib")
 VISIT_3RDPARTY_DEP(HDF5_LIBDEP   "HDF5 library dependencies")
 VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include and lib")
-VISIT_3RDPARTY_VAR(H5PART_LIBDEP "H5Part library dependencies")
+VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
-VISIT_3RDPARTY_VAR(NETCDF_LIBDEP "NETCDF library dependencies")
+VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
 VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
 VISIT_3RDPARTY_VAR(VISUS_DIR     "Path containing the ViSUS library's include and lib")
 VISIT_3RDPARTY_VAR(XDMF_DIR      "Path containing the Xdmf library's include and lib")
-VISIT_3RDPARTY_VAR(XDMF_LIBDEP   "Xdmf library dependencies")
+VISIT_3RDPARTY_DEP(XDMF_LIBDEP   "Xdmf library dependencies")
 VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include and lib")
 #-----------------------------------------------------------------------------
 # Read the version
