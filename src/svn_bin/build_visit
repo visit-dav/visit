@@ -9883,7 +9883,6 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
                  DO_EXODUS="yes"
                  DO_NETCDF="yes";;
               FastBit)
-                 DO_HDF5="yes"
                  DO_FASTBIT="yes";;
               GDAL)
                  DO_GDAL="yes";;
