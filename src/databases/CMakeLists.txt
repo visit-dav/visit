@@ -113,6 +113,9 @@
 #    Hank Childs, Thu Aug  4 13:22:36 PDT 2011
 #    Add VCell reader on behalf of Ed Boyce and UCHC team.
 #
+#    Brad Whitlock, Wed Aug 10 16:19:42 PDT 2011
+#    Add volimage reader for WPP code team.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -281,6 +284,7 @@ Xmdv
 lata
 paraDIS
 paraDIS_tecplot
+volimage
 )
 
 IF (NOT WIN32)
