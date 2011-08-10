@@ -275,6 +275,9 @@
 #    I modified the script to accept the version number in either the
 #    form X.Y.Z or X_Y_Z.
 #
+#    Jeremy Meredith, Tue Aug  9 14:41:28 EDT 2011
+#    Changed a redirection syntax to be a little more portable.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -383,7 +386,7 @@ if [ ! -e $fname1 ]; then
           echo "That is not what this script expects."
           echo "Please download the zipped distribution again."
       else
-          ls -1 $base.*.tar.* >& /dev/null
+          ls -1 $base.*.tar.* > /dev/null 2>&1
           if [ "$status" = "0" ]; then
               echo "You specified your distribution as $platform."
               echo "I could not locate that distribution."
