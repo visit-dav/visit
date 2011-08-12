@@ -65,6 +65,11 @@ public:
         Cartesian,
         Cylindrical
     };
+    enum ArrayConfiguration
+    {
+        Manual,
+        List
+    };
     enum ArrayProjection
     {
         Parallel,
@@ -136,9 +141,11 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectArrayOrigin();
+    void SelectChannelList();
 
     // Property setting methods
     void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
+    void SetArrayConfiguration(ArrayConfiguration arrayConfiguration_);
     void SetNArrays(int nArrays_);
     void SetNChannels(int nChannels_);
     void SetToroialArrayAngle(double toroialArrayAngle_);
@@ -172,43 +179,47 @@ public:
     void SetTimeStepStart(int timeStepStart_);
     void SetTimeStepStop(int timeStepStop_);
     void SetTimeStepStride(int timeStepStride_);
+    void SetChannelList(const doubleVector &channelList_);
 
     // Property getting methods
-    CoordinateSystem GetCoordinateSystem() const;
-    int          GetNArrays() const;
-    int          GetNChannels() const;
-    double       GetToroialArrayAngle() const;
-    ArrayProjection GetArrayProjection() const;
-    double       GetChannelOffset() const;
-    double       GetChannelAngle() const;
-    int          GetNRows() const;
-    double       GetRowOffset() const;
-    const double *GetArrayOrigin() const;
-          double *GetArrayOrigin();
-    ArrayAxis    GetArrayAxis() const;
-    double       GetPoloialAngle() const;
-    double       GetPoloialRTilt() const;
-    double       GetPoloialZTilt() const;
-    double       GetToroialAngle() const;
-    ViewDimension GetViewDimension() const;
-    double       GetHeightPlotScale() const;
-    double       GetChannelPlotOffset() const;
-    double       GetArrayPlotOffset() const;
-    double       GetTimePlotScale() const;
-    BeamShape    GetBeamShape() const;
-    double       GetRadius() const;
-    double       GetDivergence() const;
-    BeamType     GetBeamType() const;
-    double       GetStandardDeviation() const;
-    double       GetSampleDistance() const;
-    double       GetSampleArc() const;
-    ChannelSampling GetChannelSampling() const;
-    ToroidalSampling GetToroidalSampling() const;
-    double       GetToroidalSamplingAngle() const;
-    TimeSampling GetTimeSampling() const;
-    int          GetTimeStepStart() const;
-    int          GetTimeStepStop() const;
-    int          GetTimeStepStride() const;
+    CoordinateSystem   GetCoordinateSystem() const;
+    ArrayConfiguration GetArrayConfiguration() const;
+    int                GetNArrays() const;
+    int                GetNChannels() const;
+    double             GetToroialArrayAngle() const;
+    ArrayProjection    GetArrayProjection() const;
+    double             GetChannelOffset() const;
+    double             GetChannelAngle() const;
+    int                GetNRows() const;
+    double             GetRowOffset() const;
+    const double       *GetArrayOrigin() const;
+          double       *GetArrayOrigin();
+    ArrayAxis          GetArrayAxis() const;
+    double             GetPoloialAngle() const;
+    double             GetPoloialRTilt() const;
+    double             GetPoloialZTilt() const;
+    double             GetToroialAngle() const;
+    ViewDimension      GetViewDimension() const;
+    double             GetHeightPlotScale() const;
+    double             GetChannelPlotOffset() const;
+    double             GetArrayPlotOffset() const;
+    double             GetTimePlotScale() const;
+    BeamShape          GetBeamShape() const;
+    double             GetRadius() const;
+    double             GetDivergence() const;
+    BeamType           GetBeamType() const;
+    double             GetStandardDeviation() const;
+    double             GetSampleDistance() const;
+    double             GetSampleArc() const;
+    ChannelSampling    GetChannelSampling() const;
+    ToroidalSampling   GetToroidalSampling() const;
+    double             GetToroidalSamplingAngle() const;
+    TimeSampling       GetTimeSampling() const;
+    int                GetTimeStepStart() const;
+    int                GetTimeStepStop() const;
+    int                GetTimeStepStride() const;
+    const doubleVector &GetChannelList() const;
+          doubleVector &GetChannelList();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -219,6 +230,11 @@ public:
     static bool CoordinateSystem_FromString(const std::string &, CoordinateSystem &);
 protected:
     static std::string CoordinateSystem_ToString(int);
+public:
+    static std::string ArrayConfiguration_ToString(ArrayConfiguration);
+    static bool ArrayConfiguration_FromString(const std::string &, ArrayConfiguration &);
+protected:
+    static std::string ArrayConfiguration_ToString(int);
 public:
     static std::string ArrayProjection_ToString(ArrayProjection);
     static bool ArrayProjection_FromString(const std::string &, ArrayProjection &);
@@ -271,6 +287,7 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_coordinateSystem = 0,
+        ID_arrayConfiguration,
         ID_nArrays,
         ID_nChannels,
         ID_toroialArrayAngle,
@@ -304,49 +321,52 @@ public:
         ID_timeStepStart,
         ID_timeStepStop,
         ID_timeStepStride,
+        ID_channelList,
         ID__LAST
     };
 
 private:
-    int    coordinateSystem;
-    int    nArrays;
-    int    nChannels;
-    double toroialArrayAngle;
-    int    arrayProjection;
-    double channelOffset;
-    double channelAngle;
-    int    nRows;
-    double rowOffset;
-    double arrayOrigin[3];
-    int    arrayAxis;
-    double poloialAngle;
-    double poloialRTilt;
-    double poloialZTilt;
-    double toroialAngle;
-    int    viewDimension;
-    double heightPlotScale;
-    double channelPlotOffset;
-    double arrayPlotOffset;
-    double timePlotScale;
-    int    beamShape;
-    double radius;
-    double divergence;
-    int    beamType;
-    double standardDeviation;
-    double sampleDistance;
-    double sampleArc;
-    int    channelSampling;
-    int    toroidalSampling;
-    double toroidalSamplingAngle;
-    int    timeSampling;
-    int    timeStepStart;
-    int    timeStepStop;
-    int    timeStepStride;
+    int          coordinateSystem;
+    int          arrayConfiguration;
+    int          nArrays;
+    int          nChannels;
+    double       toroialArrayAngle;
+    int          arrayProjection;
+    double       channelOffset;
+    double       channelAngle;
+    int          nRows;
+    double       rowOffset;
+    double       arrayOrigin[3];
+    int          arrayAxis;
+    double       poloialAngle;
+    double       poloialRTilt;
+    double       poloialZTilt;
+    double       toroialAngle;
+    int          viewDimension;
+    double       heightPlotScale;
+    double       channelPlotOffset;
+    double       arrayPlotOffset;
+    double       timePlotScale;
+    int          beamShape;
+    double       radius;
+    double       divergence;
+    int          beamType;
+    double       standardDeviation;
+    double       sampleDistance;
+    double       sampleArc;
+    int          channelSampling;
+    int          toroidalSampling;
+    double       toroidalSamplingAngle;
+    int          timeSampling;
+    int          timeStepStart;
+    int          timeStepStop;
+    int          timeStepStride;
+    doubleVector channelList;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LINESAMPLERATTRIBUTES_TMFS "iiididdidDiddddiddddiddidddiidiiii"
+#define LINESAMPLERATTRIBUTES_TMFS "iiiididdidDiddddiddddiddidddiidiiiid*"
 
 #endif

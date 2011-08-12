@@ -77,6 +77,43 @@ LineSamplerAttributes::CoordinateSystem_FromString(const std::string &s, LineSam
 }
 
 //
+// Enum conversion methods for LineSamplerAttributes::ArrayConfiguration
+//
+
+static const char *ArrayConfiguration_strings[] = {
+"Manual", "List"};
+
+std::string
+LineSamplerAttributes::ArrayConfiguration_ToString(LineSamplerAttributes::ArrayConfiguration t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return ArrayConfiguration_strings[index];
+}
+
+std::string
+LineSamplerAttributes::ArrayConfiguration_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return ArrayConfiguration_strings[index];
+}
+
+bool
+LineSamplerAttributes::ArrayConfiguration_FromString(const std::string &s, LineSamplerAttributes::ArrayConfiguration &val)
+{
+    val = LineSamplerAttributes::Manual;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == ArrayConfiguration_strings[i])
+        {
+            val = (ArrayConfiguration)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for LineSamplerAttributes::ArrayProjection
 //
 
@@ -393,6 +430,7 @@ LineSamplerAttributes::TimeSampling_FromString(const std::string &s, LineSampler
 void LineSamplerAttributes::Init()
 {
     coordinateSystem = Cylindrical;
+    arrayConfiguration = Manual;
     nArrays = 1;
     nChannels = 5;
     toroialArrayAngle = 5;
@@ -428,6 +466,10 @@ void LineSamplerAttributes::Init()
     timeStepStart = 0;
     timeStepStop = 0;
     timeStepStride = 1;
+    channelList.push_back(0);
+    channelList.push_back(0);
+    channelList.push_back(0);
+    channelList.push_back(90);
 
     LineSamplerAttributes::SelectAll();
 }
@@ -450,6 +492,7 @@ void LineSamplerAttributes::Init()
 void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
 {
     coordinateSystem = obj.coordinateSystem;
+    arrayConfiguration = obj.arrayConfiguration;
     nArrays = obj.nArrays;
     nChannels = obj.nChannels;
     toroialArrayAngle = obj.toroialArrayAngle;
@@ -486,6 +529,7 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
     timeStepStart = obj.timeStepStart;
     timeStepStop = obj.timeStepStop;
     timeStepStride = obj.timeStepStride;
+    channelList = obj.channelList;
 
     LineSamplerAttributes::SelectAll();
 }
@@ -649,6 +693,7 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
 
     // Create the return value
     return ((coordinateSystem == obj.coordinateSystem) &&
+            (arrayConfiguration == obj.arrayConfiguration) &&
             (nArrays == obj.nArrays) &&
             (nChannels == obj.nChannels) &&
             (toroialArrayAngle == obj.toroialArrayAngle) &&
@@ -681,7 +726,8 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
             (timeSampling == obj.timeSampling) &&
             (timeStepStart == obj.timeStepStart) &&
             (timeStepStop == obj.timeStepStop) &&
-            (timeStepStride == obj.timeStepStride));
+            (timeStepStride == obj.timeStepStride) &&
+            (channelList == obj.channelList));
 }
 
 // ****************************************************************************
@@ -826,6 +872,7 @@ void
 LineSamplerAttributes::SelectAll()
 {
     Select(ID_coordinateSystem,      (void *)&coordinateSystem);
+    Select(ID_arrayConfiguration,    (void *)&arrayConfiguration);
     Select(ID_nArrays,               (void *)&nArrays);
     Select(ID_nChannels,             (void *)&nChannels);
     Select(ID_toroialArrayAngle,     (void *)&toroialArrayAngle);
@@ -859,6 +906,7 @@ LineSamplerAttributes::SelectAll()
     Select(ID_timeStepStart,         (void *)&timeStepStart);
     Select(ID_timeStepStop,          (void *)&timeStepStop);
     Select(ID_timeStepStride,        (void *)&timeStepStride);
+    Select(ID_channelList,           (void *)&channelList);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -895,6 +943,12 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("coordinateSystem", CoordinateSystem_ToString(coordinateSystem)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_arrayConfiguration, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("arrayConfiguration", ArrayConfiguration_ToString(arrayConfiguration)));
     }
 
     if(completeSave || !FieldsEqual(ID_nArrays, &defaultObject))
@@ -1095,6 +1149,12 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("timeStepStride", timeStepStride));
     }
 
+    if(completeSave || !FieldsEqual(ID_channelList, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("channelList", channelList));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1145,6 +1205,22 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
             CoordinateSystem value;
             if(CoordinateSystem_FromString(node->AsString(), value))
                 SetCoordinateSystem(value);
+        }
+    }
+    if((node = searchNode->GetNode("arrayConfiguration")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetArrayConfiguration(ArrayConfiguration(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ArrayConfiguration value;
+            if(ArrayConfiguration_FromString(node->AsString(), value))
+                SetArrayConfiguration(value);
         }
     }
     if((node = searchNode->GetNode("nArrays")) != 0)
@@ -1325,6 +1401,8 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         SetTimeStepStop(node->AsInt());
     if((node = searchNode->GetNode("timeStepStride")) != 0)
         SetTimeStepStride(node->AsInt());
+    if((node = searchNode->GetNode("channelList")) != 0)
+        SetChannelList(node->AsDoubleVector());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1336,6 +1414,13 @@ LineSamplerAttributes::SetCoordinateSystem(LineSamplerAttributes::CoordinateSyst
 {
     coordinateSystem = coordinateSystem_;
     Select(ID_coordinateSystem, (void *)&coordinateSystem);
+}
+
+void
+LineSamplerAttributes::SetArrayConfiguration(LineSamplerAttributes::ArrayConfiguration arrayConfiguration_)
+{
+    arrayConfiguration = arrayConfiguration_;
+    Select(ID_arrayConfiguration, (void *)&arrayConfiguration);
 }
 
 void
@@ -1571,6 +1656,13 @@ LineSamplerAttributes::SetTimeStepStride(int timeStepStride_)
     Select(ID_timeStepStride, (void *)&timeStepStride);
 }
 
+void
+LineSamplerAttributes::SetChannelList(const doubleVector &channelList_)
+{
+    channelList = channelList_;
+    Select(ID_channelList, (void *)&channelList);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1579,6 +1671,12 @@ LineSamplerAttributes::CoordinateSystem
 LineSamplerAttributes::GetCoordinateSystem() const
 {
     return CoordinateSystem(coordinateSystem);
+}
+
+LineSamplerAttributes::ArrayConfiguration
+LineSamplerAttributes::GetArrayConfiguration() const
+{
+    return ArrayConfiguration(arrayConfiguration);
 }
 
 int
@@ -1785,6 +1883,18 @@ LineSamplerAttributes::GetTimeStepStride() const
     return timeStepStride;
 }
 
+const doubleVector &
+LineSamplerAttributes::GetChannelList() const
+{
+    return channelList;
+}
+
+doubleVector &
+LineSamplerAttributes::GetChannelList()
+{
+    return channelList;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1793,6 +1903,12 @@ void
 LineSamplerAttributes::SelectArrayOrigin()
 {
     Select(ID_arrayOrigin, (void *)arrayOrigin, 3);
+}
+
+void
+LineSamplerAttributes::SelectChannelList()
+{
+    Select(ID_channelList, (void *)&channelList);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1820,6 +1936,7 @@ LineSamplerAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_coordinateSystem:      return "coordinateSystem";
+    case ID_arrayConfiguration:    return "arrayConfiguration";
     case ID_nArrays:               return "nArrays";
     case ID_nChannels:             return "nChannels";
     case ID_toroialArrayAngle:     return "toroialArrayAngle";
@@ -1853,6 +1970,7 @@ LineSamplerAttributes::GetFieldName(int index) const
     case ID_timeStepStart:         return "timeStepStart";
     case ID_timeStepStop:          return "timeStepStop";
     case ID_timeStepStride:        return "timeStepStride";
+    case ID_channelList:           return "channelList";
     default:  return "invalid index";
     }
 }
@@ -1878,6 +1996,7 @@ LineSamplerAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_coordinateSystem:      return FieldType_enum;
+    case ID_arrayConfiguration:    return FieldType_enum;
     case ID_nArrays:               return FieldType_int;
     case ID_nChannels:             return FieldType_int;
     case ID_toroialArrayAngle:     return FieldType_double;
@@ -1911,6 +2030,7 @@ LineSamplerAttributes::GetFieldType(int index) const
     case ID_timeStepStart:         return FieldType_int;
     case ID_timeStepStop:          return FieldType_int;
     case ID_timeStepStride:        return FieldType_int;
+    case ID_channelList:           return FieldType_doubleVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1936,6 +2056,7 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_coordinateSystem:      return "enum";
+    case ID_arrayConfiguration:    return "enum";
     case ID_nArrays:               return "int";
     case ID_nChannels:             return "int";
     case ID_toroialArrayAngle:     return "double";
@@ -1969,6 +2090,7 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
     case ID_timeStepStart:         return "int";
     case ID_timeStepStop:          return "int";
     case ID_timeStepStride:        return "int";
+    case ID_channelList:           return "doubleVector";
     default:  return "invalid index";
     }
 }
@@ -1998,6 +2120,11 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_coordinateSystem:
         {  // new scope
         retval = (coordinateSystem == obj.coordinateSystem);
+        }
+        break;
+    case ID_arrayConfiguration:
+        {  // new scope
+        retval = (arrayConfiguration == obj.arrayConfiguration);
         }
         break;
     case ID_nArrays:
@@ -2168,6 +2295,11 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_timeStepStride:
         {  // new scope
         retval = (timeStepStride == obj.timeStepStride);
+        }
+        break;
+    case ID_channelList:
+        {  // new scope
+        retval = (channelList == obj.channelList);
         }
         break;
     default: retval = false;

@@ -91,6 +91,21 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
           break;
     }
 
+    const char *arrayConfiguration_names = "Manual, List";
+    switch (atts->GetArrayConfiguration())
+    {
+      case LineSamplerAttributes::Manual:
+          SNPRINTF(tmpStr, 1000, "%sarrayConfiguration = %sManual  # %s\n", prefix, prefix, arrayConfiguration_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::List:
+          SNPRINTF(tmpStr, 1000, "%sarrayConfiguration = %sList  # %s\n", prefix, prefix, arrayConfiguration_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     SNPRINTF(tmpStr, 1000, "%snArrays = %d\n", prefix, atts->GetNArrays());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%snChannels = %d\n", prefix, atts->GetNChannels());
@@ -291,6 +306,22 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%stimeStepStride = %d\n", prefix, atts->GetTimeStepStride());
     str += tmpStr;
+    {   const doubleVector &channelList = atts->GetChannelList();
+        SNPRINTF(tmpStr, 1000, "%schannelList = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < channelList.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", channelList[i]);
+            str += tmpStr;
+            if(i < channelList.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -333,6 +364,39 @@ LineSamplerAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCoordinateSystem()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetArrayConfiguration(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the arrayConfiguration in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetArrayConfiguration(LineSamplerAttributes::ArrayConfiguration(ival));
+    else
+    {
+        fprintf(stderr, "An invalid arrayConfiguration value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Manual, List.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetArrayConfiguration(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetArrayConfiguration()));
     return retval;
 }
 
@@ -1230,12 +1294,77 @@ LineSamplerAttributes_GetTimeStepStride(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+LineSamplerAttributes_SetChannelList(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    doubleVector  &vec = obj->data->GetChannelList();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                vec[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = PyLong_AsDouble(item);
+            else
+                vec[i] = 0.;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyFloat_AS_DOUBLE(tuple);
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = double(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyLong_AsDouble(tuple);
+    }
+    else
+        return NULL;
+
+    // Mark the channelList in the object as modified.
+    obj->data->SelectChannelList();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetChannelList(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the channelList.
+    const doubleVector &channelList = obj->data->GetChannelList();
+    PyObject *retval = PyTuple_New(channelList.size());
+    for(size_t i = 0; i < channelList.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(channelList[i]));
+    return retval;
+}
+
 
 
 PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"Notify", LineSamplerAttributes_Notify, METH_VARARGS},
     {"SetCoordinateSystem", LineSamplerAttributes_SetCoordinateSystem, METH_VARARGS},
     {"GetCoordinateSystem", LineSamplerAttributes_GetCoordinateSystem, METH_VARARGS},
+    {"SetArrayConfiguration", LineSamplerAttributes_SetArrayConfiguration, METH_VARARGS},
+    {"GetArrayConfiguration", LineSamplerAttributes_GetArrayConfiguration, METH_VARARGS},
     {"SetNArrays", LineSamplerAttributes_SetNArrays, METH_VARARGS},
     {"GetNArrays", LineSamplerAttributes_GetNArrays, METH_VARARGS},
     {"SetNChannels", LineSamplerAttributes_SetNChannels, METH_VARARGS},
@@ -1302,6 +1431,8 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetTimeStepStop", LineSamplerAttributes_GetTimeStepStop, METH_VARARGS},
     {"SetTimeStepStride", LineSamplerAttributes_SetTimeStepStride, METH_VARARGS},
     {"GetTimeStepStride", LineSamplerAttributes_GetTimeStepStride, METH_VARARGS},
+    {"SetChannelList", LineSamplerAttributes_SetChannelList, METH_VARARGS},
+    {"GetChannelList", LineSamplerAttributes_GetChannelList, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1336,6 +1467,13 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LineSamplerAttributes::Cartesian));
     if(strcmp(name, "Cylindrical") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Cylindrical));
+
+    if(strcmp(name, "arrayConfiguration") == 0)
+        return LineSamplerAttributes_GetArrayConfiguration(self, NULL);
+    if(strcmp(name, "Manual") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Manual));
+    if(strcmp(name, "List") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::List));
 
     if(strcmp(name, "nArrays") == 0)
         return LineSamplerAttributes_GetNArrays(self, NULL);
@@ -1451,6 +1589,8 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return LineSamplerAttributes_GetTimeStepStop(self, NULL);
     if(strcmp(name, "timeStepStride") == 0)
         return LineSamplerAttributes_GetTimeStepStride(self, NULL);
+    if(strcmp(name, "channelList") == 0)
+        return LineSamplerAttributes_GetChannelList(self, NULL);
 
     return Py_FindMethod(PyLineSamplerAttributes_methods, self, name);
 }
@@ -1467,6 +1607,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "coordinateSystem") == 0)
         obj = LineSamplerAttributes_SetCoordinateSystem(self, tuple);
+    else if(strcmp(name, "arrayConfiguration") == 0)
+        obj = LineSamplerAttributes_SetArrayConfiguration(self, tuple);
     else if(strcmp(name, "nArrays") == 0)
         obj = LineSamplerAttributes_SetNArrays(self, tuple);
     else if(strcmp(name, "nChannels") == 0)
@@ -1533,6 +1675,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetTimeStepStop(self, tuple);
     else if(strcmp(name, "timeStepStride") == 0)
         obj = LineSamplerAttributes_SetTimeStepStride(self, tuple);
+    else if(strcmp(name, "channelList") == 0)
+        obj = LineSamplerAttributes_SetChannelList(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

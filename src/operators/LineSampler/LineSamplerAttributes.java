@@ -41,6 +41,8 @@ package llnl.visit.operators;
 import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
+import java.lang.Double;
+import java.util.Vector;
 
 // ****************************************************************************
 // Class: LineSamplerAttributes
@@ -59,11 +61,14 @@ import llnl.visit.Plugin;
 
 public class LineSamplerAttributes extends AttributeSubject implements Plugin
 {
-    private static int LineSamplerAttributes_numAdditionalAtts = 34;
+    private static int LineSamplerAttributes_numAdditionalAtts = 36;
 
     // Enum values
     public final static int COORDINATESYSTEM_CARTESIAN = 0;
     public final static int COORDINATESYSTEM_CYLINDRICAL = 1;
+
+    public final static int ARRAYCONFIGURATION_MANUAL = 0;
+    public final static int ARRAYCONFIGURATION_LIST = 1;
 
     public final static int ARRAYPROJECTION_PARALLEL = 0;
     public final static int ARRAYPROJECTION_DIVERGENT = 1;
@@ -99,6 +104,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         super(LineSamplerAttributes_numAdditionalAtts);
 
         coordinateSystem = COORDINATESYSTEM_CYLINDRICAL;
+        arrayConfiguration = ARRAYCONFIGURATION_MANUAL;
         nArrays = 1;
         nChannels = 5;
         toroialArrayAngle = 5;
@@ -135,6 +141,11 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         timeStepStart = 0;
         timeStepStop = 0;
         timeStepStride = 1;
+        channelList = new Vector();
+        channelList.addElement(new Double(0));
+        channelList.addElement(new Double(0));
+        channelList.addElement(new Double(0));
+        channelList.addElement(new Double(90));
     }
 
     public LineSamplerAttributes(int nMoreFields)
@@ -142,6 +153,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         super(LineSamplerAttributes_numAdditionalAtts + nMoreFields);
 
         coordinateSystem = COORDINATESYSTEM_CYLINDRICAL;
+        arrayConfiguration = ARRAYCONFIGURATION_MANUAL;
         nArrays = 1;
         nChannels = 5;
         toroialArrayAngle = 5;
@@ -178,6 +190,11 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         timeStepStart = 0;
         timeStepStop = 0;
         timeStepStride = 1;
+        channelList = new Vector();
+        channelList.addElement(new Double(0));
+        channelList.addElement(new Double(0));
+        channelList.addElement(new Double(0));
+        channelList.addElement(new Double(90));
     }
 
     public LineSamplerAttributes(LineSamplerAttributes obj)
@@ -187,6 +204,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         int i;
 
         coordinateSystem = obj.coordinateSystem;
+        arrayConfiguration = obj.arrayConfiguration;
         nArrays = obj.nArrays;
         nChannels = obj.nChannels;
         toroialArrayAngle = obj.toroialArrayAngle;
@@ -224,6 +242,13 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         timeStepStart = obj.timeStepStart;
         timeStepStop = obj.timeStepStop;
         timeStepStride = obj.timeStepStride;
+        channelList = new Vector(obj.channelList.size());
+        for(i = 0; i < obj.channelList.size(); ++i)
+        {
+            Double dv = (Double)obj.channelList.elementAt(i);
+            channelList.addElement(new Double(dv.doubleValue()));
+        }
+
 
         SelectAll();
     }
@@ -247,8 +272,18 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < 3 && arrayOrigin_equal; ++i)
             arrayOrigin_equal = (arrayOrigin[i] == obj.arrayOrigin[i]);
 
+        // Compare the elements in the channelList vector.
+        boolean channelList_equal = (obj.channelList.size() == channelList.size());
+        for(i = 0; (i < channelList.size()) && channelList_equal; ++i)
+        {
+            // Make references to Double from Object.
+            Double channelList1 = (Double)channelList.elementAt(i);
+            Double channelList2 = (Double)obj.channelList.elementAt(i);
+            channelList_equal = channelList1.equals(channelList2);
+        }
         // Create the return value
         return ((coordinateSystem == obj.coordinateSystem) &&
+                (arrayConfiguration == obj.arrayConfiguration) &&
                 (nArrays == obj.nArrays) &&
                 (nChannels == obj.nChannels) &&
                 (toroialArrayAngle == obj.toroialArrayAngle) &&
@@ -281,7 +316,8 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
                 (timeSampling == obj.timeSampling) &&
                 (timeStepStart == obj.timeStepStart) &&
                 (timeStepStop == obj.timeStepStop) &&
-                (timeStepStride == obj.timeStepStride));
+                (timeStepStride == obj.timeStepStride) &&
+                channelList_equal);
     }
 
     public String GetName() { return "LineSampler"; }
@@ -294,52 +330,58 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
+    public void SetArrayConfiguration(int arrayConfiguration_)
+    {
+        arrayConfiguration = arrayConfiguration_;
+        Select(1);
+    }
+
     public void SetNArrays(int nArrays_)
     {
         nArrays = nArrays_;
-        Select(1);
+        Select(2);
     }
 
     public void SetNChannels(int nChannels_)
     {
         nChannels = nChannels_;
-        Select(2);
+        Select(3);
     }
 
     public void SetToroialArrayAngle(double toroialArrayAngle_)
     {
         toroialArrayAngle = toroialArrayAngle_;
-        Select(3);
+        Select(4);
     }
 
     public void SetArrayProjection(int arrayProjection_)
     {
         arrayProjection = arrayProjection_;
-        Select(4);
+        Select(5);
     }
 
     public void SetChannelOffset(double channelOffset_)
     {
         channelOffset = channelOffset_;
-        Select(5);
+        Select(6);
     }
 
     public void SetChannelAngle(double channelAngle_)
     {
         channelAngle = channelAngle_;
-        Select(6);
+        Select(7);
     }
 
     public void SetNRows(int nRows_)
     {
         nRows = nRows_;
-        Select(7);
+        Select(8);
     }
 
     public void SetRowOffset(double rowOffset_)
     {
         rowOffset = rowOffset_;
-        Select(8);
+        Select(9);
     }
 
     public void SetArrayOrigin(double[] arrayOrigin_)
@@ -347,7 +389,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         arrayOrigin[0] = arrayOrigin_[0];
         arrayOrigin[1] = arrayOrigin_[1];
         arrayOrigin[2] = arrayOrigin_[2];
-        Select(9);
+        Select(10);
     }
 
     public void SetArrayOrigin(double e0, double e1, double e2)
@@ -355,155 +397,162 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         arrayOrigin[0] = e0;
         arrayOrigin[1] = e1;
         arrayOrigin[2] = e2;
-        Select(9);
+        Select(10);
     }
 
     public void SetArrayAxis(int arrayAxis_)
     {
         arrayAxis = arrayAxis_;
-        Select(10);
+        Select(11);
     }
 
     public void SetPoloialAngle(double poloialAngle_)
     {
         poloialAngle = poloialAngle_;
-        Select(11);
+        Select(12);
     }
 
     public void SetPoloialRTilt(double poloialRTilt_)
     {
         poloialRTilt = poloialRTilt_;
-        Select(12);
+        Select(13);
     }
 
     public void SetPoloialZTilt(double poloialZTilt_)
     {
         poloialZTilt = poloialZTilt_;
-        Select(13);
+        Select(14);
     }
 
     public void SetToroialAngle(double toroialAngle_)
     {
         toroialAngle = toroialAngle_;
-        Select(14);
+        Select(15);
     }
 
     public void SetViewDimension(int viewDimension_)
     {
         viewDimension = viewDimension_;
-        Select(15);
+        Select(16);
     }
 
     public void SetHeightPlotScale(double heightPlotScale_)
     {
         heightPlotScale = heightPlotScale_;
-        Select(16);
+        Select(17);
     }
 
     public void SetChannelPlotOffset(double channelPlotOffset_)
     {
         channelPlotOffset = channelPlotOffset_;
-        Select(17);
+        Select(18);
     }
 
     public void SetArrayPlotOffset(double arrayPlotOffset_)
     {
         arrayPlotOffset = arrayPlotOffset_;
-        Select(18);
+        Select(19);
     }
 
     public void SetTimePlotScale(double timePlotScale_)
     {
         timePlotScale = timePlotScale_;
-        Select(19);
+        Select(20);
     }
 
     public void SetBeamShape(int beamShape_)
     {
         beamShape = beamShape_;
-        Select(20);
+        Select(21);
     }
 
     public void SetRadius(double radius_)
     {
         radius = radius_;
-        Select(21);
+        Select(22);
     }
 
     public void SetDivergence(double divergence_)
     {
         divergence = divergence_;
-        Select(22);
+        Select(23);
     }
 
     public void SetBeamType(int beamType_)
     {
         beamType = beamType_;
-        Select(23);
+        Select(24);
     }
 
     public void SetStandardDeviation(double standardDeviation_)
     {
         standardDeviation = standardDeviation_;
-        Select(24);
+        Select(25);
     }
 
     public void SetSampleDistance(double sampleDistance_)
     {
         sampleDistance = sampleDistance_;
-        Select(25);
+        Select(26);
     }
 
     public void SetSampleArc(double sampleArc_)
     {
         sampleArc = sampleArc_;
-        Select(26);
+        Select(27);
     }
 
     public void SetChannelSampling(int channelSampling_)
     {
         channelSampling = channelSampling_;
-        Select(27);
+        Select(28);
     }
 
     public void SetToroidalSampling(int toroidalSampling_)
     {
         toroidalSampling = toroidalSampling_;
-        Select(28);
+        Select(29);
     }
 
     public void SetToroidalSamplingAngle(double toroidalSamplingAngle_)
     {
         toroidalSamplingAngle = toroidalSamplingAngle_;
-        Select(29);
+        Select(30);
     }
 
     public void SetTimeSampling(int timeSampling_)
     {
         timeSampling = timeSampling_;
-        Select(30);
+        Select(31);
     }
 
     public void SetTimeStepStart(int timeStepStart_)
     {
         timeStepStart = timeStepStart_;
-        Select(31);
+        Select(32);
     }
 
     public void SetTimeStepStop(int timeStepStop_)
     {
         timeStepStop = timeStepStop_;
-        Select(32);
+        Select(33);
     }
 
     public void SetTimeStepStride(int timeStepStride_)
     {
         timeStepStride = timeStepStride_;
-        Select(33);
+        Select(34);
+    }
+
+    public void SetChannelList(Vector channelList_)
+    {
+        channelList = channelList_;
+        Select(35);
     }
 
     // Property getting methods
     public int      GetCoordinateSystem() { return coordinateSystem; }
+    public int      GetArrayConfiguration() { return arrayConfiguration; }
     public int      GetNArrays() { return nArrays; }
     public int      GetNChannels() { return nChannels; }
     public double   GetToroialArrayAngle() { return toroialArrayAngle; }
@@ -537,6 +586,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public int      GetTimeStepStart() { return timeStepStart; }
     public int      GetTimeStepStop() { return timeStepStop; }
     public int      GetTimeStepStride() { return timeStepStride; }
+    public Vector   GetChannelList() { return channelList; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -544,71 +594,75 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(0, buf))
             buf.WriteInt(coordinateSystem);
         if(WriteSelect(1, buf))
-            buf.WriteInt(nArrays);
+            buf.WriteInt(arrayConfiguration);
         if(WriteSelect(2, buf))
-            buf.WriteInt(nChannels);
+            buf.WriteInt(nArrays);
         if(WriteSelect(3, buf))
-            buf.WriteDouble(toroialArrayAngle);
+            buf.WriteInt(nChannels);
         if(WriteSelect(4, buf))
-            buf.WriteInt(arrayProjection);
+            buf.WriteDouble(toroialArrayAngle);
         if(WriteSelect(5, buf))
-            buf.WriteDouble(channelOffset);
+            buf.WriteInt(arrayProjection);
         if(WriteSelect(6, buf))
-            buf.WriteDouble(channelAngle);
+            buf.WriteDouble(channelOffset);
         if(WriteSelect(7, buf))
-            buf.WriteInt(nRows);
+            buf.WriteDouble(channelAngle);
         if(WriteSelect(8, buf))
-            buf.WriteDouble(rowOffset);
+            buf.WriteInt(nRows);
         if(WriteSelect(9, buf))
-            buf.WriteDoubleArray(arrayOrigin);
+            buf.WriteDouble(rowOffset);
         if(WriteSelect(10, buf))
-            buf.WriteInt(arrayAxis);
+            buf.WriteDoubleArray(arrayOrigin);
         if(WriteSelect(11, buf))
-            buf.WriteDouble(poloialAngle);
+            buf.WriteInt(arrayAxis);
         if(WriteSelect(12, buf))
-            buf.WriteDouble(poloialRTilt);
+            buf.WriteDouble(poloialAngle);
         if(WriteSelect(13, buf))
-            buf.WriteDouble(poloialZTilt);
+            buf.WriteDouble(poloialRTilt);
         if(WriteSelect(14, buf))
-            buf.WriteDouble(toroialAngle);
+            buf.WriteDouble(poloialZTilt);
         if(WriteSelect(15, buf))
-            buf.WriteInt(viewDimension);
+            buf.WriteDouble(toroialAngle);
         if(WriteSelect(16, buf))
-            buf.WriteDouble(heightPlotScale);
+            buf.WriteInt(viewDimension);
         if(WriteSelect(17, buf))
-            buf.WriteDouble(channelPlotOffset);
+            buf.WriteDouble(heightPlotScale);
         if(WriteSelect(18, buf))
-            buf.WriteDouble(arrayPlotOffset);
+            buf.WriteDouble(channelPlotOffset);
         if(WriteSelect(19, buf))
-            buf.WriteDouble(timePlotScale);
+            buf.WriteDouble(arrayPlotOffset);
         if(WriteSelect(20, buf))
-            buf.WriteInt(beamShape);
+            buf.WriteDouble(timePlotScale);
         if(WriteSelect(21, buf))
-            buf.WriteDouble(radius);
+            buf.WriteInt(beamShape);
         if(WriteSelect(22, buf))
-            buf.WriteDouble(divergence);
+            buf.WriteDouble(radius);
         if(WriteSelect(23, buf))
-            buf.WriteInt(beamType);
+            buf.WriteDouble(divergence);
         if(WriteSelect(24, buf))
-            buf.WriteDouble(standardDeviation);
+            buf.WriteInt(beamType);
         if(WriteSelect(25, buf))
-            buf.WriteDouble(sampleDistance);
+            buf.WriteDouble(standardDeviation);
         if(WriteSelect(26, buf))
-            buf.WriteDouble(sampleArc);
+            buf.WriteDouble(sampleDistance);
         if(WriteSelect(27, buf))
-            buf.WriteInt(channelSampling);
+            buf.WriteDouble(sampleArc);
         if(WriteSelect(28, buf))
-            buf.WriteInt(toroidalSampling);
+            buf.WriteInt(channelSampling);
         if(WriteSelect(29, buf))
-            buf.WriteDouble(toroidalSamplingAngle);
+            buf.WriteInt(toroidalSampling);
         if(WriteSelect(30, buf))
-            buf.WriteInt(timeSampling);
+            buf.WriteDouble(toroidalSamplingAngle);
         if(WriteSelect(31, buf))
-            buf.WriteInt(timeStepStart);
+            buf.WriteInt(timeSampling);
         if(WriteSelect(32, buf))
-            buf.WriteInt(timeStepStop);
+            buf.WriteInt(timeStepStart);
         if(WriteSelect(33, buf))
+            buf.WriteInt(timeStepStop);
+        if(WriteSelect(34, buf))
             buf.WriteInt(timeStepStride);
+        if(WriteSelect(35, buf))
+            buf.WriteDoubleVector(channelList);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -619,103 +673,109 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             SetCoordinateSystem(buf.ReadInt());
             break;
         case 1:
-            SetNArrays(buf.ReadInt());
+            SetArrayConfiguration(buf.ReadInt());
             break;
         case 2:
-            SetNChannels(buf.ReadInt());
+            SetNArrays(buf.ReadInt());
             break;
         case 3:
-            SetToroialArrayAngle(buf.ReadDouble());
+            SetNChannels(buf.ReadInt());
             break;
         case 4:
-            SetArrayProjection(buf.ReadInt());
+            SetToroialArrayAngle(buf.ReadDouble());
             break;
         case 5:
-            SetChannelOffset(buf.ReadDouble());
+            SetArrayProjection(buf.ReadInt());
             break;
         case 6:
-            SetChannelAngle(buf.ReadDouble());
+            SetChannelOffset(buf.ReadDouble());
             break;
         case 7:
-            SetNRows(buf.ReadInt());
+            SetChannelAngle(buf.ReadDouble());
             break;
         case 8:
-            SetRowOffset(buf.ReadDouble());
+            SetNRows(buf.ReadInt());
             break;
         case 9:
-            SetArrayOrigin(buf.ReadDoubleArray());
+            SetRowOffset(buf.ReadDouble());
             break;
         case 10:
-            SetArrayAxis(buf.ReadInt());
+            SetArrayOrigin(buf.ReadDoubleArray());
             break;
         case 11:
-            SetPoloialAngle(buf.ReadDouble());
+            SetArrayAxis(buf.ReadInt());
             break;
         case 12:
-            SetPoloialRTilt(buf.ReadDouble());
+            SetPoloialAngle(buf.ReadDouble());
             break;
         case 13:
-            SetPoloialZTilt(buf.ReadDouble());
+            SetPoloialRTilt(buf.ReadDouble());
             break;
         case 14:
-            SetToroialAngle(buf.ReadDouble());
+            SetPoloialZTilt(buf.ReadDouble());
             break;
         case 15:
-            SetViewDimension(buf.ReadInt());
+            SetToroialAngle(buf.ReadDouble());
             break;
         case 16:
-            SetHeightPlotScale(buf.ReadDouble());
+            SetViewDimension(buf.ReadInt());
             break;
         case 17:
-            SetChannelPlotOffset(buf.ReadDouble());
+            SetHeightPlotScale(buf.ReadDouble());
             break;
         case 18:
-            SetArrayPlotOffset(buf.ReadDouble());
+            SetChannelPlotOffset(buf.ReadDouble());
             break;
         case 19:
-            SetTimePlotScale(buf.ReadDouble());
+            SetArrayPlotOffset(buf.ReadDouble());
             break;
         case 20:
-            SetBeamShape(buf.ReadInt());
+            SetTimePlotScale(buf.ReadDouble());
             break;
         case 21:
-            SetRadius(buf.ReadDouble());
+            SetBeamShape(buf.ReadInt());
             break;
         case 22:
-            SetDivergence(buf.ReadDouble());
+            SetRadius(buf.ReadDouble());
             break;
         case 23:
-            SetBeamType(buf.ReadInt());
+            SetDivergence(buf.ReadDouble());
             break;
         case 24:
-            SetStandardDeviation(buf.ReadDouble());
+            SetBeamType(buf.ReadInt());
             break;
         case 25:
-            SetSampleDistance(buf.ReadDouble());
+            SetStandardDeviation(buf.ReadDouble());
             break;
         case 26:
-            SetSampleArc(buf.ReadDouble());
+            SetSampleDistance(buf.ReadDouble());
             break;
         case 27:
-            SetChannelSampling(buf.ReadInt());
+            SetSampleArc(buf.ReadDouble());
             break;
         case 28:
-            SetToroidalSampling(buf.ReadInt());
+            SetChannelSampling(buf.ReadInt());
             break;
         case 29:
-            SetToroidalSamplingAngle(buf.ReadDouble());
+            SetToroidalSampling(buf.ReadInt());
             break;
         case 30:
-            SetTimeSampling(buf.ReadInt());
+            SetToroidalSamplingAngle(buf.ReadDouble());
             break;
         case 31:
-            SetTimeStepStart(buf.ReadInt());
+            SetTimeSampling(buf.ReadInt());
             break;
         case 32:
-            SetTimeStepStop(buf.ReadInt());
+            SetTimeStepStart(buf.ReadInt());
             break;
         case 33:
+            SetTimeStepStop(buf.ReadInt());
+            break;
+        case 34:
             SetTimeStepStride(buf.ReadInt());
+            break;
+        case 35:
+            SetChannelList(buf.ReadDoubleVector());
             break;
         }
     }
@@ -728,6 +788,12 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             str = str + "COORDINATESYSTEM_CARTESIAN";
         if(coordinateSystem == COORDINATESYSTEM_CYLINDRICAL)
             str = str + "COORDINATESYSTEM_CYLINDRICAL";
+        str = str + "\n";
+        str = str + indent + "arrayConfiguration = ";
+        if(arrayConfiguration == ARRAYCONFIGURATION_MANUAL)
+            str = str + "ARRAYCONFIGURATION_MANUAL";
+        if(arrayConfiguration == ARRAYCONFIGURATION_LIST)
+            str = str + "ARRAYCONFIGURATION_LIST";
         str = str + "\n";
         str = str + intToString("nArrays", nArrays, indent) + "\n";
         str = str + intToString("nChannels", nChannels, indent) + "\n";
@@ -810,12 +876,14 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         str = str + intToString("timeStepStart", timeStepStart, indent) + "\n";
         str = str + intToString("timeStepStop", timeStepStop, indent) + "\n";
         str = str + intToString("timeStepStride", timeStepStride, indent) + "\n";
+        str = str + doubleVectorToString("channelList", channelList, indent) + "\n";
         return str;
     }
 
 
     // Attributes
     private int      coordinateSystem;
+    private int      arrayConfiguration;
     private int      nArrays;
     private int      nChannels;
     private double   toroialArrayAngle;
@@ -849,5 +917,6 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     private int      timeStepStart;
     private int      timeStepStop;
     private int      timeStepStride;
+    private Vector   channelList; // vector of Double objects
 }
 
