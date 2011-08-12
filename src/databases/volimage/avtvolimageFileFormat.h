@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtvolimageFileFormat.h                           //
+//                            avtvolimageFileFormat.h                        //
 // ************************************************************************* //
 
 #ifndef AVT_volimage_FILE_FORMAT_H
@@ -103,6 +103,7 @@ class avtvolimageFileFormat : public avtSTMDFileFormat
     std::vector<float*> m_dataptr;
     std::vector<float*> m_gridptr;
     std::string m_filename;
+    std::string m_gridname;
     std::string m_gridfilename;
     int m_prec;
     int m_nblocks;
