@@ -152,7 +152,7 @@ avtvolimageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     else
     {
-        mmd->name = m_gridfilename;
+        mmd->name = m_gridname;
     }
 
     mmd->spatialDimension = 3;
@@ -577,6 +577,7 @@ void avtvolimageFileFormat::Initialize()
 #endif
 
 // grid file name
+        m_gridname = cgfn;
         m_gridfilename = path + cgfn;
         debug5 << "m_gridfilename = '" << m_gridfilename << "'" << endl;
     }
