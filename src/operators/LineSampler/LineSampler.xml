@@ -7,6 +7,10 @@
         Cartesian
         Cylindrical
       </Enum>
+      <Enum name="ArrayConfiguration">
+        Manual
+        List
+      </Enum>
       <Enum name="ArrayProjection">
         Parallel
         Divergent
@@ -43,8 +47,11 @@
         CurrentTimeStep
         MultipleTimeSteps
       </Enum>
-      <Field name="coordinateSystem" label="Coordinate Systems" type="enum" subtype="CoordinateSystem">
+      <Field name="coordinateSystem" label="Coordinate system" type="enum" subtype="CoordinateSystem">
         Cylindrical
+      </Field>
+      <Field name="arrayConfiguration" label="Array configuration" type="enum" subtype="ArrayConfiguration">
+        Manual
       </Field>
       <Field name="nArrays" label="Number of arrays" type="int">
         1
@@ -147,6 +154,12 @@
       <Field name="timeStepStride" label="Stride" type="int">
         1
       </Field>
+      <Field name="channelList" label="List of Channels" type="doubleVector">
+        0.000000
+        0.000000
+        0.000000
+        90.000000
+      </Field>
+
     </Attribute>
   </Plugin>
-

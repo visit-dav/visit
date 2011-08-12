@@ -55,6 +55,8 @@ class QvisColorButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisVariableButton;
+class QListWidget;
+class QListWidgetItem;
 
 // ****************************************************************************
 // Class: QvisLineSamplerWindow
@@ -87,6 +89,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void coordinateSystemChanged(int val);
+    void arrayConfigurationChanged(int val);
     void nArraysProcessText();
     void nChannelsProcessText();
     void toroialArrayAngleProcessText();
@@ -120,9 +123,24 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void timeStepStartProcessText();
     void timeStepStopProcessText();
     void timeStepStrideProcessText();
+    void textChanged(const QString &currentText);
+    void addChannel();
+    void deleteChannel();
+    void deleteChannels();
+    void readChannels();
+    void channelListProcessText();
+    void channelListClicked(QListWidgetItem*);
+    void channelListDoubleClicked(QListWidgetItem*);
   private:
+    QListWidget *channelList;
+    QPushButton *channelListAddChannel;
+    QPushButton *channelListDeleteChannel;
+    QPushButton *channelListDeleteAllChannels;
+    QPushButton *channelListReadChannels;
     QWidget      *coordinateSystem;
     QButtonGroup *coordinateSystemButtonGroup;
+    QWidget      *arrayConfiguration;
+    QButtonGroup *arrayConfigurationButtonGroup;
     QLineEdit *nArrays;
     QLineEdit *nChannels;
     QLineEdit *toroialArrayAngle;
@@ -165,6 +183,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLineEdit *timeStepStop;
     QLineEdit *timeStepStride;
     QLabel *coordinateSystemLabel;
+    QLabel *arrayConfigurationLabel;
     QLabel *nArraysLabel;
     QLabel *nChannelsLabel;
     QLabel *toroialArrayAngleLabel;

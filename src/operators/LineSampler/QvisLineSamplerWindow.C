@@ -55,6 +55,10 @@
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
 
+#include <QListWidget.h>
+#include <QPushButton.h>
+#include <QFileDialog.h>
+
 #include <stdio.h>
 #include <string>
 
@@ -127,7 +131,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    coordinateSystemLabel = new QLabel(tr("Coordinate Systems"), central);
+    coordinateSystemLabel = new QLabel(tr("Coordinate system"), central);
     mainLayout->addWidget(coordinateSystemLabel,0,0);
     coordinateSystem = new QWidget(central);
     coordinateSystemButtonGroup= new QButtonGroup(coordinateSystem);
@@ -144,19 +148,38 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(coordinateSystemChanged(int)));
     mainLayout->addWidget(coordinateSystem, 0,1);
 
+
+    arrayConfigurationLabel = new QLabel(tr("Array configuration"), central);
+    mainLayout->addWidget(arrayConfigurationLabel,1,0);
+    arrayConfiguration = new QWidget(central);
+    arrayConfigurationButtonGroup= new QButtonGroup(arrayConfiguration);
+    QHBoxLayout *arrayConfigurationLayout = new QHBoxLayout(arrayConfiguration);
+    arrayConfigurationLayout->setMargin(0);
+    arrayConfigurationLayout->setSpacing(10);
+    QRadioButton *arrayConfigurationArrayConfigurationCartesian = new QRadioButton(tr("Manual"), arrayConfiguration);
+    arrayConfigurationButtonGroup->addButton(arrayConfigurationArrayConfigurationCartesian,0);
+    arrayConfigurationLayout->addWidget(arrayConfigurationArrayConfigurationCartesian);
+    QRadioButton *arrayConfigurationArrayConfigurationCylindrical = new QRadioButton(tr("List"), arrayConfiguration);
+    arrayConfigurationButtonGroup->addButton(arrayConfigurationArrayConfigurationCylindrical,1);
+    arrayConfigurationLayout->addWidget(arrayConfigurationArrayConfigurationCylindrical);
+    connect(arrayConfigurationButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(arrayConfigurationChanged(int)));
+    mainLayout->addWidget(arrayConfiguration, 1,1);
+
+
     nArraysLabel = new QLabel(tr("Number of arrays"), central);
-    mainLayout->addWidget(nArraysLabel,1,0);
+    mainLayout->addWidget(nArraysLabel,2,0);
     nArrays = new QLineEdit(central);
     connect(nArrays, SIGNAL(returnPressed()),
             this, SLOT(nArraysProcessText()));
-    mainLayout->addWidget(nArrays, 1,1);
+    mainLayout->addWidget(nArrays, 2,1);
 
     nChannelsLabel = new QLabel(tr("Number of channels"), central);
-    mainLayout->addWidget(nChannelsLabel,2,0);
+    mainLayout->addWidget(nChannelsLabel,2,2);
     nChannels = new QLineEdit(central);
     connect(nChannels, SIGNAL(returnPressed()),
             this, SLOT(nChannelsProcessText()));
-    mainLayout->addWidget(nChannels, 2,1);
+    mainLayout->addWidget(nChannels, 2,3);
 
     toroialArrayAngleLabel = new QLabel(tr("Toroidal angle (degrees) between arrays"), central);
     mainLayout->addWidget(toroialArrayAngleLabel,3,0);
@@ -467,6 +490,31 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(timeStepStrideProcessText()));
     mainLayout->addWidget(timeStepStride, 33,1);
 
+
+    //Channel list.
+    int gRow = 35;
+    channelList = new QListWidget(central);
+    mainLayout->addWidget(channelList, gRow, 0, 5, 1);
+    connect(channelList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(channelListDoubleClicked(QListWidgetItem*)));
+    connect(channelList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(channelListClicked(QListWidgetItem*)));
+    connect(channelList, SIGNAL(currentTextChanged(const QString&)), this, SLOT(textChanged(QString)));
+
+    gRow = 35;
+
+    channelListReadChannels = new QPushButton(tr("Read configuration file"), central);
+    channelListAddChannel = new QPushButton(tr("Add Channel"), central);
+    channelListDeleteChannel = new QPushButton(tr("Delete Channel"), central);
+    channelListDeleteAllChannels = new QPushButton(tr("Delete All Channels"), central);
+
+    connect(channelListReadChannels, SIGNAL(clicked()), this, SLOT(readChannels()));
+    connect(channelListAddChannel, SIGNAL(clicked()), this, SLOT(addChannel()));
+    connect(channelListDeleteChannel, SIGNAL(clicked()), this, SLOT(deleteChannel()));
+    connect(channelListDeleteAllChannels, SIGNAL(clicked()), this, SLOT(deleteChannels()));
+
+    mainLayout->addWidget(channelListReadChannels, gRow++, 1);
+    mainLayout->addWidget(channelListAddChannel, gRow++, 1);
+    mainLayout->addWidget(channelListDeleteChannel, gRow++, 1);
+    mainLayout->addWidget(channelListDeleteAllChannels, gRow++, 1);
 }
 
 
@@ -506,6 +554,12 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             if(coordinateSystemButtonGroup->button((int)atts->GetCoordinateSystem()) != 0)
                 coordinateSystemButtonGroup->button((int)atts->GetCoordinateSystem())->setChecked(true);
             coordinateSystemButtonGroup->blockSignals(false);
+            break;
+          case LineSamplerAttributes::ID_arrayConfiguration:
+            arrayConfigurationButtonGroup->blockSignals(true);
+            if(arrayConfigurationButtonGroup->button((int)atts->GetArrayConfiguration()) != 0)
+                arrayConfigurationButtonGroup->button((int)atts->GetArrayConfiguration())->setChecked(true);
+            arrayConfigurationButtonGroup->blockSignals(false);
             break;
           case LineSamplerAttributes::ID_nArrays:
             nArrays->setText(IntToQString(atts->GetNArrays()));
@@ -630,6 +684,24 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
           case LineSamplerAttributes::ID_timeStepStride:
             timeStepStride->setText(IntToQString(atts->GetTimeStepStride()));
             break;
+          case LineSamplerAttributes::ID_channelList:
+            {
+              std::vector<double> channels = atts->GetChannelList();
+              channelList->clear();
+
+              for (int i = 0; i < channels.size(); i+= 4)
+              {
+                char tmp[256];
+                sprintf(tmp, "%lf %lf %lf %lf",
+                        channels[i], channels[i+1], channels[i+2], channels[i+3]);
+                QString str( tmp );
+                QListWidgetItem *item = new QListWidgetItem(str, channelList);
+                item->setFlags(item->flags() | Qt::ItemIsEditable);
+                channelList->setCurrentItem(item);
+              }
+              
+              break;
+            }
         }
     }
 }
@@ -1005,6 +1077,26 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do channelList
+    if(which_widget == LineSamplerAttributes::ID_channelList || doAll)
+    {
+        std::vector<double> channels;
+        double r, z, phi, ang;
+        for (int i = 0; i < channelList->count(); i++)
+        {
+            QListWidgetItem *item = channelList->item(i);
+            if (item)
+            {
+                std::string str = item->text().toLatin1().data();
+                sscanf(str.c_str(), "%lf %lf  %lf %lf", &r, &z, &phi, &ang);
+                channels.push_back(r);
+                channels.push_back(z);
+                channels.push_back(phi);
+                channels.push_back(ang);
+            }
+        }
+        atts->SetChannelList(channels);
+    }
 }
 
 
@@ -1019,6 +1111,18 @@ QvisLineSamplerWindow::coordinateSystemChanged(int val)
     if(val != atts->GetCoordinateSystem())
     {
         atts->SetCoordinateSystem(LineSamplerAttributes::CoordinateSystem(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisLineSamplerWindow::arrayConfigurationChanged(int val)
+{
+    if(val != atts->GetArrayConfiguration())
+    {
+        atts->SetArrayConfiguration(LineSamplerAttributes::ArrayConfiguration(val));
         SetUpdate(false);
         Apply();
     }
@@ -1321,3 +1425,181 @@ QvisLineSamplerWindow::timeStepStrideProcessText()
 }
 
 
+void
+QvisLineSamplerWindow::channelListProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_channelList);
+    Apply();
+}
+
+void
+QvisLineSamplerWindow::channelListClicked(QListWidgetItem *item)
+{
+}
+
+
+void
+QvisLineSamplerWindow::channelListDoubleClicked(QListWidgetItem *item)
+{
+    item->setFlags(item->flags() | Qt::ItemIsEditable);
+}
+
+
+void
+QvisLineSamplerWindow::textChanged(const QString &currentText)
+{
+}
+
+
+void
+QvisLineSamplerWindow::addChannel()
+{
+    QListWidgetItem *item = new QListWidgetItem("0 0 0 90", channelList);
+    item->setFlags(item->flags() | Qt::ItemIsEditable);
+    channelList->setCurrentItem(item);
+}
+
+
+void
+QvisLineSamplerWindow::deleteChannel()
+{
+    if (!channelList->selectedItems().empty())
+    {
+        qDeleteAll(channelList->selectedItems());
+    }
+}
+
+
+void
+QvisLineSamplerWindow::deleteChannels()
+{
+    channelList->clear();
+}
+
+std::string findstr( std::ifstream &f, std::string key )
+{
+  while (f.good())
+  {
+    char tmp[1024];
+
+    f.getline(tmp, 1024);
+    
+    std::string tmpstr = std::string(tmp);
+
+    if( tmpstr.find(key) != std::string::npos )
+    {
+      return tmpstr;
+    }
+  }
+
+  return std::string("");
+}
+
+void
+QvisLineSamplerWindow::readChannels()
+{
+    QString res = QFileDialog::getOpenFileName(NULL, tr("Open configuration file"), ".");
+    std::string filename = res.toLatin1().data();
+
+    if (filename == "")
+        return;
+
+    std::ifstream f;
+    f.open(filename.c_str());
+
+    std::string diagnostic;
+
+    while (f.good())
+    {
+        char tmp[1024];
+        f.getline(tmp, 1024);
+
+        std::string tmpstr(tmp);
+
+        if( tmpstr.find("[diiidSoftXray]") != std::string::npos )
+        {
+          diagnostic = tmpstr;
+          break;
+        }
+        else if( tmpstr.find("[diiidBES]") != std::string::npos )
+        {
+          diagnostic = tmpstr;
+          break;
+        }
+    }
+
+    if( diagnostic == "[diiidSoftXray]" )
+    {
+      int nChannels = 0;
+
+      std::string tmpStr = findstr( f, "nChannels=" );
+
+      if( tmpStr.empty() )
+      {
+        return;
+      }
+
+      tmpStr.erase( 0, tmpStr.find("=")+1 );
+          
+      nChannels = atoi( tmpStr.c_str() );
+
+      std::string Rsxr, Zsxr, PhiSxr, AngSxr;
+      std::string rTmp, zTmp, phiTmp, angTmp;
+
+      Rsxr = findstr( f, std::string("Rsxr=") );
+      Zsxr = findstr( f, std::string("Zsxr=") );
+      PhiSxr = findstr( f, std::string("PhiSxr=") );
+      AngSxr = findstr( f, std::string("AngSxr=") );
+
+      if( Rsxr.empty() || Zsxr.empty() || PhiSxr.empty() || AngSxr.empty() )
+      {
+        return;
+      }
+
+      Rsxr.erase( 0, Rsxr.find("=")+1 );
+      Zsxr.erase( 0, Zsxr.find("=")+1 );
+      PhiSxr.erase( 0, PhiSxr.find("=")+1 );
+      AngSxr.erase( 0, AngSxr.find("=")+1 );
+
+      channelList->clear();
+
+      for( int i=0; i<nChannels; ++i )
+      {
+        rTmp = Rsxr;
+        zTmp = Zsxr;
+        phiTmp = PhiSxr;
+        angTmp = AngSxr;
+
+        if( i<nChannels-1 )
+        {
+          size_t rP = rTmp.find(",");
+          size_t zP = zTmp.find(",");
+          size_t phiP = phiTmp.find(",");
+          size_t angP = angTmp.find(",");
+
+          rTmp.erase( rP, rTmp.size() );
+          zTmp.erase( zP, zTmp.size() );
+          phiTmp.erase( phiP, phiTmp.size() );
+          angTmp.erase( angP, angTmp.size() );
+
+          Rsxr.erase( 0, rP+1 );
+          Zsxr.erase( 0, zP+1 );
+          PhiSxr.erase( 0, phiP+1 );
+          AngSxr.erase( 0, angP+1 );
+        }
+
+        float r = atof( rTmp.c_str() );
+        float z = atof( zTmp.c_str() );
+        float phi = atof( phiTmp.c_str() );
+        float ang = atof( angTmp.c_str() );
+
+        char vals[256];
+        sprintf(vals, "%f %f %f %f", r, z, phi, ang);
+        QListWidgetItem *item = new QListWidgetItem(vals, channelList);
+        item->setFlags(item->flags() | Qt::ItemIsEditable);
+        channelList->setCurrentItem(item);
+      }
+    }
+
+    f.close();
+}

@@ -92,7 +92,8 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
     virtual void Iterate(int, avtDataTree_p);
     virtual void Finalize(void);
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual vtkDataSet *ExecuteChannelData(vtkDataSet *, int, std::string);
+    virtual vtkDataSet *ExecuteChannelList(vtkDataSet *, int, std::string);
 
     virtual vtkUnstructuredGrid* createPoint( avtVector startPoint,
                                               avtVector stopPoint,
