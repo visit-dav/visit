@@ -449,6 +449,13 @@
 #     Jeremy Meredith, Tue Aug  9 17:19:55 EDT 2011
 #     Updated the subversion host/path.
 #
+#     Mark C. Miller, Thu Aug 11 21:43:51 PDT 2011
+#     Changed the way Fortran support is handled. If FC_COMPILER is defined
+#     or if build_visit finds (default) fortran compiler in path, FC_COMPILER
+#     var gets populated with it. For each product supporting Fortran,
+#     if FC_COMPILER is set, then a set of fortran related args are passed
+#     to configure to enable (or disable) it depending on the lib's default
+#     fortran support.
 # *****************************************************************************
 
 
@@ -495,7 +502,7 @@ if [[ "$OPSYS" == "Darwin" ]]; then
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
-   export FC_COMPILER=${FC_COMPILER:-"gfortran"}
+   export FC_COMPILER=${FC_COMPILER:-$(which gfortran | grep '^/')}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CFLAGS=${CFLAGS:-"-fno-common -fexceptions"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -560,7 +567,7 @@ elif [[ "$OPSYS" == "Linux" ]]; then
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
-   export FC_COMPILER=${FC_COMPILER:-"gfortran"}
+   export FC_COMPILER=${FC_COMPILER:-$(which gfortran | grep '^/')}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
    export MESA_TARGET=${MESA_TARGET:-"linux"}
@@ -569,7 +576,7 @@ elif [[ "$OPSYS" == "AIX" ]]; then
    export ARCH="aix" # You can change this to say RHEL, SuSE, Fedora, etc.
    export SO_EXT="a"
    export C_COMPILER=${C_COMPILER:-"xlc"}
-   export FC_COMPILER=${FC_COMPILER:-"xlf"}
+   export FC_COMPILER=${FC_COMPILER:-$(which xlf | grep '^/')}
    export CXX_COMPILER=${CXX_COMPILER:-"xlC"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -584,7 +591,7 @@ elif [[ "$OPSYS" == "IRIX64" ]]; then
    export ARCH="irix64" # You can change this to say RHEL, SuSE, Fedora, etc.
    export SO_EXT="so"
    export C_COMPILER=${C_COMPILER:-"gcc"}
-   export FC_COMPILER=${FC_COMPILER:-"gfortran"}
+   export FC_COMPILER=${FC_COMPILER:-$(which gfortran | grep '^/')}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -594,7 +601,7 @@ elif [[ "$OPSYS" == "SunOS" ]]; then
    export ARCH=${ARCH:-"sunos5"}
    export SO_EXT="so"
    export C_COMPILER=${C_COMPILER:-"gcc"}
-   export FC_COMPILER=${FC_COMPILER:-"gfortran"}
+   export FC_COMPILER=${FC_COMPILER:-$(which gfortran | grep '^/')}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -629,7 +636,7 @@ else
       QT_PLATFORM="linux-g++-64"
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
-   export FC_COMPILER=${FC_COMPILER:-"gfortran"}
+   export FC_COMPILER=${FC_COMPILER:-$(which gfortran | grep '^/')}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -4419,21 +4426,27 @@ function build_silo
        WITHSILOQTARG="--with-qt=$SILOQTDIR"
     fi
 
+    if [[ "$FC_COMPILER" == "" ]] ; then
+        FORTRANARGS="--disable-fortran"
+    else
+        FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\""
+    fi
+
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        FC="$FC_COMPILER" F77="$FC_COMPILER" \
-        FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" \
+        $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         \"$WITHHDF5ARG\" \"$WITHSZIPARG\" \"$WITHSILOQTARG\" \
         --without-readline"
 
-    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        FC="$FC_COMPILER" F77="$FC_COMPILER" \
-        FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" \
-        --prefix="$VISITDIR/silo/$SILO_VERSION/$VISITARCH" \
-        "$WITHHDF5ARG" "$WITHSZIPARG" "$WITHSILOQTARG" \
-        --without-readline
+    # In order to ensure $FORTRANARGS is expanded to build the arguments to
+    # configure, we wrap the invokation in 'sh -c "..."' syntax
+    sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+        $FORTRANARGS \
+        --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
+        \"$WITHHDF5ARG\" \"$WITHSZIPARG\" \"$WITHSILOQTARG\" \
+        --without-readline"
 
     if [[ $? != 0 ]] ; then
        warn "Silo configure failed.  Giving up"
@@ -4647,7 +4660,6 @@ function build_hdf5
     else
         export LD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
     fi
-    info "Invoking command to configure HDF5"
     cf_szip=""
     darwin_szip=""
     if test "x${DO_SZIP}" = "xyes"; then
@@ -4657,17 +4669,25 @@ function build_hdf5
         darwin_szip="-L\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib\" -lsz"
     fi
 
+    if [[ "$FC_COMPILER" == "" ]] ; then
+        FORTRANARGS=""
+    else
+        FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
+    fi
+
+    # In order to ensure $FORTRANARGS is expanded to build the arguments to
+    # configure, we wrap the invokation in 'sh -c "..."' syntax
+    info "Invoking command to configure HDF5"
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        FC="$FC_COMPILER" F77="$FC_COMPILER" FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" --enable-fortran \
+        $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH\" \
-        ${cf_szip}"
-
-    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        FC="$FC_COMPILER" F77="$FC_COMPILER" FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" --enable-fortran \
-        --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" \
-        ${cf_szip} ${cf_darwin}
+        ${cf_szip} ${darwin_szip} ${cf_darwin}"
+    sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+        $FORTRANARGS \
+        --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH\" \
+        ${cf_szip} ${darwin_szip} ${cf_darwin}"
     if [[ $? != 0 ]] ; then
        warn "HDF5 configure failed.  Giving up"
        return 1
@@ -4676,6 +4696,7 @@ function build_hdf5
     #
     # Build HDF5
     #
+    info "Making HDF5 . . ."
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        warn "HDF5 build failed.  Giving up"
@@ -6087,21 +6108,29 @@ function build_hdf4
        fi
     fi
 
+    if [[ "$FC_COMPILER" == "" ]] ; then
+        FORTRANARGS=""
+    else
+        FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
+    fi
+
     info "Configuring HDF4 . . ."
     cd $HDF4_BUILD_DIR || error "Can't cd to hdf4 build dir."
     info "Invoking command to configure HDF4"
     MAKEOPS=""
     if [[ "$OPSYS" == "Darwin" || "$OPSYS" == "AIX" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" \
-        CPPFLAGS="-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0 \
-        -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0/vtkjpeg" \
-        FC="$FC_COMPILER" F77="$FC_COMPILER" FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" --enable-fortran \
-        --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" \
-        --with-jpeg="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH" \
-        --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" \
-        --disable-dependency-tracking
+        # In order to ensure $FORTRANARGS is expanded to build the arguments to
+        # configure, we wrap the invokation in 'sh -c "..."' syntax
+        sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
+        CPPFLAGS=\"-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0 \
+        -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0/vtkjpeg\" \
+        $FORTRANARGS \
+        --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
+        --with-jpeg=\"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH\" \
+        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
+        --disable-dependency-tracking"
         if [[ $? != 0 ]] ; then
            warn "HDF4 configure failed.  Giving up"\
                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
@@ -6110,16 +6139,16 @@ function build_hdf4
         MAKEOPS="-i"
     else
         export LD_LIBRARY_PATH="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib":"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" LIBS="-lm" \
-        CPPFLAGS="-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0 \
-        -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0/vtkjpeg" \
-        FC="$FC_COMPILER" F77="$FC_COMPILER" FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" --enable-fortran \
-        FC="$FC_COMPILER" F77="$FC_COMPILER" \
-        FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" \
-        --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" \
-        --with-jpeg="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH" \
-        --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+        # In order to ensure $FORTRANARGS is expanded to build the arguments to
+        # configure, we wrap the invokation in 'sh -c "..."' syntax
+        sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" LIBS=\"-lm\" \
+        CPPFLAGS=\"-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0 \
+        -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0/vtkjpeg\" \
+        $FOTRANARGS \
+        --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
+        --with-jpeg=\"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH\" \
+        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\""
         if [[ $? != 0 ]] ; then
            warn "HDF4 configure failed.  Giving up.\n"\
                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
@@ -7042,11 +7071,19 @@ $DYLD_LIBRARY_PATH
 $LD_LIBRARY_PATH
        SOARG=""
     fi
+    if [[ "$FC_COMPILER" == "" ]] ; then
+        FORTRANARGS=""
+    else
+        FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
+    fi
+
     info "Invoking command to configure H5Part"
-    ./configure ${WITHHDF5ARG} ${OPTIONAL} CXX="$CXX_COMPILER" \
-       CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       --enable-fortran FC="$FC_COMPILER" F77="$FC_COMPILER" FCFLAGS="$FCFLAGS" FFLAGS="$FCFLAGS" \
-       --prefix="$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH"
+    # In order to ensure $FORTRANARGS is expanded to build the arguments to
+    # configure, we wrap the invokation in 'sh -c "..."' syntax
+    sh -c "./configure ${WITHHDF5ARG} ${OPTIONAL} CXX=\"$CXX_COMPILER\" \
+       CC=\"$C_COMPILER\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+       $FORTRANARGS \
+       --prefix=\"$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH\""
     if [[ $? != 0 ]] ; then
        warn "H5Part configure failed.  Giving up"
        return 1
