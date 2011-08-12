@@ -105,8 +105,11 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
                   "Can not read number of horizontal R and/or vertical Z grid points." );
     }
 
-    int   curveCycle = atoi( time );
-    float curveTime  = atof( time ) * 1.0e-3;
+    cycles.resize( 1 );
+    cycles[0] = atoi( time );
+
+    times.resize( 1 );
+    times[0] = atof( time ) * 1.0e-3;
 
     // Read the second line ...
     f.getline(tmp, 1024);
@@ -350,10 +353,17 @@ avtGeqdskFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
     int group_origin = 0;
     int spatial_dimension = 3;
     int topological_dimension = 2;
-    double *extents = NULL;
+    double extents[6];
     int bounds[3];
 
     // Original meshes for the user to see.
+    extents[0] = rleft;
+    extents[1] = rleft + rdim;
+    extents[2] = 0;
+    extents[3] = 0;
+    extents[4] = zmid - zdim / 2.0;
+    extents[5] = zmid + zdim / 2.0;
+
     bounds[0] = nw;
     bounds[1] = nh;
     bounds[2] = 1;
@@ -364,7 +374,27 @@ avtGeqdskFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
 
 
     // Boundary mesh for the user to see.
-    bounds[0] = nbbbs;
+    extents[0] = rleft + rdim;
+    extents[1] = rleft;
+    extents[2] = 0;
+    extents[3] = 0;
+    extents[4] = zmid + zdim / 2.0;
+    extents[5] = zmid - zdim / 2.0;
+
+    for( int i=0; i<nbbbs; ++i )
+    {
+      if( extents[0] > rzbbbs[i*2] )
+        extents[0] = rzbbbs[i*2];
+      if( extents[1] < rzbbbs[i*2] )
+        extents[1] = rzbbbs[i*2];
+
+      if( extents[4] > rzbbbs[i*2+1] )
+        extents[4] = rzbbbs[i*2+1];
+      if( extents[5] < rzbbbs[i*2+1] )
+        extents[5] = rzbbbs[i*2+1];
+    }
+
+    bounds[0] = nbbbs-1;
     bounds[1] = 1;
     bounds[2] = 1;
 
@@ -377,7 +407,27 @@ avtGeqdskFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
 
 
     // Limiter mesh for the user to see.
-    bounds[0] = limitr;
+    extents[0] = rleft + rdim;
+    extents[1] = rleft;
+    extents[2] = 0;
+    extents[3] = 0;
+    extents[4] = zmid + zdim / 2.0;
+    extents[5] = zmid - zdim / 2.0;
+
+    for( int i=0; i<limitr; ++i )
+    {
+      if( extents[0] > rzlim[i*2] )
+        extents[0] = rzlim[i*2];
+      if( extents[1] < rzlim[i*2] )
+        extents[1] = rzlim[i*2];
+
+      if( extents[4] > rzlim[i*2+1] )
+        extents[4] = rzlim[i*2+1];
+      if( extents[5] < rzlim[i*2+1] )
+        extents[5] = rzlim[i*2+1];
+    }
+
+    bounds[0] = limitr-1;
     bounds[1] = 1;
     bounds[2] = 1;
 
@@ -389,85 +439,168 @@ avtGeqdskFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
                        spatial_dimension, topological_dimension, bounds );
 
 
+    // Rect scalar psirz
+    extents[0] =  1e12;
+    extents[1] = -1e12;
+    
+    for (int i=0; i<nw*nh; i++)
+    {
+      if( extents[0] > psirz[i] )
+          extents[0] = psirz[i];
+      if( extents[1] < psirz[i] )
+        extents[1] = psirz[i];
+    }
 
-    string varname = "psirz";
-    string meshname = string("rectangular");
-    AddScalarVarToMetaData( md, varname, meshname, AVT_NODECENT );
+    avtScalarMetaData *scalar = new avtScalarMetaData();
+    scalar->name = std::string("psirz");
+    scalar->meshName = string("rectangular"); 
+    scalar->centering =  AVT_NODECENT;
+    scalar->hasDataExtents = true;
+    scalar->SetExtents(extents);
+    scalar->units = std::string("weber/rad");
+    md->Add(scalar);
 
 
+    // Curve fpol
     avtCurveMetaData *curve = new avtCurveMetaData;
     curve->name = "fpol";
+
+    curve->minDataExtents =  1e12;
+    curve->maxDataExtents = -1e12;
+    curve->hasDataExtents = true;
+    
+    for (int i=0; i<nw; i++)
+    {
+      if( curve->minDataExtents > fpol[i] )
+          curve->minDataExtents = fpol[i];
+      if( curve->maxDataExtents < fpol[i] )
+        curve->maxDataExtents = fpol[i];
+    }
+
+    curve->centering = AVT_NODECENT;
     curve->xLabel = string("Poloidal flux");
     curve->xUnits = std::string("weber/rad");
     curve->yLabel = string("Poloidal current");
     curve->yUnits = std::string("m-T");
-//     curve->hasSpatialExtents = true;
-//     curve->minSpatialExtents = spatialExtents[i*2];
-//     curve->maxSpatialExtents = spatialExtents[i*2+1];
-//     curve->hasDataExtents = true;
-//     curve->minDataExtents = dataExtents[i*2];
-//     curve->maxDataExtents = dataExtents[i*2+1];
+    curve->hasSpatialExtents = true;
+    curve->minSpatialExtents = simag;
+    curve->maxSpatialExtents = sibry;
     md->Add(curve);
 
 
+    // Curve pres
     curve = new avtCurveMetaData;
     curve->name = "pres";
+    curve->centering = AVT_NODECENT;
+
+    curve->minDataExtents =  1e12;
+    curve->maxDataExtents = -1e12;
+    curve->hasDataExtents = true;
+    
+    for (int i=0; i<nw; i++)
+    {
+      if( curve->minDataExtents > pres[i] )
+          curve->minDataExtents = pres[i];
+      if( curve->maxDataExtents < pres[i] )
+        curve->maxDataExtents = pres[i];
+    }
+
     curve->xLabel = string("Poloidal flux");
     curve->xUnits = std::string("weber/rad");
     curve->yLabel = string("Plasma pressure");
     curve->yUnits = std::string("nt/m^2");
-//     curve->hasSpatialExtents = true;
-//     curve->minSpatialExtents = spatialExtents[i*2];
-//     curve->maxSpatialExtents = spatialExtents[i*2+1];
-//     curve->hasDataExtents = true;
-//     curve->minDataExtents = dataExtents[i*2];
-//     curve->maxDataExtents = dataExtents[i*2+1];
+    curve->hasSpatialExtents = true;
+    curve->minSpatialExtents = simag;
+    curve->maxSpatialExtents = sibry;
     md->Add(curve);
 
 
+    // Curve ffprim
     curve = new avtCurveMetaData;
     curve->name = "ffprim";
+    curve->centering = AVT_NODECENT;
+
+    curve->minDataExtents =  1e12;
+    curve->maxDataExtents = -1e12;
+    curve->hasDataExtents = true;
+    
+    for (int i=0; i<nw; i++)
+    {
+      if( curve->minDataExtents > ffprim[i] )
+          curve->minDataExtents = ffprim[i];
+      if( curve->maxDataExtents < ffprim[i] )
+        curve->maxDataExtents = ffprim[i];
+    }
+
     curve->xLabel = string("Poloidal flux");
     curve->xUnits = std::string("weber/rad");
     curve->yLabel = string("FF'(ψ)");
     curve->yUnits = std::string("(mT)^2/(weber/rad)");
-//     curve->hasSpatialExtents = true;
-//     curve->minSpatialExtents = spatialExtents[i*2];
-//     curve->maxSpatialExtents = spatialExtents[i*2+1];
-//     curve->hasDataExtents = true;
-//     curve->minDataExtents = dataExtents[i*2];
-//     curve->maxDataExtents = dataExtents[i*2+1];
+    curve->hasSpatialExtents = true;
+    curve->minSpatialExtents = simag;
+    curve->maxSpatialExtents = sibry;
     md->Add(curve);
 
 
+    // Curve pprime
     curve = new avtCurveMetaData;
     curve->name = "pprime";
+    curve->centering = AVT_NODECENT;
+
+    curve->minDataExtents =  1e12;
+    curve->maxDataExtents = -1e12;
+    curve->hasDataExtents = true;
+    
+    for (int i=0; i<nw; i++)
+    {
+      if( curve->minDataExtents > pprime[i] )
+          curve->minDataExtents = pprime[i];
+      if( curve->maxDataExtents < pprime[i] )
+        curve->maxDataExtents = pprime[i];
+    }
+
     curve->xLabel = string("Poloidal flux");
     curve->xUnits = std::string("weber/rad");
     curve->yLabel = string("P'(ψ)");
     curve->yUnits = std::string("(nt/m^2)/(weber/rad)");
-//     curve->hasSpatialExtents = true;
-//     curve->minSpatialExtents = spatialExtents[i*2];
-//     curve->maxSpatialExtents = spatialExtents[i*2+1];
-//     curve->hasDataExtents = true;
-//     curve->minDataExtents = dataExtents[i*2];
-//     curve->maxDataExtents = dataExtents[i*2+1];
+    curve->hasSpatialExtents = true;
+    curve->minSpatialExtents = simag;
+    curve->maxSpatialExtents = sibry;
     md->Add(curve);
 
 
+    // Curve qpsi
     curve = new avtCurveMetaData;
     curve->name = "qpsi";
+    curve->centering = AVT_NODECENT;
+
+    curve->minDataExtents =  1e12;
+    curve->maxDataExtents = -1e12;
+    curve->hasDataExtents = true;
+    
+    for (int i=0; i<nw; i++)
+    {
+      if( curve->minDataExtents > qpsi[i] )
+          curve->minDataExtents = qpsi[i];
+      if( curve->maxDataExtents < qpsi[i] )
+        curve->maxDataExtents = qpsi[i];
+    }
+
     curve->xLabel = string("Poloidal flux");
     curve->xUnits = std::string("weber/rad");
     curve->yLabel = string("Safety Factor");
     curve->yUnits = std::string("");
-//     curve->hasSpatialExtents = true;
-//     curve->minSpatialExtents = spatialExtents[i*2];
-//     curve->maxSpatialExtents = spatialExtents[i*2+1];
-//     curve->hasDataExtents = true;
-//     curve->minDataExtents = dataExtents[i*2];
-//     curve->maxDataExtents = dataExtents[i*2+1];
+    curve->hasSpatialExtents = true;
+    curve->minSpatialExtents = simag;
+    curve->maxSpatialExtents = sibry;
     md->Add(curve);
+
+    md->SetCyclesAreAccurate(true);
+    md->SetCycles( cycles );
+
+    md->SetTimesAreAccurate(true);
+    md->SetTimes( times );
+
 }
 
 
@@ -505,6 +638,8 @@ avtGeqdskFileFormat::GetMesh(int timestate, const char *meshname)
     vpoints->SetDataTypeToFloat();
     vpoints->SetNumberOfPoints(nw*nh);
 
+    int cc = 0;
+
     for( int i=0; i<nw; ++i )
     {
       float r = rmin + (float) i * dr;
@@ -513,7 +648,7 @@ avtGeqdskFileFormat::GetMesh(int timestate, const char *meshname)
       {
         float z = zmin + (float) j * dz;
 
-        vpoints->SetPoint(i*nh+j, r, 0, z );
+        vpoints->SetPoint(cc++, r, 0, z );
       }
     }
 
@@ -531,17 +666,17 @@ avtGeqdskFileFormat::GetMesh(int timestate, const char *meshname)
   else if( string(meshname) == string("boundary") ||
            string(meshname) == string("limiter") )
   {
-    float *rz;
+    float *rzVals;
     int numNodes;
 
     if( string(meshname) == string("boundary") )
     {
-      rz = rzbbbs;
+      rzVals = rzbbbs;
       numNodes = nbbbs;
     }
     else if( string(meshname) == string("limiter") )
     {
-      rz = rzlim;
+      rzVals = rzlim;
       numNodes = limitr;
     }
 
@@ -554,7 +689,7 @@ avtGeqdskFileFormat::GetMesh(int timestate, const char *meshname)
     ugridPtr->SetPoints(vpoints);
 
     for (size_t i=0; i<numNodes; ++i)
-      vpoints->SetPoint(i, rz[i*2], 0, rz[i*2+1] );
+      vpoints->SetPoint(i, rzVals[i*2], 0, rzVals[i*2+1] );
 
     ugridPtr->Allocate(numNodes-1);
 
@@ -606,7 +741,8 @@ avtGeqdskFileFormat::GetMesh(int timestate, const char *meshname)
     float xmax = sibry;
     float dx = (xmax - xmin) / (float) (nw-1);
 
-    for (int i=0; i<nw; i++) {
+    for (int i=0; i<nw; i++)
+    {
       xc->SetValue(i, xmin + (float) i * dx);
       vals->SetValue(i, var[i]);
     }
@@ -649,8 +785,17 @@ avtGeqdskFileFormat::GetVar(int timestate, const char *varname)
 
     rv->SetNumberOfTuples(nw*nh);
 
-    for (size_t i = 0; i<nw*nh; ++i)
-      rv->SetTuple(i, &psirz[i]);
+    int cc = 0;
+
+    for( int j=0; j<nh; ++j )
+    {
+      for( int i=0; i<nw; ++i )
+      {
+        rv->SetTuple(cc, &psirz[cc]);
+
+        cc++;
+      }
+    }
 
     return rv;
   }
@@ -680,35 +825,45 @@ avtGeqdskFileFormat::GetVar(int timestate, const char *varname)
 vtkDataArray *
 avtGeqdskFileFormat::GetVectorVar(int timestate, const char *varname)
 {
-    //
-    // If you have a file format where variables don't apply (for example a
-    // strictly polygonal format like the STL (Stereo Lithography) format,
-    // then uncomment the code below.
-    //
-    // EXCEPTION1(InvalidVariableException, varname);
-    //
+  return NULL;
+}
 
-    //
-    // If you do have a vector variable, here is some code that may be helpful.
-    //
-    // int ncomps = YYY;  // This is the rank of the vector - typically 2 or 3.
-    // int ntuples = XXX; // this is the number of entries in the variable.
-    // vtkFloatArray *rv = vtkFloatArray::New();
-    // int ucomps = (ncomps == 2 ? 3 : ncomps);
-    // rv->SetNumberOfComponents(ucomps);
-    // rv->SetNumberOfTuples(ntuples);
-    // float *one_entry = new float[ucomps];
-    // for (int i = 0 ; i < ntuples ; i++)
-    // {
-    //      int j;
-    //      for (j = 0 ; j < ncomps ; j++)
-    //           one_entry[j] = ...
-    //      for (j = ncomps ; j < ucomps ; j++)
-    //           one_entry[j] = 0.;
-    //      rv->SetTuple(i, one_entry); 
-    // }
-    //
-    // delete [] one_entry;
-    // return rv;
-    //
+// ****************************************************************************
+//  Method: avtGeqdskFileFormat::GetCycles
+//
+//  Purpose:
+//      Returns the cycles
+//
+//  Arguments:
+//      c          the cycles
+//
+//  Programmer: allen
+//  Creation:   
+//
+// ****************************************************************************
+
+
+void avtGeqdskFileFormat::GetCycles(std::vector<int> &c)
+{
+    c = cycles;
+}
+
+
+// ****************************************************************************
+//  Method: avtGeqdskFileFormat::GetTimes
+//
+//  Purpose:
+//      Returns the times
+//
+//  Arguments:
+//      t          the times
+//
+//  Programmer: allen
+//  Creation:   
+//
+// ****************************************************************************
+
+void avtGeqdskFileFormat::GetTimes(std::vector<double> &t)
+{
+    t = times;
 }
