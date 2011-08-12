@@ -80,9 +80,8 @@ class avtGeqdskFileFormat : public avtMTSDFileFormat
     // If you know the times and cycle numbers, overload this function.
     // Otherwise, VisIt will make up some reasonable ones for you.
     //
-    // virtual void        GetCycles(std::vector<int> &);
-    // virtual void        GetTimes(std::vector<double> &);
-    //
+    virtual void        GetCycles(std::vector<int> &);
+    virtual void        GetTimes(std::vector<double> &);
 
     virtual int            GetNTimesteps(void);
 
@@ -94,42 +93,43 @@ class avtGeqdskFileFormat : public avtMTSDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
   protected:
+    virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+
     virtual void ReadData( std::ifstream &f, float **var, int nVar );
 
-  int nw;        // Number of horizontal R grid points
-  int nh;        // Number of vertical Z grid points
+    int nw;        // Number of horizontal R grid points
+    int nh;        // Number of vertical   Z grid points
 
-  float rdim;    // Horizontal dimension in meter of computational box
-  float zdim;    // Vertical   dimension in meter of computational box
+    float rdim;    // Horizontal dimension in meter of computational box
+    float zdim;    // Vertical   dimension in meter of computational box
 
-  float rleft;   // Minimum R in meter of rectangular computational box
-  float zmid;    // Z of center of computational box in meter
+    float rleft;   // Minimum R in meter of rectangular computational box
+    float zmid;    // Z in meter of center of computational box
 
-  float rmaxis;  // R of magnetic axis in meter
-  float zmaxis;  // Z of magnetic axis in meter
+    float rmaxis;  // R of magnetic axis in meter
+    float zmaxis;  // Z of magnetic axis in meter
 
-  float  simag;    // poloidal flux at magnetic axis in Weber/rad
-  float  sibry;    // poloidal flux at the plasma boundary in Weber/rad
-  float  rcentr;   // R in meter of vacuum toroidal magnetic field BCENTR
-  float  bcentr;   // Vacuum toroidal magnetic field in Tesla at RCENTR
-  float  current;  // Plasma current in Ampere
+    float  simag;    // poloidal flux at magnetic axis in weber/rad
+    float  sibry;    // poloidal flux at the plasma boundary in weber/rad
+    float  rcentr;   // R in meter of vacuum toroidal magnetic field bcentr
+    float  bcentr;   // Vacuum toroidal magnetic field in Tesla at rcentr
+    float  current;  // Plasma current in Ampere
 
-  float  *fpol;    // Poloidal current function in m-T, F = RBT on flux grid
-  float  *pres;    // Plasma pressure in nt/m2 on uniform flux grid
-  float  *ffprim;  // FF’(ψ) in (mT)2 / (Weber/rad) on uniform flux grid
-  float  *pprime;  // P’(ψ) in (nt /m2) / (Weber/rad) on uniform flux grid
-  float  *psirz;   // Poloidal flux in Weber/rad on the rectangular grid points
-  float  *qpsi;    // q values on uniform flux grid from axis to boundary
+    float  *fpol;    // Poloidal current function in m-T, F = RBT on flux grid
+    float  *pres;    // Plasma pressure in nt/m2 on uniform flux grid
+    float  *ffprim;  // FF’(ψ) in (mT)^2 / (weber/rad) on uniform flux grid
+    float  *pprime;  // P’(ψ) in (nt/m^2) / (weber/rad) on uniform flux grid
+    float  *psirz;   // Poloidal flux in weber/rad on the rect grid points
+    float  *qpsi;    // q values on uniform flux grid from axis to boundary
 
-  int    nbbbs;    // Number of boundary points
-  int    limitr;   // Number of limiter points
+    int    nbbbs;    // Number of boundary points
+    int    limitr;   // Number of limiter points
 
-  float  *rzbbbs;   // RZ of boundary points in meter
-  float  *rzlim;    // RZ of surrounding limiter contour in meter
+    float  *rzbbbs;   // RZ of boundary points in meter
+    float  *rzlim;    // RZ of surrounding limiter contour in meter
 
-
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+    std::vector<int> cycles;
+    std::vector<double> times;
 };
-
 
 #endif
