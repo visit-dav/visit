@@ -23,6 +23,7 @@ SIMV2_API int simv2_CurvilinearMesh_setCoords3(visit_handle obj, int dims[3],
                                                visit_handle c);
 SIMV2_API int simv2_CurvilinearMesh_setRealIndices(visit_handle obj, int min[3], int max[3]);
 SIMV2_API int simv2_CurvilinearMesh_setBaseIndex(visit_handle obj, int base_index[3]);
+SIMV2_API int simv2_CurvilinearMesh_setGhostCells(visit_handle h, visit_handle gz);
 
 SIMV2_API int simv2_CurvilinearMesh_getCoords(visit_handle h, int *ndims, int dims[3],
                                               int *coordMode, 
@@ -32,6 +33,7 @@ SIMV2_API int simv2_CurvilinearMesh_getCoords(visit_handle h, int *ndims, int di
                                               visit_handle *c);
 SIMV2_API int simv2_CurvilinearMesh_getRealIndices(visit_handle h, int min[3], int max[3]);
 SIMV2_API int simv2_CurvilinearMesh_getBaseIndex(visit_handle h, int base_index[3]);
+SIMV2_API int simv2_CurvilinearMesh_getGhostCells(visit_handle h, visit_handle *gz);
 
 #ifdef __cplusplus
 }

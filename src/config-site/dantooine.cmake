@@ -14,7 +14,7 @@ SET(VISITARCH i386-apple-darwin10_gcc-4.2)
 ##
 ## Specify the location of the mesa.
 ##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2.old/${VISITARCH})
 
 ##
 ## Specify the location of the vtk.

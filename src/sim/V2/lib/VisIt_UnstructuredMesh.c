@@ -86,12 +86,12 @@ VisIt_UnstructuredMesh_setCoords(visit_handle obj, visit_handle c)
 }
 
 int
-VisIt_UnstructuredMesh_setConnectivity(visit_handle obj, int nzones, visit_handle c)
+VisIt_UnstructuredMesh_setConnectivity(visit_handle obj, int ncells, visit_handle c)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_setConnectivity,
                     int (*)(visit_handle,int,visit_handle), 
                     int (*cb)(visit_handle,int,visit_handle), 
-                    (*cb)(obj,nzones,c));
+                    (*cb)(obj,ncells,c));
 }
 
 int
@@ -101,6 +101,15 @@ VisIt_UnstructuredMesh_setRealIndices(visit_handle obj, int min, int max)
                     int (*)(visit_handle,int,int), 
                     int (*cb)(visit_handle,int,int), 
                     (*cb)(obj,min,max));
+}
+
+int
+VisIt_UnstructuredMesh_setGhostCells(visit_handle obj, visit_handle gz)
+{
+    VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_setGhostCells,
+                    int (*)(visit_handle,visit_handle), 
+                    int (*cb)(visit_handle,visit_handle), 
+                    (*cb)(obj,gz));
 }
 
 int
@@ -115,13 +124,13 @@ VisIt_UnstructuredMesh_getCoords(visit_handle obj,
 }
 
 int
-VisIt_UnstructuredMesh_getConnectivity(visit_handle obj, int *nzones,
+VisIt_UnstructuredMesh_getConnectivity(visit_handle obj, int *ncells,
     visit_handle *conn)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getConnectivity,
                     int (*)(visit_handle,int*,visit_handle*), 
                     int (*cb)(visit_handle,int*,visit_handle*), 
-                    (*cb)(obj,nzones, conn));
+                    (*cb)(obj,ncells, conn));
 }
 
 int
@@ -133,6 +142,15 @@ VisIt_UnstructuredMesh_getRealIndices(visit_handle obj, int *min, int *max)
                     (*cb)(obj,min,max));
 }
 
+int
+VisIt_UnstructuredMesh_getGhostCells(visit_handle obj, visit_handle *gz)
+{
+    VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getGhostCells,
+                    int (*)(visit_handle,visit_handle*), 
+                    int (*cb)(visit_handle,visit_handle*), 
+                    (*cb)(obj,gz));
+}
+
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITUCDMESHALLOC              F77_ID(visitucdmeshalloc_,visitucdmeshalloc,VISITUCDMESHALLOC)
@@ -142,9 +160,12 @@ VisIt_UnstructuredMesh_getRealIndices(visit_handle obj, int *min, int *max)
 #define F_VISITUCDMESHSETCOORDS          F77_ID(visitucdmeshsetcoords_,visitucdmeshsetcoords,VISITUCDMESHSETCOORDS)
 #define F_VISITUCDMESHSETCONNECTIVITY    F77_ID(visitucdmeshsetconnectivity_,visitucdmeshsetconnectivity,VISITUCDMESHSETCONNECTIVITY)
 #define F_VISITUCDMESHSETREALINDICES     F77_ID(visitucdmeshsetrealindices_,visitucdmeshsetrealindices,VISITUCDMESHSETREALINDICES)
+#define F_VISITUCDMESHSETGHOSTCELLS      F77_ID(visitucdmeshsetghostcells_,visitucdmeshsetghostcells,VISITUCDMESHSETGHOSTCELLS)
+
 #define F_VISITUCDMESHGETCOORDS          F77_ID(visitucdmeshgetcoords_,visitucdmeshgetcoords,VISITUCDMESHGETCOORDS)
 #define F_VISITUCDMESHGETCONNECTIVITY    F77_ID(visitucdmeshgetconnectivity_,visitucdmeshgetconnectivity,VISITUCDMESHGETCONNECTIVITY)
 #define F_VISITUCDMESHGETREALINDICES     F77_ID(visitucdmeshgetrealindices_,visitucdmeshgetrealindices,VISITUCDMESHGETREALINDICES)
+#define F_VISITUCDMESHGETGHOSTCELLS      F77_ID(visitucdmeshgetghostcells_,visitucdmeshgetghostcells,VISITUCDMESHGETGHOSTCELLS)
 
 int
 F_VISITUCDMESHALLOC(visit_handle *obj)
@@ -177,15 +198,21 @@ F_VISITUCDMESHSETCOORDS(visit_handle *obj, visit_handle *c)
 }
 
 int
-F_VISITUCDMESHSETCONNECTIVITY(visit_handle *obj, int *nzones, visit_handle *c)
+F_VISITUCDMESHSETCONNECTIVITY(visit_handle *obj, int *ncells, visit_handle *c)
 {
-    return VisIt_UnstructuredMesh_setConnectivity(*obj, *nzones, *c);
+    return VisIt_UnstructuredMesh_setConnectivity(*obj, *ncells, *c);
 }
 
 int
 F_VISITUCDMESHSETREALINDICES(visit_handle *obj, int *min, int *max)
 {
     return VisIt_UnstructuredMesh_setRealIndices(*obj, *min, *max);
+}
+
+int
+F_VISITUCDMESHSETGHOSTCELLS(visit_handle *obj, visit_handle *gz)
+{
+    return VisIt_UnstructuredMesh_setGhostCells(*obj, *gz);
 }
 
 int
@@ -196,9 +223,9 @@ F_VISITUCDMESHGETCOORDS(visit_handle *obj, int *ndims, int *coordMode,
 }
 
 int
-F_VISITUCDMESHGETCONNECTIVITY(visit_handle *obj, int *nzones, visit_handle *c)
+F_VISITUCDMESHGETCONNECTIVITY(visit_handle *obj, int *ncells, visit_handle *c)
 {
-    return VisIt_UnstructuredMesh_getConnectivity(*obj, nzones, c);
+    return VisIt_UnstructuredMesh_getConnectivity(*obj, ncells, c);
 }
 
 int
@@ -207,3 +234,8 @@ F_VISITUCDMESHGETREALINDICES(visit_handle *obj, int *min, int *max)
     return VisIt_UnstructuredMesh_getRealIndices(*obj, min, max);
 }
 
+int
+F_VISITUCDMESHGETGHOSTCELLS(visit_handle *obj, visit_handle *gz)
+{
+    return VisIt_UnstructuredMesh_getGhostCells(*obj, gz);
+}

@@ -1,3 +1,4 @@
+#include <snprintf.h>
 #include "VisItDataInterfaceRuntime.h"
 #include "VisItDataInterfaceRuntimeP.h"
 
@@ -10,6 +11,7 @@ struct VisIt_UnstructuredMesh : public VisIt_ObjectBase
     virtual ~VisIt_UnstructuredMesh();
     void FreeCoordinates();
     void FreeConnectivity();
+    void FreeGhostCells();
 
     int ndims;
     int coordMode;
@@ -22,6 +24,8 @@ struct VisIt_UnstructuredMesh : public VisIt_ObjectBase
     int firstRealZone;
     int lastRealZone;
     visit_handle connectivity;
+
+    visit_handle ghostCells;
 };
 
 VisIt_UnstructuredMesh::VisIt_UnstructuredMesh() : 
@@ -38,12 +42,15 @@ VisIt_UnstructuredMesh::VisIt_UnstructuredMesh() :
     firstRealZone = 0;
     lastRealZone = -1;
     connectivity = VISIT_INVALID_HANDLE;
+
+    ghostCells = VISIT_INVALID_HANDLE;
 }
 
 VisIt_UnstructuredMesh::~VisIt_UnstructuredMesh()
 {
     FreeCoordinates();
     FreeConnectivity();
+    FreeGhostCells();
 }
 
 void
@@ -81,21 +88,35 @@ VisIt_UnstructuredMesh::FreeConnectivity()
     }
 }
 
-static VisIt_UnstructuredMesh *
-GetObject(visit_handle h)
+void
+VisIt_UnstructuredMesh::FreeGhostCells()
 {
+    if(ghostCells != VISIT_INVALID_HANDLE)
+    {
+        simv2_VariableData_free(ghostCells);
+        ghostCells = VISIT_INVALID_HANDLE;
+    }
+}
+
+static VisIt_UnstructuredMesh *
+GetObject(visit_handle h, const char *fname)
+{
+    char tmp[100];
     VisIt_UnstructuredMesh *obj = (VisIt_UnstructuredMesh *)VisItGetPointer(h);
     if(obj != NULL)
     {
         if(obj->objectType() != VISIT_UNSTRUCTURED_MESH)
         {
-            VisItError("The provided handle does not point to a VariableData object.");
+            SNPRINTF(tmp, 100, "%s: The provided handle does not point to an "
+                "UnstructuredMesh object.", fname);
+            VisItError(tmp);
             obj = NULL;
         }
     }
     else
     {
-        VisItError("An invalid handle was provided.");
+        SNPRINTF(tmp, 100, "%s: An invalid handle was provided.", fname);
+        VisItError(tmp);
     }
 
     return obj;
@@ -115,7 +136,7 @@ simv2_UnstructuredMesh_alloc(visit_handle *h)
 int
 simv2_UnstructuredMesh_free(visit_handle h)
 {
-    VisIt_UnstructuredMesh *obj = GetObject(h);
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_free");
     int retval = VISIT_ERROR;
     if(obj != NULL)
     {
@@ -127,7 +148,8 @@ simv2_UnstructuredMesh_free(visit_handle h)
 }
 
 static int
-simv2_UnstructuredMesh_setCoords_helper(visit_handle h, visit_handle *cHandles, int ndims)
+simv2_UnstructuredMesh_setCoords_helper(const char *fname,
+    visit_handle h, visit_handle *cHandles, int ndims)
 {
     int retval = VISIT_ERROR;
 
@@ -170,7 +192,7 @@ simv2_UnstructuredMesh_setCoords_helper(visit_handle h, visit_handle *cHandles, 
         }
     }
 
-    VisIt_UnstructuredMesh *obj = GetObject(h);
+    VisIt_UnstructuredMesh *obj = GetObject(h, fname);
     if(obj != NULL)
     {
         obj->ndims = ndims;
@@ -192,7 +214,7 @@ simv2_UnstructuredMesh_setCoordsXY(visit_handle h, visit_handle x, visit_handle 
     visit_handle cHandles[2];
     cHandles[0] = x;
     cHandles[1] = y;
-    return simv2_UnstructuredMesh_setCoords_helper(h, cHandles, 2);
+    return simv2_UnstructuredMesh_setCoords_helper("simv2_UnstructuredMesh_setCoordsXY", h, cHandles, 2);
 }
 
 int
@@ -203,7 +225,7 @@ simv2_UnstructuredMesh_setCoordsXYZ(visit_handle h, visit_handle x, visit_handle
     cHandles[0] = x;
     cHandles[1] = y;
     cHandles[2] = z;
-    return simv2_UnstructuredMesh_setCoords_helper(h, cHandles, 3);
+    return simv2_UnstructuredMesh_setCoords_helper("simv2_UnstructuredMesh_setCoordsXYZ", h, cHandles, 3);
 }
 
 int
@@ -233,7 +255,7 @@ simv2_UnstructuredMesh_setCoords(visit_handle h, visit_handle coords)
         return VISIT_ERROR;
     }
 
-    VisIt_UnstructuredMesh *obj = GetObject(h);
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_setCoords");
     if(obj != NULL)
     {
         obj->ndims = nComps;
@@ -282,7 +304,7 @@ simv2_UnstructuredMesh_setConnectivity(visit_handle h, int nzones, visit_handle 
         return VISIT_ERROR;
     }
 
-    VisIt_UnstructuredMesh *obj = GetObject(h);
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_setConnectivity");
     int retval = VISIT_ERROR;
     if(obj != NULL)
     {
@@ -323,7 +345,7 @@ simv2_UnstructuredMesh_setRealIndices(visit_handle h, int minval, int maxval)
         return VISIT_ERROR;
     }
 
-    VisIt_UnstructuredMesh *obj = GetObject(h);
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_setRealIndices");
     int retval = VISIT_ERROR;
     if(obj != NULL)
     {
@@ -335,12 +357,48 @@ simv2_UnstructuredMesh_setRealIndices(visit_handle h, int minval, int maxval)
 }
 
 int
+simv2_UnstructuredMesh_setGhostCells(visit_handle h, visit_handle gz)
+{
+    int retval = VISIT_ERROR;
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_setGhostCells");
+    if(obj != NULL)
+    {
+        // Get the ghost cell information
+        int owner, dataType, nComps, nTuples;
+        void *data = 0;
+        if(simv2_VariableData_getData(gz, owner, dataType, nComps, nTuples, data) == VISIT_ERROR)
+        {
+            VisItError("Could not obtain ghost cell information.");
+            return VISIT_ERROR;
+        }
+
+        if(nComps != 1)
+        {
+            VisItError("Ghost cell arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
+        if(dataType != VISIT_DATATYPE_CHAR && dataType != VISIT_DATATYPE_INT)
+        {
+            VisItError("Ghost cell arrays must contain either char or int elements.");
+            return VISIT_ERROR;
+        }
+
+        obj->FreeGhostCells();
+        obj->ghostCells = gz;
+
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
 simv2_UnstructuredMesh_getCoords(visit_handle h,
     int *ndims, int *coordMode,
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *coords)
 {
     int retval = VISIT_ERROR;
-    VisIt_UnstructuredMesh *obj = GetObject(h);
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_getCoords");
     if(obj != NULL)
     {
         *ndims = obj->ndims;
@@ -358,7 +416,7 @@ int
 simv2_UnstructuredMesh_getConnectivity(visit_handle h, int *nzones, visit_handle *conn)
 {
     int retval = VISIT_ERROR;
-    VisIt_UnstructuredMesh *obj = GetObject(h);
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_getConnectivity");
     if(obj != NULL)
     {
         *nzones = obj->nzones;
@@ -373,12 +431,25 @@ int
 simv2_UnstructuredMesh_getRealIndices(visit_handle h, int *firstRealZone, int *lastRealZone)
 {
     int retval = VISIT_ERROR;
-    VisIt_UnstructuredMesh *obj = GetObject(h);
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_getRealIndices");
     if(obj != NULL)
     {
         *firstRealZone = obj->firstRealZone;
         *lastRealZone = (obj->lastRealZone == -1) ? (obj->nzones-1) : obj->lastRealZone;
 
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_UnstructuredMesh_getGhostCells(visit_handle h, visit_handle *gz)
+{
+    int retval = VISIT_ERROR;
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_getGhostCells");
+    if(obj != NULL)
+    {
+        *gz = obj->ghostCells;
         retval = VISIT_OKAY;
     }
     return retval;
@@ -391,7 +462,7 @@ simv2_UnstructuredMesh_getRealIndices(visit_handle h, int *firstRealZone, int *l
 int
 simv2_UnstructuredMesh_check(visit_handle h)
 {
-    VisIt_UnstructuredMesh *obj = GetObject(h);
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_check");
     int retval = VISIT_ERROR;
     if(obj != NULL)
     {
@@ -406,6 +477,21 @@ simv2_UnstructuredMesh_check(visit_handle h)
         {
             VisItError("The UnstructuredMesh's coordinates were not provided.");
             return VISIT_ERROR;
+        }
+
+        if(obj->ghostCells != VISIT_INVALID_HANDLE)
+        {
+            // Get the ghost cell information
+            int owner, dataType, nComps, nTuples = 0;
+            void *data = 0;
+            simv2_VariableData_getData(obj->ghostCells, owner, dataType, nComps, nTuples, data);
+
+            if(nTuples != obj->nzones)
+            {
+                 VisItError("The number of elements in the ghost cell array does "
+                            "not match the number of cells in the mesh.");
+                 return VISIT_ERROR;
+            }
         }
 
         retval = VISIT_OKAY;

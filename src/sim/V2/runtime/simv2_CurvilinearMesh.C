@@ -11,6 +11,7 @@ struct VisIt_CurvilinearMesh : public VisIt_ObjectBase
     VisIt_CurvilinearMesh();
     virtual ~VisIt_CurvilinearMesh();
     void FreeCoordinates();
+    void FreeGhostCells();
 
     int ndims;
     int dims[3];
@@ -23,6 +24,7 @@ struct VisIt_CurvilinearMesh : public VisIt_ObjectBase
     visit_handle ycoords;
     visit_handle zcoords;
     visit_handle coords;
+    visit_handle ghostCells;
 };
 
 VisIt_CurvilinearMesh::VisIt_CurvilinearMesh() : VisIt_ObjectBase(VISIT_CURVILINEAR_MESH)
@@ -38,11 +40,13 @@ VisIt_CurvilinearMesh::VisIt_CurvilinearMesh() : VisIt_ObjectBase(VISIT_CURVILIN
     ycoords = VISIT_INVALID_HANDLE;
     zcoords = VISIT_INVALID_HANDLE;
     coords = VISIT_INVALID_HANDLE;
+    ghostCells = VISIT_INVALID_HANDLE;
 }
 
 VisIt_CurvilinearMesh::~VisIt_CurvilinearMesh()
 {
     FreeCoordinates();
+    FreeGhostCells();
 }
 
 void
@@ -67,6 +71,16 @@ VisIt_CurvilinearMesh::FreeCoordinates()
     {
         simv2_VariableData_free(coords);
         coords = VISIT_INVALID_HANDLE;
+    }
+}
+
+void
+VisIt_CurvilinearMesh::FreeGhostCells()
+{
+    if(ghostCells != VISIT_INVALID_HANDLE)
+    {
+        simv2_VariableData_free(ghostCells);
+        ghostCells = VISIT_INVALID_HANDLE;
     }
 }
 
@@ -331,6 +345,42 @@ simv2_CurvilinearMesh_setBaseIndex(visit_handle h, int base_index[3])
 }
 
 int
+simv2_CurvilinearMesh_setGhostCells(visit_handle h, visit_handle gz)
+{
+    int retval = VISIT_ERROR;
+    VisIt_CurvilinearMesh *obj = GetObject(h, "simv2_CurvilinearMesh_setGhostCells");
+    if(obj != NULL)
+    {
+        // Get the ghost cell information
+        int owner, dataType, nComps, nTuples;
+        void *data = 0;
+        if(simv2_VariableData_getData(gz, owner, dataType, nComps, nTuples, data) == VISIT_ERROR)
+        {
+            VisItError("Could not obtain ghost cell information.");
+            return VISIT_ERROR;
+        }
+
+        if(nComps != 1)
+        {
+            VisItError("Ghost cell arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
+        if(dataType != VISIT_DATATYPE_CHAR && dataType != VISIT_DATATYPE_INT)
+        {
+            VisItError("Ghost cell arrays must contain either char or int elements.");
+            return VISIT_ERROR;
+        }
+
+        obj->FreeGhostCells();
+        obj->ghostCells = gz;
+
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
 simv2_CurvilinearMesh_getCoords(visit_handle h, 
     int *ndims, int dims[3], int *coordMode, 
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
@@ -385,6 +435,19 @@ simv2_CurvilinearMesh_getBaseIndex(visit_handle h, int base_index[3])
     return retval;
 }
 
+int
+simv2_CurvilinearMesh_getGhostCells(visit_handle h, visit_handle *gz)
+{
+    int retval = VISIT_ERROR;
+    VisIt_CurvilinearMesh *obj = GetObject(h, "simv2_CurvilinearMesh_getGhostCells");
+    if(obj != NULL)
+    {
+        *gz = obj->ghostCells;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
 /*******************************************************************************
  * C++ code callable from the SimV2 plugin and within the runtime
  ******************************************************************************/
@@ -401,6 +464,27 @@ simv2_CurvilinearMesh_check(visit_handle h)
             VisItError("No coordinates were supplied for the CurvilinearMesh");
             return VISIT_ERROR;
         }
+
+        if(obj->ghostCells != VISIT_INVALID_HANDLE)
+        {
+            // Get the ghost cell information
+            int owner, dataType, nComps, nTuples = 0;
+            void *data = 0;
+            simv2_VariableData_getData(obj->ghostCells, owner, dataType, nComps, nTuples, data);
+
+            // Get the number of cells
+            int nCells = 1;
+            for(int i = 0; i < obj->ndims; ++i)
+                nCells *= (obj->dims[i]-1);
+
+            if(nTuples != nCells)
+            {
+                 VisItError("The number of elements in the ghost cell array does "
+                            "not match the number of mesh cells.");
+                 return VISIT_ERROR;
+            }
+        }
+
         retval = VISIT_OKAY;
     }
     return retval;
