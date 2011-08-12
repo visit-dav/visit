@@ -73,6 +73,7 @@ using namespace std;
 #define LSEEK ::_lseek
 #else
 #include <unistd.h>
+#define O_BINARY 0
 #define OPEN  ::open
 #define CLOSE ::close
 #define LSEEK ::lseek
