@@ -113,6 +113,15 @@ VisIt_CurvilinearMesh_setBaseIndex(visit_handle obj, int base_index[3])
 }
 
 int
+VisIt_CurvilinearMesh_setGhostCells(visit_handle obj, visit_handle gz)
+{
+    VISIT_DYNAMIC_EXECUTE(CurvilinearMesh_setGhostCells,
+                    int (*)(visit_handle,visit_handle), 
+                    int (*cb)(visit_handle,visit_handle), 
+                    (*cb)(obj,gz));
+}
+
+int
 VisIt_CurvilinearMesh_getCoords(visit_handle obj, int *ndims, int dims[3],
     int *coordMode, 
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
@@ -141,6 +150,15 @@ VisIt_CurvilinearMesh_getBaseIndex(visit_handle obj, int base_index[3])
                     (*cb)(obj,base_index));
 }
 
+int
+VisIt_CurvilinearMesh_getGhostCells(visit_handle obj, visit_handle *gz)
+{
+    VISIT_DYNAMIC_EXECUTE(CurvilinearMesh_getGhostCells,
+                    int (*)(visit_handle,visit_handle*), 
+                    int (*cb)(visit_handle,visit_handle*), 
+                    (*cb)(obj,gz));
+}
+
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITCURVMESHALLOC             F77_ID(visitcurvmeshalloc_,visitcurvmeshalloc,VISITCURVMESHALLOC)
@@ -151,9 +169,12 @@ VisIt_CurvilinearMesh_getBaseIndex(visit_handle obj, int base_index[3])
 #define F_VISITCURVMESHSETCOORDS3        F77_ID(visitcurvmeshsetcoords3_,visitcurvmeshsetcoords3,VISITCURVMESHSETCOORDS3)
 #define F_VISITCURVMESHSETBASEINDEX      F77_ID(visitcurvmeshsetbaseindex_,visitcurvmeshsetbaseindex,VISITCURVMESHSETBASEINDEX)
 #define F_VISITCURVMESHSETREALINDICES    F77_ID(visitcurvmeshsetrealindices_,visitcurvmeshsetrealindices,VISITCURVMESHSETREALINDICES)
+#define F_VISITCURVMESHSETGHOSTCELLS     F77_ID(visitcurvmeshsetghostcells_,visitcurvmeshsetghostcells,VISITCURVMESHSETGHOSTCELLS)
+
 #define F_VISITCURVMESHGETCOORDS         F77_ID(visitcurvmeshgetcoords_,visitcurvmeshgetcoords,VISITCURVMESHGETCOORDS)
 #define F_VISITCURVMESHGETBASEINDEX      F77_ID(visitcurvmeshgetbaseindex_,visitcurvmeshgetbaseindex,VISITCURVMESHGETBASEINDEX)
 #define F_VISITCURVMESHGETREALINDICES    F77_ID(visitcurvmeshgetrealindices_,visitcurvmeshgetrealindices,VISITCURVMESHGETREALINDICES)
+#define F_VISITCURVMESHGETGHOSTCELLS     F77_ID(visitcurvmeshgetghostcells_,visitcurvmeshgetghostcells,VISITCURVMESHGETGHOSTCELLS)
 
 int
 F_VISITCURVMESHALLOC(visit_handle *obj)
@@ -215,6 +236,12 @@ F_VISITCURVMESHSETREALINDICES(visit_handle *obj, int *mins, int *maxs)
 }
 
 int
+F_VISITCURVMESHSETGHOSTCELLS(visit_handle *obj, visit_handle *gz)
+{
+    return VisIt_CurvilinearMesh_setGhostCells(*obj, *gz);
+}
+
+int
 F_VISITCURVMESHGETCOORDS(visit_handle *obj, int *ndims, int *dims,
     int *coordMode, 
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
@@ -234,3 +261,8 @@ F_VISITCURVMESHGETREALINDICES(visit_handle *obj, int *mins, int *maxs)
     return VisIt_CurvilinearMesh_getRealIndices(*obj, mins, maxs);
 }
 
+int
+F_VISITCURVMESHGETGHOSTCELLS(visit_handle *obj, visit_handle *gz)
+{
+    return VisIt_CurvilinearMesh_getGhostCells(*obj, gz);
+}

@@ -10,6 +10,7 @@ struct VisIt_RectilinearMesh : public VisIt_ObjectBase
     VisIt_RectilinearMesh();
     virtual ~VisIt_RectilinearMesh();
     void FreeCoordinates();
+    void FreeGhostCells();
 
     int ndims;
     visit_handle xcoords;
@@ -19,6 +20,8 @@ struct VisIt_RectilinearMesh : public VisIt_ObjectBase
     int baseIndex[3];
     int minRealIndex[3];
     int maxRealIndex[3];
+
+    visit_handle ghostCells;
 };
 
 VisIt_RectilinearMesh::VisIt_RectilinearMesh() : VisIt_ObjectBase(VISIT_RECTILINEAR_MESH)
@@ -30,11 +33,13 @@ VisIt_RectilinearMesh::VisIt_RectilinearMesh() : VisIt_ObjectBase(VISIT_RECTILIN
     baseIndex[0] = baseIndex[1] = baseIndex[2] = 0;
     minRealIndex[0] = minRealIndex[1] = minRealIndex[2] = 0;
     maxRealIndex[0] = maxRealIndex[1] = maxRealIndex[2] = -1;
+    ghostCells = VISIT_INVALID_HANDLE;
 }
 
 VisIt_RectilinearMesh::~VisIt_RectilinearMesh()
 {
     FreeCoordinates();
+    FreeGhostCells();
 }
 
 void
@@ -54,6 +59,16 @@ VisIt_RectilinearMesh::FreeCoordinates()
     {
         simv2_VariableData_free(zcoords);
         zcoords = VISIT_INVALID_HANDLE;
+    }
+}
+
+void
+VisIt_RectilinearMesh::FreeGhostCells()
+{
+    if(ghostCells != VISIT_INVALID_HANDLE)
+    {
+        simv2_VariableData_free(ghostCells);
+        ghostCells = VISIT_INVALID_HANDLE;
     }
 }
 
@@ -265,6 +280,42 @@ simv2_RectilinearMesh_setBaseIndex(visit_handle h, int base_index[3])
 }
 
 int
+simv2_RectilinearMesh_setGhostCells(visit_handle h, visit_handle gz)
+{
+    int retval = VISIT_ERROR;
+    VisIt_RectilinearMesh *obj = GetObject(h, "simv2_RectilinearMesh_setGhostCells");
+    if(obj != NULL)
+    {
+        // Get the ghost cell information
+        int owner, dataType, nComps, nTuples;
+        void *data = 0;
+        if(simv2_VariableData_getData(gz, owner, dataType, nComps, nTuples, data) == VISIT_ERROR)
+        {
+            VisItError("Could not obtain ghost cell information.");
+            return VISIT_ERROR;
+        }
+
+        if(nComps != 1)
+        {
+            VisItError("Ghost cell arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
+        if(dataType != VISIT_DATATYPE_CHAR && dataType != VISIT_DATATYPE_INT)
+        {
+            VisItError("Ghost cell arrays must contain either char or int elements.");
+            return VISIT_ERROR;
+        }
+
+        obj->FreeGhostCells();
+        obj->ghostCells = gz;
+
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
 simv2_RectilinearMesh_getCoords(visit_handle h,
     int *ndims,
     visit_handle *x, visit_handle *y, visit_handle *z)
@@ -327,6 +378,19 @@ simv2_RectilinearMesh_getBaseIndex(visit_handle h, int base_index[3])
     return retval;
 }
 
+int
+simv2_RectilinearMesh_getGhostCells(visit_handle h, visit_handle *gz)
+{
+    int retval = VISIT_ERROR;
+    VisIt_RectilinearMesh *obj = GetObject(h, "simv2_RectilinearMesh_getGhostCells");
+    if(obj != NULL)
+    {
+        *gz = obj->ghostCells;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
 /*******************************************************************************
  * C++ code callable from the SimV2 plugin and within the runtime
  ******************************************************************************/
@@ -343,7 +407,38 @@ simv2_RectilinearMesh_check(visit_handle h)
             VisItError("No coordinates were supplied for the RectilinearMesh");
             return VISIT_ERROR;
         }
+
+        if(obj->ghostCells != VISIT_INVALID_HANDLE)
+        {
+            // Get the ghost cell information
+            int owner, dataType, nComps, nTuples = 0;
+            void *data = 0;
+            simv2_VariableData_getData(obj->ghostCells, owner, dataType, nComps, nTuples, data);
+
+            // Determine the number of cells in the mesh.
+            int nCells = 1;
+            for(int i = 0; i < obj->ndims; ++i)
+            {
+                int nCoordTuples = 0;
+                if(i == 0)
+                    simv2_VariableData_getData(obj->xcoords, owner, dataType, nComps, nCoordTuples, data);
+                else if(i == 1)
+                    simv2_VariableData_getData(obj->ycoords, owner, dataType, nComps, nCoordTuples, data);
+                else
+                    simv2_VariableData_getData(obj->zcoords, owner, dataType, nComps, nCoordTuples, data);
+                nCells *= (nCoordTuples-1);
+            }
+
+            if(nCells != nTuples)
+            {
+                VisItError("The number of elements in the ghost cell array does "
+                           "not match the number of mesh cells.");
+                return VISIT_ERROR;
+            }
+        }
+
         retval = VISIT_OKAY;
     }
+
     return retval;
 }

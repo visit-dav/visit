@@ -45,6 +45,9 @@
 #   Force C++ linker for serial SimV2 examples. Otherwise I've noticed we
 #   are exposed to exceptions on newer Linux versions.
 #
+#   Brad Whitlock, Thu Aug 11 16:05:07 PDT 2011
+#   Added ghostzones example.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -201,6 +204,8 @@ ADD_SIMV2_SIMULATION(csg csg.c)
 
 ADD_SIMV2_SIMULATION(curve curve.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fcurve fcurve.f)
+
+ADD_SIMV2_SIMULATION(ghostcells ghostcells.c)
 
 ADD_SIMV2_SIMULATION(interleave interleave.c)
 

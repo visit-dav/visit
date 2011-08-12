@@ -73,6 +73,8 @@
 #include <simv2_UnstructuredMesh.h>
 #include <simv2_VariableData.h>
 
+static const char *AVT_GHOST_ZONES_ARRAY = "avtGhostZones";
+
 // ****************************************************************************
 //  Function:  GetQuadGhostZones
 //
@@ -153,7 +155,7 @@ GetQuadGhostZones(int nnodes, int ndims,
         int ncells = ds->GetNumberOfCells();
         vtkIdList *ptIds = vtkIdList::New();
         vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-        ghostCells->SetName("avtGhostZones");
+        ghostCells->SetName(AVT_GHOST_ZONES_ARRAY);
         ghostCells->Allocate(ncells);
  
         for (int i = 0; i < ncells; i++)
@@ -189,6 +191,102 @@ GetQuadGhostZones(int nnodes, int ndims,
 
         ds->SetUpdateGhostLevel(0);
     }
+}
+
+// ****************************************************************************
+// Function: AddGhostZonesFromArray
+//
+// Purpose: 
+//   Converts a mesh-sized array of ghost cell values into an avtGhostZones
+//   array that we add to the dataset.
+//
+// Arguments:
+//   ds         : The dataset to which we're adding ghost cells.
+//   ghostCells : The source array that contains the ghost cell types.
+//
+// Returns:    True if the avtGhostZones array was added; False otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 11 14:15:15 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static bool
+AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
+{
+    bool retval = false;
+
+    // Get the ghost cell information
+    int owner, dataType, nComps, nTuples = 0;
+    void *data = 0;
+    if(simv2_VariableData_getData(ghostCells, owner, dataType, nComps, nTuples, data))
+    {
+        unsigned char gzTypes[6] = {0,0,0,0,0,0};
+        avtGhostData::AddGhostZoneType(gzTypes[VISIT_GHOSTCELL_INTERIOR_BOUNDARY],     DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+        avtGhostData::AddGhostZoneType(gzTypes[VISIT_GHOSTCELL_EXTERIOR_BOUNDARY],     ZONE_EXTERIOR_TO_PROBLEM);
+        avtGhostData::AddGhostZoneType(gzTypes[VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY], ENHANCED_CONNECTIVITY_ZONE);
+        avtGhostData::AddGhostZoneType(gzTypes[VISIT_GHOSTCELL_REDUCED_CONNECTIVITY],  REDUCED_CONNECTIVITY_ZONE);
+        avtGhostData::AddGhostZoneType(gzTypes[VISIT_GHOSTCELL_BLANK],                 ZONE_NOT_APPLICABLE_TO_PROBLEM);
+
+        vtkUnsignedCharArray *ghosts = vtkUnsignedCharArray::New();
+        ghosts->SetNumberOfTuples(nTuples);
+        ghosts->SetName(AVT_GHOST_ZONES_ARRAY);
+        unsigned char *dest = (unsigned char *)ghosts->GetVoidPointer(0);
+        if(dataType == VISIT_DATATYPE_CHAR)
+        {
+            const unsigned char *src = (const unsigned char *)data;
+            const unsigned char *end = src + nTuples;
+            while(src < end)
+            {
+                if(*src <= VISIT_GHOSTCELL_BLANK)
+                {
+                    *dest++ = gzTypes[*src];
+                }
+                else
+                {
+                    ghosts->Delete();
+                    EXCEPTION1(ImproperUseException, "Invalid ghost cell value");
+                }
+
+                src++;
+            }
+
+            ds->GetCellData()->AddArray(ghosts);
+            retval = true;         
+        }
+        else if(dataType == VISIT_DATATYPE_INT)
+        {
+            const int *src = (const int *)data;
+            const int *end = src + nTuples;
+            while(src < end)
+            {
+                if(*src >= 0 && *src <= VISIT_GHOSTCELL_BLANK)
+                {
+                    *dest++ = gzTypes[*src];
+                }
+                else
+                {
+                    ghosts->Delete();
+                    EXCEPTION1(ImproperUseException, "Invalid ghost cell value");
+                }
+
+                src++;
+            }
+
+            ds->GetCellData()->AddArray(ghosts);
+            retval = true;
+        }
+        else
+        {
+            ghosts->Delete();
+        }
+    }
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -491,7 +589,9 @@ SimV2_CreatePoints(int ndims, int coordMode,
 // Creation:   Wed Feb 24 16:41:39 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 11 13:14:59 PDT 2011
+//   I added support for ghost zones from an array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -533,12 +633,22 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
     //
     sgrid->SetDimensions(dims);
 
-    GetQuadGhostZones(dims[0]*dims[1]*dims[2],
-                      ndims,
-                      dims,
-                      minRealIndex,
-                      maxRealIndex,
-                      sgrid);
+    bool doQuadGhosts = true;
+    visit_handle ghostCells;
+    if(simv2_CurvilinearMesh_getGhostCells(h, &ghostCells) == VISIT_OKAY)
+    {
+        if(ghostCells != VISIT_INVALID_HANDLE)
+            doQuadGhosts = !AddGhostZonesFromArray(sgrid, ghostCells);
+    }
+    if(doQuadGhosts)
+    {
+        GetQuadGhostZones(dims[0]*dims[1]*dims[2],
+                          ndims,
+                          dims,
+                          minRealIndex,
+                          maxRealIndex,
+                          sgrid);
+    }
 
     vtkIntArray *arr = vtkIntArray::New();
     arr->SetNumberOfTuples(3);
@@ -571,6 +681,9 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
 // Modifications:
 //   Brad Whitlock, Fri Jan 14 01:49:00 PST 2011
 //   Make all components the same type in 2D or bad things happen.
+//
+//   Brad Whitlock, Thu Aug 11 13:17:33 PDT 2011
+//   Add support for ghost cells from an array.
 //
 // ****************************************************************************
 
@@ -667,12 +780,22 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
     rgrid->SetZCoordinates(coords[2]);
     coords[2]->Delete();
 
-    GetQuadGhostZones(nTuples[0]*nTuples[1]*nTuples[2],
-                      ndims,
-                      nTuples,
-                      minRealIndex,
-                      maxRealIndex,
-                      rgrid);
+    bool doQuadGhosts = true;
+    visit_handle ghostCells;
+    if(simv2_RectilinearMesh_getGhostCells(h, &ghostCells) == VISIT_OKAY)
+    {
+        if(ghostCells != VISIT_INVALID_HANDLE)
+            doQuadGhosts = !AddGhostZonesFromArray(rgrid, ghostCells);
+    }
+    if(doQuadGhosts)
+    {
+        GetQuadGhostZones(nTuples[0]*nTuples[1]*nTuples[2],
+                          ndims,
+                          nTuples,
+                          minRealIndex,
+                          maxRealIndex,
+                          rgrid);
+    }
 
     vtkIntArray *arr = vtkIntArray::New();
     arr->SetNumberOfTuples(3);
@@ -928,6 +1051,9 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
 //   Brad Whitlock, Tue Oct 26 16:26:39 PDT 2010
 //   I changed the interface to PolyhedralSplit.
 //
+//   Brad Whitlock, Thu Aug 11 13:54:49 PDT 2011
+//   I added support for ghost zones from an array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1083,32 +1209,58 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
                << "\n\tfirstRealZone: " << firstRealZone
                << "\n\tlastRealZone: " << lastRealZone << endl;
     }
-    else if (firstRealZone != 0 || lastRealZone != numCells -1)
+    else 
     {
-        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-        ghostZones->SetNumberOfTuples(numCells);
-        unsigned char *gvals = ghostZones->GetPointer(0);
-        unsigned char val = 0;
-        avtGhostData::AddGhostZoneType(val, 
-            DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-        for (int i = 0; i < firstRealZone; i++)
-            gvals[i] = val;
-        for (int i = firstRealZone; i <= lastRealZone; i++)
-            gvals[i] = 0;
-        for (int i = lastRealZone+1; i < numCells; i++)
-            gvals[i] = val;
-
-        if(polyhedralCellCount > 0)
+        bool doGhosts = true;
+        visit_handle ghostCells;
+        if(simv2_UnstructuredMesh_getGhostCells(h, &ghostCells) == VISIT_OKAY)
         {
-            vtkDataArray *phgz = polyhedralSplit->ExpandDataArray(ghostZones, true);
-            ghostZones->Delete();
-            ghostZones = (vtkUnsignedCharArray *)phgz;
+            if(ghostCells != VISIT_INVALID_HANDLE)
+            {
+                bool addedGhosts = AddGhostZonesFromArray(ugrid, ghostCells);
+
+                // Split the ghost zones array if we split the cells.
+                vtkDataArray *ghostZones = ugrid->GetCellData()->GetArray(AVT_GHOST_ZONES_ARRAY);
+                if(ghostZones != 0 && polyhedralCellCount > 0)
+                {
+                    ugrid->GetCellData()->RemoveArray(AVT_GHOST_ZONES_ARRAY);
+
+                    vtkDataArray *phgz = polyhedralSplit->ExpandDataArray(ghostZones, true);
+                    ghostZones->Delete();
+                    ugrid->GetCellData()->AddArray(phgz);
+                }
+
+                doGhosts = !addedGhosts;
+            }
         }
 
-        ghostZones->SetName("avtGhostZones");
-        ugrid->GetCellData()->AddArray(ghostZones);
-        ghostZones->Delete();
-        ugrid->SetUpdateGhostLevel(0);
+        if (doGhosts && (firstRealZone != 0 || lastRealZone != numCells -1))
+        {
+            vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
+            ghostZones->SetNumberOfTuples(numCells);
+            unsigned char *gvals = ghostZones->GetPointer(0);
+            unsigned char val = 0;
+            avtGhostData::AddGhostZoneType(val, 
+                DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+            for (int i = 0; i < firstRealZone; i++)
+                gvals[i] = val;
+            for (int i = firstRealZone; i <= lastRealZone; i++)
+                gvals[i] = 0;
+            for (int i = lastRealZone+1; i < numCells; i++)
+                gvals[i] = val;
+
+            if(polyhedralCellCount > 0)
+            {
+                vtkDataArray *phgz = polyhedralSplit->ExpandDataArray(ghostZones, true);
+                ghostZones->Delete();
+                ghostZones = (vtkUnsignedCharArray *)phgz;
+            }
+
+            ghostZones->SetName(AVT_GHOST_ZONES_ARRAY);
+            ugrid->GetCellData()->AddArray(ghostZones);
+            ghostZones->Delete();
+            ugrid->SetUpdateGhostLevel(0);
+        }
     }
 
     if(polyhedralCellCount > 0)
