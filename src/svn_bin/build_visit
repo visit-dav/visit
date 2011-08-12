@@ -456,6 +456,9 @@
 #     if FC_COMPILER is set, then a set of fortran related args are passed
 #     to configure to enable (or disable) it depending on the lib's default
 #     fortran support.
+#
+#     Mark C. Miller, Thu Aug 11 21:57:53 PDT 2011
+#     To disable fortran support, do env FC_COMPILER=no ./build_visit ...
 # *****************************************************************************
 
 
@@ -4426,7 +4429,7 @@ function build_silo
        WITHSILOQTARG="--with-qt=$SILOQTDIR"
     fi
 
-    if [[ "$FC_COMPILER" == "" ]] ; then
+    if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS="--disable-fortran"
     else
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\""
@@ -4669,7 +4672,7 @@ function build_hdf5
         darwin_szip="-L\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib\" -lsz"
     fi
 
-    if [[ "$FC_COMPILER" == "" ]] ; then
+    if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS=""
     else
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
@@ -6108,7 +6111,7 @@ function build_hdf4
        fi
     fi
 
-    if [[ "$FC_COMPILER" == "" ]] ; then
+    if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS=""
     else
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
@@ -7071,7 +7074,7 @@ $DYLD_LIBRARY_PATH
 $LD_LIBRARY_PATH
        SOARG=""
     fi
-    if [[ "$FC_COMPILER" == "" ]] ; then
+    if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS=""
     else
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
