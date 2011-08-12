@@ -459,6 +459,9 @@
 #
 #     Mark C. Miller, Thu Aug 11 21:57:53 PDT 2011
 #     To disable fortran support, do env FC_COMPILER=no ./build_visit ...
+#
+#     Mark C. Miller, Fri Aug 12 09:59:09 PDT 2011
+#     Removed defintion and use of $darwin_szip in build_hdf5
 # *****************************************************************************
 
 
@@ -4664,12 +4667,10 @@ function build_hdf5
         export LD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
     fi
     cf_szip=""
-    darwin_szip=""
     if test "x${DO_SZIP}" = "xyes"; then
         info "SZip requested.  Configuring HDF5 with SZip support."
         sz_dir="${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}"
         cf_szip="--with-szlib=${sz_dir}"
-        darwin_szip="-L\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib\" -lsz"
     fi
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
@@ -4685,12 +4686,12 @@ function build_hdf5
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH\" \
-        ${cf_szip} ${darwin_szip} ${cf_darwin}"
+        ${cf_szip} ${cf_darwin}"
     sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH\" \
-        ${cf_szip} ${darwin_szip} ${cf_darwin}"
+        ${cf_szip} ${cf_darwin}"
     if [[ $? != 0 ]] ; then
        warn "HDF5 configure failed.  Giving up"
        return 1
