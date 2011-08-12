@@ -344,102 +344,106 @@ avtGeqdskFileFormat::FreeUpResources(void)
 void
 avtGeqdskFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
-
-    avtMeshMetaData *mmd;
-    avtMeshType mt = AVT_RECTILINEAR_MESH;
-    int nblocks = 1;
-    int block_origin = 0;
-    int cell_origin = 0;
-    int group_origin = 0;
-    int spatial_dimension = 3;
-    int topological_dimension = 2;
+    avtMeshMetaData* mmd;
+    int spatialDims = 3;
+    int topologicalDims;
     double extents[6];
     int bounds[3];
 
-    // Original meshes for the user to see.
-    extents[0] = rleft;
-    extents[1] = rleft + rdim;
-    extents[2] = 0;
-    extents[3] = 0;
-    extents[4] = zmid - zdim / 2.0;
-    extents[5] = zmid + zdim / 2.0;
+    // Rectangular mesh
+    topologicalDims = 3;
 
-    bounds[0] = nw;
-    bounds[1] = nh;
-    bounds[2] = 1;
+    mmd = new avtMeshMetaData("rectangular", 1, 1, 1, 0,
+                              spatialDims, topologicalDims,
+                              AVT_RECTILINEAR_MESH);
 
-    AddMeshToMetaData( md, "rectangular",
-                       mt, extents, nblocks, block_origin,
-                       spatial_dimension, topological_dimension, bounds );
+    extents[0] = rleft;                extents[1] = rleft + rdim;
+    extents[2] = 0;                    extents[3] = 0;
+    extents[4] = zmid - zdim / 2.0;    extents[5] = zmid + zdim / 2.0;
+
+    bounds[0] = nw;    bounds[1] = 1;    bounds[2] = nh;
+
+    mmd->SetExtents( extents );
+    mmd->SetBounds( bounds );
+    mmd->SetNumberCells( (nw-1)*(nh-1) );
+    mmd->xLabel = "R";
+    mmd->yLabel = "Phi";
+    mmd->zLabel = "Z";
+    mmd->xUnits = "meters";
+    mmd->yUnits = "meters";
+    mmd->zUnits = "meters";
+    md->Add(mmd);
 
 
-    // Boundary mesh for the user to see.
-    extents[0] = rleft + rdim;
-    extents[1] = rleft;
-    extents[2] = 0;
-    extents[3] = 0;
-    extents[4] = zmid + zdim / 2.0;
-    extents[5] = zmid - zdim / 2.0;
+    // Boundary mesh
+    topologicalDims = 1;
+
+    mmd = new avtMeshMetaData("boundary", 1, 1, 1, 0,
+                              spatialDims, topologicalDims,
+                              AVT_UNSTRUCTURED_MESH);
+
+    extents[0] = rleft + rdim;         extents[1] = rleft;
+    extents[2] = 0;                    extents[3] = 0;
+    extents[4] = zmid + zdim / 2.0;    extents[5] = zmid - zdim / 2.0;
 
     for( int i=0; i<nbbbs; ++i )
     {
-      if( extents[0] > rzbbbs[i*2] )
-        extents[0] = rzbbbs[i*2];
-      if( extents[1] < rzbbbs[i*2] )
-        extents[1] = rzbbbs[i*2];
+      if( extents[0] > rzbbbs[i*2] )  extents[0] = rzbbbs[i*2];
+      if( extents[1] < rzbbbs[i*2] )  extents[1] = rzbbbs[i*2];
 
-      if( extents[4] > rzbbbs[i*2+1] )
-        extents[4] = rzbbbs[i*2+1];
-      if( extents[5] < rzbbbs[i*2+1] )
-        extents[5] = rzbbbs[i*2+1];
+      if( extents[4] > rzbbbs[i*2+1] )  extents[4] = rzbbbs[i*2+1];
+      if( extents[5] < rzbbbs[i*2+1] )  extents[5] = rzbbbs[i*2+1];
     }
 
-    bounds[0] = nbbbs-1;
-    bounds[1] = 1;
-    bounds[2] = 1;
+    bounds[0] = nbbbs-1;    bounds[1] = 1;    bounds[2] = 1;
 
-    mt = AVT_UNSTRUCTURED_MESH;
-    topological_dimension = 1;
+    mmd->SetExtents( extents );
+    mmd->SetBounds( bounds );
+    mmd->SetNumberCells( nbbbs-1 );
+    mmd->xLabel = "R";
+    mmd->yLabel = "Phi";
+    mmd->zLabel = "Z";
+    mmd->xUnits = "meters";
+    mmd->yUnits = "meters";
+    mmd->zUnits = "meters";
+    md->Add(mmd);
 
-    AddMeshToMetaData( md, "boundary",
-                       mt, extents, nblocks, block_origin,
-                       spatial_dimension, topological_dimension, bounds );
 
+    // Limiter mesh 
+    topologicalDims = 1;
 
-    // Limiter mesh for the user to see.
-    extents[0] = rleft + rdim;
-    extents[1] = rleft;
-    extents[2] = 0;
-    extents[3] = 0;
-    extents[4] = zmid + zdim / 2.0;
-    extents[5] = zmid - zdim / 2.0;
+    mmd = new avtMeshMetaData("limiter", 1, 1, 1, 0,
+                              spatialDims, topologicalDims,
+                              AVT_UNSTRUCTURED_MESH);
+
+    extents[0] = rleft + rdim;         extents[1] = rleft;
+    extents[2] = 0;                    extents[3] = 0;
+    extents[4] = zmid + zdim / 2.0;    extents[5] = zmid - zdim / 2.0;
 
     for( int i=0; i<limitr; ++i )
     {
-      if( extents[0] > rzlim[i*2] )
-        extents[0] = rzlim[i*2];
-      if( extents[1] < rzlim[i*2] )
-        extents[1] = rzlim[i*2];
+      if( extents[0] > rzlim[i*2] )  extents[0] = rzlim[i*2];
+      if( extents[1] < rzlim[i*2] )  extents[1] = rzlim[i*2];
 
-      if( extents[4] > rzlim[i*2+1] )
-        extents[4] = rzlim[i*2+1];
-      if( extents[5] < rzlim[i*2+1] )
-        extents[5] = rzlim[i*2+1];
+      if( extents[4] > rzlim[i*2+1] )  extents[4] = rzlim[i*2+1];
+      if( extents[5] < rzlim[i*2+1] )  extents[5] = rzlim[i*2+1];
     }
 
-    bounds[0] = limitr-1;
-    bounds[1] = 1;
-    bounds[2] = 1;
+    bounds[0] = limitr-1;    bounds[1] = 1;    bounds[2] = 1;
 
-    mt = AVT_UNSTRUCTURED_MESH;
-    topological_dimension = 1;
+    mmd->SetExtents( extents );
+    mmd->SetBounds( bounds );
+    mmd->SetNumberCells( limitr-1 );
+    mmd->xLabel = "R";
+    mmd->yLabel = "Phi";
+    mmd->zLabel = "Z";
+    mmd->xUnits = "meters";
+    mmd->yUnits = "meters";
+    mmd->zUnits = "meters";
+    md->Add(mmd);
 
-    AddMeshToMetaData( md, "limiter",
-                       mt, extents, nblocks, block_origin,
-                       spatial_dimension, topological_dimension, bounds );
 
-
-    // Rect scalar psirz
+    // Rect scalar value psirz
     extents[0] =  1e12;
     extents[1] = -1e12;
     
@@ -588,7 +592,7 @@ avtGeqdskFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
 
     curve->xLabel = string("Poloidal flux");
     curve->xUnits = std::string("weber/rad");
-    curve->yLabel = string("Safety Factor");
+    curve->yLabel = string("q values");
     curve->yUnits = std::string("");
     curve->hasSpatialExtents = true;
     curve->minSpatialExtents = simag;
@@ -787,13 +791,12 @@ avtGeqdskFileFormat::GetVar(int timestate, const char *varname)
 
     int cc = 0;
 
-    for( int j=0; j<nh; ++j )
+    for( int i=0; i<nw; ++i )
     {
-      for( int i=0; i<nw; ++i )
+      for( int j=0; j<nh; ++j )
       {
-        rv->SetTuple(cc, &psirz[cc]);
-
-        cc++;
+        // NOTE: The data is transposed!!
+        rv->SetTuple(j*nw+i, &psirz[i*nh+j]);
       }
     }
 
