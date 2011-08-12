@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
   <Plugin name="volimage" type="database" label="WPP Volume Image" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" specifiedFilenames="false">
     <FilePatterns>
-      3D.ux
-      3D.uy
-      3D.uz
-      3D.rho
-      3D.p
-      3D.s
-      3D.div
-      3D.curl
-      3D.mag
-      3D.veldiv
-      3D.velcurl
-      3D.velmag
-      3D.z
+      *3D.ux
+      *3D.uy
+      *3D.uz
+      *3D.rho
+      *3D.p
+      *3D.s
+      *3D.div
+      *3D.curl
+      *3D.mag
+      *3D.veldiv
+      *3D.velcurl
+      *3D.velmag
+      *3D.z
     </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

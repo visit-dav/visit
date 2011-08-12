@@ -166,19 +166,19 @@ std::vector<std::string>
 volimageGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("3D.ux");
-    defaultPatterns.push_back("3D.uy");
-    defaultPatterns.push_back("3D.uz");
-    defaultPatterns.push_back("3D.rho");
-    defaultPatterns.push_back("3D.p");
-    defaultPatterns.push_back("3D.s");
-    defaultPatterns.push_back("3D.div");
-    defaultPatterns.push_back("3D.curl");
-    defaultPatterns.push_back("3D.mag");
-    defaultPatterns.push_back("3D.veldiv");
-    defaultPatterns.push_back("3D.velcurl");
-    defaultPatterns.push_back("3D.velmag");
-    defaultPatterns.push_back("3D.z");
+    defaultPatterns.push_back("*3D.ux");
+    defaultPatterns.push_back("*3D.uy");
+    defaultPatterns.push_back("*3D.uz");
+    defaultPatterns.push_back("*3D.rho");
+    defaultPatterns.push_back("*3D.p");
+    defaultPatterns.push_back("*3D.s");
+    defaultPatterns.push_back("*3D.div");
+    defaultPatterns.push_back("*3D.curl");
+    defaultPatterns.push_back("*3D.mag");
+    defaultPatterns.push_back("*3D.veldiv");
+    defaultPatterns.push_back("*3D.velcurl");
+    defaultPatterns.push_back("*3D.velmag");
+    defaultPatterns.push_back("*3D.z");
 
     return defaultPatterns;
 }
