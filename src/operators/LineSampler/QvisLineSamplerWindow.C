@@ -48,6 +48,10 @@
 #include <QSpinBox>
 #include <QButtonGroup>
 #include <QRadioButton>
+#include <QListWidget>
+#include <QPushButton>
+#include <QFileDialog>
+
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -55,14 +59,8 @@
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
 
-#include <QListWidget.h>
-#include <QPushButton.h>
-#include <QFileDialog.h>
-
 #include <stdio.h>
 #include <string>
-
-using std::string;
 
 // ****************************************************************************
 // Method: QvisLineSamplerWindow::QvisLineSamplerWindow
