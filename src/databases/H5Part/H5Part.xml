@@ -20,6 +20,8 @@
     <FilePatterns>
       *.h5part
       *.h5
+      *.h5p
+      *.h5block
     </FilePatterns>
     <Files components="M">
       avtH5PartFileFormat.C

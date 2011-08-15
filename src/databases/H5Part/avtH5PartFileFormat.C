@@ -731,6 +731,9 @@ avtH5PartFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
 //    Move re-running of query to this method since it seems more logical
 //    here.
 //
+//    Iuri Prilepov and Gunther H. Weber, Mon Aug 15 15:19:21 PDT 2011
+//    Fix parallel decomposition of selections bug.
+//
 // ****************************************************************************
 
 void
@@ -773,11 +776,10 @@ avtH5PartFileFormat::SelectParticlesToRead()
         else
         {
             h5part_int64_t minParticlesPerProc = 100;
-            h5part_int64_t particlesPerProc = std::min(minParticlesPerProc,
-                    h5part_int64_t(queryResults.size() / PAR_Size()));
-            h5part_int64_t myStart = std::max( h5part_int64_t(PAR_Rank() * particlesPerProc),
-                    h5part_int64_t(queryResults.size()));
-            h5part_int64_t myEnd = std::max(h5part_int64_t((PAR_Rank()+1) * particlesPerProc),
+            h5part_int64_t particlesPerProc = std::max(minParticlesPerProc,
+                    h5part_int64_t( (queryResults.size() + PAR_Size() - 1) / PAR_Size()));
+            h5part_int64_t myStart = h5part_int64_t(PAR_Rank() * particlesPerProc);
+            h5part_int64_t myEnd = std::min(h5part_int64_t((PAR_Rank()+1) * particlesPerProc),
                     h5part_int64_t(queryResults.size()));
             if (myStart < queryResults.size())
             {
