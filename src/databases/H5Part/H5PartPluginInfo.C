@@ -168,6 +168,8 @@ H5PartGeneralPluginInfo::GetDefaultFilePatterns() const
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.h5part");
     defaultPatterns.push_back("*.h5");
+    defaultPatterns.push_back("*.h5p");
+    defaultPatterns.push_back("*.h5block");
 
     return defaultPatterns;
 }
