@@ -9568,6 +9568,10 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Tue Dec 14 13:34:58 PST 2010
 //   Pass selection properties when creating named selections.
 //
+//   Brad Whitlock, Mon Aug 15 10:55:03 PDT 2011
+//   I rewrote how we manage window creation/deletion and setting sizes based
+//   on information from the config file.
+//
 // ****************************************************************************
 
 void
@@ -9640,134 +9644,86 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
         }
     }
 
-    if(nWindows > newNWindows)
+    // Read window sizes and locations.
+    int nWindowSizeLoc = 0;
+    std::vector<int> windowSizeLoc;
+    for(i = 0; i < newNWindows; ++i)
     {
-        int d = nWindows - newNWindows;
-        for(i = 0; i < d; ++i)
-            DeleteWindow();
-
-        //
-        // Create an array of pointers to the existing windows such that
-        // the pointer array has no gaps.
-        //
-        ViewerWindow **existingWindows = new ViewerWindow *[nWindows + 1];
-        for(i = 0, c = 0; i < maxWindows; ++i)
+        DataNode *windowINode = windowsNode->GetChildren()[i];
+        if((sizeNode = windowINode->GetNode("windowSize")) != 0 &&
+           (locationNode = windowINode->GetNode("windowLocation")) != 0)
         {
-           if(windows[i] != 0)
-               existingWindows[c++] = windows[i];
-        }
-
-        //
-        // Try and resize or reposition the existing windows.
-        //
-        for(i = 0; i < newNWindows; ++i)
-        {
-            DataNode *windowINode = windowsNode->GetChildren()[i];
-            if((sizeNode = windowINode->GetNode("windowSize")) != 0 &&
-               (locationNode = windowINode->GetNode("windowLocation")) != 0)
+            if(GetViewerProperties()->GetNowin())
             {
-                // We're able to read in the size and location.
-                int  w, h, x, y;
-                if(GetViewerProperties()->GetNowin())
-                {
-                    x = y = 0;
-                    w = windowLimits[0][0].width;
-                    h = windowLimits[0][0].height;
-                }
-                else
-                {
-                    w = sizeNode->AsIntArray()[0];
-                    h = sizeNode->AsIntArray()[1];
-                    x = locationNode->AsIntArray()[0];
-                    y = locationNode->AsIntArray()[1];
-                }
-
-                // If we're considering an existing window, just set the
-                // size and position.
-                existingWindows[i]->SetSize(w, h);
-                existingWindows[i]->SetLocation(x, y);
+                windowSizeLoc.push_back(windowLimits[0][0].width);
+                windowSizeLoc.push_back(windowLimits[0][0].height);
+                windowSizeLoc.push_back(0);
+                windowSizeLoc.push_back(0);
             }
-        }
-
-        delete [] existingWindows;
-    }
-    else if(nWindows < newNWindows)
-    {
-        //
-        // Create an array of pointers to the existing windows such that
-        // the pointer array has no gaps.
-        //
-        ViewerWindow **existingWindows = new ViewerWindow *[nWindows + 1];
-        for(i = 0, c = 0; i < maxWindows; ++i)
-        {
-           if(windows[i] != 0)
-               existingWindows[c++] = windows[i];
-        }
-
-        //
-        // Loop over the saved windows either using their information to
-        // resize existing windows or to create new windows.
-        //
-        int numExistingWindows = nWindows;
-        for(i = 0; i < newNWindows; ++i)
-        {
-            //
-            // Read the location and size for the window.
-            //
-            DataNode *windowINode = windowsNode->GetChildren()[i];
-            if((sizeNode = windowINode->GetNode("windowSize")) != 0 &&
-               (locationNode = windowINode->GetNode("windowLocation")) != 0)
+            else
             {
-                // We're able to read in the size and location.
-                int  w, h, x, y;
-                if(GetViewerProperties()->GetNowin())
-                {
-                    x = y = 0;
-                    w = windowLimits[0][0].width;
-                    h = windowLimits[0][0].height;
-                }
-                else
-                {
-                    w = sizeNode->AsIntArray()[0];
-                    h = sizeNode->AsIntArray()[1];
-                    x = locationNode->AsIntArray()[0];
-                    y = locationNode->AsIntArray()[1];
-                }
+                windowSizeLoc.push_back(sizeNode->AsIntArray()[0]);
+                windowSizeLoc.push_back(sizeNode->AsIntArray()[1]);
+                windowSizeLoc.push_back(locationNode->AsIntArray()[0]);
+                windowSizeLoc.push_back(locationNode->AsIntArray()[1]);
+            }
+            ++nWindowSizeLoc;
+        }
+    }
 
-                // If we're considering an existing window, just set the
-                // size and position.
-                if(i < numExistingWindows)
+    // Delete excess windows.
+    if(newNWindows < nWindows)
+    {
+        int deleteWindows = nWindows - newNWindows;
+        for(i = 0; i < deleteWindows; ++i)
+            DeleteWindow();
+    }
+
+    // Loop over the windows we have and set their sizes and locations.
+    int windowSizeIdx = 0;
+    for(i = 0, c = 0; i < maxWindows; ++i)
+    {
+        if(windows[i] != 0 && windowSizeIdx < nWindowSizeLoc)
+        {
+            windows[i]->SetSize(windowSizeLoc[windowSizeIdx*4],
+                                windowSizeLoc[windowSizeIdx*4+1]);
+            windows[i]->SetLocation(windowSizeLoc[windowSizeIdx*4+2],
+                                    windowSizeLoc[windowSizeIdx*4+3]);
+            windowSizeIdx++;
+        }
+    }
+
+    // Create additional windows. Create them the right size if possible.
+    if(nWindows < newNWindows)
+    {
+        int additionalWindows = newNWindows - nWindows;
+        for(i = 0; i < additionalWindows; ++i, ++windowSizeIdx)
+        {
+            if(windowSizeIdx < nWindowSizeLoc)
+            {
+                for(int windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
                 {
-                    existingWindows[i]->SetSize(w, h);
-                    existingWindows[i]->SetLocation(x, y);
-                }
-                // We have the size for a window that does not exist yet so
-                // create the vis window with the correct size.
-                else
-                {
-                    for(int windowIndex = 0;
-                        windowIndex < maxWindows;
-                        ++windowIndex)
+                    if(windows[windowIndex] == 0)
                     {
-                        if(windows[windowIndex] == 0)
-                        {
-                            // Create the vis window so that it has the
-                            // right size and location.
-                            CreateVisWindow(windowIndex, w, h, x, y);
+                        int w = windowSizeLoc[windowSizeIdx*4];
+                        int h = windowSizeLoc[windowSizeIdx*4+1];
+                        int x = windowSizeLoc[windowSizeIdx*4+2];
+                        int y = windowSizeLoc[windowSizeIdx*4+3];
 
-                            // HACK - set the location again because it could
-                            // be shifted a little by some window managers.
-                            windows[windowIndex]->SetLocation(x, y);
-                            break;
-                        }
+                        // Create the vis window so that it has the
+                        // right size and location.
+                        CreateVisWindow(windowIndex, w, h, x, y);
+
+                        // HACK - set the location again because it could
+                        // be shifted a little by some window managers.
+                        windows[windowIndex]->SetLocation(x, y);
+                        break;
                     }
                 }
             }
-            else if(nWindows < newNWindows)
+            else
                 AddWindow(false);
         }
-
-        delete [] existingWindows;
     }
 
     //
