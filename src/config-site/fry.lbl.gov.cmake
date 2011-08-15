@@ -9,7 +9,7 @@
 ## Set the VISITHOME environment variable.
 ##
 SET(VISITHOME /Users/ghweber/devel/visit_3rdparty)
-SET(VISITARCH i386-apple-darwin10_gcc-4.2)
+SET(VISITARCH i386-apple-darwin11_gcc-4.2)
 SET(VISIT_VERBOSE_MAKEFILE TRUE)
 VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /usr/local/visit)
 SET(CMAKE_BUILD_TYPE Debug CACHE STRING "")
@@ -18,7 +18,7 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_FILTERS ON)
 ##
 ## Specify the location of Mesa.
 ##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 
 ##
 ## Specify the location of VTK.
@@ -47,10 +47,10 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-fno-common -fexceptions -fvisibility=hidd
 ##
 ##  Parallel flags
 ##
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS "-D_REENTRANT -DOMPI_SKIP_MPICXX")
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-D_REENTRANT -DOMPI_SKIP_MPICXX")
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS "-DOMPI_SKIP_MPICXX -I/opt/local/include/openmpi")
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-DOMPI_SKIP_MPICXX -I/opt/local/include/openmpi")
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup")
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS "-Wl,-u,_munmap -Wl,-multiply_defined,suppress /usr/lib/libmpi.dylib /usr/lib/libopen-rte.dylib /usr/lib/libopen-pal.dylib /usr/lib/libutil.dylib")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS "/opt/local/lib/libmpi.dylib")
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 
 ##############################################################
@@ -78,8 +78,8 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP /opt/local/lib sz /opt/local/lib z)
 ##
 ## H5Part
 ##
-#VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.2/${VISITARCH})
-#VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
+VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR /opt/local)
+VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
 ##
 ## NetCDF
