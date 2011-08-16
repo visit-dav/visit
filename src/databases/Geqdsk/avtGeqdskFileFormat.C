@@ -38,6 +38,12 @@
 
 // ************************************************************************* //
 //                            avtGeqdskFileFormat.C                          //
+//
+// See:
+// https://fusion.gat.com/conferences/snowmass/working/mfe/physics/p3/equilibria/g_eqdsk_s.pdf
+// 
+// For information on the file layout
+//
 // ************************************************************************* //
 
 #include <avtGeqdskFileFormat.h>
@@ -93,7 +99,7 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
 
     if(!f.good())
     {
-      EXCEPTION1( InvalidFilesException, "Read past end of file" );
+      EXCEPTION1( InvalidFilesException, "Read past end of file." );
     }
 
     int n = sscanf( tmp, "%s %s %s %s  %d  %d %d",
@@ -102,7 +108,7 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
     if( n != 7 )
     {
       EXCEPTION1( InvalidVariableException,
-                  "Can not read number of horizontal R and/or vertical Z grid points." );
+                  "Can not read the first line - number of horizontal R and/or vertical Z grid points." );
     }
 
     cycles.resize( 1 );
@@ -115,7 +121,7 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
     f.getline(tmp, 1024);
     if(!f.good())
     {
-      EXCEPTION1( InvalidFilesException, "Read past end of file" );
+      EXCEPTION1( InvalidFilesException, "Read past end of file." );
     }
 
     n = sscanf( tmp, "%f %f %f %f %f",
@@ -124,14 +130,14 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
     if( n != 5 )
     {
       EXCEPTION1( InvalidVariableException,
-                  "Can not read second line." );
+                  "Can not read second line - physical dimensions of the grid." );
     }
 
     // Read the third line ...
     f.getline(tmp, 1024);
     if(!f.good())
     {
-      EXCEPTION1( InvalidFilesException, "Read past end of file" );
+      EXCEPTION1( InvalidFilesException, "Read past end of file." );
     }
 
     n = sscanf( tmp, "%f %f %f %f %f",
@@ -139,8 +145,7 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
 
     if( n != 5 )
     {
-      EXCEPTION1( InvalidVariableException,
-                  "Can not read third line." );
+      EXCEPTION1( InvalidVariableException, "Can not read third line - location of magnetic axis and the poloidal flux." );
     }
 
     // Read the forth line ...
@@ -155,15 +160,14 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
 
     if( n != 5 )
     {
-      EXCEPTION1( InvalidVariableException,
-                  "Can not read forth line." );
+      EXCEPTION1( InvalidVariableException, "Can not read forth line - current and magnetic axis." );
     }
 
     // Read the fifth line ...
     f.getline(tmp, 1024);
     if(!f.good())
     {
-      EXCEPTION1( InvalidFilesException, "Read past end of file" );
+      EXCEPTION1( InvalidFilesException, "Read past end of file." );
     }
 
     n = sscanf( tmp, "%f %f %f %f %f",
@@ -171,8 +175,7 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
 
     if( n != 5 )
     {
-      EXCEPTION1( InvalidVariableException,
-                  "Can not read fifth line." );
+      EXCEPTION1( InvalidVariableException, "Can not read fifth line - magnetic axis." );
     }
 
     // Read fpol - Poloidal current function in m-T, F = RBT on flux grid
@@ -197,7 +200,7 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
     f.getline(tmp, 1024);
     if(!f.good())
     {
-      EXCEPTION1( InvalidFilesException, "Read past end of file" );
+      EXCEPTION1( InvalidFilesException, "Read past end of file." );
     }
 
     n = sscanf( tmp, "%d %d", &nbbbs, &limitr );
@@ -209,11 +212,11 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
     }
 
     // Read RZ of boundary points in meter. Note the data is written
-    // merged together so read together.
+    // merged R and Z together so read together.
     ReadData( f, &rzbbbs, 2*nbbbs );
 
     // Read RZ of surrounding limiter contour in meter. Note the data
-    // is written merged together so read together.
+    // is written merged R and Z together so read together.
     ReadData( f, &rzlim, 2*limitr );
 }
 
@@ -231,7 +234,7 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
 void
 avtGeqdskFileFormat::ReadData( std::ifstream &f, float **var, int nVar )
 {
-    // Read fpol - Poloidal current function in m-T, F = RBT on flux grid
+  // Read fpol - Poloidal current function in m-T, F = RBT on flux grid
   *var = new float[nVar];
 
   float *varPtr = *var;
@@ -244,10 +247,15 @@ avtGeqdskFileFormat::ReadData( std::ifstream &f, float **var, int nVar )
     f.getline(tmp, 1024);
     if(!f.good())
     {
-      EXCEPTION1( InvalidFilesException, "Read past end of file" );
+      EXCEPTION1( InvalidFilesException, "Read past end of file." );
     }
 
     float fdum[5];
+
+    // According to the format there are at most 5 values dumped out:
+    // https://fusion.gat.com/conferences/snowmass/working/mfe/physics/p3/equilibria/g_eqdsk_s.pdf
+    // as such, scan appropriately based on what might be left to read
+    // in the file.
     int n, count = (cc > nVar-5 ? nVar%5 : 5 );
 
     if( count == 5 )
@@ -286,7 +294,7 @@ avtGeqdskFileFormat::ReadData( std::ifstream &f, float **var, int nVar )
     }
   }
 
-  EXCEPTION1( InvalidFilesException, "Read past end of file" );
+  EXCEPTION1( InvalidFilesException, "Read past end of file." );
 }
 
 
@@ -342,7 +350,8 @@ avtGeqdskFileFormat::FreeUpResources(void)
 // ****************************************************************************
 
 void
-avtGeqdskFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
+avtGeqdskFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
+                                              int timeState)
 {
     avtMeshMetaData* mmd;
     int spatialDims = 3;
@@ -707,6 +716,8 @@ avtGeqdskFileFormat::GetMesh(int timestate, const char *meshname)
 
       ugridPtr->InsertNextCell(VTK_LINE, cellVerts, &verts[0]);
     }
+
+    vpoints->Delete();
 
     return ugridPtr;
   }
