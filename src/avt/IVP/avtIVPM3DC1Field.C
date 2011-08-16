@@ -116,20 +116,20 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
     
   // The mesh elements.
   elements =
-    SetDataPointer( ds, fltVar, "hidden/elements",  nelms, element_size );
+    SetDataPointer( ds, fltVar, "hidden/elements", element_size );
 
   // Equalibrium field
-  intPtr = SetDataPointer( ds, intVar, "hidden/header/eqsubtract", nelms, 1 );
+  intPtr = SetDataPointer( ds, intVar, "hidden/header/eqsubtract", 1 );
   eqsubtract = intPtr[0];
   delete [] intPtr;
 
   if( eqsubtract )
   {
-    psi0 = SetDataPointer( ds, fltVar, "hidden/equilibrium/psi", nelms, scalar_size );
-    f0   = SetDataPointer( ds, fltVar, "hidden/equilibrium/f",   nelms, scalar_size );
+    psi0 = SetDataPointer( ds, fltVar, "hidden/equilibrium/psi", scalar_size );
+    f0   = SetDataPointer( ds, fltVar, "hidden/equilibrium/f",   scalar_size );
     
     if( element_size == ELEMENT_SIZE_3D )
-      I0 = SetDataPointer( ds, fltVar, "hidden/equilibrium/I",   nelms, scalar_size );
+      I0 = SetDataPointer( ds, fltVar, "hidden/equilibrium/I", scalar_size );
   }
 
 
@@ -137,19 +137,19 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
   {
     nplanes = 1;
 
-    intPtr = SetDataPointer( ds, intVar, "hidden/header/linear", nelms, 1 );
+    intPtr = SetDataPointer( ds, intVar, "hidden/header/linear", 1 );
     linflag = intPtr[0];
     delete [] intPtr;
 
-    intPtr = SetDataPointer( ds, intVar, "hidden/header/ntor",   nelms, 1 );
+    intPtr = SetDataPointer( ds, intVar, "hidden/header/ntor", 1 );
     tmode = intPtr[0];
     delete [] intPtr;
 
-    fltPtr = SetDataPointer( ds, fltVar, "hidden/header/bzero",  nelms, 1 );
+    fltPtr = SetDataPointer( ds, fltVar, "hidden/header/bzero", 1 );
     bzero = fltPtr[0];
     delete [] fltPtr;
 
-    fltPtr = SetDataPointer( ds, fltVar, "hidden/header/rzero",  nelms, 1 );
+    fltPtr = SetDataPointer( ds, fltVar, "hidden/header/rzero", 1 );
     rzero = fltPtr[0];
     delete [] fltPtr;
 
@@ -159,22 +159,22 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
     // Vector values from the field.
     if( linflag )
     {
-      psinr = SetDataPointer( ds, fltVar, "hidden/psi",             nelms, scalar_size, factor );
-      psini = SetDataPointer( ds, fltVar, "hidden/psi_i",           nelms, scalar_size, factor );
-      fnr   = SetDataPointer( ds, fltVar, "hidden/f",               nelms, scalar_size, factor );
-      fni   = SetDataPointer( ds, fltVar, "hidden/f_i",             nelms, scalar_size, factor );
+      psinr = SetDataPointer( ds, fltVar, "hidden/psi",   scalar_size, factor );
+      psini = SetDataPointer( ds, fltVar, "hidden/psi_i", scalar_size, factor );
+      fnr   = SetDataPointer( ds, fltVar, "hidden/f",   scalar_size, factor );
+      fni   = SetDataPointer( ds, fltVar, "hidden/f_i", scalar_size, factor );
     }
   }
   else //if( element_size == ELEMENT_SIZE_3D )
   {
     // Single values from the header attributes.
-    intPtr = SetDataPointer( ds, intVar, "hidden/header/nplanes", nelms, 1 );
+    intPtr = SetDataPointer( ds, intVar, "hidden/header/nplanes", 1 );
     nplanes = intPtr[0];
     delete [] intPtr;
 
-    f   = SetDataPointer( ds, fltVar, "hidden/f",   nelms, scalar_size );
-    psi = SetDataPointer( ds, fltVar, "hidden/psi", nelms, scalar_size );
-    I   = SetDataPointer( ds, fltVar, "hidden/I",   nelms, scalar_size );
+    f   = SetDataPointer( ds, fltVar, "hidden/f",   scalar_size, factor );
+    psi = SetDataPointer( ds, fltVar, "hidden/psi", scalar_size, factor );
+    I   = SetDataPointer( ds, fltVar, "hidden/I"  , scalar_size, factor );
   }
 
   // As such, construct a table with using elements from one plane.
@@ -266,8 +266,7 @@ template< class type >
 type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
                                         const type var,
                                         const char* varname,
-                                        const int ntuples,
-                                        const int ncomponents,
+                                        const int component_size,
                                         double factor )
 {
   vtkDataArray *array;
@@ -298,8 +297,10 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
     return 0;
   }
 
-  if( ntuples != array->GetNumberOfTuples() / XX ||
-      ncomponents != array->GetNumberOfComponents() )
+  const int ntuples = array->GetNumberOfTuples();
+  const int ncomponents = array->GetNumberOfComponents();
+
+  if( ntuples != nelms || ncomponents != component_size )
   {
     debug1 << "Variable " << varname
            << " size does not equal the number elements and/or components"

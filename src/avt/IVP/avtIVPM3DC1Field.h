@@ -133,8 +133,7 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
     type* SetDataPointer( vtkDataSet *ds,
                           const type var,
                           const char* varname,
-                          const int ntuples,
-                          const int ncomponents,
+                          const int component_size,
                           double factor = 1.0 );
   
   // Variables calculated in findElementNeighbors (trigtable,
