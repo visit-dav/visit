@@ -56,6 +56,7 @@
 #include <Expression.h>
 
 #include <NonCompliantException.h>
+#include <InvalidFilesException.h>
 #include <DebugStream.h>
 
 #include "mdsPlusAPI.h"
@@ -536,8 +537,11 @@ avtMDSplusFileFormat::LoadFile()
 
     if( (m_socket = MDS_Connect( m_host.c_str() )) < 0 )
     {
-      EXCEPTION2( NonCompliantException, "MDSplus server connection",
-                  "Unable to connect to MDS server " + m_host );
+      char serverError[128];
+      sprintf( serverError, "MDSplus - Unable to connect to MDSpus server %s",
+               m_host.c_str() );
+
+      EXCEPTION1( InvalidFilesException, serverError );
     }
 
     debug1 << "Connecting to mdsplus tree: " << m_tree
