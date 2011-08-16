@@ -1857,8 +1857,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       } else {
         // There was some error so add each vertex as a single point.
         // NO!  Unless we've registered as a pointmesh, adding single
-        //points won't work so we treat the entire row of the dataset
-        //as a single cell Maybe something will work!
+        // points won't work so we treat the entire row of the dataset
+        // as a single cell Maybe something will work!
         std::vector<vtkIdType> verts(numVerts);
         k--;
         for (size_t j = 0; j < numVerts; ++j) {
