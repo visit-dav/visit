@@ -86,7 +86,7 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
   : avtMTSDFileFormat(&filename, 1),
     m_filename(filename),
     m_refinement(2), m_dataLocation(AVT_NODECENT),
-    m_perturbationScale(1.5)
+    m_perturbationScale(1.0)
 {
     if (readOpts != NULL) {
       for (int i=0; i<readOpts->GetNumberOfOptions(); ++i) {
