@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtPoincareFilter.C                           //
+//                             Avtpoincarefilter.C                           //
 // ************************************************************************* //
 
 #include <avtPoincareFilter.h>
@@ -376,7 +376,7 @@ avtPoincareFilter::Execute()
 bool
 avtPoincareFilter::ContinueExecute()
 {
-    debug5 << "Continue execute " << endl;
+    debug5 << "Continue execute " << std::endl;
 
     std::vector<avtIntegralCurve *> ics;
     
@@ -396,7 +396,8 @@ avtPoincareFilter::ContinueExecute()
       {
         avtPoincareIC * poincare_ic = (avtPoincareIC *) ics[i];
 
-#ifdef STRAIGHTLINE_SKELETON    
+#ifdef STRAIGHTLINE_SKELETON
+
         // For Island Chains add in the O Points.
         if( showOPoints &&
 
@@ -411,11 +412,10 @@ avtPoincareFilter::ContinueExecute()
 
             !(poincare_ic->properties.OPoints.empty()) )
         {
-
           // Change the state of the properties to complete now that
           // the seed point has been stripped off.
           poincare_ic->properties.analysisState =
-            FieldlineProperties::COMPLETED;
+            FieldlineProperties::TERMINATED;
 
           if( poincare_ic->properties.iteration < OPointMaxIterations )
           {
@@ -427,7 +427,7 @@ avtPoincareFilter::ContinueExecute()
           
             for( unsigned int j=0; j<new_ics.size(); j++ )
             {
-                cerr << "New island seed ids " << new_ics[j]->id << "  ";
+              std::cerr << "New island seed ids " << new_ics[j]->id << "  ";
 
                 avtPoincareIC * seed_poincare_ic = (avtPoincareIC *) new_ics[j];
 
@@ -444,7 +444,7 @@ avtPoincareFilter::ContinueExecute()
                   poincare_ic->properties.iteration + 1;
             }
 
-            cerr << endl;
+            std::cerr << std::endl;
           }
 
           // The source was an island_chain which meant the seed was
@@ -452,8 +452,9 @@ avtPoincareFilter::ContinueExecute()
           if( poincare_ic->properties.source ==
               FieldlineProperties::ISLAND_CHAIN )
           {
-            cerr << "Deleting old O Point seed " <<  poincare_ic->id << endl;
-
+            std::cerr << "Deleting old O Point seed "
+                      << poincare_ic->id << std::endl;
+            
             ids_to_delete.push_back( poincare_ic->id );
           }
         }
@@ -549,7 +550,7 @@ avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
     FieldlineLib FLlib;
     FLlib.verboseFlag = verboseFlag;
 
-    debug5 << "Classifying Fieldlines " << endl;
+    debug5 << "Classifying Fieldlines " << std::endl;
 
     bool analysisComplete = true;
 
@@ -563,8 +564,8 @@ avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
         {
           poincare_ic->status = avtIntegralCurve::STATUS_FINISHED;
 
-          cerr <<"Skipping Classified Streamline: id = "
-               << poincare_ic->id << endl;
+         std::cerr <<"Skipping Classified Streamline: id = "
+               << poincare_ic->id << std::endl;
 
           continue;
         }
@@ -586,6 +587,8 @@ avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
         if( poincare_ic->maxIntersections / 2 >= maxPunctures ||
             poincare_ic->properties.nPuncturesNeeded == 0 )
         {
+          if( poincare_ic->properties.analysisState ==
+              FieldlineProperties::COMPLETED )
           poincare_ic->properties.analysisState =
             FieldlineProperties::TERMINATED;
           poincare_ic->status = avtIntegralCurve::STATUS_FINISHED;
@@ -617,7 +620,7 @@ avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
             safetyFactor = 0;
 
         if(verboseFlag )
-          cerr << "Classify Streamline: id = "<< poincare_ic->id
+         std::cerr << "Classify Streamline: id = "<< poincare_ic->id
                << "  ptCnt = " << poincare_ic->points.size()
                << "  type = " << poincare_ic->properties.type
                << "  toroidal/poloidal windings = "
@@ -637,12 +640,12 @@ avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
                                     "Yes " : "No ")
 //               << (poincare_ic->ic->status == avtIntegralCurve::STATUS_FINISHED ? 
 //                   0 : poincare_ic->ic->maxIntersections )
-               << endl << endl;
+               << std::endl << std::endl;
     }
 
     debug5 << "Classifying Streaming "
          << (analysisComplete ? "Analysis completed" : "Analysis was not complete")
-         << endl;
+         << std::endl;
 
     return analysisComplete;
 }
@@ -726,7 +729,7 @@ void realDFTamp( std::vector< double > &g, std::vector< double > &G )
 //    Changed color to dataValue
 //
 //    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
-//    Replaced cerr/cout with debug5.
+//    Replacedstd::cerr/cout with debug5.
 //
 // ****************************************************************************
 void
@@ -736,7 +739,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
     FieldlineLib FLlib;
     FLlib.verboseFlag = verboseFlag;
 
-    debug5 << "Creating output " << endl;
+    debug5 << "Creating output " << std::endl;
 
     for ( int i=0; i<ic.size(); ++i )
     {
@@ -764,47 +767,48 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
 
         if( verboseFlag ) 
         {
-          cerr << "Surface id = " << poincare_ic->id << "  "
-               << "< " << poincare_ic->points[0].x << " "
-               << poincare_ic->points[0].y << " "
-               << poincare_ic->points[0].z << " >  "
-               << toroidalWinding << "," << poloidalWinding << " ("
-               << (float) toroidalWinding / (float) poloidalWinding << ")  "
-               << toroidalResonance << "," << poloidalResonance << "  ";
+         std::cerr << "Surface id = " << poincare_ic->id << "  "
+                   << "< " << poincare_ic->points[0].x << " "
+                   << poincare_ic->points[0].y << " "
+                   << poincare_ic->points[0].z << " >  "
+                   << toroidalWinding << "," << poloidalWinding << " ("
+                   << (float) toroidalWinding / (float) poloidalWinding << ")  ";
 
           if( poloidalWinding != poloidalWindingP )
-            cerr << toroidalWinding << "," << poloidalWindingP << " ("
+           std::cerr << toroidalWinding << "," << poloidalWindingP << " ("
                  << (float) toroidalWinding / (float) poloidalWindingP << ")  ";
 
 
           if( type == FieldlineProperties::RATIONAL )
-            cerr << "rational surface  ";
+           std::cerr << "rational surface  ";
 
           else if( type == FieldlineProperties::FLUX_SURFACE )
-            cerr << "flux surface  ";
+           std::cerr << "flux surface  ";
 
           else if( type == FieldlineProperties::ISLAND_CHAIN )
-            cerr << islands << " island chain  ";
+            std::cerr << islands << " island chain with resonances: "
+                      << toroidalResonance << "," << poloidalResonance << "  ";
 
           else if( type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
-            cerr << islands << " islands around "
-                 << islandGroups << " islandGroups ";
+            std::cerr << islands << " islands around "
+                      << islandGroups << " islandGroups with resonances: "
+                      << toroidalResonance << "," << poloidalResonance << "  ";
 
           else if( type == FieldlineProperties::CHAOTIC )
-            cerr << "chaotic  ";
+           std::cerr << "chaotic  ";
 
           else if( type == FieldlineProperties::UNKNOWN_TYPE )
-            cerr << "unknown  ";
+           std::cerr << "unknown  ";
 
-          cerr << "with " << nnodes << " nodes"
+         std::cerr << "with " << nnodes << " nodes"
                << (complete ? " (Complete)  " : "  ")
-               << endl;
+               << std::endl;
 
           if( (type == FieldlineProperties::ISLAND_CHAIN ||
                type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS) &&
               toroidalWinding != poloidalWinding &&
               islands != toroidalWinding )
-            cerr << "WARNING - The island count does not match the toroidalWinding count" << endl;
+           std::cerr << "WARNING - The island count does not match the toroidalWinding count" << std::endl;
         }
     
         // If toroidal winding is zero, skip it.
@@ -831,8 +835,8 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
           else
           {
             if( verboseFlag ) 
-              cerr << " id = " << poincare_ic->id
-                   << " SKIPPING UNKNOWN TYPE " << endl;
+             std::cerr << " id = " << poincare_ic->id
+                   << " SKIPPING UNKNOWN TYPE " << std::endl;
             
             std::pair< unsigned int, unsigned int > topo( 0, 0 );
             
@@ -842,8 +846,8 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         else if( toroidalWinding == 0 ) 
         {
             if( verboseFlag ) 
-              cerr << " id = " << poincare_ic->id
-                   << " SKIPPING TOROIDALWINDING OF 0" << endl;
+             std::cerr << " id = " << poincare_ic->id
+                   << " SKIPPING TOROIDALWINDING OF 0" << std::endl;
             
             std::pair< unsigned int, unsigned int > topo( 0, 0 );
             
@@ -1080,11 +1084,10 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             }
             else if( type == FieldlineProperties::ISLAND_CHAIN )
             {
-              cerr << "Overlaps " << overlaps << "  " << nnodes << endl;
-
               if( overlaps != 0 )
               {
-                if( properties.analysisState == FieldlineProperties::COMPLETED )
+                if( properties.analysisState == FieldlineProperties::COMPLETED ||
+                    properties.analysisState == FieldlineProperties::TERMINATED )
                 {
                   // Loop through each island.
                   for( unsigned int j=0; j<toroidalWinding; j++ )
@@ -1102,7 +1105,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                   // If the analysis did result in a complete island try
                   // to find the boundary manually
 //                if( verboseFlag )
-//                  cerr << "Cleaning up island " << endl;
+//                 std::cerr << "Cleaning up island " << std::endl;
 
 //                FLlib.removeOverlap( puncturePts[p], nnodes,
 //                                     toroidalWinding, poloidalWinding,
@@ -1122,22 +1125,22 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                 if( puncturePts[p][j].size() < 1 ) 
                 {
                     if( verboseFlag ) 
-                      cerr << "Clean up check failed - Plane " << p
+                     std::cerr << "Clean up check failed - Plane " << p
                            << " bin  " << j
                            << " number of points " << puncturePts[p][j].size()
-                           << endl;
+                           << std::endl;
                     
                     VALID = false;
                     
 //                    return NULL;
                 }
                 
-                //      cerr << "Surface " << i
+                //     std::cerr << "Surface " << i
                 //           << " plane " << p
                 //           << " bin " << j
                 //           << " base number of nodes " << nnodes
                 //           << " number of points " << puncturePts[p][j].size()
-                //           << endl;
+                //           << std::endl;
             }
         }
 
@@ -1274,9 +1277,9 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
     }
     
     if( verboseFlag ) 
-        cerr << endl << endl << "count " << ic.size() << endl << endl;
+       std::cerr << std::endl << std::endl << "count " << ic.size() << std::endl << std::endl;
 
-    debug5 << "Finished creating output " << endl;
+    debug5 << "Finished creating output " << std::endl;
 }
 
 // ****************************************************************************
