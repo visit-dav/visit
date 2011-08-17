@@ -83,9 +83,17 @@ int VisIt_MeshMetaData_setYLabel(visit_handle h, const char *);
 int VisIt_MeshMetaData_getYLabel(visit_handle h, char **);
 int VisIt_MeshMetaData_setZLabel(visit_handle h, const char *);
 int VisIt_MeshMetaData_getZLabel(visit_handle h, char **);
+int VisIt_MeshMetaData_setCellOrigin(visit_handle h, int);
+int VisIt_MeshMetaData_getCellOrigin(visit_handle h, int*);
+int VisIt_MeshMetaData_setNodeOrigin(visit_handle h, int);
+int VisIt_MeshMetaData_getNodeOrigin(visit_handle h, int*);
+int VisIt_MeshMetaData_setHasSpatialExtents(visit_handle h, int);
+int VisIt_MeshMetaData_getHasSpatialExtents(visit_handle h, int*);
+int VisIt_MeshMetaData_setSpatialExtents(visit_handle h, double[6]);
+int VisIt_MeshMetaData_getSpatialExtents(visit_handle h, double[6]);
 
 #ifdef __cplusplus
-}
+};
 #endif
 
 #endif

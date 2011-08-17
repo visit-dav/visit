@@ -380,6 +380,46 @@ quadmesh_2d_create_radial_wave(quadmesh_2d *m, double time)
 
 /******************************************************************************
  *
+ * Purpose: Look for nodes that are only used by ghost cells and set their
+ *          values to bogus values that will skew any extents calculation in
+ *          VisIt if the node coordinates are used. This simulates having
+ *          invalid coordinates for ghost nodes, which some codes have.
+ *
+ *          We will combat this by setting the mesh's extents in the metadata.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Aug 12 14:59:38 PDT 2011
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+void
+mess_up_ghost_coordinates(curvmesh_2d *m)
+{
+    int i,j;
+    for(j = 0; j < m->dims[1]-1-1; ++j)
+        for(i = 0; i < m->dims[0]-1-1; ++i)
+        {
+            int cellidx = j * (m->dims[0]-1) + i;
+            if(m->ghostCells[cellidx] != 0 &&
+               m->ghostCells[cellidx + 1] != 0)
+            {
+                int top = cellidx + (m->dims[0]-1);
+                if(m->ghostCells[top] != 0)
+                {
+                    /* This cell abuts other ghosts to the right and top.
+                     * Mess up its coordinates.
+                     */
+                    int nidx = (j+1) * m->dims[0] + (i+1);
+                    m->y[nidx] = m->x[nidx] = 1.e8;
+                }
+            }
+        }
+}
+
+/******************************************************************************
+ *
  * Purpose: Create the meshes that we'll blank out using ghost cells.
  *
  * Programmer: Brad Whitlock
@@ -426,6 +466,7 @@ create_blanked_meshes(simulation_data *sim)
     /*Create some data*/
     sim->blankCurvMesh.data = (float *)malloc(ncells * sizeof(float));
     quadmesh_2d_create_radial_wave(&sim->blankCurvMesh, -sim->time);
+    mess_up_ghost_coordinates(&sim->blankCurvMesh);
 
     ucdmesh_2d_create(&sim->blankUcdMesh, NX, NY, 0.f, 10.f, 0.f, 15.f);
     /* Blank out some cells in the lower left of the mesh.*/
@@ -899,6 +940,8 @@ int main(int argc, char **argv)
  * Date:       Fri Aug 12 14:39:11 PDT 2011
  *
  * Modifications:
+ *  Brad Whitlock, Wed Aug 17 12:26:56 PDT 2011
+ *  Set spatial extents for curv_blank mesh.
  *
  *****************************************************************************/
 
@@ -912,6 +955,8 @@ SimGetMetaData(void *cbdata)
     if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
     {
         int i;
+        double extents[6];
+
         visit_handle mmd = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
         visit_handle cmd = VISIT_INVALID_HANDLE;
@@ -942,6 +987,18 @@ SimGetMetaData(void *cbdata)
             VisIt_MeshMetaData_setTopologicalDimension(mmd, 2);
             VisIt_MeshMetaData_setSpatialDimension(mmd, 2);
             VisIt_MeshMetaData_setNumDomains(mmd, 1);
+
+            /* This mesh's coordinates contain bad values for some of cells
+             * that are ghosted out. Set the extents to make it so VisIt
+             * will use these extents rather than looking over the coordinates.
+             */
+            extents[0] = sim->blankCurvMesh.extents[0];
+            extents[1] = sim->blankCurvMesh.extents[1];
+            extents[2] = sim->blankCurvMesh.extents[2];
+            extents[3] = sim->blankCurvMesh.extents[3];
+            extents[4] = 0.;
+            extents[5] = 0.;
+            VisIt_MeshMetaData_setSpatialExtents(mmd, extents);
 
             VisIt_SimulationMetaData_addMesh(md, mmd);
         }

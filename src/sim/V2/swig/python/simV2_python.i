@@ -159,6 +159,7 @@ ARRAY_ARGUMENT(int, int, 2, PyInt_AsLong)
 ARRAY_ARGUMENT(int, int, 3, PyInt_AsLong)
 ARRAY_ARGUMENT(int, int, 6, PyInt_AsLong)
 ARRAY_ARGUMENT(double, double, 3, PyFloat_AsDouble)
+ARRAY_ARGUMENT(double, double, 6, PyFloat_AsDouble)
 ARRAY_ARGUMENT(const int, int, 6, PyInt_AsLong)
 
 /*
@@ -301,6 +302,21 @@ char *pylibsim_VisItReadConsole(void)
     if(VisItReadConsole(1000, buf) == VISIT_ERROR)
         buf[0] = '\0';
     return buf;
+}
+%}
+
+/* Define alternate VisItGetSockets so it returns a tuple. */
+%rename(VisItGetSockets) pylibsim_VisItGetSockets;
+%inline %{
+PyObject *pylibsim_VisItGetSockets(void)
+{
+    PyObject *tuple = NULL;
+    int lSock=-1, cSock=-1;
+    VisItGetSockets(&lSock, &cSock);
+    tuple = PyTuple_New(2);
+    PyTuple_SET_ITEM(tuple, 0, PyInt_FromLong((long)lSock));
+    PyTuple_SET_ITEM(tuple, 1, PyInt_FromLong((long)cSock));
+    return tuple;
 }
 %}
 

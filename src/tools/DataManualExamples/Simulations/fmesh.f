@@ -254,6 +254,8 @@ c Set the first mesh's properties
               err = visitmdmeshsetyunits(m1, "cm", 2)
               err = visitmdmeshsetxlabel(m1, "Width", 5)
               err = visitmdmeshsetylabel(m1, "Height", 6)
+              err = visitmdmeshsetcellorigin(m1, 1)
+              err = visitmdmeshsetnodeorigin(m1, 1)
 
               err = visitmdsimaddmesh(md, m1)
           endif
@@ -271,6 +273,8 @@ c Set the second mesh's properties
               err = visitmdmeshsetxlabel(m2, "Width", 5)
               err = visitmdmeshsetylabel(m2, "Height", 6)
               err = visitmdmeshsetzlabel(m2, "Depth", 5)
+              err = visitmdmeshsetcellorigin(m2, 1)
+              err = visitmdmeshsetnodeorigin(m2, 1)
 
               err = visitmdsimaddmesh(md, m2)
           endif

@@ -86,6 +86,14 @@ SIMV2_API int simv2_MeshMetaData_setYLabel(visit_handle h, const char *);
 SIMV2_API int simv2_MeshMetaData_getYLabel(visit_handle h, char **);
 SIMV2_API int simv2_MeshMetaData_setZLabel(visit_handle h, const char *);
 SIMV2_API int simv2_MeshMetaData_getZLabel(visit_handle h, char **);
+SIMV2_API int simv2_MeshMetaData_setCellOrigin(visit_handle h, int);
+SIMV2_API int simv2_MeshMetaData_getCellOrigin(visit_handle h, int*);
+SIMV2_API int simv2_MeshMetaData_setNodeOrigin(visit_handle h, int);
+SIMV2_API int simv2_MeshMetaData_getNodeOrigin(visit_handle h, int*);
+SIMV2_API int simv2_MeshMetaData_setHasSpatialExtents(visit_handle h, int);
+SIMV2_API int simv2_MeshMetaData_getHasSpatialExtents(visit_handle h, int*);
+SIMV2_API int simv2_MeshMetaData_setSpatialExtents(visit_handle h, double[6]);
+SIMV2_API int simv2_MeshMetaData_getSpatialExtents(visit_handle h, double[6]);
 
 #ifdef __cplusplus
 };

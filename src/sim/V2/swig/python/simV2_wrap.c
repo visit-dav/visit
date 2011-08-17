@@ -2814,6 +2814,18 @@ SWIG_FromCharPtr(const char *cptr)
 }
 
 
+PyObject *pylibsim_VisItGetSockets(void)
+{
+    PyObject *tuple = NULL;
+    int lSock=-1, cSock=-1;
+    VisItGetSockets(&lSock, &cSock);
+    tuple = PyTuple_New(2);
+    PyTuple_SET_ITEM(tuple, 0, PyInt_FromLong((long)lSock));
+    PyTuple_SET_ITEM(tuple, 1, PyInt_FromLong((long)cSock));
+    return tuple;
+}
+
+
 int pylibsim_VisIt_MaterialData_addMaterial(visit_handle obj, const char *matName)
 {
     int matno = 0;
@@ -3371,6 +3383,19 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisItGetSockets__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PyObject *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":VisItGetSockets")) SWIG_fail;
+  result = (PyObject *)pylibsim_VisItGetSockets();
+  resultobj = result;
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VisIt_MaterialData_addMaterial__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   visit_handle arg1 ;
@@ -3748,6 +3773,71 @@ SWIGINTERN PyObject *_wrap_VisItDetectInputWithTimeout(PyObject *SWIGUNUSEDPARM(
   resultobj = SWIG_From_int((int)(result));
   return resultobj;
 fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisItGetSockets__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  int *arg1 = (int *) 0 ;
+  int *arg2 = (int *) 0 ;
+  int result;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisItGetSockets",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_int, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItGetSockets" "', argument " "1"" of type '" "int *""'"); 
+  }
+  arg1 = (int *)(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_int, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "VisItGetSockets" "', argument " "2"" of type '" "int *""'"); 
+  }
+  arg2 = (int *)(argp2);
+  result = (int)VisItGetSockets(arg1,arg2);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisItGetSockets(PyObject *self, PyObject *args) {
+  int argc;
+  PyObject *argv[3];
+  int ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = PyObject_Length(args);
+  for (ii = 0; (ii < argc) && (ii < 2); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 0) {
+    return _wrap_VisItGetSockets__SWIG_0(self, args);
+  }
+  if (argc == 2) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_int, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_int, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        return _wrap_VisItGetSockets__SWIG_1(self, args);
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number of arguments for overloaded function 'VisItGetSockets'.\n  Possible C/C++ prototypes are:\n    pylibsim_VisItGetSockets()\n    VisItGetSockets(int *,int *)\n");
   return NULL;
 }
 
@@ -5888,6 +5978,37 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisIt_CurvilinearMesh_setGhostCells(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  visit_handle arg2 ;
+  int result;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_CurvilinearMesh_setGhostCells",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_CurvilinearMesh_setGhostCells" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = (visit_handle)(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_CurvilinearMesh_setGhostCells" "', argument " "2"" of type '" "visit_handle""'");
+  } 
+  arg2 = (visit_handle)(val2);
+  result = (int)VisIt_CurvilinearMesh_setGhostCells(arg1,arg2);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VisIt_DomainBoundaries_alloc__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   visit_handle *arg1 = (visit_handle *) 0 ;
@@ -7952,6 +8073,137 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisIt_MeshMetaData_setCellOrigin(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  int arg2 ;
+  int result;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_MeshMetaData_setCellOrigin",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_MeshMetaData_setCellOrigin" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = (visit_handle)(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_MeshMetaData_setCellOrigin" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  result = (int)VisIt_MeshMetaData_setCellOrigin(arg1,arg2);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_MeshMetaData_setNodeOrigin(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  int arg2 ;
+  int result;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_MeshMetaData_setNodeOrigin",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_MeshMetaData_setNodeOrigin" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = (visit_handle)(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_MeshMetaData_setNodeOrigin" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  result = (int)VisIt_MeshMetaData_setNodeOrigin(arg1,arg2);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_MeshMetaData_setHasSpatialExtents(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  int arg2 ;
+  int result;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_MeshMetaData_setHasSpatialExtents",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_MeshMetaData_setHasSpatialExtents" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = (visit_handle)(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_MeshMetaData_setHasSpatialExtents" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  result = (int)VisIt_MeshMetaData_setHasSpatialExtents(arg1,arg2);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_MeshMetaData_setSpatialExtents(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  double *arg2 ;
+  int result;
+  int val1 ;
+  int ecode1 = 0 ;
+  double temp2[6] ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_MeshMetaData_setSpatialExtents",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_MeshMetaData_setSpatialExtents" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = (visit_handle)(val1);
+  {
+    int i;   if (!PySequence_Check(obj1)) {
+      PyErr_SetString(PyExc_ValueError,"Expected a sequence");     return NULL;   
+    }   if (PySequence_Length(obj1) != 6) {
+      PyErr_SetString(PyExc_ValueError,"Size mismatch. Expected ""6" " elements");     return NULL;   
+    }   for (i = 0; i < 6; i++) {
+      PyObject *o = PySequence_GetItem(obj1,i);     if (PyNumber_Check(o)) {
+        temp2[i] = (double) PyFloat_AsDouble(o);     
+      } else {
+        PyErr_SetString(PyExc_ValueError,"Sequence elements must be numbers");       return NULL;     
+      }   
+    }   arg2 = temp2; 
+  }
+  result = (int)VisIt_MeshMetaData_setSpatialExtents(arg1,arg2);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VisIt_NameList_alloc__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   visit_handle *arg1 = (visit_handle *) 0 ;
@@ -8499,6 +8751,37 @@ SWIGINTERN PyObject *_wrap_VisIt_RectilinearMesh_setBaseIndex(PyObject *SWIGUNUS
     }   arg2 = temp2; 
   }
   result = (int)VisIt_RectilinearMesh_setBaseIndex(arg1,arg2);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_RectilinearMesh_setGhostCells(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  visit_handle arg2 ;
+  int result;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_RectilinearMesh_setGhostCells",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_RectilinearMesh_setGhostCells" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = (visit_handle)(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_RectilinearMesh_setGhostCells" "', argument " "2"" of type '" "visit_handle""'");
+  } 
+  arg2 = (visit_handle)(val2);
+  result = (int)VisIt_RectilinearMesh_setGhostCells(arg1,arg2);
   resultobj = SWIG_From_int((int)(result));
   return resultobj;
 fail:
@@ -9574,6 +9857,37 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisIt_UnstructuredMesh_setGhostCells(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  visit_handle arg2 ;
+  int result;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_UnstructuredMesh_setGhostCells",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_UnstructuredMesh_setGhostCells" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = (visit_handle)(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_UnstructuredMesh_setGhostCells" "', argument " "2"" of type '" "visit_handle""'");
+  } 
+  arg2 = (visit_handle)(val2);
+  result = (int)VisIt_UnstructuredMesh_setGhostCells(arg1,arg2);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VisIt_VariableData_alloc__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   visit_handle *arg1 = (visit_handle *) 0 ;
@@ -9934,6 +10248,7 @@ static PyMethodDef SwigMethods[] = {
      { (char *)"VisItInitializeSocketAndDumpSimFile", _wrap_VisItInitializeSocketAndDumpSimFile, METH_VARARGS, NULL},
      { (char *)"VisItDetectInput", _wrap_VisItDetectInput, METH_VARARGS, NULL},
      { (char *)"VisItDetectInputWithTimeout", _wrap_VisItDetectInputWithTimeout, METH_VARARGS, NULL},
+     { (char *)"VisItGetSockets", _wrap_VisItGetSockets, METH_VARARGS, NULL},
      { (char *)"VisItAttemptToCompleteConnection", _wrap_VisItAttemptToCompleteConnection, METH_VARARGS, NULL},
      { (char *)"VisItReadConsole", _wrap_VisItReadConsole, METH_VARARGS, NULL},
      { (char *)"VisItSetSlaveProcessCallback", _wrap_VisItSetSlaveProcessCallback, METH_VARARGS, NULL},
@@ -9992,6 +10307,7 @@ static PyMethodDef SwigMethods[] = {
      { (char *)"VisIt_CurvilinearMesh_setCoords3", _wrap_VisIt_CurvilinearMesh_setCoords3, METH_VARARGS, NULL},
      { (char *)"VisIt_CurvilinearMesh_setRealIndices", _wrap_VisIt_CurvilinearMesh_setRealIndices, METH_VARARGS, NULL},
      { (char *)"VisIt_CurvilinearMesh_setBaseIndex", _wrap_VisIt_CurvilinearMesh_setBaseIndex, METH_VARARGS, NULL},
+     { (char *)"VisIt_CurvilinearMesh_setGhostCells", _wrap_VisIt_CurvilinearMesh_setGhostCells, METH_VARARGS, NULL},
      { (char *)"VisIt_DomainBoundaries_alloc", _wrap_VisIt_DomainBoundaries_alloc, METH_VARARGS, NULL},
      { (char *)"VisIt_DomainBoundaries_free", _wrap_VisIt_DomainBoundaries_free, METH_VARARGS, NULL},
      { (char *)"VisIt_DomainBoundaries_set_type", _wrap_VisIt_DomainBoundaries_set_type, METH_VARARGS, NULL},
@@ -10044,6 +10360,10 @@ static PyMethodDef SwigMethods[] = {
      { (char *)"VisIt_MeshMetaData_setXLabel", _wrap_VisIt_MeshMetaData_setXLabel, METH_VARARGS, NULL},
      { (char *)"VisIt_MeshMetaData_setYLabel", _wrap_VisIt_MeshMetaData_setYLabel, METH_VARARGS, NULL},
      { (char *)"VisIt_MeshMetaData_setZLabel", _wrap_VisIt_MeshMetaData_setZLabel, METH_VARARGS, NULL},
+     { (char *)"VisIt_MeshMetaData_setCellOrigin", _wrap_VisIt_MeshMetaData_setCellOrigin, METH_VARARGS, NULL},
+     { (char *)"VisIt_MeshMetaData_setNodeOrigin", _wrap_VisIt_MeshMetaData_setNodeOrigin, METH_VARARGS, NULL},
+     { (char *)"VisIt_MeshMetaData_setHasSpatialExtents", _wrap_VisIt_MeshMetaData_setHasSpatialExtents, METH_VARARGS, NULL},
+     { (char *)"VisIt_MeshMetaData_setSpatialExtents", _wrap_VisIt_MeshMetaData_setSpatialExtents, METH_VARARGS, NULL},
      { (char *)"VisIt_NameList_alloc", _wrap_VisIt_NameList_alloc, METH_VARARGS, NULL},
      { (char *)"VisIt_NameList_free", _wrap_VisIt_NameList_free, METH_VARARGS, NULL},
      { (char *)"VisIt_NameList_addName", _wrap_VisIt_NameList_addName, METH_VARARGS, NULL},
@@ -10058,6 +10378,7 @@ static PyMethodDef SwigMethods[] = {
      { (char *)"VisIt_RectilinearMesh_setCoordsXYZ", _wrap_VisIt_RectilinearMesh_setCoordsXYZ, METH_VARARGS, NULL},
      { (char *)"VisIt_RectilinearMesh_setRealIndices", _wrap_VisIt_RectilinearMesh_setRealIndices, METH_VARARGS, NULL},
      { (char *)"VisIt_RectilinearMesh_setBaseIndex", _wrap_VisIt_RectilinearMesh_setBaseIndex, METH_VARARGS, NULL},
+     { (char *)"VisIt_RectilinearMesh_setGhostCells", _wrap_VisIt_RectilinearMesh_setGhostCells, METH_VARARGS, NULL},
      { (char *)"VisIt_SimulationMetaData_alloc", _wrap_VisIt_SimulationMetaData_alloc, METH_VARARGS, NULL},
      { (char *)"VisIt_SimulationMetaData_free", _wrap_VisIt_SimulationMetaData_free, METH_VARARGS, NULL},
      { (char *)"VisIt_SimulationMetaData_setMode", _wrap_VisIt_SimulationMetaData_setMode, METH_VARARGS, NULL},
@@ -10089,6 +10410,7 @@ static PyMethodDef SwigMethods[] = {
      { (char *)"VisIt_UnstructuredMesh_setCoords", _wrap_VisIt_UnstructuredMesh_setCoords, METH_VARARGS, NULL},
      { (char *)"VisIt_UnstructuredMesh_setConnectivity", _wrap_VisIt_UnstructuredMesh_setConnectivity, METH_VARARGS, NULL},
      { (char *)"VisIt_UnstructuredMesh_setRealIndices", _wrap_VisIt_UnstructuredMesh_setRealIndices, METH_VARARGS, NULL},
+     { (char *)"VisIt_UnstructuredMesh_setGhostCells", _wrap_VisIt_UnstructuredMesh_setGhostCells, METH_VARARGS, NULL},
      { (char *)"VisIt_VariableData_alloc", _wrap_VisIt_VariableData_alloc, METH_VARARGS, NULL},
      { (char *)"VisIt_VariableData_free", _wrap_VisIt_VariableData_free, METH_VARARGS, NULL},
      { (char *)"VisIt_VariableMetaData_alloc", _wrap_VisIt_VariableMetaData_alloc, METH_VARARGS, NULL},
@@ -10736,6 +11058,12 @@ SWIGEXPORT void SWIG_init(void) {
   SWIG_Python_SetConstant(d, "VISIT_CELL_POLYHEDRON",SWIG_From_int((int)(8)));
   SWIG_Python_SetConstant(d, "VISIT_COORD_MODE_SEPARATE",SWIG_From_int((int)(0)));
   SWIG_Python_SetConstant(d, "VISIT_COORD_MODE_INTERLEAVED",SWIG_From_int((int)(1)));
+  SWIG_Python_SetConstant(d, "VISIT_GHOSTCELL_REAL",SWIG_From_int((int)(0)));
+  SWIG_Python_SetConstant(d, "VISIT_GHOSTCELL_INTERIOR_BOUNDARY",SWIG_From_int((int)(1)));
+  SWIG_Python_SetConstant(d, "VISIT_GHOSTCELL_EXTERIOR_BOUNDARY",SWIG_From_int((int)(2)));
+  SWIG_Python_SetConstant(d, "VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY",SWIG_From_int((int)(3)));
+  SWIG_Python_SetConstant(d, "VISIT_GHOSTCELL_REDUCED_CONNECTIVITY",SWIG_From_int((int)(4)));
+  SWIG_Python_SetConstant(d, "VISIT_GHOSTCELL_BLANK",SWIG_From_int((int)(5)));
   SWIG_Python_SetConstant(d, "VISIT_CSG_QUADRIC_G",SWIG_From_int((int)(16777216)));
   SWIG_Python_SetConstant(d, "VISIT_CSG_SPHERE_PR",SWIG_From_int((int)(33619968)));
   SWIG_Python_SetConstant(d, "VISIT_CSG_ELLIPSOID_PRRR",SWIG_From_int((int)(33685504)));

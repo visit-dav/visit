@@ -58,6 +58,23 @@
     <Field name="zLabel" label="Z Label" type="string">
       Depth
     </Field>
+    <Field name="cellOrigin" label="Cell origin" type="int">
+      0
+    </Field>
+    <Field name="nodeOrigin" label="Node origin" type="int">
+      0
+    </Field>
+    <Field name="hasSpatialExtents" label="Has spatial extents" type="bool">
+      false
+    </Field>
+    <Field name="spatialExtents" label="Spatial extents" type="doubleArray" length="6">
+      0.
+      0.
+      0.
+      0.
+      0.
+      0.
+    </Field>
     <Function name="simv2_MeshMetaData_check" user="true" member="true">
     </Function>
   </Attribute>
