@@ -250,6 +250,8 @@ c     Add a 3D unstructured mesh
               err = visitmdmeshsetxlabel(mmd, "Width", 5)
               err = visitmdmeshsetylabel(mmd, "Height", 6)
               err = visitmdmeshsetzlabel(mmd, "Depth", 5)
+              err = visitmdmeshsetcellorigin(mmd, 1)
+              err = visitmdmeshsetnodeorigin(mmd, 1)
               err = visitmdsimaddmesh(md, mmd)
           endif
 

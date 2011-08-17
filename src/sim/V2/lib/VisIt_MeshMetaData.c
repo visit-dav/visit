@@ -400,6 +400,78 @@ VisIt_MeshMetaData_getZLabel(visit_handle h, char **val)
         (*cb)(h, val));
 }
 
+int
+VisIt_MeshMetaData_setCellOrigin(visit_handle h, int val)
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_setCellOrigin,
+        int (*)(visit_handle, int),
+        int (*cb)(visit_handle, int),
+        (*cb)(h, val));
+}
+
+int
+VisIt_MeshMetaData_getCellOrigin(visit_handle h, int *val)
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_getCellOrigin,
+        int (*)(visit_handle, int*),
+        int (*cb)(visit_handle, int*),
+        (*cb)(h, val));
+}
+
+int
+VisIt_MeshMetaData_setNodeOrigin(visit_handle h, int val)
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_setNodeOrigin,
+        int (*)(visit_handle, int),
+        int (*cb)(visit_handle, int),
+        (*cb)(h, val));
+}
+
+int
+VisIt_MeshMetaData_getNodeOrigin(visit_handle h, int *val)
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_getNodeOrigin,
+        int (*)(visit_handle, int*),
+        int (*cb)(visit_handle, int*),
+        (*cb)(h, val));
+}
+
+int
+VisIt_MeshMetaData_setHasSpatialExtents(visit_handle h, int val)
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_setHasSpatialExtents,
+        int (*)(visit_handle, int),
+        int (*cb)(visit_handle, int),
+        (*cb)(h, val));
+}
+
+int
+VisIt_MeshMetaData_getHasSpatialExtents(visit_handle h, int *val)
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_getHasSpatialExtents,
+        int (*)(visit_handle, int*),
+        int (*cb)(visit_handle, int*),
+        (*cb)(h, val));
+}
+
+int
+VisIt_MeshMetaData_setSpatialExtents(visit_handle h, double val[6])
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_setSpatialExtents,
+        int (*)(visit_handle, double[6]),
+        int (*cb)(visit_handle, double[6]),
+        (*cb)(h, val));
+}
+
+int
+VisIt_MeshMetaData_getSpatialExtents(visit_handle h, double val[6])
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_getSpatialExtents,
+        int (*)(visit_handle, double[6]),
+        int (*cb)(visit_handle, double[6]),
+        (*cb)(h, val));
+}
+
 
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
@@ -442,6 +514,14 @@ VisIt_MeshMetaData_getZLabel(visit_handle h, char **val)
 #define F_VISITMDMESHGETYLABEL            F77_ID(visitmdmeshgetylabel_,visitmdmeshgetylabel, VISITMDMESHGETYLABEL)
 #define F_VISITMDMESHSETZLABEL            F77_ID(visitmdmeshsetzlabel_,visitmdmeshsetzlabel, VISITMDMESHSETZLABEL)
 #define F_VISITMDMESHGETZLABEL            F77_ID(visitmdmeshgetzlabel_,visitmdmeshgetzlabel, VISITMDMESHGETZLABEL)
+#define F_VISITMDMESHSETCELLORIGIN        F77_ID(visitmdmeshsetcellorigin_,visitmdmeshsetcellorigin, VISITMDMESHSETCELLORIGIN)
+#define F_VISITMDMESHGETCELLORIGIN        F77_ID(visitmdmeshgetcellorigin_,visitmdmeshgetcellorigin, VISITMDMESHGETCELLORIGIN)
+#define F_VISITMDMESHSETNODEORIGIN        F77_ID(visitmdmeshsetnodeorigin_,visitmdmeshsetnodeorigin, VISITMDMESHSETNODEORIGIN)
+#define F_VISITMDMESHGETNODEORIGIN        F77_ID(visitmdmeshgetnodeorigin_,visitmdmeshgetnodeorigin, VISITMDMESHGETNODEORIGIN)
+#define F_VISITMDMESHSETHASSPATIALEXTENTS  F77_ID(visitmdmeshsethasspatialextents_,visitmdmeshsethasspatialextents, VISITMDMESHSETHASSPATIALEXTENTS)
+#define F_VISITMDMESHGETHASSPATIALEXTENTS  F77_ID(visitmdmeshgethasspatialextents_,visitmdmeshgethasspatialextents, VISITMDMESHGETHASSPATIALEXTENTS)
+#define F_VISITMDMESHSETSPATIALEXTENTS    F77_ID(visitmdmeshsetspatialextents_,visitmdmeshsetspatialextents, VISITMDMESHSETSPATIALEXTENTS)
+#define F_VISITMDMESHGETSPATIALEXTENTS    F77_ID(visitmdmeshgetspatialextents_,visitmdmeshgetspatialextents, VISITMDMESHGETSPATIALEXTENTS)
 
 int
 F_VISITMDMESHALLOC(visit_handle *h)
@@ -826,5 +906,53 @@ F_VISITMDMESHGETZLABEL(visit_handle *h, char *val, int *lval)
         free(s);
     }
     return retval;
+}
+
+int
+F_VISITMDMESHSETCELLORIGIN(visit_handle *h, int *val)
+{
+    return VisIt_MeshMetaData_setCellOrigin(*h, *val);
+}
+
+int
+F_VISITMDMESHGETCELLORIGIN(visit_handle *h, int *val)
+{
+    return VisIt_MeshMetaData_getCellOrigin(*h, val);
+}
+
+int
+F_VISITMDMESHSETNODEORIGIN(visit_handle *h, int *val)
+{
+    return VisIt_MeshMetaData_setNodeOrigin(*h, *val);
+}
+
+int
+F_VISITMDMESHGETNODEORIGIN(visit_handle *h, int *val)
+{
+    return VisIt_MeshMetaData_getNodeOrigin(*h, val);
+}
+
+int
+F_VISITMDMESHSETHASSPATIALEXTENTS(visit_handle *h, int *val)
+{
+    return VisIt_MeshMetaData_setHasSpatialExtents(*h, *val);
+}
+
+int
+F_VISITMDMESHGETHASSPATIALEXTENTS(visit_handle *h, int *val)
+{
+    return VisIt_MeshMetaData_getHasSpatialExtents(*h, val);
+}
+
+int
+F_VISITMDMESHSETSPATIALEXTENTS(visit_handle *h, double val[6])
+{
+    return VisIt_MeshMetaData_setSpatialExtents(*h, val);
+}
+
+int
+F_VISITMDMESHGETSPATIALEXTENTS(visit_handle *h, double val[6])
+{
+    return VisIt_MeshMetaData_getSpatialExtents(*h, val);
 }
 

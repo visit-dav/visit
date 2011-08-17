@@ -67,6 +67,10 @@ struct VisIt_MeshMetaData : public VisIt_ObjectBase
     std::string  xLabel;
     std::string  yLabel;
     std::string  zLabel;
+    int          cellOrigin;
+    int          nodeOrigin;
+    bool         hasSpatialExtents;
+    double       spatialExtents[6];
 };
 
 VisIt_MeshMetaData::VisIt_MeshMetaData() : VisIt_ObjectBase(VISIT_MESHMETADATA)
@@ -87,6 +91,15 @@ VisIt_MeshMetaData::VisIt_MeshMetaData() : VisIt_ObjectBase(VISIT_MESHMETADATA)
     xLabel = "Width";
     yLabel = "Height";
     zLabel = "Depth";
+    cellOrigin = 0;
+    nodeOrigin = 0;
+    hasSpatialExtents = false;
+    spatialExtents[0] = 0.;
+    spatialExtents[1] = 0.;
+    spatialExtents[2] = 0.;
+    spatialExtents[3] = 0.;
+    spatialExtents[4] = 0.;
+    spatialExtents[5] = 0.;
 }
 
 VisIt_MeshMetaData::~VisIt_MeshMetaData()
@@ -866,6 +879,139 @@ simv2_MeshMetaData_getZLabel(visit_handle h, char **val)
     }
     else
         *val = NULL;
+    return retval;
+}
+
+int
+simv2_MeshMetaData_setCellOrigin(visit_handle h, int val)
+{
+    int retval = VISIT_ERROR;
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_setCellOrigin");
+    if(obj != NULL)
+    {
+        obj->cellOrigin = val;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_MeshMetaData_getCellOrigin(visit_handle h, int *val)
+{
+    int retval = VISIT_ERROR;
+    if(val == NULL)
+    {
+        VisItError("simv2_MeshMetaData_getCellOrigin: Invalid address.");
+        return VISIT_ERROR;
+    }
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_getCellOrigin");
+    if(obj != NULL)
+    {
+        *val = obj->cellOrigin;
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = 0;
+    return retval;
+}
+
+int
+simv2_MeshMetaData_setNodeOrigin(visit_handle h, int val)
+{
+    int retval = VISIT_ERROR;
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_setNodeOrigin");
+    if(obj != NULL)
+    {
+        obj->nodeOrigin = val;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_MeshMetaData_getNodeOrigin(visit_handle h, int *val)
+{
+    int retval = VISIT_ERROR;
+    if(val == NULL)
+    {
+        VisItError("simv2_MeshMetaData_getNodeOrigin: Invalid address.");
+        return VISIT_ERROR;
+    }
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_getNodeOrigin");
+    if(obj != NULL)
+    {
+        *val = obj->nodeOrigin;
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = 0;
+    return retval;
+}
+
+int
+simv2_MeshMetaData_setHasSpatialExtents(visit_handle h, int val)
+{
+    int retval = VISIT_ERROR;
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_setHasSpatialExtents");
+    if(obj != NULL)
+    {
+        obj->hasSpatialExtents = (val > 0);
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_MeshMetaData_getHasSpatialExtents(visit_handle h, int *val)
+{
+    int retval = VISIT_ERROR;
+    if(val == NULL)
+    {
+        VisItError("simv2_MeshMetaData_getHasSpatialExtents: Invalid address.");
+        return VISIT_ERROR;
+    }
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_getHasSpatialExtents");
+    if(obj != NULL)
+    {
+        *val = obj->hasSpatialExtents ? 1 : 0;
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = 0;
+    return retval;
+}
+
+int
+simv2_MeshMetaData_setSpatialExtents(visit_handle h, double val[6])
+{
+    int retval = VISIT_ERROR;
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_setSpatialExtents");
+    if(obj != NULL)
+    {
+        obj->hasSpatialExtents = true;
+        memcpy((void *)obj->spatialExtents, (void *)val, 6 * sizeof(double));
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_MeshMetaData_getSpatialExtents(visit_handle h, double val[6])
+{
+    int retval = VISIT_ERROR;
+    if(val == NULL)
+    {
+        VisItError("simv2_MeshMetaData_getSpatialExtents: Invalid address.");
+        return VISIT_ERROR;
+    }
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_getSpatialExtents");
+    if(obj != NULL)
+    {
+        memcpy((void *)val, (void *)obj->spatialExtents, 6 * sizeof(double));
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = 0;
     return retval;
 }
 

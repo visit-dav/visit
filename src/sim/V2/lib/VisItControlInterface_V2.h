@@ -374,7 +374,7 @@ int   VisItDetectInputWithTimeout(int blocking, int timeout_usec, int consoledes
 *             whenever possible.
 *
 *******************************************************************************/
-int VisItGetSockets(int *lSocket, int *eSocket);
+int VisItGetSockets(int *lSocket, int *cSocket);
 #endif
 
 /******************************************************************************
@@ -1055,6 +1055,7 @@ int VisItSetWriteMesh(int (*cb)(const char *, int, int, visit_handle, visit_hand
  *
  * ****************************************************************************/
 int VisItSetWriteVariable(int (*cb)(const char *, const char *, int, visit_handle, visit_handle, void *), void *cbdata);
+
 
 /* UI-related functions */
 int VisItUI_clicked(const char *name, void (*cb)(void*), void *cbdata);

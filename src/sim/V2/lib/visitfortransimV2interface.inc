@@ -729,6 +729,38 @@
       external visitmdmeshgetzlabel
       integer  visitmdmeshgetzlabel
 
+! visitmdmeshsetcellorigin(visit_handle h, int origin)
+      external visitmdmeshsetcellorigin
+      integer visitmdmeshsetcellorigin
+
+! visitmdmeshgetcellorigin(visit_handle h, int origin)
+      external visitmdmeshgetcellorigin
+      integer visitmdmeshgetcellorigin
+
+! visitmdmeshsetnodeorigin(visit_handle h, int origin)
+      external visitmdmeshsetnodeorigin
+      integer visitmdmeshsetnodeorigin
+
+! visitmdmeshgetnodeorigin(visit_handle h, int origin)
+      external visitmdmeshgetnodeorigin
+      integer visitmdmeshgetnodeorigin
+
+! visitmdmeshsethasspatialextents(visit_handle h, int hasSE)
+      external visitmdmeshsethasspatialextents
+      integer visitmdmeshsethasspatialextents
+
+! visitmdmeshgethasspatialextents(visit_handle h, int hasSE)
+      external visitmdmeshgethasspatialextents
+      integer visitmdmeshgethasspatialextents
+
+! visitmdmeshsetspatialextents(visit_handle h, double extents[6])
+      external visitmdmeshsetspatialextents
+      integer visitmdmeshsetspatialextents
+
+! visitmdmeshgetspatialextents(visit_handle h, double extents[6])
+      external visitmdmeshgetspatialextents
+      integer visitmdmeshgetspatialextents
+
 
 ! VisIt_NameList functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

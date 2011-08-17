@@ -255,6 +255,9 @@ avtSimV2FileFormat::ActivateTimestep()
 //   Brad Whitlock, Thu Dec  2 14:41:13 PST 2010
 //   I fixed a problem where a freed units string was being referenced.
 //
+//   Brad Whitlock, Wed Aug 17 12:20:43 PDT 2011
+//   I added support for node/cell origin and spatial extents.
+//
 // ****************************************************************************
 
 void
@@ -416,6 +419,33 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
     {
         mesh->zUnits = std::string(zUnits);
         free(zUnits);
+    }
+
+    // Get cell origin.
+    int origin = 0;
+    if(simv2_MeshMetaData_getCellOrigin(h, &origin) == VISIT_OKAY)
+        mesh->cellOrigin = origin;
+
+    // Get node origin.
+    if(simv2_MeshMetaData_getNodeOrigin(h, &origin) == VISIT_OKAY)
+        mesh->nodeOrigin = origin;
+
+    // Get the spatial extents.
+    int hasSE = 0;
+    if(simv2_MeshMetaData_getHasSpatialExtents(h, &hasSE) == VISIT_OKAY)
+    {
+        double extents[6] = {0.,0.,0.,0.,0.,0.};
+        if(hasSE > 0 &&
+           simv2_MeshMetaData_getSpatialExtents(h, extents) == VISIT_OKAY)
+        {
+            mesh->hasSpatialExtents = true;
+            mesh->minSpatialExtents[0] = extents[0];
+            mesh->minSpatialExtents[1] = extents[2];
+            mesh->minSpatialExtents[2] = extents[4];
+            mesh->maxSpatialExtents[0] = extents[1];
+            mesh->maxSpatialExtents[1] = extents[3];
+            mesh->maxSpatialExtents[2] = extents[5];
+        }
     }
 
     md->Add(mesh);

@@ -278,7 +278,7 @@ int VisIt_CurvilinearMesh_setCoords2(visit_handle obj, int dims[2], visit_handle
 int VisIt_CurvilinearMesh_setCoords3(visit_handle obj, int dims[3], visit_handle c);
 int VisIt_CurvilinearMesh_setRealIndices(visit_handle obj, int min[3], int max[3]);
 int VisIt_CurvilinearMesh_setBaseIndex(visit_handle obj, int base_index[3]);
-
+int VisIt_CurvilinearMesh_setGhostCells(visit_handle obj, visit_handle gz);
 
 #ifdef __cplusplus
 }
@@ -706,6 +706,10 @@ int VisIt_MeshMetaData_setZUnits(visit_handle h, const char *);
 int VisIt_MeshMetaData_setXLabel(visit_handle h, const char *);
 int VisIt_MeshMetaData_setYLabel(visit_handle h, const char *);
 int VisIt_MeshMetaData_setZLabel(visit_handle h, const char *);
+int VisIt_MeshMetaData_setCellOrigin(visit_handle h, int);
+int VisIt_MeshMetaData_setNodeOrigin(visit_handle h, int);
+int VisIt_MeshMetaData_setHasSpatialExtents(visit_handle h, int);
+int VisIt_MeshMetaData_setSpatialExtents(visit_handle h, double[6]);
 
 #ifdef __cplusplus
 }
@@ -875,6 +879,7 @@ int VisIt_RectilinearMesh_setCoordsXY(visit_handle obj, visit_handle x, visit_ha
 int VisIt_RectilinearMesh_setCoordsXYZ(visit_handle obj, visit_handle x, visit_handle y, visit_handle z);
 int VisIt_RectilinearMesh_setRealIndices(visit_handle obj, int min[3], int max[3]);
 int VisIt_RectilinearMesh_setBaseIndex(visit_handle obj, int base_index[3]);
+int VisIt_RectilinearMesh_setGhostCells(visit_handle obj, visit_handle gz);
 
 #ifdef __cplusplus
 }
@@ -1115,6 +1120,7 @@ int VisIt_UnstructuredMesh_setCoordsXYZ(visit_handle obj, visit_handle x, visit_
 int VisIt_UnstructuredMesh_setCoords(visit_handle obj, visit_handle c);
 int VisIt_UnstructuredMesh_setConnectivity(visit_handle obj, int nzones, visit_handle c);
 int VisIt_UnstructuredMesh_setRealIndices(visit_handle obj, int min, int max);
+int VisIt_UnstructuredMesh_setGhostCells(visit_handle obj, visit_handle gz);
 
 #ifdef __cplusplus
 }
