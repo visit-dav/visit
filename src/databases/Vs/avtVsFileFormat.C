@@ -1820,18 +1820,21 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
           else if( numTopologicalDims == 3 ) cellType = VTK_HEXAHEDRON;
         break;
         default:
-        if (warningCount < 30) {
-          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                            << "Error: invalid number of vertices for cell #"
-                            << cellCount << ": " << cellVerts << std::endl;
-        } else if (warningCount == 30) {
-          VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                            << "Exceeded maximum number of errors.  "
-                            << "Error messages disabled for remaining cells."
-                            << std::endl;
-        }
-        ++warningCount;
-        cellType = VTK_EMPTY_CELL;
+          if (numTopologicalDims == 2) cellType = VTK_POLYGON;
+          else {
+            if (warningCount < 30) {
+              VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                                << "Error: invalid number of vertices for cell #"
+                                << cellCount << ": " << cellVerts << std::endl;
+            } else if (warningCount == 30) {
+              VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                                << "Exceeded maximum number of errors.  "
+                                << "Error messages disabled for remaining cells."
+                                << std::endl;
+            }
+            ++warningCount;
+            cellType = VTK_EMPTY_CELL;
+          }
         break;
       }
 
