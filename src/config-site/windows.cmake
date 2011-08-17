@@ -25,6 +25,11 @@ ENDIF (CMAKE_CL_64)
 SET(VISIT_WINDOWS_DIR ${VISIT_SOURCE_DIR}/../windowsbuild)
 SET(VISITHOME ${VISIT_WINDOWS_DIR}/ThirdParty)
 
+
+# Create the NSIS installer package (override default from root CMakeLists.txt
+OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS." ON)
+
+
 ##############################################################
 ##
 ## Required libraries
