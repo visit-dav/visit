@@ -246,6 +246,9 @@
 #    Kathleen Biagas, Mon Aug 8 08:08:42 MST 2011
 #    Use VISIT_3RDPARTY_DEP for all libdep vars. 
 #
+#    Kathleen Biagas, Wed Aug 17 10:59:33 PDT 2011
+#    Remove vtkzlib as a substitute for zlib.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -835,18 +838,14 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTCMALLOC.cmake)
 # zlib, szip and jpeg
 IF(CMAKE_HOST_UNIX)
   SET(ZLIB_LIB z)
+  SET(ZLIB_FOUND 1)
   SET(DL_LIB dl)
   ADD_DEFINITIONS(-D_LARGEFILE64_SOURCE)
 ELSE(CMAKE_HOST_UNIX)
   IF(WIN32)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
-    IF(NOT ZLIB_FOUND)
-        SET(ZLIB_LIB vtkzlib)
-    ENDIF(NOT ZLIB_FOUND)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
-  ELSE(WIN32)
-      SET(ZLIB_LIB vtkzlib)
   ENDIF(WIN32)
 ENDIF(CMAKE_HOST_UNIX)
 
