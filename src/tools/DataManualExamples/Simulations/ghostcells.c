@@ -192,8 +192,8 @@ simulation_data_dtor(simulation_data *sim)
     int i;
 
     quadmesh_2d_dtor(&sim->blankRectMesh);
-    quadmesh_2d_ctor(&sim->blankCurvMesh);
-    ucdmesh_2d_ctor(&sim->blankUcdMesh);
+    quadmesh_2d_dtor(&sim->blankCurvMesh);
+    ucdmesh_2d_dtor(&sim->blankUcdMesh);
 
     for(i = 0; i < 9; ++i)
         rectmesh_idx_2d_dtor(&sim->multidomain[i]);
