@@ -160,18 +160,18 @@
       parameter   (VISIT_COORD_MODE_INTERLEAVED      = 1)
 
 !... Ghost cell types
-     integer       VISIT_GHOSTCELL_REAL                
-     parameter     VISIT_GHOSTCELL_REAL              = 0)
-     integer       VISIT_GHOSTCELL_INTERIOR_BOUNDARY     
-     parameter     VISIT_GHOSTCELL_INTERIOR_BOUNDARY = 1)
-     integer       VISIT_GHOSTCELL_EXTERIOR_BOUNDARY     
-     parameter     VISIT_GHOSTCELL_EXTERIOR_BOUNDARY = 2)
-     integer       VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY 
-     parameter     VISIT_GHOSTCELL_ENHANCED_CONNECTIV= 3)
-     integer       VISIT_GHOSTCELL_REDUCED_CONNECTIVITY  
-     parameter     VISIT_GHOSTCELL_REDUCED_CONNECTIVI= 4)
-     integer       VISIT_GHOSTCELL_BLANK                 
-     parameter     VISIT_GHOSTCELL_BLANK             = 5)
+      integer       VISIT_GHOSTCELL_REAL                
+      parameter    (VISIT_GHOSTCELL_REAL              = 0)
+      integer       VISIT_GHOSTCELL_INTERIOR_BOUNDARY     
+      parameter    (VISIT_GHOSTCELL_INTERIOR_BOUNDARY = 1)
+      integer       VISIT_GHOSTCELL_EXTERIOR_BOUNDARY     
+      parameter    (VISIT_GHOSTCELL_EXTERIOR_BOUNDARY = 2)
+      integer       VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY 
+      parameter    (VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY = 3)
+      integer       VISIT_GHOSTCELL_REDUCED_CONNECTIVITY  
+      parameter    (VISIT_GHOSTCELL_REDUCED_CONNECTIVITY = 4)
+      integer       VISIT_GHOSTCELL_BLANK                 
+      parameter    (VISIT_GHOSTCELL_BLANK             = 5)
 
 !... Image formats 
       integer      VISIT_IMAGEFORMAT_BMP
