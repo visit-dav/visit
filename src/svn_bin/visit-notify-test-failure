@@ -6,8 +6,7 @@ testEmail=""
 # list of users who want email every night with the log file
 #
 logRecipients="miller86@llnl.gov hankchilds@gmail.com jsmeredith@ornl.gov"
-logRecipients="${logRecipients} ahern@ornl.gov brugger1@llnl.gov"
-logRecipients="${logRecipients} harrison37@llnl.gov"
+logRecipients="${logRecipients} brugger1@llnl.gov harrison37@llnl.gov"
 
 #
 # Parse the command line to determine the host to run on.
