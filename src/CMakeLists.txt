@@ -249,6 +249,9 @@
 #    Kathleen Biagas, Wed Aug 17 10:59:33 PDT 2011
 #    Remove vtkzlib as a substitute for zlib.
 #
+#    Kathleen Biagas, Wed Aug 17 12:31:50 PDT 2011
+#    Make use of NSIS to create an installer an option.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -449,6 +452,9 @@ OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
 OPTION(VISIT_CREATE_APPBUNDLE_PACKAGE "Create DMG file with Mac App bundle with make package" OFF) 
+IF(WIN32)
+  OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS" OFF)
+ENDIF(WIn32)
 
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
     IF(NOT DEFINED VISIT_${libvar})
@@ -967,9 +973,9 @@ IF(MDSPLUS_FOUND)
 ENDIF(MDSPLUS_FOUND)
 
 
-IF (WIN32)
+IF (WIN32 AND VISIT_MAKE_NSIS_INSTALLER)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNSIS.cmake)
-ENDIF (WIN32)
+ENDIF (WIN32 AND VISIT_MAKE_NSIS_INSTALLER)
 
 
 IF(VISIT_STATIC)
@@ -1857,10 +1863,11 @@ IF (NOT WIN32)
     ENDIF(APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
     INCLUDE(CPack)
 ELSE (NOT WIN32)
-    # create a custom target that will run our nsis scripts.
-    # Make sure it won't run unless specifically called.
-    # 
-    IF (${MAKENSIS_FOUND})
+    IF(VISIT_MAKE_NSIS_INSTALLER)
+      IF(${MAKENSIS_FOUND})
+        # create a custom target that will run our nsis scripts.
+        # Make sure it won't run unless specifically called.
+        # 
         FILE(TO_NATIVE_PATH ${VISIT_SOURCE_DIR} VSD_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} CIP_NATIVE)
         ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
@@ -1899,5 +1906,8 @@ ELSE (NOT WIN32)
         )
         ADD_CUSTOM_TARGET(_SRC_PACKAGE ALL DEPENDS visitdev${VISIT_VERSION}.exe)
         SET_TARGET_PROPERTIES(_SRC_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
-    ENDIF (${MAKENSIS_FOUND})
+      ELSE(${MAKENSIS_FOUND})
+        MESSAGE(FATAL_ERROR "NSIS installer package requested, but 'makensis' could not be found.")
+      ENDIF(${MAKENSIS_FOUND})
+    ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
