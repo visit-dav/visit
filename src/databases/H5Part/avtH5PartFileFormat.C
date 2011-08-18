@@ -1906,9 +1906,9 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
     int             timestep = spec->GetTimestep();
     bool      regularBinning = spec->IsRegularBinning();
     std::vector<std::string> variables = spec->GetVariables();
-    std::vector<int>      numBins = spec->GetNumberOfBins();
-    bool     boundsSpecified = spec->BoundsSpecified();
-    string         condition = spec->GetCondition();
+    std::vector<int>         numBins = spec->GetNumberOfBins();
+    bool                     boundsSpecified = spec->BoundsSpecified();
+    std::string              condition(spec->GetCondition());
 
     int           boundsSize = spec->GetBounds().size();
     VISIT_LONG_LONG * counts = spec->GetCounts();
