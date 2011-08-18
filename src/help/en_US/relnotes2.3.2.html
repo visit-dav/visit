@@ -28,6 +28,7 @@ list of changes in release 2.3.1.</p>
 <li>Repeatedly passing character array variables with different string values to Libsim was broken. In the old scheme, arrays were assumed to contain the same contents and conversion to C-style strings under the covers would only happen once.</li>
 <li>A bug was corrected in the principal_tensor, principal_deviatoric_tensor and tensor_maximum_shear expressions, where a cutoff used to prevent numeric overflows and underflows was too argressive causing the expressions to calculate incorrect values for small values.</li>
 <li>VisIt again honors vis window size information stored in session files and config files for the case where there is a single vis window.</li>
+<li>The InverseGhostZone operator is now more agressive about invalidating data limits so the limits shown in the legend will reflect the values in the ghost data only.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.3.2</font></b></p>
