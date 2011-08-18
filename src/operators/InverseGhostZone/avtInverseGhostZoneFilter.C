@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtInverseGhostZoneFilter.h>
+#include <avtExtents.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -279,12 +280,27 @@ avtInverseGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //  Programmer: Hank Childs
 //  Creation:   January 8, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Thu Aug 18 16:15:30 PDT 2011
+//    Clear out the data extents since the ghost values may have different
+//    extents than the real data that we've seen so far.
+//
 // ****************************************************************************
 
 void
 avtInverseGhostZoneFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
+
+    avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
+    if(atts.ValidActiveVariable() && atts.GetVariableDimension() > 0)
+    {
+        atts.GetOriginalDataExtents()->Clear();
+        atts.GetThisProcsOriginalDataExtents()->Clear();
+        atts.GetDesiredDataExtents()->Clear();
+        atts.GetActualDataExtents()->Clear();
+        atts.GetThisProcsActualDataExtents()->Clear();
+    }
 }
 
 
