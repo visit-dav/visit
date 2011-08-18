@@ -478,8 +478,8 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     cqHistogramType->addButton(id,2);
     cqHistogramType->addButton(cqHistogramVariableButton,3);
     aLayout->addWidget(timeSlice, 0, 1);
-    aLayout->addWidget(id, 0, 2);
-    aLayout->addWidget(matches, 1, 1);
+    aLayout->addWidget(id, 1, 1);
+    aLayout->addWidget(matches, 0, 2);
     aLayout->addWidget(cqHistogramVariableButton, 1, 2);
 
     cqHistogramVariable = new QComboBox(axisGroup);
@@ -490,6 +490,7 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     cqHistogramNumBinsLabel = new QLabel(tr("Number of bins"), axisGroup);
     aLayout->addWidget(cqHistogramNumBinsLabel, 2, 0);
     cqHistogramNumBins = new QSpinBox(axisGroup);
+    cqHistogramNumBins->setRange(1,1024);
     connect(cqHistogramNumBins, SIGNAL(valueChanged(int)),
             this, SLOT(histogramNumBinsChanged(int)));
     aLayout->addWidget(cqHistogramNumBins, 2, 1);
@@ -512,6 +513,7 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
 
     cqHistogramMinLabel = new QLabel(tr("Minimum bin"), summationGroup);
     cqHistogramMin = new QSpinBox(summationGroup);
+    cqHistogramMin->setRange(0,1023);
     connect(cqHistogramMin, SIGNAL(valueChanged(int)),
             this, SLOT(histogramStartChanged(int)));
     sLayout->addWidget(cqHistogramMinLabel, 1, 0);
@@ -519,6 +521,7 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
 
     cqHistogramMaxLabel = new QLabel(tr("Maximum bin"), summationGroup);
     cqHistogramMax = new QSpinBox(summationGroup);
+    cqHistogramMax->setRange(0,1023);
     connect(cqHistogramMax, SIGNAL(valueChanged(int)),
             this, SLOT(histogramEndChanged(int)));
     sLayout->addWidget(cqHistogramMaxLabel, 1, 2);
@@ -810,6 +813,17 @@ QvisSelectionsWindow::UpdateHistogram(const double *values, int nvalues,
 
         delete [] normalized;
         delete [] mask;
+
+        if( nvalues != selectionProps.GetHistogramNumBins() )
+        {
+          selectionProps.SetHistogramNumBins(nvalues);
+          selectionProps.SetHistogramStartBin(0);
+          selectionProps.SetHistogramEndBin(nvalues-1);
+          
+          Apply();
+          
+          UpdateMinMaxBins(true, true, true);
+        }
     }
 }
 
@@ -841,9 +855,9 @@ QvisSelectionsWindow::UpdateHistogram()
         else
         {
             UpdateHistogram(&hist[0], hist.size(), 
-                selectionProps.GetHistogramStartBin(),
-                selectionProps.GetHistogramEndBin(),
-                selectionProps.GetHistogramType() != SelectionProperties::HistogramTime);
+                            selectionProps.GetHistogramStartBin(),
+                            selectionProps.GetHistogramEndBin(), true );
+//                selectionProps.GetHistogramType() != SelectionProperties::HistogramTime);
         }
     }
     else
@@ -905,7 +919,7 @@ void
 QvisSelectionsWindow::UpdateMinMaxBins(bool updateMin, bool updateMax, 
     bool updateValues)
 {
-    bool notTime = selectionProps.GetHistogramType() != SelectionProperties::HistogramTime;
+//    bool notTime = selectionProps.GetHistogramType() != SelectionProperties::HistogramTime;
 
     // Set the min value and extents.
     int hMin = 0, hMax = 100000;
@@ -914,20 +928,20 @@ QvisSelectionsWindow::UpdateMinMaxBins(bool updateMin, bool updateMax,
         int val = selectionProps.GetHistogramStartBin();
         if(val < 0)
             val = 0;
-        if(notTime)
+//        if(notTime)
         {
             hMin = 0;
             hMax = qMin(selectionProps.GetHistogramEndBin(),
                         selectionProps.GetHistogramNumBins()-1);
         }
         cqHistogramMin->blockSignals(true);
-        cqHistogramMin->setMinimum(hMin);
-        cqHistogramMin->setMaximum(hMax);
+        cqHistogramMin->setRange(hMin, hMax);
+
         if(updateValues)
             cqHistogramMin->setValue(val);
         cqHistogramMin->blockSignals(false);
-        cqHistogramMin->setEnabled(notTime);
-        cqHistogramMinLabel->setEnabled(notTime);
+//         cqHistogramMin->setEnabled(notTime);
+//         cqHistogramMinLabel->setEnabled(notTime);
     }
 
     if(updateMax)
@@ -936,19 +950,19 @@ QvisSelectionsWindow::UpdateMinMaxBins(bool updateMin, bool updateMax,
         int val = selectionProps.GetHistogramEndBin();
         if(val >= selectionProps.GetHistogramNumBins()-1)
             val = selectionProps.GetHistogramNumBins()-1;
-        if(notTime)
+//        if(notTime)
         {
             hMin = qMax(selectionProps.GetHistogramStartBin(), 0);
             hMax = selectionProps.GetHistogramNumBins()-1;
         }
         cqHistogramMax->blockSignals(true);
-        cqHistogramMax->setMinimum(hMin);
-        cqHistogramMax->setMaximum(hMax);
+        cqHistogramMax->setRange(hMin, hMax);
+
         if(updateValues)
             cqHistogramMax->setValue(val);
         cqHistogramMax->blockSignals(false);
-        cqHistogramMax->setEnabled(notTime);
-        cqHistogramMaxLabel->setEnabled(notTime);
+//         cqHistogramMax->setEnabled(notTime);
+//         cqHistogramMaxLabel->setEnabled(notTime);
     }
 }
 
@@ -1122,9 +1136,11 @@ QvisSelectionsWindow::UpdateSelectionProperties()
         cqHistogramNumBins->blockSignals(true);
         cqHistogramNumBins->setValue(selectionProps.GetHistogramNumBins());
         cqHistogramNumBins->blockSignals(false);
-        bool notTime = selectionProps.GetHistogramType() != SelectionProperties::HistogramTime;
-        cqHistogramNumBins->setEnabled(notTime);
-        cqHistogramNumBinsLabel->setEnabled(notTime);
+        bool setBins =
+          selectionProps.GetHistogramType() == SelectionProperties::HistogramID ||
+          selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable;
+        cqHistogramNumBins->setEnabled(setBins);
+        cqHistogramNumBinsLabel->setEnabled(setBins);
 
         UpdateMinMaxBins(true, true, true);
 
@@ -1823,9 +1839,11 @@ QvisSelectionsWindow::histogramTypeChanged(int value)
     cqHistogramVariableButton->setEnabled(!selectionProps.GetVariables().empty());
     cqHistogramVariable->setEnabled(!selectionProps.GetVariables().empty() &&
             selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable);
-    bool notTime = selectionProps.GetHistogramType() != SelectionProperties::HistogramTime;
-    cqHistogramNumBins->setEnabled(notTime);
-    cqHistogramNumBinsLabel->setEnabled(notTime);
+    bool setBins =
+      selectionProps.GetHistogramType() == SelectionProperties::HistogramID ||
+      selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable;
+    cqHistogramNumBins->setEnabled(setBins);
+    cqHistogramNumBinsLabel->setEnabled(setBins);
 
     UpdateMinMaxBins(true, true, true);
 }

@@ -856,18 +856,73 @@ CQFilter::SelectAndHistogram(const int *allDomains, const int *allCellIds,
 
     // We need to bin the index array into some number of bins and select
     // the cells in the selected bins into our new narrowed selection.
-    int *binPoints = new int[props.GetHistogramNumBins() + 1];
-    for(int i = 0; i < props.GetHistogramNumBins()+1; ++i)
+    int *binPoints, numBins;
+
+    // For IDs the bins are based on the number of cells
+    if(props.GetHistogramType() == SelectionProperties::HistogramID)
     {
-        float t = float(i) / float(props.GetHistogramNumBins());
+      numBins = props.GetHistogramNumBins();
+      binPoints = new int[numBins + 1];
+
+      for(int i = 0; i < numBins+1; ++i)
+      {
+        float t = float(i) / float(numBins);
         binPoints[i] = int(t * float(totalCells));
+      }
     }
 
-    debug5 << "numBins=" << props.GetHistogramNumBins()
+    else if(props.GetHistogramType() == SelectionProperties::HistogramMatches ||
+            props.GetHistogramType() == SelectionProperties::HistogramVariable)
+    {
+
+      double min, max;
+
+      if(props.GetHistogramType() == SelectionProperties::HistogramMatches)
+      {
+        min = allFrequencies[index[0]];
+        max = allFrequencies[index[totalCells-1]];
+
+        numBins = max-min+1;
+        binPoints = new int[numBins + 1];
+      }
+      else if( props.GetHistogramType() == SelectionProperties::HistogramVariable)
+      {
+        numBins = props.GetHistogramNumBins();
+        binPoints = new int[numBins + 1];
+
+        min = allVariables[index[0]];
+        max = allVariables[index[totalCells-1]];
+      }
+
+      // The starting binPoints will always be the first cell.
+      binPoints[0] = 0;
+
+      int j = 0;
+
+      for(int i = 1; i < numBins; ++i)
+      {
+        // Get the threshold for this bin. The threshold is based on
+        // the frequency of matches.
+        float t = min + float(i) * (max-min) / float(numBins);
+        if(props.GetHistogramType() == SelectionProperties::HistogramMatches)
+          while( allFrequencies[index[j]] < t )
+            ++j;
+        else if(props.GetHistogramType() == SelectionProperties::HistogramVariable)
+          while( allVariables[index[j]] < t )
+            ++j;
+
+        binPoints[i] = j;
+      }
+
+      // The ending binPoints will always be the totalCells.
+      binPoints[numBins] = totalCells;
+    }
+
+    debug5 << "numBins=" << numBins
            << ", startBin=" << props.GetHistogramStartBin()
            << ", endBin=" << props.GetHistogramEndBin() << endl;
 
-    for(int bin = 0; bin < props.GetHistogramNumBins(); ++bin)
+    for(int bin = 0; bin < numBins; ++bin)
     {
         // If the bin is one that we're selecting then add its cells to the
         // narrowed selection.
@@ -898,13 +953,22 @@ CQFilter::SelectAndHistogram(const int *allDomains, const int *allCellIds,
             }
         }
 
+        if(props.GetHistogramType() == SelectionProperties::HistogramID)
+        {
         // Compute an average for the bin.
-        double sum = 0.;
-        for(int i = binPoints[bin]; i < binPoints[bin+1]; ++i)
+          double sum = 0.;
+          for(int i = binPoints[bin]; i < binPoints[bin+1]; ++i)
             sum += allFrequencies[index[i]];
-        double averageForBin = sum / double(binPoints[bin+1] - binPoints[bin]);
-        histogram.push_back(averageForBin);
-        debug5 << "Bin " << bin << " average frequency: " << averageForBin << endl;
+          double averageForBin;
+          if( binPoints[bin+1] > binPoints[bin] )
+            averageForBin = sum / double(binPoints[bin+1] - binPoints[bin]);
+          else
+            averageForBin = 0;
+          histogram.push_back(averageForBin);
+          debug5 << "Bin " << bin << " average frequency: " << averageForBin << endl;
+        }
+        else
+          histogram.push_back(binPoints[bin+1] - binPoints[bin]);
     }
 
     delete [] binPoints;
@@ -1025,7 +1089,9 @@ CQFilter::ExecuteAllTimesteps(std::vector<avtDataTree_p> &timesteps)
         narrowedSelection = selection;
 
         for(size_t i = 0; i < timesteps.size(); ++i)
-            hist.push_back(double(cellsPerTimestep[i]));
+        {
+          hist.push_back(double(cellsPerTimestep[i]));
+        }
     }
     else
     {
@@ -1322,4 +1388,3 @@ CumulativeQueryNamedSelectionExtension::GetSelectionSummary() const
 {
     return summary;
 }
-
