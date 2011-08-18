@@ -99,6 +99,7 @@ void PersistentParticlesAttributes::Init()
     startPathType = Absolute;
     stopPathType = Absolute;
     connectParticles = false;
+    showPoints = false;
 
     PersistentParticlesAttributes::SelectAll();
 }
@@ -129,6 +130,7 @@ void PersistentParticlesAttributes::Copy(const PersistentParticlesAttributes &ob
     traceVariableY = obj.traceVariableY;
     traceVariableZ = obj.traceVariableZ;
     connectParticles = obj.connectParticles;
+    showPoints = obj.showPoints;
     indexVariable = obj.indexVariable;
 
     PersistentParticlesAttributes::SelectAll();
@@ -300,6 +302,7 @@ PersistentParticlesAttributes::operator == (const PersistentParticlesAttributes 
             (traceVariableY == obj.traceVariableY) &&
             (traceVariableZ == obj.traceVariableZ) &&
             (connectParticles == obj.connectParticles) &&
+            (showPoints == obj.showPoints) &&
             (indexVariable == obj.indexVariable));
 }
 
@@ -453,6 +456,7 @@ PersistentParticlesAttributes::SelectAll()
     Select(ID_traceVariableY,   (void *)&traceVariableY);
     Select(ID_traceVariableZ,   (void *)&traceVariableZ);
     Select(ID_connectParticles, (void *)&connectParticles);
+    Select(ID_showPoints,       (void *)&showPoints);
     Select(ID_indexVariable,    (void *)&indexVariable);
 }
 
@@ -538,6 +542,12 @@ PersistentParticlesAttributes::CreateNode(DataNode *parentNode, bool completeSav
     {
         addToParent = true;
         node->AddNode(new DataNode("connectParticles", connectParticles));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showPoints, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showPoints", showPoints));
     }
 
     if(completeSave || !FieldsEqual(ID_indexVariable, &defaultObject))
@@ -628,6 +638,8 @@ PersistentParticlesAttributes::SetFromNode(DataNode *parentNode)
         SetTraceVariableZ(node->AsString());
     if((node = searchNode->GetNode("connectParticles")) != 0)
         SetConnectParticles(node->AsBool());
+    if((node = searchNode->GetNode("showPoints")) != 0)
+        SetShowPoints(node->AsBool());
     if((node = searchNode->GetNode("indexVariable")) != 0)
         SetIndexVariable(node->AsString());
 }
@@ -697,6 +709,13 @@ PersistentParticlesAttributes::SetConnectParticles(bool connectParticles_)
 {
     connectParticles = connectParticles_;
     Select(ID_connectParticles, (void *)&connectParticles);
+}
+
+void
+PersistentParticlesAttributes::SetShowPoints(bool showPoints_)
+{
+    showPoints = showPoints_;
+    Select(ID_showPoints, (void *)&showPoints);
 }
 
 void
@@ -782,6 +801,12 @@ PersistentParticlesAttributes::GetConnectParticles() const
     return connectParticles;
 }
 
+bool
+PersistentParticlesAttributes::GetShowPoints() const
+{
+    return showPoints;
+}
+
 const std::string &
 PersistentParticlesAttributes::GetIndexVariable() const
 {
@@ -855,6 +880,7 @@ PersistentParticlesAttributes::GetFieldName(int index) const
     case ID_traceVariableY:   return "traceVariableY";
     case ID_traceVariableZ:   return "traceVariableZ";
     case ID_connectParticles: return "connectParticles";
+    case ID_showPoints:       return "showPoints";
     case ID_indexVariable:    return "indexVariable";
     default:  return "invalid index";
     }
@@ -889,6 +915,7 @@ PersistentParticlesAttributes::GetFieldType(int index) const
     case ID_traceVariableY:   return FieldType_variablename;
     case ID_traceVariableZ:   return FieldType_variablename;
     case ID_connectParticles: return FieldType_bool;
+    case ID_showPoints:       return FieldType_bool;
     case ID_indexVariable:    return FieldType_variablename;
     default:  return FieldType_unknown;
     }
@@ -923,6 +950,7 @@ PersistentParticlesAttributes::GetFieldTypeName(int index) const
     case ID_traceVariableY:   return "variablename";
     case ID_traceVariableZ:   return "variablename";
     case ID_connectParticles: return "bool";
+    case ID_showPoints:       return "bool";
     case ID_indexVariable:    return "variablename";
     default:  return "invalid index";
     }
@@ -993,6 +1021,11 @@ PersistentParticlesAttributes::FieldsEqual(int index_, const AttributeGroup *rhs
     case ID_connectParticles:
         {  // new scope
         retval = (connectParticles == obj.connectParticles);
+        }
+        break;
+    case ID_showPoints:
+        {  // new scope
+        retval = (showPoints == obj.showPoints);
         }
         break;
     case ID_indexVariable:
