@@ -97,6 +97,7 @@ class QvisPersistentParticlesWindow : public QvisOperatorWindow
     void traceVariableYChanged(const QString &varName);
     void traceVariableZChanged(const QString &varName);
     void connectParticlesChanged(bool val);
+    void showPointsChanged(bool val);
     void indexVariableChanged(const QString &varName);
   private:
     QLineEdit *startIndex;
@@ -110,6 +111,7 @@ class QvisPersistentParticlesWindow : public QvisOperatorWindow
     QvisVariableButton *traceVariableY;
     QvisVariableButton *traceVariableZ;
     QCheckBox *connectParticles;
+    QCheckBox *showPoints;
     QvisVariableButton *indexVariable;
     QLabel *startIndexLabel;
     QLabel *startPathTypeLabel;

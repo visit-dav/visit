@@ -106,6 +106,7 @@ public:
     void SetTraceVariableY(const std::string &traceVariableY_);
     void SetTraceVariableZ(const std::string &traceVariableZ_);
     void SetConnectParticles(bool connectParticles_);
+    void SetShowPoints(bool showPoints_);
     void SetIndexVariable(const std::string &indexVariable_);
 
     // Property getting methods
@@ -121,6 +122,7 @@ public:
     const std::string &GetTraceVariableZ() const;
           std::string &GetTraceVariableZ();
     bool              GetConnectParticles() const;
+    bool              GetShowPoints() const;
     const std::string &GetIndexVariable() const;
           std::string &GetIndexVariable();
 
@@ -153,6 +155,7 @@ public:
         ID_traceVariableY,
         ID_traceVariableZ,
         ID_connectParticles,
+        ID_showPoints,
         ID_indexVariable,
         ID__LAST
     };
@@ -167,12 +170,13 @@ private:
     std::string traceVariableY;
     std::string traceVariableZ;
     bool        connectParticles;
+    bool        showPoints;
     std::string indexVariable;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PERSISTENTPARTICLESATTRIBUTES_TMFS "iiiiisssbs"
+#define PERSISTENTPARTICLESATTRIBUTES_TMFS "iiiiisssbbs"
 
 #endif
