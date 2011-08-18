@@ -1903,15 +1903,15 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
         EXCEPTION1(ImproperUseException, "NULL Histogram Specification");
 
     // Compute the hisogram
-    int             timestep = spec->GetTimestep();
-    bool      regularBinning = spec->IsRegularBinning();
+    int                       timestep = spec->GetTimestep();
+    bool                regularBinning = spec->IsRegularBinning();
     std::vector<std::string> variables = spec->GetVariables();
-    std::vector<int>         numBins = spec->GetNumberOfBins();
-    bool                     boundsSpecified = spec->BoundsSpecified();
-    std::string              condition(spec->GetCondition());
+    std::vector<int>           numBins = spec->GetNumberOfBins();
+    bool               boundsSpecified = spec->BoundsSpecified();
+    std::string              condition = spec->GetCondition();
 
-    int           boundsSize = spec->GetBounds().size();
-    VISIT_LONG_LONG * counts = spec->GetCounts();
+    int                     boundsSize = spec->GetBounds().size();
+    VISIT_LONG_LONG *           counts = spec->GetCounts();
 
 #ifdef VERYVERBOSE
     std::cout << "Constructing histogram for time step " << timestep << std::endl;
