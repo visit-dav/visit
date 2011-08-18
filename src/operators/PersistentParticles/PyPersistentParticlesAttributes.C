@@ -123,6 +123,11 @@ PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *at
     else
         SNPRINTF(tmpStr, 1000, "%sconnectParticles = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetShowPoints())
+        SNPRINTF(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sindexVariable = \"%s\"\n", prefix, atts->GetIndexVariable().c_str());
     str += tmpStr;
     return str;
@@ -372,6 +377,30 @@ PersistentParticlesAttributes_GetConnectParticles(PyObject *self, PyObject *args
 }
 
 /*static*/ PyObject *
+PersistentParticlesAttributes_SetShowPoints(PyObject *self, PyObject *args)
+{
+    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showPoints in the object.
+    obj->data->SetShowPoints(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PersistentParticlesAttributes_GetShowPoints(PyObject *self, PyObject *args)
+{
+    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowPoints()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 PersistentParticlesAttributes_SetIndexVariable(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
@@ -417,6 +446,8 @@ PyMethodDef PyPersistentParticlesAttributes_methods[PERSISTENTPARTICLESATTRIBUTE
     {"GetTraceVariableZ", PersistentParticlesAttributes_GetTraceVariableZ, METH_VARARGS},
     {"SetConnectParticles", PersistentParticlesAttributes_SetConnectParticles, METH_VARARGS},
     {"GetConnectParticles", PersistentParticlesAttributes_GetConnectParticles, METH_VARARGS},
+    {"SetShowPoints", PersistentParticlesAttributes_SetShowPoints, METH_VARARGS},
+    {"GetShowPoints", PersistentParticlesAttributes_GetShowPoints, METH_VARARGS},
     {"SetIndexVariable", PersistentParticlesAttributes_SetIndexVariable, METH_VARARGS},
     {"GetIndexVariable", PersistentParticlesAttributes_GetIndexVariable, METH_VARARGS},
     {NULL, NULL}
@@ -475,6 +506,8 @@ PyPersistentParticlesAttributes_getattr(PyObject *self, char *name)
         return PersistentParticlesAttributes_GetTraceVariableZ(self, NULL);
     if(strcmp(name, "connectParticles") == 0)
         return PersistentParticlesAttributes_GetConnectParticles(self, NULL);
+    if(strcmp(name, "showPoints") == 0)
+        return PersistentParticlesAttributes_GetShowPoints(self, NULL);
     if(strcmp(name, "indexVariable") == 0)
         return PersistentParticlesAttributes_GetIndexVariable(self, NULL);
 
@@ -509,6 +542,8 @@ PyPersistentParticlesAttributes_setattr(PyObject *self, char *name, PyObject *ar
         obj = PersistentParticlesAttributes_SetTraceVariableZ(self, tuple);
     else if(strcmp(name, "connectParticles") == 0)
         obj = PersistentParticlesAttributes_SetConnectParticles(self, tuple);
+    else if(strcmp(name, "showPoints") == 0)
+        obj = PersistentParticlesAttributes_SetShowPoints(self, tuple);
     else if(strcmp(name, "indexVariable") == 0)
         obj = PersistentParticlesAttributes_SetIndexVariable(self, tuple);
 

@@ -42,6 +42,7 @@
 #include <ViewerProxy.h>
 
 #include <QCheckBox>
+#include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
@@ -127,9 +128,17 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
+    QGroupBox * timeGroup = new QGroupBox(central);
+    timeGroup->setTitle(tr("Time Slices"));
+    topLayout->addWidget(timeGroup);
+
+    QGridLayout *timeLayout = new QGridLayout(timeGroup);
+    timeLayout->setMargin(5);
+    timeLayout->setSpacing(10);
+
     // Start
     startPathTypeLabel = new QLabel(tr("Type of path"), central);
-    mainLayout->addWidget(startPathTypeLabel,0,0);
+    timeLayout->addWidget(startPathTypeLabel,0,0);
     startPathType = new QWidget(central);
     startPathTypeButtonGroup= new QButtonGroup(startPathType);
     QHBoxLayout *startPathTypeLayout = new QHBoxLayout(startPathType);
@@ -144,18 +153,18 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     startPathTypeLayout->addWidget(startPathTypePathTypeEnumRelative);
     connect(startPathTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(startPathTypeChanged(int)));
-    mainLayout->addWidget(startPathType, 0,1);
+    timeLayout->addWidget(startPathType, 0,1);
 
     startIndexLabel = new QLabel(tr("Index of first time slice"), central);
-    mainLayout->addWidget(startIndexLabel,1,0);
+    timeLayout->addWidget(startIndexLabel,1,0);
     startIndex = new QLineEdit(central);
     connect(startIndex, SIGNAL(returnPressed()),
             this, SLOT(startIndexProcessText()));
-    mainLayout->addWidget(startIndex, 1,1);
+    timeLayout->addWidget(startIndex, 1,1);
 
     // Stop
     stopPathTypeLabel = new QLabel(tr("Type of path"), central);
-    mainLayout->addWidget(stopPathTypeLabel,2,0);
+    timeLayout->addWidget(stopPathTypeLabel,2,0);
     stopPathType = new QWidget(central);
     stopPathTypeButtonGroup= new QButtonGroup(stopPathType);
     QHBoxLayout *stopPathTypeLayout = new QHBoxLayout(stopPathType);
@@ -169,61 +178,85 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     stopPathTypeLayout->addWidget(stopPathTypePathTypeEnumRelative);
     connect(stopPathTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(stopPathTypeChanged(int)));
-    mainLayout->addWidget(stopPathType, 2,1);
+    timeLayout->addWidget(stopPathType, 2,1);
 
     stopIndexLabel = new QLabel(tr("Index of last time slice"), central);
-    mainLayout->addWidget(stopIndexLabel,3,0);
+    timeLayout->addWidget(stopIndexLabel,3,0);
     stopIndex = new QLineEdit(central);
     connect(stopIndex, SIGNAL(returnPressed()),
             this, SLOT(stopIndexProcessText()));
-    mainLayout->addWidget(stopIndex, 3,1);
+    timeLayout->addWidget(stopIndex, 3,1);
 
     // Stride
     strideLabel = new QLabel(tr("Skip rate between time slices"), central);
-    mainLayout->addWidget(strideLabel,4,0);
+    timeLayout->addWidget(strideLabel,4,0);
     stride = new QLineEdit(central);
     connect(stride, SIGNAL(returnPressed()),
             this, SLOT(strideProcessText()));
-    mainLayout->addWidget(stride, 4,1);
+    timeLayout->addWidget(stride, 4,1);
 
-    // Coordinates
+
+    // Coordinate replacement
+    QGroupBox * coordinateGroup = new QGroupBox(central);
+    coordinateGroup->setTitle(tr("Coordinate replacement"));
+    topLayout->addWidget(coordinateGroup);
+
+    QGridLayout *coordinateLayout = new QGridLayout(coordinateGroup);
+    coordinateLayout->setMargin(5);
+    coordinateLayout->setSpacing(10);
+
+
     traceVariableXLabel = new QLabel(tr("X-Coordinate"), central);
-    mainLayout->addWidget(traceVariableXLabel,5,0);
+    coordinateLayout->addWidget(traceVariableXLabel,1,0);
     int traceVariableXMask = QvisVariableButton::Scalars;
     traceVariableX = new QvisVariableButton(true, true, true, traceVariableXMask, central);
     connect(traceVariableX, SIGNAL(activated(const QString&)),
             this, SLOT(traceVariableXChanged(const QString&)));
-    mainLayout->addWidget(traceVariableX, 5,1);
+    coordinateLayout->addWidget(traceVariableX, 1,1);
 
     traceVariableYLabel = new QLabel(tr("Y-Coordinate"), central);
-    mainLayout->addWidget(traceVariableYLabel,6,0);
+    coordinateLayout->addWidget(traceVariableYLabel,2,0);
     int traceVariableYMask = QvisVariableButton::Scalars;
     traceVariableY = new QvisVariableButton(true, true, true, traceVariableYMask, central);
     connect(traceVariableY, SIGNAL(activated(const QString&)),
             this, SLOT(traceVariableYChanged(const QString&)));
-    mainLayout->addWidget(traceVariableY, 6,1);
+    coordinateLayout->addWidget(traceVariableY, 2,1);
 
     traceVariableZLabel = new QLabel(tr("Z-Coordinate"), central);
-    mainLayout->addWidget(traceVariableZLabel,7,0);
+    coordinateLayout->addWidget(traceVariableZLabel,3,0);
     int traceVariableZMask = QvisVariableButton::Scalars;
     traceVariableZ = new QvisVariableButton(true, true, true, traceVariableZMask, central);
     connect(traceVariableZ, SIGNAL(activated(const QString&)),
             this, SLOT(traceVariableZChanged(const QString&)));
-    mainLayout->addWidget(traceVariableZ, 7,1);
+    coordinateLayout->addWidget(traceVariableZ, 3,1);
 
-    connectParticles = new QCheckBox(tr("Connect Particles"), central);
+
+    QGroupBox * connectionsGroup = new QGroupBox(central);
+    connectionsGroup->setTitle(tr("Connect particles"));
+    topLayout->addWidget(connectionsGroup);
+
+    QGridLayout *connectionsLayout = new QGridLayout(connectionsGroup);
+    connectionsLayout->setMargin(5);
+    connectionsLayout->setSpacing(10);
+
+
+    connectParticles = new QCheckBox(tr("Connect particles"), central);
     connect(connectParticles, SIGNAL(toggled(bool)),
             this, SLOT(connectParticlesChanged(bool)));
-    mainLayout->addWidget(connectParticles, 8,0);
+    connectionsLayout->addWidget(connectParticles, 0,0);
 
-    indexVariableLabel = new QLabel(tr("Index Variable"), central);
-    mainLayout->addWidget(indexVariableLabel,9,0);
+    showPoints = new QCheckBox(tr("Show points"), central);
+    connect(showPoints, SIGNAL(toggled(bool)),
+            this, SLOT(showPointsChanged(bool)));
+    connectionsLayout->addWidget(showPoints, 0,1);
+
+    indexVariableLabel = new QLabel(tr("Index variable"), central);
+    connectionsLayout->addWidget(indexVariableLabel,1,0);
     int indexVariableMask = QvisVariableButton::Scalars;
     indexVariable = new QvisVariableButton(true, true, true, indexVariableMask, central);
     connect(indexVariable, SIGNAL(activated(const QString&)),
             this, SLOT(indexVariableChanged(const QString&)));
-    mainLayout->addWidget(indexVariable, 9,1);
-
+    connectionsLayout->addWidget(indexVariable, 1,1);
 }
 
 
@@ -304,21 +337,20 @@ QvisPersistentParticlesWindow::UpdateWindow(bool doAll)
             traceVariableZ->blockSignals(false);
             break;
           case PersistentParticlesAttributes::ID_connectParticles:
-            if (atts->GetConnectParticles() == true)
-            {
-                indexVariable->setEnabled(true);
-                if(indexVariableLabel)
-                    indexVariableLabel->setEnabled(true);
-            }
-            else
-            {
-                indexVariable->setEnabled(false);
-                if(indexVariableLabel)
-                    indexVariableLabel->setEnabled(false);
-            }
+            showPoints->setEnabled( atts->GetConnectParticles() );
+
+            indexVariable->setEnabled( atts->GetConnectParticles() );
+            if(indexVariableLabel)
+                indexVariableLabel->setEnabled( atts->GetConnectParticles() );
+
             connectParticles->blockSignals(true);
             connectParticles->setChecked(atts->GetConnectParticles());
             connectParticles->blockSignals(false);
+            break;
+          case PersistentParticlesAttributes::ID_showPoints:
+            showPoints->blockSignals(true);
+            showPoints->setChecked(atts->GetShowPoints());
+            showPoints->blockSignals(false);
             break;
           case PersistentParticlesAttributes::ID_indexVariable:
             indexVariable->blockSignals(true);
@@ -509,11 +541,17 @@ QvisPersistentParticlesWindow::connectParticlesChanged(bool val)
 
 
 void
+QvisPersistentParticlesWindow::showPointsChanged(bool val)
+{
+    atts->SetShowPoints(val);
+    Apply();
+}
+
+
+void
 QvisPersistentParticlesWindow::indexVariableChanged(const QString &varName)
 {
     atts->SetIndexVariable(varName.toStdString());
     SetUpdate(false);
     Apply();
 }
-
-

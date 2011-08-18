@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class PersistentParticlesAttributes extends AttributeSubject implements Plugin
 {
-    private static int PersistentParticlesAttributes_numAdditionalAtts = 10;
+    private static int PersistentParticlesAttributes_numAdditionalAtts = 11;
 
     // Enum values
     public final static int PATHTYPEENUM_ABSOLUTE = 0;
@@ -79,6 +79,7 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         traceVariableY = new String("");
         traceVariableZ = new String("");
         connectParticles = false;
+        showPoints = false;
         indexVariable = new String("");
     }
 
@@ -95,6 +96,7 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         traceVariableY = new String("");
         traceVariableZ = new String("");
         connectParticles = false;
+        showPoints = false;
         indexVariable = new String("");
     }
 
@@ -111,6 +113,7 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         traceVariableY = new String(obj.traceVariableY);
         traceVariableZ = new String(obj.traceVariableZ);
         connectParticles = obj.connectParticles;
+        showPoints = obj.showPoints;
         indexVariable = new String(obj.indexVariable);
 
         SelectAll();
@@ -138,6 +141,7 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
                 (traceVariableY.equals(obj.traceVariableY)) &&
                 (traceVariableZ.equals(obj.traceVariableZ)) &&
                 (connectParticles == obj.connectParticles) &&
+                (showPoints == obj.showPoints) &&
                 (indexVariable.equals(obj.indexVariable)));
     }
 
@@ -199,10 +203,16 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         Select(8);
     }
 
+    public void SetShowPoints(boolean showPoints_)
+    {
+        showPoints = showPoints_;
+        Select(9);
+    }
+
     public void SetIndexVariable(String indexVariable_)
     {
         indexVariable = indexVariable_;
-        Select(9);
+        Select(10);
     }
 
     // Property getting methods
@@ -215,6 +225,7 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
     public String  GetTraceVariableY() { return traceVariableY; }
     public String  GetTraceVariableZ() { return traceVariableZ; }
     public boolean GetConnectParticles() { return connectParticles; }
+    public boolean GetShowPoints() { return showPoints; }
     public String  GetIndexVariable() { return indexVariable; }
 
     // Write and read methods.
@@ -239,6 +250,8 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         if(WriteSelect(8, buf))
             buf.WriteBool(connectParticles);
         if(WriteSelect(9, buf))
+            buf.WriteBool(showPoints);
+        if(WriteSelect(10, buf))
             buf.WriteString(indexVariable);
     }
 
@@ -274,6 +287,9 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
             SetConnectParticles(buf.ReadBool());
             break;
         case 9:
+            SetShowPoints(buf.ReadBool());
+            break;
+        case 10:
             SetIndexVariable(buf.ReadString());
             break;
         }
@@ -301,6 +317,7 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         str = str + stringToString("traceVariableY", traceVariableY, indent) + "\n";
         str = str + stringToString("traceVariableZ", traceVariableZ, indent) + "\n";
         str = str + boolToString("connectParticles", connectParticles, indent) + "\n";
+        str = str + boolToString("showPoints", showPoints, indent) + "\n";
         str = str + stringToString("indexVariable", indexVariable, indent) + "\n";
         return str;
     }
@@ -316,6 +333,7 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
     private String  traceVariableY;
     private String  traceVariableZ;
     private boolean connectParticles;
+    private boolean showPoints;
     private String  indexVariable;
 }
 

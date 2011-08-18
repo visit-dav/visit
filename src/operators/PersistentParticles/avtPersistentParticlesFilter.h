@@ -43,12 +43,14 @@
 #ifndef AVT_PersistentParticles_FILTER_H
 #define AVT_PersistentParticles_FILTER_H
 
-#include <map>
-
 #include <avtExecuteThenTimeLoopFilter.h>
 #include <avtPluginFilter.h>
 
 #include <PersistentParticlesAttributes.h>
+
+#include <map>
+#include <string>
+#include <vector>
 
 class vtkDataSet;
 class vtkUnstructuredGrid;
@@ -106,7 +108,7 @@ class avtPersistentParticlesFilter
     void IterateMergeData(int, avtDataTree_p);
     void IterateTraceData(int, avtDataTree_p);
 
-    string mainVariable;   
+    std::string mainVariable;   
     int activeTimeStep;
     int startTimeSlice;
     int stopTimeSlice;

@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PERSISTENTPARTICLESATTRIBUTES_NMETH 22
+#define PERSISTENTPARTICLESATTRIBUTES_NMETH 24
 void           PyPersistentParticlesAttributes_StartUp(PersistentParticlesAttributes *subj, void *data);
 void           PyPersistentParticlesAttributes_CloseDown();
 PyMethodDef *  PyPersistentParticlesAttributes_GetMethodTable(int *nMethods);
