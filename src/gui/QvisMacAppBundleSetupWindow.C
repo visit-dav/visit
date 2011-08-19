@@ -42,6 +42,8 @@
 #include <fstream>
 
 #include <QCheckBox>
+#include <QDir>
+#include <QFile>
 #include <QGroupBox>
 #include <QLabel>
 #include <QMessageBox>
@@ -108,33 +110,38 @@ QvisMacAppBundleSetupWindow::CreateWindowContents()
     readNetworkList();
     readDefaultConfigList();
 
-    QLabel *label = new QLabel(tr("To finish the VisIt install on this Mac select any "
-                "computing centers whose resources you are using to automatically "
-                "configure host profiles for their machines."));
+    QLabel *label = new QLabel(tr("To finish the VisIt install on this Mac select "
+                "any computing centers whose resources you are using to "
+                "configure host profiles automatically for their machines."));
     label->setWordWrap(true);
     topLayout->addWidget(label);
-    QGroupBox *networkGroup = new QGroupBox(tr("Select computing centers used"));
+    QGroupBox *networkGroup = new QGroupBox(
+            tr("Select computing centers used"));
     topLayout->addWidget(networkGroup);
     QVBoxLayout *networkGroupLayout = new QVBoxLayout;
     networkGroup->setLayout(networkGroupLayout);
 
-    for(std::list<NetworkInfo>::iterator it = networkList.begin(); it != networkList.end(); ++it)
+    for(std::list<NetworkInfo>::iterator it = networkList.begin();
+            it != networkList.end(); ++it)
     {
-        it->checkBox = new QCheckBox(it->longName.c_str());
+        it->checkBox = new QCheckBox(it->longName);
         networkGroupLayout->addWidget(it->checkBox);
     }
 
-    QGroupBox *configGroup = new QGroupBox(tr("Select default configuration"));
+    QGroupBox *configGroup = new QGroupBox(
+            tr("Select default configuration"));
     topLayout->addWidget(configGroup);
     QVBoxLayout *configGroupLayout = new QVBoxLayout;
     configGroup->setLayout(configGroupLayout);
 
-    QRadioButton *radioButton = new QRadioButton(tr("None (use VisIt's standard defaults)"));
+    QRadioButton *radioButton = new QRadioButton(
+            tr("None (use VisIt's standard defaults)"));
     radioButton->setChecked(true);
     configGroupLayout->addWidget(radioButton);
-    for(std::list<DefaultConfigInfo>::iterator it = defaultConfigList.begin(); it != defaultConfigList.end(); ++it)
+    for(std::list<DefaultConfigInfo>::iterator it = defaultConfigList.begin();
+            it != defaultConfigList.end(); ++it)
     {
-        it->radioButton = new QRadioButton(it->longName.c_str());
+        it->radioButton = new QRadioButton(it->longName);
         configGroupLayout->addWidget(it->radioButton);
     }
 
@@ -143,10 +150,14 @@ QvisMacAppBundleSetupWindow::CreateWindowContents()
     QPushButton *cancelButton = new QPushButton(tr("Cancel"));
     buttonLayout->addWidget(cancelButton);
     buttonLayout->addStretch(1);
-    QObject::connect(cancelButton, SIGNAL(clicked()), this, SLOT(close()));
+    QObject::connect(
+            cancelButton, SIGNAL(clicked()),
+            this, SLOT(close()));
     QPushButton *installButton = new QPushButton(tr("Install"));
     buttonLayout->addWidget(installButton);
-    QObject::connect(installButton, SIGNAL(clicked()), this, SLOT(performSetup()));
+    QObject::connect(
+            installButton, SIGNAL(clicked()),
+            this, SLOT(performSetup()));
 }
 
 // ****************************************************************************
@@ -165,36 +176,21 @@ QvisMacAppBundleSetupWindow::CreateWindowContents()
 void
 QvisMacAppBundleSetupWindow::readNetworkList()
 {
-    //std::cout << "Config file: " << GetSystemConfigFile("networks.dat") << std::endl;
     std::ifstream is(GetSystemConfigFile("networks.dat"));
 
     std::string line;
     while(std::getline(is, line))
     {
         // Find two deliminiting ":"
-        int posL = line.find(':');
-        if (posL >= line.size())
-        {
-            std::cerr << "Igonoring invalid line: " << line << std::endl;
-            continue;
-        }
-        int posS= line.find(':', posL + 1);
-        if (posS >= line.size())
+        int splitPos = line.find(':');
+        if (splitPos == std::string::npos)
         {
             std::cerr << "Igonoring invalid line: " << line << std::endl;
             continue;
         }
 
-        NetworkInfo ni(line.substr(0, posL), line.substr(posL+1, posS-(posL+1)));
-        int currPos = posS+1;
-        int endPos;
-        while ((endPos = line.find(' ', currPos)) != std::string::npos)
-        {
-            ni.configFilenameList.push_back(line.substr(currPos, endPos - currPos));
-            currPos = endPos + 1;
-        }
-        ni.configFilenameList.push_back(line.substr(currPos));
-        networkList.push_back(ni);
+        networkList.push_back(
+                NetworkInfo(line.substr(0, splitPos), line.substr(splitPos+1)));
     }
 }
 
@@ -220,32 +216,15 @@ QvisMacAppBundleSetupWindow::readDefaultConfigList()
     while(std::getline(is, line))
     {
         // Find two deliminiting ":"
-        int posL = line.find(':');
-        if (posL >= line.size())
-        {
-            std::cerr << "Igonoring invalid line: " << line << std::endl;
-            continue;
-        }
-        int posS= line.find(':', posL + 1);
-        if (posS >= line.size())
+        int splitPos = line.find(':');
+        if (splitPos == std::string::npos)
         {
             std::cerr << "Igonoring invalid line: " << line << std::endl;
             continue;
         }
 
-        std::string longName = line.substr(0, posL);
-        std::string shortName = line.substr(posL+1, posS-(posL+1));
-        std::string configString = line.substr(posS+1);
-        if (configString.size() != 3)
-        {
-            std::cerr << "Igonoring invalid line: " << line << std::endl;
-            continue;
-        }
-        bool config = (configString[0] == '1');
-        bool guiconfig = (configString[1] == '1');
-        bool rc = (configString[2] == '1');
-
-        defaultConfigList.push_back(DefaultConfigInfo(longName, shortName, config, guiconfig, rc));
+        defaultConfigList.push_back(DefaultConfigInfo(
+                    line.substr(0, splitPos), line.substr(splitPos+1)));
     }
 }
 
@@ -268,30 +247,27 @@ QvisMacAppBundleSetupWindow::readDefaultConfigList()
 // ****************************************************************************
 
 void
-QvisMacAppBundleSetupWindow::installConfigFile(const std::string& srcFilename,
-        const std::string& destFilename)
+QvisMacAppBundleSetupWindow::installConfigFile(const QString& srcFilename,
+        const QString& destFilename)
 {
-    bool install = true;
-    if (access(destFilename.c_str(), F_OK) == 0)
+    if (QFile::exists(destFilename))
     {
         QMessageBox msgBox;
 
-        QString msg = tr("The configuration file ");
-        msg += QString(destFilename.c_str());
-        msg += tr(" already exists.");
-        msgBox.setText(msg);
+        msgBox.setText(tr("The configuration file ") + destFilename +
+                tr(" already exists."));
         msgBox.setInformativeText(tr("Replace existing configuration file?"));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         msgBox.setDefaultButton(QMessageBox::No);
         int ret = msgBox.exec();
-        install = (ret == QMessageBox::Yes);
+        if (ret == QMessageBox::Yes)
+        {
+            QFile::remove(destFilename);
+        }
     }
 
-    if (install)
-    {
-        std::string cmd = "/bin/cp -f " + srcFilename + " " + destFilename;
-        system(cmd.c_str()); 
-    }
+    // Note: Copy will not overwrite existing files
+    QFile::copy(srcFilename, destFilename);
 }
 
 // ****************************************************************************
@@ -299,7 +275,7 @@ QvisMacAppBundleSetupWindow::installConfigFile(const std::string& srcFilename,
 //
 // Purpose: 
 //   Perform the actual setup (i.e., copy selected host profiles and
-//   configuration into a user's .visit directory.
+//   configuration into a user's .visit directory).
 //
 // Programmer: Gunther H. Weber
 // Creation:   Thu Aug 11 17:48:10 PDT 2011
@@ -311,20 +287,26 @@ QvisMacAppBundleSetupWindow::installConfigFile(const std::string& srcFilename,
 void
 QvisMacAppBundleSetupWindow::performSetup()
 {
-    std::string hostsInstallDirectory = GetAndMakeUserVisItHostsDirectory();
+    QString hostsInstallDirectory = QString::fromStdString(GetAndMakeUserVisItHostsDirectory());
 
     for (std::list<NetworkInfo>::iterator it = networkList.begin();
             it != networkList.end(); ++it)
     {
         if (it->checkBox->isChecked())
         {
-            for (std::list<std::string>::iterator cFIt = it->configFilenameList.begin();
-                    cFIt != it->configFilenameList.end(); ++ cFIt)
+            QString srcHostProfileDirName = QString::fromStdString(
+                    GetIsDevelopmentVersion() ?
+                    GetSystemConfigFile("") :
+                    GetSystemConfigFile("allhosts/"));
+            QDir srcHostProfileDir(
+                    srcHostProfileDirName,
+                    QString("host_") + it->shortName + QString("_*.xml"));
+            QStringList srcConfigFilenameList = srcHostProfileDir.entryList();
+            for (int i = 0; i < srcConfigFilenameList.size(); ++ i)
             {
-                std::string srcName =
-                    GetIsDevelopmentVersion() ? *cFIt : std::string("allhosts/") + *cFIt;
-                std::string srcHostProfilePath = GetSystemConfigFile(srcName.c_str());
-                installConfigFile(srcHostProfilePath, hostsInstallDirectory + "/" + *cFIt);
+                installConfigFile(
+                        srcHostProfileDirName + "/" + srcConfigFilenameList.at(i),
+                        hostsInstallDirectory + "/" + srcConfigFilenameList.at(i));
             }
         }
     }
@@ -333,40 +315,30 @@ QvisMacAppBundleSetupWindow::performSetup()
     {
         if (it->radioButton->isChecked())
         {
-            if (it->config)
-            {
-                std::string cfgname =
-                    std::string("visit-config-") + it->shortName + std::string(".ini");
-                installConfigFile(
-                        GetSystemConfigFile(cfgname.c_str()),
-                        GetDefaultConfigFile("config")
-                        );
-            }
-            if (it->guiconfig)
-            {
-                std::string cfgname =
-                    std::string("visit-guiconfig-") + it->shortName + std::string(".ini");
-                installConfigFile(
-                        GetSystemConfigFile(cfgname.c_str()),
-                        GetDefaultConfigFile("guiconfig")
-                        );
-            }
-            if (it->rc)
-            {
-                std::string cfgname =
-                    std::string("visit-visitrc-") + it->shortName + std::string(".ini");
-                installConfigFile(
-                        GetSystemConfigFile(cfgname.c_str()),
-                        GetDefaultConfigFile("visitrc")
-                        );
-            }
+            const char *configFilename[] = {
+                "config", "guiconfig", "visitrc", 0 };
 
+            for (int i = 0; configFilename[i] != 0; ++i)
+            {
+                std::string srcCfgName =
+                    std::string("visit-") +
+                    std::string(configFilename[i]) +
+                    std::string("-") +
+                    it->shortName.toStdString() +
+                    std::string(".ini");
+                QString srcCfgPath = GetSystemConfigFile(srcCfgName.c_str());
+                if (QFile::exists(srcCfgPath))
+                {
+                    installConfigFile(
+                            srcCfgPath, GetDefaultConfigFile(configFilename[i]));
+                }
+            }
         }
     }
 
     QMessageBox msgBox;
-    msgBox.setText(tr("Host profiles and configuration files have been installed and will be available "
-                " when VisIt is restarted."));
+    msgBox.setText(tr("Host profiles and configuration files have been installed"
+               " and will be available after VisIt is restarted."));
     msgBox.exec();
 
     close();

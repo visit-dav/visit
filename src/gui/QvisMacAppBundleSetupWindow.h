@@ -43,6 +43,7 @@
 #include <list>
 
 #include <QvisDelayedWindow.h>
+#include <QString>
 
 class QCheckBox;
 class QRadioButton;
@@ -59,32 +60,32 @@ public:
 private:
     struct NetworkInfo
     {
-        std::string longName;
-        std::string shortName;
-        std::list<std::string> configFilenameList;
+        QString longName;
+        QString shortName;
         QCheckBox *checkBox;
 
         NetworkInfo(const std::string& lN, const std::string& sN)
-            : longName(lN), shortName(sN), configFilenameList(), checkBox(0) {}
+            : longName(QString::fromStdString(lN)),
+              shortName(QString::fromStdString(sN)),
+              checkBox(0) {}
     };
     std::list<NetworkInfo> networkList;
     struct DefaultConfigInfo
     {
-        std::string longName;
-        std::string shortName;
-        bool config;
-        bool guiconfig;
-        bool rc;
+        QString longName;
+        QString shortName;
         QRadioButton *radioButton;
 
-        DefaultConfigInfo(const std::string& lN, const std::string& sN, bool c, bool g, bool r)
-            : longName(lN), shortName(sN), config(c), guiconfig(g), rc(r) {}
+        DefaultConfigInfo(const std::string& lN, const std::string& sN)
+            : longName(QString::fromStdString(lN)),
+              shortName(QString::fromStdString(sN)),
+              radioButton(0) {}
     };
     std::list<DefaultConfigInfo> defaultConfigList;
 
     void readNetworkList();
     void readDefaultConfigList();
-    void installConfigFile(const std::string&, const std::string&);
+    void installConfigFile(const QString&, const QString&);
 
 private slots:
     void performSetup();
