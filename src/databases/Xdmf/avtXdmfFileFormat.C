@@ -1076,7 +1076,10 @@ int avtXdmfFileFormat::GetSpatialDimensions(XdmfInt32 geometryType)
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
 //
-
+//  Modifications:
+//
+//   Hank Childs, Thu Aug 18 17:22:19 PDT 2011
+//   Indicate times are accurate.
 //
 // ****************************************************************************
 void avtXdmfFileFormat::GetTimes(std::vector<double> & times)
@@ -1084,6 +1087,7 @@ void avtXdmfFileFormat::GetTimes(std::vector<double> & times)
     times.insert(times.begin(),
                  timesteps.begin(),
                  timesteps.end());
+    metadata->SetTimesAreAccurate(true);
 
     return;
 }
@@ -1393,6 +1397,11 @@ bool avtXdmfFileFormat::GetWholeExtent(XdmfGrid* grid, int extents[6])
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
 //
+//  Modifications:
+//
+//   Hank Childs, Thu Aug 18 17:22:19 PDT 2011
+//   Make sure the times are set.
+//
 // ****************************************************************************
 
 void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
@@ -1511,6 +1520,8 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
         }
         delete grid;
     }
+    std::vector<double> times;
+    GetTimes(times);
 }
 
 // ****************************************************************************
