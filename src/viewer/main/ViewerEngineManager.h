@@ -59,6 +59,7 @@
 class AttributeSubject;
 class EngineList;
 class EngineProxy;
+class ExpressionList;
 class MaterialAttributes;
 class MeshManagementAttributes;
 class PickAttributes;
@@ -301,6 +302,9 @@ class SelectionProperties;
 //    Brad Whitlock, Thu Feb 24 01:56:40 PST 2011
 //    Remove some const char * arguments and use std::string instead.
 //
+//    Brad Whitlock, Fri Aug 19 09:59:19 PDT 2011
+//    Change function that sends expressions to the engine to be more general.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -428,7 +432,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void CreateNode(DataNode *) const;
     void SetFromNode(DataNode *, const std::string &);
 
-    void UpdateExpressionsFromPlot(const ViewerPlot *);
+    bool UpdateExpressions(const EngineKey &ek, const ExpressionList &eL);
 
   protected:
     ViewerEngineManager();

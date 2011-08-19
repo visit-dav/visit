@@ -9572,6 +9572,9 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 //   I rewrote how we manage window creation/deletion and setting sizes based
 //   on information from the config file.
 //
+//   Brad Whitlock, Fri Aug 19 11:37:00 PDT 2011
+//   Fix restoration of selections that are not based on plots.
+//
 // ****************************************************************************
 
 void
@@ -9756,22 +9759,63 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
         // originating plots for a selection. Save the name too.
         intVector *originatingPlots = new intVector[maxWindows];
         std::vector<SelectionProperties> *selProps = new std::vector<SelectionProperties>[maxWindows];
-        for(i = 0; i < maxWindows; ++i)
+
+        for(int k = 0; k < GetSelectionList()->GetNumSelections(); ++k)
         {
-            if(windows[i] == 0)
-                continue;
-            for(int j = 0; j < windows[i]->GetPlotList()->GetNumPlots(); ++j)
+            const SelectionProperties &props = GetSelectionList()->GetSelections(k);
+            bool notFound = true;
+
+            for(i = 0; i < maxWindows && notFound; ++i)
             {
-                for(int k = 0; k < GetSelectionList()->GetNumSelections(); ++k)
+                if(windows[i] == 0)
+                    continue;
+                for(int j = 0; j < windows[i]->GetPlotList()->GetNumPlots() && notFound; ++j)
                 {
-                    if(GetSelectionList()->GetSelections(k).GetOriginatingPlot() ==
+                    if(props.GetSource() == 
                        windows[i]->GetPlotList()->GetPlot(j)->GetPlotName())
                     {
-                        selProps[i].push_back(GetSelectionList()->GetSelections(k));
+                        selProps[i].push_back(props);
                         originatingPlots[i].push_back(j);
-                        break;
+                        notFound = false;
                     }
                 }
+            }
+
+            if(notFound)
+            {
+                // This selection does not have an originating plot, which means
+                // that it must be a selection directly on the database. Set it up.
+                TRY
+                {
+                    debug4 << "Creating named selection " << props.GetName()
+                           << " from database " << props.GetSource() << endl;
+
+                    std::string host, db, sim, src(props.GetSource());
+                    ViewerFileServer *fs = ViewerFileServer::Instance();
+                    fs->ExpandDatabaseName(src, host, db);
+
+                    const avtDatabaseMetaData *md = fs->GetMetaData(host, db);
+                    if (md != NULL && md->GetIsSimulation())
+                        sim = db;
+
+                    EngineKey engineKey(host, sim);
+                    SelectionProperties P(props);
+                    P.SetSource(db);
+
+                    // We're doing a selection based directly on the database. We need to
+                    // send the expression definitions to the engine since we haven't yet
+                    // created any plots.
+                    ExpressionList exprList;
+                    ViewerFileServer::Instance()->GetAllExpressions(exprList, host, db, 
+                        ViewerFileServer::ANY_STATE);
+                    ViewerEngineManager::Instance()->UpdateExpressions(engineKey, exprList);
+                    ViewerEngineManager::Instance()->CreateNamedSelection(engineKey, -1, P);
+                }
+                CATCH(VisItException)
+                {
+                    Error(tr("Could not create named selection %1.").arg(props.GetName().c_str()));
+                }
+                ENDTRY
             }
         }
 

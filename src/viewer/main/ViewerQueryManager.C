@@ -1062,8 +1062,11 @@ ViewerQueryManager::GetQueryClientAtts()
 //    case the query involves expressions that have not been sent to the engine
 //    yet.
 //
-//   Dave Pugmire, Tue Nov  9 16:08:30 EST 2010
-//   Add dumpSteps for streamline info query.
+//    Dave Pugmire, Tue Nov  9 16:08:30 EST 2010
+//    Add dumpSteps for streamline info query.
+//
+//    Brad Whitlock, Fri Aug 19 10:01:13 PDT 2011
+//    I changed the UpdateExpressions call on the engine manager.
 //
 // ****************************************************************************
 
@@ -1262,7 +1265,8 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             if(plotIds.size() > 0)
             {
                 ViewerPlot *p = plist->GetPlot(plotIds[0]);
-                ViewerEngineManager::Instance()->UpdateExpressionsFromPlot(p);
+                ViewerEngineManager::Instance()->UpdateExpressions(
+                    p->GetEngineKey(), p->GetExpressions());
             }
 
             if (doTimeQuery)
@@ -1921,6 +1925,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Thu Feb  3 11:24:17 PST 2011
 //    PickAtts plotBounds now stored as a vector.
 //
+//    Brad Whitlock, Fri Aug 19 10:02:11 PDT 2011
+//    I changed the UpdateExpressions method on the engine manager.
+//
 // ****************************************************************************
 
 bool
@@ -2216,7 +2223,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 bool createSpreadsheetSave = pa.GetCreateSpreadsheet();
                 if (win->GetInteractionMode() == SPREADSHEET_PICK)
                     pa.SetCreateSpreadsheet(true);
-                ViewerEngineManager::Instance()->UpdateExpressionsFromPlot(plot);
+                ViewerEngineManager::Instance()->UpdateExpressions(
+                    plot->GetEngineKey(), plot->GetExpressions());
                 ViewerEngineManager::Instance()->Pick(engineKey,
                                                       networkId, windowId,
                                                       &pa, pa);
