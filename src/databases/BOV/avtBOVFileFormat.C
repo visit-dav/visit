@@ -1645,6 +1645,9 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Tue Nov 30 11:41:44 PST 2010
 //    Add members for whether or not the time or cycle is accurate.
 //
+//    Gunther H. Weber, Thu Aug 18 18:13:14 PDT 2011
+//    Added support for reading NumPy files.
+//
 // ****************************************************************************
 
 void
@@ -1668,197 +1671,493 @@ avtBOVFileFormat::ReadTOC(void)
 
         int linecount = 0;
         char buff[32768]; // Is this big enough?
-        while (ifile.good())
+
+        char id[6];
+        ifile.read(id, 6);
+        if (strncmp(id, "\x93NUMPY", 6) == 0)
         {
-            buff[0] = '\0';
-            char *line = buff;
-            ifile.getline(line, 32768);
-            if (GetStrictMode() && linecount < 100)
+            debug1 << "BOV file is in NumPy format." << std::endl;
+            char version[2];
+            ifile.read(version, 2);
+            if (version[0] != 1 && version[1] != 0)
             {
-                linecount++;
-                if (!StringHelpers::IsPureASCII(line, 327678))
+                debug1 << "Unsupported NumPy file format version." << std::endl;
+                bool error=true;
+                BroadcastBool(error);
+                EXCEPTION1(InvalidFilesException, fname);
+            }
+            short headerLength;
+            ifile.read(reinterpret_cast<char*>(&headerLength), 2);
+            if (ifile.bad())
+            {
+                debug1 << "Cannot reader head length." << std::endl;
+                bool error=true;
+                BroadcastBool(error);
+            }
+#ifdef WORDS_BIGENDIAN
+            short tmp;
+            int16_Reverse_Endian(headerLength, reinterpret_cast<char*>(&tmp));
+            headerLength = tmp;
+#endif
+            char header[headerLength];
+            file_pattern = filenames[0];    // Filename is the same
+            byteOffset = 10 + headerLength;  // Skip header when reading data
+            ifile.read(header, headerLength);
+            if (header[0] != '{')
+            {
+                debug1 << "Missing '{' in NumPy file." << std::endl;
+                bool error=true;
+                BroadcastBool(error);
+                EXCEPTION1(InvalidFilesException, fname);
+            }
+            char *headerEnd = strchr(header, '}');
+            if (!headerEnd)
+            {
+                debug1 << "Missing '}' in NumPy file." << std::endl;
+                bool error=true;
+                BroadcastBool(error);
+                EXCEPTION1(InvalidFilesException, fname);
+            }
+            --headerEnd;
+            if (*headerEnd == ' ') --headerEnd;
+            if (*headerEnd == ',')
+            {
+                *headerEnd = 0;
+            }
+            else
+            {
+                ++headerEnd;
+                *headerEnd = 0;
+            }
+
+            char *currPos = header + 1;
+            bool readDescr = false;
+            bool readShape = false;
+            bool readFortranOrder = false;
+            bool fortranOrder = false;
+
+            while (*currPos)
+            {
+                if (*currPos == ' ') ++currPos; // Skip one space if there
+                if (*currPos != '\'')
                 {
+                    debug1 << "Missing ''' in NumPy file." << std::endl;
+                    bool error=true;
+                    BroadcastBool(error);
+                    EXCEPTION1(InvalidFilesException, fname);
+                }
+                ++currPos;
+                char *key = currPos;
+                char *keyEnd = strchr(currPos, '\'');
+                if (!keyEnd)
+                {
+                    debug1 << "Missing ''' in NumPy file." << std::endl;
+                    bool error=true;
+                    BroadcastBool(error);
+                    EXCEPTION1(InvalidFilesException, fname);
+                }
+                *keyEnd = 0;
+                currPos = keyEnd + 1;
+                if (*currPos != ':')
+                {
+                    debug1 << "Missing ':' in NumPy file." << std::endl;
+                    bool error=true;
+                    BroadcastBool(error);
+                    EXCEPTION1(InvalidFilesException, fname);
+                }
+                ++currPos;
+                if (*currPos == ' ') ++currPos;
+                if (strcmp(key, "descr") == 0)
+                {
+                    if (*currPos != '\'')
+                    {
+                        debug1 << "Missing ''' in NumPy file." << std::endl;
+                        bool error=true;
+                        BroadcastBool(error);
+                        EXCEPTION1(InvalidFilesException, fname);
+                    }
+                    ++currPos;
+                    bool endianSpecified = true;
+                    if (*currPos == '<')
+                        littleEndian = true;
+                    else if (*currPos == '>')
+                        littleEndian = false;
+                    else if (*currPos == '|')
+                        endianSpecified = false;
+                    else
+                    {
+                        debug1 << "Unregognized NumPy data type: " << currPos << std::endl;
+                        bool error=true;
+                        BroadcastBool(error);
+                        EXCEPTION1(InvalidFilesException, fname);
+                    }
+                    ++currPos;
+
+                    if (strncmp(currPos, "f8", 2) == 0 && endianSpecified)
+                    {
+                        dataFormat = DoubleData;
+                        currPos += 2;
+                    }
+                    else if (strncmp(currPos, "f4", 2) == 0 && endianSpecified)
+                    {
+                        dataFormat = FloatData;
+                        currPos += 2;
+                    }
+                    else if (strncmp(currPos, "i4", 2) == 0 && endianSpecified)
+                    {
+                        dataFormat = IntegerData;
+                        currPos += 2;
+                    }
+                    else if (strncmp(currPos, "i2", 2) == 0 && endianSpecified)
+                    {
+                        dataFormat = ShortData;
+                        currPos += 2;
+                    }
+                    else if (strncmp(currPos, "i1", 2) == 0)
+                    {
+                        dataFormat = ByteData;
+                        currPos += 2;
+                    }
+                    else
+                    {
+                        debug1 << "Unregognized NumPy data type: " << currPos << std::endl;
+                        bool error=true;
+                        BroadcastBool(error);
+                        EXCEPTION1(InvalidFilesException, fname);
+                    }
+                    if (*currPos != '\'')
+                    {
+                        debug1 << "Missing ''' in NumPy file." << std::endl;
+                        bool error=true;
+                        BroadcastBool(error);
+                        EXCEPTION1(InvalidFilesException, fname);
+                    }
+                    ++currPos;
+                    if (*currPos)
+                    {
+                        if (*currPos != ',')
+                        {
+                            debug1 << "Missing ',' in NumPy file." << std::endl;
+                            bool error=true;
+                            BroadcastBool(error);
+                            EXCEPTION1(InvalidFilesException, fname);
+                        }
+                        ++currPos;
+                    }
+                    readDescr = true;
+                }
+                else if (strcmp(key, "fortran_order") == 0)
+                {
+                    if (strncmp(currPos, "True", 4) == 0)
+                    {
+                        fortranOrder = true;
+                        currPos += 4;
+                    }
+                    else if (strncmp(currPos, "False", 5) == 0)
+                    {
+                        fortranOrder = false;
+                        currPos += 5;
+                    }
+                    else
+                    {
+                        debug1 << "Expected True or False" << std::endl;
+                        bool error=true;
+                        BroadcastBool(error);
+                        EXCEPTION1(InvalidFilesException, fname);
+                    }
+                    if (*currPos)
+                    {
+                        if (*currPos != ',')
+                        {
+                            debug1 << "Missing ',' in NumPy file." << std::endl;
+                            bool error=true;
+                            BroadcastBool(error);
+                            EXCEPTION1(InvalidFilesException, fname);
+                        }
+                        ++currPos;
+                    }
+                    readFortranOrder = true;
+                }
+                else if (strcmp(key, "shape") == 0)
+                {
+                    if (*currPos != '(')
+                    {
+                        debug1 << "Missing '(' in NumPy file." << std::endl;
+                        bool error=true;
+                        BroadcastBool(error);
+                        EXCEPTION1(InvalidFilesException, fname);
+                    }
+                    ++currPos;
+                    char *ptr = strchr(currPos, ',');
+                    if (!ptr)
+                    {
+                        debug1 << "Missing ',' in NumPy file." << std::endl;
+                        bool error=true;
+                        BroadcastBool(error);
+                        EXCEPTION1(InvalidFilesException, fname);
+                    }
+                    *ptr = 0;
+                    full_size[0] = atoi(currPos);
+                    currPos = ptr + 1;
+                    ptr = strchr(currPos, ',');
+                    bool is2D = false;
+                    if (!ptr)
+                    {
+                        is2D = true;
+                        ptr = strchr(currPos, ')');
+                        if (!ptr)
+                        {
+                            debug1 << "Missing ','  or ')' in NumPy file." << std::endl;
+                            bool error=true;
+                            BroadcastBool(error);
+                            EXCEPTION1(InvalidFilesException, fname);
+                        }
+                    }
+                    *ptr = 0;
+                    full_size[1] = atoi(currPos);
+                    currPos = ptr + 1;
+                    if (!is2D)
+                    {
+                        ptr = strchr(currPos, ')');
+                        if (!ptr)
+                        {
+                            debug1 << "Missing ')' in NumPy file." << std::endl;
+                            bool error=true;
+                            BroadcastBool(error);
+                            EXCEPTION1(InvalidFilesException, fname);
+                        }
+                        *ptr = 0;
+                        full_size[2] = atoi(currPos);
+                        currPos = ptr + 1;
+                    }
+                    else
+                    {
+                        full_size[2] = 1;
+                    }
+                    if (*currPos)
+                    {
+                        if (*currPos != ',')
+                        {
+                            debug1 << "Missing ',' in NumPy file." << std::endl;
+                            bool error=true;
+                            BroadcastBool(error);
+                            EXCEPTION1(InvalidFilesException, fname);
+                        }
+                        ++currPos;
+                    }
+                    readShape = true;
+                }
+                else
+                {
+                    debug1 << "Unrecognized key " << key << std::endl;
                     bool error=true;
                     BroadcastBool(error);
                     EXCEPTION1(InvalidFilesException, fname);
                 }
             }
 
-            int nparts = FormatLine(line);
-            if (nparts <= 0)
-                continue;
-            if (line[0] == '#')
-                continue;
-            else if (strcmp(line, "TIME:") == 0)
+            if (fortranOrder)
             {
-                line += strlen("TIME:") + 1;
-                dtime = atof(line);
-                timeIsAccurate = true;
+                // Instead of reordering data, reorder axes
+                std::swap(full_size[0], full_size[2]);
             }
-            else if (strcmp(line, "CYCLE:") == 0)
+        }
+        else
+        {
+            ifile.seekg(0, ios::beg);
+
+            while (ifile.good())
             {
-                line += strlen("CYCLE:") + 1;
-                cycle = atoi(line);
-                cycleIsAccurate = true;
-            }
-            else if (strcmp(line, "DATA_FILE:") == 0)
-            {
-                line += strlen("DATA_FILE:") + 1;
-                int len = strlen(line);
-                file_pattern = line;
-            }
-            else if (strcmp(line, "DATA_SIZE:") == 0)
-            {
-                line += strlen("DATA_SIZE:") + 1;
-                full_size[0] = atoi(line);
-                line += strlen(line)+1;
-                full_size[1] = atoi(line);
-                line += strlen(line)+1;
-                full_size[2] = atoi(line);
-            }
-            else if (strcmp(line, "DATA_FORMAT:") == 0)
-            {
-                line += strlen("DATA_FORMAT:") + 1;
-                if (strncmp(line, "FLOAT", strlen("FLOAT")) == 0 ||
-                    strncmp(line, "REAL", strlen("REAL")) == 0)
-                    dataFormat = FloatData;
-                else if (strncmp(line, "BYTE", strlen("BYTE")) == 0 ||
-                         strncmp(line, "CHAR", strlen("CHAR")) == 0)
-                    dataFormat = ByteData;
-                else if (strncmp(line, "DOUBLE", strlen("DOUBLE")) == 0)
-                    dataFormat = DoubleData;
-                else if (strncmp(line, "INT", strlen("INT")) == 0)
-                    dataFormat = IntegerData;
-                else if (strncmp(line, "SHORT", strlen("SHORT")) == 0)
-                    dataFormat = ShortData;
-                else
-                    debug1 << "Unknown keyword for BOV byte data: " 
-                           << line << endl;
-            }
-            else if (strcmp(line, "DATA_COMPONENTS:") == 0)
-            {
-                line += strlen("DATA_COMPONENTS:") + 1;
-                if (strncmp(line, "COMPLEX", strlen("COMPLEX")) == 0)
-                    dataNumComponents = 2;
-                else
-                    dataNumComponents = atoi(line);
-            }
-            else if (strcmp(line, "DATA_BRICKLETS:") == 0)
-            {
-                line += strlen("DATA_BRICKLETS:") + 1;
-                bricklet_size[0] = atoi(line);
-                line += strlen(line)+1;
-                bricklet_size[1] = atoi(line);
-                line += strlen(line)+1;
-                bricklet_size[2] = atoi(line);
-            }
-            else if (strcmp(line, "VARIABLE:") == 0)
-            {
-                line += strlen("VARIABLE:") + 1;
-                int len = strlen(line);
-                varname = line;
-            }
-            else if (strcmp(line, "HAS_BOUNDARY:") == 0)
-            {
-                line += strlen("HAS_BOUNDARY:") + 1;
-                if (strcmp(line, "true") == 0)
+                buff[0] = '\0';
+                char *line = buff;
+                ifile.getline(line, 32768);
+                if (GetStrictMode() && linecount < 100)
                 {
-                    hasBoundaries = true;
+                    linecount++;
+                    if (!StringHelpers::IsPureASCII(line, 327678))
+                    {
+                        bool error=true;
+                        BroadcastBool(error);
+                        EXCEPTION1(InvalidFilesException, fname);
+                    }
                 }
-            }
-            else if (strcmp(line, "DATA_ENDIAN:") == 0)
-            {
-                line += strlen("DATA_ENDIAN:") + 1;
-                if (strcmp(line, "LITTLE") == 0)
-                    littleEndian = true;
-                else
-                    littleEndian = false;
-                declaredEndianess = true;
-            }
-            else if (strcmp(line, "VARIABLE_PALETTE_MIN:") == 0)
-            {
-                line += strlen("VARIABLE_PALETTE_MIN:") + 1;
-                min = atof(line);
-                byteToFloatTransform = true;
-            }
-            else if (strcmp(line, "VARIABLE_PALETTE_MAX:") == 0)
-            {
-                line += strlen("VARIABLE_PALETTE_MAX:") + 1;
-                max = atof(line);
-                byteToFloatTransform = true;
-            }
-            else if (strcmp(line, "VARIABLE_MIN:") == 0)
-            {
-                line += strlen("VARIABLE_MIN:") + 1;
-                min = atof(line);
-                byteToFloatTransform = true;
-            }
-            else if (strcmp(line, "VARIABLE_MAX:") == 0)
-            {
-                line += strlen("VARIABLE_MAX:") + 1;
-                max = atof(line);
-                byteToFloatTransform = true;
-            }
-            else if (strcmp(line, "BRICK_ORIGIN:") == 0)
-            {
-                line += strlen("BRICK_ORIGIN:") + 1;
-                origin[0] = atof(line);
-                line += strlen(line)+1;
-                origin[1] = atof(line);
-                line += strlen(line)+1;
-                origin[2] = atof(line);
-            }
-            else if (strcmp(line, "BRICK_SIZE:") == 0)
-            {
-                line += strlen("BRICK_SIZE:") + 1;
-                dimensions[0] = atof(line);
-                line += strlen(line)+1;
-                dimensions[1] = atof(line);
-                line += strlen(line)+1;
-                dimensions[2] = atof(line);
-            }
-            else if (strcmp(line, "VARIABLE_BRICK_MIN:") == 0)
-            {
-                line += strlen("VARIABLE_BRICK_MIN:") + 1;
-                int nbricks = nparts-1;
-                var_brick_min.clear();
-                var_brick_min.resize(nbricks);
-                for (int i = 0 ; i < nbricks ; i++)
+
+                int nparts = FormatLine(line);
+                if (nparts <= 0)
+                    continue;
+                if (line[0] == '#')
+                    continue;
+                else if (strcmp(line, "TIME:") == 0)
                 {
-                    var_brick_min[i] = atof(line);
-                    if (i != nbricks-1)
-                        line += strlen(line) + 1;
+                    line += strlen("TIME:") + 1;
+                    dtime = atof(line);
+                    timeIsAccurate = true;
                 }
-            }
-            else if (strcmp(line, "VARIABLE_BRICK_MAX:") == 0)
-            {
-                line += strlen("VARIABLE_BRICK_MAX:") + 1;
-                int nbricks = nparts-1;
-                var_brick_max.clear();
-                var_brick_max.resize(nbricks);
-                for (int i = 0 ; i < nbricks ; i++)
+                else if (strcmp(line, "CYCLE:") == 0)
                 {
-                    var_brick_max[i] = atof(line);
-                    if (i != nbricks-1)
-                        line += strlen(line) + 1;
+                    line += strlen("CYCLE:") + 1;
+                    cycle = atoi(line);
+                    cycleIsAccurate = true;
                 }
-            }
-            else if (strcmp(line, "CENTERING:") == 0)
-            {
-                line += strlen("CENTERING:") + 1;
-                if (strstr(line, "zon") != NULL)
-                    nodalCentering = false;
-            }
-            else if (strcmp(line, "BYTE_OFFSET:") == 0)
-            {
-                line += strlen("BYTE_OFFSET:") + 1;
-                byteOffset = atoi(line);
-                byteOffset = byteOffset < 0 ? 0 : byteOffset;
-            }
-            else if (strcmp(line, "DIVIDE_BRICK:") == 0)
-            {
-                line += strlen("DIVIDE_BRICK:") + 1;
-                divideBrick = (strcmp(line, "true") == 0);
+                else if (strcmp(line, "DATA_FILE:") == 0)
+                {
+                    line += strlen("DATA_FILE:") + 1;
+                    int len = strlen(line);
+                    file_pattern = line;
+                }
+                else if (strcmp(line, "DATA_SIZE:") == 0)
+                {
+                    line += strlen("DATA_SIZE:") + 1;
+                    full_size[0] = atoi(line);
+                    line += strlen(line)+1;
+                    full_size[1] = atoi(line);
+                    line += strlen(line)+1;
+                    full_size[2] = atoi(line);
+                }
+                else if (strcmp(line, "DATA_FORMAT:") == 0)
+                {
+                    line += strlen("DATA_FORMAT:") + 1;
+                    if (strncmp(line, "FLOAT", strlen("FLOAT")) == 0 ||
+                            strncmp(line, "REAL", strlen("REAL")) == 0)
+                        dataFormat = FloatData;
+                    else if (strncmp(line, "BYTE", strlen("BYTE")) == 0 ||
+                            strncmp(line, "CHAR", strlen("CHAR")) == 0)
+                        dataFormat = ByteData;
+                    else if (strncmp(line, "DOUBLE", strlen("DOUBLE")) == 0)
+                        dataFormat = DoubleData;
+                    else if (strncmp(line, "INT", strlen("INT")) == 0)
+                        dataFormat = IntegerData;
+                    else if (strncmp(line, "SHORT", strlen("SHORT")) == 0)
+                        dataFormat = ShortData;
+                    else
+                        debug1 << "Unknown keyword for BOV byte data: " 
+                            << line << endl;
+                }
+                else if (strcmp(line, "DATA_COMPONENTS:") == 0)
+                {
+                    line += strlen("DATA_COMPONENTS:") + 1;
+                    if (strncmp(line, "COMPLEX", strlen("COMPLEX")) == 0)
+                        dataNumComponents = 2;
+                    else
+                        dataNumComponents = atoi(line);
+                }
+                else if (strcmp(line, "DATA_BRICKLETS:") == 0)
+                {
+                    line += strlen("DATA_BRICKLETS:") + 1;
+                    bricklet_size[0] = atoi(line);
+                    line += strlen(line)+1;
+                    bricklet_size[1] = atoi(line);
+                    line += strlen(line)+1;
+                    bricklet_size[2] = atoi(line);
+                }
+                else if (strcmp(line, "VARIABLE:") == 0)
+                {
+                    line += strlen("VARIABLE:") + 1;
+                    int len = strlen(line);
+                    varname = line;
+                }
+                else if (strcmp(line, "HAS_BOUNDARY:") == 0)
+                {
+                    line += strlen("HAS_BOUNDARY:") + 1;
+                    if (strcmp(line, "true") == 0)
+                    {
+                        hasBoundaries = true;
+                    }
+                }
+                else if (strcmp(line, "DATA_ENDIAN:") == 0)
+                {
+                    line += strlen("DATA_ENDIAN:") + 1;
+                    if (strcmp(line, "LITTLE") == 0)
+                        littleEndian = true;
+                    else
+                        littleEndian = false;
+                    declaredEndianess = true;
+                }
+                else if (strcmp(line, "VARIABLE_PALETTE_MIN:") == 0)
+                {
+                    line += strlen("VARIABLE_PALETTE_MIN:") + 1;
+                    min = atof(line);
+                    byteToFloatTransform = true;
+                }
+                else if (strcmp(line, "VARIABLE_PALETTE_MAX:") == 0)
+                {
+                    line += strlen("VARIABLE_PALETTE_MAX:") + 1;
+                    max = atof(line);
+                    byteToFloatTransform = true;
+                }
+                else if (strcmp(line, "VARIABLE_MIN:") == 0)
+                {
+                    line += strlen("VARIABLE_MIN:") + 1;
+                    min = atof(line);
+                    byteToFloatTransform = true;
+                }
+                else if (strcmp(line, "VARIABLE_MAX:") == 0)
+                {
+                    line += strlen("VARIABLE_MAX:") + 1;
+                    max = atof(line);
+                    byteToFloatTransform = true;
+                }
+                else if (strcmp(line, "BRICK_ORIGIN:") == 0)
+                {
+                    line += strlen("BRICK_ORIGIN:") + 1;
+                    origin[0] = atof(line);
+                    line += strlen(line)+1;
+                    origin[1] = atof(line);
+                    line += strlen(line)+1;
+                    origin[2] = atof(line);
+                }
+                else if (strcmp(line, "BRICK_SIZE:") == 0)
+                {
+                    line += strlen("BRICK_SIZE:") + 1;
+                    dimensions[0] = atof(line);
+                    line += strlen(line)+1;
+                    dimensions[1] = atof(line);
+                    line += strlen(line)+1;
+                    dimensions[2] = atof(line);
+                }
+                else if (strcmp(line, "VARIABLE_BRICK_MIN:") == 0)
+                {
+                    line += strlen("VARIABLE_BRICK_MIN:") + 1;
+                    int nbricks = nparts-1;
+                    var_brick_min.clear();
+                    var_brick_min.resize(nbricks);
+                    for (int i = 0 ; i < nbricks ; i++)
+                    {
+                        var_brick_min[i] = atof(line);
+                        if (i != nbricks-1)
+                            line += strlen(line) + 1;
+                    }
+                }
+                else if (strcmp(line, "VARIABLE_BRICK_MAX:") == 0)
+                {
+                    line += strlen("VARIABLE_BRICK_MAX:") + 1;
+                    int nbricks = nparts-1;
+                    var_brick_max.clear();
+                    var_brick_max.resize(nbricks);
+                    for (int i = 0 ; i < nbricks ; i++)
+                    {
+                        var_brick_max[i] = atof(line);
+                        if (i != nbricks-1)
+                            line += strlen(line) + 1;
+                    }
+                }
+                else if (strcmp(line, "CENTERING:") == 0)
+                {
+                    line += strlen("CENTERING:") + 1;
+                    if (strstr(line, "zon") != NULL)
+                        nodalCentering = false;
+                }
+                else if (strcmp(line, "BYTE_OFFSET:") == 0)
+                {
+                    line += strlen("BYTE_OFFSET:") + 1;
+                    byteOffset = atoi(line);
+                    byteOffset = byteOffset < 0 ? 0 : byteOffset;
+                }
+                else if (strcmp(line, "DIVIDE_BRICK:") == 0)
+                {
+                    line += strlen("DIVIDE_BRICK:") + 1;
+                    divideBrick = (strcmp(line, "true") == 0);
+                }
             }
         }
 
