@@ -129,6 +129,9 @@
 #include <QvisInterpreter.h>
 #include <QvisKeyframeWindow.h>
 #include <QvisLightingWindow.h>
+#if defined(Q_WS_MACX)
+#include <QvisMacAppBundleSetupWindow.h>
+#endif
 #include <QvisMacroWindow.h>
 #include <QvisMainWindow.h>
 #include <QvisMaterialWindow.h>
@@ -202,23 +205,23 @@
 #define WINDOW_SAVE              5
 #define WINDOW_ENGINE            6
 #define WINDOW_ANIMATION         7
-#define WINDOW_ANNOTATION        8 
-#define WINDOW_COLORTABLE        9 
-#define WINDOW_EXPRESSIONS      10  
+#define WINDOW_ANNOTATION        8
+#define WINDOW_COLORTABLE        9
+#define WINDOW_EXPRESSIONS      10
 #define WINDOW_SUBSET           11
-#define WINDOW_PLUGINMANAGER    12    
+#define WINDOW_PLUGINMANAGER    12
 #define WINDOW_VIEW             13
-#define WINDOW_APPEARANCE       14 
+#define WINDOW_APPEARANCE       14
 #define WINDOW_KEYFRAME         15
 #define WINDOW_LIGHTING         16
-#define WINDOW_GLOBALLINEOUT    17    
-#define WINDOW_MATERIALOPTIONS  18      
+#define WINDOW_GLOBALLINEOUT    17
+#define WINDOW_MATERIALOPTIONS  18
 #define WINDOW_PICK             19
 #define WINDOW_HELP             20
 #define WINDOW_QUERY            21
-#define WINDOW_PREFERENCES      22  
+#define WINDOW_PREFERENCES      22
 #define WINDOW_RENDERING        23
-#define WINDOW_CORRELATION      24  
+#define WINDOW_CORRELATION      24
 #define WINDOW_TIMEQUERY        25
 #define WINDOW_INTERACTOR       26
 #define WINDOW_SIMULATION       27
@@ -228,6 +231,9 @@
 #define WINDOW_FILE_OPEN        31
 #define WINDOW_MACRO            32
 #define WINDOW_SELECTIONS       33
+#if defined(Q_WS_MACX)
+#define WINDOW_CFG_MAC_APPBDL   34
+#endif
 
 #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
 #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
@@ -821,6 +827,9 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     windowNames += tr("File open");
     windowNames += tr("Macros");
     windowNames += tr("Selections");
+#if defined(Q_WS_MACX)
+    windowNames += tr("Initial VisIt Setup for MacOS");
+#endif
 
     // If the geometry was not passed on the command line then the 
     // savedGUIGeometry flag will still be set to false. If we
@@ -1706,11 +1715,16 @@ QvisGUIApplication::FinalInitialization()
             mainWin->updateNotAllowed();
         }
         else
-        { 
+        {
             ConfigStateEnum code;
             ConfigStateIncrementRunCount(code);
             if(code == CONFIGSTATE_FIRSTTIME)
+            {
                 QTimer::singleShot(1000, this, SLOT(displayReleaseNotesIfAvailable()));
+#if defined(Q_WS_MACX)
+                QTimer::singleShot(1001, this, SLOT(configureMacAppBundle()));
+#endif
+            }
         }
 
         visitTimer->StopTimer(timeid, "stage 11 - Increment run count");
@@ -3099,6 +3113,9 @@ QvisGUIApplication::CreateMainWindow()
 //   Eric Brugger, Tue Aug 24 13:22:09 PDT 2010
 //   Added the ability to enable/disable the popping up of warning messages.
 //
+//   Gunther H. Weber, Thu Aug 18 18:56:31 PDT 2011
+//   Added signal/slot connection for Mac initial configuration window.
+//
 // ****************************************************************************
 
 void
@@ -3228,6 +3245,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showSelectionsWindow()));
      connect(mainWin->GetPlotManager(), SIGNAL(activateSelectionsWindow(const QString &)),
              this, SLOT(showSelectionsWindow2(const QString &)));
+     connect(mainWin, SIGNAL(activateConfigureMacAppBundle()),
+             this, SLOT(configureMacAppBundle()));
 }
 
 // ****************************************************************************
@@ -3525,7 +3544,7 @@ QvisGUIApplication::WindowFactory(int i)
         // Create the mesh management window.
         win = new QvisMeshManagementWindow(GetViewerState()->GetMeshManagementAttributes(),
             windowNames[i], tr("MeshManagement"), mainWin->GetNotepad());
-        break;       
+        break;
     case WINDOW_FILE_OPEN:
         // Create a file open window.
         { QvisFileOpenWindow *foWin = new QvisFileOpenWindow(windowNames[i]);
@@ -3552,6 +3571,13 @@ QvisGUIApplication::WindowFactory(int i)
           win = sWin;
         }
         break;
+#if defined(Q_WS_MACX)
+    case WINDOW_CFG_MAC_APPBDL:
+        {
+            win = new QvisMacAppBundleSetupWindow(windowNames[i]);
+        }
+        break;
+#endif
     }
 
     return win;
@@ -8643,3 +8669,6 @@ QvisGUIApplication::showSelectionsWindow2(const QString &selName)
     selWindow->show();
     selWindow->highlightSelection(selName);
 }
+#if defined(Q_WS_MACX)
+void QvisGUIApplication::configureMacAppBundle()     { GetInitializedWindowPointer(WINDOW_CFG_MAC_APPBDL)->show(); }
+#endif

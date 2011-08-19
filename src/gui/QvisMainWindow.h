@@ -234,6 +234,9 @@ class WindowInformation;
 //   Brad Whitlock, Mon Sep 20 16:38:48 PDT 2010
 //   I removed navigate mode.
 //
+//   Gunther H. Weber, Thu Aug 18 18:57:20 PDT 2011
+//   Added signal for initial Mac configuation.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -306,6 +309,7 @@ signals:
     void activateMeshManagementWindow();
     void activateSelectionsWindow();
     void updateVisIt();
+    void activateConfigureMacAppBundle();
 
     void saveSettings();
     void saveWindow();

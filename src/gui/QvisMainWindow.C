@@ -626,6 +626,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                     this, SIGNAL(activatePluginWindow()));
     pref->addAction(tr("Preferences . . ."),
                     this, SIGNAL(activatePreferencesWindow()));
+    pref->addAction(tr("Initial Mac App Bundle Setup . . ."),
+                    this, SIGNAL(activateConfigureMacAppBundle()));
     pref->addAction(tr("Rendering . . ."),
                     this, SIGNAL(activateRenderingWindow()));
 

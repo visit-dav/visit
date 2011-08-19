@@ -341,6 +341,12 @@ QvisKeyframeWidget.h
 QvisKeyframePlotRangeWidget.h
 QvisViewportWidget.h
 )
+
+IF (APPLE)
+    LIST(APPEND GUILIB_SOURCES QvisMacAppBundleSetupWindow.C)
+    LIST(APPEND GUILIB_MOC_SOURCES QvisMacAppBundleSetupWindow.h)
+ENDIF (APPLE)
+
 QT_WRAP_CPP(gui GUILIB_SOURCES ${GUILIB_MOC_SOURCES})
 
 IF (NOT WIN32)
