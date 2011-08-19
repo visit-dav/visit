@@ -309,7 +309,7 @@ signals:
     void activateMeshManagementWindow();
     void activateSelectionsWindow();
     void updateVisIt();
-    void activateConfigureMacAppBundle();
+    void activateSetupHostProfilesAndConfig();
 
     void saveSettings();
     void saveWindow();

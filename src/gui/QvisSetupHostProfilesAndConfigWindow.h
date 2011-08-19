@@ -36,8 +36,8 @@
 *
 *****************************************************************************/
 
-#ifndef QVIS_MAC_APPBUNDLE_SETUP_WINDOW_H
-#define QVIS_MAC_APPBUNDLE_SETUP_WINDOW_H
+#ifndef QVIS_SETUP_HOST_PROFILES_AND_CONFIG_WINDOW_H
+#define QVIS_SETUP_HOST_PROFILES_AND_CONFIG_WINDOW_H
 
 #include <string>
 #include <list>
@@ -48,13 +48,13 @@
 class QCheckBox;
 class QRadioButton;
 
-class GUI_API QvisMacAppBundleSetupWindow : public QvisDelayedWindow
+class GUI_API QvisSetupHostProfilesAndConfigWindow : public QvisDelayedWindow
 {
     Q_OBJECT
 
 public:
-    QvisMacAppBundleSetupWindow(const QString&);
-    virtual ~QvisMacAppBundleSetupWindow();
+    QvisSetupHostProfilesAndConfigWindow(const QString&);
+    virtual ~QvisSetupHostProfilesAndConfigWindow();
     virtual void CreateWindowContents();
 
 private:

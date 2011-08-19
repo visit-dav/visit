@@ -176,6 +176,7 @@ QvisScreenPositioner.C
 QvisScribbleOpacityBar.C
 QvisSelectionsDialog.C
 QvisSelectionsWindow.C
+QvisSetupHostProfilesAndConfigWindow.C
 QvisSequenceButton.C
 QvisSequenceMappingModel.C
 QvisSequenceTransition.C
@@ -334,6 +335,7 @@ QvisCompositeTransition.h
 QvisSequenceTransition.h
 QvisPredefinedViewports.h
 QvisSaveMovieWizard.h
+QvisSetupHostProfilesAndConfigWindow.h
 QvisSequenceView.h
 QvisSequenceMappingModel.h
 QvisKeyframeWindow.h
@@ -341,11 +343,6 @@ QvisKeyframeWidget.h
 QvisKeyframePlotRangeWidget.h
 QvisViewportWidget.h
 )
-
-IF (APPLE)
-    LIST(APPEND GUILIB_SOURCES QvisMacAppBundleSetupWindow.C)
-    LIST(APPEND GUILIB_MOC_SOURCES QvisMacAppBundleSetupWindow.h)
-ENDIF (APPLE)
 
 QT_WRAP_CPP(gui GUILIB_SOURCES ${GUILIB_MOC_SOURCES})
 

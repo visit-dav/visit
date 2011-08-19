@@ -129,9 +129,7 @@
 #include <QvisInterpreter.h>
 #include <QvisKeyframeWindow.h>
 #include <QvisLightingWindow.h>
-#if defined(Q_WS_MACX)
-#include <QvisMacAppBundleSetupWindow.h>
-#endif
+#include <QvisSetupHostProfilesAndConfigWindow.h>
 #include <QvisMacroWindow.h>
 #include <QvisMainWindow.h>
 #include <QvisMaterialWindow.h>
@@ -231,9 +229,7 @@
 #define WINDOW_FILE_OPEN        31
 #define WINDOW_MACRO            32
 #define WINDOW_SELECTIONS       33
-#if defined(Q_WS_MACX)
-#define WINDOW_CFG_MAC_APPBDL   34
-#endif
+#define WINDOW_SETUP_CFG        34
 
 #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
 #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
@@ -827,9 +823,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     windowNames += tr("File open");
     windowNames += tr("Macros");
     windowNames += tr("Selections");
-#if defined(Q_WS_MACX)
-    windowNames += tr("Initial VisIt Setup for MacOS");
-#endif
+    windowNames += tr("Setup Host Profiles and Configuration");
 
     // If the geometry was not passed on the command line then the 
     // savedGUIGeometry flag will still be set to false. If we
@@ -1722,7 +1716,7 @@ QvisGUIApplication::FinalInitialization()
             {
                 QTimer::singleShot(1000, this, SLOT(displayReleaseNotesIfAvailable()));
 #if defined(Q_WS_MACX)
-                QTimer::singleShot(1001, this, SLOT(configureMacAppBundle()));
+                QTimer::singleShot(1001, this, SLOT(setupHostProfilesAndConfig()));
 #endif
             }
         }
@@ -3116,6 +3110,10 @@ QvisGUIApplication::CreateMainWindow()
 //   Gunther H. Weber, Thu Aug 18 18:56:31 PDT 2011
 //   Added signal/slot connection for Mac initial configuration window.
 //
+//   Gunther H. Weber, Fri Aug 19 16:44:42 PDT 2011
+//   Renamed signal/slot connection to make Mac configuration window a general
+//   configuration setup window.
+//
 // ****************************************************************************
 
 void
@@ -3245,8 +3243,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showSelectionsWindow()));
      connect(mainWin->GetPlotManager(), SIGNAL(activateSelectionsWindow(const QString &)),
              this, SLOT(showSelectionsWindow2(const QString &)));
-     connect(mainWin, SIGNAL(activateConfigureMacAppBundle()),
-             this, SLOT(configureMacAppBundle()));
+     connect(mainWin, SIGNAL(activateSetupHostProfilesAndConfig()),
+             this, SLOT(setupHostProfilesAndConfig()));
 }
 
 // ****************************************************************************
@@ -3571,13 +3569,11 @@ QvisGUIApplication::WindowFactory(int i)
           win = sWin;
         }
         break;
-#if defined(Q_WS_MACX)
-    case WINDOW_CFG_MAC_APPBDL:
+    case WINDOW_SETUP_CFG:
         {
-            win = new QvisMacAppBundleSetupWindow(windowNames[i]);
+            win = new QvisSetupHostProfilesAndConfigWindow(windowNames[i]);
         }
         break;
-#endif
     }
 
     return win;
@@ -8669,8 +8665,4 @@ QvisGUIApplication::showSelectionsWindow2(const QString &selName)
     selWindow->show();
     selWindow->highlightSelection(selName);
 }
-#if defined(Q_WS_MACX)
-void QvisGUIApplication::configureMacAppBundle()     { GetInitializedWindowPointer(WINDOW_CFG_MAC_APPBDL)->show(); }
-#else
-void QvisGUIApplication::configureMacAppBundle()     { }
-#endif
+void QvisGUIApplication::setupHostProfilesAndConfig() { GetInitializedWindowPointer(WINDOW_SETUP_CFG)->show(); }

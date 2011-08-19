@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 
-#include <QvisMacAppBundleSetupWindow.h>
+#include <QvisSetupHostProfilesAndConfigWindow.h>
 
 #include <iostream>
 #include <fstream>
@@ -54,10 +54,10 @@
 #include <InstallationFunctions.h>
 
 // ****************************************************************************
-// Method: QvisMacAppBundleSetupWindow::QvisMacAppBundleSetupWindow
+// Method: QvisSetupHostProfilesAndConfigWindow::QvisSetupHostProfilesAndConfigWindow
 //
-// Purpose: 
-//   Constructor for the QvisMacAppBundleSetupWindow class.
+// Purpose:
+//   Constructor for the QvisSetupHostProfilesAndConfigWindow class.
 //
 // Arguments:
 //   captionString : The window caption.
@@ -69,16 +69,16 @@
 //
 // ****************************************************************************
 
-QvisMacAppBundleSetupWindow::QvisMacAppBundleSetupWindow(const QString &captionString) :
-    QvisDelayedWindow(captionString)
+QvisSetupHostProfilesAndConfigWindow::QvisSetupHostProfilesAndConfigWindow(
+        const QString &captionString) : QvisDelayedWindow(captionString)
 {
 }
 
 // ****************************************************************************
-// Method: QvisMacAppBundleSetupWindow::~QvisMacAppBundleSetupWindow
+// Method: QvisSetupHostProfilesAndConfigWindow::~QvisSetupHostProfilesAndConfigWindow
 //
 // Purpose: 
-//   Destructor for the QvisMacAppBundleSetupWindow class.
+//   Destructor for the QvisSetupHostProfilesAndConfigWindow class.
 //
 // Programmer: Gunther H. Weber
 // Creation:   Thu Aug 11 17:48:10 PDT 2011
@@ -87,12 +87,12 @@ QvisMacAppBundleSetupWindow::QvisMacAppBundleSetupWindow(const QString &captionS
 //
 // ****************************************************************************
 
-QvisMacAppBundleSetupWindow::~QvisMacAppBundleSetupWindow()
+QvisSetupHostProfilesAndConfigWindow::~QvisSetupHostProfilesAndConfigWindow()
 {
 }
 
 // ****************************************************************************
-// Method: QvisMacAppBundleSetupWindow::CreateWindowContents
+// Method: QvisSetupHostProfilesAndConfigWindow::CreateWindowContents
 //
 // Purpose: 
 //   Creates the widgets for the Mac app bundle setup window.
@@ -105,7 +105,7 @@ QvisMacAppBundleSetupWindow::~QvisMacAppBundleSetupWindow()
 // ****************************************************************************
 
 void
-QvisMacAppBundleSetupWindow::CreateWindowContents()
+QvisSetupHostProfilesAndConfigWindow::CreateWindowContents()
 {
     readNetworkList();
     readDefaultConfigList();
@@ -161,7 +161,7 @@ QvisMacAppBundleSetupWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
-// Method: QvisMacAppBundleSetupWindow::readNetworkList()
+// Method: QvisSetupHostProfilesAndConfigWindow::readNetworkList()
 //
 // Purpose: 
 //   Read list of "network/computing center" configurations.
@@ -174,7 +174,7 @@ QvisMacAppBundleSetupWindow::CreateWindowContents()
 // ****************************************************************************
 
 void
-QvisMacAppBundleSetupWindow::readNetworkList()
+QvisSetupHostProfilesAndConfigWindow::readNetworkList()
 {
     std::ifstream is(GetSystemConfigFile("networks.dat"));
 
@@ -195,7 +195,7 @@ QvisMacAppBundleSetupWindow::readNetworkList()
 }
 
 // ****************************************************************************
-// Method: QvisMacAppBundleSetupWindow::readDefaultConfigList()
+// Method: QvisSetupHostProfilesAndConfigWindow::readDefaultConfigList()
 //
 // Purpose: 
 //   Read list of default configurations.
@@ -208,7 +208,7 @@ QvisMacAppBundleSetupWindow::readNetworkList()
 // ****************************************************************************
 
 void
-QvisMacAppBundleSetupWindow::readDefaultConfigList()
+QvisSetupHostProfilesAndConfigWindow::readDefaultConfigList()
 {
     std::ifstream is(GetSystemConfigFile("default_configs.dat"));
 
@@ -229,7 +229,7 @@ QvisMacAppBundleSetupWindow::readDefaultConfigList()
 }
 
 // ****************************************************************************
-// Method: QvisMacAppBundleSetupWindow::installConfigFile()
+// Method: QvisSetupHostProfilesAndConfigWindow::installConfigFile()
 //
 // Purpose: 
 //   Install a configuration file. Ask via dialog if a file should be
@@ -247,7 +247,7 @@ QvisMacAppBundleSetupWindow::readDefaultConfigList()
 // ****************************************************************************
 
 void
-QvisMacAppBundleSetupWindow::installConfigFile(const QString& srcFilename,
+QvisSetupHostProfilesAndConfigWindow::installConfigFile(const QString& srcFilename,
         const QString& destFilename)
 {
     if (QFile::exists(destFilename))
@@ -271,7 +271,7 @@ QvisMacAppBundleSetupWindow::installConfigFile(const QString& srcFilename,
 }
 
 // ****************************************************************************
-// Method: QvisMacAppBundleSetupWindow::performSetup()
+// Method: QvisSetupHostProfilesAndConfigWindow::performSetup()
 //
 // Purpose: 
 //   Perform the actual setup (i.e., copy selected host profiles and
@@ -285,9 +285,10 @@ QvisMacAppBundleSetupWindow::installConfigFile(const QString& srcFilename,
 // ****************************************************************************
 
 void
-QvisMacAppBundleSetupWindow::performSetup()
+QvisSetupHostProfilesAndConfigWindow::performSetup()
 {
-    QString hostsInstallDirectory = QString::fromStdString(GetAndMakeUserVisItHostsDirectory());
+    QString hostsInstallDirectory =
+        QString::fromStdString(GetAndMakeUserVisItHostsDirectory());
 
     for (std::list<NetworkInfo>::iterator it = networkList.begin();
             it != networkList.end(); ++it)
