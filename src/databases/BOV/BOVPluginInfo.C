@@ -167,6 +167,7 @@ BOVGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.bov");
+    defaultPatterns.push_back("*.npy");
 
     return defaultPatterns;
 }

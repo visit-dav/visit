@@ -5,6 +5,7 @@
     </LIBS>
     <FilePatterns>
       *.bov
+      *.npy
     </FilePatterns>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
