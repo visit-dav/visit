@@ -505,7 +505,7 @@ private slots:
     void showMeshManagementWindow();
     void showSelectionsWindow();
     void showSelectionsWindow2(const QString &);
-    void configureMacAppBundle();
+    void setupHostProfilesAndConfig();
 
     void updateVisIt();
     void updateVisItCompleted(const QString &);
