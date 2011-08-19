@@ -10277,6 +10277,10 @@ ViewerSubject::ApplyNamedSelection()
 //    Pass selection properties to the engine manager. Allow that the selection
 //    might have been passed beforehand.
 //
+//    Brad Whitlock, Fri Aug 19 10:18:37 PDT 2011
+//    Send expressions down to the engine when we're creating a selection that
+//    is not based on a plot.
+//
 // ****************************************************************************
 
 void
@@ -10338,6 +10342,14 @@ ViewerSubject::CreateNamedSelection()
 
         engineKey = EngineKey(host, sim);
         selSource = db;
+
+        // We're doing a selection based directly on the database. We need to
+        // send the expression definitions to the engine since we haven't yet
+        // created any plots.
+        ExpressionList exprList;
+        ViewerFileServer::Instance()->GetAllExpressions(exprList, host, db, 
+            ViewerFileServer::ANY_STATE);
+        ViewerEngineManager::Instance()->UpdateExpressions(engineKey, exprList);
     }
 
     TRY

@@ -195,6 +195,9 @@ class SILAttributes;
 //    fallback formats anymore, such usage still has some conveniences.
 //    Added support to munge the preferred list when given those options.
 //
+//    Brad Whitlock, Fri Aug 19 10:32:57 PDT 2011
+//    Expose ANY_STATE as a value that can be passed as a time state.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -214,6 +217,8 @@ class ViewerFileServer : public ViewerServerManager
     typedef std::map<std::string, avtDatabaseMetaData *> FileMetaDataMap;
     typedef std::map<std::string, avtSIL *> FileSILMap;
 public:
+    static const int ANY_STATE;
+
     virtual                   ~ViewerFileServer();
 
     static ViewerFileServer   *Instance();

@@ -3385,7 +3385,7 @@ ViewerEngineManager::CreateNamedSelection(const EngineKey &ek,
         // Add the new summary to the list.
         ViewerWindowManager::GetSelectionList()->AddSelectionSummary(summary);
 
-    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+    ENGINE_PROXY_RPC_END;
 }
 
 
@@ -3742,27 +3742,32 @@ ViewerEngineManager::GetCommandFromSimulation(const EngineKey &ek)
 }
 
 // ****************************************************************************
-//  Method:  ViewerEngineManager::UpdateExpressionsFromPlot
+//  Method:  ViewerEngineManager::UpdateExpressions
 //
 //  Purpose:
 //    Tells the engine to update its epxressions. 
 //
 //  Arguments:
-//    plot       The plot that has the expressions that should be updated. 
+//    ek : The key that identifies the engine.
+//    eL : The new expression list we're sending to the engine. 
 //
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    March 1, 2005 
 //
+//  Modifications:
+//    Brad Whitlock, Fri Aug 19 09:57:15 PDT 2011
+//    I changed it from being plot-specific to accepting any expression list.
+//    I also made it start an engine if one is needed.
+//
 // ****************************************************************************
 
-void
-ViewerEngineManager::UpdateExpressionsFromPlot(const ViewerPlot *plot) 
+bool
+ViewerEngineManager::UpdateExpressions(const EngineKey &ek, 
+    const ExpressionList &eL)
 {
-    EngineKey ek(plot->GetEngineKey());
-    if (EngineExists(ek))
-        engines[ek].proxy->UpdateExpressions(plot->GetExpressions());
-    else
-        EXCEPTION0(NoEngineException);
+    ENGINE_PROXY_RPC_BEGIN("UpdateExpressions");  
+        engine->UpdateExpressions(eL);
+    ENGINE_PROXY_RPC_END
 }
 
 // ****************************************************************************

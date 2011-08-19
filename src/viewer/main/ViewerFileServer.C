@@ -79,11 +79,10 @@
 #include <string>
 #include <vector>
 
-#define ANY_STATE -1
-
 // A static pointer to the one and only instance of ViewerFileServer
 ViewerFileServer *ViewerFileServer::instance = NULL;
 
+const int ViewerFileServer::ANY_STATE = -1;
 
 // ****************************************************************************
 // Function: GetTreatAllDBsAsTimeVarying 
@@ -3251,7 +3250,10 @@ ViewerFileServer::GetUserExpressions(ExpressionList &newList)
 // Creation:   Fri Feb 18 09:45:27 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug 19 11:06:39 PDT 2011
+//   If ANY_STATE was passed for the state then call a different metadata
+//   function.
+//
 // ****************************************************************************
 
 void
@@ -3262,7 +3264,11 @@ ViewerFileServer::GetDatabaseExpressions(ExpressionList &newList,
     // new list.
     if(host.size() > 0 && db.size() > 0)
     {
-        const avtDatabaseMetaData *md = GetMetaDataForState(host, db, state);
+        const avtDatabaseMetaData *md = 0;
+        if(state == ANY_STATE)
+            md = GetMetaData(host, db);
+        else
+            md = GetMetaDataForState(host, db, state);
         if (md != 0)
         {
             // Add the expressions for the database.

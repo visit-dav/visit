@@ -97,8 +97,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 2.4</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
+  <li>Named selections based directly on a database instead of a plot were not recreated when restoring a session.</li>
+  <li>Cumulative query selections based on a database instead of a plot failed to be created when a compute engine did not already exist. Furthermore, if the selection used expressions that had not been previously used in plots, the selection would not be calculated.</li>
   <li></li>
   <li></li>
   <li></li>
