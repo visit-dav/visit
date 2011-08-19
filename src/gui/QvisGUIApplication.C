@@ -8671,4 +8671,6 @@ QvisGUIApplication::showSelectionsWindow2(const QString &selName)
 }
 #if defined(Q_WS_MACX)
 void QvisGUIApplication::configureMacAppBundle()     { GetInitializedWindowPointer(WINDOW_CFG_MAC_APPBDL)->show(); }
+#else
+void QvisGUIApplication::configureMacAppBundle()     { }
 #endif
