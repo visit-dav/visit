@@ -10725,6 +10725,9 @@ ViewerSubject::LoadNamedSelection()
 //   Brad Whitlock, Thu Jun  9 11:26:20 PDT 2011
 //   Adjust to allow for selections that come from files.
 //
+//   Brad Whitlock, Fri Aug 19 12:33:03 PDT 2011
+//   Send expressions to the engine to make sure that it has them.
+//
 // ****************************************************************************
 
 void
@@ -10770,6 +10773,18 @@ ViewerSubject::UpdateNamedSelection(const std::string &selName)
         }
     }
     delete [] windowIndices;
+
+    // If we have a selection based on a database, send the expression list 
+    // to the engine.
+    if(networkId == -1)
+    {
+        ExpressionList exprList;
+        std::string host, db, sim, src(props.GetSource());
+        ViewerFileServer::Instance()->ExpandDatabaseName(src, host, db);
+        ViewerFileServer::Instance()->GetAllExpressions(exprList, host, db, 
+            ViewerFileServer::ANY_STATE);
+        ViewerEngineManager::Instance()->UpdateExpressions(engineKey, exprList);
+    }
 
     // Delete the selection
     ViewerEngineManager::Instance()->DeleteNamedSelection(engineKey, selName);
