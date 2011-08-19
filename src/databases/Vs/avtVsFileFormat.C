@@ -916,7 +916,10 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
           j += strides[i];
         }
 
-        delete [] dblDataPtr;
+        if( isDoubleType( axisDataType ) )
+          delete [] dblDataPtr;
+        else if( isFloatType( axisDataType ) ) 
+          delete [] fltDataPtr;
 
       } else if (isFloat) {
 
@@ -926,7 +929,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
         {
           float temp;
 
-          if( isDoubleType( axisDataType ) ) 
+          if( isDoubleType( axisDataType ) )
             temp = dblDataPtr[j];
           else if( isFloatType( axisDataType ) ) 
             temp = fltDataPtr[j];
@@ -936,7 +939,10 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
           j += strides[i];
         }
 
-        delete [] fltDataPtr;
+        if( isDoubleType( axisDataType ) )
+          delete [] dblDataPtr;
+        else if( isFloatType( axisDataType ) ) 
+          delete [] fltDataPtr;
       }
 
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
