@@ -1,14 +1,14 @@
-Argone National Laboatory (ANL) network:anl:host_anl_cosmea.xml host_anl_eureka.xml host_anl_gadzooks.xml host_anl_mcs_login.xml host_anl_teragrid.xml
-Los Alamos National Laboratory (LANL) open network:lanl_open: host_lanl_closed_cielo.xml
-Los Alamos National Laboratory (LANL) closed network:lanl_closed: host_lanl_closed_cielo.xml
-Lawrence Livermore National Laboratory open network:llnl:host_llnl_alastor.xml host_llnl_atlas.xml host_llnl_aztec.xml
-Lawrence Livermore National Laboratory closed network:llnl_closed:host_llnl_closed_eos.xml host_llnl_closed_graph.xml host_llnl_closed_inca.xml host_llnl_closed_juno.xml host_llnl_closed_minos.xml host_llnl_closed_muir.xml host_llnl_closed_rhea.xml host_llnl_closed_tempest.xml host_llnl_edge.xml host_llnl_hera.xml host_llnl_prism.xml host_llnl_sierra.xml host_llnl_zeus.xml
-National Energy Scientific Research Computing Center (NERSC) network:nersc:host_nersc_euclid.xml host_nersc_franklin.xml host_nersc_hopper.xml
-National Institute for Computational Sciences (NICS) newtwork:nics:host_nics_kraken.xml host_nics_nautilus.xml
-Oak Ridge National Laboratory (ORNL):ornl:host_ornl_ewok.xml host_ornl_jaguar.xml host_ornl_jaguarpf.xml host_ornl_lens.xml host_ornl_photon.xml host_ornl_sith.xml
-Princeton University network:princeton:host_princeton_artemis.xml host_princeton_hecate.xml host_princeton_tigressdata.xml
-Sandia National Laboratory (SNL) open network:sandia:host_sandia_glory.xml host_sandia_redsky.xml
-Sandia National Laboratory (SNL) closed network:snl_closed:host_snl_closed_redrose.xml
-Stanford Linear Accelerator Center (SLAC) network:slac:host_slac_red.xml
-Texas Advanced Computing Center (TACC) network:tacc:host_tacc_longhorn.xml host_tacc_ranger.xml host_tacc_ranger_vnc.xml host_tacc_spur.xml
-University of Michigan Center for Advanced Computing network:umich:host_umich_flux.xml host_umich_nyx.xml
+Argone National Laboatory (ANL) network:anl
+Los Alamos National Laboratory (LANL) open network:lanl_open
+Los Alamos National Laboratory (LANL) closed network:lanl_closed
+Lawrence Livermore National Laboratory open network:llnl
+Lawrence Livermore National Laboratory closed network:llnl_closed
+National Energy Scientific Research Computing Center (NERSC) network:nersc
+National Institute for Computational Sciences (NICS) newtwork:nics
+Oak Ridge National Laboratory (ORNL):ornl
+Princeton University network:princeton
+Sandia National Laboratory (SNL) open network:sandia
+Sandia National Laboratory (SNL) closed network:snl_closed
+Stanford Linear Accelerator Center (SLAC) network:slac
+Texas Advanced Computing Center (TACC) network:tacc
+University of Michigan Center for Advanced Computing network:umich
