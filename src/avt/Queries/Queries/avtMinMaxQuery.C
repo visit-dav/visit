@@ -730,7 +730,7 @@ avtMinMaxQuery::StandardPostExecute(void)
             result_node["max_coord"] = maxCoord;
 
         }
-        else if(doMin)
+        if(doMin)
         {
             result_node["min"] = minInfo1.GetValue();
             result_node["min_domain"] = minInfo1.GetDomain();
