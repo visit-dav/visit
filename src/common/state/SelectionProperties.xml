@@ -54,6 +54,9 @@
     <Field name="histogramVariableIndex" label="Histogram variable index" type="int">
        -1
     </Field>
+    <Field name="updateSelection" label="Update Selection" type="bool">
+      false
+    </Field>
     <Function name="GetOriginatingPlot" user="true" member="true">
     </Function>   
     <Function name="SetOriginatingPlot" user="true" member="true">
