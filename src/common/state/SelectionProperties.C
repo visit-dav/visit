@@ -178,6 +178,7 @@ void SelectionProperties::Init()
     histogramStartBin = 0;
     histogramEndBin = 9;
     histogramVariableIndex = -1;
+    updateSelection = false;
 
     SelectionProperties::SelectAll();
 }
@@ -214,6 +215,7 @@ void SelectionProperties::Copy(const SelectionProperties &obj)
     histogramStartBin = obj.histogramStartBin;
     histogramEndBin = obj.histogramEndBin;
     histogramVariableIndex = obj.histogramVariableIndex;
+    updateSelection = obj.updateSelection;
 
     SelectionProperties::SelectAll();
 }
@@ -385,7 +387,8 @@ SelectionProperties::operator == (const SelectionProperties &obj) const
             (histogramNumBins == obj.histogramNumBins) &&
             (histogramStartBin == obj.histogramStartBin) &&
             (histogramEndBin == obj.histogramEndBin) &&
-            (histogramVariableIndex == obj.histogramVariableIndex));
+            (histogramVariableIndex == obj.histogramVariableIndex) &&
+            (updateSelection == obj.updateSelection));
 }
 
 // ****************************************************************************
@@ -544,6 +547,7 @@ SelectionProperties::SelectAll()
     Select(ID_histogramStartBin,      (void *)&histogramStartBin);
     Select(ID_histogramEndBin,        (void *)&histogramEndBin);
     Select(ID_histogramVariableIndex, (void *)&histogramVariableIndex);
+    Select(ID_updateSelection,        (void *)&updateSelection);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -666,6 +670,12 @@ SelectionProperties::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("histogramVariableIndex", histogramVariableIndex));
     }
 
+    if(completeSave || !FieldsEqual(ID_updateSelection, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("updateSelection", updateSelection));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -774,6 +784,8 @@ SelectionProperties::SetFromNode(DataNode *parentNode)
         SetHistogramEndBin(node->AsInt());
     if((node = searchNode->GetNode("histogramVariableIndex")) != 0)
         SetHistogramVariableIndex(node->AsInt());
+    if((node = searchNode->GetNode("updateSelection")) != 0)
+        SetUpdateSelection(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -883,6 +895,13 @@ SelectionProperties::SetHistogramVariableIndex(int histogramVariableIndex_)
 {
     histogramVariableIndex = histogramVariableIndex_;
     Select(ID_histogramVariableIndex, (void *)&histogramVariableIndex);
+}
+
+void
+SelectionProperties::SetUpdateSelection(bool updateSelection_)
+{
+    updateSelection = updateSelection_;
+    Select(ID_updateSelection, (void *)&updateSelection);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1009,6 +1028,12 @@ SelectionProperties::GetHistogramVariableIndex() const
     return histogramVariableIndex;
 }
 
+bool
+SelectionProperties::GetUpdateSelection() const
+{
+    return updateSelection;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1082,6 +1107,7 @@ SelectionProperties::GetFieldName(int index) const
     case ID_histogramStartBin:      return "histogramStartBin";
     case ID_histogramEndBin:        return "histogramEndBin";
     case ID_histogramVariableIndex: return "histogramVariableIndex";
+    case ID_updateSelection:        return "updateSelection";
     default:  return "invalid index";
     }
 }
@@ -1121,6 +1147,7 @@ SelectionProperties::GetFieldType(int index) const
     case ID_histogramStartBin:      return FieldType_int;
     case ID_histogramEndBin:        return FieldType_int;
     case ID_histogramVariableIndex: return FieldType_int;
+    case ID_updateSelection:        return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1160,6 +1187,7 @@ SelectionProperties::GetFieldTypeName(int index) const
     case ID_histogramStartBin:      return "int";
     case ID_histogramEndBin:        return "int";
     case ID_histogramVariableIndex: return "int";
+    case ID_updateSelection:        return "bool";
     default:  return "invalid index";
     }
 }
@@ -1259,6 +1287,11 @@ SelectionProperties::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_histogramVariableIndex:
         {  // new scope
         retval = (histogramVariableIndex == obj.histogramVariableIndex);
+        }
+        break;
+    case ID_updateSelection:
+        {  // new scope
+        retval = (updateSelection == obj.updateSelection);
         }
         break;
     default: retval = false;
