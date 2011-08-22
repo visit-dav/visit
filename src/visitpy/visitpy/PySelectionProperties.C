@@ -143,11 +143,6 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    if(atts->GetTimeEnabled())
-        SNPRINTF(tmpStr, 1000, "%stimeEnabled = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%stimeEnabled = 0\n", prefix);
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sminTimeState = %d\n", prefix, atts->GetMinTimeState());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxTimeState = %d\n", prefix, atts->GetMaxTimeState());
@@ -469,30 +464,6 @@ SelectionProperties_GetVariableMaxs(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-SelectionProperties_SetTimeEnabled(PyObject *self, PyObject *args)
-{
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the timeEnabled in the object.
-    obj->data->SetTimeEnabled(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-SelectionProperties_GetTimeEnabled(PyObject *self, PyObject *args)
-{
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetTimeEnabled()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
 SelectionProperties_SetMinTimeState(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
@@ -742,8 +713,6 @@ PyMethodDef PySelectionProperties_methods[SELECTIONPROPERTIES_NMETH] = {
     {"GetVariableMins", SelectionProperties_GetVariableMins, METH_VARARGS},
     {"SetVariableMaxs", SelectionProperties_SetVariableMaxs, METH_VARARGS},
     {"GetVariableMaxs", SelectionProperties_GetVariableMaxs, METH_VARARGS},
-    {"SetTimeEnabled", SelectionProperties_SetTimeEnabled, METH_VARARGS},
-    {"GetTimeEnabled", SelectionProperties_GetTimeEnabled, METH_VARARGS},
     {"SetMinTimeState", SelectionProperties_SetMinTimeState, METH_VARARGS},
     {"GetMinTimeState", SelectionProperties_GetMinTimeState, METH_VARARGS},
     {"SetMaxTimeState", SelectionProperties_SetMaxTimeState, METH_VARARGS},
@@ -807,8 +776,6 @@ PySelectionProperties_getattr(PyObject *self, char *name)
         return SelectionProperties_GetVariableMins(self, NULL);
     if(strcmp(name, "variableMaxs") == 0)
         return SelectionProperties_GetVariableMaxs(self, NULL);
-    if(strcmp(name, "timeEnabled") == 0)
-        return SelectionProperties_GetTimeEnabled(self, NULL);
     if(strcmp(name, "minTimeState") == 0)
         return SelectionProperties_GetMinTimeState(self, NULL);
     if(strcmp(name, "maxTimeState") == 0)
@@ -867,8 +834,6 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
         obj = SelectionProperties_SetVariableMins(self, tuple);
     else if(strcmp(name, "variableMaxs") == 0)
         obj = SelectionProperties_SetVariableMaxs(self, tuple);
-    else if(strcmp(name, "timeEnabled") == 0)
-        obj = SelectionProperties_SetTimeEnabled(self, tuple);
     else if(strcmp(name, "minTimeState") == 0)
         obj = SelectionProperties_SetMinTimeState(self, tuple);
     else if(strcmp(name, "maxTimeState") == 0)

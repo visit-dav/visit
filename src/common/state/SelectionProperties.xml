@@ -27,9 +27,6 @@
     </Field>
     <Field name="variableMaxs" label="Variable maximums" type="doubleVector">
     </Field>
-    <Field name="timeEnabled" label="Time enabled" type="bool">
-      true
-    </Field>
     <Field name="minTimeState" label="Minimum time state" type="int">
       0
     </Field>
