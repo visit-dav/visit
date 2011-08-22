@@ -117,7 +117,6 @@ public:
     void SetVariables(const stringVector &variables_);
     void SetVariableMins(const doubleVector &variableMins_);
     void SetVariableMaxs(const doubleVector &variableMaxs_);
-    void SetTimeEnabled(bool timeEnabled_);
     void SetMinTimeState(int minTimeState_);
     void SetMaxTimeState(int maxTimeState_);
     void SetTimeStateStride(int timeStateStride_);
@@ -140,7 +139,6 @@ public:
           doubleVector &GetVariableMins();
     const doubleVector &GetVariableMaxs() const;
           doubleVector &GetVariableMaxs();
-    bool               GetTimeEnabled() const;
     int                GetMinTimeState() const;
     int                GetMaxTimeState() const;
     int                GetTimeStateStride() const;
@@ -190,7 +188,6 @@ public:
         ID_variables,
         ID_variableMins,
         ID_variableMaxs,
-        ID_timeEnabled,
         ID_minTimeState,
         ID_maxTimeState,
         ID_timeStateStride,
@@ -210,7 +207,6 @@ private:
     stringVector variables;
     doubleVector variableMins;
     doubleVector variableMaxs;
-    bool         timeEnabled;
     int          minTimeState;
     int          maxTimeState;
     int          timeStateStride;
@@ -225,6 +221,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SELECTIONPROPERTIES_TMFS "ssis*d*d*biiiiiiiii"
+#define SELECTIONPROPERTIES_TMFS "ssis*d*d*iiiiiiiii"
 
 #endif

@@ -188,11 +188,6 @@ QvisSelectionsWindow::SubjectRemoved(Subject *s)
 void
 QvisSelectionsWindow::CreateWindowContents()
 {
-    automaticallyApply = new QCheckBox(tr("Automatically apply updated selections"), central);
-    connect(automaticallyApply, SIGNAL(toggled(bool)),
-            this, SLOT(automaticallyApplyChanged(bool)));
-    topLayout->addWidget(automaticallyApply);
-
     QSplitter *mainSplitter = new QSplitter(central);
     topLayout->addWidget(mainSplitter);
     topLayout->setStretchFactor(mainSplitter, 100);
@@ -284,6 +279,8 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
     cqControls->setCheckable(true);
     connect(cqControls, SIGNAL(clicked(bool)),
             this, SLOT(cumulativeQueryClicked(bool)));
+
+
     QVBoxLayout *vLayout = new QVBoxLayout(cqControls);
     definitionLayout->addWidget(cqControls, 2,0,1,4);
     definitionLayout->setRowStretch(2, 10);
@@ -293,10 +290,17 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
     cqTabs->addTab(CreateCQRangeControls(cqControls), tr("Range"));
     cqTabs->addTab(CreateCQHistogramControls(cqControls), tr("Histogram"));
 
-    updateButton = new QPushButton(tr("Update Selection"), f2);
-    connect(updateButton, SIGNAL(pressed()),
+
+    automaticallyApply = new QCheckBox(tr("Automatically apply updated selections"), f2);
+    connect(automaticallyApply, SIGNAL(toggled(bool)),
+            this, SLOT(automaticallyApplyChanged(bool)));
+    definitionLayout->addWidget(automaticallyApply, 3,0,1,2);
+
+
+    updateSelectionButton = new QPushButton(tr("Update Selection"), f2);
+    connect(updateSelectionButton, SIGNAL(pressed()),
             this, SLOT(updateSelection()));
-    definitionLayout->addWidget(updateButton, 3,3);
+    definitionLayout->addWidget(updateSelectionButton, 3,3);
 
     return f2;
 }
@@ -348,6 +352,13 @@ QvisSelectionsWindow::CreateCQRangeControls(QWidget *parent)
         "Coordinates plot."));
     lLayout->addWidget(cqInitializeVarButton, 0, 2);
 
+    
+    updateQueryButton1 = new QPushButton(tr("Update Query"), central);
+    connect(updateQueryButton1, SIGNAL(pressed()),
+            this, SLOT(updateQuery()));
+    lLayout->addWidget(updateQueryButton1, 0,3);
+
+
     // Add the variable list.
     cqLimits = new QvisVariableListLimiter(central);
     cqLimits->setMinimumHeight(200);
@@ -355,11 +366,11 @@ QvisSelectionsWindow::CreateCQRangeControls(QWidget *parent)
             this, SLOT(setVariableRange(const QString &,float,float)));
     connect(cqLimits, SIGNAL(deleteVariable(const QString &)),
             this, SLOT(deleteVariable(const QString &)));
-    lLayout->addWidget(cqLimits, 1, 0, 1, 3);
+    lLayout->addWidget(cqLimits, 1, 0, 1, 4);
 
     // Add the time controls
     cqTimeGroupBox = CreateTimeControls(central);
-    lLayout->addWidget(cqTimeGroupBox, 2, 0, 1, 3);
+    lLayout->addWidget(cqTimeGroupBox, 2, 0, 1, 4);
 
     return central;
 }
@@ -449,6 +460,11 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     thLayout->addWidget(histLabel);
     cqHistogramTitle = new QLabel(titleParent);
     thLayout->addWidget(cqHistogramTitle, Qt::AlignLeft);
+
+    updateQueryButton2 = new QPushButton(tr("Update Query"), central);
+    connect(updateQueryButton2, SIGNAL(pressed()),
+            this, SLOT(updateQuery()));
+    thLayout->addWidget(updateQueryButton2);
 
     cqHistogram = new QvisHistogram(central);
     cqHistogram->setDrawBinLines(true);
@@ -795,35 +811,44 @@ QvisSelectionsWindow::UpdateHistogram(const double *values, int nvalues,
         cqHistogram->setHistogramTexture(0,0);
     else
     {
-        float *normalized = new float[nvalues];
-        bool  *mask = new bool[nvalues];
-        double maxVal = values[0];
-        for(int i = 1; i < nvalues; ++i)
-        {
-            maxVal = (values[i] > maxVal) ? values[i] : maxVal;
-        }
-
-        for(int i = 0; i < nvalues; ++i)
-        {
-            normalized[i] = values[i] / maxVal;
-            mask[i] = (i >= minBin && i <= maxBin);
-        }
-
-        cqHistogram->setHistogramTexture(normalized, useBins ? mask : 0, nvalues);
-
-        delete [] normalized;
-        delete [] mask;
-
         if( nvalues != selectionProps.GetHistogramNumBins() )
         {
           selectionProps.SetHistogramNumBins(nvalues);
           selectionProps.SetHistogramStartBin(0);
           selectionProps.SetHistogramEndBin(nvalues-1);
+
+          minBin = 0;
+          maxBin = nvalues-1;
           
           Apply();
           
           UpdateMinMaxBins(true, true, true);
         }
+
+        float *normalized = new float[nvalues];
+        bool  *mask = new bool[nvalues];
+        double maxVal = values[0];
+        for(int i = 1; i < nvalues; ++i)
+        {
+          if( maxVal < values[i] )
+            maxVal = values[i];
+        }
+
+        for(int i = 0; i < nvalues; ++i)
+        {
+            if( maxVal != 0 )
+              normalized[i] = values[i] / maxVal;
+            else
+              normalized[i] = 0;
+
+            mask[i] = (minBin <= i && i <= maxBin);
+        }
+
+        cqHistogram->setHistogramTexture(normalized, useBins ? mask : 0,
+                                         nvalues);
+
+        delete [] normalized;
+        delete [] mask;
     }
 }
 
@@ -1156,7 +1181,7 @@ QvisSelectionsWindow::UpdateSelectionProperties()
     // Set the enabled state of the load button.
     loadButton->setEnabled(!GetLoadHost().isEmpty());
 
-    updateButton->setEnabled(selectionPropsValid);
+    updateSelectionButton->setEnabled(selectionPropsValid);
 }
 
 // ****************************************************************************
@@ -1434,6 +1459,28 @@ QvisSelectionsWindow::deleteSelection()
 }
 
 // ****************************************************************************
+// Method: QvisSelectionsWindow::updateQuery
+//
+// Purpose: 
+//   This is a Qt slot function that is called to update a Selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug  6 15:44:09 PDT 2010
+//
+// Modifications:
+//   Brad Whitlock, Tue Dec 28 22:19:05 PST 2010
+//   Send the selection properties down.
+//
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::updateQuery()
+{
+    selectionProps.SetUpdateSelection(false);
+    Apply(true);
+}
+
+// ****************************************************************************
 // Method: QvisSelectionsWindow::updateSelection
 //
 // Purpose: 
@@ -1451,6 +1498,7 @@ QvisSelectionsWindow::deleteSelection()
 void
 QvisSelectionsWindow::updateSelection()
 {
+    selectionProps.SetUpdateSelection(true);
     Apply(true);
 }
 

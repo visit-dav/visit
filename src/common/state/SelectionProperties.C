@@ -169,7 +169,6 @@ SelectionProperties::HistogramType_FromString(const std::string &s, SelectionPro
 void SelectionProperties::Init()
 {
     selectionType = BasicSelection;
-    timeEnabled = true;
     minTimeState = 0;
     maxTimeState = -1;
     timeStateStride = 1;
@@ -206,7 +205,6 @@ void SelectionProperties::Copy(const SelectionProperties &obj)
     variables = obj.variables;
     variableMins = obj.variableMins;
     variableMaxs = obj.variableMaxs;
-    timeEnabled = obj.timeEnabled;
     minTimeState = obj.minTimeState;
     maxTimeState = obj.maxTimeState;
     timeStateStride = obj.timeStateStride;
@@ -379,7 +377,6 @@ SelectionProperties::operator == (const SelectionProperties &obj) const
             (variables == obj.variables) &&
             (variableMins == obj.variableMins) &&
             (variableMaxs == obj.variableMaxs) &&
-            (timeEnabled == obj.timeEnabled) &&
             (minTimeState == obj.minTimeState) &&
             (maxTimeState == obj.maxTimeState) &&
             (timeStateStride == obj.timeStateStride) &&
@@ -538,7 +535,6 @@ SelectionProperties::SelectAll()
     Select(ID_variables,              (void *)&variables);
     Select(ID_variableMins,           (void *)&variableMins);
     Select(ID_variableMaxs,           (void *)&variableMaxs);
-    Select(ID_timeEnabled,            (void *)&timeEnabled);
     Select(ID_minTimeState,           (void *)&minTimeState);
     Select(ID_maxTimeState,           (void *)&maxTimeState);
     Select(ID_timeStateStride,        (void *)&timeStateStride);
@@ -614,12 +610,6 @@ SelectionProperties::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("variableMaxs", variableMaxs));
-    }
-
-    if(completeSave || !FieldsEqual(ID_timeEnabled, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("timeEnabled", timeEnabled));
     }
 
     if(completeSave || !FieldsEqual(ID_minTimeState, &defaultObject))
@@ -738,8 +728,6 @@ SelectionProperties::SetFromNode(DataNode *parentNode)
         SetVariableMins(node->AsDoubleVector());
     if((node = searchNode->GetNode("variableMaxs")) != 0)
         SetVariableMaxs(node->AsDoubleVector());
-    if((node = searchNode->GetNode("timeEnabled")) != 0)
-        SetTimeEnabled(node->AsBool());
     if((node = searchNode->GetNode("minTimeState")) != 0)
         SetMinTimeState(node->AsInt());
     if((node = searchNode->GetNode("maxTimeState")) != 0)
@@ -832,13 +820,6 @@ SelectionProperties::SetVariableMaxs(const doubleVector &variableMaxs_)
 {
     variableMaxs = variableMaxs_;
     Select(ID_variableMaxs, (void *)&variableMaxs);
-}
-
-void
-SelectionProperties::SetTimeEnabled(bool timeEnabled_)
-{
-    timeEnabled = timeEnabled_;
-    Select(ID_timeEnabled, (void *)&timeEnabled);
 }
 
 void
@@ -974,12 +955,6 @@ SelectionProperties::GetVariableMaxs()
     return variableMaxs;
 }
 
-bool
-SelectionProperties::GetTimeEnabled() const
-{
-    return timeEnabled;
-}
-
 int
 SelectionProperties::GetMinTimeState() const
 {
@@ -1098,7 +1073,6 @@ SelectionProperties::GetFieldName(int index) const
     case ID_variables:              return "variables";
     case ID_variableMins:           return "variableMins";
     case ID_variableMaxs:           return "variableMaxs";
-    case ID_timeEnabled:            return "timeEnabled";
     case ID_minTimeState:           return "minTimeState";
     case ID_maxTimeState:           return "maxTimeState";
     case ID_timeStateStride:        return "timeStateStride";
@@ -1138,7 +1112,6 @@ SelectionProperties::GetFieldType(int index) const
     case ID_variables:              return FieldType_stringVector;
     case ID_variableMins:           return FieldType_doubleVector;
     case ID_variableMaxs:           return FieldType_doubleVector;
-    case ID_timeEnabled:            return FieldType_bool;
     case ID_minTimeState:           return FieldType_int;
     case ID_maxTimeState:           return FieldType_int;
     case ID_timeStateStride:        return FieldType_int;
@@ -1178,7 +1151,6 @@ SelectionProperties::GetFieldTypeName(int index) const
     case ID_variables:              return "stringVector";
     case ID_variableMins:           return "doubleVector";
     case ID_variableMaxs:           return "doubleVector";
-    case ID_timeEnabled:            return "bool";
     case ID_minTimeState:           return "int";
     case ID_maxTimeState:           return "int";
     case ID_timeStateStride:        return "int";
@@ -1242,11 +1214,6 @@ SelectionProperties::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_variableMaxs:
         {  // new scope
         retval = (variableMaxs == obj.variableMaxs);
-        }
-        break;
-    case ID_timeEnabled:
-        {  // new scope
-        retval = (timeEnabled == obj.timeEnabled);
         }
         break;
     case ID_minTimeState:

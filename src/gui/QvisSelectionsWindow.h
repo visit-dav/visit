@@ -123,6 +123,7 @@ private slots:
     void    saveSelection();
     void    loadSelection();
     void    updateSelection();
+    void    updateQuery();
 
     void    cumulativeQueryClicked(bool);
     void    addVariable(const QString &);
@@ -155,7 +156,9 @@ private:
     QPushButton        *deleteButton;
     QPushButton        *loadButton;
     QPushButton        *saveButton;
-    QPushButton        *updateButton;
+    QPushButton        *updateSelectionButton;
+    QPushButton        *updateQueryButton1;
+    QPushButton        *updateQueryButton2;
 
     QTabWidget         *editorTabs;
 
