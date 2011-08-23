@@ -10152,6 +10152,10 @@ ViewerSubject::SetCreateVectorMagnitudeExpressions()
 //    Brad Whitlock, Tue Aug 10 15:53:27 PDT 2010
 //    I improved how the code works.
 //
+//    Brad Whitlock, Mon Aug 22 11:03:00 PDT 2011
+//    I removed the code to tell the engine to apply the named selection since
+//    it is no longer necessary.
+//
 // ****************************************************************************
 
 void
@@ -10202,7 +10206,6 @@ ViewerSubject::ApplyNamedSelection()
     // is the originating plot for a selection since we can't apply a
     // selection to the plot that generates it.
     //
-    std::vector<std::string> plotNames;
     intVector ePlotIDs;
     ViewerPlot *plot0 = plist->GetPlot(plotIDs[0]);
     const EngineKey &engineKey = plot0->GetEngineKey();
@@ -10218,7 +10221,6 @@ ViewerSubject::ApplyNamedSelection()
         else if(plot->GetPlotName() != originatingPlot)
         {
             ePlotIDs.push_back(plotIDs[i]);
-            plotNames.push_back(plot->GetPlotName());
         }
     }
 
@@ -10227,34 +10229,23 @@ ViewerSubject::ApplyNamedSelection()
     //
     TRY
     {
-        if(ViewerEngineManager::Instance()->ApplyNamedSelection(
-            engineKey, plotNames, selName))
+        for(int i = 0; i < ePlotIDs.size(); ++i)
         {
-            // We were able to record the named selections so we need to 
-            // record the named selections in the plots and update the 
-            // plot list.
-            for(int i = 0; i < ePlotIDs.size(); ++i)
-            {
-                ViewerPlot *plot = plist->GetPlot(ePlotIDs[i]);
-                plot->SetNamedSelection(selName);
-                plot->ClearActors();
-            }
-            plist->RealizePlots(false);
-            plist->UpdatePlotList();
+            ViewerPlot *plot = plist->GetPlot(ePlotIDs[i]);
+            plot->SetNamedSelection(selName);
+            plot->ClearActors();
+        }
+        plist->RealizePlots(false);
+        plist->UpdatePlotList();
 
-            if(selName.size() > 0)
-                Message(tr("Applied named selection"));
-        }
-        else
-        {
-            Error(tr("Unable to apply named selection"));
-        }
+        if(!selName.empty())
+            Message(tr("Applied named selection"));
     }
     CATCH2(VisItException, e)
     {
         char message[1024];
         SNPRINTF(message, 1024, "(%s): %s\n", e.GetExceptionType().c_str(),
-                                             e.Message().c_str());
+                                              e.Message().c_str());
         Error(message);
     }
     ENDTRY
@@ -10508,7 +10499,10 @@ GetNamedSelectionEngineKey(const std::string &selName, EngineKey &ek)
 // Creation:   Thu Aug 12 15:33:05 PDT 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 22 11:04:50 PDT 2011
+//   I removed some code to associate selections with plots in the engine since
+//   it is no longer necessary.
+//
 // ****************************************************************************
 
 static void
@@ -10520,7 +10514,6 @@ ReplaceNamedSelection(const EngineKey &engineKey, const std::string &selName,
     // Replace the selection in all plots that use it.
     int nWindows = 0, *windowIndices = 0;
     windowIndices = wMgr->GetWindowIndices(&nWindows);
-    stringVector plotNames;
     bool *plotlistsChanged = new bool[nWindows+1];
     for(int i = 0; i < nWindows; ++i)
     {
@@ -10533,7 +10526,6 @@ ReplaceNamedSelection(const EngineKey &engineKey, const std::string &selName,
             ViewerPlot *plot = plist->GetPlot(j);
             if(plot->GetNamedSelection() == selName)
             {
-                plotNames.push_back(plot->GetPlotName());
                 plot->SetNamedSelection(newSelName);
                 plot->ClearActors();
 
@@ -10545,12 +10537,8 @@ ReplaceNamedSelection(const EngineKey &engineKey, const std::string &selName,
     // Update the plot list in the client.
     wMgr->GetActiveWindow()->GetPlotList()->UpdatePlotList();
 
-    // Apply the new selection to the affected plots
     TRY
-    {
-        ViewerEngineManager::Instance()->ApplyNamedSelection(
-            engineKey, plotNames, newSelName);
-    
+    {   
         // Reexecute all of the affected plots.
         for(int i = 0; i < nWindows; ++i)
         {

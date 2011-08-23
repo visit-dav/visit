@@ -463,6 +463,11 @@ EngineProxy::SendKeepAlive()
 //      var       the variable to read
 //      time      the time step to read
 //      silr      the sil restriction to use.
+//      matopts
+//      meshopts
+//      treatAllDBsAsTimeVarying
+//      ignoreExtents
+//      selName   the selection to apply to the data.
 //
 //  Returns:    
 //
@@ -504,17 +509,22 @@ EngineProxy::SendKeepAlive()
 //
 //    Mark C. Miller, Tue Jun 10 15:57:15 PDT 2008
 //    Added support for ignoring extents
+//
+//    Brad Whitlock, Mon Aug 22 10:10:04 PDT 2011
+//    I added a selName argument.
+//
 // ****************************************************************************
 
 void
-EngineProxy::ReadDataObject(const string &format, const string &file, 
-                            const string &var, const int time,
+EngineProxy::ReadDataObject(const std::string &format, const std::string &file, 
+                            const std::string &var, const int time,
                             avtSILRestriction_p silr,
                             const MaterialAttributes &matopts,
                             const ExpressionList &expressions,
                             const MeshManagementAttributes &meshopts,
                             bool treatAllDBsAsTimeVarying,
-                            bool ignoreExtents)
+                            bool ignoreExtents,
+                            const std::string &selName)
 {
     // Make sure the engine knows about our current expression list.
     if (exprList != expressions)
@@ -525,7 +535,7 @@ EngineProxy::ReadDataObject(const string &format, const string &file,
 
     CompactSILRestrictionAttributes *atts = silr->MakeCompactAttributes();
     readRPC(format, file, var, time, *atts, matopts, meshopts,
-        treatAllDBsAsTimeVarying, ignoreExtents);
+        treatAllDBsAsTimeVarying, ignoreExtents, selName);
     if (readRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(readRPC.GetExceptionType(),
@@ -1571,37 +1581,6 @@ EngineProxy::BlockForNamedSelectionOperation()
         RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
                                namedSelectionRPC.Message());
     }
-}
-
-// ****************************************************************************
-//  Method:  EngineProxy::ApplyNamedSelection
-//
-//  Purpose:
-//      Apply a named selection to a list of plots.
-//
-//  Arguments:
-//    ids        the id of the network to have the selection applied to.
-//    selName    the name of the named selection.
-//
-//  Programmer:  Hank Childs
-//  Creation:    January 29, 2009
-//
-//  Modifications:
-//    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
-//    Renamed NamedSelectionRPC enum names to compile on windows.
-//
-//    Brad Whitlock, Tue Dec 14 11:58:33 PST 2010
-//    I changed the invocation method.
-//
-// ****************************************************************************
-
-void
-EngineProxy::ApplyNamedSelection(const vector<string> &ids, 
-                                 const string selName)
-{
-    namedSelectionRPC.ApplyNamedSelection(ids, selName);
-
-    BlockForNamedSelectionOperation();
 }
 
 // ****************************************************************************
