@@ -78,6 +78,10 @@
 //    Daniel Schep, Thu Aug 26 15:30:18 EDT 2010
 //    Added support for vector and material data.
 //
+//    Jeremy Meredith, Tue Aug 23 17:25:48 EDT 2011
+//    Added the virtual GetTimes method; the old way (where we set it in
+//    the metadata directly) isn't supported when grouping MT files.
+//
 // ****************************************************************************
 
 class avtPFLOTRANFileFormat : public avtMTMDFileFormat
@@ -100,8 +104,7 @@ class avtPFLOTRANFileFormat : public avtMTMDFileFormat
     // Otherwise, VisIt will make up some reasonable ones for you.
     //
     // virtual void        GetCycles(std::vector<int> &);
-    // virtual void        GetTimes(std::vector<double> &);
-    //
+    virtual void           GetTimes(std::vector<double> &);
 
     virtual int            GetNTimesteps(void);
 

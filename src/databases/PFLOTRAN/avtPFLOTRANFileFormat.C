@@ -1272,3 +1272,26 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
 
     return retval;
 }
+
+
+// ****************************************************************************
+// Method:  avtPFLOTRANFileFormat::GetTimes
+//
+// Purpose:
+//   We also set the times vector in the metadata directly above, but
+//   that method doesn't work when time-grouping MT files.
+//
+// Arguments:
+//   t          the time array to populate
+//
+// Programmer:  Jeremy Meredith
+// Creation:    August 23, 2011
+//
+// ****************************************************************************
+void
+avtPFLOTRANFileFormat::GetTimes(std::vector<double> &t)
+{
+    int nt = times.size();
+    for(int i=0;i<nt;i++)
+        t.push_back(times[i].first);
+}
