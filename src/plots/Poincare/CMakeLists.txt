@@ -34,7 +34,7 @@ PoincareEnginePluginInfo.C
 avtPoincarePlot.C
 avtPoincareFilter.C
 FieldlineAnalyzerLib.C
-skelet.cpp
+#skelet.cpp
 ${COMMON_SOURCES}
 )
 
