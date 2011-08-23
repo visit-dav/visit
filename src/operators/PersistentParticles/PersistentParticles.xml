@@ -29,6 +29,9 @@
       <Field name="connectParticles" label="Connect Particles" type="bool">
         false
       </Field>
+      <Field name="showPoints" label="Show points" type="bool" enabler="connectParticles:true">
+        false
+      </Field>
       <Field name="indexVariable" label="Index Variable" type="variablename" enabler="connectParticles:true" vartypes="01000000000">
       </Field>
     </Attribute>
