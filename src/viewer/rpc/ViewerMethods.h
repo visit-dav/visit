@@ -226,8 +226,9 @@ public:
                             const std::string &simName);
     void SaveNamedSelection(const std::string &selName);
     void SetNamedSelectionAutoApply(bool);
-    void UpdateNamedSelection(const std::string &selName);
-    void UpdateNamedSelection(const std::string &selName, const SelectionProperties &props);
+    void UpdateNamedSelection(const std::string &selName, bool updatePlots=true);
+    void UpdateNamedSelection(const std::string &selName, const SelectionProperties &props,
+                              bool updatePlots = true);
     void InitializeNamedSelectionVariables(const std::string &selName);
 
     void AnimationSetNFrames(int nFrames);

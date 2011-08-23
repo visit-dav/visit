@@ -195,11 +195,6 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%shistogramVariableIndex = %d\n", prefix, atts->GetHistogramVariableIndex());
     str += tmpStr;
-    if(atts->GetUpdateSelection())
-        SNPRINTF(tmpStr, 1000, "%supdateSelection = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%supdateSelection = 0\n", prefix);
-    str += tmpStr;
     return str;
 }
 
@@ -702,30 +697,6 @@ SelectionProperties_GetHistogramVariableIndex(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-SelectionProperties_SetUpdateSelection(PyObject *self, PyObject *args)
-{
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the updateSelection in the object.
-    obj->data->SetUpdateSelection(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-SelectionProperties_GetUpdateSelection(PyObject *self, PyObject *args)
-{
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetUpdateSelection()?1L:0L);
-    return retval;
-}
-
 
 
 PyMethodDef PySelectionProperties_methods[SELECTIONPROPERTIES_NMETH] = {
@@ -760,8 +731,6 @@ PyMethodDef PySelectionProperties_methods[SELECTIONPROPERTIES_NMETH] = {
     {"GetHistogramEndBin", SelectionProperties_GetHistogramEndBin, METH_VARARGS},
     {"SetHistogramVariableIndex", SelectionProperties_SetHistogramVariableIndex, METH_VARARGS},
     {"GetHistogramVariableIndex", SelectionProperties_GetHistogramVariableIndex, METH_VARARGS},
-    {"SetUpdateSelection", SelectionProperties_SetUpdateSelection, METH_VARARGS},
-    {"GetUpdateSelection", SelectionProperties_GetUpdateSelection, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -839,8 +808,6 @@ PySelectionProperties_getattr(PyObject *self, char *name)
         return SelectionProperties_GetHistogramEndBin(self, NULL);
     if(strcmp(name, "histogramVariableIndex") == 0)
         return SelectionProperties_GetHistogramVariableIndex(self, NULL);
-    if(strcmp(name, "updateSelection") == 0)
-        return SelectionProperties_GetUpdateSelection(self, NULL);
 
     return Py_FindMethod(PySelectionProperties_methods, self, name);
 }
@@ -885,8 +852,6 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
         obj = SelectionProperties_SetHistogramEndBin(self, tuple);
     else if(strcmp(name, "histogramVariableIndex") == 0)
         obj = SelectionProperties_SetHistogramVariableIndex(self, tuple);
-    else if(strcmp(name, "updateSelection") == 0)
-        obj = SelectionProperties_SetUpdateSelection(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

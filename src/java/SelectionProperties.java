@@ -58,7 +58,7 @@ import java.lang.Double;
 
 public class SelectionProperties extends AttributeSubject
 {
-    private static int SelectionProperties_numAdditionalAtts = 16;
+    private static int SelectionProperties_numAdditionalAtts = 15;
 
     // Enum values
     public final static int SELECTIONTYPE_BASICSELECTION = 0;
@@ -83,7 +83,6 @@ public class SelectionProperties extends AttributeSubject
         variables = new Vector();
         variableMins = new Vector();
         variableMaxs = new Vector();
-        timeEnabled = true;
         minTimeState = 0;
         maxTimeState = -1;
         timeStateStride = 1;
@@ -105,7 +104,6 @@ public class SelectionProperties extends AttributeSubject
         variables = new Vector();
         variableMins = new Vector();
         variableMaxs = new Vector();
-        timeEnabled = true;
         minTimeState = 0;
         maxTimeState = -1;
         timeStateStride = 1;
@@ -144,7 +142,6 @@ public class SelectionProperties extends AttributeSubject
             variableMaxs.addElement(new Double(dv.doubleValue()));
         }
 
-        timeEnabled = obj.timeEnabled;
         minTimeState = obj.minTimeState;
         maxTimeState = obj.maxTimeState;
         timeStateStride = obj.timeStateStride;
@@ -206,7 +203,6 @@ public class SelectionProperties extends AttributeSubject
                 variables_equal &&
                 variableMins_equal &&
                 variableMaxs_equal &&
-                (timeEnabled == obj.timeEnabled) &&
                 (minTimeState == obj.minTimeState) &&
                 (maxTimeState == obj.maxTimeState) &&
                 (timeStateStride == obj.timeStateStride) &&
@@ -255,83 +251,76 @@ public class SelectionProperties extends AttributeSubject
         Select(5);
     }
 
-    public void SetTimeEnabled(boolean timeEnabled_)
-    {
-        timeEnabled = timeEnabled_;
-        Select(6);
-    }
-
     public void SetMinTimeState(int minTimeState_)
     {
         minTimeState = minTimeState_;
-        Select(7);
+        Select(6);
     }
 
     public void SetMaxTimeState(int maxTimeState_)
     {
         maxTimeState = maxTimeState_;
-        Select(8);
+        Select(7);
     }
 
     public void SetTimeStateStride(int timeStateStride_)
     {
         timeStateStride = timeStateStride_;
-        Select(9);
+        Select(8);
     }
 
     public void SetCombineRule(int combineRule_)
     {
         combineRule = combineRule_;
-        Select(10);
+        Select(9);
     }
 
     public void SetHistogramType(int histogramType_)
     {
         histogramType = histogramType_;
-        Select(11);
+        Select(10);
     }
 
     public void SetHistogramNumBins(int histogramNumBins_)
     {
         histogramNumBins = histogramNumBins_;
-        Select(12);
+        Select(11);
     }
 
     public void SetHistogramStartBin(int histogramStartBin_)
     {
         histogramStartBin = histogramStartBin_;
-        Select(13);
+        Select(12);
     }
 
     public void SetHistogramEndBin(int histogramEndBin_)
     {
         histogramEndBin = histogramEndBin_;
-        Select(14);
+        Select(13);
     }
 
     public void SetHistogramVariableIndex(int histogramVariableIndex_)
     {
         histogramVariableIndex = histogramVariableIndex_;
-        Select(15);
+        Select(14);
     }
 
     // Property getting methods
-    public String  GetName() { return name; }
-    public String  GetSource() { return source; }
-    public int     GetSelectionType() { return selectionType; }
-    public Vector  GetVariables() { return variables; }
-    public Vector  GetVariableMins() { return variableMins; }
-    public Vector  GetVariableMaxs() { return variableMaxs; }
-    public boolean GetTimeEnabled() { return timeEnabled; }
-    public int     GetMinTimeState() { return minTimeState; }
-    public int     GetMaxTimeState() { return maxTimeState; }
-    public int     GetTimeStateStride() { return timeStateStride; }
-    public int     GetCombineRule() { return combineRule; }
-    public int     GetHistogramType() { return histogramType; }
-    public int     GetHistogramNumBins() { return histogramNumBins; }
-    public int     GetHistogramStartBin() { return histogramStartBin; }
-    public int     GetHistogramEndBin() { return histogramEndBin; }
-    public int     GetHistogramVariableIndex() { return histogramVariableIndex; }
+    public String GetName() { return name; }
+    public String GetSource() { return source; }
+    public int    GetSelectionType() { return selectionType; }
+    public Vector GetVariables() { return variables; }
+    public Vector GetVariableMins() { return variableMins; }
+    public Vector GetVariableMaxs() { return variableMaxs; }
+    public int    GetMinTimeState() { return minTimeState; }
+    public int    GetMaxTimeState() { return maxTimeState; }
+    public int    GetTimeStateStride() { return timeStateStride; }
+    public int    GetCombineRule() { return combineRule; }
+    public int    GetHistogramType() { return histogramType; }
+    public int    GetHistogramNumBins() { return histogramNumBins; }
+    public int    GetHistogramStartBin() { return histogramStartBin; }
+    public int    GetHistogramEndBin() { return histogramEndBin; }
+    public int    GetHistogramVariableIndex() { return histogramVariableIndex; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -349,24 +338,22 @@ public class SelectionProperties extends AttributeSubject
         if(WriteSelect(5, buf))
             buf.WriteDoubleVector(variableMaxs);
         if(WriteSelect(6, buf))
-            buf.WriteBool(timeEnabled);
-        if(WriteSelect(7, buf))
             buf.WriteInt(minTimeState);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(7, buf))
             buf.WriteInt(maxTimeState);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(8, buf))
             buf.WriteInt(timeStateStride);
-        if(WriteSelect(10, buf))
+        if(WriteSelect(9, buf))
             buf.WriteInt(combineRule);
-        if(WriteSelect(11, buf))
+        if(WriteSelect(10, buf))
             buf.WriteInt(histogramType);
-        if(WriteSelect(12, buf))
+        if(WriteSelect(11, buf))
             buf.WriteInt(histogramNumBins);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(12, buf))
             buf.WriteInt(histogramStartBin);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(13, buf))
             buf.WriteInt(histogramEndBin);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(14, buf))
             buf.WriteInt(histogramVariableIndex);
     }
 
@@ -393,33 +380,30 @@ public class SelectionProperties extends AttributeSubject
             SetVariableMaxs(buf.ReadDoubleVector());
             break;
         case 6:
-            SetTimeEnabled(buf.ReadBool());
-            break;
-        case 7:
             SetMinTimeState(buf.ReadInt());
             break;
-        case 8:
+        case 7:
             SetMaxTimeState(buf.ReadInt());
             break;
-        case 9:
+        case 8:
             SetTimeStateStride(buf.ReadInt());
             break;
-        case 10:
+        case 9:
             SetCombineRule(buf.ReadInt());
             break;
-        case 11:
+        case 10:
             SetHistogramType(buf.ReadInt());
             break;
-        case 12:
+        case 11:
             SetHistogramNumBins(buf.ReadInt());
             break;
-        case 13:
+        case 12:
             SetHistogramStartBin(buf.ReadInt());
             break;
-        case 14:
+        case 13:
             SetHistogramEndBin(buf.ReadInt());
             break;
-        case 15:
+        case 14:
             SetHistogramVariableIndex(buf.ReadInt());
             break;
         }
@@ -439,7 +423,6 @@ public class SelectionProperties extends AttributeSubject
         str = str + stringVectorToString("variables", variables, indent) + "\n";
         str = str + doubleVectorToString("variableMins", variableMins, indent) + "\n";
         str = str + doubleVectorToString("variableMaxs", variableMaxs, indent) + "\n";
-        str = str + boolToString("timeEnabled", timeEnabled, indent) + "\n";
         str = str + intToString("minTimeState", minTimeState, indent) + "\n";
         str = str + intToString("maxTimeState", maxTimeState, indent) + "\n";
         str = str + intToString("timeStateStride", timeStateStride, indent) + "\n";
@@ -468,21 +451,20 @@ public class SelectionProperties extends AttributeSubject
 
 
     // Attributes
-    private String  name;
-    private String  source;
-    private int     selectionType;
-    private Vector  variables; // vector of String objects
-    private Vector  variableMins; // vector of Double objects
-    private Vector  variableMaxs; // vector of Double objects
-    private boolean timeEnabled;
-    private int     minTimeState;
-    private int     maxTimeState;
-    private int     timeStateStride;
-    private int     combineRule;
-    private int     histogramType;
-    private int     histogramNumBins;
-    private int     histogramStartBin;
-    private int     histogramEndBin;
-    private int     histogramVariableIndex;
+    private String name;
+    private String source;
+    private int    selectionType;
+    private Vector variables; // vector of String objects
+    private Vector variableMins; // vector of Double objects
+    private Vector variableMaxs; // vector of Double objects
+    private int    minTimeState;
+    private int    maxTimeState;
+    private int    timeStateStride;
+    private int    combineRule;
+    private int    histogramType;
+    private int    histogramNumBins;
+    private int    histogramStartBin;
+    private int    histogramEndBin;
+    private int    histogramVariableIndex;
 }
 

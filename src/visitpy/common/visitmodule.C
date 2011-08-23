@@ -13206,6 +13206,9 @@ visit_DeleteNamedSelection(PyObject *self, PyObject *args)
 //   Brad Whitlock, Tue Dec 14 16:36:13 PST 2010
 //   Allow a SelectionProperties object to be passed too.
 //
+//   Brad Whitlock, Mon Aug 22 15:39:27 PDT 2011
+//   Add optional updatePlots argument.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -13215,10 +13218,17 @@ visit_UpdateNamedSelection(PyObject *self, PyObject *args)
 
     PyObject *props = NULL;
     char *selName = NULL;
-    if(!PyArg_ParseTuple(args, "sO", &selName, &props))
+    int updatePlots = 1;
+    if(!PyArg_ParseTuple(args, "sOi", &selName, &props, &updatePlots))
     {
-        if (!PyArg_ParseTuple(args, "s", &selName))
-            return NULL;
+        if (!PyArg_ParseTuple(args, "si", &selName, &updatePlots))
+        {
+            if(!PyArg_ParseTuple(args, "sO", &selName, &props))
+            {
+                if (!PyArg_ParseTuple(args, "s", &selName))
+                    return NULL;
+            }
+        }
         PyErr_Clear();
     }
 
@@ -13232,7 +13242,7 @@ visit_UpdateNamedSelection(PyObject *self, PyObject *args)
 
             // Create the named selection.
             MUTEX_LOCK();
-                GetViewerMethods()->UpdateNamedSelection(selName, *p);
+                GetViewerMethods()->UpdateNamedSelection(selName, *p, updatePlots!=0);
             MUTEX_UNLOCK();
         }
         else
@@ -13242,7 +13252,7 @@ visit_UpdateNamedSelection(PyObject *self, PyObject *args)
     {
         // Create the named selection.
         MUTEX_LOCK();        
-            GetViewerMethods()->UpdateNamedSelection(selName);
+            GetViewerMethods()->UpdateNamedSelection(selName, updatePlots!=0);
         MUTEX_UNLOCK();
     }
 

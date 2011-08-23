@@ -126,7 +126,6 @@ public:
     void SetHistogramStartBin(int histogramStartBin_);
     void SetHistogramEndBin(int histogramEndBin_);
     void SetHistogramVariableIndex(int histogramVariableIndex_);
-    void SetUpdateSelection(bool updateSelection_);
 
     // Property getting methods
     const std::string  &GetName() const;
@@ -149,7 +148,6 @@ public:
     int                GetHistogramStartBin() const;
     int                GetHistogramEndBin() const;
     int                GetHistogramVariableIndex() const;
-    bool               GetUpdateSelection() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -199,7 +197,6 @@ public:
         ID_histogramStartBin,
         ID_histogramEndBin,
         ID_histogramVariableIndex,
-        ID_updateSelection,
         ID__LAST
     };
 
@@ -219,12 +216,11 @@ private:
     int          histogramStartBin;
     int          histogramEndBin;
     int          histogramVariableIndex;
-    bool         updateSelection;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SELECTIONPROPERTIES_TMFS "ssis*d*d*iiiiiiiiib"
+#define SELECTIONPROPERTIES_TMFS "ssis*d*d*iiiiiiiii"
 
 #endif

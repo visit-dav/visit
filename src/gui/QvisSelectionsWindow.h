@@ -108,7 +108,7 @@ protected:
     void    UpdateHistogram();
     void    UpdateHistogramTitle();
     void    UpdateMinMaxBins(bool, bool, bool);
-    void    Apply(bool forceUpdate = false);
+    void    Apply(bool forceUpdate, bool updatePlots);
     void    GetCurrentValues(int);
 
     QString GetLoadHost() const;
