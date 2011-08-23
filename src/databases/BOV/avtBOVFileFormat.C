@@ -1647,6 +1647,10 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Gunther H. Weber, Thu Aug 18 18:13:14 PDT 2011
 //    Added support for reading NumPy files.
 //
+//    Gunther H. Weber, Tue Aug 23 10:47:35 PDT 2011
+//    Replaced dynamic headerLength array with fixed maxHeaderLength array and
+//    added check whether header can be read.
+//
 // ****************************************************************************
 
 void
@@ -1698,7 +1702,15 @@ avtBOVFileFormat::ReadTOC(void)
             int16_Reverse_Endian(headerLength, reinterpret_cast<char*>(&tmp));
             headerLength = tmp;
 #endif
-            char header[headerLength];
+            const int maxHeaderLength = 32768;
+            if (headerLength > maxHeaderLength)
+            {
+                debug1 << "Internal error: Header too long for buffer." << std::endl;
+                bool error=true;
+                BroadcastBool(error);
+                EXCEPTION1(InvalidFilesException, fname);
+            }
+            char header[maxHeaderLength];
             file_pattern = filenames[0];    // Filename is the same
             byteOffset = 10 + headerLength;  // Skip header when reading data
             ifile.read(header, headerLength);
