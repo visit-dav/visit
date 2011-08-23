@@ -634,6 +634,56 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
   double co, sn, rrel, zrel;
   int    last=-1, next, flag0, flag1, flag2;
 
+  if( 1 )
+  {
+    avtInterpolationWeights iw[8];
+
+    double xpt[3];
+
+    double phi = xin[1];
+    
+    while( phi < 0 )
+      phi += 2.0*M_PI;
+    
+    while( phi >= 2.0*M_PI )
+      phi -= 2.0*M_PI;
+
+    xpt[0] = xin[0];
+    xpt[1] = phi;
+    xpt[2] = xin[2];
+
+    vtkIdType vtk_el = loc->FindCell( xpt, iw );
+
+    if( vtk_el < 0 )
+      return -1;
+
+    int local_el = vtk_el % tElements;
+
+    tri = elements + element_size*local_el;
+
+    /* Compute coordinates local to the current element */
+    co = trigtable[2*local_el];
+    sn = trigtable[2*local_el + 1];
+
+    rrel = xin[0] - (tri[4] + tri[1]*co);
+    zrel = xin[2] - (tri[5] + tri[1]*sn);
+
+    xout[0] = rrel*co + zrel*sn;  /* = xi */
+    xout[1] = zrel*co - rrel*sn;  /* = eta */
+    
+    if( element_dimension == 3 )
+    {
+      tri = elements + element_size*vtk_el;
+
+      xout[2] = phi - tri[8];
+    }
+
+    return vtk_el;
+
+//    std::cerr << vtk_el << "  " << vtk_el % tElements << "  "
+//            << xout[0] << "  "<< xout[1] << "  "<< xout[2] << "    ";
+  }
+
   for (int count=0; count<tElements; ++count)
   {
     tri = elements + element_size*el;
@@ -731,7 +781,13 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
         xout[2] = phi - tri[8];
 
         if( xout[2] <= tri[7] ) // tri[7] == depth of the section
+        {
+//        std::cerr << el + i * tElements << "  " << el << "  "
+//                  << xout[0] << "  "<< xout[1] << "  "<< xout[2] << "  "
+//                  << std::endl;
+
           return el + i * tElements;
+        }
       }
 
       // Go to the next plane
