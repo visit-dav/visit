@@ -1292,6 +1292,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-p" )        { $part = shift; $part_set = 1; }
     elsif ($arg eq "-b" )        { $bank = shift; $bank_set = 1; }
     elsif ($arg eq "-t")         { $time = shift; $time_set = 1; }
+    elsif ($arg eq "-wd")        { $cwd = shift; $wd_set = 1; }
     elsif ($arg eq "-machinefile") { $machinefile = shift; $machinefile_set = 1; }
     elsif ($arg eq "-expedite")  { if($exe_name eq "engine") { $expedite_engine = 1;} else { push @visitargs, $arg; }}
     elsif ($arg eq "-host")      { $remotehost = shift; $remotehost_set = 1; }
@@ -1789,7 +1790,7 @@ $IsRunningOnFranklinNERSC = 0;
 if ( $host =~ /^nid/ )
 {
     $nodename=`/usr/syscom/nsg/bin/nodename`;
-    if ($nodename =~ /^franklin/)
+    if ($nodename =~ /^franklin/ || $nodename =~ /^nid/)
     {
         $IsRunningOnFranklinNERSC = 1;
         $ENV{LD_LIBRARY_PATH} = "/opt/gcc/4.4.4/snos/lib64";
@@ -2679,8 +2680,38 @@ $printonly = grep(/^$exe_name$/, @norun) unless ($debug_totalview or
 
 if ($procs_set or ($parallel and $parlaunch_set))
 {
+    # aprun
+    if ($launch eq "aprun")
+    {
+        @parcmd = ("aprun");
+        push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-n", $procs if $procs_set;
+        push @parcmd, "-N",  $nodes if $nodes_set;
+        if ( $IsRunningOnFranklinNERSC || $IsRunningOnHopperNERSC || $IsRunningOnJaguar_ORNL )
+        {
+            push @parcmd, "$visitbindir/env";
+            push @parcmd, "LD_LIBRARY_PATH=$visitlibdir:$visitarchdir/system_libs";
+            push @parcmd, "MPICH_PTL_UNEX_EVENTS=6200000";
+            push @parcmd, "MPICH_MAX_SHORT_MSG_SIZE=12000";
+        }
+
+        push @parcmd,
+             generate_args_valgrind(@debug_valgrind_args) if $debug_valgrind;
+        push @parcmd, @visitcmd;
+        push @parcmd, "-plugindir";
+        push @parcmd, "$ENV{VISITPLUGINDIR}";
+        push @parcmd, "-visithome";
+        push @parcmd, "$ENV{VISITHOME}";
+        push @parcmd, "-visitarchhome";
+        push @parcmd, "$ENV{VISITARCHHOME}";
+
+        @printcmd = @parcmd;
+        if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        push @parcmd, @post_args;
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+    }
     # mpirun
-    if ($launch eq "mpirun")
+    elsif ($launch eq "mpirun")
     {
         if ($IsRunningOnEuclidNERSC)
         {
@@ -3265,10 +3296,9 @@ if ($procs_set or ($parallel and $parlaunch_set))
             }
             elsif ($IsRunningOnFranklinNERSC || $IsRunningOnHopperNERSC)
             {
+                push @parcmd, "-d", "$cwd" if $wd_set;
                 push @parcmd, "-l", "mppwidth=$procs";
-                if ($nodes_set) {
-                    push @parcmd, "-l", "mppnppn=$nodes";
-                }
+                push @parcmd, "-l", "mppnppn=$nodes" if $nodes_set;
             }
             elsif ($IsRunningOnJaguar_ORNL || $IsRunningOnNautilus_UTK)
             {
