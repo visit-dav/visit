@@ -981,7 +981,7 @@ ViewerMethods::SetNamedSelectionAutoApply(bool val)
 // ****************************************************************************
 
 void
-ViewerMethods::UpdateNamedSelection(const std::string &selName)
+ViewerMethods::UpdateNamedSelection(const std::string &selName, bool updatePlots)
 {
     //
     // Set the rpc type and arguments.
@@ -989,6 +989,7 @@ ViewerMethods::UpdateNamedSelection(const std::string &selName)
     state->GetViewerRPC()->SetRPCType(ViewerRPC::UpdateNamedSelectionRPC);
     state->GetViewerRPC()->SetStringArg1(selName);
     state->GetViewerRPC()->SetBoolFlag(false);
+    state->GetViewerRPC()->SetIntArg1(updatePlots?1:0);
 
     //
     // Issue the RPC.
@@ -1009,7 +1010,7 @@ ViewerMethods::UpdateNamedSelection(const std::string &selName)
 
 void
 ViewerMethods::UpdateNamedSelection(const std::string &selName,
-    const SelectionProperties &props)
+    const SelectionProperties &props, bool updatePlots)
 {
     // Set the selection properties.
     (*state->GetSelectionProperties()) = props;
@@ -1021,6 +1022,7 @@ ViewerMethods::UpdateNamedSelection(const std::string &selName,
     state->GetViewerRPC()->SetRPCType(ViewerRPC::UpdateNamedSelectionRPC);
     state->GetViewerRPC()->SetStringArg1(selName);
     state->GetViewerRPC()->SetBoolFlag(true);
+    state->GetViewerRPC()->SetIntArg1(updatePlots?1:0);
 
     //
     // Issue the RPC.

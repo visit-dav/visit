@@ -3454,12 +3454,15 @@ public class ViewerMethods
      * Updates a named selection.
      *
      * @param selName The name of the named selection to update.
+     * @param updatePlots Whether to also update the plots when doing the selection.
      * @return true on success; false otherwise.
      */
-    public boolean UpdateNamedSelection(String selName)
+    public boolean UpdateNamedSelection(String selName, boolean updatePlots)
     {
         GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_UPDATENAMEDSELECTIONRPC);
         GetViewerState().GetViewerRPC().SetStringArg1(selName);
+        GetViewerState().GetViewerRPC().SetBoolFlag(false);
+        GetViewerState().GetViewerRPC().SetIntArg1(updatePlots?1:0);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();
     }
