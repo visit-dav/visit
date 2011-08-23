@@ -41,7 +41,7 @@
 #if !defined(FieldlineAnalyzerLib_h)
 #define FieldlineAnalyzerLib_h
 
-#define STRAIGHTLINE_SKELETON 1
+//#define STRAIGHTLINE_SKELETON 1
 
 #include <avtVector.h>
 #include <DebugStream.h>
