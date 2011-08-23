@@ -316,6 +316,10 @@ class ParentProcess;
 //    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
 //    Rename DDF to DataBinning.
 //
+//    Brad Whitlock, Mon Aug 22 10:07:44 PDT 2011
+//    I added a selection argument to ReadDataObject. I also removed
+//    ApplyNamedSelection.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -359,14 +363,16 @@ public:
                                                    const stringVector &,
                                                    int = 0, bool=true,
                                                    bool=true);
-    void                     ReadDataObject(const std::string&,
-                                            const std::string&,
-                                            const std::string&, const int,
+    void                     ReadDataObject(const std::string &format,
+                                            const std::string &filename,
+                                            const std::string &var, const int ts,
                                             avtSILRestriction_p,
                                             const MaterialAttributes&,
                                             const ExpressionList &,
                                             const MeshManagementAttributes &,
-                                            bool, bool);
+                                            bool treatAllDbsAsTimeVarying,
+                                            bool ignoreExtents,
+                                            const std::string &selName);
     void                     ApplyOperator(const std::string&, 
                                            const AttributeSubject*);
     void                     ApplyNamedFunction(const std::string &name,
@@ -413,8 +419,6 @@ public:
     void                     ExportDatabase(int, const ExportDBAttributes *);
     void                     ConstructDataBinning(int, const ConstructDataBinningAttributes *);
 
-    void                     ApplyNamedSelection(const std::vector<std::string> &ids, 
-                                                 const std::string selName);
     const SelectionSummary  &CreateNamedSelection(int id, const SelectionProperties &props);
     void                     DeleteNamedSelection(const std::string selName);
     void                     LoadNamedSelection(const std::string selName);

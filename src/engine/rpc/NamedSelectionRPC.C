@@ -55,9 +55,14 @@
 //    Brad Whitlock, Tue Dec 14 12:05:51 PST 2010
 //    I added selection properties and summary return value.
 //
+//    Brad Whitlock, Mon Aug 22 10:15:03 PDT 2011
+//    I removed items from the type string and added intializers.
+//
 // ****************************************************************************
 
-NamedSelectionRPC::NamedSelectionRPC() : NonBlockingRPC("is*sia", &summary)
+NamedSelectionRPC::NamedSelectionRPC() : NonBlockingRPC("iisa", &summary),
+    selOperation(NamedSelectionRPC::NS_CREATE), plotId(-1), selName(), 
+    properties(), summary()
 {
 }
 
@@ -79,32 +84,7 @@ NamedSelectionRPC::~NamedSelectionRPC()
 }
 
 // ****************************************************************************
-// Method: ApplyNamedSelection
-//
-// Purpose: 
-//   Invocation method for apply.
-//
-// Arguments:
-//   ids     : The plot names of the plots to which we're applying a selection.
-//   selName : The nameof the selection to apply.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Dec 14 12:09:51 PST 2010
-//
-// ****************************************************************************
-
-void
-NamedSelectionRPC::ApplyNamedSelection(const std::vector<std::string> &ids, const std::string &selName)
-{
-    SetPlotNames(ids);
-    SetSelectionName(selName);
-    SetNamedSelectionOperation(NS_APPLY);
-
-    Execute();
-}
-
-// ****************************************************************************
-// Method: ApplyNamedSelection
+// Method: CreateNamedSelection
 //
 // Purpose: 
 //   Invocation method for apply.
@@ -221,18 +201,37 @@ NamedSelectionRPC::SaveNamedSelection(const std::string &selName)
 //    Brad Whitlock, Tue Dec 14 12:05:07 PST 2010
 //    I added selection properties.
 //
+//    Brad Whitlock, Mon Aug 22 10:18:58 PDT 2011
+//    I removed plotIDs.
+//
 // ****************************************************************************
 
 void
 NamedSelectionRPC::SelectAll()
 {
-    Select(0, (void*)&plotId);
-    Select(1, (void*)&plotNames);
+    Select(0, (void*)&selOperation);
+    Select(1, (void*)&plotId);
     Select(2, (void*)&selName);
-    Select(3, (void*)&selOperation);
-    Select(4, (void*)&properties);
+    Select(3, (void*)&properties);
 }
 
+// ****************************************************************************
+//  Method: NamedSelectionRPC::SetNamedSelectionOperation
+//
+//  Purpose: 
+//    This sets the selection type.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 29, 2009
+//
+// ****************************************************************************
+
+void
+NamedSelectionRPC::SetNamedSelectionOperation(NamedSelectionOperation t)
+{
+    selOperation = t;
+    Select(0, (void*)&selOperation);
+}
 
 // ****************************************************************************
 //  Method: NamedSelectionRPC::SetPlotID
@@ -249,28 +248,8 @@ void
 NamedSelectionRPC::SetPlotID(int id)
 {
     plotId = id;
-    Select(0, (void*)&plotId);
+    Select(1, (void*)&plotId);
 }
-
-
-// ****************************************************************************
-//  Method: NamedSelectionRPC::SetPlotNames
-//
-//  Purpose: 
-//    This sets the plot names.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 2, 2009
-//
-// ****************************************************************************
-
-void
-NamedSelectionRPC::SetPlotNames(const std::vector<std::string> &ids)
-{
-    plotNames = ids;
-    Select(1, (void*)&plotNames);
-}
-
 
 // ****************************************************************************
 //  Method: NamedSelectionRPC::SetSelectionName
@@ -290,26 +269,6 @@ NamedSelectionRPC::SetSelectionName(const std::string &n)
     Select(2, (void*)&selName);
 }
 
-
-// ****************************************************************************
-//  Method: NamedSelectionRPC::SetNamedSelectionOperation
-//
-//  Purpose: 
-//    This sets the selection type.
-//
-//  Programmer: Hank Childs
-//  Creation:   January 29, 2009
-//
-// ****************************************************************************
-
-void
-NamedSelectionRPC::SetNamedSelectionOperation(NamedSelectionOperation t)
-{
-    selOperation = t;
-    Select(3, (void*)&selOperation);
-}
-
-
 // ****************************************************************************
 // Method: NamedSelectionRPC::SetSelectionProperties
 //
@@ -327,5 +286,5 @@ void
 NamedSelectionRPC::SetSelectionProperties(const SelectionProperties &p)
 {
     properties = p;
-    Select(4, (void*)&properties);
+    Select(3, (void*)&properties);
 }

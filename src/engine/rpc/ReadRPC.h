@@ -71,6 +71,10 @@
 //
 //    Mark C. Miller, Tue Jun 10 15:57:15 PDT 2008
 //    Added ignoreExtents
+//
+//    Brad Whitlock, Mon Aug 22 09:50:39 PDT 2011
+//    Added selectionName.
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API ReadRPC : public BlockingRPC
@@ -82,12 +86,16 @@ public:
     virtual const std::string TypeName() const { return "ReadRPC"; }
 
     // Invokation method
-    void operator()(const std::string &format, const std::string& filename,
-                    const std::string &var, int time,
+    void operator()(const std::string &format,
+                    const std::string &filename,
+                    const std::string &var,
+                    int time,
                     const CompactSILRestrictionAttributes &,
                     const MaterialAttributes &,
                     const MeshManagementAttributes &,
-                    bool, bool);
+                    bool  treatAllDBsAsTimeVarying,
+                    bool  ignoreExtents,
+                    const std::string &selName);
 
     // Property selection methods
     virtual void SelectAll();
@@ -102,6 +110,7 @@ public:
     void SetMeshManagementAttributes(const MeshManagementAttributes &);
     void SetTreatAllDBsAsTimeVarying(bool);
     void SetIgnoreExtents(bool);
+    void SetSelectionName(const std::string &selName);
 
     // Property getting methods
     std::string GetVar()  const;
@@ -113,6 +122,7 @@ public:
     const MeshManagementAttributes &GetMeshManagementAttributes() const;
     bool  GetTreatAllDBsAsTimeVarying() const;
     bool  GetIgnoreExtents() const;
+    std::string GetSelectionName() const;
 
 private:
     std::string file;
@@ -124,6 +134,7 @@ private:
     MeshManagementAttributes meshManagementAtts;
     bool treatAllDBsAsTimeVarying;
     bool ignoreExtents;
+    std::string selectionName;
 };
 
 #endif

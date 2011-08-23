@@ -305,6 +305,9 @@ class SelectionProperties;
 //    Brad Whitlock, Fri Aug 19 09:59:19 PDT 2011
 //    Change function that sends expressions to the engine to be more general.
 //
+//    Brad Whitlock, Mon Aug 22 10:48:39 PDT 2011
+//    Remove ApplyNamedSelection.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -422,8 +425,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                       const QueryOverTimeAttributes *qatts);
     bool ExportDatabase(const EngineKey &ek, int id);
     bool ConstructDataBinning(const EngineKey &ek, int id);
-    bool ApplyNamedSelection(const EngineKey &ek, const std::vector<std::string> &ids, 
-                             const std::string &);
+
     bool CreateNamedSelection(const EngineKey &ek, int, const SelectionProperties &);
     bool DeleteNamedSelection(const EngineKey &ek, const std::string &);
     bool LoadNamedSelection(const EngineKey &ek, const std::string &);

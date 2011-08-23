@@ -71,6 +71,9 @@ using std::deque;
 //    Hank Childs, Fri Jan 16 14:38:42 PST 2009
 //    Initialize time and var.
 //
+//    Brad Whitlock, Mon Aug 22 10:37:05 PDT 2011
+//    Initialize selectionName.
+//
 // ****************************************************************************
 
 DataNetwork::DataNetwork(void)
@@ -85,6 +88,7 @@ DataNetwork::DataNetwork(void)
     plotName = "";
     time = -1;
     var = "";
+    selectionName = std::string();
 }
 
 // ****************************************************************************

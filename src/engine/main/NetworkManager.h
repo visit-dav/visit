@@ -421,6 +421,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Tom Fogal, Wed May 18 12:17:18 MDT 2011
 //    Need some debug code in IceT; promoting it to class methods.
 //
+//    Brad Whitlock, Mon Aug 22 10:23:00 PDT 2011
+//    I added a selName argument to StartNetwork.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API NetworkManager
@@ -463,7 +466,8 @@ class ENGINE_MAIN_API NetworkManager
                                const CompactSILRestrictionAttributes &,
                                const MaterialAttributes &,
                                const MeshManagementAttributes &,
-                               bool, bool);
+                               bool, bool,
+                               const std::string &selName);
     void          DefineDB(const std::string &, const std::string &,
                            const stringVector &, int, const std::string &);
     void          AddFilter(const std::string&,
@@ -527,8 +531,7 @@ class ENGINE_MAIN_API NetworkManager
     void          ExportDatabase(const int, ExportDBAttributes *);
     void          ConstructDataBinning(const int, ConstructDataBinningAttributes *);
     avtDataBinning *GetDataBinning(const char *);
-    void          ApplyNamedSelection(const std::vector<std::string> &, 
-                                      const std::string &);
+
     SelectionSummary CreateNamedSelection(int, const SelectionProperties &);
     void          DeleteNamedSelection(const std::string &);
     void          LoadNamedSelection(const std::string &);
@@ -616,8 +619,6 @@ class ENGINE_MAIN_API NetworkManager
 
     std::vector<Netnode*>       workingNetnodeList;
     std::vector<std::string>    nameStack;
-
-    std::map<std::string, std::string> namedSelectionsToApply;
 
     int                         uniqueNetworkId;
     bool                        requireOriginalCells;

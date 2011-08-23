@@ -209,6 +209,9 @@ RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
 //    Brad Whitlock, Tue Jun 24 15:57:34 PDT 2008
 //    Changed how the database plugin manager is accessed.
 //
+//    Brad Whitlock, Mon Aug 22 10:22:18 PDT 2011
+//    Pass the selection name to StartNetwork.
+//
 // ****************************************************************************
 
 template<>
@@ -231,7 +234,8 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
                              rpc->GetMaterialAttributes(),
                              rpc->GetMeshManagementAttributes(),
                              rpc->GetTreatAllDBsAsTimeVarying(),
-                             rpc->GetIgnoreExtents());
+                             rpc->GetIgnoreExtents(),
+                             rpc->GetSelectionName());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)
@@ -1562,6 +1566,9 @@ RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
 //    Pass selection properties to CreateNamedSelection. I also added status
 //    updates since the RPC is now non-blocking.
 //
+//    Brad Whitlock, Mon Aug 22 10:21:17 PDT 2011
+//    I changed how named selections get applied.
+//
 // ****************************************************************************
 template<>
 void
@@ -1588,9 +1595,6 @@ RPCExecutor<NamedSelectionRPC>::Execute(NamedSelectionRPC *rpc)
 
         switch (rpc->GetNamedSelectionOperation())
         {
-        case NamedSelectionRPC::NS_APPLY:
-            netmgr->ApplyNamedSelection(rpc->GetPlotNames(), rpc->GetSelectionName());
-            break;
         case NamedSelectionRPC::NS_CREATE:
             summary = netmgr->CreateNamedSelection(
                 rpc->GetPlotID(), rpc->GetSelectionProperties());

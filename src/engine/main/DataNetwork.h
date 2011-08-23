@@ -112,7 +112,11 @@
 //    Hank Childs, Fri Jan 16 14:37:33 PST 2009
 //    Add a variable field.
 //
+//    Brad Whitlock, Mon Aug 22 10:36:08 PDT 2011
+//    I added a selectionName field.
+//
 // ****************************************************************************
+
 class ENGINE_MAIN_API DataNetwork
 {
 public:
@@ -132,6 +136,7 @@ public:
     void SetDataSpec(avtDataRequest_p s) {dataRequest = s;};
     void SetTime(int time_) {time = time_;};
     void SetVariable(const std::string &v) {var = v;};
+    void SetSelectionName(const std::string &s) { selectionName = s; }
 
     virtual void ReleaseData(void);
 
@@ -153,6 +158,7 @@ public:
     std::string &GetPlottype(void) { return plottype; };
     std::string &GetPlotName(void) { return plotName; };
     std::vector<Netnode*>       &GetNodeList(void) { return nodeList; }; 
+    const std::string &GetSelectionName() const { return selectionName; }
 
 protected:
     int                         nid;
@@ -162,8 +168,6 @@ protected:
     avtDataRequest_p            dataRequest;
     avtDataObjectWriter_p       writer;
     avtActor_p                  plotActor;
-    double                      bgColor[3];
-    double                      fgColor[3];
     avtContract_p               contract;
     NetnodeDB*                  netdb;
     avtPlot_p                   plot;
@@ -172,6 +176,7 @@ protected:
     std::string                 var;
     int                         time;
     bool                        clone;
+    std::string                 selectionName;
 };
 
 #endif

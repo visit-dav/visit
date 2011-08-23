@@ -1744,6 +1744,10 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added support for ignoring bad extents from dbs.
+//
+//    Brad Whitlock, Mon Aug 22 10:46:15 PDT 2011
+//    Send the selection name with ReadDataObject.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1806,7 +1810,8 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
                                    plot->GetExpressions(),
                                    *GetMeshManagementClientAtts(),
                                    treatAllDBsAsTimeVarying,
-                                   ignoreExtents);
+                                   ignoreExtents,
+                                   plot->GetNamedSelection());
         }
 
         //
@@ -3326,28 +3331,6 @@ ViewerEngineManager::SetConstructDataBinningAtts(ConstructDataBinningAttributes 
 
     *constructDataBinningAtts = *e;
     constructDataBinningAtts->Notify();
-}
-
-
-// ****************************************************************************
-//  Method: ViewerEngineManager::ApplyNamedSelection
-//
-//  Purpose:
-//      Applies a named selection.
-//
-//  Programmer: Hank Childs
-//  Creation:   January 28, 2009
-//
-// ****************************************************************************
-
-bool
-ViewerEngineManager::ApplyNamedSelection(const EngineKey &ek, 
-                                         const std::vector<std::string> &ids,
-                                         const std::string &selName)
-{
-    ENGINE_PROXY_RPC_BEGIN("ApplyNamedSelection");
-    engine->ApplyNamedSelection(ids, selName);
-    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
 

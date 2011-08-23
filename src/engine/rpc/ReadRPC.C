@@ -65,9 +65,13 @@ using std::string;
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added bool to support to treat all databases as time varying
+//
+//    Brad Whitlock, Mon Aug 22 09:51:16 PDT 2011
+//    Added selectionName.
+//
 // ****************************************************************************
 
-ReadRPC::ReadRPC() : BlockingRPC("ssiaasabb")
+ReadRPC::ReadRPC() : BlockingRPC("ssiaasabbs")
 {
 }
 
@@ -95,10 +99,16 @@ ReadRPC::~ReadRPC()
 //    This is the RPC's invocation method.
 //
 //  Arguments:
+//    ft        the intended file format
 //    f         the filename
 //    v         the variable name
 //    t         the time step
 //    s         the sil restriction attributes.
+//    m         material attributes
+//    mm        mesh management attributes
+//    treatAllDBsAsTimeVarying : Flag to clear metadata for databases.
+//    ignoreExtents            : Flag to ignore extents.
+//    selName                  : The selection name to use.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   September 7, 2000
@@ -121,15 +131,19 @@ ReadRPC::~ReadRPC()
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added bool to support to treat all databases as time varying
+//
+//    Brad Whitlock, Mon Aug 22 10:01:40 PDT 2011
+//    Added selection name.
+//
 // ****************************************************************************
 
 void
-ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
+ReadRPC::operator()(const std::string &ft, const std::string &f, const std::string &v, int t,
                     const CompactSILRestrictionAttributes &s,
                     const MaterialAttributes &m,
                     const MeshManagementAttributes &mm,
                     bool treatAllDBsAsTimeVarying,
-                    bool ignoreExtents)
+                    bool ignoreExtents, const std::string &selName)
 {
     debug3 << "Executing read RPC" 
            << "\n\t file format='" << ft.c_str() << "'"
@@ -138,6 +152,7 @@ ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
            << "\n\t time='" << t << "'"
            << "\n\t treatAllDBsAsTimeVarying ='" << treatAllDBsAsTimeVarying << "'"
            << "\n\t ignoreExtents ='" << ignoreExtents << "'"
+           << "\n\t selName='" << selName << "'"
            << endl;
 
     SetFormat(ft);
@@ -149,6 +164,7 @@ ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
     SetMeshManagementAttributes(mm);
     SetTreatAllDBsAsTimeVarying(treatAllDBsAsTimeVarying);
     SetIgnoreExtents(ignoreExtents);
+    SetSelectionName(selName);
 
     Execute();
 }
@@ -176,6 +192,10 @@ ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added bool to support to treat all databases as time varying
+//
+//    Brad Whitlock, Mon Aug 22 10:03:20 PDT 2011
+//    I added selectionName.
+//
 // ****************************************************************************
 
 void
@@ -190,6 +210,7 @@ ReadRPC::SelectAll()
     Select(6, (void*)&meshManagementAtts);
     Select(7, (void*)&treatAllDBsAsTimeVarying);
     Select(8, (void*)&ignoreExtents);
+    Select(9, (void*)&selectionName);
 }
 
 
@@ -359,6 +380,27 @@ ReadRPC::SetIgnoreExtents(bool set)
 }
 
 // ****************************************************************************
+// Method: ReadRPC::SetSelectionName
+//
+// Purpose: 
+//   Set the selection used with the pipeline.
+//
+// Arguments:
+//   selName : The name of the selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 22 10:04:12 PDT 2011
+//
+// ****************************************************************************
+
+void
+ReadRPC::SetSelectionName(const std::string &selName)
+{
+    selectionName = selName;
+    Select(9, (void*)&selectionName);
+}
+
+// ****************************************************************************
 //  Method: ReadRPC::GetFile
 //
 //  Purpose: 
@@ -507,4 +549,23 @@ bool
 ReadRPC::GetIgnoreExtents() const
 {
     return ignoreExtents;
+}
+
+// ****************************************************************************
+// Method: ReadRPC::GetSelectionName
+//
+// Purpose: 
+//   Return the selection name.
+//
+// Returns:    The selection name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 22 10:05:38 PDT 2011
+//
+// ****************************************************************************
+
+std::string
+ReadRPC::GetSelectionName() const
+{
+    return selectionName;
 }

@@ -852,6 +852,9 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
+//    Brad Whitlock, Mon Aug 22 13:34:36 PDT 2011
+//    I added named selection creation here instead of at the end of the pipeline.
+//
 // ****************************************************************************
 
 void
@@ -863,7 +866,8 @@ NetworkManager::StartNetwork(const std::string &format,
                              const MaterialAttributes &matopts,
                              const MeshManagementAttributes &meshopts,
                              bool treatAllDBsAsTimeVarying,
-                             bool ignoreExtents)
+                             bool ignoreExtents,
+                             const std::string &selName)
 {
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
@@ -884,15 +888,28 @@ NetworkManager::StartNetwork(const std::string &format,
     workingNet->SetNetDB(netDB);
     workingNet->SetVariable(leaf);
     netDB->SetDBInfo(filename, leaf, time);
+    Netnode *input = netDB;
 
-    // Put an ExpressionEvaluatorFilter right after the netDB to handle
-    // expressions that come up the pipe.
+    // Add ExpressionEvaluatorFilter to handle expressions that come up the pipe.
     avtExpressionEvaluatorFilter *f = new avtExpressionEvaluatorFilter();
     NetnodeFilter *filt = new NetnodeFilter(f, "ExpressionEvaluator");
-    filt->GetInputNodes().push_back(netDB);
+    filt->GetInputNodes().push_back(input);
     f->GetOutput()->SetTransientStatus(false);
 
-    // Push the ExpressionEvaluator onto the working list.
+    input = filt;
+    if(!selName.empty())
+    {
+        // Add the EEF to the network.
+        workingNet->AddNode(filt);
+
+        avtNamedSelectionFilter *f = new avtNamedSelectionFilter();
+        f->SetSelectionName(selName);
+        filt = new NetnodeFilter(f, "NamedSelection");
+        filt->GetInputNodes().push_back(input);
+        workingNet->SetSelectionName(selName);
+    }
+
+    // Push the last filter onto the working list.
     workingNetnodeList.push_back(filt);
 
     workingNet->AddNode(filt);
@@ -1337,38 +1354,14 @@ NetworkManager::MakePlot(const std::string &plotName, const std::string &pluginI
 //    Brad Whitlock, Tue Aug 10 16:11:25 PDT 2010
 //    Use find() method.
 //
+//    Brad Whitlock, Mon Aug 22 10:39:12 PDT 2011
+//    Changed how named selections are finally set up.
+//
 // ****************************************************************************
 
 int
 NetworkManager::EndNetwork(int windowID)
 {
-    std::map<std::string, std::string>::iterator it;
-    it = namedSelectionsToApply.find(workingNet->GetPlotName());
-    if (it != namedSelectionsToApply.end())
-    {
-        avtNamedSelectionFilter *f = new avtNamedSelectionFilter();
-        f->SetSelectionName(it->second);
-        NetnodeFilter *filt = new NetnodeFilter(f, "NamedSelection");
-        Netnode *n = workingNetnodeList.back();
-        workingNetnodeList.pop_back();
-        filt->GetInputNodes().push_back(n);
-
-        // Push the NamedSelection filter onto the working list.
-        workingNetnodeList.push_back(filt);
-
-        workingNet->AddNode(filt);
-
-        std::vector<Netnode *> netnodes = workingNet->GetNodeList();
-        for (int i = 0 ; i < netnodes.size() ; i++)
-        {
-            avtFilter *filt = netnodes[i]->GetFilter();
-            if (filt == NULL)
-                continue;
-            filt->RegisterNamedSelection(it->second);
-        }
-        workingNet->GetPlot()->RegisterNamedSelection(it->second);
-    }
-
     // Checking to see if the network has been built successfully.
     if (workingNetnodeList.size() != 1)
     {
@@ -1376,6 +1369,22 @@ NetworkManager::EndNetwork(int windowID)
                << "absorb " << workingNetnodeList.size() << " nodes."  << endl;
 
         EXCEPTION0(ImproperUseException);
+    }
+
+    // If a named selection has been applied, make sure all of the filters
+    // know about it.
+    if (!workingNet->GetSelectionName().empty())
+    {
+        const std::string &selName = workingNet->GetSelectionName();
+        std::vector<Netnode *> netnodes = workingNet->GetNodeList();
+        for (int i = 0 ; i < netnodes.size() ; i++)
+        {
+            avtFilter *filt = netnodes[i]->GetFilter();
+            if (filt == NULL)
+                continue;
+            filt->RegisterNamedSelection(selName);
+        }
+        workingNet->GetPlot()->RegisterNamedSelection(selName);
     }
 
     // set the pipeline specification
@@ -3926,44 +3935,6 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
     }
 
     return summary;
-}
-
-
-// ****************************************************************************
-//  Method:  NetworkManager::ApplyNamedSelection
-//
-//  Purpose:
-//      Applies a named selection to a plot.
-//
-//  Arguments:
-//    ids        The names of the plots to which the selection will apply.
-//    selName    The name of the selection.
-//
-//  Programmer:  Hank Childs
-//  Creation:    January 30, 2009
-//
-//  Modifications:
-//    Brad Whitlock, Tue Aug 10 16:13:27 PDT 2010
-//    Remove a named selection from a plot if the selName is empty.
-//
-// ****************************************************************************
-
-void
-NetworkManager::ApplyNamedSelection(const std::vector<std::string> &ids, 
-                                    const std::string &selName)
-{
-    for (int i = 0 ; i < ids.size() ; i++)
-    {
-        if(selName.size() > 0)
-            namedSelectionsToApply[ids[i]] = selName;
-        else
-        {
-            std::map<std::string,std::string>::iterator it;
-            it = namedSelectionsToApply.find(ids[i]);
-            if(it != namedSelectionsToApply.end())
-                namedSelectionsToApply.erase(it);
-        }
-    }
 }
 
 
