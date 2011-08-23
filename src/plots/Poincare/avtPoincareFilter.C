@@ -467,8 +467,10 @@ avtPoincareFilter::ContinueExecute()
     }
     // No analysis requested or analysis complete, no need to
     // continue.
-    else 
+    else
+    {
        return false;
+    }
 }
 
 
@@ -767,50 +769,57 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
 
         if( verboseFlag ) 
         {
-         std::cerr << "Surface id = " << poincare_ic->id << "  "
-                   << "< " << poincare_ic->points[0].x << " "
-                   << poincare_ic->points[0].y << " "
-                   << poincare_ic->points[0].z << " >  "
-                   << toroidalWinding << "," << poloidalWinding << " ("
-                   << (float) toroidalWinding / (float) poloidalWinding << ")  ";
+          double safetyFactor;
+
+          if( poloidalWinding > 0 )
+            safetyFactor = (float) toroidalWinding / (float) poloidalWinding;
+          else
+            safetyFactor = 0;
+
+          std::cerr << "Surface id = " << poincare_ic->id << "  "
+                    << "< " << poincare_ic->points[0].x << " "
+                    << poincare_ic->points[0].y << " "
+                    << poincare_ic->points[0].z << " >  "
+                    << toroidalWinding << "," << poloidalWinding << " ("
+                    << safetyFactor << ")  ";
 
           if( poloidalWinding != poloidalWindingP )
-           std::cerr << toroidalWinding << "," << poloidalWindingP << " ("
-                 << (float) toroidalWinding / (float) poloidalWindingP << ")  ";
-
-
+            std::cerr << toroidalWinding << "," << poloidalWindingP << " ("
+                      << (float) toroidalWinding / (float) poloidalWindingP << ")  ";
+          
+          
           if( type == FieldlineProperties::RATIONAL )
-           std::cerr << "rational surface  ";
-
+            std::cerr << "rational surface  ";
+          
           else if( type == FieldlineProperties::FLUX_SURFACE )
-           std::cerr << "flux surface  ";
-
+            std::cerr << "flux surface  ";
+          
           else if( type == FieldlineProperties::ISLAND_CHAIN )
             std::cerr << islands << " island chain with resonances: "
                       << toroidalResonance << "," << poloidalResonance << "  ";
-
+          
           else if( type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
             std::cerr << islands << " islands around "
                       << islandGroups << " islandGroups with resonances: "
                       << toroidalResonance << "," << poloidalResonance << "  ";
-
+          
           else if( type == FieldlineProperties::CHAOTIC )
-           std::cerr << "chaotic  ";
-
+            std::cerr << "chaotic  ";
+          
           else if( type == FieldlineProperties::UNKNOWN_TYPE )
-           std::cerr << "unknown  ";
+            std::cerr << "unknown  ";
 
-         std::cerr << "with " << nnodes << " nodes"
-               << (complete ? " (Complete)  " : "  ")
-               << std::endl;
-
+          std::cerr << "with " << nnodes << " nodes"
+                    << (complete ? " (Complete)  " : "  ")
+                    << std::endl;
+          
           if( (type == FieldlineProperties::ISLAND_CHAIN ||
                type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS) &&
               toroidalWinding != poloidalWinding &&
               islands != toroidalWinding )
-           std::cerr << "WARNING - The island count does not match the toroidalWinding count" << std::endl;
+            std::cerr << "WARNING - The island count does not match the toroidalWinding count" << std::endl;
         }
-    
+        
         // If toroidal winding is zero, skip it.
         if( type == FieldlineProperties::CHAOTIC )
         {
@@ -835,8 +844,8 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
           else
           {
             if( verboseFlag ) 
-             std::cerr << " id = " << poincare_ic->id
-                   << " SKIPPING UNKNOWN TYPE " << std::endl;
+              std::cerr << " id = " << poincare_ic->id
+                        << " SKIPPING UNKNOWN TYPE " << std::endl;
             
             std::pair< unsigned int, unsigned int > topo( 0, 0 );
             
@@ -846,8 +855,18 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         else if( toroidalWinding == 0 ) 
         {
             if( verboseFlag ) 
-             std::cerr << " id = " << poincare_ic->id
-                   << " SKIPPING TOROIDALWINDING OF 0" << std::endl;
+              std::cerr << " id = " << poincare_ic->id
+                        << " SKIPPING TOROIDAL WINDING OF 0" << std::endl;
+            
+            std::pair< unsigned int, unsigned int > topo( 0, 0 );
+            
+            continue;
+        }
+        else if( poloidalWinding == 0 ) 
+        {
+            if( verboseFlag ) 
+              std::cerr << " id = " << poincare_ic->id
+                        << " SKIPPING POLOIDAL WINDING OF 0" << std::endl;
             
             std::pair< unsigned int, unsigned int > topo( 0, 0 );
             

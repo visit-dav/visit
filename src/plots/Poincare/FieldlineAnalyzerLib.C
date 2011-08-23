@@ -347,6 +347,20 @@ int FieldlineLib::ccw( Vector v0, Vector v1 ) {
 int FieldlineLib::intersect( Point l0_p0, Point l0_p1,
                              Point l1_p0, Point l1_p1 )
 {
+  if( (l0_p0.x < l1_p0.x && l0_p0.x < l1_p1.x && 
+       l0_p1.x < l1_p0.x && l0_p1.x < l1_p1.x) ||
+
+      (l0_p0.x > l1_p0.x && l0_p0.x > l1_p1.x && 
+       l0_p1.x > l1_p0.x && l0_p1.x > l1_p1.x) ||
+
+      (l0_p0.z < l1_p0.z && l0_p0.z < l1_p1.z && 
+       l0_p1.z < l1_p0.z && l0_p1.z < l1_p1.z) ||
+
+      (l0_p0.z > l1_p0.z && l0_p0.z > l1_p1.z && 
+       l0_p1.z > l1_p0.z && l0_p1.z > l1_p1.z) )
+  //  Lines do not intersect no bounding box intersection.
+  return 0;
+
   //  See if the lines intersect.    
   if( ( ccw( Vector(l0_p1-l0_p0), Vector(l1_p0-l0_p0)) *
         ccw( Vector(l0_p1-l0_p0), Vector(l1_p1-l0_p0) ) <= 0 ) &&
@@ -502,6 +516,9 @@ unsigned int FieldlineLib::isPrime( unsigned int a )
 // Find the great comon denominator.
 unsigned int FieldlineLib::GCD( unsigned int a, unsigned int b )
 {
+  if( a <= 0 || b <= 0 )
+    return 0;
+
   if( a < b )
     { unsigned int tmp = a; a = b; b = tmp; }
 
@@ -880,8 +897,8 @@ FieldlineLib::IntersectCheck( std::vector< Point >& points,
       Point l1_p0 = points[k];
       Point l1_p1 = points[l];
 
-//       std::cerr << nbins << "  " << offsetDir << "    "
-//         << i << "  " << j << "  " << k << "  " << l << std::endl;
+//      std::cerr << nbins << "  "
+//              << i << "  " << j << "  " << k << "  " << l << std::endl;
 
       if( intersect( l0_p0, l0_p1, l1_p0, l1_p1 ) == 1)
         return false;
@@ -1014,7 +1031,7 @@ poloidalWindingCheck( std::vector< unsigned int > &poloidalWindingCounts,
   unsigned int maxToroidalWinding = poloidalWindingCounts.size() / 2;
 
   for( unsigned int toroidalWinding=1;
-       toroidalWinding<=maxToroidalWinding;
+       toroidalWinding <= maxToroidalWinding;
        ++toroidalWinding )
   {
 
@@ -1098,8 +1115,8 @@ poloidalWindingCheck( std::vector< unsigned int > &poloidalWindingCounts,
       }
     }
 
-    // Did not fina a lower order match so record the set.
-    if( ! lowOrder )
+    // Did not find a lower order match so record the set.
+    if( ! lowOrder && toroidalWinding > 0 && poloidalWinding > 0 )
     {
       WindingPair windingPair;
       windingPair.toroidal = t;
@@ -3427,6 +3444,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     if( verboseFlag )
       std::cerr << "FORCE TERMINATING  " << nPuncturesNeeded << std::endl;
 
+    analysisState = FieldlineProperties::TERMINATED;
+
     nPuncturesNeeded = 0;
   }
 
@@ -3538,7 +3557,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
 
   int drawableRank  = -1;
   int drawableIndex = -1;
- std::vector< unsigned int > drawableIndexs;
+  std::vector< unsigned int > drawableIndexs;
 
   for( unsigned int i=0; i<toroidalStats.size(); ++i )
   {
@@ -4995,7 +5014,7 @@ FieldlineLib::findIslandCenters( std::vector< Point > &puncturePts,
     // Store the points a 2D vector.
     Skeleton::PointVector pointVec;
 
-    for( unsigned int j=0; j<tmp_points.size()-1; j+=3 )
+    for( unsigned int j=0; j<tmp_points.size()-1; j+=1 )
       pointVec.push_back( Skeleton::Point( tmp_points[j].x,
                                            tmp_points[j].z ) );
       
