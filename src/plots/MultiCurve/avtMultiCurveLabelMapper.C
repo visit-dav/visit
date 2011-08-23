@@ -131,6 +131,10 @@ avtMultiCurveLabelMapper::CustomizeMappers(void)
 //    the points are in the same color as the curve, instead of always in
 //    black.
 //
+//    Eric Brugger, Tue Aug 23 16:11:50 PDT 2011
+//    I enhanced the plot so that the identifier would not be displayed for
+//    a given point if the identifier was INT_MIN.
+//
 // ****************************************************************************
 
 void
@@ -180,7 +184,10 @@ avtMultiCurveLabelMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
         la->SetAttachmentPoint(pos);
         char label[16];
         if (buf2 != NULL)
-            sprintf(label, "%d", buf2[i]);
+            if (buf2[i] != INT_MIN)
+                sprintf(label, "%d", buf2[i]);
+            else
+                sprintf(label, "");
         else
             sprintf(label, "%d", i);
         la->SetDesignator(label);
