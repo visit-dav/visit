@@ -49,6 +49,8 @@
 #include <BadIndexException.h>
 #include <ColorAttribute.h>
 
+#include <limits.h>
+
 const double INV_255 = 0.0039215686274509803377;
 
 // ****************************************************************************
