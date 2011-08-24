@@ -278,6 +278,9 @@
 #    Jeremy Meredith, Tue Aug  9 14:41:28 EDT 2011
 #    Changed a redirection syntax to be a little more portable.
 #
+#    Eric Brugger, Wed Aug 24 09:15:39 PDT 2011
+#    I replaced the zeus host profile with rzzeus.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -674,7 +677,7 @@ elif [ "$config" = "llnl_open" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_llnl_hera.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_prism.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_sierra.xml  "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_zeus.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzzeus.xml  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_slac_red.xml     "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "nersc" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_nersc_franklin.xml "$dir"/$version+/.visit/hosts/
