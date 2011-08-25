@@ -1,0 +1,301 @@
+#!/bin/sh
+#
+# Modifications:
+#   Mark C. Miller, Thu Jul 29 23:35:19 PDT 2010
+#   Added option to ignore third party lib problems to cmake invokation.
+#
+#   Eric Brugger, Thu Mar 31 09:38:38 PDT 2011
+#   Modified the script to work with the 2.2RC instead of the 2.0RC.
+#
+#   Eric Brugger, Tue Apr 12 10:53:02 PDT 2011
+#   Removed the specular lighting tests from the skip list.
+#
+#   Jeremy Meredith, Tue Aug  9 17:19:55 EDT 2011
+#   Updated the subversion host/path.
+#
+#   Eric Brugger, Thu Aug 25 11:22:39 PDT 2011
+#   Modified the script to work on edge.
+
+#
+# Determine the users name and e-mail address.
+#
+user=`whoami`
+
+#
+# Set the user e-mail address.
+#
+userNersc=unknown
+userEmail=unknown
+case $user in
+    bonnell)
+        userNersc=bonnell
+        userEmail=bonnell2@llnl.gov
+        ;;
+    kbonnell)
+        userNersc=bonnell
+        userEmail=bonnell2@llnl.gov
+        ;;
+    brugger)
+        userNersc=brugger
+        userEmail=brugger1@llnl.gov
+        ;;
+    hrchilds)
+        userNersc=hrchilds
+        userEmail=hankchilds3@gmail.com
+        ;;
+    mcmiller)
+        userNersc=miller86
+        userEmail=miller86@llnl.gov
+        ;;
+    miller)
+        userNersc=miller86
+        userEmail=miller86@llnl.gov
+        ;;
+    miller86)
+        userNersc=miller86
+        userEmail=miller86@llnl.gov
+        ;;
+    whitlocb)
+        userNersc=whitlocb
+        userEmail=whitlock2@llnl.gov
+        ;;
+esac
+
+if test "$userEmail" = "unknown" ; then
+    echo "Unknown user name. Exiting."
+    exit 1
+fi
+
+#
+# Parse the command line to determine if we should run the test suite
+# on the trunk or RC.
+#
+debug="false"
+branch="trunk"
+revision="latest"
+serial="false"
+testHost="edge"
+testDir="/nfs/tmp2"
+
+for abc
+do
+    case $1 in
+        -trunk)
+            branch="trunk"
+            shift
+            ;;
+        -2.3RC)
+            branch="2.3RC"
+            shift
+            ;;
+        -serial)
+            serial="true"
+            shift
+            ;;
+        -parallel)
+            serial="false"
+            shift
+            ;;
+        -d)
+            debug="true"
+            shift
+            ;;
+        -r)
+            revision=$2
+            shift 2
+            ;;
+        -host)
+            testHost=$2
+            shift 2
+            ;;
+    esac
+done
+
+if test "$branch" = "trunk" ; then
+    workingDir="test_trunk"
+else
+    workingDir="test_rc"
+fi
+
+#
+# Run the test suite on $testHost.
+#
+rm -f $testHost
+cat <<EOF > $testHost
+#!/bin/sh
+
+dateTag=\`date +%y%b%d-%H:%M\`
+
+if test "$serial" = "true" ; then
+    modes="$testHost,serial"
+else
+    modes="$testHost,serial $testHost,parallel $testHost,scalable,parallel,icet"
+fi
+
+skipList_for_Edge="\
+    $testHost,serial:tests/plots/streamline_geom.py:streamline_geom_07,streamline_geom_08,streamline_geom_09 \
+    $testHost,parallel:tests/plots/streamline_geom.py:streamline_geom_07,streamline_geom_08,streamline_geom_09 \
+    $testHost,scalable,parallel,icet:tests/plots/streamline_geom.py:streamline_geom_07,streamline_geom_08,streamline_geom_09 \
+    $testHost,serial:tests/operators/persistent_particles.py \
+    $testHost,parallel:tests/operators/persistent_particles.py \
+    $testHost,scalable,parallel,icet:tests/operators/persistent_particles.py \
+    $testHost,serial:tests/databases/itaps.py:itaps_14,itaps_15 \
+    $testHost,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
+    $testHost,scalable,parallel,icet:tests/databases/itaps.py:itaps_14,itaps_15 \
+    $testHost,serial:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
+    $testHost,parallel:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
+    $testHost,scalable,parallel,icet:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
+    $testHost,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
+    $testHost,parallel:tests/rendering/compositing.py \
+    $testHost,scalable,parallel,icet:tests/rendering/compositing.py \
+    $testHost,parallel:tests/session/legendproperties.py:legendproperties00,legendproperties01 \
+    $testHost,scalable,parallel,icet:tests/session/legendproperties.py:legendproperties00,legendproperties01"
+
+skipList="\$skipList_for_Edge"
+
+# Create the test directory.
+if test ! -e $testDir/$user; then
+    mkdir $testDir/$user
+fi
+rm -rf $testDir/$user/$workingDir
+mkdir $testDir/$user/$workingDir
+cd $testDir/$user/$workingDir
+
+# Check out the source
+if test "$debug" = "true" ; then
+   echo "Checkout of $branch started at: \`date\`" | mail -s "Checkout started" $userEmail
+fi
+if test "$branch" = "trunk" ; then
+    if test "$revision" = "latest" ; then
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src > buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/data >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/test >> buildlog 2>&1
+    else
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src -r $revision > buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/data -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/test -r $revision >> buildlog 2>&1
+    fi
+else
+    if test "$revision" = "latest" ; then
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/src > buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/data >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/test >> buildlog 2>&1
+    else
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/src -r $revision > buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/data -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/test -r $revision >> buildlog 2>&1
+    fi
+fi
+if test "$debug" = "true" ; then
+    echo "Checkout of $branch completed at: \`date\`" | mail -s "Checkout completed" $userEmail
+fi
+
+# Build the code
+cd src
+export PATH=\$PATH:/usr/bin/X11
+ln -s aztec1.cmake config-site/\`hostname\`.cmake
+if test "$serial" = "true" ; then
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/aztec1.cmake
+fi
+/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_BUILD_ALL_PLUGINS=1 -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON >> ../buildlog 2>&1
+make -j 12 >> ../buildlog 2>&1
+if test "$debug" = "true" ; then
+    echo "Source build completed at: \`date\`" | mail -s "Source build completed" $userEmail
+fi
+
+# Build the test data
+cd ../data
+make -j 8 test >> ../buildlog 2>&1
+if test "$debug" = "true" ; then
+    echo "Data build completed at: \`date\`" | mail -s "Data build completed" $userEmail
+fi
+
+# Run the tests, consolidating the results in one directory
+cd ../test
+rm -rf \$dateTag
+mkdir \$dateTag
+for m in \$modes; do
+    # set pixel diff-tolerances slightly above zero for mode
+    # containing 'scalable'
+    diffTols=""
+    if test -n "\$(echo \$m | grep scalable)"; then
+        diffTols="-pixdiff 2 -avgdiff 1"
+    fi
+
+    # Run the test
+    ./runtest -q -s "\$skipList_for_Edge" -m "\$m" -l 600 \$diffTols -notrackmem >> ../buildlog 2>&1
+
+    # Move the results to the consolidation directory
+    theMode=\`echo \$m | tr ',' '_'\`
+    mv html \$dateTag/\$theMode
+    if test "$debug" = "true" ; then
+        echo "Test \$m completed at: \`date\`" | mail -s "Tests completed" $userEmail
+    fi
+done
+
+# Determine if the test suite passed or failed.
+hasFailed=""
+for m in \$modes; do
+    theMode=\`echo \$m | tr ',' '_'\`
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 Failed 2>/dev/null\`
+    fi
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 Unacceptable 2>/dev/null\`
+    fi
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 OS-Killed 2>/dev/null\`
+    fi
+done
+
+# Send out an e-mail notifying the users of the test suite status.
+cd ..
+if test "\$hasFailed" = ""; then
+   src/svn_bin/visit-notify-test-failure -pass -host $testHost
+else
+   src/svn_bin/visit-notify-test-failure -host $testHost
+fi
+
+# If the test suite passed then update the revision number indicating the
+# last pass.
+if test "\$hasFailed" = ""; then
+    svn update src/svn_bin/lastpass_$testHost
+    svnRevision=\`svn info src | grep "Revision:" | cut -d' ' -f2\`
+    rm -f src/svn_bin/lastpass_$testHost
+    echo "\$svnRevision" > src/svn_bin/lastpass_$testHost
+    svn commit -m "Update the revision number of the last test suite pass." src/svn_bin/lastpass_$testHost
+fi
+
+# Tar up the results
+cd test
+tar cf - \$dateTag | gzip > html.tar.gz
+
+# Copy the results to euclid
+scp html.tar.gz $userNersc@euclid.nersc.gov:
+if test "$debug" = "true" ; then
+    echo "Results copied to euclid at: `date`" | mail -s "Results copied" $userEmail
+fi
+
+# Post the results.
+cd ..
+scp src/svn_bin/visit-update-test-website $userNersc@euclid.nersc.gov:
+ssh $userNersc@euclid.nersc.gov "./visit-update-test-website"
+if test "$debug" = "true" ; then
+    echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
+fi
+
+# Set the permissions so that others may access the test directory.
+cd ..
+chgrp -R visit $workingDir
+chmod -R g+rwX,o+rX $workingDir
+
+EOF
+
+chmod 750 $testHost
+
+# Run the test suite.
+if test "$testHost" = "edge" ; then
+    scp edge edge:edge_testit
+
+    ssh edge "msub -l nodes=1:ppn=12 -l walltime=12:00:00 -q pbatch -A bdivp -z ./edge_testit"
+fi
