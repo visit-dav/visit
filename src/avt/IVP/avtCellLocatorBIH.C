@@ -582,30 +582,75 @@ void avtCellLocatorBIH::Free()
 
 // ---------------------------------------------------------------------------
 
+void avtCellLocatorBIH::FindCellRecursive( const double pos[3], 
+                                           avtInterpolationWeights* weights,
+                                           unsigned int node,
+                                           vtkIdType& cell ) const
+{
+    const celltree::node& n = Tree->nodes[node];
+
+    if( n.is_leaf() )
+    {
+        // if this is a leaf, test all cells it contains
+        const unsigned int* begin = &(Tree->leaves[n.start()]);
+        const unsigned int* end   = begin + n.size();
+
+        for( ; begin!=end; ++begin )
+        {
+            if( TestCell( *begin, pos, weights ) )
+            {
+                cell = *begin;
+                return;
+            }
+        }
+    }
+    else
+    {
+        // else descend the tree
+        const float p = pos[n.dim()];
+        const unsigned int left = n.left();
+
+        bool l = p <= n.lmax();
+        bool r = p >= n.rmin();
+
+        if( l && r )
+        {
+            if( n.lmax()-p < p-n.rmin() )
+            {
+                // go left first
+                FindCellRecursive( pos, weights, left, cell );
+
+                if( cell < 0 )
+                    FindCellRecursive( pos, weights, left+1, cell );
+            }
+            else
+            {
+                // go right first
+                FindCellRecursive( pos, weights, left+1, cell );
+
+                if( cell < 0 )
+                    FindCellRecursive( pos, weights, left, cell );
+            }
+       }
+       else if( l )
+           FindCellRecursive( pos, weights, left, cell );
+       else if( r )
+           FindCellRecursive( pos, weights, left+1, cell );
+    }
+}
+
+// ---------------------------------------------------------------------------
+
 vtkIdType avtCellLocatorBIH::FindCell( const double pos[3],
                                        avtInterpolationWeights* weights ) const
 {
     if( Tree == 0 )
         return -1;
 
-    const float _pos[3] = { pos[0], pos[1], pos[2] };
-    celltree::point_traversal pt( *(this->Tree), _pos );
+    vtkIdType cell = -1;
+    FindCellRecursive( pos, weights, 0, cell );
 
-    bool found = false;
-
-    while( const celltree::node* n = pt.next() )
-    {
-        const unsigned int* begin = &(this->Tree->leaves[n->start()]);
-        const unsigned int* end   = begin + n->size();
-
-        for( ; begin!=end; ++begin )
-        {
-            if( TestCell( *begin, pos, weights ) )
-                return *begin;
-        }
-    }
-
-    return -1;
+    return cell;
 }
 
 // ---------------------------------------------------------------------------

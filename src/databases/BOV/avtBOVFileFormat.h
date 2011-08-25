@@ -86,6 +86,10 @@
 //    Return INVALID_CYCLE and INVALID_TIME if we don't know them.  This 
 //    prevents oversetting elsewhere.
 //
+//    David Camp, Mon Aug 22 12:59:31 PDT 2011
+//    Added the ReadTOC function to the GetCycle and GetTime methods.
+//    Need this for pathlines.
+//
 // ****************************************************************************
 
 class avtBOVFileFormat : public avtSTMDFileFormat
@@ -105,8 +109,8 @@ class avtBOVFileFormat : public avtSTMDFileFormat
 
     virtual void               PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
-    virtual int                GetCycle(void) { return (cycleIsAccurate ? cycle : INVALID_CYCLE); };
-    virtual double             GetTime(void) { return (timeIsAccurate ? dtime : INVALID_TIME); };
+    virtual int                GetCycle(void) { ReadTOC(); return (cycleIsAccurate ? cycle : INVALID_CYCLE); };
+    virtual double             GetTime(void) { ReadTOC(); return (timeIsAccurate ? dtime : INVALID_TIME); };
     virtual bool               ReturnsValidCycle(void) { return haveReadTOC; };
     void                       ActivateTimestep(void);
 

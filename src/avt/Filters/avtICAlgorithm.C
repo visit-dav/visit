@@ -289,7 +289,8 @@ avtICAlgorithm::Execute()
 void
 avtICAlgorithm::PostExecute()
 {
-    debug1<<"avtICAlgorithm::PostExecute()\n";
+    if (DebugStream::Level1())
+        debug1<<"avtICAlgorithm::PostExecute()\n";
 
     vector<avtIntegralCurve *> v;
     
@@ -718,8 +719,12 @@ avtICAlgorithm::ComputeDomainLoadStatistic()
     if (totDomainsLoaded > 0)
         avgDomainLoaded = (float)totDomainsLoaded / (float)domainsUsed;
 
-    debug1<<"Local Dom report:"<<endl;
-    for (int i = 0; i < numDomains; i++) debug1<<setw(3)<<i<<": "<<domLoads[i]<<endl;
+    if (DebugStream::Level1())
+    {
+        debug1<<"Local Dom report:"<<endl;
+        for (int i = 0; i < numDomains; i++)
+            debug1<<setw(3)<<i<<": "<<domLoads[i]<<endl;
+    }
 
 #if PARALLEL
     globalDomainsUsed = 0;
@@ -730,10 +735,14 @@ avtICAlgorithm::ComputeDomainLoadStatistic()
 
     int *sums = new int[numDomains];
     SumIntArrayAcrossAllProcessors(domLoads, sums, numDomains);
-    
-    debug1<<"Global Dom report:"<<endl;
-    for (int i = 0; i < numDomains; i++) debug1<<setw(3)<<i<<": "<<sums[i]<<endl;
-        
+
+    if (DebugStream::Level1())
+    {
+        debug1<<"Global Dom report:"<<endl;
+        for (int i = 0; i < numDomains; i++)
+            debug1<<setw(3)<<i<<": "<<sums[i]<<endl;
+    }
+ 
     for (int i = 0; i < numDomains; i++)
     {
         if (sums[i] != 0)

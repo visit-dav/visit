@@ -243,6 +243,8 @@ class IVP_API avtIntegralCurve
 
     void     SetPostStepCallback(avtIntegralCurveCallback func) {postStepCallbackFunction = func; }
 
+    virtual avtIntegralCurve* MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v) = 0;
+
   protected:
     avtIntegralCurveCallback postStepCallbackFunction;
 

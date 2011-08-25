@@ -489,6 +489,9 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    David Camp, Wed Jul 13 12:53:52 PDT 2011
+//    Fixed a memory leak, not deleting tmp_ptr
 // ****************************************************************************
 template <class T>
 void
@@ -622,6 +625,7 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
     delete [] recvdisp;
     delete [] sendcount;
     delete [] recvcount;
+    delete [] tmp_ptr;
 #endif
 }
 

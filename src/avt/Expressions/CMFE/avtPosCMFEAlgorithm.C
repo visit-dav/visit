@@ -1119,6 +1119,9 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
 //    Hank Childs, Fri Dec  3 11:57:37 PST 2010
 //    Fix problem with vector data on rectilinear grids.
 //
+//    David Camp, Fri Jul 29 06:55:39 PDT 2011
+//    Fixed a memory leak of the big_send_msg and sub_ptr variables.
+//
 // ****************************************************************************
 
 void
@@ -1283,8 +1286,10 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
 
     delete [] recvmessages;
     delete [] big_recv_msg;
+    delete [] big_send_msg;
     delete [] recvcount;
     delete [] recvdisp;
+    delete [] sub_ptr;
 #endif
 }
 
@@ -1603,6 +1608,10 @@ avtPosCMFEAlgorithm::FastLookupGrouping::GetValueUsingList(vector<int> &list,
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    David Camp, Fri Jul 29 06:55:39 PDT 2011
+//    Fixed a memory leak of the appenders[] variable.
+//
 // ****************************************************************************
 
 void
@@ -1716,6 +1725,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
         {
             sendcount[j] = 0;
             msg_tmp[j]   = NULL;
+            appenders[j]->Delete();
             continue;
         }
         appenders[j]->Update();
@@ -2235,6 +2245,9 @@ Boundary::AttemptSplit(Boundary *&b1, Boundary *&b2)
 //    Do not use copy constructor for interval tree, since it was recently 
 //    declared to be private.
 //
+//    David Camp, Fri Jul 29 06:55:39 PDT 2011
+//    Fixed an index problem with z using nY index.
+//
 // ****************************************************************************
 
 void
@@ -2340,7 +2353,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
             double max[3];
             max[0] = x[nX-1];
             max[1] = y[nY-1];
-            max[2] = z[nY-1];
+            max[2] = z[nZ-1];
             it.GetElementsListFromRange(min, max, list);
             for (j = 0 ; j < list.size() ; j++)
             {
@@ -2422,7 +2435,8 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
             if (b_list[i]->IsLeaf())
             {
                 float *b = b_list[i]->GetBoundary();
-                debug1 << "Boundary " << count++ << " = " << b[0] << "-" <<b[1]
+                if (DebugStream::Level1())
+                    debug1 << "Boundary " << count++ << " = " << b[0] << "-" <<b[1]
                        << ", " << b[2] << "-" << b[3] << ", " << b[4] << "-"
                        << b[5] << endl;
             }
@@ -2446,9 +2460,12 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         }
         int *cnts_out = new int[nProcs];
         SumIntArrayAcrossAllProcessors(cnts, cnts_out, nProcs);
-        for (i = 0 ; i < nProcs ; i++)
-            debug5 << "Amount for processor " << i << " = " << cnts_out[i] 
+        if (DebugStream::Level5())
+        {
+            for (i = 0 ; i < nProcs ; i++)
+                debug5 << "Amount for processor " << i << " = " << cnts_out[i] 
                    << endl;
+        }
         
         delete [] cnts;
         delete [] cnts_out;

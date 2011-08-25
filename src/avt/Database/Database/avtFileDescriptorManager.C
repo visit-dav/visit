@@ -115,6 +115,27 @@ avtFileDescriptorManager::Instance(void)
     return instance;
 }
 
+// ****************************************************************************
+//  Method: avtFileDescriptorManager::DeleteInstance
+//
+//  Purpose:
+//      Delete the single instance of the avtFileDescriptorManager.
+//
+//  Returns:    nothing.
+//
+//  Programmer: David Camp
+//  Creation:   April 14, 2011
+//
+// ****************************************************************************
+
+void
+avtFileDescriptorManager::DeleteInstance(void)
+{
+    if (instance)
+    {
+        delete instance;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtFileDescriptorManager::SetMaximumNumberOfOpenFiles

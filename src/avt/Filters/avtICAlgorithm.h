@@ -109,6 +109,9 @@
 //   Dave Pugmire, Fri Jan 14 11:06:09 EST 2011
 //   Added PostStepCallback() method.
 //
+//   David Camp, Mon Aug 22 12:59:31 PDT 2011
+//   Added SetDomain method, which forwards the call to the PICs filter.
+//
 // ****************************************************************************
 
 class avtICAlgorithm
@@ -149,6 +152,8 @@ class avtICAlgorithm
                                         double X=0, double Y=0, double Z=0);
     virtual bool              DomainLoaded(DomainType &dom) const
     { return picsFilter->avtPICSFilter::DomainLoaded(dom); }
+    void                      SetDomain(avtIntegralCurve *ic)
+    { return picsFilter->avtPICSFilter::SetDomain(ic); }
     
     bool                      OwnDomain(DomainType &dom)
     {return picsFilter->avtPICSFilter::OwnDomain(dom); }

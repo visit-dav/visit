@@ -262,6 +262,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << VisItIncludeDir() << "/avt/Expressions/Management" << endl;
             out << VisItIncludeDir() << "/avt/Expressions/Math" << endl;
             out << VisItIncludeDir() << "/avt/Expressions/MeshQuality" << endl;
+            out << VisItIncludeDir() << "/avt/Expressions/TimeIterators" << endl;
         }
         out << VisItIncludeDir() << "/avt/FileWriter" << endl;
         out << VisItIncludeDir() << "/avt/Filters" << endl;

@@ -138,6 +138,9 @@ class avtICAlgorithm;
 //   Add new communication pattern: RestoreSequenceAssembleUniformly, and
 //   PostStepCallback()
 //
+//   David Camp, Tue May  3 06:51:37 PDT 2011
+//   Added the PurgeDomain() to be able to remove the cell locator when the
+//   avtDatasetOnDemandFilter purges a data set from it's cache.
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -200,6 +203,7 @@ class AVTFILTERS_API avtPICSFilter :
     void         ConvertToCartesian(bool val) { convertToCartesian = val; };
     bool         PostStepCallback();
 
+    void                      SetDomain(avtIntegralCurve *ic);
 
   protected:
     bool   emptyDataset;
@@ -244,7 +248,7 @@ class AVTFILTERS_API avtPICSFilter :
     int curTimeSlice;
 
     // Timings helpers.
-    int                       numSeedPts, MaxID;
+    int                       MaxID;
     int                       method;
     int                       maxCount, workGroupSz;
     double                    InitialIOTime;
@@ -287,12 +291,13 @@ class AVTFILTERS_API avtPICSFilter :
 
     virtual void              GetPathlineVelocityMeshVariables(avtDataRequest_p &dataRequest, std::string &velocity, std::string &mesh);
 
+    virtual void              PurgeDomain( const int domain, const int timeStep );
+
     // Helper functions.
     bool                      PointInDomain(avtVector &pt, DomainType &domain);
     int                       DomainToRank(DomainType &domain);
     void                      ComputeDomainToRankMapping();
     bool                      OwnDomain(DomainType &domain);
-    void                      SetDomain(avtIntegralCurve *ic);
     void                      Initialize();
     void                      ComputeRankList(const std::vector<int> &domList,
                                               std::vector<int> &ranks,
@@ -301,7 +306,10 @@ class AVTFILTERS_API avtPICSFilter :
     bool                      CacheLocators(void);
 
     avtCellLocator_p          SetupLocator(const DomainType &, vtkDataSet *);
+    void                      ClearDomainToCellLocatorMap();
     virtual avtIVPField      *GetFieldForDomain(const DomainType&, vtkDataSet*);
+
+    void                      UpdateIntervalTree();
 
     friend class avtICAlgorithm;
 };

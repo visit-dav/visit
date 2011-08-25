@@ -1114,9 +1114,10 @@ CountIDs(list<avtIntegralCurve *> &l, int id)
 void
 avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
 {
-    debug5<<"RestoreIntegralCurveSequence: communicatedICs: "
-          <<communicatedICs.size()
-          <<" terminatedICs: "<<terminatedICs.size()<<endl;
+    if (DebugStream::Level5())
+        debug5<<"RestoreIntegralCurveSequence: communicatedICs: "
+              <<communicatedICs.size()
+              <<" terminatedICs: "<<terminatedICs.size()<<endl;
 
     //Create larger streamline buffers.
 
@@ -1184,7 +1185,7 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
 
             t++;
         }
-        
+
         list<avtIntegralCurve*>::const_iterator c = communicatedICs.begin();
         while (c != communicatedICs.end() && (*c)->id <= maxId)
         {
@@ -1196,10 +1197,10 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
             }
             c++;
         }
-        
+
         //Exchange ID owners and sequence counts.
         MPI_Allreduce(myIDs, idBuffer, 2*N, MPI_LONG, MPI_SUM, VISIT_MPI_COMM);
-        if (0)
+        if (0) //(DebugStream::Level5())
         {
             debug5<<"idBuffer:  [";
             for(int i=0; i<2*N;i++)
@@ -1288,7 +1289,8 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
 void
 avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly()
 {
-    debug5<<"RestoreIntegralCurveSequenceAssembleUniformly: communicatedICs: "
+    if (DebugStream::Level5())
+        debug5<<"RestoreIntegralCurveSequenceAssembleUniformly: communicatedICs: "
           <<communicatedICs.size()
           <<" terminatedICs: "<<terminatedICs.size()<<endl;
 
@@ -1477,22 +1479,25 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly()
 //   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
 //   Reflect movement of some routines to state recorder IC class.
 //
+//   David Camp, Mon Aug 15 13:43:24 PDT 2011
+//   Changed the code to allow the avtIntegralCurve to merge the IC sequence.
+//
 // ****************************************************************************
 
 void
 avtParICAlgorithm::MergeTerminatedICSequences()
 {
-    //Sort them by id and sequence so we can process them one at a time.
+    // Sort them by id and sequence so we can process them one at a time.
     terminatedICs.sort(avtStateRecorderIntegralCurve::IdSeqCompare);
 
-    //Split them up into sequences.
+    // Split them up into sequences.
     vector<vector<avtIntegralCurve *> > seqs;
     while (!terminatedICs.empty())
     {
         avtIntegralCurve *s = terminatedICs.front();
         terminatedICs.pop_front();
         
-        //Empty or new ID, add a new entry.
+        // Empty or new ID, add a new entry.
         if (seqs.size() == 0 ||
             seqs[seqs.size()-1][0]->id != s->id)
         {
@@ -1507,11 +1512,10 @@ avtParICAlgorithm::MergeTerminatedICSequences()
     }
     terminatedICs.clear();
     
-    //Merge the sequences together, put them into terminated list.
+    // Merge the sequences together, put them into terminated list.
     for (int i = 0; i < seqs.size(); i++)
     {
-        avtIntegralCurve *s = 
-            avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(seqs[i]);
+        avtIntegralCurve *s = seqs[i][0]->MergeIntegralCurveSequence(seqs[i]);
         terminatedICs.push_back(s);
     }
 }

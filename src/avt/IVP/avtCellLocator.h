@@ -81,6 +81,8 @@ class IVP_API avtCellLocator
     virtual        ~avtCellLocator();
 
     vtkDataSet     *GetDataSet() { return dataSet; }
+    void            SetDataSet(vtkDataSet *ds);
+    void            ReleaseDataSet();
 
     virtual vtkIdType FindCell( const double pos[3], 
                                 avtInterpolationWeights* iw ) const = 0;
@@ -116,5 +118,4 @@ class IVP_API avtCellLocator
 typedef ref_ptr<avtCellLocator> avtCellLocator_p;
 
 #endif
-
 

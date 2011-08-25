@@ -108,12 +108,16 @@ avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator )
 //   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
 //   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField.
 //
+//   David Camp, Fri Jul 29 06:55:39 PDT 2011
+//   Release loc data set.
 // ****************************************************************************
 
 avtIVPVTKField::~avtIVPVTKField()
 {
     if( ds )
         ds->Delete();
+    if( loc )
+       loc->ReleaseDataSet();
 }
 
 // ****************************************************************************
