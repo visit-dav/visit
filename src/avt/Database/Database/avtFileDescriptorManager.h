@@ -46,6 +46,7 @@
 
 typedef void   (*CloseFileCallback)(void *, int);
 
+#include <database_exports.h>
 
 #include <vector>
 
@@ -63,10 +64,11 @@ typedef void   (*CloseFileCallback)(void *, int);
 //
 // ****************************************************************************
 
-class avtFileDescriptorManager
+class DATABASE_API avtFileDescriptorManager
 {
   public:
-    static avtFileDescriptorManager   *Instance();
+    static avtFileDescriptorManager   *Instance(void);
+    static void                        DeleteInstance(void);
 
     int                                RegisterFile(CloseFileCallback, void *);
     void                               UnregisterFile(int);
@@ -91,7 +93,5 @@ class avtFileDescriptorManager
     void                               CloseLeastRecentlyUsedFile(void);
 };
 
-
 #endif
-
 

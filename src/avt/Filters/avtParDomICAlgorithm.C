@@ -80,7 +80,6 @@ avtParDomICAlgorithm::avtParDomICAlgorithm(avtPICSFilter *icFilter,
     sentICCounter = 0;
 }
 
-
 // ****************************************************************************
 //  Method: avtParDomICAlgorithm::~avtParDomICAlgorithm
 //
@@ -91,6 +90,7 @@ avtParDomICAlgorithm::avtParDomICAlgorithm(avtPICSFilter *icFilter,
 //  Creation:   January 27, 2009
 //
 // ****************************************************************************
+
 avtParDomICAlgorithm::~avtParDomICAlgorithm()
 {
 }
@@ -215,6 +215,7 @@ avtParDomICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
     totalNumIntegralCurves = activeICs.size();
     SumIntAcrossAllProcessors(totalNumIntegralCurves);
     origNumIntegralCurves = totalNumIntegralCurves;
+    numSeedPoints = totalNumIntegralCurves;
     /*
     debug5<<"Init_totalNumIntegralCurves= "<<totalNumIntegralCurves<<endl;
     debug5<<"My ICs: "<<endl;
@@ -223,15 +224,19 @@ avtParDomICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
         debug5<<"ID "<<(*s)->id<<" dom= "<<(*s)->domain<<endl;
     */
 
-    debug1<<"My ICcount= "<<activeICs.size()<<endl;
-    debug1<<"I own: [";
-    for (int i = 0; i < numDomains; i++)
+    if (DebugStream::Level1())
     {
-        DomainType d(i,0);
-        if (OwnDomain(d))
-            debug1<<i<<" ";
+        debug1<<"My ICcount= "<<activeICs.size()<<endl;
+        debug1<<"totalNumIntegralCurves= "<<totalNumIntegralCurves<<endl;
+        debug1<<"I own: [";
+        for (int i = 0; i < numDomains; i++)
+        {
+            DomainType d(i,0);
+            if (OwnDomain(d))
+                debug1<<i<<" ";
+        }
+        debug1<<"]\n";
     }
-    debug1<<"]\n";
 }
 
 // ****************************************************************************
@@ -295,7 +300,8 @@ avtParDomICAlgorithm::PreRunAlgorithm()
 void
 avtParDomICAlgorithm::RunAlgorithm()
 {
-    debug1<<"avtParDomICAlgorithm::RunAlgorithm()\n";
+    if (DebugStream::Level1())
+        debug1<<"avtParDomICAlgorithm::RunAlgorithm() - totalNumIntegralCurves: "<<totalNumIntegralCurves<< " activeICs.size(): " << activeICs.size() << endl;
     int timer = visitTimer->StartTimer();
     
     while (totalNumIntegralCurves > 0)
@@ -311,7 +317,8 @@ avtParDomICAlgorithm::RunAlgorithm()
             AdvectParticle(s);
             if (s->status == avtIntegralCurve::STATUS_FINISHED)
             {
-                debug5<<"TerminatedIC: "<<s->id<<endl;
+                if (DebugStream::Level5())
+                    debug5<<"TerminatedIC: "<<s->id<<endl;
                 terminatedICs.push_back(s);
                 numICChange--;
             }
@@ -328,7 +335,6 @@ avtParDomICAlgorithm::RunAlgorithm()
     CheckPendingSendRequests();
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }
-
 
 // ****************************************************************************
 // Method:  avtParDomICAlgorithm::HandleCommunication
@@ -381,6 +387,11 @@ avtParDomICAlgorithm::HandleCommunication()
 // Programmer:  Dave Pugmire
 // Creation:    February  1, 2011
 //
+// David Camp, Mon Aug 15 12:55:54 PDT 2011
+// Problem when sending IC that has 2 or more domains it could be in and if 2 
+// or more are owned by 1 process, we only send the IC one time. So we need to
+// test all possible domains when we recieved the IC.
+//
 // ****************************************************************************
 
 void
@@ -393,21 +404,35 @@ avtParDomICAlgorithm::ProcessICs(list<ICCommData> &ics)
         int sendRank = (*s).rank;
         
         vector<int> msg(3);
-        msg[0] = PARTICLE_USED;
+        msg[0] = PARTICLE_NOT_USED;
         msg[1] = ic->id;
         msg[2] = ic->counter;
         
-        avtVector pt;
-        ic->CurrentLocation(pt);
-        if (PointInDomain(pt, ic->domain))
+        // fastest way to get the seedPtDomainList filled (see above)
+        SetDomain( ic );
+
+        avtVector endPt;
+        ic->CurrentLocation(endPt);
+        for (int i = 0; i < ic->seedPtDomainList.size(); i++)
         {
-            activeICs.push_back(ic);
+            DomainType dom = ic->seedPtDomainList[i];
+            if (OwnDomain(dom))
+            {
+                // If point is inside domain, we are done.
+                if (PointInDomain(endPt, dom))
+                {
+                    msg[0] = PARTICLE_USED;
+                    ic->domain = ic->seedPtDomainList[i];
+                    activeICs.push_back(ic);
+                    break;
+                }
+            }
         }
-        else
+        if( msg[0] == PARTICLE_NOT_USED )
         {
-            msg[0] = PARTICLE_NOT_USED;
             delete ic;
         }
+
         SendMsg(sendRank, msg);
     }
 }
@@ -465,9 +490,13 @@ avtParDomICAlgorithm::ProcessMsgs(vector<MsgCommData> &msgs)
             {
                 //Nobody used it
                 if (i->second.first == 0)
+                {
                     numICChange--;
+                }
                 else if (i->second.first > 1)
+                {
                     numICChange += (i->second.first-1);
+                }
                 sendICInfo.erase(i);
             }
         }
@@ -586,21 +615,48 @@ avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
 //   Dave Pugmire, Tue Nov 30 13:24:26 EST 2010
 //   Change IC status when ic to not-terminated.
 //
+//   David Camp, Mon Aug 15 12:55:54 PDT 2011
+//   For pathlines we need to call HandleOOBIC to handle changes to the mesh
+//   that can happen in AMR data.
+//
 // ****************************************************************************
 
 void
 avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute()
 {
+    std::list<avtIntegralCurve *> saveICs;
+
+    // We may send IC to a new process, so we should just count before sending.
+    totalNumIntegralCurves = terminatedICs.size();
     while (! terminatedICs.empty())
     {
         avtIntegralCurve *s = terminatedICs.front();
         terminatedICs.pop_front();
         
-        activeICs.push_back(s);
-        s->status = avtIntegralCurve::STATUS_OK;
+        if( s->domain.domain == -1 )
+        {
+            saveICs.push_back(s);
+            --totalNumIntegralCurves;   // will not be processing this IC again.
+        }
+        else
+        {
+            s->status = avtIntegralCurve::STATUS_OK;
+            // The IC may need to move to another process.
+            SetDomain(s);
+            if( s->domain.domain == -1 && s->seedPtDomainList.empty() )
+            {
+                saveICs.push_back(s);
+                --totalNumIntegralCurves;   // will not be processing this IC again.
+            }
+            else
+                HandleOOBIC(s);
+        }
     }
-    
-    totalNumIntegralCurves = activeICs.size();
+
+    // Move the IC that are out of bounds to the terminated list. 
+    // No reason to process them anymore.
+    terminatedICs = saveICs;
+
     SumIntAcrossAllProcessors(totalNumIntegralCurves);
 }
 
@@ -614,7 +670,6 @@ avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute()
 // Creation:    December  2, 2010
 //
 // ****************************************************************************
-
 
 bool
 avtParDomICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
@@ -631,8 +686,9 @@ avtParDomICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
     }
     
     SumIntAcrossAllProcessors(val);
+
     return val > 0;
 }
 
-
 #endif
+

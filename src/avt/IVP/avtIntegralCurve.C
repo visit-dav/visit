@@ -236,7 +236,6 @@ void avtIntegralCurve::Advance( avtIVPField* field )
     {
         if( DebugStream::Level5() )
             debug5 << "avtIntegralCurve::Advance(): initial point is outside domain\n";
-
         return;
     }
 
@@ -331,7 +330,6 @@ void avtIntegralCurve::Advance( avtIVPField* field )
                 // Do a very small Euler step to move the integrator's current 
                 // position just outside the domain so that it is inside the 
                 // next domain.
-                double    t = ivp->GetCurrentT();
                 avtVector y = ivp->GetCurrentY();
                 avtVector v;
                 try
@@ -356,13 +354,13 @@ void avtIntegralCurve::Advance( avtIVPField* field )
 
                 const double eps = 1e-6;
 
-                double nv = v.length();
-
                 ext[0] = std::abs( v.x ? eps * (ext[1] - ext[0]) / v.x : 0.0 );
                 ext[1] = std::abs( v.y ? eps * (ext[3] - ext[2]) / v.y : 0.0 );
                 ext[2] = std::abs( v.z ? eps * (ext[5] - ext[4]) / v.z : 0.0 );
 
+                // TODO: max maybe to big of a step, min to small. Need to look at the middle value.
                 double hmin = std::max( ext[0], std::max( ext[1], ext[2] ) );
+                //double hmin = std::min( ext[0], std::min( ext[1], ext[2] ) );
 
                 if( std::abs(h) < hmin )
                     h = h < 0 ? -hmin : hmin;
@@ -559,3 +557,4 @@ avtIntegralCurve::DomainCompare(const avtIntegralCurve *icA,
 {
     return icA->domain < icB->domain;
 }
+

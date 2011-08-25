@@ -161,6 +161,7 @@ class PIPELINE_API avtDataRepresentation
 
     unsigned char      *GetDataString(int &, DataSetType &, bool);
     static void         InitializeNullDataset(void);
+    static void         DeleteNullDataset(void);
     static DataSetType  DatasetTypeForVTK(vtkDataSet *);
 };
 

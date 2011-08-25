@@ -144,6 +144,9 @@ struct DomainCacheEntry
 //    Hank Childs, Mon Apr 20 08:40:07 PDT 2009
 //    Change inheritance so that output can be non-datasets.
 //
+//    David Camp, Tue May  3 06:51:37 PDT 2011
+//    Added virtual function PurgeDomain() to let the PICs filter delete the
+//    cell locator and any other resoures to do this a dataset.
 // **************************************************************************** 
 
 class PIPELINE_API avtDatasetOnDemandFilter : virtual public 
@@ -170,6 +173,8 @@ class PIPELINE_API avtDatasetOnDemandFilter : virtual public
     // This needs to do something else......
     void                         SetOperatingOnDemand( bool v ) { operatingOnDemand = v; }
 
+    virtual void                 PurgeDomain( const int domain, const int timeStep ) = 0;
+
 protected:
     int                          GetPurgeDSCount() const { return purgeDSCount; }
     int                          GetLoadDSCount() const { return loadDSCount; }
@@ -184,7 +189,5 @@ protected:
     int                          purgeDSCount, loadDSCount;
 };
 
-
 #endif
-
 

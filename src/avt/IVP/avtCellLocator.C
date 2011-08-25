@@ -112,7 +112,49 @@ avtCellLocator::avtCellLocator( vtkDataSet* ds ) : dataSet(ds)
 
 avtCellLocator::~avtCellLocator()
 {
-    dataSet->Delete();
+    if(dataSet)
+        dataSet->Delete();
+}
+
+// ****************************************************************************
+//  Method: avtCellLocator::SetDataSet
+//
+//  Purpose:
+//      Set the data set for this avtCellLocator
+//
+//  Programmer: David Camp
+//  Creation:   April 21, 2011
+//
+// ****************************************************************************
+
+void
+avtCellLocator::SetDataSet(vtkDataSet *ds)
+{
+    ReleaseDataSet();
+    ds->Register(NULL);
+    dataSet = ds;
+}
+
+// ****************************************************************************
+//  Method: avtCellLocator::ReleaseDataSet
+//
+//  Purpose:
+//      Release data set. This is needed for the load on demand to release 
+//    the data and it will be resigned if we load it again.
+//
+//  Programmer: David Camp
+//  Creation:   April 21, 2011
+//
+// ****************************************************************************
+
+void
+avtCellLocator::ReleaseDataSet()
+{
+    if(dataSet)
+    {
+        dataSet->Delete();
+        dataSet = NULL;
+    }
 }
 
 

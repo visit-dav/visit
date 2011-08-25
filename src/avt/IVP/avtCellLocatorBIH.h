@@ -61,6 +61,11 @@ public:
 
 protected:
 
+    void FindCellRecursive( const double pos[3], 
+                            avtInterpolationWeights* weights,
+                            unsigned int node,
+                            vtkIdType& cell ) const;
+
     void Build();
     void Free();
 

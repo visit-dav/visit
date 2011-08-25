@@ -46,6 +46,7 @@
 #include <avtParallel.h>
 
 #include <cstring>
+#include <avtFileDescriptorManager.h>
 
 // ****************************************************************************
 //  BEGIN HACK, because AIX won't link the engine against GL unless it
@@ -332,6 +333,7 @@ main(int argc, char *argv[])
 
 #ifdef DEBUG_MEMORY_LEAKS
     delete engine;
+    avtFileDescriptorManager::DeleteInstance();
 #endif
 
 #ifdef PARALLEL

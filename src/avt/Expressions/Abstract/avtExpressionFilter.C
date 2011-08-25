@@ -692,6 +692,10 @@ avtExpressionFilter::GetVariableDimension(void)
 //      assume they own the result.
 //      Also, add support for "recentering" singletons (also a no-op).
 //
+//      David Camp, Fri Jul 29 06:55:39 PDT 2011
+//      Added code to delete the copy of the ds vtkDataSet. We where leaking
+//      memory in a few places below because we exited the function early.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -699,9 +703,6 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
                               avtCentering currCent,
                               std::string name, avtCentering targCent)
 {
-    vtkDataSet *ds2 = ds->NewInstance();
-    ds2->CopyStructure(ds);
-
     if (targCent == AVT_UNKNOWN_CENT)
     {
         if (currCent == AVT_NODECENT)
@@ -717,11 +718,15 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
         return arr;
     }
 
+    vtkDataSet *ds2 = ds->NewInstance();
+    ds2->CopyStructure(ds);
+
     vtkDataArray *outv = NULL;
     if (currCent == AVT_NODECENT)
     {
         if (ds2->GetNumberOfPoints() != arr->GetNumberOfTuples())
         {
+            ds2->Delete();
             if (arr->GetNumberOfTuples() == 1)
             {
                 // okay, it's a singleton; no recentering necessary
@@ -734,6 +739,7 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
 
         if (targCent != AVT_ZONECENT)
         {
+            ds2->Delete();
             EXCEPTION2(ExpressionException, name, "Asked to re-center a nodal "
                        "variable to something other than zonal.");
         }
@@ -752,6 +758,7 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
     {
         if (ds2->GetNumberOfCells() != arr->GetNumberOfTuples())
         {
+            ds2->Delete();
             if (arr->GetNumberOfTuples() == 1)
             {
                 // okay, it's a singleton; no recentering necessary
@@ -764,6 +771,7 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
 
         if (targCent != AVT_NODECENT)
         {
+            ds2->Delete();
             EXCEPTION2(ExpressionException, name, "Asked to re-center a zonal "
                        "variable to something other than nodal.");
         }

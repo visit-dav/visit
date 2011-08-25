@@ -42,6 +42,7 @@
 
 #include "avtSerialICAlgorithm.h"
 #include <TimingsManager.h>
+#include <avtParallel.h>
 
 using namespace std;
 
@@ -164,9 +165,10 @@ avtSerialICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
     for (int i = i1; i < nSeeds; i++)
         delete ics[i];
 #endif
-    
-    debug5 << "I have seeds: "<<i0<<" to "<<i1<<" of "<<nSeeds<<endl;
-    
+
+    if (DebugStream::Level5())
+        debug5 << "I have seeds: "<<i0<<" to "<<i1<<" of "<<nSeeds<<endl;
+
     // Filter the seeds for proper domain inclusion and fill the activeICs list.
     avtVector endPt;
     for ( int i = i0; i < i1; i++)
@@ -217,12 +219,17 @@ avtSerialICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
 //   Hank Childs, Sat Nov 27 16:52:12 PST 2010
 //   Add progress reporting.
 //
+//   David Camp, Mon Aug 15 09:36:04 PDT 2011
+//   Pathline could have domains set to -1, which would cause them to be put
+//   in the oob list and continuously process (hung process).
+//
 // ****************************************************************************
 
 void
 avtSerialICAlgorithm::RunAlgorithm()
 {
-    debug1<<"avtSerialICAlgorithm::RunAlgorithm()\n";
+    if (DebugStream::Level1())
+        debug1<<"avtSerialICAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
 
     //Sort the streamlines and load the first domain.
@@ -265,11 +272,27 @@ avtSerialICAlgorithm::RunAlgorithm()
                 }
                 else
                 {
-                    oobICs.push_back(s);
+                    if( s->domain.domain == -1 && s->domain.timeStep == -1 )
+                    {
+                        terminatedICs.push_back(s);
+                    }
+                    else
+                    {
+                        oobICs.push_back(s);
+                    }
                 }
             }
             else
-                oobICs.push_back(s);
+            {
+                if( s->domain.domain == -1 && s->domain.timeStep == -1 )
+                {
+                    terminatedICs.push_back(s);
+                }
+                else
+                {
+                    oobICs.push_back(s);
+                }
+            }
         }
 
         //We are done!
@@ -326,7 +349,7 @@ avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute()
 
 
 // ****************************************************************************
-// Method:  avtParDomICAlgorithm::CheckNextTimeStepNeeded
+// Method:  avtSerialICAlgorithm::CheckNextTimeStepNeeded
 //
 // Purpose: Is the next time slice required to continue?
 //   
@@ -334,19 +357,32 @@ avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute()
 // Programmer:  Dave Pugmire
 // Creation:    December  2, 2010
 //
+//  Modifications:
+//
+//  David Camp, Tue Aug 23 09:53:35 PDT 2011
+//  We need to check if all ranks are done, because most of the database
+//  readers use collective communication. So if one or more of the serial
+//  rank exit the execute loop we will hang in the LoadNextTimeSlice()
+//  on all of the other ranks that did not exit the execute loop.
+//
 // ****************************************************************************
 
 bool
 avtSerialICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
 {
+    int val = 0;
     list<avtIntegralCurve *>::const_iterator it;
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
         if ((*it)->domain.domain != -1 && (*it)->domain.timeStep > curTimeSlice)
         {
-            return true;
+            val = 1;
+            break;
         }
     }
-    
-    return false;
+
+    SumIntAcrossAllProcessors(val);
+
+    return val > 0;
 }
+

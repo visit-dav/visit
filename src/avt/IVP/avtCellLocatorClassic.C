@@ -95,7 +95,8 @@ void avtCellLocatorClassic::Build()
 
     if( !dataSet || (numCells = dataSet->GetNumberOfCells()) < 1 )
     {
-        debug5 << "avtCellLocatorClassic::Build(): no cells to subdivide\n";
+        if (DebugStream::Level5())
+            debug5 << "avtCellLocatorClassic::Build(): no cells to subdivide\n";
         return;
     }
 

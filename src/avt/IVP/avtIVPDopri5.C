@@ -558,7 +558,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
         if( 0.1*std::abs(h) <= std::abs(t)*epsilon ) 
         {
             if (DebugStream::Level5())
-                debug5 << "\tavtIVPDopri5::step(): exiting at t = " 
+                debug5 << "\tavtIVPDopri5::Step(): exiting at t = " 
                        << t << ", step size too small (h = " << h << ")\n";
             return STEPSIZE_UNDERFLOW;
         }
@@ -577,7 +577,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
         n_steps++;
 
         if (DebugStream::Level5())
-            debug5 << "\tavtIVPDopri5::step(): t = " << t << ", y = " << y 
+            debug5 << "\tavtIVPDopri5::Step(): t = " << t << ", y = " << y 
                    << ", h = " << h << ", t+h = " << t+h << '\n';
 
         // perform stages
@@ -663,7 +663,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
                     if( iasti == 15 ) 
                     {
                         if (DebugStream::Level5())
-                            debug5 << "\tavtIVPDopri5::step(): exiting at t = " 
+                            debug5 << "\tavtIVPDopri5::Step(): exiting at t = " 
                                    << t << ", problem seems stiff (y = " << y 
                                    << ")\n";
                         return STIFFNESS_DETECTED;
@@ -726,7 +726,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
 
             // normal exit
             if (DebugStream::Level5())
-                debug5 << "\tavtIVPDopri5::step(): normal exit, now at t = " 
+                debug5 << "\tavtIVPDopri5::Step(): normal exit, now at t = " 
                        << t << ", y = " << y << ", h = " << h << '\n';
 
             return OK;
@@ -743,7 +743,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             h = h_new;
             
             if (DebugStream::Level5())
-                debug5 << "\tavtIVPDopri5::step(): step rejected, retry with h = "
+                debug5 << "\tavtIVPDopri5::Step(): step rejected, retry with h = "
                        << h << '\n';
         }
     }

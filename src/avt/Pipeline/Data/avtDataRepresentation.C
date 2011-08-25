@@ -768,8 +768,33 @@ avtDataRepresentation::InitializeNullDataset(void)
 
     nullDataset = ugrid;
     initializedNullDataset = true;
+
+#if defined(DEBUG_MEMORY_LEAKS)
+    atexit(DeleteNullDataset);
+#endif
 }
 
+// ****************************************************************************
+//  Function: DeleteNullDataset
+//
+//  Purpose:
+//      Delete the initializedNullDataset object. This is to help with memory
+//    tools to remove the still reachable memory.
+//
+//  Programmer: David Camp
+//  Creation:   August 16, 2011
+//
+// ****************************************************************************
+void 
+avtDataRepresentation::DeleteNullDataset(void)
+{
+    if (nullDataset)
+    {
+        nullDataset->Delete();
+        nullDataset = NULL;
+        initializedNullDataset = false;
+    }
+}
 
 // ****************************************************************************
 //  Function: DatasetTypeForVTK

@@ -776,6 +776,7 @@ OBJECT *object_find1(char *name, char *type)
         return object;
     }
     error_action("Unable to locate object ", name, "in data files", ERROR_IN("object_find1", ABORT));
+    if(object) free(object);
     return NULL;
 }
 

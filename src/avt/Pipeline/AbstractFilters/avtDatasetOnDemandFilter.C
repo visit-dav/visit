@@ -155,13 +155,17 @@ avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
 //    Hank Childs, Mon Feb  1 14:23:46 PST 2010
 //    Fix encoding of two 32 bit ints into one 64 bit int.
 //
+//    David Camp, Mon Aug 15 09:36:04 PDT 2011
+//    Need to remove the domain reference from the PIC locator cache.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtDatasetOnDemandFilter::GetDomain(int domainId,
                                     int timeStep)
 {
-    debug5<<"avtDatasetOnDemandFilter::GetDomain("<<domainId<<", "<<timeStep<<");"<<endl;
+    if (DebugStream::Level5())
+        debug5<<"avtDatasetOnDemandFilter::GetDomain("<<domainId<<", "<<timeStep<<");"<<endl;
     if ( ! OperatingOnDemand() )
         EXCEPTION0(ImproperUseException);
 
@@ -184,7 +188,8 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
         }
 
 
-    debug5<<"     Update->GetDomain "<<domainId<<" time= "<<timeStep<<endl;
+    if (DebugStream::Level5())
+        debug5<<"     Update->GetDomain "<<domainId<<" time= "<<timeStep<<endl;
     avtContract_p new_contract = new avtContract(firstContract);
     std::vector<int> domains;
     domains.push_back(domainId);
@@ -218,6 +223,8 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
     domainQueue.push_front(entry);
     if ( domainQueue.size() > maxQueueLength )
     {
+        DomainCacheEntry tmp = domainQueue.back();
+        PurgeDomain( tmp.domainID, tmp.timeStep );
         domainQueue.pop_back();
         purgeDSCount++;
     }
@@ -248,13 +255,17 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
 //    Remove some Delete calls, as they are now handled by the 
 //    DomainCacheEntry struct directly.
 //
+//    David Camp, Mon Aug 15 09:36:04 PDT 2011
+//    Need to remove the domain reference from the PIC locator cache.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
                                              int timeStep)
 {
-    debug1<<"avtDatasetOnDemandFilter::GetDataAroundPoint("<<X<<", "<<Y<<", "<<Z<<", "<<timeStep<<");"<<endl;
+    if (DebugStream::Level1())
+        debug1<<"avtDatasetOnDemandFilter::GetDataAroundPoint("<<X<<", "<<Y<<", "<<Z<<", "<<timeStep<<");"<<endl;
     if ( ! OperatingOnDemand() )
     {
         EXCEPTION0(ImproperUseException);
@@ -265,7 +276,8 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
     // the following for loop to test *all* cache entries whether they contain the point location.
     // This strategy is not very efficient, but better than a pipeline re-execute.
 
-    debug5<<"Look in cache: "<<domainId<<" sz= "<<domainQueue.size()<<endl;
+    if (DebugStream::Level5())
+        debug5<<"Look in cache: "<<domainId<<" sz= "<<domainQueue.size()<<endl;
 
     //See if it's in the cache.
     std::list<DomainCacheEntry>::iterator it;
@@ -279,7 +291,8 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
             //Do a bbox check.
             double bbox[6];
             it->ds->GetBounds(bbox);
-            debug5<<"BBOX ["<<bbox[0]<<", "<<bbox[1]<<"]["<<bbox[2]<<", "<<bbox[3]<<"]["<<bbox[4]<<", "<<bbox[5]<<"]"<<endl;
+            if (DebugStream::Level5())
+                debug5<<"BBOX ["<<bbox[0]<<", "<<bbox[1]<<"]["<<bbox[2]<<", "<<bbox[3]<<"]["<<bbox[4]<<", "<<bbox[5]<<"]"<<endl;
 
             if (! (X >= bbox[0] && X <= bbox[1] &&
                    Y >= bbox[2] && Y <= bbox[3] &&
@@ -294,7 +307,8 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
             else
             {
                 //Do a cell check....
-                debug5<<"It's in the bbox. Check the cell.\n";
+                if (DebugStream::Level5())
+                    debug5<<"It's in the bbox. Check the cell.\n";
 
                 vtkVisItCellLocator *cellLocator = it->cl;
                 if ( cellLocator == NULL )
@@ -314,13 +328,15 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
                                                               foundCell, subId, dist))
                 {
                     foundIt = true;
-                    debug5<<"Cell locate: We found the domain!\n";
+                    if (DebugStream::Level5())
+                        debug5<<"Cell locate: We found the domain!\n";
                 }
             }
 
             if (foundIt)
             {
-                debug5<<"Found data in cace, returning cache entry " << foundPos << std::endl;
+                if (DebugStream::Level5())
+                    debug5<<"Found data in cace, returning cache entry " << foundPos << std::endl;
                 DomainCacheEntry entry;
                 entry = *it;
 
@@ -332,7 +348,8 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
         }
     }
 
-    debug5<<"     Update->GetDataAroundPoint, time= "<<timeStep<<endl;
+    if (DebugStream::Level5())
+        debug5<<"     Update->GetDataAroundPoint, time= "<<timeStep<<endl;
     avtContract_p new_contract = new avtContract(firstContract);
     new_contract->GetDataRequest()->GetRestriction()->TurnOnAll();
     avtPointSelection *ptsel = new avtPointSelection;
@@ -363,6 +380,8 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
         domainQueue.push_front(entry);
         if ( domainQueue.size() > maxQueueLength )
         {
+            DomainCacheEntry tmp = domainQueue.back();
+            PurgeDomain( tmp.domainID, tmp.timeStep );
             domainQueue.pop_back();
             purgeDSCount++;
         }
@@ -421,7 +440,8 @@ avtDatasetOnDemandFilter::DomainLoaded(int domainID, int timeStep) const
 void
 avtDatasetOnDemandFilter::GetLoadedDomains(std::vector<std::vector<int> > &domains)
 {
-    debug1<<"avtDatasetOnDemandFilter::GetLoadedDomains()\n";
+    if (DebugStream::Level1())
+        debug1<<"avtDatasetOnDemandFilter::GetLoadedDomains()\n";
     if ( ! OperatingOnDemand() )
         EXCEPTION0(ImproperUseException);
 
