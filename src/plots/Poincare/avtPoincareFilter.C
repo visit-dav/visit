@@ -593,6 +593,7 @@ avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
               FieldlineProperties::COMPLETED )
           poincare_ic->properties.analysisState =
             FieldlineProperties::TERMINATED;
+
           poincare_ic->status = avtIntegralCurve::STATUS_FINISHED;
         }
         else
