@@ -1388,7 +1388,7 @@ class WindowFieldFactory
 class WindowGeneratorAttribute : public GeneratorBase
 {
   public:
-    vector<WindowGeneratorField*> fields;
+    std::vector<WindowGeneratorField*> fields;
     QString windowname;
     QString plugintype;
   public:
@@ -1690,7 +1690,7 @@ class WindowGeneratorAttribute : public GeneratorBase
             WindowGeneratorField *field   = fields[i];
             c << "          case "<<name<<"::ID_"<<field->name << ":" << endl;
 
-            vector<Field*> enablees;
+            std::vector<Field*> enablees;
             size_t j;
             for (j=0; j<fields.size(); j++)
             {

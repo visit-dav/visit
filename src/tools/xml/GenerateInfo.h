@@ -1285,7 +1285,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << "ExpressionList * " << endl;
                 c << funcName<<"(const avtDatabaseMetaData *md)" << endl;
                 c << "{" << endl;
-                vector<QString> intypes = SplitValues(exprInType);
+                std::vector<QString> intypes = SplitValues(exprInType);
                 bool doMesh = false, doScalar = false, doVector = false, doTensor = false, doMaterial = false;
                 bool doSubset = false, doSpecies = false, doCurve = false, doSymmTensor = false;
                 bool doLabel = false, doArray = false;
@@ -1314,7 +1314,7 @@ class InfoGeneratorPlugin : public Plugin
                     if (intypes[i] == "array")
                         doArray = true;
                 }
-                vector<QString> outtypes = SplitValues(exprOutType);
+                std::vector<QString> outtypes = SplitValues(exprOutType);
                 std::vector<QString> outExprTypes;
                 bool haveScalar = false, haveTensor = false;
                 for (size_t i = 0 ; i < outtypes.size() ; i++)
@@ -1474,7 +1474,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << funcName<<"() const" << endl;
                 c << "{" << endl;
                 c << "    return ";
-                vector<QString> types = SplitValues(vartype);
+                std::vector<QString> types = SplitValues(vartype);
                 for (size_t i=0; i<types.size(); i++)
                 {
                     if (i>0) c << " | ";
@@ -1869,7 +1869,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << funcName<<"() const" << endl;
                 c << "{" << endl;
                 c << "    return ";
-                vector<QString> types = SplitValues(vartype);
+                std::vector<QString> types = SplitValues(vartype);
                 for (size_t i=0; i<types.size(); i++)
                 {
                     if (i>0) c << " | ";

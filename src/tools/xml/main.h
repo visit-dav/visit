@@ -16,7 +16,7 @@ QString     Endl("\n");
 #include <unistd.h>
 #endif
 
-vector<EnumType*> EnumType::enums;
+std::vector<EnumType*> EnumType::enums;
 
 bool print   = true;
 bool clobber = false;

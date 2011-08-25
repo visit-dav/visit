@@ -550,7 +550,7 @@ XMLEditPlugin::UpdateWindowContents()
             iconFile->setText(xmldoc->plugin->iconFile);
             hasIcon->setChecked(xmldoc->plugin->iconFile.length() > 0);
             pluginType->setCurrentIndex(1);
-            vector<QString> types = SplitValues(xmldoc->plugin->vartype);
+            std::vector<QString> types = SplitValues(xmldoc->plugin->vartype);
             for (size_t i=0; i<types.size(); i++)
             {
                 if      (types[i] == "mesh")
@@ -582,7 +582,7 @@ XMLEditPlugin::UpdateWindowContents()
             iconFile->setText(xmldoc->plugin->iconFile);
             hasIcon->setChecked(xmldoc->plugin->iconFile.length() > 0);
             createExpressions->setChecked(xmldoc->plugin->createExpression);
-            vector<QString> types = SplitValues(xmldoc->plugin->exprInType);
+            std::vector<QString> types = SplitValues(xmldoc->plugin->exprInType);
             for (size_t i=0; i<types.size(); i++)
             {
                 if      (types[i] == "mesh")

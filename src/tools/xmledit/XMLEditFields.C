@@ -1087,7 +1087,7 @@ XMLEditFields::initChanged()
     }
     else
     {
-        vector<QString> splitvalues = SplitValues(values->toPlainText());
+        std::vector<QString> splitvalues = SplitValues(values->toPlainText());
         int length = splitvalues.size();
         if (!f->isVector && (length > f->length))
             length = f->length;
@@ -1135,7 +1135,7 @@ XMLEditFields::valuesChanged()
     }
     else
     {
-        vector<QString> splitvalues = SplitValues(values->toPlainText());
+        std::vector<QString> splitvalues = SplitValues(values->toPlainText());
         int length = splitvalues.size();
         if (!f->isVector && (length > f->length))
             length = f->length;
@@ -1220,7 +1220,7 @@ XMLEditFields::fieldlistDel()
         return;
 
     Field *f = a->fields[index];
-    vector<Field*> newlist;
+    std::vector<Field*> newlist;
     for (size_t i=0; i<a->fields.size(); i++)
     {
         if (a->fields[i] != f)

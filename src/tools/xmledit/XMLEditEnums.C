@@ -425,7 +425,7 @@ XMLEditEnums::enumlistDel()
         return;
 
     EnumType *e = EnumType::FindEnum(enumlist->currentItem()->text());
-    vector<EnumType*> newlist;
+    std::vector<EnumType*> newlist;
     for (size_t i=0; i<EnumType::enums.size(); i++)
     {
         if (EnumType::enums[i] != e)
