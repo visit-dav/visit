@@ -11,7 +11,7 @@ logRecipients="${logRecipients} brugger1@llnl.gov harrison37@llnl.gov"
 #
 # Parse the command line to determine the host to run on.
 #
-host="alastor"
+host="edge"
 status="fail"
 
 for abc
