@@ -217,6 +217,9 @@ ParseCharacters(const QString &buff_input)
 //    Hank Childs, Thu Dec 30 13:33:19 PST 2010
 //    Added support for expression-creating operators.
 //
+//    Kathleen Biagas, Thu Aug 25 13:23:07 MST 2011 
+//    Added persistent flag for fields.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -664,6 +667,7 @@ class XMLParser : public QXmlDefaultHandler
 
             QString enabler   = atts.value("enabler");
             QString internal  = atts.value("internal");
+            QString persistent  = atts.value("persistent");
 
             QString ignoreeq  = atts.value("ignoreeq");
             if (!ignoreeq.isNull())
@@ -724,6 +728,9 @@ class XMLParser : public QXmlDefaultHandler
             if (!internal.isNull())
                 currentField->SetInternal(internal);
 
+            if (!persistent.isNull())
+                currentField->SetPersistent(persistent);
+
             for (int j=0; j<atts.length(); j++)
             {
                 if (atts.qName(j) != "name"    &&
@@ -733,6 +740,7 @@ class XMLParser : public QXmlDefaultHandler
                     atts.qName(j) != "length"  &&
                     atts.qName(j) != "enabler" &&
                     atts.qName(j) != "internal"&&
+                    atts.qName(j) != "persistent"  &&
                     atts.qName(j) != "ignoreeq"&&
                     atts.qName(j) != "access"  &&
                     atts.qName(j) != "init"    )

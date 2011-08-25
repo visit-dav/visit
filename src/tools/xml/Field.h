@@ -51,7 +51,6 @@
 #endif
 
 #include <cstdlib>
-using namespace std;
 // ****************************************************************************
 //  Class:  Field
 //
@@ -102,6 +101,9 @@ using namespace std;
 //    Changed how vartypes is parsed to fix a variable scoping issue on 
 //    Windows. 
 //
+//    Kathleen Biagas, Thu Aug 25 14:18:42 PST 2011
+//    Added persistent flag. 
+//
 // ****************************************************************************
 
 
@@ -119,6 +121,7 @@ class Field
     int               length;
 
     bool              internal;
+    bool              persistent;
 
     bool              isArray;
     bool              isVector;
@@ -132,7 +135,7 @@ class Field
     AccessType        accessType;
 
     Field            *enabler;
-    vector<QString>   enableval;
+    std::vector<QString>   enableval;
 
     std::map<QString,QString> initcode;
     int               varTypes;
@@ -146,6 +149,7 @@ class Field
     {
         codeFile = NULL;
         internal = false;
+        persistent = true;
         valueSet = false;
         enabler = NULL;
         if (label.isNull())
@@ -164,6 +168,7 @@ class Field
     void CopyValues(Field *f)
     {
         internal = f->internal;
+        persistent = f->persistent;
         enabler = f->enabler;
         enableval = f->enableval;
         index = f->index;
@@ -255,6 +260,10 @@ class Field
     {
         internal = Text2Bool(v);
     }
+    void SetPersistent(const QString &v)
+    {
+        persistent = Text2Bool(v);
+    }
     void SetPublicAccess()
     {
         accessType = AccessPublic;
@@ -277,6 +286,8 @@ class Field
 
         if (internal)
             cOut << "            (INTERNAL)" << Endl;
+        if (!persistent)
+            cOut << "            (NOT PERSISTENT)" << Endl;
         if (accessType == AccessPublic)
             cOut << "            (PUBLIC)" << Endl;
         else if (accessType == AccessProtected)
@@ -367,7 +378,7 @@ class Field
         out << endl;
     }
 
-    virtual vector<QString> GetValueAsText() = 0;
+    virtual std::vector<QString> GetValueAsText() = 0;
 };
 
 
@@ -399,7 +410,7 @@ class Int : public virtual Field
     {
         if (a == "range")
         {
-            vector<QString> minmax = SplitValues(v);
+            std::vector<QString> minmax = SplitValues(v);
             min = minmax[0].toInt();
             max = minmax[1].toInt();
             rangeSet = true;
@@ -466,9 +477,9 @@ class IntArray : public virtual Field
             out << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             for (int i=0; i<length; i++)
                 retval.push_back(QString().sprintf("%d", val[i]));
@@ -483,7 +494,7 @@ class IntArray : public virtual Field
 class IntVector : public virtual Field
 {
   public:
-    vector<int> val;
+    std::vector<int> val;
   public:
     IntVector(const QString &n, const QString &l) : Field("intVector",n,l) { }
     virtual QString GetCPPName(bool, const QString &) 
@@ -510,9 +521,9 @@ class IntVector : public virtual Field
             out << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             for (size_t i=0; i<val.size(); i++)
                 retval.push_back(QString().sprintf("%d", val[i]));
@@ -547,9 +558,9 @@ class Bool : public virtual Field
             out << "            value: " << (val ? "true" : "false") << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(Bool2Text(val));
         return retval;
@@ -583,9 +594,9 @@ class Float : public virtual Field
             out << "            value: " << val << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(QString().sprintf("%f", val));
         return retval;
@@ -630,9 +641,9 @@ class FloatArray : public virtual Field
             out << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             for (int i=0; i<length; i++)
                 retval.push_back(QString().sprintf("%f", val[i]));
@@ -667,9 +678,9 @@ class Double : public virtual Field
             out << "            value: " << val << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(QString().sprintf("%f", val));
         return retval;
@@ -714,9 +725,9 @@ class DoubleArray : public virtual Field
             out << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             for (int i=0; i<length; i++)
                 retval.push_back(QString().sprintf("%f", val[i]));
@@ -731,7 +742,7 @@ class DoubleArray : public virtual Field
 class DoubleVector : public virtual Field
 {
   public:
-    vector<double> val;
+    std::vector<double> val;
   public:
     DoubleVector(const QString &n, const QString &l) : Field("doubleVector",n,l) { }
     virtual QString GetCPPName(bool, const QString &) 
@@ -761,9 +772,9 @@ class DoubleVector : public virtual Field
             out << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             for (size_t i=0; i<val.size(); i++)
                 retval.push_back(QString().sprintf("%f", val[i]));
@@ -798,9 +809,9 @@ class UChar : public virtual Field
             out << "            value: " << ios::hex << int(val) << ios::dec << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(QString().sprintf("%d", val));
         return retval;
@@ -845,9 +856,9 @@ class UCharArray : public virtual Field
             out << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             for (int i=0; i<length; i++)
                 retval.push_back(QString().sprintf("%d", val[i]));
@@ -862,7 +873,7 @@ class UCharArray : public virtual Field
 class UCharVector : public virtual Field
 {
   public:
-    vector<unsigned char> val;
+    std::vector<unsigned char> val;
   public:
     UCharVector(const QString &n, const QString &l) : Field("ucharVector",n,l) { }
     virtual QString GetCPPName(bool, const QString &) 
@@ -892,9 +903,9 @@ class UCharVector : public virtual Field
             out << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             for (size_t i=0; i<val.size(); i++)
                 retval.push_back(QString().sprintf("%d", int(val[i])));
@@ -929,9 +940,9 @@ class String : public virtual Field
             out << "            value: " << val << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(val);
         return retval;
@@ -945,7 +956,7 @@ class String : public virtual Field
 class StringVector : public virtual Field
 {
   public:
-    vector<QString> val;
+    std::vector<QString> val;
   public:
     StringVector(const QString &n, const QString &l) : Field("stringVector",n,l) { };
     virtual QString GetCPPName(bool, const QString &) 
@@ -972,7 +983,7 @@ class StringVector : public virtual Field
             out << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
         return val;
     }
@@ -1005,9 +1016,9 @@ class ColorTable : public virtual Field
             out << "            value: " << val << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(val);
         return retval;
@@ -1046,9 +1057,9 @@ class Color : public virtual Field
                 << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             for (int i=0; i<4; i++)
                 retval.push_back(QString().sprintf("%d", val[i]));
@@ -1083,9 +1094,9 @@ class Opacity : public virtual Field
             out << "            value: " << val << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(QString().sprintf("%f", val));
         return retval;
@@ -1119,9 +1130,9 @@ class LineStyle : public virtual Field
             out << "            value: " << val << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(QString().sprintf("%d", val));
         return retval;
@@ -1155,9 +1166,9 @@ class LineWidth : public virtual Field
             out << "            value: " << val << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(QString().sprintf("%d", val));
         return retval;
@@ -1227,9 +1238,9 @@ class VariableName : public virtual Field
             out << "            value: " << val << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(val);
         return retval;
@@ -1275,9 +1286,9 @@ class Att : public virtual Field
         Field::Print(out);
         out << "            subtype: " << attType << endl;
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         return retval;
     }
 };
@@ -1321,9 +1332,9 @@ class AttVector : public virtual Field
         Field::Print(out);
         out << "            subtype: " << attType << endl;
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         return retval;
     }
 };
@@ -1379,9 +1390,9 @@ class Enum : public virtual Field
             out << "            value: " << val << " (" << enumType->values[val] << ")" << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(enumType->values[val]);
         return retval;
@@ -1404,9 +1415,9 @@ class Enum : public virtual Field
             val = s.toInt();\
         valueSet = true;\
     }\
-    virtual vector<QString> GetValueAsText()\
+    virtual std::vector<QString> GetValueAsText()\
     {\
-        vector<QString> retval;\
+        std::vector<QString> retval;\
         if (valueSet)\
         {\
             int n = 0;\
@@ -1434,7 +1445,7 @@ class Enum : public virtual Field
 
 
 //
-// ------------------------------------ avtCenteringField -----------------------------------
+// ----------------------- avtCenteringField ----------------------------------
 //
 class avtCenteringField : public virtual Field
 {
@@ -1463,7 +1474,7 @@ class avtCenteringField : public virtual Field
 };
 
 //
-// ------------------------------------ avtGhostTypeField -----------------------------------
+// ---------------------- avtGhostTypeField -----------------------------------
 //
 class avtGhostTypeField : public virtual Field
 {
@@ -1492,7 +1503,7 @@ class avtGhostTypeField : public virtual Field
 };
 
 //
-// ------------------------------------ avtSubsetTypeField -----------------------------------
+// --------------------- avtSubsetTypeField -----------------------------------
 //
 class avtSubsetTypeField : public virtual Field
 {
@@ -1558,7 +1569,7 @@ class avtVarTypeField : public virtual Field
 };
 
 //
-// ------------------------------------ avtMeshTypeField -----------------------------------
+// ----------------------- avtMeshTypeField -----------------------------------
 //
 class avtMeshTypeField : public virtual Field
 {
@@ -1591,7 +1602,7 @@ class avtMeshTypeField : public virtual Field
 };
 
 //
-// ------------------------------------ avtExtentTypeField -----------------------------------
+// --------------------- avtExtentTypeField -----------------------------------
 //
 class avtExtentTypeField : public virtual Field
 {
@@ -1620,7 +1631,7 @@ class avtExtentTypeField : public virtual Field
 };
 
 //
-// ------------------------------------ avtMeshCoordTypeField -----------------------------------
+// ------------------- avtMeshCoordTypeField -----------------------------------
 //
 class avtMeshCoordTypeField : public virtual Field
 {
@@ -1648,7 +1659,7 @@ class avtMeshCoordTypeField : public virtual Field
 };
 
 //
-// ------------------------------------ LoadBalanceSchemeField -----------------------------------
+// ------------------ LoadBalanceSchemeField -----------------------------------
 //
 class LoadBalanceSchemeField : public virtual Field
 {
@@ -1705,9 +1716,9 @@ class ScaleMode : public virtual Field
             out << "            value: " << val << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(QString().sprintf("%d", val));
         return retval;

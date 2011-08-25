@@ -106,6 +106,10 @@
 //
 //    Mark C. Miller, Wed Aug 26 10:57:41 PDT 2009
 //    Added custom base class for derived state objects.
+//
+//    Kathleen Biagas, Thu Aug 25 14:17:22 MST 2011
+//    Added persistent flag for fields.
+//
 // ****************************************************************************
 
 class Attribute : public AttributeBase
@@ -181,6 +185,8 @@ class Attribute : public AttributeBase
                 WriteTagAttr(out, "length", Int2Text(f->length));
             if (f->internal)
                 WriteTagAttr(out, "internal", Bool2Text(f->internal));
+            if (!f->persistent)
+                WriteTagAttr(out, "persistent", Bool2Text(f->persistent));
             if (f->ignoreEquality)
                 WriteTagAttr(out, "ignoreeq", Bool2Text(f->ignoreEquality));
             if (f->enabler && !f->enableval.empty())
