@@ -44,98 +44,98 @@
     <Field name="showZoneBlockLogicalCoords" label="showZoneBlockLogicalCoords" type="bool">
       false
     </Field>
-    <Field name="clearWindow" label="clearWindow" type="bool" internal="true">
+    <Field name="clearWindow" label="clearWindow" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="pickLetter" label="pickLetter" type="string" internal="true">
+    <Field name="pickLetter" label="pickLetter" type="string" internal="true" persistent="false">
     </Field>
-    <Field name="fulfilled" label="fulfilled" type="bool" internal="true">
+    <Field name="fulfilled" label="fulfilled" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="pickType" label="pickType" type="enum" subtype="PickType" internal="true">
+    <Field name="pickType" label="pickType" type="enum" subtype="PickType" internal="true" persistent="false">
       Zone
     </Field>
-    <Field name="domain" label="domain" type="int" internal="true">
+    <Field name="domain" label="domain" type="int" internal="true" persistent="false">
       -1
     </Field>
-    <Field name="elementNumber" label="elementNumber" type="int" internal="true">
+    <Field name="elementNumber" label="elementNumber" type="int" internal="true" persistent="false">
       -1
     </Field>
-    <Field name="incidentElements" label="incidentElements" type="intVector" internal="true">
+    <Field name="incidentElements" label="incidentElements" type="intVector" internal="true" persistent="false">
     </Field>
-    <Field name="timeStep" label="timeStep" type="int" internal="true">
+    <Field name="timeStep" label="timeStep" type="int" internal="true" persistent="false">
       -1
     </Field>
-    <Field name="dimension" label="dimension" type="int" internal="true">
+    <Field name="dimension" label="dimension" type="int" internal="true" persistent="false">
       -1
     </Field>
-    <Field name="databaseName" label="databaseName" type="string" internal="true">
+    <Field name="databaseName" label="databaseName" type="string" internal="true" persistent="false">
     </Field>
-    <Field name="activeVariable" label="activeVariable" type="string" internal="true">
+    <Field name="activeVariable" label="activeVariable" type="string" internal="true" persistent="false">
     </Field>
-    <Field name="pickPoint" label="pickPoint" type="doubleArray" length="3" internal="true">
-      0.000000
-      0.000000
-      0.000000
-    </Field>
-    <Field name="cellPoint" label="cellPoint" type="doubleArray" length="3" internal="true">
+    <Field name="pickPoint" label="pickPoint" type="doubleArray" length="3" internal="true" persistent="false">
       0.000000
       0.000000
       0.000000
     </Field>
-    <Field name="nodePoint" label="nodePoint" type="doubleArray" length="3" internal="true">
+    <Field name="cellPoint" label="cellPoint" type="doubleArray" length="3" internal="true" persistent="false">
       0.000000
       0.000000
       0.000000
     </Field>
-    <Field name="plotBounds" label="plotBounds" type="doubleVector" length="6" internal="true">
-    </Field>
-    <Field name="rayPoint1" label="rayPoint1" type="doubleArray" length="3" internal="true">
+    <Field name="nodePoint" label="nodePoint" type="doubleArray" length="3" internal="true" persistent="false">
       0.000000
       0.000000
       0.000000
     </Field>
-    <Field name="rayPoint2" label="rayPoint2" type="doubleArray" length="3" internal="true">
+    <Field name="plotBounds" label="plotBounds" type="doubleVector" internal="true" persistent="false">
+    </Field>
+    <Field name="rayPoint1" label="rayPoint1" type="doubleArray" length="3" internal="true" persistent="false">
       0.000000
       0.000000
       0.000000
     </Field>
-    <Field name="meshInfo" label="MeshInfo" type="string" internal="true">
+    <Field name="rayPoint2" label="rayPoint2" type="doubleArray" length="3" internal="true" persistent="false">
+      0.000000
+      0.000000
+      0.000000
     </Field>
-    <Field name="realElementNumber" label="RealElementNumber" type="int" internal="true">
+    <Field name="meshInfo" label="MeshInfo" type="string" internal="true" persistent="false">
+    </Field>
+    <Field name="realElementNumber" label="RealElementNumber" type="int" internal="true" persistent="false">
       -1
     </Field>
-    <Field name="realIncidentElements" label="RealIncidentElements" type="intVector" internal="true">
+    <Field name="realIncidentElements" label="RealIncidentElements" type="intVector" internal="true" persistent="false">
     </Field>
-    <Field name="pnodeCoords" label="pnodeCoords" type="stringVector" internal="true">
+    <Field name="pnodeCoords" label="pnodeCoords" type="stringVector" internal="true" persistent="false">
     </Field>
-    <Field name="dnodeCoords" label="dnodeCoords" type="stringVector" internal="true">
+    <Field name="dnodeCoords" label="dnodeCoords" type="stringVector" internal="true" persistent="false">
     </Field>
-    <Field name="bnodeCoords" label="bnodeCoords" type="stringVector" internal="true">
+    <Field name="bnodeCoords" label="bnodeCoords" type="stringVector" internal="true" persistent="false">
     </Field>
-    <Field name="dzoneCoords" label="dzoneCoords" type="stringVector" internal="true">
+    <Field name="dzoneCoords" label="dzoneCoords" type="stringVector" internal="true" persistent="false">
     </Field>
-    <Field name="bzoneCoords" label="bzoneCoords" type="stringVector" internal="true">
+    <Field name="bzoneCoords" label="bzoneCoords" type="stringVector" internal="true" persistent="false">
     </Field>
-    <Field name="needTransformMessage" label="needTransformMessage" type="bool" internal="true">
+    <Field name="needTransformMessage" label="needTransformMessage" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="varInfo" label="varInfo" type="attVector" subtype="PickVarInfo" internal="true">
+    <Field name="varInfo" label="varInfo" type="attVector" subtype="PickVarInfo" internal="true" persistent="false">
     </Field>
-    <Field name="invalidVars" label="invalidVars" type="stringVector" internal="true">
+    <Field name="invalidVars" label="invalidVars" type="stringVector" internal="true" persistent="false">
     </Field>
     <Field name="doTimeCurve" label="doTimeCurve" type="bool">
       false
     </Field>
-    <Field name="errorMessage" label="errorMessage" type="string" internal="true">
+    <Field name="errorMessage" label="errorMessage" type="string" internal="true" persistent="false">
     </Field>
-    <Field name="error" label="error" type="bool" internal="true">
+    <Field name="error" label="error" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="matSelected" label="matSelected" type="bool" internal="true">
+    <Field name="matSelected" label="matSelected" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="needActualCoords" label="needActualCoords" type="bool" internal="true">
+    <Field name="needActualCoords" label="needActualCoords" type="bool" internal="true" persistent="false">
       false
     </Field>
     <Field name="conciseOutput" label="conciseOutput" type="bool">
@@ -147,60 +147,60 @@
     <Field name="showMeshName" label="showMeshName" type="bool">
       true
     </Field>
-    <Field name="blockPieceName" label="blockPieceName" type="string">
+    <Field name="blockPieceName" label="blockPieceName" type="string" persistent="false">
     </Field>
-    <Field name="groupPieceName" label="groupPieceName" type="string">
+    <Field name="groupPieceName" label="groupPieceName" type="string" persistent="false">
     </Field>
-    <Field name="ghosts" label="ghosts" type="intVector" internal="true">
+    <Field name="ghosts" label="ghosts" type="intVector" internal="true" persistent="false">
     </Field>
-    <Field name="includeGhosts" label="includeGhosts" type="bool" internal="true">
+    <Field name="includeGhosts" label="includeGhosts" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="elementIsGhost" label="elementIsGhost" type="bool" internal="true">
+    <Field name="elementIsGhost" label="elementIsGhost" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="requiresGlyphPick" label="requiresGlyphPick" type="bool" internal="true">
+    <Field name="requiresGlyphPick" label="requiresGlyphPick" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="locationSuccessful" label="locationSuccessful" type="bool" internal="true">
+    <Field name="locationSuccessful" label="locationSuccessful" type="bool" internal="true" persistent="false">
       false
     </Field>
     <Field name="displayGlobalIds" label="displayGlobalIds" type="bool">
       false
     </Field>
-    <Field name="globalElement" label="globalElement" type="int" internal="true">
+    <Field name="globalElement" label="globalElement" type="int" internal="true" persistent="false">
       -1
     </Field>
-    <Field name="globalIncidentElements" label="globalIncidentElements" type="intVector" internal="true">
+    <Field name="globalIncidentElements" label="globalIncidentElements" type="intVector" internal="true" persistent="false">
     </Field>
-    <Field name="elementIsGlobal" label="elementIsGlobal" type="bool" internal="true">
+    <Field name="elementIsGlobal" label="elementIsGlobal" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="displayPickLetter" label="displayPickLetter" type="bool">
+    <Field name="displayPickLetter" label="displayPickLetter" type="bool" persistent="false">
       true
     </Field>
-    <Field name="reusePickLetter" label="reusePickLetter" type="bool">
+    <Field name="reusePickLetter" label="reusePickLetter" type="bool" persistent="false">
       false
     </Field>
-    <Field name="ghostType" label="ghostType" type="int" internal="true">
+    <Field name="ghostType" label="ghostType" type="int" internal="true" persistent="false">
       0
     </Field>
-    <Field name="hasMixedGhostTypes" label="hasMixedGhostTypes" type="int" internal="true">
+    <Field name="hasMixedGhostTypes" label="hasMixedGhostTypes" type="int" internal="true" persistent="false">
       -1
     </Field>
-    <Field name="linesData" label="linesData" type="bool" internal="true">
+    <Field name="linesData" label="linesData" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="inputTopoDim" label="inputTopoDim" type="int" internal="true">
+    <Field name="inputTopoDim" label="inputTopoDim" type="int" internal="true" persistent="false">
       -1
     </Field>
-    <Field name="meshCoordType" label="meshCoordType" type="enum" subtype="CoordinateType">
+    <Field name="meshCoordType" label="meshCoordType" type="enum" subtype="CoordinateType" persistent="false">
       XY
     </Field>
     <Field name="createSpreadsheet" label="Create Spreadsheet of Pick" type="bool">
       false
     </Field>
-    <Field name="subsetName" label="Subset name" type="string" internal="true">
+    <Field name="subsetName" label="Subset name" type="string" internal="true" persistent="false">
     </Field>
     <Field name="floatFormat" label="Float Format" type="string">
       %g
@@ -208,7 +208,7 @@
     <Field name="timePreserveCoord" label="timePreserveCoord" type="bool">
       true
     </Field>
-    <Field name="timeCurveType" label="timeCurveType" type="enum" subtype="TimeCurveType">
+    <Field name="timeCurveType" label="timeCurveType" type="enum" subtype="TimeCurveType" persistent="false">
       Single_Y_Axis
     </Field>
     <Function name="PrintSelf" user="true" member="true">
@@ -216,10 +216,6 @@
     <Function name="CreateOutputString" user="true" member="true">
     </Function>
     <Function name="PrepareForNewPick" user="true" member="true">
-    </Function>
-    <Function name="SetFromNode" user="false" member="true">
-    </Function>
-    <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="CreateConciseOutputString" user="true" member="true">
     </Function>
