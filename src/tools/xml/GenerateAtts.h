@@ -201,6 +201,9 @@
 //    Brad Whitlock, Fri Dec 10 16:09:42 PST 2010
 //    I made protected members generate Set/Get methods like public members.
 //
+//    Kathleen Biagas, Thu Aug 25 14:21:58 MST 2011
+//    Allow fields in a persistent state object to be non-persistent.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -2795,6 +2798,11 @@ private:
                 c << "    // " << fields[i]->name << " is public and should not be saved." << Endl;
                 continue;
             }
+            if(!fields[i]->persistent)
+            {
+                c << "    // " << fields[i]->name << " is not persistent and should not be saved." << Endl;
+                continue;
+            }
 
             QString forceAdd("false"); 
             if(fields[i]->type != "color")
@@ -2901,6 +2909,11 @@ private:
             if(fields[i]->accessType == Field::AccessPublic)
             {
                 c << "    // " << fields[i]->name << " is public and was not saved." << Endl;
+                continue;
+            }
+            if(!fields[i]->persistent)
+            {
+                c << "    // " << fields[i]->name << " is not persistent and was not saved." << Endl;
                 continue;
             }
 

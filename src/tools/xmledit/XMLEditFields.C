@@ -111,6 +111,9 @@ class QNarrowLineEdit : public QLineEdit
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011 
+//    Added persistent checkbox.
+//
 // ****************************************************************************
 
 XMLEditFields::XMLEditFields(QWidget *p)
@@ -190,6 +193,10 @@ XMLEditFields::XMLEditFields(QWidget *p)
 
     internal = new QCheckBox(tr("Internal use only"), this);
     topLayout->addWidget(internal, row,0, 1,3);
+    row++;
+
+    persistent = new QCheckBox(tr("Persistent"), this);
+    topLayout->addWidget(persistent, row,0, 1,3);
 
     // Add a group box that contains controls to set the variable
     // types that will be accepted by a variablename object.
@@ -301,6 +308,8 @@ XMLEditFields::XMLEditFields(QWidget *p)
             this, SLOT(lengthTextChanged(const QString&)));
     connect(internal, SIGNAL(clicked()),
             this, SLOT(internalChanged()));
+    connect(persistent, SIGNAL(clicked()),
+            this, SLOT(persistentChanged()));
     connect(ignoreeq, SIGNAL(clicked()),
             this, SLOT(ignoreeqChanged()));
     connect(init, SIGNAL(clicked()),
@@ -368,6 +377,9 @@ XMLEditFields::UpdateWindowContents()
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011 
+//    Added persistent checkbox.
+//
 // ****************************************************************************
 
 void
@@ -387,6 +399,7 @@ XMLEditFields::UpdateWindowSensitivity()
     enabler->setEnabled(active);
     enableval->setEnabled(active && enabler->currentText() != tr("(none)"));
     internal->setEnabled(active);
+    persistent->setEnabled(active);
     ignoreeq->setEnabled(active);
     variableNameGroup->setEnabled(active && type->currentText() == "variablename");
     init->setEnabled(active);
@@ -419,6 +432,9 @@ XMLEditFields::UpdateWindowSensitivity()
 //     Jeremy Meredith, Thu Mar 19 12:01:02 EDT 2009
 //     Finish Qt4 port -- ids for variable type buttons weren't used.
 //
+//     Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011 
+//     Added persistent checkbox.
+//
 // ****************************************************************************
 
 void
@@ -439,6 +455,7 @@ XMLEditFields::UpdateWindowSingleItem()
         enabler->clear();
         enableval->setText("");
         internal->setChecked(false);
+        persistent->setChecked(true);
         ignoreeq->setChecked(false);
         access->button(0)->setChecked(true);
         init->setChecked(false);
@@ -501,6 +518,7 @@ XMLEditFields::UpdateWindowSingleItem()
             enableval->setText("");
         }
         internal->setChecked(f->internal);
+        persistent->setChecked(f->persistent);
         ignoreeq->setChecked(f->ignoreEquality);
         if(f->accessType == Field::AccessPrivate)
             access->button(0)->setChecked(true);
@@ -652,6 +670,9 @@ XMLEditFields::UpdateEnablerList()
 //    Brad Whitlock, Wed Feb 28 18:49:38 PST 2007
 //    Added access.
 //
+//    Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011 
+//    Added persistent checkbox.
+//
 // ****************************************************************************
 void
 XMLEditFields::BlockAllSignals(bool block)
@@ -665,6 +686,7 @@ XMLEditFields::BlockAllSignals(bool block)
     enabler->blockSignals(block);
     enableval->blockSignals(block);
     internal->blockSignals(block);
+    persistent->blockSignals(block);
     ignoreeq->blockSignals(block);
     varNameButtons->blockSignals(block);
     init->blockSignals(block);
@@ -921,6 +943,27 @@ XMLEditFields::internalChanged()
     Field *f = a->fields[index];
 
     f->internal = internal->isChecked();
+}
+
+// ****************************************************************************
+//  Method:  XMLEditFields::persistentChanged
+//
+//  Programmer:  Kathleen Biagas 
+//  Creation:    August 25, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+XMLEditFields::persistentChanged()
+{
+    Attribute *a = xmldoc->attribute;
+    int index = fieldlist->currentRow();
+    if (index == -1)
+        return;
+    Field *f = a->fields[index];
+
+    f->persistent = persistent->isChecked();
 }
 
 // ****************************************************************************

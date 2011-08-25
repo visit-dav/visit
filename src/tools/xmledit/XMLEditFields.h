@@ -72,6 +72,9 @@ class QPushButton;
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Thu Aug 25 11:28:49 PDT 2011
+//    Added persistent.
+//
 // ****************************************************************************
 
 class XMLEditFields : public QFrame
@@ -95,6 +98,7 @@ class XMLEditFields : public QFrame
     void enablevalTextChanged(const QString&);
     void lengthTextChanged(const QString&);
     void internalChanged();
+    void persistentChanged();
     void ignoreeqChanged();
     void initChanged();
     void valuesChanged();
@@ -122,6 +126,7 @@ class XMLEditFields : public QFrame
     QLineEdit       *enableval;
     QNarrowLineEdit *length;
     QCheckBox       *internal;
+    QCheckBox       *persistent;
     QCheckBox       *ignoreeq;
     QButtonGroup    *access;
     QGroupBox       *accessGroup;
