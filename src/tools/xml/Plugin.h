@@ -127,12 +127,12 @@
 class Plugin : public PluginBase
 {
   public:
-    vector<QString> defaultgfiles;
-    vector<QString> defaultsfiles;
-    vector<QString> defaultvfiles;
-    vector<QString> defaultmfiles;
-    vector<QString> defaultefiles;
-    vector<QString> defaultwfiles;
+    std::vector<QString> defaultgfiles;
+    std::vector<QString> defaultsfiles;
+    std::vector<QString> defaultvfiles;
+    std::vector<QString> defaultmfiles;
+    std::vector<QString> defaultefiles;
+    std::vector<QString> defaultwfiles;
 
     Attribute *atts;
   public:

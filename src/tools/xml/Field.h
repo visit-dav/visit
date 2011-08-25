@@ -430,9 +430,9 @@ class Int : public virtual Field
             out << "            range: " << min << " - " << max << endl;
         }
     }
-    virtual vector<QString> GetValueAsText()
+    virtual std::vector<QString> GetValueAsText()
     {
-        vector<QString> retval;
+        std::vector<QString> retval;
         if (valueSet)
             retval.push_back(QString().sprintf("%d", val));
         return retval;
@@ -806,7 +806,7 @@ class UChar : public virtual Field
         Field::Print(out);
         if (valueSet)
         {
-            out << "            value: " << ios::hex << int(val) << ios::dec << endl;
+            out << "            value: " << std::ios::hex << int(val) << std::ios::dec << endl;
         }
     }
     virtual std::vector<QString> GetValueAsText()
