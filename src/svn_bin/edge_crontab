@@ -1,0 +1,7 @@
+# use /bin/sh to run commands, no matter what /etc/passwd says
+SHELL=/bin/sh
+# mail any output to 'brugger1@llnl.gov', no matter whose crontab this is
+MAILTO=brugger1@llnl.gov
+#
+# run at 10:00 PM, every day
+0 22 * * * $HOME/visit_run_tests/edge_cron_script >> $HOME/visit_run_tests/out 2>&1
