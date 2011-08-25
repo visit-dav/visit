@@ -805,7 +805,7 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
       wedge->GetPointIds()->SetId( 3, i+3 );
       wedge->GetPointIds()->SetId( 4, i+4 );
       wedge->GetPointIds()->SetId( 5, i+5 );
-      
+
       grid->InsertNextCell( wedge->GetCellType(), wedge->GetPointIds() );
     }
     
@@ -993,16 +993,6 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
                 string(groupStr) + string("/") + string(varStr) +
                 "' the number of elements or the component size does not match" );
 
-  // Normally an array would be created but instead use the VTK memory
-  // directly - this usage works because the vtk and hdf5 memory
-  // layout are the same.
-
-//   float *vals = new float[sdim[0]*sdim[1]];
-//   if( H5Dread( datasetId,
-//             H5T_NATIVE_FLOAT, H5S_ALL, spaceId, H5P_DEFAULT, vals ) < 0 )
-//     EXCEPTION2( UnexpectedValueException,
-//                 groupStr + string("/") + varStr, "Can not read the data" );
-
   // Create the VTK structure to hole the field variable.
   vtkFloatArray *var = vtkFloatArray::New();
 
@@ -1011,22 +1001,45 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   var->SetNumberOfComponents( sdim[1] );
   var->SetNumberOfTuples( sdim[0] );
 
+
+  // Normally an array would be created but instead use the VTK memory
+  // directly - this usage works because the vtk and hdf5 memory
+  // layout are the same.
+
+//   float *vals = new float[sdim[0]*sdim[1]];
+//   if( H5Dread( datasetId,
+//             H5T_NATIVE_FLOAT, H5S_ALL, spaceId, H5P_DEFAULT, vals ) < 0 )
+//     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Read",
+//              "Dataset '" + string(groupStr) + string("/") + string(varStr) +
+//              "' can not be read" );
+
+//  var->SetNumberOfValues( sdim[0]*sdim[1] );
+//  var->SetArray( vals, sdim[0]*sdim[1], 0, // ); delete[]( void *) );
+//  delete [] vals;
+  
+
   // Pointer to the vtk memory.
   float* values = (float*) var->GetVoidPointer(0);
   
   // Read the data directly into the vtk memory - this call assume
   // that the hdfd5 and vtk memory layout are the same.
   if( H5Dread( datasetId,
-               H5T_NATIVE_FLOAT, H5S_ALL, spaceId, H5P_DEFAULT, values ) < 0 )
+              H5T_NATIVE_FLOAT, H5S_ALL, spaceId, H5P_DEFAULT, values ) < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Read",
                 "Dataset '" + string(groupStr) + string("/") + string(varStr) +
                 "' can not be read" );
-  
+
+  int ncomponents = sdim[1];
+
+//   std::cerr << "READ " << varname << std::endl;
+//     for( int j=0; j<ncomponents; ++j )
+//       std::cerr << values[0*ncomponents+j]  << "  ";
+//     std::cerr << std::endl;
+//     std::cerr << std::endl;
+
   H5Dclose(spaceId);
   H5Dclose(datasetId);
   H5Gclose( groupID );
-
-//  delete [] vals;
   
   return var;
 }
