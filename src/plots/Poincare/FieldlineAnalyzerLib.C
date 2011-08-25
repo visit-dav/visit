@@ -2181,7 +2181,7 @@ GetBaseWindingPairs( std::vector< unsigned int > &poloidalWindingCounts,
              << local_safetyFactor << " - "
              << "consistency "
              << 100.0 * baseWindingPairs[i].stat
-             << "%" << std::endl;
+             << "%)" << std::endl;
     }
     else
     {
@@ -2192,7 +2192,7 @@ GetBaseWindingPairs( std::vector< unsigned int > &poloidalWindingCounts,
              << baseWindingPairs[i].poloidal << "  ("
              << local_safetyFactor << " - "
              << "consistency " << 100.0 * baseWindingPairs[i].stat
-             << "%"
+             << "%)"
              << std::endl;
     }
   }
@@ -3434,7 +3434,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
            << fabs(safetyFactor - local_safetyFactor) << ")  "
            << "consistency "
            << 100.0 * consistency
-           << " %" << std::endl;
+           << " %)" << std::endl;
   }
 
   // A catch all in case the somehow the number of puncture points
