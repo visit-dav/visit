@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Change directories to the working directory.
+cd visit_run_tests
+
+# Get the latest version of the test script
+rm -rf svn_bin
+svn co svn+ssh://brugger@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src/svn_bin
+
+# Run the test suite.
+svn_bin/regressiontest_edge
