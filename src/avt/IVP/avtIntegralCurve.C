@@ -226,6 +226,13 @@ avtIntegralCurve::~avtIntegralCurve()
 //   Dave Pugmire, Fri Feb 18 14:52:18 EST 2011
 //   Replaced minH with minHFactor for use when integrating upto a domain boundary.
 //
+//   Hank Childs, Thu Aug 25 14:08:48 PDT 2011
+//   If we take a step to that ends up "OUTSIDE_DOMAIN", then make sure
+//   that the amount of step is limited by our maximum time.  (We have 
+//   observed multiple cases where the epsilon step in space is actually
+//   a huge step in time ... so big that it causes the particle to go well
+//   too far in the future.)
+//
 // ****************************************************************************
 
 void avtIntegralCurve::Advance( avtIVPField* field )
@@ -364,6 +371,17 @@ void avtIntegralCurve::Advance( avtIVPField* field )
 
                 if( std::abs(h) < hmin )
                     h = h < 0 ? -hmin : hmin;
+
+                if (h > 0)
+                {
+                    if (t + h > tfinal)
+                        h = tfinal-t;
+                }
+                else
+                {
+                    if (t + h < tfinal)
+                        h = tfinal-t;
+                }
 
                 t += h;
                 y += h*v;
