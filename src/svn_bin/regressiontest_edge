@@ -15,6 +15,10 @@
 #
 #   Eric Brugger, Thu Aug 25 11:22:39 PDT 2011
 #   Modified the script to work on edge.
+#
+#   Eric Brugger, Thu Aug 25 14:11:16 PDT 2011
+#   Modified the script to send out the e-mail only after the results
+#   were posted.
 
 #
 # Determine the users name and e-mail address.
@@ -248,16 +252,9 @@ for m in \$modes; do
     fi
 done
 
-# Send out an e-mail notifying the users of the test suite status.
-cd ..
-if test "\$hasFailed" = ""; then
-   src/svn_bin/visit-notify-test-failure -pass -host $testHost
-else
-   src/svn_bin/visit-notify-test-failure -host $testHost
-fi
-
 # If the test suite passed then update the revision number indicating the
 # last pass.
+cd ..
 if test "\$hasFailed" = ""; then
     svn update src/svn_bin/lastpass_$testHost
     svnRevision=\`svn info src | grep "Revision:" | cut -d' ' -f2\`
@@ -282,6 +279,13 @@ scp src/svn_bin/visit-update-test-website $userNersc@euclid.nersc.gov:
 ssh $userNersc@euclid.nersc.gov "./visit-update-test-website"
 if test "$debug" = "true" ; then
     echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
+fi
+
+# Send out an e-mail notifying the users of the test suite status.
+if test "\$hasFailed" = ""; then
+   src/svn_bin/visit-notify-test-failure -pass -host $testHost
+else
+   src/svn_bin/visit-notify-test-failure -host $testHost
 fi
 
 # Set the permissions so that others may access the test directory.
