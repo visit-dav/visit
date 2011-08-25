@@ -20,9 +20,9 @@ list of changes in release 2.3.1.</p>
 <ul>
 <li>VisIt no longer hangs when displaying from a Linux computer to a MacOS X computer over X11.</li>
 <li>If you have a running session with multiple windows, and you restore a session with one window, VisIt no longer unexpectedly exits.</li>
-<li>Curve plots created via the <i>operators/Lineout</i> variable menu in a plot variable menu failed to plot if the variable name contained spaces.</li>
+<li>Curve plots created via the <i>operators/Lineout</i> variable menu in a plot variable menu are now handled properly when the variable name contains spaces.</li>
 <li>When you using cross-mesh field evaluations, VisIt now correctly issues a warning when accessing invalid time slices.</li>
-<li>The <i>VisIt_RectilinearMesh_setBaseIndex</i> function in Libsim did not behave properly.</li>
+<li>The <i>VisIt_RectilinearMesh_setBaseIndex</i> function in Libsim now behave properly.</li>
 <li>A bug was corrected in the Enzo reader that caused it to fail sometimes on Windows.</li>
 <li>A bug was corrected in the PF3D reader where the data was not being properly decompressed for one of the compression schemes."
 <li>Repeatedly passing character array variables with different string values to Libsim was broken. In the old scheme, arrays were assumed to contain the same contents and conversion to C-style strings under the covers would only happen once.</li>
@@ -37,6 +37,7 @@ list of changes in release 2.3.1.</p>
 <li>The Enzo reader was enhanced to support the multi-resolution control operator.</li>
 <li>Libsim was enhanced to have a <i>VisItGetSockets</i> function that returns the socket file descriptors used by the <i>VisItDetectInput</i> function. This new function lets you obtain the socket descriptors in case you want to add them to your own <i>select</i>-based event loop.</li>
 <li>VisIt can now read NumPy array files (via the BOV reader). Supported data types are byte, short, 32-bit integeres, float and double.
+<li>Serial and parallel host profiles were added for LLNL's coastal and rzzeus systems.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous
