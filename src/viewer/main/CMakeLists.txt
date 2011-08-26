@@ -217,19 +217,14 @@ ELSE(NOT APPLE)
         MACOSX_PACKAGE_LOCATION Resources
     )
 
+    CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/ViewerInfo.plist.in
+                   ${VISIT_BINARY_DIR}/include/ViewerInfo.plist @ONLY IMMEDIATE)
     ADD_EXECUTABLE(viewer_exe MACOSX_BUNDLE viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE})
-    SET(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt Viewer ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_INFO_STRING          "Graphical viewer for VisIt")
-    SET(MACOSX_BUNDLE_ICON_FILE            ${VIEWER_ICON_FILE})
-    SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISV)
-    SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC")
+    SET_TARGET_PROPERTIES(viewer_exe PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${VISIT_BINARY_DIR}/include/ViewerInfo.plist)
 ENDIF(NOT APPLE)
 
 SET_TARGET_PROPERTIES(viewer_exe PROPERTIES OUTPUT_NAME viewer)
-TARGET_LINK_LIBRARIES(viewer_exe 
+TARGET_LINK_LIBRARIES(viewer_exe
     ${viewer_exe_IOperator}
     ${viewer_exe_VOperator}
     ${viewer_exe_IPlot}
