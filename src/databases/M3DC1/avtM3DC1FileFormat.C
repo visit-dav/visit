@@ -993,7 +993,7 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   {
     vtkWedge *wedge = vtkWedge::New();
 
-    for( int i=mins[0]; i<maxs[0]; i+=strides[0] )
+    for( int i=mins[0]; i<=maxs[0]; i+=strides[0] )
     {
       unsigned int index = i * nvertices;
       wedge->GetPointIds()->SetId( 0, index   );
