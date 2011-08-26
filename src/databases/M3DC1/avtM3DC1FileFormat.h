@@ -90,6 +90,12 @@ class avtM3DC1FileFormat : public avtMTSDFileFormat
     virtual const char    *GetType(void)   { return "M3DC1"; };
     virtual void           FreeUpResources(void); 
 
+    virtual bool CanCacheVariable(const char *var);
+    virtual void RegisterDataSelections(const std::vector<avtDataSelection_p> &sels,
+                                        std::vector<bool> *selectionsApplied);
+
+    virtual bool ProcessDataSelections(int *mins, int *maxs, int *strides);
+
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
@@ -110,12 +116,18 @@ class avtM3DC1FileFormat : public avtMTSDFileFormat
     bool ReadStringAttribute( hid_t parentID, const char *attr, std::string *value );
     hid_t NormalizeH5Type( hid_t type );
 
+    // Some stuff to keep track of data selections
+    std::vector<avtDataSelection_p> selList;
+    std::vector<bool>              *selsApplied;
+
+    bool processDataSelections;
+    bool haveReadWholeData;
+
     // DATA MEMBERS
     hid_t m_fileID;
     std::string m_filename;
     int m_refinement;
     avtCentering m_dataLocation;
-    float m_perturbationScale;
 
     std::vector<int>    m_cycles;
     std::vector<double> m_times;
