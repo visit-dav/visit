@@ -55,6 +55,8 @@
 #include <avtDatabaseMetaData.h>
 
 #include <DBOptionsAttributes.h>
+#include <avtLogicalSelection.h>
+//#include <avtSpatialBoxSelection.h>
 #include <Expression.h>
 
 #include <avtCallback.h>
@@ -86,7 +88,7 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
   : avtMTSDFileFormat(&filename, 1),
     m_filename(filename),
     m_refinement(2), m_dataLocation(AVT_NODECENT),
-    m_perturbationScale(1.0)
+    processDataSelections(false), haveReadWholeData(true)
 {
     if (readOpts != NULL) {
       for (int i=0; i<readOpts->GetNumberOfOptions(); ++i) {
@@ -101,8 +103,9 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
           else if( dataLocation == 1 )
             m_dataLocation = AVT_ZONECENT;
         }
-        else if (readOpts->GetName(i) == "Perturbation scaling")
-          m_perturbationScale = readOpts->GetDouble("Perturbation scaling");
+        else if (readOpts->GetName(i) == "Process Data Selections in the Reader")
+          processDataSelections =
+            readOpts->GetBool("Process Data Selections in the Reader");
       }
     }
 
@@ -153,6 +156,155 @@ avtM3DC1FileFormat::FreeUpResources(void)
 
 
 // ****************************************************************************
+//  Method: avtVsFileFormat::CanCacheVariable
+//
+//  Purpose:
+//      To truly exercise the VS file format, we can't have VisIt caching
+//      chunks of mesh and variables above the plugin.
+//      
+//  Programmer: Mark C. Miller 
+//  Creation:   September 20, 2004 
+//
+// ****************************************************************************
+
+bool
+avtM3DC1FileFormat::CanCacheVariable(const char *var)
+{
+    // If processing the selections turn caching off.
+    return !processDataSelections;
+
+//    return haveReadWholeData;
+}
+
+
+// ****************************************************************************
+//  Method: avtVsFileFormat::RegisterDataSelections
+//
+//  Purpose:
+//      The Vs format can exploit some data selections so get them. 
+//      
+//  Programmer: Allen Sanderson
+//  Creation:   March 4, 2011
+//
+// ****************************************************************************
+
+void
+avtM3DC1FileFormat::RegisterDataSelections(const std::vector<avtDataSelection_p> &sels,
+                                        std::vector<bool> *selectionsApplied)
+{
+  selList     = sels;
+  selsApplied = selectionsApplied;
+}
+
+
+// ****************************************************************************
+//  Method: avtVsFileFormat::ProcessDataSelections
+//
+//  Purpose:
+//      The Vs format can exploit some data selections so process them. 
+//      
+//  Programmer: Allen Sanderson
+//  Creation:   March 4, 2011
+//
+// ****************************************************************************
+
+bool
+avtM3DC1FileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
+{
+    bool retval = false;
+
+    if( !processDataSelections )
+      return retval;
+
+    avtLogicalSelection composedSel;
+
+    for (int i = 0; i < selList.size(); i++)
+    {
+        if (std::string(selList[i]->GetType()) == "Logical Data Selection")
+        {
+            avtLogicalSelection *sel = (avtLogicalSelection *) *(selList[i]);
+
+            // overrwrite method-scope arrays with the new indexing
+            composedSel.Compose(*sel);
+            (*selsApplied)[i] = true;
+            retval = true;
+        }
+
+        // Cannot handle avtSpatialBoxSelection without knowing the mesh.
+
+//         else if (std::string(selList[i]->GetType()) == "Spatial Box Data Selection")
+//         {
+//             avtSpatialBoxSelection *sel =
+//               (avtSpatialBoxSelection *) *(Sellist[i]);
+
+//             double dmins[3], dmaxs[3];
+//             sel->GetMins(dmins);
+//             sel->GetMaxs(dmaxs);
+//             avtSpatialBoxSelection::InclusionMode imode =
+//                 sel->GetInclusionMode();
+
+//             // we won't handle clipping of zones here
+//             if ((imode != avtSpatialBoxSelection::Whole) &&
+//                 (imode != avtSpatialBoxSelection::Partial))
+//             {
+//                 (*selsApplied)[i] = false;
+//                 continue;
+//             }
+
+//             int imins[3], imaxs[3];
+//             for (int j = 0; j < 3; j++)
+//             {
+//                 int imin = (int) dmins[j];
+//                 if (((double) imin < dmins[j]) &&
+//                     (imode == avtSpatialBoxSelection::Whole))
+//                     imin++;
+                
+//                 int imax = (int) dmaxs[j];
+//                 if (((double) imax < dmaxs[j]) &&
+//                     (imode == avtSpatialBoxSelection::Partial))
+//                     imax++;
+
+//                 imins[j] = imin;
+//                 imaxs[j] = imax;
+//             }
+
+//             avtLogicalSelection newSel;
+//             newSel.SetStarts(imins);
+//             newSel.SetStops(imaxs);
+
+//             composedSel.Compose(newSel);
+//             (*selsApplied)[i] = true;
+//             retval = true;
+//         }
+        else
+        {
+            // indicate we won't handle this selection
+            (*selsApplied)[i] = false;
+        }
+    }
+
+    composedSel.GetStarts(mins);
+    composedSel.GetStops(maxs);
+    composedSel.GetStrides(strides);
+
+    // If the user is a dumb ass and selects a dimention lower than
+    // the actual dimension the min, max, and stride will be zero. So
+    // fix it to be the full bounds and a stride of 1.
+    for (int i = 0; i < 3; i++)
+    {
+      if( strides[i] == 0 )
+      {
+        mins[i] = 0;
+        maxs[i] = -1;
+        strides[i] = 1;
+      }
+    }
+
+    return retval;
+}
+
+
+// ****************************************************************************
 //  Method: avtM3DC1FileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
@@ -170,7 +322,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                                              int timeState)
 {
     avtMeshMetaData *mmd;
-    avtMeshType mt = AVT_UNSTRUCTURED_MESH;
+    avtMeshType meshType = AVT_UNSTRUCTURED_MESH;
     int nblocks = 1;
     int block_origin = 0;
     int cell_origin = 0;
@@ -178,6 +330,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int spatial_dimension = 3;
     int topological_dimension = 3;
     double *extents = NULL;
+    int bounds[3] = {nelms, 0, 0};
 
     char level[4];
 
@@ -190,15 +343,26 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
 
     // Original meshes for the user to see.
-    AddMeshToMetaData( md, "equilibrium/mesh",
-                       mt, extents, nblocks, block_origin,
-                       spatial_dimension, topological_dimension );
-    
-    AddMeshToMetaData( md,"mesh", mt,
-                       extents, nblocks, block_origin,
-                       spatial_dimension, topological_dimension );
-    
-    
+    mmd = new avtMeshMetaData("equilibrium/mesh",
+                              nblocks, block_origin,
+                              cell_origin, group_origin,
+                              spatial_dimension, topological_dimension,
+                              meshType);
+
+    mmd->SetBounds( bounds );
+    mmd->SetNumberCells( nelms );
+    md->Add(mmd);
+
+    mmd = new avtMeshMetaData("mesh",
+                              nblocks, block_origin,
+                              cell_origin, group_origin,
+                              spatial_dimension, topological_dimension,
+                              meshType);
+
+    mmd->SetBounds( bounds );
+    mmd->SetNumberCells( nelms );
+    md->Add(mmd);
+
     // Populate the scalar field vars that will be interpolate onto a
     // refined mesh.
     for ( int i = 0; i < m_fieldVarNames.size(); ++i )
@@ -233,7 +397,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         new avtMeshMetaData(string("equilibrium/mesh") + string(level),
                             nblocks, block_origin,
                             cell_origin, group_origin,
-                            spatial_dimension, topological_dimension, mt);
+                            spatial_dimension, topological_dimension, meshType);
       mmd->hideFromGUI = true;
       md->Add(mmd);
 
@@ -242,7 +406,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         new avtMeshMetaData(string("mesh") + string(level),
                             nblocks, block_origin,
                             cell_origin, group_origin,
-                            spatial_dimension, topological_dimension, mt);
+                            spatial_dimension, topological_dimension, meshType);
       mmd->hideFromGUI = true;
       md->Add(mmd);
     }
@@ -253,14 +417,14 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     mmd =
       new avtMeshMetaData("hidden/equilibrium/mesh",
                           nblocks, block_origin, cell_origin, group_origin,
-                          spatial_dimension, topological_dimension, mt);
+                          spatial_dimension, topological_dimension, meshType);
     mmd->hideFromGUI = true;
     md->Add(mmd);
 
     mmd =
       new avtMeshMetaData("hidden/mesh",
                           nblocks, block_origin, cell_origin, group_origin,
-                          spatial_dimension, topological_dimension, mt);
+                          spatial_dimension, topological_dimension, meshType);
     mmd->hideFromGUI = true;
     md->Add(mmd);
 
@@ -726,18 +890,49 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   const char *meshnamePtr = meshname;  
   char meshStr[64];
 
+  bool haveDataSelections;
+  int mins[3], maxs[3], strides[3];
+  
   // If hidden only one poloidal plane as the mesh will be used for
   // interpolation. There should also be no refinement.
   if( strncmp(meshname, "hidden/", 7 ) == 0 )
   {
     meshnamePtr = &(meshname[7]);
+
+    mins[0] = 0;
+    maxs[0] = nelms;
+    strides[0] = 1;
+      
+    haveReadWholeData = true;
   }
   else
   {
     meshnamePtr = meshname;
+
+    // Adjust for the data selections which are NODAL.
+    if( haveDataSelections = ProcessDataSelections(mins, maxs, strides) )
+    {
+      debug5
+        << "Have a logical cell selection for mesh  " << meshname << "  "
+        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
+        //      << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
+        //      << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
+        << std::endl;
+      
+      haveReadWholeData = false;
+    }
+    else
+    {
+      mins[0] = 0;
+      maxs[0] = nelms;
+      strides[0] = 1;
+      
+      haveReadWholeData = true;
+    }
   }
   
-  // Parse the mesh variable name to get the true mesh name.
+  // Parse the mesh variable name to get the true mesh name and the
+  // refiement level in the meshnamePtr.
   if( strncmp(meshnamePtr, "equilibrium/mesh", 16 ) == 0 )
   {
     meshnamePtr = &(meshnamePtr[16]);
@@ -766,7 +961,7 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
 
   // Now get the points on the mesh based on the refinement level.
-  vtkPoints *vtkPts = GetMeshPoints( elements, refinement);
+  vtkPoints *vtkPts = GetMeshPoints( elements, refinement );
 
   // Add the points to the VTK grid.
   int npts = vtkPts->GetNumberOfPoints();
@@ -797,14 +992,16 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   else //if( element_dimension == 3 )
   {
     vtkWedge *wedge = vtkWedge::New();
-    for( int i=0; i<npts; i+=nvertices )
+
+    for( int i=mins[0]; i<maxs[0]; i+=strides[0] )
     {
-      wedge->GetPointIds()->SetId( 0, i   );
-      wedge->GetPointIds()->SetId( 1, i+1 );
-      wedge->GetPointIds()->SetId( 2, i+2 );
-      wedge->GetPointIds()->SetId( 3, i+3 );
-      wedge->GetPointIds()->SetId( 4, i+4 );
-      wedge->GetPointIds()->SetId( 5, i+5 );
+      unsigned int index = i * nvertices;
+      wedge->GetPointIds()->SetId( 0, index   );
+      wedge->GetPointIds()->SetId( 1, index+1 );
+      wedge->GetPointIds()->SetId( 2, index+2 );
+      wedge->GetPointIds()->SetId( 3, index+3 );
+      wedge->GetPointIds()->SetId( 4, index+4 );
+      wedge->GetPointIds()->SetId( 5, index+5 );
 
       grid->InsertNextCell( wedge->GetCellType(), wedge->GetPointIds() );
     }
@@ -1273,34 +1470,7 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
     strcpy( varStr, &(varname[7]) );
     
-    if( m_perturbationScale == 1.0 ||
-        (strcmp(varname, "hidden/f" ) &&
-         strcmp(varname, "hidden/f_i" ) &&
-         strcmp(varname, "hidden/psi" ) &&
-         strcmp(varname, "hidden/psi_i" ) ) )
-    {
-      return GetFieldVar( timestate, varStr );
-    }
-
-    // The user can scale the perturbed variables by a scaling factor
-    // set when the file is openned.
-    else
-    {
-      debug1 << "avtM3DC1FileFormat::GetVectorVar - Scaling "
-             << varname << " by " << m_perturbationScale << endl;
-
-      vtkDataArray* vtkVar = GetFieldVar( timestate, varStr );
-
-      float* values = (float*) vtkVar->GetVoidPointer(0);
-      
-      unsigned int nvals =
-        vtkVar->GetNumberOfTuples() * vtkVar->GetNumberOfComponents();
-      
-      for( unsigned int i=0; i<nvals; ++i )
-        *values++ *= m_perturbationScale;
-
-      return vtkVar;
-    } 
+    return GetFieldVar( timestate, varStr );
   }
   else if( strcmp(varname, "B_C1_Elements") == 0 ||
            strcmp(varname, "B_Interpolated") == 0 )

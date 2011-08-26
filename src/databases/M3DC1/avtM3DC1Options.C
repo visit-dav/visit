@@ -88,7 +88,7 @@ GetM3DC1ReadOptions(void)
     centering.push_back("Element");
     rv->SetEnumStrings("Linear mesh data location", centering);
  
-    rv->SetDouble("Perturbation scaling", 1.0);
+    rv->SetBool("Process Data Selections in the Reader", false);
 
     return rv;
 }
