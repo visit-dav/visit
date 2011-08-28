@@ -3288,7 +3288,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                             << " as AVT_POINT_MESH" << std::endl;
 
           meshType = AVT_POINT_MESH;
-          topologicalDims = 3; //?????
+          topologicalDims = 1;
 
           // Add in the logical bounds of the mesh.
           numCells = unstructuredMesh->getNumPoints();
@@ -3298,6 +3298,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                             << "Registering mesh " << it->c_str()
                             << " as AVT_UNSTRUCTURED_MESH" << std::endl;
 
+
           spatialDims = meta->getNumSpatialDims();
           VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Adding unstructured mesh " << *it
@@ -3305,7 +3306,29 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                             << " spatial dimensions." << std::endl;
 
           meshType = AVT_UNSTRUCTURED_MESH;
-          topologicalDims = 3;
+
+          // For now users can have only one connectivity dataset.
+          if( unstructuredMesh->getLinesDataset() ||
+              unstructuredMesh->getPolygonsDataset() ||
+              unstructuredMesh->getTrianglesDataset() ||
+              unstructuredMesh->getQuadrilateralsDataset() ) {
+            topologicalDims = 2;
+          } else if( unstructuredMesh->getPolyhedraDataset() ||
+                     unstructuredMesh->getTetrahedralsDataset() ||
+                     unstructuredMesh->getPyramidsDataset() ||
+                     unstructuredMesh->getPrismsDataset() ||
+                     unstructuredMesh->getHexahedralsDataset() ) {
+            topologicalDims = 3;
+          }
+          else {
+            VsLog::debugLog()
+              << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+              << "ERROR - unable to find connectivity dataset. "
+              << "Returning points data without connectivity."
+              << std::endl;
+
+            continue;
+          }
 
           // Add in the logical bounds of the mesh.
           numCells = unstructuredMesh->getNumCells();
@@ -3321,6 +3344,8 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Unrecognized mesh kind: " << meta->getKind()
                           << "." << std::endl;
+
+        continue;
       }
 
       if( meshType != AVT_UNKNOWN_MESH )

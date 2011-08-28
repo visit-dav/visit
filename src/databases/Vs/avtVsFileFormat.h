@@ -163,9 +163,6 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   /** Ensure data has been read **/
   void LoadData();
 
-  bool processDataSelections;
-  bool haveReadWholeData;
-
   private:
   /**
    * A counter to track the number of avtVsFileFormat objects in existence
@@ -180,6 +177,9 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   /** Some stuff to keep track of data selections */
   std::vector<avtDataSelection_p> selList;
   std::vector<bool>              *selsApplied;
+
+  bool processDataSelections;
+  bool haveReadWholeData;
 
   /**
    * Maintain a list of curve names so we can classify expressions better
