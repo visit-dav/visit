@@ -514,7 +514,7 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
             rectilinearFilter->Update();
             rv = rectilinearFilter->GetOutput();
         }
-        else if (topoDim == 0 && 
+        else if (topoDim == 0 &&
                  (dstype == VTK_POLY_DATA || dstype == VTK_UNSTRUCTURED_GRID))
         {
             pointsFilter->SetInput(ds);
@@ -738,7 +738,11 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     wrap[1] = atts.GetYWrap();
     wrap[2] = atts.GetZWrap();
 
-    if( wrap[0] || wrap[1] || wrap[2] )
+    int dstype = in_ds->GetDataObjectType();
+
+    if( (wrap[0] || wrap[1] || wrap[2]) &&
+        topoDim > 0 &&
+        dstype != VTK_POLY_DATA && dstype != VTK_UNSTRUCTURED_GRID )
       return Replicate( out_ds, wrap );
     else
       return out_ds;
@@ -1026,43 +1030,47 @@ avtIndexSelectFilter::PostExecute(void)
 {
     avtPluginDataTreeIterator::PostExecute();
 
-    if (successfullyExecuted)
+    int topoDim =
+      GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
+
+    int dstype = GetInput()->GetInfo().GetAttributes().GetMeshType();
+
+    // If the initial mesh is unstructure then cheating and processing
+    // an unstrucrutured mesh so skip checking for a topology
+    // dimension reduction.
+    if (topoDim > 0 || dstype != AVT_UNSTRUCTURED_MESH)
     {
-        int numMatches = 0;
+      if (successfullyExecuted)
+      {
+        int newdim =
+          GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
+
         switch (atts.GetDim())
         {
-          case IndexSelectAttributes::ThreeD:
-            if (atts.GetZMin() == atts.GetZMax())
-            {
-                numMatches++;
-            }
-    
-            // FALLTHRU
-    
-          case IndexSelectAttributes::TwoD:
-            if (atts.GetYMin() == atts.GetYMax())
-            {
-                numMatches++;
-            }
-    
-            // FALLTHRU
-    
-          case IndexSelectAttributes::OneD:
-            if (atts.GetXMin() == atts.GetXMax())
-            {
-                numMatches++;
-            }
-            break;
-    
-          default:
-            EXCEPTION0(ImproperUseException);
+        case IndexSelectAttributes::ThreeD:
+          if (atts.GetZMin() == atts.GetZMax())
+            --newdim;
+          
+          // FALLTHRU
+          
+        case IndexSelectAttributes::TwoD:
+          if (atts.GetYMin() == atts.GetYMax())
+            --newdim;
+          
+          // FALLTHRU
+          
+        case IndexSelectAttributes::OneD:
+          if (atts.GetXMin() == atts.GetXMax())
+                --newdim;
+          break;
+              
+        default:
+          EXCEPTION0(ImproperUseException);
         }
-
-        int indim = GetInput()->GetInfo().GetAttributes().
-                                                     GetTopologicalDimension();
-        int newdim = indim - numMatches;
+        
         newdim = (newdim < 0 ? 0 : newdim);
         GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(newdim);
+      }
     }
 }
 
@@ -1140,7 +1148,6 @@ avtIndexSelectFilter::UpdateDataObjectInfo(void)
     // numbering is probably different.  So set a flag that specifies that
     // they are needed for pick. 
     //
-
     GetOutput()->GetInfo().GetAttributes().SetOrigElementsRequiredForPick(true);
 
     //
@@ -1179,7 +1186,7 @@ avtIndexSelectFilter::FilterUnderstandsTransformedRectMesh()
 
 
 // ****************************************************************************
-//  Method: avtOnionPeelFilter::VerifyInput
+//  Method: avtIndexSelectFilter::VerifyInput
 //
 //  Purpose:
 //    Throw an exception if user-selected domain is out of range. 
@@ -1263,7 +1270,7 @@ avtIndexSelectFilter::VerifyInput()
 }
 
 // ****************************************************************************
-//  Method: avtOnionPeelFilter::Replicate
+//  Method: avtIndexSelectFilter::Replicate
 //
 //  Purpose:
 //    Replicates the first slice to the last slice for wrapping.
