@@ -287,7 +287,7 @@ avtM3DC1FileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
     composedSel.GetStops(maxs);
     composedSel.GetStrides(strides);
 
-    // If the user is a dumb ass and selects a dimention lower than
+    // If the user is a dumb ass and selects a dimension lower than
     // the actual dimension the min, max, and stride will be zero. So
     // fix it to be the full bounds and a stride of 1.
     for (int i = 0; i < 3; i++)
@@ -900,7 +900,7 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
     meshnamePtr = &(meshname[7]);
 
     mins[0] = 0;
-    maxs[0] = nelms;
+    maxs[0] = nelms-1;
     strides[0] = 1;
       
     haveReadWholeData = true;
@@ -924,7 +924,7 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
     else
     {
       mins[0] = 0;
-      maxs[0] = nelms;
+      maxs[0] = nelms-1;
       strides[0] = 1;
       
       haveReadWholeData = true;
@@ -973,16 +973,18 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   // triangles because each triangle is defined by three points that
   // are not unique. 
 
-  grid->Allocate(npts/nvertices);
-    
+  grid->Allocate((maxs[0]-mins[0])/strides[0]+1);
+
   if( element_dimension == 2 )
   {
     vtkTriangle *tri = vtkTriangle::New();
-    for( int i=0; i<npts; i+=nvertices )
+
+    for( int i=mins[0]; i<=maxs[0]; i+=strides[0] )
     {
-      tri->GetPointIds()->SetId( 0, i   );
-      tri->GetPointIds()->SetId( 1, i+1 );
-      tri->GetPointIds()->SetId( 2, i+2 );
+      unsigned int index = i * nvertices;
+      tri->GetPointIds()->SetId( 0, index   );
+      tri->GetPointIds()->SetId( 1, index+1 );
+      tri->GetPointIds()->SetId( 2, index+2 );
       
       grid->InsertNextCell( tri->GetCellType(), tri->GetPointIds() );
     }
