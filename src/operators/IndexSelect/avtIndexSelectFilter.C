@@ -1040,8 +1040,6 @@ avtIndexSelectFilter::PostExecute(void)
     // dimension reduction.
     if (topoDim > 0 && dstype != AVT_UNSTRUCTURED_MESH)
     {
-      cerr << __LINE__ << "  " << topoDim << "  " << dstype << endl ;
-
       if (successfullyExecuted)
       {
         int newdim =
