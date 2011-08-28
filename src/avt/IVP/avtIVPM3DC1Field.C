@@ -449,32 +449,38 @@ void avtIVPM3DC1Field::findElementNeighbors()
   // (x+(a+b)*cos(theta),z+(a+b)*sin(theta)),
   // (x+b*cos(theta)-c*sin(theta),z+b*sin(theta)+c*cos(theta)).
 
-  for (el=0; el<nplanes*tElements; el++) {
-    ptr = elements + element_size*el;
-    co = trigtable[2*el]     = cos(ptr[3]);
-    sn = trigtable[2*el + 1] = sin(ptr[3]);
-  }
+  if( element_dimension == 2 )
+  {
+    for (el=0; el<tElements; el++) {
+      ptr = elements + element_size*el;
+      co = trigtable[2*el];
+      sn = trigtable[2*el + 1];
 
-  for (el=0; el<tElements; el++) {
-    ptr = elements + element_size*el;
+      x[0] = ptr[4];
+      y[0] = ptr[5];
 
-    x[0] = ptr[4];
-    y[0] = ptr[5];
+      x[1] = x[0] + (ptr[0] + ptr[1])*co;
+      y[1] = y[0] + (ptr[0] + ptr[1])*sn;
 
-    x[1] = x[0] + (ptr[0] + ptr[1])*co;
-    y[1] = y[0] + (ptr[0] + ptr[1])*sn;
+      x[2] = x[0] + ptr[1]*co - ptr[2]*sn;
+      y[2] = y[0] + ptr[1]*sn + ptr[2]*co;
 
-    x[2] = x[0] + ptr[1]*co - ptr[2]*sn;
-    y[2] = y[0] + ptr[1]*sn + ptr[2]*co;
-
-    for (vert=0; vert<3; vert++)
-      tri[vert] = register_vert(vertexList, x[vert], y[vert]);
+      for (vert=0; vert<3; vert++)
+        tri[vert] = register_vert(vertexList, x[vert], y[vert]);
     
-    for (vert=0; vert<3; vert++)
-      add_edge(edgeListMap, tri, vert, el, neighbors);
+      for (vert=0; vert<3; vert++)
+        add_edge(edgeListMap, tri, vert, el, neighbors);
 
-  } /* end loop el */
-
+    } /* end loop el */
+  }
+  else //if( element_dimension == 3 )
+  {
+    for (el=0; el<nplanes*tElements; el++) {
+      ptr = elements + element_size*el;
+      trigtable[2*el]     = cos(ptr[3]);
+      trigtable[2*el + 1] = sin(ptr[3]);
+    }
+  }
 //   fprintf(stderr, "%d / %d unique vertices\n", vlen, 3*tElements);
 //   fprintf(stderr, "Neighbors of element 0: %d, %d, %d\n", neighbors[0],
 //           neighbors[1], neighbors[2]);
@@ -599,10 +605,10 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
   tri = elements + element_size*el;
 
   /* Compute coordinates local to the current element */
-  if( element_dimension == 2 )
+//   if( element_dimension == 2 )
     index = 2 * el;
-  else //if( element_dimension == 3 )
-    index = 2*(el%tElements);
+//   else //if( element_dimension == 3 )
+//     index = 2*(el%tElements);
 
   co = trigtable[index];
   sn = trigtable[index + 1];
@@ -644,46 +650,6 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
   float  *tri;
   double co, sn, rrel, zrel;
   int    last=-1, next, flag0, flag1, flag2;
-
-  // For 3D elements use VisIt's native cell search.
-  if( element_dimension == 3 )
-  {
-    avtInterpolationWeights iw[8];
-
-    double xpt[3];
-
-    double phi = xin[1];
-    
-    while( phi < 0 )
-      phi += 2.0*M_PI;
-    
-    while( phi >= 2.0*M_PI )
-      phi -= 2.0*M_PI;
-
-    xpt[0] = xin[0];
-    xpt[1] = phi;
-    xpt[2] = xin[2];
-
-    el = loc->FindCell( xpt, iw );
-
-    if( el < 0 )
-      return -1;
-
-    tri = elements + element_size*el;
-
-    /* Compute coordinates local to the current element */
-    co = trigtable[2*el];
-    sn = trigtable[2*el + 1];
-
-    rrel = xin[0] - (tri[4] + tri[1]*co);
-    zrel = xin[2] - (tri[5] + tri[1]*sn);
-
-    xout[0] = rrel*co + zrel*sn;  /* = xi */
-    xout[1] = zrel*co - rrel*sn;  /* = eta */
-    xout[2] = phi - tri[8];
-
-    return el;
-  }
 
   if( element_dimension == 2 )
   {
@@ -757,8 +723,6 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
 // fprintf(stderr, "Searched %d elements.\n", count);
 
     return el;
-  }
-
 
 #ifdef COMMENT_OUT_ASSUMPTIONS_NOT_TRUE
   if( element_dimension == 2 )
@@ -803,7 +767,50 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
     return -1;
   }
 #endif
+
+  }
+
+  // For 3D elements use VisIt's native cell search.
+  else //if( element_dimension == 3 )
+  {
+    avtInterpolationWeights iw[8];
+
+    double xpt[3];
+
+    double phi = xin[1];
+    
+    while( phi < 0 )
+      phi += 2.0*M_PI;
+    
+    while( phi >= 2.0*M_PI )
+      phi -= 2.0*M_PI;
+
+    xpt[0] = xin[0];
+    xpt[1] = phi;
+    xpt[2] = xin[2];
+
+    el = loc->FindCell( xpt, iw );
+
+    if( el < 0 )
+      return -1;
+
+    tri = elements + element_size*el;
+
+    /* Compute coordinates local to the current element */
+    co = trigtable[2*el];
+    sn = trigtable[2*el + 1];
+
+    rrel = xin[0] - (tri[4] + tri[1]*co);
+    zrel = xin[2] - (tri[5] + tri[1]*sn);
+
+    xout[0] = rrel*co + zrel*sn;  /* = xi */
+    xout[1] = zrel*co - rrel*sn;  /* = eta */
+    xout[2] = phi - tri[8];
+
+    return el;
+  }
 }
+
 
 // ****************************************************************************
 //  Method: avtIVPM3DC1Field::operator

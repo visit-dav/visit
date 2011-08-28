@@ -514,6 +514,8 @@ avtPICSFilter::LoadNextTimeSlice()
     GetTypedInput()->SetActiveVariable(velocityName.c_str());
 
     UpdateIntervalTree();
+    if( intervalTree == NULL )
+      return false;
 
     GetAllDatasetsArgs ds_list;
     bool dummy = false;
@@ -1380,7 +1382,10 @@ avtPICSFilter::UpdateIntervalTree()
         TRY
         {
             if (intervalTree)
+            {
                 delete intervalTree;
+                intervalTree = NULL;
+            }
 
             intervalTree = GetTypedInput()->CalculateSpatialIntervalTree(
                                            performCalculationsOverAllProcs);
@@ -1388,7 +1393,11 @@ avtPICSFilter::UpdateIntervalTree()
         CATCH(VisItException)
         {
             emptyDataset = true;
-            intervalTree = NULL;
+            if (intervalTree)
+            {
+                delete intervalTree;
+                intervalTree = NULL;
+            }
             return;
         }
         ENDTRY
@@ -2887,4 +2896,3 @@ avtPICSFilter::PurgeDomain( const int domain, const int timeStep )
         domainToCellLocatorMap.erase( it );
     } 
 }
-
