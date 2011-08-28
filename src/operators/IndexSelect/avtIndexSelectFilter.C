@@ -1038,8 +1038,10 @@ avtIndexSelectFilter::PostExecute(void)
     // If the initial mesh is unstructure then cheating and processing
     // an unstrucrutured mesh so skip checking for a topology
     // dimension reduction.
-    if (topoDim > 0 || dstype != AVT_UNSTRUCTURED_MESH)
+    if (topoDim > 0 && dstype != AVT_UNSTRUCTURED_MESH)
     {
+      cerr << __LINE__ << "  " << topoDim << "  " << dstype << endl ;
+
       if (successfullyExecuted)
       {
         int newdim =
