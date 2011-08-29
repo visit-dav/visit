@@ -322,6 +322,7 @@ void ElementFetcher::GetElemsFromBinaryFile(std::string filename, long fileOffse
   long byteOffset = mFileSet->mBytesPerElem * fileOffset; 
   if (fseek(fp, byteOffset, SEEK_SET) == -1) {
     string msg = string("Error, cannot seek ")+intToString(byteOffset)+" bytes into file: "+filename+string(" (")+strerror(errno)+string(")");
+    fclose(fp);
     EXCEPTION1(VisItException, msg.c_str()); 
   }
 
@@ -335,6 +336,7 @@ void ElementFetcher::GetElemsFromBinaryFile(std::string filename, long fileOffse
     long chunkElems = chunkBytes/mFileSet->mBytesPerElem; 
     if (fread((void*)buffer, mFileSet->mBytesPerElem, chunkElems, fp) == -1) {
       string msg = string("Error, cannot read ")+intToString(chunkBytes)+" bytes from file: "+filename+string(" (")+strerror(errno)+string(")");
+      fclose(fp);
       EXCEPTION1(VisItException, msg.c_str()); 
     }
     char *bufp = buffer; 
@@ -346,6 +348,7 @@ void ElementFetcher::GetElemsFromBinaryFile(std::string filename, long fileOffse
     bytesToRead -= chunkBytes; 
   }
   debug2 << "ElementFetcher::GetElemsFromBinaryFile complete " << endl;
+  fclose(fp);
   return; 
 }
 /* 

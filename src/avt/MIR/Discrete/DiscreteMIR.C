@@ -1336,6 +1336,7 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
             visitTimer->StopTimer(timerHandle,
                                   "MIR: Getting *completely* clean dataset");
             visitTimer->DumpTimings();
+            delete [] matFlag;
             return outmesh;
         }
         else
@@ -1343,6 +1344,7 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
             visitTimer->StopTimer(timerHandle,
                                   "MIR: Getting *empty* clean dataset");
             visitTimer->DumpTimings();
+            delete [] matFlag;
             return NULL;
         }
     }

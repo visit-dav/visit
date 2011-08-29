@@ -994,6 +994,8 @@ ParseException& ExpressionParser::generateParseException(void)
         }    
     }    
     
+    delete [] la1tokens;
+
     jj_endpos = 0;    
     jj_rescan_token();    
     jj_add_error_token(0, 0);    

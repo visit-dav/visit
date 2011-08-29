@@ -1430,12 +1430,13 @@ void avtVCellMTMDFileFormat::readVariableValues(const char * simFileName,string 
                     }
                 }
             }
+            delete [] regionValues;
         }else{
             dataHolder->SetNumberOfTuples(varDataBlock->size);
             double *values = (double *)dataHolder->GetVoidPointer(0);
             readDoubles(fp, values, varDataBlock->size);
         }
-}
+    }
 
     fclose(fp);
 }
