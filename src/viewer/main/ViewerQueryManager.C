@@ -1265,6 +1265,11 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             if(plotIds.size() > 0)
             {
                 ViewerPlot *p = plist->GetPlot(plotIds[0]);
+                if(!ViewerEngineManager::Instance()->EngineExists(p->GetEngineKey()))
+                {
+                    // Throw an exception so we know to clear actors.
+                    EXCEPTION0(NoEngineException);
+                }
                 ViewerEngineManager::Instance()->UpdateExpressions(
                     p->GetEngineKey(), p->GetExpressions());
             }
@@ -2223,8 +2228,16 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 bool createSpreadsheetSave = pa.GetCreateSpreadsheet();
                 if (win->GetInteractionMode() == SPREADSHEET_PICK)
                     pa.SetCreateSpreadsheet(true);
+
+                if(!ViewerEngineManager::Instance()->EngineExists(plot->GetEngineKey()))
+                {
+                    // Throw an exception so we know to clear actors.
+                    EXCEPTION0(NoEngineException);
+                }
+
                 ViewerEngineManager::Instance()->UpdateExpressions(
                     plot->GetEngineKey(), plot->GetExpressions());
+
                 ViewerEngineManager::Instance()->Pick(engineKey,
                                                       networkId, windowId,
                                                       &pa, pa);
