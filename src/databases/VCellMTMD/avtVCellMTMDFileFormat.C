@@ -2299,7 +2299,9 @@ void avtVCellMTMDFileFormat::substituteVisitFunctionSyntax(avtDatabaseMetaData *
                 ss << "_" << SPECIAL_XYZT[i] << "_";
                 SPECIAL_XYZT[i] = ss.str();
             }
-            vcellExpr->substituteInPlace(& VCell::Expression(RESERVE_XYZT[i]),& VCell::Expression(SPECIAL_XYZT[i]));
+        VCell::Expression reserveExp(RESERVE_XYZT[i]);
+        VCell::Expression specialExp(SPECIAL_XYZT[i]);
+        vcellExpr->substituteInPlace(& reserveExp,& specialExp);
         }
 
         //Convert VCell function syntax to Visit
