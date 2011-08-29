@@ -110,6 +110,9 @@
 #    Oliver Ruebel, Thu May 12 11:30 PDT 2011
 #    I added a CUBE reader
 #
+#    Hank Childs, Wed Aug  3 21:09:59 PDT 2011
+#    Add VCell reader on behalf of Ed Boyce, UCHC.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -181,6 +184,7 @@ Pixie
 SAMRAI
 Tetrad
 UNIC
+VCellMTMD
 Velodyne
 Vs
 ${XDMF_READER}

@@ -1,0 +1,286 @@
+/**    
+ *    
+ * VCell Expression Parser Grammer for JavaCC     
+ *    
+ */    
+    
+options {    
+  LOOKAHEAD = 1;    
+  UNICODE_INPUT = false;    
+  MULTI = true;    
+  STATIC = false;    
+  DEBUG_TOKEN_MANAGER = false;    
+}    
+    
+PARSER_BEGIN(ExpressionParser)    
+    
+package cbit.vcell.parser;    
+    
+public class ExpressionParser {    
+    
+  public static void main(String args[]) {    
+    ExpressionParser parser;    
+    if (args.length == 0) {    
+      System.out.println("Java Parser Version 0.2:  Reading from standard input . . .");    
+      parser = new ExpressionParser(new java.io.DataInputStream(System.in));    
+    } else if (args.length == 1) {    
+      System.out.println("Java Parser Version 0.2:  Reading from file " + args[0] + " . . .");    
+      try {    
+        parser = new ExpressionParser(new java.io.DataInputStream(new java.io.FileInputStream(args[0])));    
+      } catch (java.io.FileNotFoundException e) {    
+        System.out.println("Java Parser Version 0.2:  File " + args[0] + " not found.");    
+        return;    
+      }    
+    } else {    
+      System.out.println("VCELL Model Parser Version 0.2:  Usage is one of:");    
+      System.out.println("         java cbit.vcell.parser.ExpressionParser < inputfile");    
+      System.out.println("OR");    
+      System.out.println("         java cbit.vcell.parser.ExpressionParser inputfile");    
+      return;    
+    }    
+    try {    
+      ASTExpression n = parser.Expression();    
+      n.dump("");    
+      System.out.println("Java Parser Version 0.2:  Java program parsed successfully.");    
+    } catch (Exception e) {    
+      System.out.println("Java Parser Version 0.2:  exception during parse.");    
+      System.out.println(e.getMessage());    
+      e.printStackTrace();    
+    }    
+  }    
+}    
+    
+PARSER_END(ExpressionParser)    
+    
+    
+/*    
+ * Tokens to ignore in the BNF follow.    
+ */    
+    
+SKIP :    
+{    
+  " "    
+| "\t"    
+| "\n"    
+| "\r"    
+}    
+    
+    
+/*    
+ * Tokens to consider in BNF follow.    
+ */    
+/*    
+TOKEN :  FUNCTION     
+{    
+  <FUNCTION: <IDENTIFIER> >    
+}    
+*/    
+    
+TOKEN : /* Relational Operators */    
+{    
+  <RELATIONAL_OPERATOR: <LT>|<GT>|<LE>|<GE>|<EQ>|<NE>> |    
+  <#LT: "<"  > |     
+  <#GT: ">"  > |     
+  <#LE: "<=" > |    
+  <#GE: ">=" > |    
+  <#EQ: "==" > |    
+  <#NE: "!=" >    
+}    
+    
+TOKEN : /* Logical Operators */    
+{    
+  <AND: "&&" | ["a","A"] ["n","N"] ["d","D"] > |     
+  <OR:  "||" | ["o","O"] ["r","R"]           > |    
+  <NOT: "!"  | ["n","N"] ["o","O"] ["t","T"] >    
+}    
+    
+TOKEN : /* Arithmetic Operators */    
+{    
+  <POWER: "^"  > |     
+  <ADD: "+"  > |     
+  <SUB: "-" > |    
+  <MULT: "*" > |    
+  <DIV: "/" >     
+}    
+    
+TOKEN : /* LITERALS */    
+{    
+  < FLOATING_POINT_LITERAL:    
+        (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)?    
+      | "." (["0"-"9"])+ (<EXPONENT>)?    
+      | (["0"-"9"])+ <EXPONENT>    
+      | <INTEGER_LITERAL>    
+      | "0"    
+  >    
+|    
+  < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >    
+|    
+  < #INTEGER_LITERAL: ["1"-"9"] (["0"-"9"])* >    
+}    
+    
+TOKEN : /* IDENTIFIERS */    
+{    
+  < IDENTIFIER:    
+        "#" <ID>    
+      | (<ID> ".")* <ID>    
+  >    
+|    
+  < #ID:    
+      <LETTER> (<LETTER>|<DIGIT>)*    
+  >    
+|    
+  < #LETTER:    
+      ["a"-"z", "_", "A"-"Z"]    
+  >    
+|    
+  < #DIGIT:    
+      ["0"-"9"]    
+  >    
+}    
+    
+/*****************************************    
+ * THE JAVA LANGUAGE GRAMMAR STARTS HERE *    
+ *****************************************/    
+    
+/*    
+ * Expression syntax follows.    
+ */    
+ASTExpression Expression() :    
+{}    
+{    
+   LogicalORExpression() ";"    
+   { return jjtThis; }    
+}    
+    
+void LogicalORExpression() #void :     
+{}    
+{    
+   (    
+   LogicalANDExpression() ( <OR> LogicalANDExpression() )*    
+   ) #OrNode(>1)    
+}    
+    
+void LogicalANDExpression() #void :     
+{}    
+{    
+   (    
+   RelationalExpression() ( <AND> RelationalExpression() )*    
+   ) #AndNode(>1)    
+}    
+    
+void RelationalExpression() #void :     
+{Token t_name=null;}    
+{    
+   AdditiveExpression()     
+   [ LOOKAHEAD(<RELATIONAL_OPERATOR>) t_name = <RELATIONAL_OPERATOR> AdditiveExpression()     
+   {     
+     if (jjtThis!=null){    
+        ((ASTRelationalNode)jjtThis).setOperationFromToken(t_name.image);    
+     }    
+   }    
+   #RelationalNode(2) ]    
+}    
+    
+void AdditiveExpression() #void :    
+{}    
+{    
+  (    
+  MultiplicativeExpression() ((<ADD> MultiplicativeExpression()) | MinusTerm())*    
+  ) #AddNode(>1)    
+}    
+    
+    
+void MinusTerm() #MinusTermNode :    
+{}    
+{    
+   <SUB> MultiplicativeExpression()    
+}    
+    
+    
+void MultiplicativeExpression() #void :    
+{}    
+{    
+  (    
+  PowerTerm() ( (<MULT> PowerTerm() ) | DivTerm() )*     
+  ) #MultNode(>1)    
+}    
+    
+void DivTerm() #InvertTermNode :    
+{}    
+{    
+   <DIV> PowerTerm()    
+}    
+    
+void PowerTerm() #void :    
+{}    
+{    
+  (    
+  UnaryExpression() (LOOKAHEAD(<POWER>) <POWER> UnaryExpression() #PowerNode(2))*    
+  )    
+}    
+    
+void UnaryExpression() #void :    
+{}    
+{    
+  <ADD> UnaryExpression()    
+|    
+  (    
+  <SUB> UnaryExpression()    
+  ) #MinusTermNode    
+|    
+  (    
+  <NOT> UnaryExpression()    
+  ) #NotNode    
+|    
+  PrimaryExpression()    
+}    
+    
+    
+void PrimaryExpression() #void :    
+{}    
+{    
+  LOOKAHEAD(<IDENTIFIER> "(")    
+  Function()    
+|     
+  LOOKAHEAD(Name())    
+  Name()    
+|    
+  Float()    
+|    
+  "(" LogicalORExpression() ")"    
+}    
+    
+void Function() #FuncNode :    
+{ Token t; }    
+{    
+  (t = <IDENTIFIER> Arguments())    
+  { jjtThis.setFunctionFromParserToken(t.image); }    
+}    
+    
+    
+void Arguments() #void :    
+{}    
+{    
+  "(" [ ArgumentList() ] ")"    
+}    
+    
+void ArgumentList() #void:    
+{}    
+{    
+  LogicalORExpression() ( "," LogicalORExpression() )*    
+}    
+    
+void Float() #FloatNode:    
+{ Token t; }    
+{    
+  t = <FLOATING_POINT_LITERAL>    
+  { jjtThis.value = new Double(t.image); }    
+}    
+    
+void Name() #IdNode :    
+{ Token t_name=null; }    
+{    
+  t_name = <IDENTIFIER>    
+  { jjtThis.name = t_name.image; }    
+}    
+    
