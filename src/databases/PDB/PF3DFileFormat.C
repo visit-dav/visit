@@ -2026,7 +2026,7 @@ PF3DFileFormat::GetBOF(int realDomain, const char *varName)
 
             // Create a dataset with all zeros.
             int base_index[3], size[3];
-            GetLogicalExtents(realDomain base_index, size);
+            GetLogicalExtents(realDomain, base_index, size);
 
             long N = size[0] * size[1] * size[2];
             float *fptr = new float[N];
