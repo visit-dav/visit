@@ -462,6 +462,10 @@
 #
 #     Mark C. Miller, Fri Aug 12 09:59:09 PDT 2011
 #     Removed defintion and use of $darwin_szip in build_hdf5
+#
+#     Hank Childs, Mon Aug 29 11:07:26 PDT 2011
+#     More tricks for Ubuntu.
+#
 # *****************************************************************************
 
 
@@ -8954,10 +8958,13 @@ function build_hostconf
     # Patch for Ubuntu 11.04
     #
     if test -d "/usr/lib/x86_64-linux-gnu" ; then
-        rm -f $HOSTCONF.tmp
-        cat $HOSTCONF | sed "s/\/usr\/lib/\/usr\/lib\/x86_64-linux-gnu/" > $HOSTCONF.tmp
-        rm $HOSTCONF
-        mv $HOSTCONF.tmp $HOSTCONF
+        numLibs=$(ls -1 /usr/lib/x86_64-linux-gnu | wc -l)
+        if (( $numLibs > 10 )) ; then
+           rm -f $HOSTCONF.tmp
+           cat $HOSTCONF | sed "s/\/usr\/lib/\/usr\/lib\/x86_64-linux-gnu/" > $HOSTCONF.tmp
+           rm $HOSTCONF
+           mv $HOSTCONF.tmp $HOSTCONF
+        fi
     fi
 
     cd "$START_DIR"
