@@ -440,6 +440,9 @@
 #     Hank Childs, Mon Aug 29 11:07:26 PDT 2011
 #     More tricks for Ubuntu.
 #
+#     Eric Brugger, Mon Aug 29 14:42:36 PDT 2011
+#     I changed the visit version number to 2.3.2.
+#
 # *****************************************************************************
 
 
@@ -770,7 +773,7 @@ fi
 # release tag.
 ############################################################################
 
-export VISIT_VERSION=${VISIT_VERSION:-"2.3.1"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.3.2"}
 
 ####
 # Trunk:
