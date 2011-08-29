@@ -24,7 +24,8 @@ list of changes in release 2.3.1.</p>
 <li>When you using cross-mesh field evaluations, VisIt now correctly issues a warning when accessing invalid time slices.</li>
 <li>The <i>VisIt_RectilinearMesh_setBaseIndex</i> function in Libsim now behave properly.</li>
 <li>A bug was corrected in the Enzo reader that caused it to fail sometimes on Windows.</li>
-<li>A bug was corrected in the PF3D reader where the data was not being properly decompressed for one of the compression schemes."
+<li>A bug was corrected in the PF3D reader where the data was not being properly decompressed for one of the compression schemes.</li>
+<li>The PF3D reader was modified so that it doesn't crash when changing timesteps and some of the subfiles are not readable.</li>
 <li>Repeatedly passing character array variables with different string values to Libsim was broken. In the old scheme, arrays were assumed to contain the same contents and conversion to C-style strings under the covers would only happen once.</li>
 <li>A bug was corrected in the principal_tensor, principal_deviatoric_tensor and tensor_maximum_shear expressions, where a cutoff used to prevent numeric overflows and underflows was too argressive causing the expressions to calculate incorrect values for small values.</li>
 <li>VisIt again honors vis window size information stored in session files and config files for the case where there is a single vis window.</li>
