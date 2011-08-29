@@ -182,6 +182,11 @@ REAL findTriangleSetCuttingPlane(
     REAL x = newtonSearchPolynomialFunc( surfaceFunction, derivatives[s], y, xmin, xmax );
 
     DBG_MESG( "final x = "<< x );
+
+    FREE_LOCAL_ARRAY( derivatives, REAL2, nv-1 );
+    FREE_LOCAL_ARRAY( index, unsigned char, nv );
+    FREE_LOCAL_ARRAY( rindex, unsigned char, nv );
+
     return x ;
 }
 

@@ -212,6 +212,11 @@ REAL findTetraSetCuttingPlane(
     REAL x = newtonSearchPolynomialFunc( volumeFunction, derivatives[s], y, xmin, xmax );
 
     DBG_MESG( "final x = "<< x );
+
+    FREE_LOCAL_ARRAY( rindex, unsigned char, nv );
+    FREE_LOCAL_ARRAY( index, unsigned char, nv );
+    FREE_LOCAL_ARRAY( derivatives, REAL3, nv-1 );
+
     return x ;
 }
 

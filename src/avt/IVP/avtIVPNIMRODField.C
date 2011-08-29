@@ -86,7 +86,7 @@ avtIVPNIMRODField::avtIVPNIMRODField( vtkDataSet* dataset,
   }
 
   // Dummy variable to the template class
-  float fltVar = 0;
+//  float fltVar = 0;
 
   // The mesh elements.
 //  grid_fourier_series =
@@ -163,7 +163,6 @@ type* avtIVPNIMRODField::SetDataPointer( vtkDataSet *ds,
                                         const int ncomponents )
 {
   vtkDataArray *array;
-  int XX;
 
   // Because the triangluar mesh is defined by using non unique points
   // and the data is cell centered data VisIt moves it out to the
@@ -360,11 +359,11 @@ avtIVPNIMRODField::operator()( const double &t, const avtVector &p ) const
   double x[3];
   ds->GetPoint( ptIds->GetId(ic), x);
 
-  double rad, theta, phi;
+//  double rad, theta, phi;
 
   
-  vec3 P;
-  mat3 DRV;
+//  vec3 P;
+//  mat3 DRV;
 
 //  interpolate( rad, theta, phi, &P, &DRV );
 
@@ -544,10 +543,10 @@ void avtIVPNIMRODField::interpolate( double rad, double theta, double phi,
     *P   = p;
 //    *DRV = Dp;
 
-    delete wtheta;
-    delete dtheta;
-    delete wrad;
-    delete drad;
-    delete wphi;
-    delete dphi;
+    delete [] wtheta;
+    delete [] dtheta;
+    delete [] wrad;
+    delete [] drad;
+    delete [] wphi;
+    delete [] dphi;
 }
