@@ -327,6 +327,8 @@ DiscreteMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
 //    Also, use random number generator in the range [0,1) so that we don't
 //    walk off the end of other arrays.
 //
+//    Mark C. Miller, Tue Aug 30 00:10:03 PDT 2011
+//    Fixed compiler warnings converting to 'int' from 'float'.
 // ****************************************************************************
 bool
 DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
@@ -484,9 +486,9 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
         int total = 0;
         for(int m = 0; m < nMaterials; ++m)
         {
-            target[m] =
-                DX * DY * DZ *
-                vfs[m];
+            target[m] = (int)
+                (DX * DY * DZ *
+                vfs[m]);
 
             total += target[m];
             count[m] = 0;
@@ -1836,6 +1838,9 @@ unsigned char DiscreteMIR::get(size_t i, size_t j, size_t k) const
 //    Split labels into mixed and clean versions to avoid assumptions
 //    about signedness of pointers and sizes of integers and pointers.
 //
+//    Mark C. Miller, Tue Aug 30 00:09:28 PDT 2011
+//    Fixed compiler warnings converting to 'int' from either 'float' or
+//    'double'.
 // ***************************************************************************
 void DiscreteMIR::optimize()
 {
@@ -1858,15 +1863,15 @@ void DiscreteMIR::optimize()
     {
         for(int iteration = 0; iteration < 1000; ++iteration)
         {
-            cell = m_mixedCells[RANDOM * m_mixedCells.size()];
+            cell = m_mixedCells[(int)(RANDOM * m_mixedCells.size())];
             labels = m_mixedlabels[id(cell)];
 
             // Pick two sites within a cell with different labels.
             int incell = 10;
             do
             {
-                r  = DX * DY * DZ * RANDOM;
-                r2 = DX * DY * DZ * RANDOM;
+                r  = (int) (DX * DY * DZ * RANDOM);
+                r2 = (int) (DX * DY * DZ * RANDOM);
 
                 l  = labels[r];
                 l2 = labels[r2];
