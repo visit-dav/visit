@@ -443,6 +443,8 @@
 #     Eric Brugger, Mon Aug 29 14:42:36 PDT 2011
 #     I changed the visit version number to 2.3.2.
 #
+#     Mark C. Miller, Mon Aug 29 23:54:40 PDT 2011
+#     I fixed URL for where it obtains ITAPS-FMDB tarballs
 # *****************************************************************************
 
 
@@ -930,7 +932,7 @@ export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR:-"moab-4.0.1"}
 
 export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"1.2"}
 export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE:-"FMDB-${ITAPS_FMDB_VERSION}.tar.gz"}
-export ITAPS_FMDB_URL=${ITAPS_FMDB_URL:-http://www.scorec.rpi.edu/FMDB/source}
+export ITAPS_FMDB_URL=${ITAPS_FMDB_URL:-https://redmine.scorec.rpi.edu/anonsvn/itaps/software/branches/1.2RC/release_distros/FMDB}
 export ITAPS_FMDB_BUILD_DIR=${ITAPS_FMDB_BUILD_DIR:-"${ITAPS_FMDB_FILE%.tar*}"}
 
 # CGM is an indirect dependency introduced by ITAPS_GRUMMP. No other part
@@ -7794,13 +7796,13 @@ function build_itaps_fmdb
     abs_itaps_fmdb_build_dir=$(pwd)
 
     if [[ ! -e GMI-1.0.tar.gz ]]; then
-        download_file GMI-1.0.tar.gz http://www.scorec.rpi.edu/FMDB/source
+        download_file GMI-1.0.tar.gz $ITAPS_FMDB_URL
         [[ $? -eq 0 ]] || { error "Unable to download GMI-1.0.tar.gz for ITAPS_FMDB" && return 1; }
     fi
     gunzip < GMI-1.0.tar.gz | tar xf -
     [[ $? -eq 0 ]] || { error "Unable to untar GMI-1.0.tar.gz for ITAPS_FMDB" && return 1; }
     if [[ ! -e SCUtil.tar.gz ]]; then
-        download_file SCUtil.tar.gz http://www.scorec.rpi.edu/FMDB/source
+        download_file SCUtil.tar.gz $ITAPS_FMDB_URL
         [[ $? -eq 0 ]] || { error "Unable to download SCUtil.tar.gz for ITAPS_FMDB" && return 1; }
     fi
     gunzip < SCUtil.tar.gz | tar xf -
