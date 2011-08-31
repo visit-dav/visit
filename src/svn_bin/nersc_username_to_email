@@ -149,6 +149,7 @@ case $1 in
     # Iuri Prilepov, UC Davis & Lawrence Berkeley
     "iuri")
         emaddr=iprilepov@lbl.gov
+        ;;
     *)
         emaddr=visit-developers@ornl.gov
         ;;
