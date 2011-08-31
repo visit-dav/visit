@@ -1651,6 +1651,10 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Replaced dynamic headerLength array with fixed maxHeaderLength array and
 //    added check whether header can be read.
 //
+//    Gunther H. Weber, Wed Aug 31 10:19:21 PDT 2011
+//    Yet another fix for compiler issue. Since headerLen is unsigned short,
+//    reserve maximum possible length as buffer and skip test.
+//
 // ****************************************************************************
 
 void
@@ -1689,7 +1693,7 @@ avtBOVFileFormat::ReadTOC(void)
                 BroadcastBool(error);
                 EXCEPTION1(InvalidFilesException, fname);
             }
-            short headerLength;
+            unsigned short headerLength;
             ifile.read(reinterpret_cast<char*>(&headerLength), 2);
             if (ifile.bad())
             {
@@ -1698,19 +1702,12 @@ avtBOVFileFormat::ReadTOC(void)
                 BroadcastBool(error);
             }
 #ifdef WORDS_BIGENDIAN
-            short tmp;
+            unsigned short tmp;
             int16_Reverse_Endian(headerLength, reinterpret_cast<char*>(&tmp));
             headerLength = tmp;
 #endif
-            const int maxHeaderLength = 32768;
-            if (headerLength > maxHeaderLength)
-            {
-                debug1 << "Internal error: Header too long for buffer." << std::endl;
-                bool error=true;
-                BroadcastBool(error);
-                EXCEPTION1(InvalidFilesException, fname);
-            }
-            char header[maxHeaderLength];
+            // headerLength is "unsigned short" and thus always less than or equal 65535
+            char header[65535];
             file_pattern = filenames[0];    // Filename is the same
             byteOffset = 10 + headerLength;  // Skip header when reading data
             ifile.read(header, headerLength);
