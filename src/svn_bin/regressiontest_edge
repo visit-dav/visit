@@ -152,6 +152,9 @@ skipList_for_Edge="\
     $testHost,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
     $testHost,parallel:tests/rendering/compositing.py \
     $testHost,scalable,parallel,icet:tests/rendering/compositing.py \
+    $testHost,serial:tests/hybrid/selections.py \
+    $testHost,parallel:tests/hybrid/selections.py \
+    $testHost,scalable,parallel,icet:tests/hybrid/selections.py \
     $testHost,parallel:tests/session/legendproperties.py:legendproperties00,legendproperties01 \
     $testHost,scalable,parallel,icet:tests/session/legendproperties.py:legendproperties00,legendproperties01"
 
