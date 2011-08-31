@@ -47,6 +47,9 @@
 #    Mark C. Miller, Mon Apr 18 11:08:07 PDT 2011
 #    Removed Tom Treadway
 #
+#    Hank Childs, Tue Aug 30 21:41:54 PDT 2011
+#    Add Iuri Prilepov.
+#
 # *****************************************************************************
 
 
@@ -142,6 +145,10 @@ case $1 in
     # Oliver Ruebel, Lawrence Berkeley National Laboratory
     "oruebel")
         emaddr=oruebel@lbl.gov
+        ;;
+    # Iuri Prilepov, UC Davis & Lawrence Berkeley
+    "iuri")
+        emaddr=iprilepov@lbl.gov
         ;;
     *)
         emaddr=visit-developers@ornl.gov
