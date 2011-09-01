@@ -2580,6 +2580,8 @@ Variant::Read(Connection &conn)
 // Creation:   July 13, 2011
 //
 // Modifications:
+//   Kathleen Biagas, Thu Sep  1 11:19:23 PDT 2011
+//   Fix typo (two FLOAT_VECTOR_TYPES if statements).
 //   
 // ****************************************************************************
 
@@ -2692,7 +2694,7 @@ Variant::ConvertToString()
         }
         tmp += ")";
     }
-    else if (dataType == FLOAT_VECTOR_TYPE)
+    else if (dataType == DOUBLE_VECTOR_TYPE)
     {
         tmp = "(";
         const doubleVector &vec = AsDoubleVector();
