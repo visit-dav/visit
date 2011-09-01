@@ -111,6 +111,8 @@ class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
     void                      CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &streamlines);
     float                     ComputeCorrelationDistance(int idx,  avtStateRecorderIntegralCurve *ic,
                                                          double angTol, double minDist);
+    
+    void                      ProcessVaryTubeRadiusByScalar(std::vector<avtIntegralCurve *> &ics);
 
     int    coordinateSystem;
     bool   phiScalingFlag;

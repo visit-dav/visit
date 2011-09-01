@@ -2448,6 +2448,9 @@ avtPICSFilter::AddSeedPoints(std::vector<avtVector> &pts,
 //   Don't do initialization of distance for integral curves.  That happens in
 //   the derived type of integral curve now.
 //
+//   Dave Pugmire, Thu Sep  1 07:44:48 EDT 2011
+//   Keep track of fwd/bwd pair IDs, as they might need to be unified later.
+//
 // ****************************************************************************
 
 void
@@ -2507,33 +2510,45 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
             else
               seedPt = pts[i];
 
-            if (integrationDirection == VTK_INTEGRATE_FORWARD ||
-                integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
+            if (integrationDirection == VTK_INTEGRATE_FORWARD)
             {
-                avtIntegralCurve *ic = 
-                    CreateIntegralCurve(solver,
-                                        avtIntegralCurve::DIRECTION_FORWARD,
-                                        seedTime0, seedPt, seedVel, 
-                                        GetNextCurveID());
-
+                avtIntegralCurve *ic = CreateIntegralCurve(solver,
+                                                           avtIntegralCurve::DIRECTION_FORWARD,
+                                                           seedTime0, seedPt, seedVel, 
+                                                           GetNextCurveID());
                 ic->domain = dom;
-            
                 curves.push_back(ic);
                 seedPtIds.push_back(ic->id);
             }
-            
-            if (integrationDirection == VTK_INTEGRATE_BACKWARD ||
-                integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
+            else if (integrationDirection == VTK_INTEGRATE_BACKWARD)
             {
-                avtIntegralCurve *ic = 
-                    CreateIntegralCurve(solver,
-                                        avtIntegralCurve::DIRECTION_BACKWARD,
-                                        seedTime0, seedPt, seedVel,
-                                        GetNextCurveID());
+                avtIntegralCurve *ic = CreateIntegralCurve(solver,
+                                                           avtIntegralCurve::DIRECTION_BACKWARD,
+                                                           seedTime0, seedPt, seedVel,
+                                                           GetNextCurveID());
                 ic->domain = dom;
-            
                 curves.push_back(ic);
                 seedPtIds.push_back(ic->id);
+            }
+            else if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
+            {
+                avtIntegralCurve *ic0 = CreateIntegralCurve(solver,
+                                                           avtIntegralCurve::DIRECTION_FORWARD,
+                                                           seedTime0, seedPt, seedVel,
+                                                           GetNextCurveID());
+                ic0->domain = dom;
+                curves.push_back(ic0);
+                seedPtIds.push_back(ic0->id);
+
+                avtIntegralCurve *ic1 = CreateIntegralCurve(solver,
+                                                           avtIntegralCurve::DIRECTION_BACKWARD,
+                                                           seedTime0, seedPt, seedVel,
+                                                           GetNextCurveID());
+                ic1->domain = dom;
+                curves.push_back(ic1);
+                seedPtIds.push_back(ic1->id);
+
+                fwdBwdICPairs.push_back(std::pair<int,int> (ic0->id, ic1->id));
             }
         }
         

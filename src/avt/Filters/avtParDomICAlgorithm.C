@@ -40,7 +40,7 @@
 //                              avtParDomICAlgorithm.C                       //
 // ************************************************************************* //
 
-#include "avtParDomICAlgorithm.h"
+#include <avtParDomICAlgorithm.h>
 #include <TimingsManager.h>
 
 using namespace std;
@@ -174,13 +174,17 @@ avtParDomICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
     for (int i = 0; i < ics.size(); i++)
     {
         avtIntegralCurve *s = ics[i];
+        
         if (OwnDomain(s->domain))
         {
             avtVector endPt;
             s->CurrentLocation(endPt);
             
             if (PointInDomain(endPt, s->domain))
+            {
                 activeICs.push_back(s);
+                s->originatingRank = rank;
+            }
             else
                 delete s;
         }
