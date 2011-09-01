@@ -208,6 +208,9 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
 //    Added Boolean for whether the velocity field must be continuous.
 //
+//    Brad Whitlock, Thu Sep  1 10:56:29 PDT 2011
+//    Add selectionName.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRequest
@@ -454,6 +457,11 @@ class PIPELINE_API avtDataRequest
     void                         SetNeedPostGhostMaterialInfo(bool b)
                                      { needPostGhostMaterialInfo = b; }
 
+    void                         SetSelectionName(const std::string &s)
+                                     { selectionName = s; }
+    const std::string           &GetSelectionName() const
+                                     { return selectionName; }
+
     void                         DebugDump(avtWebpage *);
 
   protected:
@@ -507,6 +515,7 @@ class PIPELINE_API avtDataRequest
     bool                         passNativeCSG;
     bool                         transformVectorsDuringProject;
     bool                         needPostGhostMaterialInfo;
+    std::string                  selectionName;
 
     //
     // If we are processing in parallel, this information may have been lost.

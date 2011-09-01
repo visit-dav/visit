@@ -855,6 +855,12 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 //    Brad Whitlock, Mon Aug 22 13:34:36 PDT 2011
 //    I added named selection creation here instead of at the end of the pipeline.
 //
+//    Brad Whitlock, Thu Sep  1 11:07:55 PDT 2011
+//    Stash the selection name into the data request in case we need it 
+//    when creating other pipelines based on this one. For instance, the 
+//    avtExecuteThenTimeLoopFilter creates its own pipeline from the original
+//    source so we need the selection name there to apply it.
+//
 // ****************************************************************************
 
 void
@@ -942,6 +948,7 @@ NetworkManager::StartNetwork(const std::string &format,
     dataRequest->SetDiscMode(meshopts.GetDiscretizationMode());
     dataRequest->SetDiscBoundaryOnly(meshopts.GetDiscretizeBoundaryOnly());
     dataRequest->SetPassNativeCSG(meshopts.GetPassNativeCSG());
+    dataRequest->SetSelectionName(selName);
     workingNet->SetDataSpec(dataRequest);
     workingNet->SetTime(dataRequest->GetTimestep());
 

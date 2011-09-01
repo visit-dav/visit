@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtDataRequest.C                        //
+//                             avtDataRequest.C                              //
 // ************************************************************************* //
 
 #include <avtDataRequest.h>
@@ -183,6 +183,9 @@ using     std::map;
 //    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
 //    Added support for "velocityMustBeContinuous".
 //
+//    Brad Whitlock, Thu Sep  1 10:56:43 PDT 2011
+//    Added selectionName.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -237,6 +240,8 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
 
     variable  = new char[strlen(var)+1];
     strcpy(variable, var);
+
+    selectionName = std::string();
 
     //
     // Assume the 'orig' variable is the input variable.  If this is not true,
@@ -400,6 +405,8 @@ avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
 
     variable  = new char[strlen(var)+1];
     strcpy(variable, var);
+
+    selectionName = std::string();
 
     //
     // Assume the 'db' variable is the input variable.  If this is not true,
@@ -655,6 +662,9 @@ avtDataRequest::avtDataRequest(avtDataRequest_p spec)
 //    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
 //    Added support for "velocityMustBeContinuous".
 //
+//    Brad Whitlock, Thu Sep  1 10:58:43 PDT 2011
+//    Added selectionName.
+//
 // ****************************************************************************
 
 avtDataRequest &
@@ -724,6 +734,7 @@ avtDataRequest::operator=(const avtDataRequest &spec)
     transformVectorsDuringProject   = spec.transformVectorsDuringProject;
     needPostGhostMaterialInfo       = spec.needPostGhostMaterialInfo;
     secondaryVariables              = spec.secondaryVariables;
+    selectionName                   = spec.selectionName;
 
     selList = spec.selList;
 
@@ -1059,6 +1070,9 @@ avtDataRequest::operator==(const avtDataRequest &ds)
     if (needPostGhostMaterialInfo != ds.needPostGhostMaterialInfo)
         return false;
  
+    //if (selectionName != ds.selectionName)
+    //    return false;
+
     return true;
 }
 
@@ -1823,6 +1837,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
 //    Added support for "velocityMustBeContinuous".
 //
+//    Brad Whitlock, Thu Sep  1 11:01:51 PDT 2011
+//    Added selectionName.
+//
 // ****************************************************************************
 
 static const char *
@@ -1926,6 +1943,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("usesAllDomains", YesOrNo(usesAllDomains));
     webpage->AddTableEntry2("transformVectorsDuringProject", YesOrNo(transformVectorsDuringProject));
     webpage->AddTableEntry2("needPostGhostMaterialInfo", YesOrNo(needPostGhostMaterialInfo));
+    webpage->AddTableEntry2("selectionName", selectionName.c_str());
     webpage->EndTable();
 }
 

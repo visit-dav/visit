@@ -46,6 +46,7 @@
 #include <avtDataAttributes.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtExtents.h>
+#include <avtNamedSelectionFilter.h>
 #include <avtOriginatingSource.h>
 
 #include <DebugStream.h>
@@ -186,6 +187,9 @@ avtExecuteThenTimeLoopFilter::FinalizeTimeLoop()
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Brad Whitlock, Thu Sep  1 10:50:43 PDT 2011
+//    Add in named selection filter.
+//
 // ****************************************************************************
 
 void
@@ -216,11 +220,23 @@ avtExecuteThenTimeLoopFilter::Execute(void)
                << currentTime << endl;
         contract->GetDataRequest()->SetTimestep(currentTime);
 
-        eef.Update(contract);
+        avtDataset *ds = NULL;
+        avtNamedSelectionFilter nsf;
+        if(contract->GetDataRequest()->GetSelectionName().empty())
+        {
+            eef.Update(contract);
+            ds = *(eef.GetTypedOutput());
+        }
+        else
+        {
+            nsf.SetInput(eef.GetOutput());
+            nsf.SetSelectionName(contract->GetDataRequest()->GetSelectionName());
+            nsf.Update(contract);
+            ds = *(nsf.GetTypedOutput());
+        }
 
         // Friend status plus reference points leads to some extra
         // contortions here.
-        avtDataset *ds = *(eef.GetTypedOutput());
         avtDataTree_p tree = ds->GetDataTree();
         Iterate(currentTime, tree);
 
