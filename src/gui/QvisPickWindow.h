@@ -52,8 +52,10 @@ class QSpinBox;
 class QTabWidget;
 class QTextEdit;
 
+class QvisTimeQueryOptionsWidget;
 class QvisVariableButton;
 class PickAttributes;
+class PlotList;
 
 // ****************************************************************************
 // Class: QvisPickWindow
@@ -142,6 +144,9 @@ class PickAttributes;
 //   Kathleen Bonnell, Thu Mar  3 08:09:10 PST 2011
 //   Added timeCurveType combo box.
 //
+//   Kathleen Biagas, Fri Aug 26 11:10:16 PDT 2011
+//   Added tabs for cleaning up window a bit.  Added timeQueryOptionsWidget.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -156,6 +161,8 @@ public:
 
     virtual void CreateNode(DataNode *);
     virtual void SetFromNode(DataNode *, const int *borders);
+    virtual void SubjectRemoved(Subject *TheRemovedSubject);
+            void ConnectPlotList(PlotList *pl);
 
 public slots:
     virtual void apply();
@@ -168,6 +175,11 @@ signals:
     void initiateRestorePickAttributesAfterRepick();
 protected:
     virtual void CreateWindowContents();
+
+    void CreateDisplayOptionsTab();
+    void CreateTimeOptionsTab();
+    void CreateSpreadsheetOptionsTab();
+
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
@@ -198,10 +210,13 @@ private slots:
     void clearPicks();
     void redoPickClicked();
     void redoPickWithSpreadsheetClicked();
+    void optionsTabSelected(int);
 private:
     void UpdatePage(void);
     void ClearPages(void);
     void ResizeTabs(void);
+    void UpdateAll(bool);
+    void UpdateTimeOptions(void);
 
     bool                savePicks;
     bool                defaultSavePicks;
@@ -211,39 +226,55 @@ private:
     int                 nextPage;
     QString             lastLetter;
 
-    QTabWidget         *tabWidget;
+    QTabWidget         *resultsTabWidget;
     QWidget            *pages[MAX_PICK_TABS];
     QTextEdit          *infoLists[MAX_PICK_TABS];
-    QCheckBox          *displayIncEls;
-    QCheckBox          *nodeId;
-    QCheckBox          *nodeDomLog;
-    QCheckBox          *nodeBlockLog;
-    QCheckBox          *nodePhysical;
-    QCheckBox          *zoneId;
-    QCheckBox          *zoneDomLog;
-    QCheckBox          *zoneBlockLog;
 
     QCheckBox          *autoShowCheckBox;
     QCheckBox          *savePicksCheckBox;
-    QCheckBox          *timeCurveCheckBox;
-    QCheckBox          *spreadsheetCheckBox;
-    QCheckBox          *conciseOutputCheckBox;
-    QCheckBox          *showMeshNameCheckBox;
-    QCheckBox          *showTimestepCheckBox;
-    QComboBox          *preserveCoord;
-    QComboBox          *timeCurveType;
+    QSpinBox           *userMaxPickTabs;
 
     QvisVariableButton *varsButton;
     QLineEdit          *varsLineEdit;
     
     QLineEdit          *floatFormatLineEdit;
 
-    PickAttributes     *pickAtts;
+    QTabWidget         *optionsTabWidget;
+
+    // Display Options Tab widgets
+    QWidget            *pageDisplay;
+    QCheckBox          *conciseOutputCheckBox;
+    QCheckBox          *showMeshNameCheckBox;
+    QCheckBox          *showTimestepCheckBox;
+
+    QCheckBox          *displayIncEls;
     QCheckBox          *displayGlobalIds;
     QCheckBox          *displayPickLetter;
-    QSpinBox           *userMaxPickTabs;
+
+    QCheckBox          *nodeId;
+    QCheckBox          *nodePhysical;
+    QCheckBox          *nodeDomLog;
+    QCheckBox          *nodeBlockLog;
+    QCheckBox          *zoneId;
+    QCheckBox          *zoneDomLog;
+    QCheckBox          *zoneBlockLog;
+
+    // Time Pick Tab widgets
+    QWidget            *pageTime;
+    QComboBox          *preserveCoord;
+    QComboBox          *timeCurveType;
+    QvisTimeQueryOptionsWidget *timeOpts;
+
+    // Spreadsheet Tab widgets
+    QWidget            *pageSpreadsheet;
+    QCheckBox          *spreadsheetCheckBox;
+
+
+    PickAttributes     *pickAtts;
+    PlotList           *plotList;
 
     int                 saveCount;
+    int                 activeOptionsTab;
 
     // Saving attributes for restoring them after re-doing a pick
     bool                createSpreadsheetSave;

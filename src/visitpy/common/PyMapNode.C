@@ -39,6 +39,7 @@
 #include <PyMapNode.h>
 #include <PyVariant.h>
 #include <snprintf.h>
+#include <DebugStream.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -102,3 +103,124 @@ PyMapNode_Wrap(const MapNode &node)
     return dict;
 }
 
+
+// ****************************************************************************
+// Method: PyDict_To_MapNode
+//
+// Purpose: 
+//   Converts a python Dictionary to a MapNode.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 13, 2011 
+//
+// ****************************************************************************
+
+bool
+PyDict_To_MapNode(PyObject *obj, MapNode &mn)
+{
+    if (!PyDict_Check(obj))
+        return false;
+
+    bool success = true;
+    Py_ssize_t pos = 0;
+    PyObject *key = NULL;
+    PyObject *value = NULL;
+
+    while(PyDict_Next(obj, &pos, &key, &value)) 
+    {
+        std::string mkey;
+        if (PyString_Check(key))
+            mkey = PyString_AS_STRING(key);
+        else
+        {
+            return false;
+        }
+
+        if (PyTuple_Check(value) ||
+            PyList_Check(value))
+        {
+            PyObject *item = PySequence_GetItem(value, 0);
+            if (PyFloat_Check(item))
+            {
+                 doubleVector mval;
+                 mval.push_back(PyFloat_AS_DOUBLE(item));
+                 for (Py_ssize_t i = 1; i < PySequence_Size(value); ++i)
+                 {
+                     item = PySequence_GetItem(value, i);
+                     if (PyFloat_Check(item))
+                         mval.push_back(PyFloat_AS_DOUBLE(item));
+                     else if (PyInt_Check(item))
+                         mval.push_back((double)PyInt_AS_LONG(item));
+                     else 
+                     {
+                         debug3 << "PyDict_To_MapNode: tuples/lists must "
+                                << "contain same type." << endl;
+                         return false;
+                     }
+                 }
+                 mn[mkey] = mval;
+            }
+            else if (PyInt_Check(item))
+            {
+                 intVector mval;
+                 mval.push_back(PyInt_AS_LONG(item));
+                 for (Py_ssize_t i = 1; i < PySequence_Size(value); ++i)
+                 {
+                     item = PySequence_GetItem(value, i);
+                     if (!PyInt_Check(item))
+                     {
+                         debug3 << "PyDict_To_MapNode: tuples/lists must "
+                                << "contain same type." << endl;
+                         return false;
+                     }
+                     mval.push_back(PyInt_AS_LONG(item));
+                 }
+                 mn[mkey] = mval;
+            }
+            else if (PyString_Check(item))
+            {
+                 stringVector mval;
+                 mval.push_back(PyString_AS_STRING(item));
+                 for (Py_ssize_t i = 1; i < PySequence_Size(value); ++i)
+                 {
+                     item = PySequence_GetItem(value, i);
+                     if (!PyString_Check(item))
+                     {
+                         debug3 << "PyDict_To_MapNode: tuples/lists must "
+                                << "contain same type." << endl;
+                         return false;
+                     }
+                     mval.push_back(PyString_AS_STRING(item));
+                 }
+                 mn[mkey] = mval;
+            }
+            else
+            {
+                debug3 << "PyDict_To_MapNode: type " 
+                       << item->ob_type->tp_name 
+                       << " not currently implemented." << endl;
+                return false;
+            }
+        }
+        else if (PyFloat_Check(value))
+        {
+            mn[mkey] = (double) PyFloat_AS_DOUBLE(value); 
+        }
+        else if (PyInt_Check(value))
+        {
+            mn[mkey] = (int) PyInt_AS_LONG(value); 
+        }
+        else if (PyString_Check(value))
+        {
+            mn[mkey] = (std::string) PyString_AS_STRING(value); 
+        }
+        else
+        {
+            debug3 << "PyDict_To_MapNode: type " 
+                   << value->ob_type->tp_name 
+                   << " not currently implemented." << endl;
+            return false;
+        }
+    }
+    return true;
+}

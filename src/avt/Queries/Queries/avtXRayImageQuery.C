@@ -58,6 +58,7 @@
 
 #include <DebugStream.h>
 #include <TimingsManager.h>
+#include <QueryArgumentException.h>
 
 #include <float.h>
 #include <stdio.h>
@@ -84,6 +85,9 @@
 //    I moved all the logic for doing the ray integration and creating the
 //    image in chunks to avtXRayFilter.
 //
+//    Kathleen Biagas, Tue Jul 26 12:36:11 PDT 2011
+//    Changed default nx,ny to 200 (per Eric).
+//
 // ****************************************************************************
 
 avtXRayImageQuery::avtXRayImageQuery():
@@ -97,8 +101,8 @@ avtXRayImageQuery::avtXRayImageQuery():
     phi    = 0.0f;
     width  = 1.0f;
     height = 1.0f;
-    nx     = 10;
-    ny     = 10;
+    nx     = 200;
+    ny     = 200;
     numPixels = nx * ny;
     divideEmisByAbsorb = false;
     outputType = 2; // png
@@ -120,6 +124,79 @@ avtXRayImageQuery::~avtXRayImageQuery()
 {
 }
 
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetInputParams
+//
+//  Purpose:
+//    Set the input parameters.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   May 17, 2011
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetInputParams(const MapNode &params)
+{
+    if (params.HasEntry("vars"))
+        SetVariableNames(params.GetEntry("vars")->AsStringVector());
+    else
+        EXCEPTION1(QueryArgumentException, "vars");
+
+    if (params.HasEntry("origin"))
+    {
+        if (params.GetEntry("origin")->TypeName() == "doubleVector")
+            SetOrigin(params.GetEntry("origin")->AsDoubleVector());
+        else if (params.GetEntry("origin")->TypeName() == "intVector")
+            SetOrigin(params.GetEntry("origin")->AsIntVector());
+    }
+
+    if (params.HasEntry("theta"))
+    {
+        if (params.GetEntry("theta")->TypeName() == "double")
+            SetTheta(params.GetEntry("theta")->AsDouble());
+        else if (params.GetEntry("theta")->TypeName() == "int")
+            SetTheta(params.GetEntry("theta")->AsInt());
+    }
+
+    if (params.HasEntry("phi"))
+    {
+        if (params.GetEntry("phi")->TypeName() == "double")
+            SetPhi(params.GetEntry("phi")->AsDouble());
+        else if (params.GetEntry("phi")->TypeName() == "int")
+            SetPhi(params.GetEntry("phi")->AsInt());
+    }
+
+    if (params.HasEntry("width"))
+    {
+        if (params.GetEntry("width")->TypeName() == "double")
+            SetWidth(params.GetEntry("width")->AsDouble());
+        else if (params.GetEntry("width")->TypeName() == "int")
+            SetWidth(params.GetEntry("width")->AsInt());
+    }
+
+    if (params.HasEntry("height"))
+    {
+        if (params.GetEntry("height")->TypeName() == "double")
+            SetHeight(params.GetEntry("height")->AsDouble());
+        else if (params.GetEntry("height")->TypeName() == "int")
+            SetHeight(params.GetEntry("height")->AsInt());
+    }
+
+    if (params.HasEntry("image_size"))
+        SetImageSize(params.GetEntry("image_size")->AsIntVector());
+
+    if (params.HasEntry("divide_emis_by_absorb"))
+        SetDivideEmisByAbsorb(params.GetEntry("divide_emis_by_absorb")->AsInt());
+
+    if (params.HasEntry("output_type"))
+    {
+        if (params.GetEntry("output_type")->TypeName() == "int")
+            SetOutputType(params.GetEntry("output_type")->AsInt());
+        else if (params.GetEntry("output_type")->TypeName() == "string")
+            SetOutputType(params.GetEntry("output_type")->AsString());
+    }
+}
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetVariableNames
@@ -156,19 +233,31 @@ avtXRayImageQuery::SetVariableNames(const stringVector &names)
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Jun 17 15:17:32 PDT 2011
+//    Changed arg to doubleVector to match what is stored in InputParams.
+//
 // ****************************************************************************
 
 void
-avtXRayImageQuery::SetOrigin(float x, float y, float z)
+avtXRayImageQuery::SetOrigin(const doubleVector &_origin)
 {
-    origin[0] = x;
-    origin[1] = y;
-    origin[2] = z;
+    origin[0] = (float)_origin[0];
+    origin[1] = (float)_origin[1];
+    origin[2] = (float)_origin[2];
+}
+
+void
+avtXRayImageQuery::SetOrigin(const intVector &_origin)
+{
+    origin[0] = (float)_origin[0];
+    origin[1] = (float)_origin[1];
+    origin[2] = (float)_origin[2];
 }
 
 
 // ****************************************************************************
-//  Method: avtXRayImageQuery::SetThetaPhi
+//  Method: avtXRayImageQuery::SetTheta
 //
 //  Purpose:
 //    Set the theta and phi offsets from the z-axis in 3D, or the x-axis in 2D.
@@ -178,32 +267,62 @@ avtXRayImageQuery::SetOrigin(float x, float y, float z)
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Jun 17 15:17:32 PDT 2011
+//    Changed arg to doubleVector to match what is stored in InputParams.
+//
 // ****************************************************************************
 
 void
-avtXRayImageQuery::SetThetaPhi(float thetaInDegrees, float phiInDegrees)
+avtXRayImageQuery::SetTheta(const double &thetaInDegrees)
 {
     theta = thetaInDegrees * M_PI / 180.0;
+}
+
+void
+avtXRayImageQuery::SetPhi(const double &phiInDegrees)
+{
     phi   = phiInDegrees * M_PI / 180.0;
 }
 
 
 // ****************************************************************************
-//  Method: avtXRayImageQuery::SetWidthHeight
+//  Method: avtXRayImageQuery::SetWidth
 //
 //  Purpose:
-//    Set the width and height of the image.
+//    Set the width of the image.
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
 //
+//  Modifications:
+//
 // ****************************************************************************
 
 void
-avtXRayImageQuery::SetWidthHeight(float w, float h)
+avtXRayImageQuery::SetWidth(const double &size) 
 {
-    width  = w;
-    height = h;
+    width  = size;
+}
+
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetHeight
+//
+//  Purpose:
+//    Set the width of the image.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 30, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetHeight(const double &size) 
+{
+    height = size;
 }
 
 
@@ -216,13 +335,17 @@ avtXRayImageQuery::SetWidthHeight(float w, float h)
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Jun 17 15:17:32 PDT 2011
+//    Changed arg to intVector to match what is stored in InputParams.
+//
 // ****************************************************************************
 
 void
-avtXRayImageQuery::SetImageSize(int nx_, int ny_)
+avtXRayImageQuery::SetImageSize(const intVector &size)
 {
-    nx = nx_;
-    ny = ny_;
+    nx = size[0];
+    ny = size[1];
     numPixels = nx * ny;
 }
 
@@ -263,6 +386,34 @@ avtXRayImageQuery::SetOutputType(int type)
     outputType = type;
 }
 
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetOutputType
+//
+//  Purpose:
+//    Set the output image type.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 13, 2011
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetOutputType(const std::string &type)
+{
+    if      (type == "bmp")
+        outputType = 0;
+    else if (type == "jpeg")
+        outputType = 1;
+    else if (type == "png")
+        outputType = 2;
+    else if (type == "tif")
+        outputType = 3;
+    else if (type == "rawfloats")
+        outputType = 4;
+    else if (type == "bof")
+        outputType = 4;
+}
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::Execute
@@ -599,4 +750,45 @@ avtXRayImageQuery::WriteFloats(int iImage, int nPixels, float *fbuf)
     FILE *file = fopen(fileName, "w");
     fwrite(fbuf, sizeof(float), nPixels, file);
     fclose(file);
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::GetDefaultInputParams
+//
+//  Purpose:
+//    Retrieves default values for input variables. 
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 15, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void               
+avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
+{
+    params["output_type"] = std::string("png");
+    params["divide_emis_by_absorb"] = 0;
+    doubleVector o;
+    o.push_back(0.0);
+    o.push_back(0.0);
+    o.push_back(0.0);
+    params["origin"] = o;
+
+    params["theta"] = 0.0;
+    params["phi"] = 0.0;
+
+    params["width"] = 1.0;
+    params["height"] = 1.0;
+
+    intVector is;
+    is.push_back(200);
+    is.push_back(200);
+    params["ImageSize"] = is;
+
+    stringVector v;
+    v.push_back("absorbtivity");
+    v.push_back("emissivity");
+    params["vars"] = v;
 }

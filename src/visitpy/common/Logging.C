@@ -1263,160 +1263,132 @@ static std::string log_SetRenderingAttributesRPC(ViewerRPC *rpc)
     return s;
 }
 
-static std::string log_DatabaseQueryRPC(ViewerRPC *rpc)
+static std::string log_QueryRPC(ViewerRPC *rpc)
 {
+    std::vector<std::string> paramNames;
+
+    MapNode queryParams = rpc->GetQueryParams();
+    queryParams.GetEntryNames(paramNames);
+
     std::string s, qName;
-    char str[SLEN];
-
-    // Cyrus Harrison, Wed Jul  7 11:32:09 PDT 2010
-    //
-    // Fix (/hack) logging for chord/ray length dist.
-    // This really points to another weakness with our argument
-    // passing scheme for queries in general.
-    //
-    // IntArg3() isn't always used to mark "Global" queries,
-    // in some cases it is just a general param, or 'unset'.
-    //
-    // The fact that this was 1 for calls to the chord/ray len
-    // distribution queries caused "global" to be prepended
-    // to the recored query name, and broke recording.
-    //
-    // I am pretty sure most queries are recorded incorrectly,
-    // this should be addressed with a query infrastructured overhaul...
-    //
-
-    qName = rpc->GetQueryName();
-    if( (qName.find("Chord Length Dist") != std::string::npos) ||
-        (qName.find("Ray Length Dist") != std::string::npos)
-    )
-    {
-        SNPRINTF(str, SLEN,"Query(\"%s\", %d, %d, %g, %g)\n",
-                    qName.c_str(),
-                    rpc->GetIntArg1(),rpc->GetIntArg2(),
-                    rpc->GetDoubleArg1()[0],rpc->GetDoubleArg2()[0]);
-        s+=str;
-    }
+    if (queryParams.HasEntry("query_name"))
+       qName = queryParams.GetEntry("query_name")->AsString();
     else
-    {
-        if(rpc->GetIntArg3() > 0)
-        {
-            qName = "Global";
-            qName += rpc->GetQueryName();
-        }
-        else
-            qName = rpc->GetQueryName();
+      return MESSAGE_COMMENT("Query with no name", MSG_UNSUPPORTED);
 
-        SNPRINTF(str, SLEN, "%s(\"%s\", %d, %d, ", 
-                rpc->GetBoolFlag() ? "QueryOverTime" : "Query",
-                qName.c_str(),
-                rpc->GetIntArg1(), rpc->GetIntArg2());
-        s += str;
-        const stringVector &vars = rpc->GetQueryVariables();
-        if(vars.size() > 1)
-            s += "(";
-        for(unsigned int i = 0; i < vars.size(); ++i)
+    if (qName == "Pick")
+    {
+        std::string pt;
+        std::string qn;
+        if (queryParams.HasEntry("pick_type"))
+           pt = queryParams.GetEntry("pick_type")->AsString();
+        if (pt == "ScreenZone"  || pt == "Zone")
+            qn = "ZonePick";
+        else if (pt == "ScreenNode" || pt == "Node")
+            qn = "NodePick";
+        else if (pt == "DomainZone")
+            qn = "PickByZone";
+        else if (pt == "DomainZone")
         {
-            s += "\"";
-            s += vars[i];
-            s += "\"";
-            if(i < vars.size()-1)
+            int global = 0;
+            if (queryParams.HasEntry("use_global_id"))
+                global = queryParams.GetEntry("use_global_id")->AsInt();
+            if (global)
+                qn = "PickByGlobalZone";
+            else 
+                qn = "PickByZone";
+        }
+        else if (pt == "DomainNode")
+        {
+            int global = 0;
+            if (queryParams.HasEntry("use_global_id"))
+                global = queryParams.GetEntry("use_global_id")->AsInt();
+            if (global)
+                qn = "PickByGlobalNode";
+            else 
+                qn = "PickByNode";
+        }
+        else 
+           return MESSAGE_COMMENT("Pick with no type", MSG_UNSUPPORTED);
+        s = qn + "(";
+        for (size_t i = 0; i < paramNames.size(); ++i)
+        {
+            if (paramNames[i] != "query_name" &&
+                paramNames[i] != "pick_type" &&
+                paramNames[i] != "use_global_id" && 
+                paramNames[i] != "vars")
+            {
                 s += ", ";
+                s += paramNames[i];
+                s += "=";
+                s += queryParams.GetEntry(paramNames[i])->ConvertToString();
+            }
         }
-        if(vars.size() > 1)
+        std::vector<std::string> vars;
+        if (queryParams.HasEntry("vars"))
+            queryParams.GetEntry("vars")->AsStringVector();
+        if (!vars.empty() && !(vars.size() == 1 && vars[0] == "default"))
+        {
+            s += "\"vars=(";
+            for (size_t i = 0; i < vars.size(); ++i)
+            {
+               s += vars[i];
+               s += ",";
+            }
             s += ")";
-        s += ")\n";
-    }
-    return s;
-}
-
-static std::string log_PointQueryRPC(ViewerRPC *rpc)
-{
-    std::string s, varList;
-    char str[SLEN];
-    const stringVector &vars = rpc->GetQueryVariables();
-    if(vars.size() > 1)
-        varList += "(";
-    for(unsigned int i = 0; i < vars.size(); ++i)
-    {
-        varList += "\"";
-        varList += vars[i];
-        varList += "\"";
-        if(i < vars.size()-1)
-            varList += ", ";
-    }
-    if(vars.size() > 1)
-        varList += ")";
-
-    if(rpc->GetQueryName() == "PickByZone")
-    {
-        if(rpc->GetIntArg3() > 0)
-        {
-            SNPRINTF(str, SLEN, "PickByGlobalZone(%d, ", 
-                     rpc->GetIntArg1());
         }
-        else if(rpc->GetBoolFlag())
-        {
-            SNPRINTF(str, SLEN, "QueryOverTime(\"PickByZone\", %d, %d, ", 
-                     rpc->GetIntArg1(), rpc->GetIntArg2());
-        }
-        else
-        {
-            SNPRINTF(str, SLEN, "PickByZone(%d, %d, ", 
-                     rpc->GetIntArg1(), rpc->GetIntArg2());
-        }
-        s += str;
-        s += varList;
-        s += ")\n";
-    }
-    else if(rpc->GetQueryName() == "PickByNode")
-    {
-        if(rpc->GetIntArg3() > 0)
-        {
-            SNPRINTF(str, SLEN, "PickByGlobalNode(%d, ", 
-                     rpc->GetIntArg1());
-        }
-        else if(rpc->GetBoolFlag())
-        {
-            SNPRINTF(str, SLEN, "QueryOverTime(\"PickByNode\", %d, %d, ", 
-                     rpc->GetIntArg1(), rpc->GetIntArg2());
-        }
-        else
-        {
-            SNPRINTF(str, SLEN, "PickByNode(%d, %d, ", 
-                     rpc->GetIntArg1(), rpc->GetIntArg2());
-        }
-        s += str;
-        s += varList;
-        s += ")\n";
-    }
-    else if(rpc->GetQueryName() == "Pick")
-    {
-        SNPRINTF(str, SLEN, "Pick((%g, %g, %g), ", 
-                rpc->GetQueryPoint1()[0],
-                rpc->GetQueryPoint1()[1],
-                rpc->GetQueryPoint1()[2]);
-
-        s += str;
-        s += varList;
         s += ")\n";
     }
     else
     {
-        s = "PointQuery(";
-        s += rpc->GetQueryName();
-        s += ")";
-        s = MESSAGE_COMMENT(s.c_str(), MSG_UNSUPPORTED);
+        if (queryParams.HasEntry("do_time") && 
+            queryParams.GetEntry("do_time")->AsInt())
+            s = "QueryOverTime(\"" + qName + "\"";
+        else
+            s = "Query(\"" + qName + "\"";
+
+        for (size_t i = 0; i < paramNames.size(); ++i)
+        {
+            if (paramNames[i] == "use_actual_data") 
+            {
+                if (queryParams.GetEntry(paramNames[i])->AsInt())
+                {
+                    s += ", ";
+                    s += paramNames[i];
+                    s += "=";
+                    s += queryParams.GetEntry(paramNames[i])->ConvertToString();
+                }
+            }
+            else if (paramNames[i] != "query_name" && 
+                     paramNames[i] != "query_type" &&
+                     paramNames[i] != "do_time" &&
+                     paramNames[i] != "vars")
+            {
+                s += ", ";
+                s += paramNames[i];
+                s += "=";
+                s += queryParams.GetEntry(paramNames[i])->ConvertToString();
+            }
+        }
+        std::vector<std::string> vars;
+        if (queryParams.HasEntry("vars"))
+            queryParams.GetEntry("vars")->AsStringVector();
+        if (!vars.empty() && !(vars.size() == 1 && vars[0] == "default"))
+        {
+            s += "\"vars=(";
+            for (size_t i = 0; i < vars.size(); ++i)
+            {
+               s += vars[i];
+               s += ",";
+            }
+            s += ")";
+        }
+
+        s += ")\n";
     }
     return s;
 }
 
-static std::string log_LineQueryRPC(ViewerRPC *rpc)
-{
-    std::string s("LineQuery(");
-    s += rpc->GetQueryName();
-    s += ")";
-    return MESSAGE_COMMENT(s.c_str(), MSG_UNSUPPORTED);
-}
 
 static std::string log_CloneWindowRPC(ViewerRPC *rpc)
 {
@@ -2278,14 +2250,8 @@ LogRPCs(Subject *subj, void *)
     case ViewerRPC::SetRenderingAttributesRPC:
         str = log_SetRenderingAttributesRPC(rpc);
         break;
-    case ViewerRPC::DatabaseQueryRPC:
-        str = log_DatabaseQueryRPC(rpc);
-        break;
-    case ViewerRPC::PointQueryRPC:
-        str = log_PointQueryRPC(rpc);
-        break;
-    case ViewerRPC::LineQueryRPC:
-        str = log_LineQueryRPC(rpc);
+    case ViewerRPC::QueryRPC:
+        str = log_QueryRPC(rpc);
         break;
     case ViewerRPC::CloneWindowRPC:
         str = log_CloneWindowRPC(rpc);

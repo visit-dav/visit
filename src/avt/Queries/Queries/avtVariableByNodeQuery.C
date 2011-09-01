@@ -47,6 +47,7 @@
 #include <snprintf.h>
 #include <PickVarInfo.h>
 #include <DebugStream.h>
+#include <QueryArgumentException.h>
 
 
 using std::string;
@@ -63,11 +64,16 @@ using std::string;
 //  Creation:     July 29, 2004
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Jun 21 10:19:29 PDT 2011
+//    Added domain, node.
 //
 // ****************************************************************************
 
 avtVariableByNodeQuery::avtVariableByNodeQuery()
 {
+    domain = 0;
+    node = 0;
+    useGlobalId = 0;
 }
 
 // ****************************************************************************
@@ -87,6 +93,44 @@ avtVariableByNodeQuery::~avtVariableByNodeQuery()
 {
 }
 
+
+// ****************************************************************************
+//  Method: avtVariableByNodeQuery::SetInputParams
+//
+//  Purpose:  Allows this query to read input parameters set by user.
+//
+//  Arguments:
+//    params:     MapNode containing input.
+//
+//  Programmer:   Kathleen Biagas 
+//  Creation:     June 20, 2011
+//
+// ****************************************************************************
+
+void 
+avtVariableByNodeQuery::SetInputParams(const MapNode &params)
+{
+    if (params.HasEntry("vars"))
+    {
+        stringVector v = params.GetEntry("vars")->AsStringVector();
+        timeCurveSpecs["nResultsToStore"] = (int) v.size();
+        pickAtts.SetVariables(v);
+    }
+    else
+        EXCEPTION1(QueryArgumentException, "vars");
+
+    if (params.HasEntry("domain"))
+        domain = params.GetEntry("domain")->AsInt();
+
+    if (params.HasEntry("element"))
+        node = params.GetEntry("element")->AsInt();
+    else
+        EXCEPTION1(QueryArgumentException, "element");
+
+    if (params.HasEntry("use_global_id"))
+        useGlobalId = params.GetEntry("use_global_id")->AsInt();
+}
+
  
 // ****************************************************************************
 //  Method: avtVariableByNodeQuery::Preparation
@@ -101,6 +145,9 @@ avtVariableByNodeQuery::~avtVariableByNodeQuery()
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added avtDataAttributes arg.
 //
+//    Kathleen Biagas, Tue Jun 21 10:20:37 PDT 2011
+//    Domain, node and vars retrieved in SetInputParams.
+//
 // ****************************************************************************
 
 void 
@@ -111,10 +158,10 @@ avtVariableByNodeQuery::Preparation(const avtDataAttributes &inAtts)
 
     pickAtts.SetTimeStep(queryAtts.GetTimeStep());
     pickAtts.SetActiveVariable(dataRequest->GetVariable());
-    pickAtts.SetDomain(queryAtts.GetDomain());
-    pickAtts.SetElementNumber(queryAtts.GetElement());
-    pickAtts.SetVariables(queryAtts.GetVariables());
+    pickAtts.SetDomain(domain);
+    pickAtts.SetElementNumber(node);
     pickAtts.SetPickType(PickAttributes::DomainNode);
+    pickAtts.SetElementIsGlobal(useGlobalId);
 
     avtPickByNodeQuery::Preparation(inAtts);
 }
@@ -150,6 +197,9 @@ avtVariableByNodeQuery::Preparation(const avtDataAttributes &inAtts)
 //
 //    Kathleen Bonnell, Tue Mar  1 16:06:04 PST 2011
 //    Allow output for multiple vars.
+//
+//    Kathleen Biagas, Tue Jun 21 10:20:37 PDT 2011
+//    Domain and node retrieved in SetInputParams.
 //
 // ****************************************************************************
 
@@ -206,8 +256,7 @@ avtVariableByNodeQuery::PostExecute(void)
         {
             char msg[120]; 
             SNPRINTF(msg, 120, "Could not retrieve information from domain "
-                     " %d element %d.", queryAtts.GetDomain(), 
-                     queryAtts.GetElement());
+                     " %d element %d.", domain, node);
             SetResultMessage(msg);
             SetResultValues(vals);
         }
@@ -235,24 +284,3 @@ avtVariableByNodeQuery::GetTimeCurveSpecs()
     timeCurveSpecs["useVarForYAxis"] = true;
     return timeCurveSpecs;
 }
-
-
-// ****************************************************************************
-//  Method: avtVariableByNodeQuery::SetNumVars
-//
-//  Purpose:
-//    Override default nResultsToStore in TimeCurveSpecs.
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    March 1, 2011
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtVariableByNodeQuery::SetNumVars(int nv)
-{
-    timeCurveSpecs["nResultsToStore"] = nv;
-}
-

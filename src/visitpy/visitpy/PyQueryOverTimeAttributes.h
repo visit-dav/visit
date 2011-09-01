@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define QUERYOVERTIMEATTRIBUTES_NMETH 18
+#define QUERYOVERTIMEATTRIBUTES_NMETH 20
 void VISITPY_API           PyQueryOverTimeAttributes_StartUp(QueryOverTimeAttributes *subj, void *data);
 void VISITPY_API           PyQueryOverTimeAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyQueryOverTimeAttributes_GetMethodTable(int *nMethods);

@@ -302,6 +302,9 @@ class SelectionProperties;
 //    Brad Whitlock, Thu Feb 24 01:56:40 PST 2011
 //    Remove some const char * arguments and use std::string instead.
 //
+//    Kathleen Biagas, Fri Jul 15 11:35:27 PDT 2011
+//    Add GetQueryParameters.
+//
 //    Brad Whitlock, Fri Aug 19 09:59:19 PDT 2011
 //    Change function that sends expressions to the engine to be more general.
 //
@@ -419,6 +422,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ClearCache(const EngineKey &ek, const std::string &dbName = std::string(""));
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);
+    bool GetQueryParameters(const EngineKey &ek, const std::string &qname,
+                            std::string *params);
     bool GetProcInfo(const EngineKey &ek, ProcessAttributes &retAtts);
     bool ReleaseData(const EngineKey &ek, int id);
     bool CloneNetwork(const EngineKey &ek, int id, 

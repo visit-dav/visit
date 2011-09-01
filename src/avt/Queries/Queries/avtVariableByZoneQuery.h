@@ -72,6 +72,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Tue Mar  1 16:07:47 PST 2011
 //    Added SetNumVars method.
 //
+//    Kathleen Biagas, Mon Jun 20 10:31:43 PDT 2011
+//    Added SetInputParams, removed SetNumVars, added domain, zone.
+//
 // ****************************************************************************
 
 class QUERY_API avtVariableByZoneQuery : public avtPickByZoneQuery
@@ -86,12 +89,16 @@ class QUERY_API avtVariableByZoneQuery : public avtPickByZoneQuery
     virtual const char       *GetDescription(void)
                               { return "Retrieving var information on mesh."; }
 
+    virtual void              SetInputParams(const MapNode &);
+
     virtual const MapNode    &GetTimeCurveSpecs(); 
-    virtual void              SetNumVars(int v);
 
   protected:
     virtual void                    Preparation(const avtDataAttributes &);
     virtual void                    PostExecute(void);
+
+    int domain;
+    int zone;
 };
 
 

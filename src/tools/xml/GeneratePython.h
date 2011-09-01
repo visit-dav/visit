@@ -171,6 +171,9 @@ inline char toupper(char c)
 //    Added better error message when a yser trys to set non existant 
 //    attribute.
 //
+//    Kathleen Biagas, Tue Jun 21 10:53:31 PDT 2011
+//    Added skeleton MapNode.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -2425,6 +2428,27 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
     }
 };
 
+
+//
+// --------------------------------- MapNode --------------------------------
+//
+class AttsGeneratorMapNode : public virtual MapNode , public virtual PythonGeneratorField
+{
+  public:
+    AttsGeneratorMapNode(const QString &n, const QString &l)
+        : Field("MapNode",n,l), MapNode(n,l), PythonGeneratorField("MapNode",n,l) { }
+
+    virtual void WriteSetAttr(QTextStream &c, const QString &className, bool first)
+    {
+        // Not implemented yet!
+    }
+
+    virtual bool HasSetAttr()
+    {
+        return false;
+    }
+};
+
 #define AVT_GENERATOR_METHODS \
     virtual void WriteIncludedHeaders(QTextStream &c) \
     { \
@@ -2714,6 +2738,7 @@ class PythonFieldFactory
         else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new PythonGeneratorEnum(subtype, name, label);
         else if (type == "scalemode")    f = new AttsGeneratorScaleMode(name,label);
+        else if (type == "MapNode")      f = new AttsGeneratorMapNode(name,label);
 
         // Special built-in AVT enums
         else if (type == "avtCentering")      f = new AttsGeneratoravtCentering(name, label);

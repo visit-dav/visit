@@ -8,7 +8,14 @@
 #  Date:       July 13, 2010
 #
 #  Modifications:
-# 
+#    Kathleen Bonnell, Thu Jul 14 10:44:55 PDT 2011
+#    Change most of code to use python dictionary to pass query parameters.
+#    First call to 'Query' still tests old-style argument passing.
+#    Second call to 'Query' creates a Python dictionary from scratch and
+#    uses that.  Prior to third call to Query, retrieve default dictionary via
+#    GetQueryParameters.  All subsequent calls to Query modify that dictionary 
+#    object as necessary and pass it.
+#
 # ----------------------------------------------------------------------------
 
 import os
@@ -20,6 +27,7 @@ OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
+# old style argument passing
 Query("XRay Image", "png", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 
 if not os.path.isdir("current/queries"):
@@ -47,7 +55,9 @@ OpenDatabase("../data/silo_%s_test_data/multi_curv3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
-Query("XRay Image", "png", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("da", "pa"))
+#create our own dictionary
+params = dict(output_type="png", divide_emis_by_absorb=1, origin=(0.0, 2.5, 10.0), theta=0, phi=0, width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+Query("XRay Image", params)
 
 os.rename("output00.png", "current/queries/xrayimage/xrayimage02.png")
 os.rename("output01.png", "current/queries/xrayimage/xrayimage03.png")
@@ -66,7 +76,15 @@ OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
-Query("XRay Image", "png", 1, 0., 0., 0., 0, 0, 10., 10., 300, 300, ("d", "p"))
+#retreive default query parameters
+params = GetQueryParameters("XRay Image")
+#modify as necessary
+params['image_size'] = (300, 300)
+params['divide_emis_by_absorb'] = 1
+params['width'] = 10.
+params['height'] = 10.
+params['vars'] = ("d", "p")
+Query("XRay Image", params)
 
 os.rename("output00.png", "current/queries/xrayimage/xrayimage05.png")
 Test("xrayimage05", 0, 1)
@@ -74,7 +92,9 @@ Test("xrayimage05", 0, 1)
 s = GetQueryOutputString()
 TestText("xrayimage06", s)
 
-Query("XRay Image", "png", 1, 0., 0., 0., 90, 0, 10., 10., 300, 300, ("d", "p"))
+params['theta'] = 90
+params['phi'] =  0
+Query("XRay Image", params)
 
 os.rename("output00.png", "current/queries/xrayimage/xrayimage07.png")
 Test("xrayimage07", 0, 1)
@@ -99,7 +119,12 @@ AddPlot("Pseudocolor", "u")
 DrawPlots()
 
 # Do tets.
-Query("XRay Image", "png", 1, 0., 0., 0., 0, 0, 1., 1., 300, 300, ("w1", "v1"))
+params['theta'] = 0
+params['phi'] = 0
+params['width'] = 1.
+params['height'] = 1.
+params['vars'] = ("w1", "v1")
+Query("XRay Image", params)
 
 os.rename("output00.png", "current/queries/xrayimage/xrayimage09.png")
 Test("xrayimage09", 0, 1)
@@ -107,7 +132,11 @@ Test("xrayimage09", 0, 1)
 s = GetQueryOutputString()
 TestText("xrayimage10", s)
 
-Query("XRay Image", "png", 1, 0., 0., 0., 90, 0, 4., 4., 300, 300, ("w1", "v1"))
+params['theta'] = 90
+params['width'] = 4.
+params['height'] = 4.
+
+Query("XRay Image", params)
 
 os.rename("output00.png", "current/queries/xrayimage/xrayimage11.png")
 Test("xrayimage11", 0, 1)
@@ -116,7 +145,9 @@ s = GetQueryOutputString()
 TestText("xrayimage12", s)
 
 # Do pyramids.
-Query("XRay Image", "png", 1, 0., 0., 0., 0, 0, 4., 4., 300, 300, ("w1", "v2"))
+params['theta'] = 0
+params['vars'] = ("w1", "v2")
+Query("XRay Image", params) 
 
 os.rename("output00.png", "current/queries/xrayimage/xrayimage13.png")
 Test("xrayimage13", 0, 1)
@@ -124,7 +155,8 @@ Test("xrayimage13", 0, 1)
 s = GetQueryOutputString()
 TestText("xrayimage14", s)
 
-Query("XRay Image", "png", 1, 0., 0., 0., 90, 0, 4., 4., 300, 300, ("w1", "v2"))
+params['theta'] = 90
+Query("XRay Image", params)
 
 os.rename("output00.png", "current/queries/xrayimage/xrayimage15.png")
 Test("xrayimage15", 0, 1)
@@ -133,15 +165,23 @@ s = GetQueryOutputString()
 TestText("xrayimage16", s)
 
 # Do wedges.
-Query("XRay Image", "png", 1, 0., 0., 0., 0, 0, 8., 8., 300, 300, ("w1", "v3"))
+params['theta'] = 0
+params['width'] = 8.
+params['height'] = 8.
+params['vars'] = ("w1", "v3")
+Query("XRay Image", params)
 
 os.rename("output00.png", "current/queries/xrayimage/xrayimage17.png")
 Test("xrayimage17", 0, 1)
 
+
 s = GetQueryOutputString()
 TestText("xrayimage18", s)
 
-Query("XRay Image", "png", 1, 0., 0., 0., 90, 0, 20., 20., 300, 300, ("w1", "v3"))
+params['theta'] = 90
+params['width'] = 20.
+params['height'] = 20.
+Query("XRay Image", params)
 
 os.rename("output00.png", "current/queries/xrayimage/xrayimage19.png")
 Test("xrayimage19", 0, 1)
@@ -150,7 +190,9 @@ s = GetQueryOutputString()
 TestText("xrayimage20", s)
 
 # Do hexes.
-Query("XRay Image", "png", 1, 0., 0., 0., 0, 0, 20., 20., 300, 300, ("w1", "v4"))
+params['theta'] = 0
+params['vars'] = ("w1", "v4")
+Query("XRay Image", params)
 
 os.rename("output00.png", "current/queries/xrayimage/xrayimage21.png")
 Test("xrayimage21", 0, 1)
@@ -158,7 +200,8 @@ Test("xrayimage21", 0, 1)
 s = GetQueryOutputString()
 TestText("xrayimage22", s)
 
-Query("XRay Image", "png", 1, 0., 0., 0., 90, 0, 20., 20., 300, 300, ("w1", "v4"))
+params['theta'] = 90
+Query("XRay Image", params)
 
 os.rename("output00.png", "current/queries/xrayimage/xrayimage23.png")
 Test("xrayimage23", 0, 1)

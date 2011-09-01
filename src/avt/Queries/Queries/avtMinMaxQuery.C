@@ -1145,3 +1145,20 @@ avtMinMaxQuery::FindElement(MinMaxInfo &info)
         info.SetCoord(c);
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtMinMaxQuery::GetDefaultInputParams
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   July 26, 2011 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMinMaxQuery::GetDefaultInputParams(MapNode &params)
+{
+    params["use_actual_data"] = 0;
+}

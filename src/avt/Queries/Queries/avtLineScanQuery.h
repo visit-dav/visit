@@ -65,6 +65,13 @@ class     avtLineScanFilter;
 //  Programmer: Hank Childs
 //  Creation:   August 2, 2006
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Jun 21 11:38:19 PDT 2011
+//    Added SetInputParams.
+//
+//    Kathleen Biagas, Fri Jul 15 16:08:31 PDT 2011
+//    Added GetDefaultInputParams.
+//
 // ****************************************************************************
 
 class QUERY_API avtLineScanQuery : public avtDatasetQuery
@@ -76,6 +83,9 @@ class QUERY_API avtLineScanQuery : public avtDatasetQuery
     virtual const char        *GetType(void)  { return "avtLineScanQuery"; };
     virtual const char        *GetDescription(void)
                                            { return "Querying line scans."; };
+
+    virtual void               SetInputParams(const MapNode &);
+    static  void               GetDefaultInputParams(MapNode &);
 
     void                       SetNumberOfLines(int nl) { numLines = nl; };
     void                       SetNumberOfBins(int nb)  { numBins  = nb; };

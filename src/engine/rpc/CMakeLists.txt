@@ -39,6 +39,9 @@
 #   Hank Childs, Sat Aug 21 14:35:47 PDT 2010
 #   Rename DDF to DataBinning.
 #
+#   Kathleen Biagas, Fri Jul 15 11:34:11 PDT 2011
+#   Added QueryParametersRPC.
+#
 #****************************************************************************/
 
 SET(ENGINERPC_SOURCES
@@ -55,6 +58,7 @@ OpenDatabaseRPC.C
 PickRPC.C
 ProcInfoRPC.C
 QueryRPC.C
+QueryParametersRPC.C
 ReadRPC.C
 ReleaseDataRPC.C
 RenderRPC.C

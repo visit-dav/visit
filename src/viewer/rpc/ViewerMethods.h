@@ -40,6 +40,7 @@
 #include <string>
 #include <vectortypes.h>
 #include <viewerrpc_exports.h>
+#include <MapNode.h>
 #include <SelectionProperties.h>
 
 class ViewerState;
@@ -150,8 +151,17 @@ class ViewerState;
 //   Brad Whitlock, Tue Mar 29 11:05:58 PDT 2011
 //   Added a bool to SetPlotFollowsTime.
 //
+//   Kathleen Bonnell, Fri Jun 10 14:00:11 PDT 2011
+//   Added another bool to PointQuery.
+//
+//   Kathleen Biagas, Fri Jun 17 16:38:04 PDT 2011
+//   Add Query method, removed other forms of query methods.
+//
 //   Gunther H. Weber, Mon Jul 11 13:12:35 PDT 2011
 //   Added flag to SetActiveWindow to specify whether to raise window.
+//
+//   Kathleen Biagas, Fri Jul 15 11:35:27 PDT 2011
+//   Add GetQueryParameters.
 //
 // ****************************************************************************
 
@@ -395,27 +405,8 @@ public:
     void SuppressQueryOutput(bool onOff);
     void SetQueryFloatFormat(const std::string &format);
     
-    void DatabaseQuery(const std::string &queryName, const stringVector &vars,
-                       const bool = false, const int arg1 = 0, 
-                       const int arg2 = 0, const bool = false, const bool = false,
-                       const doubleVector &darg1 = doubleVector(),
-                       const doubleVector &darg2 = doubleVector());
-    void PointQuery(const std::string &queryName, const double pt[3],
-                    const stringVector &vars, const bool = false, 
-                    const int arg1 = 0,
-                    const int arg2 = -1, 
-                    const int arg3 = -1,
-                    const bool = false);
-    void LineQuery(const std::string &queryName, const double pt1[3],
-                   const double pt2[3], const stringVector &vars,
-                   const int samples, const bool forceSampling = false);
-    void ZonePick(int x, int y, const stringVector &vars);
-    void ZonePick(double xyz[3], const stringVector &vars);
-    void NodePick(int x, int y, const stringVector &vars);
-    void NodePick(double xyz[3], const stringVector &vars);
-    void Lineout(const double p0[3], const double p1[3],
-                 const stringVector &vars, const int samples,
-                 const bool forceSampling = false);
+    void Query(const MapNode &queryParams);
+    void GetQueryParameters(const std::string &qName);
 
     void QueryProcessAttributes(int id,
                                 const std::string engineHostName,

@@ -1,9 +1,5 @@
 <?xml version="1.0"?>
   <Attribute name="QueryAttributes" purpose="This class contains attributes used for query." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="QueryAttributes.code">
-    <Enum name="ElementType">
-      Zone
-      Node
-    </Enum>
     <Enum name="VarType">
       Mesh
       Scalar
@@ -21,69 +17,49 @@
       ActualData
       OriginalData
     </Enum>
-    <Enum name="TimeCurveType">
-      Single_Y_Axis
-      Multiple_Y_Axes
-    </Enum>
-    <Field name="name" label="name" type="string">
-    </Field>
-    <Field name="variables" label="variables" type="stringVector">
-      default
-    </Field>
     <Field name="resultsMessage" label="resultsMessage" type="string">
-    </Field>
-    <Field name="worldPoint" label="worldPoint" type="doubleArray" length="3">
-      0.000000
-      0.000000
-      0.000000
-    </Field>
-    <Field name="domain" label="domain" type="int">
-      -1
-    </Field>
-    <Field name="element" label="element" type="int">
-      -1
     </Field>
     <Field name="resultsValue" label="resultsValue" type="doubleVector">
       0.000000
-    </Field>
-    <Field name="elementType" label="elementType" type="enum" subtype="ElementType">
-      Zone
     </Field>
     <Field name="timeStep" label="timeStep" type="int">
       0
     </Field>
     <Field name="varTypes" label="varTypes" type="intVector" internal="true">
     </Field>
-    <Field name="dataType" label="dataType" type="enum" subtype="DataType" internal="true">
-      ActualData
-    </Field>
     <Field name="pipeIndex" label="pipeIndex" type="int" internal="true">
       -1
-    </Field>
-    <Field name="useGlobalId" label="useGlobalId" type="bool">
-      false
     </Field>
     <Field name="xUnits" label="xUnits" type="string">
     </Field>
     <Field name="yUnits" label="yUnits" type="string">
-    </Field>
-    <Field name="darg1" label="darg1" type="doubleVector">
-      0.000000
-    </Field>
-    <Field name="darg2" label="darg2" type="doubleVector">
-      0.000000
     </Field>
     <Field name="floatFormat" label="floatFormat" type="string">
       %g
     </Field>
     <Field name="xmlResult" label="xmlResult" type="string">
     </Field>
-    <Field name="dumpSteps" label="dumpSteps" type="bool">
+    <Field name="suppressOutput" label="suppressOutput" type="bool" internal="true">
       false
     </Field>
-    <Field name="timeCurvePlotType" label="timeCurvePlotType" type="enum" subtype="TimeCurveType">
-      Single_Y_Axis
+    <Field name="queryInputParams" label="queryInputParams" type="MapNode">
     </Field>
+    <Field name="defaultName" label="defaultName" type="string" internal="true" ignoreeq="true">
+    </Field>
+    <Field name="defaultVars" label="defaultVars" type="stringVector" internal="true" ignoreeq="true" init="true">
+    </Field>
+    <Function name="SetVariables" user="true" member="true">
+    </Function>
+    <Function name="GetName" user="true" member="true">
+    </Function>
+    <Function name="GetName2" user="true" member="true">
+    </Function>
+    <Function name="GetVariables" user="true" member="true">
+    </Function>
+    <Function name="GetVariables2" user="true" member="true">
+    </Function>
+    <Function name="GetDataType" user="true" member="true">
+    </Function>
     <Function name="Reset" user="true" member="true">
     </Function>
     <Function name="PrintSelf" user="true" member="true">

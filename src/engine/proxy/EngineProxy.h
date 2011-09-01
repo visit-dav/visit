@@ -60,6 +60,7 @@
 #include <PickRPC.h>
 #include <ProcInfoRPC.h>
 #include <QueryRPC.h>
+#include <QueryParametersRPC.h>
 #include <ReleaseDataRPC.h>
 #include <SetWinAnnotAttsRPC.h>
 #include <SimulationCommand.h>
@@ -320,6 +321,9 @@ class ParentProcess;
 //    I added a selection argument to ReadDataObject. I also removed
 //    ApplyNamedSelection.
 //
+//    Kathleen Biagas, Fri Jul 15 11:34:11 PDT 2011
+//    Added QueryParametersRPC.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -428,6 +432,8 @@ public:
                                           const QueryOverTimeAttributes *);
     void                     UpdateExpressions(const ExpressionList &);
 
+    std::string              GetQueryParameters(const std::string &qName);
+
     void                     GetProcInfo(ProcessAttributes &);
 
     void                     ExecuteSimulationControlCommand(
@@ -460,6 +466,7 @@ private:
     StartQueryRPC            startQueryRPC;
     ClearCacheRPC            clearCacheRPC;
     QueryRPC                 queryRPC;
+    QueryParametersRPC       queryParametersRPC;
     ReleaseDataRPC           releaseDataRPC;
     OpenDatabaseRPC          openDatabaseRPC;
     DefineVirtualDatabaseRPC defineVirtualDatabaseRPC;

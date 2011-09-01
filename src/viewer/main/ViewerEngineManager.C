@@ -2931,6 +2931,26 @@ ViewerEngineManager::Query(const EngineKey &ek,
 }
 
 // ****************************************************************************
+// Method: ViewerEngineManager::GetQueryParameters
+//
+// Purpose:
+//   Engine GetQueryParametersRPC wrapped for safety.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   July 15, 2011 
+//
+// ****************************************************************************
+ 
+bool
+ViewerEngineManager::GetQueryParameters(const EngineKey &ek, 
+    const std::string &qName,  string *params)
+{
+    ENGINE_PROXY_RPC_BEGIN("GetQueryParameters");
+    *params = engine->GetQueryParameters(qName);
+    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+}
+
+// ****************************************************************************
 // Method: ViewerEngineManager::GetProcInfo
 //
 // Purpose:

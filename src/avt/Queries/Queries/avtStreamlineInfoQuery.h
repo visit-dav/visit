@@ -58,6 +58,11 @@
 //  Creation:   9 Nov 2010
 //
 //  Modifications:
+//    Kathleen Biagas, Fri Jun 17 15:39:21 PDT 2011
+//    Added SetInputParams.
+//
+//    Kathleen Biagas, Fri Jul 15 16:34:54 PDT 2011
+//    Add GetDefaultInputParams.
 //
 // ****************************************************************************
 
@@ -70,6 +75,10 @@ class QUERY_API avtStreamlineInfoQuery : public avtDatasetQuery
     virtual const char        *GetType(void) { return "avtStreamlineInfoQuery"; };
     virtual const char        *GetDescription(void) 
                                   { return "Streamline information"; };
+
+    virtual void             SetInputParams(const MapNode &);
+    static  void             GetDefaultInputParams(MapNode &);
+
     void                     SetDumpSteps(bool v) {dumpSteps = v;}
 
   protected:

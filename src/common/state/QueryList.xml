@@ -7,8 +7,6 @@
     </Enum>
     <Enum name="WindowType">
       Basic
-      SinglePoint
-      DoublePoint
       DomainNode
       DomainNodeVars
       DomainZone
@@ -21,11 +19,12 @@
       ShapeletsDecomp
       XRayImage
       StreamlineInfo
+      Pick
+      Lineout
     </Enum>
     <Enum name="Groups">
       CurveRelated
       MeshRelated
-      PickRelated
       TimeRelated
       VariableRelated
       ShapeRelated
@@ -56,6 +55,8 @@
     </Field>
     <Field name="canBePublic" label="canBePublic" type="intVector">
     </Field>
+    <Field name="requiresVarSelection" label="requiresVarSelection" type="intVector">
+    </Field>
     <Function name="AddQuery" user="true" member="true">
     </Function>
     <Function name="QueryExists" user="true" member="true">
@@ -71,5 +72,7 @@
     <Function name="NumberOfVarsForQuery" user="true" member="true">
     </Function>
     <Function name="RegularQueryAvailable" user="true" member="true">
+    </Function>
+    <Function name="GetQueryType" user="true" member="true">
     </Function>
   </Attribute>

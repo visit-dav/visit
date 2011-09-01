@@ -101,30 +101,30 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
         "RedoViewRPC, InvertBackgroundRPC, ClearPickPointsRPC, SetWindowModeRPC, "
         "EnableToolRPC, SetToolUpdateModeRPC, CopyViewToWindowRPC, CopyLightingToWindowRPC, "
         "CopyAnnotationsToWindowRPC, CopyPlotsToWindowRPC, ClearCacheRPC, ClearCacheForAllEnginesRPC, "
-        "SetViewExtentsTypeRPC, ClearRefLinesRPC, SetRenderingAttributesRPC, DatabaseQueryRPC, "
-        "PointQueryRPC, LineQueryRPC, CloneWindowRPC, SetMaterialAttributesRPC, "
-        "SetDefaultMaterialAttributesRPC, ResetMaterialAttributesRPC, SetPlotDatabaseStateRPC, DeletePlotDatabaseKeyframeRPC, "
-        "MovePlotDatabaseKeyframeRPC, ClearViewKeyframesRPC, DeleteViewKeyframeRPC, MoveViewKeyframeRPC, "
-        "SetViewKeyframeRPC, OpenMDServerRPC, EnableToolbarRPC, HideToolbarsRPC, "
-        "HideToolbarsForAllWindowsRPC, ShowToolbarsRPC, ShowToolbarsForAllWindowsRPC, SetToolbarIconSizeRPC, "
-        "SaveViewRPC, SetGlobalLineoutAttributesRPC, SetPickAttributesRPC, ExportColorTableRPC, "
-        "ExportEntireStateRPC, ImportEntireStateRPC, ImportEntireStateWithDifferentSourcesRPC, ResetPickAttributesRPC, "
-        "AddAnnotationObjectRPC, HideActiveAnnotationObjectsRPC, DeleteActiveAnnotationObjectsRPC, RaiseActiveAnnotationObjectsRPC, "
-        "LowerActiveAnnotationObjectsRPC, SetAnnotationObjectOptionsRPC, SetDefaultAnnotationObjectListRPC, ResetAnnotationObjectListRPC, "
-        "ResetPickLetterRPC, SetDefaultPickAttributesRPC, ChooseCenterOfRotationRPC, SetCenterOfRotationRPC, "
-        "SetQueryOverTimeAttributesRPC, SetDefaultQueryOverTimeAttributesRPC, ResetQueryOverTimeAttributesRPC, ResetLineoutColorRPC, "
-        "SetInteractorAttributesRPC, SetDefaultInteractorAttributesRPC, ResetInteractorAttributesRPC, GetProcInfoRPC, "
-        "SendSimulationCommandRPC, UpdateDBPluginInfoRPC, ExportDBRPC, SetTryHarderCyclesTimesRPC, "
-        "OpenClientRPC, OpenGUIClientRPC, OpenCLIClientRPC, SuppressQueryOutputRPC, "
-        "SetQueryFloatFormatRPC, SetMeshManagementAttributesRPC, SetDefaultMeshManagementAttributesRPC, ResetMeshManagementAttributesRPC, "
-        "ResizeWindowRPC, MoveWindowRPC, MoveAndResizeWindowRPC, SetStateLoggingRPC, "
-        "ConstructDataBinningRPC, RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, "
-        "SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, "
-        "TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, "
-        "CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, "
-        "SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, MenuQuitRPC, "
-        "SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, "
-        "SetPlotOrderToLastRPC, RenamePickLabelRPC, MaxRPC";
+        "SetViewExtentsTypeRPC, ClearRefLinesRPC, SetRenderingAttributesRPC, QueryRPC, "
+        "CloneWindowRPC, SetMaterialAttributesRPC, SetDefaultMaterialAttributesRPC, ResetMaterialAttributesRPC, "
+        "SetPlotDatabaseStateRPC, DeletePlotDatabaseKeyframeRPC, MovePlotDatabaseKeyframeRPC, ClearViewKeyframesRPC, "
+        "DeleteViewKeyframeRPC, MoveViewKeyframeRPC, SetViewKeyframeRPC, OpenMDServerRPC, "
+        "EnableToolbarRPC, HideToolbarsRPC, HideToolbarsForAllWindowsRPC, ShowToolbarsRPC, "
+        "ShowToolbarsForAllWindowsRPC, SetToolbarIconSizeRPC, SaveViewRPC, SetGlobalLineoutAttributesRPC, "
+        "SetPickAttributesRPC, ExportColorTableRPC, ExportEntireStateRPC, ImportEntireStateRPC, "
+        "ImportEntireStateWithDifferentSourcesRPC, ResetPickAttributesRPC, AddAnnotationObjectRPC, HideActiveAnnotationObjectsRPC, "
+        "DeleteActiveAnnotationObjectsRPC, RaiseActiveAnnotationObjectsRPC, LowerActiveAnnotationObjectsRPC, SetAnnotationObjectOptionsRPC, "
+        "SetDefaultAnnotationObjectListRPC, ResetAnnotationObjectListRPC, ResetPickLetterRPC, SetDefaultPickAttributesRPC, "
+        "ChooseCenterOfRotationRPC, SetCenterOfRotationRPC, SetQueryOverTimeAttributesRPC, SetDefaultQueryOverTimeAttributesRPC, "
+        "ResetQueryOverTimeAttributesRPC, ResetLineoutColorRPC, SetInteractorAttributesRPC, SetDefaultInteractorAttributesRPC, "
+        "ResetInteractorAttributesRPC, GetProcInfoRPC, SendSimulationCommandRPC, UpdateDBPluginInfoRPC, "
+        "ExportDBRPC, SetTryHarderCyclesTimesRPC, OpenClientRPC, OpenGUIClientRPC, "
+        "OpenCLIClientRPC, SuppressQueryOutputRPC, SetQueryFloatFormatRPC, SetMeshManagementAttributesRPC, "
+        "SetDefaultMeshManagementAttributesRPC, ResetMeshManagementAttributesRPC, ResizeWindowRPC, MoveWindowRPC, "
+        "MoveAndResizeWindowRPC, SetStateLoggingRPC, ConstructDataBinningRPC, RequestMetaDataRPC, "
+        "SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, "
+        "CopyActivePlotsRPC, SetPlotFollowsTimeRPC, TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, "
+        "SetSuppressMessagesRPC, ApplyNamedSelectionRPC, CreateNamedSelectionRPC, DeleteNamedSelectionRPC, "
+        "LoadNamedSelectionRPC, SaveNamedSelectionRPC, SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, "
+        "InitializeNamedSelectionVariablesRPC, MenuQuitRPC, SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, "
+        "MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, RenamePickLabelRPC, "
+        "GetQueryParametersRPC, MaxRPC";
     switch (atts->GetRPCType())
     {
       case ViewerRPC::CloseRPC:
@@ -543,16 +543,8 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetRenderingAttributesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
-      case ViewerRPC::DatabaseQueryRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sDatabaseQueryRPC  # %s\n", prefix, prefix, RPCType_names);
-          str += tmpStr;
-          break;
-      case ViewerRPC::PointQueryRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sPointQueryRPC  # %s\n", prefix, prefix, RPCType_names);
-          str += tmpStr;
-          break;
-      case ViewerRPC::LineQueryRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sLineQueryRPC  # %s\n", prefix, prefix, RPCType_names);
+      case ViewerRPC::QueryRPC:
+          SNPRINTF(tmpStr, 1000, "%sRPCType = %sQueryRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::CloneWindowRPC:
@@ -907,6 +899,10 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sRenamePickLabelRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
+      case ViewerRPC::GetQueryParametersRPC:
+          SNPRINTF(tmpStr, 1000, "%sRPCType = %sGetQueryParametersRPC  # %s\n", prefix, prefix, RPCType_names);
+          str += tmpStr;
+          break;
       case ViewerRPC::MaxRPC:
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sMaxRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
@@ -1041,38 +1037,6 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    {   const double *queryPoint2 = atts->GetQueryPoint2();
-        SNPRINTF(tmpStr, 1000, "%squeryPoint2 = (", prefix);
-        str += tmpStr;
-        for(int i = 0; i < 3; ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", queryPoint2[i]);
-            str += tmpStr;
-            if(i < 2)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const stringVector &queryVariables = atts->GetQueryVariables();
-        SNPRINTF(tmpStr, 1000, "%squeryVariables = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < queryVariables.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", queryVariables[i].c_str());
-            str += tmpStr;
-            if(i < queryVariables.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
     SNPRINTF(tmpStr, 1000, "%stoolId = %d\n", prefix, atts->GetToolId());
     str += tmpStr;
     if(atts->GetBoolFlag())
@@ -1086,46 +1050,13 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sintArg3 = %d\n", prefix, atts->GetIntArg3());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sintArg4 = %d\n", prefix, atts->GetIntArg4());
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sstringArg1 = \"%s\"\n", prefix, atts->GetStringArg1().c_str());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sstringArg2 = \"%s\"\n", prefix, atts->GetStringArg2().c_str());
     str += tmpStr;
-    {   const doubleVector &doubleArg1 = atts->GetDoubleArg1();
-        SNPRINTF(tmpStr, 1000, "%sdoubleArg1 = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < doubleArg1.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", doubleArg1[i]);
-            str += tmpStr;
-            if(i < doubleArg1.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const doubleVector &doubleArg2 = atts->GetDoubleArg2();
-        SNPRINTF(tmpStr, 1000, "%sdoubleArg2 = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < doubleArg2.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", doubleArg2[i]);
-            str += tmpStr;
-            if(i < doubleArg2.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
     SNPRINTF(tmpStr, 1000, "%stoolUpdateMode = %d\n", prefix, atts->GetToolUpdateMode());
     str += tmpStr;
+    //queryParams
     return str;
 }
 
@@ -1148,12 +1079,12 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the RPCType in the object.
-    if(ival >= 0 && ival < 196)
+    if(ival >= 0 && ival < 195)
         obj->data->SetRPCType(ViewerRPC::ViewerRPCType(ival));
     else
     {
         fprintf(stderr, "An invalid RPCType value was given. "
-                        "Valid values are in the range of [0,195]. "
+                        "Valid values are in the range of [0,194]. "
                         "You can also use the following names: "
                         "CloseRPC, DetachRPC, AddWindowRPC, DeleteWindowRPC, SetWindowLayoutRPC, "
                         "SetActiveWindowRPC, ClearWindowRPC, ClearAllWindowsRPC, OpenDatabaseRPC, "
@@ -1180,30 +1111,30 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
                         "RedoViewRPC, InvertBackgroundRPC, ClearPickPointsRPC, SetWindowModeRPC, "
                         "EnableToolRPC, SetToolUpdateModeRPC, CopyViewToWindowRPC, CopyLightingToWindowRPC, "
                         "CopyAnnotationsToWindowRPC, CopyPlotsToWindowRPC, ClearCacheRPC, ClearCacheForAllEnginesRPC, "
-                        "SetViewExtentsTypeRPC, ClearRefLinesRPC, SetRenderingAttributesRPC, DatabaseQueryRPC, "
-                        "PointQueryRPC, LineQueryRPC, CloneWindowRPC, SetMaterialAttributesRPC, "
-                        "SetDefaultMaterialAttributesRPC, ResetMaterialAttributesRPC, SetPlotDatabaseStateRPC, DeletePlotDatabaseKeyframeRPC, "
-                        "MovePlotDatabaseKeyframeRPC, ClearViewKeyframesRPC, DeleteViewKeyframeRPC, MoveViewKeyframeRPC, "
-                        "SetViewKeyframeRPC, OpenMDServerRPC, EnableToolbarRPC, HideToolbarsRPC, "
-                        "HideToolbarsForAllWindowsRPC, ShowToolbarsRPC, ShowToolbarsForAllWindowsRPC, SetToolbarIconSizeRPC, "
-                        "SaveViewRPC, SetGlobalLineoutAttributesRPC, SetPickAttributesRPC, ExportColorTableRPC, "
-                        "ExportEntireStateRPC, ImportEntireStateRPC, ImportEntireStateWithDifferentSourcesRPC, ResetPickAttributesRPC, "
-                        "AddAnnotationObjectRPC, HideActiveAnnotationObjectsRPC, DeleteActiveAnnotationObjectsRPC, RaiseActiveAnnotationObjectsRPC, "
-                        "LowerActiveAnnotationObjectsRPC, SetAnnotationObjectOptionsRPC, SetDefaultAnnotationObjectListRPC, ResetAnnotationObjectListRPC, "
-                        "ResetPickLetterRPC, SetDefaultPickAttributesRPC, ChooseCenterOfRotationRPC, SetCenterOfRotationRPC, "
-                        "SetQueryOverTimeAttributesRPC, SetDefaultQueryOverTimeAttributesRPC, ResetQueryOverTimeAttributesRPC, ResetLineoutColorRPC, "
-                        "SetInteractorAttributesRPC, SetDefaultInteractorAttributesRPC, ResetInteractorAttributesRPC, GetProcInfoRPC, "
-                        "SendSimulationCommandRPC, UpdateDBPluginInfoRPC, ExportDBRPC, SetTryHarderCyclesTimesRPC, "
-                        "OpenClientRPC, OpenGUIClientRPC, OpenCLIClientRPC, SuppressQueryOutputRPC, "
-                        "SetQueryFloatFormatRPC, SetMeshManagementAttributesRPC, SetDefaultMeshManagementAttributesRPC, ResetMeshManagementAttributesRPC, "
-                        "ResizeWindowRPC, MoveWindowRPC, MoveAndResizeWindowRPC, SetStateLoggingRPC, "
-                        "ConstructDataBinningRPC, RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, "
-                        "SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, "
-                        "TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, "
-                        "CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, "
-                        "SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, MenuQuitRPC, "
-                        "SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, "
-                        "SetPlotOrderToLastRPC, RenamePickLabelRPC, MaxRPC.");
+                        "SetViewExtentsTypeRPC, ClearRefLinesRPC, SetRenderingAttributesRPC, QueryRPC, "
+                        "CloneWindowRPC, SetMaterialAttributesRPC, SetDefaultMaterialAttributesRPC, ResetMaterialAttributesRPC, "
+                        "SetPlotDatabaseStateRPC, DeletePlotDatabaseKeyframeRPC, MovePlotDatabaseKeyframeRPC, ClearViewKeyframesRPC, "
+                        "DeleteViewKeyframeRPC, MoveViewKeyframeRPC, SetViewKeyframeRPC, OpenMDServerRPC, "
+                        "EnableToolbarRPC, HideToolbarsRPC, HideToolbarsForAllWindowsRPC, ShowToolbarsRPC, "
+                        "ShowToolbarsForAllWindowsRPC, SetToolbarIconSizeRPC, SaveViewRPC, SetGlobalLineoutAttributesRPC, "
+                        "SetPickAttributesRPC, ExportColorTableRPC, ExportEntireStateRPC, ImportEntireStateRPC, "
+                        "ImportEntireStateWithDifferentSourcesRPC, ResetPickAttributesRPC, AddAnnotationObjectRPC, HideActiveAnnotationObjectsRPC, "
+                        "DeleteActiveAnnotationObjectsRPC, RaiseActiveAnnotationObjectsRPC, LowerActiveAnnotationObjectsRPC, SetAnnotationObjectOptionsRPC, "
+                        "SetDefaultAnnotationObjectListRPC, ResetAnnotationObjectListRPC, ResetPickLetterRPC, SetDefaultPickAttributesRPC, "
+                        "ChooseCenterOfRotationRPC, SetCenterOfRotationRPC, SetQueryOverTimeAttributesRPC, SetDefaultQueryOverTimeAttributesRPC, "
+                        "ResetQueryOverTimeAttributesRPC, ResetLineoutColorRPC, SetInteractorAttributesRPC, SetDefaultInteractorAttributesRPC, "
+                        "ResetInteractorAttributesRPC, GetProcInfoRPC, SendSimulationCommandRPC, UpdateDBPluginInfoRPC, "
+                        "ExportDBRPC, SetTryHarderCyclesTimesRPC, OpenClientRPC, OpenGUIClientRPC, "
+                        "OpenCLIClientRPC, SuppressQueryOutputRPC, SetQueryFloatFormatRPC, SetMeshManagementAttributesRPC, "
+                        "SetDefaultMeshManagementAttributesRPC, ResetMeshManagementAttributesRPC, ResizeWindowRPC, MoveWindowRPC, "
+                        "MoveAndResizeWindowRPC, SetStateLoggingRPC, ConstructDataBinningRPC, RequestMetaDataRPC, "
+                        "SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, "
+                        "CopyActivePlotsRPC, SetPlotFollowsTimeRPC, TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, "
+                        "SetSuppressMessagesRPC, ApplyNamedSelectionRPC, CreateNamedSelectionRPC, DeleteNamedSelectionRPC, "
+                        "LoadNamedSelectionRPC, SaveNamedSelectionRPC, SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, "
+                        "InitializeNamedSelectionVariablesRPC, MenuQuitRPC, SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, "
+                        "MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, RenamePickLabelRPC, "
+                        "GetQueryParametersRPC, MaxRPC.");
         return NULL;
     }
 
@@ -1926,109 +1857,6 @@ ViewerRPC_GetQueryPoint1(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ViewerRPC_SetQueryPoint2(PyObject *self, PyObject *args)
-{
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
-
-    double *dvals = obj->data->GetQueryPoint2();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
-    {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
-    }
-
-    // Mark the queryPoint2 in the object as modified.
-    obj->data->SelectQueryPoint2();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ViewerRPC_GetQueryPoint2(PyObject *self, PyObject *args)
-{
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
-    // Allocate a tuple the with enough entries to hold the queryPoint2.
-    PyObject *retval = PyTuple_New(3);
-    const double *queryPoint2 = obj->data->GetQueryPoint2();
-    for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(queryPoint2[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-ViewerRPC_SetQueryVariables(PyObject *self, PyObject *args)
-{
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
-
-    stringVector  &vec = obj->data->GetQueryVariables();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
-        }
-    }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
-    else
-        return NULL;
-
-    // Mark the queryVariables in the object as modified.
-    obj->data->SelectQueryVariables();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ViewerRPC_GetQueryVariables(PyObject *self, PyObject *args)
-{
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
-    // Allocate a tuple the with enough entries to hold the queryVariables.
-    const stringVector &queryVariables = obj->data->GetQueryVariables();
-    PyObject *retval = PyTuple_New(queryVariables.size());
-    for(size_t i = 0; i < queryVariables.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyString_FromString(queryVariables[i].c_str()));
-    return retval;
-}
-
-/*static*/ PyObject *
 ViewerRPC_SetToolId(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
@@ -2149,30 +1977,6 @@ ViewerRPC_GetIntArg3(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ViewerRPC_SetIntArg4(PyObject *self, PyObject *args)
-{
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the intArg4 in the object.
-    obj->data->SetIntArg4((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ViewerRPC_GetIntArg4(PyObject *self, PyObject *args)
-{
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntArg4()));
-    return retval;
-}
-
-/*static*/ PyObject *
 ViewerRPC_SetStringArg1(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
@@ -2221,132 +2025,6 @@ ViewerRPC_GetStringArg2(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ViewerRPC_SetDoubleArg1(PyObject *self, PyObject *args)
-{
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
-
-    doubleVector  &vec = obj->data->GetDoubleArg1();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
-    else
-        return NULL;
-
-    // Mark the doubleArg1 in the object as modified.
-    obj->data->SelectDoubleArg1();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ViewerRPC_GetDoubleArg1(PyObject *self, PyObject *args)
-{
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
-    // Allocate a tuple the with enough entries to hold the doubleArg1.
-    const doubleVector &doubleArg1 = obj->data->GetDoubleArg1();
-    PyObject *retval = PyTuple_New(doubleArg1.size());
-    for(size_t i = 0; i < doubleArg1.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(doubleArg1[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-ViewerRPC_SetDoubleArg2(PyObject *self, PyObject *args)
-{
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
-
-    doubleVector  &vec = obj->data->GetDoubleArg2();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
-    else
-        return NULL;
-
-    // Mark the doubleArg2 in the object as modified.
-    obj->data->SelectDoubleArg2();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ViewerRPC_GetDoubleArg2(PyObject *self, PyObject *args)
-{
-    ViewerRPCObject *obj = (ViewerRPCObject *)self;
-    // Allocate a tuple the with enough entries to hold the doubleArg2.
-    const doubleVector &doubleArg2 = obj->data->GetDoubleArg2();
-    PyObject *retval = PyTuple_New(doubleArg2.size());
-    for(size_t i = 0; i < doubleArg2.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(doubleArg2[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
 ViewerRPC_SetToolUpdateMode(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
@@ -2367,6 +2045,28 @@ ViewerRPC_GetToolUpdateMode(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetToolUpdateMode()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ViewerRPC_SetQueryParams(PyObject *self, PyObject *args)
+{
+    ViewerRPCObject *obj = (ViewerRPCObject *)self;
+
+    // NOT IMPLEMENTED!!!
+    // name=queryParams, type=MapNode
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ViewerRPC_GetQueryParams(PyObject *self, PyObject *args)
+{
+    ViewerRPCObject *obj = (ViewerRPCObject *)self;
+    // NOT IMPLEMENTED!!!
+    // name=queryParams, type=MapNode
+    PyObject *retval = NULL;
     return retval;
 }
 
@@ -2418,10 +2118,6 @@ PyMethodDef PyViewerRPC_methods[VIEWERRPC_NMETH] = {
     {"GetQueryName", ViewerRPC_GetQueryName, METH_VARARGS},
     {"SetQueryPoint1", ViewerRPC_SetQueryPoint1, METH_VARARGS},
     {"GetQueryPoint1", ViewerRPC_GetQueryPoint1, METH_VARARGS},
-    {"SetQueryPoint2", ViewerRPC_SetQueryPoint2, METH_VARARGS},
-    {"GetQueryPoint2", ViewerRPC_GetQueryPoint2, METH_VARARGS},
-    {"SetQueryVariables", ViewerRPC_SetQueryVariables, METH_VARARGS},
-    {"GetQueryVariables", ViewerRPC_GetQueryVariables, METH_VARARGS},
     {"SetToolId", ViewerRPC_SetToolId, METH_VARARGS},
     {"GetToolId", ViewerRPC_GetToolId, METH_VARARGS},
     {"SetBoolFlag", ViewerRPC_SetBoolFlag, METH_VARARGS},
@@ -2432,18 +2128,14 @@ PyMethodDef PyViewerRPC_methods[VIEWERRPC_NMETH] = {
     {"GetIntArg2", ViewerRPC_GetIntArg2, METH_VARARGS},
     {"SetIntArg3", ViewerRPC_SetIntArg3, METH_VARARGS},
     {"GetIntArg3", ViewerRPC_GetIntArg3, METH_VARARGS},
-    {"SetIntArg4", ViewerRPC_SetIntArg4, METH_VARARGS},
-    {"GetIntArg4", ViewerRPC_GetIntArg4, METH_VARARGS},
     {"SetStringArg1", ViewerRPC_SetStringArg1, METH_VARARGS},
     {"GetStringArg1", ViewerRPC_GetStringArg1, METH_VARARGS},
     {"SetStringArg2", ViewerRPC_SetStringArg2, METH_VARARGS},
     {"GetStringArg2", ViewerRPC_GetStringArg2, METH_VARARGS},
-    {"SetDoubleArg1", ViewerRPC_SetDoubleArg1, METH_VARARGS},
-    {"GetDoubleArg1", ViewerRPC_GetDoubleArg1, METH_VARARGS},
-    {"SetDoubleArg2", ViewerRPC_SetDoubleArg2, METH_VARARGS},
-    {"GetDoubleArg2", ViewerRPC_GetDoubleArg2, METH_VARARGS},
     {"SetToolUpdateMode", ViewerRPC_SetToolUpdateMode, METH_VARARGS},
     {"GetToolUpdateMode", ViewerRPC_GetToolUpdateMode, METH_VARARGS},
+    {"SetQueryParams", ViewerRPC_SetQueryParams, METH_VARARGS},
+    {"GetQueryParams", ViewerRPC_GetQueryParams, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -2682,12 +2374,8 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ViewerRPC::ClearRefLinesRPC));
     if(strcmp(name, "SetRenderingAttributesRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::SetRenderingAttributesRPC));
-    if(strcmp(name, "DatabaseQueryRPC") == 0)
-        return PyInt_FromLong(long(ViewerRPC::DatabaseQueryRPC));
-    if(strcmp(name, "PointQueryRPC") == 0)
-        return PyInt_FromLong(long(ViewerRPC::PointQueryRPC));
-    if(strcmp(name, "LineQueryRPC") == 0)
-        return PyInt_FromLong(long(ViewerRPC::LineQueryRPC));
+    if(strcmp(name, "QueryRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::QueryRPC));
     if(strcmp(name, "CloneWindowRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::CloneWindowRPC));
     if(strcmp(name, "SetMaterialAttributesRPC") == 0)
@@ -2864,6 +2552,8 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ViewerRPC::SetPlotOrderToLastRPC));
     if(strcmp(name, "RenamePickLabelRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::RenamePickLabelRPC));
+    if(strcmp(name, "GetQueryParametersRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::GetQueryParametersRPC));
     if(strcmp(name, "MaxRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::MaxRPC));
 
@@ -2909,10 +2599,6 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return ViewerRPC_GetQueryName(self, NULL);
     if(strcmp(name, "queryPoint1") == 0)
         return ViewerRPC_GetQueryPoint1(self, NULL);
-    if(strcmp(name, "queryPoint2") == 0)
-        return ViewerRPC_GetQueryPoint2(self, NULL);
-    if(strcmp(name, "queryVariables") == 0)
-        return ViewerRPC_GetQueryVariables(self, NULL);
     if(strcmp(name, "toolId") == 0)
         return ViewerRPC_GetToolId(self, NULL);
     if(strcmp(name, "boolFlag") == 0)
@@ -2923,18 +2609,14 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return ViewerRPC_GetIntArg2(self, NULL);
     if(strcmp(name, "intArg3") == 0)
         return ViewerRPC_GetIntArg3(self, NULL);
-    if(strcmp(name, "intArg4") == 0)
-        return ViewerRPC_GetIntArg4(self, NULL);
     if(strcmp(name, "stringArg1") == 0)
         return ViewerRPC_GetStringArg1(self, NULL);
     if(strcmp(name, "stringArg2") == 0)
         return ViewerRPC_GetStringArg2(self, NULL);
-    if(strcmp(name, "doubleArg1") == 0)
-        return ViewerRPC_GetDoubleArg1(self, NULL);
-    if(strcmp(name, "doubleArg2") == 0)
-        return ViewerRPC_GetDoubleArg2(self, NULL);
     if(strcmp(name, "toolUpdateMode") == 0)
         return ViewerRPC_GetToolUpdateMode(self, NULL);
+    if(strcmp(name, "queryParams") == 0)
+        return ViewerRPC_GetQueryParams(self, NULL);
 
     return Py_FindMethod(PyViewerRPC_methods, self, name);
 }
@@ -2993,10 +2675,6 @@ PyViewerRPC_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewerRPC_SetQueryName(self, tuple);
     else if(strcmp(name, "queryPoint1") == 0)
         obj = ViewerRPC_SetQueryPoint1(self, tuple);
-    else if(strcmp(name, "queryPoint2") == 0)
-        obj = ViewerRPC_SetQueryPoint2(self, tuple);
-    else if(strcmp(name, "queryVariables") == 0)
-        obj = ViewerRPC_SetQueryVariables(self, tuple);
     else if(strcmp(name, "toolId") == 0)
         obj = ViewerRPC_SetToolId(self, tuple);
     else if(strcmp(name, "boolFlag") == 0)
@@ -3007,16 +2685,10 @@ PyViewerRPC_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewerRPC_SetIntArg2(self, tuple);
     else if(strcmp(name, "intArg3") == 0)
         obj = ViewerRPC_SetIntArg3(self, tuple);
-    else if(strcmp(name, "intArg4") == 0)
-        obj = ViewerRPC_SetIntArg4(self, tuple);
     else if(strcmp(name, "stringArg1") == 0)
         obj = ViewerRPC_SetStringArg1(self, tuple);
     else if(strcmp(name, "stringArg2") == 0)
         obj = ViewerRPC_SetStringArg2(self, tuple);
-    else if(strcmp(name, "doubleArg1") == 0)
-        obj = ViewerRPC_SetDoubleArg1(self, tuple);
-    else if(strcmp(name, "doubleArg2") == 0)
-        obj = ViewerRPC_SetDoubleArg2(self, tuple);
     else if(strcmp(name, "toolUpdateMode") == 0)
         obj = ViewerRPC_SetToolUpdateMode(self, tuple);
 

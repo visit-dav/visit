@@ -105,6 +105,74 @@ avtLineScanQuery::~avtLineScanQuery()
 
 
 // ****************************************************************************
+//  Method: avtLineScanQuery::SetInputParams
+//
+//  Purpose:
+//    Allows this query to read input parameters set by user.
+//
+//  Arguments:
+//    params:  MapNode containing input. 
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   June 20, 2011
+//
+// ****************************************************************************
+
+void
+avtLineScanQuery::SetInputParams(const MapNode &params)
+{
+    if (params.HasEntry("num_lines"))
+        SetNumberOfLines(params.GetEntry("num_lines")->AsInt());
+
+    if (params.HasEntry("num_bins"))
+        SetNumberOfBins(params.GetEntry("num_bins")->AsInt());
+
+    double min = 0., max = 1.0;
+    if (params.HasEntry("min"))
+    {
+        if (params.GetEntry("min")->TypeName() == "double")
+            min = params.GetEntry("min")->AsDouble();
+        else if (params.GetEntry("min")->TypeName() == "int")
+            min = params.GetEntry("min")->AsInt();
+    }
+
+    if (params.HasEntry("max"))
+    {
+        if (params.GetEntry("max")->TypeName() == "double")
+            max = params.GetEntry("max")->AsDouble();
+        else if (params.GetEntry("max")->TypeName() == "int")
+            max = params.GetEntry("max")->AsInt();
+    }
+
+    SetRange(min, max);
+}
+
+
+// ****************************************************************************
+//  Method: avtLineScanQuery::GetDefaultInputParams
+//
+//  Purpose:
+//    Retrieve default input values.
+//
+//  Arguments:
+//    params:  MapNode to store the default values.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 15, 2011
+//
+// ****************************************************************************
+
+void
+avtLineScanQuery::GetDefaultInputParams(MapNode &params)
+{
+    params["num_bins"] = 100;
+    params["min"] = 0.;
+    params["max"] = 1.0;
+    params["num_lines"] = 1000;
+}
+
+
+// ****************************************************************************
 //  Method: avtLineScanQuery::PreExecute
 //
 //  Purpose:

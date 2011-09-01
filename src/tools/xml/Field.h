@@ -104,6 +104,9 @@
 //    Kathleen Biagas, Thu Aug 25 14:18:42 PST 2011
 //    Added persistent flag. 
 //
+//    Kathleen Biagas, Tue Mar  1 11:00:37 PST 2011
+//    Added MapNode type.
+//
 // ****************************************************************************
 
 
@@ -1341,6 +1344,35 @@ class AttVector : public virtual Field
 
 
 //
+// --------------------------------- MapNode --------------------------------
+//
+class MapNode : public virtual Field
+{
+  public:
+    MapNode(const QString &n, const QString &l) : Field("MapNode",n,l) 
+    {
+    };
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return QString("MapNode");
+    }
+    virtual void SetValue(const QString &s, int = 0)
+    {
+        throw QString("Cannot set value %1 for MapNode type").arg(s);
+    }
+    virtual void Print(QTextStream &out)
+    {
+        Field::Print(out);
+    }
+    virtual std::vector<QString> GetValueAsText()
+    {
+        std::vector<QString> retval;
+        return retval;
+    }
+};
+
+
+//
 // ----------------------------------- Enum -----------------------------------
 //
 class Enum : public virtual Field
@@ -1785,6 +1817,7 @@ class FieldFactory
         else if (type == "attVector")    f = new AttVector(subtype,name,label);
         else if (type == "enum")         f = new Enum(subtype, name, label);
         else if (type == "scalemode")    f = new ScaleMode(name,label);
+        else if (type == "MapNode")      f = new MapNode(name,label);
 
         // Special built-in AVT enums
         else if (type == "avtCentering")      f = new avtCenteringField(name, label);

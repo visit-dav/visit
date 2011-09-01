@@ -232,6 +232,13 @@ MapNode::operator=(const doubleVector& val)
     return *this;
 }
 
+MapNode &
+MapNode::operator=(const stringVector& val)
+{
+    Variant::operator=(val);
+    return *this;
+}
+
 
 // ****************************************************************************
 //  Method:  MapNode::operator[]

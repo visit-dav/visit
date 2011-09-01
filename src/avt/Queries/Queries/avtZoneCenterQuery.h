@@ -60,6 +60,12 @@
 //    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004
 //    Add FindLocalCenter, FindGlobalCenter.
 //
+//    Kathleen Biagas, Tue Jun 21 10:28:07 PDT 2011
+//    Add SetInputParams, element, domain, useGlobalId.
+//
+//    Kathleen Biagas, Fri Jul 15 16:38:31 PDT 2011
+//    Add GetDefaultInputParams.
+//
 // ****************************************************************************
 
 class QUERY_API avtZoneCenterQuery : public avtDatasetQuery
@@ -72,6 +78,9 @@ class QUERY_API avtZoneCenterQuery : public avtDatasetQuery
     virtual const char      *GetDescription(void) 
                                   { return "Getting zone center."; };
 
+    virtual void             SetInputParams(const MapNode &);
+    static  void             GetDefaultInputParams(MapNode &);
+
     virtual void             PerformQuery(QueryAttributes *);
     virtual bool             OriginalData(void) { return true; };
 
@@ -81,6 +90,11 @@ class QUERY_API avtZoneCenterQuery : public avtDatasetQuery
 
     bool                     FindGlobalCenter(double coord[3]);
     bool                     FindLocalCenter(double coord[3]);
+
+  private:
+    int    element;
+    int    domain;
+    bool   useGlobalId;
 };
 
 #endif

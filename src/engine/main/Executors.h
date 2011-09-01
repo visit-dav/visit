@@ -76,6 +76,7 @@
 #include <PickRPC.h>
 #include <ProcInfoRPC.h>
 #include <QueryRPC.h>
+#include <QueryParametersRPC.h>
 #include <QuitRPC.h>
 #include <ReadRPC.h>
 #include <ReleaseDataRPC.h>
@@ -1172,6 +1173,40 @@ RPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
                                Engine::EngineInitializeProgressCallback, NULL);
     avtOriginatingSource::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
+}
+
+
+// ****************************************************************************
+//  Method: RPCExecutor<QueryParametersRPC>::Execute
+//
+//  Purpose:  Retrieve query parameters.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   July 15, 2011 
+//
+//  Modifications:
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<QueryParametersRPC>::Execute(QueryParametersRPC *rpc)
+{
+    Engine         *engine = Engine::Instance();
+    NetworkManager *netmgr = engine->GetNetMgr();
+
+    debug2 << "Executing QueryParametersRPC: " << endl;
+
+    TRY
+    {
+        QueryParametersRPC::MapNodeString s(
+            netmgr->GetQueryParameters(rpc->GetQueryName()));
+        rpc->SendReply(&s);
+    }
+    CATCH2(VisItException, e)
+    {
+        rpc->SendError(e.Message(), e.GetExceptionType());
+    }
+    ENDTRY
 }
 
 

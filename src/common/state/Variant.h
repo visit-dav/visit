@@ -58,6 +58,10 @@ class Connection;
 //    Brad Whitlock, Tue Jan  6 15:16:19 PST 2009
 //    I added methods that let it read/write itself using Connection.
 //
+//    Kathleen Biagas, Wed Jul 13 10:15:33 PDT 2011
+//    Added ConvertToString, takes a basic type and returns a string 
+//    respresentation (useful for logging).
+//
 // ****************************************************************************
 
 class STATE_API Variant
@@ -156,6 +160,8 @@ class STATE_API Variant
     const doubleVector       &AsDoubleVector()       const;
     const stringVector       &AsStringVector()       const;
 
+    std::string              &ConvertToString();
+
     
     void                      SetValue(const Variant&);
     void                      SetValue(const XMLNode&);
@@ -219,6 +225,7 @@ class STATE_API Variant
 
     int                       dataType;
     void                     *dataValue;
+    std::string               tmp;
 };
 
 #endif

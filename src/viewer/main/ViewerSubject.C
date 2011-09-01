@@ -7132,158 +7132,46 @@ ViewerSubject::CopyPlotsToWindow(int from, int to)
     ViewerWindowManager::Instance()->CopyPlotListToWindow(from-1, to-1);
 }
 
+
 // ****************************************************************************
-// Method: ViewerSubject::DatabaseQuery
+// Method: ViewerSubject::Query
 //
 // Purpose: 
-//   Performs a database query.
+//   Performs a query.
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 6 14:23:13 PST 2002
+// Programmer: Kathleen Bonnell 
+// Creation:   March 1, 2011 
 //
 // Modifications:
-//   Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002
-//   Added call to ViewerQueryManager's DatabaseQuery method. 
-//   
-//   Kathleen Bonnell, Wed Jul 23 16:10:41 PDT 2003
-//   Added int args to qm->DatabaseQuery. 
-//   
-//   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
-//   Added another bool arg to qm->DatabaseQuery. 
-//   
-//   Hank Childs, Tue Jul 11 14:34:06 PDT 2006
-//   Add double arguments.
-//
-//   Brad Whitlock, Wed Apr 30 09:27:08 PDT 2008
-//   Support for internationalization.
-//
-//   Dave Pugmire, Tue Nov  9 16:07:50 EST 2010
-//   Added dumpStates for streamline info query.
 //
 // ****************************************************************************
 
 void
-ViewerSubject::DatabaseQuery()
+ViewerSubject::Query()
 {
-    // Send the client a status message.
-    QString msg = tr("Performing %1 query...").
-                  arg(GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
-    Status(msg);
-
-    ViewerWindow *vw = ViewerWindowManager::Instance()->GetActiveWindow();
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
-    qm->DatabaseQuery(vw, GetViewerState()->GetViewerRPC()->GetQueryName(), GetViewerState()->GetViewerRPC()->GetQueryVariables(),
-                      GetViewerState()->GetViewerRPC()->GetBoolFlag(), 
-                      GetViewerState()->GetViewerRPC()->GetIntArg1(), GetViewerState()->GetViewerRPC()->GetIntArg2(),
-                      (bool)GetViewerState()->GetViewerRPC()->GetIntArg3(),(bool)GetViewerState()->GetViewerRPC()->GetIntArg4(),
-                      GetViewerState()->GetViewerRPC()->GetDoubleArg1(),
-                      GetViewerState()->GetViewerRPC()->GetDoubleArg2());
-
-    // Clear the status
-    ClearStatus();
+    qm->Query(GetViewerState()->GetViewerRPC()->GetQueryParams());
 }
 
+
 // ****************************************************************************
-// Method: ViewerSubject::PointQuery
+// Method: ViewerSubject::GetQueryParameters
 //
 // Purpose: 
-//   Performs a point query.
+//   Retrieves default parameters for a query.
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 6 14:23:13 PST 2002
+// Programmer: Kathleen Biagas 
+// Creation:   July 15, 2011 
 //
 // Modifications:
-//   Kathleen Bonnell, Wed May 14 17:09:14 PDT 2003 
-//   Removed debug code, and special case handling.  Made ViewerQueryManager
-//   handle the query instead of ViewerWindowManager. 
-//
-//   Kathleen Bonnell, Wed Nov 26 14:33:23 PST 2003
-//   Use optional int args from RPC. 
-//
-//   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
-//   Use optional bool flag from RPC. 
-//
-//   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
-//   Added another bool arg to qm->DatabaseQuery. 
-//
-//   Brad Whitlock, Wed Apr 30 09:27:46 PDT 2008
-//   Support for internationalization.
-//
-//   Kathleen Bonnell, Tue Mar  1 11:15:43 PST 2011
-//   Added another int arg (for time query plot type).
-//   IntArg1 is the curvePlotType.
-//   IntArg2 is the element.
-//   IntArg3 is the domain.
-//   IntArg4 is the globalElement flag.
 //
 // ****************************************************************************
 
 void
-ViewerSubject::PointQuery()
+ViewerSubject::GetQueryParameters()
 {
-    // Send the client a status message.
-    QString msg = tr("Performing %1 query...").
-                  arg(GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
-    Status(msg);
-
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
-    qm->PointQuery(GetViewerState()->GetViewerRPC()->GetQueryName(), 
-                   GetViewerState()->GetViewerRPC()->GetQueryPoint1(),
-                   GetViewerState()->GetViewerRPC()->GetQueryVariables(),
-                   GetViewerState()->GetViewerRPC()->GetIntArg2(),
-                   GetViewerState()->GetViewerRPC()->GetIntArg3(),
-                   GetViewerState()->GetViewerRPC()->GetBoolFlag(),
-                   GetViewerState()->GetViewerRPC()->GetIntArg1(), 
-                   (bool)GetViewerState()->GetViewerRPC()->GetIntArg4()); 
-
-    // Clear the status
-    ClearStatus();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::LineQuery
-//
-// Purpose: 
-//   Performs a line query.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 6 14:23:13 PST 2002
-//
-// Modifications:
-//   Kathleen Bonnell, Fri Dec 20 11:36:11 PST 2002 
-//   ViewerQueryManager now handles the line queries.
-//
-//   Kathleen Bonnell, Wed Jul 23 16:10:41 PDT 2003
-//   Added IntArg1 to qm->LineQuery.
-//   
-//   Kathleen Bonnell, Fri Jul  9 16:24:56 PDT 2004 
-//   Changed Call from "LineQuery" to "StartLineQuery", added call to
-//   MessageRendererThread. 
-//   
-//   Kathleen Bonnell, Tue May 15 10:43:49 PDT 2007 
-//   Added bool arg to StartLineQuery. 
-//
-//   Brad Whitlock, Wed Apr 30 09:27:08 PDT 2008
-//   Support for internationalization.
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::LineQuery()
-{
-    // Send the client a status message.
-    QString msg = tr("Performing %1 query...").
-                  arg(GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
-    Status(msg);
-
-    ViewerQueryManager::Instance()->StartLineQuery( 
-        GetViewerState()->GetViewerRPC()->GetQueryName().c_str(),
-        GetViewerState()->GetViewerRPC()->GetQueryPoint1(), 
-        GetViewerState()->GetViewerRPC()->GetQueryPoint2(),
-        GetViewerState()->GetViewerRPC()->GetQueryVariables(), 
-        GetViewerState()->GetViewerRPC()->GetIntArg1(),
-        GetViewerState()->GetViewerRPC()->GetBoolFlag());
-    MessageRendererThread("finishLineQuery;");
+    qm->GetQueryParameters(GetViewerState()->GetViewerRPC()->GetQueryName());
 }
 
 // ****************************************************************************
@@ -8123,6 +8011,9 @@ ViewerSubject::HandleViewerRPC()
 //    Brad Whitlock, Fri Aug 27 10:29:23 PDT 2010
 //    I added RenamePickLabel.
 //
+//    Kathleen Bonnell, Fri Jun 17 16:33:17 PDT 2011
+//    Add Query, which replaces Database, Line and PointQuery.
+//
 // ****************************************************************************
 
 void
@@ -8330,14 +8221,8 @@ ViewerSubject::HandleViewerRPCEx()
     case ViewerRPC::SetRenderingAttributesRPC:
         SetRenderingAttributes();
         break;
-    case ViewerRPC::DatabaseQueryRPC:
-        DatabaseQuery();
-        break;
-    case ViewerRPC::PointQueryRPC:
-        PointQuery();
-        break;
-    case ViewerRPC::LineQueryRPC:
-        LineQuery();
+    case ViewerRPC::QueryRPC:
+        Query();
         break;
     case ViewerRPC::SetMaterialAttributesRPC:
         SetMaterialAttributes();
@@ -8518,6 +8403,9 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::RenamePickLabelRPC:
         RenamePickLabel();
+        break;
+    case ViewerRPC::GetQueryParametersRPC:
+        GetQueryParameters();
         break;
     case ViewerRPC::MaxRPC:
         break;

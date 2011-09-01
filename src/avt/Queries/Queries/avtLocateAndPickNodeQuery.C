@@ -51,7 +51,7 @@
 #include <snprintf.h>
 #include <DebugStream.h>
 #include <PickVarInfo.h>
-
+#include <QueryArgumentException.h>
 #include <string>
 
 // ****************************************************************************
@@ -63,6 +63,8 @@
 //  Creation:   October 22, 2007 
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Jun 21 10:43:25 PDT 2011
+//    Added domain, node.
 //
 // ****************************************************************************
 
@@ -70,6 +72,8 @@ avtLocateAndPickNodeQuery::avtLocateAndPickNodeQuery()
 {
     lnq = new avtLocateNodeQuery;
     npq = new avtNodePickQuery;
+    domain = 0;
+    node = 0;
 }
 
 
@@ -101,6 +105,56 @@ avtLocateAndPickNodeQuery::~avtLocateAndPickNodeQuery()
 
 
 // ****************************************************************************
+//  Method: avtLocateAndPickNodeQuery::SetInputParams
+//
+//  Purpose:
+//    Allows this query to read input parameters set by user.
+//
+//  Arguments:
+//    params:  MapNode containing input.
+//
+//  Programmer:  Kathleen Biagas 
+//  Creation:    June 20, 2011 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtLocateAndPickNodeQuery::SetInputParams(const MapNode &params)
+{
+    if (params.HasEntry("vars"))
+    {
+        const stringVector &v = params.GetEntry("vars")->AsStringVector();
+        timeCurveSpecs["nResultsToStore"] = (int)v.size();
+        pickAtts.SetVariables(v);
+    }
+    else
+        EXCEPTION1(QueryArgumentException, "vars");
+
+    if (params.HasEntry("ray_start_point"))
+        pickAtts.SetRayPoint1(params.GetEntry("ray_start_point")->AsDoubleVector());
+    else
+        EXCEPTION1(QueryArgumentException, "ray_start_point");
+
+    if (params.HasEntry("ray_end_point"))
+        pickAtts.SetRayPoint2(params.GetEntry("ray_end_point")->AsDoubleVector());
+    else
+        EXCEPTION1(QueryArgumentException, "ray_end_point");
+
+    if (params.HasEntry("domain"))
+        domain = params.GetEntry("domain")->AsInt();
+    else
+        EXCEPTION1(QueryArgumentException, "domain");
+
+    if (params.HasEntry("element"))
+        node = params.GetEntry("element")->AsInt();
+    else
+        EXCEPTION1(QueryArgumentException, "element");
+}
+
+
+// ****************************************************************************
 //  Method: avtLocateAndPickNodeQuery::PerformQuery
 //
 //  Purpose:
@@ -115,6 +169,9 @@ avtLocateAndPickNodeQuery::~avtLocateAndPickNodeQuery()
 //
 //    Kathleen Bonnell, Thu Feb 17 09:57:58 PST 2011
 //    Allow multiple outputs / results.
+//
+//    Kathleen Biagas, Tue Jun 21 10:51:24 PDT 2011
+//    Domain, Node, RayPoints and variables retrieved during SetInputParams.
 //
 // ****************************************************************************
 
@@ -131,9 +188,6 @@ avtLocateAndPickNodeQuery::PerformQuery(QueryAttributes *qa)
     pickAtts.SetActiveVariable(dataRequest->GetVariable());
     pickAtts.SetGhostType(inAtts.GetContainsGhostZones());
     pickAtts.SetTimeStep(qa->GetTimeStep());
-    pickAtts.SetRayPoint1(qa->GetDarg1());
-    pickAtts.SetRayPoint2(qa->GetDarg2());
-    pickAtts.SetVariables(qa->GetVariables());
     pickAtts.SetPickType(PickAttributes::Node);
 
     // Do the locate part of the query
@@ -190,8 +244,7 @@ avtLocateAndPickNodeQuery::PerformQuery(QueryAttributes *qa)
         {
             char msg[120]; 
             SNPRINTF(msg, 120, "Could not retrieve information from domain "
-                     " %d element %d.", queryAtts.GetDomain(), 
-                     queryAtts.GetElement());
+                     " %d node %d.", domain, node);
             qa->SetResultsMessage(msg);
             qa->SetResultsValue(vals);
         }
@@ -279,24 +332,3 @@ avtLocateAndPickNodeQuery::SetPickAttsForTimeQuery(
     pickAtts.SetTimePreserveCoord(pa->GetTimePreserveCoord());
     pickAtts.SetPlotBounds(pa->GetPlotBounds());
 }
-
-
-// ****************************************************************************
-//  Method: avtLocateAndPickNodeQuery::SetNumVars
-//
-//  Purpose:
-//    Override default nResultsToStore in TimeCurveSpecs.
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    February 17, 2011
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtLocateAndPickNodeQuery::SetNumVars(int nv)
-{
-    timeCurveSpecs["nResultsToStore"] = nv;
-}
-

@@ -104,6 +104,7 @@ public:
     void SetStartTime(int startTime_);
     void SetEndTimeFlag(bool endTimeFlag_);
     void SetEndTime(int endTime_);
+    void SetStrideFlag(bool strideFlag_);
     void SetStride(int stride_);
     void SetCreateWindow(bool createWindow_);
     void SetWindowId(int windowId_);
@@ -116,6 +117,7 @@ public:
     int                   GetStartTime() const;
     bool                  GetEndTimeFlag() const;
     int                   GetEndTime() const;
+    bool                  GetStrideFlag() const;
     int                   GetStride() const;
     bool                  GetCreateWindow() const;
     int                   GetWindowId() const;
@@ -149,6 +151,7 @@ public:
         ID_startTime,
         ID_endTimeFlag,
         ID_endTime,
+        ID_strideFlag,
         ID_stride,
         ID_createWindow,
         ID_windowId,
@@ -163,6 +166,7 @@ private:
     int             startTime;
     bool            endTimeFlag;
     int             endTime;
+    bool            strideFlag;
     int             stride;
     bool            createWindow;
     int             windowId;
@@ -173,6 +177,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define QUERYOVERTIMEATTRIBUTES_TMFS "ibibiibiaa"
+#define QUERYOVERTIMEATTRIBUTES_TMFS "ibibibibiaa"
 
 #endif

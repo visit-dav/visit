@@ -3315,6 +3315,9 @@ QvisGUIApplication::SetupWindows()
 //   I added the Selections window and I changed how the Subset window gets
 //   set up.
 //
+//   Kathleen Biagas, Fri Aug 26 17:08:00 PDT 2011
+//   Connect PickWindow to PlotList.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -3452,9 +3455,11 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_PICK:
         // Create the pick window.
-        { QvisPickWindow *pwin = new QvisPickWindow(GetViewerState()->GetPickAttributes(),
+        { QvisPickWindow *pwin = new QvisPickWindow(
+            GetViewerState()->GetPickAttributes(),
             windowNames[i], tr("Pick"), mainWin->GetNotepad());
-            pwin->CreateEntireWindow();
+          pwin->ConnectPlotList(GetViewerState()->GetPlotList());
+          pwin->CreateEntireWindow();
           win = pwin;
         }
         break;

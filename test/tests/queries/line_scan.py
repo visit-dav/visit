@@ -19,6 +19,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
+#    Use named arguments. 
+#
 # ----------------------------------------------------------------------------
 
 import os
@@ -63,13 +67,13 @@ def TestOne(index, filename, varname, meshname, limit):
     DrawPlots()
 
     # Do the queries...
-    Query("Chord Length Distribution - individual", 15000, 100, 0, limit)
-    Query("Chord Length Distribution - aggregate", 15000, 100, 0, limit)
-    Query("Ray Length Distribution - individual", 15000, 100, 0, limit)
-    Query("Ray Length Distribution - aggregate", 15000, 100, 0, limit)
-    Query("Mass Distribution", 15000, 100, 0, limit)
-    Query("Distance From Boundary", 15000, 100, 0, limit)
-    Query("Line Scan Transform", 15000, 100, 0, limit)
+    Query("Chord Length Distribution - individual", num_lines=15000, num_bins=100, min=0, max=limit)
+    Query("Chord Length Distribution - aggregate", num_lines=15000, num_bins=100, min=0, max=limit)
+    Query("Ray Length Distribution - individual", num_lines=15000, num_bins=100, min=0, max=limit)
+    Query("Ray Length Distribution - aggregate", num_lines=15000, num_bins=100, min=0, max=limit)
+    Query("Mass Distribution", num_lines=15000, num_bins=100, min=0, max=limit)
+    Query("Distance From Boundary", num_lines=15000, num_bins=100, min=0, max=limit)
+    Query("Line Scan Transform", num_lines=15000, num_bins=100, min=0, max=limit)
     DeleteAllPlots()
     
     # Now test the outputs

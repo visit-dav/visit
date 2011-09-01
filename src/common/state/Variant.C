@@ -630,6 +630,7 @@ Variant::AsString()
     return *((string *)dataValue);
 }
 
+
 // ****************************************************************************
 //  Method:  Variant::AsBoolVector
 //
@@ -2567,3 +2568,152 @@ Variant::Read(Connection &conn)
         }
     }
 }
+
+
+// ****************************************************************************
+// Method: Variant::ConvertToString
+//
+// Purpose: 
+//   Converts this object's data to a string representation.
+//
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+string &
+Variant::ConvertToString()
+{
+    if(dataType == STRING_TYPE)
+        return *((string *)dataValue);
+
+    tmp.clear();  
+    char retval[5000]; 
+    if (dataType == BOOL_TYPE)
+    {
+        sprintf(retval, "%s", AsBool() ? "true" : "false");
+        tmp = string(retval);
+    }
+    else if (dataType == CHAR_TYPE)
+    {
+        sprintf(retval, "%c", AsChar());
+        tmp = string(retval);
+    }
+    else if (dataType == UNSIGNED_CHAR_TYPE)
+    {
+        sprintf(retval, "%d", AsUnsignedChar());
+        tmp = string(retval);
+    }
+    else if (dataType == INT_TYPE)
+    {
+        sprintf(retval, "%d", AsInt());
+        tmp = string(retval);
+    }
+    else if (dataType == LONG_TYPE)
+    {
+        sprintf(retval, "%ld", AsLong());
+        tmp = string(retval);
+    }
+    else if (dataType == FLOAT_TYPE)
+    {
+        sprintf(retval, "%g", AsFloat());
+        tmp = string(retval);
+    }
+    else if (dataType == DOUBLE_TYPE)
+    {
+        sprintf(retval, "%g", AsDouble());
+        tmp = string(retval);
+    }
+    else if (dataType == BOOL_VECTOR_TYPE)
+    {
+        tmp = "(";
+        const boolVector &vec = AsBoolVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            sprintf(retval,"%s ",vec[i] ? "true" : "false");
+            tmp += retval;
+        }
+        tmp += ")";
+    }
+    else if (dataType == CHAR_VECTOR_TYPE)
+    {
+        tmp = "(";
+        const charVector &vec = AsCharVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            sprintf(retval,"%c ",vec[i]);
+            tmp += retval;
+        }
+        tmp += ")";
+    }
+    else if (dataType == UNSIGNED_CHAR_VECTOR_TYPE)
+    {
+        tmp = "(";
+        const unsignedCharVector &vec = AsUnsignedCharVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            sprintf(retval,"%d ",vec[i]);
+            tmp += retval;
+        }
+        tmp += ")";
+    }
+    else if (dataType == INT_VECTOR_TYPE)
+    {
+        tmp = "(";
+        const intVector &vec = AsIntVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            sprintf(retval,"%d ",vec[i]);
+            tmp += retval;
+        }
+        tmp += ")";
+    }
+    else if (dataType == LONG_VECTOR_TYPE)
+    {
+        tmp = "(";
+        const longVector &vec = AsLongVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            sprintf(retval,"%ld ",vec[i]);
+            tmp += retval;
+        }
+        tmp += ")";
+    }
+    else if (dataType == FLOAT_VECTOR_TYPE)
+    {
+        tmp = "(";
+        const floatVector &vec = AsFloatVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            sprintf(retval,"%g ",vec[i]);
+            tmp += retval;
+        }
+        tmp += ")";
+    }
+    else if (dataType == FLOAT_VECTOR_TYPE)
+    {
+        tmp = "(";
+        const doubleVector &vec = AsDoubleVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            sprintf(retval,"%g ",vec[i]);
+            tmp += retval;
+        }
+        tmp += ")";
+    }
+    else if (dataType == STRING_VECTOR_TYPE)
+    {
+        tmp = "(";
+        const stringVector &vec = AsStringVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            sprintf(retval,"%s ",vec[i].c_str());
+            tmp += retval;
+        }
+        tmp += ")";
+    }
+    return tmp;
+}
+

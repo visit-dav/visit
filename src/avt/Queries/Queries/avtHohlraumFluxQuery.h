@@ -50,7 +50,7 @@
 #include <vector>
 
 // ****************************************************************************
-//  Class: avtDistanceFromBoundaryQuery
+//  Class: avtHohlraumFluxQuery
 //
 //  Purpose:
 //    This query calculates flux from a hohlraum capsule by integrating 
@@ -69,6 +69,13 @@
 //    I added a flag which has the query optionally use the emissivity divided
 //    by the absorbtivity in place of the emissivity.
 //
+//    Kathleen Biagas, Mon Jun 20 09:05:48 PDT 2011
+//    Added SetInputParams, changed args to SetRayCenter and SetThetaPhi to
+//    reflect how information is stored in the input params MapNode.
+//
+//    Kathleen Biagas, Fri Jul 15 15:54:27 PDT 2011
+//    Added GetDefaultInputParams.
+//
 // ****************************************************************************
 
 class QUERY_API avtHohlraumFluxQuery : public avtLineScanQuery
@@ -82,10 +89,15 @@ class QUERY_API avtHohlraumFluxQuery : public avtLineScanQuery
     virtual const char       *GetDescription(void)
                                  { return "Calculating Flux For a Hohlraum"; }
 
+    virtual void              SetInputParams(const MapNode &);
+    static  void              GetDefaultInputParams(MapNode &);
+
     void                      SetVariableNames(const stringVector &names);
-    void                      SetRayCenter(float x, float y, float z);
+    void                      SetRayCenter(const doubleVector &);
+    void                      SetRayCenter(const intVector &);
     void                      SetRadius(float r);
-    void                      SetThetaPhi(float thetaInDegrees, float phiInDegrees);
+    void                      SetTheta(const double &);
+    void                      SetPhi(const double &);
     void                      SetDivideEmisByAbsorb(bool flag);
 
   protected:

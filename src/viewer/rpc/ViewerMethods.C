@@ -4757,110 +4757,31 @@ ViewerMethods::SetWindowArea(int x, int y, int w, int h)
     state->GetViewerRPC()->Notify();
 }
 
-// ****************************************************************************
-// Method: ViewerMethods::DatabaseQuery
-//
-// Purpose:
-//   Tells the viewer to perform the named database query.
-//
-// Arguments:
-//   queryName : The name of the query to perform.
-//   vars      : The variables that we're querying.
-//   arg1      : Optional integer argument.
-//   arg2      : Optional integer argument.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 9 16:35:17 PST 2002
-//
-// Modifications:
-//   Kathleen Bonnell, Wed Jul 23 17:04:10 PDT 2003
-//   Added optional integer args.
-//
-//   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004
-//   Added optional bool globalflag.
-//
-//   Hank Childs, Mon Jul 10 17:37:14 PDT 2006
-//   Added two double arguments.
-//
-//   Dave Pugmire, Tue Nov  9 16:09:04 EST 2010
-//   Add dumpSteps for streamline info query.
-//
-// ****************************************************************************
-
-void
-ViewerMethods::DatabaseQuery(const std::string &queryName,
-    const stringVector &vars, const bool bflag, const int arg1, const int arg2,
-    const bool globalFlag, const bool dumpStepsFlag, const doubleVector &darg1, const doubleVector &darg2)
-{
-    //
-    // Set the rpc type.
-    //
-    state->GetViewerRPC()->SetRPCType(ViewerRPC::DatabaseQueryRPC);
-    state->GetViewerRPC()->SetQueryName(queryName);
-    state->GetViewerRPC()->SetQueryVariables(vars);
-    state->GetViewerRPC()->SetIntArg1(arg1);
-    state->GetViewerRPC()->SetIntArg2(arg2);
-    state->GetViewerRPC()->SetBoolFlag(bflag);
-    state->GetViewerRPC()->SetIntArg3((int)globalFlag);
-    state->GetViewerRPC()->SetIntArg4((int)dumpStepsFlag);
-    state->GetViewerRPC()->SetDoubleArg1(darg1);
-    state->GetViewerRPC()->SetDoubleArg2(darg2);
-
-    //
-    // Issue the RPC.
-    //
-    state->GetViewerRPC()->Notify();
-}
 
 // ****************************************************************************
-// Method: ViewerMethods::PointQuery
+// Method: ViewerMethods::Query
 //
 // Purpose: 
-//   Tells the viewer to perform the named point query.
+//   Tells the viewer to perform a query.
 //
 // Arguments:
-//   queryName : The name of the query to perform.
-//   pt        : The location of the point to query. It can be in screen 
-//               or world coordinates.
-//   vars      : The variables that we're querying.
-//   arg1      : An optional int argument.
-//   arg2      : An optional int argument.
+//   queryParams : The parameters for the query
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 9 16:36:12 PST 2002
+// Programmer: Kathleen Bonnell 
+// Creation:   March 1, 2011
 //
 // Modifications:
-//   Kathleen Bonnell, Wed Nov 26 14:17:55 PST 2003
-//   Added optional int args.
 //   
-//   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
-//   Added optional bool flag.
-//   
-//   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
-//   Added optional bool flag.
-//   
-//   Kathleen Bonnell, Tue Mar  1 11:14:05 PST 2011
-//   Added another int arg.
-//
 // ****************************************************************************
 
 void
-ViewerMethods::PointQuery(const std::string &queryName, const double pt[3],
-    const stringVector &vars, const bool time, const int arg1, const int arg2,
-    const int arg3, const bool globalFlag) 
+ViewerMethods::Query(const MapNode &queryParams)
 {
     //
     // Set the rpc type.
     //
-    state->GetViewerRPC()->SetRPCType(ViewerRPC::PointQueryRPC);
-    state->GetViewerRPC()->SetQueryName(queryName);
-    state->GetViewerRPC()->SetQueryPoint1(pt);
-    state->GetViewerRPC()->SetQueryVariables(vars);
-    state->GetViewerRPC()->SetBoolFlag(time);
-    state->GetViewerRPC()->SetIntArg1(arg1);
-    state->GetViewerRPC()->SetIntArg2(arg2);
-    state->GetViewerRPC()->SetIntArg3(arg3);
-    state->GetViewerRPC()->SetIntArg4((int)globalFlag);
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::QueryRPC);
+    state->GetViewerRPC()->SetQueryParams(queryParams);
 
     //
     // Issue the RPC.
@@ -4870,201 +4791,34 @@ ViewerMethods::PointQuery(const std::string &queryName, const double pt[3],
 
 
 // ****************************************************************************
-// Method: ViewerMethods::LineQuery
+// Method: ViewerMethods::GetQueryParameters
 //
 // Purpose: 
-//   Tells the viewer to perform the named line query.
+//   Tells the viewer to Retrieve the default parameters for the named query. 
 //
 // Arguments:
-//   queryName : The name of the query to perform.
-//   pt1       : The start location of the line to query. It can be in screen 
-//               or world coordinates.
-//   pt2       : The end location of the line to query. It can be in screen 
-//               or world coordinates.
-//   vars      : The variables that we're querying.
-//   samples   : The number of samples to be used in the query. 
+//   queryName : The name of the query.
 //
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 9 16:37:43 PST 2002
+// Programmer: Kathleen Biagas 
+// Creation:   July 15, 2011 
 //
 // Modifications:
-//   Kathleen Bonnell, Wed Jul 23 17:04:10 PDT 2003
-//   Added samples arg.
-//   
-//   Kathleen Bonnell, Tue May 15 10:39:58 PDT 2007 
-//   Added forceSampling arg.
 //   
 // ****************************************************************************
 
 void
-ViewerMethods::LineQuery(const std::string &queryName, const double pt1[3],
-    const double pt2[3], const stringVector &vars, const int samples,
-    const bool forceSampling)
+ViewerMethods::GetQueryParameters(const std::string &queryName)
 {
     //
     // Set the rpc type.
     //
-    state->GetViewerRPC()->SetRPCType(ViewerRPC::LineQueryRPC);
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::GetQueryParametersRPC);
     state->GetViewerRPC()->SetQueryName(queryName);
-    state->GetViewerRPC()->SetQueryPoint1(pt1);
-    state->GetViewerRPC()->SetQueryPoint2(pt2);
-    state->GetViewerRPC()->SetQueryVariables(vars);
-    state->GetViewerRPC()->SetIntArg1(samples);
-    state->GetViewerRPC()->SetBoolFlag(forceSampling);
 
     //
     // Issue the RPC.
     //
     state->GetViewerRPC()->Notify();
-}
-
-// ****************************************************************************
-// Method: ViewerMethods::Pick
-//
-// Purpose: 
-//   Tells the viewer to add a pick point at the specified screen location.
-//
-// Arguments:
-//   x,y  : The pick point location in screen coordinates.
-//   vars : The variables that we're querying.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 9 16:38:51 PST 2002
-//
-// Modifications:
-//   Kathleen Bonnell, Wed Sep  8 10:26:32 PDT 2004
-//   Changed queryname passed to PointQuery form 'Pick' to 'ScreenZonePick'.
-//   
-// ****************************************************************************
-
-void
-ViewerMethods::ZonePick(int x, int y, const stringVector &vars)
-{
-    double pt[3];
-    pt[0] = (double)x;
-    pt[1] = (double)y;
-    pt[2] = 0.;
-    PointQuery("ScreenZonePick", pt, vars);
-}
-
-
-// ****************************************************************************
-// Method: ViewerMethods::Pick
-//
-// Purpose: 
-//   Tells the viewer to add a pick point at the specified world coordinate.
-//
-// Arguments:
-//   xyz  : The pick point location in world coordinates.
-//   vars   : The variables that we're querying.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   July 23, 2003 
-//
-// Modifications:
-//   Kathleen Bonnell, Wed Sep  8 10:26:32 PDT 2004
-//   Changed queryname passed to PointQuery from 'WorldPick' to 'Pick'.
-//
-// ****************************************************************************
-
-void
-ViewerMethods::ZonePick(double xyz[3], const stringVector &vars)
-{
-    PointQuery("ZonePick", xyz, vars);
-}
-
-// ****************************************************************************
-// Method: ViewerMethods::NodePick
-//
-// Purpose: 
-//   Tells the viewer to add a pick point at the specified screen location.
-//
-// Arguments:
-//   x,y  : The pick point location in screen coordinates.
-//   vars : The variables that we're querying.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   June 25, 2003 
-//
-// Modifications:
-//   Kathleen Bonnell, Wed Sep  8 10:26:32 PDT 2004
-//   Changed queryname passed to PointQuery from 'NodePick' to 
-//   'ScreenNodePick'.
-//   
-// ****************************************************************************
-
-void
-ViewerMethods::NodePick(int x, int y, const stringVector &vars)
-{
-    double pt[3];
-    pt[0] = (double)x;
-    pt[1] = (double)y;
-    pt[2] = 0.;
-    PointQuery("ScreenNodePick", pt, vars);
-}
-
-
-// ****************************************************************************
-// Method: ViewerMethods::NodePick
-//
-// Purpose: 
-//   Tells the viewer to add a pick point at the specified world coordinate.
-//
-// Arguments:
-//   xyz  : The pick point location in world coordinates.
-//   vars   : The variables that we're querying.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   July 23, 2003 
-//
-// Modifications:
-//   Kathleen Bonnell, Wed Sep  8 10:26:32 PDT 2004
-//   Changed queryname passed to PointQuery from 'WorldNodePick' to 'NodePick'.
-//   
-// ****************************************************************************
-
-void
-ViewerMethods::NodePick(double xyz[3], const stringVector &vars)
-{
-    PointQuery("NodePick", xyz, vars);
-}
-
-// ****************************************************************************
-// Method: ViewerMethods::Lineout
-//
-// Purpose: 
-//   Tells the viewer to add a reference line at the specified screen location.
-//
-// Arguments:
-//   x0,y0   : The start location of the line in screen coordinates.
-//   x1,y1   : The start location of the line in screen coordinates.
-//   vars    : The variables that we're querying.
-//   samples : The number of samples along the line. 
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 9 16:38:51 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Fri Dec 27 11:43:46 PDT 2002
-//   I changed the routine so it takes lineout endpoints in world space.
-//
-//   Kathleen Bonnell, Wed Jul 23 17:04:10 PDT 2003
-//   Added samples arg.
-//   
-//   Kathleen Bonnell, Tue May 15 10:39:58 PDT 2007 
-//   Added forceSampling arg.
-//   
-// ****************************************************************************
-
-void
-ViewerMethods::Lineout(const double p0[3], const double p1[3],
-    const stringVector &vars, const int samples, const bool forceSampling)
-{
-    LineQuery("Lineout", p0, p1, vars, samples, forceSampling);
 }
 
 

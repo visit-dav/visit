@@ -514,7 +514,11 @@ avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
 //    In support of multiple-variable time picks, create an output Tree instead
 //    of a single grid.
 //
-//    Kathleen Bonnell, Thu Jul  7 11:26:31 PDT 2011
+//    Kathleen Biagas, Tue Jun 21 09:52:26 PDT 2011
+//    Change setting of 'multiCurve' to reflect use of MapNode for
+//    query Input parameters.
+//
+//    Kathleen Biagas, Thu Jul  7 11:26:31 PDT 2011
 //    Fixed incorrect generation of warning when nResults > 2.
 //
 // ****************************************************************************
@@ -620,7 +624,11 @@ avtQueryOverTimeFilter::CreateFinalOutput()
     }
 
     stringVector vars = atts.GetQueryAtts().GetVariables();
-    bool multiCurve = atts.GetQueryAtts().GetTimeCurvePlotType() == QueryAttributes::Multiple_Y_Axes;
+    bool multiCurve = false;
+    if (atts.GetQueryAtts().GetQueryInputParams().HasEntry("curve_plot_type"))
+    {
+        multiCurve = (atts.GetQueryAtts().GetQueryInputParams().GetEntry("curve_plot_type")->AsInt() == 1);
+    }
     avtDataTree_p tree = CreateTree(times, qRes, vars, multiCurve);
     SetOutputDataTree(tree);
     finalOutputCreated = true;

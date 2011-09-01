@@ -46,6 +46,7 @@
 #include <avtOriginatingSource.h>
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
+#include <QueryArgumentException.h>
 
 #include <vectortypes.h>
 
@@ -109,6 +110,98 @@ avtHohlraumFluxQuery::~avtHohlraumFluxQuery()
     delete[] radBins;
 }
 
+// ****************************************************************************
+//  Method: avtHohlraumFluxQuery::SetInputParams
+//
+//  Purpose: Allows this query to read input parameters set by user.
+//
+//  Arguments:
+//    params    MapNode containing input.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   June 20, 2011
+//
+// ****************************************************************************
+
+void
+avtHohlraumFluxQuery::SetInputParams(const MapNode &params)
+{
+    if (params.HasEntry("vars"))
+        SetVariableNames(params.GetEntry("vars")->AsStringVector());
+    else
+        EXCEPTION1(QueryArgumentException, "vars");
+
+    if (params.HasEntry("num_lines"))
+        SetNumberOfLines(params.GetEntry("num_lines")->AsInt());
+
+    if (params.HasEntry("divide_emis_by_absorb"))
+        SetDivideEmisByAbsorb(params.GetEntry("divide_emis_by_absorb")->AsInt());
+
+    if (params.HasEntry("ray_center"))
+    {
+        if (params.GetEntry("ray_center")->TypeName() == "doubleVector")
+            SetRayCenter(params.GetEntry("ray_center")->AsDoubleVector());
+        else if (params.GetEntry("ray_center")->TypeName() == "intVector")
+            SetRayCenter(params.GetEntry("ray_center")->AsIntVector());
+    }
+
+    if (params.HasEntry("radius"))
+    {
+        if (params.GetEntry("radius")->TypeName() == "double")
+            SetRadius(params.GetEntry("radius")->AsDouble());
+        else if (params.GetEntry("radius")->TypeName() == "int")
+            SetRadius(params.GetEntry("radius")->AsInt());
+    }
+
+    if (params.HasEntry("theta"))
+    {
+        if (params.GetEntry("theta")->TypeName() == "double")
+            SetTheta(params.GetEntry("theta")->AsDouble());
+        else if (params.GetEntry("theta")->TypeName() == "int")
+            SetTheta(params.GetEntry("theta")->AsInt());
+    }
+
+    if (params.HasEntry("phi"))
+    {
+        if (params.GetEntry("phi")->TypeName() == "double")
+            SetPhi(params.GetEntry("phi")->AsDouble());
+        else if (params.GetEntry("phi")->TypeName() == "int")
+            SetPhi(params.GetEntry("phi")->AsInt());
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtHohlraumFluxQuery::GetDefaultInputParams
+//
+//  Purpose:
+//    Retrieves default values for input variables. 
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 15, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtHohlraumFluxQuery::GetDefaultInputParams(MapNode &params)
+{
+    params["num_lines"] = 1000;
+    params["divide_emis_by_absorb"] = 0;
+    doubleVector rc;
+    rc.push_back(0.0);
+    rc.push_back(0.0);
+    rc.push_back(0.0);
+    params["ray_center"] = rc;
+    params["radius"] = 1.0;
+    params["theta"] = 0.0;
+    params["phi"] = 0.0;
+    stringVector v;
+    v.push_back("absorbtivity");
+    v.push_back("emissivitiy");
+    params["vars"] = v;
+}
 
 // ****************************************************************************
 //  Method: avtHohlraumFluxQuery::SetVariableNames
@@ -150,14 +243,27 @@ avtHohlraumFluxQuery::SetVariableNames(const stringVector &names)
 //  Programmer: David Bremer
 //  Creation:   Dec 8, 2006
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Jun 21 10:39:36 PDT 2011
+//    Changed arg ifrom 3 floats to doubleVector, to reflect how the 
+//    information is stored in the input parameters MapNode.
+//
 // ****************************************************************************
 
 void
-avtHohlraumFluxQuery::SetRayCenter(float x, float y, float z)
+avtHohlraumFluxQuery::SetRayCenter(const doubleVector &rc)
 {
-    rayCenter[0] = x;
-    rayCenter[1] = y;
-    rayCenter[2] = z;
+    rayCenter[0] = rc[0];
+    rayCenter[1] = rc[1];
+    rayCenter[2] = rc[2];
+}
+
+void
+avtHohlraumFluxQuery::SetRayCenter(const intVector &rc)
+{
+    rayCenter[0] = (float)rc[0];
+    rayCenter[1] = (float)rc[1];
+    rayCenter[2] = (float)rc[2];
 }
 
 
@@ -194,9 +300,14 @@ avtHohlraumFluxQuery::SetRadius(float r)
 // ****************************************************************************
 
 void
-avtHohlraumFluxQuery::SetThetaPhi(float thetaInDegrees, float phiInDegrees)
+avtHohlraumFluxQuery::SetTheta(const double &thetaInDegrees)
 {
     theta = thetaInDegrees * M_PI / 180.0;
+}
+
+void
+avtHohlraumFluxQuery::SetPhi(const double &phiInDegrees)
+{
     phi   = phiInDegrees * M_PI / 180.0;
 }
 

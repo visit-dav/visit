@@ -20,6 +20,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state 
 #    behavior when an operator is added.
 #
+#    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
+#    Use named arguments. 
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -49,10 +52,7 @@ DeleteAllPlots()
 OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
-qota = GetQueryOverTimeAttributes()
-qota.stride = 10
-SetQueryOverTimeAttributes(qota)
-QueryOverTime("Spherical Compactness Factor")
+QueryOverTime("Spherical Compactness Factor", stride=10)
 
 SetActiveWindow(2)
 SetAnnotationAttributes(a)

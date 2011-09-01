@@ -48,7 +48,7 @@
 #include <avtDataObjectQuery.h>
 #include <avtDatasetSink.h>
 #include <QueryAttributes.h>
-#include <string.h>
+#include <string>
 
 class vtkDataSet;
 

@@ -46,6 +46,7 @@
 #include <vector>
 #include <snprintf.h>
 #include <avtParallel.h>
+#include <QueryArgumentException.h>
 
 
 using std::vector;
@@ -59,11 +60,16 @@ using std::string;
 //  Creation:   June 10, 2004 
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Jun 21 10:21:52 PDT 2011
+//    Added domain, element, useGlobalId.
 //
 // ****************************************************************************
 
 avtNodeCoordsQuery::avtNodeCoordsQuery() : avtDatasetQuery() 
 {
+    domain = 0;
+    element = 0;
+    useGlobalId = false;
 }
 
 
@@ -79,6 +85,58 @@ avtNodeCoordsQuery::avtNodeCoordsQuery() : avtDatasetQuery()
 
 avtNodeCoordsQuery::~avtNodeCoordsQuery() 
 {
+}
+
+// ****************************************************************************
+//  Method: avtNodeCoordsQuery::SetInputParams
+//
+//  Purpose:  Allows this query to read input parameters set by user.
+//    
+//  Arguments:
+//    params:   MapNode containing input.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   June 20, 2011 
+//
+// ****************************************************************************
+
+void
+avtNodeCoordsQuery::SetInputParams(const MapNode &params)
+{
+    if (params.HasEntry("use_global_id"))
+        useGlobalId = params.GetEntry("use_global_id")->AsInt();
+
+    if (params.HasEntry("domain"))
+        domain = params.GetEntry("domain")->AsInt();
+    else if (!useGlobalId)
+        EXCEPTION1(QueryArgumentException, "domain");
+
+    if (params.HasEntry("element"))
+        element = params.GetEntry("element")->AsInt();
+    else
+        EXCEPTION1(QueryArgumentException, "element");
+}
+
+
+// ****************************************************************************
+//  Method: avtNodeCoordsQuery::GetDefaultInputParams
+//
+//  Purpose:  Retrieve default input values.
+//    
+//  Arguments:
+//    params:   MapNode to store default input values.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 15, 2011 
+//
+// ****************************************************************************
+
+void
+avtNodeCoordsQuery::GetDefaultInputParams(MapNode &params)
+{
+    params["domain"] = 0;
+    params["use_global_id"] = 0;
+    params["element"] =  0;
 }
 
 
@@ -112,6 +170,9 @@ avtNodeCoordsQuery::~avtNodeCoordsQuery()
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Kathleen Biagas, Tue Jun 21 10:24:16 PDT 2011
+//    Domain, element, useGlobalId retrieved in SetInputParams.
+//
 // ****************************************************************************
 
 void
@@ -126,7 +187,8 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
     UpdateProgress(0, 0);
 
     bool singleDomain = false;
-    if (!queryAtts.GetUseGlobalId())
+
+    if (!useGlobalId)
     {
         intVector dlist;
         avtDataRequest_p dataRequest = 
@@ -147,7 +209,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
     double coord[3] = {0., 0., 0.};
 
     bool success;
-    if (queryAtts.GetUseGlobalId())
+    if (useGlobalId)
     {
         success = FindGlobalCoord(coord);
     }
@@ -170,14 +232,14 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
         if (singleDomain)
         {
             string global;
-            if (qA->GetUseGlobalId())
+            if (useGlobalId)
                 global = "global";
             if (dim == 2)
             {
                 format = "The coords of %s node %d are (" + floatFormat + ", " 
                                                           + floatFormat + ").";
                 SNPRINTF(msg, 120, format.c_str(), 
-                         global.c_str(), qA->GetElement()+nodeOrigin, coord[0], coord[1]);
+                         global.c_str(), element+nodeOrigin, coord[0], coord[1]);
             }
             else 
             {
@@ -185,7 +247,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
                                                           + floatFormat + ", " 
                                                           + floatFormat + ").";
                 SNPRINTF(msg, 120, format.c_str(), 
-                         global.c_str(), qA->GetElement()+nodeOrigin, 
+                         global.c_str(), element+nodeOrigin, 
                          coord[0], coord[1], coord[2]);
             }
         }
@@ -193,17 +255,17 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
         {
             avtOriginatingSource *src = GetInput()->GetOriginatingSource();
             int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
-            int domain      = qA->GetDomain()  - blockOrigin;
+            int dom         = domain  - blockOrigin;
             int ts          = qA->GetTimeStep();
             string var      = qA->GetVariables()[0];
             string domainName;
-            src->GetDomainName(var, ts, domain, domainName);
+            src->GetDomainName(var, ts, dom, domainName);
             if (dim == 2)
             {
                 format = "The coords of node %d (%s) are (" + floatFormat +", " 
                                                             + floatFormat +").";
                 SNPRINTF(msg, 120, format.c_str(), 
-                         qA->GetElement()+nodeOrigin, domainName.c_str(),
+                         element+nodeOrigin, domainName.c_str(),
                          coord[0], coord[1]);
             }
             else 
@@ -213,7 +275,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
                                                             + floatFormat +").";
 
                 SNPRINTF(msg, 120, format.c_str(), 
-                         qA->GetElement()+nodeOrigin, domainName.c_str(),
+                         element+nodeOrigin, domainName.c_str(),
                          coord[0], coord[1], coord[2]);
             }
         }
@@ -229,19 +291,19 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
         if (singleDomain)
         {
             SNPRINTF(msg, 120, "The coords of node %d could not be determined.",
-                     qA->GetElement()+nodeOrigin);
+                     element+nodeOrigin);
         }
         else
         {
             avtOriginatingSource *src = GetInput()->GetOriginatingSource();
             int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
-            int domain      = qA->GetDomain()  - blockOrigin;
+            int dom         = domain  - blockOrigin;
             int ts          = qA->GetTimeStep();
             string var      = qA->GetVariables()[0];
             string domainName;
-            src->GetDomainName(var, ts, domain, domainName);
+            src->GetDomainName(var, ts, dom, domainName);
             SNPRINTF(msg, 120, "The coords of node %d (%s) could not be determined.",
-                     qA->GetElement()+nodeOrigin, domainName.c_str());
+                     element+nodeOrigin, domainName.c_str());
         }
     }
 
@@ -268,9 +330,12 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 //  Creation:   December 16, 2004 (moved from method PerformQuery)
 //
 //  Modifications:
-//
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Kathleen Biagas, Tue Jun 21 10:24:16 PDT 2011
+//    Domain, element retrieved in SetInputParams.
+//
 // ****************************************************************************
 
 bool
@@ -280,8 +345,8 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
 
     int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
     int nodeOrigin  = GetInput()->GetInfo().GetAttributes().GetNodeOrigin();
-    int domain      = queryAtts.GetDomain()  - blockOrigin;
-    int node        = queryAtts.GetElement() - nodeOrigin; 
+    int dom         = domain  - blockOrigin;
+    int node        = element - nodeOrigin; 
     int ts          = queryAtts.GetTimeStep();
     string var      = queryAtts.GetVariables()[0];
 
@@ -289,7 +354,7 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
     coord[1] = 0.;
     coord[2] = 0.;
 
-    domain = (domain < 0 ? 0 : domain);
+    dom = (dom < 0 ? 0 : dom);
 
     avtSILRestrictionTraverser trav(querySILR);
     trav.GetDomainList(dlist);
@@ -303,7 +368,7 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
     bool domainUsed = false;
     for (int j = 0; j < dAllProc.size() && !domainUsed; j++)
     {
-        if (dAllProc[j] == domain)
+        if (dAllProc[j] == dom)
             domainUsed = true;
     }
 
@@ -312,15 +377,15 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
     {
         for (int i = 0; i < dlist.size() && !success; ++i) 
         {
-            if (dlist[i] == domain)
+            if (dlist[i] == dom)
             {
-                success = src->QueryCoords(var, domain, node, ts, coord, false, false);
+                success = src->QueryCoords(var, dom, node, ts, coord, false, false);
             }
         }
     }
     else if (PAR_Rank() == 0)
     {
-        success = src->QueryCoords(var, domain, node, ts, coord, false, false);
+        success = src->QueryCoords(var, dom, node, ts, coord, false, false);
     }
     return success; 
 }
@@ -344,16 +409,19 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
 //  Creation:   December 16, 2004 
 //
 //  Modifications:
-//
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Kathleen Biagas, Tue Jun 21 10:24:16 PDT 2011
+//    Element retrieved in SetInputParams.
+//
 // ****************************************************************************
 
 bool
 avtNodeCoordsQuery::FindGlobalCoord(double coord[3])
 {
     int nodeOrigin  = GetInput()->GetInfo().GetAttributes().GetNodeOrigin();
-    int node        = queryAtts.GetElement() - nodeOrigin; 
+    int node        = element - nodeOrigin; 
     int ts          = queryAtts.GetTimeStep();
     string var      = queryAtts.GetVariables()[0];
 

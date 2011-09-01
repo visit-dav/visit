@@ -327,6 +327,9 @@ protected:
 //    Tom Fogal, Wed May 26 09:26:08 MDT 2010
 //    State for launching X servers.
 //
+//    Kathleen Biagas, Fri Jul 15 11:08:44 PDT 2011
+//    Add queryParametersRPC.
+//
 // ****************************************************************************
 
 Engine::Engine() : viewerArgs()
@@ -369,6 +372,7 @@ Engine::Engine() : viewerArgs()
     executeRPC = NULL;
     clearCacheRPC = NULL;
     queryRPC = NULL;
+    queryParametersRPC = NULL;
     releaseDataRPC = NULL;
     openDatabaseRPC = NULL;
     defineVirtualDatabaseRPC = NULL;
@@ -418,6 +422,9 @@ Engine::Engine() : viewerArgs()
 //    Brad Whitlock, Thu Apr  9 11:57:07 PDT 2009
 //    Delete viewer and viewerP.
 //
+//    Kathleen Biagas, Fri Jul 15 11:08:44 PDT 2011
+//    Add queryParametersRPC.
+//
 // ****************************************************************************
 
 Engine::~Engine()
@@ -446,6 +453,7 @@ Engine::~Engine()
     delete executeRPC;
     delete clearCacheRPC;
     delete queryRPC;
+    delete queryParametersRPC;
     delete releaseDataRPC;
     delete openDatabaseRPC;
     delete defineVirtualDatabaseRPC;
@@ -866,6 +874,9 @@ public:
 //    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
 //    Rename DDF to DataBinning.
 //
+//    Kathleen Biagas, Fri Jul 15 11:08:44 PDT 2011
+//    Add queryParametersRPC.
+//
 // ****************************************************************************
 
 void
@@ -1001,6 +1012,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     executeRPC                      = new ExecuteRPC;
     clearCacheRPC                   = new ClearCacheRPC;
     queryRPC                        = new QueryRPC;
+    queryParametersRPC              = new QueryParametersRPC;
     releaseDataRPC                  = new ReleaseDataRPC;
     openDatabaseRPC                 = new OpenDatabaseRPC;
     defineVirtualDatabaseRPC        = new DefineVirtualDatabaseRPC;
@@ -1027,6 +1039,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(executeRPC);
     xfer->Add(clearCacheRPC);
     xfer->Add(queryRPC);
+    xfer->Add(queryParametersRPC);
     xfer->Add(releaseDataRPC);
     xfer->Add(openDatabaseRPC);
     xfer->Add(defineVirtualDatabaseRPC);
@@ -1057,6 +1070,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<ExecuteRPC>(executeRPC));
     rpcExecutors.push_back(new RPCExecutor<ClearCacheRPC>(clearCacheRPC));
     rpcExecutors.push_back(new RPCExecutor<QueryRPC>(queryRPC));
+    rpcExecutors.push_back(new RPCExecutor<QueryParametersRPC>(queryParametersRPC));
     rpcExecutors.push_back(new RPCExecutor<ReleaseDataRPC>(releaseDataRPC));
     rpcExecutors.push_back(new RPCExecutor<OpenDatabaseRPC>(openDatabaseRPC));
     rpcExecutors.push_back(new RPCExecutor<DefineVirtualDatabaseRPC>(defineVirtualDatabaseRPC));

@@ -105,9 +105,7 @@
       SetViewExtentsTypeRPC
       ClearRefLinesRPC
       SetRenderingAttributesRPC
-      DatabaseQueryRPC
-      PointQueryRPC
-      LineQueryRPC
+      QueryRPC
       CloneWindowRPC
       SetMaterialAttributesRPC
       SetDefaultMaterialAttributesRPC
@@ -196,6 +194,7 @@
       SetPlotOrderToFirstRPC
       SetPlotOrderToLastRPC
       RenamePickLabelRPC
+      GetQueryParametersRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">
@@ -256,13 +255,6 @@
       0.000000
       0.000000
     </Field>
-    <Field name="queryPoint2" label="queryPoint2" type="doubleArray" length="3">
-      0.000000
-      0.000000
-      0.000000
-    </Field>
-    <Field name="queryVariables" label="queryVariables" type="stringVector">
-    </Field>
     <Field name="toolId" label="toolId" type="int">
       0
     </Field>
@@ -278,21 +270,14 @@
     <Field name="intArg3" label="intArg3" type="int">
       0
     </Field>
-    <Field name="intArg4" label="intArg4" type="int">
-      0
-    </Field>
     <Field name="stringArg1" label="stringArg1" type="string">
     </Field>
     <Field name="stringArg2" label="stringArg2" type="string">
     </Field>
-    <Field name="doubleArg1" label="doubleArg1" type="doubleVector">
-      0.000000
-    </Field>
-    <Field name="doubleArg2" label="doubleArg2" type="doubleVector">
-      0.000000
-    </Field>
     <Field name="toolUpdateMode" label="toolUpdateMode" type="int">
       1
+    </Field>
+    <Field name="queryParams" label="Query Parameters" type="MapNode">
     </Field>
     <Function name="SetWindowArea" user="true" member="true">
     </Function>

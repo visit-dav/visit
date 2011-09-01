@@ -8,6 +8,8 @@
 #  Date:       Nov 10, 2010
 #
 #  Modifications:
+#    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
+#    Use named arguments. 
 #
 # ----------------------------------------------------------------------------
 
@@ -27,7 +29,7 @@ def QueryMain() :
     s = s + GetQueryOutputString()
     s = s + "\n"
     
-    Query("Streamline Info", "DumpSteps")
+    Query("Streamline Info", dump_steps=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     

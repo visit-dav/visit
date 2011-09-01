@@ -136,6 +136,7 @@ public:
     void SelectGlobalIncidentElements();
     void SelectSubsetName();
     void SelectFloatFormat();
+    void SelectTimeOptions();
 
     // Property setting methods
     void SetVariables(const stringVector &variables_);
@@ -205,6 +206,7 @@ public:
     void SetFloatFormat(const std::string &floatFormat_);
     void SetTimePreserveCoord(bool timePreserveCoord_);
     void SetTimeCurveType(TimeCurveType timeCurveType_);
+    void SetTimeOptions(const MapNode &timeOptions_);
 
     // Property getting methods
     const stringVector &GetVariables() const;
@@ -302,6 +304,8 @@ public:
           std::string  &GetFloatFormat();
     bool               GetTimePreserveCoord() const;
     TimeCurveType      GetTimeCurveType() const;
+    const MapNode      &GetTimeOptions() const;
+          MapNode      &GetTimeOptions();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -420,6 +424,7 @@ public:
         ID_floatFormat,
         ID_timePreserveCoord,
         ID_timeCurveType,
+        ID_timeOptions,
         ID__LAST
     };
 
@@ -494,11 +499,12 @@ private:
     std::string          floatFormat;
     bool                 timePreserveCoord;
     int                  timeCurveType;
+    MapNode              timeOptions;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibiibssbi"
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibiibssbim"
 
 #endif

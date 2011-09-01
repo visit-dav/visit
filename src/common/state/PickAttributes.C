@@ -352,6 +352,7 @@ void PickAttributes::Copy(const PickAttributes &obj)
     floatFormat = obj.floatFormat;
     timePreserveCoord = obj.timePreserveCoord;
     timeCurveType = obj.timeCurveType;
+    timeOptions = obj.timeOptions;
 
     PickAttributes::SelectAll();
 }
@@ -614,7 +615,8 @@ PickAttributes::operator == (const PickAttributes &obj) const
             (subsetName == obj.subsetName) &&
             (floatFormat == obj.floatFormat) &&
             (timePreserveCoord == obj.timePreserveCoord) &&
-            (timeCurveType == obj.timeCurveType));
+            (timeCurveType == obj.timeCurveType) &&
+            (timeOptions == obj.timeOptions));
 }
 
 // ****************************************************************************
@@ -826,6 +828,7 @@ PickAttributes::SelectAll()
     Select(ID_floatFormat,                 (void *)&floatFormat);
     Select(ID_timePreserveCoord,           (void *)&timePreserveCoord);
     Select(ID_timeCurveType,               (void *)&timeCurveType);
+    Select(ID_timeOptions,                 (void *)&timeOptions);
 }
 
 // ****************************************************************************
@@ -1005,7 +1008,12 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     // globalElement is not persistent and should not be saved.
     // globalIncidentElements is not persistent and should not be saved.
     // elementIsGlobal is not persistent and should not be saved.
-    // displayPickLetter is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_displayPickLetter, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displayPickLetter", displayPickLetter));
+    }
+
     // reusePickLetter is not persistent and should not be saved.
     // ghostType is not persistent and should not be saved.
     // hasMixedGhostTypes is not persistent and should not be saved.
@@ -1032,6 +1040,7 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     }
 
     // timeCurveType is not persistent and should not be saved.
+    // timeOptions is not persistent and should not be saved.
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1139,7 +1148,8 @@ PickAttributes::SetFromNode(DataNode *parentNode)
     // globalElement is not persistent and was not saved.
     // globalIncidentElements is not persistent and was not saved.
     // elementIsGlobal is not persistent and was not saved.
-    // displayPickLetter is not persistent and was not saved.
+    if((node = searchNode->GetNode("displayPickLetter")) != 0)
+        SetDisplayPickLetter(node->AsBool());
     // reusePickLetter is not persistent and was not saved.
     // ghostType is not persistent and was not saved.
     // hasMixedGhostTypes is not persistent and was not saved.
@@ -1154,6 +1164,7 @@ PickAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("timePreserveCoord")) != 0)
         SetTimePreserveCoord(node->AsBool());
     // timeCurveType is not persistent and was not saved.
+    // timeOptions is not persistent and was not saved.
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1637,6 +1648,13 @@ PickAttributes::SetTimeCurveType(PickAttributes::TimeCurveType timeCurveType_)
 {
     timeCurveType = timeCurveType_;
     Select(ID_timeCurveType, (void *)&timeCurveType);
+}
+
+void
+PickAttributes::SetTimeOptions(const MapNode &timeOptions_)
+{
+    timeOptions = timeOptions_;
+    Select(ID_timeOptions, (void *)&timeOptions);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2213,6 +2231,18 @@ PickAttributes::GetTimeCurveType() const
     return TimeCurveType(timeCurveType);
 }
 
+const MapNode &
+PickAttributes::GetTimeOptions() const
+{
+    return timeOptions;
+}
+
+MapNode &
+PickAttributes::GetTimeOptions()
+{
+    return timeOptions;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2377,6 +2407,12 @@ void
 PickAttributes::SelectFloatFormat()
 {
     Select(ID_floatFormat, (void *)&floatFormat);
+}
+
+void
+PickAttributes::SelectTimeOptions()
+{
+    Select(ID_timeOptions, (void *)&timeOptions);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2668,6 +2704,7 @@ PickAttributes::GetFieldName(int index) const
     case ID_floatFormat:                 return "floatFormat";
     case ID_timePreserveCoord:           return "timePreserveCoord";
     case ID_timeCurveType:               return "timeCurveType";
+    case ID_timeOptions:                 return "timeOptions";
     default:  return "invalid index";
     }
 }
@@ -2760,6 +2797,7 @@ PickAttributes::GetFieldType(int index) const
     case ID_floatFormat:                 return FieldType_string;
     case ID_timePreserveCoord:           return FieldType_bool;
     case ID_timeCurveType:               return FieldType_enum;
+    case ID_timeOptions:                 return FieldType_MapNode;
     default:  return FieldType_unknown;
     }
 }
@@ -2852,6 +2890,7 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_floatFormat:                 return "string";
     case ID_timePreserveCoord:           return "bool";
     case ID_timeCurveType:               return "enum";
+    case ID_timeOptions:                 return "MapNode";
     default:  return "invalid index";
     }
 }
@@ -3250,6 +3289,11 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_timeCurveType:
         {  // new scope
         retval = (timeCurveType == obj.timeCurveType);
+        }
+        break;
+    case ID_timeOptions:
+        {  // new scope
+        retval = (timeOptions == obj.timeOptions);
         }
         break;
     default: retval = false;

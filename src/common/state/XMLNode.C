@@ -662,6 +662,10 @@ XMLNode::GrabEntityValue(istream &iss)
 //  Programmer:  Cyrus Harrison
 //  Creation:    December 17, 2007
 //
+//  Modifications:
+//    Kathleen Biagas, Mon Jul 18 18:49:26 PDT 2011
+//    Changed "&quote" to "&quot".
+//
 // ****************************************************************************
 
 string
@@ -687,7 +691,7 @@ XMLNode::EscapeString(const string &val)
         else if(val[i] == '\'')
         {res += string("&apos;");}
         else if(val[i] == '"')
-        {res += string("&quote;");}
+        {res += string("&quot;");}
         else
         {res.push_back(val[i]);} 
     }

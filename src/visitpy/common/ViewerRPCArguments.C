@@ -38,6 +38,7 @@
 #include <Python.h>
 #include <ViewerRPC.h>
 #include <PyViewerRPC.h>
+#include <PyMapNode.h>
 
 //
 // Convenience methods for helping turn ViewerRPC data into a tuple
@@ -534,42 +535,11 @@ static PyObject *args_SetViewExtentsTypeRPC(ViewerRPC *rpc)
 static PyObject *args_ClearRefLinesRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 static PyObject *args_SetRenderingAttributesRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 
-static PyObject *args_DatabaseQueryRPC(ViewerRPC *rpc)
-{
-    PyObject *tuple = PyTuple_New(8);
-    PyTuple_SET_ITEM(tuple, 0, PyString_FromString(rpc->GetQueryName().c_str()));
-    PyTuple_SET_ITEM(tuple, 1, PyTuple_FromStringVector(rpc->GetQueryVariables()));
-    PyTuple_SET_ITEM(tuple, 2, PyLong_FromLong((long)rpc->GetIntArg1()));
-    PyTuple_SET_ITEM(tuple, 3, PyLong_FromLong((long)rpc->GetIntArg2()));
-    PyTuple_SET_ITEM(tuple, 4, PyLong_FromLong(rpc->GetBoolFlag()?1L:0L));
-    PyTuple_SET_ITEM(tuple, 5, PyLong_FromLong((long)rpc->GetIntArg3()));
-    PyTuple_SET_ITEM(tuple, 6, PyTuple_FromDoubleVector(rpc->GetDoubleArg1()));
-    PyTuple_SET_ITEM(tuple, 7, PyTuple_FromDoubleVector(rpc->GetDoubleArg2()));
-    return tuple;
-}
 
-static PyObject *args_PointQueryRPC(ViewerRPC *rpc)
+static PyObject *args_QueryRPC(ViewerRPC *rpc)
 {
-    PyObject *tuple = PyTuple_New(7);
-    PyTuple_SET_ITEM(tuple, 0, PyString_FromString(rpc->GetQueryName().c_str()));
-    PyTuple_SET_ITEM(tuple, 1, PyTuple_FromDoubleArray(rpc->GetQueryPoint1(), 3));
-    PyTuple_SET_ITEM(tuple, 2, PyTuple_FromStringVector(rpc->GetQueryVariables()));
-    PyTuple_SET_ITEM(tuple, 3, PyLong_FromLong(rpc->GetBoolFlag()?1L:0L));
-    PyTuple_SET_ITEM(tuple, 4, PyLong_FromLong((long)rpc->GetIntArg1()));
-    PyTuple_SET_ITEM(tuple, 5, PyLong_FromLong((long)rpc->GetIntArg2()));
-    PyTuple_SET_ITEM(tuple, 6, PyLong_FromLong((long)rpc->GetIntArg3()));
-    return tuple;
-}
-
-static PyObject *args_LineQueryRPC(ViewerRPC *rpc)
-{
-    PyObject *tuple = PyTuple_New(6);
-    PyTuple_SET_ITEM(tuple, 0, PyString_FromString(rpc->GetQueryName().c_str()));
-    PyTuple_SET_ITEM(tuple, 1, PyTuple_FromDoubleArray(rpc->GetQueryPoint1(), 3));
-    PyTuple_SET_ITEM(tuple, 2, PyTuple_FromDoubleArray(rpc->GetQueryPoint2(), 3));
-    PyTuple_SET_ITEM(tuple, 3, PyTuple_FromStringVector(rpc->GetQueryVariables()));
-    PyTuple_SET_ITEM(tuple, 4, PyLong_FromLong((long)rpc->GetIntArg1()));
-    PyTuple_SET_ITEM(tuple, 5, PyLong_FromLong(rpc->GetBoolFlag()?1L:0L));
+    PyObject *tuple = PyTuple_New(1);
+    PyTuple_SET_ITEM(tuple, 0, PyMapNode_Wrap(rpc->GetQueryParams()));
     return tuple;
 }
 
@@ -1178,14 +1148,8 @@ args_ViewerRPC(ViewerRPC *rpc)
     case ViewerRPC::SetRenderingAttributesRPC:
         args = args_SetRenderingAttributesRPC(rpc);
         break;
-    case ViewerRPC::DatabaseQueryRPC:
-        args = args_DatabaseQueryRPC(rpc);
-        break;
-    case ViewerRPC::PointQueryRPC:
-        args = args_PointQueryRPC(rpc);
-        break;
-    case ViewerRPC::LineQueryRPC:
-        args = args_LineQueryRPC(rpc);
+    case ViewerRPC::QueryRPC:
+        args = args_QueryRPC(rpc);
         break;
     case ViewerRPC::CloneWindowRPC:
         args = args_CloneWindowRPC(rpc);

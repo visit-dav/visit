@@ -20,6 +20,9 @@
     <Field name="endTime" label="endTime" type="int" enabler="endTimeFlag:true">
       1
     </Field>
+    <Field name="strideFlag" label="strideFlag" type="bool">
+      false
+    </Field>
     <Field name="stride" label="stride" type="int">
       1
     </Field>

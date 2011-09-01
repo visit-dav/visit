@@ -61,6 +61,13 @@ class QTabWidget;
 class QvisVariableButton;
 class QvisPythonFilterEditor;
 
+// widgets
+class QvisHohlraumFluxQueryWidget;
+class QvisLineoutQueryWidget;
+class QvisPickQueryWidget;
+class QvisTimeQueryOptionsWidget;
+class QvisXRayImageQueryWidget;
+
 // ****************************************************************************
 // Class: QvisQueryWindow
 //
@@ -127,6 +134,11 @@ class QvisPythonFilterEditor;
 //   Kathleen Bonnell, Tue Mar  1 11:06:35 PST 2011
 //   Add widget for plotOpts, which controls the type of plot for Time Picks.
 //
+//   Kathleen Biagas, Fri Jun 10 08:58:12 PDT 2011
+//   Added QvisPickQueryWidget, QvisHohlraumFluxQueryWidget, 
+//   QvisXRayImageQueryWidget, QvisLineoutWidget, QvisTimeQueryOptionsWidget, 
+//   which provide controls for specific queries.
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -149,19 +161,17 @@ protected:
     virtual void CreateEntireWindow();
 private:
     void UpdateQueryButton();
-    void UpdateTimeQueryButton();
+    void UpdateTimeQueryOptions();
     void UpdateQueryList();
     void UpdateResults(bool doAll);
     void UpdateArgumentPanel(const QString &);
 
-    void Apply(bool ignore = false, bool doTime = false);
-    bool GetPoint(int index, const QString &pname, double pt[3]);
+    void Apply(bool ignore = false);
     bool GetNumber(int index, int *num);
     bool GetFloatingPointNumber(int index, double *num);
     bool GetVars(stringVector &vars);
 private slots:
     void apply();
-    void timeApply();
     void handleText();
     void selectQuery();
     void clearResultText();
@@ -178,7 +188,7 @@ private:
     void                CreatePythonQueryWidget();
     void                CreateResultsWidget();
 
-    void                ExecuteStandardQuery(bool);
+    void                ExecuteStandardQuery();
     void                ExecutePythonQuery();
 
     QueryList           *queries;
@@ -194,7 +204,6 @@ private:
     QComboBox           *displayMode;
     QListWidget         *queryList;
     QPushButton         *queryButton;
-    QPushButton         *timeQueryButton;
 
     QGroupBox           *argPanel;
     QLabel              *labels[6];
@@ -208,7 +217,6 @@ private:
     QTextEdit           *resultText;
 
     QButtonGroup        *dataOpts;
-    QButtonGroup        *plotOpts;
 
     int                 saveCount;
     int                 queryVarTypes;
@@ -220,6 +228,11 @@ private:
     QLineEdit              *pyVarsLineEdit;
     QPushButton            *pyQueryButton;
 
+    QvisHohlraumFluxQueryWidget   *hohlraumFluxQueryWidget;
+    QvisLineoutQueryWidget        *lineoutQueryWidget;
+    QvisPickQueryWidget           *pickQueryWidget;
+    QvisTimeQueryOptionsWidget    *timeQueryOptions;
+    QvisXRayImageQueryWidget      *xRayImageQueryWidget;
 };
 
 #endif

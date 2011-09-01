@@ -57,6 +57,8 @@ class QueryAttributes;
 //  Creation:   March 30, 2004 
 //
 //  Modifications:
+//    Kathleen Biagas, Fri Jul 15 11:15:00 PDT 2011
+//    Added GetDefaultInputParams.
 //
 // ****************************************************************************
 
@@ -68,6 +70,8 @@ class QUERY_API avtQueryFactory
     static avtQueryFactory         *Instance();
 
     avtDataObjectQuery             *CreateQuery(const QueryAttributes *);
+    std::string                     GetDefaultInputParams(
+                                        const std::string &queryName);
 
   private:
                                     avtQueryFactory();
