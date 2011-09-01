@@ -105,7 +105,7 @@ avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model,
                                     const avtVector &p_start, 
                                     const avtVector &v_start, 
                                     long ID )
-    : status(STATUS_OK), direction(dir), domain(-1), sortKey(0), id(ID)
+    : status(STATUS_OK), direction(dir), domain(-1), sortKey(0), id(ID), originatingRank(-1)
 {
     ivp = model->Clone();
     ivp->Reset( t_start, p_start, v_start );
@@ -159,6 +159,7 @@ avtIntegralCurve::avtIntegralCurve()
     sortKey = 0;
     id = -1;
     counter = 0;
+    originatingRank = -1;
     encounteredNumericalProblems = false;
     postStepCallbackFunction = NULL;
 }
@@ -541,6 +542,7 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, status);
     buff.io(mode, counter);
     buff.io(mode, encounteredNumericalProblems);
+    buff.io(mode, originatingRank);
     
     if ( mode == MemStream::WRITE )
     {
@@ -568,6 +570,16 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
         debug5 << "avtIntegralCurve::Serialize() size is " 
                << buff.len() << endl;
 }
+
+
+// ****************************************************************************
+// Method:  avtIntegralCurve::DomainCompare
+//
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 30, 2011
+//
+// ****************************************************************************
 
 bool
 avtIntegralCurve::DomainCompare(const avtIntegralCurve *icA,

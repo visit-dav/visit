@@ -270,6 +270,7 @@ class IVP_API avtIntegralCurve
     int counter;
 
     bool   encounteredNumericalProblems;
+    int    originatingRank;
   protected:
 
     avtIVPSolver*       ivp;
