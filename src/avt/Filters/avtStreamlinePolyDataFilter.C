@@ -291,6 +291,9 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
         correlationDistAngTolToUse = cos(correlationDistanceAngTol *M_PI/180.0);
     }
 
+    if ( !scaleTubeRadiusVariable.empty())
+        ProcessVaryTubeRadiusByScalar(ics);
+
     vtkIdType pIdx = 0, idx = 0;
     for (int i = 0; i < numICs; i++)
     {
@@ -303,7 +306,6 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
         line->GetPointIds()->SetNumberOfIds(numSamps);
 
         float theta = 0.0, prevT = 0.0;
-        avtVector lastPos;
 
         //cerr << phiScaling << "  " << (phiScaling == 0.0) << endl;
 
@@ -402,7 +404,6 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
                 scaleTubeRad->InsertTuple1(pIdx, s.scalar2);
             
             pIdx++;
-            lastPos = s.position;
         }
         
         lines->InsertNextCell(line);
@@ -517,4 +518,69 @@ avtStreamlinePolyDataFilter::ComputeCorrelationDistance(int idx,  avtStateRecord
     }
 
     return val;
+}
+
+static avtStateRecorderIntegralCurve * icFromID(int id, std::vector<avtIntegralCurve *> &ics)
+{
+    for (int i = 0; i < ics.size(); i++)
+    {
+        if (ics[i]->id == id)
+            return dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
+    }
+
+    return NULL;
+}
+
+// ****************************************************************************
+// Method:  avtStreamlinePolyDataFilter::ProcessVaryTubeRadiusByScalar
+//
+// Purpose: Unify the radius scaling parameter for streamlines that go in both
+//          directions.  Since both dir streamlines are split up, they will
+//          be treated separately, resulting in different scaling.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2011
+//
+// ****************************************************************************
+
+void
+avtStreamlinePolyDataFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegralCurve *> &ics)
+{
+    for (int i = 0; i < fwdBwdICPairs.size(); i++)
+    {
+        avtStateRecorderIntegralCurve *ic[2] = {icFromID(fwdBwdICPairs[i].first, ics),
+                                                icFromID(fwdBwdICPairs[i].second, ics)};
+        if (ic[0] == NULL || ic[1] == NULL)
+        {
+            EXCEPTION1(ImproperUseException, "Integral curve ID not found.");
+        }
+
+        //Get the min/max for each pair of ICs.
+        double range[2] = {std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
+        for (int i = 0; i < 2; i++)
+        {
+            size_t n = ic[i]->GetNumberOfSamples();
+            for (int j = 0; j < n; j++)
+            {
+                avtStateRecorderIntegralCurve::Sample s = ic[i]->GetSample(j);
+                if (s.scalar2 < range[0])
+                    range[0] = s.scalar2;
+                if (s.scalar2 > range[1])
+                    range[1] = s.scalar2;
+            }
+        }
+
+        double dRange = range[1]-range[0];
+        //Scale them into the same range.
+        for (int i = 0; i < 2; i++)
+        {
+            size_t n = ic[i]->GetNumberOfSamples();
+            for (int j = 0; j < n; j++)
+            {
+                avtStateRecorderIntegralCurve::Sample s = ic[i]->GetSample(j);
+                s.scalar2 = (s.scalar2-range[0])/dRange;
+            }
+        }
+    }
 }

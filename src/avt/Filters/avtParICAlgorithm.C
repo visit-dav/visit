@@ -1034,6 +1034,9 @@ avtParICAlgorithm::RecvDS(vector<DSCommData> &ds)
 //   Added a new communication pattern, RestoreSequenceAssembleUniformly and
 //   renamed RestoreIntegralCurveSequence to RestoreIntegralCurveSequenceAssembleOnCurrentProcessor
 //
+//   Dave Pugmire, Thu Sep  1 07:44:48 EDT 2011
+//   Implement RestoreIntegralCurveToOriginatingProcessor.
+//
 // ****************************************************************************
 
 void
@@ -1057,10 +1060,7 @@ avtParICAlgorithm::PostRunAlgorithm()
     else if (pattern == avtPICSFilter::LeaveOnCurrentProcessor)
         ;
     else if (pattern == avtPICSFilter::ReturnToOriginatingProcessor)
-    { 
-        EXCEPTION1(VisItException, 
-                   "This communication pattern has not been implemented."); 
-    }
+        RestoreIntegralCurveToOriginatingProcessor();
     else
     { 
         EXCEPTION1(VisItException, "Undefined communication pattern");
@@ -1289,6 +1289,45 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
 void
 avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly()
 {
+    RestoreIntegralCurve(true);
+}
+
+// ****************************************************************************
+// Method:  avtParICAlgorithm::RestoreIntegralCurveToOriginatingProcessor
+//
+// Purpose: Communicate streamlines pieces to destinations.
+//      When a streamline is communicated, only the state information is sent.
+//      All the integration steps need to resassmbled. This method assigns curves
+//      curves uniformly across all procs, and assembles the pieces.
+//
+// Programmer:  Dave Pugmire
+// Creation:    Mon Aug 29 15:59:30 EDT 2011
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::RestoreIntegralCurveToOriginatingProcessor()
+{
+    RestoreIntegralCurve(false);
+}
+
+// ****************************************************************************
+// Method:  avtParICAlgorithm::RestoreIntegralCurve
+//
+// Purpose:
+//   
+//
+// Arguments:
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 29, 2011
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
+{
     if (DebugStream::Level5())
         debug5<<"RestoreIntegralCurveSequenceAssembleUniformly: communicatedICs: "
           <<communicatedICs.size()
@@ -1319,7 +1358,8 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly()
         N = numSeedPoints;
     
     long *idBuffer = new long[N], *myIDs = new long[N];
-    
+    int *sendList = new int[nProcs], *mySendList = new int[nProcs];
+
     int minId = 0;
     int maxId = N-1;
     int nLoops = 0;
@@ -1340,34 +1380,38 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly()
             idBuffer[i] = 0;
             myIDs[i] = 0;
         }
-
+        
+        for (int i = 0; i < nProcs; i++)
+        {
+            sendList[i] = 0;
+            mySendList[i] = 0;
+        }
         //Count ICs by id (could have multiple IDs).
         list<avtIntegralCurve*>::iterator it = allICs.begin();
         while (it != allICs.end() && (*it)->id <= maxId)
         {
-            if ((*it)->id >= minId)
+            avtIntegralCurve *ic = *it;
+            if (ic->id >= minId)
             {
-                int idx = (*it)->id % N;
+                int idx = ic->id % N;
                 myIDs[idx] ++;
-                //debug1<<"I have id= "<<(*it)->id<<" : "<<(((avtStateRecorderIntegralCurve *)*it))->sequenceCnt<<" idx= "<<idx<<endl;
+                //debug1<<"I have id= "<<(*it)->id<<" : "<<(((avtStateRecorderIntegralCurve *)*it))->sequenceCnt<<" idx= "<<idx<<" originatingRank= "<<(*it)->originatingRank<<endl;
+                if (ic->originatingRank != rank)
+                    mySendList[ic->originatingRank] ++;
             }
             it++;
         }
-        /*
-        debug1<<"myIDs:  [";
-        for(int i=0; i<N;i++)
-            debug1<<myIDs[i]<<" ";
+        debug1<<"mySendList= [";
+        for(int i=0;i<nProcs;i++) debug1<<mySendList[i]<<" ";
         debug1<<"]"<<endl;
-        */
 
         //Exchange ID owners and sequence counts.
         MPI_Allreduce(myIDs, idBuffer, N, MPI_LONG, MPI_SUM, VISIT_MPI_COMM);
-        /*
-        debug1<<"idBuffer:  [";
-        for(int i=0; i<N;i++)
-            debug1<<idBuffer[i]<<" ";
-        debug1<<"]"<<endl;
-        */
+        if (!uniformlyDistrubute)
+            MPI_Allreduce(mySendList, sendList, nProcs, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
+        //debug1<<"sendList= [";
+        //for(int i=0;i<nProcs;i++) debug1<<sendList[i]<<" ";
+        //debug1<<"]"<<endl;
         
         //Now we know where all ICs belong and how many sequences for each.
         //Send communicatedICs to the owners.
@@ -1381,7 +1425,13 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly()
                 break;
             allICs.pop_front();
             
-            int owner = s->id % nProcs;
+            int owner = -1;
+            
+            if (uniformlyDistrubute)
+                owner = s->id % nProcs;
+            else
+                owner = s->originatingRank;
+            
             //IC is mine.
             if (owner == rank)
             {
@@ -1425,13 +1475,21 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly()
         //Wait for all the sequences to arrive. The total number is known for
         //each IC, so wait until they all come.
         int numICsToBeRecvd = 0;
-        for (int i = minId; i <= maxId; i++)
+        if (uniformlyDistrubute)
         {
-            if (i % nProcs == rank)
-                numICsToBeRecvd += idBuffer[i%N];
+            for (int i = minId; i <= maxId; i++)
+            {
+                if (i % nProcs == rank)
+                    numICsToBeRecvd += idBuffer[i%N];
+            }
         }
-        numICsToBeRecvd -= numSeqAlreadyHere;
-
+        else
+        {
+            numICsToBeRecvd += sendList[rank];
+        }
+        //debug1<<"numICsToBeRecvd= "<<numICsToBeRecvd<<endl;
+        //numICsToBeRecvd -= numSeqAlreadyHere;
+        debug1<<"numICsToBeRecvd= "<<numICsToBeRecvd<<endl;
         while (numICsToBeRecvd > 0)
         {
             list<ICCommData> ICs;
@@ -1439,7 +1497,7 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly()
             list<ICCommData>::iterator it;
             for (it = ICs.begin(); it != ICs.end(); it++)            
             {
-                //int seq = ((avtStateRecorderIntegralCurve *)(*it).ic)->sequenceCnt;
+                int seq = ((avtStateRecorderIntegralCurve *)(*it).ic)->sequenceCnt;
                 //debug1<<"Recvd id= "<<(*it).ic->id<<" : "<<seq<<endl;
                 terminatedICs.push_back((*it).ic);
                 numICsToBeRecvd--;
@@ -1459,6 +1517,8 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly()
 
     delete [] idBuffer;
     delete [] myIDs;
+    delete [] sendList;
+    delete [] mySendList;
 }
 
 

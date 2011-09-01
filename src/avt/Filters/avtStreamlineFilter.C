@@ -255,6 +255,23 @@ avtStreamlineFilter::~avtStreamlineFilter()
 }
 
 // ****************************************************************************
+// Method:  avtStreamlineFilter::GetCommunicationPattern()
+//
+// Programmer:  Dave Pugmire
+// Creation:    September  1, 2011
+//
+// ****************************************************************************
+
+avtPICSFilter::CommunicationPattern
+avtStreamlineFilter::GetCommunicationPattern()
+{
+    if (! scaleTubeRadiusVariable.empty())
+        return avtPICSFilter::ReturnToOriginatingProcessor;
+    
+    return avtPICSFilter::RestoreSequenceAssembleUniformly;
+}
+
+// ****************************************************************************
 // Method:  avtStreamlineFilter::GenerateAttributeFields() const
 //
 // Programmer:  Dave Pugmire
