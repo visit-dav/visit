@@ -88,6 +88,12 @@ class vtkDataSet;
 //    Cyrus Harrison, Mon Jun  6 17:02:12 PDT 2011
 //    Added lengthFilter.
 //
+//    Kathleen Biagas, Tue Jun 21 10:42:07 PDT 2011
+//    Added SetInputParams.
+//
+//    Kathleen Biagas, Fri Jul 15 16:05:35 PDT 2011
+//    Added GetDefaultInputParams.
+//
 // ****************************************************************************
 
 class QUERY_API avtConnComponentsSummaryQuery 
@@ -101,6 +107,9 @@ class QUERY_API avtConnComponentsSummaryQuery
                          { return "avtConnComponentsSummaryQuery"; };
     virtual const char        *GetDescription(void)
                          { return "Generating connected components summary.";};
+
+    virtual void               SetInputParams(const MapNode &);
+    static  void               GetDefaultInputParams(MapNode &);
 
     void                       SetOutputFileName(const std::string &fname)
                                  {outputFileName = fname; }

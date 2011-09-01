@@ -119,6 +119,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Hank Childs, Fri Dec 24 17:48:48 PST 2010
 //    Add method QuerySupportsTimeParallelization.
 //
+//    Kathleen Bonnell, Fri Jun 17 16:25:09 PDT 2011
+//    Added SetInputParams.
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -131,6 +134,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     virtual const char     *GetDescription(void) { return NULL; };
     virtual const char     *GetShortDescription(void) { return NULL; };
 
+    virtual void            SetInputParams(const MapNode &params) {;};
     virtual bool            OriginalData(void) { return false; };
     virtual void            PerformQuery(QueryAttributes *) = 0;
     virtual std::string     GetResultMessage(void) = 0;

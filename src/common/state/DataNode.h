@@ -52,7 +52,8 @@ typedef enum
     DOUBLE_ARRAY_NODE, STRING_ARRAY_NODE, BOOL_ARRAY_NODE,
     CHAR_VECTOR_NODE, UNSIGNED_CHAR_VECTOR_NODE, INT_VECTOR_NODE,
     LONG_VECTOR_NODE, FLOAT_VECTOR_NODE,
-    DOUBLE_VECTOR_NODE, STRING_VECTOR_NODE, BOOL_VECTOR_NODE
+    DOUBLE_VECTOR_NODE, STRING_VECTOR_NODE, BOOL_VECTOR_NODE,
+    MAP_NODE_NODE
 } NodeTypeEnum;
 
 // ****************************************************************************
@@ -87,6 +88,9 @@ typedef enum
 //
 //   Brad Whitlock, Tue Apr 22 12:14:38 PDT 2008
 //   Added a Print method for debugging.
+//
+//    Kathleen Biagas, Fri Jun 17 16:41:27 PDT 2011
+//    Add MapNode node.
 //
 // ****************************************************************************
 
@@ -125,6 +129,8 @@ public:
     DataNode(const std::string &name, const doubleVector &vec);
     DataNode(const std::string &name, const stringVector &vec);
 
+    DataNode(const std::string &name, const MapNode &val);
+
     ~DataNode();
 
     // Functions to return the data as a particular type.
@@ -154,6 +160,8 @@ public:
     const doubleVector        &AsDoubleVector() const;
     const stringVector        &AsStringVector() const;
 
+    const MapNode             &AsMapNode() const;
+
     void SetChar(char val);
     void SetUnsignedChar(unsigned char val);
     void SetInt(int val);
@@ -177,6 +185,8 @@ public:
     void SetFloatVector(const floatVector &vec);
     void SetDoubleVector(const doubleVector &vec);
     void SetStringVector(const stringVector &vec);
+
+    void SetMapNode(const MapNode &val);
 
     // Node operations
     DataNode *GetNode(const std::string &key);
@@ -211,6 +221,8 @@ private:
     static floatVector         bogusFloatVector;
     static doubleVector        bogusDoubleVector;
     static stringVector        bogusStringVector;
+
+    static MapNode             bogusMapNode;
 };
 
 // Utility functions.

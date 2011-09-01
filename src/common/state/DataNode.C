@@ -50,6 +50,7 @@ longVector          DataNode::bogusLongVector;
 floatVector         DataNode::bogusFloatVector;
 doubleVector        DataNode::bogusDoubleVector;
 stringVector        DataNode::bogusStringVector;
+MapNode             DataNode::bogusMapNode;
 
 // ****************************************************************************
 // Method: DataNode::DataNode
@@ -285,6 +286,13 @@ DataNode::DataNode(const std::string &name, const stringVector &vec) : Key(name)
     Data = (void *)(new stringVector(vec));
 }
 
+DataNode::DataNode(const std::string &name, const MapNode &val) : Key(name)
+{
+    NodeType = MAP_NODE_NODE;
+    Length = 0;
+    Data = (void *)(new MapNode(val));
+}
+
 // ****************************************************************************
 // Method: DataNode::~DataNode
 //
@@ -494,6 +502,12 @@ DataNode::FreeData()
     case BOOL_VECTOR_NODE:
         // Do nothing since it can't be instantiated.
         break;
+    case MAP_NODE_NODE:
+        { // new scope
+            MapNode *mptr = (MapNode *)Data;
+            delete mptr;
+        }
+        break;
     }
 
     Data = 0;
@@ -674,6 +688,16 @@ DataNode::AsStringVector() const
         return *((stringVector *)Data);
     else
         return bogusStringVector;
+}
+
+
+const MapNode &
+DataNode::AsMapNode() const
+{
+    if(NodeType == MAP_NODE_NODE && Data != 0)
+        return *((MapNode *)Data);
+    else
+        return bogusMapNode;
 }
 
 //
@@ -920,6 +944,14 @@ DataNode::SetStringVector(const stringVector &vec)
     FreeData();
     NodeType = STRING_VECTOR_NODE;
     Data = (void *)(new stringVector(vec));
+}
+
+void
+DataNode::SetMapNode(const MapNode &val)
+{
+    FreeData();
+    NodeType = MAP_NODE_NODE;
+    Data = (void *)(new MapNode(val));
 }
 
 // ****************************************************************************
@@ -1344,7 +1376,7 @@ static const char *NodeTypeNameLookup[] = {
 "charArray", "unsignedCharArray", "intArray", "longArray", "floatArray",
 "doubleArray", "stringArray", "boolArray",
 "charVector", "unsignedCharVector", "intVector", "longVector", "floatVector",
-"doubleVector", "stringVector"
+"doubleVector", "stringVector", "boolVector", "MapNode"
 };
 
 const char *

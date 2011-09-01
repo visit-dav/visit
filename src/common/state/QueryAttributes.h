@@ -62,11 +62,6 @@
 class STATE_API QueryAttributes : public AttributeSubject
 {
 public:
-    enum ElementType
-    {
-        Zone,
-        Node
-    };
     enum VarType
     {
         Mesh,
@@ -85,11 +80,6 @@ public:
     {
         ActualData,
         OriginalData
-    };
-    enum TimeCurveType
-    {
-        Single_Y_Axis,
-        Multiple_Y_Axes
     };
 
     // These constructors are for objects of this class
@@ -117,87 +107,62 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectName();
-    void SelectVariables();
     void SelectResultsMessage();
-    void SelectWorldPoint();
     void SelectResultsValue();
     void SelectVarTypes();
     void SelectXUnits();
     void SelectYUnits();
-    void SelectDarg1();
-    void SelectDarg2();
     void SelectFloatFormat();
     void SelectXmlResult();
+    void SelectQueryInputParams();
+    void SelectDefaultName();
+    void SelectDefaultVars();
 
     // Property setting methods
-    void SetName(const std::string &name_);
-    void SetVariables(const stringVector &variables_);
     void SetResultsMessage(const std::string &resultsMessage_);
-    void SetWorldPoint(const double *worldPoint_);
-    void SetDomain(int domain_);
-    void SetElement(int element_);
     void SetResultsValue(const doubleVector &resultsValue_);
-    void SetElementType(ElementType elementType_);
     void SetTimeStep(int timeStep_);
     void SetVarTypes(const intVector &varTypes_);
-    void SetDataType(DataType dataType_);
     void SetPipeIndex(int pipeIndex_);
-    void SetUseGlobalId(bool useGlobalId_);
     void SetXUnits(const std::string &xUnits_);
     void SetYUnits(const std::string &yUnits_);
-    void SetDarg1(const doubleVector &darg1_);
-    void SetDarg2(const doubleVector &darg2_);
     void SetFloatFormat(const std::string &floatFormat_);
     void SetXmlResult(const std::string &xmlResult_);
-    void SetDumpSteps(bool dumpSteps_);
-    void SetTimeCurvePlotType(TimeCurveType timeCurvePlotType_);
+    void SetSuppressOutput(bool suppressOutput_);
+    void SetQueryInputParams(const MapNode &queryInputParams_);
+    void SetDefaultName(const std::string &defaultName_);
+    void SetDefaultVars(const stringVector &defaultVars_);
 
     // Property getting methods
-    const std::string  &GetName() const;
-          std::string  &GetName();
-    const stringVector &GetVariables() const;
-          stringVector &GetVariables();
     const std::string  &GetResultsMessage() const;
           std::string  &GetResultsMessage();
-    const double       *GetWorldPoint() const;
-          double       *GetWorldPoint();
-    int                GetDomain() const;
-    int                GetElement() const;
     const doubleVector &GetResultsValue() const;
           doubleVector &GetResultsValue();
-    ElementType        GetElementType() const;
     int                GetTimeStep() const;
     const intVector    &GetVarTypes() const;
           intVector    &GetVarTypes();
-    DataType           GetDataType() const;
     int                GetPipeIndex() const;
-    bool               GetUseGlobalId() const;
     const std::string  &GetXUnits() const;
           std::string  &GetXUnits();
     const std::string  &GetYUnits() const;
           std::string  &GetYUnits();
-    const doubleVector &GetDarg1() const;
-          doubleVector &GetDarg1();
-    const doubleVector &GetDarg2() const;
-          doubleVector &GetDarg2();
     const std::string  &GetFloatFormat() const;
           std::string  &GetFloatFormat();
     const std::string  &GetXmlResult() const;
           std::string  &GetXmlResult();
-    bool               GetDumpSteps() const;
-    TimeCurveType      GetTimeCurvePlotType() const;
+    bool               GetSuppressOutput() const;
+    const MapNode      &GetQueryInputParams() const;
+          MapNode      &GetQueryInputParams();
+    const std::string  &GetDefaultName() const;
+          std::string  &GetDefaultName();
+    const stringVector &GetDefaultVars() const;
+          stringVector &GetDefaultVars();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
     // Enum conversion functions
-    static std::string ElementType_ToString(ElementType);
-    static bool ElementType_FromString(const std::string &, ElementType &);
-protected:
-    static std::string ElementType_ToString(int);
-public:
     static std::string VarType_ToString(VarType);
     static bool VarType_FromString(const std::string &, VarType &);
 protected:
@@ -208,11 +173,6 @@ public:
 protected:
     static std::string DataType_ToString(int);
 public:
-    static std::string TimeCurveType_ToString(TimeCurveType);
-    static bool TimeCurveType_FromString(const std::string &, TimeCurveType &);
-protected:
-    static std::string TimeCurveType_ToString(int);
-public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -221,6 +181,12 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
+    void SetVariables(const stringVector &variables_);
+    const std::string &GetName() const;
+    std::string &GetName();
+    const stringVector &GetVariables() const;
+    stringVector &GetVariables();
+    DataType GetDataType() const;
     void Reset();
     void PrintSelf(ostream &os);
     void SetResultsValue(const double);
@@ -228,57 +194,41 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_name = 0,
-        ID_variables,
-        ID_resultsMessage,
-        ID_worldPoint,
-        ID_domain,
-        ID_element,
+        ID_resultsMessage = 0,
         ID_resultsValue,
-        ID_elementType,
         ID_timeStep,
         ID_varTypes,
-        ID_dataType,
         ID_pipeIndex,
-        ID_useGlobalId,
         ID_xUnits,
         ID_yUnits,
-        ID_darg1,
-        ID_darg2,
         ID_floatFormat,
         ID_xmlResult,
-        ID_dumpSteps,
-        ID_timeCurvePlotType,
+        ID_suppressOutput,
+        ID_queryInputParams,
+        ID_defaultName,
+        ID_defaultVars,
         ID__LAST
     };
 
 private:
-    std::string  name;
-    stringVector variables;
     std::string  resultsMessage;
-    double       worldPoint[3];
-    int          domain;
-    int          element;
     doubleVector resultsValue;
-    int          elementType;
     int          timeStep;
     intVector    varTypes;
-    int          dataType;
     int          pipeIndex;
-    bool         useGlobalId;
     std::string  xUnits;
     std::string  yUnits;
-    doubleVector darg1;
-    doubleVector darg2;
     std::string  floatFormat;
     std::string  xmlResult;
-    bool         dumpSteps;
-    int          timeCurvePlotType;
+    bool         suppressOutput;
+    MapNode      queryInputParams;
+    std::string  defaultName;
+    stringVector defaultVars;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define QUERYATTRIBUTES_TMFS "ss*sDiid*iii*iibssd*d*ssbi"
+#define QUERYATTRIBUTES_TMFS "sd*ii*issssbmss*"
 
 #endif

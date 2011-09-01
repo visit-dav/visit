@@ -314,13 +314,19 @@ avtQueryFactory::Instance()
 //    Cyrus Harrison, Wed Jun 15 13:14:49 PDT 2011
 //    Added Connected Components Length.
 //
+//    Kathleen Biagas, Fri Jun 17 16:26:06 PDT 2011
+//    Call SetInputParams after query is created, precludes need to set
+//    individual query options here.
+//
 // ****************************************************************************
 
 avtDataObjectQuery *
 avtQueryFactory::CreateQuery(const QueryAttributes *qa)
 {
     string qname = qa->GetName();
-    bool actualData = qa->GetDataType() == QueryAttributes::ActualData;
+    int actualData = 0;
+    if (qa->GetQueryInputParams().HasEntry("use_actual_data"))
+        actualData = qa->GetQueryInputParams().GetEntry("use_actual_data")->AsInt();
 
     avtDataObjectQuery *query = NULL;
     bool foundAQuery = false;
@@ -380,64 +386,31 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     }
     else if (qname == "Line Scan Transform")
     {
-        avtLineScanTransformQuery *lst =
-                                new avtLineScanTransformQuery();
-        lst->SetNumberOfLines(qa->GetElement()); // Element == intarg1
-        lst->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        lst->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
-        query = lst;
+        query = new avtLineScanTransformQuery();
     }
     else if (qname == "Chord Length Distribution - aggregate")
     {
-        avtAggregateChordLengthDistributionQuery *cldq =
-                                new avtAggregateChordLengthDistributionQuery();
-        cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
-        cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        cldq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
-        query = cldq;
+        query = new avtAggregateChordLengthDistributionQuery();
     }
     else if (qname == "Chord Length Distribution - individual")
     {
-        avtIndividualChordLengthDistributionQuery *cldq =
-                                new avtIndividualChordLengthDistributionQuery();
-        cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
-        cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        cldq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
-        query = cldq;
+        query = new avtIndividualChordLengthDistributionQuery();
     }
     else if (qname == "Ray Length Distribution - aggregate")
     {
-        avtAggregateRayLengthDistributionQuery *cldq =
-                                new avtAggregateRayLengthDistributionQuery();
-        cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
-        cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        cldq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
-        query = cldq;
+        query = new avtAggregateRayLengthDistributionQuery();
     }
     else if (qname == "Ray Length Distribution - individual")
     {
-        avtIndividualRayLengthDistributionQuery *cldq =
-                                new avtIndividualRayLengthDistributionQuery();
-        cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
-        cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        cldq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
-        query = cldq;
+        query = new avtIndividualRayLengthDistributionQuery();
     }
     else if (qname == "Mass Distribution")
     {
-        avtMassDistributionQuery *mdq = new avtMassDistributionQuery();
-        mdq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
-        mdq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        mdq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
-        query = mdq;
+        query = new avtMassDistributionQuery();
     }
     else if (qname == "Distance From Boundary")
     {
-        avtDistanceFromBoundaryQuery *mdq = new avtDistanceFromBoundaryQuery();
-        mdq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
-        mdq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        mdq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
-        query = mdq;
+        query = new avtDistanceFromBoundaryQuery();
     }
     else if (qname == "Kurtosis")
     {
@@ -496,15 +469,11 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     }
     else if (qname == "Variable by Zone")
     {
-        avtVariableByZoneQuery *vzq = new avtVariableByZoneQuery();
-        vzq->SetNumVars((int)qa->GetVariables().size());
-        query = vzq;
+        query = new avtVariableByZoneQuery();
     }
     else if (qname == "Variable by Node")
     {
-        avtVariableByNodeQuery *vnq = new avtVariableByNodeQuery();
-        vnq->SetNumVars((int)qa->GetVariables().size());
-        query = vnq;
+        query = new avtVariableByNodeQuery();
     }
     else if (qname == "MinMax")
     {
@@ -595,16 +564,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     }
     else if (qname == "Hohlraum Flux")
     {
-        avtHohlraumFluxQuery *mdq = new avtHohlraumFluxQuery();
-        mdq->SetVariableNames(qa->GetVariables());
-        mdq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
-        mdq->SetDivideEmisByAbsorb((qa->GetDomain() == 0) ? false : true); // Domain == intarg2
-        mdq->SetRayCenter(qa->GetDarg1()[0],
-                          qa->GetDarg1()[1],
-                          qa->GetDarg1()[2]);
-        mdq->SetRadius(qa->GetDarg2()[0]);
-        mdq->SetThetaPhi(qa->GetDarg2()[1], qa->GetDarg2()[2]);
-        query = mdq;
+        query  = new avtHohlraumFluxQuery();
     }
     else if( qname == "Number of Connected Components")
     {
@@ -636,48 +596,19 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     }
     else if( qname == "Connected Components Summary")
     {
-        avtConnComponentsSummaryQuery *ccl_query
-                                          =new avtConnComponentsSummaryQuery();
-        ccl_query->SetOutputFileName(qa->GetVariables()[0]);
-        query = ccl_query;
+        query = new avtConnComponentsSummaryQuery();
     }
     else if( qname == "Locate and Pick Zone")
     {
-        avtLocateAndPickZoneQuery *lpzq = new avtLocateAndPickZoneQuery();
-        lpzq->SetNumVars((int)qa->GetVariables().size());
-        query = lpzq;
+        query = new avtLocateAndPickZoneQuery();
     }
     else if( qname == "Locate and Pick Node")
     {
-        avtLocateAndPickNodeQuery *lpnq = new avtLocateAndPickNodeQuery();
-        lpnq->SetNumVars((int)qa->GetVariables().size());
-        query = lpnq;
+        query = new avtLocateAndPickNodeQuery();
     }
     else if( qname == "Shapelet Decomposition")
     {
-        avtShapeletDecompositionQuery *shapelet_query = 
-                                            new avtShapeletDecompositionQuery();
-        if(qa->GetDarg1().size() == 1)
-        {
-            if(qa->GetDarg1()[0] < 1.0)
-                EXCEPTION1(VisItException, 
-                            "Shapelet Decomposition requries "
-                            "beta and nmax >= 1.");
-            shapelet_query->SetBeta(qa->GetDarg1()[0]);
-        }
-        else
-            shapelet_query->SetBeta(1.0);
-        if(qa->GetElement() < 1)
-            shapelet_query->SetNMax(1);
-        else
-            shapelet_query->SetNMax(qa->GetElement()); // Element == int arg1
-        shapelet_query->SetDecompOutputFileName("");
-
-        if(qa->GetVariables().size() >1)
-            shapelet_query->SetRecompOutputFileName(qa->GetVariables()[1]);
-        else
-            shapelet_query->SetRecompOutputFileName("");
-        query = shapelet_query;
+        query = new avtShapeletDecompositionQuery();
     }
     else if( qname == "Memory Usage")
     {
@@ -693,17 +624,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     }
     else if (qname == "XRay Image")
     {
-        avtXRayImageQuery *mdq = new avtXRayImageQuery();
-        mdq->SetVariableNames(qa->GetVariables());
-        mdq->SetOutputType(qa->GetElement()); // Element == intarg1
-        mdq->SetDivideEmisByAbsorb((qa->GetDomain() == 0) ? false : true); // Domain == intarg2
-        mdq->SetOrigin(qa->GetDarg1()[0],
-                       qa->GetDarg1()[1],
-                       qa->GetDarg1()[2]);
-        mdq->SetThetaPhi(qa->GetDarg2()[0], qa->GetDarg2()[1]);
-        mdq->SetWidthHeight(qa->GetDarg2()[2], qa->GetDarg2()[3]);
-        mdq->SetImageSize((int)qa->GetDarg2()[4], (int)qa->GetDarg2()[5]);
-        query = mdq;
+        query = new avtXRayImageQuery();
     }
     else if (qname == "Python")
     {
@@ -730,9 +651,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     }
     else if (qname == "Streamline Info")
     {
-        avtStreamlineInfoQuery *slq = new avtStreamlineInfoQuery();
-        slq->SetDumpSteps(qa->GetDumpSteps());
-        query = slq;
+        query = new avtStreamlineInfoQuery();
     }
 
     if (query == NULL && !foundAQuery)
@@ -743,7 +662,122 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
              "the avtQueryFactory.");
     }
 
+    if (query != NULL)
+    {
+        TRY
+        {
+            query->SetInputParams(qa->GetQueryInputParams());
+        }
+        CATCH2(VisItException, e)
+        {
+            string msg = qname + " did not find all of its input parameters. (";
+            msg += e.Message();
+            msg += ")  Developers:  if you are developing this query, make ";
+            msg += "sure the map node containing the input parameter has been ";
+            msg += "set up correctly in the gui and in the cli.";
+            EXCEPTION1(VisItException, msg.c_str());
+        }
+        ENDTRY
+    }
     return query;
 }
 
 
+// ****************************************************************************
+//  Method: avtQueryFactory::GetDefaultInputParams
+//
+//  Purpose:
+//    Retrieve default input values for named query.
+//
+//  Arguments:
+//    qname     The name of the query.
+//             
+//  Returns:    A string representation of the MapNode parameters.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 15, 2011 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+string 
+avtQueryFactory::GetDefaultInputParams(const string &qname)
+{
+    MapNode params;
+    string retval;
+    if (qname == "XRay Image")
+    {
+        avtXRayImageQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (qname == "Hohlraum Flux")
+    {
+        avtHohlraumFluxQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if( qname == "Connected Components Summary")
+    {
+        avtConnComponentsSummaryQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (qname == "Chord Length Distribution - aggregate"  ||
+             qname == "Chord Length Distribution - individual" || 
+             qname == "Ray Length Distribution - aggregate"    ||
+             qname == "Ray Length Distribution - individual"   ||
+             qname == "Mass Distribution"                      || 
+             qname == "Line Scan Transform"                    ||
+             qname == "Distance From Boundary")
+    {
+        avtLineScanQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (qname == "Node Coords")
+    {
+        avtNodeCoordsQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (qname == "Zone Center")
+    {
+        avtZoneCenterQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if( qname == "Shapelet Decomposition")
+    {
+        avtShapeletDecompositionQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (qname == "Streamline Info")
+    {
+        avtStreamlineInfoQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (qname == "Min" ||
+             qname == "Max" ||
+             qname == "MinMax")
+    {
+        avtMinMaxQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (qname == "NumNodes")
+    {
+        avtNumNodesQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (qname == "NumZones")
+    {
+        avtNumZonesQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (qname == "TrajectoryByZone")
+    {
+        avtTrajectoryByZone::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (qname == "TrajectoryByNode")
+    {
+        avtTrajectoryByNode::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    return retval;
+}

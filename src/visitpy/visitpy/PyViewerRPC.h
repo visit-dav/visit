@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VIEWERRPC_NMETH 72
+#define VIEWERRPC_NMETH 64
 void VISITPY_API           PyViewerRPC_StartUp(ViewerRPC *subj, void *data);
 void VISITPY_API           PyViewerRPC_CloseDown();
 VISITPY_API PyMethodDef *  PyViewerRPC_GetMethodTable(int *nMethods);

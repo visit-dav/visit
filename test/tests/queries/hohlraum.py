@@ -19,6 +19,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
+#    Use named arguments. 
+#
 # ----------------------------------------------------------------------------
 
 import os
@@ -41,7 +45,8 @@ def TestOne(index, filename, varname, meshname, absvar, emisvar, numlines, x, y,
     OpenDatabase(filename)
     AddPlot("Pseudocolor", varname)
     DrawPlots()
-    Query("Hohlraum Flux", numlines, x, y, z, radius, theta, phi, (absvar, emisvar))
+    params = dict(num_lines=numlines, ray_center=(x, y, z), radius=radius, theta=theta, phi=phi, vars=(absvar, emisvar))
+    Query("Hohlraum Flux", params)
     s = GetQueryOutputString()
     #v = GetQueryOutputValue()
     test_name = "hf_%d_%d" %(index,0)

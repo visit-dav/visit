@@ -131,6 +131,51 @@ avtConnComponentsSummaryQuery::
 
 
 // ****************************************************************************
+//  Method: avtConnComponentsSummaryQuery::SetInputParams
+//
+//  Purpose: Allows this query to read input parameters set by user.
+//
+//  Arguments:
+//    params:  MapNode containing input.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   June 17, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtConnComponentsSummaryQuery::SetInputParams(const MapNode &params)
+{
+   if (params.HasEntry("output_file"))
+        SetOutputFileName(params.GetEntry("output_file")->AsString());
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsSummaryQuery::GetDefaultInputParams
+//
+//  Purpose:  Retrieve default input parameters.
+//
+//  Arguments:
+//    params:  MapNode to store default values.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 15, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtConnComponentsSummaryQuery::GetDefaultInputParams(MapNode &params)
+{
+    params["output_file"] = std::string("cc_summary.okc");
+}
+
+
+// ****************************************************************************
 //  Method: avtConnComponentsSummaryQuery::PreExecute
 //
 //

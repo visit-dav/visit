@@ -76,45 +76,7 @@ PyQueryAttributes_ToString(const QueryAttributes *atts, const char *prefix)
     std::string str; 
     char tmpStr[1000]; 
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
-    str += tmpStr;
-    {   const stringVector &variables = atts->GetVariables();
-        SNPRINTF(tmpStr, 1000, "%svariables = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < variables.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", variables[i].c_str());
-            str += tmpStr;
-            if(i < variables.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
     SNPRINTF(tmpStr, 1000, "%sresultsMessage = \"%s\"\n", prefix, atts->GetResultsMessage().c_str());
-    str += tmpStr;
-    {   const double *worldPoint = atts->GetWorldPoint();
-        SNPRINTF(tmpStr, 1000, "%sworldPoint = (", prefix);
-        str += tmpStr;
-        for(int i = 0; i < 3; ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", worldPoint[i]);
-            str += tmpStr;
-            if(i < 2)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    SNPRINTF(tmpStr, 1000, "%sdomain = %d\n", prefix, atts->GetDomain());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%selement = %d\n", prefix, atts->GetElement());
     str += tmpStr;
     {   const doubleVector &resultsValue = atts->GetResultsValue();
         SNPRINTF(tmpStr, 1000, "%sresultsValue = (", prefix);
@@ -132,88 +94,17 @@ PyQueryAttributes_ToString(const QueryAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    const char *elementType_names = "Zone, Node";
-    switch (atts->GetElementType())
-    {
-      case QueryAttributes::Zone:
-          SNPRINTF(tmpStr, 1000, "%selementType = %sZone  # %s\n", prefix, prefix, elementType_names);
-          str += tmpStr;
-          break;
-      case QueryAttributes::Node:
-          SNPRINTF(tmpStr, 1000, "%selementType = %sNode  # %s\n", prefix, prefix, elementType_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
     SNPRINTF(tmpStr, 1000, "%stimeStep = %d\n", prefix, atts->GetTimeStep());
-    str += tmpStr;
-    if(atts->GetUseGlobalId())
-        SNPRINTF(tmpStr, 1000, "%suseGlobalId = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%suseGlobalId = 0\n", prefix);
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sxUnits = \"%s\"\n", prefix, atts->GetXUnits().c_str());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%syUnits = \"%s\"\n", prefix, atts->GetYUnits().c_str());
     str += tmpStr;
-    {   const doubleVector &darg1 = atts->GetDarg1();
-        SNPRINTF(tmpStr, 1000, "%sdarg1 = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < darg1.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", darg1[i]);
-            str += tmpStr;
-            if(i < darg1.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const doubleVector &darg2 = atts->GetDarg2();
-        SNPRINTF(tmpStr, 1000, "%sdarg2 = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < darg2.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", darg2[i]);
-            str += tmpStr;
-            if(i < darg2.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
     SNPRINTF(tmpStr, 1000, "%sfloatFormat = \"%s\"\n", prefix, atts->GetFloatFormat().c_str());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sxmlResult = \"%s\"\n", prefix, atts->GetXmlResult().c_str());
     str += tmpStr;
-    if(atts->GetDumpSteps())
-        SNPRINTF(tmpStr, 1000, "%sdumpSteps = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sdumpSteps = 0\n", prefix);
-    str += tmpStr;
-    const char *timeCurvePlotType_names = "Single_Y_Axis, Multiple_Y_Axes";
-    switch (atts->GetTimeCurvePlotType())
-    {
-      case QueryAttributes::Single_Y_Axis:
-          SNPRINTF(tmpStr, 1000, "%stimeCurvePlotType = %sSingle_Y_Axis  # %s\n", prefix, prefix, timeCurvePlotType_names);
-          str += tmpStr;
-          break;
-      case QueryAttributes::Multiple_Y_Axes:
-          SNPRINTF(tmpStr, 1000, "%stimeCurvePlotType = %sMultiple_Y_Axes  # %s\n", prefix, prefix, timeCurvePlotType_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
+    //queryInputParams
     return str;
 }
 
@@ -224,79 +115,6 @@ QueryAttributes_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
-}
-
-/*static*/ PyObject *
-QueryAttributes_SetName(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the name in the object.
-    obj->data->SetName(std::string(str));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-QueryAttributes_GetName(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetName().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-QueryAttributes_SetVariables(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-
-    stringVector  &vec = obj->data->GetVariables();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
-        }
-    }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
-    else
-        return NULL;
-
-    // Mark the variables in the object as modified.
-    obj->data->SelectVariables();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-QueryAttributes_GetVariables(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the variables.
-    const stringVector &variables = obj->data->GetVariables();
-    PyObject *retval = PyTuple_New(variables.size());
-    for(size_t i = 0; i < variables.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyString_FromString(variables[i].c_str()));
-    return retval;
 }
 
 /*static*/ PyObject *
@@ -320,108 +138,6 @@ QueryAttributes_GetResultsMessage(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetResultsMessage().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-QueryAttributes_SetWorldPoint(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-
-    double *dvals = obj->data->GetWorldPoint();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
-    {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
-    }
-
-    // Mark the worldPoint in the object as modified.
-    obj->data->SelectWorldPoint();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-QueryAttributes_GetWorldPoint(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the worldPoint.
-    PyObject *retval = PyTuple_New(3);
-    const double *worldPoint = obj->data->GetWorldPoint();
-    for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(worldPoint[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-QueryAttributes_SetDomain(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the domain in the object.
-    obj->data->SetDomain((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-QueryAttributes_GetDomain(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetDomain()));
-    return retval;
-}
-
-/*static*/ PyObject *
-QueryAttributes_SetElement(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the element in the object.
-    obj->data->SetElement((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-QueryAttributes_GetElement(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetElement()));
     return retval;
 }
 
@@ -489,39 +205,6 @@ QueryAttributes_GetResultsValue(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-QueryAttributes_SetElementType(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the elementType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetElementType(QueryAttributes::ElementType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid elementType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Zone, Node.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-QueryAttributes_GetElementType(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetElementType()));
-    return retval;
-}
-
-/*static*/ PyObject *
 QueryAttributes_SetTimeStep(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
@@ -542,30 +225,6 @@ QueryAttributes_GetTimeStep(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStep()));
-    return retval;
-}
-
-/*static*/ PyObject *
-QueryAttributes_SetUseGlobalId(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the useGlobalId in the object.
-    obj->data->SetUseGlobalId(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-QueryAttributes_GetUseGlobalId(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetUseGlobalId()?1L:0L);
     return retval;
 }
 
@@ -618,132 +277,6 @@ QueryAttributes_GetYUnits(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-QueryAttributes_SetDarg1(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-
-    doubleVector  &vec = obj->data->GetDarg1();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
-    else
-        return NULL;
-
-    // Mark the darg1 in the object as modified.
-    obj->data->SelectDarg1();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-QueryAttributes_GetDarg1(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the darg1.
-    const doubleVector &darg1 = obj->data->GetDarg1();
-    PyObject *retval = PyTuple_New(darg1.size());
-    for(size_t i = 0; i < darg1.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(darg1[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-QueryAttributes_SetDarg2(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-
-    doubleVector  &vec = obj->data->GetDarg2();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
-    else
-        return NULL;
-
-    // Mark the darg2 in the object as modified.
-    obj->data->SelectDarg2();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-QueryAttributes_GetDarg2(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the darg2.
-    const doubleVector &darg2 = obj->data->GetDarg2();
-    PyObject *retval = PyTuple_New(darg2.size());
-    for(size_t i = 0; i < darg2.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(darg2[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
 QueryAttributes_SetFloatFormat(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
@@ -792,59 +325,24 @@ QueryAttributes_GetXmlResult(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-QueryAttributes_SetDumpSteps(PyObject *self, PyObject *args)
+QueryAttributes_SetQueryInputParams(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the dumpSteps in the object.
-    obj->data->SetDumpSteps(ival != 0);
+    // NOT IMPLEMENTED!!!
+    // name=queryInputParams, type=MapNode
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-QueryAttributes_GetDumpSteps(PyObject *self, PyObject *args)
+QueryAttributes_GetQueryInputParams(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetDumpSteps()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-QueryAttributes_SetTimeCurvePlotType(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the timeCurvePlotType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetTimeCurvePlotType(QueryAttributes::TimeCurveType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid timeCurvePlotType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Single_Y_Axis, Multiple_Y_Axes.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-QueryAttributes_GetTimeCurvePlotType(PyObject *self, PyObject *args)
-{
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeCurvePlotType()));
+    // NOT IMPLEMENTED!!!
+    // name=queryInputParams, type=MapNode
+    PyObject *retval = NULL;
     return retval;
 }
 
@@ -852,42 +350,22 @@ QueryAttributes_GetTimeCurvePlotType(PyObject *self, PyObject *args)
 
 PyMethodDef PyQueryAttributes_methods[QUERYATTRIBUTES_NMETH] = {
     {"Notify", QueryAttributes_Notify, METH_VARARGS},
-    {"SetName", QueryAttributes_SetName, METH_VARARGS},
-    {"GetName", QueryAttributes_GetName, METH_VARARGS},
-    {"SetVariables", QueryAttributes_SetVariables, METH_VARARGS},
-    {"GetVariables", QueryAttributes_GetVariables, METH_VARARGS},
     {"SetResultsMessage", QueryAttributes_SetResultsMessage, METH_VARARGS},
     {"GetResultsMessage", QueryAttributes_GetResultsMessage, METH_VARARGS},
-    {"SetWorldPoint", QueryAttributes_SetWorldPoint, METH_VARARGS},
-    {"GetWorldPoint", QueryAttributes_GetWorldPoint, METH_VARARGS},
-    {"SetDomain", QueryAttributes_SetDomain, METH_VARARGS},
-    {"GetDomain", QueryAttributes_GetDomain, METH_VARARGS},
-    {"SetElement", QueryAttributes_SetElement, METH_VARARGS},
-    {"GetElement", QueryAttributes_GetElement, METH_VARARGS},
     {"SetResultsValue", QueryAttributes_SetResultsValue, METH_VARARGS},
     {"GetResultsValue", QueryAttributes_GetResultsValue, METH_VARARGS},
-    {"SetElementType", QueryAttributes_SetElementType, METH_VARARGS},
-    {"GetElementType", QueryAttributes_GetElementType, METH_VARARGS},
     {"SetTimeStep", QueryAttributes_SetTimeStep, METH_VARARGS},
     {"GetTimeStep", QueryAttributes_GetTimeStep, METH_VARARGS},
-    {"SetUseGlobalId", QueryAttributes_SetUseGlobalId, METH_VARARGS},
-    {"GetUseGlobalId", QueryAttributes_GetUseGlobalId, METH_VARARGS},
     {"SetXUnits", QueryAttributes_SetXUnits, METH_VARARGS},
     {"GetXUnits", QueryAttributes_GetXUnits, METH_VARARGS},
     {"SetYUnits", QueryAttributes_SetYUnits, METH_VARARGS},
     {"GetYUnits", QueryAttributes_GetYUnits, METH_VARARGS},
-    {"SetDarg1", QueryAttributes_SetDarg1, METH_VARARGS},
-    {"GetDarg1", QueryAttributes_GetDarg1, METH_VARARGS},
-    {"SetDarg2", QueryAttributes_SetDarg2, METH_VARARGS},
-    {"GetDarg2", QueryAttributes_GetDarg2, METH_VARARGS},
     {"SetFloatFormat", QueryAttributes_SetFloatFormat, METH_VARARGS},
     {"GetFloatFormat", QueryAttributes_GetFloatFormat, METH_VARARGS},
     {"SetXmlResult", QueryAttributes_SetXmlResult, METH_VARARGS},
     {"GetXmlResult", QueryAttributes_GetXmlResult, METH_VARARGS},
-    {"SetDumpSteps", QueryAttributes_SetDumpSteps, METH_VARARGS},
-    {"GetDumpSteps", QueryAttributes_GetDumpSteps, METH_VARARGS},
-    {"SetTimeCurvePlotType", QueryAttributes_SetTimeCurvePlotType, METH_VARARGS},
-    {"GetTimeCurvePlotType", QueryAttributes_GetTimeCurvePlotType, METH_VARARGS},
+    {"SetQueryInputParams", QueryAttributes_SetQueryInputParams, METH_VARARGS},
+    {"GetQueryInputParams", QueryAttributes_GetQueryInputParams, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -916,52 +394,22 @@ QueryAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyQueryAttributes_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "name") == 0)
-        return QueryAttributes_GetName(self, NULL);
-    if(strcmp(name, "variables") == 0)
-        return QueryAttributes_GetVariables(self, NULL);
     if(strcmp(name, "resultsMessage") == 0)
         return QueryAttributes_GetResultsMessage(self, NULL);
-    if(strcmp(name, "worldPoint") == 0)
-        return QueryAttributes_GetWorldPoint(self, NULL);
-    if(strcmp(name, "domain") == 0)
-        return QueryAttributes_GetDomain(self, NULL);
-    if(strcmp(name, "element") == 0)
-        return QueryAttributes_GetElement(self, NULL);
     if(strcmp(name, "resultsValue") == 0)
         return QueryAttributes_GetResultsValue(self, NULL);
-    if(strcmp(name, "elementType") == 0)
-        return QueryAttributes_GetElementType(self, NULL);
-    if(strcmp(name, "Zone") == 0)
-        return PyInt_FromLong(long(QueryAttributes::Zone));
-    if(strcmp(name, "Node") == 0)
-        return PyInt_FromLong(long(QueryAttributes::Node));
-
     if(strcmp(name, "timeStep") == 0)
         return QueryAttributes_GetTimeStep(self, NULL);
-    if(strcmp(name, "useGlobalId") == 0)
-        return QueryAttributes_GetUseGlobalId(self, NULL);
     if(strcmp(name, "xUnits") == 0)
         return QueryAttributes_GetXUnits(self, NULL);
     if(strcmp(name, "yUnits") == 0)
         return QueryAttributes_GetYUnits(self, NULL);
-    if(strcmp(name, "darg1") == 0)
-        return QueryAttributes_GetDarg1(self, NULL);
-    if(strcmp(name, "darg2") == 0)
-        return QueryAttributes_GetDarg2(self, NULL);
     if(strcmp(name, "floatFormat") == 0)
         return QueryAttributes_GetFloatFormat(self, NULL);
     if(strcmp(name, "xmlResult") == 0)
         return QueryAttributes_GetXmlResult(self, NULL);
-    if(strcmp(name, "dumpSteps") == 0)
-        return QueryAttributes_GetDumpSteps(self, NULL);
-    if(strcmp(name, "timeCurvePlotType") == 0)
-        return QueryAttributes_GetTimeCurvePlotType(self, NULL);
-    if(strcmp(name, "Single_Y_Axis") == 0)
-        return PyInt_FromLong(long(QueryAttributes::Single_Y_Axis));
-    if(strcmp(name, "Multiple_Y_Axes") == 0)
-        return PyInt_FromLong(long(QueryAttributes::Multiple_Y_Axes));
-
+    if(strcmp(name, "queryInputParams") == 0)
+        return QueryAttributes_GetQueryInputParams(self, NULL);
 
     return Py_FindMethod(PyQueryAttributes_methods, self, name);
 }
@@ -976,42 +424,20 @@ PyQueryAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "name") == 0)
-        obj = QueryAttributes_SetName(self, tuple);
-    else if(strcmp(name, "variables") == 0)
-        obj = QueryAttributes_SetVariables(self, tuple);
-    else if(strcmp(name, "resultsMessage") == 0)
+    if(strcmp(name, "resultsMessage") == 0)
         obj = QueryAttributes_SetResultsMessage(self, tuple);
-    else if(strcmp(name, "worldPoint") == 0)
-        obj = QueryAttributes_SetWorldPoint(self, tuple);
-    else if(strcmp(name, "domain") == 0)
-        obj = QueryAttributes_SetDomain(self, tuple);
-    else if(strcmp(name, "element") == 0)
-        obj = QueryAttributes_SetElement(self, tuple);
     else if(strcmp(name, "resultsValue") == 0)
         obj = QueryAttributes_SetResultsValue(self, tuple);
-    else if(strcmp(name, "elementType") == 0)
-        obj = QueryAttributes_SetElementType(self, tuple);
     else if(strcmp(name, "timeStep") == 0)
         obj = QueryAttributes_SetTimeStep(self, tuple);
-    else if(strcmp(name, "useGlobalId") == 0)
-        obj = QueryAttributes_SetUseGlobalId(self, tuple);
     else if(strcmp(name, "xUnits") == 0)
         obj = QueryAttributes_SetXUnits(self, tuple);
     else if(strcmp(name, "yUnits") == 0)
         obj = QueryAttributes_SetYUnits(self, tuple);
-    else if(strcmp(name, "darg1") == 0)
-        obj = QueryAttributes_SetDarg1(self, tuple);
-    else if(strcmp(name, "darg2") == 0)
-        obj = QueryAttributes_SetDarg2(self, tuple);
     else if(strcmp(name, "floatFormat") == 0)
         obj = QueryAttributes_SetFloatFormat(self, tuple);
     else if(strcmp(name, "xmlResult") == 0)
         obj = QueryAttributes_SetXmlResult(self, tuple);
-    else if(strcmp(name, "dumpSteps") == 0)
-        obj = QueryAttributes_SetDumpSteps(self, tuple);
-    else if(strcmp(name, "timeCurvePlotType") == 0)
-        obj = QueryAttributes_SetTimeCurvePlotType(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

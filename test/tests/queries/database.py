@@ -79,6 +79,9 @@
 #    Cyrus Harrison, Mon Aug 16 15:51:46 PDT 2010
 #    Added test for var & wvar sum of an array variable.
 #
+#    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
+#    Use named arguments. 
+#
 # ----------------------------------------------------------------------------
 
 def QueryRect2d():
@@ -99,16 +102,16 @@ def QueryRect2d():
     Query("2D area")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("SpatialExtents", "original")
+    Query("SpatialExtents", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "original")
+    Query("NumNodes", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "original")
+    Query("NumZones")
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -119,11 +122,11 @@ def QueryRect2d():
     SetOperatorOptions(transform)
     DrawPlots()
 
-    Query("SpatialExtents", "actual")
+    Query("SpatialExtents", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
-    Query("SpatialExtents", "original")
+    Query("SpatialExtents")
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -150,7 +153,7 @@ def QueryMultiUcd3d():
     Query("Eulerian")
     s = GetQueryOutputString()
     s = s + "\n"
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("3D surface area")
@@ -159,25 +162,25 @@ def QueryMultiUcd3d():
     Query("Volume")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("SpatialExtents", "original")
+    Query("SpatialExtents")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("SpatialExtents", "actual")
+    Query("SpatialExtents", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     v = GetQueryOutputValue()
     str = "Exts from vector are [%f-%f, %f-%f, %f-%f]\n" %(v[0], v[1], v[2], v[3], v[4], v[5])
     s = s + str
-    Query("NumNodes", "original")
+    Query("NumNodes")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "original")
+    Query("NumZones")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -232,22 +235,22 @@ def QueryContours():
     Query("3D surface area")
     s = s + GetQueryOutputString()
     s = s + "\n\nMinMax Actual:"
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\nMinMax Original:"
-    Query("MinMax", "original")
+    Query("MinMax", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "original")
+    Query("NumNodes")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "original")
+    Query("NumZones")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     c.contourNLevels = 4
@@ -256,22 +259,22 @@ def QueryContours():
     Query("3D surface area")
     s = s + GetQueryOutputString()
     s = s + "\n\nMinMax Actual:"
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\nMinMax Original:"
-    Query("MinMax", "original")
+    Query("MinMax", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "original")
+    Query("NumNodes")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "original")
+    Query("NumZones")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
  
@@ -287,16 +290,16 @@ def QueryContours():
     Query("3D surface area")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "original")
+    Query("NumNodes")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "original")
+    Query("NumZones")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     c.contourNLevels = 4
@@ -305,16 +308,16 @@ def QueryContours():
     Query("3D surface area")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "original")
+    Query("NumNodes", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1) 
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "original")
+    Query("NumZones")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -339,7 +342,7 @@ def QueryCurv2d():
     Query("Eulerian")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("MinMax", "actual") 
+    Query("MinMax", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("Revolved volume")
@@ -348,20 +351,20 @@ def QueryCurv2d():
     Query("2D area")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
     DeleteAllPlots()
     AddPlot("Vector", "vel")
     DrawPlots()
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + "\nMinMax Actual:" + GetQueryOutputString()
     s = s + "\nMinMax Original:"
-    Query("MinMax", "original")
+    Query("MinMax", use_actual_data=0)
     s = s + GetQueryOutputString()
 
     TestText("QueryCurv2d", s)
@@ -376,7 +379,7 @@ def QueryCurv3d():
     Query("Eulerian")
     s = GetQueryOutputString()
     s = s + "\n"
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("3D surface area")
@@ -385,10 +388,10 @@ def QueryCurv3d():
     Query("Volume")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -404,7 +407,7 @@ def QueryGlobe():
     Query("Eulerian")
     s = GetQueryOutputString()
     s = s + "\n"
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1) 
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("3D surface area")
@@ -413,16 +416,16 @@ def QueryGlobe():
     Query("Volume")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("SpatialExtents", 0)
+    Query("SpatialExtents", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("SpatialExtents", 1)
+    Query("SpatialExtents", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -440,19 +443,19 @@ def QueryGlobe():
     Query("Volume")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("SpatialExtents", 0)
+    Query("SpatialExtents", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("SpatialExtents", 1)
+    Query("SpatialExtents", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "original")
+    Query("NumNodes", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "original")
+    Query("NumZones", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("NumZones", "actual")
@@ -463,15 +466,15 @@ def QueryGlobe():
     DeleteAllPlots()
     AddPlot("Vector", "vel")
     DrawPlots()
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + "\nMinMax Actual:" + GetQueryOutputString()
     s = s + "\nMinMax Original:"
-    Query("MinMax", "original")
+    Query("MinMax", use_actual_data=0)
     s = s + GetQueryOutputString()
 
     ChangeActivePlotsVar("disp")
     DrawPlots()
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + "MinMAx Actual:" + GetQueryOutputString()
 
     DeleteAllPlots()
@@ -499,7 +502,7 @@ def QueryNoise():
     Query("Eulerian")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("3D surface area")
@@ -508,10 +511,10 @@ def QueryNoise():
     Query("Volume")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -525,7 +528,7 @@ def QueryNoise():
     Query("Eulerian")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("Revolved volume")
@@ -534,28 +537,28 @@ def QueryNoise():
     Query("3D surface area")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
     DeleteAllPlots()
     AddPlot("Vector", "airVfGradient")
     DrawPlots()
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + "\nMinMax Actual:" + GetQueryOutputString()
     s = s + "\nMinMax Original:" 
-    Query("MinMax", "original")
+    Query("MinMax", use_actual_data=0)
     s = s + GetQueryOutputString()
 
     ChangeActivePlotsVar("grad")
     DrawPlots()
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + "MinMax Actual:" + GetQueryOutputString()
     s = s + "\nMinMax Original:"
-    Query("MinMax", "original")
+    Query("MinMax", use_actual_data=0)
     s = s + GetQueryOutputString()
 
     TestText("QueryNoise", s)
@@ -573,10 +576,10 @@ def QuerySid97():
     Query("Volume")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -592,7 +595,7 @@ def QueryBigSil():
     Query("Eulerian")
     s = GetQueryOutputString()
     s = s + "\n"
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("3D surface area")
@@ -601,10 +604,10 @@ def QueryBigSil():
     Query("Volume")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -615,13 +618,13 @@ def QueryMinMaxCurve():
     OpenDatabase("../data/curve_test_data/curve.visit")
     AddPlot("Curve", "parabolic");
     DrawPlots()
-    Query("MinMax", "actual") 
+    Query("MinMax", use_actual_data=1) 
     s = "\n"
     frames = (0, 27, 56, 73, 91);
     for frame in frames:
         SetTimeSliderState(frame)
         s = s + "For entire curve at frame %d:" %frame 
-        Query("MinMax", "actual") 
+        Query("MinMax", use_actual_data=1) 
         s = s + GetQueryOutputString() 
   
     AddOperator("Clip") 
@@ -633,7 +636,7 @@ def QueryMinMaxCurve():
     for frame in frames:
         SetTimeSliderState(frame)
         s = s + "For clipped curve at frame %d:" %frame 
-        Query("MinMax", "actual") 
+        Query("MinMax", use_actual_data=1) 
         s = s + GetQueryOutputString()
 
     TestText("QueryMinMaxCurve", s)
@@ -648,7 +651,7 @@ def QuerySAMRAI():
     Query("Eulerian")
     s = GetQueryOutputString()
     s = s + "\n"
-    Query("MinMax", "actual")
+    Query("MinMax", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("3D surface area")
@@ -657,16 +660,16 @@ def QuerySAMRAI():
     Query("Volume")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("SpatialExtents", "original")
+    Query("SpatialExtents", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("SpatialExtents", "actual")
+    Query("SpatialExtents", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes", "actual")
+    Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones", "actual")
+    Query("NumZones", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -742,16 +745,16 @@ def QueryGlobalId():
     AddPlot("Pseudocolor", "dist")
     DrawPlots()
 
-    Query("Global Zone Center", 15);
+    Query("Global Zone Center", element=15);
     s = GetQueryOutputString() + "\n"
 
-    Query("Zone Center", 0, 2)
+    Query("Zone Center", element=0, domain=2)
     s = s + GetQueryOutputString() + "\n"
 
-    Query("Global Node Coords", 16)
+    Query("Global Node Coords", element=16)
     s = s + GetQueryOutputString() + "\n"
 
-    Query("Node Coords", 1, 2)
+    Query("Node Coords", element=1, domain=2)
     s = s + GetQueryOutputString() + "\n"
 
     TestText("QueryGlobalId", s)
@@ -965,8 +968,6 @@ def QueryZR_RZ():
     s = s + GetQueryOutputString() + "\n    "
     Query("Revolved surface area")
     s = s + GetQueryOutputString() + "\n\n"
-
-    
 
     TestText("QueryZR_RZ", s)
 

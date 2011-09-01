@@ -53,6 +53,7 @@ class NamedSelectionRPC;
 class OpenDatabaseRPC;
 class PickRPC;
 class QueryRPC;
+class QueryParametersRPC;
 class QuitRPC;
 class ReadRPC;
 class ReleaseDataRPC;
@@ -214,6 +215,9 @@ class Xfer;
 //    Tom Fogal, Wed May 26 09:22:43 MDT 2010
 //    Add state for launching X servers.
 //
+//    Kathleen Biagas, Fri Jul 15 11:08:14 PDT 2011
+//    Added QueryPrametersRPC.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API Engine
@@ -359,6 +363,7 @@ class ENGINE_MAIN_API Engine
     ExecuteRPC               *executeRPC;
     ClearCacheRPC            *clearCacheRPC;
     QueryRPC                 *queryRPC;
+    QueryParametersRPC       *queryParametersRPC;
     ReleaseDataRPC           *releaseDataRPC;
     OpenDatabaseRPC          *openDatabaseRPC;
     DefineVirtualDatabaseRPC *defineVirtualDatabaseRPC;

@@ -176,7 +176,7 @@
     <Field name="elementIsGlobal" label="elementIsGlobal" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="displayPickLetter" label="displayPickLetter" type="bool" persistent="false">
+    <Field name="displayPickLetter" label="displayPickLetter" type="bool">
       true
     </Field>
     <Field name="reusePickLetter" label="reusePickLetter" type="bool" persistent="false">
@@ -210,6 +210,8 @@
     </Field>
     <Field name="timeCurveType" label="timeCurveType" type="enum" subtype="TimeCurveType" persistent="false">
       Single_Y_Axis
+    </Field>
+    <Field name="timeOptions" label="timeOptions" type="MapNode" internal="true" persistent="false">
     </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>

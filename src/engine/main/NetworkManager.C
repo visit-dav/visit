@@ -6586,3 +6586,26 @@ NetworkManager::RenderPostProcess(std::vector<avtPlot_p>& image_plots,
         visitTimer->StopTimer(t2, "VisWindow::PostProcessScreenCapture");
     }
 }
+
+// ****************************************************************************
+//  Method: GetQueryParameters
+//
+//  Purpose: Retrieves default parameters for named query.
+//
+//  Arguments:
+//    qName     The name of the query.
+//
+//  Returns:    The default parameters in string format.
+//          
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 15, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+std::string 
+NetworkManager::GetQueryParameters(const std::string &qName)
+{
+    return avtQueryFactory::Instance()->GetDefaultInputParams(qName);
+}

@@ -1,34 +1,92 @@
+Initialization: defaultVars
+    defaultVars.push_back("default");
+
+Function: SetVariables
+Declaration: void SetVariables(const stringVector &variables_);
+Definition:
+void
+QueryAttributes::SetVariables(const stringVector &variables_)
+{
+   queryInputParams["vars"] = variables_;
+}
+
+Function: GetName
+Declaration: const std::string &GetName() const;
+Definition:
+const std::string &
+QueryAttributes::GetName() const
+{
+    if (queryInputParams.HasEntry("query_name"))
+        return queryInputParams.GetEntry("query_name")->AsString();
+    return defaultName;
+}
+
+Function: GetName2
+Declaration: std::string &GetName();
+Definition:
+std::string &
+QueryAttributes::GetName() 
+{
+    if (queryInputParams.HasEntry("query_name"))
+        return queryInputParams.GetEntry("query_name")->AsString();
+    return defaultName;
+}
+
+Function: GetVariables
+Declaration: const stringVector &GetVariables() const;
+Definition:
+const stringVector &
+QueryAttributes::GetVariables() const
+{
+    if (queryInputParams.HasEntry("vars"))
+        return queryInputParams.GetEntry("vars")->AsStringVector();
+    return defaultVars;
+}
+
+Function: GetVariables2
+Declaration: stringVector &GetVariables();
+Definition:
+stringVector &
+QueryAttributes::GetVariables() 
+{
+    if (queryInputParams.HasEntry("vars"))
+        return queryInputParams.GetEntry("vars")->AsStringVector();
+    return defaultVars;
+}
+
+Function: GetDataType
+Declaration: DataType GetDataType() const;
+Definition:
+QueryAttributes::DataType
+QueryAttributes::GetDataType() const
+{
+    if (queryInputParams.HasEntry("data_type"))
+        return (QueryAttributes::DataType)queryInputParams.GetEntry("data_type")->AsInt();
+    else
+        return QueryAttributes::ActualData;
+}
+
 Function: Reset
 Declaration: void Reset();
 Definition:
 void
 QueryAttributes::Reset()
 {
-    name    = " ";
     resultsMessage  = " ";
     xUnits = "";
     yUnits = "";
-    if (!variables.empty())
-    {
-        variables.clear();
-        variables.push_back("default");
-    }
     if (!varTypes.empty())
     {
          varTypes.clear();
     }
-    worldPoint[0] = 0.;
-    worldPoint[1] = 0.;
-    worldPoint[2] = 0.;
-    domain = -1;
-    element = -1;
-    elementType = Zone;
     if (!resultsValue.empty())
     {
         resultsValue.clear();
         resultsValue.push_back(0.);
     }
     pipeIndex = -1;
+
+    queryInputParams.Reset();
  
     SelectAll();
 }
@@ -39,20 +97,13 @@ Definition:
 void
 QueryAttributes::PrintSelf(ostream &os)
 {
-    os << "\n" << name.c_str() << ":  ";
+    os << "\n" << GetName().c_str() << ":  ";
     os << "selected variables: ";
-    for (size_t i = 0; i < variables.size(); i++)
-        os << variables[i].c_str() << "  ";
+    stringVector &v = GetVariables();
+    for (size_t i = 0; i < v.size(); i++)
+        os << v[i].c_str() << "  ";
     os << "\n";
     os << "Results: <" << resultsMessage.c_str() << ">\n";
-    os << "World point: <" << worldPoint[0] << ", " << worldPoint[1] 
-       << ", " << worldPoint[2] << ">\n"; 
-    os << "Domain:      " << domain << "\n";
-    os << "Element:        " << element << ")\n";
-    if (elementType == Zone)
-    os << "Element type is Zone " << endl;
-    else
-    os << "Element type is Node " << endl;
 }
 
 Function: SetResultsValue

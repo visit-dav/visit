@@ -1,5 +1,5 @@
 Function: AddQuery
-Declaration: void AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, QueryMode qMode, int numVars = 1);
+Declaration: void AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, QueryMode qMode, int numVars = 1, int reqVars = 0);
 Definition:
 // ****************************************************************************
 //  Method:  AddQuery
@@ -22,12 +22,15 @@ Definition:
 //    Made all parameters required, added Groups. 
 //
 //    Kathleen Bonnell, Fri Sep 28 14:43:50 PDT 2007 
-//    Aded 'canBePublic' which defaults to '1'. 
+//    Add 'canBePublic' which defaults to '1'. 
+//
+//    Kathleen Bonnell, Fri Jun 17 16:42:22 PDT 2011
+//    Add 'reqVars' which defaults to '0'.
 //
 // ****************************************************************************
  
 void
-QueryList::AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, QueryMode qMode, int num_vars)
+QueryList::AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, QueryMode qMode, int num_vars, int reqVars)
 {
     names.push_back(name);
     types.push_back((int)t);
@@ -38,6 +41,7 @@ QueryList::AddQuery(const std::string &name, QueryType t, Groups g, WindowType w
     winType.push_back((int)w);
     numVars.push_back(num_vars);
     canBePublic.push_back(1);
+    requiresVarSelection.push_back(reqVars);
 }
 
 Function: QueryExists
@@ -240,3 +244,31 @@ QueryList::RegularQueryAvailable(const std::string &name)
     return canDoRegular;
 }
 
+Function: GetQueryType
+Declaration: int GetQueryType(const std::string &name) ;
+Definition:
+// ****************************************************************************
+//  Method:  GetQueryType
+//
+//  Purpose:
+//    Returns the query type for the named query. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    June 27, 2011 
+//
+// ****************************************************************************
+ 
+int
+QueryList::GetQueryType(const std::string &name)
+{
+    int qt = -1; 
+    for (size_t i = 0; i < names.size(); i++)
+    {
+        if (name == names[i]) 
+        {
+            qt = types[i];
+            break;
+        }
+    }
+    return qt;
+}

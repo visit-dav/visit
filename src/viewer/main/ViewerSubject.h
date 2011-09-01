@@ -488,6 +488,12 @@ class avtDefaultPlotMetaData;
 //    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
 //    Rename ConstructDDF to ConstructDataBinning.
 //
+//    Kathleen Biagas, Fri Jun 17 16:30:22 PDT 2011
+//    Database, Line and PointQuery methods replaced by Query.
+//
+//    Kathleen Biagas, Fri Jul 15 11:34:11 PDT 2011
+//    Added GetQueryParameters.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -652,9 +658,8 @@ private:
     void SetRenderingAttributes();
     void SuppressQueryOutput();
     void SetQueryFloatFormat();
-    void DatabaseQuery();
-    void PointQuery();
-    void LineQuery();
+    void Query();
+    void GetQueryParameters();
     void SetMaterialAttributes();
     void SetDefaultMaterialAttributes();
     void ResetMaterialAttributes();

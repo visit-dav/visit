@@ -77,6 +77,23 @@ avtNumZonesQuery::~avtNumZonesQuery()
 
 
 // ****************************************************************************
+//  Method: avtNumZonesQuery::GetDefaultInputParams
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 26, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtNumZonesQuery::GetDefaultInputParams(MapNode &params)
+{
+    params["use_actual_data"] = 0;
+}
+
+
+// ****************************************************************************
 //  Method: avtNumZonesQuery::PerformQuery
 //
 //  Purpose:

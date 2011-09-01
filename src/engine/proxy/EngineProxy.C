@@ -280,6 +280,9 @@ EngineProxy::Connect(const stringVector &args)
 //    Hank Childs, Thu Jan 29 10:16:47 PST 2009
 //    Added namedSelectionRPC.
 //
+//    Kathleen Biagas, Fri Jul 15 11:06:13 PDT 2011
+//    Added queryParametersRPC.
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -298,6 +301,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&executeRPC);
     xfer.Add(&clearCacheRPC);
     xfer.Add(&queryRPC);
+    xfer.Add(&queryParametersRPC);
     xfer.Add(&releaseDataRPC);
     xfer.Add(&openDatabaseRPC);
     xfer.Add(&defineVirtualDatabaseRPC);
@@ -1435,6 +1439,26 @@ EngineProxy::Query(const vector<int> &nid, const QueryAttributes *atts,
     retAtts = queryRPC.GetReturnAtts();
     ClearStatus();
 }
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::GetQueryParameters
+//
+//  Purpose: Gets query parameters for the named query.
+//
+//  Programmer:  Kathleen Biagas 
+//  Creation:    July 15, 2011
+//
+// ****************************************************************************
+
+string 
+EngineProxy::GetQueryParameters(const string &qName)
+{
+    string params = queryParametersRPC(qName);
+
+    return params;
+}
+
 
 // ****************************************************************************
 //  Method:  EngineProxy::GetProcInfo

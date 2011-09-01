@@ -111,6 +111,11 @@ PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const ch
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sendTime = %d\n", prefix, atts->GetEndTime());
     str += tmpStr;
+    if(atts->GetStrideFlag())
+        SNPRINTF(tmpStr, 1000, "%sstrideFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sstrideFlag = 0\n", prefix);
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
     if(atts->GetCreateWindow())
@@ -262,6 +267,30 @@ QueryOverTimeAttributes_GetEndTime(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+QueryOverTimeAttributes_SetStrideFlag(PyObject *self, PyObject *args)
+{
+    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the strideFlag in the object.
+    obj->data->SetStrideFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+QueryOverTimeAttributes_GetStrideFlag(PyObject *self, PyObject *args)
+{
+    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetStrideFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 QueryOverTimeAttributes_SetStride(PyObject *self, PyObject *args)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
@@ -347,6 +376,8 @@ PyMethodDef PyQueryOverTimeAttributes_methods[QUERYOVERTIMEATTRIBUTES_NMETH] = {
     {"GetEndTimeFlag", QueryOverTimeAttributes_GetEndTimeFlag, METH_VARARGS},
     {"SetEndTime", QueryOverTimeAttributes_SetEndTime, METH_VARARGS},
     {"GetEndTime", QueryOverTimeAttributes_GetEndTime, METH_VARARGS},
+    {"SetStrideFlag", QueryOverTimeAttributes_SetStrideFlag, METH_VARARGS},
+    {"GetStrideFlag", QueryOverTimeAttributes_GetStrideFlag, METH_VARARGS},
     {"SetStride", QueryOverTimeAttributes_SetStride, METH_VARARGS},
     {"GetStride", QueryOverTimeAttributes_GetStride, METH_VARARGS},
     {"SetCreateWindow", QueryOverTimeAttributes_SetCreateWindow, METH_VARARGS},
@@ -398,6 +429,8 @@ PyQueryOverTimeAttributes_getattr(PyObject *self, char *name)
         return QueryOverTimeAttributes_GetEndTimeFlag(self, NULL);
     if(strcmp(name, "endTime") == 0)
         return QueryOverTimeAttributes_GetEndTime(self, NULL);
+    if(strcmp(name, "strideFlag") == 0)
+        return QueryOverTimeAttributes_GetStrideFlag(self, NULL);
     if(strcmp(name, "stride") == 0)
         return QueryOverTimeAttributes_GetStride(self, NULL);
     if(strcmp(name, "createWindow") == 0)
@@ -428,6 +461,8 @@ PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = QueryOverTimeAttributes_SetEndTimeFlag(self, tuple);
     else if(strcmp(name, "endTime") == 0)
         obj = QueryOverTimeAttributes_SetEndTime(self, tuple);
+    else if(strcmp(name, "strideFlag") == 0)
+        obj = QueryOverTimeAttributes_SetStrideFlag(self, tuple);
     else if(strcmp(name, "stride") == 0)
         obj = QueryOverTimeAttributes_SetStride(self, tuple);
     else if(strcmp(name, "createWindow") == 0)

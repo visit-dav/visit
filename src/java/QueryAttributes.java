@@ -59,7 +59,7 @@ import java.lang.Integer;
 
 public class QueryAttributes extends AttributeSubject
 {
-    private static int QueryAttributes_numAdditionalAtts = 21;
+    private static int QueryAttributes_numAdditionalAtts = 22;
 
     // Enum values
     public final static int ELEMENTTYPE_ZONE = 0;
@@ -116,6 +116,7 @@ public class QueryAttributes extends AttributeSubject
         xmlResult = new String("");
         dumpSteps = false;
         timeCurvePlotType = TIMECURVETYPE_SINGLE_Y_AXIS;
+        suppressOutput = false;
     }
 
     public QueryAttributes(int nMoreFields)
@@ -150,6 +151,7 @@ public class QueryAttributes extends AttributeSubject
         xmlResult = new String("");
         dumpSteps = false;
         timeCurvePlotType = TIMECURVETYPE_SINGLE_Y_AXIS;
+        suppressOutput = false;
     }
 
     public QueryAttributes(QueryAttributes obj)
@@ -209,6 +211,7 @@ public class QueryAttributes extends AttributeSubject
         xmlResult = new String(obj.xmlResult);
         dumpSteps = obj.dumpSteps;
         timeCurvePlotType = obj.timeCurvePlotType;
+        suppressOutput = obj.suppressOutput;
 
         SelectAll();
     }
@@ -298,7 +301,8 @@ public class QueryAttributes extends AttributeSubject
                 (floatFormat.equals(obj.floatFormat)) &&
                 (xmlResult.equals(obj.xmlResult)) &&
                 (dumpSteps == obj.dumpSteps) &&
-                (timeCurvePlotType == obj.timeCurvePlotType));
+                (timeCurvePlotType == obj.timeCurvePlotType) &&
+                (suppressOutput == obj.suppressOutput));
     }
 
     // Property setting methods
@@ -438,6 +442,12 @@ public class QueryAttributes extends AttributeSubject
         Select(20);
     }
 
+    public void SetSuppressOutput(boolean suppressOutput_)
+    {
+        suppressOutput = suppressOutput_;
+        Select(21);
+    }
+
     // Property getting methods
     public String   GetName() { return name; }
     public Vector   GetVariables() { return variables; }
@@ -460,6 +470,7 @@ public class QueryAttributes extends AttributeSubject
     public String   GetXmlResult() { return xmlResult; }
     public boolean  GetDumpSteps() { return dumpSteps; }
     public int      GetTimeCurvePlotType() { return timeCurvePlotType; }
+    public boolean  GetSuppressOutput() { return suppressOutput; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -506,6 +517,8 @@ public class QueryAttributes extends AttributeSubject
             buf.WriteBool(dumpSteps);
         if(WriteSelect(20, buf))
             buf.WriteInt(timeCurvePlotType);
+        if(WriteSelect(21, buf))
+            buf.WriteBool(suppressOutput);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -575,6 +588,9 @@ public class QueryAttributes extends AttributeSubject
         case 20:
             SetTimeCurvePlotType(buf.ReadInt());
             break;
+        case 21:
+            SetSuppressOutput(buf.ReadBool());
+            break;
         }
     }
 
@@ -617,6 +633,7 @@ public class QueryAttributes extends AttributeSubject
         if(timeCurvePlotType == TIMECURVETYPE_MULTIPLE_Y_AXES)
             str = str + "TIMECURVETYPE_MULTIPLE_Y_AXES";
         str = str + "\n";
+        str = str + boolToString("suppressOutput", suppressOutput, indent) + "\n";
         return str;
     }
 
@@ -643,5 +660,6 @@ public class QueryAttributes extends AttributeSubject
     private String   xmlResult;
     private boolean  dumpSteps;
     private int      timeCurvePlotType;
+    private boolean  suppressOutput;
 }
 

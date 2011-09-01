@@ -82,11 +82,11 @@ QueryList::QueryType_FromString(const std::string &s, QueryList::QueryType &val)
 //
 
 static const char *WindowType_strings[] = {
-"Basic", "SinglePoint", "DoublePoint", 
-"DomainNode", "DomainNodeVars", "DomainZone", 
-"DomainZoneVars", "ActualData", "ActualDataVars", 
-"LineDistribution", "HohlraumFlux", "ConnCompSummary", 
-"ShapeletsDecomp", "XRayImage", "StreamlineInfo"
+"Basic", "DomainNode", "DomainNodeVars", 
+"DomainZone", "DomainZoneVars", "ActualData", 
+"ActualDataVars", "LineDistribution", "HohlraumFlux", 
+"ConnCompSummary", "ShapeletsDecomp", "XRayImage", 
+"StreamlineInfo", "Pick", "Lineout"
 };
 
 std::string
@@ -124,23 +124,22 @@ QueryList::WindowType_FromString(const std::string &s, QueryList::WindowType &va
 //
 
 static const char *Groups_strings[] = {
-"CurveRelated", "MeshRelated", "PickRelated", 
-"TimeRelated", "VariableRelated", "ShapeRelated", 
-"ConnectedComponentsRelated", "Miscellaneous", "NumGroups"
-};
+"CurveRelated", "MeshRelated", "TimeRelated", 
+"VariableRelated", "ShapeRelated", "ConnectedComponentsRelated", 
+"Miscellaneous", "NumGroups"};
 
 std::string
 QueryList::Groups_ToString(QueryList::Groups t)
 {
     int index = int(t);
-    if(index < 0 || index >= 9) index = 0;
+    if(index < 0 || index >= 8) index = 0;
     return Groups_strings[index];
 }
 
 std::string
 QueryList::Groups_ToString(int t)
 {
-    int index = (t < 0 || t >= 9) ? 0 : t;
+    int index = (t < 0 || t >= 8) ? 0 : t;
     return Groups_strings[index];
 }
 
@@ -148,7 +147,7 @@ bool
 QueryList::Groups_FromString(const std::string &s, QueryList::Groups &val)
 {
     val = QueryList::CurveRelated;
-    for(int i = 0; i < 9; ++i)
+    for(int i = 0; i < 8; ++i)
     {
         if(s == Groups_strings[i])
         {
@@ -244,6 +243,7 @@ void QueryList::Copy(const QueryList &obj)
     queryMode = obj.queryMode;
     numVars = obj.numVars;
     canBePublic = obj.canBePublic;
+    requiresVarSelection = obj.requiresVarSelection;
 
     QueryList::SelectAll();
 }
@@ -409,7 +409,8 @@ QueryList::operator == (const QueryList &obj) const
             (winType == obj.winType) &&
             (queryMode == obj.queryMode) &&
             (numVars == obj.numVars) &&
-            (canBePublic == obj.canBePublic));
+            (canBePublic == obj.canBePublic) &&
+            (requiresVarSelection == obj.requiresVarSelection));
 }
 
 // ****************************************************************************
@@ -553,15 +554,16 @@ QueryList::NewInstance(bool copy) const
 void
 QueryList::SelectAll()
 {
-    Select(ID_names,           (void *)&names);
-    Select(ID_types,           (void *)&types);
-    Select(ID_groups,          (void *)&groups);
-    Select(ID_numInputs,       (void *)&numInputs);
-    Select(ID_allowedVarTypes, (void *)&allowedVarTypes);
-    Select(ID_winType,         (void *)&winType);
-    Select(ID_queryMode,       (void *)&queryMode);
-    Select(ID_numVars,         (void *)&numVars);
-    Select(ID_canBePublic,     (void *)&canBePublic);
+    Select(ID_names,                (void *)&names);
+    Select(ID_types,                (void *)&types);
+    Select(ID_groups,               (void *)&groups);
+    Select(ID_numInputs,            (void *)&numInputs);
+    Select(ID_allowedVarTypes,      (void *)&allowedVarTypes);
+    Select(ID_winType,              (void *)&winType);
+    Select(ID_queryMode,            (void *)&queryMode);
+    Select(ID_numVars,              (void *)&numVars);
+    Select(ID_canBePublic,          (void *)&canBePublic);
+    Select(ID_requiresVarSelection, (void *)&requiresVarSelection);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -648,6 +650,12 @@ QueryList::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
         node->AddNode(new DataNode("canBePublic", canBePublic));
     }
 
+    if(completeSave || !FieldsEqual(ID_requiresVarSelection, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("requiresVarSelection", requiresVarSelection));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -702,6 +710,8 @@ QueryList::SetFromNode(DataNode *parentNode)
         SetNumVars(node->AsIntVector());
     if((node = searchNode->GetNode("canBePublic")) != 0)
         SetCanBePublic(node->AsIntVector());
+    if((node = searchNode->GetNode("requiresVarSelection")) != 0)
+        SetRequiresVarSelection(node->AsIntVector());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -769,6 +779,13 @@ QueryList::SetCanBePublic(const intVector &canBePublic_)
 {
     canBePublic = canBePublic_;
     Select(ID_canBePublic, (void *)&canBePublic);
+}
+
+void
+QueryList::SetRequiresVarSelection(const intVector &requiresVarSelection_)
+{
+    requiresVarSelection = requiresVarSelection_;
+    Select(ID_requiresVarSelection, (void *)&requiresVarSelection);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -883,6 +900,18 @@ QueryList::GetCanBePublic()
     return canBePublic;
 }
 
+const intVector &
+QueryList::GetRequiresVarSelection() const
+{
+    return requiresVarSelection;
+}
+
+intVector &
+QueryList::GetRequiresVarSelection()
+{
+    return requiresVarSelection;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -941,6 +970,12 @@ QueryList::SelectCanBePublic()
     Select(ID_canBePublic, (void *)&canBePublic);
 }
 
+void
+QueryList::SelectRequiresVarSelection()
+{
+    Select(ID_requiresVarSelection, (void *)&requiresVarSelection);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -965,15 +1000,16 @@ QueryList::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_names:           return "names";
-    case ID_types:           return "types";
-    case ID_groups:          return "groups";
-    case ID_numInputs:       return "numInputs";
-    case ID_allowedVarTypes: return "allowedVarTypes";
-    case ID_winType:         return "winType";
-    case ID_queryMode:       return "queryMode";
-    case ID_numVars:         return "numVars";
-    case ID_canBePublic:     return "canBePublic";
+    case ID_names:                return "names";
+    case ID_types:                return "types";
+    case ID_groups:               return "groups";
+    case ID_numInputs:            return "numInputs";
+    case ID_allowedVarTypes:      return "allowedVarTypes";
+    case ID_winType:              return "winType";
+    case ID_queryMode:            return "queryMode";
+    case ID_numVars:              return "numVars";
+    case ID_canBePublic:          return "canBePublic";
+    case ID_requiresVarSelection: return "requiresVarSelection";
     default:  return "invalid index";
     }
 }
@@ -998,15 +1034,16 @@ QueryList::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_names:           return FieldType_stringVector;
-    case ID_types:           return FieldType_intVector;
-    case ID_groups:          return FieldType_intVector;
-    case ID_numInputs:       return FieldType_intVector;
-    case ID_allowedVarTypes: return FieldType_intVector;
-    case ID_winType:         return FieldType_intVector;
-    case ID_queryMode:       return FieldType_intVector;
-    case ID_numVars:         return FieldType_intVector;
-    case ID_canBePublic:     return FieldType_intVector;
+    case ID_names:                return FieldType_stringVector;
+    case ID_types:                return FieldType_intVector;
+    case ID_groups:               return FieldType_intVector;
+    case ID_numInputs:            return FieldType_intVector;
+    case ID_allowedVarTypes:      return FieldType_intVector;
+    case ID_winType:              return FieldType_intVector;
+    case ID_queryMode:            return FieldType_intVector;
+    case ID_numVars:              return FieldType_intVector;
+    case ID_canBePublic:          return FieldType_intVector;
+    case ID_requiresVarSelection: return FieldType_intVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1031,15 +1068,16 @@ QueryList::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_names:           return "stringVector";
-    case ID_types:           return "intVector";
-    case ID_groups:          return "intVector";
-    case ID_numInputs:       return "intVector";
-    case ID_allowedVarTypes: return "intVector";
-    case ID_winType:         return "intVector";
-    case ID_queryMode:       return "intVector";
-    case ID_numVars:         return "intVector";
-    case ID_canBePublic:     return "intVector";
+    case ID_names:                return "stringVector";
+    case ID_types:                return "intVector";
+    case ID_groups:               return "intVector";
+    case ID_numInputs:            return "intVector";
+    case ID_allowedVarTypes:      return "intVector";
+    case ID_winType:              return "intVector";
+    case ID_queryMode:            return "intVector";
+    case ID_numVars:              return "intVector";
+    case ID_canBePublic:          return "intVector";
+    case ID_requiresVarSelection: return "intVector";
     default:  return "invalid index";
     }
 }
@@ -1111,6 +1149,11 @@ QueryList::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (canBePublic == obj.canBePublic);
         }
         break;
+    case ID_requiresVarSelection:
+        {  // new scope
+        retval = (requiresVarSelection == obj.requiresVarSelection);
+        }
+        break;
     default: retval = false;
     }
 
@@ -1142,12 +1185,15 @@ QueryList::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //    Made all parameters required, added Groups. 
 //
 //    Kathleen Bonnell, Fri Sep 28 14:43:50 PDT 2007 
-//    Aded 'canBePublic' which defaults to '1'. 
+//    Add 'canBePublic' which defaults to '1'. 
+//
+//    Kathleen Bonnell, Fri Jun 17 16:42:22 PDT 2011
+//    Add 'reqVars' which defaults to '0'.
 //
 // ****************************************************************************
  
 void
-QueryList::AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, QueryMode qMode, int num_vars)
+QueryList::AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, QueryMode qMode, int num_vars, int reqVars)
 {
     names.push_back(name);
     types.push_back((int)t);
@@ -1158,6 +1204,7 @@ QueryList::AddQuery(const std::string &name, QueryType t, Groups g, WindowType w
     winType.push_back((int)w);
     numVars.push_back(num_vars);
     canBePublic.push_back(1);
+    requiresVarSelection.push_back(reqVars);
 }
 
 // ****************************************************************************
@@ -1337,5 +1384,31 @@ QueryList::RegularQueryAvailable(const std::string &name)
         }
     }
     return canDoRegular;
+}
+
+// ****************************************************************************
+//  Method:  GetQueryType
+//
+//  Purpose:
+//    Returns the query type for the named query. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    June 27, 2011 
+//
+// ****************************************************************************
+ 
+int
+QueryList::GetQueryType(const std::string &name)
+{
+    int qt = -1; 
+    for (size_t i = 0; i < names.size(); i++)
+    {
+        if (name == names[i]) 
+        {
+            qt = types[i];
+            break;
+        }
+    }
+    return qt;
 }
 

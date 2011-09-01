@@ -424,6 +424,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Brad Whitlock, Mon Aug 22 10:23:00 PDT 2011
 //    I added a selName argument to StartNetwork.
 //
+//    Kathleen Biagas, Fri Jul 15 11:10:35 PDT 2011
+//    Add GetQueryParameters.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API NetworkManager
@@ -528,6 +531,7 @@ class ENGINE_MAIN_API NetworkManager
     void          Pick(const int, const int, PickAttributes *);
     void          PickForIntersection(const int, PickAttributes *);
     void          Query(const std::vector<int> &, QueryAttributes*);
+    std::string   GetQueryParameters(const std::string &qName);
     void          ExportDatabase(const int, ExportDBAttributes *);
     void          ConstructDataBinning(const int, ConstructDataBinningAttributes *);
     avtDataBinning *GetDataBinning(const char *);

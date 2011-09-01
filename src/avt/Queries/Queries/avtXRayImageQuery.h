@@ -69,6 +69,13 @@
 //    I moved all the logic for doing the ray integration and creating the
 //    image in chunks to avtXRayFilter.
 //
+//    Kathleen Biagas, Fri Jun 17 15:26:06 PDT 2011
+//    Added SetInputParams. Changed args to Set* methods to match what
+//    is stored in the map node.
+//
+//    Kathleen Biagas, Fri Jul 15 16:01:19 PDT 2011
+//    Added GetDefaultInputParams.
+//
 // ****************************************************************************
 
 class QUERY_API avtXRayImageQuery : public avtDatasetQuery
@@ -82,13 +89,20 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     virtual const char       *GetDescription(void)
                                  { return "Calculating x ray images"; }
 
+    virtual void              SetInputParams(const MapNode &);
+    static void               GetDefaultInputParams(MapNode &);
+
     void                      SetVariableNames(const stringVector &names);
-    void                      SetOrigin(float x, float y, float z);
-    void                      SetThetaPhi(float thetaInDegrees, float phiInDegrees);
-    void                      SetWidthHeight(float w, float h);
-    void                      SetImageSize(int nx, int ny);
+    void                      SetOrigin(const doubleVector &_origin);
+    void                      SetOrigin(const intVector &_origin);
+    void                      SetTheta(const double &thetaInDegrees);
+    void                      SetPhi(const double &phiInDegrees);
+    void                      SetWidth(const double &size);
+    void                      SetHeight(const double &size);
+    void                      SetImageSize(const intVector &size);
     void                      SetDivideEmisByAbsorb(bool flag);
     void                      SetOutputType(int type);
+    void                      SetOutputType(const std::string &type);
 
   protected:
     float                     origin[3];

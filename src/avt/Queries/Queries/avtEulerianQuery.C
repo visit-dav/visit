@@ -380,8 +380,9 @@ avtEulerianQuery::PostExecute(void)
     for (iter = domToEulerMap.begin(); iter != domToEulerMap.end(); iter++)
     {
         string domainName;
-        GetInput()->GetQueryableSource()->GetDomainName(queryAtts.GetVariables()[0],
-            queryAtts.GetTimeStep(), (*iter).first, domainName);
+        GetInput()->GetQueryableSource()->GetDomainName(
+            queryAtts.GetVariables()[0], queryAtts.GetTimeStep(), 
+            (*iter).first, domainName);
         if (domainName.size() > 0)
         {
             SNPRINTF(msgBuff, 500, "Eulerian for %s is %d\n", 

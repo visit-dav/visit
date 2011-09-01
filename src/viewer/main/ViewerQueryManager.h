@@ -241,6 +241,20 @@ typedef struct {
 //    Kathleen Bonnell, Tue Mar  1 10:24:20 PST 2011
 //    Added arg curvePlotType to PointQuery and PickThroughTime methods.
 //
+//    Kathleen Bonnell, Fri Jun 10 13:48:59 PDT 2011
+//    Added shortened DatabaseQuery, added preserveCoord to PointQuery.
+//
+//    Kathleen Biagas, Fri Jun 17 16:30:51 PDT 2011
+//    Add generic 'Query' method.
+//
+//    Kathleen Biagas, Tue Jun 21 10:56:41 PDT 2011
+//    Public Database, Point and LineQuery methods replaced by generic 'Query'
+//    method, which calls the private methods for Database, Point and Line.
+//    Arguments now stored in MapNode.
+//
+//    Kathleen Biagas, Fri Jul 15 11:24:17 PDT 2011
+//    Add GetQueryParameters.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager : public ViewerBase
@@ -250,33 +264,9 @@ class VIEWER_API ViewerQueryManager : public ViewerBase
     static          ViewerQueryManager *Instance();      
     void            SetOperatorFactory(ViewerOperatorFactory *);
 
-    void            DatabaseQuery(ViewerWindow *owin, const std::string &qName,
-                            const std::vector<std::string> &vars,
-                            const bool doTimeQuery,
-                            const int arg1, const int arg2,
-                            const bool elementIsGlobal,
-                            const bool dumpSteps,
-                            const doubleVector darg1, const doubleVector darg2);
-    bool            VerifySingleInputQuery(ViewerPlotList *, const int,
-                            const std::string &,
-                            const std::vector<std::string> &,
-                            QueryAttributes &); 
 
-    bool            VerifyMultipleInputQuery(ViewerPlotList *, const int, 
-                            const std::string &,
-                            const std::vector<std::string> &,
-                            QueryAttributes &); 
-
-    void            StartLineQuery(const char *qName, const double *pt1, 
-                      const double *pt2, const std::vector<std::string> &vars,
-                      const int samples, const bool forceSampling);
-
-    void            PointQuery(const std::string &qName, const double *pt, 
-                            const std::vector<std::string> &vars,
-                            const int arg1, const int arg2, 
-                            const bool doTimeQuery,
-                            const int curvePlotType,
-                            const bool elementIsGlobal);
+    void            Query(const MapNode &queryParams);
+    void            GetQueryParameters(const std::string &queryName);
 
     void            Pick(PICK_POINT_INFO *pd, const int dom = -1,
                          const int el = -1);
@@ -383,6 +373,22 @@ class VIEWER_API ViewerQueryManager : public ViewerBase
     void            SetLineoutsFollowTime(bool);
 
     void            HandlePickCache();
+
+    void            PointQuery(const MapNode &queryParams);
+    void            DatabaseQuery(const MapNode &queryParams);
+    void            StartLineQuery(const MapNode &queryParams);
+
+    bool            VerifySingleInputQuery(ViewerPlotList *, const int,
+                            const std::string &,
+                            const std::vector<std::string> &,
+                            QueryAttributes &); 
+
+    bool            VerifyMultipleInputQuery(ViewerPlotList *, const int, 
+                            const std::string &,
+                            const std::vector<std::string> &,
+                            QueryAttributes &); 
+
+
     bool            initialPick;
     bool            preparingPick;
     bool            handlingCache;

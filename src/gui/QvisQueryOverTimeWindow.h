@@ -63,6 +63,9 @@ class QButtonGroup;
 //   Brad Whitlock, Wed Apr  9 11:32:17 PDT 2008
 //   QString for caption, shortName.
 //
+//   Kathleen Biagas, Fri Aug 26 17:12:13 PDT 2011
+//   Removed start/end times and stride.
+//
 // ****************************************************************************
 
 class QvisQueryOverTimeWindow : public QvisPostableWindowObserver
@@ -86,20 +89,10 @@ class QvisQueryOverTimeWindow : public QvisPostableWindowObserver
     void Apply(bool ignore = false);
   private slots:
     void timeTypeChanged(int val);
-    void startTimeFlagChanged(bool val);
-    void startTimeProcessText();
-    void endTimeFlagChanged(bool val);
-    void endTimeProcessText();
-    void strideProcessText();
     void createWindowChanged(bool val);
     void windowIdProcessText();
   private:
     QButtonGroup *timeType;
-    QCheckBox *startTimeFlag;
-    QLineEdit *startTime;
-    QCheckBox *endTimeFlag;
-    QLineEdit *endTime;
-    QLineEdit *stride;
     QCheckBox *createWindow;
     QLineEdit *windowId;
     QLabel *strideLabel;

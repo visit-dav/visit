@@ -19,6 +19,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
+#    Clean up unused / unnecessary query arguments. 
+#
 # ----------------------------------------------------------------------------
 
 def QueryMultiWindow():
@@ -53,9 +57,9 @@ def QueryMultiWindow():
     s = s + GetQueryOutputString() + "\n"
     Query("Weighted Variable Sum") 
     s = s + GetQueryOutputString() + "\n"
-    Query("NumNodes", "original") 
+    Query("NumNodes")
     s = s + GetQueryOutputString() + "\n"
-    Query("NumZones", "original") 
+    Query("NumZones")
     s = s + GetQueryOutputString() + "\n"
 
 
@@ -75,9 +79,9 @@ def QueryMultiWindow():
     s = s + GetQueryOutputString() + "\n"
     Query("Weighted Variable Sum") 
     s = s + GetQueryOutputString() + "\n"
-    Query("NumNodes", "original") 
+    Query("NumNodes")
     s = s + GetQueryOutputString() + "\n"
-    Query("NumZones", "original") 
+    Query("NumZones")
     s = s + GetQueryOutputString() + "\n"
     
     #Delete window 2
@@ -94,20 +98,20 @@ def QueryMultiWindow():
     SetWindowLayout(4)
     AddPlot("Pseudocolor", "unnamed1")
     DrawPlots()
-    Query("Weighted Variable Sum", 0, 0, "default")
+    Query("Weighted Variable Sum")
     s = s + "\n" + GetQueryOutputString() + "\n"
     SetActiveWindow(2)
     AddPlot("Pseudocolor", "unnamed2")
     DrawPlots()
-    Query("Weighted Variable Sum", 0, 0, "default")
+    Query("Weighted Variable Sum")
     s = s + GetQueryOutputString() + "\n"
     SetActiveWindow(3)
     AddPlot("Pseudocolor", "unnamed3")
     DrawPlots()
-    Query("Weighted Variable Sum", 0, 0, "default")
+    Query("Weighted Variable Sum")
     s = s + GetQueryOutputString() + "\n"
     SetActiveWindow(2)
-    Query("Weighted Variable Sum", 0, 0, "default")
+    Query("Weighted Variable Sum")
     s = s + GetQueryOutputString() + "\n"
 
     SetActiveWindow(4)

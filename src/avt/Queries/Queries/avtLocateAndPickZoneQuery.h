@@ -63,6 +63,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Tue Mar  1 13:02:19 PST 2011
 //    Added SetNumVars.
 //
+//    Kathleen Biagas, Mon Jun 20 10:37:22 PDT 2011
+//    Added SetInputParams, remove SetNumVars, added domain, zone.
+//
 // ****************************************************************************
 
 class QUERY_API avtLocateAndPickZoneQuery : public avtDatasetQuery
@@ -79,6 +82,7 @@ class QUERY_API avtLocateAndPickZoneQuery : public avtDatasetQuery
     virtual const char       *GetShortDescription(void)
                                 { return "Pick Zone"; }
 
+    virtual void              SetInputParams(const MapNode &); 
 
     virtual int               GetNFilters(void) { return 2; }
 
@@ -88,7 +92,6 @@ class QUERY_API avtLocateAndPickZoneQuery : public avtDatasetQuery
 
     virtual void              SetInvTransform(const avtMatrix *m);
     virtual void              SetNeedTransform(const bool v);
-    virtual void              SetNumVars(int v);
 
   protected:
     virtual void              Execute(vtkDataSet*, const int){;}
@@ -99,6 +102,8 @@ class QUERY_API avtLocateAndPickZoneQuery : public avtDatasetQuery
     void                      SetPickAtts(const PickAttributes *);
     avtLocateQuery           *lcq;
     avtPickQuery             *zpq;
+    int                       domain;
+    int                       zone;
 };
 
 

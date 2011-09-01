@@ -167,9 +167,7 @@ public:
         SetViewExtentsTypeRPC,
         ClearRefLinesRPC,
         SetRenderingAttributesRPC,
-        DatabaseQueryRPC,
-        PointQueryRPC,
-        LineQueryRPC,
+        QueryRPC,
         CloneWindowRPC,
         SetMaterialAttributesRPC,
         SetDefaultMaterialAttributesRPC,
@@ -258,6 +256,7 @@ public:
         SetPlotOrderToFirstRPC,
         SetPlotOrderToLastRPC,
         RenamePickLabelRPC,
+        GetQueryParametersRPC,
         MaxRPC
     };
 
@@ -299,12 +298,9 @@ public:
     void SelectColorTableName();
     void SelectQueryName();
     void SelectQueryPoint1();
-    void SelectQueryPoint2();
-    void SelectQueryVariables();
     void SelectStringArg1();
     void SelectStringArg2();
-    void SelectDoubleArg1();
-    void SelectDoubleArg2();
+    void SelectQueryParams();
 
     // Property setting methods
     void SetRPCType(ViewerRPCType RPCType_);
@@ -329,19 +325,15 @@ public:
     void SetColorTableName(const std::string &colorTableName_);
     void SetQueryName(const std::string &queryName_);
     void SetQueryPoint1(const double *queryPoint1_);
-    void SetQueryPoint2(const double *queryPoint2_);
-    void SetQueryVariables(const stringVector &queryVariables_);
     void SetToolId(int toolId_);
     void SetBoolFlag(bool boolFlag_);
     void SetIntArg1(int intArg1_);
     void SetIntArg2(int intArg2_);
     void SetIntArg3(int intArg3_);
-    void SetIntArg4(int intArg4_);
     void SetStringArg1(const std::string &stringArg1_);
     void SetStringArg2(const std::string &stringArg2_);
-    void SetDoubleArg1(const doubleVector &doubleArg1_);
-    void SetDoubleArg2(const doubleVector &doubleArg2_);
     void SetToolUpdateMode(int toolUpdateMode_);
+    void SetQueryParams(const MapNode &queryParams_);
 
     // Property getting methods
     ViewerRPCType      GetRPCType() const;
@@ -379,25 +371,18 @@ public:
           std::string  &GetQueryName();
     const double       *GetQueryPoint1() const;
           double       *GetQueryPoint1();
-    const double       *GetQueryPoint2() const;
-          double       *GetQueryPoint2();
-    const stringVector &GetQueryVariables() const;
-          stringVector &GetQueryVariables();
     int                GetToolId() const;
     bool               GetBoolFlag() const;
     int                GetIntArg1() const;
     int                GetIntArg2() const;
     int                GetIntArg3() const;
-    int                GetIntArg4() const;
     const std::string  &GetStringArg1() const;
           std::string  &GetStringArg1();
     const std::string  &GetStringArg2() const;
           std::string  &GetStringArg2();
-    const doubleVector &GetDoubleArg1() const;
-          doubleVector &GetDoubleArg1();
-    const doubleVector &GetDoubleArg2() const;
-          doubleVector &GetDoubleArg2();
     int                GetToolUpdateMode() const;
+    const MapNode      &GetQueryParams() const;
+          MapNode      &GetQueryParams();
 
     // Enum conversion functions
     static std::string ViewerRPCType_ToString(ViewerRPCType);
@@ -439,19 +424,15 @@ public:
         ID_colorTableName,
         ID_queryName,
         ID_queryPoint1,
-        ID_queryPoint2,
-        ID_queryVariables,
         ID_toolId,
         ID_boolFlag,
         ID_intArg1,
         ID_intArg2,
         ID_intArg3,
-        ID_intArg4,
         ID_stringArg1,
         ID_stringArg2,
-        ID_doubleArg1,
-        ID_doubleArg2,
         ID_toolUpdateMode,
+        ID_queryParams,
         ID__LAST
     };
 
@@ -478,24 +459,20 @@ private:
     std::string  colorTableName;
     std::string  queryName;
     double       queryPoint1[3];
-    double       queryPoint2[3];
-    stringVector queryVariables;
     int          toolId;
     bool         boolFlag;
     int          intArg1;
     int          intArg2;
     int          intArg3;
-    int          intArg4;
     std::string  stringArg1;
     std::string  stringArg2;
-    doubleVector doubleArg1;
-    doubleVector doubleArg2;
     int          toolUpdateMode;
+    MapNode      queryParams;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEWERRPC_TMFS "iiiisssss*iiIiiisi*i*i*ssDDs*ibiiiissd*d*i"
+#define VIEWERRPC_TMFS "iiiisssss*iiIiiisi*i*i*ssDibiiissim"
 
 #endif

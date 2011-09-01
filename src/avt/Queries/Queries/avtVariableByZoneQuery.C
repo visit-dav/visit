@@ -47,6 +47,7 @@
 #include <snprintf.h>
 #include <PickVarInfo.h>
 #include <DebugStream.h>
+#include <QueryArgumentException.h>
 
 
 using std::string;
@@ -63,11 +64,15 @@ using std::string;
 //  Creation:     July 29, 2004
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Jun 21 10:25:58 PDT 2011
+//    Added domain, zone.
 //
 // ****************************************************************************
 
 avtVariableByZoneQuery::avtVariableByZoneQuery()
 {
+    domain = 0;
+    zone = 0;
 }
 
 // ****************************************************************************
@@ -87,6 +92,41 @@ avtVariableByZoneQuery::~avtVariableByZoneQuery()
 {
 }
 
+
+// ****************************************************************************
+//  Method: avtVariableByZoneQuery::SetInputParams
+//
+//  Purpose:  Allows this query to read input parameters set by user.
+//
+//  Arguments:
+//    params:  MapNode containing input.
+//
+//  Programmer:   Kathleen Biagas 
+//  Creation:     June 20, 2011
+//
+// ****************************************************************************
+
+void 
+avtVariableByZoneQuery::SetInputParams(const MapNode &params)
+{
+    if (params.HasEntry("vars"))
+    {
+        stringVector v = params.GetEntry("vars")->AsStringVector();
+        timeCurveSpecs["nResultsToStore"] = (int) v.size();
+        pickAtts.SetVariables(v);
+    }
+    else
+        EXCEPTION1(QueryArgumentException, "vars");
+
+    if (params.HasEntry("domain"))
+        domain = params.GetEntry("domain")->AsInt();
+
+    if (params.HasEntry("element"))
+        zone = params.GetEntry("element")->AsInt();
+    else
+        EXCEPTION1(QueryArgumentException, "element");
+}
+
  
 // ****************************************************************************
 //  Method: avtVariableByZoneQuery::Preparation
@@ -101,6 +141,9 @@ avtVariableByZoneQuery::~avtVariableByZoneQuery()
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added avtDataAttributes arg.
 //
+//    Kathleen Biagas, Tue Jun 21 10:27:00 PDT 2011
+//    Domain, zone and vars are retrieved during SetInputParams.
+//
 // ****************************************************************************
 
 void 
@@ -111,9 +154,8 @@ avtVariableByZoneQuery::Preparation(const avtDataAttributes &inAtts)
 
     pickAtts.SetTimeStep(queryAtts.GetTimeStep());
     pickAtts.SetActiveVariable(dataRequest->GetVariable());
-    pickAtts.SetDomain(queryAtts.GetDomain());
-    pickAtts.SetElementNumber(queryAtts.GetElement());
-    pickAtts.SetVariables(queryAtts.GetVariables());
+    pickAtts.SetDomain(domain);
+    pickAtts.SetElementNumber(zone);
     pickAtts.SetPickType(PickAttributes::DomainZone);
 
     avtPickByZoneQuery::Preparation(inAtts);
@@ -149,6 +191,9 @@ avtVariableByZoneQuery::Preparation(const avtDataAttributes &inAtts)
 //
 //    Kathleen Bonnell, Tue Mar  1 16:06:04 PST 2011
 //    Allow output for multiple vars.
+//
+//    Kathleen Biagas, Tue Jun 21 10:27:00 PDT 2011
+//    Domain and zone are retrieved during SetInputParams.
 //
 // ****************************************************************************
 
@@ -203,8 +248,7 @@ avtVariableByZoneQuery::PostExecute(void)
         {
             char msg[120]; 
             SNPRINTF(msg, 120, "Could not retrieve information from domain "
-                     " %d element %d.", queryAtts.GetDomain(), 
-                     queryAtts.GetElement());
+                     " %d element %d.", domain, zone);
             SetResultMessage(msg);
             SetResultValues(vals);
         }
@@ -231,23 +275,3 @@ avtVariableByZoneQuery::GetTimeCurveSpecs()
     timeCurveSpecs["useVarForYAxis"] = true;
     return timeCurveSpecs;
 }
-
-// ****************************************************************************
-//  Method: avtVariableByZoneQuery::SetNumVars
-//
-//  Purpose:
-//    Override default nResultsToStore in TimeCurveSpecs.
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    March 1, 2011
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtVariableByZoneQuery::SetNumVars(int nv)
-{
-    timeCurveSpecs["nResultsToStore"] = nv;
-}
-

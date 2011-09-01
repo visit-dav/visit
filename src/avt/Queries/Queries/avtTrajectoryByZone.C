@@ -153,8 +153,7 @@ avtTrajectoryByZone::PostExecute(void)
         {
             char msg[120]; 
             SNPRINTF(msg, 120, "Could not retrieve information from domain "
-                     " %d element %d.", queryAtts.GetDomain(), 
-                     queryAtts.GetElement());
+                     " %d element %d.", domain, zone);
             SetResultMessage(msg);
         }
     }
@@ -181,4 +180,25 @@ avtTrajectoryByZone::GetTimeCurveSpecs()
     timeCurveSpecs["useTimeForXAxis"] = false;
     timeCurveSpecs["nResultsToStore"] = 2;
     return timeCurveSpecs;
+}
+
+
+// ****************************************************************************
+// Method:  avtTrajectoryByZone::GetDefaultInputParams
+//
+// Programmer:  Kathleen Biagas 
+// Creation:    July 26, 2011
+//
+// ****************************************************************************
+
+void
+avtTrajectoryByZone::GetDefaultInputParams(MapNode &params)
+{
+    stringVector v;
+    v.push_back("var_for_x");
+    v.push_back("var_for_y");
+    params["vars"] = v;
+    params["domain"] = 0;
+    params["element"] = 0;
+    params["use_global_id"] = 0;
 }

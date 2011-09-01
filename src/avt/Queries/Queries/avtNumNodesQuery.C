@@ -76,6 +76,23 @@ avtNumNodesQuery::~avtNumNodesQuery()
 
 
 // ****************************************************************************
+//  Method: avtNumNodesQuery::GetDefaultInputParams
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 26, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtNumNodesQuery::GetDefaultInputParams(MapNode &params)
+{
+    params["use_actual_data"] = 0;
+}
+
+
+// ****************************************************************************
 //  Method: avtNumNodesQuery::PerformQuery
 //
 //  Purpose:

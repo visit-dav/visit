@@ -41,43 +41,6 @@
 #include <stdio.h>
 
 //
-// Enum conversion methods for QueryAttributes::ElementType
-//
-
-static const char *ElementType_strings[] = {
-"Zone", "Node"};
-
-std::string
-QueryAttributes::ElementType_ToString(QueryAttributes::ElementType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return ElementType_strings[index];
-}
-
-std::string
-QueryAttributes::ElementType_ToString(int t)
-{
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return ElementType_strings[index];
-}
-
-bool
-QueryAttributes::ElementType_FromString(const std::string &s, QueryAttributes::ElementType &val)
-{
-    val = QueryAttributes::Zone;
-    for(int i = 0; i < 2; ++i)
-    {
-        if(s == ElementType_strings[i])
-        {
-            val = (ElementType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for QueryAttributes::VarType
 //
 
@@ -154,43 +117,6 @@ QueryAttributes::DataType_FromString(const std::string &s, QueryAttributes::Data
     return false;
 }
 
-//
-// Enum conversion methods for QueryAttributes::TimeCurveType
-//
-
-static const char *TimeCurveType_strings[] = {
-"Single_Y_Axis", "Multiple_Y_Axes"};
-
-std::string
-QueryAttributes::TimeCurveType_ToString(QueryAttributes::TimeCurveType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return TimeCurveType_strings[index];
-}
-
-std::string
-QueryAttributes::TimeCurveType_ToString(int t)
-{
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return TimeCurveType_strings[index];
-}
-
-bool
-QueryAttributes::TimeCurveType_FromString(const std::string &s, QueryAttributes::TimeCurveType &val)
-{
-    val = QueryAttributes::Single_Y_Axis;
-    for(int i = 0; i < 2; ++i)
-    {
-        if(s == TimeCurveType_strings[i])
-        {
-            val = (TimeCurveType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
 // ****************************************************************************
 // Method: QueryAttributes::QueryAttributes
 //
@@ -208,23 +134,12 @@ QueryAttributes::TimeCurveType_FromString(const std::string &s, QueryAttributes:
 
 void QueryAttributes::Init()
 {
-    variables.push_back("default");
-    worldPoint[0] = 0;
-    worldPoint[1] = 0;
-    worldPoint[2] = 0;
-    domain = -1;
-    element = -1;
     resultsValue.push_back(0);
-    elementType = Zone;
     timeStep = 0;
-    dataType = ActualData;
     pipeIndex = -1;
-    useGlobalId = false;
-    darg1.push_back(0);
-    darg2.push_back(0);
     floatFormat = "%g";
-    dumpSteps = false;
-    timeCurvePlotType = Single_Y_Axis;
+    suppressOutput = false;
+    defaultVars.push_back("default");
 
     QueryAttributes::SelectAll();
 }
@@ -246,30 +161,19 @@ void QueryAttributes::Init()
 
 void QueryAttributes::Copy(const QueryAttributes &obj)
 {
-    name = obj.name;
-    variables = obj.variables;
     resultsMessage = obj.resultsMessage;
-    worldPoint[0] = obj.worldPoint[0];
-    worldPoint[1] = obj.worldPoint[1];
-    worldPoint[2] = obj.worldPoint[2];
-
-    domain = obj.domain;
-    element = obj.element;
     resultsValue = obj.resultsValue;
-    elementType = obj.elementType;
     timeStep = obj.timeStep;
     varTypes = obj.varTypes;
-    dataType = obj.dataType;
     pipeIndex = obj.pipeIndex;
-    useGlobalId = obj.useGlobalId;
     xUnits = obj.xUnits;
     yUnits = obj.yUnits;
-    darg1 = obj.darg1;
-    darg2 = obj.darg2;
     floatFormat = obj.floatFormat;
     xmlResult = obj.xmlResult;
-    dumpSteps = obj.dumpSteps;
-    timeCurvePlotType = obj.timeCurvePlotType;
+    suppressOutput = obj.suppressOutput;
+    queryInputParams = obj.queryInputParams;
+    defaultName = obj.defaultName;
+    defaultVars = obj.defaultVars;
 
     QueryAttributes::SelectAll();
 }
@@ -426,33 +330,20 @@ QueryAttributes::operator = (const QueryAttributes &obj)
 bool
 QueryAttributes::operator == (const QueryAttributes &obj) const
 {
-    // Compare the worldPoint arrays.
-    bool worldPoint_equal = true;
-    for(int i = 0; i < 3 && worldPoint_equal; ++i)
-        worldPoint_equal = (worldPoint[i] == obj.worldPoint[i]);
-
     // Create the return value
-    return ((name == obj.name) &&
-            (variables == obj.variables) &&
-            (resultsMessage == obj.resultsMessage) &&
-            worldPoint_equal &&
-            (domain == obj.domain) &&
-            (element == obj.element) &&
+    return ((resultsMessage == obj.resultsMessage) &&
             (resultsValue == obj.resultsValue) &&
-            (elementType == obj.elementType) &&
             (timeStep == obj.timeStep) &&
             (varTypes == obj.varTypes) &&
-            (dataType == obj.dataType) &&
             (pipeIndex == obj.pipeIndex) &&
-            (useGlobalId == obj.useGlobalId) &&
             (xUnits == obj.xUnits) &&
             (yUnits == obj.yUnits) &&
-            (darg1 == obj.darg1) &&
-            (darg2 == obj.darg2) &&
             (floatFormat == obj.floatFormat) &&
             (xmlResult == obj.xmlResult) &&
-            (dumpSteps == obj.dumpSteps) &&
-            (timeCurvePlotType == obj.timeCurvePlotType));
+            (suppressOutput == obj.suppressOutput) &&
+            (queryInputParams == obj.queryInputParams) &&
+            true /* can ignore defaultName */ &&
+            true /* can ignore defaultVars */);
 }
 
 // ****************************************************************************
@@ -596,27 +487,19 @@ QueryAttributes::NewInstance(bool copy) const
 void
 QueryAttributes::SelectAll()
 {
-    Select(ID_name,              (void *)&name);
-    Select(ID_variables,         (void *)&variables);
-    Select(ID_resultsMessage,    (void *)&resultsMessage);
-    Select(ID_worldPoint,        (void *)worldPoint, 3);
-    Select(ID_domain,            (void *)&domain);
-    Select(ID_element,           (void *)&element);
-    Select(ID_resultsValue,      (void *)&resultsValue);
-    Select(ID_elementType,       (void *)&elementType);
-    Select(ID_timeStep,          (void *)&timeStep);
-    Select(ID_varTypes,          (void *)&varTypes);
-    Select(ID_dataType,          (void *)&dataType);
-    Select(ID_pipeIndex,         (void *)&pipeIndex);
-    Select(ID_useGlobalId,       (void *)&useGlobalId);
-    Select(ID_xUnits,            (void *)&xUnits);
-    Select(ID_yUnits,            (void *)&yUnits);
-    Select(ID_darg1,             (void *)&darg1);
-    Select(ID_darg2,             (void *)&darg2);
-    Select(ID_floatFormat,       (void *)&floatFormat);
-    Select(ID_xmlResult,         (void *)&xmlResult);
-    Select(ID_dumpSteps,         (void *)&dumpSteps);
-    Select(ID_timeCurvePlotType, (void *)&timeCurvePlotType);
+    Select(ID_resultsMessage,   (void *)&resultsMessage);
+    Select(ID_resultsValue,     (void *)&resultsValue);
+    Select(ID_timeStep,         (void *)&timeStep);
+    Select(ID_varTypes,         (void *)&varTypes);
+    Select(ID_pipeIndex,        (void *)&pipeIndex);
+    Select(ID_xUnits,           (void *)&xUnits);
+    Select(ID_yUnits,           (void *)&yUnits);
+    Select(ID_floatFormat,      (void *)&floatFormat);
+    Select(ID_xmlResult,        (void *)&xmlResult);
+    Select(ID_suppressOutput,   (void *)&suppressOutput);
+    Select(ID_queryInputParams, (void *)&queryInputParams);
+    Select(ID_defaultName,      (void *)&defaultName);
+    Select(ID_defaultVars,      (void *)&defaultVars);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -649,52 +532,16 @@ QueryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
     // Create a node for QueryAttributes.
     DataNode *node = new DataNode("QueryAttributes");
 
-    if(completeSave || !FieldsEqual(ID_name, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("name", name));
-    }
-
-    if(completeSave || !FieldsEqual(ID_variables, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("variables", variables));
-    }
-
     if(completeSave || !FieldsEqual(ID_resultsMessage, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("resultsMessage", resultsMessage));
     }
 
-    if(completeSave || !FieldsEqual(ID_worldPoint, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("worldPoint", worldPoint, 3));
-    }
-
-    if(completeSave || !FieldsEqual(ID_domain, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("domain", domain));
-    }
-
-    if(completeSave || !FieldsEqual(ID_element, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("element", element));
-    }
-
     if(completeSave || !FieldsEqual(ID_resultsValue, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("resultsValue", resultsValue));
-    }
-
-    if(completeSave || !FieldsEqual(ID_elementType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("elementType", ElementType_ToString(elementType)));
     }
 
     if(completeSave || !FieldsEqual(ID_timeStep, &defaultObject))
@@ -709,22 +556,10 @@ QueryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("varTypes", varTypes));
     }
 
-    if(completeSave || !FieldsEqual(ID_dataType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("dataType", DataType_ToString(dataType)));
-    }
-
     if(completeSave || !FieldsEqual(ID_pipeIndex, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("pipeIndex", pipeIndex));
-    }
-
-    if(completeSave || !FieldsEqual(ID_useGlobalId, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("useGlobalId", useGlobalId));
     }
 
     if(completeSave || !FieldsEqual(ID_xUnits, &defaultObject))
@@ -739,18 +574,6 @@ QueryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("yUnits", yUnits));
     }
 
-    if(completeSave || !FieldsEqual(ID_darg1, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("darg1", darg1));
-    }
-
-    if(completeSave || !FieldsEqual(ID_darg2, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("darg2", darg2));
-    }
-
     if(completeSave || !FieldsEqual(ID_floatFormat, &defaultObject))
     {
         addToParent = true;
@@ -763,16 +586,28 @@ QueryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("xmlResult", xmlResult));
     }
 
-    if(completeSave || !FieldsEqual(ID_dumpSteps, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_suppressOutput, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("dumpSteps", dumpSteps));
+        node->AddNode(new DataNode("suppressOutput", suppressOutput));
     }
 
-    if(completeSave || !FieldsEqual(ID_timeCurvePlotType, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_queryInputParams, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("timeCurvePlotType", TimeCurveType_ToString(timeCurvePlotType)));
+        node->AddNode(new DataNode("queryInputParams", queryInputParams));
+    }
+
+    if(completeSave || !FieldsEqual(ID_defaultName, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultName", defaultName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_defaultVars, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultVars", defaultVars));
     }
 
 
@@ -811,109 +646,37 @@ QueryAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
-    if((node = searchNode->GetNode("name")) != 0)
-        SetName(node->AsString());
-    if((node = searchNode->GetNode("variables")) != 0)
-        SetVariables(node->AsStringVector());
     if((node = searchNode->GetNode("resultsMessage")) != 0)
         SetResultsMessage(node->AsString());
-    if((node = searchNode->GetNode("worldPoint")) != 0)
-        SetWorldPoint(node->AsDoubleArray());
-    if((node = searchNode->GetNode("domain")) != 0)
-        SetDomain(node->AsInt());
-    if((node = searchNode->GetNode("element")) != 0)
-        SetElement(node->AsInt());
     if((node = searchNode->GetNode("resultsValue")) != 0)
         SetResultsValue(node->AsDoubleVector());
-    if((node = searchNode->GetNode("elementType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
-                SetElementType(ElementType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            ElementType value;
-            if(ElementType_FromString(node->AsString(), value))
-                SetElementType(value);
-        }
-    }
     if((node = searchNode->GetNode("timeStep")) != 0)
         SetTimeStep(node->AsInt());
     if((node = searchNode->GetNode("varTypes")) != 0)
         SetVarTypes(node->AsIntVector());
-    if((node = searchNode->GetNode("dataType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
-                SetDataType(DataType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            DataType value;
-            if(DataType_FromString(node->AsString(), value))
-                SetDataType(value);
-        }
-    }
     if((node = searchNode->GetNode("pipeIndex")) != 0)
         SetPipeIndex(node->AsInt());
-    if((node = searchNode->GetNode("useGlobalId")) != 0)
-        SetUseGlobalId(node->AsBool());
     if((node = searchNode->GetNode("xUnits")) != 0)
         SetXUnits(node->AsString());
     if((node = searchNode->GetNode("yUnits")) != 0)
         SetYUnits(node->AsString());
-    if((node = searchNode->GetNode("darg1")) != 0)
-        SetDarg1(node->AsDoubleVector());
-    if((node = searchNode->GetNode("darg2")) != 0)
-        SetDarg2(node->AsDoubleVector());
     if((node = searchNode->GetNode("floatFormat")) != 0)
         SetFloatFormat(node->AsString());
     if((node = searchNode->GetNode("xmlResult")) != 0)
         SetXmlResult(node->AsString());
-    if((node = searchNode->GetNode("dumpSteps")) != 0)
-        SetDumpSteps(node->AsBool());
-    if((node = searchNode->GetNode("timeCurvePlotType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
-                SetTimeCurvePlotType(TimeCurveType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            TimeCurveType value;
-            if(TimeCurveType_FromString(node->AsString(), value))
-                SetTimeCurvePlotType(value);
-        }
-    }
+    if((node = searchNode->GetNode("suppressOutput")) != 0)
+        SetSuppressOutput(node->AsBool());
+    if((node = searchNode->GetNode("queryInputParams")) != 0)
+        SetQueryInputParams(node->AsMapNode());
+    if((node = searchNode->GetNode("defaultName")) != 0)
+        SetDefaultName(node->AsString());
+    if((node = searchNode->GetNode("defaultVars")) != 0)
+        SetDefaultVars(node->AsStringVector());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
-
-void
-QueryAttributes::SetName(const std::string &name_)
-{
-    name = name_;
-    Select(ID_name, (void *)&name);
-}
-
-void
-QueryAttributes::SetVariables(const stringVector &variables_)
-{
-    variables = variables_;
-    Select(ID_variables, (void *)&variables);
-}
 
 void
 QueryAttributes::SetResultsMessage(const std::string &resultsMessage_)
@@ -923,40 +686,10 @@ QueryAttributes::SetResultsMessage(const std::string &resultsMessage_)
 }
 
 void
-QueryAttributes::SetWorldPoint(const double *worldPoint_)
-{
-    worldPoint[0] = worldPoint_[0];
-    worldPoint[1] = worldPoint_[1];
-    worldPoint[2] = worldPoint_[2];
-    Select(ID_worldPoint, (void *)worldPoint, 3);
-}
-
-void
-QueryAttributes::SetDomain(int domain_)
-{
-    domain = domain_;
-    Select(ID_domain, (void *)&domain);
-}
-
-void
-QueryAttributes::SetElement(int element_)
-{
-    element = element_;
-    Select(ID_element, (void *)&element);
-}
-
-void
 QueryAttributes::SetResultsValue(const doubleVector &resultsValue_)
 {
     resultsValue = resultsValue_;
     Select(ID_resultsValue, (void *)&resultsValue);
-}
-
-void
-QueryAttributes::SetElementType(QueryAttributes::ElementType elementType_)
-{
-    elementType = elementType_;
-    Select(ID_elementType, (void *)&elementType);
 }
 
 void
@@ -974,24 +707,10 @@ QueryAttributes::SetVarTypes(const intVector &varTypes_)
 }
 
 void
-QueryAttributes::SetDataType(QueryAttributes::DataType dataType_)
-{
-    dataType = dataType_;
-    Select(ID_dataType, (void *)&dataType);
-}
-
-void
 QueryAttributes::SetPipeIndex(int pipeIndex_)
 {
     pipeIndex = pipeIndex_;
     Select(ID_pipeIndex, (void *)&pipeIndex);
-}
-
-void
-QueryAttributes::SetUseGlobalId(bool useGlobalId_)
-{
-    useGlobalId = useGlobalId_;
-    Select(ID_useGlobalId, (void *)&useGlobalId);
 }
 
 void
@@ -1009,20 +728,6 @@ QueryAttributes::SetYUnits(const std::string &yUnits_)
 }
 
 void
-QueryAttributes::SetDarg1(const doubleVector &darg1_)
-{
-    darg1 = darg1_;
-    Select(ID_darg1, (void *)&darg1);
-}
-
-void
-QueryAttributes::SetDarg2(const doubleVector &darg2_)
-{
-    darg2 = darg2_;
-    Select(ID_darg2, (void *)&darg2);
-}
-
-void
 QueryAttributes::SetFloatFormat(const std::string &floatFormat_)
 {
     floatFormat = floatFormat_;
@@ -1037,46 +742,36 @@ QueryAttributes::SetXmlResult(const std::string &xmlResult_)
 }
 
 void
-QueryAttributes::SetDumpSteps(bool dumpSteps_)
+QueryAttributes::SetSuppressOutput(bool suppressOutput_)
 {
-    dumpSteps = dumpSteps_;
-    Select(ID_dumpSteps, (void *)&dumpSteps);
+    suppressOutput = suppressOutput_;
+    Select(ID_suppressOutput, (void *)&suppressOutput);
 }
 
 void
-QueryAttributes::SetTimeCurvePlotType(QueryAttributes::TimeCurveType timeCurvePlotType_)
+QueryAttributes::SetQueryInputParams(const MapNode &queryInputParams_)
 {
-    timeCurvePlotType = timeCurvePlotType_;
-    Select(ID_timeCurvePlotType, (void *)&timeCurvePlotType);
+    queryInputParams = queryInputParams_;
+    Select(ID_queryInputParams, (void *)&queryInputParams);
+}
+
+void
+QueryAttributes::SetDefaultName(const std::string &defaultName_)
+{
+    defaultName = defaultName_;
+    Select(ID_defaultName, (void *)&defaultName);
+}
+
+void
+QueryAttributes::SetDefaultVars(const stringVector &defaultVars_)
+{
+    defaultVars = defaultVars_;
+    Select(ID_defaultVars, (void *)&defaultVars);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
-
-const std::string &
-QueryAttributes::GetName() const
-{
-    return name;
-}
-
-std::string &
-QueryAttributes::GetName()
-{
-    return name;
-}
-
-const stringVector &
-QueryAttributes::GetVariables() const
-{
-    return variables;
-}
-
-stringVector &
-QueryAttributes::GetVariables()
-{
-    return variables;
-}
 
 const std::string &
 QueryAttributes::GetResultsMessage() const
@@ -1090,30 +785,6 @@ QueryAttributes::GetResultsMessage()
     return resultsMessage;
 }
 
-const double *
-QueryAttributes::GetWorldPoint() const
-{
-    return worldPoint;
-}
-
-double *
-QueryAttributes::GetWorldPoint()
-{
-    return worldPoint;
-}
-
-int
-QueryAttributes::GetDomain() const
-{
-    return domain;
-}
-
-int
-QueryAttributes::GetElement() const
-{
-    return element;
-}
-
 const doubleVector &
 QueryAttributes::GetResultsValue() const
 {
@@ -1124,12 +795,6 @@ doubleVector &
 QueryAttributes::GetResultsValue()
 {
     return resultsValue;
-}
-
-QueryAttributes::ElementType
-QueryAttributes::GetElementType() const
-{
-    return ElementType(elementType);
 }
 
 int
@@ -1150,22 +815,10 @@ QueryAttributes::GetVarTypes()
     return varTypes;
 }
 
-QueryAttributes::DataType
-QueryAttributes::GetDataType() const
-{
-    return DataType(dataType);
-}
-
 int
 QueryAttributes::GetPipeIndex() const
 {
     return pipeIndex;
-}
-
-bool
-QueryAttributes::GetUseGlobalId() const
-{
-    return useGlobalId;
 }
 
 const std::string &
@@ -1190,30 +843,6 @@ std::string &
 QueryAttributes::GetYUnits()
 {
     return yUnits;
-}
-
-const doubleVector &
-QueryAttributes::GetDarg1() const
-{
-    return darg1;
-}
-
-doubleVector &
-QueryAttributes::GetDarg1()
-{
-    return darg1;
-}
-
-const doubleVector &
-QueryAttributes::GetDarg2() const
-{
-    return darg2;
-}
-
-doubleVector &
-QueryAttributes::GetDarg2()
-{
-    return darg2;
 }
 
 const std::string &
@@ -1241,15 +870,45 @@ QueryAttributes::GetXmlResult()
 }
 
 bool
-QueryAttributes::GetDumpSteps() const
+QueryAttributes::GetSuppressOutput() const
 {
-    return dumpSteps;
+    return suppressOutput;
 }
 
-QueryAttributes::TimeCurveType
-QueryAttributes::GetTimeCurvePlotType() const
+const MapNode &
+QueryAttributes::GetQueryInputParams() const
 {
-    return TimeCurveType(timeCurvePlotType);
+    return queryInputParams;
+}
+
+MapNode &
+QueryAttributes::GetQueryInputParams()
+{
+    return queryInputParams;
+}
+
+const std::string &
+QueryAttributes::GetDefaultName() const
+{
+    return defaultName;
+}
+
+std::string &
+QueryAttributes::GetDefaultName()
+{
+    return defaultName;
+}
+
+const stringVector &
+QueryAttributes::GetDefaultVars() const
+{
+    return defaultVars;
+}
+
+stringVector &
+QueryAttributes::GetDefaultVars()
+{
+    return defaultVars;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1257,27 +916,9 @@ QueryAttributes::GetTimeCurvePlotType() const
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-QueryAttributes::SelectName()
-{
-    Select(ID_name, (void *)&name);
-}
-
-void
-QueryAttributes::SelectVariables()
-{
-    Select(ID_variables, (void *)&variables);
-}
-
-void
 QueryAttributes::SelectResultsMessage()
 {
     Select(ID_resultsMessage, (void *)&resultsMessage);
-}
-
-void
-QueryAttributes::SelectWorldPoint()
-{
-    Select(ID_worldPoint, (void *)worldPoint, 3);
 }
 
 void
@@ -1305,18 +946,6 @@ QueryAttributes::SelectYUnits()
 }
 
 void
-QueryAttributes::SelectDarg1()
-{
-    Select(ID_darg1, (void *)&darg1);
-}
-
-void
-QueryAttributes::SelectDarg2()
-{
-    Select(ID_darg2, (void *)&darg2);
-}
-
-void
 QueryAttributes::SelectFloatFormat()
 {
     Select(ID_floatFormat, (void *)&floatFormat);
@@ -1326,6 +955,24 @@ void
 QueryAttributes::SelectXmlResult()
 {
     Select(ID_xmlResult, (void *)&xmlResult);
+}
+
+void
+QueryAttributes::SelectQueryInputParams()
+{
+    Select(ID_queryInputParams, (void *)&queryInputParams);
+}
+
+void
+QueryAttributes::SelectDefaultName()
+{
+    Select(ID_defaultName, (void *)&defaultName);
+}
+
+void
+QueryAttributes::SelectDefaultVars()
+{
+    Select(ID_defaultVars, (void *)&defaultVars);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1352,27 +999,19 @@ QueryAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_name:              return "name";
-    case ID_variables:         return "variables";
-    case ID_resultsMessage:    return "resultsMessage";
-    case ID_worldPoint:        return "worldPoint";
-    case ID_domain:            return "domain";
-    case ID_element:           return "element";
-    case ID_resultsValue:      return "resultsValue";
-    case ID_elementType:       return "elementType";
-    case ID_timeStep:          return "timeStep";
-    case ID_varTypes:          return "varTypes";
-    case ID_dataType:          return "dataType";
-    case ID_pipeIndex:         return "pipeIndex";
-    case ID_useGlobalId:       return "useGlobalId";
-    case ID_xUnits:            return "xUnits";
-    case ID_yUnits:            return "yUnits";
-    case ID_darg1:             return "darg1";
-    case ID_darg2:             return "darg2";
-    case ID_floatFormat:       return "floatFormat";
-    case ID_xmlResult:         return "xmlResult";
-    case ID_dumpSteps:         return "dumpSteps";
-    case ID_timeCurvePlotType: return "timeCurvePlotType";
+    case ID_resultsMessage:   return "resultsMessage";
+    case ID_resultsValue:     return "resultsValue";
+    case ID_timeStep:         return "timeStep";
+    case ID_varTypes:         return "varTypes";
+    case ID_pipeIndex:        return "pipeIndex";
+    case ID_xUnits:           return "xUnits";
+    case ID_yUnits:           return "yUnits";
+    case ID_floatFormat:      return "floatFormat";
+    case ID_xmlResult:        return "xmlResult";
+    case ID_suppressOutput:   return "suppressOutput";
+    case ID_queryInputParams: return "queryInputParams";
+    case ID_defaultName:      return "defaultName";
+    case ID_defaultVars:      return "defaultVars";
     default:  return "invalid index";
     }
 }
@@ -1397,27 +1036,19 @@ QueryAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_name:              return FieldType_string;
-    case ID_variables:         return FieldType_stringVector;
-    case ID_resultsMessage:    return FieldType_string;
-    case ID_worldPoint:        return FieldType_doubleArray;
-    case ID_domain:            return FieldType_int;
-    case ID_element:           return FieldType_int;
-    case ID_resultsValue:      return FieldType_doubleVector;
-    case ID_elementType:       return FieldType_enum;
-    case ID_timeStep:          return FieldType_int;
-    case ID_varTypes:          return FieldType_intVector;
-    case ID_dataType:          return FieldType_enum;
-    case ID_pipeIndex:         return FieldType_int;
-    case ID_useGlobalId:       return FieldType_bool;
-    case ID_xUnits:            return FieldType_string;
-    case ID_yUnits:            return FieldType_string;
-    case ID_darg1:             return FieldType_doubleVector;
-    case ID_darg2:             return FieldType_doubleVector;
-    case ID_floatFormat:       return FieldType_string;
-    case ID_xmlResult:         return FieldType_string;
-    case ID_dumpSteps:         return FieldType_bool;
-    case ID_timeCurvePlotType: return FieldType_enum;
+    case ID_resultsMessage:   return FieldType_string;
+    case ID_resultsValue:     return FieldType_doubleVector;
+    case ID_timeStep:         return FieldType_int;
+    case ID_varTypes:         return FieldType_intVector;
+    case ID_pipeIndex:        return FieldType_int;
+    case ID_xUnits:           return FieldType_string;
+    case ID_yUnits:           return FieldType_string;
+    case ID_floatFormat:      return FieldType_string;
+    case ID_xmlResult:        return FieldType_string;
+    case ID_suppressOutput:   return FieldType_bool;
+    case ID_queryInputParams: return FieldType_MapNode;
+    case ID_defaultName:      return FieldType_string;
+    case ID_defaultVars:      return FieldType_stringVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1442,27 +1073,19 @@ QueryAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_name:              return "string";
-    case ID_variables:         return "stringVector";
-    case ID_resultsMessage:    return "string";
-    case ID_worldPoint:        return "doubleArray";
-    case ID_domain:            return "int";
-    case ID_element:           return "int";
-    case ID_resultsValue:      return "doubleVector";
-    case ID_elementType:       return "enum";
-    case ID_timeStep:          return "int";
-    case ID_varTypes:          return "intVector";
-    case ID_dataType:          return "enum";
-    case ID_pipeIndex:         return "int";
-    case ID_useGlobalId:       return "bool";
-    case ID_xUnits:            return "string";
-    case ID_yUnits:            return "string";
-    case ID_darg1:             return "doubleVector";
-    case ID_darg2:             return "doubleVector";
-    case ID_floatFormat:       return "string";
-    case ID_xmlResult:         return "string";
-    case ID_dumpSteps:         return "bool";
-    case ID_timeCurvePlotType: return "enum";
+    case ID_resultsMessage:   return "string";
+    case ID_resultsValue:     return "doubleVector";
+    case ID_timeStep:         return "int";
+    case ID_varTypes:         return "intVector";
+    case ID_pipeIndex:        return "int";
+    case ID_xUnits:           return "string";
+    case ID_yUnits:           return "string";
+    case ID_floatFormat:      return "string";
+    case ID_xmlResult:        return "string";
+    case ID_suppressOutput:   return "bool";
+    case ID_queryInputParams: return "MapNode";
+    case ID_defaultName:      return "string";
+    case ID_defaultVars:      return "stringVector";
     default:  return "invalid index";
     }
 }
@@ -1489,49 +1112,14 @@ QueryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
-    case ID_name:
-        {  // new scope
-        retval = (name == obj.name);
-        }
-        break;
-    case ID_variables:
-        {  // new scope
-        retval = (variables == obj.variables);
-        }
-        break;
     case ID_resultsMessage:
         {  // new scope
         retval = (resultsMessage == obj.resultsMessage);
         }
         break;
-    case ID_worldPoint:
-        {  // new scope
-        // Compare the worldPoint arrays.
-        bool worldPoint_equal = true;
-        for(int i = 0; i < 3 && worldPoint_equal; ++i)
-            worldPoint_equal = (worldPoint[i] == obj.worldPoint[i]);
-
-        retval = worldPoint_equal;
-        }
-        break;
-    case ID_domain:
-        {  // new scope
-        retval = (domain == obj.domain);
-        }
-        break;
-    case ID_element:
-        {  // new scope
-        retval = (element == obj.element);
-        }
-        break;
     case ID_resultsValue:
         {  // new scope
         retval = (resultsValue == obj.resultsValue);
-        }
-        break;
-    case ID_elementType:
-        {  // new scope
-        retval = (elementType == obj.elementType);
         }
         break;
     case ID_timeStep:
@@ -1544,19 +1132,9 @@ QueryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (varTypes == obj.varTypes);
         }
         break;
-    case ID_dataType:
-        {  // new scope
-        retval = (dataType == obj.dataType);
-        }
-        break;
     case ID_pipeIndex:
         {  // new scope
         retval = (pipeIndex == obj.pipeIndex);
-        }
-        break;
-    case ID_useGlobalId:
-        {  // new scope
-        retval = (useGlobalId == obj.useGlobalId);
         }
         break;
     case ID_xUnits:
@@ -1569,16 +1147,6 @@ QueryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (yUnits == obj.yUnits);
         }
         break;
-    case ID_darg1:
-        {  // new scope
-        retval = (darg1 == obj.darg1);
-        }
-        break;
-    case ID_darg2:
-        {  // new scope
-        retval = (darg2 == obj.darg2);
-        }
-        break;
     case ID_floatFormat:
         {  // new scope
         retval = (floatFormat == obj.floatFormat);
@@ -1589,14 +1157,24 @@ QueryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (xmlResult == obj.xmlResult);
         }
         break;
-    case ID_dumpSteps:
+    case ID_suppressOutput:
         {  // new scope
-        retval = (dumpSteps == obj.dumpSteps);
+        retval = (suppressOutput == obj.suppressOutput);
         }
         break;
-    case ID_timeCurvePlotType:
+    case ID_queryInputParams:
         {  // new scope
-        retval = (timeCurvePlotType == obj.timeCurvePlotType);
+        retval = (queryInputParams == obj.queryInputParams);
+        }
+        break;
+    case ID_defaultName:
+        {  // new scope
+        retval = (defaultName == obj.defaultName);
+        }
+        break;
+    case ID_defaultVars:
+        {  // new scope
+        retval = (defaultVars == obj.defaultVars);
         }
         break;
     default: retval = false;
@@ -1610,33 +1188,70 @@ QueryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 
 void
+QueryAttributes::SetVariables(const stringVector &variables_)
+{
+   queryInputParams["vars"] = variables_;
+}
+
+const std::string &
+QueryAttributes::GetName() const
+{
+    if (queryInputParams.HasEntry("query_name"))
+        return queryInputParams.GetEntry("query_name")->AsString();
+    return defaultName;
+}
+
+std::string &
+QueryAttributes::GetName() 
+{
+    if (queryInputParams.HasEntry("query_name"))
+        return queryInputParams.GetEntry("query_name")->AsString();
+    return defaultName;
+}
+
+const stringVector &
+QueryAttributes::GetVariables() const
+{
+    if (queryInputParams.HasEntry("vars"))
+        return queryInputParams.GetEntry("vars")->AsStringVector();
+    return defaultVars;
+}
+
+stringVector &
+QueryAttributes::GetVariables() 
+{
+    if (queryInputParams.HasEntry("vars"))
+        return queryInputParams.GetEntry("vars")->AsStringVector();
+    return defaultVars;
+}
+
+QueryAttributes::DataType
+QueryAttributes::GetDataType() const
+{
+    if (queryInputParams.HasEntry("data_type"))
+        return (QueryAttributes::DataType)queryInputParams.GetEntry("data_type")->AsInt();
+    else
+        return QueryAttributes::ActualData;
+}
+
+void
 QueryAttributes::Reset()
 {
-    name    = " ";
     resultsMessage  = " ";
     xUnits = "";
     yUnits = "";
-    if (!variables.empty())
-    {
-        variables.clear();
-        variables.push_back("default");
-    }
     if (!varTypes.empty())
     {
          varTypes.clear();
     }
-    worldPoint[0] = 0.;
-    worldPoint[1] = 0.;
-    worldPoint[2] = 0.;
-    domain = -1;
-    element = -1;
-    elementType = Zone;
     if (!resultsValue.empty())
     {
         resultsValue.clear();
         resultsValue.push_back(0.);
     }
     pipeIndex = -1;
+
+    queryInputParams.Reset();
  
     SelectAll();
 }
@@ -1644,20 +1259,13 @@ QueryAttributes::Reset()
 void
 QueryAttributes::PrintSelf(ostream &os)
 {
-    os << "\n" << name.c_str() << ":  ";
+    os << "\n" << GetName().c_str() << ":  ";
     os << "selected variables: ";
-    for (size_t i = 0; i < variables.size(); i++)
-        os << variables[i].c_str() << "  ";
+    stringVector &v = GetVariables();
+    for (size_t i = 0; i < v.size(); i++)
+        os << v[i].c_str() << "  ";
     os << "\n";
     os << "Results: <" << resultsMessage.c_str() << ">\n";
-    os << "World point: <" << worldPoint[0] << ", " << worldPoint[1] 
-       << ", " << worldPoint[2] << ">\n"; 
-    os << "Domain:      " << domain << "\n";
-    os << "Element:        " << element << ")\n";
-    if (elementType == Zone)
-    os << "Element type is Zone " << endl;
-    else
-    os << "Element type is Node " << endl;
 }
 
 void

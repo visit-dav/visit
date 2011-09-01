@@ -100,9 +100,11 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.4</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>Arguments for queries in the CLI are now passed as named arguments (keyword args) or a python dictionary. eg <i>Query("MinMax", use_actual_data=1)</i> or <i>Query("NodeCoords", element=1, domain=2)</i></li>
+  <li>Default arguments for a query may be retrieved in the CLI via <i>GetQueryParameters(QueryName)</i> The method returns a python dictionary, which can be modified and used as the arugment to the Query.
+  <li>You no longer have to specify all the accepted arguments for a query if the default values will suffice.</li>
+  <li>Picking via the Query Window has been consolidated into one method <i>Pick</i> with more options for what type of pick should be performed. The CLI options for Pick currently remain the same.</li>
+  <li>Options for controlling start/end times and stride for queries-over-time can now be specified in the Query window, and as keyword args in the CLI. eg <i>QueryOverTime("Min", start_time=50, end_time=250, stride=5).</i>Defaults if not specified remain <i>start_time=0, end_time=numTimeStates, stride=1)</i>.</li>
   <li></li>
   <li></li>
   <li></li>
@@ -135,7 +137,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 2.4</font></b></p>
 <ul>
   <li>There is now an "aprun" option for launching parallel jobs.</li>
-  <li></li>
+  <li>Queries can now have custom widgets added to the QueryWindow, allowing more useful controls of options.</li>
   <li></li>
   <li></li>
   <li></li>

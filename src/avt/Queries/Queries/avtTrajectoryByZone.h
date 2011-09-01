@@ -61,6 +61,9 @@
 //    Kathleen Bonnell, Tue Jul  8 15:41:59 PDT 2008
 //    Changed GetTimeCurveSpecs signature.
 //
+//    Kathleen Biagas, Tue Jul 26 10:03:42 PDT 2011
+//    Add GetDefaultInputParams.
+//
 // ****************************************************************************
 
 class QUERY_API avtTrajectoryByZone : public avtVariableByZoneQuery
@@ -76,9 +79,11 @@ class QUERY_API avtTrajectoryByZone : public avtVariableByZoneQuery
 
     virtual const MapNode    &GetTimeCurveSpecs(); 
 
+    static void               GetDefaultInputParams(MapNode &);
+
   protected:
-    virtual void                    Preparation(const avtDataAttributes &);
-    virtual void                    PostExecute(void);
+    virtual void              Preparation(const avtDataAttributes &);
+    virtual void              PostExecute(void);
 };
 
 

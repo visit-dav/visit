@@ -55,14 +55,17 @@
 #include <QStringList>
 #include <QWidget>
 
+#include <QvisTimeQueryOptionsWidget.h>
 #include <QvisVariableButton.h>
 #include <QvisPickWindow.h>
 #include <PickAttributes.h>
+#include <PlotList.h>
 #include <ViewerProxy.h>
 #include <DebugStream.h>
 #include <PickVarInfo.h>
 #include <DataNode.h>
 #include <StringHelpers.h>
+#include <QueryList.h>
 
 #ifdef _WIN32
 #include <QTemporaryFile>
@@ -117,6 +120,9 @@ using std::vector;
 //   Brad Whitlock, Wed Apr  9 11:30:06 PDT 2008
 //   QString for caption, shortName.
 //
+//   Kathleen Biagas, Fri Aug 26 11:11:26 PDT 2011
+//   Added activeOptionsTab, plotList.
+//
 // ****************************************************************************
 
 QvisPickWindow::QvisPickWindow(PickAttributes *subj, const QString &caption, 
@@ -131,6 +137,8 @@ QvisPickWindow::QvisPickWindow(PickAttributes *subj, const QString &caption,
     defaultSavePicks = savePicks = false;
     defaultNumTabs = 8;
     saveCount = 0;
+    activeOptionsTab = 0;
+    plotList = 0;
 }
 
 // ****************************************************************************
@@ -143,12 +151,16 @@ QvisPickWindow::QvisPickWindow(PickAttributes *subj, const QString &caption,
 // Creation:   December 3, 2001
 //
 // Modifications:
+//   Kathleen Biagas, Fri Aug 26 11:11:42 PDT 2011
+//   Handle plotList.
 //
 // ****************************************************************************
 
 QvisPickWindow::~QvisPickWindow()
 {
     pickAtts = 0;
+    if (plotList)
+        plotList->Detach(this);
 }
 
 // ****************************************************************************
@@ -236,14 +248,17 @@ QvisPickWindow::~QvisPickWindow()
 //   Kathleen Bonnell, Thu Mar  3 08:07:31 PST 2011
 //   Added timeCurveType combo box.
 //
+//   Kathleen Biagas, Thu Aug 25 09:58:00 PDT 2011
+//   Create separate tabs for display, time, and spreadsheet options.
+//
 // ****************************************************************************
 
 void
 QvisPickWindow::CreateWindowContents()
 {
-    tabWidget = new QTabWidget(central);
-    tabWidget->setMinimumHeight(200);
-    topLayout->addWidget(tabWidget, 10);
+    resultsTabWidget = new QTabWidget(central);
+    resultsTabWidget->setMinimumHeight(200);
+    topLayout->addWidget(resultsTabWidget, 10);
 
     for (int i = 0; i < MAX_PICK_TABS; i++)
     {
@@ -259,7 +274,7 @@ QvisPickWindow::CreateWindowContents()
         if (i < MIN_PICK_TABS)
         {
             pages[i]->show();
-            tabWidget->addTab(pages[i]," "); 
+            resultsTabWidget->addTab(pages[i]," "); 
         }
     }
     
@@ -302,44 +317,97 @@ QvisPickWindow::CreateWindowContents()
     gLayout->addWidget(floatFormatLineEdit, 2, 1, 1, 3);
     connect(floatFormatLineEdit, SIGNAL(returnPressed()),
             this, SLOT(floatFormatProcessText()));
-        
-    conciseOutputCheckBox = new QCheckBox(tr("Concise Output"), central);
+
+    autoShowCheckBox = new QCheckBox(tr("Automatically show window"), central);
+    connect(autoShowCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(autoShowToggled(bool)));
+    gLayout->addWidget(autoShowCheckBox, 3, 0, 1, 4);
+
+    savePicksCheckBox = new QCheckBox(tr("Don't clear this window"), central);
+    connect(savePicksCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(savePicksToggled(bool)));
+    gLayout->addWidget(savePicksCheckBox, 4, 0, 1, 2);
+
+    QPushButton *clearPicksButton = new QPushButton(tr("Clear Picks"), central);
+    connect(clearPicksButton, SIGNAL(clicked()),
+            this, SLOT(clearPicks()));
+    gLayout->addWidget(clearPicksButton, 4, 2, 1, 2);
+
+  
+    optionsTabWidget = new QTabWidget(central);
+    connect(optionsTabWidget, SIGNAL(currentChanged(int)),
+            this, SLOT(optionsTabSelected(int)));
+    topLayout->addWidget(optionsTabWidget, 10);
+
+    CreateDisplayOptionsTab();
+    CreateTimeOptionsTab();
+    CreateSpreadsheetOptionsTab();
+
+    // Show the appropriate page based on the activeOptionsTab setting.
+    optionsTabWidget->blockSignals(true);
+    optionsTabWidget->setCurrentIndex(activeOptionsTab);
+    optionsTabWidget->blockSignals(false);
+}
+
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::CreateDisplayOptionsTab
+//
+// Purpose: 
+//   Creates the Display options tab.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 23, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::CreateDisplayOptionsTab()
+{
+    pageDisplay = new QWidget(central);
+    optionsTabWidget->addTab(pageDisplay, tr("Output Display Options"));
+
+    QGridLayout *dLayout = new QGridLayout(pageDisplay);
+
+    conciseOutputCheckBox = new QCheckBox(tr("Concise Output"), pageDisplay);
     connect(conciseOutputCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(conciseOutputToggled(bool)));
-    gLayout->addWidget(conciseOutputCheckBox, 3, 0);
+    dLayout->addWidget(conciseOutputCheckBox, 0, 0);
 
 
-    showMeshNameCheckBox = new QCheckBox(tr("Show Mesh Name"), central);
+    showMeshNameCheckBox = new QCheckBox(tr("Mesh Name"), pageDisplay);
     connect(showMeshNameCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showMeshNameToggled(bool)));
-    gLayout->addWidget(showMeshNameCheckBox, 4, 0, 1, 2);
+    dLayout->addWidget(showMeshNameCheckBox, 1, 0, 1, 2);
 
-    showTimestepCheckBox = new QCheckBox(tr("Show Timestep"), central);
+    showTimestepCheckBox = new QCheckBox(tr("Timestep"), pageDisplay);
     connect(showTimestepCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showTimestepToggled(bool)));
-    gLayout->addWidget(showTimestepCheckBox, 4, 2, 1, 2);
+    dLayout->addWidget(showTimestepCheckBox, 1, 2, 1, 2);
 
-    displayIncEls = new QCheckBox(tr("Display incident nodes/zones"), central);
+    displayIncEls = new QCheckBox(tr("Incident nodes/zones"), pageDisplay);
     connect(displayIncEls, SIGNAL(toggled(bool)),
             this, SLOT(displayIncElsToggled(bool)));
-    gLayout->addWidget(displayIncEls, 5, 0, 1, 4);
+    dLayout->addWidget(displayIncEls, 2, 0, 1, 2);
 
-    displayGlobalIds = new QCheckBox(tr("Display global nodes/zones"), central);
+    displayGlobalIds = new QCheckBox(tr("Global nodes/zones"), pageDisplay);
     connect(displayGlobalIds, SIGNAL(toggled(bool)),
             this, SLOT(displayGlobalIdsToggled(bool)));
-    gLayout->addWidget(displayGlobalIds, 6, 0, 1, 4);
+    dLayout->addWidget(displayGlobalIds, 2, 2, 1, 2);
 
-    displayPickLetter = new QCheckBox(tr("Display reference pick letter"), 
-                                      central);
+    displayPickLetter = new QCheckBox(tr("Reference pick letter"), 
+                                      pageDisplay);
     connect(displayPickLetter, SIGNAL(toggled(bool)),
             this, SLOT(displayPickLetterToggled(bool)));
-    gLayout->addWidget(displayPickLetter, 7, 0, 1, 4);
+    dLayout->addWidget(displayPickLetter, 4, 0, 1, 4);
 
 
     // Node settings
-    QGroupBox *nodeGroupBox = new QGroupBox(central);
-    nodeGroupBox->setTitle(tr("Display for Nodes"));
-    gLayout->addWidget(nodeGroupBox, 8, 0, 1, 4);
+    QGroupBox *nodeGroupBox = new QGroupBox(pageDisplay);
+    nodeGroupBox->setTitle(tr("For Nodes"));
+    dLayout->addWidget(nodeGroupBox, 5, 0, 1, 4);
     QGridLayout *nLayout = new QGridLayout(nodeGroupBox);
     nLayout->setMargin(10);
     nLayout->setSpacing(10);
@@ -362,9 +430,9 @@ QvisPickWindow::CreateWindowContents()
     nLayout->addWidget(nodeBlockLog, 1, 1);
 
     // Zone settings
-    QGroupBox *zoneGroupBox = new QGroupBox(central);
-    zoneGroupBox->setTitle(tr("Display for Zones"));
-    gLayout->addWidget(zoneGroupBox, 9, 0, 1, 4);
+    QGroupBox *zoneGroupBox = new QGroupBox(pageDisplay);
+    zoneGroupBox->setTitle(tr("For Zones"));
+    dLayout->addWidget(zoneGroupBox, 6, 0, 1, 4);
     QGridLayout *zLayout = new QGridLayout(zoneGroupBox);
     zLayout->setMargin(10);
     zLayout->setSpacing(10);
@@ -381,65 +449,124 @@ QvisPickWindow::CreateWindowContents()
     connect(zoneBlockLog, SIGNAL(toggled(bool)),
             this, SLOT(zoneBlockLogToggled(bool)));
     zLayout->addWidget(zoneBlockLog, 1, 1);
+}
 
-   
-    autoShowCheckBox = new QCheckBox(tr("Automatically show window"), central);
-    connect(autoShowCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(autoShowToggled(bool)));
-    gLayout->addWidget(autoShowCheckBox, 10, 0, 1, 4);
 
-    savePicksCheckBox = new QCheckBox(tr("Don't clear this window"), central);
-    connect(savePicksCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(savePicksToggled(bool)));
-    gLayout->addWidget(savePicksCheckBox, 11, 0, 1, 2);
+// ****************************************************************************
+// Method: QvisAnnotationWindow::CreateTimeOptionsTab
+//
+// Purpose: 
+//   Creates the Time options tab.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 23, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
 
-    QPushButton *clearPicksButton = new QPushButton(tr("Clear Picks"), central);
-    connect(clearPicksButton, SIGNAL(clicked()),
-            this, SLOT(clearPicks()));
-    gLayout->addWidget(clearPicksButton, 11, 2, 1, 2);
+void
+QvisPickWindow::CreateTimeOptionsTab()
+{
+    pageTime = new QWidget(central);
+    optionsTabWidget->addTab(pageTime, tr("Time Pick Options"));
 
-    timeCurveCheckBox = new QCheckBox(tr("Create time curve with next pick"), 
-                                      central);
-    connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
+    //QGridLayout *tLayout = new QGridLayout(pageTime);
+    QVBoxLayout *tLayout = new QVBoxLayout(pageTime);
+
+    timeOpts = new QvisTimeQueryOptionsWidget(tr("Do Time Curve with next pick"), pageTime);
+    connect(timeOpts, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
-    gLayout->addWidget(timeCurveCheckBox, 12, 0, 1, 2);
+    tLayout->addWidget(timeOpts);
 
-    QPushButton *redoPickButton = new QPushButton(tr("Repeat Pick"), central);
-    connect(redoPickButton, SIGNAL(clicked()),
-            this, SLOT(redoPickClicked()));
-    gLayout->addWidget(redoPickButton, 12, 2, 1, 2);
-
-    preserveCoord= new QComboBox(central);
+    preserveCoord= new QComboBox(pageTime);
     preserveCoord->addItem(tr("Time curve use picked element"));
     preserveCoord->addItem(tr("Time curve use picked coordinates"));
     preserveCoord->setCurrentIndex(0);
     connect(preserveCoord, SIGNAL(activated(int)),
             this, SLOT(preserveCoordActivated(int)));
-    gLayout->addWidget(preserveCoord, 13, 0, 1, 4);
+    //tLayout->addWidget(preserveCoord, 1, 0, 1, 2);
+    tLayout->addWidget(preserveCoord);
 
-    timeCurveType= new QComboBox(central);
+    timeCurveType= new QComboBox(pageTime);
     timeCurveType->addItem(tr("Time curve use single Y axis"));
     timeCurveType->addItem(tr("Time curve use multiple Y axes"));
     timeCurveType->setCurrentIndex(0);
     connect(timeCurveType, SIGNAL(activated(int)),
             this, SLOT(timeCurveTypeActivated(int)));
-    gLayout->addWidget(timeCurveType, 14, 0, 1, 4);
+    //tLayout->addWidget(timeCurveType, 2, 0, 1, 2);
+    tLayout->addWidget(timeCurveType);
 
-    spreadsheetCheckBox = new QCheckBox(tr("Create spreadsheet with next pick"), 
-                                        central);
-    connect(spreadsheetCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(spreadsheetToggled(bool)));
-    gLayout->addWidget(spreadsheetCheckBox, 15, 0, 1, 2);
-
-    QPushButton *redoPickWithSpreadsheetButton =
-        new QPushButton(tr("Display in Spreadsheet"), central);
-    connect(redoPickWithSpreadsheetButton, SIGNAL(clicked()),
-            this, SLOT(redoPickWithSpreadsheetClicked()));
-    gLayout->addWidget(redoPickWithSpreadsheetButton, 15, 2, 1, 2);
+    QPushButton *redoPickButton = new QPushButton(tr("Repeat Pick"), pageTime);
+    connect(redoPickButton, SIGNAL(clicked()),
+            this, SLOT(redoPickClicked()));
+    //tLayout->addWidget(redoPickButton, 3, 0, 1, 1);
+    tLayout->addWidget(redoPickButton);
 }
 
 // ****************************************************************************
+// Method: QvisAnnotationWindow::CreateSpreadsheetOptionsTab
+//
+// Purpose: 
+//   Creates the Spreadsheet options tab.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 23, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::CreateSpreadsheetOptionsTab()
+{
+    pageSpreadsheet = new QWidget(central);
+    optionsTabWidget->addTab(pageSpreadsheet, tr("Spreadsheet Options"));
+
+    //QGridLayout *sLayout = new QGridLayout(pageSpreadsheet);
+    QVBoxLayout *sLayout = new QVBoxLayout(pageSpreadsheet);
+
+    spreadsheetCheckBox = new QCheckBox(tr("Create spreadsheet with next pick"),
+                                        pageSpreadsheet);
+    connect(spreadsheetCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(spreadsheetToggled(bool)));
+    //sLayout->addWidget(spreadsheetCheckBox, 0, 0, 1, 2);
+    sLayout->addWidget(spreadsheetCheckBox);
+
+    QPushButton *redoPickWithSpreadsheetButton =
+        new QPushButton(tr("Display in Spreadsheet"), pageSpreadsheet);
+    connect(redoPickWithSpreadsheetButton, SIGNAL(clicked()),
+            this, SLOT(redoPickWithSpreadsheetClicked()));
+    //sLayout->addWidget(redoPickWithSpreadsheetButton, 1, 0, 1, 1);
+    sLayout->addWidget(redoPickWithSpreadsheetButton);
+}
+
+
+// ****************************************************************************
 // Method: QvisPickWindow::UpdateWindow
+//
+// Purpose: 
+//   This method is called when the window needs to be updated.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 26, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::UpdateWindow(bool doAll)
+{
+    if (SelectedSubject() == pickAtts || doAll)
+        UpdateAll(doAll);
+    if (SelectedSubject() == plotList || doAll)
+        UpdateTimeOptions();
+}
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::UpdateAll
 //
 // Purpose: 
 //   This method updates the window's widgets to reflect changes made
@@ -503,10 +630,13 @@ QvisPickWindow::CreateWindowContents()
 //   Kathleen Bonnell, Thu Mar  3 08:08:03 PST 2011
 //   Added timeCurveType.
 //
+//   Kathleen Biagas, Fri Aug 26 11:13:18 PDT 2011
+//   timeCurve options handle by timeQueryOptionsWidget.
+//
 // ****************************************************************************
 
 void
-QvisPickWindow::UpdateWindow(bool doAll)
+QvisPickWindow::UpdateAll(bool doAll)
 {
     if (pickAtts == 0)
         return;
@@ -623,11 +753,11 @@ QvisPickWindow::UpdateWindow(bool doAll)
     // doTimeCurve
     if (pickAtts->IsSelected(PickAttributes::ID_doTimeCurve) || doAll)
     {
-        timeCurveCheckBox->blockSignals(true);
-        timeCurveCheckBox->setChecked(pickAtts->GetDoTimeCurve());
+        timeOpts->blockSignals(true);
+        timeOpts->setChecked(pickAtts->GetDoTimeCurve());
         preserveCoord->setEnabled(pickAtts->GetDoTimeCurve());
         timeCurveType->setEnabled(pickAtts->GetDoTimeCurve());
-        timeCurveCheckBox->blockSignals(false);
+        timeOpts->blockSignals(false);
     }
 
     // conciseOutput
@@ -703,6 +833,27 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 }
 
+// ****************************************************************************
+// Method: QvisPickWindow::UpdateTimeQueryOptions
+//
+// Purpose: 
+//   Sets the enabled state for the time options widget.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 26, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::UpdateTimeOptions()
+{
+    timeOpts->setEnabled(plotList->GetNumPlots() > 0);
+    preserveCoord->setEnabled(timeOpts->isEnabled() && timeOpts->isChecked());
+    timeCurveType->setEnabled(timeOpts->isEnabled() && timeOpts->isChecked());
+}
+
 
 // ****************************************************************************
 // Method: QvisPickWindow::UpdatePage
@@ -774,7 +925,7 @@ QvisPickWindow::UpdatePage()
         // Change the tab heading.
         lastLetter = pickLetter;
         temp.sprintf(" %s ", pickAtts->GetPickLetter().c_str());
-        tabWidget->setTabText(nextPage, temp);
+        resultsTabWidget->setTabText(nextPage, temp);
 
         //
         // Get the output string without the letter, as it is
@@ -787,7 +938,7 @@ QvisPickWindow::UpdatePage()
         infoLists[nextPage]->setText(displayString.c_str());
 
         // Show the tab.
-        tabWidget->setCurrentIndex(nextPage);
+        resultsTabWidget->setCurrentIndex(nextPage);
         nextPage = (nextPage + 1) % userMaxPickTabs->value();
     }
 }
@@ -826,6 +977,9 @@ QvisPickWindow::UpdatePage()
 //
 //   Brad Whitlock, Fri Jun  6 14:55:57 PDT 2008
 //   Qt 4.
+//
+//   Kathleen Biagas, Fri Aug 26 11:13:54 PDT 2011
+//   Added timeQueryOptionsWidget.
 //
 // ****************************************************************************
 
@@ -872,6 +1026,9 @@ QvisPickWindow::GetCurrentValues(int which_widget)
 
     if (doAll)
     {
+        MapNode timeOptions;
+        timeOpts->GetTimeQueryOptions(timeOptions);
+        pickAtts->SetTimeOptions(timeOptions);
         ResizeTabs();
     }
 }
@@ -898,6 +1055,9 @@ QvisPickWindow::GetCurrentValues(int which_widget)
 //   Brad Whitlock, Fri Jun  6 14:56:43 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Fri Aug 26 11:14:11 PDT 2011
+//   Added activeOptionsTab.
+//
 // ****************************************************************************
 
 void
@@ -915,6 +1075,7 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
             node->AddNode(new DataNode("autoShow", autoShow));
             node->AddNode(new DataNode("savePicks", savePicks));
             node->AddNode(new DataNode("userMaxTabs",userMaxPickTabs->value()));
+            node->AddNode(new DataNode("activeOptionsTab",activeOptionsTab));
         }
     }
 }
@@ -946,6 +1107,9 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
 //   Brad Whitlock, Fri Jun  6 14:56:56 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Fri Aug 26 11:14:30 PDT 2011
+//   Added activeOptionsTab.
+//
 // ****************************************************************************
 
 void
@@ -955,7 +1119,9 @@ QvisPickWindow::SetFromNode(DataNode *parentNode, const int *borders)
 
     DataNode *winNode = parentNode->GetNode(windowTitle().toStdString());
     if(winNode == 0)
+    {
         return;
+    }
 
     // Set the autoShow flag.
     DataNode *node;
@@ -968,6 +1134,16 @@ QvisPickWindow::SetFromNode(DataNode *parentNode, const int *borders)
         defaultNumTabs = node->AsInt();
         userMaxPickTabs->setValue(node->AsInt());
         ResizeTabs();
+    }
+    if((node = winNode->GetNode("activeOptionsTab")) != 0)
+    {
+        activeOptionsTab = node->AsInt();
+        if (activeOptionsTab < 0 || activeOptionsTab > 2)
+            activeOptionsTab = 0;    
+        // Show the appropriate page based on the activeOptionsTab setting.
+        optionsTabWidget->blockSignals(true);
+        optionsTabWidget->setCurrentIndex(activeOptionsTab);
+        optionsTabWidget->blockSignals(false);
     }
 }
 
@@ -1074,12 +1250,12 @@ QvisPickWindow::floatFormatProcessText()
 }
 
 
-
 // ****************************************************************************
 // Method: QvisPickWindow::ClearPages
 //
 // Purpose: 
-//   This method clears all the pages on the tab widget to reflect a clean-slate.
+//   This method clears all the pages on the tab widget to reflect a 
+//   clean-slate
 //
 // Programmer: Kathleen Bonnell
 // Creation:   March 25, 2002 
@@ -1093,12 +1269,12 @@ void
 QvisPickWindow::ClearPages()
 {
     QString temp = " ";
-    for (int i = 0; i < tabWidget->count(); i++)
+    for (int i = 0; i < resultsTabWidget->count(); i++)
     {
-        tabWidget->setTabText(i, temp);
+        resultsTabWidget->setTabText(i, temp);
         infoLists[i]->clear();
     }
-    tabWidget->setCurrentIndex(0);
+    resultsTabWidget->setCurrentIndex(0);
 }
 
 
@@ -1170,6 +1346,7 @@ QvisPickWindow::makeDefault()
     pickAtts->Notify();
     GetViewerMethods()->SetDefaultPickAttributes();
 }
+
 
 // ****************************************************************************
 // Method: QvisPickWindow::reset
@@ -1643,7 +1820,7 @@ QvisPickWindow::timeCurveTypeActivated(int val)
 // Method: QvisPickWindow::ResizeTabs
 //
 // Purpose:
-//   Resizes the number of tab the tabWidget hold based on the
+//   Resizes the number of tab the resultsTabWidget hold based on the
 //   current value in userMaxPickTabs. 
 //
 // Programmer: Kathleen Bonnell 
@@ -1658,7 +1835,7 @@ QvisPickWindow::timeCurveTypeActivated(int val)
 void
 QvisPickWindow::ResizeTabs()
 {
-    int currentMax = tabWidget->count();
+    int currentMax = resultsTabWidget->count();
     int newMax     = userMaxPickTabs->value();
 
     if (currentMax == newMax)
@@ -1668,12 +1845,12 @@ QvisPickWindow::ResizeTabs()
     QString temp = " ";
     if (newMax < currentMax)
     {
-        // Reduce the number of pages that tabWidget holds
+        // Reduce the number of pages that resultsTabWidget holds
         for (i = currentMax-1; i >= newMax; i--)
         {
-            tabWidget->setTabText(i, temp);
+            resultsTabWidget->setTabText(i, temp);
             infoLists[i]->clear();
-            tabWidget->removeTab(i);
+            resultsTabWidget->removeTab(i);
             pages[i]->hide();
         }
         if (nextPage >= newMax)
@@ -1681,22 +1858,24 @@ QvisPickWindow::ResizeTabs()
     }
     else // newMax > currentMax 
     {
-        // Increase the number of pages that tabWidget holds
+        // Increase the number of pages that resultsTabWidget holds
         for (i = currentMax; i < newMax; i++)
         {
             pages[i]->show();
-            tabWidget->addTab(pages[i]," "); 
+            resultsTabWidget->addTab(pages[i]," "); 
         }
-        if (tabWidget->tabText(nextPage) != " ")
+        if (resultsTabWidget->tabText(nextPage) != " ")
             nextPage = currentMax; 
     }
 }
+
 
 // ****************************************************************************
 // Method: QvisPickWindow::savePickText
 //
 // Purpose: 
-//   This is a Qt slot function that saves the pick text in a user selected file.
+//   This is a Qt slot function that saves the pick text in a user 
+//   selected file.
 //
 // Programmer: Ellen Tarwater
 // Creation:   Friday May 18 2007
@@ -1708,10 +1887,10 @@ QvisPickWindow::ResizeTabs()
 //   Brad Whitlock, Fri Jun  6 14:59:53 PDT 2008
 //   Qt 4.
 //
-//    Kathleen Bonnell, Fri May 13 13:28:45 PDT 2011
-//    On Windows, explicitly test writeability of the 'cwd' before passing it 
-//    to getSaveFileName (eg don't present user with a place to save a file if 
-//    they cannot save there!)
+//   Kathleen Bonnell, Fri May 13 13:28:45 PDT 2011
+//   On Windows, explicitly test writeability of the 'cwd' before passing it 
+//   to getSaveFileName (eg don't present user with a place to save a file if 
+//   they cannot save there!)
 //
 // ****************************************************************************
 
@@ -1756,7 +1935,7 @@ QvisPickWindow::savePickText()
         {
             QTextStream stream( &file );
             int i;
-            for ( i = 0; i < tabWidget->count(); i++ )
+            for ( i = 0; i < resultsTabWidget->count(); i++ )
             {
                 QString txt( infoLists[i]->toPlainText() );
                 if ( txt.length() > 0 )
@@ -1804,7 +1983,8 @@ QvisPickWindow::clearPicks()
 //   
 // ****************************************************************************
 
-void QvisPickWindow::redoPickClicked()
+void 
+QvisPickWindow::redoPickClicked()
 {
     // Save old state
     createSpreadsheetSave = pickAtts->GetCreateSpreadsheet();
@@ -1841,7 +2021,8 @@ void QvisPickWindow::redoPickClicked()
 //   
 // ****************************************************************************
 
-void QvisPickWindow::redoPickWithSpreadsheetClicked()
+void 
+QvisPickWindow::redoPickWithSpreadsheetClicked()
 {
     // Save old state
     createSpreadsheetSave = pickAtts->GetCreateSpreadsheet();
@@ -1876,15 +2057,25 @@ void QvisPickWindow::redoPickWithSpreadsheetClicked()
 //    Gunther H. Weber, Tue May 17 19:45:24 PDT 2011
 //    Replaced generic "Pick" with "ZonePick" to get re-picking to work again.
 //
+//    Kathleen Biagas, Tue Jun 21 12:00:49 PDT 2011
+//    ViewerMethods only has a Query method now, so fill out a MapNode
+//    with Pick parameters to pass to it.
+//
 // ****************************************************************************
 
 void
 QvisPickWindow::redoPick()
 {
+    MapNode params;
+    params["Coord"] = pickAtts->GetPickPoint();
+    params["vars"]  = pickAtts->GetVariables();
+    params["QueryType"] = (QueryList::QueryType)QueryList::PointQuery;
     if (pickAtts->GetPickType() == PickAttributes::Zone)
-        GetViewerMethods()->PointQuery("ZonePick", pickAtts->GetPickPoint(), pickAtts->GetVariables());
+        params["QueryName"] = string("ZonePick");
     else if (pickAtts->GetPickType() == PickAttributes::Node)
-        GetViewerMethods()->PointQuery("NodePick", pickAtts->GetPickPoint(),  pickAtts->GetVariables());
+        params["QueryName"] = string("NodePick");
+
+    GetViewerMethods()->Query(params);
 
     // Tell GUI to restore the pick attributes once the pick is complete
     emit initiateRestorePickAttributesAfterRepick();
@@ -1915,3 +2106,76 @@ QvisPickWindow::restorePickAttributesAfterRepick()
     pickAtts->Notify();
     GetViewerMethods()->SetPickAttributes();
 }
+
+// ****************************************************************************
+// Method: QvisPickWindow::optionsTabSelected
+//
+// Purpose: 
+//   This is a Qt slot function that is called when options tabs are changed.
+//
+// Arguments:
+//   index : The new active tab.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 26, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::optionsTabSelected(int index)
+{
+    activeOptionsTab = index;
+}
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::ConnectPlotList
+//
+// Purpose: 
+//   This method connects this window to the plotList.
+//
+// Arguments:
+//   pl        The plot list whichis being connected. 
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 26, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::ConnectPlotList(PlotList *pl)
+{
+    plotList = pl;
+    plotList->Attach(this);
+}
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::SubjectRemoved
+//
+// Purpose:
+//   Called when subjects that the window observes are destroyed.
+//
+// Arguments:
+//   TheRemovedSubject : A pointer to the subject being removed.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 26, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::SubjectRemoved(Subject *TheRemovedSubject)
+{
+    if(pickAtts == TheRemovedSubject)
+        pickAtts = 0;
+    if(plotList == TheRemovedSubject)
+        plotList = 0;
+}
+

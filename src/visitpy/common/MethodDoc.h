@@ -121,6 +121,7 @@ extern const char *visit_GetPlotOptions_doc;
 extern const char *visit_GetPreferredFileFormats_doc;
 extern const char *visit_GetQueryOutput_doc;
 extern const char *visit_GetQueryOverTimeAttributes_doc;
+extern const char *visit_GetQueryParameters_doc;
 extern const char *visit_GetRenderingAttributes_doc;
 extern const char *visit_GetSaveWindowAttributes_doc;
 extern const char *visit_GetSelectionList_doc; 

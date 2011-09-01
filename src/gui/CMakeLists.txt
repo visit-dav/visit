@@ -56,6 +56,10 @@
 #   Brad Whitlock, Thu Jun  9 15:22:21 PDT 2011
 #   Added QvisSelectionsDialog.
 #
+#   Kathleen Biagas, Fri Jun 10 08:57:36 PDT 2011
+#   Added widgets for PickQuery, LineoutQuery, HohlraumFluxQuery,
+#   XRayImageQuery,  TimeQueryOtions.
+#
 #****************************************************************************/
 
 SET(GUILIB_SOURCES
@@ -122,6 +126,7 @@ QvisGridWidget.C
 QvisHelpWindow.C
 QvisHistogram.C
 QvisHistogramLimits.C
+QvisHohlraumFluxQueryWidget.C
 QvisHostProfileWindow.C
 QvisImageAnnotationInterface.C
 QvisInteractorWindow.C
@@ -135,6 +140,7 @@ QvisLegendAttributesInterface.C
 QvisLightingWidget.C
 QvisLightingWindow.C
 QvisLine2DInterface.C
+QvisLineoutQueryWidget.C
 QvisLineStyleWidget.C
 QvisLineWidthWidget.C
 QvisMacroWindow.C
@@ -148,6 +154,7 @@ QvisOpacitySlider.C
 QvisOperatorWindow.C
 QvisOutputWindow.C
 QvisPeriodicTableWidget.C
+QvisPickQueryWidget.C
 QvisPickWindow.C
 QvisPlotListBox.C
 QvisPlotListBoxItem.C
@@ -197,6 +204,7 @@ QvisSubsetPanelWidget.C
 QvisSubsetWindow.C
 QvisText2DInterface.C
 QvisText3DInterface.C
+QvisTimeQueryOptionsWidget.C
 QvisTimeSliderControlWidget.C
 QvisTimeSliderInterface.C
 QvisTurnDownButton.C
@@ -208,6 +216,7 @@ QvisViewportWidget.C
 QvisVisItUpdate.C
 QvisWindowBase.C
 QvisWizard.C
+QvisXRayImageQueryWidget.C
 SimCommandSlots.C
 SplashScreen.C
 WidgetDataNode.C
@@ -256,12 +265,14 @@ QvisGUIApplication.h
 QvisHelpWindow.h
 QvisHistogram.h
 QvisHistogramLimits.h
+QvisHohlraumFluxQueryWidget.h
 QvisHostProfileWindow.h
 QvisImageAnnotationInterface.h
 QvisInteractorWindow.h
 QvisInterpreter.h
 QvisLightingWidget.h
 QvisLightingWindow.h
+QvisLineoutQueryWidget.h
 QvisLineStyleWidget.h
 QvisLineWidthWidget.h
 QvisMacroWindow.h
@@ -274,6 +285,7 @@ QvisOperatorWindow.h
 QvisOpacitySlider.h
 QvisOutputWindow.h
 QvisPeriodicTableWidget.h
+QvisPickQueryWidget.h
 QvisPickWindow.h
 QvisPlotListBox.h
 QvisPluginManagerAttributesDataModel.h
@@ -322,6 +334,7 @@ QvisColorSwatchListWidget.h
 QvisSILSetSelector.h
 QvisSubsetWindow.h
 QvisSubsetPanelWidget.h
+QvisTimeQueryOptionsWidget.h
 QvisTimeSliderInterface.h
 QvisLegendAttributesInterface.h
 QvisLine2DInterface.h
@@ -342,6 +355,7 @@ QvisKeyframeWindow.h
 QvisKeyframeWidget.h
 QvisKeyframePlotRangeWidget.h
 QvisViewportWidget.h
+QvisXRayImageQueryWidget.h
 )
 
 QT_WRAP_CPP(gui GUILIB_SOURCES ${GUILIB_MOC_SOURCES})

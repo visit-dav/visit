@@ -48,6 +48,7 @@
 #include <time.h>
 #include "Field.h"
 
+
 #define GENERATOR_NAME "xml2atts"
 
 // ****************************************************************************
@@ -203,6 +204,9 @@
 //
 //    Kathleen Biagas, Thu Aug 25 14:21:58 MST 2011
 //    Allow fields in a persistent state object to be non-persistent.
+//
+//    Kathleen Biagas, Tue Mar  1 11:01:51 PST 2011
+//    Added Generator for MapNode type.
 //
 // ****************************************************************************
 
@@ -1324,6 +1328,28 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     }
 };
 
+//
+// --------------------------------- MapNode ---------------------------------
+//
+class AttsGeneratorMapNode : public virtual MapNode , public virtual AttsGeneratorField
+{
+  public:
+    AttsGeneratorMapNode(const QString &n, const QString &l)
+        : Field("MapNode",n,l), MapNode(n,l), AttsGeneratorField("MapNode",n,l) { }
+    virtual bool CanHaveConst() { return true; }
+    virtual QString GetAttributeGroupID()
+    {
+        return "m";
+    }
+    virtual QString DataNodeConversion()
+    {
+        return "AsMapNode";
+    }
+    virtual void WriteSourceSetDefault(QTextStream &c)
+    {
+    }
+};
+
 
 //
 // ----------------------------------- Enum -----------------------------------
@@ -1530,6 +1556,9 @@ class AttsGeneratorLoadBalanceScheme : public virtual LoadBalanceSchemeField, pu
 //    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007 
 //    Added scalemode.
 //
+//    Kathleen Bonnell, Tue Mar  1 11:02:37 PST 2011
+//    Added MapNode.
+//
 // ----------------------------------------------------------------------------
 class AttsFieldFactory
 {
@@ -1566,6 +1595,7 @@ class AttsFieldFactory
         else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new AttsGeneratorEnum(subtype, name, label);
         else if (type == "scalemode")    f = new AttsGeneratorScaleMode(name,label);
+        else if (type == "MapNode")       f = new AttsGeneratorMapNode(name,label);
 
         // Special built-in AVT enums
         else if (type == "avtCentering")      f = new AttsGeneratoravtCentering(name, label);

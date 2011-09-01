@@ -57,6 +57,8 @@
 //  Creation:   February 18, 2004 
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Jul 26 15:13:06 PDT 2011
+//    Add GetDefaultInputParams.
 //
 // ****************************************************************************
 
@@ -72,6 +74,8 @@ class QUERY_API avtNumNodesQuery : public avtDatasetQuery
 
 
     virtual void             PerformQuery(QueryAttributes *);
+
+    static void              GetDefaultInputParams(MapNode &);
 
   protected:
 

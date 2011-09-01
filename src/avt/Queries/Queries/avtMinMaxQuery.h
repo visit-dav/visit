@@ -83,6 +83,9 @@ class vtkDataSet;
 //    Hank Childs, Sun Dec 26 12:13:19 PST 2010
 //    Add support for time parallelization.
 //
+//    Kathleen Biagas, Tue Jul 26 13:48:11 PDT 2011
+//    Add GetDefaultInputParams.
+//
 // ****************************************************************************
 
 class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
@@ -96,6 +99,8 @@ class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
                                 { return "avtMinMaxQuery"; };
     virtual const char     *GetDescription(void)
                                 { return "Calculating min/max."; };
+
+    static  void            GetDefaultInputParams(MapNode &);
 
   protected:
     virtual void            Execute(vtkDataSet *, const int);

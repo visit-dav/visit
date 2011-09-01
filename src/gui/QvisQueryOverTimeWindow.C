@@ -128,6 +128,9 @@ QvisQueryOverTimeWindow::~QvisQueryOverTimeWindow()
 //   And that the 'Cycles' 'Times' and 'Timestate' options only apply to 
 //   values displayed for x-axis.
 //
+//   Kathleen Biagas, Fri Aug 26 17:12:13 PDT 2011
+//   Removed start/end times and stride.
+//
 // ****************************************************************************
 
 void
@@ -168,62 +171,23 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     topLayout->addLayout(mainLayout);
 
     //
-    // StartTime 
-    //
-    QLabel *msgLabel = new QLabel(tr("Start and End times MUST be specified as Time steps, not cycles or times."), central);
-    msgLabel->setWordWrap(true);
-    mainLayout->addWidget(msgLabel, 0, 0, 1, 3);
-    startTimeFlag = new QCheckBox(tr("Starting timestep"), central);
-    connect(startTimeFlag, SIGNAL(toggled(bool)),
-            this, SLOT(startTimeFlagChanged(bool)));
-    mainLayout->addWidget(startTimeFlag, 3,0);
-
-    startTime = new QNarrowLineEdit(central);
-    connect(startTime, SIGNAL(returnPressed()),
-            this, SLOT(startTimeProcessText()));
-    mainLayout->addWidget(startTime, 3,1);
-
-    //
-    // EndTime 
-    //
-    endTimeFlag = new QCheckBox(tr("Ending timestep"), central);
-    connect(endTimeFlag, SIGNAL(toggled(bool)),
-            this, SLOT(endTimeFlagChanged(bool)));
-    mainLayout->addWidget(endTimeFlag, 4,0);
-
-    endTime = new QNarrowLineEdit(central);
-    connect(endTime, SIGNAL(returnPressed()),
-            this, SLOT(endTimeProcessText()));
-    mainLayout->addWidget(endTime, 4,1);
-
-    //
-    // Stride 
-    //
-    strideLabel = new QLabel(tr("stride"), central);
-    mainLayout->addWidget(strideLabel,5,0);
-    stride = new QNarrowLineEdit(central);
-    connect(stride, SIGNAL(returnPressed()),
-            this, SLOT(strideProcessText()));
-    mainLayout->addWidget(stride, 5,1);
-
-    //
     // CreateWindow 
     //
     createWindow = new QCheckBox(tr("Use 1st unused window or create new\none. All subsequent queries will use this\nsame window."),
                                   central);
     connect(createWindow, SIGNAL(toggled(bool)),
             this, SLOT(createWindowChanged(bool)));
-    mainLayout->addWidget(createWindow, 6,0,3,2);
+    mainLayout->addWidget(createWindow, 0,0,3,2);
 
     //
     // WindowId 
     //
     windowIdLabel = new QLabel(tr("Window #"), central);
-    mainLayout->addWidget(windowIdLabel,9,0);
+    mainLayout->addWidget(windowIdLabel,3,0);
     windowId = new QNarrowLineEdit(central);
     connect(windowId, SIGNAL(returnPressed()),
             this, SLOT(windowIdProcessText()));
-    mainLayout->addWidget(windowId, 9,1);
+    mainLayout->addWidget(windowId, 3,1);
 
 }
 
@@ -241,8 +205,11 @@ QvisQueryOverTimeWindow::CreateWindowContents()
 //   Brad Whitlock, Mon Dec 17 09:40:53 PST 2007
 //   Made it use ids.
 //
-//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//    Initial Qt4 Port.
+//   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Kathleen Biagas, Fri Aug 26 17:12:13 PDT 2011
+//   Removed start/end times and stride.
 //
 // ****************************************************************************
 
@@ -266,40 +233,6 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
           case QueryOverTimeAttributes::ID_timeType:
             timeType->button(atts->GetTimeType())->setChecked(true);
             break;
-          case QueryOverTimeAttributes::ID_startTimeFlag:
-            if (atts->GetStartTimeFlag() == true)
-            {
-                startTime->setEnabled(true);
-            }
-            else
-            {
-                startTime->setEnabled(false);
-            }
-            startTimeFlag->setChecked(atts->GetStartTimeFlag());
-            break;
-          case QueryOverTimeAttributes::ID_startTime:
-            temp.sprintf("%d", atts->GetStartTime());
-            startTime->setText(temp);
-            break;
-          case QueryOverTimeAttributes::ID_endTimeFlag:
-            if (atts->GetEndTimeFlag() == true)
-            {
-                endTime->setEnabled(true);
-            }
-            else
-            {
-                endTime->setEnabled(false);
-            }
-            endTimeFlag->setChecked(atts->GetEndTimeFlag());
-            break;
-          case QueryOverTimeAttributes::ID_endTime:
-            temp.sprintf("%d", atts->GetEndTime());
-            endTime->setText(temp);
-            break;
-          case QueryOverTimeAttributes::ID_stride:
-            temp.sprintf("%d", atts->GetStride());
-            stride->setText(temp);
-            break;
           case QueryOverTimeAttributes::ID_createWindow:
             if (atts->GetCreateWindow() == false)
             {
@@ -316,6 +249,8 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
           case QueryOverTimeAttributes::ID_windowId:
             temp.sprintf("%d", atts->GetWindowId());
             windowId->setText(temp);
+            break;
+          default:
             break;
         }
     }
@@ -335,6 +270,9 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
 //   
+//   Kathleen Biagas, Fri Aug 26 17:12:13 PDT 2011
+//   Removed start/end times and stride.
+//
 // ****************************************************************************
 
 void
@@ -347,81 +285,6 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
     if(which_widget == QueryOverTimeAttributes::ID_timeType || doAll)
     {
         // Nothing for timeType
-    }
-
-    // Do startTimeFlag
-    if(which_widget == QueryOverTimeAttributes::ID_startTimeFlag || doAll)
-    {
-        // Nothing for startTimeFlag
-    }
-
-    // Do startTime
-    if(which_widget == QueryOverTimeAttributes::ID_startTime || doAll)
-    {
-        temp = startTime->displayText().simplified();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            int val = temp.toInt(&okay);
-            atts->SetStartTime(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of startTime was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetStartTime());
-            Message(msg);
-            atts->SetStartTime(atts->GetStartTime());
-        }
-    }
-
-    // Do endTimeFlag
-    if(which_widget == QueryOverTimeAttributes::ID_endTimeFlag || doAll)
-    {
-        // Nothing for endTimeFlag
-    }
-
-    // Do endTime
-    if(which_widget == QueryOverTimeAttributes::ID_endTime || doAll)
-    {
-        temp = endTime->displayText().simplified();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            int val = temp.toInt(&okay);
-            atts->SetEndTime(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of endTime was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetEndTime());
-            Message(msg);
-            atts->SetEndTime(atts->GetEndTime());
-        }
-    }
-
-    // Do stride
-    if(which_widget == QueryOverTimeAttributes::ID_stride || doAll)
-    {
-        temp = stride->displayText().simplified();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            int val = temp.toInt(&okay);
-            atts->SetStride(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of stride was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetStride());
-            Message(msg);
-            atts->SetStride(atts->GetStride());
-        }
     }
 
     // Do createWindow
@@ -557,46 +420,6 @@ QvisQueryOverTimeWindow::timeTypeChanged(int val)
         atts->SetTimeType(QueryOverTimeAttributes::TimeType(val));
         Apply();
     }
-}
-
-
-void
-QvisQueryOverTimeWindow::startTimeFlagChanged(bool val)
-{
-    atts->SetStartTimeFlag(val);
-    Apply();
-}
-
-
-void
-QvisQueryOverTimeWindow::startTimeProcessText()
-{
-    GetCurrentValues(QueryOverTimeAttributes::ID_startTime);
-    Apply();
-}
-
-
-void
-QvisQueryOverTimeWindow::endTimeFlagChanged(bool val)
-{
-    atts->SetEndTimeFlag(val);
-    Apply();
-}
-
-
-void
-QvisQueryOverTimeWindow::endTimeProcessText()
-{
-    GetCurrentValues(QueryOverTimeAttributes::ID_endTime);
-    Apply();
-}
-
-
-void
-QvisQueryOverTimeWindow::strideProcessText()
-{
-    GetCurrentValues(QueryOverTimeAttributes::ID_stride);
-    Apply();
 }
 
 

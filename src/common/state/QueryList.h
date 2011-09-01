@@ -70,8 +70,6 @@ public:
     enum WindowType
     {
         Basic,
-        SinglePoint,
-        DoublePoint,
         DomainNode,
         DomainNodeVars,
         DomainZone,
@@ -83,13 +81,14 @@ public:
         ConnCompSummary,
         ShapeletsDecomp,
         XRayImage,
-        StreamlineInfo
+        StreamlineInfo,
+        Pick,
+        Lineout
     };
     enum Groups
     {
         CurveRelated,
         MeshRelated,
-        PickRelated,
         TimeRelated,
         VariableRelated,
         ShapeRelated,
@@ -138,6 +137,7 @@ public:
     void SelectQueryMode();
     void SelectNumVars();
     void SelectCanBePublic();
+    void SelectRequiresVarSelection();
 
     // Property setting methods
     void SetNames(const stringVector &names_);
@@ -149,6 +149,7 @@ public:
     void SetQueryMode(const intVector &queryMode_);
     void SetNumVars(const intVector &numVars_);
     void SetCanBePublic(const intVector &canBePublic_);
+    void SetRequiresVarSelection(const intVector &requiresVarSelection_);
 
     // Property getting methods
     const stringVector &GetNames() const;
@@ -169,6 +170,8 @@ public:
           intVector    &GetNumVars();
     const intVector    &GetCanBePublic() const;
           intVector    &GetCanBePublic();
+    const intVector    &GetRequiresVarSelection() const;
+          intVector    &GetRequiresVarSelection();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -203,7 +206,7 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    void AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, QueryMode qMode, int numVars = 1);
+    void AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, QueryMode qMode, int numVars = 1, int reqVars = 0);
     bool QueryExists(const std::string &name, QueryType t);
     int NumberOfInputsForQuery(const std::string &name);
     int AllowedVarsForQuery(const std::string &name);
@@ -211,6 +214,7 @@ public:
     int GetWindowType(const std::string &name) ;
     int NumberOfVarsForQuery(const std::string &name);
     bool RegularQueryAvailable(const std::string &name) ;
+    int GetQueryType(const std::string &name) ;
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -223,6 +227,7 @@ public:
         ID_queryMode,
         ID_numVars,
         ID_canBePublic,
+        ID_requiresVarSelection,
         ID__LAST
     };
 
@@ -236,11 +241,12 @@ private:
     intVector    queryMode;
     intVector    numVars;
     intVector    canBePublic;
+    intVector    requiresVarSelection;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define QUERYLIST_TMFS "s*i*i*i*i*i*i*i*i*"
+#define QUERYLIST_TMFS "s*i*i*i*i*i*i*i*i*i*"
 
 #endif

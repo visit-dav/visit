@@ -79,51 +79,51 @@ static const char *ViewerRPCType_strings[] = {
 "EnableToolRPC", "SetToolUpdateModeRPC", "CopyViewToWindowRPC", 
 "CopyLightingToWindowRPC", "CopyAnnotationsToWindowRPC", "CopyPlotsToWindowRPC", 
 "ClearCacheRPC", "ClearCacheForAllEnginesRPC", "SetViewExtentsTypeRPC", 
-"ClearRefLinesRPC", "SetRenderingAttributesRPC", "DatabaseQueryRPC", 
-"PointQueryRPC", "LineQueryRPC", "CloneWindowRPC", 
-"SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC", "ResetMaterialAttributesRPC", 
-"SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC", "MovePlotDatabaseKeyframeRPC", 
-"ClearViewKeyframesRPC", "DeleteViewKeyframeRPC", "MoveViewKeyframeRPC", 
-"SetViewKeyframeRPC", "OpenMDServerRPC", "EnableToolbarRPC", 
-"HideToolbarsRPC", "HideToolbarsForAllWindowsRPC", "ShowToolbarsRPC", 
-"ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC", "SaveViewRPC", 
-"SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC", "ExportColorTableRPC", 
-"ExportEntireStateRPC", "ImportEntireStateRPC", "ImportEntireStateWithDifferentSourcesRPC", 
-"ResetPickAttributesRPC", "AddAnnotationObjectRPC", "HideActiveAnnotationObjectsRPC", 
-"DeleteActiveAnnotationObjectsRPC", "RaiseActiveAnnotationObjectsRPC", "LowerActiveAnnotationObjectsRPC", 
-"SetAnnotationObjectOptionsRPC", "SetDefaultAnnotationObjectListRPC", "ResetAnnotationObjectListRPC", 
-"ResetPickLetterRPC", "SetDefaultPickAttributesRPC", "ChooseCenterOfRotationRPC", 
-"SetCenterOfRotationRPC", "SetQueryOverTimeAttributesRPC", "SetDefaultQueryOverTimeAttributesRPC", 
-"ResetQueryOverTimeAttributesRPC", "ResetLineoutColorRPC", "SetInteractorAttributesRPC", 
-"SetDefaultInteractorAttributesRPC", "ResetInteractorAttributesRPC", "GetProcInfoRPC", 
-"SendSimulationCommandRPC", "UpdateDBPluginInfoRPC", "ExportDBRPC", 
-"SetTryHarderCyclesTimesRPC", "OpenClientRPC", "OpenGUIClientRPC", 
-"OpenCLIClientRPC", "SuppressQueryOutputRPC", "SetQueryFloatFormatRPC", 
-"SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC", "ResetMeshManagementAttributesRPC", 
-"ResizeWindowRPC", "MoveWindowRPC", "MoveAndResizeWindowRPC", 
-"SetStateLoggingRPC", "ConstructDataBinningRPC", "RequestMetaDataRPC", 
-"SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC", "SetCreateTimeDerivativeExpressionsRPC", 
-"SetCreateVectorMagnitudeExpressionsRPC", "CopyActivePlotsRPC", "SetPlotFollowsTimeRPC", 
-"TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", "SetSuppressMessagesRPC", 
-"ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", "DeleteNamedSelectionRPC", 
-"LoadNamedSelectionRPC", "SaveNamedSelectionRPC", "SetNamedSelectionAutoApplyRPC", 
-"UpdateNamedSelectionRPC", "InitializeNamedSelectionVariablesRPC", "MenuQuitRPC", 
-"SetPlotDescriptionRPC", "MovePlotOrderTowardFirstRPC", "MovePlotOrderTowardLastRPC", 
-"SetPlotOrderToFirstRPC", "SetPlotOrderToLastRPC", "RenamePickLabelRPC", 
-"MaxRPC"};
+"ClearRefLinesRPC", "SetRenderingAttributesRPC", "QueryRPC", 
+"CloneWindowRPC", "SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC", 
+"ResetMaterialAttributesRPC", "SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC", 
+"MovePlotDatabaseKeyframeRPC", "ClearViewKeyframesRPC", "DeleteViewKeyframeRPC", 
+"MoveViewKeyframeRPC", "SetViewKeyframeRPC", "OpenMDServerRPC", 
+"EnableToolbarRPC", "HideToolbarsRPC", "HideToolbarsForAllWindowsRPC", 
+"ShowToolbarsRPC", "ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC", 
+"SaveViewRPC", "SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC", 
+"ExportColorTableRPC", "ExportEntireStateRPC", "ImportEntireStateRPC", 
+"ImportEntireStateWithDifferentSourcesRPC", "ResetPickAttributesRPC", "AddAnnotationObjectRPC", 
+"HideActiveAnnotationObjectsRPC", "DeleteActiveAnnotationObjectsRPC", "RaiseActiveAnnotationObjectsRPC", 
+"LowerActiveAnnotationObjectsRPC", "SetAnnotationObjectOptionsRPC", "SetDefaultAnnotationObjectListRPC", 
+"ResetAnnotationObjectListRPC", "ResetPickLetterRPC", "SetDefaultPickAttributesRPC", 
+"ChooseCenterOfRotationRPC", "SetCenterOfRotationRPC", "SetQueryOverTimeAttributesRPC", 
+"SetDefaultQueryOverTimeAttributesRPC", "ResetQueryOverTimeAttributesRPC", "ResetLineoutColorRPC", 
+"SetInteractorAttributesRPC", "SetDefaultInteractorAttributesRPC", "ResetInteractorAttributesRPC", 
+"GetProcInfoRPC", "SendSimulationCommandRPC", "UpdateDBPluginInfoRPC", 
+"ExportDBRPC", "SetTryHarderCyclesTimesRPC", "OpenClientRPC", 
+"OpenGUIClientRPC", "OpenCLIClientRPC", "SuppressQueryOutputRPC", 
+"SetQueryFloatFormatRPC", "SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC", 
+"ResetMeshManagementAttributesRPC", "ResizeWindowRPC", "MoveWindowRPC", 
+"MoveAndResizeWindowRPC", "SetStateLoggingRPC", "ConstructDataBinningRPC", 
+"RequestMetaDataRPC", "SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC", 
+"SetCreateTimeDerivativeExpressionsRPC", "SetCreateVectorMagnitudeExpressionsRPC", "CopyActivePlotsRPC", 
+"SetPlotFollowsTimeRPC", "TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", 
+"SetSuppressMessagesRPC", "ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", 
+"DeleteNamedSelectionRPC", "LoadNamedSelectionRPC", "SaveNamedSelectionRPC", 
+"SetNamedSelectionAutoApplyRPC", "UpdateNamedSelectionRPC", "InitializeNamedSelectionVariablesRPC", 
+"MenuQuitRPC", "SetPlotDescriptionRPC", "MovePlotOrderTowardFirstRPC", 
+"MovePlotOrderTowardLastRPC", "SetPlotOrderToFirstRPC", "SetPlotOrderToLastRPC", 
+"RenamePickLabelRPC", "GetQueryParametersRPC", "MaxRPC"
+};
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(ViewerRPC::ViewerRPCType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 196) index = 0;
+    if(index < 0 || index >= 195) index = 0;
     return ViewerRPCType_strings[index];
 }
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(int t)
 {
-    int index = (t < 0 || t >= 196) ? 0 : t;
+    int index = (t < 0 || t >= 195) ? 0 : t;
     return ViewerRPCType_strings[index];
 }
 
@@ -131,7 +131,7 @@ bool
 ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCType &val)
 {
     val = ViewerRPC::CloseRPC;
-    for(int i = 0; i < 196; ++i)
+    for(int i = 0; i < 195; ++i)
     {
         if(s == ViewerRPCType_strings[i])
         {
@@ -173,17 +173,11 @@ void ViewerRPC::Init()
     queryPoint1[0] = 0;
     queryPoint1[1] = 0;
     queryPoint1[2] = 0;
-    queryPoint2[0] = 0;
-    queryPoint2[1] = 0;
-    queryPoint2[2] = 0;
     toolId = 0;
     boolFlag = false;
     intArg1 = 0;
     intArg2 = 0;
     intArg3 = 0;
-    intArg4 = 0;
-    doubleArg1.push_back(0);
-    doubleArg2.push_back(0);
     toolUpdateMode = 1;
 
     ViewerRPC::SelectAll();
@@ -233,22 +227,15 @@ void ViewerRPC::Copy(const ViewerRPC &obj)
     queryPoint1[1] = obj.queryPoint1[1];
     queryPoint1[2] = obj.queryPoint1[2];
 
-    queryPoint2[0] = obj.queryPoint2[0];
-    queryPoint2[1] = obj.queryPoint2[1];
-    queryPoint2[2] = obj.queryPoint2[2];
-
-    queryVariables = obj.queryVariables;
     toolId = obj.toolId;
     boolFlag = obj.boolFlag;
     intArg1 = obj.intArg1;
     intArg2 = obj.intArg2;
     intArg3 = obj.intArg3;
-    intArg4 = obj.intArg4;
     stringArg1 = obj.stringArg1;
     stringArg2 = obj.stringArg2;
-    doubleArg1 = obj.doubleArg1;
-    doubleArg2 = obj.doubleArg2;
     toolUpdateMode = obj.toolUpdateMode;
+    queryParams = obj.queryParams;
 
     ViewerRPC::SelectAll();
 }
@@ -415,11 +402,6 @@ ViewerRPC::operator == (const ViewerRPC &obj) const
     for(int i = 0; i < 3 && queryPoint1_equal; ++i)
         queryPoint1_equal = (queryPoint1[i] == obj.queryPoint1[i]);
 
-    // Compare the queryPoint2 arrays.
-    bool queryPoint2_equal = true;
-    for(int i = 0; i < 3 && queryPoint2_equal; ++i)
-        queryPoint2_equal = (queryPoint2[i] == obj.queryPoint2[i]);
-
     // Create the return value
     return ((RPCType == obj.RPCType) &&
             (windowLayout == obj.windowLayout) &&
@@ -443,19 +425,15 @@ ViewerRPC::operator == (const ViewerRPC &obj) const
             (colorTableName == obj.colorTableName) &&
             (queryName == obj.queryName) &&
             queryPoint1_equal &&
-            queryPoint2_equal &&
-            (queryVariables == obj.queryVariables) &&
             (toolId == obj.toolId) &&
             (boolFlag == obj.boolFlag) &&
             (intArg1 == obj.intArg1) &&
             (intArg2 == obj.intArg2) &&
             (intArg3 == obj.intArg3) &&
-            (intArg4 == obj.intArg4) &&
             (stringArg1 == obj.stringArg1) &&
             (stringArg2 == obj.stringArg2) &&
-            (doubleArg1 == obj.doubleArg1) &&
-            (doubleArg2 == obj.doubleArg2) &&
-            (toolUpdateMode == obj.toolUpdateMode));
+            (toolUpdateMode == obj.toolUpdateMode) &&
+            (queryParams == obj.queryParams));
 }
 
 // ****************************************************************************
@@ -621,19 +599,15 @@ ViewerRPC::SelectAll()
     Select(ID_colorTableName,    (void *)&colorTableName);
     Select(ID_queryName,         (void *)&queryName);
     Select(ID_queryPoint1,       (void *)queryPoint1, 3);
-    Select(ID_queryPoint2,       (void *)queryPoint2, 3);
-    Select(ID_queryVariables,    (void *)&queryVariables);
     Select(ID_toolId,            (void *)&toolId);
     Select(ID_boolFlag,          (void *)&boolFlag);
     Select(ID_intArg1,           (void *)&intArg1);
     Select(ID_intArg2,           (void *)&intArg2);
     Select(ID_intArg3,           (void *)&intArg3);
-    Select(ID_intArg4,           (void *)&intArg4);
     Select(ID_stringArg1,        (void *)&stringArg1);
     Select(ID_stringArg2,        (void *)&stringArg2);
-    Select(ID_doubleArg1,        (void *)&doubleArg1);
-    Select(ID_doubleArg2,        (void *)&doubleArg2);
     Select(ID_toolUpdateMode,    (void *)&toolUpdateMode);
+    Select(ID_queryParams,       (void *)&queryParams);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -798,22 +772,6 @@ ViewerRPC::SetQueryPoint1(const double *queryPoint1_)
 }
 
 void
-ViewerRPC::SetQueryPoint2(const double *queryPoint2_)
-{
-    queryPoint2[0] = queryPoint2_[0];
-    queryPoint2[1] = queryPoint2_[1];
-    queryPoint2[2] = queryPoint2_[2];
-    Select(ID_queryPoint2, (void *)queryPoint2, 3);
-}
-
-void
-ViewerRPC::SetQueryVariables(const stringVector &queryVariables_)
-{
-    queryVariables = queryVariables_;
-    Select(ID_queryVariables, (void *)&queryVariables);
-}
-
-void
 ViewerRPC::SetToolId(int toolId_)
 {
     toolId = toolId_;
@@ -849,13 +807,6 @@ ViewerRPC::SetIntArg3(int intArg3_)
 }
 
 void
-ViewerRPC::SetIntArg4(int intArg4_)
-{
-    intArg4 = intArg4_;
-    Select(ID_intArg4, (void *)&intArg4);
-}
-
-void
 ViewerRPC::SetStringArg1(const std::string &stringArg1_)
 {
     stringArg1 = stringArg1_;
@@ -870,24 +821,17 @@ ViewerRPC::SetStringArg2(const std::string &stringArg2_)
 }
 
 void
-ViewerRPC::SetDoubleArg1(const doubleVector &doubleArg1_)
-{
-    doubleArg1 = doubleArg1_;
-    Select(ID_doubleArg1, (void *)&doubleArg1);
-}
-
-void
-ViewerRPC::SetDoubleArg2(const doubleVector &doubleArg2_)
-{
-    doubleArg2 = doubleArg2_;
-    Select(ID_doubleArg2, (void *)&doubleArg2);
-}
-
-void
 ViewerRPC::SetToolUpdateMode(int toolUpdateMode_)
 {
     toolUpdateMode = toolUpdateMode_;
     Select(ID_toolUpdateMode, (void *)&toolUpdateMode);
+}
+
+void
+ViewerRPC::SetQueryParams(const MapNode &queryParams_)
+{
+    queryParams = queryParams_;
+    Select(ID_queryParams, (void *)&queryParams);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1104,30 +1048,6 @@ ViewerRPC::GetQueryPoint1()
     return queryPoint1;
 }
 
-const double *
-ViewerRPC::GetQueryPoint2() const
-{
-    return queryPoint2;
-}
-
-double *
-ViewerRPC::GetQueryPoint2()
-{
-    return queryPoint2;
-}
-
-const stringVector &
-ViewerRPC::GetQueryVariables() const
-{
-    return queryVariables;
-}
-
-stringVector &
-ViewerRPC::GetQueryVariables()
-{
-    return queryVariables;
-}
-
 int
 ViewerRPC::GetToolId() const
 {
@@ -1158,12 +1078,6 @@ ViewerRPC::GetIntArg3() const
     return intArg3;
 }
 
-int
-ViewerRPC::GetIntArg4() const
-{
-    return intArg4;
-}
-
 const std::string &
 ViewerRPC::GetStringArg1() const
 {
@@ -1188,34 +1102,22 @@ ViewerRPC::GetStringArg2()
     return stringArg2;
 }
 
-const doubleVector &
-ViewerRPC::GetDoubleArg1() const
-{
-    return doubleArg1;
-}
-
-doubleVector &
-ViewerRPC::GetDoubleArg1()
-{
-    return doubleArg1;
-}
-
-const doubleVector &
-ViewerRPC::GetDoubleArg2() const
-{
-    return doubleArg2;
-}
-
-doubleVector &
-ViewerRPC::GetDoubleArg2()
-{
-    return doubleArg2;
-}
-
 int
 ViewerRPC::GetToolUpdateMode() const
 {
     return toolUpdateMode;
+}
+
+const MapNode &
+ViewerRPC::GetQueryParams() const
+{
+    return queryParams;
+}
+
+MapNode &
+ViewerRPC::GetQueryParams()
+{
+    return queryParams;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1301,18 +1203,6 @@ ViewerRPC::SelectQueryPoint1()
 }
 
 void
-ViewerRPC::SelectQueryPoint2()
-{
-    Select(ID_queryPoint2, (void *)queryPoint2, 3);
-}
-
-void
-ViewerRPC::SelectQueryVariables()
-{
-    Select(ID_queryVariables, (void *)&queryVariables);
-}
-
-void
 ViewerRPC::SelectStringArg1()
 {
     Select(ID_stringArg1, (void *)&stringArg1);
@@ -1325,15 +1215,9 @@ ViewerRPC::SelectStringArg2()
 }
 
 void
-ViewerRPC::SelectDoubleArg1()
+ViewerRPC::SelectQueryParams()
 {
-    Select(ID_doubleArg1, (void *)&doubleArg1);
-}
-
-void
-ViewerRPC::SelectDoubleArg2()
-{
-    Select(ID_doubleArg2, (void *)&doubleArg2);
+    Select(ID_queryParams, (void *)&queryParams);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1382,19 +1266,15 @@ ViewerRPC::GetFieldName(int index) const
     case ID_colorTableName:    return "colorTableName";
     case ID_queryName:         return "queryName";
     case ID_queryPoint1:       return "queryPoint1";
-    case ID_queryPoint2:       return "queryPoint2";
-    case ID_queryVariables:    return "queryVariables";
     case ID_toolId:            return "toolId";
     case ID_boolFlag:          return "boolFlag";
     case ID_intArg1:           return "intArg1";
     case ID_intArg2:           return "intArg2";
     case ID_intArg3:           return "intArg3";
-    case ID_intArg4:           return "intArg4";
     case ID_stringArg1:        return "stringArg1";
     case ID_stringArg2:        return "stringArg2";
-    case ID_doubleArg1:        return "doubleArg1";
-    case ID_doubleArg2:        return "doubleArg2";
     case ID_toolUpdateMode:    return "toolUpdateMode";
+    case ID_queryParams:       return "queryParams";
     default:  return "invalid index";
     }
 }
@@ -1441,19 +1321,15 @@ ViewerRPC::GetFieldType(int index) const
     case ID_colorTableName:    return FieldType_string;
     case ID_queryName:         return FieldType_string;
     case ID_queryPoint1:       return FieldType_doubleArray;
-    case ID_queryPoint2:       return FieldType_doubleArray;
-    case ID_queryVariables:    return FieldType_stringVector;
     case ID_toolId:            return FieldType_int;
     case ID_boolFlag:          return FieldType_bool;
     case ID_intArg1:           return FieldType_int;
     case ID_intArg2:           return FieldType_int;
     case ID_intArg3:           return FieldType_int;
-    case ID_intArg4:           return FieldType_int;
     case ID_stringArg1:        return FieldType_string;
     case ID_stringArg2:        return FieldType_string;
-    case ID_doubleArg1:        return FieldType_doubleVector;
-    case ID_doubleArg2:        return FieldType_doubleVector;
     case ID_toolUpdateMode:    return FieldType_int;
+    case ID_queryParams:       return FieldType_MapNode;
     default:  return FieldType_unknown;
     }
 }
@@ -1500,19 +1376,15 @@ ViewerRPC::GetFieldTypeName(int index) const
     case ID_colorTableName:    return "string";
     case ID_queryName:         return "string";
     case ID_queryPoint1:       return "doubleArray";
-    case ID_queryPoint2:       return "doubleArray";
-    case ID_queryVariables:    return "stringVector";
     case ID_toolId:            return "int";
     case ID_boolFlag:          return "bool";
     case ID_intArg1:           return "int";
     case ID_intArg2:           return "int";
     case ID_intArg3:           return "int";
-    case ID_intArg4:           return "int";
     case ID_stringArg1:        return "string";
     case ID_stringArg2:        return "string";
-    case ID_doubleArg1:        return "doubleVector";
-    case ID_doubleArg2:        return "doubleVector";
     case ID_toolUpdateMode:    return "int";
+    case ID_queryParams:       return "MapNode";
     default:  return "invalid index";
     }
 }
@@ -1659,21 +1531,6 @@ ViewerRPC::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = queryPoint1_equal;
         }
         break;
-    case ID_queryPoint2:
-        {  // new scope
-        // Compare the queryPoint2 arrays.
-        bool queryPoint2_equal = true;
-        for(int i = 0; i < 3 && queryPoint2_equal; ++i)
-            queryPoint2_equal = (queryPoint2[i] == obj.queryPoint2[i]);
-
-        retval = queryPoint2_equal;
-        }
-        break;
-    case ID_queryVariables:
-        {  // new scope
-        retval = (queryVariables == obj.queryVariables);
-        }
-        break;
     case ID_toolId:
         {  // new scope
         retval = (toolId == obj.toolId);
@@ -1699,11 +1556,6 @@ ViewerRPC::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (intArg3 == obj.intArg3);
         }
         break;
-    case ID_intArg4:
-        {  // new scope
-        retval = (intArg4 == obj.intArg4);
-        }
-        break;
     case ID_stringArg1:
         {  // new scope
         retval = (stringArg1 == obj.stringArg1);
@@ -1714,19 +1566,14 @@ ViewerRPC::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (stringArg2 == obj.stringArg2);
         }
         break;
-    case ID_doubleArg1:
-        {  // new scope
-        retval = (doubleArg1 == obj.doubleArg1);
-        }
-        break;
-    case ID_doubleArg2:
-        {  // new scope
-        retval = (doubleArg2 == obj.doubleArg2);
-        }
-        break;
     case ID_toolUpdateMode:
         {  // new scope
         retval = (toolUpdateMode == obj.toolUpdateMode);
+        }
+        break;
+    case ID_queryParams:
+        {  // new scope
+        retval = (queryParams == obj.queryParams);
         }
         break;
     default: retval = false;

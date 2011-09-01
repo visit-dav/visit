@@ -51,6 +51,7 @@
 #include <DatabaseCorrelationList.h>
 #include <DataNode.h>
 #include <DebugStream.h>
+#include <EngineList.h>
 #include <InvalidVariableException.h>
 #include <GlobalAttributes.h>
 #include <LineoutListItem.h>
@@ -1065,19 +1066,28 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Dave Pugmire, Tue Nov  9 16:08:30 EST 2010
 //    Add dumpSteps for streamline info query.
 //
+//    Kathleen Biagas, Fri Jun 10 13:53:10 PDT 2011
+//    Send the 'suppressQueryOutput' flag to QueryAtts.
+//
+//    Kathleen Biagas, Tue Jun 21 11:05:15 PDT 2011
+//    Changed arg to MapNode, modifications within to reflect this change.
+//    Culled modification notes to last couple of years.
+//    Moved test for non-hiddend active plot and running engine to generic
+//    'Query' method (which calls this one).
+//
 //    Brad Whitlock, Fri Aug 19 10:01:13 PDT 2011
 //    I changed the UpdateExpressions call on the engine manager.
 //
 // ****************************************************************************
 
-void         
-ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
-                            const stringVector &vars, const bool doTimeQuery,
-                            const int arg1, const int arg2,
-                            const bool elementIsGlobal,
-                            const bool dumpSteps,
-                            const doubleVector darg1, const doubleVector darg2)
+void
+ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
 {
+    string qName = queryParams.GetEntry("query_name")->AsString();
+    bool doTimeQuery = false;
+    if (queryParams.HasEntry("do_time"))
+        doTimeQuery = queryParams.GetEntry("do_time")->AsBool();
+
     queryClientAtts->SetResultsMessage("");
     queryClientAtts->SetResultsValue(0.);
     if (!queryTypes->QueryExists(qName, QueryList::DatabaseQuery))
@@ -1096,28 +1106,6 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         return;
     }
 
-    // test for non-hidden active plot and running engine
-    ViewerPlotList *plist = oWin->GetPlotList();
-    intVector plotIds;
-    plist->GetActivePlotIDs(plotIds);
-    if (plotIds.size() > 0)
-    {
-        if (!EngineExistsForQuery(plist->GetPlot(plotIds[0])))
-        {
-            return;
-        }
-    }
-    else
-    {
-        queryClientAtts->Notify();
-        QString msg = tr("%1 requires an active non-hidden Plot.\n"
-                         "Please select a plot and try again.\n").
-                      arg(qName.c_str());
-        Error(msg);
-        return ;
-    }
-
-
     int numInputs = queryTypes->NumberOfInputsForQuery(qName);
     if (numInputs <= 0)
     {
@@ -1128,6 +1116,11 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         Error(msg);
         return;
     }
+
+    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+    ViewerPlotList *plist = win->GetPlotList();
+    intVector plotIds;
+    plist->GetActivePlotIDs(plotIds);
 
     bool canBeDLBPlots = true;
     if (canBeDLBPlots)
@@ -1161,61 +1154,42 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         }
     }
 
+    int useActualData = 0;
+    if (queryParams.HasEntry("use_actual_data"))
+        useActualData = queryParams.GetEntry("use_actual_data")->AsInt();
+
     if (qName == "SpatialExtents")
     {
         //
         // NO NEED TO GO TO THE ENGINE FOR THIS INFORMATION, AS
         // IT IS AVAILABLE FROM THE PLOT
         //
-        if (arg1 == AVT_ORIGINAL_EXTENTS)
+        if (!useActualData)
         {
 
             avtDataObjectReader_p rdr = plist->GetPlot(plotIds[0])->GetReader();
             avtDataObject_p dob = rdr->GetOutput();
             if (!dob->GetInfo().GetValidity().GetPointsWereTransformed())
             {
-                DoSpatialExtentsQuery(plist->GetPlot(plotIds[0]), arg1);
+                DoSpatialExtentsQuery(plist->GetPlot(plotIds[0]),useActualData);
                 return;
             }
         }
         else
         {
-            DoSpatialExtentsQuery(plist->GetPlot(plotIds[0]), arg1);
+            DoSpatialExtentsQuery(plist->GetPlot(plotIds[0]), useActualData);
             return;
         }
     }
 
+    stringVector vars;
+    if (queryParams.HasEntry("vars"))
+        vars = queryParams.GetEntry("vars")->AsStringVector();
+
     QueryAttributes qa;
     qa.SetFloatFormat(floatFormat);
-    qa.SetName(qName);
-    qa.SetUseGlobalId(elementIsGlobal);
-    qa.SetDumpSteps(dumpSteps);
-
-    // Right now, use of Element and DataType are mutually
-    // exclusive, and we don't necessarily have to know thich one
-    // the query will use, so go ahead and use arg1 to set both atts.
-
-    if (queryTypes->GetWindowType(qName) == QueryList::ActualData ||
-        queryTypes->GetWindowType(qName) == QueryList::ActualDataVars)
-    {
-        if (arg1)
-            qa.SetDataType(QueryAttributes::ActualData);
-        else
-            qa.SetDataType(QueryAttributes::OriginalData);
-    }
-    else
-    {
-        qa.SetDataType(QueryAttributes::ActualData);
-    }
-
-    qa.SetElement(arg1);
-    qa.SetDomain(arg2);
-    qa.SetDarg1(darg1);
-    qa.SetDarg2(darg2);
-    if (qName == "Variable by Zone")
-        qa.SetElementType(QueryAttributes::Zone);
-    else if (qName == "Variable by Node")
-        qa.SetElementType(QueryAttributes::Node);
+    qa.SetSuppressOutput(suppressQueryOutput);
+    qa.SetQueryInputParams(queryParams);
 
     if (numInputs == 1)
     {
@@ -1276,7 +1250,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 
             if (doTimeQuery)
             {
-                DoTimeQuery(oWin, &qa);
+                DoTimeQuery(win, &qa);
                 CATCH_RETURN(1);
             }
 
@@ -1313,7 +1287,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 //
                 for (int i = 0 ; i < plotIds.size() ; i++)
                     plist->GetPlot(plotIds[i])->ClearCurrentActor();
-                oWin->GetPlotList()->UpdateFrame(); 
+                win->GetPlotList()->UpdateFrame(); 
                 numAttempts++; 
                 retry = true;
             }
@@ -1387,7 +1361,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 
 
 // ****************************************************************************
-//  Method: ViewerQueryManager::LineQuery
+//  Method: ViewerQueryManager::StartLineQuery
 //
 //  Purpose:
 //    Perform a line query.
@@ -1402,46 +1376,22 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 //  Creation:   December 20, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Mon Dec 23 13:19:38 PST 2002
-//    Removed Screen-space lineout, renamed WorldLineout to Lineout.
-// 
-//    Kathleen Bonnell, Fri Mar 14 17:11:42 PST 2003  
-//    Allow multiple-vars.
-// 
-//    Kathleen Bonnell, Wed Jul 23 16:26:34 PDT 2003 
-//    Remove duplicate vars, call GetUniqueVars. 
-// 
-//    Kathleen Bonnell, Fri Jul  9 14:33:17 PDT 2004  
-//    Renamed to StartLineQuery.  Attempt to get LineoutWindow. Save info 
-//    necessary for Lineout to lineoutCache.
-// 
-//    Kathleen Bonnell, Thu Jul 22 15:43:56 PDT 2004 
-//    Added useThisId arg to GetLineoutWindow call, so that a user-specified
-//    window can be retrieved/created.  Save resWin's Id in lineoutCache
-//    for use during Finish routine.
-//
-//    Kathleen Bonnell, Mon Jul 26 17:45:12 PDT 2004
-//    Suspend socket signals in the viewer so that Lineout does not cause 
-//    synchronization events to be processed before we are ready for them. 
-//
-//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
-//    Added optional bool arg forceSampling. 
-//
-//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
-//    Added new axis array window mode.
-//
-//    Brad Whitlock, Tue Apr 29 16:36:19 PDT 2008
-//    Support for internationalization.
+//    <snip>
+//  
+//    Kathleen Bonnell, Tue Jun 21 11:14:41 PDT 2011
+//    Changed arg to MapNode, changes within to reflect this change.
+//    Removed modifications notes older than 2009.
 //
 // ****************************************************************************
 
-void         
-ViewerQueryManager::StartLineQuery(const char *qName, const double *pt1, 
-                    const double *pt2, const stringVector &vars,
-                    const int samples, const bool forceSampling)
+void
+ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
 {
-    if (strcmp(qName, "Lineout") == 0)
+    string qName = queryParams.GetEntry("query_name")->AsString();
+    if (qName ==  "Lineout")
     {
+        doubleVector pt1 = queryParams.GetEntry("start_point")->AsDoubleVector();
+        doubleVector pt2 = queryParams.GetEntry("end_point")->AsDoubleVector();
         viewerSubject->BlockSocketSignals(true);
         //
         // Can we get a lineout window? 
@@ -1475,6 +1425,9 @@ ViewerQueryManager::StartLineQuery(const char *qName, const double *pt1,
             return;
         }
 
+        stringVector vars;
+        if (queryParams.HasEntry("vars"))
+            vars = queryParams.GetEntry("vars")->AsStringVector();
         stringVector uniqueVars; 
         // GetUniqueVars sets 'default' to the passed 'activeVar'.
         // Since we don't want to go through the trouble of figuring what
@@ -1483,16 +1436,24 @@ ViewerQueryManager::StartLineQuery(const char *qName, const double *pt1,
         GetUniqueVars(vars, activeVar, uniqueVars);
 
         Line line;
-        line.SetPoint1(pt1);
-        line.SetPoint2(pt2);
-        line.SetNumSamples(samples);
+        line.SetPoint1(&pt1[0]);
+        line.SetPoint2(&pt2[0]);
+
+        if (queryParams.HasEntry("num_samples"))
+        {
+            line.SetNumSamples(queryParams.GetEntry("num_samples")->AsInt());
+            lineoutCache.forceSampling = true;
+        }
+        else
+        {
+            lineoutCache.forceSampling = false;
+        }
 
         lineoutCache.origWin = win;
         lineoutCache.line = line;
         lineoutCache.fromDefault = true;
         lineoutCache.vars = uniqueVars;
         lineoutCache.resWinId = resWin->GetWindowId();
-        lineoutCache.forceSampling = forceSampling;
     }
 }
 
@@ -3211,115 +3172,87 @@ ViewerQueryManager::HandlePickCache()
 //  Creation:   May 14, 2003 
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Jun 27 15:54:30 PDT 2003
-//    Only set pickAtts' variables if the passed list is not empty.
-//    Handle NodePick.
-//
-//    Kathleen Bonnell, Wed Jul 23 16:56:15 PDT 2003
-//    Added support for WorldPick and WorldNodePick. 
-//    
-//    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
-//    Replaced references to GetTypeIsCurve with GetWindowMode.
-//
-//    Kathleen Bonnell, Mon Dec  1 18:04:41 PST 2003 
-//    Added optional int args, to support PickByDomain, PickByZone.
-//   
-//    Kathleen Bonnell, Wed Dec  3 13:11:34 PST 2003 
-//    Remove no-curve restrictions. 
-//   
-//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
-//    Added bool arg to support queries-over-time. 
-//
-//    Kathleen Bonnell, Wed Sep  8 09:36:30 PDT 2004 
-//    Renamed 'Pick' to 'ScreenZonePick', 'NodePick' to 'ScreenNodePick' and
-//    'WorldPick' to 'Pick', 'WorldNodePick' to 'NodePick'.
-//    
-//    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004 
-//    Added 'elementIsGlobal' arg, use to set same attribute in pickAtts. 
-//
-//    Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005 
-//    Test for existence of engine before proceeding. 
-//    
-//    Kathleen Bonnell, Tue Aug 16 10:03:27 PDT 2005
-//    Check for non-hidden active plot before checking if EngineExists. 
-//
-//    Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006 
-//    Added a couple of Pick aliases. 
-//
-//    Kathleen Bonnell, Wed Nov 28 16:25:54 PST 2007 
-//    Added timeCurve bool.  For Node/Zone picks-through-time, preserve current
-//    values of pickAtts DoTimeCurve and TimePreserveCoord as they both should
-//    be true in this instance.  For PickByNode/Zone, TimePreserveCoord should
-//    be false.
-// 
-//    Brad Whitlock, Tue Apr 29 16:43:32 PDT 2008
-//    Support for internationalization.
-//
-//    Kathleen Bonnell, Tue Jun 24 09:04:23 PDT 2008 
-//    Reset the vars in pickAtts at the end of this method, to prevent
-//    query-set-vars to be applied to picks.
+//    <snip>
 //
 //    Kathleen Bonnell, Tue Mar  1 10:25:05 PST 2011
 //    Added arg curvePlotType.
 //
+//    Kathleen Bonnell, Fri Jun 10 13:53:52 PDT 2011
+//    Added preserveCoord argument.  Allow it to be used with PickByZone/Node.
+//
+//    Kathleen Biagas, Tue Jun 21 11:18:33 PDT 2011
+//    Changed arg to MapNode.  Changes within to reflect this.  Culled
+//    Modifications notes to last couple of years. Move test for non-hidden
+//    active plot and running engine to generic 'Query' method.
+//
 // ****************************************************************************
 
 void         
-ViewerQueryManager::PointQuery(const string &qName, const double *pt, 
-                    const stringVector &vars, const int arg1, const int arg2,
-                    const bool doTime, const int curvePlotType,
-                    const bool elementIsGlobal)
+ViewerQueryManager::PointQuery(const MapNode &queryParams)
 {
-    // test for non-hidden active plot and running engine
+    string qName = queryParams.GetEntry("query_name")->AsString();
+
+    string pType;
+    if (queryParams.HasEntry("pick_type"))
+        pType = queryParams.GetEntry("pick_type")->AsString();
+
+    stringVector vars;
+    if (queryParams.HasEntry("vars"))
+        vars = queryParams.GetEntry("vars")->AsStringVector(); 
+
+    if (!vars.empty())
+        pickAtts->SetVariables(vars);
+
+    // some parameters common to all Picks.
+    bool timeCurve = false;
+    if (queryParams.HasEntry("do_time"))
+        timeCurve = queryParams.GetEntry("do_time");
+    timeCurve |= pickAtts->GetDoTimeCurve(); 
+
+    int curvePlotType = 0;
+    if (queryParams.HasEntry("curve_plot_type"))
+        curvePlotType = queryParams.GetEntry("curve_plot_type")->AsInt();
+    else 
+        curvePlotType = pickAtts->GetTimeCurveType();
+
     ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
-    ViewerPlotList *plist = win->GetPlotList();
-    intVector plotIds;
-    plist->GetActivePlotIDs(plotIds);
-    bool timeCurve = doTime || pickAtts->GetDoTimeCurve();
-    if (plotIds.size() > 0)
+    INTERACTION_MODE imode = win->GetInteractionMode();  
+    
+    if (pType == "ScreenZone" || pType == "ScreenNode")
     {
-        if (!EngineExistsForQuery(plist->GetPlot(plotIds[0])))
+        if (!vars.empty())
         {
+            pickAtts->SetVariables(vars);
+        }
+        if (queryParams.HasEntry("x")  &&
+            queryParams.HasEntry("y"))
+        {
+            win->Pick(queryParams.GetEntry("x")->AsInt(),
+                      queryParams.GetEntry("y")->AsInt(),
+                      pType == "ScreenZone" ? ZONE_PICK : NODE_PICK);
+        }
+        else
+            EXCEPTION1(VisItException, 
+                       "Screen pick requires x and y screen coordinates.");
+    }
+
+    else if (pType == "Zone" || pType == "Node")
+    {
+        win->SetInteractionMode(ZONE_PICK);
+        if (pType == "Node")
+        {
+            win->SetInteractionMode(NODE_PICK);
+        }
+        else 
+        {
+            win->SetInteractionMode(ZONE_PICK);
+        }
+        if (!queryParams.HasEntry("coord"))
+        {
+            Error(tr("%1 requires a 'coord' parameter.\n").arg(qName.c_str()));
             return;
         }
-    }
-    else
-    {
-        Error(tr("Pick requires an active non-hidden Plot.\n"
-                 "Please select a plot and try again.\n"));
-        return ;
-    }
-    pickAtts->SetElementIsGlobal(elementIsGlobal);
-    if (qName == "ScreenZonePick")
-    {
-        if (!vars.empty())
-        {
-            pickAtts->SetVariables(vars);
-        }
-        win->Pick((int)pt[0], (int)pt[1], ZONE_PICK);
-    }
-    else if (qName == "ScreenNodePick") 
-    {
-        if (!vars.empty())
-        {
-            pickAtts->SetVariables(vars);
-        }
-        win->Pick((int)pt[0], (int)pt[1], NODE_PICK);
-    }
-    else if (qName == "ZonePick" || 
-             qName == "NodePick" || qName == "PointPick (aka NodePick)")
-    {
-        if (!vars.empty())
-        {
-            pickAtts->SetVariables(vars);
-        }
-
-        INTERACTION_MODE imode  = win->GetInteractionMode();
-        if (qName == "ZonePick")
-            win->SetInteractionMode(ZONE_PICK);
-        else
-            win->SetInteractionMode(NODE_PICK);
-
+        doubleVector pt = queryParams.GetEntry("coord")->AsDoubleVector();
         PICK_POINT_INFO ppi;
         ppi.callbackData = win;
         ppi.rayPt1[0] = ppi.rayPt2[0] = pt[0];
@@ -3327,29 +3260,108 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
         ppi.validPick = true;
         if (!timeCurve)
+        {
             Pick(&ppi);
+        }
         else
         {
+            bool preserveCoord = true; // is this really the default we want?
+            if (queryParams.HasEntry("preserve_coord"))
+                preserveCoord = queryParams.GetEntry("preserve_coord")->AsBool();
+
             bool tpc = pickAtts->GetTimePreserveCoord();
-            bool tc = pickAtts->GetDoTimeCurve();
-            pickAtts->SetTimePreserveCoord(true);
+            bool tc  = pickAtts->GetDoTimeCurve();
+            pickAtts->SetTimePreserveCoord(preserveCoord);
             pickAtts->SetDoTimeCurve(true);
             PickThroughTime(&ppi, curvePlotType);
             pickAtts->SetDoTimeCurve(tc);
             pickAtts->SetTimePreserveCoord(tpc);
+                
         }
-
         win->SetInteractionMode(imode);
     }
-    else if (qName == "PickByZone"  || qName == "PickByNode") 
+    else if (pType == "DomainZone"  || pType == "DomainNode") 
     {
+        int domain = 0, element = -1;
+        if (queryParams.HasEntry("use_global_id"))
+        {
+            pickAtts->SetElementIsGlobal(
+                queryParams.GetEntry("use_global_id")->AsInt());
+        }
+        else
+        {
+            pickAtts->SetElementIsGlobal(false);
+        }
+
+        if (queryParams.HasEntry("domain"))
+            domain = queryParams.GetEntry("domain")->AsInt();
+
+        if (queryParams.HasEntry("element"))
+            element = queryParams.GetEntry("element")->AsInt();
+
+        bool preserveCoord = false; // is this really the default we want?
+        if (queryParams.HasEntry("preserve_coord"))
+            preserveCoord = queryParams.GetEntry("preserve_coord")->AsBool();
+
+        if (timeCurve && preserveCoord)
+        {
+            // need to determine the coordinate to use, and change
+            // the query type appropriately.
+            if (pType == "DomainZone")
+            {
+                bool sqo_orig = suppressQueryOutput;
+                suppressQueryOutput = true;
+                MapNode dbQueryParams(queryParams);
+                dbQueryParams["query_name"] = "Zone Center";
+
+                DatabaseQuery(dbQueryParams);
+
+                doubleVector zpt = queryClientAtts->GetResultsValue();
+                suppressQueryOutput = sqo_orig;
+
+                MapNode pointQueryParams;
+                pointQueryParams["query_name"] = "Pick";
+                pointQueryParams["pick_type"] = "Zone";
+                pointQueryParams["coord"] = zpt;
+                pointQueryParams["vars"] = vars;
+                pointQueryParams["do_time"] = true;
+                pointQueryParams["preserve_coord"] = true;
+                pointQueryParams["curve_plot_type"] = curvePlotType;
+               
+                PointQuery(pointQueryParams);
+            }
+            else 
+            {
+                bool sqo_orig = suppressQueryOutput;
+                suppressQueryOutput = true;
+
+                MapNode dbQueryParams(queryParams);
+                dbQueryParams["query_name"] = "Node Coords";
+                DatabaseQuery(dbQueryParams);
+
+                doubleVector npt = queryClientAtts->GetResultsValue();
+                suppressQueryOutput = sqo_orig;
+
+                MapNode pointQueryParams;
+                pointQueryParams["query_name"] = "Pick";
+                pointQueryParams["pick_type"] = "Node";
+                pointQueryParams["coord"] = npt;
+                pointQueryParams["vars"] = vars;
+                pointQueryParams["do_time"] = true;
+                pointQueryParams["preserve_coord"] = true;
+                pointQueryParams["curve_plot_type"] = curvePlotType;
+
+                PointQuery(pointQueryParams);
+            }
+            return;
+        }
         if (!vars.empty())
         {
             pickAtts->SetVariables(vars);
         }
 
         INTERACTION_MODE imode  = win->GetInteractionMode();
-        if (qName == "PickByZone") 
+        if (pType == "DomainZone") 
         {
             win->SetInteractionMode(ZONE_PICK);
             pickAtts->SetPickType(PickAttributes::DomainZone);
@@ -3361,26 +3373,27 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         }
         PICK_POINT_INFO ppi;
         ppi.callbackData = win;
-        ppi.rayPt1[0] = ppi.rayPt2[0] = pt[0];
-        ppi.rayPt1[1] = ppi.rayPt2[1] = pt[1];
-        ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
+        ppi.rayPt1[0] = ppi.rayPt2[0] = 0.;
+        ppi.rayPt1[1] = ppi.rayPt2[1] = 0.;
+        ppi.rayPt1[2] = ppi.rayPt2[2] = 0.;
         ppi.validPick = true;
 
         if (!timeCurve)
-            Pick(&ppi, arg2, arg1);
+            Pick(&ppi, domain, element);
         else
         {
             bool tpc = pickAtts->GetTimePreserveCoord();
             bool tc = pickAtts->GetDoTimeCurve();
-            pickAtts->SetTimePreserveCoord(false);
+            pickAtts->SetTimePreserveCoord(preserveCoord);
             pickAtts->SetDoTimeCurve(true);
-            PickThroughTime(&ppi, curvePlotType, arg2, arg1);
+            PickThroughTime(&ppi, curvePlotType, domain, element);
             pickAtts->SetTimePreserveCoord(tpc);
             pickAtts->SetDoTimeCurve(tc);
         }
 
         win->SetInteractionMode(imode);
     }
+    // cleanup
     pickAtts->SetElementIsGlobal(false);
     stringVector emptyVars;
     emptyVars.push_back("default");
@@ -3708,10 +3721,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //
 //    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004 
 //    Added two new window states, to distinguish between Domain-zone/node
-//    queries that take vars and those that do not.  Removed 'Variabley by
-//    Zone' and 'Variable by Node' queries, as those are coved by 
+//    queries that take vars and those that do not.  Removed 'Variable by
+//    Zone' and 'Variable by Node' queries, as those are covered by 
 //    PickByNode and PickByZone.
-//    exists.   Removed screen-coords pick 'Pick' and 'NodePick', changed
 //
 //    Hank Childs, Thu May 19 14:26:48 PDT 2005
 //    Added centroid, moment of inertia queries.
@@ -3809,8 +3821,20 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Thu May 12 15:37:21 PDT 2011
 //    Add average value query.
 //
+//    Kathleen Biagas, Fri Jun 10 13:56:06 PDT 2011
+//    Consolidate Picks into one "Pick" query, with it's own window type.
+//    Remove 'PickRelated" from the query groups.
+//
 //    Cyrus Harrison, Wed Jun 15 13:14:49 PDT 2011
 //    Added Connected Components Length.
+//
+//    Kathleen Biagas, Fri Jun 17 16:33:59 PDT 2011
+//    Add another int arg in calls to 'AddQuery' specifies whether they need
+//    to have the 'vars' button in their window (default 0, or 'No').
+//
+//    Kathleen Biagas, Mon Jul 25 16:49:52 PDT 2011
+//    Changed windowtype for Statistics queries to be Basic, as the actual
+//    code for the queries does not seem to make use of the 'ActualData' flag.
 //
 // ****************************************************************************
 
@@ -3836,7 +3860,6 @@ ViewerQueryManager::InitializeQueryList()
 
     QueryList::Groups cr = QueryList::CurveRelated;
     QueryList::Groups mr = QueryList::MeshRelated;
-    QueryList::Groups pr = QueryList::PickRelated;
     QueryList::Groups tr = QueryList::TimeRelated;
     QueryList::Groups vr = QueryList::VariableRelated;
     QueryList::Groups sr = QueryList::ShapeRelated;
@@ -3844,8 +3867,6 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::Groups misc_r = QueryList::Miscellaneous;
 
     QueryList::WindowType basic = QueryList::Basic;
-    QueryList::WindowType sp  = QueryList::SinglePoint;
-    QueryList::WindowType dp  = QueryList::DoublePoint;
     QueryList::WindowType dn  = QueryList::DomainNode;
     QueryList::WindowType dnv = QueryList::DomainNodeVars;
     QueryList::WindowType dz  = QueryList::DomainZone;
@@ -3857,6 +3878,8 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::WindowType shp_wt  = QueryList::ShapeletsDecomp;
     QueryList::WindowType xri  = QueryList::XRayImage;
     QueryList::WindowType sli  = QueryList::StreamlineInfo;
+    QueryList::WindowType pick  = QueryList::Pick;
+    QueryList::WindowType line  = QueryList::Lineout;
 
     QueryList::QueryMode qo = QueryList::QueryOnly;
     QueryList::QueryMode qt = QueryList::QueryAndTime;
@@ -3865,7 +3888,7 @@ ViewerQueryManager::InitializeQueryList()
     if (GetPlotPluginManager()->PluginAvailable("Curve_1.0") &&
         GetOperatorPluginManager()->PluginAvailable("Lineout_1.0"))
     {
-        queryTypes->AddQuery("Lineout", lq, vr, dp, 1, 0, qo);
+        queryTypes->AddQuery("Lineout", lq, vr, line, 1, 0, qo, 1, 1);
     }
     queryTypes->AddQuery("Eulerian", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Compactness", dq, sr, basic, 1, 0, qo);
@@ -3880,7 +3903,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Mass Distribution", dq, sr, ld, 1, 0, qo);
     queryTypes->AddQuery("Distance From Boundary", dq, sr, ld, 1, 0, qo);
     queryTypes->AddQuery("Line Scan Transform", dq, sr, ld, 1, 0, qo);
-    queryTypes->AddQuery("Hohlraum Flux", dq, sr, hf, 1, 0, qt, 0);
+    queryTypes->AddQuery("Hohlraum Flux", dq, sr, hf, 1, 0, qt, 0, 1);
     queryTypes->AddQuery("Skewness", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Integrate", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Expected Value", dq, cr, basic, 1, 0, qo);
@@ -3905,9 +3928,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, qt);
     queryTypes->AddQuery("Watertight", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, qt);
-    queryTypes->AddQuery("ZonePick", pq, pr, sp, 1, 0, qt);
-    queryTypes->AddQuery("NodePick", pq, pr, sp, 1, 0, qt);
-    queryTypes->AddQuery("PointPick (aka NodePick)", pq, pr, sp, 1, 0, qt);
+    queryTypes->AddQuery("Pick", pq, vr, pick, 1, 0, qt, 1, 1);
 
     queryTypes->AddQuery("Number of Connected Components", dq, ccl_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Connected Component Length", dq, ccl_r, basic, 1, 0, qo);
@@ -3919,7 +3940,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Connected Components Summary", dq, ccl_r, ccls_wt, 1, 0, qo);
 
     queryTypes->AddQuery("Shapelet Decomposition", dq, sr, shp_wt, 1, 0, qo);
-    queryTypes->AddQuery("XRay Image", dq, sr, xri, 1, 0, qo, 0);
+    queryTypes->AddQuery("XRay Image", dq, sr, xri, 1, 0, qo, 0, 1);
 
     // always add python query here, error checking if python filters were built
     // happens on the engine.
@@ -3937,17 +3958,15 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("SpatialExtents", dq, mr, ad, 1, 0, qo);
     queryTypes->AddQuery("NumNodes", dq, mr, ad, 1, 0, qo);
     queryTypes->AddQuery("NumZones", dq, mr, ad, 1, 0, qo);
-    queryTypes->AddQuery("PickByZone", pq, pr, dzv, 1, 0, qt);
-    queryTypes->AddQuery("PickByNode", pq, pr, dnv, 1, 0, qt);
     queryTypes->AddQuery("Zone Center", dq, mr, dz, 1, 0, qo);
     queryTypes->AddQuery("Node Coords", dq, mr, dn, 1, 0, qo);
     int TrajVars = QUERY_SCALAR_VAR;
-    queryTypes->AddQuery("TrajectoryByZone", dq, vr, dzv, 1, TrajVars, to, 2);
-    queryTypes->AddQuery("TrajectoryByNode", dq, vr, dnv, 1, TrajVars, to, 2);
+    queryTypes->AddQuery("TrajectoryByZone", dq, vr, dzv, 1, TrajVars, to, 2,1);
+    queryTypes->AddQuery("TrajectoryByNode", dq, vr, dnv, 1, TrajVars, to, 2,1);
     queryTypes->AddQuery("Best Fit Line", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Memory Usage", dq, misc_r, basic, 1, 0, qo);
-    queryTypes->AddQuery("Sample Statistics", dq, vr, ad, 1, 0, qo);
-    queryTypes->AddQuery("Population Statistics", dq, vr, ad, 1, 0, qo);
+    queryTypes->AddQuery("Sample Statistics", dq, vr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Population Statistics", dq, vr, basic, 1, 0, qo);
 
     queryTypes->AddQuery("Streamline Info", dq, misc_r, sli, 1, 0, qo);
     queryTypes->SelectAll();
@@ -4328,9 +4347,12 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 // ***********************************************************************
 
 void
-ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
+ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, 
+                                QueryAttributes *qA)
 {
-    string qName = qA->GetName();
+    MapNode qParams = qA->GetQueryInputParams();
+    string qName = qParams.GetEntry("query_name")->AsString();
+
     if (!queryTypes->TimeQueryAvailable(qName))
     {
         if (qName != "Variable by Zone" && 
@@ -4362,9 +4384,13 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     string hdbName = origPlot->GetSource();
     bool replacePlots = ViewerWindowManager::Instance()->
                         GetClientAtts()->GetReplacePlots();
-
-    string qvarName = qA->GetVariables()[0];
-  
+    string qvarName("default");
+    if (qParams.HasEntry("vars"))
+    {
+        stringVector vars = qParams.GetEntry("vars")->AsStringVector();
+        if (vars.size() > 0)
+            qvarName = vars[0];
+    }
     //
     // For certain queries, if we are querying the plot's current variable, 
     // check for centering consistency.
@@ -4427,11 +4453,23 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     // Create a list of timesteps for the query. 
     // 
 
-    int startT = timeQueryAtts->GetStartTimeFlag() ? 
-                 timeQueryAtts->GetStartTime() : 0; 
-    int endT   = timeQueryAtts->GetEndTimeFlag() ? 
-                 timeQueryAtts->GetEndTime() : nStates-1;
+    int startT = 0;
+    int endT = nStates-1;
+    int stride = 1;
+    if (qParams.HasEntry("start_time"))
+        startT = qParams.GetEntry("start_time")->AsInt();
+    else if (timeQueryAtts->GetStartTimeFlag())
+        startT =  timeQueryAtts->GetStartTime();
 
+    if (qParams.HasEntry("end_time"))
+        endT = qParams.GetEntry("end_time")->AsInt();
+    else if (timeQueryAtts->GetEndTimeFlag())
+        endT =  timeQueryAtts->GetEndTime();
+
+    if (qParams.HasEntry("stride"))
+        stride = qParams.GetEntry("stride")->AsInt();
+    else if (timeQueryAtts->GetStrideFlag())
+        stride = timeQueryAtts->GetStride();
     if (startT < 0)
     {
         Warning(tr("Clamping start time to 0."));
@@ -4449,8 +4487,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
               " please correct and try again.")); 
         return;
     }
-    int nUserFrames = (int) ceil(double((endT - startT)/
-                                        timeQueryAtts->GetStride()))+1;
+    int nUserFrames = (int) ceil(double((endT - startT)/stride))+1;
     if (nUserFrames <= 1)
     {
         Error(tr("Query over time requires more than 1 frame, "
@@ -4460,6 +4497,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
 
     timeQueryAtts->SetStartTime(startT); 
     timeQueryAtts->SetEndTime(endT); 
+    timeQueryAtts->SetStride(stride); 
 
     //
     //  See if we can get a window in which to place the resulting curve.
@@ -4476,11 +4514,17 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
         return;
     }
 
-    int plotType;
-    if (qA->GetTimeCurvePlotType() == QueryAttributes::Single_Y_Axis)
-      plotType = GetPlotPluginManager()->GetEnabledIndex("Curve_1.0");
-    else 
-      plotType = GetPlotPluginManager()->GetEnabledIndex("MultiCurve_1.0");
+    int plotType = GetPlotPluginManager()->GetEnabledIndex("Curve_1.0");
+    if (qParams.HasEntry("curve_plot_type"))
+    {
+      if (qParams.GetEntry("curve_plot_type")->AsInt() == 1)
+        plotType = GetPlotPluginManager()->GetEnabledIndex("MultiCurve_1.0");
+    }
+    else
+    {
+      if (pickAtts->GetTimeCurveType() == 1)
+        plotType = GetPlotPluginManager()->GetEnabledIndex("MultiCurve_1.0");
+    }
 
     ViewerPlotList *plotList =  resWin->GetPlotList();
 
@@ -4489,9 +4533,9 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
 
     if (qvarName == "default")
         qvarName = vName;
+
     int pid = plotList->AddPlot(plotType, qvarName, replacePlots, false,false);
     ViewerPlot *resultsPlot = plotList->GetPlot(pid);
-
     timeQueryAtts->SetQueryAtts(*qA);
     if (qName == "Variable by Zone"     || qName == "Variable by Node" ||
         qName == "Locate and Pick Zone" || qName == "Locate and Pick Node") 
@@ -4733,30 +4777,29 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
     if (valid)
     {
         QueryAttributes qatts;
+        MapNode params;
         if (pickAtts->GetTimePreserveCoord())
         {
-            doubleVector d(3);
-            d[0] = ppi->rayPt1[0];
-            d[1] = ppi->rayPt1[1];
-            d[2] = ppi->rayPt1[2];
-            qatts.SetDarg1(d);
-            d[0] = ppi->rayPt2[0];
-            d[1] = ppi->rayPt2[1];
-            d[2] = ppi->rayPt2[2];
-            qatts.SetDarg2(d);
+            doubleVector d1(3);
+            d1[0] = ppi->rayPt1[0];
+            d1[1] = ppi->rayPt1[1];
+            d1[2] = ppi->rayPt1[2];
+            params["ray_start_point"] = d1;
+            doubleVector d2(3);
+            d2[0] = ppi->rayPt2[0];
+            d2[1] = ppi->rayPt2[1];
+            d2[2] = ppi->rayPt2[2];
+            params["ray_end_point"] = d2;
         }
-        else
-        {
-            qatts.SetDomain(pickAtts->GetDomain() >= 0 ? 
-                            pickAtts->GetDomain() : 0);
-            qatts.SetElement(pickAtts->GetElementNumber());
-        }
-        qatts.SetDataType(QueryAttributes::OriginalData);
+        params["domain"] = pickAtts->GetDomain() >= 0 ? 
+                           pickAtts->GetDomain() : 0;
+        params["element"] = pickAtts->GetElementNumber();
+        params["data_type"] = QueryAttributes::OriginalData;
         stringVector pvars = pickAtts->GetVariables();
         for (size_t i = 0; i < pvars.size(); ++i)
             if (pvars[i] == "default")
                 pvars[i] = pvarName;
-        qatts.SetVariables(pvars);
+        params["vars"] = pvars;
         int cpt;
         if (curvePlotType != -1)
             cpt = curvePlotType;
@@ -4767,33 +4810,33 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
            cpt = 0;
            Warning(tr("Multiple-Y-Axes time query availble only with multiple variable selected.  Using Single-Y-Axis instead."));
         }
-        qatts.SetTimeCurvePlotType((QueryAttributes::TimeCurveType)cpt);
+        params["curve_plot_type"] = cpt;
         if (type == PickAttributes::Zone || type == PickAttributes::DomainZone) 
         {
             if (pickAtts->GetTimePreserveCoord())
             {
-                qatts.SetName("Locate and Pick Zone");
+                params["query_name"] = string("Locate and Pick Zone");
             }
             else
             {
-                qatts.SetName("Variable by Zone");
+                params["query_name"] = string("Variable by Zone");
             }
-            qatts.SetElementType(QueryAttributes::Zone);
         }
         else 
         if (type == PickAttributes::Node || type == PickAttributes::DomainNode)
         {
             if (pickAtts->GetTimePreserveCoord())
             {
-                qatts.SetName("Locate and Pick Node");
+                params["query_name"] = string("Locate and Pick Node");
             }
             else
             {
-                qatts.SetName("Variable by Node");
+                params["query_name"] = string("Variable by Node");
             }
-            qatts.SetElementType(QueryAttributes::Node);
         }
-
+        const MapNode &timeOpts = pickAtts->GetTimeOptions();
+        params.Merge(timeOpts);
+        qatts.SetQueryInputParams(params);
         DoTimeQuery(origWin, &qatts);
     }
     pickAtts->SetVariables(userVars);
@@ -5381,5 +5424,130 @@ ViewerQueryManager::CloneQuery(ViewerQuery *toBeCloned, int newTS, int oldTS)
     if (index != -1)
     {
         lineoutList[index]->AddQuery(clone);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::Query
+//
+//  Purpose:
+//    Performs a query.
+//
+//  Arguments:
+//    queryParams  The parameters for the query.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 13, 2011 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+
+void         
+ViewerQueryManager::Query(const MapNode &queryParams)
+{
+    string qName = queryParams.GetEntry("query_name")->AsString();
+
+    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+    // test for non-hidden active plot and running engine
+    ViewerPlotList *plist = win->GetPlotList();
+    intVector plotIds;
+    plist->GetActivePlotIDs(plotIds);
+    if (plotIds.size() > 0)
+    {
+        if (!EngineExistsForQuery(plist->GetPlot(plotIds[0])))
+        {
+            return;
+        }
+    }
+    else
+    {
+        queryClientAtts->Notify();
+        QString msg = tr("%1 requires an active non-hidden Plot.\n"
+                         "Please select a plot and try again.\n").
+                      arg(qName.c_str());
+        Error(msg);
+        return ;
+    }
+
+    // Send the client a status message.
+    QString msg = tr("Performing %1 query...").arg(qName.c_str());
+    Status(msg);
+
+    int qtype;
+    if (queryParams.HasEntry("query_type"))
+        qtype = queryParams.GetEntry("query_type")->AsInt();
+    else
+        qtype  = queryTypes->GetQueryType(qName);
+
+    if (qtype == QueryList::DatabaseQuery)
+        DatabaseQuery(queryParams);
+    else if (qtype == QueryList::PointQuery)
+        PointQuery(queryParams);
+    else if (qtype == QueryList::LineQuery)
+    {
+        StartLineQuery(queryParams);
+        viewerSubject->MessageRendererThread("finishLineQuery;");
+    }
+    else 
+    {
+        Error(tr("ViewerQueryManager could not determine query type."));
+    }
+
+    // Clear the status
+    ClearStatus();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::GetQueryParameters
+//
+//  Purpose:
+//    Retrieves default parameters for named query.
+//
+//  Arguments:
+//    qName     The name of the query.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   July 15, 2011 
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+ViewerQueryManager::GetQueryParameters(const string &qName)
+{
+    queryClientAtts->SetResultsMessage("");
+    queryClientAtts->SetResultsValue(0.);
+    if (qName == "SpatialExtents")
+    {
+        // this query does not exist on engine
+        MapNode params;
+        params["use_actual_data"] = 0;
+        string sparams = params.ToXML();
+        queryClientAtts->SetXmlResult(sparams);
+        queryClientAtts->Notify();
+    }
+    else
+    {
+        // need an engine key, but don't necessarily need a plot, so 
+        // see if we can find an engine key another way.
+        ViewerEngineManager *em = ViewerEngineManager::Instance();
+        EngineList *engines = em->GetEngineList();
+        const stringVector &hosts = engines->GetEngines();
+        const stringVector &sims  = engines->GetSimulationName();
+        if (hosts.empty())
+        {
+            Error(tr("Need a running engine to retrieve query parameters."));
+            return;
+        }
+  
+        EngineKey ek(hosts[0], sims[0]); 
+        string params;
+        ViewerEngineManager::Instance()->GetQueryParameters(ek, qName, &params);
+        queryClientAtts->SetXmlResult(params);
+        queryClientAtts->Notify();
     }
 }

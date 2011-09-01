@@ -99,6 +99,7 @@ void QueryOverTimeAttributes::Init()
     startTime = 0;
     endTimeFlag = false;
     endTime = 1;
+    strideFlag = false;
     stride = 1;
     createWindow = true;
     windowId = 2;
@@ -128,6 +129,7 @@ void QueryOverTimeAttributes::Copy(const QueryOverTimeAttributes &obj)
     startTime = obj.startTime;
     endTimeFlag = obj.endTimeFlag;
     endTime = obj.endTime;
+    strideFlag = obj.strideFlag;
     stride = obj.stride;
     createWindow = obj.createWindow;
     windowId = obj.windowId;
@@ -295,6 +297,7 @@ QueryOverTimeAttributes::operator == (const QueryOverTimeAttributes &obj) const
             (startTime == obj.startTime) &&
             (endTimeFlag == obj.endTimeFlag) &&
             (endTime == obj.endTime) &&
+            (strideFlag == obj.strideFlag) &&
             (stride == obj.stride) &&
             (createWindow == obj.createWindow) &&
             (windowId == obj.windowId) &&
@@ -448,6 +451,7 @@ QueryOverTimeAttributes::SelectAll()
     Select(ID_startTime,     (void *)&startTime);
     Select(ID_endTimeFlag,   (void *)&endTimeFlag);
     Select(ID_endTime,       (void *)&endTime);
+    Select(ID_strideFlag,    (void *)&strideFlag);
     Select(ID_stride,        (void *)&stride);
     Select(ID_createWindow,  (void *)&createWindow);
     Select(ID_windowId,      (void *)&windowId);
@@ -638,6 +642,13 @@ QueryOverTimeAttributes::SetEndTime(int endTime_)
 }
 
 void
+QueryOverTimeAttributes::SetStrideFlag(bool strideFlag_)
+{
+    strideFlag = strideFlag_;
+    Select(ID_strideFlag, (void *)&strideFlag);
+}
+
+void
 QueryOverTimeAttributes::SetStride(int stride_)
 {
     stride = stride_;
@@ -704,6 +715,12 @@ int
 QueryOverTimeAttributes::GetEndTime() const
 {
     return endTime;
+}
+
+bool
+QueryOverTimeAttributes::GetStrideFlag() const
+{
+    return strideFlag;
 }
 
 int
@@ -793,6 +810,7 @@ QueryOverTimeAttributes::GetFieldName(int index) const
     case ID_startTime:     return "startTime";
     case ID_endTimeFlag:   return "endTimeFlag";
     case ID_endTime:       return "endTime";
+    case ID_strideFlag:    return "strideFlag";
     case ID_stride:        return "stride";
     case ID_createWindow:  return "createWindow";
     case ID_windowId:      return "windowId";
@@ -827,6 +845,7 @@ QueryOverTimeAttributes::GetFieldType(int index) const
     case ID_startTime:     return FieldType_int;
     case ID_endTimeFlag:   return FieldType_bool;
     case ID_endTime:       return FieldType_int;
+    case ID_strideFlag:    return FieldType_bool;
     case ID_stride:        return FieldType_int;
     case ID_createWindow:  return FieldType_bool;
     case ID_windowId:      return FieldType_int;
@@ -861,6 +880,7 @@ QueryOverTimeAttributes::GetFieldTypeName(int index) const
     case ID_startTime:     return "int";
     case ID_endTimeFlag:   return "bool";
     case ID_endTime:       return "int";
+    case ID_strideFlag:    return "bool";
     case ID_stride:        return "int";
     case ID_createWindow:  return "bool";
     case ID_windowId:      return "int";
@@ -915,6 +935,11 @@ QueryOverTimeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
     case ID_endTime:
         {  // new scope
         retval = (endTime == obj.endTime);
+        }
+        break;
+    case ID_strideFlag:
+        {  // new scope
+        retval = (strideFlag == obj.strideFlag);
         }
         break;
     case ID_stride:

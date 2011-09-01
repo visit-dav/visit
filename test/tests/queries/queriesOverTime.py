@@ -54,6 +54,9 @@
 #    Kathleen Bonnell, Thu Mar  3 11:47:09 PST 2011
 #    Added MultiVarTimePick tests.
 #
+#    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
+#    Use named arguments. 
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotation():
@@ -188,12 +191,8 @@ def TestOperators():
     SetOperatorOptions(iso)
     DrawPlots()
    
-    qot = GetQueryOverTimeAttributes()
-    qot.stride = 10
-    SetQueryOverTimeAttributes(qot)
- 
     SetActiveWindow(1)
-    QueryOverTime("Volume") 
+    QueryOverTime("Volume", stride=10) 
     SetActiveWindow(2)
     InitAnnotation()
     Test("TimeQuery_ops_01")
@@ -214,7 +213,7 @@ def TestOperators():
     SetOperatorOptions(slice)
 
     DrawPlots()
-    QueryOverTime("2D area")
+    QueryOverTime("2D area", stride=10)
     SetActiveWindow(2)
     InitAnnotation()
     Test("TimeQuery_ops_02")
@@ -236,11 +235,7 @@ def TestExpressions():
     pa.max = 4
     SetPlotOptions(pa)
     DrawPlots()
-    qt = GetQueryOverTimeAttributes()
-    qt.startTimeFlag = 0
-    qt.endTimeFlag = 0
-    qt.stride = 1
-    SetQueryOverTimeAttributes(qt)
+
     pt = (4., 3., 0.)
     pick = GetPickAttributes()
     pick.doTimeCurve = 1
@@ -260,10 +255,8 @@ def TestExpressions():
     DefineScalarExpression("p2", "pressure*pressure")
     AddPlot("Pseudocolor", "p2")
     DrawPlots()
-    qt.stride = 10
-    SetQueryOverTimeAttributes(qt)
 
-    QueryOverTime("Variable Sum")
+    QueryOverTime("Variable Sum", stride=10)
     SetActiveWindow(2)
     Test("TimeQuery_expr_02")
     
@@ -277,8 +270,6 @@ def TestExpressions():
     DefineScalarExpression("m", "matvf(material, 1)")
     AddPlot("Pseudocolor", "m")
     DrawPlots()
-    qt.stride = 1
-    SetQueryOverTimeAttributes(qt)
 
     QueryOverTime("Variable Sum")
     SetActiveWindow(2)
@@ -306,9 +297,6 @@ def TestTransientVariable():
 
     qt = GetQueryOverTimeAttributes()
     qt.timeType = qt.Timestep
-    qt.startTimeFlag = 0
-    qt.endTimeFlag = 0
-    qt.stride = 1
     SetQueryOverTimeAttributes(qt)
 
     QueryOverTime("Variable Sum")
@@ -342,9 +330,6 @@ def TestSpecifyTimeQueryWindow():
 
     qt = GetQueryOverTimeAttributes()
     qt.timeType = qt.Timestep
-    qt.startTimeFlag = 0
-    qt.endTimeFlag = 0
-    qt.stride = 1
     SetQueryOverTimeAttributes(qt)
 
     QueryOverTime("3D surface area")
@@ -417,9 +402,6 @@ def TestTimeVaryingSIL():
     # Go ahead and use default plot for now.
     qt = GetQueryOverTimeAttributes()
     qt.timeType = qt.Timestep
-    qt.startTimeFlag = 0
-    qt.endTimeFlag = 0
-    qt.stride = 1
     qt.createWindow = 0
     qt.windowId = 2
     SetQueryOverTimeAttributes(qt)
@@ -482,10 +464,7 @@ def TestQueryAfterQueryOverTime():
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
     TurnMaterialsOn()
-    qot = GetQueryOverTimeAttributes()
-    qot.stride = 10
-    SetQueryOverTimeAttributes(qot)
-    QueryOverTime("3D surface area")
+    QueryOverTime("3D surface area", stride=10)
 
     SetActiveWindow(2)
     DeleteAllPlots()
@@ -537,8 +516,8 @@ def TestMili():
     DeleteAllPlots()
 
     SetActiveWindow(1)
-    vars = ("edv1", "edv2")
-    QueryOverTime("TrajectoryByZone", 242, vars)
+    qvars = ("edv1", "edv2")
+    QueryOverTime("TrajectoryByZone", element=242, vars=qvars)
     SetActiveWindow(2) 
     ResetView()
     InitAnnotation()

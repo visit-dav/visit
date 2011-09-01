@@ -64,6 +64,12 @@
 #include <QvisVariableButton.h>
 #include <QvisPythonFilterEditor.h>
 
+#include <QvisHohlraumFluxQueryWidget.h>
+#include <QvisLineoutQueryWidget.h>
+#include <QvisPickQueryWidget.h>
+#include <QvisTimeQueryOptionsWidget.h>
+#include <QvisXRayImageQueryWidget.h>
+
 #include <ViewerProxy.h>
 
 #ifdef _WIN32
@@ -267,6 +273,10 @@ QvisQueryWindow::CreateWindowContents()
 //   Kathleen Bonnell, Tue Mar  1 11:07:20 PST 2011
 //   Added plotOpts.
 //
+//   Kathleen Biagas, Fri Jun 10 08:59:13 PDT 2011
+//   Added pickQueryWidget, xRayImageQueryWidget, lineoutQueryWidget,
+//   hohlraumFluxQueryWidget, timeQueryOptions.
+//
 // ****************************************************************************
 
 void
@@ -313,6 +323,26 @@ QvisQueryWindow::CreateStandardQueryWidget()
 
     hLayout->addWidget(argPanel);
     QVBoxLayout *gLayout = new QVBoxLayout(argPanel);
+
+    // Add the vars button to the argument panel
+    QHBoxLayout *vbLayout = new QHBoxLayout();
+    gLayout->addLayout(vbLayout);
+    varsButton = new QvisVariableButton(true, false, true, queryVarTypes,
+                                        argPanel);
+    varsButton->setText(tr("Variables"));
+    varsButton->setChangeTextOnVariableChange(false);
+    varsButton->hide();
+    connect(varsButton, SIGNAL(activated(const QString &)),
+            this, SLOT(addVariable(const QString &)));
+    vbLayout->addWidget(varsButton);
+
+    varsLineEdit = new QLineEdit(argPanel);
+    varsLineEdit->setText("default"); 
+    varsLineEdit->hide();
+    connect(varsLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(handleText()));
+    vbLayout->addWidget(varsLineEdit);
+
     QGridLayout *sLayout = new QGridLayout();
     sLayout->setMargin(0);
     gLayout->addLayout(sLayout);
@@ -326,32 +356,18 @@ QvisQueryWindow::CreateStandardQueryWidget()
         connect(textFields[i], SIGNAL(returnPressed()),
                 this, SLOT(handleText()));
         textFields[i]->hide();
-        sLayout->addWidget(textFields[i], i+1, 1);
+        sLayout->addWidget(textFields[i], i+2, 1);
         labels[i] = new QLabel(name1,argPanel);
         labels[i]->hide();
-        sLayout->addWidget(labels[i], i+1, 0);
+        sLayout->addWidget(labels[i], i+2, 0);
     }
-    varsButton = new QvisVariableButton(true, false, true, queryVarTypes,
-                                        argPanel);
-    varsButton->setText(tr("Variables"));
-    varsButton->setChangeTextOnVariableChange(false);
-    varsButton->hide();
-    connect(varsButton, SIGNAL(activated(const QString &)),
-            this, SLOT(addVariable(const QString &)));
-    sLayout->addWidget(varsButton, 7, 0);
-
-    varsLineEdit = new QLineEdit(argPanel);
-    varsLineEdit->setText("default"); 
-    varsLineEdit->hide();
-    connect(varsLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(handleText()));
-    sLayout->addWidget(varsLineEdit, 7, 1);
 
     useGlobal = new QCheckBox(tr("Use Global Id"), argPanel);
     connect(useGlobal, SIGNAL(toggled(bool)), this, 
             SLOT(useGlobalToggled(bool)));
     useGlobal->hide();
     sLayout->addWidget(useGlobal, 8, 0, 1, 2);
+
 
     // Add the data options radio button group to the argument panel.
     dataOpts = new QButtonGroup(argPanel);
@@ -363,41 +379,51 @@ QvisQueryWindow::CreateStandardQueryWidget()
     dataOpts->button(0)->setChecked(true);
     sLayout->addWidget(actualData, 10, 0);
 
-    // Add the plot options radio button group to the argument panel.
-    plotOpts = new QButtonGroup(argPanel);
-    QRadioButton *singleAxis = new QRadioButton(tr("Single Y-Axis (for time curve)"), argPanel);
-    plotOpts->addButton(singleAxis,0);
-    sLayout->addWidget(singleAxis, 11, 0, 1, 2);
-    QRadioButton *multiAxes = new QRadioButton(tr("Multiple Y-Axes (for time curve)"), argPanel);
-    plotOpts->addButton(multiAxes,1);
-    plotOpts->button(0)->setChecked(true);
-    sLayout->addWidget(multiAxes, 12, 0, 1, 2);
-
     dumpSteps = new QCheckBox(tr("Dump Steps"), argPanel);
     connect(dumpSteps, SIGNAL(toggled(bool)), this, 
             SLOT(dumpStepsToggled(bool)));
     dumpSteps->hide();
     sLayout->addWidget(dumpSteps, 13, 0, 1, 2);
 
-    // Add the time button to the argument panel.
+    // only one of these will be shown at a time, so they can be added
+    // to the same location in the layout
+
+    pickQueryWidget = new QvisPickQueryWidget();
+    sLayout->addWidget(pickQueryWidget, 14, 0);
+
+    lineoutQueryWidget = new QvisLineoutQueryWidget();
+    sLayout->addWidget(lineoutQueryWidget, 14, 0);
+
+    xRayImageQueryWidget = new QvisXRayImageQueryWidget();
+    sLayout->addWidget(xRayImageQueryWidget, 14, 0);
+
+    hohlraumFluxQueryWidget = new QvisHohlraumFluxQueryWidget();
+    sLayout->addWidget(hohlraumFluxQueryWidget, 14, 0);
+
+
+    // Add the time query options
     gLayout->addStretch(10);
-    QHBoxLayout *tbLayout = new QHBoxLayout();
-    gLayout->addLayout(tbLayout);
-    tbLayout->addStretch(5);
-    timeQueryButton = new QPushButton(tr("Time Curve"), argPanel);
-    connect(timeQueryButton, SIGNAL(clicked()),
-            this, SLOT(timeApply()));
-    tbLayout->addWidget(timeQueryButton);
-    tbLayout->addStretch(5);
-    gLayout->addStretch(5);
+    timeQueryOptions = new QvisTimeQueryOptionsWidget();
+    gLayout->addWidget(timeQueryOptions);
+    //
+    //  PickQueryWidget needs to know when time is toggled, so it
+    //  can enable certain of its own time-specific options.
+    //
+    connect(timeQueryOptions, SIGNAL(toggled(bool)), 
+            pickQueryWidget, SLOT(timeOptionsToggled(bool)));
 
     // Add the query button to the argument panel.
     QHBoxLayout *qbLayout = new QHBoxLayout();
     gLayout->addLayout(qbLayout);
+    qbLayout->addStretch(5);
     queryButton = new QPushButton(tr("Query"), argPanel);
     connect(queryButton, SIGNAL(clicked()),
             this, SLOT(apply()));
     qbLayout->addWidget(queryButton);
+    qbLayout->addStretch(5);
+
+    // make sure these are sorted
+    UpdateQueryList();
 }
 
 // ****************************************************************************
@@ -609,7 +635,7 @@ QvisQueryWindow::UpdateWindow(bool doAll)
     if(SelectedSubject() == plotList || doAll)
     {
         UpdateQueryButton();
-        UpdateTimeQueryButton();
+        UpdateTimeQueryOptions();
     }
 }
 
@@ -635,10 +661,10 @@ QvisQueryWindow::UpdateQueryButton()
 }
  
 // ****************************************************************************
-// Method: QvisQueryWindow::UpdateTimeQueryButton
+// Method: QvisQueryWindow::UpdateTimeQueryOptions
 //
 // Purpose: 
-//   Sets the enabled state for the time query button.
+//   Sets the enabled state for the time query options widget.
 //
 // Programmer: Kathleen Bonnell 
 // Creation:   April 1, 2004 
@@ -648,11 +674,11 @@ QvisQueryWindow::UpdateQueryButton()
 // ****************************************************************************
 
 void
-QvisQueryWindow::UpdateTimeQueryButton()
+QvisQueryWindow::UpdateTimeQueryOptions()
 {
     bool val = (queries->GetNames().size() > 0) &&
                (plotList->GetNumPlots() > 0);
-    timeQueryButton->setEnabled(val);
+    timeQueryOptions->setEnabled(val);
 }
 
 // ****************************************************************************
@@ -773,6 +799,9 @@ QvisQueryWindow::UpdateQueryList()
 //   Hank Childs, Sun Dec  5 15:43:32 PST 2010
 //   Make the focus of the query window be at the bottom of the window.
 //
+//   Kathleen Biagas, Fri Jun 10 14:01:28 PDT 2011
+//   Allow output to this window to be suppressed.
+//
 // ****************************************************************************
 
 void
@@ -786,7 +815,7 @@ QvisQueryWindow::UpdateResults(bool)
         resultText->moveCursor(QTextCursor::Down,QTextCursor::MoveAnchor);
         //resultText->setCursorPosition(resultText->numLines() - 1, 0);
     }
-    else if (SelectedSubject() == queryAtts)
+    else if (SelectedSubject() == queryAtts && !queryAtts->GetSuppressOutput())
     {
         string str;
         str = queryAtts->GetResultsMessage();
@@ -896,6 +925,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kathleen Bonnell, Tue Mar  1 11:07:43 PST 2011
 //   Added plotOpts.
 //
+//   Kathleen Biagas, Fri Jun 10 08:59:32 PDT 2011
+//   Added pickQueryWidget.
+//
 // ****************************************************************************
 
 void
@@ -904,6 +936,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     const intVector &winType = queries->GetWinType();
     const intVector &queryMode = queries->GetQueryMode();
     const stringVector &names = queries->GetNames();
+    const intVector &requiresVars = queries->GetRequiresVarSelection();
 
     int index = -1;
     for (int i = 0; i < names.size(); i++)
@@ -920,7 +953,16 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     dumpSteps->setChecked(0);
     labels[0]->setEnabled(true);
     textFields[0]->setEnabled(true);
-    plotOpts->button(0)->setChecked(true);
+
+    // turnf off specialized widgets
+    hohlraumFluxQueryWidget->setEnabled(false);
+    hohlraumFluxQueryWidget->hide();
+    lineoutQueryWidget->setEnabled(false);
+    lineoutQueryWidget->hide();
+    pickQueryWidget->setEnabled(false);
+    pickQueryWidget->hide();
+    xRayImageQueryWidget->setEnabled(false);
+    xRayImageQueryWidget->hide();
 
     if(index >= 0 && index < winType.size())
     {
@@ -928,31 +970,23 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         bool showDataOptions = false;
         bool showGlobal = false;
         bool showDumpSteps = false;
-        QueryList::WindowType winT = (QueryList::WindowType)winType[index];
+        QueryList::WindowType winT   = (QueryList::WindowType)winType[index];
         bool showTime = queryMode[index] != QueryList::QueryOnly;
-        bool showQuery = queryMode[index] != QueryList::TimeOnly;
-        bool showVars = false;
+        bool timeOnly = queryMode[index] == QueryList::TimeOnly;
+        bool showVars = requiresVars[index];
         bool showTimeCurvePlotType = false;
         varsLineEdit->setText("default");
         varsButton->setVarTypes(queryVarTypes);
 
-        if (winT == QueryList::SinglePoint)
+        if (winT == QueryList::Pick)
         {
-            labels[0]->setText(tr("Query point"));
-            textFields[0]->setText("0 0 0");
-            showWidgets[0] = true;
-            showVars = true;
-            showTimeCurvePlotType = true;
+            pickQueryWidget->setEnabled(true);
+            pickQueryWidget->show();
         }
-        else if (winT == QueryList::DoublePoint)
+        else if (winT == QueryList::Lineout)
         {
-            labels[0]->setText(tr("Start point"));
-            textFields[0]->setText("0 0 0");
-            labels[1]->setText(tr("End point"));
-            textFields[1]->setText("1 0 0");
-            showWidgets[0] = true;
-            showWidgets[1] = true;
-            showVars = true;
+            lineoutQueryWidget->setEnabled(true);
+            lineoutQueryWidget->show();
             varsButton->setVarTypes(QvisVariableButton::Scalars);
         }
         else if (winT == QueryList::DomainZone)
@@ -968,13 +1002,13 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         }
         else if (winT == QueryList::DomainZoneVars)
         {
+            varsLineEdit->setText("var_for_x var_for_y");
             labels[0]->setText(tr("Domain"));
             textFields[0]->setText("0");
             labels[1]->setText(tr("Zone"));
             textFields[1]->setText("0");
             showWidgets[0] = true;
             showWidgets[1] = true;
-            showVars = true;
             useGlobal->setText("Use Global Zone");
             showGlobal = true;
             showTimeCurvePlotType = (queries->GetNumVars()[index] < 2);
@@ -992,13 +1026,13 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         }
         else if (winT == QueryList::DomainNodeVars)
         {
+            varsLineEdit->setText("var_for_x var_for_y");
             labels[0]->setText(tr("Domain"));
             textFields[0]->setText("0");
             labels[1]->setText(tr("Node"));
             textFields[1]->setText("0");
             showWidgets[0] = true;
             showWidgets[1] = true;
-            showVars = true;
             useGlobal->setText("Use Global Node");
             showGlobal = true;
             showTimeCurvePlotType = (queries->GetNumVars()[index] < 2);
@@ -1009,16 +1043,15 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         }
         else if (winT == QueryList::ActualDataVars)
         {
-            showVars = true;
             showDataOptions = true;
         }
         else if (winT == QueryList::LineDistribution)
         {
             labels[0]->setText(tr("Number of Lines"));
-            textFields[0]->setText("100");
+            textFields[0]->setText("1000");
             showWidgets[0] = true;
             labels[1]->setText(tr("Number of Bins"));
-            textFields[1]->setText("30");
+            textFields[1]->setText("100");
             showWidgets[1] = true;
             labels[2]->setText(tr("Min Length"));
             textFields[2]->setText("0.");
@@ -1032,23 +1065,9 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             varsLineEdit->setText("absorbtivity emissivity");
             varsButton->setVarTypes(QvisVariableButton::Scalars |
                                     QvisVariableButton::Arrays);
-            showVars = true;
 
-            labels[0]->setText(tr("Number of Lines"));
-            textFields[0]->setText("100");
-            showWidgets[0] = true;
-
-            labels[1]->setText(tr("Divide Emis by Absorb"));
-            textFields[1]->setText("0");
-            showWidgets[1] = true;
-
-            labels[2]->setText(tr("Ray Center"));
-            textFields[2]->setText("0 0 0");
-            showWidgets[2] = true;
-
-            labels[3]->setText(tr("Radius, Theta, Phi"));
-            textFields[3]->setText("1 0 0");
-            showWidgets[3] = true;
+            hohlraumFluxQueryWidget->setEnabled(true);
+            hohlraumFluxQueryWidget->show();
         }
         else if (winT == QueryList::ConnCompSummary)
         {
@@ -1062,7 +1081,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             textFields[0]->setText("5.0");
             showWidgets[0] = true;
             labels[1]->setText(tr("NMax"));
-            textFields[1]->setText("5");
+            textFields[1]->setText("16");
             showWidgets[1] = true;
             labels[2]->setText(tr("Recomp Output (Vtk)"));
             textFields[2]->setText(tr("[skip]"));
@@ -1073,31 +1092,9 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             varsLineEdit->setText("absorbtivity emissivity");
             varsButton->setVarTypes(QvisVariableButton::Scalars |
                                     QvisVariableButton::Arrays);
-            showVars = true;
 
-            labels[0]->setText(tr("Output Image Format"));
-            textFields[0]->setText("png");
-            showWidgets[0] = true;
-
-            labels[1]->setText(tr("Divide Emis by Absorb"));
-            textFields[1]->setText("0");
-            showWidgets[1] = true;
-
-            labels[2]->setText(tr("Origin"));
-            textFields[2]->setText("0 0 0");
-            showWidgets[2] = true;
-
-            labels[3]->setText(tr("Theta, Phi"));
-            textFields[3]->setText("0 0");
-            showWidgets[3] = true;
-
-            labels[4]->setText(tr("Image Width, Height"));
-            textFields[4]->setText("1 1");
-            showWidgets[4] = true;
-
-            labels[5]->setText(tr("Image Pixel Size"));
-            textFields[5]->setText("200 200");
-            showWidgets[5] = true;
+            xRayImageQueryWidget->setEnabled(true);
+            xRayImageQueryWidget->show();
         }
         else if (winT == QueryList::StreamlineInfo)
         {
@@ -1152,27 +1149,17 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             dataOpts->button(1)->hide();
         }
 
-        if (showTimeCurvePlotType)
-        {
-            plotOpts->button(0)->show();
-            plotOpts->button(1)->show();
-        }
-        else
-        {
-            plotOpts->button(0)->hide();
-            plotOpts->button(1)->hide();
-        }
-            
-
         if (showTime)
-            timeQueryButton->show();
+        {
+            timeQueryOptions->show();
+        }
         else
-            timeQueryButton->hide();
+        {
+            timeQueryOptions->hide();
+        }
 
-        if (showQuery)
-            queryButton->show();
-        else
-            queryButton->hide();
+        timeQueryOptions->setCheckable(!timeOnly);
+        queryButton->show();
     }
 }
 
@@ -1329,7 +1316,7 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 // ****************************************************************************
 
 void
-QvisQueryWindow::Apply(bool ignore, bool doTime)
+QvisQueryWindow::Apply(bool ignore)
 {
     string format = floatFormatText
                          ->displayText().simplified().toStdString();
@@ -1347,7 +1334,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
     {
         // check which tab is active to determine how to procede
         if(queryTabs->currentIndex() == 0) // std query
-            ExecuteStandardQuery(doTime);
+            ExecuteStandardQuery();
         else if(queryTabs->currentIndex() == 1) // python script query
             ExecutePythonQuery();
 
@@ -1359,9 +1346,6 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
 //
 // Purpose:
 //   Prepares arguments and executes the selected standard query.
-//
-// Arguments:
-//    doTime true if query over time was selected.
 //
 // Programmer: Cyrus Harrison
 // Creation:   Mon Wed Feb 17 11:55:51 PST 2010
@@ -1378,11 +1362,8 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
 // ****************************************************************************
 
 void
-QvisQueryWindow::ExecuteStandardQuery(bool doTime)
+QvisQueryWindow::ExecuteStandardQuery()
 {
-    int useActualData = dataOpts->id(dataOpts->checkedButton());
-    int curvePlotType = plotOpts->id(plotOpts->checkedButton());
-
     const stringVector &names = queries->GetNames();
     const intVector &types = queries->GetTypes();
     const intVector &winType = queries->GetWinType();
@@ -1402,30 +1383,22 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
     {
         QueryList::QueryType t = (QueryList::QueryType)types[index];
         QueryList::WindowType winT = (QueryList::WindowType)winType[index];
-        bool noErrors = true;
         double p0[3] = {0., 0., 0.}, p1[3] = {0., 0., 0.};
         stringVector vars;
+
+        bool noErrors = GetVars(vars);
+
+        MapNode queryParams;
+        queryParams["query_name"] = names[index];
+        queryParams["query_type"] = types[index];
+        if (!vars.empty())
+            queryParams["vars"] = vars;
 
         // Gather the query parameters according to the type of
         // window we're using.
         if(winT == QueryList::Basic)
         {
-            if(!GetVars(vars))
-                noErrors = false;
-
-            if(noErrors)
-            {
-                if (t == QueryList::DatabaseQuery)
-                {
-                    GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                        doTime, useActualData);
-                }
-                else 
-                {
-                    debug5 << "QueryWindow -- Attempted use BasicWindow "
-                            << "with non DatabaseQuery." << endl;
-                }
-            }
+            ;//basic queries don't require any more parameters
         }
         else if ((winT == QueryList::DomainZone) ||
                  (winT == QueryList::DomainNode) || 
@@ -1450,98 +1423,23 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
                     Error(tr("The node must be an integer >= 0."));
             }
 
-            if (winT == QueryList::DomainZoneVars ||
-                winT == QueryList::DomainNodeVars )
-            {
-                if(!GetVars(vars))
-                    noErrors = false;
-            }
-
             if(noErrors && goodDomain && goodEl)
             {
-                if (t == QueryList::DatabaseQuery)
-                {
-                    GetViewerMethods()->DatabaseQuery(names[index], 
-                        vars, doTime, el, dom, useGlobal->isChecked());
-                }
-                else if (t == QueryList::PointQuery)
-                {
-                    GetViewerMethods()->PointQuery(names[index], p0, 
-                        vars, doTime, curvePlotType, el, dom, useGlobal->isChecked());
-                }
-                else 
-                {
-                    debug5 << "QueryWindow -- Attempted to use "
-                            << "DomainWindow with non Database or non "
-                            << "Point Query." << endl;
-                }
+                queryParams["domain"] = dom;
+                queryParams["element"] = el;
+                queryParams["use_global_id"] = (int)useGlobal->isChecked();
             }
         }
-        else if(winT == QueryList::SinglePoint)
+        else if(winT == QueryList::Lineout)
         {
-            if(!GetPoint(0, tr("query point"), p0))
+            if(!lineoutQueryWidget->GetQueryParameters(queryParams))
                 noErrors = false;
-            if(!GetVars(vars))
-                noErrors = false;
-
-            if(noErrors)
-            {
-                if (t == QueryList::PointQuery)
-                {
-                    GetViewerMethods()->PointQuery(names[index], p0,
-                        vars, doTime, curvePlotType);
-                }
-                else 
-                {
-                    debug5 << "QueryWindow -- Attempted to use "
-                            << "SinglePointWindow with non PointQuery." 
-                            << endl;
-                }
-            }
-        }
-        else if(winT == QueryList::DoublePoint)
-        {
-            if(!GetPoint(0, tr("start point"), p0))
-                noErrors = false;
-            if(!GetPoint(1, tr("end point"), p1))
-                noErrors = false;
-            if(!GetVars(vars))
-                noErrors = false;
-
-            if(noErrors)
-            {
-                if (t == QueryList::LineQuery)
-                {
-                    GetViewerMethods()->LineQuery(names[index], p0, p1,
-                        vars, 50);
-                }
-                else 
-                {
-                    debug5 << "QueryWindow -- Attempted to use "
-                            << "DoublePointWindow with non LineQuery." 
-                            << endl;
-                }
-            }
         }
         else if ((winT == QueryList::ActualData) ||
-                    (winT == QueryList::ActualDataVars))
+                 (winT == QueryList::ActualDataVars))
         {
-            if(!GetVars(vars))
-                noErrors = false;
             if (noErrors)
-            {
-                if (t == QueryList::DatabaseQuery)
-                {
-                    GetViewerMethods()->DatabaseQuery(names[index], 
-                        vars, doTime, useActualData);
-                }
-                else 
-                {
-                    debug5 << "QueryWindow -- Attempted to use "
-                            << "ActualDataWindow with non DatabaseQuery." 
-                            << endl;
-                }
-            }
+                queryParams["use_actual_data"] = (int)dataOpts->button(1)->isChecked();
         }
         else if (winT == QueryList::LineDistribution)
         {
@@ -1559,71 +1457,33 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
                 noErrors = false;
             if (noErrors)
             {
-                doubleVector vmin(1), vmax(1);
-                vmin[0] = min;
-                vmax[0] = max;
-                GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                                 false, nLines, nBins, true, false, vmin, vmax);
+                queryParams["min"] = min;
+                queryParams["max"] = max;
+                queryParams["num_lines"] = nLines;
+                queryParams["num_bins"]  = nBins;
             }
         }
         else if (winT == QueryList::HohlraumFlux)
         {
-            stringVector v;
-
-            if (!GetVars(vars))
-                noErrors = false;
-
             if (vars.size() != 2)
                 noErrors = false;
 
-            int nLines=0;
-            if(!GetNumber(0, &nLines))
+            if (!hohlraumFluxQueryWidget->GetQueryParameters(queryParams))
                 noErrors = false;
-
-            int divideEmisByAbsorb=0;
-            if(!GetNumber(1, &divideEmisByAbsorb))
-                noErrors = false;
-
-            doubleVector pos(3);
-            if(!GetPoint(2, tr("Ray Center"), p0))
-                noErrors = false;
-            if (noErrors)
-            {
-                pos[0] = p0[0];
-                pos[1] = p0[1];
-                pos[2] = p0[2];
-            }
-
-            doubleVector radiusThetaPhi(3);
-            if(!GetPoint(3, tr("Radius, Theta, Phi"), p0))
-                noErrors = false;
-            if (noErrors)
-            {
-                radiusThetaPhi[0] = p0[0];
-                radiusThetaPhi[1] = p0[1];
-                radiusThetaPhi[2] = p0[2];
-            }
-            if (noErrors)
-                GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                    doTime, nLines, divideEmisByAbsorb, true, false, pos,
-                    radiusThetaPhi);
         }
         else if (winT == QueryList::ConnCompSummary)
         {
             // get from textFields[0] (this used to be hooked up to GetVars ...)
-            stringVector v;
-            v.push_back(textFields[0]->text().simplified().toStdString());
-            if(v[0]=="")
+            string ofile = textFields[0]->text().simplified().toStdString();
+            if(ofile == "")
                 noErrors = false;
             if (noErrors)
-                GetViewerMethods()->DatabaseQuery(names[index], v, 
-                                                    false,true);
+                queryParams["output_file"] = ofile;
         }
         else if (winT == QueryList::ShapeletsDecomp)
         {
             string ofile = "";
             QString ofqs;
-            vars.push_back("default");
 
             doubleVector dvec;
             dvec.resize(1);
@@ -1636,105 +1496,47 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
 
             ofqs = textFields[2]->displayText();
             ofile = ofqs.simplified().toStdString();
-            if(ofile == "[skip]")
-                vars.push_back("");
-            else
-                vars.push_back(ofile);
 
             if(noErrors)
-                GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                                                  false, nmax,0,false, false,
-                                                    dvec);
+            {
+                queryParams["beta"] = dvec[0];
+                queryParams["nmax"] = nmax;
+                if(ofile != "[skip]")
+                    queryParams["recomp_file"] = ofile;
+            }
         }
         else if (winT == QueryList::XRayImage)
         {
-            stringVector v;
-
-            if (!GetVars(vars))
-                noErrors = false;
-
             if (vars.size() != 2)
                 noErrors = false;
 
-            int outputType = 2;
-            if (textFields[0]->text().simplified().toStdString() ==  "bmp")
-                outputType = 0;
-            else if (textFields[0]->text().simplified().toStdString() ==  "jpeg")
-                outputType = 1;
-            else if (textFields[0]->text().simplified().toStdString() ==  "png")
-                outputType = 2;
-            else if (textFields[0]->text().simplified().toStdString() ==  "tiff")
-                outputType = 3;
-            else if (textFields[0]->text().simplified().toStdString() ==  "rawfloats")
-                outputType = 4;
-            else
+            if (!xRayImageQueryWidget->GetQueryParameters(queryParams))
                 noErrors = false;
-
-            int divideEmisByAbsorb=0;
-            if(!GetNumber(1, &divideEmisByAbsorb))
-                noErrors = false;
-
-            doubleVector pos(3);
-            if(!GetPoint(2, tr("Origin"), p0))
-                noErrors = false;
-            if (noErrors)
-            {
-                pos[0] = p0[0];
-                pos[1] = p0[1];
-                pos[2] = p0[2];
-            }
-
-            doubleVector darg2(6);
-            if(!GetPoint(3, tr("Theta, Phi"), p0))
-                noErrors = false;
-            if (noErrors)
-            {
-                darg2[0] = p0[0];
-                darg2[1] = p0[1];
-            }
-
-            if(!GetPoint(4, tr("Image Width, Height"), p0))
-                noErrors = false;
-            if (noErrors)
-            {
-                darg2[2] = p0[0];
-                darg2[3] = p0[1];
-            }
-
-            if(!GetPoint(5, tr("Image Pixel Size"), p0))
-                noErrors = false;
-            if (noErrors)
-            {
-                darg2[4] = p0[0];
-                darg2[5] = p0[1];
-            }
-            if (noErrors)
-                GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                    doTime, outputType, divideEmisByAbsorb, true, false, pos,
-                    darg2);
         }
         else if (winT == QueryList::StreamlineInfo)
         {
-            if(!GetVars(vars))
-                noErrors = false;
             if(noErrors)
             {
-                if (t == QueryList::DatabaseQuery)
-                {
-                    GetViewerMethods()->DatabaseQuery(names[index], vars,
-                                                      doTime, 0, 0, false, dumpSteps->isChecked());
-                }
-                else 
-                {
-                    debug5 << "QueryWindow -- Attempted use BasicWindow "
-                           << "with non DatabaseQuery." << endl;
-                }
+                queryParams["dump_steps"] = dumpSteps->isChecked();
             }
+        }
+        else if(winT == QueryList::Pick)
+        {
+            if (!pickQueryWidget->GetQueryParameters(queryParams))
+                noErrors = false;
+        }
+
+        if(!timeQueryOptions->isCheckable() || timeQueryOptions->isChecked())
+        {
+            noErrors = timeQueryOptions->GetTimeQueryOptions(queryParams);
+            if (noErrors)
+                queryParams["do_time"] = true;
         }
 
         // Display a status message.
         if(noErrors)
         {
+            GetViewerMethods()->Query(queryParams);
             QString str = tr("Performing %1 query.").
                             arg(names[index].c_str());
             Status(str);
@@ -1759,6 +1561,9 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
 //  Cyrus Harrison, Tue Sep 21 11:23:00 PDT 2010
 //  Support passing of arbitary arguments via "args" keyword.
 //
+//  Kathleen Biagas, Fri Jun 10 08:59:13 PDT 2011
+//  Send args to viewer in a MapNode.
+//
 // ****************************************************************************
 
 void
@@ -1779,71 +1584,15 @@ QvisQueryWindow::ExecutePythonQuery()
     QString query_def = pyFilterEdit->getSource();
     py_args.push_back(query_def.toStdString());
 
-    GetViewerMethods()->DatabaseQuery("Python", py_args,false);
+    MapNode params;
+    params["query_name"] = string("Python");
+    params["query_type"] = (QueryList::QueryType)QueryList::DatabaseQuery;
+    params["vars"] = py_args;
+
+    GetViewerMethods()->Query(params);
     Status("Executing Python Script Query");
 }
 
-// ****************************************************************************
-// Method: QvisQueryWindow::GetPoint
-//
-// Purpose:
-//   Gets a point from the i'th text field.
-//
-// Arguments:
-//   index : The index of the text field to use.
-//   pname : The point name being read.
-//   pt    : The array in which the point will be stored.
-//
-// Returns:    True if it worked.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 9 17:54:53 PST 2002
-//
-// Modifications:
-//   Kathleen Bonnell, Tue Jul 22 14:02:37 PDT 2003
-//   Allow for only 2 world-space coordinates, setting z to 0 if not provided.
-//   
-//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
-//   Removed references to QueryList::CoordRep, no longer exists. 
-//
-//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
-//   Support for internationalization.
-//
-//   Cyrus Harrison, Tue Jun 24 16:21:00 PDT 2008
-//   Initial Qt4 Port.
-//
-//   Eric Brugger, Fri Jul  2 15:54:23 PDT 2010
-//   I increased the number of text fields to support the x ray image query.
-//
-// ****************************************************************************
-
-bool
-QvisQueryWindow::GetPoint(int index, const QString &pname, double pt[3])
-{
-    bool okay = false;
-
-    if(index >= 0 && index < 6)
-    {
-        QString temp(textFields[index]->displayText().simplified());
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            pt[2] = 0.;
-            int numScanned = sscanf(temp.toStdString().c_str(), "%lg %lg %lg",
-                        &pt[0], &pt[1], &pt[2]);
-            okay = (numScanned == 2 || numScanned == 3);
-            if(!okay)
-            {
-                QString msg = tr("The %1 is not valid. It should consist of "
-                                 "two or three real world coordinate values.").
-                              arg(pname);
-                Error(msg);
-            }
-        }
-    }
-
-    return okay;
-}
 
 // ****************************************************************************
 // Method: QvisQueryWindow::GetNumber
@@ -2001,25 +1750,6 @@ QvisQueryWindow::apply()
     Apply(true);
 }
 
-// ****************************************************************************
-// Method: QvisQueryWindow::apply
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the TimeCurve button is 
-//   clicked.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   Thu Apr  1 18:42:52 PST 2004 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisQueryWindow::timeApply()
-{
-    Apply(true, true);
-}
 
 // ****************************************************************************
 // Method: QvisQueryWindow::selectQuery
@@ -2321,6 +2051,3 @@ QvisQueryWindow::pyTemplateSelected(const QString &tname)
 
     pyFilterEdit->loadScript(fname);
 }
-
-
-

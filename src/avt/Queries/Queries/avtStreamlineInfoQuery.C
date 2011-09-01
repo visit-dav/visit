@@ -86,8 +86,38 @@ avtStreamlineInfoQuery::~avtStreamlineInfoQuery()
 {
 }
 
+
 // ****************************************************************************
-// Method:  avtMomentOfInertiaQuery::VerifyInput
+// Method:  avtStreamlineInfoQuery::SetInputParams
+//
+// Programmer:  Kathleen Biagas 
+// Creation:    June 17, 2011
+//
+// ****************************************************************************
+
+void
+avtStreamlineInfoQuery::SetInputParams(const MapNode &params)
+{
+    if (params.HasEntry("dump_steps"))
+        SetDumpSteps(params.GetEntry("dump_steps")->AsInt());
+}
+
+// ****************************************************************************
+// Method:  avtStreamlineInfoQuery::GetDefaultInputParams
+//
+// Programmer:  Kathleen Biagas 
+// Creation:    July 15, 2011
+//
+// ****************************************************************************
+
+void
+avtStreamlineInfoQuery::GetDefaultInputParams(MapNode &params)
+{
+    params["dump_steps"] = 0;
+}
+
+// ****************************************************************************
+// Method:  avtStreamlineInfoQuery::VerifyInput
 //
 // Programmer:  Dave Pugmire
 // Creation:    November  9, 2010
