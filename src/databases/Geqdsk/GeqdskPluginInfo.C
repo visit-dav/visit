@@ -166,7 +166,7 @@ std::vector<std::string>
 GeqdskGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("*.mdsplus");
+    defaultPatterns.push_back("*.geq");
 
     return defaultPatterns;
 }
