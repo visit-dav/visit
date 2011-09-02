@@ -319,7 +319,7 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
     if (noerrors)
     {
         params["output_type"] = imageFormat->currentIndex();
-        params["divide_emis_by_absorb"] = divideFlag->isChecked();
+        params["divide_emis_by_absorb"] = (int)divideFlag->isChecked();
         params["origin"] = origin;
         params["theta"] = t;
         params["phi"] = p;

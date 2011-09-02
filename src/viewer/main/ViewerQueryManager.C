@@ -1084,9 +1084,9 @@ void
 ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
 {
     string qName = queryParams.GetEntry("query_name")->AsString();
-    bool doTimeQuery = false;
+    int doTimeQuery = 0;
     if (queryParams.HasEntry("do_time"))
-        doTimeQuery = queryParams.GetEntry("do_time")->AsBool();
+        doTimeQuery = queryParams.GetEntry("do_time")->AsInt();
 
     queryClientAtts->SetResultsMessage("");
     queryClientAtts->SetResultsValue(0.);
@@ -3204,9 +3204,9 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         pickAtts->SetVariables(vars);
 
     // some parameters common to all Picks.
-    bool timeCurve = false;
+    int timeCurve = 0;
     if (queryParams.HasEntry("do_time"))
-        timeCurve = queryParams.GetEntry("do_time");
+        timeCurve = queryParams.GetEntry("do_time")->AsInt();
     timeCurve |= pickAtts->GetDoTimeCurve(); 
 
     int curvePlotType = 0;
@@ -3324,7 +3324,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                 pointQueryParams["pick_type"] = "Zone";
                 pointQueryParams["coord"] = zpt;
                 pointQueryParams["vars"] = vars;
-                pointQueryParams["do_time"] = true;
+                pointQueryParams["do_time"] = 1;
                 pointQueryParams["preserve_coord"] = true;
                 pointQueryParams["curve_plot_type"] = curvePlotType;
                
@@ -3347,7 +3347,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                 pointQueryParams["pick_type"] = "Node";
                 pointQueryParams["coord"] = npt;
                 pointQueryParams["vars"] = vars;
-                pointQueryParams["do_time"] = true;
+                pointQueryParams["do_time"] = 1;
                 pointQueryParams["preserve_coord"] = true;
                 pointQueryParams["curve_plot_type"] = curvePlotType;
 

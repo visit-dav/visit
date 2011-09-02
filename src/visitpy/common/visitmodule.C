@@ -11480,7 +11480,7 @@ visit_QueryOverTime_deprecated(PyObject *self, PyObject *args)
     params["query_Name"] = std::string(queryName);
     if (!vars.empty())
         params["vars"] = vars;
-    params["do_time"] = true;
+    params["do_time"] = 1;
     MUTEX_LOCK();
         GetViewerMethods()->Query(params);
 
@@ -11564,7 +11564,7 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     queryParams["query_name"] = std::string(queryName);
-    queryParams["do_time"] = true;
+    queryParams["do_time"] = 1;
 
     MUTEX_LOCK();
     GetViewerMethods()->Query(queryParams);
