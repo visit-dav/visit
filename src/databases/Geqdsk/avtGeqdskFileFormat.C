@@ -124,8 +124,8 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
     tmp[48] = 0;
     std::string alphaStr(tmp);
 
-    // One format :   EFITD    03/16/2004    #118898  3400ms
-    if( alphaStr.find("EFITD") != std::string::npos &&
+    // One format :   EFIT    03/16/2004    #118898  3400ms
+    if( alphaStr.find("EFIT") != std::string::npos &&
         sscanf( tmp, "%s %s %s %s", id, date, run, time ) == 4 )
     {
       cycles.resize( 1 );
@@ -152,6 +152,20 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
 
       times.resize( 1 );
       times[0] = atof( time );
+
+      n = 7;
+    }
+
+    // Unkown - so no times or cycles.
+    else
+    {
+      cycles.resize( 1 );
+      cycles[0] = 0;
+
+      std::string timeStr(time);
+
+      times.resize( 1 );
+      times[0] = 0;
 
       n = 7;
     }
