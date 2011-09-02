@@ -293,7 +293,7 @@ QvisHohlraumFluxQueryWidget::GetQueryParameters(MapNode &params)
     if (noerrors)
     {
         params["num_lines"] = nl;
-        params["divide_emis_by_absorb"] = divideFlag->isChecked();
+        params["divide_emis_by_absorb"] = (int)divideFlag->isChecked();
         params["ray_center"] = rc;
         params["radius"] = rad;
         params["theta"] = t;

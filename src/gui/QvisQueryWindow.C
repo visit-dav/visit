@@ -1517,7 +1517,7 @@ QvisQueryWindow::ExecuteStandardQuery()
         {
             if(noErrors)
             {
-                queryParams["dump_steps"] = dumpSteps->isChecked();
+                queryParams["dump_steps"] = (int)dumpSteps->isChecked();
             }
         }
         else if(winT == QueryList::Pick)
@@ -1530,7 +1530,7 @@ QvisQueryWindow::ExecuteStandardQuery()
         {
             noErrors = timeQueryOptions->GetTimeQueryOptions(queryParams);
             if (noErrors)
-                queryParams["do_time"] = true;
+                queryParams["do_time"] = 1;
         }
 
         // Display a status message.
