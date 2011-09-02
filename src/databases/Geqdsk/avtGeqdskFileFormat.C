@@ -162,8 +162,6 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
       cycles.resize( 1 );
       cycles[0] = 0;
 
-      std::string timeStr(time);
-
       times.resize( 1 );
       times[0] = 0;
 
