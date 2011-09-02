@@ -10,7 +10,7 @@
       ${GEQDSK_LIB}
     </LIBS>
     <FilePatterns>
-      *.mdsplus
+      *.geq
     </FilePatterns>
     <Files components="M">
       avtGeqdskFileFormat.C

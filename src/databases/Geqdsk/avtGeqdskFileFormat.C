@@ -80,7 +80,7 @@ using     std::string;
 // ****************************************************************************
 
 avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttributes *readOpts)
-  : avtMTSDFileFormat(&filename, 1)
+  : avtMTSDFileFormat(&filename, 1), nw(0), nh(0)
 {
     if (filename == "")
         return;
@@ -88,12 +88,12 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
     std::ifstream f;
     f.open(filename);
 
-    char tmp[1024];
+    char tmp[1024], tmpInt[8];
     
     // Read the first line: case information, dummy var, and nw, and nh
     char id[32], date[32], run[32], time[32];
-    int idum;
     float xdum;
+    int idum;
 
     f.getline(tmp, 1024);
 
@@ -102,20 +102,66 @@ avtGeqdskFileFormat::avtGeqdskFileFormat(const char *filename, DBOptionsAttribut
       EXCEPTION1( InvalidFilesException, "Read past end of file." );
     }
 
-    int n = sscanf( tmp, "%s %s %s %s  %d  %d %d",
-                    id, date, run, time, &idum, &nw, &nh );
+    // The first line contains 60 FORTRAN characters format (6a8,3i4),
+    // 6 alpha characters of length 8 and 3 integers of length 4.
+
+    // Strip off the last three int and convert them to ints.
+    strncpy(tmpInt, &(tmp[48]), 4 );
+    idum = atoi( tmpInt );
+    strncpy(tmpInt, &(tmp[52]), 4 );
+    nw = atoi( tmpInt );
+    strncpy(tmpInt, &(tmp[56]), 4 );
+    nh = atoi( tmpInt );
+
+    if( nw < 0 || nh < 0 )
+    {
+        EXCEPTION1( InvalidVariableException,
+                    "Can not read the first line - number of horizontal R and/or vertical Z grid points." );
+    }
+
+    int n = 3;
+
+    tmp[48] = 0;
+    std::string alphaStr(tmp);
+
+    // One format :   EFITD    03/16/2004    #118898  3400ms
+    if( alphaStr.find("EFITD") != std::string::npos &&
+        sscanf( tmp, "%s %s %s %s", id, date, run, time ) == 4 )
+    {
+      cycles.resize( 1 );
+      cycles[0] = atoi( time );
+
+      std::string timeStr(time);
+
+      times.resize( 1 );
+      times[0] = atof( time );
+
+      if( timeStr.find("ms") != std::string::npos )
+        times[0] *= 1.0e-3;
+
+      n = 7;
+    }
+
+    // Second format: TRXPL 09May2008 ALFA ALFA TRANSP(403 t=   0.9000
+    else if( alphaStr.find("TRXPL") != std::string::npos &&
+             sscanf( tmp, "%s %s ALFA ALFA TRANSP(%s t= %s",
+                     id, date, run, time ) == 4 )
+    {
+      cycles.resize( 1 );
+      cycles[0] = (int) (atof( time ) * 1000.0);
+
+      times.resize( 1 );
+      times[0] = atof( time );
+
+      n = 7;
+    }
 
     if( n != 7 )
     {
-      EXCEPTION1( InvalidVariableException,
-                  "Can not read the first line - number of horizontal R and/or vertical Z grid points." );
+        EXCEPTION1( InvalidVariableException,
+                    "Can not read the first line - number of horizontal R and/or vertical Z grid points." );
     }
 
-    cycles.resize( 1 );
-    cycles[0] = atoi( time );
-
-    times.resize( 1 );
-    times[0] = atof( time ) * 1.0e-3;
 
     // Read the second line ...
     f.getline(tmp, 1024);
