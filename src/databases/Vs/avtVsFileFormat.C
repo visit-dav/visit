@@ -2476,10 +2476,10 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       if( meshMetaPtr->isStructuredMesh() || meshMetaPtr->isUnstructuredMesh() )
         numTopologicalDims -= 1;
 
-      if( varDims.size() - (int) isAComponent < numTopologicalDims )
+      if( varDims.size() - (int) isAComponent != numTopologicalDims )
       {
         VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "Var and mesh do not have the spatial dimension"
+                          << "Var and mesh do not have the topological dimension"
                           << "Returning NULL." << std::endl;
         return NULL;
       }

@@ -21,8 +21,9 @@
 
 VsH5Dataset::VsH5Dataset(VsRegistry* r, VsH5Object* parentObject, std::string datasetName, hid_t id):
   VsH5Object(r, parentObject, datasetName, id){
-  
+
   dataType = H5Tget_native_type(H5Dget_type(id), H5T_DIR_DEFAULT);
+
   loadDims();
   
   registry->add(this);
