@@ -154,9 +154,11 @@ herr_t VsH5Reader::getDataSet( VsH5Dataset* dataSet,
     return -1;
   }
   
-  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << dataSet->getFullName() << " - Entering."
-                    << std::endl;
+  if (data == NULL) {
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Data storage is null?" << std::endl;
+    return -1;
+  }
   
   herr_t err = 0;
 
