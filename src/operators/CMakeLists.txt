@@ -48,6 +48,8 @@
 #   Brad Whitlock, Wed Jun 22 15:25:18 PDT 2011
 #   I added the Extrude operator.
 #
+#   Marc Durant, Tue Sep 6 2011
+#   Added the FFT operator
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
@@ -76,6 +78,7 @@ Edge
 Elevate
 ExternalSurface
 Extrude
+FFT
 FiveFoldTetSubdivision
 Flux
 IndexSelect
