@@ -93,7 +93,7 @@ int VisIt_MeshMetaData_setSpatialExtents(visit_handle h, double[6]);
 int VisIt_MeshMetaData_getSpatialExtents(visit_handle h, double[6]);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif
