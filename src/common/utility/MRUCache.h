@@ -40,6 +40,7 @@
 #define MRU_CACHE_H
 
 #include <cstddef>
+#include <cstdlib>
 #include <map>
 #include <vector>
 
