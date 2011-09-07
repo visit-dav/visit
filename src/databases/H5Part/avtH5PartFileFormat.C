@@ -821,9 +821,6 @@ avtH5PartFileFormat::SelectParticlesToRead()
                 // Serial version and parallel if domain decomposition disabled
                 h5part_int64_t *indices = new h5part_int64_t[queryResults.size()];
                 std::copy(queryResults.begin(), queryResults.end(), indices);
-                // FIXME: With the current version of H5Part, an empty query will result
-                // in the entire file being selected. Unfortunately, H5PartSetViewEmpty is
-                // not available in the serial version.
                 H5PartSetViewIndices(file, indices, queryResults.size());
                 delete[] indices;
             }
@@ -855,7 +852,6 @@ avtH5PartFileFormat::SelectParticlesToRead()
 #ifdef VERYVERBOSE
                 std::cout << "None." << std::endl;
 #endif
-                // FIXME: The following will select the entire file instead of nothing.
                 h5part_int64_t dummy[] = { 0 };
                 // Empty selection since processor does not have any particles
                 H5PartSetViewIndices(file, dummy, 0);
