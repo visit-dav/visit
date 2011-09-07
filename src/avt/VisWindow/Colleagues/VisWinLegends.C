@@ -93,6 +93,9 @@ const double   VisWinLegends::dbInfoWidth         = 0.21;
 //    Brad Whitlock, Mon Mar  2 14:11:07 PST 2009
 //    I added dbInfoTimeScale and dbInfoTimeOffset.
 //
+//    Kathleen Biagas, Wed Sep  7 16:23:57 PDT 2011
+//    Added timeVisible.
+//
 // ****************************************************************************
 
 VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p),
@@ -113,6 +116,7 @@ VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p),
     pathExpansionMode = 0;
     legendVisible = true;
     homogeneous = true;
+    timeVisible = true;
 }
 
 
@@ -482,14 +486,18 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
 //   Cyrus Harrison, Mon Jun 18 09:34:37 PDT 2007
 //   Added database path expansion mode option
 //
+//   Kathleen Biagas, Wed Sep  7 16:23:08 PDT 2011
+//   Added timeInfo argument.
+//
 // ****************************************************************************
 
 void
-VisWinLegends::SetVisibility(bool db, int path_exp_mode, bool legend)
+VisWinLegends::SetVisibility(bool db, int path_exp_mode, bool legend, bool timeInfo)
 {
     dbInfoVisible = db;
     pathExpansionMode = path_exp_mode;
     legendVisible = legend;
+    timeVisible = timeInfo;
 }
 
 // ****************************************************************************
@@ -539,6 +547,9 @@ VisWinLegends::SetTimeScaleAndOffset(double scale, double offset)
 //    Brad Whitlock, Mon Mar  2 14:12:41 PST 2009
 //    I added support for time scale and offset.
 //
+//    Kathleen Biagas, Wed Sep  7 16:23:36 PDT 2011
+//    Added timeVisible.
+//
 // ****************************************************************************
 
 bool
@@ -548,12 +559,12 @@ VisWinLegends::CreateDatabaseInfo(char *info,
 {
     bool hasTime = false;
     sprintf(info, "DB: %s\n", dbname.c_str());
-    if (atts.CycleIsAccurate())
+    if (timeVisible && atts.CycleIsAccurate())
     {
         sprintf(info+strlen(info), "Cycle: %-8d ", atts.GetCycle());
 
     }
-    if (atts.TimeIsAccurate())
+    if (timeVisible && atts.TimeIsAccurate())
     {
         double t = atts.GetTime() * dbInfoTimeScale + dbInfoTimeOffset;
         sprintf(info+strlen(info), "Time:%-10g", t);

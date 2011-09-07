@@ -4553,6 +4553,9 @@ VisWindow::UpdateAxes3D()
 //   Brad Whitlock, Mon Mar  2 14:07:57 PST 2009
 //   I added time scale and offset.
 //
+//   Kathleen Biagas, Wed Sep  7 16:21:51 PDT 2011
+//   I added timeInfoFlag to the SetVisibility call for legends.
+//
 // ****************************************************************************
 
 void
@@ -4566,7 +4569,8 @@ VisWindow::UpdateTextAnnotations()
     // Set the legend and database info properties.
     legends->SetVisibility(annotationAtts.GetDatabaseInfoFlag(),
                            annotationAtts.GetDatabaseInfoExpansionMode(),
-                           annotationAtts.GetLegendInfoFlag());
+                           annotationAtts.GetLegendInfoFlag(),
+                           annotationAtts.GetTimeInfoFlag());
     legends->SetTimeScaleAndOffset(annotationAtts.GetDatabaseInfoTimeScale(),
                                    annotationAtts.GetDatabaseInfoTimeOffset());
     const FontAttributes &fa2 = annotationAtts.GetDatabaseInfoFont();

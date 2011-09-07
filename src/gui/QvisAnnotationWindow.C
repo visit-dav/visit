@@ -370,6 +370,9 @@ QvisAnnotationWindow::CreateWindowContents()
 //   Brad Whitlock, Wed Jun 25 09:30:38 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Wed Sep  7 16:16:36 PDT 2011
+//   Add timeInfo.
+//
 // ****************************************************************************
 
 void
@@ -442,20 +445,24 @@ QvisAnnotationWindow::CreateGeneralTab()
     dbSep2->setFrameStyle(QFrame::HLine + QFrame::Sunken);
     dLayout->addWidget(dbSep2, 3, 0, 1, 2);
 
-    QWidget *timeControls = new QWidget(databaseInfo);
-    dLayout->addWidget(timeControls, 4, 0, 1, 2);
-    QHBoxLayout *htLayout = new QHBoxLayout(timeControls);
+    timeInfo = new QGroupBox(databaseInfo);
+    timeInfo->setTitle(tr("Time"));
+    timeInfo->setCheckable(true);
+    connect(timeInfo, SIGNAL(toggled(bool)), this, SLOT(timeInfoChecked(bool)));
+    dLayout->addWidget(timeInfo, 4, 0, 1, 2);
+
+    QHBoxLayout *htLayout = new QHBoxLayout(timeInfo);
     htLayout->setSpacing(5);
-    databaseTimeScale = new QNarrowLineEdit(timeControls);
+    databaseTimeScale = new QNarrowLineEdit(timeInfo);
     connect(databaseTimeScale, SIGNAL(returnPressed()),
             this, SLOT(databaseTimeScaleChanged()));
-    htLayout->addWidget(new QLabel(tr("Time scale factor"), timeControls));
+    htLayout->addWidget(new QLabel(tr("Time scale factor"), timeInfo));
     htLayout->addWidget(databaseTimeScale);
 
-    databaseTimeOffset = new QNarrowLineEdit(timeControls);
+    databaseTimeOffset = new QNarrowLineEdit(timeInfo);
     connect(databaseTimeOffset, SIGNAL(returnPressed()),
             this, SLOT(databaseTimeOffsetChanged()));
-    htLayout->addWidget(new QLabel(tr("Time offset"), timeControls));
+    htLayout->addWidget(new QLabel(tr("Time offset"), timeInfo));
     htLayout->addWidget(databaseTimeOffset);
 
     //
@@ -1607,6 +1614,9 @@ QvisAnnotationWindow::UpdateAxes3D()
 //   Brad Whitlock, Mon Mar  2 14:43:04 PST 2009
 //   I added time scale and offset.
 //
+//   Kathleen Biagas, Wed Sep  7 16:16:56 PDT 2011
+//   Added timeInfo.
+//
 // ****************************************************************************
 
 void
@@ -1650,9 +1660,11 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             databaseInfo->blockSignals(true);
             databaseInfo->setChecked(annotationAtts->GetDatabaseInfoFlag());
             databaseInfo->blockSignals(false);
-
-            databasePathExpansionMode->setEnabled(annotationAtts->GetDatabaseInfoFlag());
-            databasePathExpansionModeLabel->setEnabled(annotationAtts->GetDatabaseInfoFlag());
+            break;
+        case AnnotationAttributes::ID_timeInfoFlag:
+            timeInfo->blockSignals(true);
+            timeInfo->setChecked(annotationAtts->GetTimeInfoFlag() && annotationAtts->GetDatabaseInfoFlag());
+            timeInfo->blockSignals(false);
             break;
         case AnnotationAttributes::ID_databaseInfoFont:
             databaseInfoFont->setFontAttributes(annotationAtts->GetDatabaseInfoFont());
@@ -2322,6 +2334,29 @@ void
 QvisAnnotationWindow::databaseInfoChecked(bool val)
 {
     annotationAtts->SetDatabaseInfoFlag(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::timeInfoChecked
+//
+// Purpose:
+//   This is a Qt slot function that sets the time info flag.
+//
+// Arguments:
+//   val : The new time info value.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   September 7, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::timeInfoChecked(bool val)
+{
+    annotationAtts->SetTimeInfoFlag(val);
     Apply();
 }
 
