@@ -391,7 +391,11 @@ NetworkManager::GetPlotPluginManager() const
 //    Hank Childs, Thu Mar  2 10:06:33 PST 2006
 //    Added support for image based plots.
 //
+//    Brad Whitlock, Wed Sep  7 13:31:27 PDT 2011
+//    Tell the NSM to clear its cache.
+//
 // ****************************************************************************
+
 void
 NetworkManager::ClearAllNetworks(void)
 {
@@ -426,6 +430,8 @@ NetworkManager::ClearAllNetworks(void)
     }
     viswinMap.clear();
     NewVisWindow(0);
+
+    avtNamedSelectionManager::GetInstance()->ClearCache();
 }
 
 // ****************************************************************************
@@ -3762,6 +3768,9 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 //    Brad Whitlock, Mon Dec 13 15:22:00 PST 2010
 //    I added support for cumulative query selections.
 //
+//    Brad Whitlock, Tue Sep  6 15:56:53 PDT 2011
+//    Pass a default named selection extension to the NSM.
+//
 // ****************************************************************************
 
 SelectionSummary
@@ -3923,7 +3932,8 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
     else
     {
         debug1 << mName << "Creating named selection." << endl;
-        nsm->CreateNamedSelection(dob, props, NULL);
+        avtNamedSelectionExtension ext;
+        nsm->CreateNamedSelection(dob, props, &ext);
     }
 
     if(f != NULL)
@@ -3953,9 +3963,13 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
 //
 //  Arguments:
 //    selName    The name of the selection.
+//    clearCache Whether we should clear the NSM's cache of intermediate results
+//               related to this selection.
 //
 //  Programmer:  Hank Childs
 //  Creation:    January 30, 2009
+//
+//  Modifications:
 //
 // ****************************************************************************
 
@@ -3963,7 +3977,7 @@ void
 NetworkManager::DeleteNamedSelection(const std::string &selName)
 {
     avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
-    nsm->DeleteNamedSelection(selName);
+    nsm->DeleteNamedSelection(selName, true);
 }
 
 

@@ -76,6 +76,9 @@
 #define DEFAULT_FORCE_UPDATE false
 #define DEFAULT_UPDATE_PLOTS true
 
+#define ALLOW_CACHING      true
+#define DONT_ALLOW_CACHING false
+
 // ****************************************************************************
 // Method: QvisSelectionsWindow::QvisSelectionsWindow
 //
@@ -90,6 +93,8 @@
 // Creation:   Fri Aug  6 15:44:09 PDT 2010
 //
 // Modifications:
+//   Brad Whitlock, Wed Sep  7 15:43:35 PDT 2011
+//   Initialize allowCaching.
 //
 // ****************************************************************************
 
@@ -104,6 +109,7 @@ QvisSelectionsWindow::QvisSelectionsWindow(const QString &caption,
     windowInformation = 0;
 
     selectionPropsValid = false;
+    allowCaching = true;
     selectionCounter = 1;
 }
 
@@ -732,11 +738,16 @@ QvisSelectionsWindow::GetCurrentValues(int which_widget)
 //   Brad Whitlock, Mon Aug 22 16:42:43 PDT 2011
 //   I added an updatePlots argument.
 //
+//   Brad Whitlock, Wed Sep  7 15:45:27 PDT 2011
+//   I added a caching argument.
+//
 // ****************************************************************************
 
 void
-QvisSelectionsWindow::Apply(bool forceUpdate, bool updatePlots)
+QvisSelectionsWindow::Apply(bool forceUpdate, bool updatePlots, bool caching)
 {
+    allowCaching &= caching;
+
     if(forceUpdate || AutoUpdate())
     {
         GetCurrentValues(-1);
@@ -744,8 +755,10 @@ QvisSelectionsWindow::Apply(bool forceUpdate, bool updatePlots)
         if(selectionListBox->currentItem() != 0)
         {
             GetViewerMethods()->UpdateNamedSelection(selectionProps.GetName(), 
-                selectionProps, updatePlots);
+                selectionProps, updatePlots, allowCaching);
         }
+
+        allowCaching = true;
     }
 }
 
@@ -826,7 +839,7 @@ QvisSelectionsWindow::UpdateHistogram(const double *values, int nvalues,
           minBin = 0;
           maxBin = nvalues-1;
           
-          Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+          Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
           
           UpdateMinMaxBins(true, true, true);
         }
@@ -1310,6 +1323,7 @@ QvisSelectionsWindow::UpdateWindowSingleItem()
         // Copy the list's selection properties into the working copy.
         selectionProps = selectionList->GetSelections(index);
     }
+    allowCaching = true;
 
     UpdateSelectionProperties();
     UpdateSelectionSummary();
@@ -1483,7 +1497,8 @@ void
 QvisSelectionsWindow::updateQuery()
 {
     // Force an update of the selection but do not update the plots that use it.
-    Apply(true, false);
+    bool updatePlots = false;
+    Apply(true, updatePlots, DONT_ALLOW_CACHING);
 }
 
 // ****************************************************************************
@@ -1505,7 +1520,7 @@ void
 QvisSelectionsWindow::updateSelection()
 {
     // Force an update of the selection and update the plots that use it.
-    Apply(true, DEFAULT_UPDATE_PLOTS);
+    Apply(true, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
 }
 
 // ****************************************************************************
@@ -1613,7 +1628,7 @@ QvisSelectionsWindow::cumulativeQueryClicked(bool value)
 {
     selectionProps.SetSelectionType(value ? SelectionProperties::CumulativeQuerySelection :
         SelectionProperties::BasicSelection);
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
 }
 
 // ****************************************************************************
@@ -1641,7 +1656,7 @@ QvisSelectionsWindow::addVariable(const QString &var)
 
     // Update the window using the new selectionProps.
     UpdateSelectionProperties();
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
 }
 
 // ****************************************************************************
@@ -1672,7 +1687,7 @@ QvisSelectionsWindow::setVariableRange(const QString &var, float r0, float r1)
         {
             selectionProps.GetVariableMins()[i] = r0;
             selectionProps.GetVariableMaxs()[i] = r1;
-            Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+            Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
             return;
         }
     }
@@ -1716,7 +1731,7 @@ QvisSelectionsWindow::deleteVariable(const QString &var)
             selectionProps.SetVariableMins(newmin);
             selectionProps.SetVariableMaxs(newmax);
 
-            Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+            Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
             return;
         }
     }
@@ -1745,7 +1760,7 @@ QvisSelectionsWindow::summationChanged(int val)
         selectionProps.SetCombineRule(SelectionProperties::CombineOr);
     else
         selectionProps.SetCombineRule(SelectionProperties::CombineAnd);
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
 }
 
 // ****************************************************************************
@@ -1765,7 +1780,7 @@ void
 QvisSelectionsWindow::processTimeMin()
 {
     GetCurrentValues(SelectionProperties::ID_minTimeState);
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
 }
 
 // ****************************************************************************
@@ -1785,7 +1800,7 @@ void
 QvisSelectionsWindow::processTimeMax()
 {
     GetCurrentValues(SelectionProperties::ID_maxTimeState);
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
 }
 
 // ****************************************************************************
@@ -1805,7 +1820,7 @@ void
 QvisSelectionsWindow::processTimeStride()
 {
     GetCurrentValues(SelectionProperties::ID_timeStateStride);
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
 }
 
 // ****************************************************************************
@@ -1824,7 +1839,7 @@ QvisSelectionsWindow::processTimeStride()
 void
 QvisSelectionsWindow::initializeVariableList()
 {
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
 
     // Ask the viewer to populate the selection's variables using the
     // current plot's attributes.
@@ -1886,7 +1901,7 @@ QvisSelectionsWindow::histogramTypeChanged(int value)
         break;
     }
 
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
     UpdateHistogram(0,0,0,0,false); // invalidate the histogram
     UpdateHistogramTitle();
 
@@ -1922,7 +1937,7 @@ void
 QvisSelectionsWindow::histogramVariableChanged(int index)
 {
     selectionProps.SetHistogramVariableIndex(index);
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
 }
 
 // ****************************************************************************
@@ -1957,7 +1972,7 @@ QvisSelectionsWindow::histogramNumBinsChanged(int index)
     selectionProps.SetHistogramStartBin(b0);
     selectionProps.SetHistogramEndBin(b1);
 
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
 
     UpdateMinMaxBins(true, true, true);
 }
@@ -1983,7 +1998,7 @@ QvisSelectionsWindow::histogramStartChanged(int index)
 {
     selectionProps.SetHistogramStartBin(index);
 
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
 
     UpdateMinMaxBins(false, true, false);
     UpdateHistogram();
@@ -2010,7 +2025,7 @@ QvisSelectionsWindow::histogramEndChanged(int index)
 {
     selectionProps.SetHistogramEndBin(index);
 
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS);
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
     UpdateMinMaxBins(true, false, false);
     UpdateHistogram();
 }

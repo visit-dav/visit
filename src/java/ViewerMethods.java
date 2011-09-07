@@ -3455,14 +3455,16 @@ public class ViewerMethods
      *
      * @param selName The name of the named selection to update.
      * @param updatePlots Whether to also update the plots when doing the selection.
+     * @param allowCaching Whether to allow caching if we recalculate the selection.
      * @return true on success; false otherwise.
      */
-    public boolean UpdateNamedSelection(String selName, boolean updatePlots)
+    public boolean UpdateNamedSelection(String selName, boolean updatePlots, boolean allowCaching)
     {
         GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_UPDATENAMEDSELECTIONRPC);
         GetViewerState().GetViewerRPC().SetStringArg1(selName);
         GetViewerState().GetViewerRPC().SetBoolFlag(false);
         GetViewerState().GetViewerRPC().SetIntArg1(updatePlots?1:0);
+        GetViewerState().GetViewerRPC().SetIntArg2(allowCaching?1:0);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();
     }

@@ -990,6 +990,7 @@ ViewerMethods::UpdateNamedSelection(const std::string &selName, bool updatePlots
     state->GetViewerRPC()->SetStringArg1(selName);
     state->GetViewerRPC()->SetBoolFlag(false);
     state->GetViewerRPC()->SetIntArg1(updatePlots?1:0);
+    state->GetViewerRPC()->SetIntArg2(true);
 
     //
     // Issue the RPC.
@@ -1010,7 +1011,7 @@ ViewerMethods::UpdateNamedSelection(const std::string &selName, bool updatePlots
 
 void
 ViewerMethods::UpdateNamedSelection(const std::string &selName,
-    const SelectionProperties &props, bool updatePlots)
+    const SelectionProperties &props, bool updatePlots, bool allowCaching)
 {
     // Set the selection properties.
     (*state->GetSelectionProperties()) = props;
@@ -1023,6 +1024,7 @@ ViewerMethods::UpdateNamedSelection(const std::string &selName,
     state->GetViewerRPC()->SetStringArg1(selName);
     state->GetViewerRPC()->SetBoolFlag(true);
     state->GetViewerRPC()->SetIntArg1(updatePlots?1:0);
+    state->GetViewerRPC()->SetIntArg2(allowCaching?1:0);
 
     //
     // Issue the RPC.

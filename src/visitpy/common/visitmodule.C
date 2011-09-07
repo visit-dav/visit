@@ -14062,6 +14062,9 @@ visit_DeleteNamedSelection(PyObject *self, PyObject *args)
 //   Brad Whitlock, Mon Aug 22 15:39:27 PDT 2011
 //   Add optional updatePlots argument.
 //
+//   Brad Whitlock, Wed Sep  7 15:53:54 PDT 2011
+//   Add optional allowCaching argument.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -14072,14 +14075,18 @@ visit_UpdateNamedSelection(PyObject *self, PyObject *args)
     PyObject *props = NULL;
     char *selName = NULL;
     int updatePlots = 1;
-    if(!PyArg_ParseTuple(args, "sOi", &selName, &props, &updatePlots))
+    int allowCaching = 1;
+    if(!PyArg_ParseTuple(args, "sOii", &selName, &props, &updatePlots, &allowCaching))
     {
-        if (!PyArg_ParseTuple(args, "si", &selName, &updatePlots))
+        if(!PyArg_ParseTuple(args, "sOi", &selName, &props, &updatePlots))
         {
-            if(!PyArg_ParseTuple(args, "sO", &selName, &props))
+            if (!PyArg_ParseTuple(args, "si", &selName, &updatePlots))
             {
-                if (!PyArg_ParseTuple(args, "s", &selName))
-                    return NULL;
+                if(!PyArg_ParseTuple(args, "sO", &selName, &props))
+                {
+                    if (!PyArg_ParseTuple(args, "s", &selName))
+                        return NULL;
+                }
             }
         }
         PyErr_Clear();
@@ -14095,7 +14102,8 @@ visit_UpdateNamedSelection(PyObject *self, PyObject *args)
 
             // Create the named selection.
             MUTEX_LOCK();
-                GetViewerMethods()->UpdateNamedSelection(selName, *p, updatePlots!=0);
+                GetViewerMethods()->UpdateNamedSelection(selName, *p, 
+                    updatePlots!=0, allowCaching!=0);
             MUTEX_UNLOCK();
         }
         else

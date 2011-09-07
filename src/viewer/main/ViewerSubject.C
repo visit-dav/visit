@@ -7609,7 +7609,7 @@ ViewerSubject::ProcessRendererMessage()
                 char *str = msg + offset;
                 int len = strlen(str);
                 str[len-1] = '\0';
-                UpdateNamedSelection(std::string(str), true);
+                UpdateNamedSelection(std::string(str), true, false);
             }
         }
     }
@@ -10586,6 +10586,7 @@ ViewerSubject::LoadNamedSelection()
 // Arguments:
 //   selName     : The name of the selection to update.
 //   updatePlots : Whether to update plots.
+//   allowCache  : Whether the NSM's intermediate data cache can be used.
 //
 // Returns:    
 //
@@ -10605,10 +10606,14 @@ ViewerSubject::LoadNamedSelection()
 //   Brad Whitlock, Fri Aug 19 12:33:03 PDT 2011
 //   Send expressions to the engine to make sure that it has them.
 //
+//   Brad Whitlock, Wed Sep  7 14:42:21 PDT 2011
+//   I added the allowCache argument.
+//
 // ****************************************************************************
 
 void
-ViewerSubject::UpdateNamedSelection(const std::string &selName, bool updatePlots)
+ViewerSubject::UpdateNamedSelection(const std::string &selName, bool updatePlots,
+    bool allowCache)
 {
     EngineKey engineKey;
     bool okay = GetNamedSelectionEngineKey(selName, engineKey);
@@ -10663,12 +10668,9 @@ ViewerSubject::UpdateNamedSelection(const std::string &selName, bool updatePlots
         ViewerEngineManager::Instance()->UpdateExpressions(engineKey, exprList);
     }
 
-    // Delete the selection
-    ViewerEngineManager::Instance()->DeleteNamedSelection(engineKey, selName);
-
     // Create the named selection again and reapply it to plots that use it.
-    if(ViewerEngineManager::Instance()->CreateNamedSelection(
-         engineKey, networkId, props))
+    if(ViewerEngineManager::Instance()->UpdateNamedSelection(
+         engineKey, networkId, props, allowCache))
     {
         if(updatePlots)
             ReplaceNamedSelection(engineKey, selName, selName);
@@ -10698,6 +10700,9 @@ ViewerSubject::UpdateNamedSelection(const std::string &selName, bool updatePlots
 //   Brad Whitlock, Mon Aug 22 16:33:41 PDT 2011
 //   Get updatePlots flag from the rpc.
 //
+//   Brad Whitlock, Wed Sep  7 15:25:17 PDT 2011
+//   Get allowCache flag from the rpc.
+//
 // ****************************************************************************
 
 void
@@ -10718,8 +10723,9 @@ ViewerSubject::UpdateNamedSelection()
     }
 
     bool updatePlots = (GetViewerState()->GetViewerRPC()->GetIntArg1() != 0);
+    bool allowCache = (GetViewerState()->GetViewerRPC()->GetIntArg2() != 0);
 
-    UpdateNamedSelection(selName, updatePlots);
+    UpdateNamedSelection(selName, updatePlots, allowCache);
 }
 
 // ****************************************************************************

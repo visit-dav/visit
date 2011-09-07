@@ -44,10 +44,6 @@
 #include <avtNamedSelectionManager.h>
 #include <avtNamedSelectionExtension.h>
 
-#include <vtkCellData.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-
 #include <avtDataObjectSource.h>
 #include <avtDataset.h>
 #include <avtNamedSelection.h>
@@ -56,6 +52,7 @@
 #include <DebugStream.h>
 #include <snprintf.h>
 #include <InstallationFunctions.h>
+#include <StackTimer.h>
 #include <visitstream.h>
 #include <VisItException.h>
 
@@ -82,10 +79,15 @@ avtNamedSelectionManager::avtNamedSelectionManager(void)
 //  Programmer: Hank Childs
 //  Creation:   January 30, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Tue Sep  6 16:00:38 PDT 2011
+//    Clear the cache.
+//
 // ****************************************************************************
 
 avtNamedSelectionManager::~avtNamedSelectionManager()
 {
+    cache.clear();
 }
 
 
@@ -166,6 +168,9 @@ avtNamedSelectionManager::MaximumSelectionSize()
 //    I fixed a memory corruption problem that caused bad selections to be
 //    generated in parallel.
 //
+//    Brad Whitlock, Tue Sep  6 16:01:52 PDT 2011
+//    I moved most of the code to do the selection into the extension.
+//
 // ****************************************************************************
 
 void
@@ -174,6 +179,7 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
 {
     int   i;
     const char *mName = "avtNamedSelectionManager::CreateNamedSelection: ";
+    StackTimer t0("CreateNamedSelection");
 
     if (strcmp(dob->GetType(), "avtDataset") != 0)
     {
@@ -218,81 +224,13 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
         return;
     }
 
-    bool needZoneNumbers = c1->GetDataRequest()->NeedZoneNumbers() == false;
-    avtDataset_p ds;
-    if(ext != 0)
-    {
-        // Perform additional setup using the extension.
-        avtDataObject_p newdob = ext->GetSelectedData(dob, contract, selProps);
-
-        debug5 << mName << "Must execute the pipeline to create the named selection" << endl;
-        newdob->Update(contract);
-        debug5 << mName << "Done executing the pipeline to create the named selection" << endl;
-
-        CopyTo(ds, newdob);
-    }
-    else
-    {
-        if (needZoneNumbers)
-        {
-            debug1 << mName << "Must re-execute pipeline to create named selection" << endl;
-            dob->Update(contract);
-            debug1 << mName << "Done re-executing pipeline to create named selection" << endl;
-        }
-        CopyTo(ds, dob);
-    }
-
-    avtDataTree_p tree = ds->GetDataTree();
-    std::vector<int> doms;
-    std::vector<int> zones;
-    int nleaves = 0;
-    vtkDataSet **leaves = tree->GetAllLeaves(nleaves);
-    for (i = 0 ; i < nleaves ; i++)
-    {
-        if (leaves[i]->GetNumberOfCells() == 0)
-            continue;
-
-        vtkDataArray *ocn = leaves[i]->GetCellData()->
-                                            GetArray("avtOriginalCellNumbers");
-        if (ocn == NULL)
-        {
-            // Write an error to the logs but don't fail out since we have
-            // a collective communication coming up.
-            debug5 << mName
-                   << "This dataset has no original cell numbers so it cannot "
-                      "contribute to the selection." << endl;
-        }
-        else
-        {
-            unsigned int *ptr = (unsigned int *) ocn->GetVoidPointer(0);
-            if (ptr == NULL)
-            {
-                // Write an error to the logs but don't fail out since we have
-                // a collective communication coming up.
-                debug5 << mName
-                       << "This dataset has no original cell numbers so it "
-                          "cannot contribute to the selection." << endl;
-            }
-            else
-            {
-                // We have original cell numbers so add them to the selection.
-                int ncells = leaves[i]->GetNumberOfCells();
-                int curSize = doms.size();
-                doms.resize(curSize+ncells);
-                zones.resize(curSize+ncells);
-                for (int j = 0 ; j < ncells ; j++)
-                {
-                    doms[curSize+j]  = ptr[2*j];
-                    zones[curSize+j] = ptr[2*j+1];
-                }
-            }
-        }
-    }
-    delete [] leaves;
-
-    // Let the extension free its resources. (We could just do this later...)
-    if(ext != 0)
-        ext->FreeUpResources();
+    //
+    // Call into the extension to get the domains and zones that make up the selection.
+    //
+    std::vector<int> doms, zones;
+    TimedCodeBlock("Creating selection in extension",
+        ext->GetSelection(dob, selProps, cache, doms, zones);
+    );
 
     // Note the poor use of MPI below, coded for expediency, as I believe all
     // of the named selections will be small.
@@ -660,4 +598,38 @@ avtNamedSelectionManager::AddSelectionProperties(const SelectionProperties &srcp
         *p = srcp;
     else
         properties.push_back(srcp);
+}
+
+// ****************************************************************************
+// Method: avtNamedSelectionManager::ClearCache
+//
+// Purpose: 
+//   Clear the cache.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep  7 13:32:46 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtNamedSelectionManager::ClearCache(const std::string &selName)
+{
+    if(selName.empty())
+        cache.clear();
+    else
+    {
+        avtNamedSelectionCache::iterator it = cache.begin();
+        while(it != cache.end())
+        {
+            if(it->second->properties.GetName() == selName)
+            {
+                cache.remove(it->first);
+                it = cache.begin();
+            }
+            else
+                it++;
+        }
+    }
 }

@@ -65,6 +65,9 @@
 //    Brad Whitlock, Wed Jun  8 16:44:15 PDT 2011
 //    I made it be non-blocking.
 //
+//    Brad Whitlock, Wed Sep  7 14:21:25 PDT 2011
+//    Added UpdateNamedSelection.
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API NamedSelectionRPC : public NonBlockingRPC
@@ -73,6 +76,7 @@ public:
     typedef enum
     {
         NS_CREATE      = 0,
+        NS_UPDATE,    /* 3 */
         NS_DELETE,    /* 2 */
         NS_LOAD,      /* 3 */
         NS_SAVE       /* 4 */
@@ -85,6 +89,7 @@ public:
 
     // Invocation method
     const SelectionSummary &CreateNamedSelection(int id, const SelectionProperties &);
+    const SelectionSummary &UpdateNamedSelection(int id, const SelectionProperties &, bool);
     void DeleteNamedSelection(const std::string &selName);
     void LoadNamedSelection(const std::string &selName);
     void SaveNamedSelection(const std::string &selName);
@@ -97,17 +102,20 @@ public:
     void SetSelectionName(const std::string &s);
     void SetNamedSelectionOperation(NamedSelectionOperation t);
     void SetSelectionProperties(const SelectionProperties &p);
+    void SetAllowCache(bool);
 
     // Property getting methods
     int                             GetPlotID(void) const { return plotId; }
     const std::string              &GetSelectionName(void) const { return selName; }
     NamedSelectionOperation         GetNamedSelectionOperation(void) const { return selOperation; }
     const SelectionProperties      &GetSelectionProperties() const { return properties; }
+    bool                            GetAllowCache() const { return allowCache; }
 private:
     NamedSelectionOperation  selOperation;
     int                      plotId;
     std::string              selName;
     SelectionProperties      properties;
+    bool                     allowCache;
 
     // Return values
     SelectionSummary         summary;

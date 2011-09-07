@@ -1611,7 +1611,7 @@ EngineProxy::BlockForNamedSelectionOperation()
 //  Method:  EngineProxy::CreateNamedSelection
 //
 //  Purpose:
-//      Create a named selection to a list of plots.
+//      Create a named selection.
 //
 //  Arguments:
 //    ids        the id of the network to create the selection from.
@@ -1640,6 +1640,32 @@ EngineProxy::CreateNamedSelection(int id, const SelectionProperties &props)
     return s;
 }
 
+// ****************************************************************************
+//  Method:  EngineProxy::UpdateNamedSelection
+//
+//  Purpose:
+//      Update a named selection.
+//
+//  Arguments:
+//    ids        the id of the network to create the selection from.
+//    props      the properties of the named selection.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Wed Sep  7 14:30:38 PDT 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const SelectionSummary &
+EngineProxy::UpdateNamedSelection(int id, const SelectionProperties &props, bool cache)
+{
+    const SelectionSummary &s = namedSelectionRPC.UpdateNamedSelection(id, props, cache);
+
+    BlockForNamedSelectionOperation();
+
+    return s;
+}
 
 // ****************************************************************************
 //  Method:  EngineProxy::DeleteNamedSelection

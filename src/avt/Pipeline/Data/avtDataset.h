@@ -51,8 +51,8 @@
 
 class   avtDataRepresentation;
 class   avtIntervalTree;
+class   avtNamedSelectionExtension;
 class   avtWebpage;
-
 
 // ****************************************************************************
 //  Class: avtDataset
@@ -156,7 +156,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtLineScanQuery;
     friend                   class avtLineSurfaceFilter;
     friend                   class avtExecuteThenTimeLoopFilter;
-    friend                   class avtNamedSelectionManager;
+    friend                   class avtNamedSelectionExtension;
     friend                   class avtTimeIteratorExpression;
     friend                   class avtXRayImageQuery;
     friend                   class avtResampleExpression;

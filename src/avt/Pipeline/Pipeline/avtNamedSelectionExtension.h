@@ -39,9 +39,28 @@
 #define AVT_NAMED_SELECTION_EXTENSION_H
 
 #include <pipeline_exports.h>
+#include <vector>
 
+#include <avtContract.h>
+#include <avtDataset.h>
 #include <avtDataObject.h>
+#include <MRUCache.h>
 #include <SelectionProperties.h>
+
+// Base class for things we can stick in the cache.
+class PIPELINE_API avtNamedSelectionCacheItem
+{
+public:
+    avtNamedSelectionCacheItem();
+    virtual ~avtNamedSelectionCacheItem();
+
+    SelectionProperties properties;
+};
+
+typedef MRUCache<std::string, 
+                 avtNamedSelectionCacheItem *,
+                 MRUCache_Delete, 
+                 10> avtNamedSelectionCache;
 
 // ****************************************************************************
 // Class: avtNamedSelectionExtension
@@ -57,7 +76,9 @@
 // Creation:   Mon Dec 13 16:09:53 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Sep  6 14:47:35 PDT 2011
+//   I changed the API.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelectionExtension
@@ -65,10 +86,16 @@ class PIPELINE_API avtNamedSelectionExtension
 public:
     avtNamedSelectionExtension();
     virtual ~avtNamedSelectionExtension();
-    virtual avtDataObject_p GetSelectedData(avtDataObject_p dob,
-                                            avtContract_p contract,
-                                            const SelectionProperties &props) = 0;
-    virtual void FreeUpResources();
+
+    virtual void GetSelection(avtDataObject_p dob, const SelectionProperties &props,
+                              avtNamedSelectionCache &cache, 
+                              std::vector<int> &doms, std::vector<int> &zones);
+
+protected:
+    avtContract_p GetContract(avtDataObject_p dob, bool &needsUpdate);
+
+    void GetSelectionFromDataset(avtDataset_p tree, 
+                                 std::vector<int> &doms, std::vector<int> &zones);
 };
 
 #endif

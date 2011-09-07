@@ -60,7 +60,10 @@ class CQFilter;
 // Creation:   Mon Dec 13 15:56:56 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Sep  6 15:27:34 PDT 2011
+//   I changed the API so we could add caching support that lets setting
+//   query attributes sometimes bypass filter execution.
+//
 // ****************************************************************************
 
 class CumulativeQueryNamedSelectionExtension : public avtNamedSelectionExtension
@@ -68,13 +71,19 @@ class CumulativeQueryNamedSelectionExtension : public avtNamedSelectionExtension
 public:
     CumulativeQueryNamedSelectionExtension();
     virtual ~CumulativeQueryNamedSelectionExtension();
-    virtual avtDataObject_p GetSelectedData(avtDataObject_p dob,
-                                            avtContract_p contract,
-                                            const SelectionProperties &props);
-    virtual void FreeUpResources();
+
+    virtual void GetSelection(avtDataObject_p dob, const SelectionProperties &props,
+                              avtNamedSelectionCache &cache, 
+                              std::vector<int> &doms, std::vector<int> &zones);
 
     const SelectionSummary &GetSelectionSummary() const;
 private:
+    std::string      CreateSelectionKey(const SelectionProperties &props) const;
+    bool             CheckProperties(const SelectionProperties &newProps, 
+                                     const SelectionProperties &oldProps) const;
+    avtDataObject_p  AddFilters(avtDataObject_p dob, const SelectionProperties &props);
+    SelectionSummary BuildSummary();
+
     CQHistogramCalculationFilter *hist;
     CQFilter                     *cqFilter;
     avtThresholdFilter           *threshold;
