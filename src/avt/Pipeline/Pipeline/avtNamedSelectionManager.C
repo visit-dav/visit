@@ -40,6 +40,7 @@
 //                         avtNamedSelectionManager.C                        //
 // ************************************************************************* //
 
+#include <cstring>
 #include <sstream>
 #include <avtNamedSelectionManager.h>
 #include <avtNamedSelectionExtension.h>
