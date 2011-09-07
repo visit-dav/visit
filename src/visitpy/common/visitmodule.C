@@ -10867,7 +10867,6 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         }
     }
     
-    
     if(!parse_success)
     {
         PyErr_Clear();
@@ -10964,6 +10963,10 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
 // Programmer: Kathleen Bonnell
 // Creation:   July 15, 2011
 //
+// Modifications:
+//   Kathleen Biagas, Wed Sep  7 12:46:24 PDT 2011
+//   Use VisItErrorFunc instead of cerr.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -10978,13 +10981,13 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (args == NULL)
     {
-        cerr << "Query requires at least one argument: the query name." << endl;
+        VisItErrorFunc("Query requires at least one argument: the query name.");
         return NULL;
     }
   
     if (!(PyString_Check(PyTuple_GetItem(args, 0))))
     {
-         cerr << "Query requires first argument to be the query name." << endl;
+         VisItErrorFunc("Query requires first argument to be the query name.");
          return NULL;
     }
     queryName = PyString_AS_STRING(PyTuple_GetItem(args, 0));
@@ -11004,7 +11007,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
         parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,1), queryParams); 
         if (!parse_success)
         {
-           debug3 << "Query, dictionary second argument not parseable " << endl;
+           VisItErrorFunc("Query:  could not parse dictionary argument.");
            return NULL;
         }
     }
@@ -11013,7 +11016,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
         parse_success = PyDict_To_MapNode(kwargs, queryParams); 
         if (!parse_success)
         {
-            debug3 << "Query, keyword args present, but un parseable." << endl;
+            VisItErrorFunc(" Query:  could not parse keyword args.");
             return NULL;
         }
     }
@@ -11045,8 +11048,6 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
-
-
 
 
 // ****************************************************************************
@@ -11523,13 +11524,13 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (args == NULL)
     {
-        cerr << mn << "requires at least one argument: the query name." << endl;
+        VisItErrorFunc("QueryOverTime: requires at least one argument, the query name."); 
         return NULL;
     }
   
     if (!(PyString_Check(PyTuple_GetItem(args, 0))))
     {
-         cerr << mn << "requires first argument to be the query name." << endl;
+         VisItErrorFunc("QueryOverTime: requires first argument to be the query name."); 
          return NULL;
     }
     queryName = PyString_AS_STRING(PyTuple_GetItem(args, 0));
@@ -11549,8 +11550,8 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
         parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,1), queryParams); 
         if (!parse_success)
         {
-           debug3 << mn << "dictionary second argument not parseable " << endl;
-           return NULL;
+          VisItErrorFunc("QueryOverTime: could not parse dictionary argument.");
+          return NULL;
         }
     }
     else if (kwargs != NULL)
@@ -11558,8 +11559,8 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
         parse_success = PyDict_To_MapNode(kwargs, queryParams); 
         if (!parse_success)
         {
-            debug3 << mn << ", keyword args present, but unparseable." << endl;
-            return NULL;
+          VisItErrorFunc("QueryOverTime:  could not parse keyword arguments.");
+          return NULL;
         }
     }
 
@@ -11577,7 +11578,7 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
 
 
 // ****************************************************************************
-// Function: visit_ZonePick
+// Function: visit_ZonePick_deprecated
 //
 // Purpose:
 //   Tells the viewer to do pick.
@@ -11615,10 +11616,14 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Kathleen Biagas, Tue Jul 19 12:00:04 PDT 2011
 //   Send args as MapNode to new ViewerMethod 'Query'.
 //
+//   Kathleen Biagas, Wed Sep  7 07:39:35 PDT 2011
+//   Made this a deprecated method, in favor of one that uses
+//   python dictionary and/or named arguments.
+//
 // ****************************************************************************
 
 STATIC PyObject *
-visit_ZonePick(PyObject *self, PyObject *args)
+visit_ZonePick_deprecated(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
@@ -11689,7 +11694,79 @@ visit_ZonePick(PyObject *self, PyObject *args)
 
 
 // ****************************************************************************
-// Function: visit_NodePick
+// Function: visit_ZonePick
+//
+// Purpose:
+//   Tells the viewer to do ZonePick.
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   September 7, 2011
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ZonePick(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    bool parse_success = true;
+    MapNode pickParams;
+
+    // parse arguments.  First check if first arg (if present) is
+    // a python dictionary object
+    // If not, check for named args (kwargs).
+    if (PyTuple_Size(args) > 0)
+    {
+        if (!(PyDict_Check(PyTuple_GetItem(args, 0))))
+        {
+            debug3 << "Pick first argument not a Python dictionary." << endl;
+            debug3 << "  attempting old parsing methodology." << endl;
+            return visit_ZonePick_deprecated(self, args);
+        }
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        if (!parse_success)
+        {
+           VisItErrorFunc("ZonePick: could not parse dictionary argument.");
+           return NULL;
+        }
+    }
+    else if (kwargs != NULL)
+    {
+        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        if (!parse_success)
+        {
+            VisItErrorFunc("ZonePick: could not parse keyword arguments.");
+            return NULL;
+        }
+    }
+    if (pickParams.HasEntry("coord"))
+    {
+        pickParams["pick_type"] = std::string("Zone");
+    } 
+    else if (pickParams.HasEntry("x") && pickParams.HasEntry("y"))
+    {
+        pickParams["pick_type"] = std::string("ScreenZone");
+    } 
+    else
+    {
+        VisItErrorFunc("ZonePick: requires \"coord\" argument.");
+        return NULL;
+    }
+    pickParams["query_name"] = std::string("Pick");
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+
+
+// ****************************************************************************
+// Function: visit_NodePick_deprecated
 //
 // Purpose:
 //   Tells the viewer to do NodePick.
@@ -11718,10 +11795,14 @@ visit_ZonePick(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Tue Jul 19 12:00:04 PDT 2011
 //   Send args as MapNode to new ViewerMethod 'Query'.
 //
+//   Kathleen Biagas, Wed Sep  7 07:39:35 PDT 2011
+//   Made this a deprecated method, in favor of one that uses
+//   python dictionary and/or named arguments.
+//
 // ****************************************************************************
 
 STATIC PyObject *
-visit_NodePick(PyObject *self, PyObject *args)
+visit_NodePick_deprecated(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
@@ -11782,6 +11863,77 @@ visit_NodePick(PyObject *self, PyObject *args)
             LogFile_Write(tmp);
         }
         GetViewerMethods()->Query(params);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+
+// ****************************************************************************
+// Function: visit_NodePick
+//
+// Purpose:
+//   Tells the viewer to do NodePick.
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   September 7, 2011
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_NodePick(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    bool parse_success = true;
+    MapNode pickParams;
+
+    // parse arguments.  First check if first arg (if present) is
+    // a python dictionary object
+    // If not, check for named args (kwargs).
+    if (PyTuple_Size(args) > 0)
+    {
+        if (!(PyDict_Check(PyTuple_GetItem(args, 0))))
+        {
+            debug3 << "Pick first argument not a Python dictionary." << endl;
+            debug3 << "  attempting old parsing methodology." << endl;
+            return visit_NodePick_deprecated(self, args);
+        }
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        if (!parse_success)
+        {
+           VisItErrorFunc("NodePick:  could not parse dictionary argument.");
+           return NULL;
+        }
+    }
+    else if (kwargs != NULL)
+    {
+        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        if (!parse_success)
+        {
+            VisItErrorFunc("NodePick: could not parse keyword arguments.");
+            return NULL;
+        }
+    }
+    if (pickParams.HasEntry("coord"))
+    {
+        pickParams["pick_type"] = std::string("Node");
+    } 
+    else if (pickParams.HasEntry("x") && pickParams.HasEntry("y"))
+    {
+        pickParams["pick_type"] = std::string("ScreenNode");
+    } 
+    else
+    {
+        VisItErrorFunc("NodePick:  requires \"coord\" arguments.");
+        return NULL;
+    }
+    pickParams["query_name"] = std::string("Pick");
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -12414,7 +12566,7 @@ visit_GetGlobalLineoutAttributes(PyObject *self, PyObject *args)
 
 
 // ****************************************************************************
-// Function: visit_PickByZone
+// Function: visit_PickByZone_deprecated
 //
 // Purpose:
 //   Tells the viewer to perform Pick via domain and zone.
@@ -12437,10 +12589,14 @@ visit_GetGlobalLineoutAttributes(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Tue Jul 19 12:00:04 PDT 2011
 //   Send args as MapNode to new ViewerMethod 'Query'.
 //
+//   Kathleen Biagas, Wed Sep  7 07:39:35 PDT 2011
+//   Made this a deprecated method, in favor of one that uses
+//   python dictionary and/or named arguments.
+//
 // ****************************************************************************
 
 STATIC PyObject *
-visit_PickByZone(PyObject *self, PyObject *args)
+visit_PickByZone_deprecated(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
@@ -12475,8 +12631,73 @@ visit_PickByZone(PyObject *self, PyObject *args)
     return IntReturnValue(Synchronize());
 }
 
+
 // ****************************************************************************
-// Function: visit_PickByGlobalZone
+// Function: visit_PickByZone
+//
+// Purpose:
+//   Tells the viewer to do PickByZone.
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   September 7, 2011
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_PickByZone(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    bool parse_success = true;
+    MapNode pickParams;
+
+    // parse arguments.  First check if first arg (if present) is
+    // a python dictionary object
+    // If not, check for named args (kwargs).
+    if (PyTuple_Size(args) > 0)
+    {
+        if (!(PyDict_Check(PyTuple_GetItem(args, 0))))
+        {
+            debug3 << "Pick first argument not a Python dictionary." << endl;
+            debug3 << "  attempting old parsing methodology." << endl;
+            return visit_PickByZone_deprecated(self, args);
+        }
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        if (!parse_success)
+        {
+           VisItErrorFunc("PickByZone:  could not parse dictionary argument.");
+           return NULL;
+        }
+    }
+    else if (kwargs != NULL)
+    {
+        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        if (!parse_success)
+        {
+            VisItErrorFunc("PickByZone:  could not parse keyword arguments.");
+            return NULL;
+        }
+    }
+    if (!pickParams.HasEntry("element"))
+    {
+        VisItErrorFunc("PickByZone: requires \"element\" argument.");
+        return NULL;
+    } 
+    pickParams["query_name"] = std::string("Pick");
+    pickParams["pick_type"] = std::string("DomainZone");
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+
+// ****************************************************************************
+// Function: visit_PickByGlobalZone_deprecated
 //
 // Purpose:
 //   Tells the viewer to perform Pick via global zone id.
@@ -12493,10 +12714,14 @@ visit_PickByZone(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Tue Jul 19 12:00:04 PDT 2011
 //   Send args as MapNode to new ViewerMethod 'Query'.
 //
+//   Kathleen Biagas, Wed Sep  7 07:39:35 PDT 2011
+//   Made this a deprecated method, in favor of one that uses
+//   python dictionary and/or named arguments.
+//
 // ****************************************************************************
 
 STATIC PyObject *
-visit_PickByGlobalZone(PyObject *self, PyObject *args)
+visit_PickByGlobalZone_deprecated(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
@@ -12528,7 +12753,72 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args)
 
 
 // ****************************************************************************
-// Function: visit_PickByNode
+// Function: visit_PickByGlobalZone
+//
+// Purpose:
+//   Tells the viewer to do PickByGlobalZone.
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   September 7, 2011
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_PickByGlobalZone(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    bool parse_success = true;
+    MapNode pickParams;
+
+    // parse arguments.  First check if first arg (if present) is
+    // a python dictionary object
+    // If not, check for named args (kwargs).
+    if (PyTuple_Size(args) > 0)
+    {
+        if (!(PyDict_Check(PyTuple_GetItem(args, 0))))
+        {
+            debug3 << "Pick first argument not a Python dictionary." << endl;
+            debug3 << "  attempting old parsing methodology." << endl;
+            return visit_PickByGlobalZone_deprecated(self, args);
+        }
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        if (!parse_success)
+        {
+           VisItErrorFunc("PickByGlobalZone:  could not parse dictionary argument.");
+           return NULL;
+        }
+    }
+    else if (kwargs != NULL)
+    {
+        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        if (!parse_success)
+        {
+            VisItErrorFunc("PickByGlobalZone:  could not parse keyword arguments.");
+            return NULL;
+        }
+    }
+    if (!pickParams.HasEntry("element"))
+    {
+        VisItErrorFunc("PickByGlobalZone: requires \"element\" argument.");
+        return NULL;
+    } 
+    pickParams["query_name"] = std::string("Pick");
+    pickParams["pick_type"] = std::string("DomainZone");
+    pickParams["use_global_id"] = 1;
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+
+// ****************************************************************************
+// Function: visit_PickByNode_deprecated
 //
 // Purpose:
 //   Tells the viewer to perform Pick via domain and node.
@@ -12551,10 +12841,14 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Tue Jul 19 12:00:04 PDT 2011
 //   Send args as MapNode to new ViewerMethod 'Query'.
 //
+//   Kathleen Biagas, Wed Sep  7 07:39:35 PDT 2011
+//   Made this a deprecated method, in favor of one that uses
+//   python dictionary and/or named arguments.
+//
 // ****************************************************************************
 
 STATIC PyObject *
-visit_PickByNode(PyObject *self, PyObject *args)
+visit_PickByNode_deprecated(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
@@ -12591,7 +12885,72 @@ visit_PickByNode(PyObject *self, PyObject *args)
 
 
 // ****************************************************************************
-// Function: visit_PickByGlobalNode
+// Function: visit_PickByNode
+//
+// Purpose:
+//   Tells the viewer to do PickByNode.
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   September 7, 2011
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_PickByNode(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    bool parse_success = true;
+    MapNode pickParams;
+
+    // parse arguments.  First check if first arg (if present) is
+    // a python dictionary object
+    // If not, check for named args (kwargs).
+    if (PyTuple_Size(args) > 0)
+    {
+        if (!(PyDict_Check(PyTuple_GetItem(args, 0))))
+        {
+            debug3 << "Pick first argument not a Python dictionary." << endl;
+            debug3 << "  attempting old parsing methodology." << endl;
+            return visit_PickByNode_deprecated(self, args);
+        }
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        if (!parse_success)
+        {
+           VisItErrorFunc("PickByNode: could not parse dictionary argument.");
+           return NULL;
+        }
+    }
+    else if (kwargs != NULL)
+    {
+        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        if (!parse_success)
+        {
+            VisItErrorFunc("PickByNode:  could not parse keyword arguments.");
+            return NULL;
+        }
+    }
+    if (!pickParams.HasEntry("element"))
+    {
+        VisItErrorFunc("PickByNode: requires \"element\" argument.");
+        return NULL;
+    } 
+    pickParams["query_name"] = std::string("Pick");
+    pickParams["pick_type"] = std::string("DomainNode");
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+
+
+// ****************************************************************************
+// Function: visit_PickByGlobalNode_deprecated
 //
 // Purpose:
 //   Tells the viewer to perform Pick via global node id.
@@ -12608,10 +12967,14 @@ visit_PickByNode(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Tue Jul 19 12:00:04 PDT 2011
 //   Send args as MapNode to new ViewerMethod 'Query'.
 //
+//   Kathleen Biagas, Wed Sep  7 07:39:35 PDT 2011
+//   Made this a deprecated method, in favor of one that uses
+//   python dictionary and/or named arguments.
+//
 // ****************************************************************************
 
 STATIC PyObject *
-visit_PickByGlobalNode(PyObject *self, PyObject *args)
+visit_PickByGlobalNode_deprecated(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
@@ -12641,6 +13004,72 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args)
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
+
+
+// ****************************************************************************
+// Function: visit_PickByGlobalNode
+//
+// Purpose:
+//   Tells the viewer to do PickByGlobalNode.
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   September 7, 2011
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_PickByGlobalNode(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    bool parse_success = true;
+    MapNode pickParams;
+
+    // parse arguments.  First check if first arg (if present) is
+    // a python dictionary object
+    // If not, check for named args (kwargs).
+    if (PyTuple_Size(args) > 0)
+    {
+        if (!(PyDict_Check(PyTuple_GetItem(args, 0))))
+        {
+            debug3 << "Pick first argument not a Python dictionary." << endl;
+            debug3 << "  attempting old parsing methodology." << endl;
+            return visit_PickByGlobalNode_deprecated(self, args);
+        }
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        if (!parse_success)
+        {
+           VisItErrorFunc("PickByGlobalNode:  could not parse dictionary argument.");
+           return NULL;
+        }
+    }
+    else if (kwargs != NULL)
+    {
+        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        if (!parse_success)
+        {
+            VisItErrorFunc("PickByGlobalNode: could not parse keyword arguments.");
+            return NULL;
+        }
+    }
+    if (!pickParams.HasEntry("element"))
+    {
+        VisItErrorFunc("PickByGlobalNode:  requires \"element\" argument.");
+        return NULL;
+    } 
+    pickParams["query_name"] = std::string("Pick");
+    pickParams["pick_type"] = std::string("DomainNode");
+    pickParams["use_global_id"] = 1;
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
 
 
 // ****************************************************************************

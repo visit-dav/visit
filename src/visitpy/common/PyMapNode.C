@@ -113,6 +113,10 @@ PyMapNode_Wrap(const MapNode &node)
 // Programmer: Kathleen Bonnell 
 // Creation:   July 13, 2011 
 //
+// Modifications:
+//   Kathleen Biagas, Wed Sep  7 11:56:23 PDT 2011
+//   Allow ints and doubles in same sequence.
+//
 // ****************************************************************************
 
 bool
@@ -162,20 +166,49 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
             }
             else if (PyInt_Check(item))
             {
-                 intVector mval;
-                 mval.push_back(PyInt_AS_LONG(item));
+                 int ni = 1, nd = 0, no = 0;
                  for (Py_ssize_t i = 1; i < PySequence_Size(value); ++i)
                  {
                      item = PySequence_GetItem(value, i);
-                     if (!PyInt_Check(item))
-                     {
-                         debug3 << "PyDict_To_MapNode: tuples/lists must "
-                                << "contain same type." << endl;
-                         return false;
-                     }
-                     mval.push_back(PyInt_AS_LONG(item));
+                     if (PyFloat_Check(item))
+                         nd++;
+                     else if (PyInt_Check(item))
+                         ni++;
+                     else 
+                         no++;
                  }
-                 mn[mkey] = mval;
+                 if (no != 0)
+                 {
+                     debug3 << "PyDict_To_MapNode: tuples/lists must "
+                            << "contain same type." << endl;
+                     return false;
+                 }
+                 else if (nd != 0)
+                 {
+                     // process as doubleVector
+                     doubleVector mval;
+                     mval.push_back((double)PyInt_AS_LONG(item));
+                     for (Py_ssize_t i = 1; i < PySequence_Size(value); ++i)
+                     {
+                         item = PySequence_GetItem(value, i);
+                         if (PyFloat_Check(item))
+                             mval.push_back(PyFloat_AS_DOUBLE(item));
+                         else if (PyInt_Check(item))
+                             mval.push_back((double)PyInt_AS_LONG(item));
+                     }
+                     mn[mkey] = mval;
+                 }
+                 else
+                 {
+                     intVector mval;
+                     mval.push_back(PyInt_AS_LONG(item));
+                     for (Py_ssize_t i = 1; i < PySequence_Size(value); ++i)
+                     {
+                         item = PySequence_GetItem(value, i);
+                         mval.push_back(PyInt_AS_LONG(item));
+                     }
+                     mn[mkey] = mval;
+                }
             }
             else if (PyString_Check(item))
             {

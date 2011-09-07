@@ -1263,6 +1263,14 @@ static std::string log_SetRenderingAttributesRPC(ViewerRPC *rpc)
     return s;
 }
 
+
+//*****************************************************************************
+//  Modifications:
+//    Kathleen Biagas, Wed Sep  7 12:53:16 PDT 2011
+//    Fix pick logging, vars logging. 
+// 
+//*****************************************************************************
+
 static std::string log_QueryRPC(ViewerRPC *rpc)
 {
     std::vector<std::string> paramNames;
@@ -1280,14 +1288,15 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
     {
         std::string pt;
         std::string qn;
+        bool timePick = false;
+        if (queryParams.HasEntry("do_time"))
+            timePick = (bool)queryParams.GetEntry("do_time")->AsInt();
         if (queryParams.HasEntry("pick_type"))
            pt = queryParams.GetEntry("pick_type")->AsString();
         if (pt == "ScreenZone"  || pt == "Zone")
             qn = "ZonePick";
         else if (pt == "ScreenNode" || pt == "Node")
             qn = "NodePick";
-        else if (pt == "DomainZone")
-            qn = "PickByZone";
         else if (pt == "DomainZone")
         {
             int global = 0;
@@ -1311,31 +1320,37 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
         else 
            return MESSAGE_COMMENT("Pick with no type", MSG_UNSUPPORTED);
         s = qn + "(";
+        int numPrinted = 0;
         for (size_t i = 0; i < paramNames.size(); ++i)
         {
+            if ((paramNames[i] == "curve_plot_type" ||
+                 paramNames[i] == "preserve_coord") &&
+                !timePick)
+               continue;
+
             if (paramNames[i] != "query_name" &&
+                paramNames[i] != "query_type" &&
                 paramNames[i] != "pick_type" &&
                 paramNames[i] != "use_global_id" && 
                 paramNames[i] != "vars")
             {
-                s += ", ";
+                if (numPrinted > 0)
+                    s += ", ";
                 s += paramNames[i];
                 s += "=";
                 s += queryParams.GetEntry(paramNames[i])->ConvertToString();
+                numPrinted++;
             }
         }
         std::vector<std::string> vars;
         if (queryParams.HasEntry("vars"))
-            queryParams.GetEntry("vars")->AsStringVector();
+            vars = queryParams.GetEntry("vars")->AsStringVector();
         if (!vars.empty() && !(vars.size() == 1 && vars[0] == "default"))
         {
-            s += "\"vars=(";
-            for (size_t i = 0; i < vars.size(); ++i)
-            {
-               s += vars[i];
-               s += ",";
-            }
-            s += ")";
+            if (numPrinted > 0)
+                s += ", ";
+            s += "vars=";
+            s += queryParams.GetEntry("vars")->ConvertToString();
         }
         s += ")\n";
     }
@@ -1372,16 +1387,11 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
         }
         std::vector<std::string> vars;
         if (queryParams.HasEntry("vars"))
-            queryParams.GetEntry("vars")->AsStringVector();
+            vars = queryParams.GetEntry("vars")->AsStringVector();
         if (!vars.empty() && !(vars.size() == 1 && vars[0] == "default"))
         {
-            s += "\"vars=(";
-            for (size_t i = 0; i < vars.size(); ++i)
-            {
-               s += vars[i];
-               s += ",";
-            }
-            s += ")";
+            s += ", vars=";
+            s += queryParams.GetEntry("vars")->ConvertToString();
         }
 
         s += ")\n";
