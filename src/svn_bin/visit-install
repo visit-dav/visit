@@ -677,14 +677,14 @@ elif [ "$config" = "llnl_closed" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_snl_closed_redrose.xml  "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "llnl_open" ]; then
    ln -s visit-config-llnl_open.ini  "$dir"/$version+/.visit/config
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzalastor.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_atlas.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_aztec.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_edge.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_hera.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_prism.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_sierra.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzalastor.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_rzzeus.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_sierra.xml  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_slac_red.xml     "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "nersc" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_nersc_franklin.xml "$dir"/$version+/.visit/hosts/
