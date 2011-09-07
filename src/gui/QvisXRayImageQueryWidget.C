@@ -287,7 +287,9 @@ QvisXRayImageQueryWidget::GetIntValues(int whichWidget, int *pt)
 // Creation:   June 17, 2011
 //
 // Modifications:
-//
+//    Kathleen Biagas, Wed Sep  7 08:40:22 PDT 2011
+//    Return output_type as string instead of int.
+// 
 // ****************************************************************************
 bool
 QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
@@ -318,7 +320,7 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
 
     if (noerrors)
     {
-        params["output_type"] = imageFormat->currentIndex();
+        params["output_type"] = imageFormat->currentText().toStdString();
         params["divide_emis_by_absorb"] = (int)divideFlag->isChecked();
         params["origin"] = origin;
         params["theta"] = t;

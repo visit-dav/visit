@@ -2583,14 +2583,14 @@ Variant::Read(Connection &conn)
 //   Kathleen Biagas, Thu Sep  1 11:19:23 PDT 2011
 //   Fix typo (two FLOAT_VECTOR_TYPES if statements).
 //   
+//   Kathleen Biagas, Tue Sep  6 14:06:24 PDT 2011
+//   Fix formatting of vectors, strings should be surrounded by quotes.
+//
 // ****************************************************************************
 
 string &
 Variant::ConvertToString()
 {
-    if(dataType == STRING_TYPE)
-        return *((string *)dataValue);
-
     tmp.clear();  
     char retval[5000]; 
     if (dataType == BOOL_TYPE)
@@ -2600,7 +2600,7 @@ Variant::ConvertToString()
     }
     else if (dataType == CHAR_TYPE)
     {
-        sprintf(retval, "%c", AsChar());
+        sprintf(retval, "\'%c\'", AsChar());
         tmp = string(retval);
     }
     else if (dataType == UNSIGNED_CHAR_TYPE)
@@ -2628,13 +2628,20 @@ Variant::ConvertToString()
         sprintf(retval, "%g", AsDouble());
         tmp = string(retval);
     }
+    else if (dataType == STRING_TYPE)
+    {
+        sprintf(retval, "\"%s\"", AsString().c_str());
+        tmp = string(retval);
+    }
     else if (dataType == BOOL_VECTOR_TYPE)
     {
         tmp = "(";
         const boolVector &vec = AsBoolVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            sprintf(retval,"%s ",vec[i] ? "true" : "false");
+            if (i != 0)
+                tmp += ", ";
+            sprintf(retval,"%s",vec[i] ? "true" : "false");
             tmp += retval;
         }
         tmp += ")";
@@ -2645,7 +2652,9 @@ Variant::ConvertToString()
         const charVector &vec = AsCharVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            sprintf(retval,"%c ",vec[i]);
+            if (i != 0)
+                tmp += ", ";
+            sprintf(retval,"\'%c\'",vec[i]);
             tmp += retval;
         }
         tmp += ")";
@@ -2656,7 +2665,9 @@ Variant::ConvertToString()
         const unsignedCharVector &vec = AsUnsignedCharVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            sprintf(retval,"%d ",vec[i]);
+            if (i != 0)
+                tmp += ", ";
+            sprintf(retval,"%d",vec[i]);
             tmp += retval;
         }
         tmp += ")";
@@ -2667,7 +2678,9 @@ Variant::ConvertToString()
         const intVector &vec = AsIntVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            sprintf(retval,"%d ",vec[i]);
+            if (i != 0)
+                tmp += ", ";
+            sprintf(retval,"%d",vec[i]);
             tmp += retval;
         }
         tmp += ")";
@@ -2678,7 +2691,9 @@ Variant::ConvertToString()
         const longVector &vec = AsLongVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            sprintf(retval,"%ld ",vec[i]);
+            if (i != 0)
+                tmp += ", ";
+            sprintf(retval,"%ld",vec[i]);
             tmp += retval;
         }
         tmp += ")";
@@ -2689,7 +2704,9 @@ Variant::ConvertToString()
         const floatVector &vec = AsFloatVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            sprintf(retval,"%g ",vec[i]);
+            if (i != 0)
+                tmp += ", ";
+            sprintf(retval,"%g",vec[i]);
             tmp += retval;
         }
         tmp += ")";
@@ -2700,7 +2717,9 @@ Variant::ConvertToString()
         const doubleVector &vec = AsDoubleVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            sprintf(retval,"%g ",vec[i]);
+            if (i != 0)
+                tmp += ", ";
+            sprintf(retval,"%g",vec[i]);
             tmp += retval;
         }
         tmp += ")";
@@ -2711,7 +2730,9 @@ Variant::ConvertToString()
         const stringVector &vec = AsStringVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            sprintf(retval,"%s ",vec[i].c_str());
+            if (i != 0)
+                tmp += ", ";
+            sprintf(retval,"\"%s\"",vec[i].c_str());
             tmp += retval;
         }
         tmp += ")";

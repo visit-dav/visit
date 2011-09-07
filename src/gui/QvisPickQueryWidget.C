@@ -450,7 +450,7 @@ QvisPickQueryWidget::GetQueryParameters(MapNode &params)
     doubleVector p(3);
     bool noerrors = true;
     int  curvePlotType = GetPlotType();
-    bool preserveCoord = GetTimePreservesCoord();
+    int preserveCoord = (int) GetTimePreservesCoord();
     int dom = 0, el = 0;
     switch (pickType->currentIndex())
     {

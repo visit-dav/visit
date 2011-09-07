@@ -3185,6 +3185,9 @@ ViewerQueryManager::HandlePickCache()
 //    Modifications notes to last couple of years. Move test for non-hidden
 //    active plot and running engine to generic 'Query' method.
 //
+//    Kathleen Biagas, Wed Sep  7 11:11:19 PDT 2011
+//    coord argument may be an intVector or a doubleVector.
+//
 // ****************************************************************************
 
 void         
@@ -3252,13 +3255,25 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
             Error(tr("%1 requires a 'coord' parameter.\n").arg(qName.c_str()));
             return;
         }
-        doubleVector pt = queryParams.GetEntry("coord")->AsDoubleVector();
         PICK_POINT_INFO ppi;
         ppi.callbackData = win;
-        ppi.rayPt1[0] = ppi.rayPt2[0] = pt[0];
-        ppi.rayPt1[1] = ppi.rayPt2[1] = pt[1];
-        ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
-        ppi.validPick = true;
+
+        if (queryParams.GetEntry("coord")->TypeName() == "doubleVector")
+        {
+            doubleVector pt = queryParams.GetEntry("coord")->AsDoubleVector();
+            ppi.rayPt1[0] = ppi.rayPt2[0] = pt[0];
+            ppi.rayPt1[1] = ppi.rayPt2[1] = pt[1];
+            ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
+            ppi.validPick = true;
+        }
+        else if (queryParams.GetEntry("coord")->TypeName() == "intVector")
+        {
+            intVector pt = queryParams.GetEntry("coord")->AsIntVector();
+            ppi.rayPt1[0] = ppi.rayPt2[0] = (double)pt[0];
+            ppi.rayPt1[1] = ppi.rayPt2[1] = (double)pt[1];
+            ppi.rayPt1[2] = ppi.rayPt2[2] = (double)pt[2];
+            ppi.validPick = true;
+        }
         if (!timeCurve)
         {
             Pick(&ppi);
