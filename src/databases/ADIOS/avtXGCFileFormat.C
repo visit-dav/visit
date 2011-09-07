@@ -97,15 +97,14 @@ avtXGCFileFormat::Identify(ADIOSFileObject *f)
 // ****************************************************************************
 
 avtFileFormatInterface *
-avtXGCFileFormat::CreateInterface(ADIOSFileObject *f,
-                                  const char *const *list,
+avtXGCFileFormat::CreateInterface(const char *const *list,
                                   int nList,
                                   int nBlock)
 {
     int nTimestepGroups = nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
     for (int i = 0 ; i < nTimestepGroups ; i++)
-        ffl[i] = new avtXGCFileFormat(list[i*nBlock], (i==0)?f:NULL);
+        ffl[i] = new avtXGCFileFormat(list[i*nBlock]);
     
     return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
 }
@@ -191,23 +190,6 @@ avtXGCFileFormat::IsFieldIFile(ADIOSFileObject *f)
     if (!f->GetIntAttr("/nnode_data", val))
         return false;    
     return true;
-}
-
-
-// ****************************************************************************
-//  Method: avtXGCFileFormat constructor
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Tue Mar  9 12:40:15 EST 2010
-//
-// ****************************************************************************
-
-avtXGCFileFormat::avtXGCFileFormat(const char *nm, ADIOSFileObject *f)
-    : avtMTMDFileFormat(nm)
-{
-    file = f;
-    meshFile = NULL;
-    initialized = false;
 }
 
 
