@@ -103,6 +103,7 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
                 debug5<<"Database is avtADIOSBasicFileFormat"<<endl;
                 flavor = 0;
             }
+            delete f;
         }
         CATCH(VisItException)
         {
@@ -114,20 +115,20 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
         switch(flavor)
         {
           case 1:
-            ffi = avtXGCFileFormat::CreateInterface(f, list, nList, nBlock);
+            ffi = avtXGCFileFormat::CreateInterface(list, nList, nBlock);
             break;
           case 2:
-            ffi = avtPixieFileFormat::CreateInterface(f, list, nList, nBlock);
+            ffi = avtPixieFileFormat::CreateInterface(list, nList, nBlock);
             break;
-
           case 0:
-            ffi = avtADIOSBasicFileFormat::CreateInterface(f, list, nList, nBlock);
+            ffi = avtADIOSBasicFileFormat::CreateInterface(list, nList, nBlock);
             break;
             
           default:
             delete f;
             return NULL;
         }
+            
     }
 
     return ffi;
