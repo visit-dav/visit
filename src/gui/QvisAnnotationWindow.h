@@ -140,6 +140,9 @@ class QvisLineWidthWidget;
 //   Hank Childs, Fri May 13 16:00:24 PDT 2011
 //   Add ability to set location of bounding box.
 //
+//   Kathleen Biagas, Wed Sep  7 16:17:23 PDT 2011
+//   Added timeInfo.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -191,6 +194,7 @@ private slots:
     void databaseInfoChecked(bool val);
     void databasePathExpansionModeChanged(int index);
     void databaseInfoFontChanged(const FontAttributes &);
+    void timeInfoChecked(bool val);
     void legendChecked(bool val);
     void turnOffAllAnnotations();
     void databaseTimeScaleChanged();
@@ -267,6 +271,7 @@ private:
     QvisFontAttributesWidget *databaseInfoFont;
     QLabel                   *databasePathExpansionModeLabel;
     QComboBox                *databasePathExpansionMode;
+    QGroupBox                *timeInfo;
     QCheckBox                *legendInfo;
     QPushButton              *turnOffAllButton;
     QNarrowLineEdit          *databaseTimeScale;

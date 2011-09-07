@@ -32,6 +32,9 @@
     <Field name="databaseInfoFlag" label="databaseInfoFlag" type="bool">
       true
     </Field>
+    <Field name="timeInfoFlag" label="timeInfoFlag" type="bool">
+      true
+    </Field>
     <Field name="databaseInfoFont" label="Database info font" type="att" subtype="FontAttributes">
     </Field>
     <Field name="databaseInfoExpansionMode" label="Path Expansion:" type="enum" subtype="PathExpansionMode" enabler="databaseInfoFlag:true">

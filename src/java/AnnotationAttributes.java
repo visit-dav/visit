@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class AnnotationAttributes extends AttributeSubject
 {
-    private static int AnnotationAttributes_numAdditionalAtts = 20;
+    private static int AnnotationAttributes_numAdditionalAtts = 21;
 
     // Enum values
     public final static int GRADIENTSTYLE_TOPTOBOTTOM = 0;
@@ -86,6 +86,7 @@ public class AnnotationAttributes extends AttributeSubject
         userInfoFlag = true;
         userInfoFont = new FontAttributes();
         databaseInfoFlag = true;
+        timeInfoFlag = true;
         databaseInfoFont = new FontAttributes();
         databaseInfoExpansionMode = PATHEXPANSIONMODE_FILE;
         databaseInfoTimeScale = 1;
@@ -112,6 +113,7 @@ public class AnnotationAttributes extends AttributeSubject
         userInfoFlag = true;
         userInfoFont = new FontAttributes();
         databaseInfoFlag = true;
+        timeInfoFlag = true;
         databaseInfoFont = new FontAttributes();
         databaseInfoExpansionMode = PATHEXPANSIONMODE_FILE;
         databaseInfoTimeScale = 1;
@@ -138,6 +140,7 @@ public class AnnotationAttributes extends AttributeSubject
         userInfoFlag = obj.userInfoFlag;
         userInfoFont = new FontAttributes(obj.userInfoFont);
         databaseInfoFlag = obj.databaseInfoFlag;
+        timeInfoFlag = obj.timeInfoFlag;
         databaseInfoFont = new FontAttributes(obj.databaseInfoFont);
         databaseInfoExpansionMode = obj.databaseInfoExpansionMode;
         databaseInfoTimeScale = obj.databaseInfoTimeScale;
@@ -175,6 +178,7 @@ public class AnnotationAttributes extends AttributeSubject
                 (userInfoFlag == obj.userInfoFlag) &&
                 (userInfoFont.equals(obj.userInfoFont)) &&
                 (databaseInfoFlag == obj.databaseInfoFlag) &&
+                (timeInfoFlag == obj.timeInfoFlag) &&
                 (databaseInfoFont.equals(obj.databaseInfoFont)) &&
                 (databaseInfoExpansionMode == obj.databaseInfoExpansionMode) &&
                 (databaseInfoTimeScale == obj.databaseInfoTimeScale) &&
@@ -223,94 +227,100 @@ public class AnnotationAttributes extends AttributeSubject
         Select(4);
     }
 
+    public void SetTimeInfoFlag(boolean timeInfoFlag_)
+    {
+        timeInfoFlag = timeInfoFlag_;
+        Select(5);
+    }
+
     public void SetDatabaseInfoFont(FontAttributes databaseInfoFont_)
     {
         databaseInfoFont = databaseInfoFont_;
-        Select(5);
+        Select(6);
     }
 
     public void SetDatabaseInfoExpansionMode(int databaseInfoExpansionMode_)
     {
         databaseInfoExpansionMode = databaseInfoExpansionMode_;
-        Select(6);
+        Select(7);
     }
 
     public void SetDatabaseInfoTimeScale(double databaseInfoTimeScale_)
     {
         databaseInfoTimeScale = databaseInfoTimeScale_;
-        Select(7);
+        Select(8);
     }
 
     public void SetDatabaseInfoTimeOffset(double databaseInfoTimeOffset_)
     {
         databaseInfoTimeOffset = databaseInfoTimeOffset_;
-        Select(8);
+        Select(9);
     }
 
     public void SetLegendInfoFlag(boolean legendInfoFlag_)
     {
         legendInfoFlag = legendInfoFlag_;
-        Select(9);
+        Select(10);
     }
 
     public void SetBackgroundColor(ColorAttribute backgroundColor_)
     {
         backgroundColor = backgroundColor_;
-        Select(10);
+        Select(11);
     }
 
     public void SetForegroundColor(ColorAttribute foregroundColor_)
     {
         foregroundColor = foregroundColor_;
-        Select(11);
+        Select(12);
     }
 
     public void SetGradientBackgroundStyle(int gradientBackgroundStyle_)
     {
         gradientBackgroundStyle = gradientBackgroundStyle_;
-        Select(12);
+        Select(13);
     }
 
     public void SetGradientColor1(ColorAttribute gradientColor1_)
     {
         gradientColor1 = gradientColor1_;
-        Select(13);
+        Select(14);
     }
 
     public void SetGradientColor2(ColorAttribute gradientColor2_)
     {
         gradientColor2 = gradientColor2_;
-        Select(14);
+        Select(15);
     }
 
     public void SetBackgroundMode(int backgroundMode_)
     {
         backgroundMode = backgroundMode_;
-        Select(15);
+        Select(16);
     }
 
     public void SetBackgroundImage(String backgroundImage_)
     {
         backgroundImage = backgroundImage_;
-        Select(16);
+        Select(17);
     }
 
     public void SetImageRepeatX(int imageRepeatX_)
     {
         imageRepeatX = imageRepeatX_;
-        Select(17);
+        Select(18);
     }
 
     public void SetImageRepeatY(int imageRepeatY_)
     {
         imageRepeatY = imageRepeatY_;
-        Select(18);
+        Select(19);
     }
 
     public void SetAxesArray(AxesArray axesArray_)
     {
         axesArray = axesArray_;
-        Select(19);
+        Select(20);
     }
 
     // Property getting methods
@@ -319,6 +329,7 @@ public class AnnotationAttributes extends AttributeSubject
     public boolean        GetUserInfoFlag() { return userInfoFlag; }
     public FontAttributes GetUserInfoFont() { return userInfoFont; }
     public boolean        GetDatabaseInfoFlag() { return databaseInfoFlag; }
+    public boolean        GetTimeInfoFlag() { return timeInfoFlag; }
     public FontAttributes GetDatabaseInfoFont() { return databaseInfoFont; }
     public int            GetDatabaseInfoExpansionMode() { return databaseInfoExpansionMode; }
     public double         GetDatabaseInfoTimeScale() { return databaseInfoTimeScale; }
@@ -349,34 +360,36 @@ public class AnnotationAttributes extends AttributeSubject
         if(WriteSelect(4, buf))
             buf.WriteBool(databaseInfoFlag);
         if(WriteSelect(5, buf))
-            databaseInfoFont.Write(buf);
+            buf.WriteBool(timeInfoFlag);
         if(WriteSelect(6, buf))
-            buf.WriteInt(databaseInfoExpansionMode);
+            databaseInfoFont.Write(buf);
         if(WriteSelect(7, buf))
-            buf.WriteDouble(databaseInfoTimeScale);
+            buf.WriteInt(databaseInfoExpansionMode);
         if(WriteSelect(8, buf))
-            buf.WriteDouble(databaseInfoTimeOffset);
+            buf.WriteDouble(databaseInfoTimeScale);
         if(WriteSelect(9, buf))
-            buf.WriteBool(legendInfoFlag);
+            buf.WriteDouble(databaseInfoTimeOffset);
         if(WriteSelect(10, buf))
-            backgroundColor.Write(buf);
+            buf.WriteBool(legendInfoFlag);
         if(WriteSelect(11, buf))
-            foregroundColor.Write(buf);
+            backgroundColor.Write(buf);
         if(WriteSelect(12, buf))
-            buf.WriteInt(gradientBackgroundStyle);
+            foregroundColor.Write(buf);
         if(WriteSelect(13, buf))
-            gradientColor1.Write(buf);
+            buf.WriteInt(gradientBackgroundStyle);
         if(WriteSelect(14, buf))
-            gradientColor2.Write(buf);
+            gradientColor1.Write(buf);
         if(WriteSelect(15, buf))
-            buf.WriteInt(backgroundMode);
+            gradientColor2.Write(buf);
         if(WriteSelect(16, buf))
-            buf.WriteString(backgroundImage);
+            buf.WriteInt(backgroundMode);
         if(WriteSelect(17, buf))
-            buf.WriteInt(imageRepeatX);
+            buf.WriteString(backgroundImage);
         if(WriteSelect(18, buf))
-            buf.WriteInt(imageRepeatY);
+            buf.WriteInt(imageRepeatX);
         if(WriteSelect(19, buf))
+            buf.WriteInt(imageRepeatY);
+        if(WriteSelect(20, buf))
             axesArray.Write(buf);
     }
 
@@ -403,55 +416,58 @@ public class AnnotationAttributes extends AttributeSubject
             SetDatabaseInfoFlag(buf.ReadBool());
             break;
         case 5:
-            databaseInfoFont.Read(buf);
-            Select(5);
+            SetTimeInfoFlag(buf.ReadBool());
             break;
         case 6:
-            SetDatabaseInfoExpansionMode(buf.ReadInt());
+            databaseInfoFont.Read(buf);
+            Select(6);
             break;
         case 7:
-            SetDatabaseInfoTimeScale(buf.ReadDouble());
+            SetDatabaseInfoExpansionMode(buf.ReadInt());
             break;
         case 8:
-            SetDatabaseInfoTimeOffset(buf.ReadDouble());
+            SetDatabaseInfoTimeScale(buf.ReadDouble());
             break;
         case 9:
-            SetLegendInfoFlag(buf.ReadBool());
+            SetDatabaseInfoTimeOffset(buf.ReadDouble());
             break;
         case 10:
-            backgroundColor.Read(buf);
-            Select(10);
+            SetLegendInfoFlag(buf.ReadBool());
             break;
         case 11:
-            foregroundColor.Read(buf);
+            backgroundColor.Read(buf);
             Select(11);
             break;
         case 12:
-            SetGradientBackgroundStyle(buf.ReadInt());
+            foregroundColor.Read(buf);
+            Select(12);
             break;
         case 13:
-            gradientColor1.Read(buf);
-            Select(13);
+            SetGradientBackgroundStyle(buf.ReadInt());
             break;
         case 14:
-            gradientColor2.Read(buf);
+            gradientColor1.Read(buf);
             Select(14);
             break;
         case 15:
-            SetBackgroundMode(buf.ReadInt());
+            gradientColor2.Read(buf);
+            Select(15);
             break;
         case 16:
-            SetBackgroundImage(buf.ReadString());
+            SetBackgroundMode(buf.ReadInt());
             break;
         case 17:
-            SetImageRepeatX(buf.ReadInt());
+            SetBackgroundImage(buf.ReadString());
             break;
         case 18:
-            SetImageRepeatY(buf.ReadInt());
+            SetImageRepeatX(buf.ReadInt());
             break;
         case 19:
+            SetImageRepeatY(buf.ReadInt());
+            break;
+        case 20:
             axesArray.Read(buf);
-            Select(19);
+            Select(20);
             break;
         }
     }
@@ -464,6 +480,7 @@ public class AnnotationAttributes extends AttributeSubject
         str = str + boolToString("userInfoFlag", userInfoFlag, indent) + "\n";
         str = str + indent + "userInfoFont = {\n" + userInfoFont.toString(indent + "    ") + indent + "}\n";
         str = str + boolToString("databaseInfoFlag", databaseInfoFlag, indent) + "\n";
+        str = str + boolToString("timeInfoFlag", timeInfoFlag, indent) + "\n";
         str = str + indent + "databaseInfoFont = {\n" + databaseInfoFont.toString(indent + "    ") + indent + "}\n";
         str = str + indent + "databaseInfoExpansionMode = ";
         if(databaseInfoExpansionMode == PATHEXPANSIONMODE_FILE)
@@ -520,6 +537,7 @@ public class AnnotationAttributes extends AttributeSubject
     private boolean        userInfoFlag;
     private FontAttributes userInfoFont;
     private boolean        databaseInfoFlag;
+    private boolean        timeInfoFlag;
     private FontAttributes databaseInfoFont;
     private int            databaseInfoExpansionMode;
     private double         databaseInfoTimeScale;

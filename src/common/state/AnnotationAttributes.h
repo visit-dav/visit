@@ -132,6 +132,7 @@ public:
     void SetUserInfoFlag(bool userInfoFlag_);
     void SetUserInfoFont(const FontAttributes &userInfoFont_);
     void SetDatabaseInfoFlag(bool databaseInfoFlag_);
+    void SetTimeInfoFlag(bool timeInfoFlag_);
     void SetDatabaseInfoFont(const FontAttributes &databaseInfoFont_);
     void SetDatabaseInfoExpansionMode(PathExpansionMode databaseInfoExpansionMode_);
     void SetDatabaseInfoTimeScale(double databaseInfoTimeScale_);
@@ -157,6 +158,7 @@ public:
     const FontAttributes &GetUserInfoFont() const;
           FontAttributes &GetUserInfoFont();
     bool                 GetDatabaseInfoFlag() const;
+    bool                 GetTimeInfoFlag() const;
     const FontAttributes &GetDatabaseInfoFont() const;
           FontAttributes &GetDatabaseInfoFont();
     PathExpansionMode    GetDatabaseInfoExpansionMode() const;
@@ -218,6 +220,7 @@ public:
         ID_userInfoFlag,
         ID_userInfoFont,
         ID_databaseInfoFlag,
+        ID_timeInfoFlag,
         ID_databaseInfoFont,
         ID_databaseInfoExpansionMode,
         ID_databaseInfoTimeScale,
@@ -242,6 +245,7 @@ private:
     bool           userInfoFlag;
     FontAttributes userInfoFont;
     bool           databaseInfoFlag;
+    bool           timeInfoFlag;
     FontAttributes databaseInfoFont;
     int            databaseInfoExpansionMode;
     double         databaseInfoTimeScale;
@@ -262,6 +266,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define ANNOTATIONATTRIBUTES_TMFS "aababaiddbaaiaaisiia"
+#define ANNOTATIONATTRIBUTES_TMFS "aababbaiddbaaiaaisiia"
 
 #endif

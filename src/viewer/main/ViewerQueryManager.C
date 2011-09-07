@@ -4359,6 +4359,9 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Add ability for TimeCurve to create MultiCurve plot if querying
 //    multiple variables.
 //
+//    Kathleen Biagas, Wed Sep  7 16:20:32 PDT 2011
+//    Turn off the 'time' display in the legend for the time query window.
+//
 // ***********************************************************************
 
 void
@@ -4559,6 +4562,12 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     }
     bool retry = false;
     int numAttempts = 0;
+
+    // turn off time in the legend, as it means nothing for a TimeQuery curve
+    AnnotationAttributes *annot = 
+        ViewerWindowManager::Instance()->GetAnnotationClientAtts();
+    annot->SetTimeInfoFlag(false);
+    resWin->SetAnnotationAttributes(annot, true);
 
     EngineKey engineKey =  origPlot->GetEngineKey();
 

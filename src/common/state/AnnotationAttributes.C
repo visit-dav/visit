@@ -172,6 +172,7 @@ void AnnotationAttributes::Init()
 {
     userInfoFlag = true;
     databaseInfoFlag = true;
+    timeInfoFlag = true;
     databaseInfoExpansionMode = File;
     databaseInfoTimeScale = 1;
     databaseInfoTimeOffset = 0;
@@ -206,6 +207,7 @@ void AnnotationAttributes::Copy(const AnnotationAttributes &obj)
     userInfoFlag = obj.userInfoFlag;
     userInfoFont = obj.userInfoFont;
     databaseInfoFlag = obj.databaseInfoFlag;
+    timeInfoFlag = obj.timeInfoFlag;
     databaseInfoFont = obj.databaseInfoFont;
     databaseInfoExpansionMode = obj.databaseInfoExpansionMode;
     databaseInfoTimeScale = obj.databaseInfoTimeScale;
@@ -387,6 +389,7 @@ AnnotationAttributes::operator == (const AnnotationAttributes &obj) const
             (userInfoFlag == obj.userInfoFlag) &&
             (userInfoFont == obj.userInfoFont) &&
             (databaseInfoFlag == obj.databaseInfoFlag) &&
+            (timeInfoFlag == obj.timeInfoFlag) &&
             (databaseInfoFont == obj.databaseInfoFont) &&
             (databaseInfoExpansionMode == obj.databaseInfoExpansionMode) &&
             (databaseInfoTimeScale == obj.databaseInfoTimeScale) &&
@@ -550,6 +553,7 @@ AnnotationAttributes::SelectAll()
     Select(ID_userInfoFlag,              (void *)&userInfoFlag);
     Select(ID_userInfoFont,              (void *)&userInfoFont);
     Select(ID_databaseInfoFlag,          (void *)&databaseInfoFlag);
+    Select(ID_timeInfoFlag,              (void *)&timeInfoFlag);
     Select(ID_databaseInfoFont,          (void *)&databaseInfoFont);
     Select(ID_databaseInfoExpansionMode, (void *)&databaseInfoExpansionMode);
     Select(ID_databaseInfoTimeScale,     (void *)&databaseInfoTimeScale);
@@ -643,6 +647,12 @@ AnnotationAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     {
         addToParent = true;
         node->AddNode(new DataNode("databaseInfoFlag", databaseInfoFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_timeInfoFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("timeInfoFlag", timeInfoFlag));
     }
 
     if(completeSave || !FieldsEqual(ID_databaseInfoFont, &defaultObject))
@@ -801,6 +811,8 @@ AnnotationAttributes::SetFromNode(DataNode *parentNode)
         userInfoFont.SetFromNode(node);
     if((node = searchNode->GetNode("databaseInfoFlag")) != 0)
         SetDatabaseInfoFlag(node->AsBool());
+    if((node = searchNode->GetNode("timeInfoFlag")) != 0)
+        SetTimeInfoFlag(node->AsBool());
     if((node = searchNode->GetNode("databaseInfoFont")) != 0)
         databaseInfoFont.SetFromNode(node);
     if((node = searchNode->GetNode("databaseInfoExpansionMode")) != 0)
@@ -912,6 +924,13 @@ AnnotationAttributes::SetDatabaseInfoFlag(bool databaseInfoFlag_)
 {
     databaseInfoFlag = databaseInfoFlag_;
     Select(ID_databaseInfoFlag, (void *)&databaseInfoFlag);
+}
+
+void
+AnnotationAttributes::SetTimeInfoFlag(bool timeInfoFlag_)
+{
+    timeInfoFlag = timeInfoFlag_;
+    Select(ID_timeInfoFlag, (void *)&timeInfoFlag);
 }
 
 void
@@ -1069,6 +1088,12 @@ bool
 AnnotationAttributes::GetDatabaseInfoFlag() const
 {
     return databaseInfoFlag;
+}
+
+bool
+AnnotationAttributes::GetTimeInfoFlag() const
+{
+    return timeInfoFlag;
 }
 
 const FontAttributes &
@@ -1296,6 +1321,7 @@ AnnotationAttributes::GetFieldName(int index) const
     case ID_userInfoFlag:              return "userInfoFlag";
     case ID_userInfoFont:              return "userInfoFont";
     case ID_databaseInfoFlag:          return "databaseInfoFlag";
+    case ID_timeInfoFlag:              return "timeInfoFlag";
     case ID_databaseInfoFont:          return "databaseInfoFont";
     case ID_databaseInfoExpansionMode: return "databaseInfoExpansionMode";
     case ID_databaseInfoTimeScale:     return "databaseInfoTimeScale";
@@ -1340,6 +1366,7 @@ AnnotationAttributes::GetFieldType(int index) const
     case ID_userInfoFlag:              return FieldType_bool;
     case ID_userInfoFont:              return FieldType_att;
     case ID_databaseInfoFlag:          return FieldType_bool;
+    case ID_timeInfoFlag:              return FieldType_bool;
     case ID_databaseInfoFont:          return FieldType_att;
     case ID_databaseInfoExpansionMode: return FieldType_enum;
     case ID_databaseInfoTimeScale:     return FieldType_double;
@@ -1384,6 +1411,7 @@ AnnotationAttributes::GetFieldTypeName(int index) const
     case ID_userInfoFlag:              return "bool";
     case ID_userInfoFont:              return "att";
     case ID_databaseInfoFlag:          return "bool";
+    case ID_timeInfoFlag:              return "bool";
     case ID_databaseInfoFont:          return "att";
     case ID_databaseInfoExpansionMode: return "enum";
     case ID_databaseInfoTimeScale:     return "double";
@@ -1448,6 +1476,11 @@ AnnotationAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_databaseInfoFlag:
         {  // new scope
         retval = (databaseInfoFlag == obj.databaseInfoFlag);
+        }
+        break;
+    case ID_timeInfoFlag:
+        {  // new scope
+        retval = (timeInfoFlag == obj.timeInfoFlag);
         }
         break;
     case ID_databaseInfoFont:
