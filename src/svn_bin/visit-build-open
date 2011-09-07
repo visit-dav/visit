@@ -71,6 +71,9 @@
 #   Eric Brugger, Fri Aug  5 09:48:13 PDT 2011
 #   I added kickit.
 #
+#   Eric Brugger, Tue Sep  6 13:58:32 PDT 2011
+#   I added rzzeus.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -114,6 +117,7 @@ esac
 hoth=true
 kickit=true
 aztec=true
+rzzeus=true
 alastor=false
 xchem=false
 euclid=true
@@ -135,6 +139,7 @@ do
          hoth=false
          kickit=false
          aztec=false
+         rzzeus=false
          alastor=false
          xchem=false
          euclid=false
@@ -165,6 +170,14 @@ do
          ;;
       +aztec)
          aztec=true
+         shift
+         ;;
+      -rzzeus)
+         rzzeus=false
+         shift
+         ;;
+      +rzzeus)
+         rzzeus=true
          shift
          ;;
       -alastor)
@@ -232,6 +245,7 @@ then
    echo "    hoth (B-Div, Linux),"
    echo "    kickit (B-Div, Linux),"
    echo "    aztec (LC, Linux, x86_64),"
+   echo "    rzzeus (LC, Linux, x86_64),"
    echo "    alastor (LC, Linux, x86_64),"
    echo "    xchem (HEAF, Linux),"
    echo "    euclid (LBNL, Linux, x86_64),"
@@ -401,6 +415,58 @@ then
       scp aztec aztec3:aztec_buildit
       scp $dist.tar.gz aztec3:aztec_$dist.tar.gz
       ssh aztec3 "chmod 750 aztec_buildit;./aztec_buildit" &
+   fi
+fi
+
+#
+# Build on rzzeus.
+#
+rm -f rzzeus
+cat <<EOF > rzzeus
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/rzzeus ; then
+   mkdir /usr/tmp/$user/rzzeus
+fi
+rm -rf /usr/tmp/$user/rzzeus/visitbuild
+mkdir /usr/tmp/$user/rzzeus/visitbuild
+mv rzzeus_$dist.tar.gz /usr/tmp/$user/rzzeus/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/rzzeus/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+export PATH=\$PATH:/usr/bin/X11
+/usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make -j 6 >> ../../buildlog 2>&1
+make -j 6 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on rzzeus"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail  -s "VisIt build ($dist): rzzeus" $emailName < resultlog
+EOF
+
+if [ $rzzeus = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on rzzeus"
+      cp rzzeus rzzeus_buildit
+      cp $dist.tar.gz rzzeus_$dist.tar.gz
+      chmod 750 rzzeus_buildit;./rzzeus_buildit &
    fi
 fi
 
@@ -737,5 +803,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit aztec alastor xchem euclid ellipse glory redsky
+   rm -f hoth kickit aztec rzzeus alastor xchem euclid ellipse glory redsky
 fi
