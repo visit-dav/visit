@@ -29,6 +29,9 @@
 #   Eric Brugger, Fri Aug  5 09:53:51 PDT 2011
 #   I added kickit.
 #
+#   Eric Brugger, Tue Sep  6 14:13:59 PDT 2011
+#   I added rzzeus.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -66,6 +69,7 @@ esac
 hoth=true
 kickit=true
 aztec=true
+rzzeus=true
 xchem=false
 euclid=true
 ellipse=true
@@ -86,6 +90,7 @@ do
          hoth=false
          kickit=false
          aztec=false
+         rzzeus=false
          xchem=false
          euclid=false
          ellipse=false
@@ -115,6 +120,14 @@ do
          ;;
       +aztec)
          aztec=true
+         shift
+         ;;
+      -rzzeus)
+         rzzeus=false
+         shift
+         ;;
+      +rzzeus)
+         rzzeus=true
          shift
          ;;
       -xchem)
@@ -289,6 +302,40 @@ then
       scp visit-install aztec:
       scp aztec aztec:aztec_install
       ssh aztec "chmod 750 aztec_install;./aztec_install"
+   fi
+fi
+
+#
+# Install on rzzeus.
+#
+rm -f rzzeus
+cat <<EOF > rzzeus
+#!/bin/sh
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on rzzeus"          > resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin      >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail -s "VisIt install ($ver): rzzeus" $emailName < resultlog
+EOF
+
+if [ $rzzeus = true ]
+then
+   if [ $test = no ]
+   then
+      cp /usr/tmp/$user/rzzeus/visitbuild/visit$ver2.linux-x86_64.tar.gz .
+      cp rzzeus rzzeus_install
+      chmod 750 rzzeus_install;./rzzeus_install
    fi
 fi
 
@@ -473,5 +520,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit aztec xchem euclid ellipse glory redsky
+   rm -f hoth kickit aztec rzzeus xchem euclid ellipse glory redsky
 fi
