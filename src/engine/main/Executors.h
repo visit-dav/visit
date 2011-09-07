@@ -59,6 +59,7 @@
 #include <avtColorTables.h>
 #include <avtDatabaseFactory.h>
 #include <avtDataObjectQuery.h>
+#include <avtNamedSelectionManager.h>
 #include <avtNullData.h>
 
 
@@ -1604,6 +1605,9 @@ RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
 //    Brad Whitlock, Mon Aug 22 10:21:17 PDT 2011
 //    I changed how named selections get applied.
 //
+//    Brad Whitlock, Wed Sep  7 14:33:01 PDT 2011
+//    I added NS_UPDATE and code to clear the NSM's cache.
+//
 // ****************************************************************************
 template<>
 void
@@ -1631,10 +1635,19 @@ RPCExecutor<NamedSelectionRPC>::Execute(NamedSelectionRPC *rpc)
         switch (rpc->GetNamedSelectionOperation())
         {
         case NamedSelectionRPC::NS_CREATE:
+            avtNamedSelectionManager::GetInstance()->ClearCache(rpc->GetSelectionName());
+            summary = netmgr->CreateNamedSelection(
+                rpc->GetPlotID(), rpc->GetSelectionProperties());
+            break;
+        case NamedSelectionRPC::NS_UPDATE:
+            if(!rpc->GetAllowCache())
+                avtNamedSelectionManager::GetInstance()->ClearCache(rpc->GetSelectionName());
+            netmgr->DeleteNamedSelection(rpc->GetSelectionName());
             summary = netmgr->CreateNamedSelection(
                 rpc->GetPlotID(), rpc->GetSelectionProperties());
             break;
         case NamedSelectionRPC::NS_DELETE:
+            avtNamedSelectionManager::GetInstance()->ClearCache(rpc->GetSelectionName());
             netmgr->DeleteNamedSelection(rpc->GetSelectionName());
             break;
         case NamedSelectionRPC::NS_LOAD:

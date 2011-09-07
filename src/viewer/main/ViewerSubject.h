@@ -601,7 +601,7 @@ private:
     void SaveNamedSelection();
     void SetNamedSelectionAutoApply();
     void UpdateNamedSelection();
-    void UpdateNamedSelection(const std::string &selName, bool updatePlots);
+    void UpdateNamedSelection(const std::string &selName, bool updatePlots, bool allowCache);
     void InitializeNamedSelectionVariables();
 
     void SetDefaultPlotOptions();

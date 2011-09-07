@@ -432,6 +432,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ConstructDataBinning(const EngineKey &ek, int id);
 
     bool CreateNamedSelection(const EngineKey &ek, int, const SelectionProperties &);
+    bool UpdateNamedSelection(const EngineKey &ek, int, const SelectionProperties &, bool allowCache);
     bool DeleteNamedSelection(const EngineKey &ek, const std::string &);
     bool LoadNamedSelection(const EngineKey &ek, const std::string &);
     bool SaveNamedSelection(const EngineKey &ek, const std::string &);

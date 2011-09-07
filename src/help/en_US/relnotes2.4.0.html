@@ -46,7 +46,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Libsim was enhanced so it offers support for attaching mesh-sized ghost cell arrays to rectilinear, curvilinear, and unstructured meshes. This method for creating ghost cells allows any cell in the mesh to be a ghost cell so it is more flexible than the existing index-based approach to ghost cells, which still works. If a ghost cells array is added to a mesh then those values are used instead of the ghost zone indices. The new ghost zone approach allows different flavors of ghost cell, including VISIT_GHOSTCELL_BLANK, which lets you remove cell from a mesh. When older versions of VisIt connect to a newer Libsim with these ghost cell enhancements, the new functions have no effect.</li>
   <li>Libsim was enhanced to support setting cell and node origin in mesh metadata.</li>
   <li>Libsim was enhanced to support setting spatial extents in mesh metadata.</li>
-  <li></li>
+  <li>Cumulative query selections were enhanced so they can cache intermediate results obtained from executing filters over time. This accelerates operations that modify the histogram such as changing the summation rule, display type, and bin properties. Modifying the selection variable list or ranges do not benefit from caching.</li>
   <li></li>
   <li></li>
 </ul>

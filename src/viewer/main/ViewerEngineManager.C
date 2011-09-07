@@ -3393,6 +3393,42 @@ ViewerEngineManager::CreateNamedSelection(const EngineKey &ek,
 
 
 // ****************************************************************************
+//  Method: ViewerEngineManager::UpdateNamedSelection
+//
+//  Purpose:
+//      Update a named selection with new properties.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Sep  7 14:44:15 PDT 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+ViewerEngineManager::UpdateNamedSelection(const EngineKey &ek, 
+    int id, const SelectionProperties &props, bool allowCache)
+{
+    SelectionSummary summary;
+    ENGINE_PROXY_RPC_BEGIN("UpdateNamedSelection");
+
+        // Remove the summary if it is there.
+        int sindex = ViewerWindowManager::GetSelectionList()->
+            GetSelectionSummary(props.GetName());
+        if(sindex >= 0)
+            ViewerWindowManager::GetSelectionList()->RemoveSelectionSummary(sindex);
+
+        // Create the named selection
+        summary = engine->UpdateNamedSelection(id, props, allowCache);
+
+        // Add the new summary to the list.
+        ViewerWindowManager::GetSelectionList()->AddSelectionSummary(summary);
+
+    ENGINE_PROXY_RPC_END;
+}
+
+
+// ****************************************************************************
 //  Method: ViewerEngineManager::DeleteNamedSelection
 //
 //  Purpose:

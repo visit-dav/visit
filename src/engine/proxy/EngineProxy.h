@@ -324,6 +324,9 @@ class ParentProcess;
 //    Kathleen Biagas, Fri Jul 15 11:34:11 PDT 2011
 //    Added QueryParametersRPC.
 //
+//    Brad Whitlock, Wed Sep  7 14:29:35 PDT 2011
+//    Added UpdateNamedSelection.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -424,6 +427,7 @@ public:
     void                     ConstructDataBinning(int, const ConstructDataBinningAttributes *);
 
     const SelectionSummary  &CreateNamedSelection(int id, const SelectionProperties &props);
+    const SelectionSummary  &UpdateNamedSelection(int id, const SelectionProperties &props, bool cache);
     void                     DeleteNamedSelection(const std::string selName);
     void                     LoadNamedSelection(const std::string selName);
     void                     SaveNamedSelection(const std::string selName);

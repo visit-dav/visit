@@ -108,7 +108,7 @@ protected:
     void    UpdateHistogram();
     void    UpdateHistogramTitle();
     void    UpdateMinMaxBins(bool, bool, bool);
-    void    Apply(bool forceUpdate, bool updatePlots);
+    void    Apply(bool forceUpdate, bool updatePlots, bool allowCache);
     void    GetCurrentValues(int);
 
     QString GetLoadHost() const;
@@ -199,6 +199,7 @@ private:
 
     bool                selectionPropsValid;
     SelectionProperties selectionProps;
+    bool                allowCaching;
 
     int                 selectionCounter;
 };

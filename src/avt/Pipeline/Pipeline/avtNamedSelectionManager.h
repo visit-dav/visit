@@ -44,11 +44,12 @@
 #include <vector>
 
 #include <avtDataObject.h>
+#include <avtNamedSelection.h>
+#include <avtNamedSelectionExtension.h>
+
+#include <MRUCache.h>
 #include <SelectionProperties.h>
 #include <visitstream.h>
-
-class     avtNamedSelection;
-class     avtNamedSelectionExtension;
 
 // ****************************************************************************
 //  Class: avtNamedSelectionManager
@@ -78,6 +79,9 @@ class     avtNamedSelectionExtension;
 //    defined. These properties can be queried in the event that we need to
 //    create a selection using some other method.
 //
+//    Brad Whitlock, Tue Sep  6 15:15:53 PDT 2011
+//    I added a cache.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelectionManager
@@ -97,9 +101,11 @@ class PIPELINE_API avtNamedSelectionManager
                                        avtNamedSelectionExtension *);
 
     void          DeleteNamedSelection(const std::string &, 
-                                       bool expectThisSelToBeThere = true);
+                                       bool expectThisSelToBeThere);
     bool          LoadNamedSelection(const std::string &, bool = false);
     void          SaveNamedSelection(const std::string &, bool = false);
+
+    void          ClearCache(const std::string &selName = std::string());
 
     const SelectionProperties *GetSelectionProperties(const std::string &selName) const;
 
@@ -111,6 +117,8 @@ class PIPELINE_API avtNamedSelectionManager
 
     void          AddSelectionProperties(const SelectionProperties &);
     std::vector<SelectionProperties>    properties;
+
+    avtNamedSelectionCache              cache;
 
   private:
     // These methods are defined to prevent accidental use of bitwise copy
