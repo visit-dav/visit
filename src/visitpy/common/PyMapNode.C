@@ -187,8 +187,7 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
                  {
                      // process as doubleVector
                      doubleVector mval;
-                     mval.push_back((double)PyInt_AS_LONG(item));
-                     for (Py_ssize_t i = 1; i < PySequence_Size(value); ++i)
+                     for (Py_ssize_t i = 0; i < PySequence_Size(value); ++i)
                      {
                          item = PySequence_GetItem(value, i);
                          if (PyFloat_Check(item))
@@ -201,8 +200,7 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
                  else
                  {
                      intVector mval;
-                     mval.push_back(PyInt_AS_LONG(item));
-                     for (Py_ssize_t i = 1; i < PySequence_Size(value); ++i)
+                     for (Py_ssize_t i = 0; i < PySequence_Size(value); ++i)
                      {
                          item = PySequence_GetItem(value, i);
                          mval.push_back(PyInt_AS_LONG(item));
