@@ -3810,7 +3810,8 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
             EXCEPTION0(ImproperUseException);
         }
 
-        if(!networkCache[id]->GetPlot()->CompatibleWithCumulativeQuery())
+        if(props.GetSelectionType() == SelectionProperties::CumulativeQuerySelection &&
+           !networkCache[id]->GetPlot()->CompatibleWithCumulativeQuery())
         {
             // Work off of the source file instead of the plot.
             source = networkCache[id]->GetNetDB()->GetFilename();
