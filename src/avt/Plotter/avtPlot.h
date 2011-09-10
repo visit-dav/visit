@@ -341,6 +341,8 @@ class PLOTTER_API avtPlot
 
     virtual avtFilter         *GetFilterForTopOfPipeline() { return 0; }
 
+    virtual bool               CompatibleWithCumulativeQuery() const { return true; }
+
   protected:
     bool                       needsRecalculation;
     int                        index;

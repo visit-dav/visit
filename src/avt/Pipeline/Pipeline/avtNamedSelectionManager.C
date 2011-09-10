@@ -209,20 +209,23 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
     // logic, for example the parallel coordinates filter.
     //
     const std::string &selName = selProps.GetName();
-    avtNamedSelection *ns = dob->GetSource()->CreateNamedSelection(contract, 
-                                                                   selName);
-    if (ns != NULL)
+    avtNamedSelection *ns = NULL;
+    if(selProps.GetSelectionType() == SelectionProperties::BasicSelection)
     {
-        int curSize = selList.size();
-        selList.resize(curSize+1);
-        selList[curSize] = ns;
+        ns = dob->GetSource()->CreateNamedSelection(contract, selName);
+        if (ns != NULL)
+        {
+            int curSize = selList.size();
+            selList.resize(curSize+1);
+            selList[curSize] = ns;
 
-        //
-        // Save out the named selection in case of engine crash / 
-        // save/restore session, etc.
-        //  
-        SaveNamedSelection(selName, true);
-        return;
+            //
+            // Save out the named selection in case of engine crash / 
+            // save/restore session, etc.
+            //  
+            SaveNamedSelection(selName, true);
+            return;
+        }
     }
 
     //

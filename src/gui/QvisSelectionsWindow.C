@@ -1839,7 +1839,7 @@ QvisSelectionsWindow::processTimeStride()
 void
 QvisSelectionsWindow::initializeVariableList()
 {
-    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
+    Apply(true, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
 
     // Ask the viewer to populate the selection's variables using the
     // current plot's attributes.

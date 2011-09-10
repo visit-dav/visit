@@ -3780,13 +3780,60 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
     avtExpressionEvaluatorFilter *f = NULL;
     avtDataObject_p dob;
 
-    debug1 << mName << "selection source " << props.GetSource() << endl;
+    std::string source(props.GetSource());
+    debug1 << mName << "selection source " << source << endl;
+
+    if(id >= 0)
+    {
+        // The selection source is a plot that has been executed.
+
+        if (id >= networkCache.size())
+        {
+            debug1 << mName << "Internal error:  asked to use network ID (" << id 
+                   << ") >= num saved networks ("
+                   << networkCache.size() << ")" << endl;
+            EXCEPTION0(ImproperUseException);
+        }
+ 
+        if (networkCache[id] == NULL)
+        {
+            debug1 << mName << "Asked to construct a named selection from a network "
+                   << "that has already been cleared." << endl;
+            EXCEPTION0(ImproperUseException);
+        }
+
+        if (id != networkCache[id]->GetNetID())
+        {
+            debug1 << mName << "Internal error: network at position[" << id << "] "
+                   << "does not have same id (" << networkCache[id]->GetNetID()
+                   << ")" << endl;
+            EXCEPTION0(ImproperUseException);
+        }
+
+        if(!networkCache[id]->GetPlot()->CompatibleWithCumulativeQuery())
+        {
+            // Work off of the source file instead of the plot.
+            source = networkCache[id]->GetNetDB()->GetFilename();
+            debug1 << mName << "Do not use the plot's intermediate data object "
+                               "for selection. Use its database source: " << source << endl;
+            // Do not allow use of the plot's output.
+            id = -1;
+        }
+        else
+        {
+            dob = networkCache[id]->GetPlot()->GetIntermediateDataObject();
+
+            debug1 << mName << "Cached network's plot id: "
+                   << networkCache[id]->GetPlotName()
+                   << ", selection plot: " << source << endl;
+        }
+    }
 
     if(id < 0)
     {
-        // We're going to assume that the props.source is a database name.
+        // We're going to assume that the source is a database name.
         int ts = 0;
-        NetnodeDB *netDB = GetDBFromCache(props.GetSource(), ts);
+        NetnodeDB *netDB = GetDBFromCache(source, ts);
         if(netDB != NULL)
         {
             // Try and determine a suitable variable to use to start our pipeline.
@@ -3826,7 +3873,7 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
                 TRY
                 {
                     debug1 << mName << "Try creating new db source for "
-                           << props.GetSource() << " named selection." << endl;
+                           << source << " named selection." << endl;
                     std::string leaf = ParsingExprList::GetRealVariable(var);
 
                     // Add an expression filter since we may need to do expressions.
@@ -3840,7 +3887,7 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
                     std::string mesh = netDB->GetDB()->GetMetaData(0)->MeshForVar(var);
                     silr->SetTopSet(mesh.c_str());
                     avtDataRequest_p dataRequest = new avtDataRequest(var.c_str(), ts, silr);
-                    int pipelineIndex = loadBalancer->AddPipeline(props.GetSource());
+                    int pipelineIndex = loadBalancer->AddPipeline(source);
                     avtContract_p contract = new avtContract(dataRequest, pipelineIndex);
 
                     // Execute with an empty source so the contract gets put in the data
@@ -3861,41 +3908,8 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
         }
         else
         {
-           debug1 << mName << "Could not get database " << props.GetSource() << " from cache." << endl;
+           debug1 << mName << "Could not get database " << source << " from cache." << endl;
         }
-    }
-    else
-    {
-        // The selection source is a plot that has been executed.
-
-        if (id >= networkCache.size())
-        {
-            debug1 << mName << "Internal error:  asked to use network ID (" << id 
-                   << ") >= num saved networks ("
-                   << networkCache.size() << ")" << endl;
-            EXCEPTION0(ImproperUseException);
-        }
- 
-        if (networkCache[id] == NULL)
-        {
-            debug1 << mName << "Asked to construct a named selection from a network "
-                   << "that has already been cleared." << endl;
-            EXCEPTION0(ImproperUseException);
-        }
-
-        if (id != networkCache[id]->GetNetID())
-        {
-            debug1 << mName << "Internal error: network at position[" << id << "] "
-                   << "does not have same id (" << networkCache[id]->GetNetID()
-                   << ")" << endl;
-            EXCEPTION0(ImproperUseException);
-        }
-
-        dob = networkCache[id]->GetPlot()->GetIntermediateDataObject();
-
-        debug1 << mName << "Cached network's plot id: "
-               << networkCache[id]->GetPlotName()
-               << ", selection plot: " << props.GetSource() << endl;
     }
 
     if (*dob == NULL)

@@ -90,6 +90,8 @@ public:
     virtual void             RegisterNamedSelection(const std::string &s)
                                 { namedSelections.push_back(s); };
 
+    virtual bool             CompatibleWithCumulativeQuery() const { return false; }
+
 protected:
     avtParallelCoordinatesFilter   *parAxisFilter;
     avtLevelsMapper         *levelsMapper;
