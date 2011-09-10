@@ -620,6 +620,12 @@ CumulativeQuery::CalculateFrequency(const SelectionProperties &props,
 
     for(size_t ts = 0; ts < timesteps.size(); ++ts)
     {
+        if(*timesteps[ts] == NULL)
+        {
+            debug5 << mName << "Time step " << ts << " of input dataset is empty." << endl;
+            continue;
+        }
+
         // Iterate over all pieces of the data for the current time step and 
         // figure out the set of cells.
         int nleaves = 0;
