@@ -460,7 +460,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetOverrideToroidalWinding( atts.GetOverrideToroidalWinding() );
     poincareFilter->SetOverridePoloidalWinding( atts.GetOverridePoloidalWinding() );
     poincareFilter->SetWindingPairConfidence( atts.GetWindingPairConfidence() );
-    poincareFilter->SetRationalTemplateSeedParm( atts.GetRationalTemplateSeedParm() );
+    poincareFilter->SetRationalSurfaceFactor( atts.GetRationalSurfaceFactor() );
     poincareFilter->SetOverlaps( atts.GetOverlaps() );
     poincareFilter->SetAdjustPlane( atts.GetAdjustPlane() );
 

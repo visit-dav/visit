@@ -590,8 +590,8 @@ void PoincareAttributes::Init()
 {
     opacityType = Explicit;
     opacity = 1;
-    minPunctures = 10;
-    maxPunctures = 100;
+    minPunctures = 50;
+    maxPunctures = 500;
     puncturePlane = Poloidal;
     sourceType = SpecifiedPoint;
     pointSource[0] = 0;
@@ -623,7 +623,7 @@ void PoincareAttributes::Init()
     overrideToroidalWinding = 0;
     overridePoloidalWinding = 0;
     windingPairConfidence = 0.9;
-    rationalTemplateSeedParm = 0.9;
+    rationalSurfaceFactor = 0.1;
     adjustPlane = -1;
     overlaps = Remove;
     meshType = Curves;
@@ -717,7 +717,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     overrideToroidalWinding = obj.overrideToroidalWinding;
     overridePoloidalWinding = obj.overridePoloidalWinding;
     windingPairConfidence = obj.windingPairConfidence;
-    rationalTemplateSeedParm = obj.rationalTemplateSeedParm;
+    rationalSurfaceFactor = obj.rationalSurfaceFactor;
     adjustPlane = obj.adjustPlane;
     overlaps = obj.overlaps;
     meshType = obj.meshType;
@@ -959,7 +959,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (overrideToroidalWinding == obj.overrideToroidalWinding) &&
             (overridePoloidalWinding == obj.overridePoloidalWinding) &&
             (windingPairConfidence == obj.windingPairConfidence) &&
-            (rationalTemplateSeedParm == obj.rationalTemplateSeedParm) &&
+            (rationalSurfaceFactor == obj.rationalSurfaceFactor) &&
             (adjustPlane == obj.adjustPlane) &&
             (overlaps == obj.overlaps) &&
             (meshType == obj.meshType) &&
@@ -1190,7 +1190,7 @@ PoincareAttributes::SelectAll()
     Select(ID_overrideToroidalWinding,   (void *)&overrideToroidalWinding);
     Select(ID_overridePoloidalWinding,   (void *)&overridePoloidalWinding);
     Select(ID_windingPairConfidence,     (void *)&windingPairConfidence);
-    Select(ID_rationalTemplateSeedParm,  (void *)&rationalTemplateSeedParm);
+    Select(ID_rationalSurfaceFactor,     (void *)&rationalSurfaceFactor);
     Select(ID_adjustPlane,               (void *)&adjustPlane);
     Select(ID_overlaps,                  (void *)&overlaps);
     Select(ID_meshType,                  (void *)&meshType);
@@ -1420,10 +1420,10 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("windingPairConfidence", windingPairConfidence));
     }
 
-    if(completeSave || !FieldsEqual(ID_rationalTemplateSeedParm, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_rationalSurfaceFactor, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("rationalTemplateSeedParm", rationalTemplateSeedParm));
+        node->AddNode(new DataNode("rationalSurfaceFactor", rationalSurfaceFactor));
     }
 
     if(completeSave || !FieldsEqual(ID_adjustPlane, &defaultObject))
@@ -1840,8 +1840,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetOverridePoloidalWinding(node->AsInt());
     if((node = searchNode->GetNode("windingPairConfidence")) != 0)
         SetWindingPairConfidence(node->AsDouble());
-    if((node = searchNode->GetNode("rationalTemplateSeedParm")) != 0)
-        SetRationalTemplateSeedParm(node->AsDouble());
+    if((node = searchNode->GetNode("rationalSurfaceFactor")) != 0)
+        SetRationalSurfaceFactor(node->AsDouble());
     if((node = searchNode->GetNode("adjustPlane")) != 0)
         SetAdjustPlane(node->AsInt());
     if((node = searchNode->GetNode("overlaps")) != 0)
@@ -2200,10 +2200,10 @@ PoincareAttributes::SetWindingPairConfidence(double windingPairConfidence_)
 }
 
 void
-PoincareAttributes::SetRationalTemplateSeedParm(double rationalTemplateSeedParm_)
+PoincareAttributes::SetRationalSurfaceFactor(double rationalSurfaceFactor_)
 {
-    rationalTemplateSeedParm = rationalTemplateSeedParm_;
-    Select(ID_rationalTemplateSeedParm, (void *)&rationalTemplateSeedParm);
+    rationalSurfaceFactor = rationalSurfaceFactor_;
+    Select(ID_rationalSurfaceFactor, (void *)&rationalSurfaceFactor);
 }
 
 void
@@ -2642,9 +2642,9 @@ PoincareAttributes::GetWindingPairConfidence() const
 }
 
 double
-PoincareAttributes::GetRationalTemplateSeedParm() const
+PoincareAttributes::GetRationalSurfaceFactor() const
 {
-    return rationalTemplateSeedParm;
+    return rationalSurfaceFactor;
 }
 
 int
@@ -2960,7 +2960,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_overrideToroidalWinding:   return "overrideToroidalWinding";
     case ID_overridePoloidalWinding:   return "overridePoloidalWinding";
     case ID_windingPairConfidence:     return "windingPairConfidence";
-    case ID_rationalTemplateSeedParm:  return "rationalTemplateSeedParm";
+    case ID_rationalSurfaceFactor:     return "rationalSurfaceFactor";
     case ID_adjustPlane:               return "adjustPlane";
     case ID_overlaps:                  return "overlaps";
     case ID_meshType:                  return "meshType";
@@ -3047,7 +3047,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_overrideToroidalWinding:   return FieldType_int;
     case ID_overridePoloidalWinding:   return FieldType_int;
     case ID_windingPairConfidence:     return FieldType_double;
-    case ID_rationalTemplateSeedParm:  return FieldType_double;
+    case ID_rationalSurfaceFactor:     return FieldType_double;
     case ID_adjustPlane:               return FieldType_int;
     case ID_overlaps:                  return FieldType_enum;
     case ID_meshType:                  return FieldType_enum;
@@ -3134,7 +3134,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_overrideToroidalWinding:   return "int";
     case ID_overridePoloidalWinding:   return "int";
     case ID_windingPairConfidence:     return "double";
-    case ID_rationalTemplateSeedParm:  return "double";
+    case ID_rationalSurfaceFactor:     return "double";
     case ID_adjustPlane:               return "int";
     case ID_overlaps:                  return "enum";
     case ID_meshType:                  return "enum";
@@ -3351,9 +3351,9 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (windingPairConfidence == obj.windingPairConfidence);
         }
         break;
-    case ID_rationalTemplateSeedParm:
+    case ID_rationalSurfaceFactor:
         {  // new scope
-        retval = (rationalTemplateSeedParm == obj.rationalTemplateSeedParm);
+        retval = (rationalSurfaceFactor == obj.rationalSurfaceFactor);
         }
         break;
     case ID_adjustPlane:
@@ -3645,7 +3645,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            overrideToroidalWinding != obj.overrideToroidalWinding ||
            overridePoloidalWinding != obj.overridePoloidalWinding ||
            windingPairConfidence != obj.windingPairConfidence ||
-           rationalTemplateSeedParm != obj.rationalTemplateSeedParm ||
+           rationalSurfaceFactor != obj.rationalSurfaceFactor ||
 
            showOPoints != obj.showOPoints ||
            OPointMaxIterations != obj.OPointMaxIterations ||

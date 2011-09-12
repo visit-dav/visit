@@ -158,7 +158,7 @@ avtPoincareFilter::avtPoincareFilter() :
     overrideToroidalWinding( 0 ),
     overridePoloidalWinding( 0 ),
     windingPairConfidence( 0.90 ),
-    rationalTemplateSeedParm( 0.90 ),
+    rationalSurfaceFactor( 0.10 ),
     adjust_plane(-1),
     overlaps(1),
 
@@ -580,6 +580,7 @@ avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
                                    overridePoloidalWinding,
                                    maximumToroidalWinding,
                                    windingPairConfidence,
+                                   rationalSurfaceFactor,
                                    showOPoints );
 
         // Make the number of punctures 2x because the Poincare analysis
@@ -630,7 +631,7 @@ avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
                << poincare_ic->properties.toroidalWinding << ","
                << poincare_ic->properties.poloidalWinding
                << "  (" << safetyFactor << ")"
-               << "  toroidal/poloidal Resonance = "
+               << "  toroidal/poloidal resonance = "
                << poincare_ic->properties.toroidalResonance << ","
                << poincare_ic->properties.poloidalResonance
                << "  windingGroupOffset = "
@@ -744,6 +745,9 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
 
     debug5 << "Creating output " << std::endl;
 
+    if( verboseFlag ) 
+       std::cerr << std::endl << std::endl << "count " << ic.size() << std::endl << std::endl;
+
     for ( int i=0; i<ic.size(); ++i )
     {
         avtPoincareIC * poincare_ic = (avtPoincareIC *) ic[i];
@@ -841,6 +845,8 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
           if( analysis == 0 )
           {
             toroidalWinding = 1;
+            poloidalWinding = 1;
+            poloidalWindingP = 1;
           }
           else
           {
@@ -1296,9 +1302,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         }
     }
     
-    if( verboseFlag ) 
-       std::cerr << std::endl << std::endl << "count " << ic.size() << std::endl << std::endl;
-
     debug5 << "Finished creating output " << std::endl;
 }
 

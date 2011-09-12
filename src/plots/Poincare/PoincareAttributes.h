@@ -218,7 +218,7 @@ public:
     void SetOverrideToroidalWinding(int overrideToroidalWinding_);
     void SetOverridePoloidalWinding(int overridePoloidalWinding_);
     void SetWindingPairConfidence(double windingPairConfidence_);
-    void SetRationalTemplateSeedParm(double rationalTemplateSeedParm_);
+    void SetRationalSurfaceFactor(double rationalSurfaceFactor_);
     void SetAdjustPlane(int adjustPlane_);
     void SetOverlaps(OverlapType overlaps_);
     void SetMeshType(ShowMeshType meshType_);
@@ -287,7 +287,7 @@ public:
     int                  GetOverrideToroidalWinding() const;
     int                  GetOverridePoloidalWinding() const;
     double               GetWindingPairConfidence() const;
-    double               GetRationalTemplateSeedParm() const;
+    double               GetRationalSurfaceFactor() const;
     int                  GetAdjustPlane() const;
     OverlapType          GetOverlaps() const;
     ShowMeshType         GetMeshType() const;
@@ -442,7 +442,7 @@ public:
         ID_overrideToroidalWinding,
         ID_overridePoloidalWinding,
         ID_windingPairConfidence,
-        ID_rationalTemplateSeedParm,
+        ID_rationalSurfaceFactor,
         ID_adjustPlane,
         ID_overlaps,
         ID_meshType,
@@ -509,7 +509,7 @@ private:
     int            overrideToroidalWinding;
     int            overridePoloidalWinding;
     double         windingPairConfidence;
-    double         rationalTemplateSeedParm;
+    double         rationalSurfaceFactor;
     int            adjustPlane;
     int            overlaps;
     int            meshType;

@@ -108,7 +108,7 @@ class avtPoincareFilter : public avtStreamlineFilter
       overridePoloidalWinding = value; }
 
     void SetWindingPairConfidence( double val ) { windingPairConfidence = val; }
-    void SetRationalTemplateSeedParm( double val ) { rationalTemplateSeedParm = val; }
+    void SetRationalSurfaceFactor( double val ) { rationalSurfaceFactor = val; }
 
     void SetAdjustPlane( int val ) { adjust_plane = val; }
 
@@ -210,7 +210,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     unsigned int overridePoloidalWinding;
 
     double windingPairConfidence;
-    double rationalTemplateSeedParm;
+    double rationalSurfaceFactor;
 
     unsigned int overlaps;
 

@@ -96,10 +96,10 @@
         1.000000
       </Field>
       <Field name="minPunctures" label="Minimum number of Punctures" type="int">
-        10
+        50
       </Field>
       <Field name="maxPunctures" label="Maximum number of Punctures" type="int">
-        100
+        500
       </Field>
       <Field name="puncturePlane" label="Puncture Plane" type="enum" subtype="PuncturePlaneType">
         Poloidal
@@ -178,9 +178,8 @@
       <Field name="windingPairConfidence" label="Winding Pair Confidence" type="double">
         0.900000
       </Field>
-      <Field name="rationalTemplateSeedParm" label="Rational Template
-                                                    Seed Parameter" type="double">
-        0.900000
+      <Field name="rationalSurfaceFactor" label="Rational surface factor" type="double">
+        0.100000
       </Field>
       <Field name="adjustPlane" label="Adjust plane" type="int">
         -1
