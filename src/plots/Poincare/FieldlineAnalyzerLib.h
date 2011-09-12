@@ -301,10 +301,12 @@ public:
                        unsigned int overridePoloidalWinding,
                        unsigned int maxToroidalWinding,
                        double windingPairConfidence,
+                       double rationalSurfaceFactor,
                        bool detectIslandCenters );
 
   void
   fieldlineProperties2( std::vector< Point > &ptList,
+                        double rationalSurfaceFactor,
                         FieldlineProperties &fi );
 
   void findIslandCenters( std::vector< Point > &puncturePts,

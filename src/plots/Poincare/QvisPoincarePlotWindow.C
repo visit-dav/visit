@@ -147,7 +147,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     // First tab
     // ----------------------------------------------------------------------
     firstTab = new QWidget(central);
-    propertyTabs->addTab(firstTab, tr("Streamlines"));
+    propertyTabs->addTab(firstTab, tr("Fieldlines"));
     
     QGridLayout *mainLayout = new QGridLayout(firstTab);
 
@@ -463,13 +463,13 @@ QvisPoincarePlotWindow::CreateWindowContents()
     analysisLayout->addWidget(windingPairConfidence, 3, 1);
 
 
-    rationalTemplateSeedParmLabel =
-      new QLabel(tr("Rational Template Seed Parameter"), secondTab);
-    analysisLayout->addWidget(rationalTemplateSeedParmLabel, 4, 0);
-    rationalTemplateSeedParm = new QLineEdit(secondTab);
-    connect(rationalTemplateSeedParm, SIGNAL(returnPressed()),
-            this, SLOT(rationalTemplateSeedParmProcessText()));
-    analysisLayout->addWidget(rationalTemplateSeedParm, 4, 1);
+    rationalSurfaceFactorLabel =
+      new QLabel(tr("Rational surface factor"), secondTab);
+    analysisLayout->addWidget(rationalSurfaceFactorLabel, 4, 0);
+    rationalSurfaceFactor = new QLineEdit(secondTab);
+    connect(rationalSurfaceFactor, SIGNAL(returnPressed()),
+            this, SLOT(rationalSurfaceFactorProcessText()));
+    analysisLayout->addWidget(rationalSurfaceFactor, 4, 1);
 
    // Create the O/X Point group box.
     QGroupBox *criticalPointGroup = new QGroupBox(secondTab);
@@ -810,7 +810,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     mainLayout = new QGridLayout(fourthTab);
 
     QGroupBox *algoGrp = new QGroupBox(fourthTab);
-    algoGrp->setTitle(tr("Parallel streamline options"));
+    algoGrp->setTitle(tr("Parallel fieldline options"));
     mainLayout->addWidget(algoGrp, 0, 0, 1, 4);
 
     // Algorithm group.
@@ -820,9 +820,9 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
     slAlgoLabel = new QLabel(tr("Parallelize across"), algoGrp);
     slAlgo = new QComboBox(algoGrp);
-    slAlgo->addItem(tr("Streamlines"));
+    slAlgo->addItem(tr("Fieldlines"));
     slAlgo->addItem(tr("Domains"));
-    slAlgo->addItem(tr("Streamlines and Domains"));
+    slAlgo->addItem(tr("Fieldlines and Domains"));
     connect(slAlgo, SIGNAL(activated(int)),
             this, SLOT(streamlineAlgorithmChanged(int)));
     algoGLayout->addWidget( slAlgoLabel, 1,0);
@@ -1118,8 +1118,8 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             windingPairConfidence->setText(DoubleToQString(atts->GetWindingPairConfidence()));
             break;
 
-          case PoincareAttributes::ID_rationalTemplateSeedParm:
-            rationalTemplateSeedParm->setText(DoubleToQString(atts->GetRationalTemplateSeedParm()));
+          case PoincareAttributes::ID_rationalSurfaceFactor:
+            rationalSurfaceFactor->setText(DoubleToQString(atts->GetRationalSurfaceFactor()));
             break;
           case PoincareAttributes::ID_adjustPlane:
             adjustPlane->blockSignals(true);
@@ -1523,17 +1523,17 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do rationalTemplateSeedParm
-    if(which_widget == PoincareAttributes::ID_rationalTemplateSeedParm || doAll)
+    // Do rationalSurfaceFactor
+    if(which_widget == PoincareAttributes::ID_rationalSurfaceFactor || doAll)
     {
         double val;
-        if(LineEditGetDouble(rationalTemplateSeedParm, val))
-            atts->SetRationalTemplateSeedParm(val);
+        if(LineEditGetDouble(rationalSurfaceFactor, val))
+            atts->SetRationalSurfaceFactor(val);
         else
         {
-            ResettingError(tr("rationalTemplateSeedParm"),
-                DoubleToQString(atts->GetRationalTemplateSeedParm()));
-            atts->SetRationalTemplateSeedParm(atts->GetRationalTemplateSeedParm());
+            ResettingError(tr("rationalSurfaceFactor"),
+                DoubleToQString(atts->GetRationalSurfaceFactor()));
+            atts->SetRationalSurfaceFactor(atts->GetRationalSurfaceFactor());
         }
     }
 
@@ -1622,7 +1622,7 @@ QvisPoincarePlotWindow::UpdateMeshTypeAttributes()
 
 
 // ****************************************************************************
-// Method: QvisStreamlinePlotWindow::UpdateFieldAttributes
+// Method: QvisPoincarePlotWindow::UpdateFieldAttributes
 //
 // Purpose: 
 //   Updates the widgets for the various field types.
@@ -1664,7 +1664,7 @@ QvisPoincarePlotWindow::UpdateFieldAttributes()
 
 
 // ****************************************************************************
-// Method: QvisStreamlinePlotWindow::UpdateIntegrationAttributes
+// Method: QvisPoincarePlotWindow::UpdateIntegrationAttributes
 //
 // Purpose: 
 //   Updates the widgets for the various integration types.
@@ -2097,9 +2097,9 @@ QvisPoincarePlotWindow::windingPairConfidenceProcessText()
 
 
 void
-QvisPoincarePlotWindow::rationalTemplateSeedParmProcessText()
+QvisPoincarePlotWindow::rationalSurfaceFactorProcessText()
 {
-    GetCurrentValues(PoincareAttributes::ID_rationalTemplateSeedParm);
+    GetCurrentValues(PoincareAttributes::ID_rationalSurfaceFactor);
     Apply();
 }
 

@@ -2274,6 +2274,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
                                    unsigned int overridePoloidalWinding,
                                    unsigned int maxToroidalWinding,
                                    double windingPairConfidence,
+                                   double rationalSurfaceFactor,
                                    bool detectIslandCenters )
 {
   std::vector< Point > poloidal_puncture_pts;
@@ -2704,7 +2705,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       if( rationalCheck( poloidal_puncture_pts,
                          toroidalWinding / GCD( toroidalWinding,
                                                 poloidalWinding ),
-                         nnodes, delta*0.1 ) ) 
+                         nnodes, delta*rationalSurfaceFactor ) ) 
       {
         type = FieldlineProperties::RATIONAL;
         islands = 0;
@@ -2713,7 +2714,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         
         if( verboseFlag )
           std::cerr << "Appears to be a rational surface "
-                    << delta*0.1 << std::endl;
+                    << delta*rationalSurfaceFactor << std::endl;
       }
       else
       {
@@ -3071,13 +3072,13 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       // surface. Thus divide by the GCD.
       if( rationalCheck( poloidal_puncture_pts,
                          toroidalWinding / GCD(toroidalWinding, poloidalWinding ),
-                         nnodes, delta*0.1 ) ) 
+                         nnodes, delta*rationalSurfaceFactor ) ) 
       {
         type = FieldlineProperties::O_POINT;
         analysisState = FieldlineProperties::COMPLETED;
         
         if( verboseFlag )
-          std::cerr << "Appears to be an O point " << delta*0.1 << std::endl;
+          std::cerr << "Appears to be an O point " << delta*rationalSurfaceFactor << std::endl;
       }
     }
 
@@ -3185,7 +3186,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   // probably on a rational surface.
   else if( rationalCheck( poloidal_puncture_pts,
                           toroidalWinding / GCD(toroidalWinding, poloidalWinding ),
-                          nnodes, delta*0.1 ) ) 
+                          nnodes, delta*rationalSurfaceFactor ) ) 
   {
     type = FieldlineProperties::RATIONAL;
     islands = 0;
@@ -3194,7 +3195,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     analysisState = FieldlineProperties::COMPLETED;
 
     if( verboseFlag )
-      std::cerr << "Appears to be a rational surface " << delta*0.1 << std::endl;
+      std::cerr << "Appears to be a rational surface "
+                << delta*rationalSurfaceFactor << std::endl;
 
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
   }
@@ -3489,6 +3491,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
 void
 FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
+                                    double rationalSurfaceFactor,
                                     FieldlineProperties &fi )
 {
  std::vector< Point > poloidal_puncture_pts;
@@ -3497,7 +3500,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
  std::vector< double > rotationalSums;
  std::vector< unsigned int > poloidalWindingCounts;
 
-  float delta = 0.0;
+ float delta = 0.0;
 
   getPunctures( ptList, Vector(0,1,0), poloidal_puncture_pts );
 
@@ -3803,13 +3806,14 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
       // probably on a rational surface.
       if( rationalCheck( poloidal_puncture_pts,
                          toroidalWinding,
-                         nnodes, delta*0.1 ) ) 
+                         nnodes, delta*rationalSurfaceFactor ) ) 
       {
         type = FieldlineProperties::O_POINT;
         analysisState = FieldlineProperties::COMPLETED;
         
         if( verboseFlag )
-          std::cerr << "Appears to be an O point " << delta*0.1 << std::endl;
+          std::cerr << "Appears to be an O point "
+                    << delta*rationalSurfaceFactor << std::endl;
       }
     }
   }
@@ -3819,7 +3823,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
   // probably on a rational surface.
   else if( rationalCheck( poloidal_puncture_pts,
                           toroidalWinding,
-                          nnodes, delta*0.1 ) ) 
+                          nnodes, delta*rationalSurfaceFactor ) ) 
   {
     type = FieldlineProperties::RATIONAL;
     islands = 0;
@@ -3828,7 +3832,8 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
     analysisState = FieldlineProperties::COMPLETED;
 
     if( verboseFlag )
-      std::cerr << "Appears to be a rational surface " << delta*0.1 << std::endl;
+      std::cerr << "Appears to be a rational surface "
+                << delta*rationalSurfaceFactor << std::endl;
   }
 
   // At this point assume the surface is irrational.

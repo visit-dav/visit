@@ -138,8 +138,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
         opacityType = OPACITY_EXPLICIT;
         opacity = 1;
-        minPunctures = 10;
-        maxPunctures = 100;
+        minPunctures = 50;
+        maxPunctures = 500;
         puncturePlane = PUNCTUREPLANETYPE_POLOIDAL;
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         pointSource = new double[3];
@@ -175,7 +175,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overrideToroidalWinding = 0;
         overridePoloidalWinding = 0;
         windingPairConfidence = 0.9;
-        rationalTemplateSeedParm = 0.9;
+        rationalSurfaceFactor = 0.1;
         adjustPlane = -1;
         overlaps = OVERLAPTYPE_REMOVE;
         meshType = SHOWMESHTYPE_CURVES;
@@ -219,8 +219,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
         opacityType = OPACITY_EXPLICIT;
         opacity = 1;
-        minPunctures = 10;
-        maxPunctures = 100;
+        minPunctures = 50;
+        maxPunctures = 500;
         puncturePlane = PUNCTUREPLANETYPE_POLOIDAL;
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         pointSource = new double[3];
@@ -256,7 +256,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overrideToroidalWinding = 0;
         overridePoloidalWinding = 0;
         windingPairConfidence = 0.9;
-        rationalTemplateSeedParm = 0.9;
+        rationalSurfaceFactor = 0.1;
         adjustPlane = -1;
         overlaps = OVERLAPTYPE_REMOVE;
         meshType = SHOWMESHTYPE_CURVES;
@@ -343,7 +343,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overrideToroidalWinding = obj.overrideToroidalWinding;
         overridePoloidalWinding = obj.overridePoloidalWinding;
         windingPairConfidence = obj.windingPairConfidence;
-        rationalTemplateSeedParm = obj.rationalTemplateSeedParm;
+        rationalSurfaceFactor = obj.rationalSurfaceFactor;
         adjustPlane = obj.adjustPlane;
         overlaps = obj.overlaps;
         meshType = obj.meshType;
@@ -445,7 +445,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (overrideToroidalWinding == obj.overrideToroidalWinding) &&
                 (overridePoloidalWinding == obj.overridePoloidalWinding) &&
                 (windingPairConfidence == obj.windingPairConfidence) &&
-                (rationalTemplateSeedParm == obj.rationalTemplateSeedParm) &&
+                (rationalSurfaceFactor == obj.rationalSurfaceFactor) &&
                 (adjustPlane == obj.adjustPlane) &&
                 (overlaps == obj.overlaps) &&
                 (meshType == obj.meshType) &&
@@ -689,9 +689,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(26);
     }
 
-    public void SetRationalTemplateSeedParm(double rationalTemplateSeedParm_)
+    public void SetRationalSurfaceFactor(double rationalSurfaceFactor_)
     {
-        rationalTemplateSeedParm = rationalTemplateSeedParm_;
+        rationalSurfaceFactor = rationalSurfaceFactor_;
         Select(27);
     }
 
@@ -933,7 +933,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public int            GetOverrideToroidalWinding() { return overrideToroidalWinding; }
     public int            GetOverridePoloidalWinding() { return overridePoloidalWinding; }
     public double         GetWindingPairConfidence() { return windingPairConfidence; }
-    public double         GetRationalTemplateSeedParm() { return rationalTemplateSeedParm; }
+    public double         GetRationalSurfaceFactor() { return rationalSurfaceFactor; }
     public int            GetAdjustPlane() { return adjustPlane; }
     public int            GetOverlaps() { return overlaps; }
     public int            GetMeshType() { return meshType; }
@@ -1028,7 +1028,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(26, buf))
             buf.WriteDouble(windingPairConfidence);
         if(WriteSelect(27, buf))
-            buf.WriteDouble(rationalTemplateSeedParm);
+            buf.WriteDouble(rationalSurfaceFactor);
         if(WriteSelect(28, buf))
             buf.WriteInt(adjustPlane);
         if(WriteSelect(29, buf))
@@ -1187,7 +1187,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetWindingPairConfidence(buf.ReadDouble());
             break;
         case 27:
-            SetRationalTemplateSeedParm(buf.ReadDouble());
+            SetRationalSurfaceFactor(buf.ReadDouble());
             break;
         case 28:
             SetAdjustPlane(buf.ReadInt());
@@ -1384,7 +1384,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + intToString("overrideToroidalWinding", overrideToroidalWinding, indent) + "\n";
         str = str + intToString("overridePoloidalWinding", overridePoloidalWinding, indent) + "\n";
         str = str + doubleToString("windingPairConfidence", windingPairConfidence, indent) + "\n";
-        str = str + doubleToString("rationalTemplateSeedParm", rationalTemplateSeedParm, indent) + "\n";
+        str = str + doubleToString("rationalSurfaceFactor", rationalSurfaceFactor, indent) + "\n";
         str = str + intToString("adjustPlane", adjustPlane, indent) + "\n";
         str = str + indent + "overlaps = ";
         if(overlaps == OVERLAPTYPE_RAW)
@@ -1518,7 +1518,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private int            overrideToroidalWinding;
     private int            overridePoloidalWinding;
     private double         windingPairConfidence;
-    private double         rationalTemplateSeedParm;
+    private double         rationalSurfaceFactor;
     private int            adjustPlane;
     private int            overlaps;
     private int            meshType;
