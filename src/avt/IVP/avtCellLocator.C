@@ -63,8 +63,32 @@
 //
 //----------------------------------------------------------------------------
 
-avtCellLocator::avtCellLocator( vtkDataSet* ds ) : dataSet(ds)
+avtCellLocator::avtCellLocator( vtkDataSet* ds ) : dataSet(NULL)
 {
+    SetDataSet(ds);
+}
+
+// ****************************************************************************
+//  Method: avtCellLocator::SetDataSet
+//
+//  Purpose:
+//      Set the data set for this avtCellLocator
+//
+//  Programmer: David Camp
+//  Creation:   April 21, 2011
+//
+//  Modifications:
+//
+//  David Camp, Tue Sep 13 08:16:35 PDT 2011
+//  Needed to reset the pointer to the dataset
+//
+// ****************************************************************************
+
+void
+avtCellLocator::SetDataSet(vtkDataSet *ds)
+{
+    ReleaseDataSet();
+    dataSet = ds;
     dataSet->Register( NULL );
 
     cellIdxPtr = NULL;
@@ -81,9 +105,9 @@ avtCellLocator::avtCellLocator( vtkDataSet* ds ) : dataSet(ds)
     else if( vtkStructuredGrid* sg = vtkStructuredGrid::SafeDownCast( dataSet ) )
     {
         strDimPtr = sg->GetDimensions();
-        if (strDimPtr[0] > 1 && strDimPtr[0] > 1 && strDimPtr[2] == 1)
+        if (strDimPtr[0] > 1 && strDimPtr[1] > 1 && strDimPtr[2] == 1)
             normal2D = true;
-        else if (strDimPtr[0] > 1 && strDimPtr[0] > 1 && strDimPtr[2] > 1)
+        else if (strDimPtr[0] > 1 && strDimPtr[1] > 1 && strDimPtr[2] > 1)
             normal3D = true;
     }
 
@@ -117,25 +141,6 @@ avtCellLocator::~avtCellLocator()
 }
 
 // ****************************************************************************
-//  Method: avtCellLocator::SetDataSet
-//
-//  Purpose:
-//      Set the data set for this avtCellLocator
-//
-//  Programmer: David Camp
-//  Creation:   April 21, 2011
-//
-// ****************************************************************************
-
-void
-avtCellLocator::SetDataSet(vtkDataSet *ds)
-{
-    ReleaseDataSet();
-    ds->Register(NULL);
-    dataSet = ds;
-}
-
-// ****************************************************************************
 //  Method: avtCellLocator::ReleaseDataSet
 //
 //  Purpose:
@@ -154,9 +159,17 @@ avtCellLocator::ReleaseDataSet()
     {
         dataSet->Delete();
         dataSet = NULL;
+
+        cellIdxPtr = NULL;
+        cellLocPtr = NULL;
+        strDimPtr  = NULL;
+        normal2D = false;
+        normal3D = false;
+
+        fCoordPtr = NULL;
+        dCoordPtr = NULL;
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtCellLocator::Destruct
@@ -176,7 +189,6 @@ avtCellLocator::Destruct(void *p)
     avtCellLocator *cl = (avtCellLocator *) p;
     delete cl;
 }
-
 
 //----------------------------------------------------------------------------
 // Modifications:

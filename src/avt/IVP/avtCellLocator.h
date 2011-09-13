@@ -72,6 +72,10 @@ typedef std::vector<avtInterpolationWeight> avtInterpolationWeights;
 //    Hank Childs, Sun Nov 28 11:34:04 PST 2010
 //    Add support for caching cell locators via void_ref_ptr.
 //
+//    David Camp, Tue Sep 13 08:16:35 PDT 2011
+//    Changed the SetDataSet function to virtual. You may need to reset
+//    pointer to the new dataset.
+//
 // ************************************************************************* //
 
 class IVP_API avtCellLocator
@@ -81,7 +85,7 @@ class IVP_API avtCellLocator
     virtual        ~avtCellLocator();
 
     vtkDataSet     *GetDataSet() { return dataSet; }
-    void            SetDataSet(vtkDataSet *ds);
+    virtual void    SetDataSet(vtkDataSet *ds);
     void            ReleaseDataSet();
 
     virtual vtkIdType FindCell( const double pos[3], 
