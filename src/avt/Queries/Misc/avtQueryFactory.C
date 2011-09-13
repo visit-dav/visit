@@ -318,6 +318,9 @@ avtQueryFactory::Instance()
 //    Call SetInputParams after query is created, precludes need to set
 //    individual query options here.
 //
+//    Kathleen Biagas, Mon Sep 12 18:27:26 PDT 2011
+//    Clean up query memory if SetInputParams fails.
+//
 // ****************************************************************************
 
 avtDataObjectQuery *
@@ -675,6 +678,8 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
             msg += ")  Developers:  if you are developing this query, make ";
             msg += "sure the map node containing the input parameter has been ";
             msg += "set up correctly in the gui and in the cli.";
+            delete query;
+            query = NULL;
             EXCEPTION1(VisItException, msg.c_str());
         }
         ENDTRY
