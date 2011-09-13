@@ -1,93 +1,95 @@
-<!DOCTYPE TS><TS>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
 <context>
     <name>@default</name>
     <message>
         <source>Launching engine on %1</source>
-        <translation>Looncheeng ingeene-a oon %1</translation>
+        <translation type="obsolete">Looncheeng ingeene-a oon %1</translation>
     </message>
     <message>
         <source>VisIt could not launch a compute engine on host &quot;%1&quot; because that host does not exist.</source>
-        <translation>VisIt cuoold nut loonch a cumpoote-a ingeene-a oon hust %1 becoose-a thet hust dues nut ixeest.</translation>
+        <translation type="obsolete">VisIt cuoold nut loonch a cumpoote-a ingeene-a oon hust %1 becoose-a thet hust dues nut ixeest.</translation>
     </message>
     <message>
         <source>VisIt cannot use the compute engine on host &quot;%1&quot; because the engine has an incompatible  version number.</source>
-        <translation>VisIt cunnut use-a zee cumpoote-a ingeene-a oon hust %1 becoose-a zee ingeene-a hes un incumpeteeble-a  ferseeun noomber.</translation>
+        <translation type="obsolete">VisIt cunnut use-a zee cumpoote-a ingeene-a oon hust %1 becoose-a zee ingeene-a hes un incumpeteeble-a  ferseeun noomber.</translation>
     </message>
     <message>
         <source>VisIt cannot use the compute engine on host &quot;%1&quot;because the compute engine did not provide the proper credentials.</source>
-        <translation>VisIt cunnut use-a zee cumpoote-a ingeene-a oon hust %1becoose-a zee cumpoote-a ingeene-a deed nut prufeede-a zee pruper credenteeels.</translation>
+        <translation type="obsolete">VisIt cunnut use-a zee cumpoote-a ingeene-a oon hust %1becoose-a zee cumpoote-a ingeene-a deed nut prufeede-a zee pruper credenteeels.</translation>
     </message>
     <message>
         <source>VisIt could not launch the compute engine on host &quot;%1&quot;.</source>
-        <translation>VisIt cuoold nut loonch zee cumpoote-a ingeene-a oon hust %1.</translation>
+        <translation type="obsolete">VisIt cuoold nut loonch zee cumpoote-a ingeene-a oon hust %1.</translation>
     </message>
     <message>
         <source>The launch of the compute engine on host &quot;%1&quot; has been cancelled.</source>
-        <translation>Zee loonch ooff zee cumpoote-a ingeene-a oon hust %1 hes beee cuncelled.</translation>
+        <translation type="obsolete">Zee loonch ooff zee cumpoote-a ingeene-a oon hust %1 hes beee cuncelled.</translation>
     </message>
     <message>
         <source>Connecting to simulation at %1:%2</source>
-        <translation>Cunnecteeng tu seemooleshun et %1:%2</translation>
+        <translation type="obsolete">Cunnecteeng tu seemooleshun et %1:%2</translation>
     </message>
     <message>
         <source>VisIt could not connect to the simulation on host &quot;%1&quot; because that host does not exist.</source>
-        <translation>VisIt cuoold nut cunnect tu zee seemooleshun oon hust %1 becoose-a thet hust dues nut ixeest.</translation>
+        <translation type="obsolete">VisIt cuoold nut cunnect tu zee seemooleshun oon hust %1 becoose-a thet hust dues nut ixeest.</translation>
     </message>
     <message>
         <source>VisIt cannot use the simulation on host &quot;%1&quot; because the simulation has an incompatible  version number.</source>
-        <translation>VisIt cunnut use-a zee seemooleshun oon hust %1 becoose-a zee seemooleshun hes un incumpeteeble-a  ferseeun noomber.</translation>
+        <translation type="obsolete">VisIt cunnut use-a zee seemooleshun oon hust %1 becoose-a zee seemooleshun hes un incumpeteeble-a  ferseeun noomber.</translation>
     </message>
     <message>
         <source>VisIt cannot use the simulation on host &quot;%1&quot;because the simulation did not provide the proper credentials.</source>
-        <translation>VisIt cunnut use-a zee seemooleshun oon hust %1becoose-a zee seemooleshun deed nut prufeede-a zee pruper credenteeels.</translation>
+        <translation type="obsolete">VisIt cunnut use-a zee seemooleshun oon hust %1becoose-a zee seemooleshun deed nut prufeede-a zee pruper credenteeels.</translation>
     </message>
     <message>
         <source>VisIt could not connect to the simulation on host &quot;%1&quot;.</source>
-        <translation>VisIt cuoold nut cunnect tu zee seemooleshun oon hust %1.</translation>
+        <translation type="obsolete">VisIt cuoold nut cunnect tu zee seemooleshun oon hust %1.</translation>
     </message>
     <message>
         <source>The connection to the simulation on host &quot;%1&quot; has been cancelled.</source>
-        <translation>Zee cunnecshun tu zee seemooleshun oon hust %1 hes beee cuncelled.</translation>
+        <translation type="obsolete">Zee cunnecshun tu zee seemooleshun oon hust %1 hes beee cuncelled.</translation>
     </message>
     <message>
         <source>Closed the compute engine on host %1.</source>
-        <translation>Clused zee cumpoote-a ingeene-a oon hust %1.</translation>
+        <translation type="obsolete">Clused zee cumpoote-a ingeene-a oon hust %1.</translation>
     </message>
     <message>
         <source>Cannot close the compute engine on host %1 because there is no compute engine running on that host.</source>
-        <translation>Cunnut cluse-a zee cumpoote-a ingeene-a oon hust %1 becoose-a zeere-a is nu cumpoote-a ingeene-a roonneeng oon thet hust.</translation>
+        <translation type="obsolete">Cunnut cluse-a zee cumpoote-a ingeene-a oon hust %1 becoose-a zeere-a is nu cumpoote-a ingeene-a roonneeng oon thet hust.</translation>
     </message>
     <message>
         <source>Interrupting the compute engine on host %1.</source>
-        <translation>Interroopteeng zee cumpoote-a ingeene-a oon hust %1.</translation>
+        <translation type="obsolete">Interroopteeng zee cumpoote-a ingeene-a oon hust %1.</translation>
     </message>
     <message>
         <source>Cannot interrupt the compute engine on host %1 because there is no compute engine running on that host.</source>
-        <translation>Cunnut interroopt zee cumpoote-a ingeene-a oon hust %1 becoose-a zeere-a is nu cumpoote-a ingeene-a roonneeng oon thet hust.</translation>
+        <translation type="obsolete">Cunnut interroopt zee cumpoote-a ingeene-a oon hust %1 becoose-a zeere-a is nu cumpoote-a ingeene-a roonneeng oon thet hust.</translation>
     </message>
     <message>
         <source>VisIt is not connected to the simulation &apos;%1&apos; on host %2</source>
-        <translation>VisIt is nut cunnected tu zee seemooleshun %1 oon hust %2</translation>
+        <translation type="obsolete">VisIt is nut cunnected tu zee seemooleshun %1 oon hust %2</translation>
     </message>
     <message>
         <source>VisIt could not find a compute engine to use for the plot on host %1. VisIt will try to launch a compute engine on that host.</source>
-        <translation>VisIt cuoold nut feend a cumpoote-a ingeene-a tu use-a fur zee plut oon hust %1. VisIt veell try tu loonch a cumpoote-a ingeene-a oon thet hust.</translation>
+        <translation type="obsolete">VisIt cuoold nut feend a cumpoote-a ingeene-a tu use-a fur zee plut oon hust %1. VisIt veell try tu loonch a cumpoote-a ingeene-a oon thet hust.</translation>
     </message>
     <message>
         <source>VisIt has been disconnected from the simulation &apos;%1&apos; on host %2</source>
-        <translation>VisIt hes beee deescunnected frum zee seemooleshun %1 oon hust %2</translation>
+        <translation type="obsolete">VisIt hes beee deescunnected frum zee seemooleshun %1 oon hust %2</translation>
     </message>
     <message>
         <source>The compute engine running on %1 has exited abnormally.</source>
-        <translation>Zee cumpoote-a ingeene-a roonneeng oon %1 hes ixeeted ebnurmelly.</translation>
+        <translation type="obsolete">Zee cumpoote-a ingeene-a roonneeng oon %1 hes ixeeted ebnurmelly.</translation>
     </message>
     <message>
         <source>The compute engine running on host %1 issued the following warning: %2</source>
-        <translation>Zee cumpoote-a ingeene-a roonneeng oon hust %1 issooed zee fullooeeng verneeng: %2</translation>
+        <translation type="obsolete">Zee cumpoote-a ingeene-a roonneeng oon hust %1 issooed zee fullooeeng verneeng: %2</translation>
     </message>
     <message>
         <source>VisIt can only export data to a simulation if the data being exported originated in a simulation.</source>
-        <translation>VisIt cun oonly ixpurt deta tu a seemooleshun iff zee deta beeeng ixpurted ooreegineted in a seemooleshun.</translation>
+        <translation type="obsolete">VisIt cun oonly ixpurt deta tu a seemooleshun iff zee deta beeeng ixpurted ooreegineted in a seemooleshun.</translation>
     </message>
     <message>
         <source>Add operator</source>
@@ -9756,11 +9758,19 @@
     <name>AddWindowAction</name>
     <message>
         <source>Add new window</source>
-        <translation type="unfinished">Edd noo veendoo</translation>
+        <translation type="obsolete">Edd noo veendoo</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished">Edd</translation>
+        <translation type="obsolete">Edd</translation>
+    </message>
+    <message>
+        <source>Create a new viewer window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Noo</translation>
     </message>
 </context>
 <context>
@@ -9794,6 +9804,14 @@
     <message>
         <source>Stop animation</source>
         <translation type="unfinished">Stup uneemeshun</translation>
+    </message>
+</context>
+<context>
+    <name>ChangeActivePlotsVarAction</name>
+    <message>
+        <source>VisIt was unable to change the active variable because: %1
+</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9844,18 +9862,26 @@
     <name>ClearWindowAction</name>
     <message>
         <source>Clear plots</source>
-        <translation type="unfinished">Cleer pluts</translation>
+        <translation type="obsolete">Cleer pluts</translation>
+    </message>
+    <message>
+        <source>Clear all plots from this window</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>CloneWindowAction</name>
     <message>
         <source>Clone window</source>
-        <translation type="unfinished">Clune-a veendoo</translation>
+        <translation type="obsolete">Clune-a veendoo</translation>
     </message>
     <message>
         <source>Clone</source>
         <translation type="unfinished">Clune-a</translation>
+    </message>
+    <message>
+        <source>Clone this window</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9876,11 +9902,15 @@
     <name>DeleteWindowAction</name>
     <message>
         <source>Delete window</source>
-        <translation type="unfinished">Delete-a veendoo</translation>
+        <translation type="obsolete">Delete-a veendoo</translation>
     </message>
     <message>
         <source>Delete</source>
         <translation type="unfinished">Delete-a</translation>
+    </message>
+    <message>
+        <source>Delete this window</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9986,6 +10016,36 @@
     <message>
         <source>Swap background and foreground colors</source>
         <translation type="unfinished">Svep beckgruoond und furegruoond culurs</translation>
+    </message>
+</context>
+<context>
+    <name>KeyframeDataModel</name>
+    <message>
+        <source>Current frame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation type="unfinished">Feeoo</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation type="unfinished">Stete-a</translation>
+    </message>
+    <message>
+        <source>Attributes</source>
+        <translation type="unfinished">Ettreebootes</translation>
+    </message>
+    <message>
+        <source>Keyframes</source>
+        <translation type="unfinished">Keyffremes</translation>
+    </message>
+</context>
+<context>
+    <name>MenuQuitAction</name>
+    <message>
+        <source>Quit</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10171,6 +10231,20 @@
     </message>
 </context>
 <context>
+    <name>OpenCLIClientAction</name>
+    <message>
+        <source>Open CLI</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>OpenGUIClientAction</name>
+    <message>
+        <source>Open GUI</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>OperatorNames</name>
     <message>
         <source>Boundary</source>
@@ -10344,6 +10418,74 @@
         <source>Zone Dump</source>
         <translation type="unfinished">Zune-a Doomp</translation>
     </message>
+    <message>
+        <source>AMR Dual Grid and Stitch Cells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ChannelComm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ConnectedComponents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DataBinning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DeformSphereGlyph</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delaunay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dual Mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Extrude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FFT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Five Fold Tet Subdvision</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flux</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LineSampler</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MultiresControl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PersistentParticles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SurfaceNormal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Triangulate Regular Points</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PlotNames</name>
@@ -10369,7 +10511,7 @@
     </message>
     <message>
         <source>Kerbel</source>
-        <translation type="unfinished">Kerbel</translation>
+        <translation type="obsolete">Kerbel</translation>
     </message>
     <message>
         <source>Label</source>
@@ -10431,17 +10573,103 @@
         <source>Volume</source>
         <translation type="unfinished">Fuloome-a</translation>
     </message>
+    <message>
+        <source>MultiCurve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poincare</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well Bore</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
         <source>hidden</source>
-        <translation type="unfinished">heeddee</translation>
+        <translation type="obsolete">heeddee</translation>
     </message>
     <message>
         <source>QvisPlotListBoxItem</source>
         <comment>hidden</comment>
-        <translation type="unfinished">QfeesPlutListBuxItem</translation>
+        <translation type="obsolete">QfeesPlutListBuxItem</translation>
+    </message>
+    <message>
+        <source>Reopening </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> on </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opening </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not open the file %1.
+
+The metadata server returned the following message:
+
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value(s) for &apos;%1&apos; were invalid. Resetting to the last good value(s) of %2.</source>
+        <comment>ResettingError</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use selection [%1]</source>
+        <comment>QvisPlotListBoxItem</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>hidden</source>
+        <comment>QvisPlotListBoxItem</comment>
+        <translation type="unfinished">heeddee</translation>
+    </message>
+    <message>
+        <source>Create selection [%1]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt has encountered the following error: %1.
+VisIt will attempt to continue processing, but it may behave unreliably.  Please save this error message and give it to a VisIt developer.  In addition, you may want to save your session and re-start.  Of course, this session may still cause VisIt to malfunction.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QPlaneGroup</name>
+    <message>
+        <source>Origin</source>
+        <translation type="unfinished">Ooreegin</translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation type="unfinished">Nurmel</translation>
+    </message>
+</context>
+<context>
+    <name>QvisAMRStitchCellWindow</name>
+    <message>
+        <source>Create cells of type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dual grid and stitch cells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dual grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stitch cells</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10477,6 +10705,10 @@
     <message>
         <source>faster</source>
         <translation type="unfinished">fester</translation>
+    </message>
+    <message>
+        <source>Animation increment</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10752,6 +10984,38 @@
         <source>No annotation object was created.</source>
         <translation type="unfinished">Nu unnuteshun oobject ves creeted.</translation>
     </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">Teeme-a</translation>
+    </message>
+    <message>
+        <source>Time scale factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set bounding box location manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array</source>
+        <translation type="unfinished">Errey</translation>
+    </message>
+    <message>
+        <source>General Array</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Axes</source>
+        <translation type="unfinished">Exes</translation>
+    </message>
+    <message>
+        <source>Tick marks visible</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisAppearanceWindow</name>
@@ -10786,6 +11050,10 @@
     <message>
         <source>The background color and foreground color will not be changed because the selected colors are too similar and using them would make it too difficult to use VisIt.</source>
         <translation type="unfinished">Zee beckgruoond culur und furegruoond culur veell nut be-a chunged becoose-a zee selected culurs ere-a tuu seemiler und useeng zeem vuoold meke-a it tuu deefffficoolt tu use-a VisIt.</translation>
+    </message>
+    <message>
+        <source>Use default system appearance</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10837,6 +11105,57 @@
     <message>
         <source>An invalid value was provided for </source>
         <translation type="unfinished">Un infeleed felooe-a ves prufeeded fur </translation>
+    </message>
+</context>
+<context>
+    <name>QvisBaseVariableButton</name>
+    <message>
+        <source>Scalars</source>
+        <translation type="unfinished">Scelers</translation>
+    </message>
+    <message>
+        <source>Vectors</source>
+        <translation type="unfinished">Fecturs</translation>
+    </message>
+    <message>
+        <source>Meshes</source>
+        <translation type="unfinished">Meshes</translation>
+    </message>
+    <message>
+        <source>Materials</source>
+        <translation type="unfinished">Metereeels</translation>
+    </message>
+    <message>
+        <source>Subsets</source>
+        <translation type="unfinished">Soobsets</translation>
+    </message>
+    <message>
+        <source>Species</source>
+        <translation type="unfinished">Speceees</translation>
+    </message>
+    <message>
+        <source>Curves</source>
+        <translation type="unfinished">Coorfes</translation>
+    </message>
+    <message>
+        <source>Tensors</source>
+        <translation type="unfinished">Tensurs</translation>
+    </message>
+    <message>
+        <source>Symmetric Tensors</source>
+        <translation type="unfinished">Symmetreec Tensurs</translation>
+    </message>
+    <message>
+        <source>Labels</source>
+        <translation type="unfinished">Lebels</translation>
+    </message>
+    <message>
+        <source>Arrays</source>
+        <translation type="unfinished">Erreys</translation>
+    </message>
+    <message>
+        <source>Create new expression ...</source>
+        <translation type="unfinished">Creete-a noo ixpresseeun ...</translation>
     </message>
 </context>
 <context>
@@ -10902,7 +11221,7 @@
     </message>
     <message>
         <source>Geometry smoothing</source>
-        <translation type="unfinished">Geumetry smuutheeng</translation>
+        <translation type="obsolete">Geumetry smuutheeng</translation>
     </message>
     <message>
         <source>None</source>
@@ -10915,6 +11234,26 @@
     <message>
         <source>High</source>
         <translation type="unfinished">Heegh</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10957,27 +11296,322 @@
     </message>
     <message>
         <source>The value of minx was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff meenx ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff meenx ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of maxx was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff mexx ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff mexx ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of miny was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff meeny ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff meeny ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of maxy was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff mexy ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff mexy ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of minz was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff meenz ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff meenz ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of maxz was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff mexz ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff mexz ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisCMFEWizard</name>
+    <message>
+        <source>Data-Level Comparison Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target Database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data-Level Comparisons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cross-mesh field evaluations (CMFEs) take a field from a donor mesh and place that field on a target mesh.  To begin select the type of evaluation to setup:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Between different time slices on the same mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Between meshes in a single database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Between meshes in two separate databases</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor &amp; Target Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Which mesh should be used as the evaluation target? What is the desired donor field?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target Mesh:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor Database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor Field:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specify Donor Time Slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Which time slice do you want to extract data from?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Absolute Versus Relative Time&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>I want to specify an absolute time.
+The time slice I specify should not change as I change the time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>I want to specify a relative time.
+The time slice I want will change as I change the time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Time Type and Value&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation cycle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Time index is the most robust and works in all circumstances)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Examples&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>#1: &quot;Simulation time&quot; with &quot;10.5&quot; and absolute time will always return the data from simulation time 10.5.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>#2: &quot;Time index&quot; with &quot;-1&quot; and relative time will always return the data from the time slice immediately preceding the current one.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specify Evaluation Scheme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you want to use indexing or interpolation?  How will you handle regions of non-overlap?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Evaluation Scheme&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connectivity-based CMFE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value at index &apos;i&apos; of the target is assigned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>the value of index &apos;i&apos; from the donor.  This is efficient,</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>but requires that the meshes are congruent.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position-based CMFE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value at index &apos;i&apos; from the target is evaluated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>by first determining its location and then determining the</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>value at that location from the donor mesh.  This is less</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>efficient, but is robust and works on non-congruent meshes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Handling For Non-Overlapping Regions&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use a constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use a variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Setting Up The Expression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>How do you want to use your new CMFE expression?  What is its name?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name of Expression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;What do you want to do with the donor field?&lt;u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simply place it on the target mesh (you can then use this field in the expression editor to do more complex things)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Difference with </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute value of difference</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor field minus variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable minus donor field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;Select&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Target Database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Donor Database</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisCMap2Widget</name>
+    <message>
+        <source>Widget list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation type="unfinished">Treeungle-a</translation>
+    </message>
+    <message>
+        <source>Rectangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ellipsoid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Paraboloid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">Delete-a</translation>
+    </message>
+    <message>
+        <source>Widget attributes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Neme-a</translation>
+    </message>
+    <message>
+        <source>Size/Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">Culur</translation>
+    </message>
+    <message>
+        <source>tri</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ellipse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>paraboloid</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisChannelCommWindow</name>
+    <message>
+        <source>Number in X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number in Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>velocity</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11040,31 +11674,55 @@
     </message>
     <message>
         <source>Plane %1</source>
-        <translation type="unfinished">Plune-a %1</translation>
+        <translation type="obsolete">Plune-a %1</translation>
     </message>
     <message>
         <source>Origin</source>
-        <translation type="unfinished">Ooreegin</translation>
+        <translation type="obsolete">Ooreegin</translation>
     </message>
     <message>
         <source>Normal</source>
-        <translation type="unfinished">Nurmel</translation>
+        <translation type="obsolete">Nurmel</translation>
     </message>
     <message>
         <source>The origin vector was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee ooreegin fectur ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee ooreegin fectur ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The normal vector was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee nurmel fectur ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee nurmel fectur ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The center was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee center ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee center ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The radius was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee redeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee redeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+    </message>
+    <message>
+        <source>Plane 1 Origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane 2 Origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane 3 Origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane 1 Normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane 2 Normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane 3 Normal</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11087,6 +11745,13 @@
     <message>
         <source>More colors ...</source>
         <translation type="unfinished">Mure-a culurs ...</translation>
+    </message>
+</context>
+<context>
+    <name>QvisColorTableWidget</name>
+    <message>
+        <source>Invert</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11167,6 +11832,14 @@
         <source> is already in the color table list. You must provide a unique name for the new color table before it can be added.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Show index hints</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alpha</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisCommandWindow</name>
@@ -11236,11 +11909,11 @@
     </message>
     <message>
         <source>Please enter the name of the Python function to be defined for the macro.</source>
-        <translation type="unfinished">Pleese-a inter zee neme-a ooff zee Pythun fooncshun tu be-a deffeened fur zee mecru.</translation>
+        <translation type="obsolete">Pleese-a inter zee neme-a ooff zee Pythun fooncshun tu be-a deffeened fur zee mecru.</translation>
     </message>
     <message>
         <source>Function names may not contain spaces. Please try to create the macro again using a valid function name.</source>
-        <translation type="unfinished">Fooncshun nemes mey nut cunteeen speces. Pleese-a try tu creete-a zee mecru egeeen useeng a feleed fooncshun neme-a.</translation>
+        <translation type="obsolete">Fooncshun nemes mey nut cunteeen speces. Pleese-a try tu creete-a zee mecru egeeen useeng a feleed fooncshun neme-a.</translation>
     </message>
     <message>
         <source>Please enter the name of the macro to be defined (as you want it to appear in a button).</source>
@@ -11298,27 +11971,35 @@
     </message>
     <message>
         <source>Cut cone off?    Length</source>
-        <translation type="unfinished">Coot cune-a ooffff?    Lengt</translation>
+        <translation type="obsolete">Coot cune-a ooffff?    Lengt</translation>
     </message>
     <message>
         <source>The value of angle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ungle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ungle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of origin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ooreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ooreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of normal was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff nurmel ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff nurmel ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of upAxis was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff upExees ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff upExees ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of length was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff lengt ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff lengt ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Cut cone off?   Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cone Length</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11329,7 +12010,14 @@
     </message>
     <message>
         <source>The value of target was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff terget ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff terget ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisConnectedComponentsWindow</name>
+    <message>
+        <source>Use Ghosts Zone Neighbors for connectivity between Domains</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11364,31 +12052,31 @@
     </message>
     <message>
         <source>The value of offset was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ooffffset ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ooffffset ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of low was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff loo ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff loo ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of hi was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff hee ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff hee ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of context was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff cuntext ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff cuntext ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of cutoff was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff cootuffff ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff cootuffff ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of below was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff beloo ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff beloo ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of above was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ebufe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ebufe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
 </context>
 <context>
@@ -11451,15 +12139,15 @@
     </message>
     <message>
         <source>Limits</source>
-        <translation type="unfinished">Leemits</translation>
+        <translation type="obsolete">Leemits</translation>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">Meen</translation>
+        <translation type="obsolete">Meen</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">Mex</translation>
+        <translation type="obsolete">Mex</translation>
     </message>
     <message>
         <source>Legend</source>
@@ -11479,11 +12167,11 @@
     </message>
     <message>
         <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee meenimoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee meenimoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee mexeemoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee mexeemoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>VisIt requires at least one contour.</source>
@@ -11493,28 +12181,56 @@
         <source>VisIt will not allow more than %1 contours.</source>
         <translation type="unfinished">VisIt veell nut elloo mure-a thun %1 cuntuoors.</translation>
     </message>
+    <message>
+        <source>Contour Levels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Meenimoom</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Mexeemoom</translation>
+    </message>
+    <message>
+        <source>Line Style</source>
+        <translation type="unfinished">Leene-a Style-a</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisCoordSwapWindow</name>
     <message>
         <source>New Coordinate 1?</source>
-        <translation type="unfinished">Noo Cuurdeenete-a 1?</translation>
+        <translation type="obsolete">Noo Cuurdeenete-a 1?</translation>
     </message>
     <message>
         <source>Old Coordinate 1</source>
-        <translation type="unfinished">Oold Cuurdeenete-a 1</translation>
+        <translation type="obsolete">Oold Cuurdeenete-a 1</translation>
     </message>
     <message>
         <source>Old Coordinate 2</source>
-        <translation type="unfinished">Oold Cuurdeenete-a 2</translation>
+        <translation type="obsolete">Oold Cuurdeenete-a 2</translation>
     </message>
     <message>
         <source>Old Coordinate 3</source>
-        <translation type="unfinished">Oold Cuurdeenete-a 3</translation>
+        <translation type="obsolete">Oold Cuurdeenete-a 3</translation>
     </message>
     <message>
         <source>New Coordinate 2?</source>
-        <translation type="unfinished">Noo Cuurdeenete-a 2?</translation>
+        <translation type="obsolete">Noo Cuurdeenete-a 2?</translation>
     </message>
     <message>
         <source>New Coordinate 3</source>
@@ -11522,7 +12238,27 @@
     </message>
     <message>
         <source>One coordinate is being used more than one time.  Resetting to the initial state.</source>
-        <translation type="unfinished">Oone-a cuurdeenete-a is beeeng used mure-a thun oone-a teeme-a.  Resetteeng tu zee ineetiel stete-a.</translation>
+        <translation type="obsolete">Oone-a cuurdeenete-a is beeeng used mure-a thun oone-a teeme-a.  Resetteeng tu zee ineetiel stete-a.</translation>
+    </message>
+    <message>
+        <source>New Coordinate 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coord1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coord2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coord3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New Coordinate 2</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11557,7 +12293,7 @@
     </message>
     <message>
         <source>Calculate Density</source>
-        <translation type="unfinished">Celcoolete-a Denseety</translation>
+        <translation type="obsolete">Celcoolete-a Denseety</translation>
     </message>
     <message>
         <source>Input Mass Variable</source>
@@ -11565,7 +12301,7 @@
     </message>
     <message>
         <source>Output Density Variable</source>
-        <translation type="unfinished">Ooootpoot Denseety Fereeeble-a</translation>
+        <translation type="obsolete">Ooootpoot Denseety Fereeeble-a</translation>
     </message>
 </context>
 <context>
@@ -11580,7 +12316,7 @@
     </message>
     <message>
         <source>Bonds</source>
-        <translation type="unfinished">Bunds</translation>
+        <translation type="obsolete">Bunds</translation>
     </message>
     <message>
         <source>Note: first match is taken, so order is significant</source>
@@ -11642,16 +12378,60 @@
         <source>The value for maxBonds must be between 1 and 100.</source>
         <translation type="unfinished">Zee felooe-a fur mexBunds moost be-a betveee 1 und 100.</translation>
     </message>
+    <message>
+        <source>Bonding parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add periodic bonds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Periodic in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished">X</translation>
+    </message>
+    <message>
+        <source>Y</source>
+        <translation type="unfinished">Y</translation>
+    </message>
+    <message>
+        <source>Z</source>
+        <translation type="unfinished">Z</translation>
+    </message>
+    <message>
+        <source>Use provided unit cell vectors</source>
+        <translation type="unfinished">Use-a prufeeded uneet cell fecturs</translation>
+    </message>
+    <message>
+        <source>Vector for X</source>
+        <translation type="unfinished">Fectur fur X</translation>
+    </message>
+    <message>
+        <source>Vector for Y</source>
+        <translation type="unfinished">Fectur fur Y</translation>
+    </message>
+    <message>
+        <source>Vector for Z</source>
+        <translation type="unfinished">Fectur fur Z</translation>
+    </message>
 </context>
 <context>
     <name>QvisCurvePlotWindow</name>
     <message>
         <source>Draw curve using lines</source>
-        <translation type="unfinished">Drev coorfe-a useeng leenes</translation>
+        <translation type="obsolete">Drev coorfe-a useeng leenes</translation>
     </message>
     <message>
         <source>Draw curve using symbols</source>
-        <translation type="unfinished">Drev coorfe-a useeng symbuls</translation>
+        <translation type="obsolete">Drev coorfe-a useeng symbuls</translation>
     </message>
     <message>
         <source>Line style</source>
@@ -11659,7 +12439,7 @@
     </message>
     <message>
         <source>Line Width</source>
-        <translation type="unfinished">Leene-a Veedt</translation>
+        <translation type="obsolete">Leene-a Veedt</translation>
     </message>
     <message>
         <source>Show points</source>
@@ -11675,11 +12455,11 @@
     </message>
     <message>
         <source>Density</source>
-        <translation type="unfinished">Denseety</translation>
+        <translation type="obsolete">Denseety</translation>
     </message>
     <message>
         <source>Cycle colors</source>
-        <translation type="unfinished">Cycle-a culurs</translation>
+        <translation type="obsolete">Cycle-a culurs</translation>
     </message>
     <message>
         <source>Color</source>
@@ -11695,7 +12475,111 @@
     </message>
     <message>
         <source>The point size was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee pueent seeze-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee pueent seeze-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Line/Point Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line width</source>
+        <translation type="unfinished">Leene-a veedt</translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished">Pueent</translation>
+    </message>
+    <message>
+        <source>triangle up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>triangle down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>square</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished">X</translation>
+    </message>
+    <message>
+        <source>Static</source>
+        <translation type="unfinished">Steteec</translation>
+    </message>
+    <message>
+        <source>Point stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dynamic</source>
+        <translation type="unfinished">Dynemeec</translation>
+    </message>
+    <message>
+        <source>Point density</source>
+        <translation type="unfinished">Pueent denseety</translation>
+    </message>
+    <message>
+        <source>Curve color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cycle</source>
+        <translation type="unfinished">Cycle-a</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create Cue For Current Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Ball</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ball size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Crop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position of cue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Cue Ball Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>timeForTimeCue</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11714,15 +12598,15 @@
     </message>
     <message>
         <source>The value of point1 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pueent1 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pueent1 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of point2 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pueent2 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pueent2 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of radius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff redeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff redeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
 </context>
 <context>
@@ -11734,6 +12618,81 @@
     <message>
         <source>Cancel</source>
         <translation type="unfinished">Cuncel</translation>
+    </message>
+</context>
+<context>
+    <name>QvisDataBinningWindow</name>
+    <message>
+        <source>Bin Definitions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimensions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimension 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimension 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimension 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished">Fereeeble-a</translation>
+    </message>
+    <message>
+        <source>Number of Bins</source>
+        <translation type="unfinished">Noomber ooff Beens</translation>
+    </message>
+    <message>
+        <source>Specify range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Min</source>
+        <translation type="unfinished">Meen</translation>
+    </message>
+    <message>
+        <source>Max</source>
+        <translation type="unfinished">Mex</translation>
+    </message>
+    <message>
+        <source>Behavior for data outside range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clamp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction Operator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value for bins with no data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NumBins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value for Bins With No Data</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11886,7 +12845,7 @@
     </message>
     <message>
         <source>The value of target was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff terget ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff terget ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
 </context>
 <context>
@@ -11894,6 +12853,40 @@
     <message>
         <source>Variables</source>
         <translation type="unfinished">Fereeebles</translation>
+    </message>
+</context>
+<context>
+    <name>QvisDeformSphereGlyphWindow</name>
+    <message>
+        <source>var</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scale Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisDelaunayWindow</name>
+    <message>
+        <source>Dimension</source>
+        <translation type="unfinished">Deemensiun</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Triangulation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tetrahedralization</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11908,7 +12901,33 @@
     </message>
     <message>
         <source>The value of factor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisDualMeshWindow</name>
+    <message>
+        <source>Conversion Mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto</source>
+        <translation type="unfinished">Ootu</translation>
+    </message>
+    <message>
+        <source>Nodes to Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zones to Nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisEdgeWindow</name>
+    <message>
+        <source>dummy</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11926,7 +12945,7 @@
     </message>
     <message>
         <source>Limits mode</source>
-        <translation type="unfinished">Leemits mude-a</translation>
+        <translation type="obsolete">Leemits mude-a</translation>
     </message>
     <message>
         <source>Original Data</source>
@@ -11978,19 +12997,27 @@
     </message>
     <message>
         <source>Elevate by variable</source>
-        <translation type="unfinished">Ilefete-a by fereeeble-a</translation>
+        <translation type="obsolete">Ilefete-a by fereeeble-a</translation>
     </message>
     <message>
         <source>The value of skewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff skooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff skooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Limits Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Elevate by Variable</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12045,7 +13072,7 @@
     </message>
     <message>
         <source>Disconnect simulation</source>
-        <translation type="unfinished">Deescunnect seemooleshun</translation>
+        <translation type="obsolete">Deescunnect seemooleshun</translation>
     </message>
     <message>
         <source>Default</source>
@@ -12094,6 +13121,10 @@
     <message>
         <source>Cancel</source>
         <translation type="unfinished">Cuncel</translation>
+    </message>
+    <message>
+        <source>Disconnect</source>
+        <translation type="unfinished">Deescunnect</translation>
     </message>
 </context>
 <context>
@@ -12257,6 +13288,30 @@
         <source>Insert Variable...</source>
         <translation type="unfinished">Insert Fereeeble-a...</translation>
     </message>
+    <message>
+        <source>Time Iteration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arguments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python Expression Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open Attribute XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML Files (*.xml);;All files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The expressions loaded from %1 contained expressions having the same names as expressions already in the expression list. You may want to edit some of your expression names so they are unique.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisExternalSurfaceWindow</name>
@@ -12267,6 +13322,32 @@
     <message>
         <source>Find external edges for 2D datasets</source>
         <translation type="unfinished">Feend ixternel idges fur 2D detesets</translation>
+    </message>
+</context>
+<context>
+    <name>QvisExtrudeWindow</name>
+    <message>
+        <source>Extrusion axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Length</source>
+        <translation type="unfinished">Lengt</translation>
+    </message>
+    <message>
+        <source>Number of steps</source>
+        <translation type="unfinished">Noomber ooff steps</translation>
+    </message>
+    <message>
+        <source>Preserve original cell numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisFFTWindow</name>
+    <message>
+        <source>Dummy attribute</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12290,48 +13371,52 @@
         <source>VisIt could not access the directory: %1 so your home directory will be used.</source>
         <translation type="unfinished">VisIt cuoold nut eccess zee durectury: %1 su yuoor hume-a durectury veell be-a used.</translation>
     </message>
+    <message>
+        <source>VisIt could not access the directory: %1 so %2 directory will be used.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisFileOpenWindow</name>
     <message>
         <source>Host</source>
-        <translation type="unfinished">Hust</translation>
+        <translation type="obsolete">Hust</translation>
     </message>
     <message>
         <source>Path</source>
-        <translation type="unfinished">Pet</translation>
+        <translation type="obsolete">Pet</translation>
     </message>
     <message>
         <source>Filter</source>
-        <translation type="unfinished">Feelter</translation>
+        <translation type="obsolete">Feelter</translation>
     </message>
     <message>
         <source>Use &quot;current working directory&quot; by default</source>
-        <translation type="unfinished">Use-a coorrent vurkeeng durectury by deffoolt</translation>
+        <translation type="obsolete">Use-a coorrent vurkeeng durectury by deffoolt</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation type="unfinished">Ooffff</translation>
+        <translation type="obsolete">Ooffff</translation>
     </message>
     <message>
         <source>On</source>
-        <translation type="unfinished">Oon</translation>
+        <translation type="obsolete">Oon</translation>
     </message>
     <message>
         <source>Smart</source>
-        <translation type="unfinished">Smert</translation>
+        <translation type="obsolete">Smert</translation>
     </message>
     <message>
         <source>File grouping</source>
-        <translation type="unfinished">Feele-a gruoopeeng</translation>
+        <translation type="obsolete">Feele-a gruoopeeng</translation>
     </message>
     <message>
         <source>Remove recent paths</source>
-        <translation type="unfinished">Remufe-a recent peths</translation>
+        <translation type="obsolete">Remufe-a recent peths</translation>
     </message>
     <message>
         <source>Remove paths . . .</source>
-        <translation type="unfinished">Remufe-a peths . . .</translation>
+        <translation type="obsolete">Remufe-a peths . . .</translation>
     </message>
     <message>
         <source>Directories</source>
@@ -12363,51 +13448,51 @@
     </message>
     <message>
         <source>Opening server on %1</source>
-        <translation type="unfinished">Oopeneeng serfer oon %1</translation>
+        <translation type="obsolete">Oopeneeng serfer oon %1</translation>
     </message>
     <message>
         <source>&quot;%1&quot; is not a valid host.</source>
-        <translation type="unfinished">%1 is nut a feleed hust.</translation>
+        <translation type="obsolete">%1 is nut a feleed hust.</translation>
     </message>
     <message>
         <source>Changing directory.</source>
-        <translation type="unfinished">Chungeeng durectury.</translation>
+        <translation type="obsolete">Chungeeng durectury.</translation>
     </message>
     <message>
         <source>The MetaData server running on %1 could not change the current directory to %2.</source>
-        <translation type="unfinished">Zee MeteDeta serfer roonneeng oon %1 cuoold nut chunge-a zee coorrent durectury tu %2.</translation>
+        <translation type="obsolete">Zee MeteDeta serfer roonneeng oon %1 cuoold nut chunge-a zee coorrent durectury tu %2.</translation>
     </message>
     <message>
         <source>The MetaData server running on %1 could not get the file list for the current directory</source>
-        <translation type="unfinished">Zee MeteDeta serfer roonneeng oon %1 cuoold nut get zee feele-a leest fur zee coorrent durectury</translation>
+        <translation type="obsolete">Zee MeteDeta serfer roonneeng oon %1 cuoold nut get zee feele-a leest fur zee coorrent durectury</translation>
     </message>
     <message>
         <source>The MetaData server running could not get the file list for the current directory, which is required before setting the file filter. Try entering a valid path before changing the file filter.</source>
-        <translation type="unfinished">Zee MeteDeta serfer roonneeng cuoold nut get zee feele-a leest fur zee coorrent durectury, vheech is reqooured beffure-a setteeng zee feele-a feelter. Try intereeng a feleed pet beffure-a chungeeng zee feele-a feelter.</translation>
+        <translation type="obsolete">Zee MeteDeta serfer roonneeng cuoold nut get zee feele-a leest fur zee coorrent durectury, vheech is reqooured beffure-a setteeng zee feele-a feelter. Try intereeng a feleed pet beffure-a chungeeng zee feele-a feelter.</translation>
     </message>
     <message>
         <source>An error occured when trying to set the file filter.</source>
-        <translation type="unfinished">Un irrur ooccoored vhee tryeeng tu set zee feele-a feelter.</translation>
+        <translation type="obsolete">Un irrur ooccoored vhee tryeeng tu set zee feele-a feelter.</translation>
     </message>
     <message>
         <source>An invalid filter was entered.</source>
-        <translation type="unfinished">Un infeleed feelter ves intered.</translation>
+        <translation type="obsolete">Un infeleed feelter ves intered.</translation>
     </message>
     <message>
         <source>(current directory)</source>
-        <translation type="unfinished">(coorrent durectury)</translation>
+        <translation type="obsolete">(coorrent durectury)</translation>
     </message>
     <message>
         <source>(go up 1 directory level)</source>
-        <translation type="unfinished">(gu up 1 durectury lefel)</translation>
+        <translation type="obsolete">(gu up 1 durectury lefel)</translation>
     </message>
     <message>
         <source>Changing directory</source>
-        <translation type="unfinished">Chungeeng durectury</translation>
+        <translation type="obsolete">Chungeeng durectury</translation>
     </message>
     <message>
         <source>The MetaData server running on %1 could not get the file list for the current directory.</source>
-        <translation type="unfinished">Zee MeteDeta serfer roonneeng oon %1 cuoold nut get zee feele-a leest fur zee coorrent durectury.</translation>
+        <translation type="obsolete">Zee MeteDeta serfer roonneeng oon %1 cuoold nut get zee feele-a leest fur zee coorrent durectury.</translation>
     </message>
     <message>
         <source>Guess from file name/extension</source>
@@ -12422,7 +13507,7 @@
     <name>QvisFilePanel</name>
     <message>
         <source>Selected files</source>
-        <translation type="unfinished">Selected feeles</translation>
+        <translation type="obsolete">Selected feeles</translation>
     </message>
     <message>
         <source>Open</source>
@@ -12438,7 +13523,7 @@
     </message>
     <message>
         <source>Active time slider</source>
-        <translation type="unfinished">Ecteefe-a teeme-a sleeder</translation>
+        <translation type="obsolete">Ecteefe-a teeme-a sleeder</translation>
     </message>
     <message>
         <source>Hosts</source>
@@ -12458,7 +13543,7 @@
     </message>
     <message>
         <source>The active time slider is already at state</source>
-        <translation type="unfinished">Zee ecteefe-a teeme-a sleeder is elreedy et stete-a</translation>
+        <translation type="obsolete">Zee ecteefe-a teeme-a sleeder is elreedy et stete-a</translation>
     </message>
     <message>
         <source>Activate</source>
@@ -12468,48 +13553,80 @@
         <source>Reopen cannot be used to change the active time state for an animation because reopen discards all cached networks and causes the database to actually be reopened. If you want to change the active time state, use the animation slider or select a new time state and click the Replace button.</source>
         <translation type="unfinished">Reupee cunnut be-a used tu chunge-a zee ecteefe-a teeme-a stete-a fur un uneemeshun becoose-a reupee deescerds ell ceched netvurks und cooses zee detebese-a tu ectooelly be-a reupened. Iff yuoo vunt tu chunge-a zee ecteefe-a teeme-a stete-a, use-a zee uneemeshun sleeder oor select a noo teeme-a stete-a und cleeck zee Replece-a boottun.</translation>
     </message>
+    <message>
+        <source>Selected Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Open</source>
+        <translation type="unfinished">Oopee</translation>
+    </message>
+    <message>
+        <source>&amp;Replace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace &amp;Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Overlay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Activate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Re&amp;Open</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisFileSelectionWindow</name>
     <message>
         <source>Host</source>
-        <translation type="unfinished">Hust</translation>
+        <translation type="obsolete">Hust</translation>
     </message>
     <message>
         <source>Path</source>
-        <translation type="unfinished">Pet</translation>
+        <translation type="obsolete">Pet</translation>
     </message>
     <message>
         <source>Filter</source>
-        <translation type="unfinished">Feelter</translation>
+        <translation type="obsolete">Feelter</translation>
     </message>
     <message>
         <source>Use &quot;current working directory&quot; by default</source>
-        <translation type="unfinished">Use-a coorrent vurkeeng durectury by deffoolt</translation>
+        <translation type="obsolete">Use-a coorrent vurkeeng durectury by deffoolt</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation type="unfinished">Ooffff</translation>
+        <translation type="obsolete">Ooffff</translation>
     </message>
     <message>
         <source>On</source>
-        <translation type="unfinished">Oon</translation>
+        <translation type="obsolete">Oon</translation>
     </message>
     <message>
         <source>Smart</source>
-        <translation type="unfinished">Smert</translation>
+        <translation type="obsolete">Smert</translation>
     </message>
     <message>
         <source>File grouping</source>
-        <translation type="unfinished">Feele-a gruoopeeng</translation>
+        <translation type="obsolete">Feele-a gruoopeeng</translation>
     </message>
     <message>
         <source>Remove recent paths</source>
-        <translation type="unfinished">Remufe-a recent peths</translation>
+        <translation type="obsolete">Remufe-a recent peths</translation>
     </message>
     <message>
         <source>Remove paths . . .</source>
-        <translation type="unfinished">Remufe-a peths . . .</translation>
+        <translation type="obsolete">Remufe-a peths . . .</translation>
     </message>
     <message>
         <source>Directories</source>
@@ -12557,6 +13674,109 @@
     </message>
     <message>
         <source>Opening server on %1</source>
+        <translation type="obsolete">Oopeneeng serfer oon %1</translation>
+    </message>
+    <message>
+        <source>&quot;%1&quot; is not a valid host.</source>
+        <translation type="obsolete">%1 is nut a feleed hust.</translation>
+    </message>
+    <message>
+        <source>Changing directory.</source>
+        <translation type="obsolete">Chungeeng durectury.</translation>
+    </message>
+    <message>
+        <source>The MetaData server running on %1 could not change the current directory to %2.</source>
+        <translation type="obsolete">Zee MeteDeta serfer roonneeng oon %1 cuoold nut chunge-a zee coorrent durectury tu %2.</translation>
+    </message>
+    <message>
+        <source>The MetaData server running on %1 could not get the file list for the current directory</source>
+        <translation type="obsolete">Zee MeteDeta serfer roonneeng oon %1 cuoold nut get zee feele-a leest fur zee coorrent durectury</translation>
+    </message>
+    <message>
+        <source>The MetaData server running could not get the file list for the current directory, which is required before setting the file filter. Try entering a valid path before changing the file filter.</source>
+        <translation type="obsolete">Zee MeteDeta serfer roonneeng cuoold nut get zee feele-a leest fur zee coorrent durectury, vheech is reqooured beffure-a setteeng zee feele-a feelter. Try intereeng a feleed pet beffure-a chungeeng zee feele-a feelter.</translation>
+    </message>
+    <message>
+        <source>An error occured when trying to set the file filter.</source>
+        <translation type="obsolete">Un irrur ooccoored vhee tryeeng tu set zee feele-a feelter.</translation>
+    </message>
+    <message>
+        <source>An invalid filter was entered.</source>
+        <translation type="obsolete">Un infeleed feelter ves intered.</translation>
+    </message>
+    <message>
+        <source>(current directory)</source>
+        <translation type="obsolete">(coorrent durectury)</translation>
+    </message>
+    <message>
+        <source>(go up 1 directory level)</source>
+        <translation type="obsolete">(gu up 1 durectury lefel)</translation>
+    </message>
+    <message>
+        <source>Changing directory</source>
+        <translation type="obsolete">Chungeeng durectury</translation>
+    </message>
+    <message>
+        <source>The MetaData server running on %1 could not get the file list for the current directory.</source>
+        <translation type="obsolete">Zee MeteDeta serfer roonneeng oon %1 cuoold nut get zee feele-a leest fur zee coorrent durectury.</translation>
+    </message>
+    <message>
+        <source>Creating group list on %1</source>
+        <translation type="unfinished">Creeteeng gruoop leest oon %1</translation>
+    </message>
+</context>
+<context>
+    <name>QvisFileWindowBase</name>
+    <message>
+        <source>(current directory)</source>
+        <translation type="unfinished">(coorrent durectury)</translation>
+    </message>
+    <message>
+        <source>(go up 1 directory level)</source>
+        <translation type="unfinished">(gu up 1 durectury lefel)</translation>
+    </message>
+    <message>
+        <source>Host</source>
+        <translation type="unfinished">Hust</translation>
+    </message>
+    <message>
+        <source>Path</source>
+        <translation type="unfinished">Pet</translation>
+    </message>
+    <message>
+        <source>Filter</source>
+        <translation type="unfinished">Feelter</translation>
+    </message>
+    <message>
+        <source>Use &quot;current working directory&quot; by default</source>
+        <translation type="unfinished">Use-a coorrent vurkeeng durectury by deffoolt</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation type="unfinished">Ooffff</translation>
+    </message>
+    <message>
+        <source>On</source>
+        <translation type="unfinished">Oon</translation>
+    </message>
+    <message>
+        <source>Smart</source>
+        <translation type="unfinished">Smert</translation>
+    </message>
+    <message>
+        <source>File grouping</source>
+        <translation type="unfinished">Feele-a gruoopeeng</translation>
+    </message>
+    <message>
+        <source>Remove recent paths</source>
+        <translation type="unfinished">Remufe-a recent peths</translation>
+    </message>
+    <message>
+        <source>Remove paths . . .</source>
+        <translation type="unfinished">Remufe-a peths . . .</translation>
+    </message>
+    <message>
+        <source>Opening server on %1</source>
         <translation type="unfinished">Oopeneeng serfer oon %1</translation>
     </message>
     <message>
@@ -12588,24 +13808,12 @@
         <translation type="unfinished">Un infeleed feelter ves intered.</translation>
     </message>
     <message>
-        <source>(current directory)</source>
-        <translation type="unfinished">(coorrent durectury)</translation>
-    </message>
-    <message>
-        <source>(go up 1 directory level)</source>
-        <translation type="unfinished">(gu up 1 durectury lefel)</translation>
-    </message>
-    <message>
         <source>Changing directory</source>
         <translation type="unfinished">Chungeeng durectury</translation>
     </message>
     <message>
         <source>The MetaData server running on %1 could not get the file list for the current directory.</source>
         <translation type="unfinished">Zee MeteDeta serfer roonneeng oon %1 cuoold nut get zee feele-a leest fur zee coorrent durectury.</translation>
-    </message>
-    <message>
-        <source>Creating group list on %1</source>
-        <translation type="unfinished">Creeteeng gruoop leest oon %1</translation>
     </message>
 </context>
 <context>
@@ -12664,7 +13872,7 @@
     </message>
     <message>
         <source>Geometry smoothing</source>
-        <translation type="unfinished">Geumetry smuutheeng</translation>
+        <translation type="obsolete">Geumetry smuutheeng</translation>
     </message>
     <message>
         <source>None</source>
@@ -12677,6 +13885,76 @@
     <message>
         <source>High</source>
         <translation type="unfinished">Heegh</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisFiveFoldTetSubdivisionWindow</name>
+    <message>
+        <source>Vertices with odd parity have six neighborhood </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add component information from contour tree</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Contour Tree Filename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Isovalue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selected IDs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Highlighted IDs</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisFluxWindow</name>
+    <message>
+        <source>Flow field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiply dot product by a scalar variable?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Weight field</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13068,6 +14346,26 @@ version of VisIt?</source>
         <source>VisIt found a crash recovery session file. Would you like to restore it to return to the last saved state?</source>
         <translation type="unfinished">VisIt fuoond a cresh recufery sesseeun feele-a. Vuoold yuoo leeke-a tu resture-a it tu retoorn tu zee lest sefed stete-a?</translation>
     </message>
+    <message>
+        <source>Selections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Setup Host Profiles and Configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Session File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open VisIt Session File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt</source>
+        <translation type="unfinished">VisIt</translation>
+    </message>
 </context>
 <context>
     <name>QvisGlobalLineoutWindow</name>
@@ -13091,7 +14389,7 @@ will use this same window.</source>
     </message>
     <message>
         <source>Dynamic options</source>
-        <translation type="unfinished">Dynemeec oopshuns</translation>
+        <translation type="obsolete">Dynemeec oopshuns</translation>
     </message>
     <message>
         <source>updates curve</source>
@@ -13195,7 +14493,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Add Bookmark</source>
-        <translation type="unfinished">Edd Buukmerk</translation>
+        <translation type="obsolete">Edd Buukmerk</translation>
     </message>
     <message>
         <source>Dismiss</source>
@@ -13265,6 +14563,36 @@ by Lineout Operator</source>
         <source>This page cannot be bookmarked.</source>
         <translation type="unfinished">Thees pege-a cunnut be-a buukmerked.</translation>
     </message>
+    <message>
+        <source>Add bookmark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt UltraWrapper</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ultra wrapper</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisHistogram</name>
+    <message>
+        <source>No data</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisHistogramLimits</name>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Meenimoom</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Mexeemoom</translation>
+    </message>
 </context>
 <context>
     <name>QvisHistogramPlotWindow</name>
@@ -13314,7 +14642,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Data Scale</source>
-        <translation type="unfinished">Deta Scele-a</translation>
+        <translation type="obsolete">Deta Scele-a</translation>
     </message>
     <message>
         <source>Linear</source>
@@ -13322,7 +14650,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Log10</source>
-        <translation type="unfinished">Lug10</translation>
+        <translation type="obsolete">Lug10</translation>
     </message>
     <message>
         <source>Square root</source>
@@ -13330,7 +14658,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Specify Range?</source>
-        <translation type="unfinished">Speceeffy Runge-a?</translation>
+        <translation type="obsolete">Speceeffy Runge-a?</translation>
     </message>
     <message>
         <source>Minimum</source>
@@ -13362,7 +14690,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Use bin widths?</source>
-        <translation type="unfinished">Use-a been veedths?</translation>
+        <translation type="obsolete">Use-a been veedths?</translation>
     </message>
     <message>
         <source>Plot Style</source>
@@ -13394,30 +14722,101 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of numBins was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff noomBeens ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff noomBeens ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of domain was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff dumeeen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff dumeeen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of zone was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff zune-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff zune-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Log</source>
+        <translation type="unfinished">Lug</translation>
+    </message>
+    <message>
+        <source>Weighting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">Deta</translation>
+    </message>
+    <message>
+        <source>Scale</source>
+        <translation type="unfinished">Scele-a</translation>
+    </message>
+    <message>
+        <source>Square Root</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limits</source>
+        <translation type="unfinished">Leemits</translation>
+    </message>
+    <message>
+        <source>Use Original Data</source>
+        <translation type="unfinished">Use-a Ooreeginel Deta</translation>
+    </message>
+    <message>
+        <source>Use Current Plot</source>
+        <translation type="unfinished">Use-a Coorrent Plut</translation>
+    </message>
+    <message>
+        <source>Use bin widths</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisHohlraumFluxQueryWidget</name>
+    <message>
+        <source>Number of Lines</source>
+        <translation type="unfinished">Noomber ooff Leenes</translation>
+    </message>
+    <message>
+        <source>Divide Emis by Absorb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ray Center</source>
+        <translation type="unfinished">Rey Center</translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation type="unfinished">Redeeoos</translation>
+    </message>
+    <message>
+        <source>Theta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phi</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisHostProfileWindow</name>
     <message>
         <source>Host profiles</source>
-        <translation type="unfinished">Hust pruffeeles</translation>
+        <translation type="obsolete">Hust pruffeeles</translation>
     </message>
     <message>
         <source>New profile</source>
@@ -13425,23 +14824,23 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Delete profile</source>
-        <translation type="unfinished">Delete-a pruffeele-a</translation>
+        <translation type="obsolete">Delete-a pruffeele-a</translation>
     </message>
     <message>
         <source>Selected profile</source>
-        <translation type="unfinished">Selected pruffeele-a</translation>
+        <translation type="obsolete">Selected pruffeele-a</translation>
     </message>
     <message>
         <source>Parallel options</source>
-        <translation type="unfinished">Perellel oopshuns</translation>
+        <translation type="obsolete">Perellel oopshuns</translation>
     </message>
     <message>
         <source>Advanced options</source>
-        <translation type="unfinished">Edfunced oopshuns</translation>
+        <translation type="obsolete">Edfunced oopshuns</translation>
     </message>
     <message>
         <source>Applies to all profiles for a given host</source>
-        <translation type="unfinished">Eppleees tu ell pruffeeles fur a geefee hust</translation>
+        <translation type="obsolete">Eppleees tu ell pruffeeles fur a geefee hust</translation>
     </message>
     <message>
         <source>Profile name</source>
@@ -13449,7 +14848,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Default profile for host</source>
-        <translation type="unfinished">Deffoolt pruffeele-a fur hust</translation>
+        <translation type="obsolete">Deffoolt pruffeele-a fur hust</translation>
     </message>
     <message>
         <source>Remote host name</source>
@@ -13469,11 +14868,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Additional options</source>
-        <translation type="unfinished">Eddeeshunel oopshuns</translation>
+        <translation type="obsolete">Eddeeshunel oopshuns</translation>
     </message>
     <message>
         <source>Parallel computation engine</source>
-        <translation type="unfinished">Perellel cumpooteshun ingeene-a</translation>
+        <translation type="obsolete">Perellel cumpooteshun ingeene-a</translation>
     </message>
     <message>
         <source>(default)</source>
@@ -13501,7 +14900,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Partition / Pool</source>
-        <translation type="unfinished">Perteeshun / Puul</translation>
+        <translation type="obsolete">Perteeshun / Puul</translation>
     </message>
     <message>
         <source>Auto</source>
@@ -13529,7 +14928,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Default Bank</source>
-        <translation type="unfinished">Deffoolt Bunk</translation>
+        <translation type="obsolete">Deffoolt Bunk</translation>
     </message>
     <message>
         <source>Default Time Limit</source>
@@ -13549,15 +14948,15 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Networking</source>
-        <translation type="unfinished">Netvurkeeng</translation>
+        <translation type="obsolete">Netvurkeeng</translation>
     </message>
     <message>
         <source>Hardware acceleration</source>
-        <translation type="unfinished">Herdvere-a eccelereshun</translation>
+        <translation type="obsolete">Herdvere-a eccelereshun</translation>
     </message>
     <message>
         <source>Networking options apply to all profiles for a given host.</source>
-        <translation type="unfinished">Netvurkeeng oopshuns epply tu ell pruffeeles fur a geefee hust.</translation>
+        <translation type="obsolete">Netvurkeeng oopshuns epply tu ell pruffeeles fur a geefee hust.</translation>
     </message>
     <message>
         <source>Tunnel data connections through SSH</source>
@@ -13593,11 +14992,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Pre-command</source>
-        <translation type="unfinished">Pre-a-cummund</translation>
+        <translation type="obsolete">Pre-a-cummund</translation>
     </message>
     <message>
         <source>Post-command</source>
-        <translation type="unfinished">Pust-cummund</translation>
+        <translation type="obsolete">Pust-cummund</translation>
     </message>
     <message>
         <source>Profile name cannot be empty, reverting to &quot;%1&quot;.</source>
@@ -13625,11 +15024,103 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Pre-command cannot be empty, turning off pre-command.</source>
-        <translation type="unfinished">Pre-a-cummund cunnut be-a impty, toorneeng ooffff pre-a-cummund.</translation>
+        <translation type="obsolete">Pre-a-cummund cunnut be-a impty, toorneeng ooffff pre-a-cummund.</translation>
     </message>
     <message>
         <source>Post-command cannot be empty, turning off post-command.</source>
-        <translation type="unfinished">Pust-cummund cunnut be-a impty, toorneeng ooffff pust-cummund.</translation>
+        <translation type="obsolete">Pust-cummund cunnut be-a impty, toorneeng ooffff pust-cummund.</translation>
+    </message>
+    <message>
+        <source>Hosts</source>
+        <translation type="unfinished">Husts</translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Noo</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">Delete-a</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation type="unfinished">Cupy</translation>
+    </message>
+    <message>
+        <source>Host Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Launch Profiles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host nickname</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use gateway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Path to VisIt installation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation type="unfinished">Setteengs</translation>
+    </message>
+    <message>
+        <source>Parallel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished">Edfunced</translation>
+    </message>
+    <message>
+        <source>GPU Accel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Additional arguments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Launch (parallel) engine using job control system</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Partition / Pool / Queue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default Bank / Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DISPLAY:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have VisIt launch X servers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of GPUs per node:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X arguments:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(default</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13684,7 +15175,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Select Image</source>
-        <translation type="unfinished">Select Imege-a</translation>
+        <translation type="obsolete">Select Imege-a</translation>
     </message>
 </context>
 <context>
@@ -13737,6 +15228,14 @@ by Lineout Operator</source>
         <source>Use Whole Collection</source>
         <translation type="unfinished">Use-a Vhule-a Cullecshun</translation>
     </message>
+    <message>
+        <source>  </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wrap</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisInteractorWindow</name>
@@ -13780,6 +15279,22 @@ by Lineout Operator</source>
         <source>Snap to horizontal grid</source>
         <translation type="unfinished">Snep tu hureezuntel greed</translation>
     </message>
+    <message>
+        <source>Switch to bounding box when changing views:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <translation type="unfinished">Elveys</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation type="unfinished">Nefer</translation>
+    </message>
+    <message>
+        <source>Auto (remote rendering only)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisInterpreter</name>
@@ -13792,15 +15307,43 @@ by Lineout Operator</source>
     <name>QvisInverseGhostZoneWindow</name>
     <message>
         <source>Zones to Display:</source>
-        <translation type="unfinished">Zunes tu Deespley:</translation>
+        <translation type="obsolete">Zunes tu Deespley:</translation>
     </message>
     <message>
         <source>Ghost zones only</source>
-        <translation type="unfinished">Ghust zunes oonly</translation>
+        <translation type="obsolete">Ghust zunes oonly</translation>
     </message>
     <message>
         <source>Both ghost zones and real zones</source>
-        <translation type="unfinished">But ghust zunes und reel zunes</translation>
+        <translation type="obsolete">But ghust zunes und reel zunes</translation>
+    </message>
+    <message>
+        <source>Request Ghost Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Zones That Are Duplicated At Domain Boundaries</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Enhanced Connectivity Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Reduced Connectivity Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show zones refined out by finer patches (AMR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show cells on exterior of data set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show zones deemed not applicable to problem</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13835,15 +15378,15 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Limits</source>
-        <translation type="unfinished">Leemits</translation>
+        <translation type="obsolete">Leemits</translation>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">Meen</translation>
+        <translation type="obsolete">Meen</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">Mex</translation>
+        <translation type="obsolete">Mex</translation>
     </message>
     <message>
         <source>Variable</source>
@@ -13855,11 +15398,27 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee meenimoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee meenimoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee mexeemoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee mexeemoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Meenimoom</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Mexeemoom</translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13878,49 +15437,49 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The lower bound value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee looer buoond felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee looer buoond felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The upper bound value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee upper buoond felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee upper buoond felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
 </context>
 <context>
     <name>QvisKerbelPlotWindow</name>
     <message>
         <source>Center</source>
-        <translation type="unfinished">Center</translation>
+        <translation type="obsolete">Center</translation>
     </message>
     <message>
         <source>Radius</source>
-        <translation type="unfinished">Redeeoos</translation>
+        <translation type="obsolete">Redeeoos</translation>
     </message>
     <message>
         <source>Opacity</source>
-        <translation type="unfinished">Oopeceety</translation>
+        <translation type="obsolete">Oopeceety</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation type="unfinished">Culur teble-a</translation>
+        <translation type="obsolete">Culur teble-a</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="unfinished">Legend</translation>
+        <translation type="obsolete">Legend</translation>
     </message>
     <message>
         <source>Filename</source>
-        <translation type="unfinished">Feeleneme-a</translation>
+        <translation type="obsolete">Feeleneme-a</translation>
     </message>
 </context>
 <context>
     <name>QvisKeyframeWindow</name>
     <message>
         <source>State</source>
-        <translation type="unfinished">Stete-a</translation>
+        <translation type="obsolete">Stete-a</translation>
     </message>
     <message>
         <source>Atts</source>
-        <translation type="unfinished">Etts</translation>
+        <translation type="obsolete">Etts</translation>
     </message>
     <message>
         <source>Keyframing enabled</source>
@@ -13928,7 +15487,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Snap to frame</source>
-        <translation type="unfinished">Snep tu freme-a</translation>
+        <translation type="obsolete">Snep tu freme-a</translation>
     </message>
     <message>
         <source>Number of frames</source>
@@ -13936,11 +15495,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Attributes</source>
-        <translation type="unfinished">Ettreebootes</translation>
+        <translation type="obsolete">Ettreebootes</translation>
     </message>
     <message>
         <source>Keyframes</source>
-        <translation type="unfinished">Keyffremes</translation>
+        <translation type="obsolete">Keyffremes</translation>
     </message>
     <message>
         <source>Add state keyframe</source>
@@ -13948,15 +15507,23 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>View</source>
-        <translation type="unfinished">Feeoo</translation>
+        <translation type="obsolete">Feeoo</translation>
     </message>
     <message>
         <source>The value for the number of frames was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a fur zee noomber ooff fremes ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a fur zee noomber ooff fremes ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>Cannot set state index to less than zero
 </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add view keyframe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use view keyframes</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -14092,11 +15659,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value entered for the number of labels was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a intered fur zee noomber ooff lebels ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a intered fur zee noomber ooff lebels ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value entered for the text height was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a intered fur zee text heeeght ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a intered fur zee text heeeght ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>Must enter a printf-style template that would be valid for a single floating point number.</source>
@@ -14105,6 +15672,18 @@ by Lineout Operator</source>
     <message>
         <source>The template produces values that are too long.  36 character limit.</source>
         <translation type="unfinished">Zee templete-a prudooces felooes thet ere-a tuu lung.  36 cherecter leemit.</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>number of labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>text height</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14135,7 +15714,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Draw labels</source>
-        <translation type="unfinished">Drev lebels</translation>
+        <translation type="obsolete">Drev lebels</translation>
     </message>
     <message>
         <source>Text color</source>
@@ -14180,6 +15759,102 @@ by Lineout Operator</source>
     <message>
         <source>The format string for the legend was not used because it contains multiple &apos;%&apos; characters.</source>
         <translation type="unfinished">Zee furmet streeng fur zee legend ves nut used becoose-a it cunteeens moolteeple-a % cherecters.</translation>
+    </message>
+    <message>
+        <source>Vertical, Text on Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vertical, Text on Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Horizontal, Text on Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Horizontal, Text on Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Orientation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation type="unfinished">Puseeshun</translation>
+    </message>
+    <message>
+        <source>Let VisIt determine tick labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Num ticks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Inclusive of min and max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">Nune-a</translation>
+    </message>
+    <message>
+        <source>Values</source>
+        <translation type="unfinished">Felooes</translation>
+    </message>
+    <message>
+        <source>Labels</source>
+        <translation type="unfinished">Lebels</translation>
+    </message>
+    <message>
+        <source>Values and Labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specify tick values and labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add tick value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete selected value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tick Marks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw min/max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Courier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Times</source>
+        <translation type="unfinished">Teemes</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation type="unfinished">Eppeerunce-a</translation>
+    </message>
+    <message>
+        <source>Computed values</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14273,11 +15948,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Begin Arrow</source>
-        <translation type="unfinished">Begeen Erroo</translation>
+        <translation type="obsolete">Begeen Erroo</translation>
     </message>
     <message>
         <source>End Arrow</source>
-        <translation type="unfinished">Ind Erroo</translation>
+        <translation type="obsolete">Ind Erroo</translation>
     </message>
     <message>
         <source>Visible</source>
@@ -14290,6 +15965,292 @@ by Lineout Operator</source>
     <message>
         <source>End</source>
         <translation type="unfinished">Ind</translation>
+    </message>
+    <message>
+        <source>Begin arrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>End arrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisLineSamplerWindow</name>
+    <message>
+        <source>Coordinate system</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cartesian</source>
+        <translation type="unfinished">Certeseeun</translation>
+    </message>
+    <message>
+        <source>Cylindrical</source>
+        <translation type="unfinished">Cyleendricel</translation>
+    </message>
+    <message>
+        <source>Array configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of arrays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal angle (degrees) between arrays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array projection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divergent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel/Grid: Offset between channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divergent: Angle (degrees) between channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grid: Number of rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grid: Offset between rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array axis direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>R</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z</source>
+        <translation type="unfinished">Z</translation>
+    </message>
+    <message>
+        <source>Poloidal angle (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal plane R-tilt (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal plane Z-tilt (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal angle (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View dimension</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>One</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Two</source>
+        <translation type="unfinished">Tvu</translation>
+    </message>
+    <message>
+        <source>Three</source>
+        <translation type="unfinished">Three-a</translation>
+    </message>
+    <message>
+        <source>1D plot height scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D plot channel offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D plot array offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D plot time scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Beam shape</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished">Pueent</translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished">Leene-a</translation>
+    </message>
+    <message>
+        <source>Cylinder</source>
+        <translation type="unfinished">Cyleender</translation>
+    </message>
+    <message>
+        <source>Cone</source>
+        <translation type="unfinished">Cune-a</translation>
+    </message>
+    <message>
+        <source>Cylinder radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cone divergence (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Beam Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TopHat</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gaussian</source>
+        <translation type="unfinished">Goosseeun</translation>
+    </message>
+    <message>
+        <source>Standard deviation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear sample distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Radial sample arc (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SingleChannelSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SummationChannelSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SingleToroidalSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SummationToroidalSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal sampling angle (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CurrentTimeStep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MultipleTimeSteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stride</source>
+        <translation type="unfinished">Streede-a</translation>
+    </message>
+    <message>
+        <source>Read configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete All Channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisLineStyleWidget</name>
+    <message>
+        <source>solid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dotted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dash/dot</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14316,23 +16277,34 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of startTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff stertTeeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff stertTeeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of endTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff indTeeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff indTeeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of stride was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff streede-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff streede-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of point1 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pueent1 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pueent1 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of point2 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pueent2 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pueent2 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisLineoutQueryWidget</name>
+    <message>
+        <source>Start point</source>
+        <translation type="unfinished">Stert pueent</translation>
+    </message>
+    <message>
+        <source>End point</source>
+        <translation type="unfinished">Ind pueent</translation>
     </message>
 </context>
 <context>
@@ -14355,7 +16327,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Global Lineout Overrides</source>
-        <translation type="unfinished">Glubel Leeneuoot Ooferreedes</translation>
+        <translation type="obsolete">Glubel Leeneuoot Ooferreedes</translation>
     </message>
     <message>
         <source>Use Sampling</source>
@@ -14371,15 +16343,19 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of point1 is not valid. It should consist of two or three real world coordinate values.  Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pueent1 is nut feleed. It shuoold cunseest ooff tvu oor three-a reel vurld cuurdeenete-a felooes.  Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pueent1 is nut feleed. It shuoold cunseest ooff tvu oor three-a reel vurld cuurdeenete-a felooes.  Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of point2 is not valid. It should consist of two or three real world coordinate values.  Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pueent2 is nut feleed. It shuoold cunseest ooff tvu oor three-a reel vurld cuurdeenete-a felooes.  Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pueent2 is nut feleed. It shuoold cunseest ooff tvu oor three-a reel vurld cuurdeenete-a felooes.  Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of numberOfSamplePoints was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff noomberOffSemplePueents ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff noomberOffSemplePueents ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Number of Sample Points </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14453,7 +16429,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Set Print options . . .</source>
-        <translation type="unfinished">Set Preent oopshuns . . .</translation>
+        <translation type="obsolete">Set Preent oopshuns . . .</translation>
     </message>
     <message>
         <source>Restore session . . .</source>
@@ -14465,7 +16441,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Save session . . .</source>
-        <translation type="unfinished">Sefe-a sesseeun . . .</translation>
+        <translation type="obsolete">Sefe-a sesseeun . . .</translation>
     </message>
     <message>
         <source>&amp;Quit</source>
@@ -14593,7 +16569,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished">Edd</translation>
+        <translation type="obsolete">Edd</translation>
     </message>
     <message>
         <source>Clone</source>
@@ -14701,15 +16677,15 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Full frame</source>
-        <translation type="unfinished">Fooll freme-a</translation>
+        <translation type="obsolete">Fooll freme-a</translation>
     </message>
     <message>
         <source>Navigate bbox</source>
-        <translation type="unfinished">Nefeegete-a bbux</translation>
+        <translation type="obsolete">Nefeegete-a bbux</translation>
     </message>
     <message>
         <source>Spin</source>
-        <translation type="unfinished">Speen</translation>
+        <translation type="obsolete">Speen</translation>
     </message>
     <message>
         <source>&amp;Help</source>
@@ -14741,23 +16717,23 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Maintain limits</source>
-        <translation type="unfinished">Meeentein leemits</translation>
+        <translation type="obsolete">Meeentein leemits</translation>
     </message>
     <message>
         <source>view</source>
-        <translation type="unfinished">feeoo</translation>
+        <translation type="obsolete">feeoo</translation>
     </message>
     <message>
         <source>data</source>
-        <translation type="unfinished">deta</translation>
+        <translation type="obsolete">deta</translation>
     </message>
     <message>
         <source>Replace plots</source>
-        <translation type="unfinished">Replece-a pluts</translation>
+        <translation type="obsolete">Replece-a pluts</translation>
     </message>
     <message>
         <source>Auto update</source>
-        <translation type="unfinished">Ootu updete-a</translation>
+        <translation type="obsolete">Ootu updete-a</translation>
     </message>
     <message>
         <source>done</source>
@@ -14771,6 +16747,54 @@ by Lineout Operator</source>
         <source>Window </source>
         <translation type="unfinished">Veendoo </translation>
     </message>
+    <message>
+        <source>Save session</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save session as . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Data-Level Comparisons . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selections . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Setup Host Profiles and Configuration . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Noo</translation>
+    </message>
+    <message>
+        <source>Full frame mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spin mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Main Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Main</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto apply</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisMaterialWindow</name>
@@ -14780,11 +16804,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Tetrahedral (obsolete)</source>
-        <translation type="unfinished">Tetrehedrel (oobsulete-a)</translation>
+        <translation type="obsolete">Tetrehedrel (oobsulete-a)</translation>
     </message>
     <message>
         <source>Zoo-based (default)</source>
-        <translation type="unfinished">Zuu-besed (deffoolt)</translation>
+        <translation type="obsolete">Zuu-besed (deffoolt)</translation>
     </message>
     <message>
         <source>Isovolume (special-purpose)</source>
@@ -14792,11 +16816,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Enable interface smoothing</source>
-        <translation type="unfinished">Ineble-a interffece-a smuutheeng</translation>
+        <translation type="obsolete">Ineble-a interffece-a smuutheeng</translation>
     </message>
     <message>
         <source>Force full connectivity</source>
-        <translation type="unfinished">Furce-a fooll cunnecteefity</translation>
+        <translation type="obsolete">Furce-a fooll cunnecteefity</translation>
     </message>
     <message>
         <source>Force interface reconstruction</source>
@@ -14834,6 +16858,58 @@ by Lineout Operator</source>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.  VisIt will NOT issue this message any further times for this session, but keep in mind that you must re-open each time you change the material attributes.</source>
         <translation type="unfinished">Nute-a:  Zeese-a setteengs oonly epply tu noo pluts.  Tu epply zeem tu coorrent pluts, re-a-oopee zee feele-a.  VisIt veell NOT issooe-a thees messege-a uny foorzeer teemes fur thees sesseeun, boot keep in meend thet yuoo moost re-a-oopee iech teeme-a yuoo chunge-a zee metereeel ettreebootes.</translation>
     </message>
+    <message>
+        <source>Equi-T (obsolete)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Equi-Z (default, supports iteration)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PLIC (accurate/discontinuous)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discrete (accurate/10X memory footprint/rect. only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable interface smoothing (Equi-* only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Force full connectivity (Equi-T only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable iteration (Equi-Z, Isovolume only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of iterations</source>
+        <translation type="unfinished">Noomber ooff itereshuns</translation>
+    </message>
+    <message>
+        <source>Convergence rate (&gt;0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Annealing time (seconds) (Discrete only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of numIterations was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished">Zee felooe-a ooff noomItereshuns ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>The value of iterationDamping was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of annealingTime was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisMergeWindow</name>
@@ -14847,7 +16923,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of tolerance was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff tulerunce-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff tulerunce-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
 </context>
 <context>
@@ -14892,6 +16968,10 @@ by Lineout Operator</source>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.</source>
         <translation type="unfinished">Nute-a:  Zeese-a setteengs oonly epply tu noo pluts.  Tu epply zeem tu coorrent pluts, re-a-oopee zee feele-a.</translation>
     </message>
+    <message>
+        <source>Multi-pass</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisMeshPlotWindow</name>
@@ -14909,7 +16989,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Use foreground</source>
-        <translation type="unfinished">Use-a furegruoond</translation>
+        <translation type="obsolete">Use-a furegruoond</translation>
     </message>
     <message>
         <source>Opaque color</source>
@@ -14917,7 +16997,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Use background</source>
-        <translation type="unfinished">Use-a beckgruoond</translation>
+        <translation type="obsolete">Use-a beckgruoond</translation>
     </message>
     <message>
         <source>Opaque mode</source>
@@ -14937,7 +17017,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Show Internal Zones</source>
-        <translation type="unfinished">Shoo Internel Zunes</translation>
+        <translation type="obsolete">Shoo Internel Zunes</translation>
     </message>
     <message>
         <source>Outline only</source>
@@ -14953,7 +17033,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Geometry smoothing</source>
-        <translation type="unfinished">Geumetry smuutheeng</translation>
+        <translation type="obsolete">Geumetry smuutheeng</translation>
     </message>
     <message>
         <source>None</source>
@@ -14969,7 +17049,55 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The error tolerance was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee irrur tulerunce-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee irrur tulerunce-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Zone</source>
+        <translation type="unfinished">Zune-a</translation>
+    </message>
+    <message>
+        <source>Show internal zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">Culur</translation>
+    </message>
+    <message>
+        <source>Foreground</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Background</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity</source>
+        <translation type="unfinished">Oopeceety</translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>error tolerance</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15003,7 +17131,7 @@ by Lineout Operator</source>
     <name>QvisMetricThresholdWindow</name>
     <message>
         <source>Preset Data for: </source>
-        <translation type="unfinished">Preset Deta fur: </translation>
+        <translation type="obsolete">Preset Deta fur: </translation>
     </message>
     <message>
         <source>None</source>
@@ -15095,11 +17223,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Enable Type</source>
-        <translation type="unfinished">Ineble-a Type-a</translation>
+        <translation type="obsolete">Ineble-a Type-a</translation>
     </message>
     <message>
         <source>Exclusion Range</source>
-        <translation type="unfinished">Ixclooseeun Runge-a</translation>
+        <translation type="obsolete">Ixclooseeun Runge-a</translation>
     </message>
     <message>
         <source>hex_lower</source>
@@ -15171,51 +17299,55 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of hex_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff hex_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff hex_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of hex_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff hex_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff hex_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of tet_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff tet_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff tet_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of tet_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff tet_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff tet_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of wed_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ved_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ved_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of wed_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ved_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ved_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of pyr_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pyr_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pyr_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of pyr_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pyr_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pyr_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of tri_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff tree_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff tree_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of tri_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff tree_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff tree_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of quad_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff qooed_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff qooed_looer ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of quad_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff qooed_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff qooed_upper ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>preset</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15382,23 +17514,47 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of radiusScaleFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff redeeoosSceleFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff redeeoosSceleFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of radiusFixed was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff redeeoosFixed ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff redeeoosFixed ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of bondRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff bundRedeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff bundRedeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of scalarMin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff scelerMeen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff scelerMeen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of scalarMax was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff scelerMex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff scelerMex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>radius scale factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>fixed radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>bond radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15406,6 +17562,76 @@ by Lineout Operator</source>
     <message>
         <source>Cancel</source>
         <translation type="unfinished">Cuncel</translation>
+    </message>
+</context>
+<context>
+    <name>QvisMultiCurvePlotWindow</name>
+    <message>
+        <source>Curve colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Seengle-a</translation>
+    </message>
+    <message>
+        <source>Multiple</source>
+        <translation type="unfinished">Moolteeple-a</translation>
+    </message>
+    <message>
+        <source>Curve</source>
+        <translation type="unfinished">Coorfe-a</translation>
+    </message>
+    <message>
+        <source>Line Style</source>
+        <translation type="unfinished">Leene-a Style-a</translation>
+    </message>
+    <message>
+        <source>Line Width</source>
+        <translation type="unfinished">Leene-a Veedt</translation>
+    </message>
+    <message>
+        <source>Y-Axis title format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Axis tick spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display markers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marker variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display ids</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Id variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend</source>
+        <translation type="unfinished">Legend</translation>
+    </message>
+    <message>
+        <source>yAxisTickSpacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisMultiresControlWindow</name>
+    <message>
+        <source>Resolution: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of info was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15458,11 +17684,11 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Yes</source>
-        <translation type="unfinished">Yes</translation>
+        <translation type="obsolete">Yes</translation>
     </message>
     <message>
         <source>No</source>
-        <translation type="unfinished">Nu</translation>
+        <translation type="obsolete">Nu</translation>
     </message>
     <message>
         <source>Yes, Do not prompt again</source>
@@ -15616,67 +17842,75 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Number of zones</source>
-        <translation type="unfinished">Noomber ooff zunes</translation>
+        <translation type="obsolete">Noomber ooff zunes</translation>
     </message>
     <message>
         <source>The value of var1 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer1 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer1 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var1Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer1Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer1Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var1Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer1Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer1Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var1SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer1SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer1SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var1NumSamples was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer1NoomSemples ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer1NoomSemples ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var2 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer2 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer2 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var2Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer2Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer2Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var2Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer2Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer2Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var2SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer2SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer2SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var2NumSamples was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer2NoomSemples ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer2NoomSemples ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var3 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer3 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer3 ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var3Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer3Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer3Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var3Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer3Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer3Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var3SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer3SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer3SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var3NumSamples was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer3NoomSemples ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer3NoomSemples ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Variable 2 Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ZoneCount</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15719,7 +17953,7 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Draw individual lines</source>
-        <translation type="unfinished">Drev indeefidooel leenes</translation>
+        <translation type="obsolete">Drev indeefidooel leenes</translation>
     </message>
     <message>
         <source>... but only when axis extents have been restricted</source>
@@ -15727,7 +17961,7 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Line color</source>
-        <translation type="unfinished">Leene-a culur</translation>
+        <translation type="obsolete">Leene-a culur</translation>
     </message>
     <message>
         <source>Draw context</source>
@@ -15757,146 +17991,337 @@ Do you want to apply the %2 operator?
         <source>The value of contextNumPartitions was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished">Zee felooe-a ooff cuntextNoomPerteeshuns ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
+    <message>
+        <source>Min value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Max value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw focus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw focus as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Individual lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bins of constant color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bins colored by population</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Focus color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of focusGamma was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisParallelCoordinatesPlotWizard</name>
     <message>
         <source>The plot has successfully been defined by use of an array variable.</source>
-        <translation type="unfinished">Zee plut hes sooccessffoolly beee deffeened by use-a ooff un errey fereeeble-a.</translation>
+        <translation type="obsolete">Zee plut hes sooccessffoolly beee deffeened by use-a ooff un errey fereeeble-a.</translation>
     </message>
     <message>
         <source>Click Finish</source>
-        <translation type="unfinished">Cleeck Feenish</translation>
+        <translation type="obsolete">Cleeck Feenish</translation>
     </message>
     <message>
         <source>ParallelCoordinates Plot Wizard</source>
-        <translation type="unfinished">PerellelCuurdeenetes Plut Veezerd</translation>
-    </message>
-    <message>
-        <source>A ParallelCoordinates plot needs at least 2 axes.
-Choose a scalar variable for the second axis.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">PerellelCuurdeenetes Plut Veezerd</translation>
     </message>
     <message>
         <source>Choose second axis variable</source>
-        <translation type="unfinished">Chuuse-a secund exees fereeeble-a</translation>
+        <translation type="obsolete">Chuuse-a secund exees fereeeble-a</translation>
     </message>
     <message>
         <source>Would you like to add a third axis to the plot?</source>
-        <translation type="unfinished">Vuoold yuoo leeke-a tu edd a thurd exees tu zee plut?</translation>
+        <translation type="obsolete">Vuoold yuoo leeke-a tu edd a thurd exees tu zee plut?</translation>
     </message>
     <message>
         <source>Add third axis?</source>
-        <translation type="unfinished">Edd thurd exees?</translation>
+        <translation type="obsolete">Edd thurd exees?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the third axis.</source>
-        <translation type="unfinished">Chuuse-a a sceler fereeeble-a fur zee thurd exees.</translation>
+        <translation type="obsolete">Chuuse-a a sceler fereeeble-a fur zee thurd exees.</translation>
     </message>
     <message>
         <source>Choose third axis variable</source>
-        <translation type="unfinished">Chuuse-a thurd exees fereeeble-a</translation>
+        <translation type="obsolete">Chuuse-a thurd exees fereeeble-a</translation>
     </message>
     <message>
         <source>Would you like to add a fourth axis to the plot?</source>
-        <translation type="unfinished">Vuoold yuoo leeke-a tu edd a fuoort exees tu zee plut?</translation>
+        <translation type="obsolete">Vuoold yuoo leeke-a tu edd a fuoort exees tu zee plut?</translation>
     </message>
     <message>
         <source>Add fourth axis?</source>
-        <translation type="unfinished">Edd fuoort exees?</translation>
+        <translation type="obsolete">Edd fuoort exees?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the fourth axis.</source>
-        <translation type="unfinished">Chuuse-a a sceler fereeeble-a fur zee fuoort exees.</translation>
+        <translation type="obsolete">Chuuse-a a sceler fereeeble-a fur zee fuoort exees.</translation>
     </message>
     <message>
         <source>Choose fourth axis variable</source>
-        <translation type="unfinished">Chuuse-a fuoort exees fereeeble-a</translation>
+        <translation type="obsolete">Chuuse-a fuoort exees fereeeble-a</translation>
     </message>
     <message>
         <source>Would you like to add a fifth axis to the plot?</source>
-        <translation type="unfinished">Vuoold yuoo leeke-a tu edd a feefft exees tu zee plut?</translation>
+        <translation type="obsolete">Vuoold yuoo leeke-a tu edd a feefft exees tu zee plut?</translation>
     </message>
     <message>
         <source>Add fifth axis?</source>
-        <translation type="unfinished">Edd feefft exees?</translation>
+        <translation type="obsolete">Edd feefft exees?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the fifth axis.</source>
-        <translation type="unfinished">Chuuse-a a sceler fereeeble-a fur zee feefft exees.</translation>
+        <translation type="obsolete">Chuuse-a a sceler fereeeble-a fur zee feefft exees.</translation>
     </message>
     <message>
         <source>Choose fifth axis variable</source>
-        <translation type="unfinished">Chuuse-a feefft exees fereeeble-a</translation>
+        <translation type="obsolete">Chuuse-a feefft exees fereeeble-a</translation>
     </message>
     <message>
         <source>Would you like to add a sixth axis to the plot?</source>
-        <translation type="unfinished">Vuoold yuoo leeke-a tu edd a seext exees tu zee plut?</translation>
+        <translation type="obsolete">Vuoold yuoo leeke-a tu edd a seext exees tu zee plut?</translation>
     </message>
     <message>
         <source>Add sixth axis?</source>
-        <translation type="unfinished">Edd seext exees?</translation>
+        <translation type="obsolete">Edd seext exees?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the sixth axis.</source>
-        <translation type="unfinished">Chuuse-a a sceler fereeeble-a fur zee seext exees.</translation>
+        <translation type="obsolete">Chuuse-a a sceler fereeeble-a fur zee seext exees.</translation>
     </message>
     <message>
         <source>Choose sixth axis variable</source>
-        <translation type="unfinished">Chuuse-a seext exees fereeeble-a</translation>
+        <translation type="obsolete">Chuuse-a seext exees fereeeble-a</translation>
     </message>
     <message>
         <source>Would you like to add a seventh axis to the plot?</source>
-        <translation type="unfinished">Vuoold yuoo leeke-a tu edd a sefent exees tu zee plut?</translation>
+        <translation type="obsolete">Vuoold yuoo leeke-a tu edd a sefent exees tu zee plut?</translation>
     </message>
     <message>
         <source>Add seventh axis?</source>
-        <translation type="unfinished">Edd sefent exees?</translation>
+        <translation type="obsolete">Edd sefent exees?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the seventh axis.</source>
-        <translation type="unfinished">Chuuse-a a sceler fereeeble-a fur zee sefent exees.</translation>
+        <translation type="obsolete">Chuuse-a a sceler fereeeble-a fur zee sefent exees.</translation>
     </message>
     <message>
         <source>Choose seventh axis variable</source>
-        <translation type="unfinished">Chuuse-a sefent exees fereeeble-a</translation>
+        <translation type="obsolete">Chuuse-a sefent exees fereeeble-a</translation>
     </message>
     <message>
         <source>Would you like to add an eighth axis to the plot?</source>
-        <translation type="unfinished">Vuoold yuoo leeke-a tu edd un ieeght exees tu zee plut?</translation>
+        <translation type="obsolete">Vuoold yuoo leeke-a tu edd un ieeght exees tu zee plut?</translation>
     </message>
     <message>
         <source>Add eighth axis?</source>
-        <translation type="unfinished">Edd ieeght exees?</translation>
+        <translation type="obsolete">Edd ieeght exees?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the eighth axis.</source>
-        <translation type="unfinished">Chuuse-a a sceler fereeeble-a fur zee ieeght exees.</translation>
+        <translation type="obsolete">Chuuse-a a sceler fereeeble-a fur zee ieeght exees.</translation>
     </message>
     <message>
         <source>Choose eighth axis variable</source>
-        <translation type="unfinished">Chuuse-a ieeght exees fereeeble-a</translation>
+        <translation type="obsolete">Chuuse-a ieeght exees fereeeble-a</translation>
     </message>
     <message>
         <source>Click the Finish button to create a new ParallelCoordinates plot.</source>
-        <translation type="unfinished">Cleeck zee Feenish boottun tu creete-a a noo PerellelCuurdeenetes plut.</translation>
+        <translation type="obsolete">Cleeck zee Feenish boottun tu creete-a a noo PerellelCuurdeenetes plut.</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="unfinished">Fereeeble-a</translation>
-    </message>
-    <message>
-        <source>Selected variable duplicates variable of another axis.
-Choose a unique scalar variable for the new axis.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Fereeeble-a</translation>
     </message>
     <message>
         <source>Yes</source>
-        <translation type="unfinished">Yes</translation>
+        <translation type="obsolete">Yes</translation>
     </message>
     <message>
         <source>No</source>
-        <translation type="unfinished">Nu</translation>
+        <translation type="obsolete">Nu</translation>
+    </message>
+    <message>
+        <source>Parallel Coordinates Plot Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisParallelCoordinatesPlotWizardPage</name>
+    <message>
+        <source>Select axis variables</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please select at least 2 variables to setup your plot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation type="unfinished">Edd</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Remufe-a</translation>
+    </message>
+</context>
+<context>
+    <name>QvisPersistentParticlesWindow</name>
+    <message>
+        <source>Time Slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type of path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative</source>
+        <translation type="unfinished">Releteefe-a</translation>
+    </message>
+    <message>
+        <source>Index of first time slice</source>
+        <translation type="unfinished">Index ooff furst teeme-a sleece-a</translation>
+    </message>
+    <message>
+        <source>Index of last time slice</source>
+        <translation type="unfinished">Index ooff lest teeme-a sleece-a</translation>
+    </message>
+    <message>
+        <source>Skip rate between time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coordinate replacement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X-Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z-Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connect particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show points</source>
+        <translation type="unfinished">Shoo pueents</translation>
+    </message>
+    <message>
+        <source>Index variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Index of the first time slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of slices backwards in time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Index of the last time slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of slices forward in time</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPickQueryWidget</name>
+    <message>
+        <source>Pick using coordinate to determine zone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pick using coordinate to determine node</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pick using domain and element Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pick using global element Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Node Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zone Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Curve options:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preserve Picked Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preserve Picked Element Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiple-variable Time Curve options:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create Single Y-Axis plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create Multiple Y-Axes plot</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15915,35 +18340,35 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Float Format:</source>
-        <translation type="unfinished">Fluet Furmet:</translation>
+        <translation type="obsolete">Fluet Furmet:</translation>
     </message>
     <message>
         <source>Concise Output.</source>
-        <translation type="unfinished">Cunceese-a Ooootpoot.</translation>
+        <translation type="obsolete">Cunceese-a Ooootpoot.</translation>
     </message>
     <message>
         <source>Show Mesh Name</source>
-        <translation type="unfinished">Shoo Mesh Neme-a</translation>
+        <translation type="obsolete">Shoo Mesh Neme-a</translation>
     </message>
     <message>
         <source>Show Timestep</source>
-        <translation type="unfinished">Shoo Teemestep</translation>
+        <translation type="obsolete">Shoo Teemestep</translation>
     </message>
     <message>
         <source>Display incident nodes/zones.</source>
-        <translation type="unfinished">Deespley inceedent nudes/zunes.</translation>
+        <translation type="obsolete">Deespley inceedent nudes/zunes.</translation>
     </message>
     <message>
         <source>Display global nodes/zones.</source>
-        <translation type="unfinished">Deespley glubel nudes/zunes.</translation>
+        <translation type="obsolete">Deespley glubel nudes/zunes.</translation>
     </message>
     <message>
         <source>Display reference pick letter.</source>
-        <translation type="unfinished">Deespley refference-a peeck letter.</translation>
+        <translation type="obsolete">Deespley refference-a peeck letter.</translation>
     </message>
     <message>
         <source>Display for Nodes:</source>
-        <translation type="unfinished">Deespley fur Nudes:</translation>
+        <translation type="obsolete">Deespley fur Nudes:</translation>
     </message>
     <message>
         <source>Id</source>
@@ -15963,7 +18388,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Display for Zones:</source>
-        <translation type="unfinished">Deespley fur Zunes:</translation>
+        <translation type="obsolete">Deespley fur Zunes:</translation>
     </message>
     <message>
         <source>Automatically show window</source>
@@ -15975,7 +18400,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Create time curve with next pick.</source>
-        <translation type="unfinished">Creete-a teeme-a coorfe-a veet next peeck.</translation>
+        <translation type="obsolete">Creete-a teeme-a coorfe-a veet next peeck.</translation>
     </message>
     <message>
         <source>Time curve use picked element</source>
@@ -15987,7 +18412,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Create spreadsheet with next pick.</source>
-        <translation type="unfinished">Creete-a spreedsheet veet next peeck.</translation>
+        <translation type="obsolete">Creete-a spreedsheet veet next peeck.</translation>
     </message>
     <message>
         <source>Invalid pick floating point format string.</source>
@@ -15996,6 +18421,86 @@ Choose a unique scalar variable for the new axis.</source>
     <message>
         <source>VisIt could not save the pick resultsto the selected file</source>
         <translation type="unfinished">VisIt cuoold nut sefe-a zee peeck resooltstu zee selected feele-a</translation>
+    </message>
+    <message>
+        <source>Float Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear Picks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output Display Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Concise Output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Timestep</source>
+        <translation type="unfinished">Teemestep</translation>
+    </message>
+    <message>
+        <source>Incident nodes/zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global nodes/zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reference pick letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For Nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Pick Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do Time Curve with next pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time curve use single Y axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time curve use multiple Y axes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Repeat Pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spreadsheet Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create spreadsheet with next pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display in Spreadsheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose save filename</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16042,46 +18547,102 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Copy</source>
-        <translation type="unfinished">Cupy</translation>
+        <translation type="obsolete">Cupy</translation>
     </message>
     <message>
         <source>Copy this plot</source>
-        <translation type="unfinished">Cupy thees plut</translation>
+        <translation type="obsolete">Cupy thees plut</translation>
     </message>
     <message>
         <source>Copy To Window</source>
-        <translation type="unfinished">Cupy Tu Veendoo</translation>
+        <translation type="obsolete">Cupy Tu Veendoo</translation>
     </message>
     <message>
         <source>Copy this plot to different window</source>
-        <translation type="unfinished">Cupy thees plut tu deefffferent veendoo</translation>
+        <translation type="obsolete">Cupy thees plut tu deefffferent veendoo</translation>
     </message>
     <message>
         <source>Window 1</source>
-        <translation type="unfinished">Veendoo 1</translation>
+        <translation type="obsolete">Veendoo 1</translation>
     </message>
     <message>
         <source>Window 2</source>
-        <translation type="unfinished">Veendoo 2</translation>
+        <translation type="obsolete">Veendoo 2</translation>
     </message>
     <message>
         <source>Disconnect From TimeSlider</source>
-        <translation type="unfinished">Deescunnect Frum TeemeSlider</translation>
+        <translation type="obsolete">Deescunnect Frum TeemeSlider</translation>
     </message>
     <message>
         <source>Disconnect this plot from time slider</source>
-        <translation type="unfinished">Deescunnect thees plut frum teeme-a sleeder</translation>
+        <translation type="obsolete">Deescunnect thees plut frum teeme-a sleeder</translation>
+    </message>
+    <message>
+        <source>Clone</source>
+        <translation type="unfinished">Clune-a</translation>
+    </message>
+    <message>
+        <source>Clone this plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit plot description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add a meaningful name for the plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move toward first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move this plot one slot toward the first plot in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move toward last</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move this plot one slot toward the last plot in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make this plot be the first in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make last</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make this plot be the last in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Follow time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set whether this plot follows the time slider</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisPlotManagerWidget</name>
     <message>
         <source>Source</source>
-        <translation type="unfinished">Suoorce-a</translation>
+        <translation type="obsolete">Suoorce-a</translation>
     </message>
     <message>
         <source>Active plots</source>
-        <translation type="unfinished">Ecteefe-a pluts</translation>
+        <translation type="obsolete">Ecteefe-a pluts</translation>
     </message>
     <message>
         <source>Hide/Show</source>
@@ -16097,15 +18658,15 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Apply </source>
-        <translation type="unfinished">Epply </translation>
+        <translation type="obsolete">Epply </translation>
     </message>
     <message>
         <source>operators</source>
-        <translation type="unfinished">oopereturs</translation>
+        <translation type="obsolete">oopereturs</translation>
     </message>
     <message>
         <source>selection to all plots</source>
-        <translation type="unfinished">selecshun tu ell pluts</translation>
+        <translation type="obsolete">selecshun tu ell pluts</translation>
     </message>
     <message>
         <source>Plots</source>
@@ -16145,27 +18706,86 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Copy This Plot To Window</source>
-        <translation type="unfinished">Cupy Thees Plut Tu Veendoo</translation>
+        <translation type="obsolete">Cupy Thees Plut Tu Veendoo</translation>
     </message>
     <message>
         <source>Not Yet Implemented...</source>
-        <translation type="unfinished">Nut Yet Implemented...</translation>
+        <translation type="obsolete">Nut Yet Implemented...</translation>
     </message>
     <message>
         <source>Window 1</source>
-        <translation type="unfinished">Veendoo 1</translation>
+        <translation type="obsolete">Veendoo 1</translation>
     </message>
     <message>
         <source>Copy Plot to Window 1</source>
-        <translation type="unfinished">Cupy Plut tu Veendoo 1</translation>
+        <translation type="obsolete">Cupy Plut tu Veendoo 1</translation>
     </message>
     <message>
         <source>Window 2</source>
-        <translation type="unfinished">Veendoo 2</translation>
+        <translation type="obsolete">Veendoo 2</translation>
     </message>
     <message>
         <source>Copy Plot to Window 2</source>
-        <translation type="unfinished">Cupy Plut tu Veendoo 2</translation>
+        <translation type="obsolete">Cupy Plut tu Veendoo 2</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation type="unfinished">Edd</translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Debugging</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Molecular</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection</source>
+        <translation type="unfinished">Selecshun</translation>
+    </message>
+    <message>
+        <source>Slicing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transforms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Apply operators to all plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Apply subset selections to all plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPluginManagerAttributesDataModel</name>
+    <message>
+        <source>Enabled</source>
+        <translation type="unfinished">Inebled</translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation type="unfinished">Ferseeun</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Neme-a</translation>
+    </message>
+    <message>
+        <source>Category</source>
+        <translation type="unfinished">Cetegury</translation>
     </message>
 </context>
 <context>
@@ -16180,7 +18800,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Version</source>
-        <translation type="unfinished">Ferseeun</translation>
+        <translation type="obsolete">Ferseeun</translation>
     </message>
     <message>
         <source>Operators</source>
@@ -16192,19 +18812,19 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Open Options</source>
-        <translation type="unfinished">Oopee Oopshuns</translation>
+        <translation type="obsolete">Oopee Oopshuns</translation>
     </message>
     <message>
         <source>Select all</source>
-        <translation type="unfinished">Select ell</translation>
+        <translation type="obsolete">Select ell</translation>
     </message>
     <message>
         <source>Unselect all</source>
-        <translation type="unfinished">Unselect ell</translation>
+        <translation type="obsolete">Unselect ell</translation>
     </message>
     <message>
         <source>Set Default Open Options</source>
-        <translation type="unfinished">Set Deffoolt Oopee Oopshuns</translation>
+        <translation type="obsolete">Set Deffoolt Oopee Oopshuns</translation>
     </message>
     <message>
         <source>Note:  Plugins are loaded at startup.  Please save your settings and restart VisIt to apply your changes.</source>
@@ -16213,6 +18833,537 @@ Choose a unique scalar variable for the new axis.</source>
     <message>
         <source>Default file opening options for %1 reader</source>
         <translation type="unfinished">Deffoolt feele-a oopeneeng oopshuns fur %1 reeder</translation>
+    </message>
+    <message>
+        <source>Clear category for all operators</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation type="unfinished">Inebled</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disable all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set default open options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add to preferred list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation type="unfinished">Up</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation type="unfinished">Doon</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Remufe-a</translation>
+    </message>
+    <message>
+        <source>yes</source>
+        <translation type="unfinished">yes</translation>
+    </message>
+</context>
+<context>
+    <name>QvisPoincarePlotWindow</name>
+    <message>
+        <source>Fieldlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished">Suoorce-a</translation>
+    </message>
+    <message>
+        <source>Source Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished">Pueent</translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished">Leene-a</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation type="unfinished">Luceshun</translation>
+    </message>
+    <message>
+        <source>Start Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>End Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point density</source>
+        <translation type="unfinished">Pueent denseety</translation>
+    </message>
+    <message>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished">Deffoolt</translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished">Cunstunt</translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unused</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step length</source>
+        <translation type="unfinished">Step lengt</translation>
+    </message>
+    <message>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Force node centering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Punctures</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Meenimoom</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Mexeemoom</translation>
+    </message>
+    <message>
+        <source>Puncture Plane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None - Punctures only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Full</source>
+        <translation type="unfinished">Fooll</translation>
+    </message>
+    <message>
+        <source>Maximum toroidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override toroidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override poloidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding pair confidence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rational surface factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Critical Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detect O Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Maximum iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overlaps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overlaping curve sections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Raw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Remufe-a</translation>
+    </message>
+    <message>
+        <source>Merge</source>
+        <translation type="unfinished">Merge-a</translation>
+    </message>
+    <message>
+        <source>Smooth</source>
+        <translation type="unfinished">Smuut</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show islands only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show chaotic fieldlines (as points)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show 1D plots (distance/ridgelines)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Verbose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation type="unfinished">Eppeerunce-a</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">Deta</translation>
+    </message>
+    <message>
+        <source>Data value:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">Nune-a</translation>
+    </message>
+    <message>
+        <source>Safety Factor Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor Q if Q==P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor P if P!=Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal Windings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal Windings Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal Windings P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fieldline Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Group Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Point Order Modulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>   </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limits</source>
+        <translation type="unfinished">Leemits</translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">Culur</translation>
+    </message>
+    <message>
+        <source>Single color</source>
+        <translation type="unfinished">Seengle-a culur</translation>
+    </message>
+    <message>
+        <source>Color table</source>
+        <translation type="unfinished">Culur teble-a</translation>
+    </message>
+    <message>
+        <source>Opacity</source>
+        <translation type="unfinished">Oopeceety</translation>
+    </message>
+    <message>
+        <source>Set explicitly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>From color table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished">Deespley</translation>
+    </message>
+    <message>
+        <source>Mesh type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Curves</source>
+        <translation type="unfinished">Coorfes</translation>
+    </message>
+    <message>
+        <source>Surfaces</source>
+        <translation type="unfinished">Soorffeces</translation>
+    </message>
+    <message>
+        <source>Number of planes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base plane (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adjust plane index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line style</source>
+        <translation type="unfinished">Leene-a style-a</translation>
+    </message>
+    <message>
+        <source>Line width</source>
+        <translation type="unfinished">Leene-a veedt</translation>
+    </message>
+    <message>
+        <source>Show Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend</source>
+        <translation type="unfinished">Legend</translation>
+    </message>
+    <message>
+        <source>Lighting</source>
+        <translation type="unfinished">Leeghting</translation>
+    </message>
+    <message>
+        <source>Parallel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel fieldline options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize across</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fieldlines and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain cache size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Work group size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velocity Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Point Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Point End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>windingPairConfidence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rationalSurfaceFactor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>singlePlane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>max</source>
+        <translation type="unfinished">mex</translation>
     </message>
 </context>
 <context>
@@ -16247,11 +19398,15 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Point Type</source>
-        <translation type="unfinished">Pueent Type-a</translation>
+        <translation type="obsolete">Pueent Type-a</translation>
     </message>
     <message>
         <source>Point size (pixels)</source>
         <translation type="unfinished">Pueent seeze-a (peexels)</translation>
+    </message>
+    <message>
+        <source>Point type</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16271,6 +19426,25 @@ Choose a unique scalar variable for the new axis.</source>
     <message>
         <source>Dismiss</source>
         <translation type="unfinished">Deesmiss</translation>
+    </message>
+</context>
+<context>
+    <name>QvisPostableWindowObserver</name>
+    <message>
+        <source>Open Attribute XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML Files (*.xml);;All files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Attribute XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML Files (*.xml)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16310,6 +19484,14 @@ Choose a unique scalar variable for the new axis.</source>
     <message>
         <source>Yes, Do not prompt again</source>
         <translation type="unfinished">Yes, Du nut prumpt egeeen</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished">Sefe-a</translation>
     </message>
 </context>
 <context>
@@ -16429,6 +19611,22 @@ Choose a unique scalar variable for the new axis.</source>
         <source>Number of significant digits</source>
         <translation type="unfinished">Noomber ooff seegnifficunt deegits</translation>
     </message>
+    <message>
+        <source>New plots automatically expanded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace plots</source>
+        <translation type="unfinished">Replece-a pluts</translation>
+    </message>
+    <message>
+        <source>Enable warning message popups</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ignore database extents (may degrade performance)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisProjectWindow</name>
@@ -16438,11 +19636,55 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>XYCartesian</source>
-        <translation type="unfinished">XYCerteseeun</translation>
+        <translation type="obsolete">XYCerteseeun</translation>
     </message>
     <message>
         <source>ZRCylindrical</source>
-        <translation type="unfinished">ZRCyleendricel</translation>
+        <translation type="obsolete">ZRCyleendricel</translation>
+    </message>
+    <message>
+        <source>X-Axis Cartesian (x &lt;= z, y &lt;= y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Axis Cartesian (x &lt;= x, y &lt;= z)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z-Axis Cartesian (x &lt;= x, y &lt;= y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X-Axis Cylindrical (x &lt;= x, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Axis Cylindrical (x &lt;= y, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z-Axis Cylindrical (x &lt;= z, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector transform method:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No transformation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as point coordinates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as coordinate displacements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as instantaneous directions</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16453,7 +19695,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Natural</source>
-        <translation type="unfinished">Netoorel</translation>
+        <translation type="obsolete">Netoorel</translation>
     </message>
     <message>
         <source>Nodal</source>
@@ -16477,11 +19719,11 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">Meen</translation>
+        <translation type="obsolete">Meen</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">Mex</translation>
+        <translation type="obsolete">Mex</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -16501,7 +19743,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Skew factor</source>
-        <translation type="unfinished">Skoo fectur</translation>
+        <translation type="obsolete">Skoo fectur</translation>
     </message>
     <message>
         <source>Opacity</source>
@@ -16521,7 +19763,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Geometry smoothing</source>
-        <translation type="unfinished">Geumetry smuutheeng</translation>
+        <translation type="obsolete">Geumetry smuutheeng</translation>
     </message>
     <message>
         <source>None</source>
@@ -16537,15 +19779,118 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee meenimoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee meenimoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee mexeemoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee mexeemoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The skew factor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee skoo fectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee skoo fectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">Deta</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Meenimoom</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Mexeemoom</translation>
+    </message>
+    <message>
+        <source>Original</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">Culur</translation>
+    </message>
+    <message>
+        <source>Set explicitly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>From color table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line style</source>
+        <translation type="unfinished">Leene-a style-a</translation>
+    </message>
+    <message>
+        <source>Line width</source>
+        <translation type="unfinished">Leene-a veedt</translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPythonFilterEditor</name>
+    <message>
+        <source>Load Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;File</source>
+        <translation type="unfinished">Feele-a</translation>
+    </message>
+    <message>
+        <source>&amp;Simple Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Advanced Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python Script File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Python Filter Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load Python Filter</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16568,22 +19913,15 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Starting timestep</source>
-        <translation type="unfinished">Sterteeng teemestep</translation>
+        <translation type="obsolete">Sterteeng teemestep</translation>
     </message>
     <message>
         <source>Ending timestep</source>
-        <translation type="unfinished">Indeeng teemestep</translation>
+        <translation type="obsolete">Indeeng teemestep</translation>
     </message>
     <message>
         <source>stride</source>
-        <translation type="unfinished">streede-a</translation>
-    </message>
-    <message>
-        <source>Use 1st unused window or
-create new one.  All
-subsequent queries will
-use this same window.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">streede-a</translation>
     </message>
     <message>
         <source>Window #</source>
@@ -16591,19 +19929,29 @@ use this same window.</source>
     </message>
     <message>
         <source>The value of startTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff stertTeeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff stertTeeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of endTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff indTeeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff indTeeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of stride was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff streede-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff streede-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of windowId was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished">Zee felooe-a ooff veendooId ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Choices entered here only apply to values displayed in the x-axis of the time curve.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use 1st unused window or create new
+one. All subsequent queries will use this
+same window.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16642,7 +19990,7 @@ use this same window.</source>
     </message>
     <message>
         <source>Time Curve</source>
-        <translation type="unfinished">Teeme-a Coorfe-a</translation>
+        <translation type="obsolete">Teeme-a Coorfe-a</translation>
     </message>
     <message>
         <source>Query</source>
@@ -16678,15 +20026,15 @@ use this same window.</source>
     </message>
     <message>
         <source>Query point</source>
-        <translation type="unfinished">Qooery pueent</translation>
+        <translation type="obsolete">Qooery pueent</translation>
     </message>
     <message>
         <source>Start point</source>
-        <translation type="unfinished">Stert pueent</translation>
+        <translation type="obsolete">Stert pueent</translation>
     </message>
     <message>
         <source>End point</source>
-        <translation type="unfinished">Ind pueent</translation>
+        <translation type="obsolete">Ind pueent</translation>
     </message>
     <message>
         <source>Domain</source>
@@ -16718,15 +20066,15 @@ use this same window.</source>
     </message>
     <message>
         <source>Variable Names</source>
-        <translation type="unfinished">Fereeeble-a Nemes</translation>
+        <translation type="obsolete">Fereeeble-a Nemes</translation>
     </message>
     <message>
         <source>Ray Center</source>
-        <translation type="unfinished">Rey Center</translation>
+        <translation type="obsolete">Rey Center</translation>
     </message>
     <message>
         <source>Radius, Theta, Phi</source>
-        <translation type="unfinished">Redeeoos, Zeeta, Phee</translation>
+        <translation type="obsolete">Redeeoos, Zeeta, Phee</translation>
     </message>
     <message>
         <source>Output File</source>
@@ -16766,15 +20114,15 @@ use this same window.</source>
     </message>
     <message>
         <source>query point</source>
-        <translation type="unfinished">qooery pueent</translation>
+        <translation type="obsolete">qooery pueent</translation>
     </message>
     <message>
         <source>start point</source>
-        <translation type="unfinished">stert pueent</translation>
+        <translation type="obsolete">stert pueent</translation>
     </message>
     <message>
         <source>end point</source>
-        <translation type="unfinished">ind pueent</translation>
+        <translation type="obsolete">ind pueent</translation>
     </message>
     <message>
         <source>Performing %1 query.</source>
@@ -16782,7 +20130,7 @@ use this same window.</source>
     </message>
     <message>
         <source>The %1 is not valid. It should consist of two or three real world coordinate values.</source>
-        <translation type="unfinished">Zee %1 is nut feleed. It shuoold cunseest ooff tvu oor three-a reel vurld cuurdeenete-a felooes.</translation>
+        <translation type="obsolete">Zee %1 is nut feleed. It shuoold cunseest ooff tvu oor three-a reel vurld cuurdeenete-a felooes.</translation>
     </message>
     <message>
         <source>The list of variables contains an error.</source>
@@ -16794,7 +20142,31 @@ use this same window.</source>
     </message>
     <message>
         <source>VisIt could not save the query resultsto the selected file</source>
-        <translation type="unfinished">VisIt cuoold nut sefe-a zee qooery resooltstu zee selected feele-a</translation>
+        <translation type="obsolete">VisIt cuoold nut sefe-a zee qooery resooltstu zee selected feele-a</translation>
+    </message>
+    <message>
+        <source>Dump Steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python Query Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Execute Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are currently no query results to save.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Query Results As</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not save the query results to the selected file</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16940,19 +20312,31 @@ use this same window.</source>
     </message>
     <message>
         <source>The value of specifiedX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff speceeffiedX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff speceeffiedX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of specifiedY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff speceeffiedY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff speceeffiedY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of specifiedZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff speceeffiedZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff speceeffiedZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The reflection attributes require the 3D input mode because the original data octant or one or more of the reflection octants has a negative Z value. The input mode will remain 3D.</source>
         <translation type="unfinished">Zee refflecshun ettreebootes reqooure-a zee 3D inpoot mude-a becoose-a zee ooreeginel deta ooctunt oor oone-a oor mure-a ooff zee refflecshun ooctunts hes a negeteefe-a Z felooe-a. Zee inpoot mude-a veell remeeen 3D.</translation>
+    </message>
+    <message>
+        <source>Specified X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specified Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specified Z</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16979,11 +20363,11 @@ use this same window.</source>
     </message>
     <message>
         <source>The value of cell was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff cell ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff cell ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of domain was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff dumeeen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff dumeeen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
 </context>
 <context>
@@ -16994,7 +20378,7 @@ use this same window.</source>
     </message>
     <message>
         <source>Basic Options</source>
-        <translation type="unfinished">Beseec Oopshuns</translation>
+        <translation type="obsolete">Beseec Oopshuns</translation>
     </message>
     <message>
         <source>Antialiasing</source>
@@ -17070,7 +20454,7 @@ use this same window.</source>
     </message>
     <message>
         <source>Advanced Options</source>
-        <translation type="unfinished">Edfunced Oopshuns</translation>
+        <translation type="obsolete">Edfunced Oopshuns</translation>
     </message>
     <message>
         <source>Use scalable rendering</source>
@@ -17082,7 +20466,7 @@ use this same window.</source>
     </message>
     <message>
         <source>Compress images (geom too) from engine</source>
-        <translation type="unfinished">Cumpress imeges (geum tuu) frum ingeene-a</translation>
+        <translation type="obsolete">Cumpress imeges (geum tuu) frum ingeene-a</translation>
     </message>
     <message>
         <source>Shadows (scalable rendering only)</source>
@@ -17094,11 +20478,11 @@ use this same window.</source>
     </message>
     <message>
         <source>Start point</source>
-        <translation type="unfinished">Stert pueent</translation>
+        <translation type="obsolete">Stert pueent</translation>
     </message>
     <message>
         <source>End point</source>
-        <translation type="unfinished">Ind pueent</translation>
+        <translation type="obsolete">Ind pueent</translation>
     </message>
     <message>
         <source>Apply color using textures</source>
@@ -17158,11 +20542,43 @@ use this same window.</source>
     </message>
     <message>
         <source>The start point was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee stert pueent ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee stert pueent ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The end point was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee ind pueent ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee ind pueent ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+    </message>
+    <message>
+        <source>Compress images (geometry too) from engine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compact domains on engine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When domains per process exceeds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue automatically along camera depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manual start point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manual end point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start point</source>
+        <translation type="unfinished">stert pueent</translation>
+    </message>
+    <message>
+        <source>end point</source>
+        <translation type="unfinished">ind pueent</translation>
     </message>
 </context>
 <context>
@@ -17206,27 +20622,39 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>The value of xVector was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff xFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff xFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of yVector was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff yFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff yFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of zVector was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff zFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff zFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of xReplications was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff xRepleeceshuns ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff xRepleeceshuns ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of yReplications was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff yRepleeceshuns ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff yRepleeceshuns ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of zReplications was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff zRepleeceshuns ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff zRepleeceshuns ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Shift atoms to new periodic origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New periodic atom origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New periodic origin</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -17300,50 +20728,52 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished">Felooe-a fur uncufered regeeuns</translation>
     </message>
     <message>
-        <source>Distribute resampled data
-set across all processors
-(parallel only)?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The value of startX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff stertX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff stertX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of endX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff indX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff indX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of samplesX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff semplesX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff semplesX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of startY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff stertY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff stertY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of endY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff indY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff indY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of samplesY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff semplesY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff semplesY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of startZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff stertZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff stertZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of endZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff indZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff indZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of samplesZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff semplesZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff semplesZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of defaultValue was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff deffooltFelooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff deffooltFelooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Distribute resampled data set across all processors (parallel only)?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make output cell centered</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -17390,19 +20820,19 @@ set across all processors
     </message>
     <message>
         <source>The value of axis was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff exees ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff exees ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of startAngle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff stertUngle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff stertUngle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of stopAngle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff stupUngle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff stupUngle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of steps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff steps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff steps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
 </context>
 <context>
@@ -17443,7 +20873,7 @@ set across all processors
     </message>
     <message>
         <source>Template uage</source>
-        <translation type="unfinished">Templete-a uege-a</translation>
+        <translation type="obsolete">Templete-a uege-a</translation>
     </message>
     <message>
         <source>Movie templates allow you to create complex movies. What would you like to do?</source>
@@ -17683,7 +21113,7 @@ set across all processors
     </message>
     <message>
         <source>Movie settings</source>
-        <translation type="unfinished">Mufeee-a setteengs</translation>
+        <translation type="obsolete">Mufeee-a setteengs</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -17863,7 +21293,7 @@ set across all processors
     </message>
     <message>
         <source>%1 page %2 for sequence %3</source>
-        <translation type="unfinished">%1 pege-a %2 fur seqooence-a %3</translation>
+        <translation type="obsolete">%1 pege-a %2 fur seqooence-a %3</translation>
     </message>
     <message>
         <source>No description available</source>
@@ -17873,12 +21303,28 @@ set across all processors
         <source>Select output directory</source>
         <translation type="unfinished">Select ooootpoot durectury</translation>
     </message>
+    <message>
+        <source>Template usage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User interface</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frame stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 sequence</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisSaveWindow</name>
     <message>
         <source>File information</source>
-        <translation type="unfinished">Feele-a inffurmeshun</translation>
+        <translation type="obsolete">Feele-a inffurmeshun</translation>
     </message>
     <message>
         <source>Output files to current directory</source>
@@ -17996,6 +21442,62 @@ set across all processors
         <source>Select output directory</source>
         <translation type="unfinished">Select ooootpoot durectury</translation>
     </message>
+    <message>
+        <source>Format Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Standard Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced Multi-Window Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do Advanced Multi-Window Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Total Window Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Individual Window Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Window</source>
+        <translation type="unfinished">Veendoo</translation>
+    </message>
+    <message>
+        <source>Omit Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position (X)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position (Y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Layer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transparency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The x position was invalid. Resetting to the last good value %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The y position was invalid. Resetting to the last good value %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisScatterPlotWindow</name>
@@ -18017,11 +21519,11 @@ set across all processors
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">Meen</translation>
+        <translation type="obsolete">Meen</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">Mex</translation>
+        <translation type="obsolete">Mex</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -18041,7 +21543,7 @@ set across all processors
     </message>
     <message>
         <source>Skew factor</source>
-        <translation type="unfinished">Skoo fectur</translation>
+        <translation type="obsolete">Skoo fectur</translation>
     </message>
     <message>
         <source>Input 2</source>
@@ -18097,11 +21599,11 @@ set across all processors
     </message>
     <message>
         <source>Use foreground </source>
-        <translation type="unfinished">Use-a furegruoond </translation>
+        <translation type="obsolete">Use-a furegruoond </translation>
     </message>
     <message>
         <source>Scale to cube</source>
-        <translation type="unfinished">Scele-a tu coobe-a</translation>
+        <translation type="obsolete">Scele-a tu coobe-a</translation>
     </message>
     <message>
         <source>Roles</source>
@@ -18133,127 +21635,450 @@ set across all processors
     </message>
     <message>
         <source>The value of var1Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer1Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer1Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var1Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer1Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer1Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var1SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer1SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer1SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var2Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer2Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer2Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var2Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer2Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer2Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var2SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer2SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer2SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var3Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer3Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer3Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var3Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer3Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer3Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var3SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer3SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer3SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var4Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer4Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer4Meen ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var4Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer4Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer4Mex ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of var4SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fer4SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fer4SkooFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of pointSizePixels was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pueentSizePixels ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pueentSizePixels ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of pointSize was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pueentSize-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pueentSize-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The %1 role was being fulfilled by another input variable. To ensure that the %2 role is fulfilled by the %3 variable, the other variable&apos;s role has been set to None.</source>
         <translation type="unfinished">Zee %1 rule-a ves beeeng foolffeelled by unuzeer inpoot fereeeble-a. Tu insoore-a thet zee %2 rule-a is foolffeelled by zee %3 fereeeble-a, zee oozeer fereeeble-as rule-a hes beee set tu Nune-a.</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">Deta</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Meenimoom</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Mexeemoom</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normalize the axis to a cube</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">Culur</translation>
+    </message>
+    <message>
+        <source>Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 1 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 1 max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 1 skew factor</source>
+        <translation type="unfinished">Fereeeble-a 1 skoo fectur</translation>
+    </message>
+    <message>
+        <source>Variable 2 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 2 maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 2 skew factor</source>
+        <translation type="unfinished">Fereeeble-a 2 skoo fectur</translation>
+    </message>
+    <message>
+        <source>Variable 3 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 3 maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 3 skew factor</source>
+        <translation type="unfinished">Fereeeble-a 3 skoo fectur</translation>
+    </message>
+    <message>
+        <source>Variable 4 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 4 maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 4 skew factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>point size (pixels)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>point size</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisScatterPlotWizard</name>
     <message>
         <source>Scatter plot wizard</source>
-        <translation type="unfinished">Scetter plut veezerd</translation>
-    </message>
-    <message>
-        <source>Choose a variable to use for the Scatter
-plot&apos;s Y coordinate.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Scetter plut veezerd</translation>
     </message>
     <message>
         <source>Choose Y coordinate</source>
-        <translation type="unfinished">Chuuse-a Y cuurdeenete-a</translation>
-    </message>
-    <message>
-        <source>Would you like to choose a variable to use
-as the Scatter plot&apos;s Z coordinate?</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Chuuse-a Y cuurdeenete-a</translation>
     </message>
     <message>
         <source>Choose Z coordinate</source>
-        <translation type="unfinished">Chuuse-a Z cuurdeenete-a</translation>
-    </message>
-    <message>
-        <source>Choose a variable to use for the Scatter
-plot&apos;s Z coordinate.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Would you like to choose a variable to use
-as the Scatter plot&apos;s color?</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Chuuse-a Z cuurdeenete-a</translation>
     </message>
     <message>
         <source>Choose color variable</source>
-        <translation type="unfinished">Chuuse-a culur fereeeble-a</translation>
-    </message>
-    <message>
-        <source>Choose a variable to use for the Scatter
-plot&apos;s color.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Chuuse-a culur fereeeble-a</translation>
     </message>
     <message>
         <source>Click the Finish button to create a new Scatter plot</source>
-        <translation type="unfinished">Cleeck zee Feenish boottun tu creete-a a noo Scetter plut</translation>
+        <translation type="obsolete">Cleeck zee Feenish boottun tu creete-a a noo Scetter plut</translation>
     </message>
     <message>
         <source>Click Finish</source>
-        <translation type="unfinished">Cleeck Feenish</translation>
+        <translation type="obsolete">Cleeck Feenish</translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="obsolete">Fereeeble-a</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation type="obsolete">Yes</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation type="obsolete">Nu</translation>
+    </message>
+    <message>
+        <source>Scatter Plot Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisScatterPlotWizardPage</name>
+    <message>
+        <source>&lt;Select&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select variables for a new Scatter Plot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisSelectionsDialog</name>
+    <message>
+        <source>Selection Name and Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database</source>
+        <translation type="unfinished">Detebese-a</translation>
+    </message>
+    <message>
+        <source>Plot</source>
+        <translation type="unfinished">Plut</translation>
+    </message>
+</context>
+<context>
+    <name>QvisSelectionsWindow</name>
+    <message>
+        <source>Selections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Noo</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">Delete-a</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished">Sefe-a</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties</source>
+        <translation type="unfinished">Pruperteees</translation>
+    </message>
+    <message>
+        <source>Statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The data source that defines the selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cumulative Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Range</source>
+        <translation type="unfinished">Runge-a</translation>
+    </message>
+    <message>
+        <source>Histogram</source>
+        <translation type="unfinished">Heestugrem</translation>
+    </message>
+    <message>
+        <source>Automatically apply updated selections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation type="unfinished">Edd fereeeble-a</translation>
+    </message>
+    <message>
+        <source>Get variable ranges</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Populate the list of variables used for the cumulative query
+selection from the list of variables used in the selection&apos;s
+originating plot. The originating plot must be a Parallel
+Coordinates plot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Query over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation type="unfinished">Stert</translation>
+    </message>
+    <message>
+        <source>End</source>
+        <translation type="unfinished">Ind</translation>
+    </message>
+    <message>
+        <source>Stride</source>
+        <translation type="unfinished">Streede-a</translation>
+    </message>
+    <message>
+        <source>Axis</source>
+        <translation type="unfinished">Exees</translation>
+    </message>
+    <message>
+        <source>Display axis type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Matches</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Variable</source>
         <translation type="unfinished">Fereeeble-a</translation>
     </message>
     <message>
-        <source>Yes</source>
-        <translation type="unfinished">Yes</translation>
+        <source>Number of bins</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>No</source>
-        <translation type="unfinished">Nu</translation>
+        <source>Summation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished">Type-a</translation>
+    </message>
+    <message>
+        <source>Include cells matching in any time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Include cells matching in all time steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum bin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum bin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cells in selection:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cells in dataset:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum time state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum time state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>time stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of Cells vs. Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency vs. Matches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency vs. ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency vs. Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>none</source>
+        <translation type="unfinished">nune-a</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Meenimoom</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Mexeemoom</translation>
+    </message>
+    <message>
+        <source>VisIt can&apos;t determine the host for the compute engine to use for loading the selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load selection from file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable display is not supported when the selection does not have any variables.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18340,6 +22165,49 @@ plot&apos;s color.</source>
     </message>
 </context>
 <context>
+    <name>QvisSetupHostProfilesAndConfigWindow</name>
+    <message>
+        <source>To finish the VisIt install on this Mac select any computing centers whose resources you are using to configure host profiles automatically for their machines.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select computing centers used</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select default configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None (use VisIt&apos;s standard defaults)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Cuncel</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The configuration file </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace existing configuration file?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host profiles and configuration files have been installed and will be available after VisIt is restarted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisSiloDumpWindow</name>
     <message>
         <source>Filename</source>
@@ -18351,30 +22219,18 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of filename was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff feeleneme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff feeleneme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
 </context>
 <context>
-    <name>QvisSimulationWindow</name>
+    <name>QvisSimulationCommandWindow</name>
     <message>
-        <source>Simulation:</source>
-        <translation type="unfinished">Seemooleshun:</translation>
+        <source>Commands</source>
+        <translation type="unfinished">Cummunds</translation>
     </message>
     <message>
-        <source>Attribute</source>
-        <translation type="unfinished">Ettreeboote-a</translation>
-    </message>
-    <message>
-        <source>Value</source>
-        <translation type="unfinished">Felooe-a</translation>
-    </message>
-    <message>
-        <source>Simulation Status: </source>
-        <translation type="unfinished">Seemooleshun Stetoos: </translation>
-    </message>
-    <message>
-        <source>VisIt Status</source>
-        <translation type="unfinished">VisIt Stetoos</translation>
+        <source>Enable time ranging</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Start</source>
@@ -18389,8 +22245,47 @@ plot&apos;s color.</source>
         <translation type="unfinished">Stup</translation>
     </message>
     <message>
+        <source>Custom . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisSimulationWindow</name>
+    <message>
+        <source>Simulation:</source>
+        <translation type="obsolete">Seemooleshun:</translation>
+    </message>
+    <message>
+        <source>Attribute</source>
+        <translation type="unfinished">Ettreeboote-a</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation type="unfinished">Felooe-a</translation>
+    </message>
+    <message>
+        <source>Simulation Status: </source>
+        <translation type="obsolete">Seemooleshun Stetoos: </translation>
+    </message>
+    <message>
+        <source>VisIt Status</source>
+        <translation type="obsolete">VisIt Stetoos</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation type="obsolete">Stert</translation>
+    </message>
+    <message>
+        <source>Step</source>
+        <translation type="obsolete">Step</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation type="obsolete">Stup</translation>
+    </message>
+    <message>
         <source>Enable Time Ranging</source>
-        <translation type="unfinished">Ineble-a Teeme-a Rungeeng</translation>
+        <translation type="obsolete">Ineble-a Teeme-a Rungeeng</translation>
     </message>
     <message>
         <source>Interrupt</source>
@@ -18406,15 +22301,15 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Commands</source>
-        <translation type="unfinished">Cummunds</translation>
+        <translation type="obsolete">Cummunds</translation>
     </message>
     <message>
         <source>Message Viewer</source>
-        <translation type="unfinished">Messege-a Feeooer</translation>
+        <translation type="obsolete">Messege-a Feeooer</translation>
     </message>
     <message>
         <source>Unpost Strip Chart Window</source>
-        <translation type="unfinished">Unpust Streep Chert Veendoo</translation>
+        <translation type="obsolete">Unpust Streep Chert Veendoo</translation>
     </message>
     <message>
         <source>VisIt could not locate the simulation&apos;s user interface creation file at: %1. The custom user interface for this simulation will be unavailable.</source>
@@ -18422,7 +22317,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>on</source>
-        <translation type="unfinished">oon</translation>
+        <translation type="obsolete">oon</translation>
     </message>
     <message>
         <source>Host</source>
@@ -18442,11 +22337,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Simulation Status: Running</source>
-        <translation type="unfinished">Seemooleshun Stetoos: Roonneeng</translation>
+        <translation type="obsolete">Seemooleshun Stetoos: Roonneeng</translation>
     </message>
     <message>
         <source>Simulation Status: Stopped</source>
-        <translation type="unfinished">Seemooleshun Stetoos: Stupped</translation>
+        <translation type="obsolete">Seemooleshun Stetoos: Stupped</translation>
     </message>
     <message>
         <source>Really close the compute engine on host &quot;%1&quot;?
@@ -18462,11 +22357,59 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished">Ook</translation>
+        <translation type="obsolete">Ook</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Cuncel</translation>
+        <translation type="obsolete">Cuncel</translation>
+    </message>
+    <message>
+        <source>Simulation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 on %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Running</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stopped</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18553,43 +22496,83 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The normal vector was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee nurmel fectur ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee nurmel fectur ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The upAxis vector was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee upExees fectur ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee upExees fectur ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The origin point vector was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee ooreegin pueent fectur ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee ooreegin pueent fectur ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The origin intercept was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee ooreegin intercept ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee ooreegin intercept ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The origin percent was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee ooreegin percent ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee ooreegin percent ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The origin zone was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee ooreegin zune-a ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee ooreegin zune-a ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The origin node was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee ooreegin nude-a ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee ooreegin nude-a ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The origin domain was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee ooreegin dumeeen ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee ooreegin dumeeen ves infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
     </message>
     <message>
         <source>The value of meshName was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff meshNeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff meshNeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The theta-phi angles were invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">Zee zeeta-phee ungles vere-a infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+        <translation type="obsolete">Zee zeeta-phee ungles vere-a infeleed. Resetteeng tu zee lest guud felooe-a %1.</translation>
+    </message>
+    <message>
+        <source>normal vector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>upAxis vector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin point vector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin intercept</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin percent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin zone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin node</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin domain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>mesh name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>theta-phi angles</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18624,23 +22607,54 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of numIterations was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff noomItereshuns ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff noomItereshuns ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of relaxationFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff relexeshunFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff relexeshunFectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of convergence was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff cunfergence-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff cunfergence-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of featureAngle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff feetooreUngle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff feetooreUngle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of edgeAngle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff idgeUngle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff idgeUngle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisSourceManagerWidget</name>
+    <message>
+        <source>Sources</source>
+        <translation type="unfinished">Suoorces</translation>
+    </message>
+    <message>
+        <source>Open</source>
+        <translation type="unfinished">Oopee</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reopen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace</source>
+        <translation type="unfinished">Replece-a</translation>
+    </message>
+    <message>
+        <source>Overlay</source>
+        <translation type="unfinished">Ooferley</translation>
+    </message>
+    <message>
+        <source>Active source</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18655,11 +22669,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of origin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ooreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ooreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of radius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff redeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff redeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
 </context>
 <context>
@@ -18725,11 +22739,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Maximum steps</source>
-        <translation type="unfinished">Mexeemoom steps</translation>
+        <translation type="obsolete">Mexeemoom steps</translation>
     </message>
     <message>
         <source>Streamline source</source>
-        <translation type="unfinished">Streemleene-a suoorce-a</translation>
+        <translation type="obsolete">Streemleene-a suoorce-a</translation>
     </message>
     <message>
         <source>Source type</source>
@@ -18737,7 +22751,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Point</source>
-        <translation type="unfinished">Pueent</translation>
+        <translation type="obsolete">Pueent</translation>
     </message>
     <message>
         <source>Line</source>
@@ -18821,7 +22835,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Show start</source>
-        <translation type="unfinished">Shoo stert</translation>
+        <translation type="obsolete">Shoo stert</translation>
     </message>
     <message>
         <source>Radius used for tubes and ribbons.</source>
@@ -18829,7 +22843,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Line width</source>
-        <translation type="unfinished">Leene-a veedt</translation>
+        <translation type="obsolete">Leene-a veedt</translation>
     </message>
     <message>
         <source>Solid</source>
@@ -18845,7 +22859,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Color by</source>
-        <translation type="unfinished">Culur by</translation>
+        <translation type="obsolete">Culur by</translation>
     </message>
     <message>
         <source>Color table</source>
@@ -18857,7 +22871,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Point density</source>
-        <translation type="unfinished">Pueent denseety</translation>
+        <translation type="obsolete">Pueent denseety</translation>
     </message>
     <message>
         <source>Streamline direction</source>
@@ -18885,47 +22899,47 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of stepLength was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff stepLengt ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff stepLengt ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of maxTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff mexTeeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff mexTeeme-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of pointSource was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pueentSuoorce-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pueentSuoorce-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of lineStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff leeneStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff leeneStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of lineEnd was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff leeneEnd ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff leeneEnd ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of planeOrigin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pluneOreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pluneOreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of planeNormal was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pluneNurmel ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pluneNurmel ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of planeUpAxis was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pluneOopExees ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pluneOopExees ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of planeRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pluneRedeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pluneRedeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of sphereOrigin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff sphereOreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff sphereOreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of sphereRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff sphereRedeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff sphereRedeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The box extents contained errors so the previous values will be used.</source>
@@ -18933,7 +22947,699 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of radius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff redeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff redeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Streamlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished">Suoorce-a</translation>
+    </message>
+    <message>
+        <source>Single Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read Text File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete All Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uniform</source>
+        <translation type="unfinished">Uneeffurm</translation>
+    </message>
+    <message>
+        <source>Random</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling along:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Boundary</source>
+        <translation type="unfinished">Buoondery</translation>
+    </message>
+    <message>
+        <source>Interior</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of random samples</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Random number seed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished">Deffoolt</translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished">Cunstunt</translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unused</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Force node centering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Termination</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum number of steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum distance traveled by particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum time elapsed for particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished">Edfunced</translation>
+    </message>
+    <message>
+        <source>Coordinate transform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">Nune-a</translation>
+    </message>
+    <message>
+        <source>Cylindrical to Cartesian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cartesian to Cylindrical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phi scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(When displaying in cylindrical coordinates.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">Deta</translation>
+    </message>
+    <message>
+        <source>Data Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arc length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">Teeme-a</translation>
+    </message>
+    <message>
+        <source>Seed point ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished">Fereeeble-a</translation>
+    </message>
+    <message>
+        <source>Correlation Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Angular tolerance (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum measuring distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limits</source>
+        <translation type="unfinished">Leemits</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Meenimoom</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Mexeemoom</translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">Culur</translation>
+    </message>
+    <message>
+        <source>Fully Opaque</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ramp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity</source>
+        <translation type="unfinished">Oopeceety</translation>
+    </message>
+    <message>
+        <source>Opacity Min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished">Deespley</translation>
+    </message>
+    <message>
+        <source>Draw as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>  </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation type="unfinished">Veedt</translation>
+    </message>
+    <message>
+        <source>Display density</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vary radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show seeds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Radius for seed point display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show heads</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cone</source>
+        <translation type="unfinished">Cune-a</translation>
+    </message>
+    <message>
+        <source>Radius for head point display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Height:Radius Ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Height for head point display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low</source>
+        <translation type="unfinished">Loo</translation>
+    </message>
+    <message>
+        <source>Medium</source>
+        <translation type="unfinished">Medeeoom</translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation type="unfinished">Heegh</translation>
+    </message>
+    <message>
+        <source>Super</source>
+        <translation type="unfinished">Sooper</translation>
+    </message>
+    <message>
+        <source>Display quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Crop away portion of streamlines (for animations)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Retain from</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Units are in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel streamline options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize Over Particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize Over Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize Over Particles and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain cache size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Work group size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines vs Streamlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamline
+    Compute particle trajectories in an (instantaneous) snapshot
+    of the vector field. Uses and loads only velocity field from current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads velocity data from all relevant time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when the maximum number of steps is reached</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when stiffness is detected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when a particle doesn&apos;t terminate at a critical point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Meaning it circles round and round the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples along line:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance in X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance in Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Theta:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in R:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Latitude:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Longitude:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Z:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxsteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxtime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxdistance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>velocity source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>point source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>line start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>line end</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane up axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sphere origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>tube radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ribbon width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>phi scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend Min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display Begin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seed radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Head radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Head height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tube vary radius factor must be &gt;= 1.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tube vary radius factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance angular tolerance must be &gt;= 0.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance angular tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance minimum distance must be &gt;= 0.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance minimum distnace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open text file</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18980,11 +23686,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Zoom In</source>
-        <translation type="unfinished">Zuum In</translation>
+        <translation type="obsolete">Zuum In</translation>
     </message>
     <message>
         <source>Zoom Out</source>
-        <translation type="unfinished">Zuum Oooot</translation>
+        <translation type="obsolete">Zuum Oooot</translation>
     </message>
     <message>
         <source>Focus</source>
@@ -19002,12 +23708,24 @@ plot&apos;s color.</source>
         <source>Invalid index encountered for Sim engine access</source>
         <translation type="unfinished">Infeleed index incuoontered fur Seem ingeene-a eccess</translation>
     </message>
+    <message>
+        <source>Strip charts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zoom in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zoom out</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisStripChartTabWidget</name>
     <message>
         <source>VisIt Strip Chart</source>
-        <translation type="unfinished">VisIt Streep Chert</translation>
+        <translation type="obsolete">VisIt Streep Chert</translation>
     </message>
 </context>
 <context>
@@ -19034,15 +23752,38 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of threshold was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff threshuld ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff threshuld ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of maxSubdivs was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff mexSoobdeefs ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff mexSoobdeefs ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of variable was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff fereeeble-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff fereeeble-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisSubsetPanelWidget</name>
+    <message>
+        <source>All Sets:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reverse</source>
+        <translation type="unfinished">Referse-a</translation>
+    </message>
+    <message>
+        <source>Turn On</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Turn Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selected Sets:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -19093,7 +23834,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Geometry smoothing</source>
-        <translation type="unfinished">Geumetry smuutheeng</translation>
+        <translation type="obsolete">Geumetry smuutheeng</translation>
     </message>
     <message>
         <source>None</source>
@@ -19107,6 +23848,26 @@ plot&apos;s color.</source>
         <source>High</source>
         <translation type="unfinished">Heegh</translation>
     </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisSubsetWindow</name>
@@ -19116,23 +23877,31 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Reverse</source>
-        <translation type="unfinished">Referse-a</translation>
+        <translation type="obsolete">Referse-a</translation>
     </message>
     <message>
         <source>Turn on</source>
-        <translation type="unfinished">Toorn oon</translation>
+        <translation type="obsolete">Toorn oon</translation>
     </message>
     <message>
         <source>Turn off</source>
-        <translation type="unfinished">Toorn ooffff</translation>
+        <translation type="obsolete">Toorn ooffff</translation>
     </message>
     <message>
         <source>All sets</source>
-        <translation type="unfinished">Ell sets</translation>
+        <translation type="obsolete">Ell sets</translation>
     </message>
     <message>
         <source>Selected sets</source>
-        <translation type="unfinished">Selected sets</translation>
+        <translation type="obsolete">Selected sets</translation>
+    </message>
+    <message>
+        <source>Applied selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">Nune-a</translation>
     </message>
 </context>
 <context>
@@ -19243,75 +24012,90 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of thetaStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff zeeteStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff zeeteStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of thetaStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff zeeteStup ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff zeeteStup ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of thetaSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff zeeteSteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff zeeteSteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of phiStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pheeStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pheeStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of phiStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pheeStup ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pheeStup ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of phiSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff pheeSteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff pheeSteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of startRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff stertRedeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff stertRedeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of endRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff indRedeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff indRedeeoos ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of radiusSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff redeeoosSteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff redeeoosSteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of xStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff xStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff xStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of xStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff xStup ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff xStup ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of xSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff xSteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff xSteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of yStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff yStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff yStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of yStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff yStup ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff yStup ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of ySteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ySteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ySteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of zStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff zStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff zStert ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of zStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff zStup ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff zStup ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of zSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff zSteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff zSteps ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisSurfaceNormalWindow</name>
+    <message>
+        <source>Centering</source>
+        <translation type="unfinished">Centereeng</translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished">Pueent</translation>
+    </message>
+    <message>
+        <source>Cell</source>
+        <translation type="unfinished">Cell</translation>
     </message>
 </context>
 <context>
@@ -19326,19 +24110,19 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Surface color</source>
-        <translation type="unfinished">Soorffece-a culur</translation>
+        <translation type="obsolete">Soorffece-a culur</translation>
     </message>
     <message>
         <source>Z Value</source>
-        <translation type="unfinished">Z Felooe-a</translation>
+        <translation type="obsolete">Z Felooe-a</translation>
     </message>
     <message>
         <source>Constant</source>
-        <translation type="unfinished">Cunstunt</translation>
+        <translation type="obsolete">Cunstunt</translation>
     </message>
     <message>
         <source>Wire Color</source>
-        <translation type="unfinished">Vure-a Culur</translation>
+        <translation type="obsolete">Vure-a Culur</translation>
     </message>
     <message>
         <source>Line width</source>
@@ -19350,7 +24134,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Scale  </source>
-        <translation type="unfinished">Scele-a  </translation>
+        <translation type="obsolete">Scele-a  </translation>
     </message>
     <message>
         <source>Linear</source>
@@ -19362,7 +24146,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Skew</source>
-        <translation type="unfinished">Skoo</translation>
+        <translation type="obsolete">Skoo</translation>
     </message>
     <message>
         <source>Skew factor</source>
@@ -19378,11 +24162,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">Meen</translation>
+        <translation type="obsolete">Meen</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">Mex</translation>
+        <translation type="obsolete">Mex</translation>
     </message>
     <message>
         <source>Legend</source>
@@ -19394,22 +24178,58 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The skew factor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee skoo fectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee skoo fectur ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee meenimoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee meenimoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee mexeemoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee mexeemoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">Deta</translation>
+    </message>
+    <message>
+        <source>Scale</source>
+        <translation type="unfinished">Scele-a</translation>
+    </message>
+    <message>
+        <source>Limits</source>
+        <translation type="unfinished">Leemits</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Meenimoom</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Mexeemoom</translation>
+    </message>
+    <message>
+        <source>Color by Z value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wire color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisTensorPlotWindow</name>
     <message>
         <source>Tensor color</source>
-        <translation type="unfinished">Tensur culur</translation>
+        <translation type="obsolete">Tensur culur</translation>
     </message>
     <message>
         <source>Eigenvalues</source>
@@ -19421,7 +24241,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Tensor scale</source>
-        <translation type="unfinished">Tensur scele-a</translation>
+        <translation type="obsolete">Tensur scele-a</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -19453,15 +24273,31 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The scale value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee scele-a felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee scele-a felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The head size was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee heed seeze-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee heed seeze-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The stride was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee streede-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee streede-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">Deta</translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished">Deespley</translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">Culur</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -19509,6 +24345,18 @@ plot&apos;s color.</source>
     <message>
         <source>Visible</source>
         <translation type="unfinished">Feesible-a</translation>
+    </message>
+    <message>
+        <source>Arial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Courier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Times</source>
+        <translation type="unfinished">Teemes</translation>
     </message>
 </context>
 <context>
@@ -19590,15 +24438,27 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of x was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff x ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff x ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of y was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff y ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff y ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of z was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff z ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff z ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>z</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -19666,6 +24526,61 @@ plot&apos;s color.</source>
     <message>
         <source>Part in range</source>
         <translation type="unfinished">Pert in runge-a</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>max</source>
+        <translation type="unfinished">mex</translation>
+    </message>
+</context>
+<context>
+    <name>QvisTimeQueryOptionsWidget</name>
+    <message>
+        <source>Do Time Curve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start and End are Time steps,
+not cycles or times.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Starting timestep</source>
+        <translation type="unfinished">Sterteeng teemestep</translation>
+    </message>
+    <message>
+        <source>Ending timestep</source>
+        <translation type="unfinished">Indeeng teemestep</translation>
+    </message>
+    <message>
+        <source>Stride</source>
+        <translation type="unfinished">Streede-a</translation>
+    </message>
+    <message>
+        <source>Do Time Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Query Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisTimeSliderControlWidget</name>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">Teeme-a</translation>
+    </message>
+    <message>
+        <source>Active time slider</source>
+        <translation type="unfinished">Ecteefe-a teeme-a sleeder</translation>
+    </message>
+    <message>
+        <source>The active time slider is already at state</source>
+        <translation type="unfinished">Zee ecteefe-a teeme-a sleeder is elreedy et stete-a</translation>
     </message>
 </context>
 <context>
@@ -19747,7 +24662,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Min Color</source>
-        <translation type="unfinished">Meen Culur</translation>
+        <translation type="obsolete">Meen Culur</translation>
     </message>
     <message>
         <source>Opacity</source>
@@ -19755,15 +24670,15 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Min Plateau Color</source>
-        <translation type="unfinished">Meen Pleteoo Culur</translation>
+        <translation type="obsolete">Meen Pleteoo Culur</translation>
     </message>
     <message>
         <source>Max Plateau Color</source>
-        <translation type="unfinished">Mex Pleteoo Culur</translation>
+        <translation type="obsolete">Mex Pleteoo Culur</translation>
     </message>
     <message>
         <source>Max Color</source>
-        <translation type="unfinished">Mex Culur</translation>
+        <translation type="obsolete">Mex Culur</translation>
     </message>
     <message>
         <source>tolerance</source>
@@ -19775,11 +24690,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of tolerance was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff tulerunce-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff tulerunce-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of hitpercent was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff heetpercent ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff heetpercent ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
 </context>
 <context>
@@ -19802,11 +24717,19 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of numiter was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff noomeeter ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff noomeeter ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of output was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ooootpoot ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ooootpoot ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>number of iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>output</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -19873,7 +24796,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Spherical (r,phi,theta)</source>
-        <translation type="unfinished">Sphereecel (r,phee,zeeta)</translation>
+        <translation type="obsolete">Sphereecel (r,phee,zeeta)</translation>
     </message>
     <message>
         <source>Output coordinates</source>
@@ -19889,39 +24812,39 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>m00</source>
-        <translation type="unfinished">m00</translation>
+        <translation type="obsolete">m00</translation>
     </message>
     <message>
         <source>m01</source>
-        <translation type="unfinished">m01</translation>
+        <translation type="obsolete">m01</translation>
     </message>
     <message>
         <source>m02</source>
-        <translation type="unfinished">m02</translation>
+        <translation type="obsolete">m02</translation>
     </message>
     <message>
         <source>m10</source>
-        <translation type="unfinished">m10</translation>
+        <translation type="obsolete">m10</translation>
     </message>
     <message>
         <source>m11</source>
-        <translation type="unfinished">m11</translation>
+        <translation type="obsolete">m11</translation>
     </message>
     <message>
         <source>m12</source>
-        <translation type="unfinished">m12</translation>
+        <translation type="obsolete">m12</translation>
     </message>
     <message>
         <source>m20</source>
-        <translation type="unfinished">m20</translation>
+        <translation type="obsolete">m20</translation>
     </message>
     <message>
         <source>m21</source>
-        <translation type="unfinished">m21</translation>
+        <translation type="obsolete">m21</translation>
     </message>
     <message>
         <source>m22</source>
-        <translation type="unfinished">m22</translation>
+        <translation type="obsolete">m22</translation>
     </message>
     <message>
         <source>Invert linear transform</source>
@@ -19929,43 +24852,130 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of rotateOrigin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ruteteOreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ruteteOreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of rotateAxis was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ruteteExees ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ruteteExees ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of rotateAmount was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ruteteEmuoont ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ruteteEmuoont ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of scaleOrigin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff sceleOreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff sceleOreegin ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of scaleX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff sceleX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff sceleX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of scaleY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff sceleY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff sceleY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of scaleZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff sceleZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff sceleZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of translateX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff trunsleteX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff trunsleteX ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of translateY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff trunsleteY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff trunsleteY ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of translateZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff trunsleteZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff trunsleteZ ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Transform vectors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spherical (r,theta,phi)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector transform method:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No transformation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as point coordinates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as coordinate displacements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as instantaneous directions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rotate origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rotate axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rotate amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>scale origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>translation in X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>translation in Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>translation in Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisTriangulateRegularPointsWindow</name>
+    <message>
+        <source>Use X grid spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X grid spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Y grid spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y grid spacing</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -19978,12 +24988,20 @@ plot&apos;s color.</source>
         <source>Lighting</source>
         <translation type="unfinished">Leeghting</translation>
     </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">Culur</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisTubeWindow</name>
     <message>
         <source>width</source>
-        <translation type="unfinished">veedt</translation>
+        <translation type="obsolete">veedt</translation>
     </message>
     <message>
         <source>Fineness of tube</source>
@@ -19991,84 +25009,108 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Cap Tubes?</source>
-        <translation type="unfinished">Cep Toobes?</translation>
+        <translation type="obsolete">Cep Toobes?</translation>
     </message>
     <message>
         <source>The value of width was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff veedt ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff veedt ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The fineness of the tube is limited from 3 (coarsest) to 12 (finest)</source>
-        <translation type="unfinished">Zee feeneness ooff zee toobe-a is leemited frum 3 (cuersest) tu 12 (feenest)</translation>
+        <translation type="obsolete">Zee feeneness ooff zee toobe-a is leemited frum 3 (cuersest) tu 12 (feenest)</translation>
     </message>
     <message>
         <source>The value of fineness was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff feeneness ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff feeneness ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Tube radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scale width by variable?  (Nodal variables work best)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished">Fereeeble-a</translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation type="unfinished">Redeeoos</translation>
+    </message>
+    <message>
+        <source>Tube form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cap ends of the tubes</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisVariableButton</name>
     <message>
         <source>Create new expression ...</source>
-        <translation type="unfinished">Creete-a noo ixpresseeun ...</translation>
+        <translation type="obsolete">Creete-a noo ixpresseeun ...</translation>
     </message>
 </context>
 <context>
     <name>QvisVariableButton::VariablePopupInfo</name>
     <message>
         <source>Scalars</source>
-        <translation type="unfinished">Scelers</translation>
+        <translation type="obsolete">Scelers</translation>
     </message>
     <message>
         <source>Vectors</source>
-        <translation type="unfinished">Fecturs</translation>
+        <translation type="obsolete">Fecturs</translation>
     </message>
     <message>
         <source>Meshes</source>
-        <translation type="unfinished">Meshes</translation>
+        <translation type="obsolete">Meshes</translation>
     </message>
     <message>
         <source>Materials</source>
-        <translation type="unfinished">Metereeels</translation>
+        <translation type="obsolete">Metereeels</translation>
     </message>
     <message>
         <source>Subsets</source>
-        <translation type="unfinished">Soobsets</translation>
+        <translation type="obsolete">Soobsets</translation>
     </message>
     <message>
         <source>Species</source>
-        <translation type="unfinished">Speceees</translation>
+        <translation type="obsolete">Speceees</translation>
     </message>
     <message>
         <source>Curves</source>
-        <translation type="unfinished">Coorfes</translation>
+        <translation type="obsolete">Coorfes</translation>
     </message>
     <message>
         <source>Tensors</source>
-        <translation type="unfinished">Tensurs</translation>
+        <translation type="obsolete">Tensurs</translation>
     </message>
     <message>
         <source>Symmetric Tensors</source>
-        <translation type="unfinished">Symmetreec Tensurs</translation>
+        <translation type="obsolete">Symmetreec Tensurs</translation>
     </message>
     <message>
         <source>Labels</source>
-        <translation type="unfinished">Lebels</translation>
+        <translation type="obsolete">Lebels</translation>
     </message>
     <message>
         <source>Arrays</source>
-        <translation type="unfinished">Erreys</translation>
+        <translation type="obsolete">Erreys</translation>
     </message>
 </context>
 <context>
     <name>QvisVectorPlotWindow</name>
     <message>
         <source>Reduce by</source>
-        <translation type="unfinished">Redooce-a by</translation>
+        <translation type="obsolete">Redooce-a by</translation>
     </message>
     <message>
         <source>N vectors</source>
-        <translation type="unfinished">N fecturs</translation>
+        <translation type="obsolete">N fecturs</translation>
     </message>
     <message>
         <source>Stride</source>
@@ -20080,15 +25122,15 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Vector style</source>
-        <translation type="unfinished">Fectur style-a</translation>
+        <translation type="obsolete">Fectur style-a</translation>
     </message>
     <message>
         <source>Line:</source>
-        <translation type="unfinished">Leene-a:</translation>
+        <translation type="obsolete">Leene-a:</translation>
     </message>
     <message>
         <source>Cylinder:</source>
-        <translation type="unfinished">Cyleender:</translation>
+        <translation type="obsolete">Cyleender:</translation>
     </message>
     <message>
         <source>Width</source>
@@ -20096,7 +25138,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Draw head:</source>
-        <translation type="unfinished">Drev heed:</translation>
+        <translation type="obsolete">Drev heed:</translation>
     </message>
     <message>
         <source>Size</source>
@@ -20104,7 +25146,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>High quality geometry</source>
-        <translation type="unfinished">Heegh qooeleety geumetry</translation>
+        <translation type="obsolete">Heegh qooeleety geumetry</translation>
     </message>
     <message>
         <source>Vector origin</source>
@@ -20128,7 +25170,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Vector color</source>
-        <translation type="unfinished">Fectur culur</translation>
+        <translation type="obsolete">Fectur culur</translation>
     </message>
     <message>
         <source>Magnitude</source>
@@ -20152,11 +25194,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">Meen</translation>
+        <translation type="obsolete">Meen</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">Mex</translation>
+        <translation type="obsolete">Mex</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -20164,7 +25206,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Vector scale</source>
-        <translation type="unfinished">Fectur scele-a</translation>
+        <translation type="obsolete">Fectur scele-a</translation>
     </message>
     <message>
         <source>Scale by magnitude</source>
@@ -20180,27 +25222,147 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The scale value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee scele-a felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee scele-a felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The head size was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee heed seeze-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee heed seeze-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The stride was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee streede-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee streede-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee meenimoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee meenimoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee mexeemoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee mexeemoom felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The stem width was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee stem veedt ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee stem veedt ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation type="unfinished">Luceshun</translation>
+    </message>
+    <message>
+        <source>Where to place the vectors and how many of them</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector placement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adapted to resolution of mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uniformly located throughout mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fixed number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only show vectors on original nodes/cells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Glyph type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ellipsoid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished">Leene-a</translation>
+    </message>
+    <message>
+        <source>Cylinder</source>
+        <translation type="unfinished">Cyleender</translation>
+    </message>
+    <message>
+        <source>Draw head</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quality</source>
+        <translation type="unfinished">Qooeleety</translation>
+    </message>
+    <message>
+        <source>Fast</source>
+        <translation type="unfinished">Fest</translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation type="unfinished">Heegh</translation>
+    </message>
+    <message>
+        <source>Rendering</source>
+        <translation type="unfinished">Rendereeng</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Meenimoom</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Mexeemoom</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>scale value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>head size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>number of vectors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>stride</source>
+        <translation type="unfinished">streede-a</translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>stem width</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -20379,63 +25541,143 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The viewport values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">Zee feeoopurt felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
+        <translation type="obsolete">Zee feeoopurt felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
     </message>
     <message>
         <source>The domain values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">Zee dumeeen felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
+        <translation type="obsolete">Zee dumeeen felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
     </message>
     <message>
         <source>The range values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">Zee runge-a felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
+        <translation type="obsolete">Zee runge-a felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
     </message>
     <message>
         <source>The window values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">Zee veendoo felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
+        <translation type="obsolete">Zee veendoo felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
     </message>
     <message>
         <source>The normal location values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">Zee nurmel luceshun felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
+        <translation type="obsolete">Zee nurmel luceshun felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
     </message>
     <message>
         <source>The focus location values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">Zee fucoos luceshun felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
+        <translation type="obsolete">Zee fucoos luceshun felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
     </message>
     <message>
         <source>The up vector values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">Zee up fectur felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
+        <translation type="obsolete">Zee up fectur felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
     </message>
     <message>
         <source>The viewangle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee feeooungle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee feeooungle-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The parallel scale was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee perellel scele-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee perellel scele-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The near clipping value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee neer cleepping felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee neer cleepping felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The far clipping value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee fer cleepping felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee fer cleepping felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The image pan values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">Zee imege-a pun felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
+        <translation type="obsolete">Zee imege-a pun felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
     </message>
     <message>
         <source>The image zoom value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee imege-a zuum felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee imege-a zuum felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The eye angle value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee iye-a ungle-a felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee iye-a ungle-a felooe-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The center of rotation values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">Zee center ooff ruteshun felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
+        <translation type="obsolete">Zee center ooff ruteshun felooes vere-a infeleed. Resetteeng tu zee lest guud felooes ooff %1.</translation>
+    </message>
+    <message>
+        <source>Shear</source>
+        <translation type="unfinished">Sheer</translation>
+    </message>
+    <message>
+        <source>Scale 3D axes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maintain view limits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>viewport</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>domain</source>
+        <translation type="unfinished">dumeeen</translation>
+    </message>
+    <message>
+        <source>range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>focus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>up vector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>viewangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>parallel scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>near clipping</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>far clipping</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>image pan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>image zoom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>eye angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>center of rotation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>axis3DScales</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>shear</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -20453,7 +25695,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>VisIt could not determine the platform that you are running on so VisIt cannot automatically update. You should browse to ftp://ftp.llnl.gov/pub/visit and download the latest binary distribution for your platform.</source>
-        <translation type="unfinished">VisIt cuoold nut determeene-a zee pletffurm thet yuoo ere-a roonneeng oon su VisIt cunnut ootumeteecelly updete-a. Yuoo shuoold broose-a tu ftp://ftp.llnl.guf/poob/feesit und doonlued zee letest beenery deestribooshun fur yuoor pletffurm.</translation>
+        <translation type="obsolete">VisIt cuoold nut determeene-a zee pletffurm thet yuoo ere-a roonneeng oon su VisIt cunnut ootumeteecelly updete-a. Yuoo shuoold broose-a tu ftp://ftp.llnl.guf/poob/feesit und doonlued zee letest beenery deestribooshun fur yuoor pletffurm.</translation>
     </message>
     <message>
         <source>VisIt determined that you do not have write permission to the %1 directory where VisIt is installed. You must have group %2 write access to update VisIt.</source>
@@ -20461,7 +25703,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Could not download %1! Can&apos;t finish updating VisIt.</source>
-        <translation type="unfinished">Cuoold nut doonlued %1! Cunt feenish updeteeng VisIt.</translation>
+        <translation type="obsolete">Cuoold nut doonlued %1! Cunt feenish updeteeng VisIt.</translation>
     </message>
     <message>
         <source>Installation complete.</source>
@@ -20473,7 +25715,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Downloaded %1 bytes.</source>
-        <translation type="unfinished">Doonlueded %1 bytes.</translation>
+        <translation type="obsolete">Doonlueded %1 bytes.</translation>
     </message>
     <message>
         <source>Your version of VisIt is up to date.</source>
@@ -20484,8 +25726,27 @@ plot&apos;s color.</source>
         <translation type="unfinished">VisIt %1 is efeeeleble-a fur doonlued. Vuoold yuoo leeke-a tu instell it?</translation>
     </message>
     <message>
-        <source>VisIt could not complete the update.
-FTP Error: </source>
+        <source>VisIt could not determine the platform that you are running on so VisIt cannot automatically update. You should browse to %1 and download the latest binary distribution for your platform.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt</source>
+        <translation type="unfinished">VisIt</translation>
+    </message>
+    <message>
+        <source>There is a newer version of VisIt available (version %1) but your distribution type: %2 was not found in the new version. There is likely another distribution type that will work for you but you will need to determine that and install VisIt yourself. Alternatively, you can build VisIt for your platform using the build_visit script.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt was not able to check for updates.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt was not able to download %1 so the update will not proceed. Try again later.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Downloaded %1 / %2 bytes.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -20517,11 +25778,11 @@ FTP Error: </source>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">Meen</translation>
+        <translation type="obsolete">Meen</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">Mex</translation>
+        <translation type="obsolete">Mex</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -20533,7 +25794,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>Log10</source>
-        <translation type="unfinished">Lug10</translation>
+        <translation type="obsolete">Lug10</translation>
     </message>
     <message>
         <source>Skew</source>
@@ -20541,7 +25802,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>Skew factor </source>
-        <translation type="unfinished">Skoo fectur </translation>
+        <translation type="obsolete">Skoo fectur </translation>
     </message>
     <message>
         <source>Opacity</source>
@@ -20549,7 +25810,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>Show Colors</source>
-        <translation type="unfinished">Shoo Culurs</translation>
+        <translation type="obsolete">Shoo Culurs</translation>
     </message>
     <message>
         <source>Interaction mode</source>
@@ -20589,11 +25850,11 @@ FTP Error: </source>
     </message>
     <message>
         <source>SCI, University of Utah (SLIVR)</source>
-        <translation type="unfinished">SCI, Uneefersity ooff Uteh (SLIFR)</translation>
+        <translation type="obsolete">SCI, Uneefersity ooff Uteh (SLIFR)</translation>
     </message>
     <message>
         <source>Rendering method</source>
-        <translation type="unfinished">Rendereeng methud</translation>
+        <translation type="obsolete">Rendereeng methud</translation>
     </message>
     <message>
         <source>Number of samples</source>
@@ -20617,7 +25878,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>Centered diff</source>
-        <translation type="unfinished">Centered deeffff</translation>
+        <translation type="obsolete">Centered deeffff</translation>
     </message>
     <message>
         <source>Sobel</source>
@@ -20649,7 +25910,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>The value of resampleTarget was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff resempleTerget ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff resempleTerget ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The minimum value for the color variable was invalid.Resetting to the last good value of %1.</source>
@@ -20661,7 +25922,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>The minimum value for the opacity var was invalid.Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee meenimoom felooe-a fur zee oopeceety fer ves infeleed.Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee meenimoom felooe-a fur zee oopeceety fer ves infeleed.Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The maximum value for the opacity var was invalid.Resetting to the last good value of %1.</source>
@@ -20669,11 +25930,11 @@ FTP Error: </source>
     </message>
     <message>
         <source>The number of samples per ray was invalid.Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee noomber ooff semples per rey ves infeleed.Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee noomber ooff semples per rey ves infeleed.Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The number of 3d slices was invalid.Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee noomber ooff 3d sleeces ves infeleed.Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee noomber ooff 3d sleeces ves infeleed.Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The skew factor was invalid. Resetting to the last good value of %1.</source>
@@ -20681,11 +25942,317 @@ FTP Error: </source>
     </message>
     <message>
         <source>The value of renderer samples was invalid. Valid values are in the range [1.,%1]. Resetting to the last good value of %2.</source>
-        <translation type="unfinished">Zee felooe-a ooff renderer semples ves infeleed. Feleed felooes ere-a in zee runge-a [1.,%1]. Resetteeng tu zee lest guud felooe-a ooff %2.</translation>
+        <translation type="obsolete">Zee felooe-a ooff renderer semples ves infeleed. Feleed felooes ere-a in zee runge-a [1.,%1]. Resetteeng tu zee lest guud felooe-a ooff %2.</translation>
     </message>
     <message>
         <source>The range set for indexing colors will also be used when indexing opacities</source>
         <translation type="unfinished">Zee runge-a set fur indexeeng culurs veell elsu be-a used vhee indexeeng oopeceeties</translation>
+    </message>
+    <message>
+        <source>Renderer Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D transfer function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2D transfer function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color table</source>
+        <translation type="unfinished">Culur teble-a</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">Deta</translation>
+    </message>
+    <message>
+        <source>Log</source>
+        <translation type="unfinished">Lug</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Meenimoom</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Mexeemoom</translation>
+    </message>
+    <message>
+        <source>From Color Table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished">Fereeeble-a</translation>
+    </message>
+    <message>
+        <source>Rendering Method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tuvok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SLIVR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transfer function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D</source>
+        <translation type="unfinished">1D</translation>
+    </message>
+    <message>
+        <source>2D</source>
+        <translation type="unfinished">2D</translation>
+    </message>
+    <message>
+        <source>Sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Methods</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Centered differences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low gradient lighting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The minimum value for the opacity variable was invalid.Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value for the low gradient lighting max clamp was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisWellBorePlotWindow</name>
+    <message>
+        <source>Read well bores...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Write well bores...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Noo</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">Delete-a</translation>
+    </message>
+    <message>
+        <source>Definition</source>
+        <translation type="unfinished">Deffeenishun</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Neme-a</translation>
+    </message>
+    <message>
+        <source>Well colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color table</source>
+        <translation type="unfinished">Culur teble-a</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">Seengle-a</translation>
+    </message>
+    <message>
+        <source>Multiple</source>
+        <translation type="unfinished">Moolteeple-a</translation>
+    </message>
+    <message>
+        <source>Well</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw wells as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lines</source>
+        <translation type="unfinished">Leenes</translation>
+    </message>
+    <message>
+        <source>Cylinders</source>
+        <translation type="unfinished">Cyleenders</translation>
+    </message>
+    <message>
+        <source>Well cylinder quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low</source>
+        <translation type="unfinished">Loo</translation>
+    </message>
+    <message>
+        <source>Medium</source>
+        <translation type="unfinished">Medeeoom</translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation type="unfinished">Heegh</translation>
+    </message>
+    <message>
+        <source>Super</source>
+        <translation type="unfinished">Sooper</translation>
+    </message>
+    <message>
+        <source>Well radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well line width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well line style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well annotation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">Nune-a</translation>
+    </message>
+    <message>
+        <source>Stem only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stem and name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well stem height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well name scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend</source>
+        <translation type="unfinished">Legend</translation>
+    </message>
+    <message>
+        <source>The value of wellRadius was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of wellStemHeight was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of wellNameScale was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt</source>
+        <translation type="unfinished">VisIt</translation>
+    </message>
+</context>
+<context>
+    <name>QvisXRayImageQueryWidget</name>
+    <message>
+        <source>Output Image Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>bmp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>jpeg</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>png</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>tiff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rawfloats</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divide Emis by Absorb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Origin</source>
+        <translation type="unfinished">Ooreegin</translation>
+    </message>
+    <message>
+        <source>Theta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Pixel Size</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -20716,15 +26283,19 @@ FTP Error: </source>
     </message>
     <message>
         <source>The value of lowerBound was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff looerBuoond ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff looerBuoond ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of upperBound was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff upperBuoond ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff upperBuoond ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
     </message>
     <message>
         <source>The value of outputFile was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">Zee felooe-a ooff ooootpootFeele-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+        <translation type="obsolete">Zee felooe-a ooff ooootpootFeele-a ves infeleed. Resetteeng tu zee lest guud felooe-a ooff %1.</translation>
+    </message>
+    <message>
+        <source>Output File </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -20828,14 +26399,45 @@ FTP Error: </source>
     </message>
     <message>
         <source>Make window active</source>
-        <translation type="unfinished">Meke-a veendoo ecteefe-a</translation>
+        <translation type="obsolete">Meke-a veendoo ecteefe-a</translation>
+    </message>
+    <message>
+        <source>Make this window active</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SetPlotFollowsTimeAction</name>
     <message>
         <source>Disconnect from time slider</source>
-        <translation type="unfinished">Deescunnect frum teeme-a sleeder</translation>
+        <translation type="obsolete">Deescunnect frum teeme-a sleeder</translation>
+    </message>
+    <message>
+        <source>Plot follows time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SetToolUpdateModeAction</name>
+    <message>
+        <source>Tool Updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set tool update frequency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Continuously</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On Mouse Release</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On Tool Close</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -21016,7 +26618,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>July 2008</source>
-        <translation type="unfinished">Jooly 2008</translation>
+        <translation type="obsolete">Jooly 2008</translation>
     </message>
     <message>
         <source>Starting VisIt...</source>
@@ -21033,6 +26635,54 @@ FTP Error: </source>
     <message>
         <source>Dismiss</source>
         <translation type="unfinished">Deesmiss</translation>
+    </message>
+    <message>
+        <source>January</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>February</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>March</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>April</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>May</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>June</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>July</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>August</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>September</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>October</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>November</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>December</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -21075,7 +26725,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>Show in visualizaion window</source>
-        <translation type="unfinished">Shoo in feesooelizeiun veendoo</translation>
+        <translation type="obsolete">Shoo in feesooelizeiun veendoo</translation>
     </message>
     <message>
         <source>Tracer plane</source>
@@ -21169,6 +26819,35 @@ FTP Error: </source>
         <source>The average value of the selected cells is: %1.</source>
         <translation type="unfinished">Zee eferege-a felooe-a ooff zee selected cells is: %1.</translation>
     </message>
+    <message>
+        <source>Show in visualization window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: row vs. coordinate 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: row vs. coordinate 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: column vs. coordinate 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: column vs. coordinate 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>* Note that the vertical ordering of this file&apos;s contents is opposite from what you would see in the Spreadsheet window.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TimeSliderForwardStepAction</name>
@@ -21196,11 +26875,11 @@ FTP Error: </source>
     <name>ToggleBoundingBoxModeAction</name>
     <message>
         <source>Navigate bbox</source>
-        <translation type="unfinished">Nefeegete-a bbux</translation>
+        <translation type="obsolete">Nefeegete-a bbux</translation>
     </message>
     <message>
         <source>Toggle bounding box navigation</source>
-        <translation type="unfinished">Tuggle-a buoondeeng bux nefeegeshun</translation>
+        <translation type="obsolete">Tuggle-a buoondeeng bux nefeegeshun</translation>
     </message>
 </context>
 <context>
@@ -21349,6 +27028,103 @@ FTP Error: </source>
     </message>
 </context>
 <context>
+    <name>ViewerEngineManager</name>
+    <message>
+        <source>Launching engine on %1</source>
+        <translation type="unfinished">Looncheeng ingeene-a oon %1</translation>
+    </message>
+    <message>
+        <source>VisIt could not launch a compute engine on host &quot;%1&quot; because that host does not exist.</source>
+        <translation type="unfinished">VisIt cuoold nut loonch a cumpoote-a ingeene-a oon hust %1 becoose-a thet hust dues nut ixeest.</translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the compute engine on host &quot;%1&quot; because the engine has an incompatible  version number.</source>
+        <translation type="unfinished">VisIt cunnut use-a zee cumpoote-a ingeene-a oon hust %1 becoose-a zee ingeene-a hes un incumpeteeble-a  ferseeun noomber.</translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the compute engine on host &quot;%1&quot;because the compute engine did not provide the proper credentials.</source>
+        <translation type="unfinished">VisIt cunnut use-a zee cumpoote-a ingeene-a oon hust %1becoose-a zee cumpoote-a ingeene-a deed nut prufeede-a zee pruper credenteeels.</translation>
+    </message>
+    <message>
+        <source>VisIt could not launch the compute engine on host &quot;%1&quot;.</source>
+        <translation type="unfinished">VisIt cuoold nut loonch zee cumpoote-a ingeene-a oon hust %1.</translation>
+    </message>
+    <message>
+        <source>The launch of the compute engine on host &quot;%1&quot; has been cancelled.
+
+You might want to check the job control system on &quot;%2&quot; to be sure the job is no longer present</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication with the compute engine on host &quot;%1&quot; has been lost.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connecting to simulation at %1:%2</source>
+        <translation type="unfinished">Cunnecteeng tu seemooleshun et %1:%2</translation>
+    </message>
+    <message>
+        <source>VisIt could not connect to the simulation on host &quot;%1&quot; because that host does not exist.</source>
+        <translation type="unfinished">VisIt cuoold nut cunnect tu zee seemooleshun oon hust %1 becoose-a thet hust dues nut ixeest.</translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the simulation on host &quot;%1&quot; because the simulation has an incompatible  version number.</source>
+        <translation type="unfinished">VisIt cunnut use-a zee seemooleshun oon hust %1 becoose-a zee seemooleshun hes un incumpeteeble-a  ferseeun noomber.</translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the simulation on host &quot;%1&quot;because the simulation did not provide the proper credentials.</source>
+        <translation type="unfinished">VisIt cunnut use-a zee seemooleshun oon hust %1becoose-a zee seemooleshun deed nut prufeede-a zee pruper credenteeels.</translation>
+    </message>
+    <message>
+        <source>VisIt could not connect to the simulation on host &quot;%1&quot;.</source>
+        <translation type="unfinished">VisIt cuoold nut cunnect tu zee seemooleshun oon hust %1.</translation>
+    </message>
+    <message>
+        <source>The connection to the simulation on host &quot;%1&quot; has been cancelled.</source>
+        <translation type="unfinished">Zee cunnecshun tu zee seemooleshun oon hust %1 hes beee cuncelled.</translation>
+    </message>
+    <message>
+        <source>Closed the compute engine on host %1.</source>
+        <translation type="unfinished">Clused zee cumpoote-a ingeene-a oon hust %1.</translation>
+    </message>
+    <message>
+        <source>Cannot close the compute engine on host %1 because there is no compute engine running on that host.</source>
+        <translation type="unfinished">Cunnut cluse-a zee cumpoote-a ingeene-a oon hust %1 becoose-a zeere-a is nu cumpoote-a ingeene-a roonneeng oon thet hust.</translation>
+    </message>
+    <message>
+        <source>Interrupting the compute engine on host %1.</source>
+        <translation type="unfinished">Interroopteeng zee cumpoote-a ingeene-a oon hust %1.</translation>
+    </message>
+    <message>
+        <source>Cannot interrupt the compute engine on host %1 because there is no compute engine running on that host.</source>
+        <translation type="unfinished">Cunnut interroopt zee cumpoote-a ingeene-a oon hust %1 becoose-a zeere-a is nu cumpoote-a ingeene-a roonneeng oon thet hust.</translation>
+    </message>
+    <message>
+        <source>VisIt is not connected to the simulation &apos;%1&apos; on host %2</source>
+        <translation type="unfinished">VisIt is nut cunnected tu zee seemooleshun %1 oon hust %2</translation>
+    </message>
+    <message>
+        <source>VisIt could not find a compute engine to use for the plot on host %1. VisIt will try to launch a compute engine on that host.</source>
+        <translation type="unfinished">VisIt cuoold nut feend a cumpoote-a ingeene-a tu use-a fur zee plut oon hust %1. VisIt veell try tu loonch a cumpoote-a ingeene-a oon thet hust.</translation>
+    </message>
+    <message>
+        <source>VisIt has been disconnected from the simulation &apos;%1&apos; on host %2</source>
+        <translation type="unfinished">VisIt hes beee deescunnected frum zee seemooleshun %1 oon hust %2</translation>
+    </message>
+    <message>
+        <source>The compute engine running on %1 has exited abnormally.</source>
+        <translation type="unfinished">Zee cumpoote-a ingeene-a roonneeng oon %1 hes ixeeted ebnurmelly.</translation>
+    </message>
+    <message>
+        <source>The compute engine running on host %1 issued the following warning: %2</source>
+        <translation type="unfinished">Zee cumpoote-a ingeene-a roonneeng oon hust %1 issooed zee fullooeeng verneeng: %2</translation>
+    </message>
+    <message>
+        <source>VisIt can only export data to a simulation if the data being exported originated in a simulation.</source>
+        <translation type="unfinished">VisIt cun oonly ixpurt deta tu a seemooleshun iff zee deta beeeng ixpurted ooreegineted in a seemooleshun.</translation>
+    </message>
+</context>
+<context>
     <name>ViewerFileServer</name>
     <message>
         <source>GetMetaDataForState called with ANY_STATE. That is not allowed so VisIt will instead use time state 0.</source>
@@ -21360,14 +27136,6 @@ FTP Error: </source>
 The generated error message was:
 
 %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt could not read from the file &quot;%`&quot; on host %2.
-
-The generated error message was:
-
-%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -21403,20 +27171,6 @@ The metadata server returned the following message:
         <translation type="unfinished">Zee metedeta serfer oon hust %1 deed nut retoorn zee pruper credenteeels. It cunnut be-a used.</translation>
     </message>
     <message>
-        <source>The metadata server on host %1 could not be launched or it could not connect back to your local computer. This can happen for a variety of reasons.
-
-It is possible that SSH was unable to launch VisIt on %1. If you want to verify this, run &quot;visit -debug 5&quot; and then check to see if any vcl, mdserver, or engine log files are present on %1 in your home directory. If no log files were created then SSH was probably not able to launch VisIt components on %1. In that case, check that you can SSH to %1 and check your local VisIt installation&apos;s Host profiles to make sure the path to VisIt on %1 is specified. Alternatively, you set the PATH environment variable on %1 so it contains the path to the program &quot;visit&quot;.
-
-If there were no debug logs to be found on %1 and your local computer runs a newer version of Linux then quit VisIt and try running &quot;visit -nopty -debug 5&quot;. The &quot;-nopty&quot; option tells VisIt not to allocate a pseudoterminal in which to run SSH. When you run with the &quot;-nopty&quot; option, VisIt&apos;s password window will not be used. Instead, look for an SSH prompt in the terminal window where you ran VisIt. You should be able to enter your password at that prompt. If successful, SSH should continue trying to launch VisIt on %1. If VisIt still cannot connect after SSH launches VisIt&apos;s remote components, check for debug logs on %1 to see if VisIt was at least able to launch there.
-
-If you found debug log files on %1 but VisIt still can&apos;t connect then it&apos;s possible that %1 cannot connect to your local computer. Some desktop computers do not provide a valid network name when VisIt asks for one. If you suspect that this could be the cause of the launch failure, try using &quot;Parse from SSH_CLIENT&quot; in your host profile for host %1. If that does not work and if you are using VPN then you should try manually setting the local host name VisIt will use when telling its remote components to connect back to your local computer. Open the Host profiles window and go to the Advanced options tab. Click the &quot;Specify manually&quot; radio button and type in the IP address of your VPN session into the adjacent text field before you try connecting again.
-
-If changing the above settings still does not allow you to connect then you may have a local firewall blocking ports 5600-5609, which are the ports that VisIt uses to listen for incoming connections (when they are expected) from remote VisIt components. If you&apos;ve tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to local computer. Try turning the firewall off or allowing ports 5600-5609 and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.
-
-If none of these suggestions allow you to successfully connect to %1 then contact visit-users@ornl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The launch of the metadata server on host &quot;%1&quot; has been cancelled.</source>
         <translation type="unfinished">Zee loonch ooff zee metedeta serfer oon hust %1 hes beee cuncelled.</translation>
     </message>
@@ -21443,6 +27197,30 @@ If none of these suggestions allow you to successfully connect to %1 then contac
     <message>
         <source>VisIt was unable to determine the real variable type for %1&apos;s %2 variable.</source>
         <translation type="unfinished">VisIt ves uneble-a tu determeene-a zee reel fereeeble-a type-a fur %1s %2 fereeeble-a.</translation>
+    </message>
+    <message>
+        <source>VisIt could not read from the file &quot;%1&quot; on host %2.
+
+The generated error message was:
+
+%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The metadata server on host %1 could not be launched or it could not connect back to your local computer. This can happen for a variety of reasons.
+
+It is possible that SSH was unable to launch VisIt on %1. If you want to verify this, run &quot;visit -debug 5&quot; and then check to see if any vcl, mdserver, or engine log files are present on %1 in your home directory. If no log files were created then SSH was probably not able to launch VisIt components on %1. In that case, check that you can SSH to %1 and check your local VisIt installation&apos;s Host profiles to make sure the path to VisIt on %1 is specified. Alternatively, you set the PATH environment variable on %1 so it contains the path to the program &quot;visit&quot;.
+
+If there were no debug logs to be found on %1 and your local computer runs a newer version of Linux then quit VisIt and try running &quot;visit -nopty -debug 5&quot;. The &quot;-nopty&quot; option tells VisIt not to allocate a pseudoterminal in which to run SSH. When you run with the &quot;-nopty&quot; option, VisIt&apos;s password window will not be used. Instead, look for an SSH prompt in the terminal window where you ran VisIt. You should be able to enter your password at that prompt. If successful, SSH should continue trying to launch VisIt on %1. If VisIt still cannot connect after SSH launches VisIt&apos;s remote components, check for debug logs on %1 to see if VisIt was at least able to launch there.
+
+&quot;vglrun&quot;: If you do not know what &quot;vglrun&quot; is, you can ignore this paragraph.  If there were no debug logs to be found on %1 and you are using vglrun, then vglrun may be causing VisIt to fail. Some versions of vglrun cause the ssh program to fail.  If you are running VisIt in conjunction with vglrun, this may be causing your failure.  (You can test this by running &quot;vglrun ssh&quot; and seeing if it cores.)
+
+If you found debug log files on %1 but VisIt still can&apos;t connect then it&apos;s possible that %1 cannot connect to your local computer. Some desktop computers do not provide a valid network name when VisIt asks for one. If you suspect that this could be the cause of the launch failure, try using &quot;Parse from SSH_CLIENT&quot; in your host profile for host %1. If that does not work and if you are using VPN then you should try manually setting the local host name VisIt will use when telling its remote components to connect back to your local computer. Open the Host profiles window and go to the Advanced options tab. Click the &quot;Specify manually&quot; radio button and type in the IP address of your VPN session into the adjacent text field before you try connecting again.
+
+If changing the above settings still does not allow you to connect then you may have a local firewall blocking ports 5600-5609, which are the ports that VisIt uses to listen for incoming connections (when they are expected) from remote VisIt components. If you&apos;ve tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to local computer. Try turning the firewall off or allowing ports 5600-5609 and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.
+
+If none of these suggestions allow you to successfully connect to %1 then contact visit-users@ornl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -21515,7 +27293,7 @@ If none of these suggestions allow you to successfully connect to %1 then contac
     </message>
     <message>
         <source>You have added the &quot;%1&quot; operator multiple times. For some operators, like &quot;Slice&quot;, this can lead to an empty plot but is otherwise harmless.</source>
-        <translation type="unfinished">Yuoo hefe-a edded zee %1 ooperetur moolteeple-a teemes. Fur sume-a oopereturs, leeke-a Sleece-a, thees cun leed tu un impty plut boot is oozeerveese-a hermless.</translation>
+        <translation type="obsolete">Yuoo hefe-a edded zee %1 ooperetur moolteeple-a teemes. Fur sume-a oopereturs, leeke-a Sleece-a, thees cun leed tu un impty plut boot is oozeerveese-a hermless.</translation>
     </message>
     <message>
         <source>VisIt cannot move the %1 operator because it is already the first operator.</source>
@@ -21560,6 +27338,10 @@ If none of these suggestions allow you to successfully connect to %1 then contac
     <message>
         <source>The session file was missing the pluginID for a plot.</source>
         <translation type="unfinished">Zee sesseeun feele-a ves meessing zee ploogeenID fur a plut.</translation>
+    </message>
+    <message>
+        <source>You have added the &quot;Slice&quot; operator multiple times. This can lead to an empty plot.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -21608,7 +27390,7 @@ operation could take as much as a few minutes.</source>
     </message>
     <message>
         <source>VisIt cannot set the %1 plot attributes since no plots of that type are selected. Please select a %2 plot before trying to modify its plot attributes.</source>
-        <translation type="unfinished">VisIt cunnut set zee %1 plut ettreebootes seence-a nu pluts ooff thet type-a ere-a selected. Pleese-a select a %2 plut beffure-a tryeeng tu mudeeffy its plut ettreebootes.</translation>
+        <translation type="obsolete">VisIt cunnut set zee %1 plut ettreebootes seence-a nu pluts ooff thet type-a ere-a selected. Pleese-a select a %2 plut beffure-a tryeeng tu mudeeffy its plut ettreebootes.</translation>
     </message>
     <message>
         <source>The %1 plot of &quot;%2&quot; cannot be regenerated using the database: %3 since the variable is not contained in the new database.</source>
@@ -21640,7 +27422,7 @@ operation could take as much as a few minutes.</source>
     </message>
     <message>
         <source>The plot dimensions do not match.</source>
-        <translation type="unfinished">Zee plut deemensiuns du nut metch.</translation>
+        <translation type="obsolete">Zee plut deemensiuns du nut metch.</translation>
     </message>
     <message>
         <source>VisIt does not have all the information it needs to perform a pick.  Please wait while the necessary information is calculated.  All current pick selections have been cached and will be performed when calculations are complete.  VisIt will notify you when it is fully ready for more picks.</source>
@@ -21657,6 +27439,22 @@ operation could take as much as a few minutes.</source>
     <message>
         <source>The session file did not specify how many plots to create.</source>
         <translation type="unfinished">Zee sesseeun feele-a deed nut speceeffy hoo muny pluts tu creete-a.</translation>
+    </message>
+    <message>
+        <source>VisIt cannot set the %1 plot attributes since no plots of that type are selected. This can either mean that you have no plots selected or you have more than one instance of the %1 plot in your plot list. Please select a %1 plot before trying to modify its plot attributes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No plots were created as a result of the overlay because no plots were selected in the plot list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The plot spatial dimensions do not match, 2D vs 3D. Plots need to be in windows with plots of the same spatial dimension.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not create a plot of type from variable %1 of database %2 on host %3.  This often happens because something has changed since the session file was saved.  (For example, the file was overwritten.)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -21817,14 +27615,30 @@ Please select a plot and try again.
         <source>There is no running engine with which to perform the query.  Please ensure the plot has finished drawing and try again.</source>
         <translation type="unfinished">Zeere-a is nu roonneeng ingeene-a veet vheech tu perffurm zee qooery.  Pleese-a insoore-a zee plut hes feenished dreveeng und try egeeen.</translation>
     </message>
+    <message>
+        <source>%1 requires a &apos;coord&apos; parameter.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiple-Y-Axes time query availble only with multiple variable selected.  Using Single-Y-Axis instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Performing %1 query...</source>
+        <translation type="unfinished">Perffurmeeng %1 qooery...</translation>
+    </message>
+    <message>
+        <source>ViewerQueryManager could not determine query type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Need a running engine to retrieve query parameters.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ViewerSubject</name>
-    <message>
-        <source>VisIt has encountered the following error: %1.
-VisIt will attempt to continue processing, but it may behave unreliably.  Please save this error message and give it to a VisIt developer.  In addition, you may want to save your session and re-start.  Of course, this session may still cause VisIt to malfunction.</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>You cannot define a database correlation that has the same name as a source. No database correlation will be created for %1.</source>
         <translation type="unfinished">Yuoo cunnut deffeene-a a detebese-a curreleshun thet hes zee seme-a neme-a es a suoorce-a. Nu detebese-a curreleshun veell be-a creeted fur %1.</translation>
@@ -21835,19 +27649,19 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <source>To construct a derived data function, you must have an active plot.  No DDF was created.</source>
-        <translation type="unfinished">Tu cunstrooct a dereefed deta fooncshun, yuoo moost hefe-a un ecteefe-a plut.  Nu DDF ves creeted.</translation>
+        <translation type="obsolete">Tu cunstrooct a dereefed deta fooncshun, yuoo moost hefe-a un ecteefe-a plut.  Nu DDF ves creeted.</translation>
     </message>
     <message>
         <source>Only one DDF can be created at a time.  VisIt is using the first active plot.</source>
-        <translation type="unfinished">Oonly oone-a DDF cun be-a creeted et a teeme-a.  VisIt is useeng zee furst ecteefe-a plut.</translation>
+        <translation type="obsolete">Oonly oone-a DDF cun be-a creeted et a teeme-a.  VisIt is useeng zee furst ecteefe-a plut.</translation>
     </message>
     <message>
         <source>Created DDF</source>
-        <translation type="unfinished">Creeted DDF</translation>
+        <translation type="obsolete">Creeted DDF</translation>
     </message>
     <message>
         <source>Unable to create DDF</source>
-        <translation type="unfinished">Uneble-a tu creete-a DDF</translation>
+        <translation type="obsolete">Uneble-a tu creete-a DDF</translation>
     </message>
     <message>
         <source>To export a database, you must have an active plot.  No database was saved.</source>
@@ -21883,7 +27697,7 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <source>Performing %1 query...</source>
-        <translation type="unfinished">Perffurmeeng %1 qooery...</translation>
+        <translation type="obsolete">Perffurmeeng %1 qooery...</translation>
     </message>
     <message>
         <source>Sending keep alive signals...</source>
@@ -21903,11 +27717,91 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <source>Invalid PlotId</source>
-        <translation type="unfinished">Infeleed PlutId</translation>
+        <translation type="obsolete">Infeleed PlutId</translation>
     </message>
     <message>
         <source>Invalid WindowId</source>
-        <translation type="unfinished">Infeleed VeendooId</translation>
+        <translation type="obsolete">Infeleed VeendooId</translation>
+    </message>
+    <message>
+        <source>To construct a data binning, you must have an active plot.  No data binning was created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only one data binning can be created at a time.  VisIt is using the first active plot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Created data binning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to create data binning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An invalid selection name was provided. No selection was applied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To apply a named selection, you must have an active plot.  No named selection was applied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All plots involving a named selection must come from the same engine.  No named selection was applied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Applied named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To create a named selection, you must have an active plot that has been drawn.  No named selection was created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can only have one active plot when creating a named selection.  No named selection was created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Created named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to create named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Deleted named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to delete named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Loaded named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to load named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not determine the source or plot that creates the %1 selection.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt cannot update the %1 selection because it does not exist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saved named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to save named selection</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -22065,38 +27959,6 @@ support log-scaling.  It will not be done.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>There are non-positive values in the domain of the
-curve, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There are non-positive values in the range of the
-curve, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There are non-positive values in the x-coords of
-the mesh, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There are non-positive values in the y-coords of
-the mesh, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Would you like to modify the %1 correlation so it correlates the following databases?</source>
         <translation type="unfinished">Vuoold yuoo leeke-a tu mudeeffy zee %1 curreleshun su it curreletes zee fullooeeng detebeses?</translation>
     </message>
@@ -22186,12 +28048,60 @@ To avoid this warning in the future, make sure that locked windows have compatib
         <source>VisIt could not open a window for TimeQuery because the maximum number of windows was exceeded.</source>
         <translation type="unfinished">VisIt cuoold nut oopee a veendoo fur TeemeQooery becoose-a zee mexeemoom noomber ooff veendoos ves ixceeded.</translation>
     </message>
+    <message>
+        <source>VisIt did not do an advanced window save because none of the windows had any plots.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the domain of 
+the curve, so log scaling cannot be done. You must
+limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the range of 
+the curve, so log scaling cannot be done. You must
+limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the x-coords 
+of the mesh, so log scaling cannot be done. You must
+limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the y-coords
+of the mesh, so log scaling cannot be done. You
+must limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not create named selection %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>VisItSimStripChart</name>
     <message>
         <source>Strip Chart</source>
-        <translation type="unfinished">Streep Chert</translation>
+        <translation type="obsolete">Streep Chert</translation>
+    </message>
+    <message>
+        <source>Strip chart</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -22234,7 +28144,7 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>Makefile</source>
-        <translation type="unfinished">Mekeffeele-a</translation>
+        <translation type="obsolete">Mekeffeele-a</translation>
     </message>
     <message>
         <source>Attribute</source>
@@ -22274,7 +28184,7 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>XMLOpen</source>
-        <translation type="unfinished">XMLOpee</translation>
+        <translation type="obsolete">XMLOpee</translation>
     </message>
     <message>
         <source>Open file...</source>
@@ -22282,7 +28192,7 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>XMLSave</source>
-        <translation type="unfinished">XMLSefe-a</translation>
+        <translation type="obsolete">XMLSefe-a</translation>
     </message>
     <message>
         <source>Save file...</source>
@@ -22299,6 +28209,17 @@ To avoid this warning in the future, make sure that locked windows have compatib
     <message>
         <source>Generate code for %1</source>
         <translation type="unfinished">Generete-a cude-a fur %1</translation>
+    </message>
+    <message>
+        <source>CMake</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditAttribute</name>
+    <message>
+        <source>Base Class</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -22367,11 +28288,11 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>Project file</source>
-        <translation type="unfinished">Pruject feele-a</translation>
+        <translation type="obsolete">Pruject feele-a</translation>
     </message>
     <message>
         <source>Makefile</source>
-        <translation type="unfinished">Mekeffeele-a</translation>
+        <translation type="obsolete">Mekeffeele-a</translation>
     </message>
     <message>
         <source>Plugin information</source>
@@ -22388,6 +28309,10 @@ To avoid this warning in the future, make sure that locked windows have compatib
     <message>
         <source>Cancel</source>
         <translation type="unfinished">Cuncel</translation>
+    </message>
+    <message>
+        <source>CMake</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -22579,6 +28504,10 @@ equality calculations</source>
         <source>Initialization Values / Code</source>
         <translation type="unfinished">Ineetielizeshun Felooes / Cude-a</translation>
     </message>
+    <message>
+        <source>Persistent</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>XMLEditFunctions</name>
@@ -22720,6 +28649,26 @@ equality calculations</source>
         <source>Plugin has code specific to the MDServer (Database Plugins only)</source>
         <translation type="unfinished">Ploogeen hes cude-a speceeffic tu zee MDSerfer (Detebese-a Ploogeens oonly)</translation>
     </message>
+    <message>
+        <source>GUI Libs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Viewer Libs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MDServer Libs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Engine Libs (ser)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Engine Libs (par)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>XMLEditPlugin</name>
@@ -22845,7 +28794,7 @@ equality calculations</source>
     </message>
     <message>
         <source>Extensions</source>
-        <translation type="unfinished">Ixtenseeuns</translation>
+        <translation type="obsolete">Ixtenseeuns</translation>
     </message>
     <message>
         <source>File format can also write data</source>
@@ -22857,11 +28806,39 @@ equality calculations</source>
     </message>
     <message>
         <source>Format uses explicit filenames</source>
-        <translation type="unfinished">Furmet uses ixpleecit feelenemes</translation>
+        <translation type="obsolete">Furmet uses ixpleecit feelenemes</translation>
     </message>
     <message>
         <source>Filenames</source>
-        <translation type="unfinished">Feelenemes</translation>
+        <translation type="obsolete">Feelenemes</translation>
+    </message>
+    <message>
+        <source>Operator Plugin attributes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Operator creates new variable via expressions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable type inputted by the operator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable type created by the operator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default file name patterns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File name patterns are strict by default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File format opens a whole directory (not a single file)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

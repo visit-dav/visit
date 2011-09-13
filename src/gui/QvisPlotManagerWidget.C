@@ -232,6 +232,9 @@ using std::vector;
 //   Brad Whitlock, Fri Jul 23 15:24:49 PDT 2010
 //   I added selection support.
 //
+//   Brad Whitlock, Tue Sep 13 11:18:35 PDT 2011
+//   Change the "apply operators" and "apply selections" to read better.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
@@ -362,20 +365,15 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 
     topLayout->addWidget(plotListBox);
 
-    QWidget *cbParent = new QWidget(this);
-    QHBoxLayout *cbLayout = new QHBoxLayout(cbParent);
-    cbLayout->setMargin(0);
-    topLayout->addWidget(cbParent);
-    applyOperatorCheckBox = new QCheckBox(tr("Apply operators  /"), cbParent);
+    applyOperatorCheckBox = new QCheckBox(tr("Apply operators to all plots"), this);
     connect(applyOperatorCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(applyOperatorToggled(bool)));
-    cbLayout->addWidget(applyOperatorCheckBox);
+    topLayout->addWidget(applyOperatorCheckBox);
 
-    applySelectionCheckBox = new QCheckBox(tr("selection to all plots"), cbParent);
+    applySelectionCheckBox = new QCheckBox(tr("Apply subset selections to all plots"), this);
     connect(applySelectionCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(applySelectionToggled(bool)));
-    cbLayout->addWidget(applySelectionCheckBox);
-    cbLayout->addStretch();
+    topLayout->addWidget(applySelectionCheckBox);
 
     // Let's size the widget a little based on its toolbar button text
     int minWidth = fontMetrics().boundingRect(plotAddMenuAction->text()).width() + 

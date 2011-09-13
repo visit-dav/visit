@@ -92,6 +92,9 @@ QPixmap *QvisPlotListBoxItem::selectionIcon = 0;
 //   Brad Whitlock, Fri Jul 23 14:55:53 PDT 2010
 //   I added selectionName.
 //
+//   Brad Whitlock, Tue Sep 13 12:24:58 PDT 2011
+//   Scale the subset icon down smoothly.
+//
 // ****************************************************************************
 
 QvisPlotListBoxItem::QvisPlotListBoxItem(const Plot &p, const QString &prefix_, 
@@ -162,7 +165,8 @@ QvisPlotListBoxItem::QvisPlotListBoxItem(const Plot &p, const QString &prefix_,
     //
     if(subsetIcon == 0)
     {
-        subsetIcon = new QPixmap(subset_xpm);
+        subsetIcon = new QPixmap(
+            QPixmap(subset_xpm).scaledToWidth(20,Qt::SmoothTransformation));
     }
     if(selectionIcon == 0)
     {
