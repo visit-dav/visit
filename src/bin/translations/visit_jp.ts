@@ -715,6 +715,26 @@
         <source>Triangulate Regular Points</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>ChannelComm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Extrude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FFT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Five Fold Tet Subdvision</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LineSampler</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PlotNames</name>
@@ -1222,6 +1242,14 @@ The metadata server returned the following message:
     </message>
     <message>
         <source>Tick marks visible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">時刻</translation>
+    </message>
+    <message>
+        <source>Set bounding box location manually</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1780,6 +1808,21 @@ The time slice I want will change as I change the time slider</source>
     </message>
 </context>
 <context>
+    <name>QvisChannelCommWindow</name>
+    <message>
+        <source>Number in X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number in Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisClipWindow</name>
     <message>
         <source>Quality:</source>
@@ -1881,6 +1924,13 @@ The time slice I want will change as I change the time slider</source>
     <name>QvisColorSelectionWidget</name>
     <message>
         <source>More colors ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisColorTableWidget</name>
+    <message>
+        <source>Invert</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2104,6 +2154,13 @@ The time slice I want will change as I change the time slider</source>
     <name>QvisConnCompReduceWindow</name>
     <message>
         <source>Target Reduction </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisConnectedComponentsWindow</name>
+    <message>
+        <source>Use Ghosts Zone Neighbors for connectivity between Domains</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3235,6 +3292,18 @@ The time slice I want will change as I change the time slider</source>
         <source>Python Expression Script</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Open Attribute XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML Files (*.xml);;All files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The expressions loaded from %1 contained expressions having the same names as expressions already in the expression list. You may want to edit some of your expression names so they are unique.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisExternalSurfaceWindow</name>
@@ -3244,6 +3313,32 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Find external edges for 2D datasets</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisExtrudeWindow</name>
+    <message>
+        <source>Extrusion axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preserve original cell numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisFFTWindow</name>
+    <message>
+        <source>Dummy attribute</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3266,6 +3361,10 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>VisIt could not access the directory: %1 so your home directory will be used.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not access the directory: %1 so %2 directory will be used.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3605,6 +3704,41 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisFiveFoldTetSubdivisionWindow</name>
+    <message>
+        <source>Vertices with odd parity have six neighborhood </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add component information from contour tree</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Contour Tree Filename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Isovalue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selected IDs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Highlighted IDs</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4028,6 +4162,10 @@ version of VisIt?</source>
         <source>VisIt</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Setup Host Profiles and Configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisGlobalLineoutWindow</name>
@@ -4231,6 +4369,24 @@ by Lineout Operator</source>
     </message>
 </context>
 <context>
+    <name>QvisHistogram</name>
+    <message>
+        <source>No data</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisHistogramLimits</name>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisHistogramPlotWindow</name>
     <message>
         <source>Histogram based on</source>
@@ -4277,23 +4433,11 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Data Scale</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Linear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Log10</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Square root</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Specify Range?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4322,10 +4466,6 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>zone</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use bin widths?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4365,7 +4505,66 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>number of bins</source>
+        <source>Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Weighting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Square Root</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Original Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Current Plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use bin widths</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisHohlraumFluxQueryWidget</name>
+    <message>
+        <source>Number of Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divide Emis by Absorb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ray Center</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Theta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phi</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4492,14 +4691,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Pre-command</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Post-command</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Profile name cannot be empty, reverting to &quot;%1&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4521,14 +4712,6 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>An invalid timeout was specified, reverting to %1 minutes.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Pre-command cannot be empty, turning off pre-command.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Post-command cannot be empty, turning off post-command.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4601,6 +4784,26 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>(default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use gateway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DISPLAY:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have VisIt launch X servers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of GPUs per node:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X arguments:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4709,6 +4912,10 @@ by Lineout Operator</source>
         <source>Wrap</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>  </source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisInteractorWindow</name>
@@ -4779,19 +4986,31 @@ by Lineout Operator</source>
 <context>
     <name>QvisInverseGhostZoneWindow</name>
     <message>
-        <source>Zones to Display:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Request Ghost Zones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>GhostZonesOnly</source>
+        <source>Show Zones That Are Duplicated At Domain Boundaries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>GhostZonesAndRealZones</source>
+        <source>Show Enhanced Connectivity Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Reduced Connectivity Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show zones refined out by finer patches (AMR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show cells on exterior of data set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show zones deemed not applicable to problem</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5322,6 +5541,265 @@ by Lineout Operator</source>
     </message>
 </context>
 <context>
+    <name>QvisLineSamplerWindow</name>
+    <message>
+        <source>Coordinate system</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cartesian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cylindrical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of arrays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal angle (degrees) between arrays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array projection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divergent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel/Grid: Offset between channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divergent: Angle (degrees) between channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grid: Number of rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grid: Offset between rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array axis direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>R</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal angle (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal plane R-tilt (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal plane Z-tilt (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal angle (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View dimension</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>One</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Two</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Three</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D plot height scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D plot channel offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D plot array offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D plot time scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Beam shape</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cylinder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cylinder radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cone divergence (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Beam Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TopHat</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gaussian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Standard deviation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear sample distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Radial sample arc (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SingleChannelSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SummationChannelSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SingleToroidalSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SummationToroidalSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal sampling angle (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CurrentTimeStep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MultipleTimeSteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete All Channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisLineStyleWidget</name>
     <message>
         <source>solid</source>
@@ -5360,6 +5838,17 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Point 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisLineoutQueryWidget</name>
+    <message>
+        <source>Start point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>End point</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5829,6 +6318,10 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Auto apply</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Setup Host Profiles and Configuration . . .</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6937,14 +7430,6 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Connect Particles</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Index Variable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Index of the first time slice</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6960,6 +7445,85 @@ Do you want to apply the %2 operator?
         <source>Number of slices forward in time</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Time Slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coordinate replacement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connect particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Index variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPickQueryWidget</name>
+    <message>
+        <source>Pick using coordinate to determine zone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pick using coordinate to determine node</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pick using domain and element Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pick using global element Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Node Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zone Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Curve options:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preserve Picked Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preserve Picked Element Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiple-variable Time Curve options:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create Single Y-Axis plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create Multiple Y-Axes plot</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisPickWindow</name>
@@ -6973,14 +7537,6 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Variables</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Show Mesh Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Show Timestep</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7044,35 +7600,63 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Display incident nodes/zones</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Display global nodes/zones</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Display reference pick letter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Display for Nodes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Display for Zones</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Create time curve with next pick</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Create spreadsheet with next pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Choose save filename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output Display Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Timestep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Incident nodes/zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global nodes/zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reference pick letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For Nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Pick Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do Time Curve with next pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time curve use single Y axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time curve use multiple Y axes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spreadsheet Options</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7116,10 +7700,6 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Redraw this plot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Disconnect this plot from time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7171,7 +7751,11 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Disconnect From time slider</source>
+        <source>Follow time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set whether this plot follows the time slider</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7187,10 +7771,6 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Draw</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>selection to all plots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7234,10 +7814,6 @@ Do you want to apply the %2 operator?
         <translation type="unfinished">新しく開く</translation>
     </message>
     <message>
-        <source>Apply operators  /</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Analysis</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7263,6 +7839,14 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Transforms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Apply operators to all plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Apply subset selections to all plots</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7359,10 +7943,6 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisPoincarePlotWindow</name>
     <message>
-        <source>Streamlines</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7399,23 +7979,11 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Integrator:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Dormand-Prince (Runge-Kutta)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Adams-Bashforth (Multi-step)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>M3D-C1 Integrator</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Maxiumum step length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7459,14 +8027,6 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Punctures only</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Normal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Maximum toroidal winding</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7476,10 +8036,6 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Winding pair confidence</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Periodicity consistency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7531,10 +8087,6 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Show ridgelines</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Verbose</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7552,54 +8104,6 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OriginalValue</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>InputOrder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PointIndex</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Plane</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>WindingGroup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>WindingPointOrder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>WindingPointOrderModulo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ToroidalWindings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PoloidalWindings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>SafetyFactor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Confidence</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RidgelineVariance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7695,19 +8199,11 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Parallel streamline options</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Parallelize across</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Domains</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Streamlines and Domains</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7743,10 +8239,6 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>periodicityConsistency</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>singlePlane</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7760,6 +8252,178 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fieldlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unused</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None - Punctures only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Full</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override poloidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rational surface factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show 1D plots (distance/ridgelines)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor Q if Q==P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor P if P!=Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal Windings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal Windings Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal Windings P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fieldline Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Group Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Point Order Modulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel fieldline options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fieldlines and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velocity Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rationalSurfaceFactor</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8265,42 +8929,21 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Starting timestep</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Ending timestep</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>stride</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use 1st unused window or
-create new one.  All
-subsequent queries will
-use this same window.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Window #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of startTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of endTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of stride was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The value of windowId was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choices entered here only apply to values displayed in the x-axis of the time curve.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use 1st unused window or create new
+one. All subsequent queries will use this
+same window.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8343,10 +8986,6 @@ use this same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Time Curve</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Query</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8375,18 +9014,6 @@ use this same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Query point</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Start point</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>End point</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Domain</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8412,14 +9039,6 @@ use this same window.</source>
     </message>
     <message>
         <source>Max Length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Ray Center</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Radius, Theta, Phi</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8459,23 +9078,7 @@ use this same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>query point</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>start point</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>end point</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Performing %1 query.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The %1 is not valid. It should consist of two or three real world coordinate values.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8495,30 +9098,6 @@ use this same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Divide Emis by Absorb</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Output Image Format</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Origin</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Theta, Phi</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Image Width, Height</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Image Pixel Size</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>There are currently no query results to save.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8528,6 +9107,10 @@ use this same window.</source>
     </message>
     <message>
         <source>VisIt could not save the query results to the selected file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dump Steps</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9019,6 +9602,10 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Distribute resampled data set across all processors (parallel only)?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make output cell centered</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9533,6 +10120,10 @@ atoms at unit cell boundaries.</source>
         <source>%1 sequence</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Frame stride</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisSaveWindow</name>
@@ -9840,19 +10431,11 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Normlize the axis to a cube</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Foreground Color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Single</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9919,6 +10502,14 @@ atoms at unit cell boundaries.</source>
         <source>point size</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Normalize the axis to a cube</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single color</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisScatterPlotWizard</name>
@@ -9955,6 +10546,25 @@ atoms at unit cell boundaries.</source>
     </message>
 </context>
 <context>
+    <name>QvisSelectionsDialog</name>
+    <message>
+        <source>Selection Name and Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisSelectionsWindow</name>
     <message>
         <source>Automatically apply updated selections</source>
@@ -9973,10 +10583,6 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished">閉じる</translation>
     </message>
     <message>
-        <source>Update</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9986,18 +10592,6 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Properties</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Plot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Plot the defines the selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10017,15 +10611,162 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Enter a name for the new selection.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>VisIt can&apos;t determine the host for the compute engine to use for loading the selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Load selection from file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The data source that defines the selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cumulative Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Get variable ranges</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Populate the list of variables used for the cumulative query
+selection from the list of variables used in the selection&apos;s
+originating plot. The originating plot must be a Parallel
+Coordinates plot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Query over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display axis type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Matches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of bins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Summation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Include cells matching in any time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Include cells matching in all time steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum bin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum bin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cells in selection:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cells in dataset:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum time state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum time state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>time stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of Cells vs. Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency vs. Matches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency vs. ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency vs. Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable display is not supported when the selection does not have any variables.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10113,6 +10854,49 @@ atoms at unit cell boundaries.</source>
     </message>
 </context>
 <context>
+    <name>QvisSetupHostProfilesAndConfigWindow</name>
+    <message>
+        <source>To finish the VisIt install on this Mac select any computing centers whose resources you are using to configure host profiles automatically for their machines.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select computing centers used</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select default configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None (use VisIt&apos;s standard defaults)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The configuration file </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace existing configuration file?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host profiles and configuration files have been installed and will be available after VisIt is restarted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisSiloDumpWindow</name>
     <message>
         <source>Filename</source>
@@ -10174,10 +10958,6 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>VisIt could not locate the simulation&apos;s user interface creation file at: %1. The custom user interface for this simulation will be unavailable.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10250,6 +11030,10 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Stopped</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 on %2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10663,10 +11447,6 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Domains</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Communication threshold</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10684,10 +11464,6 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Adams-Bashforth (Multi-step)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Maximum step length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10755,14 +11531,6 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Number of Samples</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Seed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Sample density 0</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10807,15 +11575,7 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>M3D-C1 Integrator</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Limit maximum time step</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Maximum time step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10979,14 +11739,6 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Parallelize across</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Streamlines and Domains</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Have VisIt select the best algorithm</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10996,10 +11748,6 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Issue warnings when the maximum number of steps is reached</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11136,6 +11884,242 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Open text file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete All Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uniform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of random samples</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Random number seed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unused</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coordinate transform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cylindrical to Cartesian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cartesian to Cylindrical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phi scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(When displaying in cylindrical coordinates.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Angular tolerance (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum measuring distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vary radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize Over Particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize Over Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize Over Particles and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines vs Streamlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamline
+    Compute particle trajectories in an (instantaneous) snapshot
+    of the vector field. Uses and loads only velocity field from current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads velocity data from all relevant time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when the maximum number of steps is reached</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when stiffness is detected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when a particle doesn&apos;t terminate at a critical point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Meaning it circles round and round the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>velocity source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>phi scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tube vary radius factor must be &gt;= 1.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tube vary radius factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance angular tolerance must be &gt;= 0.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance angular tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance minimum distance must be &gt;= 0.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance minimum distnace</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11835,6 +12819,38 @@ atoms at unit cell boundaries.</source>
     </message>
 </context>
 <context>
+    <name>QvisTimeQueryOptionsWidget</name>
+    <message>
+        <source>Do Time Curve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start and End are Time steps,
+not cycles or times.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Starting timestep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ending timestep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do Time Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Query Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisTimeSliderControlWidget</name>
     <message>
         <source>Time</source>
@@ -12158,19 +13174,27 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Scale width by variable?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Tube width (fixed)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Tube width scaling variable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Cap ends of the tubes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tube radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scale width by variable?  (Nodal variables work best)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tube form</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13081,6 +14105,61 @@ atoms at unit cell boundaries.</source>
     </message>
 </context>
 <context>
+    <name>QvisXRayImageQueryWidget</name>
+    <message>
+        <source>Output Image Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>bmp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>jpeg</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>png</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>tiff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rawfloats</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divide Emis by Absorb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Theta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Pixel Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisZoneDumpWindow</name>
     <message>
         <source>Dump Variable</source>
@@ -13218,7 +14297,7 @@ atoms at unit cell boundaries.</source>
 <context>
     <name>SetPlotFollowsTimeAction</name>
     <message>
-        <source>Disconnect from time slider</source>
+        <source>Plot follows time slider</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -14203,10 +15282,6 @@ operation could take as much as a few minutes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The plot dimensions do not match.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>VisIt does not have all the information it needs to perform a pick.  Please wait while the necessary information is calculated.  All current pick selections have been cached and will be performed when calculations are complete.  VisIt will notify you when it is fully ready for more picks.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14228,6 +15303,10 @@ operation could take as much as a few minutes.</source>
     </message>
     <message>
         <source>Could not create a plot of type from variable %1 of database %2 on host %3.  This often happens because something has changed since the session file was saved.  (For example, the file was overwritten.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The plot spatial dimensions do not match, 2D vs 3D. Plots need to be in windows with plots of the same spatial dimension.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -14389,6 +15468,27 @@ Please select a plot and try again.
         <source>There is no running engine with which to perform the query.  Please ensure the plot has finished drawing and try again.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>%1 requires a &apos;coord&apos; parameter.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiple-Y-Axes time query availble only with multiple variable selected.  Using Single-Y-Axis instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Performing %1 query...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ViewerQueryManager could not determine query type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Need a running engine to retrieve query parameters.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ViewerSubject</name>
@@ -14430,10 +15530,6 @@ Please select a plot and try again.
     </message>
     <message>
         <source>VisIt could not save your settings to: %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Performing %1 query...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -14485,10 +15581,6 @@ Please select a plot and try again.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Unable to apply named selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>To create a named selection, you must have an active plot that has been drawn.  No named selection was created.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14526,6 +15618,14 @@ Please select a plot and try again.
     </message>
     <message>
         <source>Unable to save named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not determine the source or plot that creates the %1 selection.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt cannot update the %1 selection because it does not exist</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -15205,6 +16305,10 @@ equality calculations</source>
         <source>Initialization Values / Code</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Persistent</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>XMLEditFunctions</name>
@@ -15507,6 +16611,22 @@ equality calculations</source>
     </message>
     <message>
         <source>File format opens a whole directory (not a single file)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Operator Plugin attributes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Operator creates new variable via expressions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable type inputted by the operator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable type created by the operator</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

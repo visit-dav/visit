@@ -1,93 +1,95 @@
-<!DOCTYPE TS><TS>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
 <context>
     <name>@default</name>
     <message>
         <source>Launching engine on %1</source>
-        <translation>aunchingLay engineway onway %1</translation>
+        <translation type="obsolete">aunchingLay engineway onway %1</translation>
     </message>
     <message>
         <source>VisIt could not launch a compute engine on host &quot;%1&quot; because that host does not exist.</source>
-        <translation>VisIt ouldcay otnay aunchlay away omputecay engineway onway osthay %1 ecausebay atthay osthay oesday otnay existway.</translation>
+        <translation type="obsolete">VisIt ouldcay otnay aunchlay away omputecay engineway onway osthay %1 ecausebay atthay osthay oesday otnay existway.</translation>
     </message>
     <message>
         <source>VisIt cannot use the compute engine on host &quot;%1&quot; because the engine has an incompatible  version number.</source>
-        <translation>VisIt annotcay useway ethay omputecay engineway onway osthay %1 ecausebay ethay engineway ashay anway incompatibleway  ersionvay umbernay.</translation>
+        <translation type="obsolete">VisIt annotcay useway ethay omputecay engineway onway osthay %1 ecausebay ethay engineway ashay anway incompatibleway  ersionvay umbernay.</translation>
     </message>
     <message>
         <source>VisIt cannot use the compute engine on host &quot;%1&quot;because the compute engine did not provide the proper credentials.</source>
-        <translation>VisIt annotcay useway ethay omputecay engineway onway osthay %1ecausebay ethay omputecay engineway idday otnay ovidepray ethay operpray edentialscray.</translation>
+        <translation type="obsolete">VisIt annotcay useway ethay omputecay engineway onway osthay %1ecausebay ethay omputecay engineway idday otnay ovidepray ethay operpray edentialscray.</translation>
     </message>
     <message>
         <source>VisIt could not launch the compute engine on host &quot;%1&quot;.</source>
-        <translation>VisIt ouldcay otnay aunchlay ethay omputecay engineway onway osthay %1.</translation>
+        <translation type="obsolete">VisIt ouldcay otnay aunchlay ethay omputecay engineway onway osthay %1.</translation>
     </message>
     <message>
         <source>The launch of the compute engine on host &quot;%1&quot; has been cancelled.</source>
-        <translation>eThay aunchlay ofway ethay omputecay engineway onway osthay %1 ashay eenbay ancelledcay.</translation>
+        <translation type="obsolete">eThay aunchlay ofway ethay omputecay engineway onway osthay %1 ashay eenbay ancelledcay.</translation>
     </message>
     <message>
         <source>Connecting to simulation at %1:%2</source>
-        <translation>onnectingCay otay imulationsay atway %1:%2</translation>
+        <translation type="obsolete">onnectingCay otay imulationsay atway %1:%2</translation>
     </message>
     <message>
         <source>VisIt could not connect to the simulation on host &quot;%1&quot; because that host does not exist.</source>
-        <translation>VisIt ouldcay otnay onnectcay otay ethay imulationsay onway osthay %1 ecausebay atthay osthay oesday otnay existway.</translation>
+        <translation type="obsolete">VisIt ouldcay otnay onnectcay otay ethay imulationsay onway osthay %1 ecausebay atthay osthay oesday otnay existway.</translation>
     </message>
     <message>
         <source>VisIt cannot use the simulation on host &quot;%1&quot; because the simulation has an incompatible  version number.</source>
-        <translation>VisIt annotcay useway ethay imulationsay onway osthay %1 ecausebay ethay imulationsay ashay anway incompatibleway  ersionvay umbernay.</translation>
+        <translation type="obsolete">VisIt annotcay useway ethay imulationsay onway osthay %1 ecausebay ethay imulationsay ashay anway incompatibleway  ersionvay umbernay.</translation>
     </message>
     <message>
         <source>VisIt cannot use the simulation on host &quot;%1&quot;because the simulation did not provide the proper credentials.</source>
-        <translation>VisIt annotcay useway ethay imulationsay onway osthay %1ecausebay ethay imulationsay idday otnay ovidepray ethay operpray edentialscray.</translation>
+        <translation type="obsolete">VisIt annotcay useway ethay imulationsay onway osthay %1ecausebay ethay imulationsay idday otnay ovidepray ethay operpray edentialscray.</translation>
     </message>
     <message>
         <source>VisIt could not connect to the simulation on host &quot;%1&quot;.</source>
-        <translation>VisIt ouldcay otnay onnectcay otay ethay imulationsay onway osthay %1.</translation>
+        <translation type="obsolete">VisIt ouldcay otnay onnectcay otay ethay imulationsay onway osthay %1.</translation>
     </message>
     <message>
         <source>The connection to the simulation on host &quot;%1&quot; has been cancelled.</source>
-        <translation>eThay onnectioncay otay ethay imulationsay onway osthay %1 ashay eenbay ancelledcay.</translation>
+        <translation type="obsolete">eThay onnectioncay otay ethay imulationsay onway osthay %1 ashay eenbay ancelledcay.</translation>
     </message>
     <message>
         <source>Closed the compute engine on host %1.</source>
-        <translation>osedClay ethay omputecay engineway onway osthay %1.</translation>
+        <translation type="obsolete">osedClay ethay omputecay engineway onway osthay %1.</translation>
     </message>
     <message>
         <source>Cannot close the compute engine on host %1 because there is no compute engine running on that host.</source>
-        <translation>annotCay oseclay ethay omputecay engineway onway osthay %1 ecausebay erethay isway onay omputecay engineway unningray onway atthay osthay.</translation>
+        <translation type="obsolete">annotCay oseclay ethay omputecay engineway onway osthay %1 ecausebay erethay isway onay omputecay engineway unningray onway atthay osthay.</translation>
     </message>
     <message>
         <source>Interrupting the compute engine on host %1.</source>
-        <translation>Interruptingway ethay omputecay engineway onway osthay %1.</translation>
+        <translation type="obsolete">Interruptingway ethay omputecay engineway onway osthay %1.</translation>
     </message>
     <message>
         <source>Cannot interrupt the compute engine on host %1 because there is no compute engine running on that host.</source>
-        <translation>annotCay interruptway ethay omputecay engineway onway osthay %1 ecausebay erethay isway onay omputecay engineway unningray onway atthay osthay.</translation>
+        <translation type="obsolete">annotCay interruptway ethay omputecay engineway onway osthay %1 ecausebay erethay isway onay omputecay engineway unningray onway atthay osthay.</translation>
     </message>
     <message>
         <source>VisIt is not connected to the simulation &apos;%1&apos; on host %2</source>
-        <translation>VisIt isway otnay onnectedcay otay ethay imulationsay %1 onway osthay %2</translation>
+        <translation type="obsolete">VisIt isway otnay onnectedcay otay ethay imulationsay %1 onway osthay %2</translation>
     </message>
     <message>
         <source>VisIt could not find a compute engine to use for the plot on host %1. VisIt will try to launch a compute engine on that host.</source>
-        <translation>VisIt ouldcay otnay indfay away omputecay engineway otay useway orfay ethay otplay onway osthay %1. VisIt illway ytray otay aunchlay away omputecay engineway onway atthay osthay.</translation>
+        <translation type="obsolete">VisIt ouldcay otnay indfay away omputecay engineway otay useway orfay ethay otplay onway osthay %1. VisIt illway ytray otay aunchlay away omputecay engineway onway atthay osthay.</translation>
     </message>
     <message>
         <source>VisIt has been disconnected from the simulation &apos;%1&apos; on host %2</source>
-        <translation>VisIt ashay eenbay isconnectedday omfray ethay imulationsay %1 onway osthay %2</translation>
+        <translation type="obsolete">VisIt ashay eenbay isconnectedday omfray ethay imulationsay %1 onway osthay %2</translation>
     </message>
     <message>
         <source>The compute engine running on %1 has exited abnormally.</source>
-        <translation>eThay omputecay engineway unningray onway %1 ashay exitedway abnormallyway.</translation>
+        <translation type="obsolete">eThay omputecay engineway unningray onway %1 ashay exitedway abnormallyway.</translation>
     </message>
     <message>
         <source>The compute engine running on host %1 issued the following warning: %2</source>
-        <translation>eThay omputecay engineway unningray onway osthay %1 issuedway ethay ollowingfay arningway: %2</translation>
+        <translation type="obsolete">eThay omputecay engineway unningray onway osthay %1 issuedway ethay ollowingfay arningway: %2</translation>
     </message>
     <message>
         <source>VisIt can only export data to a simulation if the data being exported originated in a simulation.</source>
-        <translation>VisIt ancay onlyway exportway ataday otay away imulationsay ifway ethay ataday eingbay exportedway originatedway inway away imulationsay.</translation>
+        <translation type="obsolete">VisIt ancay onlyway exportway ataday otay away imulationsay ifway ethay ataday eingbay exportedway originatedway inway away imulationsay.</translation>
     </message>
     <message>
         <source>Add operator</source>
@@ -9756,11 +9758,19 @@
     <name>AddWindowAction</name>
     <message>
         <source>Add new window</source>
-        <translation type="unfinished">Addway ewnay indowway</translation>
+        <translation type="obsolete">Addway ewnay indowway</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished">Addway</translation>
+        <translation type="obsolete">Addway</translation>
+    </message>
+    <message>
+        <source>Create a new viewer window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">ewNay</translation>
     </message>
 </context>
 <context>
@@ -9794,6 +9804,14 @@
     <message>
         <source>Stop animation</source>
         <translation type="unfinished">opStay animationway</translation>
+    </message>
+</context>
+<context>
+    <name>ChangeActivePlotsVarAction</name>
+    <message>
+        <source>VisIt was unable to change the active variable because: %1
+</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9844,18 +9862,26 @@
     <name>ClearWindowAction</name>
     <message>
         <source>Clear plots</source>
-        <translation type="unfinished">earClay otsplay</translation>
+        <translation type="obsolete">earClay otsplay</translation>
+    </message>
+    <message>
+        <source>Clear all plots from this window</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>CloneWindowAction</name>
     <message>
         <source>Clone window</source>
-        <translation type="unfinished">oneClay indowway</translation>
+        <translation type="obsolete">oneClay indowway</translation>
     </message>
     <message>
         <source>Clone</source>
         <translation type="unfinished">oneClay</translation>
+    </message>
+    <message>
+        <source>Clone this window</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9876,11 +9902,15 @@
     <name>DeleteWindowAction</name>
     <message>
         <source>Delete window</source>
-        <translation type="unfinished">eleteDay indowway</translation>
+        <translation type="obsolete">eleteDay indowway</translation>
     </message>
     <message>
         <source>Delete</source>
         <translation type="unfinished">eleteDay</translation>
+    </message>
+    <message>
+        <source>Delete this window</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9986,6 +10016,36 @@
     <message>
         <source>Swap background and foreground colors</source>
         <translation type="unfinished">apSway ackgroundbay andway oregroundfay olorscay</translation>
+    </message>
+</context>
+<context>
+    <name>KeyframeDataModel</name>
+    <message>
+        <source>Current frame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation type="unfinished">iewVay</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation type="unfinished">ateStay</translation>
+    </message>
+    <message>
+        <source>Attributes</source>
+        <translation type="unfinished">Attributesway</translation>
+    </message>
+    <message>
+        <source>Keyframes</source>
+        <translation type="unfinished">eyframesKay</translation>
+    </message>
+</context>
+<context>
+    <name>MenuQuitAction</name>
+    <message>
+        <source>Quit</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10171,6 +10231,20 @@
     </message>
 </context>
 <context>
+    <name>OpenCLIClientAction</name>
+    <message>
+        <source>Open CLI</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>OpenGUIClientAction</name>
+    <message>
+        <source>Open GUI</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>OperatorNames</name>
     <message>
         <source>Boundary</source>
@@ -10344,6 +10418,74 @@
         <source>Zone Dump</source>
         <translation type="unfinished">oneZay umpDay</translation>
     </message>
+    <message>
+        <source>AMR Dual Grid and Stitch Cells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ChannelComm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ConnectedComponents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DataBinning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DeformSphereGlyph</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delaunay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dual Mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Extrude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FFT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Five Fold Tet Subdvision</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flux</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LineSampler</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MultiresControl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PersistentParticles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SurfaceNormal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Triangulate Regular Points</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PlotNames</name>
@@ -10369,7 +10511,7 @@
     </message>
     <message>
         <source>Kerbel</source>
-        <translation type="unfinished">erbelKay</translation>
+        <translation type="obsolete">erbelKay</translation>
     </message>
     <message>
         <source>Label</source>
@@ -10431,17 +10573,103 @@
         <source>Volume</source>
         <translation type="unfinished">olumeVay</translation>
     </message>
+    <message>
+        <source>MultiCurve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poincare</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well Bore</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
         <source>hidden</source>
-        <translation type="unfinished">iddenhay</translation>
+        <translation type="obsolete">iddenhay</translation>
     </message>
     <message>
         <source>QvisPlotListBoxItem</source>
         <comment>hidden</comment>
-        <translation type="unfinished">isPlotListBoxItemQvay</translation>
+        <translation type="obsolete">isPlotListBoxItemQvay</translation>
+    </message>
+    <message>
+        <source>Reopening </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> on </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opening </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not open the file %1.
+
+The metadata server returned the following message:
+
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value(s) for &apos;%1&apos; were invalid. Resetting to the last good value(s) of %2.</source>
+        <comment>ResettingError</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use selection [%1]</source>
+        <comment>QvisPlotListBoxItem</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>hidden</source>
+        <comment>QvisPlotListBoxItem</comment>
+        <translation type="unfinished">iddenhay</translation>
+    </message>
+    <message>
+        <source>Create selection [%1]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt has encountered the following error: %1.
+VisIt will attempt to continue processing, but it may behave unreliably.  Please save this error message and give it to a VisIt developer.  In addition, you may want to save your session and re-start.  Of course, this session may still cause VisIt to malfunction.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QPlaneGroup</name>
+    <message>
+        <source>Origin</source>
+        <translation type="unfinished">Originway</translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation type="unfinished">ormalNay</translation>
+    </message>
+</context>
+<context>
+    <name>QvisAMRStitchCellWindow</name>
+    <message>
+        <source>Create cells of type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dual grid and stitch cells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dual grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stitch cells</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10477,6 +10705,10 @@
     <message>
         <source>faster</source>
         <translation type="unfinished">asterfay</translation>
+    </message>
+    <message>
+        <source>Animation increment</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10752,6 +10984,38 @@
         <source>No annotation object was created.</source>
         <translation type="unfinished">oNay annotationway objectway asway eatedcray.</translation>
     </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">imeTay</translation>
+    </message>
+    <message>
+        <source>Time scale factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set bounding box location manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array</source>
+        <translation type="unfinished">Arrayway</translation>
+    </message>
+    <message>
+        <source>General Array</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Axes</source>
+        <translation type="unfinished">Axesway</translation>
+    </message>
+    <message>
+        <source>Tick marks visible</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisAppearanceWindow</name>
@@ -10786,6 +11050,10 @@
     <message>
         <source>The background color and foreground color will not be changed because the selected colors are too similar and using them would make it too difficult to use VisIt.</source>
         <translation type="unfinished">eThay ackgroundbay olorcay andway oregroundfay olorcay illway otnay ebay angedchay ecausebay ethay electedsay olorscay areway ootay imilarsay andway usingway emthay ouldway akemay itway ootay ifficultday otay useway VisIt.</translation>
+    </message>
+    <message>
+        <source>Use default system appearance</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10837,6 +11105,57 @@
     <message>
         <source>An invalid value was provided for </source>
         <translation type="unfinished">Anway invalidway aluevay asway ovidedpray orfay </translation>
+    </message>
+</context>
+<context>
+    <name>QvisBaseVariableButton</name>
+    <message>
+        <source>Scalars</source>
+        <translation type="unfinished">alarsScay</translation>
+    </message>
+    <message>
+        <source>Vectors</source>
+        <translation type="unfinished">ectorsVay</translation>
+    </message>
+    <message>
+        <source>Meshes</source>
+        <translation type="unfinished">eshesMay</translation>
+    </message>
+    <message>
+        <source>Materials</source>
+        <translation type="unfinished">aterialsMay</translation>
+    </message>
+    <message>
+        <source>Subsets</source>
+        <translation type="unfinished">ubsetsSay</translation>
+    </message>
+    <message>
+        <source>Species</source>
+        <translation type="unfinished">eciesSpay</translation>
+    </message>
+    <message>
+        <source>Curves</source>
+        <translation type="unfinished">urvesCay</translation>
+    </message>
+    <message>
+        <source>Tensors</source>
+        <translation type="unfinished">ensorsTay</translation>
+    </message>
+    <message>
+        <source>Symmetric Tensors</source>
+        <translation type="unfinished">ymmetricSay ensorsTay</translation>
+    </message>
+    <message>
+        <source>Labels</source>
+        <translation type="unfinished">abelsLay</translation>
+    </message>
+    <message>
+        <source>Arrays</source>
+        <translation type="unfinished">Arraysway</translation>
+    </message>
+    <message>
+        <source>Create new expression ...</source>
+        <translation type="unfinished">eateCray ewnay expressionway ...</translation>
     </message>
 </context>
 <context>
@@ -10902,7 +11221,7 @@
     </message>
     <message>
         <source>Geometry smoothing</source>
-        <translation type="unfinished">eometryGay oothingsmay</translation>
+        <translation type="obsolete">eometryGay oothingsmay</translation>
     </message>
     <message>
         <source>None</source>
@@ -10915,6 +11234,26 @@
     <message>
         <source>High</source>
         <translation type="unfinished">ighHay</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10957,27 +11296,322 @@
     </message>
     <message>
         <source>The value of minx was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway inxmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway inxmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of maxx was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway axxmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway axxmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of miny was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway inymay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway inymay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of maxy was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway axymay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway axymay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of minz was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway inzmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway inzmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of maxz was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway axzmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway axzmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisCMFEWizard</name>
+    <message>
+        <source>Data-Level Comparison Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target Database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data-Level Comparisons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cross-mesh field evaluations (CMFEs) take a field from a donor mesh and place that field on a target mesh.  To begin select the type of evaluation to setup:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Between different time slices on the same mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Between meshes in a single database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Between meshes in two separate databases</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor &amp; Target Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Which mesh should be used as the evaluation target? What is the desired donor field?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target Mesh:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor Database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor Field:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specify Donor Time Slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Which time slice do you want to extract data from?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Absolute Versus Relative Time&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>I want to specify an absolute time.
+The time slice I specify should not change as I change the time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>I want to specify a relative time.
+The time slice I want will change as I change the time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Time Type and Value&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation cycle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Time index is the most robust and works in all circumstances)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Examples&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>#1: &quot;Simulation time&quot; with &quot;10.5&quot; and absolute time will always return the data from simulation time 10.5.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>#2: &quot;Time index&quot; with &quot;-1&quot; and relative time will always return the data from the time slice immediately preceding the current one.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specify Evaluation Scheme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you want to use indexing or interpolation?  How will you handle regions of non-overlap?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Evaluation Scheme&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connectivity-based CMFE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value at index &apos;i&apos; of the target is assigned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>the value of index &apos;i&apos; from the donor.  This is efficient,</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>but requires that the meshes are congruent.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position-based CMFE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value at index &apos;i&apos; from the target is evaluated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>by first determining its location and then determining the</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>value at that location from the donor mesh.  This is less</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>efficient, but is robust and works on non-congruent meshes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Handling For Non-Overlapping Regions&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use a constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use a variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Setting Up The Expression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>How do you want to use your new CMFE expression?  What is its name?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name of Expression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;What do you want to do with the donor field?&lt;u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simply place it on the target mesh (you can then use this field in the expression editor to do more complex things)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Difference with </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute value of difference</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor field minus variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable minus donor field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;Select&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Target Database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Donor Database</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisCMap2Widget</name>
+    <message>
+        <source>Widget list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation type="unfinished">iangleTray</translation>
+    </message>
+    <message>
+        <source>Rectangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ellipsoid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Paraboloid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">eleteDay</translation>
+    </message>
+    <message>
+        <source>Widget attributes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">ameNay</translation>
+    </message>
+    <message>
+        <source>Size/Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">olorCay</translation>
+    </message>
+    <message>
+        <source>tri</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ellipse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>paraboloid</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisChannelCommWindow</name>
+    <message>
+        <source>Number in X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number in Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>velocity</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11040,31 +11674,55 @@
     </message>
     <message>
         <source>Plane %1</source>
-        <translation type="unfinished">anePlay %1</translation>
+        <translation type="obsolete">anePlay %1</translation>
     </message>
     <message>
         <source>Origin</source>
-        <translation type="unfinished">Originway</translation>
+        <translation type="obsolete">Originway</translation>
     </message>
     <message>
         <source>Normal</source>
-        <translation type="unfinished">ormalNay</translation>
+        <translation type="obsolete">ormalNay</translation>
     </message>
     <message>
         <source>The origin vector was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay originway ectorvay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay originway ectorvay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The normal vector was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay ormalnay ectorvay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay ormalnay ectorvay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The center was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay entercay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay entercay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The radius was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay adiusray asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay adiusray asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+    </message>
+    <message>
+        <source>Plane 1 Origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane 2 Origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane 3 Origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane 1 Normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane 2 Normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane 3 Normal</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11087,6 +11745,13 @@
     <message>
         <source>More colors ...</source>
         <translation type="unfinished">oreMay olorscay ...</translation>
+    </message>
+</context>
+<context>
+    <name>QvisColorTableWidget</name>
+    <message>
+        <source>Invert</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11167,6 +11832,14 @@
         <source> is already in the color table list. You must provide a unique name for the new color table before it can be added.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Show index hints</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alpha</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisCommandWindow</name>
@@ -11236,11 +11909,11 @@
     </message>
     <message>
         <source>Please enter the name of the Python function to be defined for the macro.</source>
-        <translation type="unfinished">easePlay enterway ethay amenay ofway ethay ythonPay unctionfay otay ebay efinedday orfay ethay acromay.</translation>
+        <translation type="obsolete">easePlay enterway ethay amenay ofway ethay ythonPay unctionfay otay ebay efinedday orfay ethay acromay.</translation>
     </message>
     <message>
         <source>Function names may not contain spaces. Please try to create the macro again using a valid function name.</source>
-        <translation type="unfinished">unctionFay amesnay aymay otnay ontaincay acesspay. easePlay ytray otay eatecray ethay acromay againway usingway away alidvay unctionfay amenay.</translation>
+        <translation type="obsolete">unctionFay amesnay aymay otnay ontaincay acesspay. easePlay ytray otay eatecray ethay acromay againway usingway away alidvay unctionfay amenay.</translation>
     </message>
     <message>
         <source>Please enter the name of the macro to be defined (as you want it to appear in a button).</source>
@@ -11298,27 +11971,35 @@
     </message>
     <message>
         <source>Cut cone off?    Length</source>
-        <translation type="unfinished">utCay onecay offway?    engthLay</translation>
+        <translation type="obsolete">utCay onecay offway?    engthLay</translation>
     </message>
     <message>
         <source>The value of angle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway angleway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway angleway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of origin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway originway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway originway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of normal was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ormalnay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ormalnay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of upAxis was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway upAxisway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway upAxisway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of length was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway engthlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway engthlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Cut cone off?   Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cone Length</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11329,7 +12010,14 @@
     </message>
     <message>
         <source>The value of target was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway argettay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway argettay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisConnectedComponentsWindow</name>
+    <message>
+        <source>Use Ghosts Zone Neighbors for connectivity between Domains</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11364,31 +12052,31 @@
     </message>
     <message>
         <source>The value of offset was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway offsetway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway offsetway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of low was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway owlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway owlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of hi was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ihay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ihay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of context was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ontextcay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ontextcay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of cutoff was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway utoffcay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway utoffcay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of below was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway elowbay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway elowbay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of above was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway aboveway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway aboveway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
 </context>
 <context>
@@ -11451,15 +12139,15 @@
     </message>
     <message>
         <source>Limits</source>
-        <translation type="unfinished">imitsLay</translation>
+        <translation type="obsolete">imitsLay</translation>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">inMay</translation>
+        <translation type="obsolete">inMay</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">axMay</translation>
+        <translation type="obsolete">axMay</translation>
     </message>
     <message>
         <source>Legend</source>
@@ -11479,11 +12167,11 @@
     </message>
     <message>
         <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay inimummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay inimummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aximummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aximummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>VisIt requires at least one contour.</source>
@@ -11493,28 +12181,56 @@
         <source>VisIt will not allow more than %1 contours.</source>
         <translation type="unfinished">VisIt illway otnay allowway oremay anthay %1 ontourscay.</translation>
     </message>
+    <message>
+        <source>Contour Levels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">inimumMay</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">aximumMay</translation>
+    </message>
+    <message>
+        <source>Line Style</source>
+        <translation type="unfinished">ineLay yleStay</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisCoordSwapWindow</name>
     <message>
         <source>New Coordinate 1?</source>
-        <translation type="unfinished">ewNay oordinateCay 1?</translation>
+        <translation type="obsolete">ewNay oordinateCay 1?</translation>
     </message>
     <message>
         <source>Old Coordinate 1</source>
-        <translation type="unfinished">Oldway oordinateCay 1</translation>
+        <translation type="obsolete">Oldway oordinateCay 1</translation>
     </message>
     <message>
         <source>Old Coordinate 2</source>
-        <translation type="unfinished">Oldway oordinateCay 2</translation>
+        <translation type="obsolete">Oldway oordinateCay 2</translation>
     </message>
     <message>
         <source>Old Coordinate 3</source>
-        <translation type="unfinished">Oldway oordinateCay 3</translation>
+        <translation type="obsolete">Oldway oordinateCay 3</translation>
     </message>
     <message>
         <source>New Coordinate 2?</source>
-        <translation type="unfinished">ewNay oordinateCay 2?</translation>
+        <translation type="obsolete">ewNay oordinateCay 2?</translation>
     </message>
     <message>
         <source>New Coordinate 3</source>
@@ -11522,7 +12238,27 @@
     </message>
     <message>
         <source>One coordinate is being used more than one time.  Resetting to the initial state.</source>
-        <translation type="unfinished">Oneway oordinatecay isway eingbay usedway oremay anthay oneway imetay.  esettingRay otay ethay initialway atestay.</translation>
+        <translation type="obsolete">Oneway oordinatecay isway eingbay usedway oremay anthay oneway imetay.  esettingRay otay ethay initialway atestay.</translation>
+    </message>
+    <message>
+        <source>New Coordinate 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coord1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coord2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coord3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New Coordinate 2</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11557,7 +12293,7 @@
     </message>
     <message>
         <source>Calculate Density</source>
-        <translation type="unfinished">alculateCay ensityDay</translation>
+        <translation type="obsolete">alculateCay ensityDay</translation>
     </message>
     <message>
         <source>Input Mass Variable</source>
@@ -11565,7 +12301,7 @@
     </message>
     <message>
         <source>Output Density Variable</source>
-        <translation type="unfinished">Outputway ensityDay ariableVay</translation>
+        <translation type="obsolete">Outputway ensityDay ariableVay</translation>
     </message>
 </context>
 <context>
@@ -11580,7 +12316,7 @@
     </message>
     <message>
         <source>Bonds</source>
-        <translation type="unfinished">ondsBay</translation>
+        <translation type="obsolete">ondsBay</translation>
     </message>
     <message>
         <source>Note: first match is taken, so order is significant</source>
@@ -11642,16 +12378,60 @@
         <source>The value for maxBonds must be between 1 and 100.</source>
         <translation type="unfinished">eThay aluevay orfay axBondsmay ustmay ebay etweenbay 1 andway 100.</translation>
     </message>
+    <message>
+        <source>Bonding parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add periodic bonds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Periodic in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished">Xay</translation>
+    </message>
+    <message>
+        <source>Y</source>
+        <translation type="unfinished">Yay</translation>
+    </message>
+    <message>
+        <source>Z</source>
+        <translation type="unfinished">Zay</translation>
+    </message>
+    <message>
+        <source>Use provided unit cell vectors</source>
+        <translation type="unfinished">Useway ovidedpray unitway ellcay ectorsvay</translation>
+    </message>
+    <message>
+        <source>Vector for X</source>
+        <translation type="unfinished">ectorVay orfay Xay</translation>
+    </message>
+    <message>
+        <source>Vector for Y</source>
+        <translation type="unfinished">ectorVay orfay Yay</translation>
+    </message>
+    <message>
+        <source>Vector for Z</source>
+        <translation type="unfinished">ectorVay orfay Zay</translation>
+    </message>
 </context>
 <context>
     <name>QvisCurvePlotWindow</name>
     <message>
         <source>Draw curve using lines</source>
-        <translation type="unfinished">awDray urvecay usingway ineslay</translation>
+        <translation type="obsolete">awDray urvecay usingway ineslay</translation>
     </message>
     <message>
         <source>Draw curve using symbols</source>
-        <translation type="unfinished">awDray urvecay usingway ymbolssay</translation>
+        <translation type="obsolete">awDray urvecay usingway ymbolssay</translation>
     </message>
     <message>
         <source>Line style</source>
@@ -11659,7 +12439,7 @@
     </message>
     <message>
         <source>Line Width</source>
-        <translation type="unfinished">ineLay idthWay</translation>
+        <translation type="obsolete">ineLay idthWay</translation>
     </message>
     <message>
         <source>Show points</source>
@@ -11675,11 +12455,11 @@
     </message>
     <message>
         <source>Density</source>
-        <translation type="unfinished">ensityDay</translation>
+        <translation type="obsolete">ensityDay</translation>
     </message>
     <message>
         <source>Cycle colors</source>
-        <translation type="unfinished">ycleCay olorscay</translation>
+        <translation type="obsolete">ycleCay olorscay</translation>
     </message>
     <message>
         <source>Color</source>
@@ -11695,7 +12475,111 @@
     </message>
     <message>
         <source>The point size was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay ointpay izesay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay ointpay izesay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Line/Point Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line width</source>
+        <translation type="unfinished">ineLay idthway</translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished">ointPay</translation>
+    </message>
+    <message>
+        <source>triangle up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>triangle down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>square</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished">Xay</translation>
+    </message>
+    <message>
+        <source>Static</source>
+        <translation type="unfinished">aticStay</translation>
+    </message>
+    <message>
+        <source>Point stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dynamic</source>
+        <translation type="unfinished">ynamicDay</translation>
+    </message>
+    <message>
+        <source>Point density</source>
+        <translation type="unfinished">ointPay ensityday</translation>
+    </message>
+    <message>
+        <source>Curve color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cycle</source>
+        <translation type="unfinished">ycleCay</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create Cue For Current Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Ball</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ball size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Crop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position of cue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Cue Ball Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>timeForTimeCue</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11714,15 +12598,15 @@
     </message>
     <message>
         <source>The value of point1 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ointpay1 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ointpay1 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of point2 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ointpay2 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ointpay2 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of radius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway adiusray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway adiusray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
 </context>
 <context>
@@ -11734,6 +12618,81 @@
     <message>
         <source>Cancel</source>
         <translation type="unfinished">ancelCay</translation>
+    </message>
+</context>
+<context>
+    <name>QvisDataBinningWindow</name>
+    <message>
+        <source>Bin Definitions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimensions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimension 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimension 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimension 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished">ariableVay</translation>
+    </message>
+    <message>
+        <source>Number of Bins</source>
+        <translation type="unfinished">umberNay ofway insBay</translation>
+    </message>
+    <message>
+        <source>Specify range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Min</source>
+        <translation type="unfinished">inMay</translation>
+    </message>
+    <message>
+        <source>Max</source>
+        <translation type="unfinished">axMay</translation>
+    </message>
+    <message>
+        <source>Behavior for data outside range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clamp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction Operator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value for bins with no data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NumBins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value for Bins With No Data</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11886,7 +12845,7 @@
     </message>
     <message>
         <source>The value of target was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway argettay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway argettay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
 </context>
 <context>
@@ -11894,6 +12853,40 @@
     <message>
         <source>Variables</source>
         <translation type="unfinished">ariablesVay</translation>
+    </message>
+</context>
+<context>
+    <name>QvisDeformSphereGlyphWindow</name>
+    <message>
+        <source>var</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scale Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisDelaunayWindow</name>
+    <message>
+        <source>Dimension</source>
+        <translation type="unfinished">imensionDay</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Triangulation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tetrahedralization</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11908,7 +12901,33 @@
     </message>
     <message>
         <source>The value of factor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway actorfay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway actorfay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisDualMeshWindow</name>
+    <message>
+        <source>Conversion Mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto</source>
+        <translation type="unfinished">Autoway</translation>
+    </message>
+    <message>
+        <source>Nodes to Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zones to Nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisEdgeWindow</name>
+    <message>
+        <source>dummy</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11926,7 +12945,7 @@
     </message>
     <message>
         <source>Limits mode</source>
-        <translation type="unfinished">imitsLay odemay</translation>
+        <translation type="obsolete">imitsLay odemay</translation>
     </message>
     <message>
         <source>Original Data</source>
@@ -11978,19 +12997,27 @@
     </message>
     <message>
         <source>Elevate by variable</source>
-        <translation type="unfinished">Elevateway ybay ariablevay</translation>
+        <translation type="obsolete">Elevateway ybay ariablevay</translation>
     </message>
     <message>
         <source>The value of skewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ewFactorskay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ewFactorskay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway inmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway inmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway axmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway axmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Limits Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Elevate by Variable</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12045,7 +13072,7 @@
     </message>
     <message>
         <source>Disconnect simulation</source>
-        <translation type="unfinished">isconnectDay imulationsay</translation>
+        <translation type="obsolete">isconnectDay imulationsay</translation>
     </message>
     <message>
         <source>Default</source>
@@ -12094,6 +13121,10 @@
     <message>
         <source>Cancel</source>
         <translation type="unfinished">ancelCay</translation>
+    </message>
+    <message>
+        <source>Disconnect</source>
+        <translation type="unfinished">isconnectDay</translation>
     </message>
 </context>
 <context>
@@ -12257,6 +13288,30 @@
         <source>Insert Variable...</source>
         <translation type="unfinished">Insertway ariableVay...</translation>
     </message>
+    <message>
+        <source>Time Iteration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arguments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python Expression Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open Attribute XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML Files (*.xml);;All files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The expressions loaded from %1 contained expressions having the same names as expressions already in the expression list. You may want to edit some of your expression names so they are unique.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisExternalSurfaceWindow</name>
@@ -12267,6 +13322,32 @@
     <message>
         <source>Find external edges for 2D datasets</source>
         <translation type="unfinished">indFay externalway edgesway orfay 2Day atasetsday</translation>
+    </message>
+</context>
+<context>
+    <name>QvisExtrudeWindow</name>
+    <message>
+        <source>Extrusion axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Length</source>
+        <translation type="unfinished">engthLay</translation>
+    </message>
+    <message>
+        <source>Number of steps</source>
+        <translation type="unfinished">umberNay ofway epsstay</translation>
+    </message>
+    <message>
+        <source>Preserve original cell numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisFFTWindow</name>
+    <message>
+        <source>Dummy attribute</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12290,48 +13371,52 @@
         <source>VisIt could not access the directory: %1 so your home directory will be used.</source>
         <translation type="unfinished">VisIt ouldcay otnay accessway ethay irectoryday: %1 osay youray omehay irectoryday illway ebay usedway.</translation>
     </message>
+    <message>
+        <source>VisIt could not access the directory: %1 so %2 directory will be used.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisFileOpenWindow</name>
     <message>
         <source>Host</source>
-        <translation type="unfinished">ostHay</translation>
+        <translation type="obsolete">ostHay</translation>
     </message>
     <message>
         <source>Path</source>
-        <translation type="unfinished">athPay</translation>
+        <translation type="obsolete">athPay</translation>
     </message>
     <message>
         <source>Filter</source>
-        <translation type="unfinished">ilterFay</translation>
+        <translation type="obsolete">ilterFay</translation>
     </message>
     <message>
         <source>Use &quot;current working directory&quot; by default</source>
-        <translation type="unfinished">Useway urrentcay orkingway irectoryday ybay efaultday</translation>
+        <translation type="obsolete">Useway urrentcay orkingway irectoryday ybay efaultday</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation type="unfinished">Offway</translation>
+        <translation type="obsolete">Offway</translation>
     </message>
     <message>
         <source>On</source>
-        <translation type="unfinished">Onway</translation>
+        <translation type="obsolete">Onway</translation>
     </message>
     <message>
         <source>Smart</source>
-        <translation type="unfinished">artSmay</translation>
+        <translation type="obsolete">artSmay</translation>
     </message>
     <message>
         <source>File grouping</source>
-        <translation type="unfinished">ileFay oupinggray</translation>
+        <translation type="obsolete">ileFay oupinggray</translation>
     </message>
     <message>
         <source>Remove recent paths</source>
-        <translation type="unfinished">emoveRay ecentray athspay</translation>
+        <translation type="obsolete">emoveRay ecentray athspay</translation>
     </message>
     <message>
         <source>Remove paths . . .</source>
-        <translation type="unfinished">emoveRay athspay . . .</translation>
+        <translation type="obsolete">emoveRay athspay . . .</translation>
     </message>
     <message>
         <source>Directories</source>
@@ -12363,51 +13448,51 @@
     </message>
     <message>
         <source>Opening server on %1</source>
-        <translation type="unfinished">Openingway erversay onway %1</translation>
+        <translation type="obsolete">Openingway erversay onway %1</translation>
     </message>
     <message>
         <source>&quot;%1&quot; is not a valid host.</source>
-        <translation type="unfinished">%1 isway otnay away alidvay osthay.</translation>
+        <translation type="obsolete">%1 isway otnay away alidvay osthay.</translation>
     </message>
     <message>
         <source>Changing directory.</source>
-        <translation type="unfinished">angingChay irectoryday.</translation>
+        <translation type="obsolete">angingChay irectoryday.</translation>
     </message>
     <message>
         <source>The MetaData server running on %1 could not change the current directory to %2.</source>
-        <translation type="unfinished">eThay etaDataMay erversay unningray onway %1 ouldcay otnay angechay ethay urrentcay irectoryday otay %2.</translation>
+        <translation type="obsolete">eThay etaDataMay erversay unningray onway %1 ouldcay otnay angechay ethay urrentcay irectoryday otay %2.</translation>
     </message>
     <message>
         <source>The MetaData server running on %1 could not get the file list for the current directory</source>
-        <translation type="unfinished">eThay etaDataMay erversay unningray onway %1 ouldcay otnay etgay ethay ilefay istlay orfay ethay urrentcay irectoryday</translation>
+        <translation type="obsolete">eThay etaDataMay erversay unningray onway %1 ouldcay otnay etgay ethay ilefay istlay orfay ethay urrentcay irectoryday</translation>
     </message>
     <message>
         <source>The MetaData server running could not get the file list for the current directory, which is required before setting the file filter. Try entering a valid path before changing the file filter.</source>
-        <translation type="unfinished">eThay etaDataMay erversay unningray ouldcay otnay etgay ethay ilefay istlay orfay ethay urrentcay irectoryday, ichwhay isway equiredray eforebay ettingsay ethay ilefay ilterfay. yTray enteringway away alidvay athpay eforebay angingchay ethay ilefay ilterfay.</translation>
+        <translation type="obsolete">eThay etaDataMay erversay unningray ouldcay otnay etgay ethay ilefay istlay orfay ethay urrentcay irectoryday, ichwhay isway equiredray eforebay ettingsay ethay ilefay ilterfay. yTray enteringway away alidvay athpay eforebay angingchay ethay ilefay ilterfay.</translation>
     </message>
     <message>
         <source>An error occured when trying to set the file filter.</source>
-        <translation type="unfinished">Anway errorway occuredway enwhay yingtray otay etsay ethay ilefay ilterfay.</translation>
+        <translation type="obsolete">Anway errorway occuredway enwhay yingtray otay etsay ethay ilefay ilterfay.</translation>
     </message>
     <message>
         <source>An invalid filter was entered.</source>
-        <translation type="unfinished">Anway invalidway ilterfay asway enteredway.</translation>
+        <translation type="obsolete">Anway invalidway ilterfay asway enteredway.</translation>
     </message>
     <message>
         <source>(current directory)</source>
-        <translation type="unfinished">(urrentcay irectoryday)</translation>
+        <translation type="obsolete">(urrentcay irectoryday)</translation>
     </message>
     <message>
         <source>(go up 1 directory level)</source>
-        <translation type="unfinished">(ogay upway 1 irectoryday evellay)</translation>
+        <translation type="obsolete">(ogay upway 1 irectoryday evellay)</translation>
     </message>
     <message>
         <source>Changing directory</source>
-        <translation type="unfinished">angingChay irectoryday</translation>
+        <translation type="obsolete">angingChay irectoryday</translation>
     </message>
     <message>
         <source>The MetaData server running on %1 could not get the file list for the current directory.</source>
-        <translation type="unfinished">eThay etaDataMay erversay unningray onway %1 ouldcay otnay etgay ethay ilefay istlay orfay ethay urrentcay irectoryday.</translation>
+        <translation type="obsolete">eThay etaDataMay erversay unningray onway %1 ouldcay otnay etgay ethay ilefay istlay orfay ethay urrentcay irectoryday.</translation>
     </message>
     <message>
         <source>Guess from file name/extension</source>
@@ -12422,7 +13507,7 @@
     <name>QvisFilePanel</name>
     <message>
         <source>Selected files</source>
-        <translation type="unfinished">electedSay ilesfay</translation>
+        <translation type="obsolete">electedSay ilesfay</translation>
     </message>
     <message>
         <source>Open</source>
@@ -12438,7 +13523,7 @@
     </message>
     <message>
         <source>Active time slider</source>
-        <translation type="unfinished">Activeway imetay iderslay</translation>
+        <translation type="obsolete">Activeway imetay iderslay</translation>
     </message>
     <message>
         <source>Hosts</source>
@@ -12458,7 +13543,7 @@
     </message>
     <message>
         <source>The active time slider is already at state</source>
-        <translation type="unfinished">eThay activeway imetay iderslay isway alreadyway atway atestay</translation>
+        <translation type="obsolete">eThay activeway imetay iderslay isway alreadyway atway atestay</translation>
     </message>
     <message>
         <source>Activate</source>
@@ -12468,48 +13553,80 @@
         <source>Reopen cannot be used to change the active time state for an animation because reopen discards all cached networks and causes the database to actually be reopened. If you want to change the active time state, use the animation slider or select a new time state and click the Replace button.</source>
         <translation type="unfinished">eopenRay annotcay ebay usedway otay angechay ethay activeway imetay atestay orfay anway animationway ecausebay eopenray iscardsday allway achedcay etworksnay andway ausescay ethay atabaseday otay actuallyway ebay eopenedray. Ifway youay antway otay angechay ethay activeway imetay atestay, useway ethay animationway iderslay orway electsay away ewnay imetay atestay andway ickclay ethay eplaceRay uttonbay.</translation>
     </message>
+    <message>
+        <source>Selected Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Open</source>
+        <translation type="unfinished">Openway</translation>
+    </message>
+    <message>
+        <source>&amp;Replace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace &amp;Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Overlay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Activate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Re&amp;Open</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisFileSelectionWindow</name>
     <message>
         <source>Host</source>
-        <translation type="unfinished">ostHay</translation>
+        <translation type="obsolete">ostHay</translation>
     </message>
     <message>
         <source>Path</source>
-        <translation type="unfinished">athPay</translation>
+        <translation type="obsolete">athPay</translation>
     </message>
     <message>
         <source>Filter</source>
-        <translation type="unfinished">ilterFay</translation>
+        <translation type="obsolete">ilterFay</translation>
     </message>
     <message>
         <source>Use &quot;current working directory&quot; by default</source>
-        <translation type="unfinished">Useway urrentcay orkingway irectoryday ybay efaultday</translation>
+        <translation type="obsolete">Useway urrentcay orkingway irectoryday ybay efaultday</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation type="unfinished">Offway</translation>
+        <translation type="obsolete">Offway</translation>
     </message>
     <message>
         <source>On</source>
-        <translation type="unfinished">Onway</translation>
+        <translation type="obsolete">Onway</translation>
     </message>
     <message>
         <source>Smart</source>
-        <translation type="unfinished">artSmay</translation>
+        <translation type="obsolete">artSmay</translation>
     </message>
     <message>
         <source>File grouping</source>
-        <translation type="unfinished">ileFay oupinggray</translation>
+        <translation type="obsolete">ileFay oupinggray</translation>
     </message>
     <message>
         <source>Remove recent paths</source>
-        <translation type="unfinished">emoveRay ecentray athspay</translation>
+        <translation type="obsolete">emoveRay ecentray athspay</translation>
     </message>
     <message>
         <source>Remove paths . . .</source>
-        <translation type="unfinished">emoveRay athspay . . .</translation>
+        <translation type="obsolete">emoveRay athspay . . .</translation>
     </message>
     <message>
         <source>Directories</source>
@@ -12557,6 +13674,109 @@
     </message>
     <message>
         <source>Opening server on %1</source>
+        <translation type="obsolete">Openingway erversay onway %1</translation>
+    </message>
+    <message>
+        <source>&quot;%1&quot; is not a valid host.</source>
+        <translation type="obsolete">%1 isway otnay away alidvay osthay.</translation>
+    </message>
+    <message>
+        <source>Changing directory.</source>
+        <translation type="obsolete">angingChay irectoryday.</translation>
+    </message>
+    <message>
+        <source>The MetaData server running on %1 could not change the current directory to %2.</source>
+        <translation type="obsolete">eThay etaDataMay erversay unningray onway %1 ouldcay otnay angechay ethay urrentcay irectoryday otay %2.</translation>
+    </message>
+    <message>
+        <source>The MetaData server running on %1 could not get the file list for the current directory</source>
+        <translation type="obsolete">eThay etaDataMay erversay unningray onway %1 ouldcay otnay etgay ethay ilefay istlay orfay ethay urrentcay irectoryday</translation>
+    </message>
+    <message>
+        <source>The MetaData server running could not get the file list for the current directory, which is required before setting the file filter. Try entering a valid path before changing the file filter.</source>
+        <translation type="obsolete">eThay etaDataMay erversay unningray ouldcay otnay etgay ethay ilefay istlay orfay ethay urrentcay irectoryday, ichwhay isway equiredray eforebay ettingsay ethay ilefay ilterfay. yTray enteringway away alidvay athpay eforebay angingchay ethay ilefay ilterfay.</translation>
+    </message>
+    <message>
+        <source>An error occured when trying to set the file filter.</source>
+        <translation type="obsolete">Anway errorway occuredway enwhay yingtray otay etsay ethay ilefay ilterfay.</translation>
+    </message>
+    <message>
+        <source>An invalid filter was entered.</source>
+        <translation type="obsolete">Anway invalidway ilterfay asway enteredway.</translation>
+    </message>
+    <message>
+        <source>(current directory)</source>
+        <translation type="obsolete">(urrentcay irectoryday)</translation>
+    </message>
+    <message>
+        <source>(go up 1 directory level)</source>
+        <translation type="obsolete">(ogay upway 1 irectoryday evellay)</translation>
+    </message>
+    <message>
+        <source>Changing directory</source>
+        <translation type="obsolete">angingChay irectoryday</translation>
+    </message>
+    <message>
+        <source>The MetaData server running on %1 could not get the file list for the current directory.</source>
+        <translation type="obsolete">eThay etaDataMay erversay unningray onway %1 ouldcay otnay etgay ethay ilefay istlay orfay ethay urrentcay irectoryday.</translation>
+    </message>
+    <message>
+        <source>Creating group list on %1</source>
+        <translation type="unfinished">eatingCray oupgray istlay onway %1</translation>
+    </message>
+</context>
+<context>
+    <name>QvisFileWindowBase</name>
+    <message>
+        <source>(current directory)</source>
+        <translation type="unfinished">(urrentcay irectoryday)</translation>
+    </message>
+    <message>
+        <source>(go up 1 directory level)</source>
+        <translation type="unfinished">(ogay upway 1 irectoryday evellay)</translation>
+    </message>
+    <message>
+        <source>Host</source>
+        <translation type="unfinished">ostHay</translation>
+    </message>
+    <message>
+        <source>Path</source>
+        <translation type="unfinished">athPay</translation>
+    </message>
+    <message>
+        <source>Filter</source>
+        <translation type="unfinished">ilterFay</translation>
+    </message>
+    <message>
+        <source>Use &quot;current working directory&quot; by default</source>
+        <translation type="unfinished">Useway urrentcay orkingway irectoryday ybay efaultday</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation type="unfinished">Offway</translation>
+    </message>
+    <message>
+        <source>On</source>
+        <translation type="unfinished">Onway</translation>
+    </message>
+    <message>
+        <source>Smart</source>
+        <translation type="unfinished">artSmay</translation>
+    </message>
+    <message>
+        <source>File grouping</source>
+        <translation type="unfinished">ileFay oupinggray</translation>
+    </message>
+    <message>
+        <source>Remove recent paths</source>
+        <translation type="unfinished">emoveRay ecentray athspay</translation>
+    </message>
+    <message>
+        <source>Remove paths . . .</source>
+        <translation type="unfinished">emoveRay athspay . . .</translation>
+    </message>
+    <message>
+        <source>Opening server on %1</source>
         <translation type="unfinished">Openingway erversay onway %1</translation>
     </message>
     <message>
@@ -12588,24 +13808,12 @@
         <translation type="unfinished">Anway invalidway ilterfay asway enteredway.</translation>
     </message>
     <message>
-        <source>(current directory)</source>
-        <translation type="unfinished">(urrentcay irectoryday)</translation>
-    </message>
-    <message>
-        <source>(go up 1 directory level)</source>
-        <translation type="unfinished">(ogay upway 1 irectoryday evellay)</translation>
-    </message>
-    <message>
         <source>Changing directory</source>
         <translation type="unfinished">angingChay irectoryday</translation>
     </message>
     <message>
         <source>The MetaData server running on %1 could not get the file list for the current directory.</source>
         <translation type="unfinished">eThay etaDataMay erversay unningray onway %1 ouldcay otnay etgay ethay ilefay istlay orfay ethay urrentcay irectoryday.</translation>
-    </message>
-    <message>
-        <source>Creating group list on %1</source>
-        <translation type="unfinished">eatingCray oupgray istlay onway %1</translation>
     </message>
 </context>
 <context>
@@ -12664,7 +13872,7 @@
     </message>
     <message>
         <source>Geometry smoothing</source>
-        <translation type="unfinished">eometryGay oothingsmay</translation>
+        <translation type="obsolete">eometryGay oothingsmay</translation>
     </message>
     <message>
         <source>None</source>
@@ -12677,6 +13885,76 @@
     <message>
         <source>High</source>
         <translation type="unfinished">ighHay</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisFiveFoldTetSubdivisionWindow</name>
+    <message>
+        <source>Vertices with odd parity have six neighborhood </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add component information from contour tree</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Contour Tree Filename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Isovalue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selected IDs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Highlighted IDs</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisFluxWindow</name>
+    <message>
+        <source>Flow field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiply dot product by a scalar variable?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Weight field</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13068,6 +14346,26 @@ version of VisIt?</source>
         <source>VisIt found a crash recovery session file. Would you like to restore it to return to the last saved state?</source>
         <translation type="unfinished">VisIt oundfay away ashcray ecoveryray essionsay ilefay. ouldWay youay ikelay otay estoreray itway otay eturnray otay ethay astlay avedsay atestay?</translation>
     </message>
+    <message>
+        <source>Selections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Setup Host Profiles and Configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Session File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open VisIt Session File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt</source>
+        <translation type="unfinished">VisIt</translation>
+    </message>
 </context>
 <context>
     <name>QvisGlobalLineoutWindow</name>
@@ -13091,7 +14389,7 @@ will use this same window.</source>
     </message>
     <message>
         <source>Dynamic options</source>
-        <translation type="unfinished">ynamicDay optionsway</translation>
+        <translation type="obsolete">ynamicDay optionsway</translation>
     </message>
     <message>
         <source>updates curve</source>
@@ -13195,7 +14493,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Add Bookmark</source>
-        <translation type="unfinished">Addway ookmarkBay</translation>
+        <translation type="obsolete">Addway ookmarkBay</translation>
     </message>
     <message>
         <source>Dismiss</source>
@@ -13265,6 +14563,36 @@ by Lineout Operator</source>
         <source>This page cannot be bookmarked.</source>
         <translation type="unfinished">isThay agepay annotcay ebay ookmarkedbay.</translation>
     </message>
+    <message>
+        <source>Add bookmark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt UltraWrapper</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ultra wrapper</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisHistogram</name>
+    <message>
+        <source>No data</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisHistogramLimits</name>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">inimumMay</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">aximumMay</translation>
+    </message>
 </context>
 <context>
     <name>QvisHistogramPlotWindow</name>
@@ -13314,7 +14642,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Data Scale</source>
-        <translation type="unfinished">ataDay aleScay</translation>
+        <translation type="obsolete">ataDay aleScay</translation>
     </message>
     <message>
         <source>Linear</source>
@@ -13322,7 +14650,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Log10</source>
-        <translation type="unfinished">ogLay10</translation>
+        <translation type="obsolete">ogLay10</translation>
     </message>
     <message>
         <source>Square root</source>
@@ -13330,7 +14658,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Specify Range?</source>
-        <translation type="unfinished">ecifySpay angeRay?</translation>
+        <translation type="obsolete">ecifySpay angeRay?</translation>
     </message>
     <message>
         <source>Minimum</source>
@@ -13362,7 +14690,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Use bin widths?</source>
-        <translation type="unfinished">Useway inbay idthsway?</translation>
+        <translation type="obsolete">Useway inbay idthsway?</translation>
     </message>
     <message>
         <source>Plot Style</source>
@@ -13394,30 +14722,101 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway inmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway inmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway axmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway axmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of numBins was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway umBinsnay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway umBinsnay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of domain was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway omainday asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway omainday asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of zone was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway onezay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway onezay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Log</source>
+        <translation type="unfinished">ogLay</translation>
+    </message>
+    <message>
+        <source>Weighting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">ataDay</translation>
+    </message>
+    <message>
+        <source>Scale</source>
+        <translation type="unfinished">aleScay</translation>
+    </message>
+    <message>
+        <source>Square Root</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limits</source>
+        <translation type="unfinished">imitsLay</translation>
+    </message>
+    <message>
+        <source>Use Original Data</source>
+        <translation type="unfinished">Useway Originalway ataDay</translation>
+    </message>
+    <message>
+        <source>Use Current Plot</source>
+        <translation type="unfinished">Useway urrentCay otPlay</translation>
+    </message>
+    <message>
+        <source>Use bin widths</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisHohlraumFluxQueryWidget</name>
+    <message>
+        <source>Number of Lines</source>
+        <translation type="unfinished">umberNay ofway inesLay</translation>
+    </message>
+    <message>
+        <source>Divide Emis by Absorb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ray Center</source>
+        <translation type="unfinished">ayRay enterCay</translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation type="unfinished">adiusRay</translation>
+    </message>
+    <message>
+        <source>Theta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phi</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisHostProfileWindow</name>
     <message>
         <source>Host profiles</source>
-        <translation type="unfinished">ostHay ofilespray</translation>
+        <translation type="obsolete">ostHay ofilespray</translation>
     </message>
     <message>
         <source>New profile</source>
@@ -13425,23 +14824,23 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Delete profile</source>
-        <translation type="unfinished">eleteDay ofilepray</translation>
+        <translation type="obsolete">eleteDay ofilepray</translation>
     </message>
     <message>
         <source>Selected profile</source>
-        <translation type="unfinished">electedSay ofilepray</translation>
+        <translation type="obsolete">electedSay ofilepray</translation>
     </message>
     <message>
         <source>Parallel options</source>
-        <translation type="unfinished">arallelPay optionsway</translation>
+        <translation type="obsolete">arallelPay optionsway</translation>
     </message>
     <message>
         <source>Advanced options</source>
-        <translation type="unfinished">Advancedway optionsway</translation>
+        <translation type="obsolete">Advancedway optionsway</translation>
     </message>
     <message>
         <source>Applies to all profiles for a given host</source>
-        <translation type="unfinished">Appliesway otay allway ofilespray orfay away ivengay osthay</translation>
+        <translation type="obsolete">Appliesway otay allway ofilespray orfay away ivengay osthay</translation>
     </message>
     <message>
         <source>Profile name</source>
@@ -13449,7 +14848,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Default profile for host</source>
-        <translation type="unfinished">efaultDay ofilepray orfay osthay</translation>
+        <translation type="obsolete">efaultDay ofilepray orfay osthay</translation>
     </message>
     <message>
         <source>Remote host name</source>
@@ -13469,11 +14868,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Additional options</source>
-        <translation type="unfinished">Additionalway optionsway</translation>
+        <translation type="obsolete">Additionalway optionsway</translation>
     </message>
     <message>
         <source>Parallel computation engine</source>
-        <translation type="unfinished">arallelPay omputationcay engineway</translation>
+        <translation type="obsolete">arallelPay omputationcay engineway</translation>
     </message>
     <message>
         <source>(default)</source>
@@ -13501,7 +14900,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Partition / Pool</source>
-        <translation type="unfinished">artitionPay / oolPay</translation>
+        <translation type="obsolete">artitionPay / oolPay</translation>
     </message>
     <message>
         <source>Auto</source>
@@ -13529,7 +14928,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Default Bank</source>
-        <translation type="unfinished">efaultDay ankBay</translation>
+        <translation type="obsolete">efaultDay ankBay</translation>
     </message>
     <message>
         <source>Default Time Limit</source>
@@ -13549,15 +14948,15 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Networking</source>
-        <translation type="unfinished">etworkingNay</translation>
+        <translation type="obsolete">etworkingNay</translation>
     </message>
     <message>
         <source>Hardware acceleration</source>
-        <translation type="unfinished">ardwareHay accelerationway</translation>
+        <translation type="obsolete">ardwareHay accelerationway</translation>
     </message>
     <message>
         <source>Networking options apply to all profiles for a given host.</source>
-        <translation type="unfinished">etworkingNay optionsway applyway otay allway ofilespray orfay away ivengay osthay.</translation>
+        <translation type="obsolete">etworkingNay optionsway applyway otay allway ofilespray orfay away ivengay osthay.</translation>
     </message>
     <message>
         <source>Tunnel data connections through SSH</source>
@@ -13593,11 +14992,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Pre-command</source>
-        <translation type="unfinished">ePray-ommandcay</translation>
+        <translation type="obsolete">ePray-ommandcay</translation>
     </message>
     <message>
         <source>Post-command</source>
-        <translation type="unfinished">ostPay-ommandcay</translation>
+        <translation type="obsolete">ostPay-ommandcay</translation>
     </message>
     <message>
         <source>Profile name cannot be empty, reverting to &quot;%1&quot;.</source>
@@ -13625,11 +15024,103 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Pre-command cannot be empty, turning off pre-command.</source>
-        <translation type="unfinished">ePray-ommandcay annotcay ebay emptyway, urningtay offway epray-ommandcay.</translation>
+        <translation type="obsolete">ePray-ommandcay annotcay ebay emptyway, urningtay offway epray-ommandcay.</translation>
     </message>
     <message>
         <source>Post-command cannot be empty, turning off post-command.</source>
-        <translation type="unfinished">ostPay-ommandcay annotcay ebay emptyway, urningtay offway ostpay-ommandcay.</translation>
+        <translation type="obsolete">ostPay-ommandcay annotcay ebay emptyway, urningtay offway ostpay-ommandcay.</translation>
+    </message>
+    <message>
+        <source>Hosts</source>
+        <translation type="unfinished">ostsHay</translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">ewNay</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">eleteDay</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation type="unfinished">opyCay</translation>
+    </message>
+    <message>
+        <source>Host Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Launch Profiles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host nickname</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use gateway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Path to VisIt installation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation type="unfinished">ettingsSay</translation>
+    </message>
+    <message>
+        <source>Parallel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished">Advancedway</translation>
+    </message>
+    <message>
+        <source>GPU Accel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Additional arguments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Launch (parallel) engine using job control system</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Partition / Pool / Queue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default Bank / Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DISPLAY:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have VisIt launch X servers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of GPUs per node:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X arguments:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(default</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13684,7 +15175,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Select Image</source>
-        <translation type="unfinished">electSay Imageway</translation>
+        <translation type="obsolete">electSay Imageway</translation>
     </message>
 </context>
 <context>
@@ -13737,6 +15228,14 @@ by Lineout Operator</source>
         <source>Use Whole Collection</source>
         <translation type="unfinished">Useway oleWhay ollectionCay</translation>
     </message>
+    <message>
+        <source>  </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wrap</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisInteractorWindow</name>
@@ -13780,6 +15279,22 @@ by Lineout Operator</source>
         <source>Snap to horizontal grid</source>
         <translation type="unfinished">apSnay otay orizontalhay idgray</translation>
     </message>
+    <message>
+        <source>Switch to bounding box when changing views:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <translation type="unfinished">Alwaysway</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation type="unfinished">everNay</translation>
+    </message>
+    <message>
+        <source>Auto (remote rendering only)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisInterpreter</name>
@@ -13792,15 +15307,43 @@ by Lineout Operator</source>
     <name>QvisInverseGhostZoneWindow</name>
     <message>
         <source>Zones to Display:</source>
-        <translation type="unfinished">onesZay otay isplayDay:</translation>
+        <translation type="obsolete">onesZay otay isplayDay:</translation>
     </message>
     <message>
         <source>Ghost zones only</source>
-        <translation type="unfinished">ostGhay oneszay onlyway</translation>
+        <translation type="obsolete">ostGhay oneszay onlyway</translation>
     </message>
     <message>
         <source>Both ghost zones and real zones</source>
-        <translation type="unfinished">othBay ostghay oneszay andway ealray oneszay</translation>
+        <translation type="obsolete">othBay ostghay oneszay andway ealray oneszay</translation>
+    </message>
+    <message>
+        <source>Request Ghost Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Zones That Are Duplicated At Domain Boundaries</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Enhanced Connectivity Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Reduced Connectivity Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show zones refined out by finer patches (AMR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show cells on exterior of data set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show zones deemed not applicable to problem</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13835,15 +15378,15 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Limits</source>
-        <translation type="unfinished">imitsLay</translation>
+        <translation type="obsolete">imitsLay</translation>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">inMay</translation>
+        <translation type="obsolete">inMay</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">axMay</translation>
+        <translation type="obsolete">axMay</translation>
     </message>
     <message>
         <source>Variable</source>
@@ -13855,11 +15398,27 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay inimummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay inimummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aximummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aximummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">inimumMay</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">aximumMay</translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13878,49 +15437,49 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The lower bound value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay owerlay oundbay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay owerlay oundbay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The upper bound value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay upperway oundbay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay upperway oundbay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
 </context>
 <context>
     <name>QvisKerbelPlotWindow</name>
     <message>
         <source>Center</source>
-        <translation type="unfinished">enterCay</translation>
+        <translation type="obsolete">enterCay</translation>
     </message>
     <message>
         <source>Radius</source>
-        <translation type="unfinished">adiusRay</translation>
+        <translation type="obsolete">adiusRay</translation>
     </message>
     <message>
         <source>Opacity</source>
-        <translation type="unfinished">Opacityway</translation>
+        <translation type="obsolete">Opacityway</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation type="unfinished">olorCay abletay</translation>
+        <translation type="obsolete">olorCay abletay</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="unfinished">egendLay</translation>
+        <translation type="obsolete">egendLay</translation>
     </message>
     <message>
         <source>Filename</source>
-        <translation type="unfinished">ilenameFay</translation>
+        <translation type="obsolete">ilenameFay</translation>
     </message>
 </context>
 <context>
     <name>QvisKeyframeWindow</name>
     <message>
         <source>State</source>
-        <translation type="unfinished">ateStay</translation>
+        <translation type="obsolete">ateStay</translation>
     </message>
     <message>
         <source>Atts</source>
-        <translation type="unfinished">Attsway</translation>
+        <translation type="obsolete">Attsway</translation>
     </message>
     <message>
         <source>Keyframing enabled</source>
@@ -13928,7 +15487,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Snap to frame</source>
-        <translation type="unfinished">apSnay otay amefray</translation>
+        <translation type="obsolete">apSnay otay amefray</translation>
     </message>
     <message>
         <source>Number of frames</source>
@@ -13936,11 +15495,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Attributes</source>
-        <translation type="unfinished">Attributesway</translation>
+        <translation type="obsolete">Attributesway</translation>
     </message>
     <message>
         <source>Keyframes</source>
-        <translation type="unfinished">eyframesKay</translation>
+        <translation type="obsolete">eyframesKay</translation>
     </message>
     <message>
         <source>Add state keyframe</source>
@@ -13948,15 +15507,23 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>View</source>
-        <translation type="unfinished">iewVay</translation>
+        <translation type="obsolete">iewVay</translation>
     </message>
     <message>
         <source>The value for the number of frames was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay orfay ethay umbernay ofway amesfray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay orfay ethay umbernay ofway amesfray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>Cannot set state index to less than zero
 </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add view keyframe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use view keyframes</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -14092,11 +15659,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value entered for the number of labels was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay enteredway orfay ethay umbernay ofway abelslay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay enteredway orfay ethay umbernay ofway abelslay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value entered for the text height was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay enteredway orfay ethay exttay eighthay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay enteredway orfay ethay exttay eighthay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>Must enter a printf-style template that would be valid for a single floating point number.</source>
@@ -14105,6 +15672,18 @@ by Lineout Operator</source>
     <message>
         <source>The template produces values that are too long.  36 character limit.</source>
         <translation type="unfinished">eThay emplatetay oducespray aluesvay atthay areway ootay onglay.  36 aracterchay imitlay.</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>number of labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>text height</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14135,7 +15714,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Draw labels</source>
-        <translation type="unfinished">awDray abelslay</translation>
+        <translation type="obsolete">awDray abelslay</translation>
     </message>
     <message>
         <source>Text color</source>
@@ -14180,6 +15759,102 @@ by Lineout Operator</source>
     <message>
         <source>The format string for the legend was not used because it contains multiple &apos;%&apos; characters.</source>
         <translation type="unfinished">eThay ormatfay ingstray orfay ethay egendlay asway otnay usedway ecausebay itway ontainscay ultiplemay % aracterschay.</translation>
+    </message>
+    <message>
+        <source>Vertical, Text on Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vertical, Text on Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Horizontal, Text on Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Horizontal, Text on Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Orientation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation type="unfinished">ositionPay</translation>
+    </message>
+    <message>
+        <source>Let VisIt determine tick labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Num ticks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Inclusive of min and max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">oneNay</translation>
+    </message>
+    <message>
+        <source>Values</source>
+        <translation type="unfinished">aluesVay</translation>
+    </message>
+    <message>
+        <source>Labels</source>
+        <translation type="unfinished">abelsLay</translation>
+    </message>
+    <message>
+        <source>Values and Labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specify tick values and labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add tick value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete selected value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tick Marks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw min/max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Courier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Times</source>
+        <translation type="unfinished">imesTay</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation type="unfinished">Appearanceway</translation>
+    </message>
+    <message>
+        <source>Computed values</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14273,11 +15948,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Begin Arrow</source>
-        <translation type="unfinished">eginBay Arrowway</translation>
+        <translation type="obsolete">eginBay Arrowway</translation>
     </message>
     <message>
         <source>End Arrow</source>
-        <translation type="unfinished">Endway Arrowway</translation>
+        <translation type="obsolete">Endway Arrowway</translation>
     </message>
     <message>
         <source>Visible</source>
@@ -14290,6 +15965,292 @@ by Lineout Operator</source>
     <message>
         <source>End</source>
         <translation type="unfinished">Endway</translation>
+    </message>
+    <message>
+        <source>Begin arrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>End arrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisLineSamplerWindow</name>
+    <message>
+        <source>Coordinate system</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cartesian</source>
+        <translation type="unfinished">artesianCay</translation>
+    </message>
+    <message>
+        <source>Cylindrical</source>
+        <translation type="unfinished">ylindricalCay</translation>
+    </message>
+    <message>
+        <source>Array configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of arrays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal angle (degrees) between arrays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array projection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divergent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel/Grid: Offset between channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divergent: Angle (degrees) between channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grid: Number of rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grid: Offset between rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array axis direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>R</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z</source>
+        <translation type="unfinished">Zay</translation>
+    </message>
+    <message>
+        <source>Poloidal angle (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal plane R-tilt (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal plane Z-tilt (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal angle (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View dimension</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>One</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Two</source>
+        <translation type="unfinished">oTway</translation>
+    </message>
+    <message>
+        <source>Three</source>
+        <translation type="unfinished">eeThray</translation>
+    </message>
+    <message>
+        <source>1D plot height scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D plot channel offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D plot array offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D plot time scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Beam shape</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished">ointPay</translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished">ineLay</translation>
+    </message>
+    <message>
+        <source>Cylinder</source>
+        <translation type="unfinished">ylinderCay</translation>
+    </message>
+    <message>
+        <source>Cone</source>
+        <translation type="unfinished">oneCay</translation>
+    </message>
+    <message>
+        <source>Cylinder radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cone divergence (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Beam Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TopHat</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gaussian</source>
+        <translation type="unfinished">aussianGay</translation>
+    </message>
+    <message>
+        <source>Standard deviation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear sample distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Radial sample arc (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SingleChannelSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SummationChannelSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SingleToroidalSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SummationToroidalSampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal sampling angle (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CurrentTimeStep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MultipleTimeSteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stride</source>
+        <translation type="unfinished">ideStray</translation>
+    </message>
+    <message>
+        <source>Read configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete All Channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisLineStyleWidget</name>
+    <message>
+        <source>solid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dotted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dash/dot</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14316,23 +16277,34 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of startTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway artTimestay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway artTimestay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of endTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway endTimeway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway endTimeway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of stride was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway idestray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway idestray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of point1 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ointpay1 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ointpay1 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of point2 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ointpay2 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ointpay2 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisLineoutQueryWidget</name>
+    <message>
+        <source>Start point</source>
+        <translation type="unfinished">artStay ointpay</translation>
+    </message>
+    <message>
+        <source>End point</source>
+        <translation type="unfinished">Endway ointpay</translation>
     </message>
 </context>
 <context>
@@ -14355,7 +16327,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Global Lineout Overrides</source>
-        <translation type="unfinished">obalGlay ineoutLay Overridesway</translation>
+        <translation type="obsolete">obalGlay ineoutLay Overridesway</translation>
     </message>
     <message>
         <source>Use Sampling</source>
@@ -14371,15 +16343,19 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of point1 is not valid. It should consist of two or three real world coordinate values.  Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ointpay1 isway otnay alidvay. Itway ouldshay onsistcay ofway otway orway eethray ealray orldway oordinatecay aluesvay.  esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ointpay1 isway otnay alidvay. Itway ouldshay onsistcay ofway otway orway eethray ealray orldway oordinatecay aluesvay.  esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of point2 is not valid. It should consist of two or three real world coordinate values.  Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ointpay2 isway otnay alidvay. Itway ouldshay onsistcay ofway otway orway eethray ealray orldway oordinatecay aluesvay.  esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ointpay2 isway otnay alidvay. Itway ouldshay onsistcay ofway otway orway eethray ealray orldway oordinatecay aluesvay.  esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of numberOfSamplePoints was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway umberOfSamplePointsnay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway umberOfSamplePointsnay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Number of Sample Points </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14453,7 +16429,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Set Print options . . .</source>
-        <translation type="unfinished">etSay intPray optionsway . . .</translation>
+        <translation type="obsolete">etSay intPray optionsway . . .</translation>
     </message>
     <message>
         <source>Restore session . . .</source>
@@ -14465,7 +16441,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Save session . . .</source>
-        <translation type="unfinished">aveSay essionsay . . .</translation>
+        <translation type="obsolete">aveSay essionsay . . .</translation>
     </message>
     <message>
         <source>&amp;Quit</source>
@@ -14593,7 +16569,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished">Addway</translation>
+        <translation type="obsolete">Addway</translation>
     </message>
     <message>
         <source>Clone</source>
@@ -14701,15 +16677,15 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Full frame</source>
-        <translation type="unfinished">ullFay amefray</translation>
+        <translation type="obsolete">ullFay amefray</translation>
     </message>
     <message>
         <source>Navigate bbox</source>
-        <translation type="unfinished">avigateNay oxbbay</translation>
+        <translation type="obsolete">avigateNay oxbbay</translation>
     </message>
     <message>
         <source>Spin</source>
-        <translation type="unfinished">inSpay</translation>
+        <translation type="obsolete">inSpay</translation>
     </message>
     <message>
         <source>&amp;Help</source>
@@ -14741,23 +16717,23 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Maintain limits</source>
-        <translation type="unfinished">aintainMay imitslay</translation>
+        <translation type="obsolete">aintainMay imitslay</translation>
     </message>
     <message>
         <source>view</source>
-        <translation type="unfinished">iewvay</translation>
+        <translation type="obsolete">iewvay</translation>
     </message>
     <message>
         <source>data</source>
-        <translation type="unfinished">ataday</translation>
+        <translation type="obsolete">ataday</translation>
     </message>
     <message>
         <source>Replace plots</source>
-        <translation type="unfinished">eplaceRay otsplay</translation>
+        <translation type="obsolete">eplaceRay otsplay</translation>
     </message>
     <message>
         <source>Auto update</source>
-        <translation type="unfinished">Autoway updateway</translation>
+        <translation type="obsolete">Autoway updateway</translation>
     </message>
     <message>
         <source>done</source>
@@ -14771,6 +16747,54 @@ by Lineout Operator</source>
         <source>Window </source>
         <translation type="unfinished">indowWay </translation>
     </message>
+    <message>
+        <source>Save session</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save session as . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Data-Level Comparisons . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selections . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Setup Host Profiles and Configuration . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">ewNay</translation>
+    </message>
+    <message>
+        <source>Full frame mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spin mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Main Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Main</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto apply</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisMaterialWindow</name>
@@ -14780,11 +16804,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Tetrahedral (obsolete)</source>
-        <translation type="unfinished">etrahedralTay (obsoleteway)</translation>
+        <translation type="obsolete">etrahedralTay (obsoleteway)</translation>
     </message>
     <message>
         <source>Zoo-based (default)</source>
-        <translation type="unfinished">ooZay-asedbay (efaultday)</translation>
+        <translation type="obsolete">ooZay-asedbay (efaultday)</translation>
     </message>
     <message>
         <source>Isovolume (special-purpose)</source>
@@ -14792,11 +16816,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Enable interface smoothing</source>
-        <translation type="unfinished">Enableway interfaceway oothingsmay</translation>
+        <translation type="obsolete">Enableway interfaceway oothingsmay</translation>
     </message>
     <message>
         <source>Force full connectivity</source>
-        <translation type="unfinished">orceFay ullfay onnectivitycay</translation>
+        <translation type="obsolete">orceFay ullfay onnectivitycay</translation>
     </message>
     <message>
         <source>Force interface reconstruction</source>
@@ -14834,6 +16858,58 @@ by Lineout Operator</source>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.  VisIt will NOT issue this message any further times for this session, but keep in mind that you must re-open each time you change the material attributes.</source>
         <translation type="unfinished">oteNay:  eseThay ettingssay onlyway applyway otay ewnay otsplay.  oTay applyway emthay otay urrentcay otsplay, eray-openway ethay ilefay.  VisIt illway OTNay issueway isthay essagemay anyway urtherfay imestay orfay isthay essionsay, utbay eepkay inway indmay atthay youay ustmay eray-openway eachway imetay youay angechay ethay aterialmay attributesway.</translation>
     </message>
+    <message>
+        <source>Equi-T (obsolete)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Equi-Z (default, supports iteration)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PLIC (accurate/discontinuous)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discrete (accurate/10X memory footprint/rect. only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable interface smoothing (Equi-* only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Force full connectivity (Equi-T only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable iteration (Equi-Z, Isovolume only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of iterations</source>
+        <translation type="unfinished">umberNay ofway iterationsway</translation>
+    </message>
+    <message>
+        <source>Convergence rate (&gt;0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Annealing time (seconds) (Discrete only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of numIterations was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished">eThay aluevay ofway umIterationsnay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>The value of iterationDamping was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of annealingTime was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisMergeWindow</name>
@@ -14847,7 +16923,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of tolerance was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway olerancetay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway olerancetay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
 </context>
 <context>
@@ -14892,6 +16968,10 @@ by Lineout Operator</source>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.</source>
         <translation type="unfinished">oteNay:  eseThay ettingssay onlyway applyway otay ewnay otsplay.  oTay applyway emthay otay urrentcay otsplay, eray-openway ethay ilefay.</translation>
     </message>
+    <message>
+        <source>Multi-pass</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisMeshPlotWindow</name>
@@ -14909,7 +16989,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Use foreground</source>
-        <translation type="unfinished">Useway oregroundfay</translation>
+        <translation type="obsolete">Useway oregroundfay</translation>
     </message>
     <message>
         <source>Opaque color</source>
@@ -14917,7 +16997,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Use background</source>
-        <translation type="unfinished">Useway ackgroundbay</translation>
+        <translation type="obsolete">Useway ackgroundbay</translation>
     </message>
     <message>
         <source>Opaque mode</source>
@@ -14937,7 +17017,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Show Internal Zones</source>
-        <translation type="unfinished">owShay Internalway onesZay</translation>
+        <translation type="obsolete">owShay Internalway onesZay</translation>
     </message>
     <message>
         <source>Outline only</source>
@@ -14953,7 +17033,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Geometry smoothing</source>
-        <translation type="unfinished">eometryGay oothingsmay</translation>
+        <translation type="obsolete">eometryGay oothingsmay</translation>
     </message>
     <message>
         <source>None</source>
@@ -14969,7 +17049,55 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The error tolerance was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay errorway olerancetay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay errorway olerancetay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Zone</source>
+        <translation type="unfinished">oneZay</translation>
+    </message>
+    <message>
+        <source>Show internal zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">olorCay</translation>
+    </message>
+    <message>
+        <source>Foreground</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Background</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity</source>
+        <translation type="unfinished">Opacityway</translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>error tolerance</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15003,7 +17131,7 @@ by Lineout Operator</source>
     <name>QvisMetricThresholdWindow</name>
     <message>
         <source>Preset Data for: </source>
-        <translation type="unfinished">esetPray ataDay orfay: </translation>
+        <translation type="obsolete">esetPray ataDay orfay: </translation>
     </message>
     <message>
         <source>None</source>
@@ -15095,11 +17223,11 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Enable Type</source>
-        <translation type="unfinished">Enableway ypeTay</translation>
+        <translation type="obsolete">Enableway ypeTay</translation>
     </message>
     <message>
         <source>Exclusion Range</source>
-        <translation type="unfinished">Exclusionway angeRay</translation>
+        <translation type="obsolete">Exclusionway angeRay</translation>
     </message>
     <message>
         <source>hex_lower</source>
@@ -15171,51 +17299,55 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of hex_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway exhay_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway exhay_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of hex_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway exhay_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway exhay_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of tet_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ettay_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ettay_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of tet_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ettay_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ettay_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of wed_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway edway_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway edway_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of wed_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway edway_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway edway_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of pyr_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway yrpay_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway yrpay_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of pyr_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway yrpay_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway yrpay_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of tri_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway itray_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway itray_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of tri_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway itray_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway itray_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of quad_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway adquay_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway adquay_owerlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of quad_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway adquay_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway adquay_upperway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>preset</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15382,23 +17514,47 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The value of radiusScaleFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway adiusScaleFactorray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway adiusScaleFactorray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of radiusFixed was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway adiusFixedray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway adiusFixedray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of bondRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ondRadiusbay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ondRadiusbay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of scalarMin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway alarMinscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway alarMinscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of scalarMax was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway alarMaxscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway alarMaxscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>radius scale factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>fixed radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>bond radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15406,6 +17562,76 @@ by Lineout Operator</source>
     <message>
         <source>Cancel</source>
         <translation type="unfinished">ancelCay</translation>
+    </message>
+</context>
+<context>
+    <name>QvisMultiCurvePlotWindow</name>
+    <message>
+        <source>Curve colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">ingleSay</translation>
+    </message>
+    <message>
+        <source>Multiple</source>
+        <translation type="unfinished">ultipleMay</translation>
+    </message>
+    <message>
+        <source>Curve</source>
+        <translation type="unfinished">urveCay</translation>
+    </message>
+    <message>
+        <source>Line Style</source>
+        <translation type="unfinished">ineLay yleStay</translation>
+    </message>
+    <message>
+        <source>Line Width</source>
+        <translation type="unfinished">ineLay idthWay</translation>
+    </message>
+    <message>
+        <source>Y-Axis title format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Axis tick spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display markers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marker variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display ids</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Id variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend</source>
+        <translation type="unfinished">egendLay</translation>
+    </message>
+    <message>
+        <source>yAxisTickSpacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisMultiresControlWindow</name>
+    <message>
+        <source>Resolution: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of info was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15458,11 +17684,11 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Yes</source>
-        <translation type="unfinished">Yesay</translation>
+        <translation type="obsolete">Yesay</translation>
     </message>
     <message>
         <source>No</source>
-        <translation type="unfinished">oNay</translation>
+        <translation type="obsolete">oNay</translation>
     </message>
     <message>
         <source>Yes, Do not prompt again</source>
@@ -15616,67 +17842,75 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Number of zones</source>
-        <translation type="unfinished">umberNay ofway oneszay</translation>
+        <translation type="obsolete">umberNay ofway oneszay</translation>
     </message>
     <message>
         <source>The value of var1 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay1 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay1 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var1Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay1inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay1inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var1Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay1axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay1axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var1SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay1ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay1ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var1NumSamples was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay1umSamplesNay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay1umSamplesNay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var2 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay2 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay2 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var2Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay2inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay2inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var2Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay2axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay2axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var2SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay2ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay2ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var2NumSamples was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay2umSamplesNay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay2umSamplesNay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var3 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay3 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay3 asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var3Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay3inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay3inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var3Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay3axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay3axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var3SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay3ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay3ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var3NumSamples was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay3umSamplesNay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay3umSamplesNay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Variable 2 Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ZoneCount</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15719,7 +17953,7 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Draw individual lines</source>
-        <translation type="unfinished">awDray individualway ineslay</translation>
+        <translation type="obsolete">awDray individualway ineslay</translation>
     </message>
     <message>
         <source>... but only when axis extents have been restricted</source>
@@ -15727,7 +17961,7 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Line color</source>
-        <translation type="unfinished">ineLay olorcay</translation>
+        <translation type="obsolete">ineLay olorcay</translation>
     </message>
     <message>
         <source>Draw context</source>
@@ -15757,146 +17991,337 @@ Do you want to apply the %2 operator?
         <source>The value of contextNumPartitions was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished">eThay aluevay ofway ontextNumPartitionscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
+    <message>
+        <source>Min value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Max value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw focus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw focus as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Individual lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bins of constant color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bins colored by population</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Focus color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of focusGamma was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisParallelCoordinatesPlotWizard</name>
     <message>
         <source>The plot has successfully been defined by use of an array variable.</source>
-        <translation type="unfinished">eThay otplay ashay uccessfullysay eenbay efinedday ybay useway ofway anway arrayway ariablevay.</translation>
+        <translation type="obsolete">eThay otplay ashay uccessfullysay eenbay efinedday ybay useway ofway anway arrayway ariablevay.</translation>
     </message>
     <message>
         <source>Click Finish</source>
-        <translation type="unfinished">ickClay inishFay</translation>
+        <translation type="obsolete">ickClay inishFay</translation>
     </message>
     <message>
         <source>ParallelCoordinates Plot Wizard</source>
-        <translation type="unfinished">arallelCoordinatesPay otPlay izardWay</translation>
-    </message>
-    <message>
-        <source>A ParallelCoordinates plot needs at least 2 axes.
-Choose a scalar variable for the second axis.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">arallelCoordinatesPay otPlay izardWay</translation>
     </message>
     <message>
         <source>Choose second axis variable</source>
-        <translation type="unfinished">ooseChay econdsay axisway ariablevay</translation>
+        <translation type="obsolete">ooseChay econdsay axisway ariablevay</translation>
     </message>
     <message>
         <source>Would you like to add a third axis to the plot?</source>
-        <translation type="unfinished">ouldWay youay ikelay otay addway away irdthay axisway otay ethay otplay?</translation>
+        <translation type="obsolete">ouldWay youay ikelay otay addway away irdthay axisway otay ethay otplay?</translation>
     </message>
     <message>
         <source>Add third axis?</source>
-        <translation type="unfinished">Addway irdthay axisway?</translation>
+        <translation type="obsolete">Addway irdthay axisway?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the third axis.</source>
-        <translation type="unfinished">ooseChay away alarscay ariablevay orfay ethay irdthay axisway.</translation>
+        <translation type="obsolete">ooseChay away alarscay ariablevay orfay ethay irdthay axisway.</translation>
     </message>
     <message>
         <source>Choose third axis variable</source>
-        <translation type="unfinished">ooseChay irdthay axisway ariablevay</translation>
+        <translation type="obsolete">ooseChay irdthay axisway ariablevay</translation>
     </message>
     <message>
         <source>Would you like to add a fourth axis to the plot?</source>
-        <translation type="unfinished">ouldWay youay ikelay otay addway away ourthfay axisway otay ethay otplay?</translation>
+        <translation type="obsolete">ouldWay youay ikelay otay addway away ourthfay axisway otay ethay otplay?</translation>
     </message>
     <message>
         <source>Add fourth axis?</source>
-        <translation type="unfinished">Addway ourthfay axisway?</translation>
+        <translation type="obsolete">Addway ourthfay axisway?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the fourth axis.</source>
-        <translation type="unfinished">ooseChay away alarscay ariablevay orfay ethay ourthfay axisway.</translation>
+        <translation type="obsolete">ooseChay away alarscay ariablevay orfay ethay ourthfay axisway.</translation>
     </message>
     <message>
         <source>Choose fourth axis variable</source>
-        <translation type="unfinished">ooseChay ourthfay axisway ariablevay</translation>
+        <translation type="obsolete">ooseChay ourthfay axisway ariablevay</translation>
     </message>
     <message>
         <source>Would you like to add a fifth axis to the plot?</source>
-        <translation type="unfinished">ouldWay youay ikelay otay addway away ifthfay axisway otay ethay otplay?</translation>
+        <translation type="obsolete">ouldWay youay ikelay otay addway away ifthfay axisway otay ethay otplay?</translation>
     </message>
     <message>
         <source>Add fifth axis?</source>
-        <translation type="unfinished">Addway ifthfay axisway?</translation>
+        <translation type="obsolete">Addway ifthfay axisway?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the fifth axis.</source>
-        <translation type="unfinished">ooseChay away alarscay ariablevay orfay ethay ifthfay axisway.</translation>
+        <translation type="obsolete">ooseChay away alarscay ariablevay orfay ethay ifthfay axisway.</translation>
     </message>
     <message>
         <source>Choose fifth axis variable</source>
-        <translation type="unfinished">ooseChay ifthfay axisway ariablevay</translation>
+        <translation type="obsolete">ooseChay ifthfay axisway ariablevay</translation>
     </message>
     <message>
         <source>Would you like to add a sixth axis to the plot?</source>
-        <translation type="unfinished">ouldWay youay ikelay otay addway away ixthsay axisway otay ethay otplay?</translation>
+        <translation type="obsolete">ouldWay youay ikelay otay addway away ixthsay axisway otay ethay otplay?</translation>
     </message>
     <message>
         <source>Add sixth axis?</source>
-        <translation type="unfinished">Addway ixthsay axisway?</translation>
+        <translation type="obsolete">Addway ixthsay axisway?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the sixth axis.</source>
-        <translation type="unfinished">ooseChay away alarscay ariablevay orfay ethay ixthsay axisway.</translation>
+        <translation type="obsolete">ooseChay away alarscay ariablevay orfay ethay ixthsay axisway.</translation>
     </message>
     <message>
         <source>Choose sixth axis variable</source>
-        <translation type="unfinished">ooseChay ixthsay axisway ariablevay</translation>
+        <translation type="obsolete">ooseChay ixthsay axisway ariablevay</translation>
     </message>
     <message>
         <source>Would you like to add a seventh axis to the plot?</source>
-        <translation type="unfinished">ouldWay youay ikelay otay addway away eventhsay axisway otay ethay otplay?</translation>
+        <translation type="obsolete">ouldWay youay ikelay otay addway away eventhsay axisway otay ethay otplay?</translation>
     </message>
     <message>
         <source>Add seventh axis?</source>
-        <translation type="unfinished">Addway eventhsay axisway?</translation>
+        <translation type="obsolete">Addway eventhsay axisway?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the seventh axis.</source>
-        <translation type="unfinished">ooseChay away alarscay ariablevay orfay ethay eventhsay axisway.</translation>
+        <translation type="obsolete">ooseChay away alarscay ariablevay orfay ethay eventhsay axisway.</translation>
     </message>
     <message>
         <source>Choose seventh axis variable</source>
-        <translation type="unfinished">ooseChay eventhsay axisway ariablevay</translation>
+        <translation type="obsolete">ooseChay eventhsay axisway ariablevay</translation>
     </message>
     <message>
         <source>Would you like to add an eighth axis to the plot?</source>
-        <translation type="unfinished">ouldWay youay ikelay otay addway anway eighthway axisway otay ethay otplay?</translation>
+        <translation type="obsolete">ouldWay youay ikelay otay addway anway eighthway axisway otay ethay otplay?</translation>
     </message>
     <message>
         <source>Add eighth axis?</source>
-        <translation type="unfinished">Addway eighthway axisway?</translation>
+        <translation type="obsolete">Addway eighthway axisway?</translation>
     </message>
     <message>
         <source>Choose a scalar variable for the eighth axis.</source>
-        <translation type="unfinished">ooseChay away alarscay ariablevay orfay ethay eighthway axisway.</translation>
+        <translation type="obsolete">ooseChay away alarscay ariablevay orfay ethay eighthway axisway.</translation>
     </message>
     <message>
         <source>Choose eighth axis variable</source>
-        <translation type="unfinished">ooseChay eighthway axisway ariablevay</translation>
+        <translation type="obsolete">ooseChay eighthway axisway ariablevay</translation>
     </message>
     <message>
         <source>Click the Finish button to create a new ParallelCoordinates plot.</source>
-        <translation type="unfinished">ickClay ethay inishFay uttonbay otay eatecray away ewnay arallelCoordinatesPay otplay.</translation>
+        <translation type="obsolete">ickClay ethay inishFay uttonbay otay eatecray away ewnay arallelCoordinatesPay otplay.</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="unfinished">ariableVay</translation>
-    </message>
-    <message>
-        <source>Selected variable duplicates variable of another axis.
-Choose a unique scalar variable for the new axis.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">ariableVay</translation>
     </message>
     <message>
         <source>Yes</source>
-        <translation type="unfinished">Yesay</translation>
+        <translation type="obsolete">Yesay</translation>
     </message>
     <message>
         <source>No</source>
-        <translation type="unfinished">oNay</translation>
+        <translation type="obsolete">oNay</translation>
+    </message>
+    <message>
+        <source>Parallel Coordinates Plot Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisParallelCoordinatesPlotWizardPage</name>
+    <message>
+        <source>Select axis variables</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please select at least 2 variables to setup your plot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation type="unfinished">Addway</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">emoveRay</translation>
+    </message>
+</context>
+<context>
+    <name>QvisPersistentParticlesWindow</name>
+    <message>
+        <source>Time Slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type of path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative</source>
+        <translation type="unfinished">elativeRay</translation>
+    </message>
+    <message>
+        <source>Index of first time slice</source>
+        <translation type="unfinished">Indexway ofway irstfay imetay iceslay</translation>
+    </message>
+    <message>
+        <source>Index of last time slice</source>
+        <translation type="unfinished">Indexway ofway astlay imetay iceslay</translation>
+    </message>
+    <message>
+        <source>Skip rate between time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coordinate replacement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X-Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z-Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connect particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show points</source>
+        <translation type="unfinished">owShay ointspay</translation>
+    </message>
+    <message>
+        <source>Index variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Index of the first time slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of slices backwards in time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Index of the last time slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of slices forward in time</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPickQueryWidget</name>
+    <message>
+        <source>Pick using coordinate to determine zone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pick using coordinate to determine node</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pick using domain and element Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pick using global element Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Node Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zone Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Curve options:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preserve Picked Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preserve Picked Element Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiple-variable Time Curve options:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create Single Y-Axis plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create Multiple Y-Axes plot</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15915,35 +18340,35 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Float Format:</source>
-        <translation type="unfinished">oatFlay ormatFay:</translation>
+        <translation type="obsolete">oatFlay ormatFay:</translation>
     </message>
     <message>
         <source>Concise Output.</source>
-        <translation type="unfinished">onciseCay Outputway.</translation>
+        <translation type="obsolete">onciseCay Outputway.</translation>
     </message>
     <message>
         <source>Show Mesh Name</source>
-        <translation type="unfinished">owShay eshMay ameNay</translation>
+        <translation type="obsolete">owShay eshMay ameNay</translation>
     </message>
     <message>
         <source>Show Timestep</source>
-        <translation type="unfinished">owShay imestepTay</translation>
+        <translation type="obsolete">owShay imestepTay</translation>
     </message>
     <message>
         <source>Display incident nodes/zones.</source>
-        <translation type="unfinished">isplayDay incidentway odesnay/oneszay.</translation>
+        <translation type="obsolete">isplayDay incidentway odesnay/oneszay.</translation>
     </message>
     <message>
         <source>Display global nodes/zones.</source>
-        <translation type="unfinished">isplayDay obalglay odesnay/oneszay.</translation>
+        <translation type="obsolete">isplayDay obalglay odesnay/oneszay.</translation>
     </message>
     <message>
         <source>Display reference pick letter.</source>
-        <translation type="unfinished">isplayDay eferenceray ickpay etterlay.</translation>
+        <translation type="obsolete">isplayDay eferenceray ickpay etterlay.</translation>
     </message>
     <message>
         <source>Display for Nodes:</source>
-        <translation type="unfinished">isplayDay orfay odesNay:</translation>
+        <translation type="obsolete">isplayDay orfay odesNay:</translation>
     </message>
     <message>
         <source>Id</source>
@@ -15963,7 +18388,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Display for Zones:</source>
-        <translation type="unfinished">isplayDay orfay onesZay:</translation>
+        <translation type="obsolete">isplayDay orfay onesZay:</translation>
     </message>
     <message>
         <source>Automatically show window</source>
@@ -15975,7 +18400,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Create time curve with next pick.</source>
-        <translation type="unfinished">eateCray imetay urvecay ithway extnay ickpay.</translation>
+        <translation type="obsolete">eateCray imetay urvecay ithway extnay ickpay.</translation>
     </message>
     <message>
         <source>Time curve use picked element</source>
@@ -15987,7 +18412,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Create spreadsheet with next pick.</source>
-        <translation type="unfinished">eateCray eadsheetspray ithway extnay ickpay.</translation>
+        <translation type="obsolete">eateCray eadsheetspray ithway extnay ickpay.</translation>
     </message>
     <message>
         <source>Invalid pick floating point format string.</source>
@@ -15996,6 +18421,86 @@ Choose a unique scalar variable for the new axis.</source>
     <message>
         <source>VisIt could not save the pick resultsto the selected file</source>
         <translation type="unfinished">VisIt ouldcay otnay avesay ethay ickpay esultstoray ethay electedsay ilefay</translation>
+    </message>
+    <message>
+        <source>Float Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear Picks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output Display Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Concise Output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Timestep</source>
+        <translation type="unfinished">imestepTay</translation>
+    </message>
+    <message>
+        <source>Incident nodes/zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global nodes/zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reference pick letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For Nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Pick Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do Time Curve with next pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time curve use single Y axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time curve use multiple Y axes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Repeat Pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spreadsheet Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create spreadsheet with next pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display in Spreadsheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose save filename</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16042,46 +18547,102 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Copy</source>
-        <translation type="unfinished">opyCay</translation>
+        <translation type="obsolete">opyCay</translation>
     </message>
     <message>
         <source>Copy this plot</source>
-        <translation type="unfinished">opyCay isthay otplay</translation>
+        <translation type="obsolete">opyCay isthay otplay</translation>
     </message>
     <message>
         <source>Copy To Window</source>
-        <translation type="unfinished">opyCay oTay indowWay</translation>
+        <translation type="obsolete">opyCay oTay indowWay</translation>
     </message>
     <message>
         <source>Copy this plot to different window</source>
-        <translation type="unfinished">opyCay isthay otplay otay ifferentday indowway</translation>
+        <translation type="obsolete">opyCay isthay otplay otay ifferentday indowway</translation>
     </message>
     <message>
         <source>Window 1</source>
-        <translation type="unfinished">indowWay 1</translation>
+        <translation type="obsolete">indowWay 1</translation>
     </message>
     <message>
         <source>Window 2</source>
-        <translation type="unfinished">indowWay 2</translation>
+        <translation type="obsolete">indowWay 2</translation>
     </message>
     <message>
         <source>Disconnect From TimeSlider</source>
-        <translation type="unfinished">isconnectDay omFray imeSliderTay</translation>
+        <translation type="obsolete">isconnectDay omFray imeSliderTay</translation>
     </message>
     <message>
         <source>Disconnect this plot from time slider</source>
-        <translation type="unfinished">isconnectDay isthay otplay omfray imetay iderslay</translation>
+        <translation type="obsolete">isconnectDay isthay otplay omfray imetay iderslay</translation>
+    </message>
+    <message>
+        <source>Clone</source>
+        <translation type="unfinished">oneClay</translation>
+    </message>
+    <message>
+        <source>Clone this plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit plot description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add a meaningful name for the plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move toward first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move this plot one slot toward the first plot in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move toward last</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move this plot one slot toward the last plot in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make this plot be the first in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make last</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make this plot be the last in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Follow time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set whether this plot follows the time slider</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisPlotManagerWidget</name>
     <message>
         <source>Source</source>
-        <translation type="unfinished">ourceSay</translation>
+        <translation type="obsolete">ourceSay</translation>
     </message>
     <message>
         <source>Active plots</source>
-        <translation type="unfinished">Activeway otsplay</translation>
+        <translation type="obsolete">Activeway otsplay</translation>
     </message>
     <message>
         <source>Hide/Show</source>
@@ -16097,15 +18658,15 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Apply </source>
-        <translation type="unfinished">Applyway </translation>
+        <translation type="obsolete">Applyway </translation>
     </message>
     <message>
         <source>operators</source>
-        <translation type="unfinished">operatorsway</translation>
+        <translation type="obsolete">operatorsway</translation>
     </message>
     <message>
         <source>selection to all plots</source>
-        <translation type="unfinished">electionsay otay allway otsplay</translation>
+        <translation type="obsolete">electionsay otay allway otsplay</translation>
     </message>
     <message>
         <source>Plots</source>
@@ -16145,27 +18706,86 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Copy This Plot To Window</source>
-        <translation type="unfinished">opyCay isThay otPlay oTay indowWay</translation>
+        <translation type="obsolete">opyCay isThay otPlay oTay indowWay</translation>
     </message>
     <message>
         <source>Not Yet Implemented...</source>
-        <translation type="unfinished">otNay Yetay Implementedway...</translation>
+        <translation type="obsolete">otNay Yetay Implementedway...</translation>
     </message>
     <message>
         <source>Window 1</source>
-        <translation type="unfinished">indowWay 1</translation>
+        <translation type="obsolete">indowWay 1</translation>
     </message>
     <message>
         <source>Copy Plot to Window 1</source>
-        <translation type="unfinished">opyCay otPlay otay indowWay 1</translation>
+        <translation type="obsolete">opyCay otPlay otay indowWay 1</translation>
     </message>
     <message>
         <source>Window 2</source>
-        <translation type="unfinished">indowWay 2</translation>
+        <translation type="obsolete">indowWay 2</translation>
     </message>
     <message>
         <source>Copy Plot to Window 2</source>
-        <translation type="unfinished">opyCay otPlay otay indowWay 2</translation>
+        <translation type="obsolete">opyCay otPlay otay indowWay 2</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation type="unfinished">Addway</translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Debugging</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Molecular</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection</source>
+        <translation type="unfinished">electionSay</translation>
+    </message>
+    <message>
+        <source>Slicing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transforms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Apply operators to all plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Apply subset selections to all plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPluginManagerAttributesDataModel</name>
+    <message>
+        <source>Enabled</source>
+        <translation type="unfinished">Enabledway</translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation type="unfinished">ersionVay</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">ameNay</translation>
+    </message>
+    <message>
+        <source>Category</source>
+        <translation type="unfinished">ategoryCay</translation>
     </message>
 </context>
 <context>
@@ -16180,7 +18800,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Version</source>
-        <translation type="unfinished">ersionVay</translation>
+        <translation type="obsolete">ersionVay</translation>
     </message>
     <message>
         <source>Operators</source>
@@ -16192,19 +18812,19 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Open Options</source>
-        <translation type="unfinished">Openway Optionsway</translation>
+        <translation type="obsolete">Openway Optionsway</translation>
     </message>
     <message>
         <source>Select all</source>
-        <translation type="unfinished">electSay allway</translation>
+        <translation type="obsolete">electSay allway</translation>
     </message>
     <message>
         <source>Unselect all</source>
-        <translation type="unfinished">Unselectway allway</translation>
+        <translation type="obsolete">Unselectway allway</translation>
     </message>
     <message>
         <source>Set Default Open Options</source>
-        <translation type="unfinished">etSay efaultDay Openway Optionsway</translation>
+        <translation type="obsolete">etSay efaultDay Openway Optionsway</translation>
     </message>
     <message>
         <source>Note:  Plugins are loaded at startup.  Please save your settings and restart VisIt to apply your changes.</source>
@@ -16213,6 +18833,537 @@ Choose a unique scalar variable for the new axis.</source>
     <message>
         <source>Default file opening options for %1 reader</source>
         <translation type="unfinished">efaultDay ilefay openingway optionsway orfay %1 eaderray</translation>
+    </message>
+    <message>
+        <source>Clear category for all operators</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation type="unfinished">Enabledway</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disable all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set default open options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add to preferred list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation type="unfinished">Upway</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation type="unfinished">ownDay</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">emoveRay</translation>
+    </message>
+    <message>
+        <source>yes</source>
+        <translation type="unfinished">yesay</translation>
+    </message>
+</context>
+<context>
+    <name>QvisPoincarePlotWindow</name>
+    <message>
+        <source>Fieldlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished">ourceSay</translation>
+    </message>
+    <message>
+        <source>Source Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished">ointPay</translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished">ineLay</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation type="unfinished">ocationLay</translation>
+    </message>
+    <message>
+        <source>Start Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>End Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point density</source>
+        <translation type="unfinished">ointPay ensityday</translation>
+    </message>
+    <message>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished">efaultDay</translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished">onstantCay</translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unused</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step length</source>
+        <translation type="unfinished">epStay engthlay</translation>
+    </message>
+    <message>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Force node centering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Punctures</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">inimumMay</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">aximumMay</translation>
+    </message>
+    <message>
+        <source>Puncture Plane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None - Punctures only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Full</source>
+        <translation type="unfinished">ullFay</translation>
+    </message>
+    <message>
+        <source>Maximum toroidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override toroidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override poloidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding pair confidence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rational surface factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Critical Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detect O Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Maximum iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overlaps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overlaping curve sections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Raw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">emoveRay</translation>
+    </message>
+    <message>
+        <source>Merge</source>
+        <translation type="unfinished">ergeMay</translation>
+    </message>
+    <message>
+        <source>Smooth</source>
+        <translation type="unfinished">oothSmay</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show islands only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show chaotic fieldlines (as points)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show 1D plots (distance/ridgelines)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Verbose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation type="unfinished">Appearanceway</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">ataDay</translation>
+    </message>
+    <message>
+        <source>Data value:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">oneNay</translation>
+    </message>
+    <message>
+        <source>Safety Factor Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor Q if Q==P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Safety Factor P if P!=Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal Windings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal Windings Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal Windings P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fieldline Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Group Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Point Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding Point Order Modulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>   </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limits</source>
+        <translation type="unfinished">imitsLay</translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">olorCay</translation>
+    </message>
+    <message>
+        <source>Single color</source>
+        <translation type="unfinished">ingleSay olorcay</translation>
+    </message>
+    <message>
+        <source>Color table</source>
+        <translation type="unfinished">olorCay abletay</translation>
+    </message>
+    <message>
+        <source>Opacity</source>
+        <translation type="unfinished">Opacityway</translation>
+    </message>
+    <message>
+        <source>Set explicitly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>From color table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished">isplayDay</translation>
+    </message>
+    <message>
+        <source>Mesh type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Curves</source>
+        <translation type="unfinished">urvesCay</translation>
+    </message>
+    <message>
+        <source>Surfaces</source>
+        <translation type="unfinished">urfacesSay</translation>
+    </message>
+    <message>
+        <source>Number of planes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base plane (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adjust plane index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line style</source>
+        <translation type="unfinished">ineLay ylestay</translation>
+    </message>
+    <message>
+        <source>Line width</source>
+        <translation type="unfinished">ineLay idthway</translation>
+    </message>
+    <message>
+        <source>Show Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend</source>
+        <translation type="unfinished">egendLay</translation>
+    </message>
+    <message>
+        <source>Lighting</source>
+        <translation type="unfinished">ightingLay</translation>
+    </message>
+    <message>
+        <source>Parallel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel fieldline options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize across</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fieldlines and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain cache size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Work group size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velocity Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Point Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Point End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>windingPairConfidence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rationalSurfaceFactor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>singlePlane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>max</source>
+        <translation type="unfinished">axmay</translation>
     </message>
 </context>
 <context>
@@ -16247,11 +19398,15 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Point Type</source>
-        <translation type="unfinished">ointPay ypeTay</translation>
+        <translation type="obsolete">ointPay ypeTay</translation>
     </message>
     <message>
         <source>Point size (pixels)</source>
         <translation type="unfinished">ointPay izesay (ixelspay)</translation>
+    </message>
+    <message>
+        <source>Point type</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16271,6 +19426,25 @@ Choose a unique scalar variable for the new axis.</source>
     <message>
         <source>Dismiss</source>
         <translation type="unfinished">ismissDay</translation>
+    </message>
+</context>
+<context>
+    <name>QvisPostableWindowObserver</name>
+    <message>
+        <source>Open Attribute XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML Files (*.xml);;All files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Attribute XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML Files (*.xml)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16310,6 +19484,14 @@ Choose a unique scalar variable for the new axis.</source>
     <message>
         <source>Yes, Do not prompt again</source>
         <translation type="unfinished">Yesay, oDay otnay omptpray againway</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished">aveSay</translation>
     </message>
 </context>
 <context>
@@ -16429,6 +19611,22 @@ Choose a unique scalar variable for the new axis.</source>
         <source>Number of significant digits</source>
         <translation type="unfinished">umberNay ofway ignificantsay igitsday</translation>
     </message>
+    <message>
+        <source>New plots automatically expanded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace plots</source>
+        <translation type="unfinished">eplaceRay otsplay</translation>
+    </message>
+    <message>
+        <source>Enable warning message popups</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ignore database extents (may degrade performance)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisProjectWindow</name>
@@ -16438,11 +19636,55 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>XYCartesian</source>
-        <translation type="unfinished">YCartesianXay</translation>
+        <translation type="obsolete">YCartesianXay</translation>
     </message>
     <message>
         <source>ZRCylindrical</source>
-        <translation type="unfinished">ylindricalZRCay</translation>
+        <translation type="obsolete">ylindricalZRCay</translation>
+    </message>
+    <message>
+        <source>X-Axis Cartesian (x &lt;= z, y &lt;= y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Axis Cartesian (x &lt;= x, y &lt;= z)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z-Axis Cartesian (x &lt;= x, y &lt;= y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X-Axis Cylindrical (x &lt;= x, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Axis Cylindrical (x &lt;= y, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z-Axis Cylindrical (x &lt;= z, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector transform method:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No transformation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as point coordinates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as coordinate displacements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as instantaneous directions</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16453,7 +19695,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Natural</source>
-        <translation type="unfinished">aturalNay</translation>
+        <translation type="obsolete">aturalNay</translation>
     </message>
     <message>
         <source>Nodal</source>
@@ -16477,11 +19719,11 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">inMay</translation>
+        <translation type="obsolete">inMay</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">axMay</translation>
+        <translation type="obsolete">axMay</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -16501,7 +19743,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Skew factor</source>
-        <translation type="unfinished">ewSkay actorfay</translation>
+        <translation type="obsolete">ewSkay actorfay</translation>
     </message>
     <message>
         <source>Opacity</source>
@@ -16521,7 +19763,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Geometry smoothing</source>
-        <translation type="unfinished">eometryGay oothingsmay</translation>
+        <translation type="obsolete">eometryGay oothingsmay</translation>
     </message>
     <message>
         <source>None</source>
@@ -16537,15 +19779,118 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay inimummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay inimummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aximummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aximummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The skew factor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay ewskay actorfay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay ewskay actorfay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">ataDay</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">inimumMay</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">aximumMay</translation>
+    </message>
+    <message>
+        <source>Original</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">olorCay</translation>
+    </message>
+    <message>
+        <source>Set explicitly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>From color table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line style</source>
+        <translation type="unfinished">ineLay ylestay</translation>
+    </message>
+    <message>
+        <source>Line width</source>
+        <translation type="unfinished">ineLay idthway</translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPythonFilterEditor</name>
+    <message>
+        <source>Load Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;File</source>
+        <translation type="unfinished">ileFay</translation>
+    </message>
+    <message>
+        <source>&amp;Simple Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Advanced Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python Script File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Python Filter Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load Python Filter</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16568,22 +19913,15 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Starting timestep</source>
-        <translation type="unfinished">artingStay imesteptay</translation>
+        <translation type="obsolete">artingStay imesteptay</translation>
     </message>
     <message>
         <source>Ending timestep</source>
-        <translation type="unfinished">Endingway imesteptay</translation>
+        <translation type="obsolete">Endingway imesteptay</translation>
     </message>
     <message>
         <source>stride</source>
-        <translation type="unfinished">idestray</translation>
-    </message>
-    <message>
-        <source>Use 1st unused window or
-create new one.  All
-subsequent queries will
-use this same window.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">idestray</translation>
     </message>
     <message>
         <source>Window #</source>
@@ -16591,19 +19929,29 @@ use this same window.</source>
     </message>
     <message>
         <source>The value of startTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway artTimestay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway artTimestay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of endTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway endTimeway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway endTimeway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of stride was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway idestray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway idestray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of windowId was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished">eThay aluevay ofway indowIdway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Choices entered here only apply to values displayed in the x-axis of the time curve.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use 1st unused window or create new
+one. All subsequent queries will use this
+same window.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16642,7 +19990,7 @@ use this same window.</source>
     </message>
     <message>
         <source>Time Curve</source>
-        <translation type="unfinished">imeTay urveCay</translation>
+        <translation type="obsolete">imeTay urveCay</translation>
     </message>
     <message>
         <source>Query</source>
@@ -16678,15 +20026,15 @@ use this same window.</source>
     </message>
     <message>
         <source>Query point</source>
-        <translation type="unfinished">eryQuay ointpay</translation>
+        <translation type="obsolete">eryQuay ointpay</translation>
     </message>
     <message>
         <source>Start point</source>
-        <translation type="unfinished">artStay ointpay</translation>
+        <translation type="obsolete">artStay ointpay</translation>
     </message>
     <message>
         <source>End point</source>
-        <translation type="unfinished">Endway ointpay</translation>
+        <translation type="obsolete">Endway ointpay</translation>
     </message>
     <message>
         <source>Domain</source>
@@ -16718,15 +20066,15 @@ use this same window.</source>
     </message>
     <message>
         <source>Variable Names</source>
-        <translation type="unfinished">ariableVay amesNay</translation>
+        <translation type="obsolete">ariableVay amesNay</translation>
     </message>
     <message>
         <source>Ray Center</source>
-        <translation type="unfinished">ayRay enterCay</translation>
+        <translation type="obsolete">ayRay enterCay</translation>
     </message>
     <message>
         <source>Radius, Theta, Phi</source>
-        <translation type="unfinished">adiusRay, etaThay, iPhay</translation>
+        <translation type="obsolete">adiusRay, etaThay, iPhay</translation>
     </message>
     <message>
         <source>Output File</source>
@@ -16766,15 +20114,15 @@ use this same window.</source>
     </message>
     <message>
         <source>query point</source>
-        <translation type="unfinished">eryquay ointpay</translation>
+        <translation type="obsolete">eryquay ointpay</translation>
     </message>
     <message>
         <source>start point</source>
-        <translation type="unfinished">artstay ointpay</translation>
+        <translation type="obsolete">artstay ointpay</translation>
     </message>
     <message>
         <source>end point</source>
-        <translation type="unfinished">endway ointpay</translation>
+        <translation type="obsolete">endway ointpay</translation>
     </message>
     <message>
         <source>Performing %1 query.</source>
@@ -16782,7 +20130,7 @@ use this same window.</source>
     </message>
     <message>
         <source>The %1 is not valid. It should consist of two or three real world coordinate values.</source>
-        <translation type="unfinished">eThay %1 isway otnay alidvay. Itway ouldshay onsistcay ofway otway orway eethray ealray orldway oordinatecay aluesvay.</translation>
+        <translation type="obsolete">eThay %1 isway otnay alidvay. Itway ouldshay onsistcay ofway otway orway eethray ealray orldway oordinatecay aluesvay.</translation>
     </message>
     <message>
         <source>The list of variables contains an error.</source>
@@ -16794,7 +20142,31 @@ use this same window.</source>
     </message>
     <message>
         <source>VisIt could not save the query resultsto the selected file</source>
-        <translation type="unfinished">VisIt ouldcay otnay avesay ethay eryquay esultstoray ethay electedsay ilefay</translation>
+        <translation type="obsolete">VisIt ouldcay otnay avesay ethay eryquay esultstoray ethay electedsay ilefay</translation>
+    </message>
+    <message>
+        <source>Dump Steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python Query Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Execute Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are currently no query results to save.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Query Results As</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not save the query results to the selected file</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16940,19 +20312,31 @@ use this same window.</source>
     </message>
     <message>
         <source>The value of specifiedX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ecifiedXspay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ecifiedXspay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of specifiedY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ecifiedYspay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ecifiedYspay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of specifiedZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ecifiedZspay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ecifiedZspay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The reflection attributes require the 3D input mode because the original data octant or one or more of the reflection octants has a negative Z value. The input mode will remain 3D.</source>
         <translation type="unfinished">eThay eflectionray attributesway equireray ethay 3Day inputway odemay ecausebay ethay originalway ataday octantway orway oneway orway oremay ofway ethay eflectionray octantsway ashay away egativenay Zay aluevay. eThay inputway odemay illway emainray 3Day.</translation>
+    </message>
+    <message>
+        <source>Specified X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specified Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specified Z</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16979,11 +20363,11 @@ use this same window.</source>
     </message>
     <message>
         <source>The value of cell was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ellcay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ellcay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of domain was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway omainday asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway omainday asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
 </context>
 <context>
@@ -16994,7 +20378,7 @@ use this same window.</source>
     </message>
     <message>
         <source>Basic Options</source>
-        <translation type="unfinished">asicBay Optionsway</translation>
+        <translation type="obsolete">asicBay Optionsway</translation>
     </message>
     <message>
         <source>Antialiasing</source>
@@ -17070,7 +20454,7 @@ use this same window.</source>
     </message>
     <message>
         <source>Advanced Options</source>
-        <translation type="unfinished">Advancedway Optionsway</translation>
+        <translation type="obsolete">Advancedway Optionsway</translation>
     </message>
     <message>
         <source>Use scalable rendering</source>
@@ -17082,7 +20466,7 @@ use this same window.</source>
     </message>
     <message>
         <source>Compress images (geom too) from engine</source>
-        <translation type="unfinished">ompressCay imagesway (eomgay ootay) omfray engineway</translation>
+        <translation type="obsolete">ompressCay imagesway (eomgay ootay) omfray engineway</translation>
     </message>
     <message>
         <source>Shadows (scalable rendering only)</source>
@@ -17094,11 +20478,11 @@ use this same window.</source>
     </message>
     <message>
         <source>Start point</source>
-        <translation type="unfinished">artStay ointpay</translation>
+        <translation type="obsolete">artStay ointpay</translation>
     </message>
     <message>
         <source>End point</source>
-        <translation type="unfinished">Endway ointpay</translation>
+        <translation type="obsolete">Endway ointpay</translation>
     </message>
     <message>
         <source>Apply color using textures</source>
@@ -17158,11 +20542,43 @@ use this same window.</source>
     </message>
     <message>
         <source>The start point was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay artstay ointpay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay artstay ointpay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The end point was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay endway ointpay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay endway ointpay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+    </message>
+    <message>
+        <source>Compress images (geometry too) from engine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compact domains on engine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When domains per process exceeds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue automatically along camera depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manual start point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manual end point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start point</source>
+        <translation type="unfinished">artstay ointpay</translation>
+    </message>
+    <message>
+        <source>end point</source>
+        <translation type="unfinished">endway ointpay</translation>
     </message>
 </context>
 <context>
@@ -17206,27 +20622,39 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>The value of xVector was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ectorxVay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ectorxVay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of yVector was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway yVectoray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway yVectoray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of zVector was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ectorzVay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ectorzVay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of xReplications was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway eplicationsxRay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway eplicationsxRay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of yReplications was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway yReplicationsay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway yReplicationsay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of zReplications was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway eplicationszRay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway eplicationszRay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Shift atoms to new periodic origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New periodic atom origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New periodic origin</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -17300,50 +20728,52 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished">alueVay orfay uncoveredway egionsray</translation>
     </message>
     <message>
-        <source>Distribute resampled data
-set across all processors
-(parallel only)?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The value of startX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway artXstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway artXstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of endX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway endXway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway endXway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of samplesX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway amplesXsay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway amplesXsay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of startY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway artYstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway artYstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of endY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway endYway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway endYway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of samplesY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway amplesYsay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway amplesYsay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of startZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway artZstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway artZstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of endZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway endZway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway endZway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of samplesZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway amplesZsay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway amplesZsay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of defaultValue was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway efaultValueday asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway efaultValueday asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Distribute resampled data set across all processors (parallel only)?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make output cell centered</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -17390,19 +20820,19 @@ set across all processors
     </message>
     <message>
         <source>The value of axis was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway axisway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway axisway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of startAngle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway artAnglestay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway artAnglestay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of stopAngle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway opAnglestay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway opAnglestay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of steps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway epsstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway epsstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
 </context>
 <context>
@@ -17443,7 +20873,7 @@ set across all processors
     </message>
     <message>
         <source>Template uage</source>
-        <translation type="unfinished">emplateTay uageway</translation>
+        <translation type="obsolete">emplateTay uageway</translation>
     </message>
     <message>
         <source>Movie templates allow you to create complex movies. What would you like to do?</source>
@@ -17683,7 +21113,7 @@ set across all processors
     </message>
     <message>
         <source>Movie settings</source>
-        <translation type="unfinished">ovieMay ettingssay</translation>
+        <translation type="obsolete">ovieMay ettingssay</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -17863,7 +21293,7 @@ set across all processors
     </message>
     <message>
         <source>%1 page %2 for sequence %3</source>
-        <translation type="unfinished">%1 agepay %2 orfay equencesay %3</translation>
+        <translation type="obsolete">%1 agepay %2 orfay equencesay %3</translation>
     </message>
     <message>
         <source>No description available</source>
@@ -17873,12 +21303,28 @@ set across all processors
         <source>Select output directory</source>
         <translation type="unfinished">electSay outputway irectoryday</translation>
     </message>
+    <message>
+        <source>Template usage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User interface</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frame stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 sequence</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisSaveWindow</name>
     <message>
         <source>File information</source>
-        <translation type="unfinished">ileFay informationway</translation>
+        <translation type="obsolete">ileFay informationway</translation>
     </message>
     <message>
         <source>Output files to current directory</source>
@@ -17996,6 +21442,62 @@ set across all processors
         <source>Select output directory</source>
         <translation type="unfinished">electSay outputway irectoryday</translation>
     </message>
+    <message>
+        <source>Format Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Standard Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced Multi-Window Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do Advanced Multi-Window Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Total Window Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Individual Window Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Window</source>
+        <translation type="unfinished">indowWay</translation>
+    </message>
+    <message>
+        <source>Omit Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position (X)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position (Y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Layer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transparency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The x position was invalid. Resetting to the last good value %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The y position was invalid. Resetting to the last good value %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisScatterPlotWindow</name>
@@ -18017,11 +21519,11 @@ set across all processors
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">inMay</translation>
+        <translation type="obsolete">inMay</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">axMay</translation>
+        <translation type="obsolete">axMay</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -18041,7 +21543,7 @@ set across all processors
     </message>
     <message>
         <source>Skew factor</source>
-        <translation type="unfinished">ewSkay actorfay</translation>
+        <translation type="obsolete">ewSkay actorfay</translation>
     </message>
     <message>
         <source>Input 2</source>
@@ -18097,11 +21599,11 @@ set across all processors
     </message>
     <message>
         <source>Use foreground </source>
-        <translation type="unfinished">Useway oregroundfay </translation>
+        <translation type="obsolete">Useway oregroundfay </translation>
     </message>
     <message>
         <source>Scale to cube</source>
-        <translation type="unfinished">aleScay otay ubecay</translation>
+        <translation type="obsolete">aleScay otay ubecay</translation>
     </message>
     <message>
         <source>Roles</source>
@@ -18133,127 +21635,450 @@ set across all processors
     </message>
     <message>
         <source>The value of var1Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay1inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay1inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var1Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay1axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay1axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var1SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay1ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay1ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var2Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay2inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay2inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var2Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay2axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay2axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var2SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay2ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay2ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var3Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay3inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay3inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var3Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay3axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay3axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var3SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay3ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay3ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var4Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay4inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay4inMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var4Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay4axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay4axMay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of var4SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway arvay4ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway arvay4ewFactorSkay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of pointSizePixels was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ointSizePixelspay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ointSizePixelspay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of pointSize was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ointSizepay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ointSizepay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The %1 role was being fulfilled by another input variable. To ensure that the %2 role is fulfilled by the %3 variable, the other variable&apos;s role has been set to None.</source>
         <translation type="unfinished">eThay %1 oleray asway eingbay ulfilledfay ybay anotherway inputway ariablevay. oTay ensureway atthay ethay %2 oleray isway ulfilledfay ybay ethay %3 ariablevay, ethay otherway ariablevaysay oleray ashay eenbay etsay otay oneNay.</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">ataDay</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">inimumMay</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">aximumMay</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normalize the axis to a cube</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">olorCay</translation>
+    </message>
+    <message>
+        <source>Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 1 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 1 max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 1 skew factor</source>
+        <translation type="unfinished">ariableVay 1 ewskay actorfay</translation>
+    </message>
+    <message>
+        <source>Variable 2 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 2 maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 2 skew factor</source>
+        <translation type="unfinished">ariableVay 2 ewskay actorfay</translation>
+    </message>
+    <message>
+        <source>Variable 3 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 3 maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 3 skew factor</source>
+        <translation type="unfinished">ariableVay 3 ewskay actorfay</translation>
+    </message>
+    <message>
+        <source>Variable 4 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 4 maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 4 skew factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>point size (pixels)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>point size</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisScatterPlotWizard</name>
     <message>
         <source>Scatter plot wizard</source>
-        <translation type="unfinished">atterScay otplay izardway</translation>
-    </message>
-    <message>
-        <source>Choose a variable to use for the Scatter
-plot&apos;s Y coordinate.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">atterScay otplay izardway</translation>
     </message>
     <message>
         <source>Choose Y coordinate</source>
-        <translation type="unfinished">ooseChay Yay oordinatecay</translation>
-    </message>
-    <message>
-        <source>Would you like to choose a variable to use
-as the Scatter plot&apos;s Z coordinate?</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">ooseChay Yay oordinatecay</translation>
     </message>
     <message>
         <source>Choose Z coordinate</source>
-        <translation type="unfinished">ooseChay Zay oordinatecay</translation>
-    </message>
-    <message>
-        <source>Choose a variable to use for the Scatter
-plot&apos;s Z coordinate.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Would you like to choose a variable to use
-as the Scatter plot&apos;s color?</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">ooseChay Zay oordinatecay</translation>
     </message>
     <message>
         <source>Choose color variable</source>
-        <translation type="unfinished">ooseChay olorcay ariablevay</translation>
-    </message>
-    <message>
-        <source>Choose a variable to use for the Scatter
-plot&apos;s color.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">ooseChay olorcay ariablevay</translation>
     </message>
     <message>
         <source>Click the Finish button to create a new Scatter plot</source>
-        <translation type="unfinished">ickClay ethay inishFay uttonbay otay eatecray away ewnay atterScay otplay</translation>
+        <translation type="obsolete">ickClay ethay inishFay uttonbay otay eatecray away ewnay atterScay otplay</translation>
     </message>
     <message>
         <source>Click Finish</source>
-        <translation type="unfinished">ickClay inishFay</translation>
+        <translation type="obsolete">ickClay inishFay</translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="obsolete">ariableVay</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation type="obsolete">Yesay</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation type="obsolete">oNay</translation>
+    </message>
+    <message>
+        <source>Scatter Plot Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisScatterPlotWizardPage</name>
+    <message>
+        <source>&lt;Select&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select variables for a new Scatter Plot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisSelectionsDialog</name>
+    <message>
+        <source>Selection Name and Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database</source>
+        <translation type="unfinished">atabaseDay</translation>
+    </message>
+    <message>
+        <source>Plot</source>
+        <translation type="unfinished">otPlay</translation>
+    </message>
+</context>
+<context>
+    <name>QvisSelectionsWindow</name>
+    <message>
+        <source>Selections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">ewNay</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">eleteDay</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished">aveSay</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties</source>
+        <translation type="unfinished">opertiesPray</translation>
+    </message>
+    <message>
+        <source>Statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The data source that defines the selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cumulative Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Range</source>
+        <translation type="unfinished">angeRay</translation>
+    </message>
+    <message>
+        <source>Histogram</source>
+        <translation type="unfinished">istogramHay</translation>
+    </message>
+    <message>
+        <source>Automatically apply updated selections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation type="unfinished">Addway ariablevay</translation>
+    </message>
+    <message>
+        <source>Get variable ranges</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Populate the list of variables used for the cumulative query
+selection from the list of variables used in the selection&apos;s
+originating plot. The originating plot must be a Parallel
+Coordinates plot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Query over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation type="unfinished">artStay</translation>
+    </message>
+    <message>
+        <source>End</source>
+        <translation type="unfinished">Endway</translation>
+    </message>
+    <message>
+        <source>Stride</source>
+        <translation type="unfinished">ideStray</translation>
+    </message>
+    <message>
+        <source>Axis</source>
+        <translation type="unfinished">Axisway</translation>
+    </message>
+    <message>
+        <source>Display axis type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Matches</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Variable</source>
         <translation type="unfinished">ariableVay</translation>
     </message>
     <message>
-        <source>Yes</source>
-        <translation type="unfinished">Yesay</translation>
+        <source>Number of bins</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>No</source>
-        <translation type="unfinished">oNay</translation>
+        <source>Summation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished">ypeTay</translation>
+    </message>
+    <message>
+        <source>Include cells matching in any time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Include cells matching in all time steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum bin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum bin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cells in selection:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cells in dataset:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum time state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum time state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>time stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of Cells vs. Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency vs. Matches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency vs. ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequency vs. Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>none</source>
+        <translation type="unfinished">onenay</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">inimumMay</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">aximumMay</translation>
+    </message>
+    <message>
+        <source>VisIt can&apos;t determine the host for the compute engine to use for loading the selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load selection from file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable display is not supported when the selection does not have any variables.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18340,6 +22165,49 @@ plot&apos;s color.</source>
     </message>
 </context>
 <context>
+    <name>QvisSetupHostProfilesAndConfigWindow</name>
+    <message>
+        <source>To finish the VisIt install on this Mac select any computing centers whose resources you are using to configure host profiles automatically for their machines.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select computing centers used</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select default configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None (use VisIt&apos;s standard defaults)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">ancelCay</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The configuration file </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace existing configuration file?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host profiles and configuration files have been installed and will be available after VisIt is restarted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisSiloDumpWindow</name>
     <message>
         <source>Filename</source>
@@ -18351,30 +22219,18 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of filename was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ilenamefay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ilenamefay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
 </context>
 <context>
-    <name>QvisSimulationWindow</name>
+    <name>QvisSimulationCommandWindow</name>
     <message>
-        <source>Simulation:</source>
-        <translation type="unfinished">imulationSay:</translation>
+        <source>Commands</source>
+        <translation type="unfinished">ommandsCay</translation>
     </message>
     <message>
-        <source>Attribute</source>
-        <translation type="unfinished">Attributeway</translation>
-    </message>
-    <message>
-        <source>Value</source>
-        <translation type="unfinished">alueVay</translation>
-    </message>
-    <message>
-        <source>Simulation Status: </source>
-        <translation type="unfinished">imulationSay atusStay: </translation>
-    </message>
-    <message>
-        <source>VisIt Status</source>
-        <translation type="unfinished">VisIt atusStay</translation>
+        <source>Enable time ranging</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Start</source>
@@ -18389,8 +22245,47 @@ plot&apos;s color.</source>
         <translation type="unfinished">opStay</translation>
     </message>
     <message>
+        <source>Custom . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisSimulationWindow</name>
+    <message>
+        <source>Simulation:</source>
+        <translation type="obsolete">imulationSay:</translation>
+    </message>
+    <message>
+        <source>Attribute</source>
+        <translation type="unfinished">Attributeway</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation type="unfinished">alueVay</translation>
+    </message>
+    <message>
+        <source>Simulation Status: </source>
+        <translation type="obsolete">imulationSay atusStay: </translation>
+    </message>
+    <message>
+        <source>VisIt Status</source>
+        <translation type="obsolete">VisIt atusStay</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation type="obsolete">artStay</translation>
+    </message>
+    <message>
+        <source>Step</source>
+        <translation type="obsolete">epStay</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation type="obsolete">opStay</translation>
+    </message>
+    <message>
         <source>Enable Time Ranging</source>
-        <translation type="unfinished">Enableway imeTay angingRay</translation>
+        <translation type="obsolete">Enableway imeTay angingRay</translation>
     </message>
     <message>
         <source>Interrupt</source>
@@ -18406,15 +22301,15 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Commands</source>
-        <translation type="unfinished">ommandsCay</translation>
+        <translation type="obsolete">ommandsCay</translation>
     </message>
     <message>
         <source>Message Viewer</source>
-        <translation type="unfinished">essageMay iewerVay</translation>
+        <translation type="obsolete">essageMay iewerVay</translation>
     </message>
     <message>
         <source>Unpost Strip Chart Window</source>
-        <translation type="unfinished">Unpostway ipStray artChay indowWay</translation>
+        <translation type="obsolete">Unpostway ipStray artChay indowWay</translation>
     </message>
     <message>
         <source>VisIt could not locate the simulation&apos;s user interface creation file at: %1. The custom user interface for this simulation will be unavailable.</source>
@@ -18422,7 +22317,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>on</source>
-        <translation type="unfinished">onway</translation>
+        <translation type="obsolete">onway</translation>
     </message>
     <message>
         <source>Host</source>
@@ -18442,11 +22337,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Simulation Status: Running</source>
-        <translation type="unfinished">imulationSay atusStay: unningRay</translation>
+        <translation type="obsolete">imulationSay atusStay: unningRay</translation>
     </message>
     <message>
         <source>Simulation Status: Stopped</source>
-        <translation type="unfinished">imulationSay atusStay: oppedStay</translation>
+        <translation type="obsolete">imulationSay atusStay: oppedStay</translation>
     </message>
     <message>
         <source>Really close the compute engine on host &quot;%1&quot;?
@@ -18462,11 +22357,59 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished">Okway</translation>
+        <translation type="obsolete">Okway</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">ancelCay</translation>
+        <translation type="obsolete">ancelCay</translation>
+    </message>
+    <message>
+        <source>Simulation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 on %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Running</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stopped</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18553,43 +22496,83 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The normal vector was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay ormalnay ectorvay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay ormalnay ectorvay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The upAxis vector was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay upAxisway ectorvay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay upAxisway ectorvay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The origin point vector was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay originway ointpay ectorvay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay originway ointpay ectorvay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The origin intercept was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay originway interceptway asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay originway interceptway asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The origin percent was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay originway ercentpay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay originway ercentpay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The origin zone was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay originway onezay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay originway onezay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The origin node was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay originway odenay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay originway odenay asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The origin domain was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay originway omainday asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay originway omainday asway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
     </message>
     <message>
         <source>The value of meshName was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway eshNamemay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway eshNamemay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The theta-phi angles were invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished">eThay etathay-iphay anglesway ereway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+        <translation type="obsolete">eThay etathay-iphay anglesway ereway invalidway. esettingRay otay ethay astlay oodgay aluevay %1.</translation>
+    </message>
+    <message>
+        <source>normal vector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>upAxis vector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin point vector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin intercept</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin percent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin zone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin node</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>origin domain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>mesh name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>theta-phi angles</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18624,23 +22607,54 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of numIterations was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway umIterationsnay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway umIterationsnay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of relaxationFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway elaxationFactorray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway elaxationFactorray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of convergence was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway onvergencecay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway onvergencecay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of featureAngle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway eatureAnglefay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway eatureAnglefay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of edgeAngle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway edgeAngleway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway edgeAngleway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisSourceManagerWidget</name>
+    <message>
+        <source>Sources</source>
+        <translation type="unfinished">ourcesSay</translation>
+    </message>
+    <message>
+        <source>Open</source>
+        <translation type="unfinished">Openway</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reopen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace</source>
+        <translation type="unfinished">eplaceRay</translation>
+    </message>
+    <message>
+        <source>Overlay</source>
+        <translation type="unfinished">Overlayway</translation>
+    </message>
+    <message>
+        <source>Active source</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18655,11 +22669,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of origin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway originway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway originway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of radius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway adiusray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway adiusray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
 </context>
 <context>
@@ -18725,11 +22739,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Maximum steps</source>
-        <translation type="unfinished">aximumMay epsstay</translation>
+        <translation type="obsolete">aximumMay epsstay</translation>
     </message>
     <message>
         <source>Streamline source</source>
-        <translation type="unfinished">eamlineStray ourcesay</translation>
+        <translation type="obsolete">eamlineStray ourcesay</translation>
     </message>
     <message>
         <source>Source type</source>
@@ -18737,7 +22751,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Point</source>
-        <translation type="unfinished">ointPay</translation>
+        <translation type="obsolete">ointPay</translation>
     </message>
     <message>
         <source>Line</source>
@@ -18821,7 +22835,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Show start</source>
-        <translation type="unfinished">owShay artstay</translation>
+        <translation type="obsolete">owShay artstay</translation>
     </message>
     <message>
         <source>Radius used for tubes and ribbons.</source>
@@ -18829,7 +22843,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Line width</source>
-        <translation type="unfinished">ineLay idthway</translation>
+        <translation type="obsolete">ineLay idthway</translation>
     </message>
     <message>
         <source>Solid</source>
@@ -18845,7 +22859,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Color by</source>
-        <translation type="unfinished">olorCay ybay</translation>
+        <translation type="obsolete">olorCay ybay</translation>
     </message>
     <message>
         <source>Color table</source>
@@ -18857,7 +22871,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Point density</source>
-        <translation type="unfinished">ointPay ensityday</translation>
+        <translation type="obsolete">ointPay ensityday</translation>
     </message>
     <message>
         <source>Streamline direction</source>
@@ -18885,47 +22899,47 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of stepLength was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway epLengthstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway epLengthstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of maxTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway axTimemay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway axTimemay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of pointSource was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ointSourcepay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ointSourcepay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of lineStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ineStartlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ineStartlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of lineEnd was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ineEndlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ineEndlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of planeOrigin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway aneOriginplay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway aneOriginplay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of planeNormal was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway aneNormalplay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway aneNormalplay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of planeUpAxis was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway aneUpAxisplay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway aneUpAxisplay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of planeRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway aneRadiusplay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway aneRadiusplay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of sphereOrigin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ereOriginsphay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ereOriginsphay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of sphereRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ereRadiussphay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ereRadiussphay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The box extents contained errors so the previous values will be used.</source>
@@ -18933,7 +22947,699 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of radius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway adiusray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway adiusray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Streamlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished">ourceSay</translation>
+    </message>
+    <message>
+        <source>Single Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read Text File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete All Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uniform</source>
+        <translation type="unfinished">Uniformway</translation>
+    </message>
+    <message>
+        <source>Random</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling along:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Boundary</source>
+        <translation type="unfinished">oundaryBay</translation>
+    </message>
+    <message>
+        <source>Interior</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of random samples</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Random number seed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished">efaultDay</translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NIMROD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished">onstantCay</translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward Euler (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leapfrog (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unused</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Force node centering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Termination</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum number of steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum distance traveled by particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum time elapsed for particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished">Advancedway</translation>
+    </message>
+    <message>
+        <source>Coordinate transform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">oneNay</translation>
+    </message>
+    <message>
+        <source>Cylindrical to Cartesian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cartesian to Cylindrical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phi scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(When displaying in cylindrical coordinates.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">ataDay</translation>
+    </message>
+    <message>
+        <source>Data Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arc length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">imeTay</translation>
+    </message>
+    <message>
+        <source>Seed point ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished">ariableVay</translation>
+    </message>
+    <message>
+        <source>Correlation Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Angular tolerance (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum measuring distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limits</source>
+        <translation type="unfinished">imitsLay</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">inimumMay</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">aximumMay</translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">olorCay</translation>
+    </message>
+    <message>
+        <source>Fully Opaque</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ramp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity</source>
+        <translation type="unfinished">Opacityway</translation>
+    </message>
+    <message>
+        <source>Opacity Min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished">isplayDay</translation>
+    </message>
+    <message>
+        <source>Draw as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>  </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation type="unfinished">idthWay</translation>
+    </message>
+    <message>
+        <source>Display density</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vary radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show seeds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Radius for seed point display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show heads</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cone</source>
+        <translation type="unfinished">oneCay</translation>
+    </message>
+    <message>
+        <source>Radius for head point display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Height:Radius Ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Height for head point display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low</source>
+        <translation type="unfinished">owLay</translation>
+    </message>
+    <message>
+        <source>Medium</source>
+        <translation type="unfinished">ediumMay</translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation type="unfinished">ighHay</translation>
+    </message>
+    <message>
+        <source>Super</source>
+        <translation type="unfinished">uperSay</translation>
+    </message>
+    <message>
+        <source>Display quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Crop away portion of streamlines (for animations)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Retain from</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Units are in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel streamline options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize Over Particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize Over Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize Over Particles and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain cache size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Work group size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines vs Streamlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamline
+    Compute particle trajectories in an (instantaneous) snapshot
+    of the vector field. Uses and loads only velocity field from current time slice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathline    
+    Compute trajectories in the time-varying vector field.
+    Uses and loads velocity data from all relevant time slices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>How to perform interpolation over time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh is static over time (fast, but special purpose)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh changes over time (slow, but robust)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when the maximum number of steps is reached</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when stiffness is detected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Stiffness refers to one vector component being so much </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>larger than another that tolerances can&apos;t be met.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warning when a particle doesn&apos;t terminate at a critical point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Meaning it circles round and round the critical point without stopping.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speed cutoff for critical points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples along line:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance in X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance in Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Theta:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in R:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Latitude:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Longitude:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Z:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>field constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxsteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxtime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxdistance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pathlines Override Starting Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>velocity source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>point source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>line start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>line end</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane up axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sphere origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>tube radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ribbon width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>phi scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend Min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display Begin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seed radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Head radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Head height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tube vary radius factor must be &gt;= 1.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tube vary radius factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance angular tolerance must be &gt;= 0.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance angular tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance minimum distance must be &gt;= 0.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Correlation distance minimum distnace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open text file</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18980,11 +23686,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Zoom In</source>
-        <translation type="unfinished">oomZay Inway</translation>
+        <translation type="obsolete">oomZay Inway</translation>
     </message>
     <message>
         <source>Zoom Out</source>
-        <translation type="unfinished">oomZay Outway</translation>
+        <translation type="obsolete">oomZay Outway</translation>
     </message>
     <message>
         <source>Focus</source>
@@ -19002,12 +23708,24 @@ plot&apos;s color.</source>
         <source>Invalid index encountered for Sim engine access</source>
         <translation type="unfinished">Invalidway indexway encounteredway orfay imSay engineway accessway</translation>
     </message>
+    <message>
+        <source>Strip charts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zoom in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zoom out</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisStripChartTabWidget</name>
     <message>
         <source>VisIt Strip Chart</source>
-        <translation type="unfinished">VisIt ipStray artChay</translation>
+        <translation type="obsolete">VisIt ipStray artChay</translation>
     </message>
 </context>
 <context>
@@ -19034,15 +23752,38 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of threshold was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway esholdthray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway esholdthray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of maxSubdivs was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway axSubdivsmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway axSubdivsmay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of variable was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway ariablevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway ariablevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisSubsetPanelWidget</name>
+    <message>
+        <source>All Sets:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reverse</source>
+        <translation type="unfinished">everseRay</translation>
+    </message>
+    <message>
+        <source>Turn On</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Turn Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selected Sets:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -19093,7 +23834,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Geometry smoothing</source>
-        <translation type="unfinished">eometryGay oothingsmay</translation>
+        <translation type="obsolete">eometryGay oothingsmay</translation>
     </message>
     <message>
         <source>None</source>
@@ -19107,6 +23848,26 @@ plot&apos;s color.</source>
         <source>High</source>
         <translation type="unfinished">ighHay</translation>
     </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisSubsetWindow</name>
@@ -19116,23 +23877,31 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Reverse</source>
-        <translation type="unfinished">everseRay</translation>
+        <translation type="obsolete">everseRay</translation>
     </message>
     <message>
         <source>Turn on</source>
-        <translation type="unfinished">urnTay onway</translation>
+        <translation type="obsolete">urnTay onway</translation>
     </message>
     <message>
         <source>Turn off</source>
-        <translation type="unfinished">urnTay offway</translation>
+        <translation type="obsolete">urnTay offway</translation>
     </message>
     <message>
         <source>All sets</source>
-        <translation type="unfinished">Allway etssay</translation>
+        <translation type="obsolete">Allway etssay</translation>
     </message>
     <message>
         <source>Selected sets</source>
-        <translation type="unfinished">electedSay etssay</translation>
+        <translation type="obsolete">electedSay etssay</translation>
+    </message>
+    <message>
+        <source>Applied selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">oneNay</translation>
     </message>
 </context>
 <context>
@@ -19243,75 +24012,90 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of thetaStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway etaStartthay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway etaStartthay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of thetaStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway etaStopthay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway etaStopthay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of thetaSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway etaStepsthay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway etaStepsthay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of phiStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway iStartphay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway iStartphay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of phiStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway iStopphay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway iStopphay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of phiSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway iStepsphay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway iStepsphay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of startRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway artRadiusstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway artRadiusstay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of endRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway endRadiusway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway endRadiusway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of radiusSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway adiusStepsray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway adiusStepsray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of xStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway artxStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway artxStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of xStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway opxStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway opxStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of xSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway epsxStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway epsxStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of yStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway yStartay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway yStartay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of yStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway yStopay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway yStopay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of ySteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway yStepsay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway yStepsay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of zStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway artzStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway artzStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of zStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway opzStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway opzStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of zSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway epszStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway epszStay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+</context>
+<context>
+    <name>QvisSurfaceNormalWindow</name>
+    <message>
+        <source>Centering</source>
+        <translation type="unfinished">enteringCay</translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished">ointPay</translation>
+    </message>
+    <message>
+        <source>Cell</source>
+        <translation type="unfinished">ellCay</translation>
     </message>
 </context>
 <context>
@@ -19326,19 +24110,19 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Surface color</source>
-        <translation type="unfinished">urfaceSay olorcay</translation>
+        <translation type="obsolete">urfaceSay olorcay</translation>
     </message>
     <message>
         <source>Z Value</source>
-        <translation type="unfinished">Zay alueVay</translation>
+        <translation type="obsolete">Zay alueVay</translation>
     </message>
     <message>
         <source>Constant</source>
-        <translation type="unfinished">onstantCay</translation>
+        <translation type="obsolete">onstantCay</translation>
     </message>
     <message>
         <source>Wire Color</source>
-        <translation type="unfinished">ireWay olorCay</translation>
+        <translation type="obsolete">ireWay olorCay</translation>
     </message>
     <message>
         <source>Line width</source>
@@ -19350,7 +24134,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Scale  </source>
-        <translation type="unfinished">aleScay  </translation>
+        <translation type="obsolete">aleScay  </translation>
     </message>
     <message>
         <source>Linear</source>
@@ -19362,7 +24146,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Skew</source>
-        <translation type="unfinished">ewSkay</translation>
+        <translation type="obsolete">ewSkay</translation>
     </message>
     <message>
         <source>Skew factor</source>
@@ -19378,11 +24162,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">inMay</translation>
+        <translation type="obsolete">inMay</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">axMay</translation>
+        <translation type="obsolete">axMay</translation>
     </message>
     <message>
         <source>Legend</source>
@@ -19394,22 +24178,58 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The skew factor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay ewskay actorfay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay ewskay actorfay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay inimummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay inimummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aximummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aximummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">ataDay</translation>
+    </message>
+    <message>
+        <source>Scale</source>
+        <translation type="unfinished">aleScay</translation>
+    </message>
+    <message>
+        <source>Limits</source>
+        <translation type="unfinished">imitsLay</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">inimumMay</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">aximumMay</translation>
+    </message>
+    <message>
+        <source>Color by Z value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wire color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisTensorPlotWindow</name>
     <message>
         <source>Tensor color</source>
-        <translation type="unfinished">ensorTay olorcay</translation>
+        <translation type="obsolete">ensorTay olorcay</translation>
     </message>
     <message>
         <source>Eigenvalues</source>
@@ -19421,7 +24241,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Tensor scale</source>
-        <translation type="unfinished">ensorTay alescay</translation>
+        <translation type="obsolete">ensorTay alescay</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -19453,15 +24273,31 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The scale value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay alescay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay alescay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The head size was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay eadhay izesay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay eadhay izesay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The stride was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay idestray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay idestray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">ataDay</translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished">isplayDay</translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">olorCay</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -19509,6 +24345,18 @@ plot&apos;s color.</source>
     <message>
         <source>Visible</source>
         <translation type="unfinished">isibleVay</translation>
+    </message>
+    <message>
+        <source>Arial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Courier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Times</source>
+        <translation type="unfinished">imesTay</translation>
     </message>
 </context>
 <context>
@@ -19590,15 +24438,27 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of x was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway xay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway xay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of y was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway yay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway yay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of z was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway zay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway zay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>z</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -19666,6 +24526,61 @@ plot&apos;s color.</source>
     <message>
         <source>Part in range</source>
         <translation type="unfinished">artPay inway angeray</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>max</source>
+        <translation type="unfinished">axmay</translation>
+    </message>
+</context>
+<context>
+    <name>QvisTimeQueryOptionsWidget</name>
+    <message>
+        <source>Do Time Curve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start and End are Time steps,
+not cycles or times.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Starting timestep</source>
+        <translation type="unfinished">artingStay imesteptay</translation>
+    </message>
+    <message>
+        <source>Ending timestep</source>
+        <translation type="unfinished">Endingway imesteptay</translation>
+    </message>
+    <message>
+        <source>Stride</source>
+        <translation type="unfinished">ideStray</translation>
+    </message>
+    <message>
+        <source>Do Time Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Query Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisTimeSliderControlWidget</name>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished">imeTay</translation>
+    </message>
+    <message>
+        <source>Active time slider</source>
+        <translation type="unfinished">Activeway imetay iderslay</translation>
+    </message>
+    <message>
+        <source>The active time slider is already at state</source>
+        <translation type="unfinished">eThay activeway imetay iderslay isway alreadyway atway atestay</translation>
     </message>
 </context>
 <context>
@@ -19747,7 +24662,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Min Color</source>
-        <translation type="unfinished">inMay olorCay</translation>
+        <translation type="obsolete">inMay olorCay</translation>
     </message>
     <message>
         <source>Opacity</source>
@@ -19755,15 +24670,15 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Min Plateau Color</source>
-        <translation type="unfinished">inMay ateauPlay olorCay</translation>
+        <translation type="obsolete">inMay ateauPlay olorCay</translation>
     </message>
     <message>
         <source>Max Plateau Color</source>
-        <translation type="unfinished">axMay ateauPlay olorCay</translation>
+        <translation type="obsolete">axMay ateauPlay olorCay</translation>
     </message>
     <message>
         <source>Max Color</source>
-        <translation type="unfinished">axMay olorCay</translation>
+        <translation type="obsolete">axMay olorCay</translation>
     </message>
     <message>
         <source>tolerance</source>
@@ -19775,11 +24690,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of tolerance was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway olerancetay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway olerancetay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of hitpercent was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway itpercenthay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway itpercenthay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
 </context>
 <context>
@@ -19802,11 +24717,19 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of numiter was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway umiternay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway umiternay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of output was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway outputway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway outputway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>number of iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>output</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -19873,7 +24796,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Spherical (r,phi,theta)</source>
-        <translation type="unfinished">ericalSphay (ray,iphay,etathay)</translation>
+        <translation type="obsolete">ericalSphay (ray,iphay,etathay)</translation>
     </message>
     <message>
         <source>Output coordinates</source>
@@ -19889,39 +24812,39 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>m00</source>
-        <translation type="unfinished">may00</translation>
+        <translation type="obsolete">may00</translation>
     </message>
     <message>
         <source>m01</source>
-        <translation type="unfinished">may01</translation>
+        <translation type="obsolete">may01</translation>
     </message>
     <message>
         <source>m02</source>
-        <translation type="unfinished">may02</translation>
+        <translation type="obsolete">may02</translation>
     </message>
     <message>
         <source>m10</source>
-        <translation type="unfinished">may10</translation>
+        <translation type="obsolete">may10</translation>
     </message>
     <message>
         <source>m11</source>
-        <translation type="unfinished">may11</translation>
+        <translation type="obsolete">may11</translation>
     </message>
     <message>
         <source>m12</source>
-        <translation type="unfinished">may12</translation>
+        <translation type="obsolete">may12</translation>
     </message>
     <message>
         <source>m20</source>
-        <translation type="unfinished">may20</translation>
+        <translation type="obsolete">may20</translation>
     </message>
     <message>
         <source>m21</source>
-        <translation type="unfinished">may21</translation>
+        <translation type="obsolete">may21</translation>
     </message>
     <message>
         <source>m22</source>
-        <translation type="unfinished">may22</translation>
+        <translation type="obsolete">may22</translation>
     </message>
     <message>
         <source>Invert linear transform</source>
@@ -19929,43 +24852,130 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The value of rotateOrigin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway otateOriginray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway otateOriginray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of rotateAxis was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway otateAxisray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway otateAxisray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of rotateAmount was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway otateAmountray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway otateAmountray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of scaleOrigin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway aleOriginscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway aleOriginscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of scaleX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway aleXscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway aleXscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of scaleY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway aleYscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway aleYscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of scaleZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway aleZscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway aleZscay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of translateX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway anslateXtray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway anslateXtray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of translateY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway anslateYtray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway anslateYtray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of translateZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway anslateZtray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway anslateZtray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Transform vectors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spherical (r,theta,phi)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector transform method:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No transformation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as point coordinates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as coordinate displacements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as instantaneous directions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rotate origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rotate axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rotate amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>scale origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>translation in X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>translation in Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>translation in Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisTriangulateRegularPointsWindow</name>
+    <message>
+        <source>Use X grid spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X grid spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Y grid spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y grid spacing</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -19978,12 +24988,20 @@ plot&apos;s color.</source>
         <source>Lighting</source>
         <translation type="unfinished">ightingLay</translation>
     </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">olorCay</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisTubeWindow</name>
     <message>
         <source>width</source>
-        <translation type="unfinished">idthway</translation>
+        <translation type="obsolete">idthway</translation>
     </message>
     <message>
         <source>Fineness of tube</source>
@@ -19991,84 +25009,108 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Cap Tubes?</source>
-        <translation type="unfinished">apCay ubesTay?</translation>
+        <translation type="obsolete">apCay ubesTay?</translation>
     </message>
     <message>
         <source>The value of width was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway idthway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway idthway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The fineness of the tube is limited from 3 (coarsest) to 12 (finest)</source>
-        <translation type="unfinished">eThay inenessfay ofway ethay ubetay isway imitedlay omfray 3 (oarsestcay) otay 12 (inestfay)</translation>
+        <translation type="obsolete">eThay inenessfay ofway ethay ubetay isway imitedlay omfray 3 (oarsestcay) otay 12 (inestfay)</translation>
     </message>
     <message>
         <source>The value of fineness was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway inenessfay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway inenessfay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Tube radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scale width by variable?  (Nodal variables work best)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished">ariableVay</translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation type="unfinished">adiusRay</translation>
+    </message>
+    <message>
+        <source>Tube form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cap ends of the tubes</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisVariableButton</name>
     <message>
         <source>Create new expression ...</source>
-        <translation type="unfinished">eateCray ewnay expressionway ...</translation>
+        <translation type="obsolete">eateCray ewnay expressionway ...</translation>
     </message>
 </context>
 <context>
     <name>QvisVariableButton::VariablePopupInfo</name>
     <message>
         <source>Scalars</source>
-        <translation type="unfinished">alarsScay</translation>
+        <translation type="obsolete">alarsScay</translation>
     </message>
     <message>
         <source>Vectors</source>
-        <translation type="unfinished">ectorsVay</translation>
+        <translation type="obsolete">ectorsVay</translation>
     </message>
     <message>
         <source>Meshes</source>
-        <translation type="unfinished">eshesMay</translation>
+        <translation type="obsolete">eshesMay</translation>
     </message>
     <message>
         <source>Materials</source>
-        <translation type="unfinished">aterialsMay</translation>
+        <translation type="obsolete">aterialsMay</translation>
     </message>
     <message>
         <source>Subsets</source>
-        <translation type="unfinished">ubsetsSay</translation>
+        <translation type="obsolete">ubsetsSay</translation>
     </message>
     <message>
         <source>Species</source>
-        <translation type="unfinished">eciesSpay</translation>
+        <translation type="obsolete">eciesSpay</translation>
     </message>
     <message>
         <source>Curves</source>
-        <translation type="unfinished">urvesCay</translation>
+        <translation type="obsolete">urvesCay</translation>
     </message>
     <message>
         <source>Tensors</source>
-        <translation type="unfinished">ensorsTay</translation>
+        <translation type="obsolete">ensorsTay</translation>
     </message>
     <message>
         <source>Symmetric Tensors</source>
-        <translation type="unfinished">ymmetricSay ensorsTay</translation>
+        <translation type="obsolete">ymmetricSay ensorsTay</translation>
     </message>
     <message>
         <source>Labels</source>
-        <translation type="unfinished">abelsLay</translation>
+        <translation type="obsolete">abelsLay</translation>
     </message>
     <message>
         <source>Arrays</source>
-        <translation type="unfinished">Arraysway</translation>
+        <translation type="obsolete">Arraysway</translation>
     </message>
 </context>
 <context>
     <name>QvisVectorPlotWindow</name>
     <message>
         <source>Reduce by</source>
-        <translation type="unfinished">educeRay ybay</translation>
+        <translation type="obsolete">educeRay ybay</translation>
     </message>
     <message>
         <source>N vectors</source>
-        <translation type="unfinished">Nay ectorsvay</translation>
+        <translation type="obsolete">Nay ectorsvay</translation>
     </message>
     <message>
         <source>Stride</source>
@@ -20080,15 +25122,15 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Vector style</source>
-        <translation type="unfinished">ectorVay ylestay</translation>
+        <translation type="obsolete">ectorVay ylestay</translation>
     </message>
     <message>
         <source>Line:</source>
-        <translation type="unfinished">ineLay:</translation>
+        <translation type="obsolete">ineLay:</translation>
     </message>
     <message>
         <source>Cylinder:</source>
-        <translation type="unfinished">ylinderCay:</translation>
+        <translation type="obsolete">ylinderCay:</translation>
     </message>
     <message>
         <source>Width</source>
@@ -20096,7 +25138,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Draw head:</source>
-        <translation type="unfinished">awDray eadhay:</translation>
+        <translation type="obsolete">awDray eadhay:</translation>
     </message>
     <message>
         <source>Size</source>
@@ -20104,7 +25146,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>High quality geometry</source>
-        <translation type="unfinished">ighHay alityquay eometrygay</translation>
+        <translation type="obsolete">ighHay alityquay eometrygay</translation>
     </message>
     <message>
         <source>Vector origin</source>
@@ -20128,7 +25170,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Vector color</source>
-        <translation type="unfinished">ectorVay olorcay</translation>
+        <translation type="obsolete">ectorVay olorcay</translation>
     </message>
     <message>
         <source>Magnitude</source>
@@ -20152,11 +25194,11 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">inMay</translation>
+        <translation type="obsolete">inMay</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">axMay</translation>
+        <translation type="obsolete">axMay</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -20164,7 +25206,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Vector scale</source>
-        <translation type="unfinished">ectorVay alescay</translation>
+        <translation type="obsolete">ectorVay alescay</translation>
     </message>
     <message>
         <source>Scale by magnitude</source>
@@ -20180,27 +25222,147 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The scale value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay alescay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay alescay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The head size was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay eadhay izesay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay eadhay izesay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The stride was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay idestray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay idestray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay inimummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay inimummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aximummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aximummay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The stem width was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay emstay idthway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay emstay idthway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation type="unfinished">ocationLay</translation>
+    </message>
+    <message>
+        <source>Where to place the vectors and how many of them</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector placement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adapted to resolution of mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uniformly located throughout mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fixed number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only show vectors on original nodes/cells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Glyph type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ellipsoid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished">ineLay</translation>
+    </message>
+    <message>
+        <source>Cylinder</source>
+        <translation type="unfinished">ylinderCay</translation>
+    </message>
+    <message>
+        <source>Draw head</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quality</source>
+        <translation type="unfinished">alityQuay</translation>
+    </message>
+    <message>
+        <source>Fast</source>
+        <translation type="unfinished">astFay</translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation type="unfinished">ighHay</translation>
+    </message>
+    <message>
+        <source>Rendering</source>
+        <translation type="unfinished">enderingRay</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">inimumMay</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">aximumMay</translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>scale value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>head size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>number of vectors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>stride</source>
+        <translation type="unfinished">idestray</translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>stem width</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -20379,63 +25541,143 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>The viewport values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">eThay iewportvay aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
+        <translation type="obsolete">eThay iewportvay aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
     </message>
     <message>
         <source>The domain values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">eThay omainday aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
+        <translation type="obsolete">eThay omainday aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
     </message>
     <message>
         <source>The range values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">eThay angeray aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
+        <translation type="obsolete">eThay angeray aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
     </message>
     <message>
         <source>The window values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">eThay indowway aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
+        <translation type="obsolete">eThay indowway aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
     </message>
     <message>
         <source>The normal location values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">eThay ormalnay ocationlay aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
+        <translation type="obsolete">eThay ormalnay ocationlay aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
     </message>
     <message>
         <source>The focus location values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">eThay ocusfay ocationlay aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
+        <translation type="obsolete">eThay ocusfay ocationlay aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
     </message>
     <message>
         <source>The up vector values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">eThay upway ectorvay aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
+        <translation type="obsolete">eThay upway ectorvay aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
     </message>
     <message>
         <source>The viewangle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay iewanglevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay iewanglevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The parallel scale was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay arallelpay alescay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay arallelpay alescay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The near clipping value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay earnay ippingclay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay earnay ippingclay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The far clipping value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay arfay ippingclay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay arfay ippingclay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The image pan values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">eThay imageway anpay aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
+        <translation type="obsolete">eThay imageway anpay aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
     </message>
     <message>
         <source>The image zoom value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay imageway oomzay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay imageway oomzay aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The eye angle value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay eyeway angleway aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay eyeway angleway aluevay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The center of rotation values were invalid. Resetting to the last good values of %1.</source>
-        <translation type="unfinished">eThay entercay ofway otationray aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
+        <translation type="obsolete">eThay entercay ofway otationray aluesvay ereway invalidway. esettingRay otay ethay astlay oodgay aluesvay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Shear</source>
+        <translation type="unfinished">earShay</translation>
+    </message>
+    <message>
+        <source>Scale 3D axes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maintain view limits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>viewport</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>domain</source>
+        <translation type="unfinished">omainday</translation>
+    </message>
+    <message>
+        <source>range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>focus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>up vector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>viewangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>parallel scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>near clipping</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>far clipping</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>image pan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>image zoom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>eye angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>center of rotation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>axis3DScales</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>shear</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -20453,7 +25695,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>VisIt could not determine the platform that you are running on so VisIt cannot automatically update. You should browse to ftp://ftp.llnl.gov/pub/visit and download the latest binary distribution for your platform.</source>
-        <translation type="unfinished">VisIt ouldcay otnay etermineday ethay atformplay atthay youay areway unningray onway osay VisIt annotcay automaticallyway updateway. Youay ouldshay owsebray otay ftpay://ftpay.llnlay.ovgay/ubpay/isitvay andway ownloadday ethay atestlay inarybay istributionday orfay youray atformplay.</translation>
+        <translation type="obsolete">VisIt ouldcay otnay etermineday ethay atformplay atthay youay areway unningray onway osay VisIt annotcay automaticallyway updateway. Youay ouldshay owsebray otay ftpay://ftpay.llnlay.ovgay/ubpay/isitvay andway ownloadday ethay atestlay inarybay istributionday orfay youray atformplay.</translation>
     </message>
     <message>
         <source>VisIt determined that you do not have write permission to the %1 directory where VisIt is installed. You must have group %2 write access to update VisIt.</source>
@@ -20461,7 +25703,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Could not download %1! Can&apos;t finish updating VisIt.</source>
-        <translation type="unfinished">ouldCay otnay ownloadday %1! anCaytay inishfay updatingway VisIt.</translation>
+        <translation type="obsolete">ouldCay otnay ownloadday %1! anCaytay inishfay updatingway VisIt.</translation>
     </message>
     <message>
         <source>Installation complete.</source>
@@ -20473,7 +25715,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Downloaded %1 bytes.</source>
-        <translation type="unfinished">ownloadedDay %1 ytesbay.</translation>
+        <translation type="obsolete">ownloadedDay %1 ytesbay.</translation>
     </message>
     <message>
         <source>Your version of VisIt is up to date.</source>
@@ -20484,8 +25726,27 @@ plot&apos;s color.</source>
         <translation type="unfinished">VisIt %1 isway availableway orfay ownloadday. ouldWay youay ikelay otay installway itway?</translation>
     </message>
     <message>
-        <source>VisIt could not complete the update.
-FTP Error: </source>
+        <source>VisIt could not determine the platform that you are running on so VisIt cannot automatically update. You should browse to %1 and download the latest binary distribution for your platform.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt</source>
+        <translation type="unfinished">VisIt</translation>
+    </message>
+    <message>
+        <source>There is a newer version of VisIt available (version %1) but your distribution type: %2 was not found in the new version. There is likely another distribution type that will work for you but you will need to determine that and install VisIt yourself. Alternatively, you can build VisIt for your platform using the build_visit script.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt was not able to check for updates.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt was not able to download %1 so the update will not proceed. Try again later.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Downloaded %1 / %2 bytes.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -20517,11 +25778,11 @@ FTP Error: </source>
     </message>
     <message>
         <source>Min</source>
-        <translation type="unfinished">inMay</translation>
+        <translation type="obsolete">inMay</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation type="unfinished">axMay</translation>
+        <translation type="obsolete">axMay</translation>
     </message>
     <message>
         <source>Scale</source>
@@ -20533,7 +25794,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>Log10</source>
-        <translation type="unfinished">ogLay10</translation>
+        <translation type="obsolete">ogLay10</translation>
     </message>
     <message>
         <source>Skew</source>
@@ -20541,7 +25802,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>Skew factor </source>
-        <translation type="unfinished">ewSkay actorfay </translation>
+        <translation type="obsolete">ewSkay actorfay </translation>
     </message>
     <message>
         <source>Opacity</source>
@@ -20549,7 +25810,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>Show Colors</source>
-        <translation type="unfinished">owShay olorsCay</translation>
+        <translation type="obsolete">owShay olorsCay</translation>
     </message>
     <message>
         <source>Interaction mode</source>
@@ -20589,11 +25850,11 @@ FTP Error: </source>
     </message>
     <message>
         <source>SCI, University of Utah (SLIVR)</source>
-        <translation type="unfinished">ISCay, Universityway ofway Utahway (IVRSLay)</translation>
+        <translation type="obsolete">ISCay, Universityway ofway Utahway (IVRSLay)</translation>
     </message>
     <message>
         <source>Rendering method</source>
-        <translation type="unfinished">enderingRay ethodmay</translation>
+        <translation type="obsolete">enderingRay ethodmay</translation>
     </message>
     <message>
         <source>Number of samples</source>
@@ -20617,7 +25878,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>Centered diff</source>
-        <translation type="unfinished">enteredCay iffday</translation>
+        <translation type="obsolete">enteredCay iffday</translation>
     </message>
     <message>
         <source>Sobel</source>
@@ -20649,7 +25910,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>The value of resampleTarget was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway esampleTargetray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway esampleTargetray asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The minimum value for the color variable was invalid.Resetting to the last good value of %1.</source>
@@ -20661,7 +25922,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>The minimum value for the opacity var was invalid.Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay inimummay aluevay orfay ethay opacityway arvay asway invalidway.esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay inimummay aluevay orfay ethay opacityway arvay asway invalidway.esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The maximum value for the opacity var was invalid.Resetting to the last good value of %1.</source>
@@ -20669,11 +25930,11 @@ FTP Error: </source>
     </message>
     <message>
         <source>The number of samples per ray was invalid.Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay umbernay ofway amplessay erpay ayray asway invalidway.esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay umbernay ofway amplessay erpay ayray asway invalidway.esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The number of 3d slices was invalid.Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay umbernay ofway 3day icesslay asway invalidway.esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay umbernay ofway 3day icesslay asway invalidway.esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The skew factor was invalid. Resetting to the last good value of %1.</source>
@@ -20681,11 +25942,317 @@ FTP Error: </source>
     </message>
     <message>
         <source>The value of renderer samples was invalid. Valid values are in the range [1.,%1]. Resetting to the last good value of %2.</source>
-        <translation type="unfinished">eThay aluevay ofway endererray amplessay asway invalidway. alidVay aluesvay areway inway ethay angeray [1.,%1]. esettingRay otay ethay astlay oodgay aluevay ofway %2.</translation>
+        <translation type="obsolete">eThay aluevay ofway endererray amplessay asway invalidway. alidVay aluesvay areway inway ethay angeray [1.,%1]. esettingRay otay ethay astlay oodgay aluevay ofway %2.</translation>
     </message>
     <message>
         <source>The range set for indexing colors will also be used when indexing opacities</source>
         <translation type="unfinished">eThay angeray etsay orfay indexingway olorscay illway alsoway ebay usedway enwhay indexingway opacitiesway</translation>
+    </message>
+    <message>
+        <source>Renderer Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D transfer function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2D transfer function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color table</source>
+        <translation type="unfinished">olorCay abletay</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished">ataDay</translation>
+    </message>
+    <message>
+        <source>Log</source>
+        <translation type="unfinished">ogLay</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">inimumMay</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">aximumMay</translation>
+    </message>
+    <message>
+        <source>From Color Table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished">ariableVay</translation>
+    </message>
+    <message>
+        <source>Rendering Method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tuvok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SLIVR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transfer function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D</source>
+        <translation type="unfinished">1Day</translation>
+    </message>
+    <message>
+        <source>2D</source>
+        <translation type="unfinished">2Day</translation>
+    </message>
+    <message>
+        <source>Sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Methods</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Centered differences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low gradient lighting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The minimum value for the opacity variable was invalid.Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value for the low gradient lighting max clamp was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisWellBorePlotWindow</name>
+    <message>
+        <source>Read well bores...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Write well bores...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">ewNay</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">eleteDay</translation>
+    </message>
+    <message>
+        <source>Definition</source>
+        <translation type="unfinished">efinitionDay</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">ameNay</translation>
+    </message>
+    <message>
+        <source>Well colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color table</source>
+        <translation type="unfinished">olorCay abletay</translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished">ingleSay</translation>
+    </message>
+    <message>
+        <source>Multiple</source>
+        <translation type="unfinished">ultipleMay</translation>
+    </message>
+    <message>
+        <source>Well</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw wells as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lines</source>
+        <translation type="unfinished">inesLay</translation>
+    </message>
+    <message>
+        <source>Cylinders</source>
+        <translation type="unfinished">ylindersCay</translation>
+    </message>
+    <message>
+        <source>Well cylinder quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low</source>
+        <translation type="unfinished">owLay</translation>
+    </message>
+    <message>
+        <source>Medium</source>
+        <translation type="unfinished">ediumMay</translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation type="unfinished">ighHay</translation>
+    </message>
+    <message>
+        <source>Super</source>
+        <translation type="unfinished">uperSay</translation>
+    </message>
+    <message>
+        <source>Well radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well line width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well line style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well annotation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">oneNay</translation>
+    </message>
+    <message>
+        <source>Stem only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stem and name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well stem height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well name scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend</source>
+        <translation type="unfinished">egendLay</translation>
+    </message>
+    <message>
+        <source>The value of wellRadius was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of wellStemHeight was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of wellNameScale was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt</source>
+        <translation type="unfinished">VisIt</translation>
+    </message>
+</context>
+<context>
+    <name>QvisXRayImageQueryWidget</name>
+    <message>
+        <source>Output Image Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>bmp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>jpeg</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>png</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>tiff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rawfloats</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divide Emis by Absorb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Origin</source>
+        <translation type="unfinished">Originway</translation>
+    </message>
+    <message>
+        <source>Theta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Phi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Pixel Size</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -20716,15 +26283,19 @@ FTP Error: </source>
     </message>
     <message>
         <source>The value of lowerBound was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway owerBoundlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway owerBoundlay asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of upperBound was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway upperBoundway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway upperBoundway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
     </message>
     <message>
         <source>The value of outputFile was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished">eThay aluevay ofway outputFileway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+        <translation type="obsolete">eThay aluevay ofway outputFileway asway invalidway. esettingRay otay ethay astlay oodgay aluevay ofway %1.</translation>
+    </message>
+    <message>
+        <source>Output File </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -20828,14 +26399,45 @@ FTP Error: </source>
     </message>
     <message>
         <source>Make window active</source>
-        <translation type="unfinished">akeMay indowway activeway</translation>
+        <translation type="obsolete">akeMay indowway activeway</translation>
+    </message>
+    <message>
+        <source>Make this window active</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SetPlotFollowsTimeAction</name>
     <message>
         <source>Disconnect from time slider</source>
-        <translation type="unfinished">isconnectDay omfray imetay iderslay</translation>
+        <translation type="obsolete">isconnectDay omfray imetay iderslay</translation>
+    </message>
+    <message>
+        <source>Plot follows time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SetToolUpdateModeAction</name>
+    <message>
+        <source>Tool Updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set tool update frequency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Continuously</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On Mouse Release</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On Tool Close</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -21016,7 +26618,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>July 2008</source>
-        <translation type="unfinished">ulyJay 2008</translation>
+        <translation type="obsolete">ulyJay 2008</translation>
     </message>
     <message>
         <source>Starting VisIt...</source>
@@ -21033,6 +26635,54 @@ FTP Error: </source>
     <message>
         <source>Dismiss</source>
         <translation type="unfinished">ismissDay</translation>
+    </message>
+    <message>
+        <source>January</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>February</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>March</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>April</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>May</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>June</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>July</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>August</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>September</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>October</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>November</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>December</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -21075,7 +26725,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>Show in visualizaion window</source>
-        <translation type="unfinished">owShay inway isualizaionvay indowway</translation>
+        <translation type="obsolete">owShay inway isualizaionvay indowway</translation>
     </message>
     <message>
         <source>Tracer plane</source>
@@ -21169,6 +26819,35 @@ FTP Error: </source>
         <source>The average value of the selected cells is: %1.</source>
         <translation type="unfinished">eThay averageway aluevay ofway ethay electedsay ellscay isway: %1.</translation>
     </message>
+    <message>
+        <source>Show in visualization window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: row vs. coordinate 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: row vs. coordinate 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: column vs. coordinate 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: column vs. coordinate 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>* Note that the vertical ordering of this file&apos;s contents is opposite from what you would see in the Spreadsheet window.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TimeSliderForwardStepAction</name>
@@ -21196,11 +26875,11 @@ FTP Error: </source>
     <name>ToggleBoundingBoxModeAction</name>
     <message>
         <source>Navigate bbox</source>
-        <translation type="unfinished">avigateNay oxbbay</translation>
+        <translation type="obsolete">avigateNay oxbbay</translation>
     </message>
     <message>
         <source>Toggle bounding box navigation</source>
-        <translation type="unfinished">oggleTay oundingbay oxbay avigationnay</translation>
+        <translation type="obsolete">oggleTay oundingbay oxbay avigationnay</translation>
     </message>
 </context>
 <context>
@@ -21349,6 +27028,103 @@ FTP Error: </source>
     </message>
 </context>
 <context>
+    <name>ViewerEngineManager</name>
+    <message>
+        <source>Launching engine on %1</source>
+        <translation type="unfinished">aunchingLay engineway onway %1</translation>
+    </message>
+    <message>
+        <source>VisIt could not launch a compute engine on host &quot;%1&quot; because that host does not exist.</source>
+        <translation type="unfinished">VisIt ouldcay otnay aunchlay away omputecay engineway onway osthay %1 ecausebay atthay osthay oesday otnay existway.</translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the compute engine on host &quot;%1&quot; because the engine has an incompatible  version number.</source>
+        <translation type="unfinished">VisIt annotcay useway ethay omputecay engineway onway osthay %1 ecausebay ethay engineway ashay anway incompatibleway  ersionvay umbernay.</translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the compute engine on host &quot;%1&quot;because the compute engine did not provide the proper credentials.</source>
+        <translation type="unfinished">VisIt annotcay useway ethay omputecay engineway onway osthay %1ecausebay ethay omputecay engineway idday otnay ovidepray ethay operpray edentialscray.</translation>
+    </message>
+    <message>
+        <source>VisIt could not launch the compute engine on host &quot;%1&quot;.</source>
+        <translation type="unfinished">VisIt ouldcay otnay aunchlay ethay omputecay engineway onway osthay %1.</translation>
+    </message>
+    <message>
+        <source>The launch of the compute engine on host &quot;%1&quot; has been cancelled.
+
+You might want to check the job control system on &quot;%2&quot; to be sure the job is no longer present</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication with the compute engine on host &quot;%1&quot; has been lost.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connecting to simulation at %1:%2</source>
+        <translation type="unfinished">onnectingCay otay imulationsay atway %1:%2</translation>
+    </message>
+    <message>
+        <source>VisIt could not connect to the simulation on host &quot;%1&quot; because that host does not exist.</source>
+        <translation type="unfinished">VisIt ouldcay otnay onnectcay otay ethay imulationsay onway osthay %1 ecausebay atthay osthay oesday otnay existway.</translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the simulation on host &quot;%1&quot; because the simulation has an incompatible  version number.</source>
+        <translation type="unfinished">VisIt annotcay useway ethay imulationsay onway osthay %1 ecausebay ethay imulationsay ashay anway incompatibleway  ersionvay umbernay.</translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the simulation on host &quot;%1&quot;because the simulation did not provide the proper credentials.</source>
+        <translation type="unfinished">VisIt annotcay useway ethay imulationsay onway osthay %1ecausebay ethay imulationsay idday otnay ovidepray ethay operpray edentialscray.</translation>
+    </message>
+    <message>
+        <source>VisIt could not connect to the simulation on host &quot;%1&quot;.</source>
+        <translation type="unfinished">VisIt ouldcay otnay onnectcay otay ethay imulationsay onway osthay %1.</translation>
+    </message>
+    <message>
+        <source>The connection to the simulation on host &quot;%1&quot; has been cancelled.</source>
+        <translation type="unfinished">eThay onnectioncay otay ethay imulationsay onway osthay %1 ashay eenbay ancelledcay.</translation>
+    </message>
+    <message>
+        <source>Closed the compute engine on host %1.</source>
+        <translation type="unfinished">osedClay ethay omputecay engineway onway osthay %1.</translation>
+    </message>
+    <message>
+        <source>Cannot close the compute engine on host %1 because there is no compute engine running on that host.</source>
+        <translation type="unfinished">annotCay oseclay ethay omputecay engineway onway osthay %1 ecausebay erethay isway onay omputecay engineway unningray onway atthay osthay.</translation>
+    </message>
+    <message>
+        <source>Interrupting the compute engine on host %1.</source>
+        <translation type="unfinished">Interruptingway ethay omputecay engineway onway osthay %1.</translation>
+    </message>
+    <message>
+        <source>Cannot interrupt the compute engine on host %1 because there is no compute engine running on that host.</source>
+        <translation type="unfinished">annotCay interruptway ethay omputecay engineway onway osthay %1 ecausebay erethay isway onay omputecay engineway unningray onway atthay osthay.</translation>
+    </message>
+    <message>
+        <source>VisIt is not connected to the simulation &apos;%1&apos; on host %2</source>
+        <translation type="unfinished">VisIt isway otnay onnectedcay otay ethay imulationsay %1 onway osthay %2</translation>
+    </message>
+    <message>
+        <source>VisIt could not find a compute engine to use for the plot on host %1. VisIt will try to launch a compute engine on that host.</source>
+        <translation type="unfinished">VisIt ouldcay otnay indfay away omputecay engineway otay useway orfay ethay otplay onway osthay %1. VisIt illway ytray otay aunchlay away omputecay engineway onway atthay osthay.</translation>
+    </message>
+    <message>
+        <source>VisIt has been disconnected from the simulation &apos;%1&apos; on host %2</source>
+        <translation type="unfinished">VisIt ashay eenbay isconnectedday omfray ethay imulationsay %1 onway osthay %2</translation>
+    </message>
+    <message>
+        <source>The compute engine running on %1 has exited abnormally.</source>
+        <translation type="unfinished">eThay omputecay engineway unningray onway %1 ashay exitedway abnormallyway.</translation>
+    </message>
+    <message>
+        <source>The compute engine running on host %1 issued the following warning: %2</source>
+        <translation type="unfinished">eThay omputecay engineway unningray onway osthay %1 issuedway ethay ollowingfay arningway: %2</translation>
+    </message>
+    <message>
+        <source>VisIt can only export data to a simulation if the data being exported originated in a simulation.</source>
+        <translation type="unfinished">VisIt ancay onlyway exportway ataday otay away imulationsay ifway ethay ataday eingbay exportedway originatedway inway away imulationsay.</translation>
+    </message>
+</context>
+<context>
     <name>ViewerFileServer</name>
     <message>
         <source>GetMetaDataForState called with ANY_STATE. That is not allowed so VisIt will instead use time state 0.</source>
@@ -21360,14 +27136,6 @@ FTP Error: </source>
 The generated error message was:
 
 %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt could not read from the file &quot;%`&quot; on host %2.
-
-The generated error message was:
-
-%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -21403,20 +27171,6 @@ The metadata server returned the following message:
         <translation type="unfinished">eThay etadatamay erversay onway osthay %1 idday otnay eturnray ethay operpray edentialscray. Itway annotcay ebay usedway.</translation>
     </message>
     <message>
-        <source>The metadata server on host %1 could not be launched or it could not connect back to your local computer. This can happen for a variety of reasons.
-
-It is possible that SSH was unable to launch VisIt on %1. If you want to verify this, run &quot;visit -debug 5&quot; and then check to see if any vcl, mdserver, or engine log files are present on %1 in your home directory. If no log files were created then SSH was probably not able to launch VisIt components on %1. In that case, check that you can SSH to %1 and check your local VisIt installation&apos;s Host profiles to make sure the path to VisIt on %1 is specified. Alternatively, you set the PATH environment variable on %1 so it contains the path to the program &quot;visit&quot;.
-
-If there were no debug logs to be found on %1 and your local computer runs a newer version of Linux then quit VisIt and try running &quot;visit -nopty -debug 5&quot;. The &quot;-nopty&quot; option tells VisIt not to allocate a pseudoterminal in which to run SSH. When you run with the &quot;-nopty&quot; option, VisIt&apos;s password window will not be used. Instead, look for an SSH prompt in the terminal window where you ran VisIt. You should be able to enter your password at that prompt. If successful, SSH should continue trying to launch VisIt on %1. If VisIt still cannot connect after SSH launches VisIt&apos;s remote components, check for debug logs on %1 to see if VisIt was at least able to launch there.
-
-If you found debug log files on %1 but VisIt still can&apos;t connect then it&apos;s possible that %1 cannot connect to your local computer. Some desktop computers do not provide a valid network name when VisIt asks for one. If you suspect that this could be the cause of the launch failure, try using &quot;Parse from SSH_CLIENT&quot; in your host profile for host %1. If that does not work and if you are using VPN then you should try manually setting the local host name VisIt will use when telling its remote components to connect back to your local computer. Open the Host profiles window and go to the Advanced options tab. Click the &quot;Specify manually&quot; radio button and type in the IP address of your VPN session into the adjacent text field before you try connecting again.
-
-If changing the above settings still does not allow you to connect then you may have a local firewall blocking ports 5600-5609, which are the ports that VisIt uses to listen for incoming connections (when they are expected) from remote VisIt components. If you&apos;ve tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to local computer. Try turning the firewall off or allowing ports 5600-5609 and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.
-
-If none of these suggestions allow you to successfully connect to %1 then contact visit-users@ornl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The launch of the metadata server on host &quot;%1&quot; has been cancelled.</source>
         <translation type="unfinished">eThay aunchlay ofway ethay etadatamay erversay onway osthay %1 ashay eenbay ancelledcay.</translation>
     </message>
@@ -21443,6 +27197,30 @@ If none of these suggestions allow you to successfully connect to %1 then contac
     <message>
         <source>VisIt was unable to determine the real variable type for %1&apos;s %2 variable.</source>
         <translation type="unfinished">VisIt asway unableway otay etermineday ethay ealray ariablevay ypetay orfay %1say %2 ariablevay.</translation>
+    </message>
+    <message>
+        <source>VisIt could not read from the file &quot;%1&quot; on host %2.
+
+The generated error message was:
+
+%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The metadata server on host %1 could not be launched or it could not connect back to your local computer. This can happen for a variety of reasons.
+
+It is possible that SSH was unable to launch VisIt on %1. If you want to verify this, run &quot;visit -debug 5&quot; and then check to see if any vcl, mdserver, or engine log files are present on %1 in your home directory. If no log files were created then SSH was probably not able to launch VisIt components on %1. In that case, check that you can SSH to %1 and check your local VisIt installation&apos;s Host profiles to make sure the path to VisIt on %1 is specified. Alternatively, you set the PATH environment variable on %1 so it contains the path to the program &quot;visit&quot;.
+
+If there were no debug logs to be found on %1 and your local computer runs a newer version of Linux then quit VisIt and try running &quot;visit -nopty -debug 5&quot;. The &quot;-nopty&quot; option tells VisIt not to allocate a pseudoterminal in which to run SSH. When you run with the &quot;-nopty&quot; option, VisIt&apos;s password window will not be used. Instead, look for an SSH prompt in the terminal window where you ran VisIt. You should be able to enter your password at that prompt. If successful, SSH should continue trying to launch VisIt on %1. If VisIt still cannot connect after SSH launches VisIt&apos;s remote components, check for debug logs on %1 to see if VisIt was at least able to launch there.
+
+&quot;vglrun&quot;: If you do not know what &quot;vglrun&quot; is, you can ignore this paragraph.  If there were no debug logs to be found on %1 and you are using vglrun, then vglrun may be causing VisIt to fail. Some versions of vglrun cause the ssh program to fail.  If you are running VisIt in conjunction with vglrun, this may be causing your failure.  (You can test this by running &quot;vglrun ssh&quot; and seeing if it cores.)
+
+If you found debug log files on %1 but VisIt still can&apos;t connect then it&apos;s possible that %1 cannot connect to your local computer. Some desktop computers do not provide a valid network name when VisIt asks for one. If you suspect that this could be the cause of the launch failure, try using &quot;Parse from SSH_CLIENT&quot; in your host profile for host %1. If that does not work and if you are using VPN then you should try manually setting the local host name VisIt will use when telling its remote components to connect back to your local computer. Open the Host profiles window and go to the Advanced options tab. Click the &quot;Specify manually&quot; radio button and type in the IP address of your VPN session into the adjacent text field before you try connecting again.
+
+If changing the above settings still does not allow you to connect then you may have a local firewall blocking ports 5600-5609, which are the ports that VisIt uses to listen for incoming connections (when they are expected) from remote VisIt components. If you&apos;ve tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to local computer. Try turning the firewall off or allowing ports 5600-5609 and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.
+
+If none of these suggestions allow you to successfully connect to %1 then contact visit-users@ornl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -21515,7 +27293,7 @@ If none of these suggestions allow you to successfully connect to %1 then contac
     </message>
     <message>
         <source>You have added the &quot;%1&quot; operator multiple times. For some operators, like &quot;Slice&quot;, this can lead to an empty plot but is otherwise harmless.</source>
-        <translation type="unfinished">Youay avehay addedway ethay %1 operatorway ultiplemay imestay. orFay omesay operatorsway, ikelay iceSlay, isthay ancay eadlay otay anway emptyway otplay utbay isway otherwiseway armlesshay.</translation>
+        <translation type="obsolete">Youay avehay addedway ethay %1 operatorway ultiplemay imestay. orFay omesay operatorsway, ikelay iceSlay, isthay ancay eadlay otay anway emptyway otplay utbay isway otherwiseway armlesshay.</translation>
     </message>
     <message>
         <source>VisIt cannot move the %1 operator because it is already the first operator.</source>
@@ -21560,6 +27338,10 @@ If none of these suggestions allow you to successfully connect to %1 then contac
     <message>
         <source>The session file was missing the pluginID for a plot.</source>
         <translation type="unfinished">eThay essionsay ilefay asway issingmay ethay uginIDplay orfay away otplay.</translation>
+    </message>
+    <message>
+        <source>You have added the &quot;Slice&quot; operator multiple times. This can lead to an empty plot.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -21608,7 +27390,7 @@ operation could take as much as a few minutes.</source>
     </message>
     <message>
         <source>VisIt cannot set the %1 plot attributes since no plots of that type are selected. Please select a %2 plot before trying to modify its plot attributes.</source>
-        <translation type="unfinished">VisIt annotcay etsay ethay %1 otplay attributesway incesay onay otsplay ofway atthay ypetay areway electedsay. easePlay electsay away %2 otplay eforebay yingtray otay odifymay itsway otplay attributesway.</translation>
+        <translation type="obsolete">VisIt annotcay etsay ethay %1 otplay attributesway incesay onay otsplay ofway atthay ypetay areway electedsay. easePlay electsay away %2 otplay eforebay yingtray otay odifymay itsway otplay attributesway.</translation>
     </message>
     <message>
         <source>The %1 plot of &quot;%2&quot; cannot be regenerated using the database: %3 since the variable is not contained in the new database.</source>
@@ -21640,7 +27422,7 @@ operation could take as much as a few minutes.</source>
     </message>
     <message>
         <source>The plot dimensions do not match.</source>
-        <translation type="unfinished">eThay otplay imensionsday oday otnay atchmay.</translation>
+        <translation type="obsolete">eThay otplay imensionsday oday otnay atchmay.</translation>
     </message>
     <message>
         <source>VisIt does not have all the information it needs to perform a pick.  Please wait while the necessary information is calculated.  All current pick selections have been cached and will be performed when calculations are complete.  VisIt will notify you when it is fully ready for more picks.</source>
@@ -21657,6 +27439,22 @@ operation could take as much as a few minutes.</source>
     <message>
         <source>The session file did not specify how many plots to create.</source>
         <translation type="unfinished">eThay essionsay ilefay idday otnay ecifyspay owhay anymay otsplay otay eatecray.</translation>
+    </message>
+    <message>
+        <source>VisIt cannot set the %1 plot attributes since no plots of that type are selected. This can either mean that you have no plots selected or you have more than one instance of the %1 plot in your plot list. Please select a %1 plot before trying to modify its plot attributes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No plots were created as a result of the overlay because no plots were selected in the plot list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The plot spatial dimensions do not match, 2D vs 3D. Plots need to be in windows with plots of the same spatial dimension.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not create a plot of type from variable %1 of database %2 on host %3.  This often happens because something has changed since the session file was saved.  (For example, the file was overwritten.)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -21817,14 +27615,30 @@ Please select a plot and try again.
         <source>There is no running engine with which to perform the query.  Please ensure the plot has finished drawing and try again.</source>
         <translation type="unfinished">ereThay isway onay unningray engineway ithway ichwhay otay erformpay ethay eryquay.  easePlay ensureway ethay otplay ashay inishedfay awingdray andway ytray againway.</translation>
     </message>
+    <message>
+        <source>%1 requires a &apos;coord&apos; parameter.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiple-Y-Axes time query availble only with multiple variable selected.  Using Single-Y-Axis instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Performing %1 query...</source>
+        <translation type="unfinished">erformingPay %1 eryquay...</translation>
+    </message>
+    <message>
+        <source>ViewerQueryManager could not determine query type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Need a running engine to retrieve query parameters.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ViewerSubject</name>
-    <message>
-        <source>VisIt has encountered the following error: %1.
-VisIt will attempt to continue processing, but it may behave unreliably.  Please save this error message and give it to a VisIt developer.  In addition, you may want to save your session and re-start.  Of course, this session may still cause VisIt to malfunction.</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>You cannot define a database correlation that has the same name as a source. No database correlation will be created for %1.</source>
         <translation type="unfinished">Youay annotcay efineday away atabaseday orrelationcay atthay ashay ethay amesay amenay asway away ourcesay. oNay atabaseday orrelationcay illway ebay eatedcray orfay %1.</translation>
@@ -21835,19 +27649,19 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <source>To construct a derived data function, you must have an active plot.  No DDF was created.</source>
-        <translation type="unfinished">oTay onstructcay away erivedday ataday unctionfay, youay ustmay avehay anway activeway otplay.  oNay DDFay asway eatedcray.</translation>
+        <translation type="obsolete">oTay onstructcay away erivedday ataday unctionfay, youay ustmay avehay anway activeway otplay.  oNay DDFay asway eatedcray.</translation>
     </message>
     <message>
         <source>Only one DDF can be created at a time.  VisIt is using the first active plot.</source>
-        <translation type="unfinished">Onlyway oneway DDFay ancay ebay eatedcray atway away imetay.  VisIt isway usingway ethay irstfay activeway otplay.</translation>
+        <translation type="obsolete">Onlyway oneway DDFay ancay ebay eatedcray atway away imetay.  VisIt isway usingway ethay irstfay activeway otplay.</translation>
     </message>
     <message>
         <source>Created DDF</source>
-        <translation type="unfinished">eatedCray DDFay</translation>
+        <translation type="obsolete">eatedCray DDFay</translation>
     </message>
     <message>
         <source>Unable to create DDF</source>
-        <translation type="unfinished">Unableway otay eatecray DDFay</translation>
+        <translation type="obsolete">Unableway otay eatecray DDFay</translation>
     </message>
     <message>
         <source>To export a database, you must have an active plot.  No database was saved.</source>
@@ -21883,7 +27697,7 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <source>Performing %1 query...</source>
-        <translation type="unfinished">erformingPay %1 eryquay...</translation>
+        <translation type="obsolete">erformingPay %1 eryquay...</translation>
     </message>
     <message>
         <source>Sending keep alive signals...</source>
@@ -21903,11 +27717,91 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <source>Invalid PlotId</source>
-        <translation type="unfinished">Invalidway otIdPlay</translation>
+        <translation type="obsolete">Invalidway otIdPlay</translation>
     </message>
     <message>
         <source>Invalid WindowId</source>
-        <translation type="unfinished">Invalidway indowIdWay</translation>
+        <translation type="obsolete">Invalidway indowIdWay</translation>
+    </message>
+    <message>
+        <source>To construct a data binning, you must have an active plot.  No data binning was created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only one data binning can be created at a time.  VisIt is using the first active plot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Created data binning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to create data binning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An invalid selection name was provided. No selection was applied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To apply a named selection, you must have an active plot.  No named selection was applied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All plots involving a named selection must come from the same engine.  No named selection was applied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Applied named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To create a named selection, you must have an active plot that has been drawn.  No named selection was created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can only have one active plot when creating a named selection.  No named selection was created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Created named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to create named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Deleted named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to delete named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Loaded named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to load named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not determine the source or plot that creates the %1 selection.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt cannot update the %1 selection because it does not exist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saved named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to save named selection</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -22065,38 +27959,6 @@ support log-scaling.  It will not be done.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>There are non-positive values in the domain of the
-curve, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There are non-positive values in the range of the
-curve, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There are non-positive values in the x-coords of
-the mesh, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There are non-positive values in the y-coords of
-the mesh, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Would you like to modify the %1 correlation so it correlates the following databases?</source>
         <translation type="unfinished">ouldWay youay ikelay otay odifymay ethay %1 orrelationcay osay itway orrelatescay ethay ollowingfay atabasesday?</translation>
     </message>
@@ -22186,12 +28048,60 @@ To avoid this warning in the future, make sure that locked windows have compatib
         <source>VisIt could not open a window for TimeQuery because the maximum number of windows was exceeded.</source>
         <translation type="unfinished">VisIt ouldcay otnay openway away indowway orfay imeQueryTay ecausebay ethay aximummay umbernay ofway indowsway asway exceededway.</translation>
     </message>
+    <message>
+        <source>VisIt did not do an advanced window save because none of the windows had any plots.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the domain of 
+the curve, so log scaling cannot be done. You must
+limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the range of 
+the curve, so log scaling cannot be done. You must
+limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the x-coords 
+of the mesh, so log scaling cannot be done. You must
+limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the y-coords
+of the mesh, so log scaling cannot be done. You
+must limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not create named selection %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>VisItSimStripChart</name>
     <message>
         <source>Strip Chart</source>
-        <translation type="unfinished">ipStray artChay</translation>
+        <translation type="obsolete">ipStray artChay</translation>
+    </message>
+    <message>
+        <source>Strip chart</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -22234,7 +28144,7 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>Makefile</source>
-        <translation type="unfinished">akefileMay</translation>
+        <translation type="obsolete">akefileMay</translation>
     </message>
     <message>
         <source>Attribute</source>
@@ -22274,7 +28184,7 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>XMLOpen</source>
-        <translation type="unfinished">OpenXMLay</translation>
+        <translation type="obsolete">OpenXMLay</translation>
     </message>
     <message>
         <source>Open file...</source>
@@ -22282,7 +28192,7 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>XMLSave</source>
-        <translation type="unfinished">aveXMLSay</translation>
+        <translation type="obsolete">aveXMLSay</translation>
     </message>
     <message>
         <source>Save file...</source>
@@ -22299,6 +28209,17 @@ To avoid this warning in the future, make sure that locked windows have compatib
     <message>
         <source>Generate code for %1</source>
         <translation type="unfinished">enerateGay odecay orfay %1</translation>
+    </message>
+    <message>
+        <source>CMake</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditAttribute</name>
+    <message>
+        <source>Base Class</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -22367,11 +28288,11 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>Project file</source>
-        <translation type="unfinished">ojectPray ilefay</translation>
+        <translation type="obsolete">ojectPray ilefay</translation>
     </message>
     <message>
         <source>Makefile</source>
-        <translation type="unfinished">akefileMay</translation>
+        <translation type="obsolete">akefileMay</translation>
     </message>
     <message>
         <source>Plugin information</source>
@@ -22388,6 +28309,10 @@ To avoid this warning in the future, make sure that locked windows have compatib
     <message>
         <source>Cancel</source>
         <translation type="unfinished">ancelCay</translation>
+    </message>
+    <message>
+        <source>CMake</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -22579,6 +28504,10 @@ equality calculations</source>
         <source>Initialization Values / Code</source>
         <translation type="unfinished">Initializationway aluesVay / odeCay</translation>
     </message>
+    <message>
+        <source>Persistent</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>XMLEditFunctions</name>
@@ -22720,6 +28649,26 @@ equality calculations</source>
         <source>Plugin has code specific to the MDServer (Database Plugins only)</source>
         <translation type="unfinished">uginPlay ashay odecay ecificspay otay ethay erverMDSay (atabaseDay uginsPlay onlyway)</translation>
     </message>
+    <message>
+        <source>GUI Libs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Viewer Libs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MDServer Libs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Engine Libs (ser)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Engine Libs (par)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>XMLEditPlugin</name>
@@ -22845,7 +28794,7 @@ equality calculations</source>
     </message>
     <message>
         <source>Extensions</source>
-        <translation type="unfinished">Extensionsway</translation>
+        <translation type="obsolete">Extensionsway</translation>
     </message>
     <message>
         <source>File format can also write data</source>
@@ -22857,11 +28806,39 @@ equality calculations</source>
     </message>
     <message>
         <source>Format uses explicit filenames</source>
-        <translation type="unfinished">ormatFay usesway explicitway ilenamesfay</translation>
+        <translation type="obsolete">ormatFay usesway explicitway ilenamesfay</translation>
     </message>
     <message>
         <source>Filenames</source>
-        <translation type="unfinished">ilenamesFay</translation>
+        <translation type="obsolete">ilenamesFay</translation>
+    </message>
+    <message>
+        <source>Operator Plugin attributes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Operator creates new variable via expressions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable type inputted by the operator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable type created by the operator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default file name patterns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File name patterns are strict by default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File format opens a whole directory (not a single file)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
