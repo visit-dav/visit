@@ -76,12 +76,10 @@ class avtPixieFileFormat : public avtMTMDFileFormat
 {
   public:
     static bool        Identify(ADIOSFileObject *);
-    static avtFileFormatInterface *CreateInterface(ADIOSFileObject *f,
-                                                   const char *const *list,
+    static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
                                                    int nBlock);
     avtPixieFileFormat(const char *);
-    avtPixieFileFormat(const char *, ADIOSFileObject *);
     virtual  ~avtPixieFileFormat();
 
     virtual void        GetCycles(std::vector<int> &);

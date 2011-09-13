@@ -73,12 +73,10 @@ class avtADIOSBasicFileFormat : public avtMTMDFileFormat
 {
   public:
     static bool        Identify(ADIOSFileObject *);
-    static avtFileFormatInterface *CreateInterface(ADIOSFileObject *f,
-                                                   const char *const *list,
+    static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
                                                    int nBlock);
     avtADIOSBasicFileFormat(const char *);
-    avtADIOSBasicFileFormat(const char *, ADIOSFileObject *);
     virtual  ~avtADIOSBasicFileFormat();
 
     //

@@ -67,8 +67,7 @@ class avtXGCFileFormat : public avtMTMDFileFormat
 {
   public:
     static bool        Identify(ADIOSFileObject *);
-    static avtFileFormatInterface *CreateInterface(ADIOSFileObject *f,
-                                                   const char *const *list,
+    static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
                                                    int nBlock);
     static std::string CreateMeshName(const std::string &filename);
@@ -76,7 +75,6 @@ class avtXGCFileFormat : public avtMTMDFileFormat
     static bool IsFieldIFile(ADIOSFileObject *f);
     
     avtXGCFileFormat(const char *);
-    avtXGCFileFormat(const char *, ADIOSFileObject *);
     virtual  ~avtXGCFileFormat();
 
     //

@@ -88,34 +88,17 @@ avtADIOSBasicFileFormat::Identify(ADIOSFileObject *f)
 // ****************************************************************************
 
 avtFileFormatInterface *
-avtADIOSBasicFileFormat::CreateInterface(ADIOSFileObject *f,
-                                         const char *const *list,
+avtADIOSBasicFileFormat::CreateInterface(const char *const *list,
                                          int nList,
                                          int nBlock)
 {
     int nTimestepGroups = nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
     for (int i = 0 ; i < nTimestepGroups ; i++)
-        ffl[i] = new avtADIOSBasicFileFormat(list[i*nBlock], (i==0)?f:NULL);
+        ffl[i] = new avtADIOSBasicFileFormat(list[i*nBlock]);
     
     return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
 }
-
-// ****************************************************************************
-//  Method: avtADIOSBasicFileFormat constructor
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Thu Sep 17 11:23:05 EDT 2009
-//
-// ****************************************************************************
-
-avtADIOSBasicFileFormat::avtADIOSBasicFileFormat(const char *nm, ADIOSFileObject *f)
-    : avtMTMDFileFormat(nm)
-{
-    fileObj = f;
-    initialized = false;
-}
-
 
 // ****************************************************************************
 //  Method: avtADIOSBasicFileFormat constructor

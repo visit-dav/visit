@@ -92,34 +92,17 @@ avtPixieFileFormat::Identify(ADIOSFileObject *f)
 // ****************************************************************************
 
 avtFileFormatInterface *
-avtPixieFileFormat::CreateInterface(ADIOSFileObject *f,
-                                  const char *const *list,
-                                  int nList,
-                                  int nBlock)
+avtPixieFileFormat::CreateInterface(const char *const *list,
+                                    int nList,
+                                    int nBlock)
 {
     int nTimestepGroups = nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
     for (int i = 0 ; i < nTimestepGroups ; i++)
-        ffl[i] = new avtPixieFileFormat(list[i*nBlock], (i==0)?f:NULL);
+        ffl[i] = new avtPixieFileFormat(list[i*nBlock]);
     
     return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
 }
-
-// ****************************************************************************
-//  Method: avtPixieFileFormat constructor
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Wed Mar 17 15:29:24 EDT 2010
-//
-// ****************************************************************************
-
-avtPixieFileFormat::avtPixieFileFormat(const char *nm, ADIOSFileObject *f)
-    : avtMTMDFileFormat(nm)
-{
-    file = f;
-    initialized = false;
-}
-
 
 // ****************************************************************************
 //  Method: avtPixieFileFormat constructor
