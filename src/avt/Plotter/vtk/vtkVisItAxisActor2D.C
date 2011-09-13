@@ -501,6 +501,9 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Hank Childs, Wed Dec 22 11:17:32 PST 2010
 //   Support for vertical text.
 //
+//   Hank Childs, Tue Sep 13 14:17:34 PDT 2011
+//   Increase precision if label is significantly different from location.
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -741,10 +744,29 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         val = pow(10., val);
         }
 
-      if (!this->LogScale)
-        SNPRINTF(string,64,this->LabelFormat, val*this->MajorTickLabelScale);
-      else 
-        SNPRINTF(string,64,this->LogLabelFormat, val*this->MajorTickLabelScale);
+      char format[1024];
+      if (this->LogScale)
+          strcpy(format, this->LogLabelFormat);
+      else
+          strcpy(format, this->LabelFormat);
+      int iterations = 0;
+      while (iterations < 2)
+      {
+          SNPRINTF(string,64,format, val*this->MajorTickLabelScale);
+          double v = atof(string);
+          double error = fabs(val-v) / (Range[1]-Range[0]);
+          if (fabs(error) < 0.01) // < less than 1%
+              break;
+          bool foundDot = false;
+          for (int c = 0 ; c < strlen(format) ; c++)
+          {
+              if (format[c] == '.')
+                  foundDot = true;
+              if (foundDot && (format[c] >= '0' && format[c] <= '8'))
+                  format[c]++;  // increases precision by one digit
+          }
+          iterations++;
+      }
 
       this->LabelMappers[labelCount]->SetInput(string);
       if (fabs(val) < 0.01)
