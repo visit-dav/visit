@@ -192,7 +192,6 @@ avtXGCFileFormat::IsFieldIFile(ADIOSFileObject *f)
     return true;
 }
 
-
 // ****************************************************************************
 //  Method: avtXGCFileFormat constructor
 //
