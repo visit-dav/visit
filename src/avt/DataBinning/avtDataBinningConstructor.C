@@ -150,7 +150,37 @@ avtDataBinningConstructor::~avtDataBinningConstructor()
 //    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
 //    Better support for mixed centering, r2f's that don't require a variable.
 //
+//    Hank Childs, Tue Sep 13 14:17:34 PDT 2011
+//    Add support for data binning's based on spatial coordinates.
+//
 // ****************************************************************************
+
+class ValueRetriever
+{
+  public:
+    virtual double GetValue(int) = 0;
+};
+
+class VariableValueRetriever : public ValueRetriever
+{
+  public:
+                   VariableValueRetriever(vtkDataArray *a) { arr = a; };
+    double         GetValue(int v) { return arr->GetTuple1(v); };
+  private:
+    vtkDataArray  *arr;
+};
+
+class CoordinateValueRetriever : public ValueRetriever
+{
+  public:
+                   CoordinateValueRetriever(vtkDataSet *m, int c) { mesh = m; coord = c; };
+    double         GetValue(int v) { double p[3]; mesh->GetPoint(v, p);  return p[coord]; };
+
+  private:
+    vtkDataSet    *mesh;
+    int            coord;
+};
+
 
 avtDataBinning *
 avtDataBinningConstructor::ConstructDataBinning(
@@ -184,6 +214,29 @@ avtDataBinningConstructor::ConstructDataBinning(
             return NULL;
         }
     }
+    if ((atts->GetBinType().size() != atts->GetNumBins().size()) &&
+        (atts->GetBinType().size() != 0))
+    {
+        debug1 << "Bin types were specified, but the wrong number were "
+               << "specified." << endl;
+        EXCEPTION1(ImproperUseException,
+                   "If you specify bin types, the number of bin types must "
+                   "match the number of variables.");
+        return NULL;
+    }
+
+    // For legacy reasons, binType might be a zero-length array.  In that 
+    // case, the binType should be assumed to be all "Variable".  Make an
+    // array following this assumption, so coding below can be a bit easier.
+    int *binType = new int[atts->GetNumBins().size()];
+    for (i = 0 ; i < atts->GetNumBins().size() ; i++)
+    {
+        if (atts->GetBinType().size() == 0)
+            binType[i] = ConstructDataBinningAttributes::Variable;
+        else
+            binType[i] = atts->GetBinType()[i];
+    }
+
     if (atts->GetNumBins().size() != atts->GetVarnames().size())
     {
         debug1 << "There must be the same number of samples "
@@ -239,8 +292,8 @@ avtDataBinningConstructor::ConstructDataBinning(
         nvals[i] = atts->GetNumBins()[i];
     avtBinningScheme *bs = new avtUniformBinningScheme(nvars, minmax, nvals);
     std::vector<std::string> varnames = atts->GetVarnames();
-    avtDataBinningFunctionInfo *info = new avtDataBinningFunctionInfo(bs, varnames,
-                                                      atts->GetVarForReductionOperator());
+    avtDataBinningFunctionInfo *info = new avtDataBinningFunctionInfo(bs, 
+             varnames, atts->GetBinType(), atts->GetVarForReductionOperator());
 
     //
     // Now create the "relation-to-function operator".
@@ -317,7 +370,8 @@ avtDataBinningConstructor::ConstructDataBinning(
             if (atts->GetVarForReductionOperator() != "")
                 dataRequest->AddSecondaryVariable(atts->GetVarForReductionOperator().c_str());
             for (i = 0 ; i < atts->GetVarnames().size() ; i++)
-                dataRequest->AddSecondaryVariable(atts->GetVarnames()[i].c_str());
+                if (binType[i] == ConstructDataBinningAttributes::Variable)
+                    dataRequest->AddSecondaryVariable(atts->GetVarnames()[i].c_str());
             dataRequest->SetTimestep(time);
             if (mustReExecute)
                 GetInput()->Update(spec2);
@@ -348,14 +402,24 @@ avtDataBinningConstructor::ConstructDataBinning(
             {
                 for (k = 0 ; k < nvars ; k++)
                 {
-                    const char *varname = info->GetDomainTupleName(k).c_str();
-                    if (leaves[0]->GetPointData()->GetArray(varname) != NULL)
-                        isNodal[k] = true;
-                    else if (leaves[0]->GetCellData()->GetArray(varname) 
-                                                                       != NULL)
-                        isNodal[k] = false;
+                    avtDataBinningFunctionInfo::BinBasedOn bbo = 
+                                                    info->GetBinBasedOnType(k);
+                    if (bbo == avtDataBinningFunctionInfo::VARIABLE)
+                    {
+                        const char *varname=info->GetDomainTupleName(k).c_str();
+                        if (leaves[0]->GetPointData()->GetArray(varname)!=NULL)
+                            isNodal[k] = true;
+                        else if (leaves[0]->GetCellData()->GetArray(varname) 
+                                                                        != NULL)
+                            isNodal[k] = false;
+                        else
+                            hasError = true;
+                    }
                     else
-                        hasError = true;
+                    {
+                        // Coordinate, so nodal
+                        isNodal[k] = true;
+                    }
                 }
     
                 if (atts->ReductionRequiresVariable())
@@ -394,7 +458,7 @@ avtDataBinningConstructor::ConstructDataBinning(
                 return NULL;
             }
         
-            vtkDataArray **arr = new vtkDataArray*[nvars];
+            ValueRetriever **val_ret = new ValueRetriever*[nvars];
             float        *args = new float[nvars];
             for (j = 0 ; j < nLeaves ; j++)
             {
@@ -403,10 +467,22 @@ avtDataBinningConstructor::ConstructDataBinning(
                         : leaves[j]->GetCellData()->GetArray(codomain_varname));
                 for (k = 0 ; k < nvars ; k++)
                 {
-                    const char *varname = info->GetDomainTupleName(k).c_str();
-                    arr[k] = (isNodal[k]
-                                ? leaves[j]->GetPointData()->GetArray(varname)
-                                : leaves[j]->GetCellData()->GetArray(varname));
+                    avtDataBinningFunctionInfo::BinBasedOn bbo = 
+                                                    info->GetBinBasedOnType(k);
+                    if (bbo == avtDataBinningFunctionInfo::VARIABLE)
+                    {
+                        const char *varname = info->GetDomainTupleName(k).c_str();
+                        vtkDataArray *arr = (isNodal[k]
+                                    ? leaves[j]->GetPointData()->GetArray(varname)
+                                    : leaves[j]->GetCellData()->GetArray(varname));
+                        val_ret[k] = new VariableValueRetriever(arr);
+                    }
+                    else if (bbo == avtDataBinningFunctionInfo::X)
+                        val_ret[k] = new CoordinateValueRetriever(leaves[j], 0);
+                    else if (bbo == avtDataBinningFunctionInfo::Y)
+                        val_ret[k] = new CoordinateValueRetriever(leaves[j], 1);
+                    else if (bbo == avtDataBinningFunctionInfo::Z)
+                        val_ret[k] = new CoordinateValueRetriever(leaves[j], 2);
                 }
                 int nvals;
                 bool doCells = true;
@@ -459,7 +535,7 @@ avtDataBinningConstructor::ConstructDataBinning(
                     if (!mixedCentering)
                     {
                         for (k = 0 ; k < nvars ; k++)
-                            args[k] = arr[k]->GetTuple1(l);
+                            args[k] = val_ret[k]->GetValue(l);
                         int binId = bs->GetBinId(args);
                         float cval = 0.;
                         if (atts->ReductionRequiresVariable())
@@ -475,9 +551,9 @@ avtDataBinningConstructor::ConstructDataBinning(
                             vtkIdType ptId = cell->GetPointId(p);
                             for (k = 0 ; k < nvars ; k++)
                                 if (isNodal[k])
-                                    args[k] = arr[k]->GetTuple1(ptId);
+                                    args[k] = val_ret[k]->GetValue(ptId);
                                 else
-                                    args[k] = arr[k]->GetTuple1(l);
+                                    args[k] = val_ret[k]->GetValue(l);
                             int binId = bs->GetBinId(args);
                             float cval = 0;
                             if (atts->ReductionRequiresVariable())
@@ -490,7 +566,9 @@ avtDataBinningConstructor::ConstructDataBinning(
                     }
                 }
             }
-            delete [] arr;
+            for (j = 0 ; j < nvars ; j++)
+                delete val_ret[j];
+            delete [] val_ret;
             delete [] args;
             delete [] leaves;
             delete [] isNodal;
@@ -510,6 +588,7 @@ avtDataBinningConstructor::ConstructDataBinning(
     delete R2Foperator;
     delete [] minmax;
     delete [] nvals;
+    delete [] binType;
     // Don't delete binning scheme (bs) function info (info), or "vals"
     // since the data binning now owns them.
 

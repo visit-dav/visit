@@ -94,6 +94,22 @@ PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const unsignedCharVector &binType = atts->GetBinType();
+        SNPRINTF(tmpStr, 1000, "%sbinType = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < binType.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", int(binType[i]));
+            str += tmpStr;
+            if(i < binType.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     {   const doubleVector &binBoundaries = atts->GetBinBoundaries();
         SNPRINTF(tmpStr, 1000, "%sbinBoundaries = (", prefix);
         str += tmpStr;
@@ -297,6 +313,83 @@ ConstructDataBinningAttributes_GetVarnames(PyObject *self, PyObject *args)
     PyObject *retval = PyTuple_New(varnames.size());
     for(size_t i = 0; i < varnames.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyString_FromString(varnames[i].c_str()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ConstructDataBinningAttributes_SetBinType(PyObject *self, PyObject *args)
+{
+    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+
+    unsignedCharVector  &vec = obj->data->GetBinType();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            int c;
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                c = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                c = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                c = int(PyLong_AsDouble(item));
+            else
+                c = 0;
+
+            if(c < 0) c = 0;
+            if(c > 255) c = 255;
+            vec[i] = (unsigned char)(c);
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        int c = int(PyFloat_AS_DOUBLE(tuple));
+        if(c < 0) c = 0;
+        if(c > 255) c = 255;
+        vec[0] = (unsigned char)(c);
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        int c = int(PyInt_AS_LONG(tuple));
+        if(c < 0) c = 0;
+        if(c > 255) c = 255;
+        vec[0] = (unsigned char)(c);
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        int c = PyLong_AsLong(tuple);
+        if(c < 0) c = 0;
+        if(c > 255) c = 255;
+        vec[0] = (unsigned char)(c);
+    }
+    else
+        return NULL;
+
+    // Mark the binType in the object as modified.
+    obj->data->SelectBinType();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ConstructDataBinningAttributes_GetBinType(PyObject *self, PyObject *args)
+{
+    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the binType.
+    const unsignedCharVector &binType = obj->data->GetBinType();
+    PyObject *retval = PyTuple_New(binType.size());
+    for(size_t i = 0; i < binType.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(binType[i])));
     return retval;
 }
 
@@ -679,6 +772,8 @@ PyMethodDef PyConstructDataBinningAttributes_methods[CONSTRUCTDATABINNINGATTRIBU
     {"GetName", ConstructDataBinningAttributes_GetName, METH_VARARGS},
     {"SetVarnames", ConstructDataBinningAttributes_SetVarnames, METH_VARARGS},
     {"GetVarnames", ConstructDataBinningAttributes_GetVarnames, METH_VARARGS},
+    {"SetBinType", ConstructDataBinningAttributes_SetBinType, METH_VARARGS},
+    {"GetBinType", ConstructDataBinningAttributes_GetBinType, METH_VARARGS},
     {"SetBinBoundaries", ConstructDataBinningAttributes_SetBinBoundaries, METH_VARARGS},
     {"GetBinBoundaries", ConstructDataBinningAttributes_GetBinBoundaries, METH_VARARGS},
     {"SetReductionOperator", ConstructDataBinningAttributes_SetReductionOperator, METH_VARARGS},
@@ -733,6 +828,8 @@ PyConstructDataBinningAttributes_getattr(PyObject *self, char *name)
         return ConstructDataBinningAttributes_GetName(self, NULL);
     if(strcmp(name, "varnames") == 0)
         return ConstructDataBinningAttributes_GetVarnames(self, NULL);
+    if(strcmp(name, "binType") == 0)
+        return ConstructDataBinningAttributes_GetBinType(self, NULL);
     if(strcmp(name, "binBoundaries") == 0)
         return ConstructDataBinningAttributes_GetBinBoundaries(self, NULL);
     if(strcmp(name, "reductionOperator") == 0)
@@ -813,6 +910,8 @@ PyConstructDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *a
         obj = ConstructDataBinningAttributes_SetName(self, tuple);
     else if(strcmp(name, "varnames") == 0)
         obj = ConstructDataBinningAttributes_SetVarnames(self, tuple);
+    else if(strcmp(name, "binType") == 0)
+        obj = ConstructDataBinningAttributes_SetBinType(self, tuple);
     else if(strcmp(name, "binBoundaries") == 0)
         obj = ConstructDataBinningAttributes_SetBinBoundaries(self, tuple);
     else if(strcmp(name, "reductionOperator") == 0)

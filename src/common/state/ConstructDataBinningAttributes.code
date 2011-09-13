@@ -1,21 +1,4 @@
 Target: xml2python
-Code: PyConstructDataBinningAttributes_setattr
-Prefix:
-Postfix:
-    // try to handle old ddf attributes
-    if(strcmp(name, "ddfName") == 0)
-        obj = ConstructDataBinningAttributes_SetName(self, tuple);
-    else if(strcmp(name, "ranges") == 0)
-        obj = ConstructDataBinningAttributes_SetBinBoundaries(self, tuple);
-    else if(strcmp(name, "statisticalOperator") == 0)
-        obj = ConstructDataBinningAttributes_SetReductionOperator(self, tuple);
-    else if(strcmp(name, "codomainName") == 0)
-        obj = ConstructDataBinningAttributes_SetVarForReductionOperator(self, tuple);
-    else if(strcmp(name, "numSamples") == 0)
-        obj = ConstructDataBinningAttributes_SetNumBins(self, tuple);
-
-
-
 Code: PyConstructDataBinningAttributes_getattr
 Prefix:
 Postfix:
@@ -30,6 +13,21 @@ Postfix:
         return ConstructDataBinningAttributes_GetVarForReductionOperator(self, NULL);
     if(strcmp(name, "numSamples") == 0)
         return ConstructDataBinningAttributes_GetNumBins(self, NULL);
+
+Code: PyConstructDataBinningAttributes_setattr
+Prefix:
+Postfix:
+    // try to handle old ddf attributes
+    if(strcmp(name, "ddfName") == 0)
+        obj = ConstructDataBinningAttributes_SetName(self, tuple);
+    else if(strcmp(name, "ranges") == 0)
+        obj = ConstructDataBinningAttributes_SetBinBoundaries(self, tuple);
+    else if(strcmp(name, "statisticalOperator") == 0)
+        obj = ConstructDataBinningAttributes_SetReductionOperator(self, tuple);
+    else if(strcmp(name, "codomainName") == 0)
+        obj = ConstructDataBinningAttributes_SetVarForReductionOperator(self, tuple);
+    else if(strcmp(name, "numSamples") == 0)
+        obj = ConstructDataBinningAttributes_SetNumBins(self, tuple);
 
 Target: xml2atts
 Function: ReductionRequiresVariable

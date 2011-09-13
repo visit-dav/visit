@@ -1121,6 +1121,10 @@ const char *visit_ConstructDataBinning_doc =
 "i.reductionOperator = i.Average\n"
 "i.varForReductionOperator = \"v\"\n"
 "ConstructDataBinning(i)\n"
+"\n"
+"# Example of binning using spatial coordinates\n"
+"i.varnames = (\"X\", \"u\") # X is added as a placeholder to maintain indexing\n"
+"i.binType = (1, 0) # 1 = X, 2 = Y, 3 = Z, 0 = variable\n"
 ;
 const char *visit_Copy_doc = 
 "Copy\n"

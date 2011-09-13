@@ -163,6 +163,9 @@ avtDataBinningFilter::Equivalent(const AttributeGroup *a)
 //    Set the spatial extents of the output.  Otherwise downstream filters might
 //    get confused.
 //
+//    Hank Childs, Mon Aug  1 07:13:23 PDT 2011
+//    Add support for spatial dimensions.
+//
 // ****************************************************************************
 
 void
@@ -172,34 +175,67 @@ avtDataBinningFilter::Execute(void)
     std::vector<double> bb = dba.GetBinBoundaries();
     if (! atts.GetDim1SpecifyRange())
     {
-        std::string v1name = atts.GetDim1Var();
-        if (v1name == "default")
-            v1name = pipelineVariable;
-        double range[2];
-        GetDataExtents(range, v1name.c_str());
-        bb[0] = range[0];
-        bb[1] = range[1];
+        if (atts.GetDim1BinBasedOn() == DataBinningAttributes::Variable)
+        {
+            std::string v1name = atts.GetDim1Var();
+            if (v1name == "default")
+                v1name = pipelineVariable;
+            double range[2];
+            GetDataExtents(range, v1name.c_str());
+            bb[0] = range[0];
+            bb[1] = range[1];
+        }
+        else
+        {
+            int dim = (atts.GetDim1BinBasedOn()-DataBinningAttributes::X);
+            double range[6];
+            GetSpatialExtents(range);
+            bb[0] = range[2*dim];
+            bb[1] = range[2*dim+1];
+        }
     }
     if ((! atts.GetDim2SpecifyRange()) && (atts.GetNumDimensions() == DataBinningAttributes::Two ||
                                          atts.GetNumDimensions() == DataBinningAttributes::Three))
     {
-        std::string v2name = atts.GetDim2Var();
-        if (v2name == "default")
-            v2name = pipelineVariable;
-        double range[2];
-        GetDataExtents(range, v2name.c_str());
-        bb[2] = range[0];
-        bb[3] = range[1];
+        if (atts.GetDim2BinBasedOn() == DataBinningAttributes::Variable)
+        {
+            std::string v2name = atts.GetDim2Var();
+            if (v2name == "default")
+                v2name = pipelineVariable;
+            double range[2];
+            GetDataExtents(range, v2name.c_str());
+            bb[2] = range[0];
+            bb[3] = range[1];
+        }
+        else
+        {
+            int dim = (atts.GetDim2BinBasedOn()-DataBinningAttributes::X);
+            double range[6];
+            GetSpatialExtents(range);
+            bb[2] = range[2*dim];
+            bb[3] = range[2*dim+1];
+        }
     }
     if ((! atts.GetDim3SpecifyRange()) && atts.GetNumDimensions() == DataBinningAttributes::Three)
     {
-        std::string v3name = atts.GetDim3Var();
-        if (v3name == "default")
-            v3name = pipelineVariable;
-        double range[2];
-        GetDataExtents(range, v3name.c_str());
-        bb[4] = range[0];
-        bb[5] = range[1];
+        if (atts.GetDim3BinBasedOn() == DataBinningAttributes::Variable)
+        {
+            std::string v3name = atts.GetDim3Var();
+            if (v3name == "default")
+                v3name = pipelineVariable;
+            double range[2];
+            GetDataExtents(range, v3name.c_str());
+            bb[4] = range[0];
+            bb[5] = range[1];
+        }
+        else
+        {
+            int dim = (atts.GetDim3BinBasedOn()-DataBinningAttributes::X);
+            double range[6];
+            GetSpatialExtents(range);
+            bb[4] = range[2*dim];
+            bb[5] = range[2*dim+1];
+        }
     }
     dba.SetBinBoundaries(bb);
 
@@ -266,58 +302,70 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
     }
 
     const char *dim1Var = atts.GetDim1Var().c_str();
-    if (strcmp(dim1Var, "default") == 0)
-    {    
-        if (defaultVarOK)
-            dim1Var = pipelineVariable;
-        else
-        {
-            EXCEPTION1(VisItException, "You specified the first dimension of the "
-                               "data binning as \"default\", but your plotting variable "
-                               "(which \"default\" resolves to) is of the output of the "
-                               "data binning.  This is a recursion definition.  Please "
-                               "change the first dimension of the data binning to be "
-                               "something besides \"default\".");
+    if (atts.GetDim1BinBasedOn() == DataBinningAttributes::Variable)
+    {
+        if (strcmp(dim1Var, "default") == 0)
+        {    
+            if (defaultVarOK)
+                dim1Var = pipelineVariable;
+            else
+            {
+                EXCEPTION1(VisItException, "You specified the first dimension of the "
+                                   "data binning as \"default\", but your plotting variable "
+                                   "(which \"default\" resolves to) is of the output of the "
+                                   "data binning.  This is a recursion definition.  Please "
+                                   "change the first dimension of the data binning to be "
+                                   "something besides \"default\".");
+            }
         }
     }
+
     const char *dim2Var = atts.GetDim2Var().c_str();
-    if (strcmp(dim2Var, "default") == 0 && 
-        (atts.GetNumDimensions() == DataBinningAttributes::Two || 
-         atts.GetNumDimensions() == DataBinningAttributes::Three))
-    {    
-        if (defaultVarOK)
-            dim2Var = pipelineVariable;
-        else
-        {
-            EXCEPTION1(VisItException, "You specified the second dimension of the "
-                               "data binning as \"default\", but your plotting variable "
-                               "(which \"default\" resolves to) is of the output of the "
-                               "data binning.  This is a recursion definition.  Please "
-                               "change the first dimension of the data binning to be "
-                               "something besides \"default\".");
+    if (atts.GetDim2BinBasedOn() == DataBinningAttributes::Variable)
+    {
+        if (strcmp(dim2Var, "default") == 0 && 
+            (atts.GetNumDimensions() == DataBinningAttributes::Two || 
+             atts.GetNumDimensions() == DataBinningAttributes::Three))
+        {    
+            if (defaultVarOK)
+                dim2Var = pipelineVariable;
+            else
+            {
+                EXCEPTION1(VisItException, "You specified the second dimension of the "
+                                   "data binning as \"default\", but your plotting variable "
+                                   "(which \"default\" resolves to) is of the output of the "
+                                   "data binning.  This is a recursion definition.  Please "
+                                   "change the first dimension of the data binning to be "
+                                   "something besides \"default\".");
+            }
         }
     }
+
     const char *dim3Var = atts.GetDim3Var().c_str();
-    if (strcmp(dim3Var, "default") == 0 && 
-        atts.GetNumDimensions() == DataBinningAttributes::Three)
-    {    
-        if (defaultVarOK)
-            dim3Var = pipelineVariable;
-        else
-        {
-            EXCEPTION1(VisItException, "You specified the third dimension of the "
-                               "data binning as \"default\", but your plotting variable "
-                               "(which \"default\" resolves to) is of the output of the "
-                               "data binning.  This is a recursion definition.  Please "
-                               "change the first dimension of the data binning to be "
-                               "something besides \"default\".");
+    if (atts.GetDim3BinBasedOn() == DataBinningAttributes::Variable)
+    {
+        if (strcmp(dim3Var, "default") == 0 && 
+            atts.GetNumDimensions() == DataBinningAttributes::Three)
+        {    
+            if (defaultVarOK)
+                dim3Var = pipelineVariable;
+            else
+            {
+                EXCEPTION1(VisItException, "You specified the third dimension of the "
+                                   "data binning as \"default\", but your plotting variable "
+                                   "(which \"default\" resolves to) is of the output of the "
+                                   "data binning.  This is a recursion definition.  Please "
+                                   "change the first dimension of the data binning to be "
+                                   "something besides \"default\".");
+            }
         }
     }
 
     avtDataRequest_p in_dr  = inContract->GetDataRequest();
     avtDataRequest_p out_dr;
+    avtDataAttributes &inAtts   = GetInput()->GetInfo().GetAttributes();
     if (strncmp(in_dr->GetVariable(), "operators/DataBinning", strlen("operators/DataBinning")) == 0)
-        out_dr = new avtDataRequest(in_dr, dim1Var);
+        out_dr = new avtDataRequest(in_dr, inAtts.GetMeshname().c_str());
     else
         out_dr = new avtDataRequest(in_dr);
     std::vector<CharStrRef>   vars2nd = in_dr->GetSecondaryVariablesWithoutDuplicates();
@@ -332,11 +380,14 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
     for (i = 0 ; i < removeMe.size() ; i++)
         out_dr->RemoveSecondaryVariable(removeMe[i].c_str());
 
-    out_dr->AddSecondaryVariable(dim1Var);
-    if (atts.GetNumDimensions() == DataBinningAttributes::Two || 
+    if (atts.GetDim1BinBasedOn() == DataBinningAttributes::Variable)
+        out_dr->AddSecondaryVariable(dim1Var);
+    if ((atts.GetNumDimensions() == DataBinningAttributes::Two || 
         atts.GetNumDimensions() == DataBinningAttributes::Three)
+        && (atts.GetDim2BinBasedOn() == DataBinningAttributes::Variable))
         out_dr->AddSecondaryVariable(dim2Var);
-    if (atts.GetNumDimensions() == DataBinningAttributes::Three)
+    if ((atts.GetNumDimensions() == DataBinningAttributes::Three)
+        && (atts.GetDim3BinBasedOn() == DataBinningAttributes::Variable))
         out_dr->AddSecondaryVariable(dim3Var);
     if (atts.GetReductionOperator() != DataBinningAttributes::PDF && 
         atts.GetReductionOperator() != DataBinningAttributes::Count)
@@ -364,16 +415,36 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
     // want the extents bouncing all around because certain regions aren't contributing.
     //
     avtContract_p rv = new avtContract(inContract, out_dr);
-    if (! atts.GetDim1SpecifyRange() && dim1Var != pipelineVariable)
+    if (! atts.GetDim1SpecifyRange() && dim1Var != pipelineVariable
+        && atts.GetDim1BinBasedOn() == DataBinningAttributes::Variable)
         rv->SetCalculateVariableExtents(dim1Var, true);
     if ((! atts.GetDim2SpecifyRange()) && (atts.GetNumDimensions() == DataBinningAttributes::Two ||
                                          atts.GetNumDimensions() == DataBinningAttributes::Three)
-         && (dim2Var != pipelineVariable))
+         && (dim2Var != pipelineVariable)
+         && (atts.GetDim2BinBasedOn() == DataBinningAttributes::Variable))
         rv->SetCalculateVariableExtents(dim2Var, true);
     if ((! atts.GetDim3SpecifyRange()) && atts.GetNumDimensions() == DataBinningAttributes::Three
-         && (dim2Var != pipelineVariable))
+         && (dim2Var != pipelineVariable)
+         && (atts.GetDim3BinBasedOn() == DataBinningAttributes::Variable))
         rv->SetCalculateVariableExtents(dim3Var, true);
 
+    int numSpatialDimensions = 0;
+    if ((atts.GetDim1BinBasedOn() != DataBinningAttributes::Variable) &&
+        (! atts.GetDim1SpecifyRange()))
+        numSpatialDimensions++;
+    if ((atts.GetDim2BinBasedOn() != DataBinningAttributes::Variable) 
+        && (! atts.GetDim2SpecifyRange()) 
+        && (atts.GetNumDimensions() == DataBinningAttributes::Two ||
+            atts.GetNumDimensions() == DataBinningAttributes::Three))
+        numSpatialDimensions++;
+    if ((atts.GetDim3BinBasedOn() != DataBinningAttributes::Variable) 
+        && (! atts.GetDim3SpecifyRange()) 
+        && (atts.GetNumDimensions() == DataBinningAttributes::Three))
+        numSpatialDimensions++;
+
+    if (numSpatialDimensions > 0)
+        rv->SetCalculateMeshExtents(true);
+    
     lastContract = rv;
 
     return rv;

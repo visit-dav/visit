@@ -83,6 +83,13 @@ public:
         Clamp,
         Discard
     };
+    enum BinType
+    {
+        Variable,
+        X,
+        Y,
+        Z
+    };
 
     // These constructors are for objects of this class
     ConstructDataBinningAttributes();
@@ -111,6 +118,7 @@ public:
     virtual void SelectAll();
     void SelectName();
     void SelectVarnames();
+    void SelectBinType();
     void SelectBinBoundaries();
     void SelectVarForReductionOperator();
     void SelectNumBins();
@@ -118,6 +126,7 @@ public:
     // Property setting methods
     void SetName(const std::string &name_);
     void SetVarnames(const stringVector &varnames_);
+    void SetBinType(const unsignedCharVector &binType_);
     void SetBinBoundaries(const doubleVector &binBoundaries_);
     void SetReductionOperator(ReductionOperator reductionOperator_);
     void SetVarForReductionOperator(const std::string &varForReductionOperator_);
@@ -131,24 +140,26 @@ public:
     void SetOutOfBoundsBehavior(OutOfBoundsBehavior outOfBoundsBehavior_);
 
     // Property getting methods
-    const std::string  &GetName() const;
-          std::string  &GetName();
-    const stringVector &GetVarnames() const;
-          stringVector &GetVarnames();
-    const doubleVector &GetBinBoundaries() const;
-          doubleVector &GetBinBoundaries();
-    ReductionOperator  GetReductionOperator() const;
-    const std::string  &GetVarForReductionOperator() const;
-          std::string  &GetVarForReductionOperator();
-    double             GetUndefinedValue() const;
-    BinningScheme      GetBinningScheme() const;
-    const intVector    &GetNumBins() const;
-          intVector    &GetNumBins();
-    bool               GetOverTime() const;
-    int                GetTimeStart() const;
-    int                GetTimeEnd() const;
-    int                GetTimeStride() const;
-    OutOfBoundsBehavior GetOutOfBoundsBehavior() const;
+    const std::string        &GetName() const;
+          std::string        &GetName();
+    const stringVector       &GetVarnames() const;
+          stringVector       &GetVarnames();
+    const unsignedCharVector &GetBinType() const;
+          unsignedCharVector &GetBinType();
+    const doubleVector       &GetBinBoundaries() const;
+          doubleVector       &GetBinBoundaries();
+    ReductionOperator        GetReductionOperator() const;
+    const std::string        &GetVarForReductionOperator() const;
+          std::string        &GetVarForReductionOperator();
+    double                   GetUndefinedValue() const;
+    BinningScheme            GetBinningScheme() const;
+    const intVector          &GetNumBins() const;
+          intVector          &GetNumBins();
+    bool                     GetOverTime() const;
+    int                      GetTimeStart() const;
+    int                      GetTimeEnd() const;
+    int                      GetTimeStride() const;
+    OutOfBoundsBehavior      GetOutOfBoundsBehavior() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -170,6 +181,11 @@ public:
 protected:
     static std::string OutOfBoundsBehavior_ToString(int);
 public:
+    static std::string BinType_ToString(BinType);
+    static bool BinType_FromString(const std::string &, BinType &);
+protected:
+    static std::string BinType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -184,6 +200,7 @@ public:
     enum {
         ID_name = 0,
         ID_varnames,
+        ID_binType,
         ID_binBoundaries,
         ID_reductionOperator,
         ID_varForReductionOperator,
@@ -199,24 +216,25 @@ public:
     };
 
 private:
-    std::string  name;
-    stringVector varnames;
-    doubleVector binBoundaries;
-    int          reductionOperator;
-    std::string  varForReductionOperator;
-    double       undefinedValue;
-    int          binningScheme;
-    intVector    numBins;
-    bool         overTime;
-    int          timeStart;
-    int          timeEnd;
-    int          timeStride;
-    int          outOfBoundsBehavior;
+    std::string        name;
+    stringVector       varnames;
+    unsignedCharVector binType;
+    doubleVector       binBoundaries;
+    int                reductionOperator;
+    std::string        varForReductionOperator;
+    double             undefinedValue;
+    int                binningScheme;
+    intVector          numBins;
+    bool               overTime;
+    int                timeStart;
+    int                timeEnd;
+    int                timeStride;
+    int                outOfBoundsBehavior;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define CONSTRUCTDATABINNINGATTRIBUTES_TMFS "ss*d*isdii*biiii"
+#define CONSTRUCTDATABINNINGATTRIBUTES_TMFS "ss*u*d*isdii*biiii"
 
 #endif

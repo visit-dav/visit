@@ -153,6 +153,44 @@ ConstructDataBinningAttributes::OutOfBoundsBehavior_FromString(const std::string
     return false;
 }
 
+//
+// Enum conversion methods for ConstructDataBinningAttributes::BinType
+//
+
+static const char *BinType_strings[] = {
+"Variable", "X", "Y", 
+"Z"};
+
+std::string
+ConstructDataBinningAttributes::BinType_ToString(ConstructDataBinningAttributes::BinType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return BinType_strings[index];
+}
+
+std::string
+ConstructDataBinningAttributes::BinType_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return BinType_strings[index];
+}
+
+bool
+ConstructDataBinningAttributes::BinType_FromString(const std::string &s, ConstructDataBinningAttributes::BinType &val)
+{
+    val = ConstructDataBinningAttributes::Variable;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == BinType_strings[i])
+        {
+            val = (BinType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: ConstructDataBinningAttributes::ConstructDataBinningAttributes
 //
@@ -201,6 +239,7 @@ void ConstructDataBinningAttributes::Copy(const ConstructDataBinningAttributes &
 {
     name = obj.name;
     varnames = obj.varnames;
+    binType = obj.binType;
     binBoundaries = obj.binBoundaries;
     reductionOperator = obj.reductionOperator;
     varForReductionOperator = obj.varForReductionOperator;
@@ -371,6 +410,7 @@ ConstructDataBinningAttributes::operator == (const ConstructDataBinningAttribute
     // Create the return value
     return ((name == obj.name) &&
             (varnames == obj.varnames) &&
+            (binType == obj.binType) &&
             (binBoundaries == obj.binBoundaries) &&
             (reductionOperator == obj.reductionOperator) &&
             (varForReductionOperator == obj.varForReductionOperator) &&
@@ -527,6 +567,7 @@ ConstructDataBinningAttributes::SelectAll()
 {
     Select(ID_name,                    (void *)&name);
     Select(ID_varnames,                (void *)&varnames);
+    Select(ID_binType,                 (void *)&binType);
     Select(ID_binBoundaries,           (void *)&binBoundaries);
     Select(ID_reductionOperator,       (void *)&reductionOperator);
     Select(ID_varForReductionOperator, (void *)&varForReductionOperator);
@@ -580,6 +621,12 @@ ConstructDataBinningAttributes::CreateNode(DataNode *parentNode, bool completeSa
     {
         addToParent = true;
         node->AddNode(new DataNode("varnames", varnames));
+    }
+
+    if(completeSave || !FieldsEqual(ID_binType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("binType", binType));
     }
 
     if(completeSave || !FieldsEqual(ID_binBoundaries, &defaultObject))
@@ -688,6 +735,8 @@ ConstructDataBinningAttributes::SetFromNode(DataNode *parentNode)
         SetName(node->AsString());
     if((node = searchNode->GetNode("varnames")) != 0)
         SetVarnames(node->AsStringVector());
+    if((node = searchNode->GetNode("binType")) != 0)
+        SetBinType(node->AsUnsignedCharVector());
     if((node = searchNode->GetNode("binBoundaries")) != 0)
         SetBinBoundaries(node->AsDoubleVector());
     if((node = searchNode->GetNode("reductionOperator")) != 0)
@@ -770,6 +819,13 @@ ConstructDataBinningAttributes::SetVarnames(const stringVector &varnames_)
 {
     varnames = varnames_;
     Select(ID_varnames, (void *)&varnames);
+}
+
+void
+ConstructDataBinningAttributes::SetBinType(const unsignedCharVector &binType_)
+{
+    binType = binType_;
+    Select(ID_binType, (void *)&binType);
 }
 
 void
@@ -877,6 +933,18 @@ ConstructDataBinningAttributes::GetVarnames()
     return varnames;
 }
 
+const unsignedCharVector &
+ConstructDataBinningAttributes::GetBinType() const
+{
+    return binType;
+}
+
+unsignedCharVector &
+ConstructDataBinningAttributes::GetBinType()
+{
+    return binType;
+}
+
 const doubleVector &
 ConstructDataBinningAttributes::GetBinBoundaries() const
 {
@@ -978,6 +1046,12 @@ ConstructDataBinningAttributes::SelectVarnames()
 }
 
 void
+ConstructDataBinningAttributes::SelectBinType()
+{
+    Select(ID_binType, (void *)&binType);
+}
+
+void
 ConstructDataBinningAttributes::SelectBinBoundaries()
 {
     Select(ID_binBoundaries, (void *)&binBoundaries);
@@ -1021,6 +1095,7 @@ ConstructDataBinningAttributes::GetFieldName(int index) const
     {
     case ID_name:                    return "name";
     case ID_varnames:                return "varnames";
+    case ID_binType:                 return "binType";
     case ID_binBoundaries:           return "binBoundaries";
     case ID_reductionOperator:       return "reductionOperator";
     case ID_varForReductionOperator: return "varForReductionOperator";
@@ -1058,6 +1133,7 @@ ConstructDataBinningAttributes::GetFieldType(int index) const
     {
     case ID_name:                    return FieldType_string;
     case ID_varnames:                return FieldType_stringVector;
+    case ID_binType:                 return FieldType_ucharVector;
     case ID_binBoundaries:           return FieldType_doubleVector;
     case ID_reductionOperator:       return FieldType_enum;
     case ID_varForReductionOperator: return FieldType_string;
@@ -1095,6 +1171,7 @@ ConstructDataBinningAttributes::GetFieldTypeName(int index) const
     {
     case ID_name:                    return "string";
     case ID_varnames:                return "stringVector";
+    case ID_binType:                 return "ucharVector";
     case ID_binBoundaries:           return "doubleVector";
     case ID_reductionOperator:       return "enum";
     case ID_varForReductionOperator: return "string";
@@ -1140,6 +1217,11 @@ ConstructDataBinningAttributes::FieldsEqual(int index_, const AttributeGroup *rh
     case ID_varnames:
         {  // new scope
         retval = (varnames == obj.varnames);
+        }
+        break;
+    case ID_binType:
+        {  // new scope
+        retval = (binType == obj.binType);
         }
         break;
     case ID_binBoundaries:
