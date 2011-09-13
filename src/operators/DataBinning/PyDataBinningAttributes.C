@@ -95,6 +95,29 @@ PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *
           break;
     }
 
+    const char *dim1BinBasedOn_names = "X, Y, Z, Variable";
+    switch (atts->GetDim1BinBasedOn())
+    {
+      case DataBinningAttributes::X:
+          SNPRINTF(tmpStr, 1000, "%sdim1BinBasedOn = %sX  # %s\n", prefix, prefix, dim1BinBasedOn_names);
+          str += tmpStr;
+          break;
+      case DataBinningAttributes::Y:
+          SNPRINTF(tmpStr, 1000, "%sdim1BinBasedOn = %sY  # %s\n", prefix, prefix, dim1BinBasedOn_names);
+          str += tmpStr;
+          break;
+      case DataBinningAttributes::Z:
+          SNPRINTF(tmpStr, 1000, "%sdim1BinBasedOn = %sZ  # %s\n", prefix, prefix, dim1BinBasedOn_names);
+          str += tmpStr;
+          break;
+      case DataBinningAttributes::Variable:
+          SNPRINTF(tmpStr, 1000, "%sdim1BinBasedOn = %sVariable  # %s\n", prefix, prefix, dim1BinBasedOn_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     SNPRINTF(tmpStr, 1000, "%sdim1Var = \"%s\"\n", prefix, atts->GetDim1Var().c_str());
     str += tmpStr;
     if(atts->GetDim1SpecifyRange())
@@ -108,6 +131,29 @@ PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sdim1NumBins = %d\n", prefix, atts->GetDim1NumBins());
     str += tmpStr;
+    const char *dim2BinBasedOn_names = "X, Y, Z, Variable";
+    switch (atts->GetDim2BinBasedOn())
+    {
+      case DataBinningAttributes::X:
+          SNPRINTF(tmpStr, 1000, "%sdim2BinBasedOn = %sX  # %s\n", prefix, prefix, dim2BinBasedOn_names);
+          str += tmpStr;
+          break;
+      case DataBinningAttributes::Y:
+          SNPRINTF(tmpStr, 1000, "%sdim2BinBasedOn = %sY  # %s\n", prefix, prefix, dim2BinBasedOn_names);
+          str += tmpStr;
+          break;
+      case DataBinningAttributes::Z:
+          SNPRINTF(tmpStr, 1000, "%sdim2BinBasedOn = %sZ  # %s\n", prefix, prefix, dim2BinBasedOn_names);
+          str += tmpStr;
+          break;
+      case DataBinningAttributes::Variable:
+          SNPRINTF(tmpStr, 1000, "%sdim2BinBasedOn = %sVariable  # %s\n", prefix, prefix, dim2BinBasedOn_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     SNPRINTF(tmpStr, 1000, "%sdim2Var = \"%s\"\n", prefix, atts->GetDim2Var().c_str());
     str += tmpStr;
     if(atts->GetDim2SpecifyRange())
@@ -121,6 +167,29 @@ PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sdim2NumBins = %d\n", prefix, atts->GetDim2NumBins());
     str += tmpStr;
+    const char *dim3BinBasedOn_names = "X, Y, Z, Variable";
+    switch (atts->GetDim3BinBasedOn())
+    {
+      case DataBinningAttributes::X:
+          SNPRINTF(tmpStr, 1000, "%sdim3BinBasedOn = %sX  # %s\n", prefix, prefix, dim3BinBasedOn_names);
+          str += tmpStr;
+          break;
+      case DataBinningAttributes::Y:
+          SNPRINTF(tmpStr, 1000, "%sdim3BinBasedOn = %sY  # %s\n", prefix, prefix, dim3BinBasedOn_names);
+          str += tmpStr;
+          break;
+      case DataBinningAttributes::Z:
+          SNPRINTF(tmpStr, 1000, "%sdim3BinBasedOn = %sZ  # %s\n", prefix, prefix, dim3BinBasedOn_names);
+          str += tmpStr;
+          break;
+      case DataBinningAttributes::Variable:
+          SNPRINTF(tmpStr, 1000, "%sdim3BinBasedOn = %sVariable  # %s\n", prefix, prefix, dim3BinBasedOn_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     SNPRINTF(tmpStr, 1000, "%sdim3Var = \"%s\"\n", prefix, atts->GetDim3Var().c_str());
     str += tmpStr;
     if(atts->GetDim3SpecifyRange())
@@ -239,6 +308,39 @@ DataBinningAttributes_GetNumDimensions(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumDimensions()));
+    return retval;
+}
+
+/*static*/ PyObject *
+DataBinningAttributes_SetDim1BinBasedOn(PyObject *self, PyObject *args)
+{
+    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the dim1BinBasedOn in the object.
+    if(ival >= 0 && ival < 4)
+        obj->data->SetDim1BinBasedOn(DataBinningAttributes::BinBasedOn(ival));
+    else
+    {
+        fprintf(stderr, "An invalid dim1BinBasedOn value was given. "
+                        "Valid values are in the range of [0,3]. "
+                        "You can also use the following names: "
+                        "X, Y, Z, Variable.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+DataBinningAttributes_GetDim1BinBasedOn(PyObject *self, PyObject *args)
+{
+    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDim1BinBasedOn()));
     return retval;
 }
 
@@ -363,6 +465,39 @@ DataBinningAttributes_GetDim1NumBins(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+DataBinningAttributes_SetDim2BinBasedOn(PyObject *self, PyObject *args)
+{
+    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the dim2BinBasedOn in the object.
+    if(ival >= 0 && ival < 4)
+        obj->data->SetDim2BinBasedOn(DataBinningAttributes::BinBasedOn(ival));
+    else
+    {
+        fprintf(stderr, "An invalid dim2BinBasedOn value was given. "
+                        "Valid values are in the range of [0,3]. "
+                        "You can also use the following names: "
+                        "X, Y, Z, Variable.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+DataBinningAttributes_GetDim2BinBasedOn(PyObject *self, PyObject *args)
+{
+    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDim2BinBasedOn()));
+    return retval;
+}
+
+/*static*/ PyObject *
 DataBinningAttributes_SetDim2Var(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
@@ -479,6 +614,39 @@ DataBinningAttributes_GetDim2NumBins(PyObject *self, PyObject *args)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDim2NumBins()));
+    return retval;
+}
+
+/*static*/ PyObject *
+DataBinningAttributes_SetDim3BinBasedOn(PyObject *self, PyObject *args)
+{
+    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the dim3BinBasedOn in the object.
+    if(ival >= 0 && ival < 4)
+        obj->data->SetDim3BinBasedOn(DataBinningAttributes::BinBasedOn(ival));
+    else
+    {
+        fprintf(stderr, "An invalid dim3BinBasedOn value was given. "
+                        "Valid values are in the range of [0,3]. "
+                        "You can also use the following names: "
+                        "X, Y, Z, Variable.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+DataBinningAttributes_GetDim3BinBasedOn(PyObject *self, PyObject *args)
+{
+    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDim3BinBasedOn()));
     return retval;
 }
 
@@ -724,6 +892,8 @@ PyMethodDef PyDataBinningAttributes_methods[DATABINNINGATTRIBUTES_NMETH] = {
     {"Notify", DataBinningAttributes_Notify, METH_VARARGS},
     {"SetNumDimensions", DataBinningAttributes_SetNumDimensions, METH_VARARGS},
     {"GetNumDimensions", DataBinningAttributes_GetNumDimensions, METH_VARARGS},
+    {"SetDim1BinBasedOn", DataBinningAttributes_SetDim1BinBasedOn, METH_VARARGS},
+    {"GetDim1BinBasedOn", DataBinningAttributes_GetDim1BinBasedOn, METH_VARARGS},
     {"SetDim1Var", DataBinningAttributes_SetDim1Var, METH_VARARGS},
     {"GetDim1Var", DataBinningAttributes_GetDim1Var, METH_VARARGS},
     {"SetDim1SpecifyRange", DataBinningAttributes_SetDim1SpecifyRange, METH_VARARGS},
@@ -734,6 +904,8 @@ PyMethodDef PyDataBinningAttributes_methods[DATABINNINGATTRIBUTES_NMETH] = {
     {"GetDim1MaxRange", DataBinningAttributes_GetDim1MaxRange, METH_VARARGS},
     {"SetDim1NumBins", DataBinningAttributes_SetDim1NumBins, METH_VARARGS},
     {"GetDim1NumBins", DataBinningAttributes_GetDim1NumBins, METH_VARARGS},
+    {"SetDim2BinBasedOn", DataBinningAttributes_SetDim2BinBasedOn, METH_VARARGS},
+    {"GetDim2BinBasedOn", DataBinningAttributes_GetDim2BinBasedOn, METH_VARARGS},
     {"SetDim2Var", DataBinningAttributes_SetDim2Var, METH_VARARGS},
     {"GetDim2Var", DataBinningAttributes_GetDim2Var, METH_VARARGS},
     {"SetDim2SpecifyRange", DataBinningAttributes_SetDim2SpecifyRange, METH_VARARGS},
@@ -744,6 +916,8 @@ PyMethodDef PyDataBinningAttributes_methods[DATABINNINGATTRIBUTES_NMETH] = {
     {"GetDim2MaxRange", DataBinningAttributes_GetDim2MaxRange, METH_VARARGS},
     {"SetDim2NumBins", DataBinningAttributes_SetDim2NumBins, METH_VARARGS},
     {"GetDim2NumBins", DataBinningAttributes_GetDim2NumBins, METH_VARARGS},
+    {"SetDim3BinBasedOn", DataBinningAttributes_SetDim3BinBasedOn, METH_VARARGS},
+    {"GetDim3BinBasedOn", DataBinningAttributes_GetDim3BinBasedOn, METH_VARARGS},
     {"SetDim3Var", DataBinningAttributes_SetDim3Var, METH_VARARGS},
     {"GetDim3Var", DataBinningAttributes_GetDim3Var, METH_VARARGS},
     {"SetDim3SpecifyRange", DataBinningAttributes_SetDim3SpecifyRange, METH_VARARGS},
@@ -799,6 +973,17 @@ PyDataBinningAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Three") == 0)
         return PyInt_FromLong(long(DataBinningAttributes::Three));
 
+    if(strcmp(name, "dim1BinBasedOn") == 0)
+        return DataBinningAttributes_GetDim1BinBasedOn(self, NULL);
+    if(strcmp(name, "X") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::X));
+    if(strcmp(name, "Y") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::Y));
+    if(strcmp(name, "Z") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::Z));
+    if(strcmp(name, "Variable") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::Variable));
+
     if(strcmp(name, "dim1Var") == 0)
         return DataBinningAttributes_GetDim1Var(self, NULL);
     if(strcmp(name, "dim1SpecifyRange") == 0)
@@ -809,6 +994,17 @@ PyDataBinningAttributes_getattr(PyObject *self, char *name)
         return DataBinningAttributes_GetDim1MaxRange(self, NULL);
     if(strcmp(name, "dim1NumBins") == 0)
         return DataBinningAttributes_GetDim1NumBins(self, NULL);
+    if(strcmp(name, "dim2BinBasedOn") == 0)
+        return DataBinningAttributes_GetDim2BinBasedOn(self, NULL);
+    if(strcmp(name, "X") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::X));
+    if(strcmp(name, "Y") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::Y));
+    if(strcmp(name, "Z") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::Z));
+    if(strcmp(name, "Variable") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::Variable));
+
     if(strcmp(name, "dim2Var") == 0)
         return DataBinningAttributes_GetDim2Var(self, NULL);
     if(strcmp(name, "dim2SpecifyRange") == 0)
@@ -819,6 +1015,17 @@ PyDataBinningAttributes_getattr(PyObject *self, char *name)
         return DataBinningAttributes_GetDim2MaxRange(self, NULL);
     if(strcmp(name, "dim2NumBins") == 0)
         return DataBinningAttributes_GetDim2NumBins(self, NULL);
+    if(strcmp(name, "dim3BinBasedOn") == 0)
+        return DataBinningAttributes_GetDim3BinBasedOn(self, NULL);
+    if(strcmp(name, "X") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::X));
+    if(strcmp(name, "Y") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::Y));
+    if(strcmp(name, "Z") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::Z));
+    if(strcmp(name, "Variable") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::Variable));
+
     if(strcmp(name, "dim3Var") == 0)
         return DataBinningAttributes_GetDim3Var(self, NULL);
     if(strcmp(name, "dim3SpecifyRange") == 0)
@@ -877,6 +1084,8 @@ PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "numDimensions") == 0)
         obj = DataBinningAttributes_SetNumDimensions(self, tuple);
+    else if(strcmp(name, "dim1BinBasedOn") == 0)
+        obj = DataBinningAttributes_SetDim1BinBasedOn(self, tuple);
     else if(strcmp(name, "dim1Var") == 0)
         obj = DataBinningAttributes_SetDim1Var(self, tuple);
     else if(strcmp(name, "dim1SpecifyRange") == 0)
@@ -887,6 +1096,8 @@ PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = DataBinningAttributes_SetDim1MaxRange(self, tuple);
     else if(strcmp(name, "dim1NumBins") == 0)
         obj = DataBinningAttributes_SetDim1NumBins(self, tuple);
+    else if(strcmp(name, "dim2BinBasedOn") == 0)
+        obj = DataBinningAttributes_SetDim2BinBasedOn(self, tuple);
     else if(strcmp(name, "dim2Var") == 0)
         obj = DataBinningAttributes_SetDim2Var(self, tuple);
     else if(strcmp(name, "dim2SpecifyRange") == 0)
@@ -897,6 +1108,8 @@ PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = DataBinningAttributes_SetDim2MaxRange(self, tuple);
     else if(strcmp(name, "dim2NumBins") == 0)
         obj = DataBinningAttributes_SetDim2NumBins(self, tuple);
+    else if(strcmp(name, "dim3BinBasedOn") == 0)
+        obj = DataBinningAttributes_SetDim3BinBasedOn(self, tuple);
     else if(strcmp(name, "dim3Var") == 0)
         obj = DataBinningAttributes_SetDim3Var(self, tuple);
     else if(strcmp(name, "dim3SpecifyRange") == 0)

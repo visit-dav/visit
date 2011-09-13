@@ -154,6 +154,44 @@ DataBinningAttributes::OutOfBoundsBehavior_FromString(const std::string &s, Data
     return false;
 }
 
+//
+// Enum conversion methods for DataBinningAttributes::BinBasedOn
+//
+
+static const char *BinBasedOn_strings[] = {
+"X", "Y", "Z", 
+"Variable"};
+
+std::string
+DataBinningAttributes::BinBasedOn_ToString(DataBinningAttributes::BinBasedOn t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return BinBasedOn_strings[index];
+}
+
+std::string
+DataBinningAttributes::BinBasedOn_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return BinBasedOn_strings[index];
+}
+
+bool
+DataBinningAttributes::BinBasedOn_FromString(const std::string &s, DataBinningAttributes::BinBasedOn &val)
+{
+    val = DataBinningAttributes::X;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == BinBasedOn_strings[i])
+        {
+            val = (BinBasedOn)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: DataBinningAttributes::DataBinningAttributes
 //
@@ -172,14 +210,17 @@ DataBinningAttributes::OutOfBoundsBehavior_FromString(const std::string &s, Data
 void DataBinningAttributes::Init()
 {
     numDimensions = One;
+    dim1BinBasedOn = Variable;
     dim1SpecifyRange = false;
     dim1MinRange = 0;
     dim1MaxRange = 1;
     dim1NumBins = 50;
+    dim2BinBasedOn = Variable;
     dim2SpecifyRange = false;
     dim2MinRange = 0;
     dim2MaxRange = 1;
     dim2NumBins = 50;
+    dim3BinBasedOn = Variable;
     dim3SpecifyRange = false;
     dim3MinRange = 0;
     dim3MaxRange = 1;
@@ -209,16 +250,19 @@ void DataBinningAttributes::Init()
 void DataBinningAttributes::Copy(const DataBinningAttributes &obj)
 {
     numDimensions = obj.numDimensions;
+    dim1BinBasedOn = obj.dim1BinBasedOn;
     dim1Var = obj.dim1Var;
     dim1SpecifyRange = obj.dim1SpecifyRange;
     dim1MinRange = obj.dim1MinRange;
     dim1MaxRange = obj.dim1MaxRange;
     dim1NumBins = obj.dim1NumBins;
+    dim2BinBasedOn = obj.dim2BinBasedOn;
     dim2Var = obj.dim2Var;
     dim2SpecifyRange = obj.dim2SpecifyRange;
     dim2MinRange = obj.dim2MinRange;
     dim2MaxRange = obj.dim2MaxRange;
     dim2NumBins = obj.dim2NumBins;
+    dim3BinBasedOn = obj.dim3BinBasedOn;
     dim3Var = obj.dim3Var;
     dim3SpecifyRange = obj.dim3SpecifyRange;
     dim3MinRange = obj.dim3MinRange;
@@ -390,16 +434,19 @@ DataBinningAttributes::operator == (const DataBinningAttributes &obj) const
 {
     // Create the return value
     return ((numDimensions == obj.numDimensions) &&
+            (dim1BinBasedOn == obj.dim1BinBasedOn) &&
             (dim1Var == obj.dim1Var) &&
             (dim1SpecifyRange == obj.dim1SpecifyRange) &&
             (dim1MinRange == obj.dim1MinRange) &&
             (dim1MaxRange == obj.dim1MaxRange) &&
             (dim1NumBins == obj.dim1NumBins) &&
+            (dim2BinBasedOn == obj.dim2BinBasedOn) &&
             (dim2Var == obj.dim2Var) &&
             (dim2SpecifyRange == obj.dim2SpecifyRange) &&
             (dim2MinRange == obj.dim2MinRange) &&
             (dim2MaxRange == obj.dim2MaxRange) &&
             (dim2NumBins == obj.dim2NumBins) &&
+            (dim3BinBasedOn == obj.dim3BinBasedOn) &&
             (dim3Var == obj.dim3Var) &&
             (dim3SpecifyRange == obj.dim3SpecifyRange) &&
             (dim3MinRange == obj.dim3MinRange) &&
@@ -573,16 +620,19 @@ void
 DataBinningAttributes::SelectAll()
 {
     Select(ID_numDimensions,       (void *)&numDimensions);
+    Select(ID_dim1BinBasedOn,      (void *)&dim1BinBasedOn);
     Select(ID_dim1Var,             (void *)&dim1Var);
     Select(ID_dim1SpecifyRange,    (void *)&dim1SpecifyRange);
     Select(ID_dim1MinRange,        (void *)&dim1MinRange);
     Select(ID_dim1MaxRange,        (void *)&dim1MaxRange);
     Select(ID_dim1NumBins,         (void *)&dim1NumBins);
+    Select(ID_dim2BinBasedOn,      (void *)&dim2BinBasedOn);
     Select(ID_dim2Var,             (void *)&dim2Var);
     Select(ID_dim2SpecifyRange,    (void *)&dim2SpecifyRange);
     Select(ID_dim2MinRange,        (void *)&dim2MinRange);
     Select(ID_dim2MaxRange,        (void *)&dim2MaxRange);
     Select(ID_dim2NumBins,         (void *)&dim2NumBins);
+    Select(ID_dim3BinBasedOn,      (void *)&dim3BinBasedOn);
     Select(ID_dim3Var,             (void *)&dim3Var);
     Select(ID_dim3SpecifyRange,    (void *)&dim3SpecifyRange);
     Select(ID_dim3MinRange,        (void *)&dim3MinRange);
@@ -630,6 +680,12 @@ DataBinningAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("numDimensions", NumDimensions_ToString(numDimensions)));
     }
 
+    if(completeSave || !FieldsEqual(ID_dim1BinBasedOn, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("dim1BinBasedOn", BinBasedOn_ToString(dim1BinBasedOn)));
+    }
+
     if(completeSave || !FieldsEqual(ID_dim1Var, &defaultObject))
     {
         addToParent = true;
@@ -660,6 +716,12 @@ DataBinningAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("dim1NumBins", dim1NumBins));
     }
 
+    if(completeSave || !FieldsEqual(ID_dim2BinBasedOn, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("dim2BinBasedOn", BinBasedOn_ToString(dim2BinBasedOn)));
+    }
+
     if(completeSave || !FieldsEqual(ID_dim2Var, &defaultObject))
     {
         addToParent = true;
@@ -688,6 +750,12 @@ DataBinningAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("dim2NumBins", dim2NumBins));
+    }
+
+    if(completeSave || !FieldsEqual(ID_dim3BinBasedOn, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("dim3BinBasedOn", BinBasedOn_ToString(dim3BinBasedOn)));
     }
 
     if(completeSave || !FieldsEqual(ID_dim3Var, &defaultObject))
@@ -796,6 +864,22 @@ DataBinningAttributes::SetFromNode(DataNode *parentNode)
                 SetNumDimensions(value);
         }
     }
+    if((node = searchNode->GetNode("dim1BinBasedOn")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetDim1BinBasedOn(BinBasedOn(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            BinBasedOn value;
+            if(BinBasedOn_FromString(node->AsString(), value))
+                SetDim1BinBasedOn(value);
+        }
+    }
     if((node = searchNode->GetNode("dim1Var")) != 0)
         SetDim1Var(node->AsString());
     if((node = searchNode->GetNode("dim1SpecifyRange")) != 0)
@@ -806,6 +890,22 @@ DataBinningAttributes::SetFromNode(DataNode *parentNode)
         SetDim1MaxRange(node->AsDouble());
     if((node = searchNode->GetNode("dim1NumBins")) != 0)
         SetDim1NumBins(node->AsInt());
+    if((node = searchNode->GetNode("dim2BinBasedOn")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetDim2BinBasedOn(BinBasedOn(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            BinBasedOn value;
+            if(BinBasedOn_FromString(node->AsString(), value))
+                SetDim2BinBasedOn(value);
+        }
+    }
     if((node = searchNode->GetNode("dim2Var")) != 0)
         SetDim2Var(node->AsString());
     if((node = searchNode->GetNode("dim2SpecifyRange")) != 0)
@@ -816,6 +916,22 @@ DataBinningAttributes::SetFromNode(DataNode *parentNode)
         SetDim2MaxRange(node->AsDouble());
     if((node = searchNode->GetNode("dim2NumBins")) != 0)
         SetDim2NumBins(node->AsInt());
+    if((node = searchNode->GetNode("dim3BinBasedOn")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetDim3BinBasedOn(BinBasedOn(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            BinBasedOn value;
+            if(BinBasedOn_FromString(node->AsString(), value))
+                SetDim3BinBasedOn(value);
+        }
+    }
     if((node = searchNode->GetNode("dim3Var")) != 0)
         SetDim3Var(node->AsString());
     if((node = searchNode->GetNode("dim3SpecifyRange")) != 0)
@@ -876,6 +992,13 @@ DataBinningAttributes::SetNumDimensions(DataBinningAttributes::NumDimensions num
 }
 
 void
+DataBinningAttributes::SetDim1BinBasedOn(DataBinningAttributes::BinBasedOn dim1BinBasedOn_)
+{
+    dim1BinBasedOn = dim1BinBasedOn_;
+    Select(ID_dim1BinBasedOn, (void *)&dim1BinBasedOn);
+}
+
+void
 DataBinningAttributes::SetDim1Var(const std::string &dim1Var_)
 {
     dim1Var = dim1Var_;
@@ -911,6 +1034,13 @@ DataBinningAttributes::SetDim1NumBins(int dim1NumBins_)
 }
 
 void
+DataBinningAttributes::SetDim2BinBasedOn(DataBinningAttributes::BinBasedOn dim2BinBasedOn_)
+{
+    dim2BinBasedOn = dim2BinBasedOn_;
+    Select(ID_dim2BinBasedOn, (void *)&dim2BinBasedOn);
+}
+
+void
 DataBinningAttributes::SetDim2Var(const std::string &dim2Var_)
 {
     dim2Var = dim2Var_;
@@ -943,6 +1073,13 @@ DataBinningAttributes::SetDim2NumBins(int dim2NumBins_)
 {
     dim2NumBins = dim2NumBins_;
     Select(ID_dim2NumBins, (void *)&dim2NumBins);
+}
+
+void
+DataBinningAttributes::SetDim3BinBasedOn(DataBinningAttributes::BinBasedOn dim3BinBasedOn_)
+{
+    dim3BinBasedOn = dim3BinBasedOn_;
+    Select(ID_dim3BinBasedOn, (void *)&dim3BinBasedOn);
 }
 
 void
@@ -1018,6 +1155,12 @@ DataBinningAttributes::GetNumDimensions() const
     return NumDimensions(numDimensions);
 }
 
+DataBinningAttributes::BinBasedOn
+DataBinningAttributes::GetDim1BinBasedOn() const
+{
+    return BinBasedOn(dim1BinBasedOn);
+}
+
 const std::string &
 DataBinningAttributes::GetDim1Var() const
 {
@@ -1054,6 +1197,12 @@ DataBinningAttributes::GetDim1NumBins() const
     return dim1NumBins;
 }
 
+DataBinningAttributes::BinBasedOn
+DataBinningAttributes::GetDim2BinBasedOn() const
+{
+    return BinBasedOn(dim2BinBasedOn);
+}
+
 const std::string &
 DataBinningAttributes::GetDim2Var() const
 {
@@ -1088,6 +1237,12 @@ int
 DataBinningAttributes::GetDim2NumBins() const
 {
     return dim2NumBins;
+}
+
+DataBinningAttributes::BinBasedOn
+DataBinningAttributes::GetDim3BinBasedOn() const
+{
+    return BinBasedOn(dim3BinBasedOn);
 }
 
 const std::string &
@@ -1209,16 +1364,19 @@ DataBinningAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_numDimensions:       return "numDimensions";
+    case ID_dim1BinBasedOn:      return "dim1BinBasedOn";
     case ID_dim1Var:             return "dim1Var";
     case ID_dim1SpecifyRange:    return "dim1SpecifyRange";
     case ID_dim1MinRange:        return "dim1MinRange";
     case ID_dim1MaxRange:        return "dim1MaxRange";
     case ID_dim1NumBins:         return "dim1NumBins";
+    case ID_dim2BinBasedOn:      return "dim2BinBasedOn";
     case ID_dim2Var:             return "dim2Var";
     case ID_dim2SpecifyRange:    return "dim2SpecifyRange";
     case ID_dim2MinRange:        return "dim2MinRange";
     case ID_dim2MaxRange:        return "dim2MaxRange";
     case ID_dim2NumBins:         return "dim2NumBins";
+    case ID_dim3BinBasedOn:      return "dim3BinBasedOn";
     case ID_dim3Var:             return "dim3Var";
     case ID_dim3SpecifyRange:    return "dim3SpecifyRange";
     case ID_dim3MinRange:        return "dim3MinRange";
@@ -1253,16 +1411,19 @@ DataBinningAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_numDimensions:       return FieldType_enum;
+    case ID_dim1BinBasedOn:      return FieldType_enum;
     case ID_dim1Var:             return FieldType_variablename;
     case ID_dim1SpecifyRange:    return FieldType_bool;
     case ID_dim1MinRange:        return FieldType_double;
     case ID_dim1MaxRange:        return FieldType_double;
     case ID_dim1NumBins:         return FieldType_int;
+    case ID_dim2BinBasedOn:      return FieldType_enum;
     case ID_dim2Var:             return FieldType_variablename;
     case ID_dim2SpecifyRange:    return FieldType_bool;
     case ID_dim2MinRange:        return FieldType_double;
     case ID_dim2MaxRange:        return FieldType_double;
     case ID_dim2NumBins:         return FieldType_int;
+    case ID_dim3BinBasedOn:      return FieldType_enum;
     case ID_dim3Var:             return FieldType_variablename;
     case ID_dim3SpecifyRange:    return FieldType_bool;
     case ID_dim3MinRange:        return FieldType_double;
@@ -1297,16 +1458,19 @@ DataBinningAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_numDimensions:       return "enum";
+    case ID_dim1BinBasedOn:      return "enum";
     case ID_dim1Var:             return "variablename";
     case ID_dim1SpecifyRange:    return "bool";
     case ID_dim1MinRange:        return "double";
     case ID_dim1MaxRange:        return "double";
     case ID_dim1NumBins:         return "int";
+    case ID_dim2BinBasedOn:      return "enum";
     case ID_dim2Var:             return "variablename";
     case ID_dim2SpecifyRange:    return "bool";
     case ID_dim2MinRange:        return "double";
     case ID_dim2MaxRange:        return "double";
     case ID_dim2NumBins:         return "int";
+    case ID_dim3BinBasedOn:      return "enum";
     case ID_dim3Var:             return "variablename";
     case ID_dim3SpecifyRange:    return "bool";
     case ID_dim3MinRange:        return "double";
@@ -1347,6 +1511,11 @@ DataBinningAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (numDimensions == obj.numDimensions);
         }
         break;
+    case ID_dim1BinBasedOn:
+        {  // new scope
+        retval = (dim1BinBasedOn == obj.dim1BinBasedOn);
+        }
+        break;
     case ID_dim1Var:
         {  // new scope
         retval = (dim1Var == obj.dim1Var);
@@ -1372,6 +1541,11 @@ DataBinningAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (dim1NumBins == obj.dim1NumBins);
         }
         break;
+    case ID_dim2BinBasedOn:
+        {  // new scope
+        retval = (dim2BinBasedOn == obj.dim2BinBasedOn);
+        }
+        break;
     case ID_dim2Var:
         {  // new scope
         retval = (dim2Var == obj.dim2Var);
@@ -1395,6 +1569,11 @@ DataBinningAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_dim2NumBins:
         {  // new scope
         retval = (dim2NumBins == obj.dim2NumBins);
+        }
+        break;
+    case ID_dim3BinBasedOn:
+        {  // new scope
+        retval = (dim3BinBasedOn == obj.dim3BinBasedOn);
         }
         break;
     case ID_dim3Var:
@@ -1474,16 +1653,47 @@ DataBinningAttributes::CreateConstructionAtts(void)
     stringVector varnames;
     doubleVector range;
     intVector    numBins;
+    std::vector<unsigned char> binType;
     varnames.push_back(dim1Var);
     range.push_back(dim1MinRange);
     range.push_back(dim1MaxRange);
     numBins.push_back(dim1NumBins);
+    switch (dim1BinBasedOn)
+    {
+      case X:
+        binType.push_back(ConstructDataBinningAttributes::X);
+        break;
+      case Y:
+        binType.push_back(ConstructDataBinningAttributes::Y);
+        break;
+      case Z:
+        binType.push_back(ConstructDataBinningAttributes::Z);
+        break;
+      case Variable:
+        binType.push_back(ConstructDataBinningAttributes::Variable);
+        break;
+    }
     if (numDimensions == Two || numDimensions == Three)
     {
         varnames.push_back(dim2Var);
         range.push_back(dim2MinRange);
         range.push_back(dim2MaxRange);
         numBins.push_back(dim2NumBins);
+        switch (dim2BinBasedOn)
+        {
+          case X:
+            binType.push_back(ConstructDataBinningAttributes::X);
+            break;
+          case Y:
+            binType.push_back(ConstructDataBinningAttributes::Y);
+            break;
+          case Z:
+            binType.push_back(ConstructDataBinningAttributes::Z);
+            break;
+          case Variable:
+            binType.push_back(ConstructDataBinningAttributes::Variable);
+            break;
+        }
     }
     if (numDimensions == Three)
     {
@@ -1491,6 +1701,21 @@ DataBinningAttributes::CreateConstructionAtts(void)
         range.push_back(dim3MinRange);
         range.push_back(dim3MaxRange);
         numBins.push_back(dim3NumBins);
+        switch (dim3BinBasedOn)
+        {
+          case X:
+            binType.push_back(ConstructDataBinningAttributes::X);
+            break;
+          case Y:
+            binType.push_back(ConstructDataBinningAttributes::Y);
+            break;
+          case Z:
+            binType.push_back(ConstructDataBinningAttributes::Z);
+            break;
+          case Variable:
+            binType.push_back(ConstructDataBinningAttributes::Variable);
+            break;
+        }
     }
     dba.SetVarnames(varnames);
     dba.SetBinBoundaries(range);
@@ -1500,6 +1725,7 @@ DataBinningAttributes::CreateConstructionAtts(void)
     dba.SetUndefinedValue(emptyVal);
     dba.SetOverTime(false);
     dba.SetOutOfBoundsBehavior((ConstructDataBinningAttributes::OutOfBoundsBehavior) outOfBoundsBehavior);
+    dba.SetBinType(binType);
     
     return dba;
 }

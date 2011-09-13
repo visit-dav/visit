@@ -50,6 +50,7 @@ class QLineEdit;
 class QSpinBox;
 class QVBox;
 class QButtonGroup;
+class QRadioButton;
 class QvisColorTableButton;
 class QvisOpacitySlider;
 class QvisColorButton;
@@ -70,6 +71,9 @@ class QvisVariableButton;
 //
 // Modifications:
 //   
+//   Hank Childs, Sun Jul 31 16:01:41 PDT 2011
+//   Add support for binning based on spatial dimensions.
+//
 // ****************************************************************************
 
 class QvisDataBinningWindow : public QvisOperatorWindow
@@ -93,16 +97,19 @@ class QvisDataBinningWindow : public QvisOperatorWindow
     void dim1MinRangeProcessText();
     void dim1MaxRangeProcessText();
     void dim1NumBinsProcessText();
+    void dim1BinBasedOnChanged(int);
     void dim2VarChanged(const QString &varName);
     void dim2SpecifyRangeToggled(bool);
     void dim2MinRangeProcessText();
     void dim2MaxRangeProcessText();
     void dim2NumBinsProcessText();
+    void dim2BinBasedOnChanged(int);
     void dim3VarChanged(const QString &varName);
     void dim3SpecifyRangeToggled(bool);
     void dim3MinRangeProcessText();
     void dim3MaxRangeProcessText();
     void dim3NumBinsProcessText();
+    void dim3BinBasedOnChanged(int);
     void outOfBoundsBehaviorChanged(int val);
     void reductionOperatorClicked(int val);
     void varForReductionChanged(const QString &varName);
@@ -132,15 +139,30 @@ class QvisDataBinningWindow : public QvisOperatorWindow
     QvisVariableButton *varForReduction;
     QLineEdit *emptyVal;
     QLabel *numDimensionsLabel;
-    QLabel *dim1VarLabel;
+    QLabel *dim1BinBasedOn;
+    QRadioButton *dim1VarLabel;
+    QRadioButton *dim1XLabel;
+    QRadioButton *dim1YLabel;
+    QRadioButton *dim1ZLabel;
+    QButtonGroup *dim1BinBasedOnButtonGroup;
     QLabel *dim1MinRangeLabel;
     QLabel *dim1MaxRangeLabel;
     QLabel *dim1NumBinsLabel;
-    QLabel *dim2VarLabel;
+    QLabel *dim2BinBasedOn;
+    QRadioButton *dim2VarLabel;
+    QRadioButton *dim2XLabel;
+    QRadioButton *dim2YLabel;
+    QRadioButton *dim2ZLabel;
+    QButtonGroup *dim2BinBasedOnButtonGroup;
     QLabel *dim2MinRangeLabel;
     QLabel *dim2MaxRangeLabel;
     QLabel *dim2NumBinsLabel;
-    QLabel *dim3VarLabel;
+    QLabel *dim3BinBasedOn;
+    QRadioButton *dim3VarLabel;
+    QRadioButton *dim3XLabel;
+    QRadioButton *dim3YLabel;
+    QRadioButton *dim3ZLabel;
+    QButtonGroup *dim3BinBasedOnButtonGroup;
     QLabel *dim3MinRangeLabel;
     QLabel *dim3MaxRangeLabel;
     QLabel *dim3NumBinsLabel;

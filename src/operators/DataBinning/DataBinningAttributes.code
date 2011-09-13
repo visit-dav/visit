@@ -74,16 +74,47 @@ DataBinningAttributes::CreateConstructionAtts(void)
     stringVector varnames;
     doubleVector range;
     intVector    numBins;
+    std::vector<unsigned char> binType;
     varnames.push_back(dim1Var);
     range.push_back(dim1MinRange);
     range.push_back(dim1MaxRange);
     numBins.push_back(dim1NumBins);
+    switch (dim1BinBasedOn)
+    {
+      case X:
+        binType.push_back(ConstructDataBinningAttributes::X);
+        break;
+      case Y:
+        binType.push_back(ConstructDataBinningAttributes::Y);
+        break;
+      case Z:
+        binType.push_back(ConstructDataBinningAttributes::Z);
+        break;
+      case Variable:
+        binType.push_back(ConstructDataBinningAttributes::Variable);
+        break;
+    }
     if (numDimensions == Two || numDimensions == Three)
     {
         varnames.push_back(dim2Var);
         range.push_back(dim2MinRange);
         range.push_back(dim2MaxRange);
         numBins.push_back(dim2NumBins);
+        switch (dim2BinBasedOn)
+        {
+          case X:
+            binType.push_back(ConstructDataBinningAttributes::X);
+            break;
+          case Y:
+            binType.push_back(ConstructDataBinningAttributes::Y);
+            break;
+          case Z:
+            binType.push_back(ConstructDataBinningAttributes::Z);
+            break;
+          case Variable:
+            binType.push_back(ConstructDataBinningAttributes::Variable);
+            break;
+        }
     }
     if (numDimensions == Three)
     {
@@ -91,6 +122,21 @@ DataBinningAttributes::CreateConstructionAtts(void)
         range.push_back(dim3MinRange);
         range.push_back(dim3MaxRange);
         numBins.push_back(dim3NumBins);
+        switch (dim3BinBasedOn)
+        {
+          case X:
+            binType.push_back(ConstructDataBinningAttributes::X);
+            break;
+          case Y:
+            binType.push_back(ConstructDataBinningAttributes::Y);
+            break;
+          case Z:
+            binType.push_back(ConstructDataBinningAttributes::Z);
+            break;
+          case Variable:
+            binType.push_back(ConstructDataBinningAttributes::Variable);
+            break;
+        }
     }
     dba.SetVarnames(varnames);
     dba.SetBinBoundaries(range);
@@ -100,6 +146,7 @@ DataBinningAttributes::CreateConstructionAtts(void)
     dba.SetUndefinedValue(emptyVal);
     dba.SetOverTime(false);
     dba.SetOutOfBoundsBehavior((ConstructDataBinningAttributes::OutOfBoundsBehavior) outOfBoundsBehavior);
+    dba.SetBinType(binType);
     
     return dba;
 }

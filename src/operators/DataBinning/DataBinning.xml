@@ -24,8 +24,17 @@
         Clamp
         Discard
       </Enum>
+      <Enum name="BinBasedOn">
+        X
+        Y
+        Z
+        Variable
+      </Enum>
       <Field name="numDimensions" label="Dimensions" type="enum" subtype="NumDimensions">
         One
+      </Field>
+      <Field name="dim1BinBasedOn" label="Bin Based On" type="enum" subtype="BinBasedOn">
+        Variable
       </Field>
       <Field name="dim1Var" label="Variable" type="variablename" vartypes="01000000000">
       </Field>
@@ -41,6 +50,9 @@
       <Field name="dim1NumBins" label="Number of bins" type="int">
         50
       </Field>
+      <Field name="dim2BinBasedOn" label="Bin Based On" type="enum" subtype="BinBasedOn">
+        Variable
+      </Field>
       <Field name="dim2Var" label="Variable" type="variablename" enabler="numDimensions:Two,Three" vartypes="01000000000">
       </Field>
       <Field name="dim2SpecifyRange" label="Specify Range for Dim 2?" type="bool">
@@ -54,6 +66,9 @@
       </Field>
       <Field name="dim2NumBins" label="Number of bins" type="int" enabler="numDimensions:Two,Three">
         50
+      </Field>
+      <Field name="dim3BinBasedOn" label="Bin Based On" type="enum" subtype="BinBasedOn">
+        Variable
       </Field>
       <Field name="dim3Var" label="Variable" type="variablename" enabler="numDimensions:Three" vartypes="01000000000">
       </Field>

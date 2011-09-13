@@ -74,28 +74,39 @@ class     avtBinningScheme;
 //    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
 //    Renamed from DDF to DataBinning.
 //
+//    Hank Childs, Mon Aug  1 06:48:26 PDT 2011
+//    Add support for spatial coordinates.
+//
 // ****************************************************************************
 
 class AVTDBIN_API avtDataBinningFunctionInfo
 {
   public:
-                           avtDataBinningFunctionInfo(avtBinningScheme *,
-                                              const std::vector<std::string> &, 
-                                              const std::string &);
+    typedef enum
+    {
+          VARIABLE, X, Y, Z
+    } BinBasedOn;
+
+                         avtDataBinningFunctionInfo(avtBinningScheme *,
+                                            const std::vector<std::string> &, 
+                                            const std::vector<unsigned char> &, 
+                                            const std::string &);
     virtual               ~avtDataBinningFunctionInfo();
   
     int                    GetDomainNumberOfTuples(void) const
                                 { return tupleNames.size(); };
     const std::string     &GetDomainTupleName(int) const;
+    BinBasedOn             GetBinBasedOnType(int) const;
     const std::string     &GetCodomainName(void) const
                                 { return codomainVariable; };
     avtBinningScheme      *GetBinningScheme(void)
                                 { return binningScheme; };
 
   private:
-    avtBinningScheme         *binningScheme;
-    std::vector<std::string>  tupleNames;
-    std::string               codomainVariable;
+    avtBinningScheme           *binningScheme;
+    std::vector<std::string>    tupleNames;
+    std::vector<BinBasedOn>     binBasedOn;
+    std::string                 codomainVariable;
 };
 
 

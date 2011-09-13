@@ -39,6 +39,7 @@
 package llnl.visit;
 
 import java.util.Vector;
+import java.lang.Byte;
 import java.lang.Double;
 import java.lang.Integer;
 
@@ -59,7 +60,7 @@ import java.lang.Integer;
 
 public class ConstructDataBinningAttributes extends AttributeSubject
 {
-    private static int ConstructDataBinningAttributes_numAdditionalAtts = 13;
+    private static int ConstructDataBinningAttributes_numAdditionalAtts = 14;
 
     // Enum values
     public final static int BINNINGSCHEME_UNIFORM = 0;
@@ -78,6 +79,11 @@ public class ConstructDataBinningAttributes extends AttributeSubject
     public final static int OUTOFBOUNDSBEHAVIOR_CLAMP = 0;
     public final static int OUTOFBOUNDSBEHAVIOR_DISCARD = 1;
 
+    public final static int BINTYPE_VARIABLE = 0;
+    public final static int BINTYPE_X = 1;
+    public final static int BINTYPE_Y = 2;
+    public final static int BINTYPE_Z = 3;
+
 
     public ConstructDataBinningAttributes()
     {
@@ -85,6 +91,7 @@ public class ConstructDataBinningAttributes extends AttributeSubject
 
         name = new String("");
         varnames = new Vector();
+        binType = new Vector();
         binBoundaries = new Vector();
         reductionOperator = REDUCTIONOPERATOR_AVERAGE;
         varForReductionOperator = new String("");
@@ -104,6 +111,7 @@ public class ConstructDataBinningAttributes extends AttributeSubject
 
         name = new String("");
         varnames = new Vector();
+        binType = new Vector();
         binBoundaries = new Vector();
         reductionOperator = REDUCTIONOPERATOR_AVERAGE;
         varForReductionOperator = new String("");
@@ -127,6 +135,13 @@ public class ConstructDataBinningAttributes extends AttributeSubject
         varnames = new Vector(obj.varnames.size());
         for(i = 0; i < obj.varnames.size(); ++i)
             varnames.addElement(new String((String)obj.varnames.elementAt(i)));
+
+        binType = new Vector(obj.binType.size());
+        for(i = 0; i < obj.binType.size(); ++i)
+        {
+            Byte bv = (Byte)obj.binType.elementAt(i);
+            binType.addElement(new Byte(bv.byteValue()));
+        }
 
         binBoundaries = new Vector(obj.binBoundaries.size());
         for(i = 0; i < obj.binBoundaries.size(); ++i)
@@ -177,6 +192,15 @@ public class ConstructDataBinningAttributes extends AttributeSubject
             String varnames2 = (String)obj.varnames.elementAt(i);
             varnames_equal = varnames1.equals(varnames2);
         }
+        // Compare the elements in the binType vector.
+        boolean binType_equal = (obj.binType.size() == binType.size());
+        for(i = 0; (i < binType.size()) && binType_equal; ++i)
+        {
+            // Make references to Byte from Object.
+            Byte binType1 = (Byte)binType.elementAt(i);
+            Byte binType2 = (Byte)obj.binType.elementAt(i);
+            binType_equal = binType1.equals(binType2);
+        }
         // Compare the elements in the binBoundaries vector.
         boolean binBoundaries_equal = (obj.binBoundaries.size() == binBoundaries.size());
         for(i = 0; (i < binBoundaries.size()) && binBoundaries_equal; ++i)
@@ -198,6 +222,7 @@ public class ConstructDataBinningAttributes extends AttributeSubject
         // Create the return value
         return ((name.equals(obj.name)) &&
                 varnames_equal &&
+                binType_equal &&
                 binBoundaries_equal &&
                 (reductionOperator == obj.reductionOperator) &&
                 (varForReductionOperator.equals(obj.varForReductionOperator)) &&
@@ -224,75 +249,82 @@ public class ConstructDataBinningAttributes extends AttributeSubject
         Select(1);
     }
 
+    public void SetBinType(Vector binType_)
+    {
+        binType = binType_;
+        Select(2);
+    }
+
     public void SetBinBoundaries(Vector binBoundaries_)
     {
         binBoundaries = binBoundaries_;
-        Select(2);
+        Select(3);
     }
 
     public void SetReductionOperator(int reductionOperator_)
     {
         reductionOperator = reductionOperator_;
-        Select(3);
+        Select(4);
     }
 
     public void SetVarForReductionOperator(String varForReductionOperator_)
     {
         varForReductionOperator = varForReductionOperator_;
-        Select(4);
+        Select(5);
     }
 
     public void SetUndefinedValue(double undefinedValue_)
     {
         undefinedValue = undefinedValue_;
-        Select(5);
+        Select(6);
     }
 
     public void SetBinningScheme(int binningScheme_)
     {
         binningScheme = binningScheme_;
-        Select(6);
+        Select(7);
     }
 
     public void SetNumBins(Vector numBins_)
     {
         numBins = numBins_;
-        Select(7);
+        Select(8);
     }
 
     public void SetOverTime(boolean overTime_)
     {
         overTime = overTime_;
-        Select(8);
+        Select(9);
     }
 
     public void SetTimeStart(int timeStart_)
     {
         timeStart = timeStart_;
-        Select(9);
+        Select(10);
     }
 
     public void SetTimeEnd(int timeEnd_)
     {
         timeEnd = timeEnd_;
-        Select(10);
+        Select(11);
     }
 
     public void SetTimeStride(int timeStride_)
     {
         timeStride = timeStride_;
-        Select(11);
+        Select(12);
     }
 
     public void SetOutOfBoundsBehavior(int outOfBoundsBehavior_)
     {
         outOfBoundsBehavior = outOfBoundsBehavior_;
-        Select(12);
+        Select(13);
     }
 
     // Property getting methods
     public String  GetName() { return name; }
     public Vector  GetVarnames() { return varnames; }
+    public Vector  GetBinType() { return binType; }
     public Vector  GetBinBoundaries() { return binBoundaries; }
     public int     GetReductionOperator() { return reductionOperator; }
     public String  GetVarForReductionOperator() { return varForReductionOperator; }
@@ -313,26 +345,28 @@ public class ConstructDataBinningAttributes extends AttributeSubject
         if(WriteSelect(1, buf))
             buf.WriteStringVector(varnames);
         if(WriteSelect(2, buf))
-            buf.WriteDoubleVector(binBoundaries);
+            buf.WriteByteVector(binType);
         if(WriteSelect(3, buf))
-            buf.WriteInt(reductionOperator);
+            buf.WriteDoubleVector(binBoundaries);
         if(WriteSelect(4, buf))
-            buf.WriteString(varForReductionOperator);
+            buf.WriteInt(reductionOperator);
         if(WriteSelect(5, buf))
-            buf.WriteDouble(undefinedValue);
+            buf.WriteString(varForReductionOperator);
         if(WriteSelect(6, buf))
-            buf.WriteInt(binningScheme);
+            buf.WriteDouble(undefinedValue);
         if(WriteSelect(7, buf))
-            buf.WriteIntVector(numBins);
+            buf.WriteInt(binningScheme);
         if(WriteSelect(8, buf))
-            buf.WriteBool(overTime);
+            buf.WriteIntVector(numBins);
         if(WriteSelect(9, buf))
-            buf.WriteInt(timeStart);
+            buf.WriteBool(overTime);
         if(WriteSelect(10, buf))
-            buf.WriteInt(timeEnd);
+            buf.WriteInt(timeStart);
         if(WriteSelect(11, buf))
-            buf.WriteInt(timeStride);
+            buf.WriteInt(timeEnd);
         if(WriteSelect(12, buf))
+            buf.WriteInt(timeStride);
+        if(WriteSelect(13, buf))
             buf.WriteInt(outOfBoundsBehavior);
     }
 
@@ -347,36 +381,39 @@ public class ConstructDataBinningAttributes extends AttributeSubject
             SetVarnames(buf.ReadStringVector());
             break;
         case 2:
-            SetBinBoundaries(buf.ReadDoubleVector());
+            SetBinType(buf.ReadByteVector());
             break;
         case 3:
-            SetReductionOperator(buf.ReadInt());
+            SetBinBoundaries(buf.ReadDoubleVector());
             break;
         case 4:
-            SetVarForReductionOperator(buf.ReadString());
+            SetReductionOperator(buf.ReadInt());
             break;
         case 5:
-            SetUndefinedValue(buf.ReadDouble());
+            SetVarForReductionOperator(buf.ReadString());
             break;
         case 6:
-            SetBinningScheme(buf.ReadInt());
+            SetUndefinedValue(buf.ReadDouble());
             break;
         case 7:
-            SetNumBins(buf.ReadIntVector());
+            SetBinningScheme(buf.ReadInt());
             break;
         case 8:
-            SetOverTime(buf.ReadBool());
+            SetNumBins(buf.ReadIntVector());
             break;
         case 9:
-            SetTimeStart(buf.ReadInt());
+            SetOverTime(buf.ReadBool());
             break;
         case 10:
-            SetTimeEnd(buf.ReadInt());
+            SetTimeStart(buf.ReadInt());
             break;
         case 11:
-            SetTimeStride(buf.ReadInt());
+            SetTimeEnd(buf.ReadInt());
             break;
         case 12:
+            SetTimeStride(buf.ReadInt());
+            break;
+        case 13:
             SetOutOfBoundsBehavior(buf.ReadInt());
             break;
         }
@@ -387,6 +424,7 @@ public class ConstructDataBinningAttributes extends AttributeSubject
         String str = new String();
         str = str + stringToString("name", name, indent) + "\n";
         str = str + stringVectorToString("varnames", varnames, indent) + "\n";
+        str = str + ucharVectorToString("binType", binType, indent) + "\n";
         str = str + doubleVectorToString("binBoundaries", binBoundaries, indent) + "\n";
         str = str + indent + "reductionOperator = ";
         if(reductionOperator == REDUCTIONOPERATOR_AVERAGE)
@@ -434,6 +472,7 @@ public class ConstructDataBinningAttributes extends AttributeSubject
     // Attributes
     private String  name;
     private Vector  varnames; // vector of String objects
+    private Vector  binType; // vector of Byte objects
     private Vector  binBoundaries; // vector of Double objects
     private int     reductionOperator;
     private String  varForReductionOperator;

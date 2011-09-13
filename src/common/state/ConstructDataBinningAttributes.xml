@@ -19,9 +19,17 @@
       Clamp
       Discard
     </Enum>
+    <Enum name="BinType">
+      Variable
+      X
+      Y
+      Z
+    </Enum>
     <Field name="name" label="name" type="string">
     </Field>
     <Field name="varnames" label="varnames" type="stringVector">
+    </Field>
+    <Field name="binType" label="binType" type="ucharVector">
     </Field>
     <Field name="binBoundaries" label="binBoundaries" type="doubleVector">
     </Field>

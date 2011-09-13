@@ -121,6 +121,9 @@ QvisDataBinningWindow::~QvisDataBinningWindow()
 //
 // Modifications:
 //   
+//   Hank Childs, Sun Jul 31 16:01:41 PDT 2011
+//   Add support for bins based on spatial dimensions.
+//
 // ****************************************************************************
 
 void
@@ -158,15 +161,32 @@ QvisDataBinningWindow::CreateWindowContents()
     QGridLayout *dim2Layout = new QGridLayout(dim2Tab);
     QGridLayout *dim3Layout = new QGridLayout(dim3Tab);
 
-    dim1VarLabel = new QLabel(tr("Variable"), central);
-    dim1Layout->addWidget(dim1VarLabel,0,0);
+    dim1BinBasedOn = new QLabel(tr("Bin based on"), central);
+    dim1Layout->addWidget(dim1BinBasedOn,0,0);
+
+    QWidget *dim1BinBasedOnWidget = new QWidget(central);
+    dim1BinBasedOnButtonGroup = new QButtonGroup(dim1BinBasedOnWidget);
+    dim1VarLabel = new QRadioButton(tr("Variable"), dim1BinBasedOnWidget);
+    dim1Layout->addWidget(dim1VarLabel,0,1, Qt::AlignRight);
     int dim1VarMask = QvisVariableButton::Scalars;
     dim1Var = new QvisVariableButton(true, true, true, dim1VarMask, central);
     connect(dim1Var, SIGNAL(activated(const QString&)),
             this, SLOT(dim1VarChanged(const QString&)));
-    dim1Layout->addWidget(dim1Var, 0,1);
+    dim1Layout->addWidget(dim1Var, 0,2);
+    dim1XLabel = new QRadioButton(tr("X"), dim1BinBasedOnWidget);
+    dim1Layout->addWidget(dim1XLabel, 0,3);
+    dim1YLabel = new QRadioButton(tr("Y"), dim1BinBasedOnWidget);
+    dim1Layout->addWidget(dim1YLabel, 0,4);
+    dim1ZLabel = new QRadioButton(tr("Z"), dim1BinBasedOnWidget);
+    dim1Layout->addWidget(dim1ZLabel, 0,5);
+    dim1BinBasedOnButtonGroup->addButton(dim1VarLabel,0);
+    dim1BinBasedOnButtonGroup->addButton(dim1XLabel,1);
+    dim1BinBasedOnButtonGroup->addButton(dim1YLabel,2);
+    dim1BinBasedOnButtonGroup->addButton(dim1ZLabel,3);
+    connect(dim1BinBasedOnButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(dim1BinBasedOnChanged(int)));
 
-    dim1NumBinsLabel = new QLabel(tr("Number of Bins"), central);
+    dim1NumBinsLabel = new QLabel(tr("Number of bins"), central);
     dim1Layout->addWidget(dim1NumBinsLabel,1,0);
     dim1NumBins = new QLineEdit(central);
     connect(dim1NumBins, SIGNAL(returnPressed()),
@@ -192,15 +212,26 @@ QvisDataBinningWindow::CreateWindowContents()
             this, SLOT(dim1MaxRangeProcessText()));
     dim1Layout->addWidget(dim1MaxRange, 4,1);
 
-    dim2VarLabel = new QLabel(tr("Variable"), central);
-    dim2Layout->addWidget(dim2VarLabel,0,0);
+    dim2BinBasedOn = new QLabel(tr("Bin based on"), central);
+    dim2Layout->addWidget(dim2BinBasedOn,0,0);
+
+    QWidget *dim2BinBasedOnWidget = new QWidget(central);
+    dim2BinBasedOnButtonGroup = new QButtonGroup(dim2BinBasedOnWidget);
+    dim2VarLabel = new QRadioButton(tr("Variable"), dim2BinBasedOnWidget);
+    dim2Layout->addWidget(dim2VarLabel,0,1, Qt::AlignRight);
     int dim2VarMask = QvisVariableButton::Scalars;
     dim2Var = new QvisVariableButton(true, true, true, dim2VarMask, central);
     connect(dim2Var, SIGNAL(activated(const QString&)),
             this, SLOT(dim2VarChanged(const QString&)));
-    dim2Layout->addWidget(dim2Var, 0,1);
+    dim2Layout->addWidget(dim2Var, 0,2);
+    dim2XLabel = new QRadioButton(tr("X"), dim2BinBasedOnWidget);
+    dim2Layout->addWidget(dim2XLabel, 0,3);
+    dim2YLabel = new QRadioButton(tr("Y"), dim2BinBasedOnWidget);
+    dim2Layout->addWidget(dim2YLabel, 0,4);
+    dim2ZLabel = new QRadioButton(tr("Z"), dim2BinBasedOnWidget);
+    dim2Layout->addWidget(dim2ZLabel, 0,5);
 
-    dim2NumBinsLabel = new QLabel(tr("Number of Bins"), central);
+    dim2NumBinsLabel = new QLabel(tr("Number of bins"), central);
     dim2Layout->addWidget(dim2NumBinsLabel,1,0);
     dim2NumBins = new QLineEdit(central);
     connect(dim2NumBins, SIGNAL(returnPressed()),
@@ -225,16 +256,33 @@ QvisDataBinningWindow::CreateWindowContents()
     connect(dim2MaxRange, SIGNAL(returnPressed()),
             this, SLOT(dim2MaxRangeProcessText()));
     dim2Layout->addWidget(dim2MaxRange, 4,1);
+    dim2BinBasedOnButtonGroup->addButton(dim2VarLabel,0);
+    dim2BinBasedOnButtonGroup->addButton(dim2XLabel,1);
+    dim2BinBasedOnButtonGroup->addButton(dim2YLabel,2);
+    dim2BinBasedOnButtonGroup->addButton(dim2ZLabel,3);
+    connect(dim2BinBasedOnButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(dim2BinBasedOnChanged(int)));
 
-    dim3VarLabel = new QLabel(tr("Variable"), central);
-    dim3Layout->addWidget(dim3VarLabel,0,0);
+    dim3BinBasedOn = new QLabel(tr("Bin based on"), central);
+    dim3Layout->addWidget(dim3BinBasedOn,0,0);
+
+    QWidget *dim3BinBasedOnWidget = new QWidget(central);
+    dim3BinBasedOnButtonGroup = new QButtonGroup(dim3BinBasedOnWidget);
+    dim3VarLabel = new QRadioButton(tr("Variable"), dim3BinBasedOnWidget);
+    dim3Layout->addWidget(dim3VarLabel,0,1, Qt::AlignRight);
     int dim3VarMask = QvisVariableButton::Scalars;
     dim3Var = new QvisVariableButton(true, true, true, dim3VarMask, central);
     connect(dim3Var, SIGNAL(activated(const QString&)),
             this, SLOT(dim3VarChanged(const QString&)));
-    dim3Layout->addWidget(dim3Var, 0,1);
+    dim3Layout->addWidget(dim3Var, 0,2);
+    dim3XLabel = new QRadioButton(tr("X"), dim3BinBasedOnWidget);
+    dim3Layout->addWidget(dim3XLabel, 0,3);
+    dim3YLabel = new QRadioButton(tr("Y"), dim3BinBasedOnWidget);
+    dim3Layout->addWidget(dim3YLabel, 0,4);
+    dim3ZLabel = new QRadioButton(tr("Z"), dim3BinBasedOnWidget);
+    dim3Layout->addWidget(dim3ZLabel, 0,5);
 
-    dim3NumBinsLabel = new QLabel(tr("Number of Bins"), central);
+    dim3NumBinsLabel = new QLabel(tr("Number of bins"), central);
     dim3Layout->addWidget(dim3NumBinsLabel,1,0);
     dim3NumBins = new QLineEdit(central);
     connect(dim3NumBins, SIGNAL(returnPressed()),
@@ -259,6 +307,12 @@ QvisDataBinningWindow::CreateWindowContents()
     connect(dim3MaxRange, SIGNAL(returnPressed()),
             this, SLOT(dim3MaxRangeProcessText()));
     dim3Layout->addWidget(dim3MaxRange, 4,1);
+    dim3BinBasedOnButtonGroup->addButton(dim3VarLabel,0);
+    dim3BinBasedOnButtonGroup->addButton(dim3XLabel,1);
+    dim3BinBasedOnButtonGroup->addButton(dim3YLabel,2);
+    dim3BinBasedOnButtonGroup->addButton(dim3ZLabel,3);
+    connect(dim3BinBasedOnButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(dim3BinBasedOnChanged(int)));
 
     outOfBoundsBehaviorLabel = new QLabel(tr("Behavior for data outside range"), central);
     bdLayout->addWidget(outOfBoundsBehaviorLabel,2,0);
@@ -331,11 +385,16 @@ QvisDataBinningWindow::CreateWindowContents()
 //
 // Modifications:
 //   
+//   Hank Childs, Sun Jul 31 16:01:41 PDT 2011
+//   Add support for bins based on spatial dimensions.
+//
 // ****************************************************************************
 
 void
 QvisDataBinningWindow::UpdateWindow(bool doAll)
 {
+    int button;
+
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -411,15 +470,22 @@ QvisDataBinningWindow::UpdateWindow(bool doAll)
           case DataBinningAttributes::ID_numDimensions:
             if (atts->GetNumDimensions() == DataBinningAttributes::Two || atts->GetNumDimensions() == DataBinningAttributes::Three)
             {
-                dim2Var->setEnabled(true);
-                if(dim2VarLabel)
-                    dim2VarLabel->setEnabled(true);
+                dim2BinBasedOn->setEnabled(true);
+                if (atts->GetDim2BinBasedOn() == DataBinningAttributes::Variable)
+                   dim2Var->setEnabled(true);
+                dim2VarLabel->setEnabled(true);
+                dim2XLabel->setEnabled(true);
+                dim2YLabel->setEnabled(true);
+                dim2ZLabel->setEnabled(true);
             }
             else
             {
+                dim2BinBasedOn->setEnabled(false);
                 dim2Var->setEnabled(false);
-                if(dim2VarLabel)
-                    dim2VarLabel->setEnabled(false);
+                dim2VarLabel->setEnabled(false);
+                dim2XLabel->setEnabled(false);
+                dim2YLabel->setEnabled(false);
+                dim2ZLabel->setEnabled(false);
             }
             if (atts->GetNumDimensions() == DataBinningAttributes::Two || atts->GetNumDimensions() == DataBinningAttributes::Three)
                 dim2SpecifyRange->setEnabled(true);
@@ -463,15 +529,22 @@ QvisDataBinningWindow::UpdateWindow(bool doAll)
             }
             if (atts->GetNumDimensions() == DataBinningAttributes::Three)
             {
-                dim3Var->setEnabled(true);
-                if(dim3VarLabel)
-                    dim3VarLabel->setEnabled(true);
+                dim3BinBasedOn->setEnabled(true);
+                if (atts->GetDim3BinBasedOn() == DataBinningAttributes::Variable)
+                    dim3Var->setEnabled(true);
+                dim3VarLabel->setEnabled(true);
+                dim3XLabel->setEnabled(true);
+                dim3YLabel->setEnabled(true);
+                dim3ZLabel->setEnabled(true);
             }
             else
             {
+                dim3BinBasedOn->setEnabled(false);
                 dim3Var->setEnabled(false);
-                if(dim3VarLabel)
-                    dim3VarLabel->setEnabled(false);
+                dim3VarLabel->setEnabled(false);
+                dim3XLabel->setEnabled(false);
+                dim3YLabel->setEnabled(false);
+                dim3ZLabel->setEnabled(false);
             }
             if (atts->GetNumDimensions() == DataBinningAttributes::Three)
                 dim3SpecifyRange->setEnabled(true);
@@ -590,6 +663,51 @@ QvisDataBinningWindow::UpdateWindow(bool doAll)
           case DataBinningAttributes::ID_emptyVal:
             emptyVal->setText(DoubleToQString(atts->GetEmptyVal()));
             break;
+          case DataBinningAttributes::ID_dim1BinBasedOn:
+            if (atts->GetDim1BinBasedOn() == DataBinningAttributes::Variable)
+               dim1Var->setEnabled(true);
+            else
+               dim1Var->setEnabled(false);
+            if (atts->GetDim1BinBasedOn() == DataBinningAttributes::Variable)
+               dim1VarLabel->setChecked(true);
+            else if (atts->GetDim1BinBasedOn() == DataBinningAttributes::X)
+               dim1XLabel->setChecked(true);
+            else if (atts->GetDim1BinBasedOn() == DataBinningAttributes::Y)
+               dim1YLabel->setChecked(true);
+            else if (atts->GetDim1BinBasedOn() == DataBinningAttributes::Z)
+               dim1ZLabel->setChecked(true);
+            break;
+          case DataBinningAttributes::ID_dim2BinBasedOn:
+            if (atts->GetDim2BinBasedOn() == DataBinningAttributes::Variable
+                && (atts->GetNumDimensions() == DataBinningAttributes::Two ||
+                    atts->GetNumDimensions() == DataBinningAttributes::Two))
+               dim2Var->setEnabled(true);
+            else
+               dim2Var->setEnabled(false);
+            if (atts->GetDim2BinBasedOn() == DataBinningAttributes::Variable)
+               dim2VarLabel->setChecked(true);
+            else if (atts->GetDim2BinBasedOn() == DataBinningAttributes::X)
+               dim2XLabel->setChecked(true);
+            else if (atts->GetDim2BinBasedOn() == DataBinningAttributes::Y)
+               dim2YLabel->setChecked(true);
+            else if (atts->GetDim2BinBasedOn() == DataBinningAttributes::Z)
+               dim2ZLabel->setChecked(true);
+            break;
+          case DataBinningAttributes::ID_dim3BinBasedOn:
+            if (atts->GetDim3BinBasedOn() == DataBinningAttributes::Variable
+                && atts->GetNumDimensions() == DataBinningAttributes::Three)
+               dim3Var->setEnabled(true);
+            else
+               dim3Var->setEnabled(false);
+            if (atts->GetDim3BinBasedOn() == DataBinningAttributes::Variable)
+               dim3VarLabel->setChecked(true);
+            else if (atts->GetDim3BinBasedOn() == DataBinningAttributes::X)
+               dim3XLabel->setChecked(true);
+            else if (atts->GetDim3BinBasedOn() == DataBinningAttributes::Y)
+               dim3YLabel->setChecked(true);
+            else if (atts->GetDim3BinBasedOn() == DataBinningAttributes::Z)
+               dim3ZLabel->setChecked(true);
+            break;
         }
     }
 }
@@ -693,7 +811,7 @@ QvisDataBinningWindow::GetCurrentValues(int which_widget)
             atts->SetDim2NumBins(val);
         else
         {
-            ResettingError(tr("Number of Bins"),
+            ResettingError(tr("Number of bins"),
                 IntToQString(atts->GetDim2NumBins()));
             atts->SetDim2NumBins(atts->GetDim2NumBins());
         }
@@ -735,7 +853,7 @@ QvisDataBinningWindow::GetCurrentValues(int which_widget)
             atts->SetDim3NumBins(val);
         else
         {
-            ResettingError(tr("Number of Bins"),
+            ResettingError(tr("Number of bins"),
                 IntToQString(atts->GetDim3NumBins()));
             atts->SetDim3NumBins(atts->GetDim3NumBins());
         }
@@ -870,6 +988,64 @@ QvisDataBinningWindow::dim3NumBinsProcessText()
 {
     GetCurrentValues(DataBinningAttributes::ID_dim3NumBins);
     Apply();
+}
+
+
+void
+QvisDataBinningWindow::dim1BinBasedOnChanged(int val)
+{
+    DataBinningAttributes::BinBasedOn newVal;
+    if (val == 0)
+        newVal = DataBinningAttributes::Variable;
+    else if (val == 1)
+        newVal = DataBinningAttributes::X;
+    else if (val == 2)
+        newVal = DataBinningAttributes::Y;
+    else if (val == 3)
+        newVal = DataBinningAttributes::Z;
+    if(newVal != atts->GetDim1BinBasedOn())
+    {
+        atts->SetDim1BinBasedOn(newVal);
+        Apply();
+    }
+}
+
+void
+QvisDataBinningWindow::dim2BinBasedOnChanged(int val)
+{
+    DataBinningAttributes::BinBasedOn newVal;
+    if (val == 0)
+        newVal = DataBinningAttributes::Variable;
+    else if (val == 1)
+        newVal = DataBinningAttributes::X;
+    else if (val == 2)
+        newVal = DataBinningAttributes::Y;
+    else if (val == 3)
+        newVal = DataBinningAttributes::Z;
+    if(newVal != atts->GetDim2BinBasedOn())
+    {
+        atts->SetDim2BinBasedOn(newVal);
+        Apply();
+    }
+}
+
+void
+QvisDataBinningWindow::dim3BinBasedOnChanged(int val)
+{
+    DataBinningAttributes::BinBasedOn newVal;
+    if (val == 0)
+        newVal = DataBinningAttributes::Variable;
+    else if (val == 1)
+        newVal = DataBinningAttributes::X;
+    else if (val == 2)
+        newVal = DataBinningAttributes::Y;
+    else if (val == 3)
+        newVal = DataBinningAttributes::Z;
+    if(newVal != atts->GetDim3BinBasedOn())
+    {
+        atts->SetDim3BinBasedOn(newVal);
+        Apply();
+    }
 }
 
 

@@ -57,10 +57,17 @@ using     std::vector;
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Aug  1 06:48:26 PDT 2011
+//    Add support for bin types.
+//
 // ****************************************************************************
 
 avtDataBinningFunctionInfo::avtDataBinningFunctionInfo(avtBinningScheme *bs,
-                                    const vector<string> &tn, const string &cv)
+                                    const vector<string> &tn, 
+                                    const vector<unsigned char> &bn, 
+                                    const string &cv)
 {
     if (tn.size() <= 0)
     {
@@ -68,6 +75,8 @@ avtDataBinningFunctionInfo::avtDataBinningFunctionInfo(avtBinningScheme *bs,
     }
 
     binningScheme = bs;
+    for (int i = 0 ; i < bn.size() ; i++)
+        binBasedOn.push_back((BinBasedOn) bn[i]);
     tupleNames = tn;
     codomainVariable = cv;
 }
@@ -107,6 +116,33 @@ avtDataBinningFunctionInfo::GetDomainTupleName(int idx) const
     }
 
     return tupleNames[idx];
+}
+
+
+// ****************************************************************************
+//  Method: avtDataBinningFunctionInfo::GetBinBasedOnType
+//
+//  Purpose:
+//      Get the category of for the bin ... is it based on X, Y, Z, or a 
+//      variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2011
+//
+// ****************************************************************************
+
+avtDataBinningFunctionInfo::BinBasedOn
+avtDataBinningFunctionInfo::GetBinBasedOnType(int idx) const
+{
+    if (binBasedOn.size() == 0)
+        return VARIABLE;
+
+    if (idx < 0 || idx >= binBasedOn.size())
+    {
+        EXCEPTION2(BadIndexException, idx, binBasedOn.size());
+    }
+
+    return binBasedOn[idx];
 }
 
 

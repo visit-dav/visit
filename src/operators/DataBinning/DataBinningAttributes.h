@@ -86,6 +86,13 @@ public:
         Clamp,
         Discard
     };
+    enum BinBasedOn
+    {
+        X,
+        Y,
+        Z,
+        Variable
+    };
 
     // These constructors are for objects of this class
     DataBinningAttributes();
@@ -119,16 +126,19 @@ public:
 
     // Property setting methods
     void SetNumDimensions(NumDimensions numDimensions_);
+    void SetDim1BinBasedOn(BinBasedOn dim1BinBasedOn_);
     void SetDim1Var(const std::string &dim1Var_);
     void SetDim1SpecifyRange(bool dim1SpecifyRange_);
     void SetDim1MinRange(double dim1MinRange_);
     void SetDim1MaxRange(double dim1MaxRange_);
     void SetDim1NumBins(int dim1NumBins_);
+    void SetDim2BinBasedOn(BinBasedOn dim2BinBasedOn_);
     void SetDim2Var(const std::string &dim2Var_);
     void SetDim2SpecifyRange(bool dim2SpecifyRange_);
     void SetDim2MinRange(double dim2MinRange_);
     void SetDim2MaxRange(double dim2MaxRange_);
     void SetDim2NumBins(int dim2NumBins_);
+    void SetDim3BinBasedOn(BinBasedOn dim3BinBasedOn_);
     void SetDim3Var(const std::string &dim3Var_);
     void SetDim3SpecifyRange(bool dim3SpecifyRange_);
     void SetDim3MinRange(double dim3MinRange_);
@@ -141,18 +151,21 @@ public:
 
     // Property getting methods
     NumDimensions     GetNumDimensions() const;
+    BinBasedOn        GetDim1BinBasedOn() const;
     const std::string &GetDim1Var() const;
           std::string &GetDim1Var();
     bool              GetDim1SpecifyRange() const;
     double            GetDim1MinRange() const;
     double            GetDim1MaxRange() const;
     int               GetDim1NumBins() const;
+    BinBasedOn        GetDim2BinBasedOn() const;
     const std::string &GetDim2Var() const;
           std::string &GetDim2Var();
     bool              GetDim2SpecifyRange() const;
     double            GetDim2MinRange() const;
     double            GetDim2MaxRange() const;
     int               GetDim2NumBins() const;
+    BinBasedOn        GetDim3BinBasedOn() const;
     const std::string &GetDim3Var() const;
           std::string &GetDim3Var();
     bool              GetDim3SpecifyRange() const;
@@ -185,6 +198,11 @@ public:
 protected:
     static std::string OutOfBoundsBehavior_ToString(int);
 public:
+    static std::string BinBasedOn_ToString(BinBasedOn);
+    static bool BinBasedOn_FromString(const std::string &, BinBasedOn &);
+protected:
+    static std::string BinBasedOn_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -198,16 +216,19 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_numDimensions = 0,
+        ID_dim1BinBasedOn,
         ID_dim1Var,
         ID_dim1SpecifyRange,
         ID_dim1MinRange,
         ID_dim1MaxRange,
         ID_dim1NumBins,
+        ID_dim2BinBasedOn,
         ID_dim2Var,
         ID_dim2SpecifyRange,
         ID_dim2MinRange,
         ID_dim2MaxRange,
         ID_dim2NumBins,
+        ID_dim3BinBasedOn,
         ID_dim3Var,
         ID_dim3SpecifyRange,
         ID_dim3MinRange,
@@ -222,16 +243,19 @@ public:
 
 private:
     int         numDimensions;
+    int         dim1BinBasedOn;
     std::string dim1Var;
     bool        dim1SpecifyRange;
     double      dim1MinRange;
     double      dim1MaxRange;
     int         dim1NumBins;
+    int         dim2BinBasedOn;
     std::string dim2Var;
     bool        dim2SpecifyRange;
     double      dim2MinRange;
     double      dim2MaxRange;
     int         dim2NumBins;
+    int         dim3BinBasedOn;
     std::string dim3Var;
     bool        dim3SpecifyRange;
     double      dim3MinRange;
@@ -246,6 +270,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define DATABINNINGATTRIBUTES_TMFS "isbddisbddisbddiiisd"
+#define DATABINNINGATTRIBUTES_TMFS "iisbddiisbddiisbddiiisd"
 
 #endif
