@@ -1750,7 +1750,8 @@ avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
         double bbox[6];
         cli->second->GetDataSet()->GetBounds(bbox);
 
-        if (pt.x < bbox[0] || pt.x > bbox[1] || pt.y < bbox[2] || pt.y > bbox[3] ||
+        if (pt.x < bbox[0] || pt.x > bbox[1] ||
+            pt.y < bbox[2] || pt.y > bbox[3] ||
             pt.z < bbox[4] || pt.z > bbox[5])
         {
             // We are getting data in a point based way and the point changed
@@ -1781,6 +1782,7 @@ avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
                << (cell == -1 ? "false" : "true") << endl;
 
     visitTimer->StopTimer( t1, "PointInDomain" );
+
     return cell != -1;
 }
 
@@ -2379,7 +2381,8 @@ avtPICSFilter::AddSeedPoint(avtVector &pt,
                             std::vector<avtIntegralCurve *> &ics)
 {
     if (icAlgo == NULL)
-        EXCEPTION1(ImproperUseException, "Improper call of avtPICSFilter::AddSeedpoints");
+        EXCEPTION1(ImproperUseException,
+                   "Improper call of avtPICSFilter::AddSeedpoints");
 
     std::vector<std::vector<int> > ids;
 
@@ -2470,7 +2473,30 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 
     for (int i = 0; i < pts.size(); i++)
     {
-        double xyz[3] = {pts[i].x, pts[i].y, pts[i].z};
+        avtVector seedPt;
+        avtVector seedVel = vels[i];
+
+        // Transform the seed into the correct coordinate systems so
+        // it passes the domain tests.
+        if( fieldType == STREAMLINE_FIELD_M3D_C1_2D )
+        {
+          // Convert the seed to cylindrical coordiantes.
+          seedPt.x = sqrt(pts[i].x*pts[i].x+pts[i].y*pts[i].y);
+          seedPt.y = 0; //atan2( pts[i].y, pts[i].x );
+          seedPt.z = pts[i].z;
+        }
+        else if( fieldType == STREAMLINE_FIELD_M3D_C1_3D )
+        {
+          // Convert the seed to cylindrical coordinates
+          seedPt.x = sqrt(pts[i].x*pts[i].x+pts[i].y*pts[i].y);
+          seedPt.y = atan2( pts[i].y, pts[i].x );
+          seedPt.z = pts[i].z;
+        }
+        else
+          seedPt = pts[i];
+
+
+        double xyz[3] = {seedPt.x, seedPt.y, seedPt.z};
         vector<int> dl;
         
         intervalTree->GetElementsListFromRange(xyz, xyz, dl);
@@ -2481,7 +2507,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         {
             DomainType dom(dl[j], seedTimeStep0);
 
-            if (!PointInDomain(pts[i], dom))
+            if (!PointInDomain(seedPt, dom))
             {
                 // Need to keep the ID insink with the other ranks.
                 GetNextCurveID();
@@ -2490,60 +2516,44 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                 continue;
             }
 
-            avtVector seedPt;
-            avtVector seedVel = vels[i];
-
-            if( fieldType == STREAMLINE_FIELD_M3D_C1_2D )
-            {
-              // Convert the seed to cylindrical coordiantes.
-              seedPt.x = sqrt(pts[i].x*pts[i].x+pts[i].y*pts[i].y);
-              seedPt.y = 0; //atan2( pts[i].y, pts[i].x );
-              seedPt.z = pts[i].z;
-            }
-            else if( fieldType == STREAMLINE_FIELD_M3D_C1_3D )
-            {
-              // Convert the seed to cylindrical coordinates
-              seedPt.x = sqrt(pts[i].x*pts[i].x+pts[i].y*pts[i].y);
-              seedPt.y = atan2( pts[i].y, pts[i].x );
-              seedPt.z = pts[i].z;
-            }
-            else
-              seedPt = pts[i];
-
             if (integrationDirection == VTK_INTEGRATE_FORWARD)
             {
-                avtIntegralCurve *ic = CreateIntegralCurve(solver,
-                                                           avtIntegralCurve::DIRECTION_FORWARD,
-                                                           seedTime0, seedPt, seedVel, 
-                                                           GetNextCurveID());
+                avtIntegralCurve *ic =
+                  CreateIntegralCurve(solver,
+                                      avtIntegralCurve::DIRECTION_FORWARD,
+                                      seedTime0, seedPt, seedVel, 
+                                      GetNextCurveID());
                 ic->domain = dom;
                 curves.push_back(ic);
                 seedPtIds.push_back(ic->id);
             }
             else if (integrationDirection == VTK_INTEGRATE_BACKWARD)
             {
-                avtIntegralCurve *ic = CreateIntegralCurve(solver,
-                                                           avtIntegralCurve::DIRECTION_BACKWARD,
-                                                           seedTime0, seedPt, seedVel,
-                                                           GetNextCurveID());
+                avtIntegralCurve *ic =
+                  CreateIntegralCurve(solver,
+                                      avtIntegralCurve::DIRECTION_BACKWARD,
+                                      seedTime0, seedPt, seedVel,
+                                      GetNextCurveID());
                 ic->domain = dom;
                 curves.push_back(ic);
                 seedPtIds.push_back(ic->id);
             }
             else if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
             {
-                avtIntegralCurve *ic0 = CreateIntegralCurve(solver,
-                                                           avtIntegralCurve::DIRECTION_FORWARD,
-                                                           seedTime0, seedPt, seedVel,
-                                                           GetNextCurveID());
+                avtIntegralCurve *ic0 =
+                  CreateIntegralCurve(solver,
+                                      avtIntegralCurve::DIRECTION_FORWARD,
+                                      seedTime0, seedPt, seedVel,
+                                      GetNextCurveID());
                 ic0->domain = dom;
                 curves.push_back(ic0);
                 seedPtIds.push_back(ic0->id);
 
-                avtIntegralCurve *ic1 = CreateIntegralCurve(solver,
-                                                           avtIntegralCurve::DIRECTION_BACKWARD,
-                                                           seedTime0, seedPt, seedVel,
-                                                           GetNextCurveID());
+                avtIntegralCurve *ic1 =
+                  CreateIntegralCurve(solver,
+                                      avtIntegralCurve::DIRECTION_BACKWARD,
+                                      seedTime0, seedPt, seedVel,
+                                      GetNextCurveID());
                 ic1->domain = dom;
                 curves.push_back(ic1);
                 seedPtIds.push_back(ic1->id);
@@ -2716,7 +2726,8 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
 
         for (int i = 0; i < elist->GetNumExpressions(); i++)
         {
-            if (elist->GetExpressions(i).GetName() == avtIVPVTKTimeVaryingField::NextTimePrefix)
+            if (elist->GetExpressions(i).GetName() ==
+                avtIVPVTKTimeVaryingField::NextTimePrefix)
             {
                 needExpr = false;
                 break;
@@ -2733,11 +2744,14 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
             char defn[1024];
             if( pathlineCMFE == 0 )
             {
-                SNPRINTF(defn, 1024, "conn_cmfe(<[1]id:%s>, %s)", pathlineName.c_str(), meshName.c_str());
+                SNPRINTF(defn, 1024, "conn_cmfe(<[1]id:%s>, %s)",
+                         pathlineName.c_str(), meshName.c_str());
             }
             else
             {
-                SNPRINTF(defn, 1024, "pos_cmfe(<[1]id:%s>, %s, %s)", pathlineName.c_str(), meshName.c_str(), pathlineName.c_str());
+                SNPRINTF(defn, 1024, "pos_cmfe(<[1]id:%s>, %s, %s)",
+                         pathlineName.c_str(), meshName.c_str(),
+                         pathlineName.c_str());
             }
             e->SetDefinition(defn);
             e->SetType(Expression::VectorMeshVar);
@@ -2835,7 +2849,9 @@ avtPICSFilter::DeleteIntegralCurves(vector<int> &icIDs)
 // ****************************************************************************
 
 void
-avtPICSFilter::GetPathlineVelocityMeshVariables(avtDataRequest_p &dataRequest, std::string &velocity, std::string &mesh)
+avtPICSFilter::GetPathlineVelocityMeshVariables(avtDataRequest_p &dataRequest,
+                                                std::string &velocity,
+                                                std::string &mesh)
 {
     mesh = dataRequest->GetVariable();
     velocity = mesh;
@@ -2903,7 +2919,8 @@ void
 avtPICSFilter::PurgeDomain( const int domain, const int timeStep )
 {
     DomainType dom(domain, timeStep);
-    std::map<DomainType,avtCellLocator_p>::iterator it = domainToCellLocatorMap.find( dom );
+    std::map<DomainType,avtCellLocator_p>::iterator it =
+      domainToCellLocatorMap.find( dom );
 
     if( it != domainToCellLocatorMap.end() )
     {

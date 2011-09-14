@@ -290,7 +290,7 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
             int i = cellid % (strDimPtr[0] - 1);
             int j = (cellid / (strDimPtr[0] - 1)) % (strDimPtr[1] - 1);
             int k = cellid / ((strDimPtr[0] - 1) * (strDimPtr[1] - 1));
-    
+
             int idx = i + j*strDimPtr[0] + k*strDimPtr[0]*strDimPtr[1];
             int d0 = strDimPtr[0];
             int d1 = strDimPtr[0]*strDimPtr[1];
@@ -311,7 +311,7 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
         {
             int i = cellid % (strDimPtr[0] - 1);
             int j = cellid / (strDimPtr[0] - 1);
-    
+
             int idx = i + j*strDimPtr[0];
             int d0 = strDimPtr[0];
             ids[0] = idx;
