@@ -274,7 +274,7 @@ vtkRectilinearGrid* avtFFTFilter::PopulateRGrid(std::vector<double>* freqs, doub
       vals->SetTuple(i, dummy);
     }
 
-    delete dummy;
+    delete []dummy;
 
     debug5 <<"avtFFTFilter::PopulateRGrid() - Returning" <<std::endl;
     return outGrid;
@@ -370,7 +370,7 @@ vtkRectilinearGrid* avtFFTFilter::ComputeFFT(std::vector<double>* data, long nDa
   vtkRectilinearGrid* outGrid = PopulateRGrid(&freqs, fftData, nFFThalf);
   ManageMemory(outGrid);
 
-  delete fftData;
+  delete []fftData;
 
   debug5 <<"avtFFTFilter::ComputeFFT() - Returning" <<std::endl;
   return outGrid;
@@ -409,6 +409,13 @@ avtFFTFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
   // Convert input dataset to a rectilinear grid for easier access
   vtkRectilinearGrid *rGrid = vtkRectilinearGrid::SafeDownCast(in_ds);
+
+  // If input dataset has not been safely down cast to vtkRectilinearGrid, return.
+  if(rGrid == NULL) {
+    debug3 << "avtFFTFilter::ExecuteData() ERROR: Input dataset when safely down cast to VTK_RECTILINEAR_GRID is NULL." <<std::endl;
+    debug3 << "avtFFTFilter::ExecuteData() ERROR: Not executing FFT. Returning input dataset." << std::endl;
+    return in_ds;
+  }
 
   // Check if the input dataset dimension is X/1/1
   int* dims = rGrid->GetDimensions();
