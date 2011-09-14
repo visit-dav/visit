@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
 #include <avtMaterial.h>
 #include <avtVTKFileFormat.h>
 
@@ -54,6 +55,7 @@
 #include <vtkStructuredPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkFloatArray.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkVisItXMLImageDataReader.h>
 #include <vtkVisItXMLPolyDataReader.h>
 #include <vtkVisItXMLRectilinearGridReader.h>
@@ -762,6 +764,9 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Expand the test for lower topological dimensions to include
 //    structured grids.
 //
+//    Hank Childs, Wed Sep 14 16:29:19 PDT 2011
+//    Improve handling of ghost data.
+//
 // ****************************************************************************
 
 void
@@ -900,6 +905,24 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
         }
     }
+    if (dataset->GetCellData()->GetArray("avtGhostZones"))
+    {
+        mesh->containsGhostZones = AVT_HAS_GHOSTS;
+        int ncells = dataset->GetNumberOfCells();
+        vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *) dataset->GetCellData()->GetArray("avtGhostZones");
+        unsigned char *ptr = arr->GetPointer(0);
+        unsigned char v = '\0';
+        avtGhostData::AddGhostZoneType(v, ZONE_EXTERIOR_TO_PROBLEM);
+        for (int i = 0 ; i < ncells ; i++)
+            if (ptr[i] & v)
+            {
+                mesh->containsExteriorBoundaryGhosts = true;
+                break;
+            }
+    }
+    else
+        mesh->containsGhostZones = AVT_NO_GHOSTS;
+
     md->Add(mesh); 
 
     int nvars = 0;
