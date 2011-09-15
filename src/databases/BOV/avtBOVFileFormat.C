@@ -1965,10 +1965,13 @@ avtBOVFileFormat::ReadTOC(void)
                 }
             }
 
-            if (fortranOrder)
+            if (!fortranOrder)
             {
                 // Instead of reordering data, reorder axes
-                std::swap(full_size[0], full_size[2]);
+                if (full_size[2] == 1)
+                    std::swap(full_size[0], full_size[1]);
+                else
+                    std::swap(full_size[0], full_size[2]);
             }
         }
         else
