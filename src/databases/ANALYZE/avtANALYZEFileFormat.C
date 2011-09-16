@@ -44,6 +44,9 @@
 
 #include <string>
 
+#include <vtkUnsignedCharArray.h>
+#include <vtkShortArray.h>
+#include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 
@@ -317,6 +320,10 @@ avtANALYZEFileFormat::GetMesh(const char *meshname)
 //  Programmer: Brad Whitlock
 //  Creation:   Mon Nov 24 16:51:26 PST 2003
 //
+//  Modifications:
+//    Brad Whitlock, Fri Sep 16 09:18:06 PDT 2011
+//    Rewrote it to read data directly into different VTK buffers.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -327,7 +334,7 @@ avtANALYZEFileFormat::GetVar(const char *varname)
     //
     // Try and open the data file.
     //
-    vtkFloatArray *rv = 0;
+    vtkDataArray *rv = 0;
     debug1 << "avtANALYZEFileFormat::GetVar: Opening data file: "
            << dataFilename.c_str() << endl;
     FILE *fp = fopen(dataFilename.c_str(), "rb");
@@ -339,8 +346,6 @@ avtANALYZEFileFormat::GetVar(const char *varname)
         dims[1] = int(fileInformation.data.dime.dim[2]);
         dims[2] = int(fileInformation.data.dime.dim[3]);
         int ntuples = dims[0] * dims[1] * dims[2];
-        rv = vtkFloatArray::New();
-        rv->SetNumberOfTuples(ntuples);
 
         //
         // Read the data from the file, convert it to float, and put it
@@ -348,73 +353,74 @@ avtANALYZEFileFormat::GetVar(const char *varname)
         //
         if(fileInformation.data.dime.datatype == DT_UNSIGNED_CHAR)
         {
-            unsigned char *data = new unsigned char[ntuples];
-            nb = fread((void *)data, ntuples * sizeof(unsigned char), 1, fp);
-            for (int i = 0 ; i < ntuples ; i++)
-                rv->SetTuple1(i, float(data[i]));
-            delete [] data;
+            rv = vtkUnsignedCharArray::New();
+            if(rv != NULL)
+            {
+                rv->SetNumberOfTuples(ntuples);
+                unsigned char *data = (unsigned char *)rv->GetVoidPointer(0);
+                if(data != NULL)
+                    nb = fread((void *)data, ntuples * sizeof(unsigned char), 1, fp);
+            }
         }
         else if(fileInformation.data.dime.datatype == DT_SIGNED_SHORT)
         {
-            short *data = new short[ntuples];
-            nb = fread((void *)data, ntuples * sizeof(short), 1, fp);
-
-            if(fileInformation.ReversedEndian())
+            rv = vtkShortArray::New();
+            if(rv != NULL)
             {
-                for (int i = 0 ; i < ntuples ; i++)
+                rv->SetNumberOfTuples(ntuples);
+                short *data = (short *)rv->GetVoidPointer(0);
+                if(data != NULL)
                 {
-                    short tmp = reverse_endian(data[i]);
-                    rv->SetTuple1(i, float(tmp));
+                    nb = fread((void *)data, ntuples * sizeof(short), 1, fp);
+
+                    if(fileInformation.ReversedEndian())
+                    {
+                        short *end = data + ntuples;
+                        while(data < end)
+                            *data++ = reverse_endian(*data);
+                    }
                 }
             }
-            else
-            {
-                for (int i = 0 ; i < ntuples ; i++)
-                    rv->SetTuple1(i, float(data[i]));
-            }
-
-            delete [] data;
         }
         else if(fileInformation.data.dime.datatype == DT_SIGNED_INT)
         {
-            int *data = new int[ntuples];
-            nb = fread((void *)data, ntuples * sizeof(int), 1, fp);
-
-            if(fileInformation.ReversedEndian())
+            rv = vtkIntArray::New();
+            if(rv != NULL)
             {
-                for (int i = 0 ; i < ntuples ; i++)
+                rv->SetNumberOfTuples(ntuples);
+                int *data = (int *)rv->GetVoidPointer(0);
+                if(data != NULL)
                 {
-                    int tmp = reverse_endian(data[i]);
-                    rv->SetTuple1(i, float(tmp));
+                    nb = fread((void *)data, ntuples * sizeof(int), 1, fp);
+
+                    if(fileInformation.ReversedEndian())
+                    {
+                        int *end = data + ntuples;
+                        while(data < end)
+                            *data++ = reverse_endian(*data);
+                    }
                 }
             }
-            else
-            {
-                for (int i = 0 ; i < ntuples ; i++)
-                    rv->SetTuple1(i, float(data[i]));
-            }
-            delete [] data;
         }
         else if(fileInformation.data.dime.datatype == DT_FLOAT)
         {
-            float *data = new float[ntuples];
-            nb = fread((void *)data, ntuples * sizeof(float), 1, fp);
-
-            if(fileInformation.ReversedEndian())
+            rv = vtkFloatArray::New();
+            if(rv != NULL)
             {
-                for (int i = 0 ; i < ntuples ; i++)
+                rv->SetNumberOfTuples(ntuples);
+                float *data = (float *)rv->GetVoidPointer(0);
+                if(data != NULL)
                 {
-                    float tmp = reverse_endian(data[i]);
-                    rv->SetTuple1(i, tmp);
+                    nb = fread((void *)data, ntuples * sizeof(float), 1, fp);
+
+                    if(fileInformation.ReversedEndian())
+                    {
+                        float *end = data + ntuples;
+                        while(data < end)
+                            *data++ = reverse_endian(*data);
+                    }
                 }
             }
-            else
-            {
-                for (int i = 0 ; i < ntuples ; i++)
-                     rv->SetTuple1(i, data[i]);
-            }
-
-            delete [] data;
         }
         else
         {
