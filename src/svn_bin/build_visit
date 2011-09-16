@@ -471,6 +471,10 @@
 #
 #     Mark C. Miller, Mon Aug 29 23:54:40 PDT 2011
 #     I fixed URL for where it obtains ITAPS-FMDB tarballs
+#
+#     Cyrus Harrison, Thu Sep 15 16:47:18 PDT 2011
+#     Disable fortran support if a fortran compiler was not specified or found.
+#
 # *****************************************************************************
 
 
@@ -9752,6 +9756,12 @@ if [[ "$OPSYS" == "AIX" ]]; then
         echo "GNU tar command."
         exit 1
     fi
+fi
+
+# Disable fortran support if a fortran compiler was not specified or found.
+if [[ $FC_COMPILER == "" ]]; then
+    export FC_COMPILER="no";
+    warn "FC_COMPILER not set: Fortran support for thirdparty libraries disabled."
 fi
 
 # Show a splashscreen. This routine also determines if we have "dialog"
