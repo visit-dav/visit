@@ -1647,7 +1647,14 @@ class AttsFieldFactory
 //
 //   Mark C. Miller, Tue Sep  1 09:19:06 PDT 2009
 //   Fixed missing call to SelectAll in implementation of Init() func.
+//
+//   Kathleen Biagas, Mon Sep 19 15:51:28 PDT 2011
+//   For atts with 'custombase', call baseClass' method instead of returning
+//   'FieldType_Unknown' or 'invalid index' in the default case for 
+//   GetFieldName, GetFieldType, GetFieldTypeName and FieldsEqual.
+//
 // ----------------------------------------------------------------------------
+
 #include <GeneratorBase.h>
 
 class AttsGeneratorAttribute : public GeneratorBase
@@ -2975,7 +2982,10 @@ private:
             QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
             c << "    case "<<fieldID<<" return \""<<fields[i]->name<<"\";" << Endl;
         }
-        c << "    default:  return \"invalid index\";" << Endl;
+        if (custombase)
+            c << "    default:  return " << baseClass << "::GetFieldName(index);" << Endl;
+        else
+            c << "    default:  return \"invalid index\";" << Endl;
         c << "    }" << Endl;
         c << "}" << Endl;
         c << Endl;
@@ -2993,7 +3003,10 @@ private:
             QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
             c << "    case "<<fieldID<<" return FieldType_"<<fields[i]->GetFieldType()<<";" << Endl;
         }
-        c << "    default:  return FieldType_unknown;" << Endl;
+        if (custombase)
+            c << "    default:  return " << baseClass << "::GetFieldType(index);" << Endl;
+        else
+            c << "    default:  return FieldType_unknown;" << Endl;
         c << "    }" << Endl;
         c << "}" << Endl;
         c << Endl;
@@ -3011,7 +3024,10 @@ private:
             QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
             c << "    case "<<fieldID<<" return \""<<fields[i]->type<<"\";" << Endl;
         }
-        c << "    default:  return \"invalid index\";" << Endl;
+        if (custombase)
+            c << "    default:  return " << baseClass << "::GetFieldTypeName(index);" << Endl;
+        else
+            c << "    default:  return \"invalid index\";" << Endl;
         c << "    }" << Endl;
         c << "}" << Endl;
         c << Endl;
@@ -3041,7 +3057,10 @@ private:
             c << ";" << Endl << "        }" << Endl;
             c << "        break;" << Endl;
         }
-        c << "    default: retval = false;" << Endl;
+        if (custombase)
+            c << "    default: retval = " << baseClass << "::FieldsEqual(index_, rhs);" << Endl;
+        else 
+            c << "    default: retval = false;" << Endl;
         c << "    }" << Endl << Endl;
         c << "    return retval;" << Endl;
         c << "}" << Endl << Endl;
