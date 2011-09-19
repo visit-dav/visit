@@ -109,8 +109,9 @@ namespace StringHelpers
     std::string UTILITY_API HumanReadableList(const std::vector<std::string>&);
     bool UTILITY_API IsPureASCII(const std::string &txt);
     bool UTILITY_API IsPureASCII(const char *const txt, int length);
-
-
+    bool UTILITY_API CaseInsenstiveEqual(const std::string &str_a,
+                                         const std::string &str_b);
+    
 // ****************************************************************************
 //  Function: str_to_u_numeric
 //

@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+#include <StringHelpers.h>
 
 // ****************************************************************************
 // Class: QueryList

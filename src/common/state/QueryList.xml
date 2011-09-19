@@ -75,4 +75,7 @@
     </Function>
     <Function name="GetQueryType" user="true" member="true">
     </Function>
+    <Include file="header" quoted="false">
+      StringHelpers.h
+    </Include>
   </Attribute>
