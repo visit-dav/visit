@@ -588,7 +588,7 @@ ThresholdAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    default:  return "invalid index";
+    default:  return ThresholdOpAttributes::GetFieldName(index);
     }
 }
 
@@ -612,7 +612,7 @@ ThresholdAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    default:  return FieldType_unknown;
+    default:  return ThresholdOpAttributes::GetFieldType(index);
     }
 }
 
@@ -636,7 +636,7 @@ ThresholdAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    default:  return "invalid index";
+    default:  return ThresholdOpAttributes::GetFieldTypeName(index);
     }
 }
 
@@ -662,7 +662,7 @@ ThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
-    default: retval = false;
+    default: retval = ThresholdOpAttributes::FieldsEqual(index_, rhs);
     }
 
     return retval;
