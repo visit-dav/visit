@@ -46,6 +46,7 @@
 #include <regex.h>
 #endif
 #include <stdlib.h>
+#include <algorithm>
 #include <map>
 #include <string>
 #include <cstring>
