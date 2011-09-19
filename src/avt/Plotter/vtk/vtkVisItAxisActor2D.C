@@ -754,6 +754,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       {
           SNPRINTF(string,64,format, val*this->MajorTickLabelScale);
           double v = atof(string);
+          if (this->MajorTickLabelScale != 0.0)
+              v /= this->MajorTickLabelScale;
           double error = fabs(val-v) / (Range[1]-Range[0]);
           if (fabs(error) < 0.01) // < less than 1%
               break;
