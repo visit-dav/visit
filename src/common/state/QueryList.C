@@ -1216,6 +1216,10 @@ QueryList::AddQuery(const std::string &name, QueryType t, Groups g, WindowType w
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    July 11, 2003 
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
+//    Use case insensitive equal test.
+//
 // ****************************************************************************
  
 bool
@@ -1224,7 +1228,7 @@ QueryList::QueryExists(const std::string &name, QueryType t)
     bool match = false;
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (name == names[i]) 
+        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
         {
             if (t == types[i])
             {
@@ -1245,6 +1249,10 @@ QueryList::QueryExists(const std::string &name, QueryType t)
 //  Programmer:  Hank Childs
 //  Creation:    October 2, 2003
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
+//    Use case insensitive equal test.
+//
 // ****************************************************************************
  
 int
@@ -1252,7 +1260,7 @@ QueryList::NumberOfInputsForQuery(const std::string &name)
 {
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (name == names[i]) 
+        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
         {
             return numInputs[i];
         }
@@ -1269,6 +1277,10 @@ QueryList::NumberOfInputsForQuery(const std::string &name)
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    November 18, 2003 
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
+//    Use case insensitive equal test.
+//
 // ****************************************************************************
  
 int
@@ -1276,7 +1288,7 @@ QueryList::AllowedVarsForQuery(const std::string &name)
 {
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (name == names[i]) 
+        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
         {
             return allowedVarTypes[i];
         }
@@ -1293,6 +1305,10 @@ QueryList::AllowedVarsForQuery(const std::string &name)
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    March 23, 2004 
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
+//    Use case insensitive equal test.
+//
 // ****************************************************************************
  
 bool
@@ -1301,7 +1317,7 @@ QueryList::TimeQueryAvailable(const std::string &name)
     bool canDoTime = false;
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (name == names[i]) 
+        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
         {
             canDoTime = (queryMode[i] != QueryList::QueryOnly);
             break;
@@ -1319,6 +1335,10 @@ QueryList::TimeQueryAvailable(const std::string &name)
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    March 15, 2005 
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
+//    Use case insensitive equal test.
+//
 // ****************************************************************************
  
 int
@@ -1327,7 +1347,7 @@ QueryList::GetWindowType(const std::string &name)
     int wt = -1; 
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (name == names[i]) 
+        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
         {
             wt = winType[i];
             break;
@@ -1345,6 +1365,10 @@ QueryList::GetWindowType(const std::string &name)
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    November 1, 2005 
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
+//    Use case insensitive equal test.
+//
 // ****************************************************************************
  
 int
@@ -1352,7 +1376,7 @@ QueryList::NumberOfVarsForQuery(const std::string &name)
 {
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (name == names[i]) 
+        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
         {
             return numVars[i];
         }
@@ -1369,6 +1393,10 @@ QueryList::NumberOfVarsForQuery(const std::string &name)
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    November 9, 2005 
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
+//    Use case insensitive equal test.
+//
 // ****************************************************************************
  
 bool
@@ -1377,7 +1405,7 @@ QueryList::RegularQueryAvailable(const std::string &name)
     bool canDoRegular = false;
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (name == names[i]) 
+        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
         {
             canDoRegular = (queryMode[i] != QueryList::TimeOnly);
             break;
@@ -1395,6 +1423,10 @@ QueryList::RegularQueryAvailable(const std::string &name)
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    June 27, 2011 
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Sep 19 15:44:34 PDT 2011
+//    Use case insensitive equal test.
+//
 // ****************************************************************************
  
 int
@@ -1403,7 +1435,7 @@ QueryList::GetQueryType(const std::string &name)
     int qt = -1; 
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (name == names[i]) 
+        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
         {
             qt = types[i];
             break;

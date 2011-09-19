@@ -111,7 +111,10 @@
 
 #include <QueryAttributes.h>
 #include <string>
+#include <StringHelpers.h>
+
 using std::string;
+using namespace StringHelpers;
 
 //
 // Storage for static data elements.
@@ -321,6 +324,9 @@ avtQueryFactory::Instance()
 //    Kathleen Biagas, Mon Sep 12 18:27:26 PDT 2011
 //    Clean up query memory if SetInputParams fails.
 //
+//    Cyrus Harrison, Mon Sep 19 10:49:37 PDT 2011
+//    Use case insensitive match for query names.
+//
 // ****************************************************************************
 
 avtDataObjectQuery *
@@ -334,151 +340,152 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     avtDataObjectQuery *query = NULL;
     bool foundAQuery = false;
 
-    if (qname == "Surface area" || qname == "2D area" ||
-        qname == "3D surface area")
+    if (CaseInsenstiveEqual(qname,"Surface area") || 
+        CaseInsenstiveEqual(qname,"2D area")||
+        CaseInsenstiveEqual(qname,"3D surface area"))
     {
         query = new avtTotalSurfaceAreaQuery();
     }
-    else if (qname == "Volume")
+    else if (CaseInsenstiveEqual(qname,"Volume"))
     {
         query = new avtTotalVolumeQuery();
     }
-    else if (qname == "Volume2")
+    else if (CaseInsenstiveEqual(qname,"Volume2"))
     {
         query = new avtTotalVolumeQuery(false);
     }
-    else if (qname == "Total Length")
+    else if (CaseInsenstiveEqual(qname,"Total Length"))
     {
         query = new avtTotalLengthQuery();
     }
-    else if (qname == "Revolved volume")
+    else if (CaseInsenstiveEqual(qname,"Revolved volume"))
     {
         query = new avtTotalRevolvedVolumeQuery();
     }
-    else if (qname == "Revolved surface area")
+    else if (CaseInsenstiveEqual(qname,"Revolved surface area"))
     {
         query = new avtTotalRevolvedSurfaceAreaQuery();
     }
-    else if (qname == "Eulerian")
+    else if (CaseInsenstiveEqual(qname,"Eulerian"))
     {
         query = new avtEulerianQuery();
     }
-    else if (qname == "Compactness")
+    else if (CaseInsenstiveEqual(qname,"Compactness"))
     {
         query = new avtCompactnessQuery();
     }
-    else if (qname == "Cycle")
+    else if (CaseInsenstiveEqual(qname,"Cycle"))
     {
         query = new avtCycleQuery();
     }
-    else if (qname == "Integrate")
+    else if (CaseInsenstiveEqual(qname,"Integrate"))
     {
         query = new avtIntegrateQuery();
     }
-    else if (qname == "Expected Value")
+    else if (CaseInsenstiveEqual(qname,"Expected Value"))
     {
         query = new avtExpectedValueQuery();
     }
-    else if (qname == "Time")
+    else if (CaseInsenstiveEqual(qname,"Time"))
     {
         query = new avtTimeQuery();
     }
-    else if (qname == "L2Norm")
+    else if (CaseInsenstiveEqual(qname,"L2Norm"))
     {
         query = new avtL2NormQuery();
     }
-    else if (qname == "Line Scan Transform")
+    else if (CaseInsenstiveEqual(qname,"Line Scan Transform"))
     {
         query = new avtLineScanTransformQuery();
     }
-    else if (qname == "Chord Length Distribution - aggregate")
+    else if (CaseInsenstiveEqual(qname,"Chord Length Distribution - aggregate"))
     {
         query = new avtAggregateChordLengthDistributionQuery();
     }
-    else if (qname == "Chord Length Distribution - individual")
+    else if (CaseInsenstiveEqual(qname,"Chord Length Distribution - individual"))
     {
         query = new avtIndividualChordLengthDistributionQuery();
     }
-    else if (qname == "Ray Length Distribution - aggregate")
+    else if (CaseInsenstiveEqual(qname,"Ray Length Distribution - aggregate"))
     {
         query = new avtAggregateRayLengthDistributionQuery();
     }
-    else if (qname == "Ray Length Distribution - individual")
+    else if (CaseInsenstiveEqual(qname,"Ray Length Distribution - individual"))
     {
         query = new avtIndividualRayLengthDistributionQuery();
     }
-    else if (qname == "Mass Distribution")
+    else if (CaseInsenstiveEqual(qname,"Mass Distribution"))
     {
         query = new avtMassDistributionQuery();
     }
-    else if (qname == "Distance From Boundary")
+    else if (CaseInsenstiveEqual(qname,"Distance From Boundary"))
     {
         query = new avtDistanceFromBoundaryQuery();
     }
-    else if (qname == "Kurtosis")
+    else if (CaseInsenstiveEqual(qname,"Kurtosis"))
     {
         query = new avtKurtosisQuery();
     }
-    else if (qname == "Skewness")
+    else if (CaseInsenstiveEqual(qname,"Skewness"))
     {
         query = new avtSkewnessQuery();
     }
     // problem with multiple input queries, so don't do them here
-    else if (qname == "L2Norm Between Curves")
+    else if (CaseInsenstiveEqual(qname,"L2Norm Between Curves"))
     {
 #if 0
         query = new avtL2NormBetweenCurvesQuery();
 #endif
         foundAQuery = true;
     }
-    else if (qname == "Area Between Curves")
+    else if (CaseInsenstiveEqual(qname,"Area Between Curves"))
     {
 #if 0
         query = new avtAreaBetweenCurvesQuery();
 #endif
         foundAQuery = true;
     }
-    else if (qname == "Variable Sum")
+    else if (CaseInsenstiveEqual(qname,"Variable Sum"))
     {
         query = new avtVariableSummationQuery();
     }
-    else if (qname == "Centroid")
+    else if (CaseInsenstiveEqual(qname,"Centroid"))
     {
         query = new avtCentroidQuery();
     }
-    else if (qname == "Moment of Inertia")
+    else if (CaseInsenstiveEqual(qname,"Moment of Inertia"))
     {
         query = new avtMomentOfInertiaQuery();
     }
-    else if (qname == "Spherical Compactness Factor")
+    else if (CaseInsenstiveEqual(qname,"Spherical Compactness Factor"))
     {
         query = new avtSphericalCompactnessFactorQuery();
     }
-    else if (qname == "Localized Compactness Factor")
+    else if (CaseInsenstiveEqual(qname,"Localized Compactness Factor"))
     {
         query = new avtLocalizedCompactnessFactorQuery();
     }
-    else if (qname == "Elliptical Compactness Factor")
+    else if (CaseInsenstiveEqual(qname,"Elliptical Compactness Factor"))
     {
         query = new avtEllipticalCompactnessFactorQuery();
     }
-    else if (qname == "Watertight")
+    else if (CaseInsenstiveEqual(qname,"Watertight"))
     {
         query = new avtWatertightQuery();
     }
-    else if (qname == "Weighted Variable Sum")
+    else if (CaseInsenstiveEqual(qname,"Weighted Variable Sum"))
     {
         query = new avtWeightedVariableSummationQuery();
     }
-    else if (qname == "Variable by Zone")
+    else if (CaseInsenstiveEqual(qname,"Variable by Zone"))
     {
         query = new avtVariableByZoneQuery();
     }
-    else if (qname == "Variable by Node")
+    else if (CaseInsenstiveEqual(qname,"Variable by Node"))
     {
         query = new avtVariableByNodeQuery();
     }
-    else if (qname == "MinMax")
+    else if (CaseInsenstiveEqual(qname,"MinMax"))
     {
         if (actualData)
         {
@@ -489,7 +496,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
             query = new avtOriginalDataMinMaxQuery();
         }
     }
-    else if (qname == "Min")
+    else if (CaseInsenstiveEqual(qname,"Min"))
     {
         if (actualData)
         {
@@ -500,7 +507,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
             query = new avtOriginalDataMinMaxQuery(true, false);
         }
     }
-    else if (qname == "Max")
+    else if (CaseInsenstiveEqual(qname,"Max"))
     {
         if (actualData)
         {
@@ -511,7 +518,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
             query = new avtOriginalDataMinMaxQuery(false, true);
         }
     }
-    else if (qname == "NumZones") 
+    else if (CaseInsenstiveEqual(qname,"NumZones"))
     {
         if (actualData)
         {
@@ -522,7 +529,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
             query = new avtOriginalDataNumZonesQuery();
         }
     }
-    else if (qname == "NumNodes")
+    else if (CaseInsenstiveEqual(qname,"NumNodes"))
     {
         if (actualData)
         {
@@ -533,103 +540,103 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
             query = new avtOriginalDataNumNodesQuery();
         }
     }
-    else if (qname == "Zone Center")
+    else if (CaseInsenstiveEqual(qname,"Zone Center"))
     {
         query = new avtZoneCenterQuery();
     }
-    else if (qname == "Node Coords")
+    else if (CaseInsenstiveEqual(qname,"Node Coords"))
     {
         query = new avtNodeCoordsQuery();
     }
-    else if (qname == "TrajectoryByZone") 
+    else if (CaseInsenstiveEqual(qname,"TrajectoryByZone"))
     {
         query = new avtTrajectoryByZone();
     }
-    else if (qname == "TrajectoryByNode")
+    else if (CaseInsenstiveEqual(qname,"TrajectoryByNode"))
     {
         query = new avtTrajectoryByNode();
     }
-    else if (qname == "Best Fit Line")
+    else if (CaseInsenstiveEqual(qname,"Best Fit Line"))
     {
         query = new avtBestFitLineQuery();
     }
-    else if (qname == "SpatialExtents")
+    else if (CaseInsenstiveEqual(qname,"SpatialExtents"))
     {
         query = new avtOriginalDataSpatialExtentsQuery();
     }
-    else if (qname == "Average Mean Curvature")
+    else if (CaseInsenstiveEqual(qname,"Average Mean Curvature"))
     {
         query = new avtAverageMeanCurvatureQuery();
     }
-    else if (qname == "Average Value")
+    else if (CaseInsenstiveEqual(qname,"Average Value"))
     {
         query = new avtAverageValueQuery();
     }
-    else if (qname == "Hohlraum Flux")
+    else if (CaseInsenstiveEqual(qname,"Hohlraum Flux"))
     {
         query  = new avtHohlraumFluxQuery();
     }
-    else if( qname == "Number of Connected Components")
+    else if( CaseInsenstiveEqual(qname,"Number of Connected Components"))
     {
         query = new avtConnComponentsQuery();
     }
-    else if( qname == "Connected Component Centroids")
+    else if( CaseInsenstiveEqual(qname,"Connected Component Centroids"))
     {
         query = new avtConnComponentsCentroidQuery();
     }
-    else if( qname == "Connected Component Area")
+    else if( CaseInsenstiveEqual(qname,"Connected Component Area"))
     {
         query = new avtConnComponentsAreaQuery();
     }
-    else if( qname == "Connected Component Length")
+    else if( CaseInsenstiveEqual(qname,"Connected Component Length"))
     {
         query = new avtConnComponentsLengthQuery();
     }
-    else if( qname == "Connected Component Volume")
+    else if( CaseInsenstiveEqual(qname,"Connected Component Volume"))
     {
         query = new avtConnComponentsVolumeQuery();
     }
-    else if( qname == "Connected Component Variable Sum")
+    else if( CaseInsenstiveEqual(qname,"Connected Component Variable Sum"))
     {
         query = new avtConnComponentsVariableQuery();
     }
-    else if( qname == "Connected Component Weighted Variable Sum")
+    else if( CaseInsenstiveEqual(qname,"Connected Component Weighted Variable Sum"))
     {
         query = new avtConnComponentsWeightedVariableQuery();
     }
-    else if( qname == "Connected Components Summary")
+    else if( CaseInsenstiveEqual(qname,"Connected Components Summary"))
     {
         query = new avtConnComponentsSummaryQuery();
     }
-    else if( qname == "Locate and Pick Zone")
+    else if( CaseInsenstiveEqual(qname,"Locate and Pick Zone"))
     {
         query = new avtLocateAndPickZoneQuery();
     }
-    else if( qname == "Locate and Pick Node")
+    else if( CaseInsenstiveEqual(qname,"Locate and Pick Node"))
     {
         query = new avtLocateAndPickNodeQuery();
     }
-    else if( qname == "Shapelet Decomposition")
+    else if( CaseInsenstiveEqual(qname,"Shapelet Decomposition"))
     {
         query = new avtShapeletDecompositionQuery();
     }
-    else if( qname == "Memory Usage")
+    else if( CaseInsenstiveEqual(qname,"Memory Usage"))
     {
         query = new avtMemoryUsageQuery();
     }
-    else if (qname == "Sample Statistics")
+    else if (CaseInsenstiveEqual(qname,"Sample Statistics"))
     {
         query = new avtSampleStatisticsQuery(false);
     }
-    else if (qname == "Population Statistics")
+    else if (CaseInsenstiveEqual(qname,"Population Statistics"))
     {
         query = new avtSampleStatisticsQuery(true);
     }
-    else if (qname == "XRay Image")
+    else if (CaseInsenstiveEqual(qname,"XRay Image"))
     {
         query = new avtXRayImageQuery();
     }
-    else if (qname == "Python")
+    else if (CaseInsenstiveEqual(qname,"Python"))
     {
 #ifdef VISIT_PYTHON_FILTERS
         avtPythonQuery *py_query = new avtPythonQuery();
@@ -652,7 +659,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
                       "VisIt was build without Python Filter support.");
 #endif
     }
-    else if (qname == "Streamline Info")
+    else if (CaseInsenstiveEqual(qname,"Streamline Info"))
     {
         query = new avtStreamlineInfoQuery();
     }
@@ -703,6 +710,8 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
 //  Creation:   July 15, 2011 
 //
 //  Modifications:
+//    Cyrus Harrison, Mon Sep 19 10:49:37 PDT 2011
+//    Use case insensitive match for query names.
 //
 // ****************************************************************************
 
@@ -711,75 +720,75 @@ avtQueryFactory::GetDefaultInputParams(const string &qname)
 {
     MapNode params;
     string retval;
-    if (qname == "XRay Image")
+    if (CaseInsenstiveEqual(qname,"XRay Image"))
     {
         avtXRayImageQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if (qname == "Hohlraum Flux")
+    else if (CaseInsenstiveEqual(qname,"Hohlraum Flux"))
     {
         avtHohlraumFluxQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if( qname == "Connected Components Summary")
+    else if( CaseInsenstiveEqual(qname,"Connected Components Summary"))
     {
         avtConnComponentsSummaryQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if (qname == "Chord Length Distribution - aggregate"  ||
-             qname == "Chord Length Distribution - individual" || 
-             qname == "Ray Length Distribution - aggregate"    ||
-             qname == "Ray Length Distribution - individual"   ||
-             qname == "Mass Distribution"                      || 
-             qname == "Line Scan Transform"                    ||
-             qname == "Distance From Boundary")
+    else if (CaseInsenstiveEqual(qname,"Chord Length Distribution - aggregate")  ||
+             CaseInsenstiveEqual(qname,"Chord Length Distribution - individual") || 
+             CaseInsenstiveEqual(qname,"Ray Length Distribution - aggregate")    ||
+             CaseInsenstiveEqual(qname,"Ray Length Distribution - individual")   ||
+             CaseInsenstiveEqual(qname,"Mass Distribution")                      || 
+             CaseInsenstiveEqual(qname,"Line Scan Transform")                    ||
+             CaseInsenstiveEqual(qname,"Distance From Boundary"))
     {
         avtLineScanQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if (qname == "Node Coords")
+    else if (CaseInsenstiveEqual(qname,"Node Coords"))
     {
         avtNodeCoordsQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if (qname == "Zone Center")
+    else if (CaseInsenstiveEqual(qname,"Zone Center"))
     {
         avtZoneCenterQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if( qname == "Shapelet Decomposition")
+    else if( CaseInsenstiveEqual(qname,"Shapelet Decomposition"))
     {
         avtShapeletDecompositionQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if (qname == "Streamline Info")
+    else if (CaseInsenstiveEqual(qname,"Streamline Info"))
     {
         avtStreamlineInfoQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if (qname == "Min" ||
-             qname == "Max" ||
-             qname == "MinMax")
+    else if (CaseInsenstiveEqual(qname,"Min") ||
+             CaseInsenstiveEqual(qname,"Max") ||
+             CaseInsenstiveEqual(qname,"MinMax"))
     {
         avtMinMaxQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if (qname == "NumNodes")
+    else if (CaseInsenstiveEqual(qname,"NumNodes"))
     {
         avtNumNodesQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if (qname == "NumZones")
+    else if (CaseInsenstiveEqual(qname,"NumZones"))
     {
         avtNumZonesQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if (qname == "TrajectoryByZone")
+    else if (CaseInsenstiveEqual(qname,"TrajectoryByZone"))
     {
         avtTrajectoryByZone::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if (qname == "TrajectoryByNode")
+    else if (CaseInsenstiveEqual(qname,"TrajectoryByNode"))
     {
         avtTrajectoryByNode::GetDefaultInputParams(params);
         retval = params.ToXML();

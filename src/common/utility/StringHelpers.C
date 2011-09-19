@@ -1178,3 +1178,26 @@ StringHelpers::IsPureASCII(const char *const txt, int length)
     return true;
 }
 
+// ****************************************************************************
+// Method:  StringHelpers::CaseInsenstiveEqual
+//
+// Purpose:
+//   Check to see two strings compare as equal, after result of ::tolower.
+//
+// Arguments:
+//   str_a, str_b   Input strings.
+//
+// Programmer:  Cyrus Harrison
+// Creation:    Mon Sep 19 16:23:05 PDT 2011
+//
+// ****************************************************************************
+bool
+StringHelpers::CaseInsenstiveEqual(const std::string &str_a,
+                                   const std::string &str_b)
+{
+    std::string sa_l = str_a;
+    std::string sb_l = str_b;
+    std::transform(sa_l.begin(),sa_l.end(),sa_l.begin(),::tolower);
+    std::transform(sb_l.begin(),sb_l.end(),sb_l.begin(),::tolower);
+    return sa_l == sb_l;
+}
