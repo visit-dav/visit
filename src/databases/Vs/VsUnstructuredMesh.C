@@ -320,10 +320,14 @@ bool VsUnstructuredMesh::initialize() {
     {
       numPoints = pointsDataset->getDims()[0];
       numSpatialDims = pointsDataset->getDims()[1];
+      //guess that topological == spatial
+      numTopologicalDims = numSpatialDims;
     }
     else
     {
       numSpatialDims = pointsDataset->getDims()[0];
+      //guess that topological == spatial
+      numTopologicalDims = numSpatialDims;
       numPoints = pointsDataset->getDims()[1];
     }
   }
@@ -350,16 +354,23 @@ bool VsUnstructuredMesh::initialize() {
     
     //spatial dimensionality = number of vspoints datasets
     numSpatialDims = 1;
+    numTopologicalDims = 1;
     if (points1) {
       if (points2) {
         numSpatialDims = 3;
+        numTopologicalDims = 3;
       } else {
         numSpatialDims = 2;
+        numTopologicalDims = 2;
       }
     }
 
     numPoints = points0->getDims()[0];
   }
+
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Unstructured mesh " <<getShortName() <<" has num topological dims = " 
+                    << numTopologicalDims <<std::endl;
 
   if( isPointMesh() )
   {

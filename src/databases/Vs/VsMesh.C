@@ -23,6 +23,7 @@
 
 VsMesh::VsMesh(VsH5Object* object):VsRegistryObject(object->registry) {
   numSpatialDims = -1;
+  numTopologicalDims = -1;
   indexOrder = VsSchema::compMinorCKey;
 
   if (!object) {
@@ -63,11 +64,16 @@ void VsMesh::write() {
                     << getFullName() << "  "
                     << "Kind: " << getKind() << "  "
                     << "Index Order: " << indexOrder << "  "
-                    << "NumSpatialDims: " << numSpatialDims << std::endl;
+                    << "NumSpatialDims: " << numSpatialDims << "  "
+                    << "NumTopologicalDims: " << numTopologicalDims << std::endl;
 }
 
 size_t VsMesh::getNumSpatialDims() {
   return numSpatialDims;
+}
+
+size_t VsMesh::getNumTopologicalDims() {
+  return numTopologicalDims;
 }
 
 std::string VsMesh::getPath() {

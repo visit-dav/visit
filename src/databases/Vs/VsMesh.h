@@ -48,6 +48,8 @@ public:
   std::string getIndexOrder();
   virtual std::string getKind() = 0;
   size_t getNumSpatialDims();
+  size_t getNumTopologicalDims();
+
   VsH5Attribute* getAttribute(std::string name);
   static VsMesh* buildObject(VsH5Dataset* dataset);
   static VsMesh* buildObject(VsH5Group* group);
@@ -67,6 +69,13 @@ protected:
   
   /** The spatial dimensionality */
   size_t numSpatialDims;
+
+  /** The topological dimensionality 
+   * Note: will always be <= the spatial dimensionality
+   * (i.e. can have lower-dimension object in a higher dimension
+   * but not vice versa)
+   */
+  size_t numTopologicalDims;
 
   /** Index order (Fortran vs C style) */
   std::string indexOrder;

@@ -75,16 +75,34 @@ bool VsStructuredMesh::initialize()
       << "an array of size [numPoints] but with no spatial dimension.  "
       << "Whereas the normal dimensions would be [numPoints][spatialDim] "
       << "As such, assume the spatial dimenson is 1." << std::endl;
-
+    numTopologicalDims = 1;
     numSpatialDims = 1;
   }
   else
   {
-    if( isCompMinor() )
+    if( isCompMinor() ) {
       numSpatialDims = dims[dims.size()-1];
-    else
+      numTopologicalDims = 0;
+      for (int i = 0; i < (dims.size() - 1); i++) {
+        if (dims[i] > 1) {
+          numTopologicalDims++;
+        }
+      }
+    }
+    else {
       numSpatialDims = dims[0];
+      numTopologicalDims = 0;
+      for (int i = 1; i < dims.size(); i++) {
+        if (dims[i] > 1) {
+          numTopologicalDims++;
+        }
+      } 
+    }
   }
+
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Structured mesh " << getShortName() << " has topological dimensionality = " 
+                    << numTopologicalDims << std::endl;
   
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Mesh has num spatial dims = " << numSpatialDims
