@@ -104,8 +104,7 @@ avtVsFileFormat::avtVsFileFormat(const char* filename,
 
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "entering" << std::endl;
-    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "VizSchema Revision #742" << std::endl;
+    
 
     if (readOpts != NULL) {
       for (int i=0; i<readOpts->GetNumberOfOptions(); ++i) {
@@ -563,7 +562,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
       throw std::out_of_range(msg.str().c_str());
     }
 
-    size_t numTopologicalDims = numCells.size();
+    size_t numTopologicalDims = uniformMesh->getNumTopologicalDims();
 
     if (numTopologicalDims > 3) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -766,9 +765,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       throw std::out_of_range(msg.str().c_str());
     }
 
-    // The numTopologicalDims and numSpatialDims are the same for
-    // rectilinear grids.
-    size_t numTopologicalDims = numNodes.size();
+    size_t numTopologicalDims = rectilinearMesh->getNumTopologicalDims();
 
     if (numTopologicalDims > 3) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -1038,7 +1035,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
 
     // The numTopologicalDims and numSpatialDims can be different for
     // structured grids.
-    size_t numTopologicalDims = numNodes.size();
+    size_t numTopologicalDims = structuredMesh->getNumTopologicalDims();
 
     if (numTopologicalDims > 3) {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -2247,24 +2244,51 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const std::string& requestedNa
       nPts = varMeta->getDims()[1];
     }
 
+    // Cross-reference against the number of points in the mesh
+    int nPtsInOutput = nPts;
+    std::vector<int> meshDims;
+    meshMeta->getMeshDataDims(meshDims);
+    int nPtsInMesh = meshDims[0];
+    if (varMeta->isZonal()) {
+      if (nPts != (nPtsInMesh - 1)) {
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "ERROR - mesh and var dimensionalities don't match." <<std::endl;
+        //Use the lower of the two values
+        if (nPts > (nPtsInMesh - 1)) {
+          nPtsInOutput = nPtsInMesh - 1;
+        }
+      }
+    } else if (nPts != nPtsInMesh) {
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "ERROR - mesh and var dimensionalities don't match." <<std::endl;
+      //Use the lower of the two values                                                                                           
+      if (nPts > nPtsInMesh) {
+        nPtsInOutput = nPtsInMesh;
+      }
+    }
+
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Variable has " << nPts << " points." << std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Mesh has " << nPtsInMesh << " points." << std::endl;
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Output will have " << nPtsInOutput << " points." << std::endl;
 
     // Create 1-D RectilinearGrid
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Building Rectilinear grid." << std::endl;
     vtkFloatArray* vals = vtkFloatArray::New();
     vals->SetNumberOfComponents(1);
-    vals->SetNumberOfTuples(nPts);
+    vals->SetNumberOfTuples(nPtsInOutput);
     vals->SetName(name.c_str());
 
-    vtkRectilinearGrid* rg = vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
+    vtkRectilinearGrid* rg = vtkVisItUtility::Create1DRGrid(nPtsInOutput, VTK_FLOAT);
     rg->GetPointData()->SetScalars(vals);
 
     vtkFloatArray* xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
     vtkDataArray* meshXCoord = meshData->GetXCoordinates();
 
-    for (int i = 0; i < nPts; i++) {
+    for (int i = 0; i < nPtsInOutput; i++) {
       double* var_i = varData->GetTuple(i);
       double* mesh_i = meshXCoord->GetTuple(i);
       xc->SetValue(i, mesh_i[0]);
@@ -3230,7 +3254,6 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                           << "Adding uniform mesh " << *it << "." << std::endl;
 
         meshType = AVT_RECTILINEAR_MESH;
-        topologicalDims = 3;
 
         // Add in the logical bounds of the mesh.
         static_cast<VsUniformMesh*>(meta)->getNumMeshDims(dims);
@@ -3248,7 +3271,6 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                           << "spatialDims = " << spatialDims << "." << std::endl;
 
         meshType = AVT_RECTILINEAR_MESH;
-        topologicalDims = 3;
 
         // Add in the logical bounds of the mesh.
         static_cast<VsRectilinearMesh*>(meta)->getNumMeshDims(dims);
@@ -3265,7 +3287,6 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                           << "Adding structured mesh " << *it << "." << std::endl;
 
         meshType = AVT_CURVILINEAR_MESH;
-        topologicalDims = 3;
 
         // Add in the logical bounds of the mesh.
         static_cast<VsRectilinearMesh*>(meta)->getNumMeshDims(dims);
@@ -3348,8 +3369,23 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         continue;
       }
 
+      int topologicalDims = meta->getNumTopologicalDims();
+
       if( meshType != AVT_UNKNOWN_MESH )
       {
+        //Add a note for this interesting case.  It is legal, but since it's a new feature
+        //we want to keep an eye on it
+        if (topologicalDims > spatialDims) {
+          VsLog::errorLog() <<__CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                            <<"ERROR - num topological dims (" << topologicalDims
+                            <<") > num spatial dims (" << spatialDims <<")" <<std::endl;
+          topologicalDims = spatialDims;
+        } else if (spatialDims != topologicalDims) {
+          VsLog::debugLog() <<__CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                            <<"Interesting - num topological dims (" << topologicalDims
+                            <<") != num spatial dims (" << spatialDims <<")" <<std::endl;
+        }
+
         avtMeshMetaData* vmd =
           new avtMeshMetaData(it->c_str(), 1, 1, 1, 0,
                               spatialDims, topologicalDims, meshType);
@@ -3617,6 +3653,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
         continue;
       }
 
+      // This loop registers all VARIABLES
       // SS: we need all components so going to lastDim here.
       //    for (size_t i = 0; i < lastDim-vm->numSpatialDims; ++i) {
       for (size_t i = 0; i < lastDim; ++i) {
@@ -3639,14 +3676,20 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
         }
       }
 
-      // add var mesh
+      // This loop registers all of the MESHES
       // Add in the logical bounds of the mesh.
       int numCells =  vMeta->getNumPoints();
       int bounds[3] = {numCells,0,0};
+      int spatialDims = vMeta->getNumSpatialDims();
+      if (spatialDims == 1) {
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          <<"Found 1-d var with mesh, artificially elevating it to 2-d." <<std::endl;
+        spatialDims = 2;
+      } 
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Adding point mesh for this variable." << std::endl;
       avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
-          1, 1, 1, 0, vMeta->getNumSpatialDims(), 0, AVT_POINT_MESH);
+          1, 1, 1, 0, spatialDims, 0, AVT_POINT_MESH);
       vmd->SetBounds( bounds );
 //      vmd->SetNumberCells( numCells );
       setAxisLabels(vmd);
@@ -3826,7 +3869,6 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
 
     // NOTE that we can't decompose domains if we have MD meshes
     // So it's one or the other
-    std::vector<std::string> names;
 
 #ifdef VIZSCHEMA_DECOMPOSE_DOMAINS
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -3871,7 +3913,8 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
       md->Add(mmd);
     }
 
-    UpdateCyclesAndTimes(md);
+    //VsLog::debugLog() <<"Calling UpdateCyclesAndTimes for file: " <<dataFileName <<std::endl;
+    //UpdateCyclesAndTimes(md);
     
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Exiting normally." << std::endl;
@@ -3966,20 +4009,20 @@ bool avtVsFileFormat::ReturnsValidCycle()
 int avtVsFileFormat::GetCycle()
 {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "entering" << std::endl;
+                      << "entering for file " <<dataFileName << std::endl;
     LoadData();
 
     if (registry->hasCycle())
     {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "This file supplies cycle: "
+                        << "The file " <<dataFileName <<" supplies cycle: "
                         << registry->getCycle() << std::endl;
       return registry->getCycle();
     }
     else
     {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "This file does not supply cycle.  "
+                        << "The file " <<dataFileName <<" does not supply cycle.  "
                         << "Returning INVALID_CYCLE." << std::endl;
 
       return INVALID_CYCLE;
@@ -4041,14 +4084,14 @@ double avtVsFileFormat::GetTime()
     if (registry->hasTime())
     {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "This file supplies time: "
+                        << "The file " <<dataFileName <<" supplies time: "
                         <<registry->getTime() << std::endl;
       return registry->getTime();
     }
     else
     {
       VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "This file does not supply time.  "
+                        << "The file " <<dataFileName <<" does not supply time.  "
                         << "Returning INVALID_TIME." << std::endl;
       return INVALID_TIME;
     }

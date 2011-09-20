@@ -11,6 +11,7 @@
 #include "VsH5Group.h"
 #include "VsH5Attribute.h"
 #include "VsLog.h"
+#include "VsUtils.h"
 
 #include <string>
 
@@ -99,7 +100,52 @@ bool VsRectilinearMesh::initialize() {
     }
   }
 
-  VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+  //Calculate topological dims
+  numTopologicalDims = 0;
+  std::vector<int> axis0Dims = axis0->getDims();
+  if (axis0Dims.size() != 1) {
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Expected 1-d dataset for Axis 0, actually have " <<axis0Dims.size() <<std::endl;
+    numTopologicalDims = numSpatialDims;
+  } else {
+    if (axis0Dims[0] > 1) {
+      numTopologicalDims++;
+    }
+
+    //Check axis 1 (if it exists)
+    if (axis1) {
+      std::vector<int> axis1Dims = axis1->getDims();
+      if (axis1Dims.size() != 1) {
+        VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Expected 1-d dataset for Axis 1, actually have " <<axis1Dims.size() <<std::endl;
+        numTopologicalDims = numSpatialDims;
+      } else {
+        if (axis1Dims[0] > 1) {
+          numTopologicalDims++;
+        }
+
+        //Check axis 1 (if it exists)
+        if (axis2) {
+          std::vector<int> axis2Dims = axis2->getDims();
+          if (axis2Dims.size() != 1) {
+            VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                              << "Expected 1-d dataset for Axis 2, actually have " <<axis2Dims.size() <<std::endl;
+            numTopologicalDims = numSpatialDims;
+          } else {
+            if (axis2Dims[0] > 1) {
+              numTopologicalDims++;
+            }
+          }
+        } //end if axis2
+      }
+    } //end if axis1
+  }
+
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Rectilinear Mesh " <<getShortName() <<" has num topological dims = "
+                    << numTopologicalDims << std::endl;
+
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Mesh has num spatial dims = "
                     << numSpatialDims << std::endl;
   
@@ -132,7 +178,7 @@ std::string VsRectilinearMesh::getAxisDatasetName(int axisNumber) {
   if (axisNameAtt) {
     axisNameAtt->getStringValue(&axisName);
     if (!axisName.empty()) {
-      return axisName;
+      return makeCanonicalName(getFullName(), axisName);
     }
   }
   
@@ -150,7 +196,7 @@ std::string VsRectilinearMesh::getAxisDatasetName(int axisNumber) {
   }
 
   //axisName 
-  return axisName;
+  return makeCanonicalName(getFullName(), axisName);
 }
 
 

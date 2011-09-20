@@ -93,7 +93,18 @@ bool VsUniformMesh::initialize()
     return false;
   }
 
-  int numTopologyDims = dims.size();
+  //Num topological dims is equal to the count of dims
+  //that are > 1
+  numTopologicalDims = 0;
+  for (int i = 0; i < dims.size(); i++) {
+    if (dims[i] > 1) {
+      numTopologicalDims++;
+    }
+  } 
+
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Uniform mesh " <<getShortName() << " has topological dimensionality " 
+                    << numTopologicalDims <<std::endl;
   
   // Lowerbounds is required
   lowerBoundsAtt = getAttribute(VsSchema::Uniform::lowerBounds);
@@ -157,8 +168,6 @@ bool VsUniformMesh::initialize()
     numSpatialDims = -1;
     return false;
   }
-
-  numSpatialDims = dVals.size();
 
   // Now get the upper bounds spatial dimension.
   err = upperBoundsAtt->getDoubleVectorValue(&dVals);
