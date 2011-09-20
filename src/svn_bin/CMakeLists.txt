@@ -41,6 +41,12 @@
 #  Use glob to find all host profiles & ini files we want to install
 #  from svn_bin.
 #
+#  Gunther H. Weber, Tue Sep 20 13:11:08 PDT 2011
+#  Support installation of global host profiles on "make install". Set
+#  VISIT_INSTALL_PROFILES_TO_HOSTS to "nersc", "ornl" etc. to create
+#  a global "hosts" directory in the VisIt install and copy over the
+#  corresponding host profiles.
+
 
 ## find all host profiles to install using a glob
 FILE(GLOB HPROF_FILES "${CMAKE_CURRENT_SOURCE_DIR}/host_*.xml")
@@ -51,9 +57,11 @@ FILE(GLOB INI_FILES   "${CMAKE_CURRENT_SOURCE_DIR}/visit-*.ini")
 IF(WIN32)
     SET(INI_DEST   ${VISIT_INSTALLED_VERSION_BIN})
     SET(HPROF_DEST ${VISIT_INSTALLED_VERSION_BIN}/allhosts)
+    SET(LPROF_DEST ${VISIT_INSTALLED_VERSION_BIN}/hosts)
 ELSE(WIN32)
     SET(INI_DEST   ${VISIT_VERSION}/.visit)
     SET(HPROF_DEST ${VISIT_VERSION}/.visit/allhosts)
+    SET(LPROF_DEST ${VISIT_VERSION}/.visit/hosts)
 ENDIF(WIN32)
 
 # Install the visit config files
@@ -67,3 +75,13 @@ INSTALL(FILES ${HPROF_FILES}
         DESTINATION ${HPROF_DEST}
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
 )
+
+# Infall local host profiles if specified
+IF (VISIT_INSTALL_PROFILES_TO_HOSTS)
+    FILE(GLOB LPROF_FILES
+         "${CMAKE_CURRENT_SOURCE_DIR}/host_${VISIT_INSTALL_PROFILES_TO_HOSTS}_*.xml")
+    INSTALL(FILES ${LPROF_FILES}
+            DESTINATION ${LPROF_DEST}
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+    ) 
+ENDIF (VISIT_INSTALL_PROFILES_TO_HOSTS)

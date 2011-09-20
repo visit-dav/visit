@@ -11,6 +11,7 @@
 SET(VISITHOME /project/projectdirs/visit/visit_3rdparty_euclid_opt)
 SET(VISITHOME2 /project/projectdirs/visit/visit_3rdparty_euclid)
 SET(VISITARCH linux-x86_64_gcc-4.1)
+SET(VISIT_INSTALL_PROFILES_TO_HOSTS "nersc")
 VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /usr/common/graphics/visit)
 VISIT_OPTION_DEFAULT(VISIT_INSTALL_THIRD_PARTY ON)
 VISIT_OPTION_DEFAULT(VISIT_VERBOSE_MAKEFILE TRUE)
