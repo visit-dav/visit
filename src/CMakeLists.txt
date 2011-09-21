@@ -242,6 +242,10 @@
 #    Kathleen Biagas, Mon Aug 8 08:08:42 MST 2011
 #    Use VISIT_3RDPARTY_DEP for all libdep vars. 
 #
+#    Gunther H. Weber, Tue Sep 20 17:15:48 PDT 2011
+#    Use NERSC_HOST environment variable instead of hostname to determine if
+#    we are running on Franklin or Hopper.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -268,6 +272,14 @@ SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 #----------------------------------------------------------------------------
 
 SITE_NAME(HOSTNAME)
+
+# Use NERSC_HOST environment variable to determine if we are running on Franklin
+# or Hopper. If so, use that hostname instead of the result of SITE_NAME which is
+# only the name of the login node we are running on.
+IF (($ENV{NERSC_HOST} STREQUAL "franklin") OR ($ENV{NERSC_HOST} STREQUAL "hopper"))
+    SET(HOSTNAME "$ENV{NERSC_HOST}.nersc.gov")
+ENDIF (($ENV{NERSC_HOST} STREQUAL "franklin") OR ($ENV{NERSC_HOST} STREQUAL "hopper"))
+
 
 #-----------------------------------------------------------------------------
 # Helper function for setting build options via config-site file.

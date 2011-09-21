@@ -45,6 +45,8 @@ lustrePrefix = "/usr/common"
 
 # Find MPI path
 hostname = os.uname()[1]
+if os.environ.has_key('NERSC_HOST'):
+   hostname = (os.environ['NERSC_HOST']) + ".nersc.gov"
 configFilename = os.path.abspath(os.path.dirname(sys.argv[0]) + "/../config-site/" + hostname + ".cmake")
 (status, MPIRPathLine) = commands.getstatusoutput("grep VISIT_PARALLEL_RPATH " + configFilename + " | egrep -v ^#")
 
