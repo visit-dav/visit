@@ -474,6 +474,9 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
 //    Cyrus Harrison, Tue Feb 15 13:44:45 PST 2011
 //    Preserve units if possible & better y-axis label for 1D case.
 //
+//    Hank Childs, Wed Sep 21 09:15:21 PDT 2011
+//    Fix problem where 3D unstructured meshes sometimes had exceptions.
+//
 // ****************************************************************************
 
 void
@@ -562,6 +565,8 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
         else
             dataAtts.SetZUnits("");
     }
+
+    GetOutput()->GetInfo().GetValidity().InvalidateZones();
 }
 
 
