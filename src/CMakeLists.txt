@@ -276,9 +276,11 @@ SITE_NAME(HOSTNAME)
 # Use NERSC_HOST environment variable to determine if we are running on Franklin
 # or Hopper. If so, use that hostname instead of the result of SITE_NAME which is
 # only the name of the login node we are running on.
-IF (($ENV{NERSC_HOST} STREQUAL "franklin") OR ($ENV{NERSC_HOST} STREQUAL "hopper"))
-    SET(HOSTNAME "$ENV{NERSC_HOST}.nersc.gov")
-ENDIF (($ENV{NERSC_HOST} STREQUAL "franklin") OR ($ENV{NERSC_HOST} STREQUAL "hopper"))
+IF(NOT "$ENV{NERSC_HOST}" STREQUAL "")
+    IF (($ENV{NERSC_HOST} STREQUAL "franklin") OR ($ENV{NERSC_HOST} STREQUAL "hopper"))
+        SET(HOSTNAME "$ENV{NERSC_HOST}.nersc.gov")
+    ENDIF (($ENV{NERSC_HOST} STREQUAL "franklin") OR ($ENV{NERSC_HOST} STREQUAL "hopper"))
+ENDIF(NOT "$ENV{NERSC_HOST}" STREQUAL "")
 
 
 #-----------------------------------------------------------------------------
