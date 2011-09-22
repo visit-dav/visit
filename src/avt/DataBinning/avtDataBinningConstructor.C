@@ -153,6 +153,9 @@ avtDataBinningConstructor::~avtDataBinningConstructor()
 //    Hank Childs, Tue Sep 13 14:17:34 PDT 2011
 //    Add support for data binning's based on spatial coordinates.
 //
+//    Hank Childs, Thu Sep 22 08:39:24 PDT 2011
+//    Fix crash when processor has no data.
+//
 // ****************************************************************************
 
 class ValueRetriever
@@ -459,6 +462,8 @@ avtDataBinningConstructor::ConstructDataBinning(
             }
         
             ValueRetriever **val_ret = new ValueRetriever*[nvars];
+            for (k = 0 ; k < nvars ; k++)
+                 val_ret[k] = NULL;
             float        *args = new float[nvars];
             for (j = 0 ; j < nLeaves ; j++)
             {
@@ -567,7 +572,8 @@ avtDataBinningConstructor::ConstructDataBinning(
                 }
             }
             for (j = 0 ; j < nvars ; j++)
-                delete val_ret[j];
+                if (val_ret[j] != NULL)
+                    delete val_ret[j];
             delete [] val_ret;
             delete [] args;
             delete [] leaves;
