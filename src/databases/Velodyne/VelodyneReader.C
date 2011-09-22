@@ -17,6 +17,8 @@ using std::cout;
 
 #include <VelodyneReader.h>
 
+#include <visit-hdf5.h>
+
 #include <set>
 #include <string>
 

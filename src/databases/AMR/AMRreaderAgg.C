@@ -6,6 +6,8 @@ using std::setw;
 
 #include <AMRreaderAgg.h>
 
+#include <visit-hdf5.h>
+
 
 const int kid2i[8] = {0,1,0,1,0,1,0,1};
 const int kid2j[8] = {0,0,1,1,0,0,1,1};

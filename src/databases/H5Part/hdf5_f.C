@@ -1,4 +1,5 @@
 #include "hdf5_f.h"
+#include <visit-hdf5.h>
 
 H5F::H5F(){
         valid = false;
