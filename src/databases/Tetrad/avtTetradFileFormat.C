@@ -56,6 +56,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidTimeStepException.h>
 
+#include <visit-hdf5.h>
 
 typedef struct
 {

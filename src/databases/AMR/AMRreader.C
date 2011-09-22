@@ -3,6 +3,8 @@
 #include <DebugStream.h>
 #include <AMRreader.h>
 
+#include <visit-hdf5.h>
+
 #include <string.h>
 
 #include <string>

@@ -69,6 +69,8 @@
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 
+#include <visit-hdf5.h>
+
 #define TRY_MIXED_SCALARS
 
 using     std::string;

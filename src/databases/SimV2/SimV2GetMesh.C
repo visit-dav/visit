@@ -57,6 +57,7 @@
 #include <vtkCSGGrid.h>
 
 #include <VisItDataInterface_V2.h>
+#include <VisItInterfaceTypes_V2.h>
 
 #include <avtGhostData.h>
 

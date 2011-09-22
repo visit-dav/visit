@@ -60,6 +60,8 @@
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
 
+#include <visit-hdf5.h>
+
 #include <set>
 #include <string>
 

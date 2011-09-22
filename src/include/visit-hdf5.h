@@ -51,4 +51,95 @@
          ((H5_VERS_MAJOR==Maj) && (H5_VERS_MINOR>Min)) || \
          (H5_VERS_MAJOR>Maj))
 
+//
+// Macros to re-map H5Fopen and H5Fclose so that HDF5 files are always handled
+// using the H5F_CLOSE_SEMI property. This permits us to detect when attempts
+// to close files fail due to a buggy plugin (e.g. one that fails to close all
+// the objects in a file). This is a problematic issue when multiple HDF5
+// plugins are attempted on the same HDF5 file and a buggy plugin winds up
+// accidentally leaving the file open.
+//
+#ifndef VISIT_DONT_REDEFINE_H5FOPENCLOSE
+#ifdef H5_VERS_MAJOR
+#include <avtCallback.h>
+static void VisIt_IssueH5Warning(int phase)
+{
+    static bool haveIssuedOpenWarning = false;
+    static bool haveIssuedCloseWarning = false;
+    char msg[512];
+    if (phase == 0 && !haveIssuedOpenWarning)
+    {
+#ifndef NDEBUG
+        SNPRINTF(msg, sizeof(msg), "Detected attempt to open an HDF5 file without H5F_CLOSE_SEMI.\n"
+            "Please contact VisIt developers to have this issue fixed.");
+        haveIssuedOpenWarning = true;
+        if (!avtCallback::IssueWarning(msg))
+           cerr << msg << endl;
+#endif
+    }
+    else if (phase == 1 && !haveIssuedCloseWarning)
+    {
+        SNPRINTF(msg, sizeof(msg), "An attempt to close an HDF5 file failed, incidating a bug in the plugin.\n"
+            "Please contact VisIt developers to have this issue fixed.");
+        haveIssuedCloseWarning = true;
+        if (!avtCallback::IssueWarning(msg))
+           cerr << msg << endl;
+    }
+
+}
+
+static hid_t VisIt_H5Fopen(const char *name, int flags, hid_t fapl)
+{
+    bool created_fapl = false;
+
+    if (fapl == H5P_DEFAULT)
+    {
+        // Issue error message indicating plugin is using default open
+        VisIt_IssueH5Warning(0);
+
+        fapl = H5Pcreate(H5P_FILE_ACCESS);
+        created_fapl = true;
+
+        // Build a fapl with semi close behavior
+        H5Pset_fclose_degree(fapl, H5F_CLOSE_SEMI);
+    }
+    else
+    {
+        H5F_close_degree_t cd;
+        H5Pget_fclose_degree(fapl, &cd);
+        if (cd != H5F_CLOSE_SEMI)
+        {
+            // Issue message if not
+            VisIt_IssueH5Warning(0);
+
+            // copy the fapl
+            fapl = H5Pcopy(fapl);
+            created_fapl = true;
+
+            // Add semi close property if not
+            H5Pset_fclose_degree(fapl, H5F_CLOSE_SEMI);
+        }
+    }
+
+    hid_t retval = H5Fopen(name, flags, fapl);
+
+    if (created_fapl) H5Pclose(fapl);
+
+    return retval;
+}
+
+static herr_t VisIt_H5Fclose(hid_t fid)
+{
+    herr_t err = H5Fclose(fid);
+    if (err < 0)
+        VisIt_IssueH5Warning(1);
+    return err;
+}
+
+#define H5Fopen(NAME, FLAGS, FAPL) VisIt_H5Fopen(NAME, FLAGS, FAPL)
+#define H5Fclose(FID) VisIt_H5Fclose(FID)
+
+#endif
+#endif
+
 #endif

@@ -73,6 +73,8 @@
 #include <string>
 #include <vector>
 
+#include <visit-hdf5.h>
+
 using std::map;
 using std::string;
 using std::vector;

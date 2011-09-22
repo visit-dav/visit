@@ -62,6 +62,8 @@
 
 #include <DebugStream.h>
 
+#include <visit-hdf5.h>
+
 using
 std::string;
 using

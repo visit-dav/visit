@@ -58,6 +58,7 @@
 // is explicitly upgraded to the 1.8 API, this symbol should be removed.
 #define H5_USE_16_API
 #include <hdf5.h>
+#include <visit-hdf5.h>
 #endif
 #include <silo.h>
 

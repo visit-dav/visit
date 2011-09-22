@@ -437,16 +437,10 @@ int vtkVisItEnSight6Reader::ReadMeasuredGeometryFile(const char* fileName, int t
   for (i = 0; i < this->NumberOfMeasuredPoints; i++)
     {
     this->ReadLine(line);
-#ifdef NDEBUG
-    vtkVisItEnSight6ReaderRead1(line, " %8d %12e %12e %12e", 
-                           &tempId, &coords[0],
-                           &coords[1], &coords[2]);
-#else
     int entries = vtkVisItEnSight6ReaderRead1(line, " %8d %12e %12e %12e", 
                                          &tempId, &coords[0],
                                          &coords[1], &coords[2]);
     assert( entries == 4 );
-#endif
     id = tempId;
     newPoints->InsertNextPoint(coords);
     pd->InsertNextCell(VTK_VERTEX, 1, &id);
