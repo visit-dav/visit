@@ -1,7 +1,7 @@
 /*
  A parallel Jacobi solver for the Laplacian equation in 2D
  Written by Jean M. Favre, Swiss National Supercomputing Center
- May 16, 2011
+ September 24, 2011
  Code inspired from an older example by Kadin Tseng, Boston University, November 1999
  The compile flag -D_VISIT_ enables compilation with VisIt. Otherwise, the pogram runs
  in stand-alone mode
@@ -25,7 +25,8 @@ visit_handle SimGetMesh(int, const char *, void *);
 visit_handle SimGetVariable(int, const char *, void *);
 visit_handle SimGetDomainList(const char *, void *);
 void ControlCommandCallback(const char *cmd, const char *args, void *cbdata);
-void SlaveProcessCallback();
+void SlaveProcessCallback(void);
+int ProcessVisItCommand();
 #ifdef PARALLEL
 int visit_broadcast_int_callback(int *value, int sender);
 int visit_broadcast_string_callback(char *str, int len, int sender);
@@ -34,7 +35,7 @@ int visit_broadcast_string_callback(char *str, int len, int sender);
 
 int iter, par_rank, par_size, below, above, runMode;
 int m, mp;
-double gdel, *v, *vnew;
+double gdel, *oldTemp, *Temp;
 float *cx, *cy;
 
 int main(int argc, char *argv[])
@@ -42,7 +43,7 @@ int main(int argc, char *argv[])
   int i;
   int blocking, visitstate, err = 0;
   par_rank=0; par_size = 1;
-
+  char *env = NULL;
 #ifdef PARALLEL
   MPI_Init(&argc, &argv);                       /* starts MPI */
   MPI_Comm_rank(MPI_COMM_WORLD, &par_rank); /* get current process id */
@@ -60,6 +61,7 @@ int main(int argc, char *argv[])
   VisItSetParallel(par_size > 1);
   VisItSetParallelRank(par_rank);
 #endif
+
   if(!par_rank)
     {
     VisItInitializeSocketAndDumpSimFile(
@@ -75,7 +77,7 @@ int main(int argc, char *argv[])
 
 #endif
 
-  runMode = 0;
+  runMode = SIM_STOPPED;
   m = 20; // mesh size = (m+2)x(m+2) including the bc grid lines
 // We make no attempt to check that the number of grid points divides evenly
 // with the number of MPI tasks.
@@ -90,8 +92,8 @@ int main(int argc, char *argv[])
   mp = m/par_size;
 // We use (mp + 2) grid points in the Y direction, i.e. interior points plus 2 b.c. points
 
-  v  = (double *)malloc((mp + 2)* (m + 2) * sizeof(double));
-  vnew = (double *)malloc((mp + 2) * (m + 2) * sizeof(double));
+  oldTemp = (double *)malloc((mp + 2) * (m + 2) * sizeof(double));
+  Temp    = (double *)malloc((mp + 2) * (m + 2) * sizeof(double));
   cx = (float *)malloc(sizeof(float) * (m + 2));
   cy = (float *)malloc(sizeof(float) * (mp + 2));
 
@@ -118,7 +120,7 @@ int main(int argc, char *argv[])
       break;       /* nonconvergent solution */
       }
 #ifdef _VISIT_
-    blocking = (runMode == VISIT_SIMMODE_RUNNING) ? 0 : 1;
+    blocking = (runMode == SIM_RUNNING) ? 0 : 1;
 
         /* Get input from VisIt or timeout so the simulation can run. */
     if(par_rank == 0)
@@ -163,8 +165,12 @@ int main(int argc, char *argv[])
           {
           /* Disconnect on an error or closed connection. */
           VisItDisconnect();
-          /* Start running again if VisIt closes. */
-          runMode = SIM_RUNNING;
+          if(!par_rank)
+            {
+            fprintf(stderr, "VisIt disconnected\n");
+            }
+          // Start running again if VisIt closes. 
+          //runMode = SIM_RUNNING;
           }
       break;
       default:
@@ -187,7 +193,7 @@ int main(int argc, char *argv[])
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
 #endif
-  free(v); free(vnew);
+  free(oldTemp); free(Temp);
   free(cx); free(cy);
   return (0);
 }

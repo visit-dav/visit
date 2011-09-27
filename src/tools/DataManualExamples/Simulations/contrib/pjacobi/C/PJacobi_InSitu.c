@@ -134,8 +134,7 @@ SimGetVariable(int domain, const char *name, void *cbdata)
     if(strcmp(name, "temperature") == 0)
       {
       nTuples = (m+2)*(mp+2);
-
-      VisIt_VariableData_setDataD(h, VISIT_OWNER_SIM, nComponents, nTuples, v);
+      VisIt_VariableData_setDataD(h, VISIT_OWNER_SIM, nComponents, nTuples, Temp);
       }
     else
       {
@@ -176,7 +175,7 @@ void BroadcastSlaveCommand(int *command)
 }
 
 /* Callback involved in command communication. */
-void SlaveProcessCallback()
+void SlaveProcessCallback(void)
 {
    int command = VISIT_COMMAND_PROCESS;
    BroadcastSlaveCommand(&command);
