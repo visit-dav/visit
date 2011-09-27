@@ -256,6 +256,9 @@
 #    Use NERSC_HOST environment variable instead of hostname to determine if
 #    we are running on Franklin or Hopper.
 #
+#    Kathleen Biagas, Mon Sep 26 14:59:32 MST 2011
+#    Add mpi search support for Windows.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1074,38 +1077,84 @@ IF(VISIT_PARALLEL)
         ENDIF(VISIT_FORTRAN AND VISIT_MPI_FORTRAN_COMPILER)
 
     ELSE(VISIT_MPI_COMPILER)
-        MESSAGE(STATUS "Setting up MPI using user defined flags")
+        SET(VPFLAGS "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK")
         IF(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
-            SET(VISIT_PARALLEL_LIBS          ${VISIT_MPI_LIBS} CACHE STRING "MPI libraries")
-            SET(VISIT_PARALLEL_FORTRAN_LIBS  ${VISIT_MPI_FORTRAN_LIBS} CACHE STRING "MPI libraries for Fortran")
+            MESSAGE(STATUS "Setting up MPI using user defined flags")
+            SET(VISIT_PARALLEL_LIBS          ${VISIT_MPI_LIBS} 
+                CACHE STRING "MPI libraries")
+            SET(VISIT_PARALLEL_FORTRAN_LIBS  ${VISIT_MPI_FORTRAN_LIBS} 
+                CACHE STRING "MPI libraries for Fortran")
 
             IF(VISIT_MPI_C_FLAGS)
-                SET(VISIT_PARALLEL_CFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK ${VISIT_MPI_C_FLAGS}" CACHE STRING "Parallel CFLAGS")
+                SET(VISIT_PARALLEL_CFLAGS  " ${VPFLAGS} ${VISIT_MPI_C_FLAGS}" 
+                    CACHE STRING "Parallel CFLAGS")
             ELSE(VISIT_MPI_C_FLAGS)
-                SET(VISIT_PARALLEL_CFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK" CACHE STRING "Parallel CFLAGS")
+                SET(VISIT_PARALLEL_CFLAGS  "${VPFLAGS}" 
+                    CACHE STRING "Parallel CFLAGS")
             ENDIF(VISIT_MPI_C_FLAGS)
 
             IF(VISIT_MPI_CXX_FLAGS)
-                SET(VISIT_PARALLEL_CXXFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK ${VISIT_MPI_CXX_FLAGS}" CACHE STRING "Parallel CXXFLAGS")
+                SET(VISIT_PARALLEL_CXXFLAGS "${VPFLAGS} ${VISIT_MPI_CXX_FLAGS}" 
+                    CACHE STRING "Parallel CXXFLAGS")
             ELSE(VISIT_MPI_CXX_FLAGS)
-                SET(VISIT_PARALLEL_CXXFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK" CACHE STRING "Parallel CXXFLAGS")
+                SET(VISIT_PARALLEL_CXXFLAGS  "${VPFLAGS}"
+                    CACHE STRING "Parallel CXXFLAGS")
             ENDIF(VISIT_MPI_CXX_FLAGS)
 
             IF(VISIT_MPI_FORTRAN_FLAGS)
-                SET(VISIT_PARALLEL_FORTRANFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK ${VISIT_MPI_FORTRAN_FLAGS}" CACHE STRING "Parallel Fortran flags")
+                SET(VISIT_PARALLEL_FORTRANFLAGS "${VPFLAGS} ${VISIT_MPI_FORTRAN_FLAGS}" 
+                    CACHE STRING "Parallel Fortran flags")
             ELSE(VISIT_MPI_FORTRAN_FLAGS)
-                SET(VISIT_PARALLEL_FORTRANFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK" CACHE STRING "Parallel flags for Fortran")
+                SET(VISIT_PARALLEL_FORTRANFLAGS  "${VPFLAGS}" 
+                    CACHE STRING "Parallel flags for Fortran")
             ENDIF(VISIT_MPI_FORTRAN_FLAGS)
 
             IF(VISIT_MPI_LD_FLAGS)
-                SET(VISIT_PARALLEL_LINKER_FLAGS "${VISIT_MPI_LD_FLAGS}" CACHE STRING "Parallel LDFLAGS")
+                SET(VISIT_PARALLEL_LINKER_FLAGS "${VISIT_MPI_LD_FLAGS}" 
+                    CACHE STRING "Parallel LDFLAGS")
             ELSE(VISIT_MPI_LD_FLAGS)
-                SET(VISIT_PARALLEL_LINKER_FLAGS "" CACHE STRING "Parallel LDFLAGS")
+                SET(VISIT_PARALLEL_LINKER_FLAGS "" 
+                    CACHE STRING "Parallel LDFLAGS")
             ENDIF(VISIT_MPI_LD_FLAGS)
         ELSE(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
-            MESSAGE(FATAL_ERROR "To build parallel VisIt, you must at a minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS.
-                    You may also define VISIT_MPI_LD_FLAGS, VISIT_MPI_CXX_FLAGS." )
+            IF(WIN32)
+              INCLUDE(${CMAKE_ROOT}/Modules/FindMPI.cmake)
+              IF(MPI_FOUND)
+                IF(MPI_COMPILE_FLAGS)
+                    LIST(APPEND VPFLAGS "${MPI_COMPILE_FLAGS}")
+                ENDIF(MPI_COMPILE_FLAGS)
+                IF(MPI_INCLUDE_PATH)
+                    LIST(APPEND VPFLAGS "/I \"${MPI_INCLUDE_PATH}\"")
+                ENDIF(MPI_INCLUDE_PATH)
+                STRING(REPLACE ";" " " VPFLAGS "${VPFLAGS}")
+                SET(VISIT_PARALLEL_CFLAGS "${VPFLAGS}" 
+                    CACHE STRING "Parallel CFLAGS")
+                SET(VISIT_PARALLEL_CXXFLAGS "${VPFLAGS}" 
+                     CACHE STRING "Parallel CXXFLAGS")
+                SET(VISIT_PARALLEL_LIBS "${MPI_LIBRARY}"
+                    CACHE STRING "MPI libraries")
+                IF(MPI_LINK_FLAGS)
+                    SET(VISIT_PARALLEL_LINKER_FLAGS "${MPI_LINK_FLAGS}"
+                        CACHE STRING "Parallel LDFLAGS")
+                #ELSE(MPI_LINK_FLAGS)
+                #    SET(VISIT_PARALLEL_LINKER_FLAGS " "
+                #        CACHE STRING "Parallel LDFLAGS")
+                ENDIF(MPI_LINK_FLAGS)
+              ELSE(MPI_FOUND)
+                MESSAGE(FATAL_ERROR "To build parallel VisIt, you must at a " 
+                        "minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS. "
+                        "You may also define VISIT_MPI_LD_FLAGS, "
+                        "VISIT_MPI_CXX_FLAGS." )
+              ENDIF(MPI_FOUND)
+            ELSE(WIN32)
+                MESSAGE(FATAL_ERROR "To build parallel VisIt, you must at a " 
+                        "minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS. "
+                        "You may also define VISIT_MPI_LD_FLAGS, "
+                        "VISIT_MPI_CXX_FLAGS." )
+            ENDIF(WIN32)
+
         ENDIF(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
+        UNSET(VPFLAGS)
     ENDIF(VISIT_MPI_COMPILER)
 
     MESSAGE(STATUS "Parallel version of VisIt")

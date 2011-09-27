@@ -89,6 +89,9 @@ class SlaveInfo;
 //   Dave Pugmire, Thu Dec  2 11:21:06 EST 2010
 //   Add CheckNextTimeStepNeeded.
 //
+//   Kathleen Biagas, Mon Sep 26 7:15:32 MST 2011
+//   Change Sleep to NSleep to prevent collision on Windows.
+//
 // ****************************************************************************
 
 class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
@@ -132,7 +135,7 @@ class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
     }
     
     int                        sleepMicroSec;
-    void                       Sleep();
+    void                       NSleep();
     
     static int                 MSG_STATUS, MSG_DONE, MSG_SEND_IC,
                                MSG_LOAD_DOMAIN, MSG_SEND_IC_HINT,

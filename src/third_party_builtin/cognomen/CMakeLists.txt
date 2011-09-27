@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas,  Mon Sep 26 07:21:44 MST 2011
+#   Make cognomen always build static lib on windows.
 #
 #****************************************************************************/
 
@@ -53,6 +55,15 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 ADD_DEFINITIONS(-DIN_COGNOMEN)
 
-ADD_PARALLEL_LIBRARY(cognomen ${COGNOMEN_SOURCES})
+
+IF(WIN32)
+    SET(TMP ${BUILD_SHARED_LIBS})
+    SET(BUILD_SHARED_LIBS 0)
+    ADD_PARALLEL_LIBRARY(cognomen ${COGNOMEN_SOURCES})
+    TARGET_LINK_LIBRARIES(cognomen ws2_32)
+    SET(BUILD_SHARED_LIBS ${TMP})
+ELSE(WIN32)
+    ADD_PARALLEL_LIBRARY(cognomen ${COGNOMEN_SOURCES})
+ENDIF(WIN32)
 
 VISIT_INSTALL_TARGETS(cognomen)
