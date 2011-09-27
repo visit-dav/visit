@@ -2,9 +2,11 @@
 <Object name="MachineProfile">
     <Field name="host" type="string">rzzeus.llnl.gov</Field>
     <Field name="hostAliases" type="string">rzzeus#.llnl.gov rzzeus##.llnl.gov rzzeus###.llnl.gov rzzeus# rzzeus## rzzeus###</Field>
-    <Field name="hostNickname" type="string">LLNL Zeus</Field>
+    <Field name="hostNickname" type="string">LLNL RZ Zeus</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
-    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
+    <Field name="useGateway" type="bool">true</Field>
+    <Field name="gatewayHost" type="string">rzgw.llnl.gov</Field>
+    <Field name="clientHostDetermination" type="string">MachineName</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">serial</Field>
         <Field name="timeout" type="int">480</Field>
