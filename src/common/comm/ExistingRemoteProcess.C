@@ -124,6 +124,11 @@ ExistingRemoteProcess::~ExistingRemoteProcess()
 //   I added the ability to use a gateway machine when connecting to a
 //   remote host.
 //
+//   Eric Brugger, Mon Sep 26 17:02:16 PDT 2011
+//   I modified the remote launching to pass the remote user name to the
+//   ssh command to the gateway machine instead of to the ssh command to
+//   the remote machine.
+//
 // ****************************************************************************
 
 bool
@@ -143,8 +148,8 @@ ExistingRemoteProcess::Open(const std::string &rHost,
     // Add all of the relevant command line arguments to a vector of strings.
     stringVector commandLine;
     CreateCommandLine(commandLine, rHost,
-                      chd, clientHostName, manualSSHPort, sshPort,useTunneling,
-                      numRead, numWrite,
+                      chd, clientHostName, manualSSHPort, sshPort,
+                      useTunneling, useGateway, numRead, numWrite,
                       createAsThoughLocal);
 
     //
