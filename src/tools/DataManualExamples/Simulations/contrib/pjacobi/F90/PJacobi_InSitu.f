@@ -138,8 +138,10 @@ c---------------------------------------------------------------------------
       integer h
 
       if(visitvardataalloc(h).eq.VISIT_OKAY) then
+        if(visitstrcmp(name, lname, "temperature", 11).eq.0) then 
         ierr = visitvardatasetd(h, VISIT_OWNER_SIM, 1,
-     .                          (m+2)*(mp+2), v)
+     .                          (m+2)*(mp+2), Temp)
+        endif
       endif
 
       visitgetvariable = h
@@ -159,7 +161,7 @@ c     Handle the commands that we define in visitgetmetadata.
       if(visitstrcmp(cmd, lcmd, "halt", 4).eq.0) then
            visRunFlag = .false.
       elseif(visitstrcmp(cmd, lcmd, "step", 4).eq.0) then
-           call simulate_one_timestep(v, m, mp, vnew)
+           call simulate_one_timestep()
            ierr = visitupdateplots()
       elseif(visitstrcmp(cmd, lcmd, "run", 3).eq.0) then
           visRunFlag = .true.

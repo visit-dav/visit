@@ -51,9 +51,9 @@ implicit none
 
   print *, 'proc ', par_rank, ' out of ', par_size, ' m=', m, ' mp=', mp
 
-  allocate ( vnew(m,mp), v(0:m+1,0:mp+1) )  ! mem for vnew, v
+  allocate ( Temp(0:m+1,0:mp+1), oldTemp(0:m+1,0:mp+1) )  ! mem for Temp, v
 
-  call set_initial_bc(v, m, mp)             ! set up boundary values
+  call set_initial_bc()             ! set up boundary values
 
 #if ( defined _VISIT_ )
   visRunFlag = .FALSE.
@@ -82,7 +82,7 @@ implicit none
   if (visitstate < 0) then
     print *, 'visitState < 0 in time stepping loop. Ignoring and continuing'
   elseif (visitstate == 0) then
-    call simulate_one_timestep(v, m, mp, vnew)
+    call simulate_one_timestep()
   elseif (visitstate == 1) then
     visRunFlag = .TRUE.
     visResult = visitattemptconnection()
@@ -100,11 +100,11 @@ implicit none
     endif
   endif
 #else
-    call simulate_one_timestep(v, m, mp, vnew)
+    call simulate_one_timestep()
 #endif
   end do
-  call MPIIOWriteData('/tmp/Jacobi.bin', v, m, mp)
-  deallocate (vnew, v)
+  call MPIIOWriteData('/tmp/Jacobi.bin')
+  deallocate (Temp, oldTemp)
 
   call MPI_Finalize(ierr)
 

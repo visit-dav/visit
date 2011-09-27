@@ -24,20 +24,20 @@ void set_initial_bc()
  ************************************************************************/
   int i;
   double x;
-  memset(v, 0, sizeof(double)*(m+2)*(mp+2));
-
+  memset(oldTemp, 0, sizeof(double)*(m+2)*(mp+2));
+  memset(Temp, 0, sizeof(double)*(m+2)*(mp+2));
   if(par_size > 1)
     {
     if (par_rank == 0)
       {
       for (i = 0; i < (m+2); i++)
         {
-        v[i] = sin(M_PI*i/(m+1));              /* at y = 0; all x */
+        Temp[i] = sin(M_PI*i/(m+1));              /* at y = 0; all x */
         }
       }
     if (par_rank == par_size-1) {
       for (i = 0; i < (m+2); i++) {
-        v[i+(m+2)*(mp+1)] = sin(M_PI*i/(m+1))*exp(-M_PI);   /* at y = 1; all x */
+        Temp[i+(m+2)*(mp+1)] = sin(M_PI*i/(m+1))*exp(-M_PI);   /* at y = 1; all x */
       }
     }
   }
@@ -46,15 +46,32 @@ void set_initial_bc()
     for (i = 0; i < (m+2); i++)
       {
       x = sin(M_PI*i/(m+1));    /* at y = 0; all x */
-      v[i] = x;    /* at y = 0; all x */
-      v[i+(m+2)*(mp+1)] = x*exp(-M_PI);   /* at y = 1; all x */
+      Temp[i] = x;    /* at y = 0; all x */
+      Temp[i+(m+2)*(mp+1)] = x*exp(-M_PI);   /* at y = 1; all x */
       }
     }
 }
 
+void CopyTempValues_2_OldValues()
+{
+  //save current solution array to buffer
+  int i, j, idx;
+
+  for (j = 0; j <= (mp+1); j++)
+    {
+    for (i = 0; i <= (m+1); i++)
+      {
+      idx = i+(m+2)*j;
+      oldTemp[idx] = Temp[idx];
+      }
+  }
+}
+
 void simulate_one_timestep()
 {
-/* compute new solution according to the Jacobi scheme */
+  CopyTempValues_2_OldValues();
+
+/* compute Temp solution according to the Jacobi scheme */
   double del = update_jacobi();
   /* find global max error */
 #ifdef PARALLEL
@@ -71,7 +88,7 @@ void simulate_one_timestep()
       }
     }
 #ifdef PARALLEL
-  update_bc_2(); // update boundary conditions
+  exchange_ghost_lines(); // update lowest and uppermost grid lines
 #endif
   iter++;
 #ifdef _VISIT_
@@ -89,35 +106,28 @@ double update_jacobi()
     {
     for (i = 1; i < m+1; i++)
       {
-      vnew[i+(m+2)*j] = ( v[i+(m+2)*(j+1)] +
-                                v[(i+1)+(m+2)*j] +
-                                v[(i-1)+(m+2)*j] +
-                                v[i+(m+2)*(j-1)] )*0.25;
-      del += fabs(vnew[i+(m+2)*j] - v[i+(m+2)*j]); /* find local max error */
+      Temp[i+(m+2)*j] = ( oldTemp[i+(m+2)*(j+1)] +
+                          oldTemp[(i+1)+(m+2)*j] +
+                          oldTemp[(i-1)+(m+2)*j] +
+                          oldTemp[i+(m+2)*(j-1)] )*0.25;
+      del += fabs(Temp[i+(m+2)*j] - oldTemp[i+(m+2)*j]); /* find local max error */
       }
     }
-  for (j = 1; j < (mp+1); j++)
-    {
-    for (i = 1; i < (m+1); i++)
-      {
-      v[i+(m+2)*j] = vnew[i+(m+2)*j];
-      }
-  }
-      
+
   return del;
 }
 
 #ifdef PARALLEL
-void update_bc_2()
+void exchange_ghost_lines()
 {
   MPI_Status status;
 // send my last computed row above and receive from below my south boundary wall
-  MPI_Sendrecv(&v[1+mp*(m+2)], m, MPI_DOUBLE, above, 0,
-               &v[1+0*(m+2)], m, MPI_DOUBLE, below, 0,
+  MPI_Sendrecv(&Temp[1+mp*(m+2)], m, MPI_DOUBLE, above, 0,
+               &Temp[1+0*(m+2)], m, MPI_DOUBLE, below, 0,
                 MPI_COMM_WORLD, &status );
 // send my first computed row below and receive from above my north boundary wa
-  MPI_Sendrecv(&v[1 + 1*(m+2) ], m, MPI_DOUBLE, below, 1,
-               &v[1+(mp+1)*(m+2)], m, MPI_DOUBLE, above, 1,
+  MPI_Sendrecv(&Temp[1 + 1*(m+2) ], m, MPI_DOUBLE, below, 1,
+               &Temp[1+(mp+1)*(m+2)], m, MPI_DOUBLE, above, 1,
                 MPI_COMM_WORLD, &status );
 }
 
@@ -149,36 +159,29 @@ void MPIIOWriteData(char *filename)
                           MPI_MODE_CREATE | MPI_MODE_WRONLY,
                           MPI_INFO_NULL, &filehandle);
 
+// write the grid dimensions to allow a restart
   if(par_rank == 0)
-    {
     MPI_File_write(filehandle, dimuids, 2, MPI_INT, MPI_STATUS_IGNORE);
-    }
+
   disp = 2 * sizeof(int); // offset because we just wrote 2 integers
-  ustart[0] = mp * par_rank + 1;
-  if(par_rank == 0)
-    {
-  ustart[0] = 0;
-    }
-  ustart[1] = 0; // X direction
+  ustart[0] = mp * par_rank;
+  ustart[1] = 0; // in the X direction, always start at 0
 
   ucount[0] = mp;
   ucount[1] = m+2;
-// all tasks write mp lines except rank 0 and last rank which write (mp+1)
+// all tasks write mp lines except last rank which writes (mp+2)
 // in total, we have  the (m+2)*(m+2) grid written, including the b.c.
-  if((par_rank == 0) || (par_rank == (par_size-1)))
-    {
-    ucount[0]++;
-    }
+  if(par_rank == (par_size-1))
+    ucount[0] = mp+2;
 
  // Create the subarray representing the local block
   MPI_Type_create_subarray(2, dimuids, ucount, ustart,
-                                        MPI_ORDER_C, MPI_DOUBLE, &filetype);
+                           MPI_ORDER_C, MPI_DOUBLE, &filetype);
   MPI_Type_commit(&filetype);
 
   MPI_File_set_view(filehandle, disp, MPI_DOUBLE,
-                                filetype, "native", MPI_INFO_NULL);
-
-  MPI_File_write_all(filehandle, v, ucount[0]*ucount[1], MPI_DOUBLE, MPI_STATUS_IGNORE);
+                    filetype, "native", MPI_INFO_NULL);
+  MPI_File_write_all(filehandle, Temp, ucount[0]*ucount[1], MPI_DOUBLE, MPI_STATUS_IGNORE);
   MPI_File_close(&filehandle);
   MPI_Type_free(&filetype);
 
