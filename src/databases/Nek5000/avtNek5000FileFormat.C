@@ -2165,6 +2165,9 @@ avtNek5000FileFormat::GetFileName(int rawTimestep, int pardir, char *outFileName
 //    with a new mesh at every time slice, and a bug where time and cycle
 //    get combined.
 //
+//    Hank Childs, Tue Sep 27 16:48:10 PDT 2011
+//    Add support for the case where the metadata hasn't been initialized yet.
+//
 // ****************************************************************************
 
 void
@@ -2182,10 +2185,13 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
     if (readTimeInfoFor[curTimestep] == true)
     {
         // avtMTMDFileFormatInterface tramples on this.  Fight back.
-        metadata->SetTime(curTimestep+timeSliceOffset, aTimes[curTimestep]);
-        metadata->SetTimeIsAccurate(true, curTimestep+timeSliceOffset);
-        metadata->SetCycle(curTimestep+timeSliceOffset, aCycles[curTimestep]);
-        metadata->SetCycleIsAccurate(true, curTimestep+timeSliceOffset);
+        if (metadata != NULL)
+        {
+            metadata->SetTime(curTimestep+timeSliceOffset, aTimes[curTimestep]);
+            metadata->SetTimeIsAccurate(true, curTimestep+timeSliceOffset);
+            metadata->SetCycle(curTimestep+timeSliceOffset, aCycles[curTimestep]);
+            metadata->SetCycleIsAccurate(true, curTimestep+timeSliceOffset);
+        }
 
         return;
     }
@@ -2231,11 +2237,14 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
     f.close();
 
     aTimes[curTimestep] = t;
-    metadata->SetTime(curTimestep+timeSliceOffset, t);
-    metadata->SetTimeIsAccurate(true, curTimestep+timeSliceOffset);
     aCycles[curTimestep] = c;
-    metadata->SetCycle(curTimestep+timeSliceOffset, c);
-    metadata->SetCycleIsAccurate(true, curTimestep+timeSliceOffset);
+    if (metadata != NULL)
+    {
+        metadata->SetTime(curTimestep+timeSliceOffset, t);
+        metadata->SetTimeIsAccurate(true, curTimestep+timeSliceOffset);
+        metadata->SetCycle(curTimestep+timeSliceOffset, c);
+        metadata->SetCycleIsAccurate(true, curTimestep+timeSliceOffset);
+    }
 
     // If this file contains a mesh, the first variable codes after the 
     // cycle number will be X Y
@@ -3221,6 +3230,9 @@ avtNek5000FileFormat::CombineElementLists(
 //    Tom Fogal, Sat Feb  7 17:33:06 EST 2009
 //    Fix the iterator declaration.
 //
+//    Hank Childs, Tue Sep 27 16:32:55 PDT 2011
+//    Add support for meshes whose coordinates vary over time.
+//
 // ****************************************************************************
 
 void
@@ -3249,7 +3261,13 @@ avtNek5000FileFormat::ActivateTimestep(int ts)
     dataExtents = new_dataExtents;
 
     curTimestep = ts;
-    timestepToUseForMesh = 0;
+    UpdateCyclesAndTimes();   //Needs to call this to update iTimestepsWithMesh
+    if (iTimestepsWithMesh[curTimestep] == true)
+    {
+        timestepToUseForMesh = curTimestep;
+    }
+    else
+        timestepToUseForMesh = 0;
 }
 
 
