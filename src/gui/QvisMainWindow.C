@@ -616,9 +616,13 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     pref->addAction(tr("&Appearance . . ."), 
                     this, SIGNAL(activateAppearanceWindow()), 
                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A));
+    pref->addSeparator();
     pref->addAction(computerIcon, tr("&Host profiles . . ."),
                     this, SIGNAL(activateHostWindow()), 
                     QKeySequence(Qt::CTRL + Qt::Key_H));
+    pref->addAction(tr("Host profiles and Configuration Setup . . ."),
+                    this, SIGNAL(activateSetupHostProfilesAndConfig()));
+    pref->addSeparator();
     pref->addAction(tr("&Interactors . . ."),
                     this, SIGNAL(activateInteractorWindow()),
                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I));
@@ -626,8 +630,6 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                     this, SIGNAL(activatePluginWindow()));
     pref->addAction(tr("Preferences . . ."),
                     this, SIGNAL(activatePreferencesWindow()));
-    pref->addAction(tr("Setup Host Profiles and Configuration . . ."),
-                    this, SIGNAL(activateSetupHostProfilesAndConfig()));
     pref->addAction(tr("Rendering . . ."),
                     this, SIGNAL(activateRenderingWindow()));
 
