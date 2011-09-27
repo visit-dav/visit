@@ -126,6 +126,11 @@ class Connection;
 //    I added the ability to use a gateway machine when connecting to a
 //    remote host.
 //
+//    Eric Brugger, Mon Sep 26 16:40:20 PDT 2011
+//    I modified the remote launching to pass the remote user name to the
+//    ssh command to the gateway machine instead of to the ssh command to
+//    the remote machine.
+//
 // ****************************************************************************
 
 class COMM_API RemoteProcess
@@ -172,10 +177,11 @@ protected:
                            MachineProfile::ClientHostDetermination chd,
                            const std::string &clientHostName,
                            bool manualSSHPort,
-                           int sshPort, bool useTunneling,
+                           int sshPort, bool useTunneling, bool useGateway,
                            int numRead, int numWrite, bool local);
     virtual void Launch(const std::string &rHost, bool createAsThoughLocal,
                         bool useGateway, const std::string &gatewayHost,
+                        const std::string &remoteUserName,
                         const stringVector &commandLine);
 protected:
     int                      listenPortNum;
@@ -189,10 +195,12 @@ private:
     void CloseListenSocket();
     void ExchangeTypeRepresentations();
     void LaunchRemote(bool useGateway, const std::string &gatewayHost,
+                      const std::string &remoteUserName,
                       const stringVector &args);
     void LaunchLocal(const stringVector &args);
     char **CreateSplitCommandLine(const stringVector &args, int &argc) const;
     char **CreateSSHCommandLine(const std::string &host,
+                                const std::string &remoteUserName,
                                 const stringVector &args, int &argc) const;
     void DestroySplitCommandLine(char **args, int argc) const;
     char *StrDup(const std::string &) const;

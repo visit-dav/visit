@@ -197,6 +197,11 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //   I added the ability to use a gateway machine when connecting to a
 //   remote host.
 //
+//   Eric Brugger, Tue Sep 27 09:03:03 PDT 2011
+//   I modified the remote launching to pass the remote user name to the
+//   ssh command to the gateway machine instead of to the ssh command to
+//   the remote machine.
+//
 // ****************************************************************************
 
 class ViewerRemoteProcess : public RemoteProcess
@@ -258,7 +263,8 @@ protected:
             debug5 << ")" << endl;
         }
 
-        RemoteProcess::Launch(rHost, createAsThoughLocal, false, "", viewerArgs);
+        RemoteProcess::Launch(rHost, createAsThoughLocal, false, "", "notset",
+                              viewerArgs);
     }
 };
 
