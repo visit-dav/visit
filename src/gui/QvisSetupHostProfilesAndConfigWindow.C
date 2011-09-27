@@ -110,7 +110,7 @@ QvisSetupHostProfilesAndConfigWindow::CreateWindowContents()
     readNetworkList();
     readDefaultConfigList();
 
-    QLabel *label = new QLabel(tr("To finish the VisIt install on this Mac select "
+    QLabel *label = new QLabel(tr("To finish the VisIt install on this computer select "
                 "any computing centers whose resources you are using to "
                 "configure host profiles automatically for their machines."));
     label->setWordWrap(true);
