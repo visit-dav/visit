@@ -27,7 +27,8 @@
 #include <limits.h>
 
 #if defined(_WIN32)
-#include <win32-hostid.h>
+/*#include <win32-hostid.h>*/
+#include <winsock2.h>
 #else
 #include <unistd.h>
 #endif
@@ -42,6 +43,39 @@ static int mpi_size();
 static int mpi_rank();
 static void *xmalloc(size_t bytes);
 
+long
+wgethostid()
+{
+#ifndef _WIN32
+    return gethostid();
+#else
+
+    int             nErr;
+    char            acHost  [   MAX_COMPUTERNAME_LENGTH];
+    WORD            wVersionRequested;
+    WSADATA         wsaData;
+    struct hostent* pHostent;
+   
+    wVersionRequested   =   MAKEWORD(   1,  1);
+
+    if (nErr = WSAStartup(wVersionRequested,  &wsaData))
+    {    
+        return -1;
+    }    
+    if (nErr = gethostname(acHost, MAX_COMPUTERNAME_LENGTH))
+    {
+        return -1; 
+    }
+
+    if  (!(pHostent = gethostbyname(acHost)))
+    {
+        return -1; 
+    }
+
+    return *((long*)pHostent->h_addr);
+#endif
+}
+
 /** Initialization for the Cognomen library.
  * identify must be called by all nodes in lockstep.  It initializes
  * the library and performs node identification.  You only need to do this once
@@ -54,7 +88,7 @@ cog_identify()
     int proc;
     const int rank = mpi_rank();
 
-    id = gethostid();
+    id = wgethostid();
     sz = mpi_size();
 
     if(map_id) {

@@ -308,7 +308,7 @@ avtMasterSlaveICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &streamlines,
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveICAlgorithm::Sleep
+//  Method: avtMasterSlaveICAlgorithm::NSleep
 //
 //  Purpose:
 //      Sleep for a spell
@@ -316,17 +316,25 @@ avtMasterSlaveICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &streamlines,
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//    Kathleen Biagas, Mon Sep 26 07:15:32 MST 2011
+//    Changed name to NSleep to prevent collision on Windows.
+//
 // ****************************************************************************
 
 void
-avtMasterSlaveICAlgorithm::Sleep()
+avtMasterSlaveICAlgorithm::NSleep()
 {
     if (sleepMicroSec > 0)
     {
         //debug1<<"Sleep for "<<sleepMicroSec<<" microSec\n";
         int sleepTimer = visitTimer->StartTimer();
+#ifdef _WIN32
+        Sleep(0);
+#else
         struct timespec ts = {0, 0};
         nanosleep(&ts, 0);
+#endif
         SleepTime.value += visitTimer->StopTimer(sleepTimer, "SleepTimer");
         SleepCnt.value++;
     }
@@ -1259,6 +1267,10 @@ avtMasterICAlgorithm::ProcessNewIntegralCurves()
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
 //
+//  Modifications:
+//    Kathleen Biagas, Mon Sep 26 07:15:32 MST 2011
+//    Changed Sleep call to NSleep to prevent collision on Windows.
+//
 // ****************************************************************************
 
 void
@@ -1287,7 +1299,7 @@ avtMasterICAlgorithm::ManageWorkgroup()
 
     if (!slaveUpdate && !masterUpdate)
     {
-        Sleep();
+        NSleep();
     }
     else
     {
@@ -2426,7 +2438,7 @@ avtSlaveICAlgorithm::RunAlgorithm()
         //Nothing to do, take a snooze....
         if (!workToDo)
         {
-            Sleep();
+            NSleep();
         }
     }
 

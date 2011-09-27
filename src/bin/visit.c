@@ -55,8 +55,11 @@
 
 using std::vector;
 using std::string;
+using std::cerr;
+using std::endl;
 typedef vector<int> intVector;
 typedef vector<intVector> intIntVector;
+typedef vector<string> stringVector;
 
 /* Uncomment these definitions if you need to debug the functions. */
 /*
@@ -71,15 +74,12 @@ typedef vector<intVector> intIntVector;
  */
 #define ARG(A) (strcmp((A), argv[i]) == 0)
 
-#define PUSHARG(A) componentArgs[nComponentArgs] = (char*)malloc(strlen(A)+1); \
-                   strcpy(componentArgs[nComponentArgs], A); \
-                   ++nComponentArgs;
-
 #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
 
 #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
 
 #define HASSPACE(A) (strstr(A, " ") != NULL)
+#define SQUOTEARG(A) (tmpArg = string("\'") + string(A) + string("\'"))
 
 
 /*
@@ -129,11 +129,13 @@ static const char usage[] =
 /*
  * Prototypes
  */
-char *AddEnvironment(const int, const int, bool &);
-void  AddPath(char *, const char *, const char*);
-int   ReadKey(const char *key, char **keyval);
-void  TestForConfigFiles(const char *component);
-void PrintEnvironment(void);
+string AddEnvironment(const bool, const bool);
+void   AddPath(char *, const char *, const char*);
+int    ReadKey(const char *key, char **keyval);
+void   TestForConfigFiles(const string &component);
+void   PrintEnvironment(void);
+string WinGetEnv(const char * name);
+
 
 /******************************************************************************
  *
@@ -235,39 +237,41 @@ void PrintEnvironment(void);
  *   Kathleen Bonnell, Tue May 3 14:31:50 MST 2011
  *   Add support for -env. 
  *
+ *   Kathleen Bonnell, Mon Sep 26 07:13:08 MST 2011
+ *   Add support for parallel engine.  Use string for arg storage.
+ *
  *****************************************************************************/
 
 int
 main(int argc, char *argv[])
 {
-    int   nComponentArgs = 0;
-    char *componentArgs[100], *command = 0, *printCommand = 0, *visitpath = 0,
-         *visitargs = 0, *cptr = 0, *cptr2 = 0, tmpArg[512];
-    int i, j, size = 0, retval = 0, skipping = 0, nArgsSkip = 0, tmplen = 0;
-    int addMovieArguments = 0, addVISITARGS = 1, useShortFileName = 0;
-    int addPluginVars = 0;
-    int newConsole = 0;
-    int noloopback = 0;
-    int parallel = 0;
-    int hostset = 0;
-    char *spawnargs[100];
-    int nspawnargs = 0;
-    char component[100];
-    bool freeVisItPath = false;
+    bool addMovieArguments = false; 
+    bool addVISITARGS = true; 
+    bool useShortFileName = false;
+    bool addPluginVars = false;
+    bool newConsole = false;
+    bool noloopback = false;
+    bool parallel = false;
+    bool hostset = 0;
     bool envOnly = false;
 
-    /*
-     * Default values.
-     */
-    memset((void*)spawnargs, 0, 100 * sizeof(char*));
-    strcpy(component, "gui");
+    string nps("2");
+    stringVector componentArgs;
+    stringVector engineArgs;
+    string component("gui");
+    string tmpArg;
+    
 
-    /*
-     * Parse the command line arguments.
-     */
-    for(i = 0; i < argc; ++i)
+    //
+    // Parse the command line arguments.
+    // 
+    for(int i = 0; i < argc; ++i)
     {
-        if(ARG("-help"))
+        if(ARG("visit"))
+        {
+           continue; 
+        }
+        else if(ARG("-help"))
         {
             printf("%s", usage);
             return 0;
@@ -279,54 +283,61 @@ main(int argc, char *argv[])
         }
         else if(ARG("-gui"))
         {
-            strcpy(component, "gui");
-            addVISITARGS = 1;
+            component = "gui";
+            addVISITARGS = true;
         }
         else if(ARG("-cli"))
         {
-            strcpy(component, "cli");
-            addVISITARGS = 1;
+            component = "cli";
+            addVISITARGS = true;
         }
         else if(ARG("-viewer"))
         {
-            strcpy(component, "viewer");
-            addVISITARGS = 0;
+            component = "viewer";
+            addVISITARGS = false;
         }
         else if(ARG("-mdserver"))
         {
-            strcpy(component, "mdserver");
-            addVISITARGS = 0;
+            component = "mdserver";
+            addVISITARGS = false;
         }
         else if(ARG("-engine"))
         {
-            strcpy(component, "engine_ser");
-            addVISITARGS = 0;
+            if (parallel)
+            {
+                component = "engine_par";
+            }
+            else
+            {
+                component = "engine_ser";
+            }
+            addVISITARGS = false;
         }
         else if(ARG("-vcl"))
         {
-            strcpy(component, "vcl");
-            addVISITARGS = 0;
+            component = "vcl";
+            addVISITARGS = false;
         }
         else if(ARG("-movie"))
         {
-            strcpy(component, "cli");
-            addMovieArguments = 1;
-            useShortFileName = 1;
+            component = "cli";
+            addMovieArguments = true;
+            useShortFileName = true;
         }
         else if(ARG("-mpeg2encode"))
         {
-            strcpy(component, "mpeg2encode.exe");
-            addVISITARGS = 1;
+            component = "mpeg2encode";
+            addVISITARGS = true;
         }
         else if(ARG("-transition"))
         {
-            strcpy(component, "visit_transition");
-            addVISITARGS = 1;
+            component = "visit_transition";
+            addVISITARGS = true;
         }
         else if(ARG("-composite"))
         {
-            strcpy(component, "visit_composite");
-            addVISITARGS = 1;
+            component = "visit_composite";
+            addVISITARGS = true;
         }
         else if(ARG("-mpeg_encode"))
         {
@@ -337,13 +348,13 @@ main(int argc, char *argv[])
         }
         else if(ARG("-xmledit"))
         {
-            strcpy(component, "xmledit");
-            addVISITARGS = 0;
+            component = "xmledit";
+            addVISITARGS = false;
         }
         else if(ARG("-silex"))
         {
-            strcpy(component, "silex");
-            addVISITARGS = 0;
+            component = "silex";
+            addVISITARGS = false;
         }
         else if(ARG("-v"))
         {
@@ -352,33 +363,54 @@ main(int argc, char *argv[])
         }
         else if(ARG("-newconsole"))
         {
-            newConsole = 1;
+            newConsole = true;
         }
         else if(ARG("-noloopback"))
         {
-            noloopback = 1;
-            PUSHARG("-noloopback");
+            noloopback = true;
+            componentArgs.push_back("-noloopback");
         }
         else if(ARG("-par"))
         {
-            parallel = 1;
-            PUSHARG("-par");
+            parallel = true;
+            if (component == "engine_ser" ||
+                component == "engine")
+            {
+                component = "engine_par";
+            }
+            else
+            {
+                engineArgs.push_back("-par");
+            }
         }
         else if(ARG("-np"))
         {
-            parallel = 1;
-            PUSHARG("-np");
+            parallel = true;
+        
+            if (component == "engine_ser" ||
+                component == "engine")
+            {
+                nps = string(argv[i+1]);
+                component = "engine_par";
+            }
+            else
+            {
+                engineArgs.push_back("-np");
+                engineArgs.push_back(argv[i+1]);
+            }
+            // skip next argument.
+            ++i;
         }
         else if(ARG("-host"))
         {
-            hostset = 1;
-            PUSHARG("-host");
+            hostset = true;
+            componentArgs.push_back("-host");
         }
         else if(ARG("-xml2cmake"))
         {
-            strcpy(component, "xml2cmake.exe");
-            addVISITARGS = 0;
-            addPluginVars = 1;
+            component = "xml2cmake";
+            addVISITARGS = false;
+            addPluginVars = true;
         }
         else if(ARG("-env"))
         {
@@ -388,44 +420,41 @@ main(int argc, char *argv[])
         {
             if (!BEGINSWITHQUOTE(argv[i]) && HASSPACE(argv[i]))
             {
-                sprintf(tmpArg, "\'%s\'", argv[i]);
-                PUSHARG(tmpArg);
+                SQUOTEARG(argv[i]); 
+                componentArgs.push_back(tmpArg);
             }
             else if (BEGINSWITHQUOTE(argv[i]) && !ENDSWITHQUOTE(argv[i]))
             {
-                strcpy(tmpArg, argv[i]);
-                nArgsSkip = 1;
-                tmplen += strlen(argv[i]);
-                for (j = i+1; j < argc; j++)
+                tmpArg = argv[i];
+                int nArgsSkip = 1;
+                for (int j = i+1; j < argc; j++)
                 {
                     nArgsSkip++;
-                    strcat(tmpArg, " ");
-                    strcat(tmpArg, argv[j]);
-                    tmplen += (strlen(argv[j]) +1);
+                    tmpArg += " ";
+                    tmpArg += argv[j];
                     if (ENDSWITHQUOTE(argv[j]))
                         break;
                 }
-                tmpArg[tmplen] = '\0';
-                PUSHARG(tmpArg);
+                componentArgs.push_back(tmpArg);
                 i += (nArgsSkip -1);
             }
             else 
             {
-                PUSHARG(argv[i]);
+                componentArgs.push_back(argv[i]);
             }
         }
     }
 
     if (parallel && !noloopback)
     {
-        noloopback = 1;
-        PUSHARG("-noloopback");
+        noloopback = true;
+        componentArgs.push_back("-noloopback");
     }
 
-    /*
-     * If we want a new console, allocate it now.
-     */
-    if(newConsole)
+    //
+    // If we want a new console, allocate it now.
+    //
+    if(newConsole || component == "engine_par")
     {
         FreeConsole();
         AllocConsole();
@@ -434,210 +463,140 @@ main(int argc, char *argv[])
     /*
      * Add some stuff to the environment.
      */
-    visitpath = AddEnvironment(useShortFileName, addPluginVars, freeVisItPath);
+    string visitpath = AddEnvironment(useShortFileName, addPluginVars);
 
     if (envOnly)
     {
         PrintEnvironment();
-        for(i = 0; i < nComponentArgs; ++i)
-            free(componentArgs[i]);
-        for(i = 0; i < nspawnargs; ++i)
-            free(spawnargs[i]);
-        if (freeVisItPath)
-            free(visitpath);
-        if(visitargs != 0)
-            free(visitargs);
+        componentArgs.clear();
         return 1;
     }
 
-    /*
-     * Migrate config files 
-     */
-    if ((strcmp(component, "gui") == 0) || 
-        (strcmp(component, "cli") == 0)) 
+    //
+    // Migrate config files 
+    // 
+    if (component == "gui"  || component == "cli")
     {
         TestForConfigFiles(component);
     }
     
-    /*
-     * Get additional VisIt arguments.
-     */
-    if(addVISITARGS)
+    string command;
+    command.reserve(1000);
+    string quote("\"");
+    if (component == "engine_par")
     {
-        if(ReadKey("VISITARGS", &visitargs) == 0)
+        // first look for an EnvVar set by the installer
+        string mpipath = WinGetEnv("VISIT_MPIEXEC");
+        if (mpipath.empty())
         {
-            addVISITARGS = 0;
-            free(visitargs);
-            visitargs = 0;
+            // Check for EnvVar set by MSMPI R2 redist installer
+            mpipath = WinGetEnv("MSMPI_INC");
+            if (!mpipath.empty())
+            {
+                // found the include path, point to Bin
+                mpipath += "\\..\\Bin\\mpiexec.exe";
+            }
         }
-    }
-
-    /*
-     * Figure out the length of the command string.
-     */
-    size = strlen(visitpath) + strlen(component) + 4;
-    for(i = 0; i < nComponentArgs; ++i)
-    {
-        /*
-         * Replace the host arg with the loopback instead before we
-         * calculate the size.
-         */
-        if(strcmp(componentArgs[i], "-host") == 0 && !noloopback)
+        if (mpipath.empty())
         {
-            free(componentArgs[i+1]);
-            componentArgs[i+1] = strdup("127.0.0.1"); 
+            // Check for EnvVar set by HPC SDK installer
+            mpipath = WinGetEnv("CCP_SDK");
+            if (!mpipath.empty())
+            {
+                // found the base path, point to Bin
+                mpipath += "\\Bin\\mpiexec.exe";
+            }
+        }
+        if (mpipath.empty())
+        {
+            cerr << "Could not find path to \"mpiexec\"" << endl;
+            cerr << "If it is installed on your system, please set "
+                 << "an environment variable 'VISIT_MPIEXEC' that points"
+                 << "to its location." << endl;
+            return -1;
         }
 
-        size += (strlen(componentArgs[i]) + 1);
-        if (!BEGINSWITHQUOTE(componentArgs[i]) && HASSPACE(componentArgs[i]))
-            size += 2;
-    }
-    if(addMovieArguments)
-    {
-        size += strlen("-s") + 1;
-        size += 1 + strlen(visitpath) + 1 + strlen("makemoviemain.py") + 2;
-        size += strlen("-nowin") + 1;
-    }
-    if(addVISITARGS)
-        size += (strlen(visitargs) + 1);
+        char *shortmpipath = (char*)malloc(512);
+        GetShortPathName(mpipath.c_str(), shortmpipath, 512);
 
-    /*
-     * Create the command to execute and the string that we print.
-     */
-    command = (char *)malloc(size);
-    memset(command, 0, size);
-    printCommand = (char *)malloc(size);
-    memset(printCommand, 0, size);
-    if(useShortFileName)
-    {
-        char *argv0 = (char *)malloc(strlen(visitpath) + 100);
-        sprintf(argv0, "%s\\%s", visitpath, component);
-        strcpy(command, argv0);
-        strcpy(printCommand, argv0);
-
-        spawnargs[nspawnargs] = strdup(argv0);
-        nspawnargs++;
-        free(argv0);
+        // mpi exec, with shortpath 
+        command = shortmpipath ;
+        free(shortmpipath);
+        // mpi exec args, 
+        command += string(" -n ") + nps;
+        // engine_par, Surrounded by quotes
+        command += string(" \"") + string(visitpath) + string("\\");
+        command += string(component) + string(".exe\"");
     }
     else
     {
-        char *argv0 = (char *)malloc(strlen(visitpath) + 100);
-        sprintf(argv0, "\"%s\\%s\"", visitpath, component);
-        strcpy(command, argv0);
-        strcpy(printCommand, argv0);
-
-        sprintf(argv0, "%s\\%s", visitpath, component);
-        spawnargs[nspawnargs] = strdup(argv0);
-        nspawnargs++;
-        free(argv0);
+        if(!useShortFileName)
+            command += quote;
+        command += visitpath + string("\\");
+        command += component + string(".exe");
+        if(!useShortFileName)
+            command += quote;
     }
-    cptr = command + strlen(command);
-    cptr2 = printCommand + strlen(printCommand);
-    for(i = 0; i < nComponentArgs; ++i)
-    {
-        if (!BEGINSWITHQUOTE(componentArgs[i])&& HASSPACE(componentArgs[i]))
-        {
-            sprintf(cptr, " \'%s\'", componentArgs[i]);
-            cptr += (strlen(componentArgs[i]) + 3);
 
-            spawnargs[nspawnargs] = (char *)malloc(strlen(componentArgs[i]) + 1 + 2);
-            sprintf(spawnargs[nspawnargs], " \'%s\'", componentArgs[i]);
-            nspawnargs++;
+    for(size_t i = 0; i < componentArgs.size(); ++i)
+    {
+        if((componentArgs[i] == "-host") && !noloopback)
+        {
+            // Replace the host arg with the loopback
+            componentArgs[i+1] = "127.0.0.1"; 
+        }
+
+        if (!BEGINSWITHQUOTE(componentArgs[i].c_str()) && 
+            HASSPACE(componentArgs[i].c_str()))
+        {
+            SQUOTEARG(componentArgs[i].c_str());
+            command += string(" ") + tmpArg;
         }
         else
-        {
-            sprintf(cptr, " %s", componentArgs[i]);
-            cptr += (strlen(componentArgs[i]) + 1);
-
-            spawnargs[nspawnargs] = strdup(componentArgs[i]);
-            nspawnargs++;
-        }
-
-        if(strcmp(componentArgs[i], "-key") == 0)
-            skipping = 1;
-
-        if(skipping == 0) 
-        {
-            if (!BEGINSWITHQUOTE(componentArgs[i])&& HASSPACE(componentArgs[i]))
-            {
-                sprintf(cptr2, " \'%s\'", componentArgs[i]);
-                cptr2 += (strlen(componentArgs[i]) + 3);
-            }
-            else
-            {
-                sprintf(cptr2, " %s", componentArgs[i]);
-                cptr2 += (strlen(componentArgs[i]) + 1);
-            }
-        }
+            command += string(" ") + string(componentArgs[i]);
+        
     }
-    if(addVISITARGS)
-    {
-        sprintf(cptr, " %s", visitargs);
-        cptr += (strlen(visitargs) + 1);
-        sprintf(cptr2, " %s", visitargs);
-        cptr2 += (strlen(visitargs) + 1);
 
-        spawnargs[nspawnargs] = strdup(visitargs);
-        nspawnargs++;
+    if (!engineArgs.empty())
+    {
+        command.append(" -launchengine localhost -engineargs ");
+        for (size_t i = 0; i < engineArgs.size(); ++i)
+        {
+            command.append(";");
+            command.append(engineArgs[i]);
+        }
     }
     if(addMovieArguments)
     {
-        char *spath = (char *)malloc(strlen(visitpath) + 100);
-        sprintf(spath, "\"%s\\makemoviemain.py\"", visitpath);
-        sprintf(cptr, " -s %s -nowin", spath);
-        sprintf(cptr2, " -s %s -nowin", spath);
-
-        spawnargs[nspawnargs] = strdup("-s");
-        nspawnargs++;
-        spawnargs[nspawnargs] = strdup(spath);
-        nspawnargs++;
-        spawnargs[nspawnargs] = strdup("-nowin");
-        nspawnargs++;
-        free(spath);
+        command += string(" -s ") + quote + visitpath;
+        command += string("\\makemoviemain.py\"");
+        command += string(" -nowin");
     }
-    command[size-1] = '\0';
-    printCommand[size-1] = '\0';
 
-    /*
-     * Print the run information.
-     */
-    fprintf(stderr, "Running: %s\n", printCommand);
-    fflush(stderr);
-
-    /*
-     * Launch the appropriate VisIt component.
-     */
-#if 0
-    /* This method seems to be able to deal with spaces in the exe path name.
-     * It's not perfect but we might want to consider cleaning it up and
-     * switching.
-     */
-#if 1
-printf("=============\n%s\n", spawnargs[0]);
-for(i = 1; i < nspawnargs; ++i)
-    printf("\t%s\n", spawnargs[i]);
-printf("=============\n");
-#endif
-    _execv(spawnargs[0], &spawnargs[1]);
-#else
-    retval = system(command);
-#endif
-
-    /*
-     * Free memory
-     */
-    free(command);
-    free(printCommand);
-    for(i = 0; i < nComponentArgs; ++i)
-        free(componentArgs[i]);
-    for(i = 0; i < nspawnargs; ++i)
-        free(spawnargs[i]);
-    if (freeVisItPath)
-        free(visitpath);
-    if(visitargs != 0)
+    //
+    // Create the command to execute and the string that we print.
+    //
+    if(addVISITARGS)
+    {
+        char *visitargs = 0;
+        if(ReadKey("VISITARGS", &visitargs))
+        {
+            command += string(" ") + string(visitargs);
+        }
         free(visitargs);
+        visitargs = 0;
+    }
 
-    return retval;
+    // 
+    // Print the run information.
+    // 
+    cerr << "Running: " << command << endl;
+
+    char *cl = const_cast<char*>(command.c_str());
+    system(cl);
+
+    componentArgs.clear();
+    return 0;
 }
 
 /******************************************************************************
@@ -832,19 +791,18 @@ ReadKey(const char *key, char **keyval)
  *
  *****************************************************************************/
 
-char *
-AddEnvironment(const int useShortFileName, const int addPluginVars, bool &freeVisItPath)
+string 
+AddEnvironment(const bool useShortFileName, const bool addPluginVars)
 {
     char *tmp, *visitpath = 0;
     char *visitdevdir = 0;
     char tmpdir[512];
-    int haveVISITHOME = 0;
-    int usingdev = 0;
+    bool haveVISITHOME = false;
+    bool usingdev = false;
+    bool freeVisItPath = true;
 
     tmp = (char *)malloc(10000);
 
-
-    freeVisItPath = true;
     /*
      * Determine visit path
      */
@@ -856,7 +814,7 @@ AddEnvironment(const int useShortFileName, const int addPluginVars, bool &freeVi
         visitpath = 0;
         if ((visitpath = getenv("VISITHOME")) != NULL)
         {
-            haveVISITHOME = 1;
+            haveVISITHOME = true;
             freeVisItPath = false;
         }
     }
@@ -1102,8 +1060,10 @@ AddEnvironment(const int useShortFileName, const int addPluginVars, bool &freeVi
     }
 
     free(tmp);
-
-    return visitpath;
+    string vp(visitpath);
+    if (freeVisItPath)
+        free(visitpath);
+    return vp;
 }
 
 /******************************************************************************
@@ -1499,7 +1459,6 @@ FindOldVisItVersions(const char *basePath, FILE *log)
     {
         do
         {
-            int len = strlen(fd.cFileName);
             char *visit = strstr(fd.cFileName, "VisIt ");
             if (visit != NULL)
             {
@@ -1740,7 +1699,7 @@ GetUserHomeDir()
 #include <io.h>
 
 void
-TestForConfigFiles(const char *component)
+TestForConfigFiles(const string &component)
 {
     FILE *f = NULL;
     char *visItUserHome = getenv("VISITUSERHOME");
@@ -1767,7 +1726,7 @@ TestForConfigFiles(const char *component)
     string userHome = GetUserHomeDir();
     if (GetPathToOlderConfigFiles(userHome.c_str(), VISIT_VERSION, oldVersion, msg))
     {
-        if (strcmp(component, "gui") == 0) 
+        if (component == "gui")
         {
             int msgboxID = MessageBox(NULL, msg, "Migrate Config Files",
                                        MB_ICONEXCLAMATION | MB_YESNO);
@@ -1816,3 +1775,19 @@ PrintEnvironment()
         fprintf(stdout, "VISITPLUGINDIR=%s\n", tmp);
 
 }
+
+
+string
+WinGetEnv(const char * name)
+{
+    const DWORD buffSize = 65535;
+    static char buffer[buffSize];
+    string retval;
+    if (GetEnvironmentVariableA(name, buffer, buffSize))
+    {
+        retval = buffer;
+    }
+    return retval;
+}
+
+
