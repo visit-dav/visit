@@ -2378,7 +2378,12 @@ RemoteProcess::CreateSplitCommandLine(const stringVector &args, int &argc) const
 //   I modified the remote launching to pass the remote user name to the
 //   ssh command to the gateway machine instead of to the ssh command to
 //   the remote machine.
-//   
+//  
+//   Kathleen Biagas, Tues Sep 27 17:55:21 MST 2011
+//   Change order of created args on Windows, which needs qtssh (the first
+//   arg passed in args) to connect to the gateway machine, and ssh for 
+//   connection from gateway to remote.
+// 
 // ****************************************************************************
 
 char **
@@ -2393,7 +2398,13 @@ RemoteProcess::CreateSSHCommandLine(const std::string &host,
 
     char **argv = new char*[10];
     argc = 0;
+#ifdef WIN32
+    // the first arg is qtssh (with full path), which is what Windows needs
+    // in order to connect to the gateway machine.
+    argv[argc++] = StrDup(args[0]);
+#else
     argv[argc++] = StrDup("ssh");
+#endif
     if(remoteUserName != std::string("notset"))
     {
          argv[argc++] = StrDup("-l");
@@ -2402,10 +2413,18 @@ RemoteProcess::CreateSSHCommandLine(const std::string &host,
     argv[argc++] = StrDup(host.c_str());
     argv[argc++] = new char[lstrings];
     char *tmpstr = argv[argc-1];
-    for (int i = 0; i < nstrings; ++i)
+    int start = 0;
+#ifdef WIN32
+    // gateway machine needs ssh 
+    SNPRINTF(tmpstr, 4, "ssh "); 
+    tmpstr += 4;
+    // we've already used the first of the args, so skip it.
+    start = 1;
+#endif
+    for (int i = start; i < nstrings; ++i)
     {
         std::string const tmpstr2 = args[i];
-        for (int j = 0; j < tmpstr2.size(); ++j)
+        for (size_t j = 0; j < tmpstr2.size(); ++j)
         {
             *tmpstr = tmpstr2[j];
             tmpstr++;
