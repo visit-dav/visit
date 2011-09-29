@@ -240,6 +240,9 @@ string WinGetEnv(const char * name);
  *   Kathleen Bonnell, Mon Sep 26 07:13:08 MST 2011
  *   Add support for parallel engine.  Use string for arg storage.
  *
+ *   Kathleen Bonnell, Thu Sep 29 16:41:28 MST 2011
+ *   Pass over 'visit' and '-visit' args.
+ *
  *****************************************************************************/
 
 int
@@ -267,9 +270,13 @@ main(int argc, char *argv[])
     // 
     for(int i = 0; i < argc; ++i)
     {
-        if(ARG("visit"))
+        if(ARG("-visit"))
         {
            continue; 
+        }
+        else if(ARG("visit"))
+        {
+            continue;
         }
         else if(ARG("-help"))
         {
