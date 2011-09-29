@@ -90,6 +90,9 @@ class avtVariableCache;
 //   Brad Whitlock, Fri Jun 18 09:38:04 PDT 2010
 //   I added a method to count the number of lasers.
 //
+//   Brad Whitlock, Wed Sep 28 16:28:44 PDT 2011
+//   Special case reading for ireg.
+//
 // ****************************************************************************
 
 class PP_ZFileReader : public PDBReader
@@ -125,6 +128,7 @@ protected:
     void Initialize();
     void InitializeVarStorage();
     void ReadVariable(const std::string &var);
+    void ReadVariableIREG();
     void CreateGhostZones(const int *, vtkDataSet *);
     bool VariableIsNodal(const std::string &var) const;
     void ReadMixvarAndCache(const std::string &var,
