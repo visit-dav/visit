@@ -263,6 +263,9 @@ class     avtWebpage;
 //    Hank Childs, Tue Jan 11 08:41:22 PST 2011
 //    Add data member for the time index.
 //
+//    Kathleen Biagas, Thu Sep 29 06:07:22 PDT 2011
+//    Add constructMultipleCurves member.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -552,6 +555,11 @@ class PIPELINE_API avtDataAttributes
     size_t                   GetLevelsOfDetail() const
                                { return levelsOfDetail; }
 
+    void                     SetConstructMultipleCurves(bool n)
+                               { constructMultipleCurves = n; }
+    bool                     GetConstructMultipleCurves() const
+                               { return constructMultipleCurves; }
+
   protected:
     int                      spatialDimension;
     int                      topologicalDimension;
@@ -590,6 +598,7 @@ class PIPELINE_API avtDataAttributes
     bool                     rectilinearGridHasTransform;
     double                   rectilinearGridTransform[16];
     size_t                   levelsOfDetail;
+    bool                     constructMultipleCurves;
 
     avtExtents              *originalSpatial;
     avtExtents              *thisProcsOriginalSpatial;
