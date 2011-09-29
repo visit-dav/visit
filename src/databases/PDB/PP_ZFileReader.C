@@ -708,6 +708,9 @@ PP_ZFileReader::ReadMaterialNames(PDBFileObject *p, int nmats,
 //   Brad Whitlock, Thu Dec  4 11:36:35 PST 2008
 //   I updated the calls to ReadMaterialNames.
 //
+//   Brad Whitlock, Wed Sep 28 16:29:46 PDT 2011
+//   Read ireg specially to catch some problems it can have.
+//
 // ****************************************************************************
 
 bool
@@ -779,7 +782,7 @@ PP_ZFileReader::PopulateMaterialNames()
 
         TRY
         {
-            ReadVariable("ireg");
+            ReadVariableIREG();
 
             VariableData *ireg_data = varStorage["ireg"];
             if(ireg_data->dataType == INTEGERARRAY_TYPE)
@@ -1704,6 +1707,8 @@ PP_ZFileReader::CreateGhostZones(const int *ireg, vtkDataSet *ds)
 // Creation:   Fri Aug 8 16:16:38 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Wed Sep 28 16:29:46 PDT 2011
+//   Read ireg specially to catch some problems it can have.
 //   
 // ****************************************************************************
 
@@ -1715,7 +1720,7 @@ PP_ZFileReader::GetIreg(int state)
 
     TRY
     {
-        ReadVariable("ireg");
+        ReadVariableIREG();
 
         VariableData *iregData = varStorage["ireg"];
         if(iregData->dataType == INTEGERARRAY_TYPE)
@@ -2518,6 +2523,63 @@ PP_ZFileReader::ReadVariable(const std::string &varStr)
 }
 
 // ****************************************************************************
+// Method: PP_ZFileReader::ReadVariableIREG
+//
+// Purpose: 
+//   Read ireg and also do some special handling in case it does not have the
+//   right size.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 28 16:44:50 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PP_ZFileReader::ReadVariableIREG()
+{
+    ReadVariable("ireg");
+
+    VariableDataMap::iterator pos = varStorage.find("ireg");
+    if(pos != varStorage.end())
+    {
+        if(nTimes > 1 && pos->second->nDims == 2)
+        {
+            // Work around bad files whose ireg is only kmax*lmax
+            debug4 << "The ireg array is not time-varying so we need to "
+                      "extend it." << endl;
+
+            // The ireg we read does not have a time dimension so we
+            // need to extend it and replicate the data to make the
+            // other parts of this plugin happy.
+
+            if(pos->second->dataType == INTEGERARRAY_TYPE)
+            {
+                int *src = (int *)pos->second->data;
+                int *newIREG = new int[pos->second->nTotalElements * nTimes];
+                int *iptr = newIREG;
+                for(int i = 0; i < nTimes; ++i)
+                {
+                    memcpy(iptr, src, sizeof(int) * pos->second->nTotalElements);
+                    iptr += pos->second->nTotalElements;
+                }
+                delete [] src;
+                pos->second->data = newIREG;
+                int *dims = new int[3];
+                dims[0] = pos->second->dims[0];
+                dims[1] = pos->second->dims[1];
+                dims[2] = nTimes;
+                delete [] pos->second->dims;
+                pos->second->dims = dims;
+                pos->second->nDims = 3;
+                pos->second->nTotalElements = dims[0] * dims[1] * dims[2];
+            }
+        }
+    }
+}
+
+// ****************************************************************************
 // Function: GetMixArray
 //
 // Purpose: 
@@ -2617,6 +2679,9 @@ GetMixArray(const int *ireg, const int *ilamm, const int *nummm,
 //   Eric Brugger, Thu Jan  6 08:40:28 PST 2005
 //   Corrected a misuse of the CATCH_RETURN macro.
 //
+//   Brad Whitlock, Wed Sep 28 16:29:46 PDT 2011
+//   Read ireg specially to catch some problems it can have.
+//
 // ****************************************************************************
 
 void
@@ -2656,7 +2721,7 @@ PP_ZFileReader::ReadMixvarAndCache(const std::string &varStr,
         {
             ReadVariable("nummm");
             ReadVariable("ilamm");
-            ReadVariable("ireg");
+            ReadVariableIREG();
         }
         CATCH(InvalidVariableException)
         {
