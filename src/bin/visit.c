@@ -235,6 +235,9 @@ void PrintEnvironment(void);
  *   Kathleen Bonnell, Tue May 3 14:31:50 MST 2011
  *   Add support for -env. 
  *
+ *   Kathleen Bonnell, Thu Sep 29 16:41:28 MST 2011
+ *   Pass over 'visit' and '-visit' args.
+ *
  *****************************************************************************/
 
 int
@@ -267,7 +270,15 @@ main(int argc, char *argv[])
      */
     for(i = 0; i < argc; ++i)
     {
-        if(ARG("-help"))
+        if(ARG("-visit"))
+        {
+            continue;
+        }
+        else if(ARG("visit"))
+        {
+            continue;
+        }
+        else if(ARG("-help"))
         {
             printf("%s", usage);
             return 0;
