@@ -174,6 +174,9 @@ using     std::sort;
 //    Hank Childs, Tue Jan 11 08:41:22 PST 2011
 //    Add support for time index.
 //
+//    Kathleen Biagas, Thu Sep 29 06:08:06 PDT 2011
+//    Add constructMultipleCurves.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes() : plotInfoAtts()
@@ -253,6 +256,7 @@ avtDataAttributes::avtDataAttributes() : plotInfoAtts()
         }
     }
     rectilinearGridHasTransform = false;
+    constructMultipleCurves = false;
 }
 
 
@@ -997,6 +1001,9 @@ avtDataAttributes::Print(ostream &out)
 //    Hank Childs, Tue Jan 11 08:41:22 PST 2011
 //    Add support for time index.
 //
+//    Kathleen Biagas, Thu Sep 29 06:08:06 PDT 2011
+//    Add constructMultipleCurves.
+//
 // ****************************************************************************
 
 void
@@ -1102,6 +1109,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
         rectilinearGridTransform[k] = di.rectilinearGridTransform[k];
     plotInfoAtts = di.plotInfoAtts;
     levelsOfDetail = di.levelsOfDetail;
+    constructMultipleCurves = di.constructMultipleCurves;
 }
 
 
@@ -1240,6 +1248,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Hank Childs, Tue Jan 11 08:41:22 PST 2011
 //    Add support for time index.
+//
+//    Kathleen Biagas, Thu Sep 29 06:08:06 PDT 2011
+//    Add constructMultipleCurves.
 //
 // ****************************************************************************
 
@@ -1503,6 +1514,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     canUseOrigZones &= da.canUseOrigZones;
     origElementsRequiredForPick |= da.origElementsRequiredForPick;
     plotInfoAtts.Merge(da.plotInfoAtts);
+    constructMultipleCurves &= da.constructMultipleCurves;
 
     // there's no good answer for unitCellVectors or rectilinearGridTransform
 }
@@ -2720,6 +2732,9 @@ avtDataAttributes::SetDynamicDomainDecomposition(bool ddd)
 //    Hank Childs, Tue Jan 11 08:41:22 PST 2011
 //    Add support for time index.
 //
+//    Kathleen Biagas, Thu Sep 29 06:08:06 PDT 2011
+//    Add constructMultipleCurves.
+//
 // ****************************************************************************
 
 void
@@ -2729,7 +2744,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     int   i, j;
 
     int varSize = 7;
-    int numVals = 34 + varSize*variables.size();
+    int numVals = 35 + varSize*variables.size();
     int *vals = new int[numVals];
     i = 0;
     vals[i++] = topologicalDimension;
@@ -2764,6 +2779,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[i++] = meshType;
     vals[i++] = (nodesAreCritical ? 1 : 0);
     vals[i++] = (rectilinearGridHasTransform ? 1 : 0);
+    vals[i++] = (constructMultipleCurves ? 1 : 0);
     vals[i++] = activeVariable;
     vals[i++] = variables.size();
     int basei = i;
@@ -3024,6 +3040,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Hank Childs, Tue Jan 11 08:41:22 PST 2011
 //    Add support for time index.
 //
+//    Kathleen Biagas, Thu Sep 29 06:08:06 PDT 2011
+//    Add constructMultipleCurves.
+//
 // ****************************************************************************
 
 int
@@ -3161,6 +3180,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     rectilinearGridHasTransform = (tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    constructMultipleCurves = (tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

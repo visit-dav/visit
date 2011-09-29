@@ -409,6 +409,9 @@ avtQueryOverTimeFilter::FilterSupportsTimeParallelization(void)
 //    Kathleen Bonnell, Thu Mar  3 12:40:41 PST 2011
 //    Set output Atts labels to be the variable names used for the query.
 //
+//    Kathleen Biagas, Thu Sep 29 06:13:54 PDT 2011
+//    Set ConstructMultipleCurves in the output's DataAttributes.
+//
 // ****************************************************************************
 
 void
@@ -460,6 +463,10 @@ avtQueryOverTimeFilter::UpdateDataObjectInfo(void)
             outAtts.SetYUnits(atts.GetQueryAtts().GetYUnits());
         }
         outAtts.SetLabels(atts.GetQueryAtts().GetVariables());
+        if (atts.GetQueryAtts().GetVariables().size() > 1)
+            outAtts.SetConstructMultipleCurves(true);
+        else 
+            outAtts.SetConstructMultipleCurves(false);
         double bounds[6];
         avtDataset_p ds = GetTypedOutput();
         avtDatasetExaminer::GetSpatialExtents(ds, bounds);

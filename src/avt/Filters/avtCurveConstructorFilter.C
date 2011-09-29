@@ -178,6 +178,9 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Moved bulk of dataset construction into CreateSingleOutput method,
 //    which will allow creation of multiple outputs when necessary.
 //
+//    Kathleen Biagas, Thu Sep 29 06:11:38 PDT 2011
+//    Only construct multiple outputs when requested in data attributes.
+//
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -273,7 +276,8 @@ void avtCurveConstructorFilter::Execute()
     stringVector labels;
     inTree->GetAllLabels(labels);
     
-    if (labels.size() == 0)
+    if (labels.size() == 0 || 
+        !GetInput()->GetInfo().GetAttributes().GetConstructMultipleCurves())
     {
         vtkDataSet *outGrid;
         outGrid = CreateSingleOutput(inTree);
