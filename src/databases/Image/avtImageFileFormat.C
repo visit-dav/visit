@@ -1112,9 +1112,12 @@ avtImageFileFormat::GetVar(const char *varname)
 //  Creation:   March 23, 2005
 //
 //  Modifications:
-//
 //    Mark C. Miller, Fri Apr 23 17:28:15 PDT 2010
 //    Added support for ghost zones.
+//
+//    Brad Whitlock, Thu Sep 29 15:39:56 PDT 2011
+//    I added support for a 4-component color vector.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1122,6 +1125,9 @@ avtImageFileFormat::GetImageVolumeVar(const char *varname)
 {
     int rank = PAR_Rank();
     int nprocs = PAR_Size();
+
+    // Number of components.
+    int nc = (strncmp(varname, "color", 5) == 0) ? 4 : 1;
 
     // examine name to see if its node-/zone-centered
     const char *vtmp = varname;
@@ -1158,6 +1164,7 @@ avtImageFileFormat::GetImageVolumeVar(const char *varname)
     if (localZoneStart + localZoneCount < globalZoneCount-1) count++;
 
     vtkFloatArray *arr = vtkFloatArray::New();
+    arr->SetNumberOfComponents(nc);
     bool haveInitialized = false;
     int  valsPerSlice = 0;
     for (int i = start; i < start+count; i++)
@@ -1180,18 +1187,11 @@ avtImageFileFormat::GetImageVolumeVar(const char *varname)
                    << "not floating point, returning early" << endl;
             return NULL;
         }
-        if (one_slice->GetNumberOfComponents() != 1)
-        {
-            debug1 << "Return value from avtImageFileFormat::GetOneVar had "
-                   << "more than 1 component.  Not supported." << endl;
-            return NULL;
-        }
 
         if (!haveInitialized)
         {
-            valsPerSlice = one_slice->GetNumberOfTuples();
-            int ntups = valsPerSlice*count;
-            arr->SetNumberOfTuples(ntups);
+            valsPerSlice = one_slice->GetNumberOfTuples() * nc;
+            arr->SetNumberOfTuples(one_slice->GetNumberOfTuples() * count);
             haveInitialized = true;
         }
        
@@ -1238,6 +1238,9 @@ avtImageFileFormat::GetImageVolumeVar(const char *varname)
 //    Fixed flipping of green and blue channels.  Also added fast track for
 //    float and unsigned char data.
 //
+//    Brad Whitlock, Thu Sep 29 15:39:14 PDT 2011
+//    I added support for returning a 4-component color vector.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1257,40 +1260,50 @@ avtImageFileFormat::GetOneVar(const char *varname)
     int ymin = extents[2];
     int ymax = extents[3];
 
-    int channel = -2;
-    if (strncmp(varname, "red", 3) == 0)
-        channel = 0;
-    else if (strncmp(varname, "green", 5) == 0)
-        channel = 1;
-    else if (strncmp(varname, "blue", 4) == 0)
-        channel = 2;
-    else if (strncmp(varname, "alpha", 5) == 0)
-        channel = 3;
-    else if (strncmp(varname, "intensity", 9) == 0)
-        channel = -1;
+    int nChannels = image->GetNumberOfScalarComponents();
 
-    if (channel == -2)
+    int nc = 1;
+    int channel = 0;
+    if (strncmp(varname, "color", 5) == 0)
     {
-        EXCEPTION1(InvalidVariableException, varname);
+        nc = 4;
+        channel = -2;
     }
-
-    if (channel > image->GetNumberOfScalarComponents())
+    else 
     {
-        EXCEPTION1(InvalidVariableException, varname);
+        if (strncmp(varname, "red", 3) == 0)
+            channel = 0;
+        else if (strncmp(varname, "green", 5) == 0)
+            channel = 1;
+        else if (strncmp(varname, "blue", 4) == 0)
+            channel = 2;
+        else if (strncmp(varname, "alpha", 5) == 0)
+            channel = 3;
+        else if (strncmp(varname, "intensity", 9) == 0)
+        {
+            // Use red as intensity if there are not 3 channels in the image.
+            channel = (nChannels < 3) ? 0 : -1;
+        }
+        else
+        {
+            EXCEPTION1(InvalidVariableException, varname);
+        }
+
+        // If the image is just 1 channel then use red.
+        if (nChannels == 1)
+            channel = 0;
     }
 
     vtkFloatArray *scalars = vtkFloatArray::New();
+    scalars->SetNumberOfComponents(nc);
     scalars->SetNumberOfTuples((xdim)*(ydim));
     float *ptr = (float *)scalars->GetVoidPointer(0);
 
     int i, j;
-    int nChannels = image->GetNumberOfScalarComponents();
-    if (channel < 0 && nChannels < 3)
-        channel = 0;  // Treat the 0th channel as intensity in this case.
-    if (nChannels == 1)
-        channel = 0;
+
     if (channel >= 0)
     {
+        // Extract a component.
         if (image->GetScalarType() == VTK_FLOAT)
         {
             float *data = (float *) image->GetScalarPointer();
@@ -1325,8 +1338,9 @@ avtImageFileFormat::GetOneVar(const char *varname)
             }
         }
     }
-    else
+    else if(channel == -1)
     {
+        // Intensity.
         if (image->GetScalarType() == VTK_FLOAT)
         {
             float *data = (float *) image->GetScalarPointer();
@@ -1372,6 +1386,39 @@ avtImageFileFormat::GetOneVar(const char *varname)
             }
         }
     }
+    else if(channel == -2)
+    {
+        // We want a 4-component vector.
+#define CONVERT_TO_COMP4(NC, BODY) \
+        if(nChannels == NC) {\
+            for (j = 0; j < ydim; j++) {\
+                for (i = 0; i < xdim; i++) { \
+                    BODY }}}
+        CONVERT_TO_COMP4(1,
+           *ptr++ = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0, 0);
+           *ptr++ = 0.f;
+           *ptr++ = 0.f;
+           *ptr++ = 255.f;
+        );
+        CONVERT_TO_COMP4(2,
+           *ptr++ = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0, 0);
+           *ptr++ = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0, 1);
+           *ptr++ = 0.f;
+           *ptr++ = 255.f;
+        );
+        CONVERT_TO_COMP4(3,
+           *ptr++ = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0, 0);
+           *ptr++ = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0, 1);
+           *ptr++ = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0, 2);
+           *ptr++ = 255.f;
+        );
+        CONVERT_TO_COMP4(4,
+           *ptr++ = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0, 0);
+           *ptr++ = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0, 1);
+           *ptr++ = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0, 2);
+           *ptr++ = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0, 3);
+        );
+    } 
 
     return scalars;
 
@@ -1402,55 +1449,15 @@ avtImageFileFormat::GetOneVar(const char *varname)
 //      Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
 //      Added code to return float data directly from vtkImageData object
 //      instead of through intermediary float vectors
+//
+//      Brad Whitlock, Thu Sep 29 16:04:46 PDT 2011
+//      I made it call GetVar and I beefed up that method to deal with vectors.
+//
 // ****************************************************************************
 
 
 vtkDataArray *
 avtImageFileFormat::GetVectorVar(const char *varname)
 {
-    ReadInImage();
-
-    int imgcomps = image->GetNumberOfScalarComponents();
-    if (imgcomps < 3)
-    {
-        EXCEPTION1(InvalidVariableException, varname);
-    }
-
-    int dims[3];
-    image->GetDimensions(dims);
-    int xdim = dims[0];
-    int ydim = dims[1];
-
-    int extents[6];
-    image->GetExtent(extents);
-    int xmin = extents[0];
-    int xmax = extents[1];
-    int ymin = extents[2];
-    int ymax = extents[3];
-
-    int ncomps = 4;
-    int ntuples = xdim*ydim;   // this is the number of entries in the variable.
-    vtkFloatArray *rv = vtkFloatArray::New();
-
-    int ucomps = 4;
-
-    rv->SetNumberOfComponents(ucomps);
-    rv->SetNumberOfTuples(ntuples);
-    float *one_entry = new float[ucomps];
-    for (int i = 0 ; i < ntuples ; i++)
-    {
-        int j;
-        for (j = 0 ; j < imgcomps; j++)
-        {
-            int ii = i % xdim;
-            int jj = i / xdim;
-            one_entry[j] = image->GetScalarComponentAsDouble(ii+xmin,jj+ymin,0,j);
-        }
-        for (j = imgcomps ; j < ucomps; j++)
-            one_entry[j] = (j == 3 ? 255.0 : 0.0);
-        rv->SetTuple(i, one_entry); 
-    }
-    
-    delete [] one_entry;
-    return rv;
+    return GetVar(varname);
 }
