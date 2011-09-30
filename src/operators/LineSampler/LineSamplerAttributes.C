@@ -81,7 +81,7 @@ LineSamplerAttributes::CoordinateSystem_FromString(const std::string &s, LineSam
 //
 
 static const char *ArrayConfiguration_strings[] = {
-"Manual", "List"};
+"Geometry", "Manual"};
 
 std::string
 LineSamplerAttributes::ArrayConfiguration_ToString(LineSamplerAttributes::ArrayConfiguration t)
@@ -101,7 +101,7 @@ LineSamplerAttributes::ArrayConfiguration_ToString(int t)
 bool
 LineSamplerAttributes::ArrayConfiguration_FromString(const std::string &s, LineSamplerAttributes::ArrayConfiguration &val)
 {
-    val = LineSamplerAttributes::Manual;
+    val = LineSamplerAttributes::Geometry;
     for(int i = 0; i < 2; ++i)
     {
         if(s == ArrayConfiguration_strings[i])
@@ -114,37 +114,111 @@ LineSamplerAttributes::ArrayConfiguration_FromString(const std::string &s, LineS
 }
 
 //
-// Enum conversion methods for LineSamplerAttributes::ArrayProjection
+// Enum conversion methods for LineSamplerAttributes::Boundary
 //
 
-static const char *ArrayProjection_strings[] = {
-"Parallel", "Divergent", "Grid"
-};
+static const char *Boundary_strings[] = {
+"Data", "Wall"};
 
 std::string
-LineSamplerAttributes::ArrayProjection_ToString(LineSamplerAttributes::ArrayProjection t)
+LineSamplerAttributes::Boundary_ToString(LineSamplerAttributes::Boundary t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
-    return ArrayProjection_strings[index];
+    if(index < 0 || index >= 2) index = 0;
+    return Boundary_strings[index];
 }
 
 std::string
-LineSamplerAttributes::ArrayProjection_ToString(int t)
+LineSamplerAttributes::Boundary_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
-    return ArrayProjection_strings[index];
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return Boundary_strings[index];
 }
 
 bool
-LineSamplerAttributes::ArrayProjection_FromString(const std::string &s, LineSamplerAttributes::ArrayProjection &val)
+LineSamplerAttributes::Boundary_FromString(const std::string &s, LineSamplerAttributes::Boundary &val)
 {
-    val = LineSamplerAttributes::Parallel;
+    val = LineSamplerAttributes::Data;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == Boundary_strings[i])
+        {
+            val = (Boundary)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for LineSamplerAttributes::ChannelProjection
+//
+
+static const char *ChannelProjection_strings[] = {
+"Divergent", "Parallel", "Grid"
+};
+
+std::string
+LineSamplerAttributes::ChannelProjection_ToString(LineSamplerAttributes::ChannelProjection t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return ChannelProjection_strings[index];
+}
+
+std::string
+LineSamplerAttributes::ChannelProjection_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return ChannelProjection_strings[index];
+}
+
+bool
+LineSamplerAttributes::ChannelProjection_FromString(const std::string &s, LineSamplerAttributes::ChannelProjection &val)
+{
+    val = LineSamplerAttributes::Divergent;
     for(int i = 0; i < 3; ++i)
     {
-        if(s == ArrayProjection_strings[i])
+        if(s == ChannelProjection_strings[i])
         {
-            val = (ArrayProjection)i;
+            val = (ChannelProjection)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for LineSamplerAttributes::ChannelLayoutType
+//
+
+static const char *ChannelLayoutType_strings[] = {
+"ChannelAbsolute", "ChannelRelative"};
+
+std::string
+LineSamplerAttributes::ChannelLayoutType_ToString(LineSamplerAttributes::ChannelLayoutType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return ChannelLayoutType_strings[index];
+}
+
+std::string
+LineSamplerAttributes::ChannelLayoutType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return ChannelLayoutType_strings[index];
+}
+
+bool
+LineSamplerAttributes::ChannelLayoutType_FromString(const std::string &s, LineSamplerAttributes::ChannelLayoutType &val)
+{
+    val = LineSamplerAttributes::ChannelAbsolute;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == ChannelLayoutType_strings[i])
+        {
+            val = (ChannelLayoutType)i;
             return true;
         }
     }
@@ -189,37 +263,37 @@ LineSamplerAttributes::ArrayAxis_FromString(const std::string &s, LineSamplerAtt
 }
 
 //
-// Enum conversion methods for LineSamplerAttributes::BeamShape
+// Enum conversion methods for LineSamplerAttributes::ChannelGeometry
 //
 
-static const char *BeamShape_strings[] = {
+static const char *ChannelGeometry_strings[] = {
 "Point", "Line", "Cylinder", 
 "Cone"};
 
 std::string
-LineSamplerAttributes::BeamShape_ToString(LineSamplerAttributes::BeamShape t)
+LineSamplerAttributes::ChannelGeometry_ToString(LineSamplerAttributes::ChannelGeometry t)
 {
     int index = int(t);
     if(index < 0 || index >= 4) index = 0;
-    return BeamShape_strings[index];
+    return ChannelGeometry_strings[index];
 }
 
 std::string
-LineSamplerAttributes::BeamShape_ToString(int t)
+LineSamplerAttributes::ChannelGeometry_ToString(int t)
 {
     int index = (t < 0 || t >= 4) ? 0 : t;
-    return BeamShape_strings[index];
+    return ChannelGeometry_strings[index];
 }
 
 bool
-LineSamplerAttributes::BeamShape_FromString(const std::string &s, LineSamplerAttributes::BeamShape &val)
+LineSamplerAttributes::ChannelGeometry_FromString(const std::string &s, LineSamplerAttributes::ChannelGeometry &val)
 {
     val = LineSamplerAttributes::Point;
     for(int i = 0; i < 4; ++i)
     {
-        if(s == BeamShape_strings[i])
+        if(s == ChannelGeometry_strings[i])
         {
-            val = (BeamShape)i;
+            val = (ChannelGeometry)i;
             return true;
         }
     }
@@ -265,36 +339,36 @@ LineSamplerAttributes::ViewDimension_FromString(const std::string &s, LineSample
 }
 
 //
-// Enum conversion methods for LineSamplerAttributes::BeamType
+// Enum conversion methods for LineSamplerAttributes::ChannelProfile
 //
 
-static const char *BeamType_strings[] = {
+static const char *ChannelProfile_strings[] = {
 "TopHat", "Gaussian"};
 
 std::string
-LineSamplerAttributes::BeamType_ToString(LineSamplerAttributes::BeamType t)
+LineSamplerAttributes::ChannelProfile_ToString(LineSamplerAttributes::ChannelProfile t)
 {
     int index = int(t);
     if(index < 0 || index >= 2) index = 0;
-    return BeamType_strings[index];
+    return ChannelProfile_strings[index];
 }
 
 std::string
-LineSamplerAttributes::BeamType_ToString(int t)
+LineSamplerAttributes::ChannelProfile_ToString(int t)
 {
     int index = (t < 0 || t >= 2) ? 0 : t;
-    return BeamType_strings[index];
+    return ChannelProfile_strings[index];
 }
 
 bool
-LineSamplerAttributes::BeamType_FromString(const std::string &s, LineSamplerAttributes::BeamType &val)
+LineSamplerAttributes::ChannelProfile_FromString(const std::string &s, LineSamplerAttributes::ChannelProfile &val)
 {
     val = LineSamplerAttributes::TopHat;
     for(int i = 0; i < 2; ++i)
     {
-        if(s == BeamType_strings[i])
+        if(s == ChannelProfile_strings[i])
         {
-            val = (BeamType)i;
+            val = (ChannelProfile)i;
             return true;
         }
     }
@@ -302,36 +376,36 @@ LineSamplerAttributes::BeamType_FromString(const std::string &s, LineSamplerAttr
 }
 
 //
-// Enum conversion methods for LineSamplerAttributes::ChannelSampling
+// Enum conversion methods for LineSamplerAttributes::ChannelIntegration
 //
 
-static const char *ChannelSampling_strings[] = {
-"SingleChannelSampling", "SummationChannelSampling"};
+static const char *ChannelIntegration_strings[] = {
+"NoChannelIntegration", "IntegrateAlongChannel"};
 
 std::string
-LineSamplerAttributes::ChannelSampling_ToString(LineSamplerAttributes::ChannelSampling t)
+LineSamplerAttributes::ChannelIntegration_ToString(LineSamplerAttributes::ChannelIntegration t)
 {
     int index = int(t);
     if(index < 0 || index >= 2) index = 0;
-    return ChannelSampling_strings[index];
+    return ChannelIntegration_strings[index];
 }
 
 std::string
-LineSamplerAttributes::ChannelSampling_ToString(int t)
+LineSamplerAttributes::ChannelIntegration_ToString(int t)
 {
     int index = (t < 0 || t >= 2) ? 0 : t;
-    return ChannelSampling_strings[index];
+    return ChannelIntegration_strings[index];
 }
 
 bool
-LineSamplerAttributes::ChannelSampling_FromString(const std::string &s, LineSamplerAttributes::ChannelSampling &val)
+LineSamplerAttributes::ChannelIntegration_FromString(const std::string &s, LineSamplerAttributes::ChannelIntegration &val)
 {
-    val = LineSamplerAttributes::SingleChannelSampling;
+    val = LineSamplerAttributes::NoChannelIntegration;
     for(int i = 0; i < 2; ++i)
     {
-        if(s == ChannelSampling_strings[i])
+        if(s == ChannelIntegration_strings[i])
         {
-            val = (ChannelSampling)i;
+            val = (ChannelIntegration)i;
             return true;
         }
     }
@@ -339,36 +413,74 @@ LineSamplerAttributes::ChannelSampling_FromString(const std::string &s, LineSamp
 }
 
 //
-// Enum conversion methods for LineSamplerAttributes::ToroidalSampling
+// Enum conversion methods for LineSamplerAttributes::ToroidalIntegration
 //
 
-static const char *ToroidalSampling_strings[] = {
-"SingleToroidalSampling", "SummationToroidalSampling"};
+static const char *ToroidalIntegration_strings[] = {
+"NoToroidalIntegration", "ToroidalTimeSample", "IntegrateToroidally"
+};
 
 std::string
-LineSamplerAttributes::ToroidalSampling_ToString(LineSamplerAttributes::ToroidalSampling t)
+LineSamplerAttributes::ToroidalIntegration_ToString(LineSamplerAttributes::ToroidalIntegration t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return ToroidalSampling_strings[index];
+    if(index < 0 || index >= 3) index = 0;
+    return ToroidalIntegration_strings[index];
 }
 
 std::string
-LineSamplerAttributes::ToroidalSampling_ToString(int t)
+LineSamplerAttributes::ToroidalIntegration_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return ToroidalSampling_strings[index];
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return ToroidalIntegration_strings[index];
 }
 
 bool
-LineSamplerAttributes::ToroidalSampling_FromString(const std::string &s, LineSamplerAttributes::ToroidalSampling &val)
+LineSamplerAttributes::ToroidalIntegration_FromString(const std::string &s, LineSamplerAttributes::ToroidalIntegration &val)
 {
-    val = LineSamplerAttributes::SingleToroidalSampling;
+    val = LineSamplerAttributes::NoToroidalIntegration;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == ToroidalIntegration_strings[i])
+        {
+            val = (ToroidalIntegration)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for LineSamplerAttributes::ToroidalAngleSampling
+//
+
+static const char *ToroidalAngleSampling_strings[] = {
+"ToroidalAngleAbsoluteSampling", "ToroidalAngleRelativeSampling"};
+
+std::string
+LineSamplerAttributes::ToroidalAngleSampling_ToString(LineSamplerAttributes::ToroidalAngleSampling t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return ToroidalAngleSampling_strings[index];
+}
+
+std::string
+LineSamplerAttributes::ToroidalAngleSampling_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return ToroidalAngleSampling_strings[index];
+}
+
+bool
+LineSamplerAttributes::ToroidalAngleSampling_FromString(const std::string &s, LineSamplerAttributes::ToroidalAngleSampling &val)
+{
+    val = LineSamplerAttributes::ToroidalAngleAbsoluteSampling;
     for(int i = 0; i < 2; ++i)
     {
-        if(s == ToroidalSampling_strings[i])
+        if(s == ToroidalAngleSampling_strings[i])
         {
-            val = (ToroidalSampling)i;
+            val = (ToroidalAngleSampling)i;
             return true;
         }
     }
@@ -430,11 +542,13 @@ LineSamplerAttributes::TimeSampling_FromString(const std::string &s, LineSampler
 void LineSamplerAttributes::Init()
 {
     coordinateSystem = Cylindrical;
-    arrayConfiguration = Manual;
+    arrayConfiguration = Geometry;
+    boundary = Data;
     nArrays = 1;
+    toroidalArrayAngle = 5;
     nChannels = 5;
-    toroialArrayAngle = 5;
-    arrayProjection = Parallel;
+    channelProjection = Parallel;
+    channelLayoutType = ChannelRelative;
     channelOffset = 0.1;
     channelAngle = 5;
     nRows = 1;
@@ -443,25 +557,31 @@ void LineSamplerAttributes::Init()
     arrayOrigin[1] = 0;
     arrayOrigin[2] = 0;
     arrayAxis = Z;
+    poloidalAngleStart = 180;
+    poloidalAngleStop = 220;
     poloialAngle = 0;
     poloialRTilt = 0;
     poloialZTilt = 0;
-    toroialAngle = 0;
+    toroidalAngle = 0;
     viewDimension = Three;
     heightPlotScale = 1;
     channelPlotOffset = 1;
     arrayPlotOffset = 1;
     timePlotScale = 1;
-    beamShape = Line;
+    channelGeometry = Line;
     radius = 0.1;
     divergence = 1;
-    beamType = TopHat;
+    channelProfile = TopHat;
     standardDeviation = 1;
     sampleDistance = 0.1;
+    sampleVolume = 1;
     sampleArc = 10;
-    channelSampling = SingleChannelSampling;
-    toroidalSampling = SingleToroidalSampling;
-    toroidalSamplingAngle = 1;
+    channelIntegration = NoChannelIntegration;
+    toroidalIntegration = NoToroidalIntegration;
+    toroidalAngleSampling = ToroidalAngleAbsoluteSampling;
+    toroidalAngleStart = 0;
+    toroidalAngleStop = 360;
+    toroidalAngleStride = 1;
     timeSampling = CurrentTimeStep;
     timeStepStart = 0;
     timeStepStop = 0;
@@ -470,6 +590,9 @@ void LineSamplerAttributes::Init()
     channelList.push_back(0);
     channelList.push_back(0);
     channelList.push_back(90);
+    nChannelListArrays = 1;
+    channelListToroidalArrayAngle = 5;
+    channelListToroidalAngle = 0;
 
     LineSamplerAttributes::SelectAll();
 }
@@ -493,10 +616,12 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
 {
     coordinateSystem = obj.coordinateSystem;
     arrayConfiguration = obj.arrayConfiguration;
+    boundary = obj.boundary;
     nArrays = obj.nArrays;
+    toroidalArrayAngle = obj.toroidalArrayAngle;
     nChannels = obj.nChannels;
-    toroialArrayAngle = obj.toroialArrayAngle;
-    arrayProjection = obj.arrayProjection;
+    channelProjection = obj.channelProjection;
+    channelLayoutType = obj.channelLayoutType;
     channelOffset = obj.channelOffset;
     channelAngle = obj.channelAngle;
     nRows = obj.nRows;
@@ -506,30 +631,39 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
     arrayOrigin[2] = obj.arrayOrigin[2];
 
     arrayAxis = obj.arrayAxis;
+    poloidalAngleStart = obj.poloidalAngleStart;
+    poloidalAngleStop = obj.poloidalAngleStop;
     poloialAngle = obj.poloialAngle;
     poloialRTilt = obj.poloialRTilt;
     poloialZTilt = obj.poloialZTilt;
-    toroialAngle = obj.toroialAngle;
+    toroidalAngle = obj.toroidalAngle;
     viewDimension = obj.viewDimension;
     heightPlotScale = obj.heightPlotScale;
     channelPlotOffset = obj.channelPlotOffset;
     arrayPlotOffset = obj.arrayPlotOffset;
     timePlotScale = obj.timePlotScale;
-    beamShape = obj.beamShape;
+    channelGeometry = obj.channelGeometry;
     radius = obj.radius;
     divergence = obj.divergence;
-    beamType = obj.beamType;
+    channelProfile = obj.channelProfile;
     standardDeviation = obj.standardDeviation;
     sampleDistance = obj.sampleDistance;
+    sampleVolume = obj.sampleVolume;
     sampleArc = obj.sampleArc;
-    channelSampling = obj.channelSampling;
-    toroidalSampling = obj.toroidalSampling;
-    toroidalSamplingAngle = obj.toroidalSamplingAngle;
+    channelIntegration = obj.channelIntegration;
+    toroidalIntegration = obj.toroidalIntegration;
+    toroidalAngleSampling = obj.toroidalAngleSampling;
+    toroidalAngleStart = obj.toroidalAngleStart;
+    toroidalAngleStop = obj.toroidalAngleStop;
+    toroidalAngleStride = obj.toroidalAngleStride;
     timeSampling = obj.timeSampling;
     timeStepStart = obj.timeStepStart;
     timeStepStop = obj.timeStepStop;
     timeStepStride = obj.timeStepStride;
     channelList = obj.channelList;
+    nChannelListArrays = obj.nChannelListArrays;
+    channelListToroidalArrayAngle = obj.channelListToroidalArrayAngle;
+    channelListToroidalAngle = obj.channelListToroidalAngle;
 
     LineSamplerAttributes::SelectAll();
 }
@@ -694,40 +828,51 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
     // Create the return value
     return ((coordinateSystem == obj.coordinateSystem) &&
             (arrayConfiguration == obj.arrayConfiguration) &&
+            (boundary == obj.boundary) &&
             (nArrays == obj.nArrays) &&
+            (toroidalArrayAngle == obj.toroidalArrayAngle) &&
             (nChannels == obj.nChannels) &&
-            (toroialArrayAngle == obj.toroialArrayAngle) &&
-            (arrayProjection == obj.arrayProjection) &&
+            (channelProjection == obj.channelProjection) &&
+            (channelLayoutType == obj.channelLayoutType) &&
             (channelOffset == obj.channelOffset) &&
             (channelAngle == obj.channelAngle) &&
             (nRows == obj.nRows) &&
             (rowOffset == obj.rowOffset) &&
             arrayOrigin_equal &&
             (arrayAxis == obj.arrayAxis) &&
+            (poloidalAngleStart == obj.poloidalAngleStart) &&
+            (poloidalAngleStop == obj.poloidalAngleStop) &&
             (poloialAngle == obj.poloialAngle) &&
             (poloialRTilt == obj.poloialRTilt) &&
             (poloialZTilt == obj.poloialZTilt) &&
-            (toroialAngle == obj.toroialAngle) &&
+            (toroidalAngle == obj.toroidalAngle) &&
             (viewDimension == obj.viewDimension) &&
             (heightPlotScale == obj.heightPlotScale) &&
             (channelPlotOffset == obj.channelPlotOffset) &&
             (arrayPlotOffset == obj.arrayPlotOffset) &&
             (timePlotScale == obj.timePlotScale) &&
-            (beamShape == obj.beamShape) &&
+            (channelGeometry == obj.channelGeometry) &&
             (radius == obj.radius) &&
             (divergence == obj.divergence) &&
-            (beamType == obj.beamType) &&
+            (channelProfile == obj.channelProfile) &&
             (standardDeviation == obj.standardDeviation) &&
             (sampleDistance == obj.sampleDistance) &&
+            (sampleVolume == obj.sampleVolume) &&
             (sampleArc == obj.sampleArc) &&
-            (channelSampling == obj.channelSampling) &&
-            (toroidalSampling == obj.toroidalSampling) &&
-            (toroidalSamplingAngle == obj.toroidalSamplingAngle) &&
+            (channelIntegration == obj.channelIntegration) &&
+            (toroidalIntegration == obj.toroidalIntegration) &&
+            (toroidalAngleSampling == obj.toroidalAngleSampling) &&
+            (toroidalAngleStart == obj.toroidalAngleStart) &&
+            (toroidalAngleStop == obj.toroidalAngleStop) &&
+            (toroidalAngleStride == obj.toroidalAngleStride) &&
             (timeSampling == obj.timeSampling) &&
             (timeStepStart == obj.timeStepStart) &&
             (timeStepStop == obj.timeStepStop) &&
             (timeStepStride == obj.timeStepStride) &&
-            (channelList == obj.channelList));
+            (channelList == obj.channelList) &&
+            (nChannelListArrays == obj.nChannelListArrays) &&
+            (channelListToroidalArrayAngle == obj.channelListToroidalArrayAngle) &&
+            (channelListToroidalAngle == obj.channelListToroidalAngle));
 }
 
 // ****************************************************************************
@@ -871,42 +1016,53 @@ LineSamplerAttributes::NewInstance(bool copy) const
 void
 LineSamplerAttributes::SelectAll()
 {
-    Select(ID_coordinateSystem,      (void *)&coordinateSystem);
-    Select(ID_arrayConfiguration,    (void *)&arrayConfiguration);
-    Select(ID_nArrays,               (void *)&nArrays);
-    Select(ID_nChannels,             (void *)&nChannels);
-    Select(ID_toroialArrayAngle,     (void *)&toroialArrayAngle);
-    Select(ID_arrayProjection,       (void *)&arrayProjection);
-    Select(ID_channelOffset,         (void *)&channelOffset);
-    Select(ID_channelAngle,          (void *)&channelAngle);
-    Select(ID_nRows,                 (void *)&nRows);
-    Select(ID_rowOffset,             (void *)&rowOffset);
-    Select(ID_arrayOrigin,           (void *)arrayOrigin, 3);
-    Select(ID_arrayAxis,             (void *)&arrayAxis);
-    Select(ID_poloialAngle,          (void *)&poloialAngle);
-    Select(ID_poloialRTilt,          (void *)&poloialRTilt);
-    Select(ID_poloialZTilt,          (void *)&poloialZTilt);
-    Select(ID_toroialAngle,          (void *)&toroialAngle);
-    Select(ID_viewDimension,         (void *)&viewDimension);
-    Select(ID_heightPlotScale,       (void *)&heightPlotScale);
-    Select(ID_channelPlotOffset,     (void *)&channelPlotOffset);
-    Select(ID_arrayPlotOffset,       (void *)&arrayPlotOffset);
-    Select(ID_timePlotScale,         (void *)&timePlotScale);
-    Select(ID_beamShape,             (void *)&beamShape);
-    Select(ID_radius,                (void *)&radius);
-    Select(ID_divergence,            (void *)&divergence);
-    Select(ID_beamType,              (void *)&beamType);
-    Select(ID_standardDeviation,     (void *)&standardDeviation);
-    Select(ID_sampleDistance,        (void *)&sampleDistance);
-    Select(ID_sampleArc,             (void *)&sampleArc);
-    Select(ID_channelSampling,       (void *)&channelSampling);
-    Select(ID_toroidalSampling,      (void *)&toroidalSampling);
-    Select(ID_toroidalSamplingAngle, (void *)&toroidalSamplingAngle);
-    Select(ID_timeSampling,          (void *)&timeSampling);
-    Select(ID_timeStepStart,         (void *)&timeStepStart);
-    Select(ID_timeStepStop,          (void *)&timeStepStop);
-    Select(ID_timeStepStride,        (void *)&timeStepStride);
-    Select(ID_channelList,           (void *)&channelList);
+    Select(ID_coordinateSystem,              (void *)&coordinateSystem);
+    Select(ID_arrayConfiguration,            (void *)&arrayConfiguration);
+    Select(ID_boundary,                      (void *)&boundary);
+    Select(ID_nArrays,                       (void *)&nArrays);
+    Select(ID_toroidalArrayAngle,            (void *)&toroidalArrayAngle);
+    Select(ID_nChannels,                     (void *)&nChannels);
+    Select(ID_channelProjection,             (void *)&channelProjection);
+    Select(ID_channelLayoutType,             (void *)&channelLayoutType);
+    Select(ID_channelOffset,                 (void *)&channelOffset);
+    Select(ID_channelAngle,                  (void *)&channelAngle);
+    Select(ID_nRows,                         (void *)&nRows);
+    Select(ID_rowOffset,                     (void *)&rowOffset);
+    Select(ID_arrayOrigin,                   (void *)arrayOrigin, 3);
+    Select(ID_arrayAxis,                     (void *)&arrayAxis);
+    Select(ID_poloidalAngleStart,            (void *)&poloidalAngleStart);
+    Select(ID_poloidalAngleStop,             (void *)&poloidalAngleStop);
+    Select(ID_poloialAngle,                  (void *)&poloialAngle);
+    Select(ID_poloialRTilt,                  (void *)&poloialRTilt);
+    Select(ID_poloialZTilt,                  (void *)&poloialZTilt);
+    Select(ID_toroidalAngle,                 (void *)&toroidalAngle);
+    Select(ID_viewDimension,                 (void *)&viewDimension);
+    Select(ID_heightPlotScale,               (void *)&heightPlotScale);
+    Select(ID_channelPlotOffset,             (void *)&channelPlotOffset);
+    Select(ID_arrayPlotOffset,               (void *)&arrayPlotOffset);
+    Select(ID_timePlotScale,                 (void *)&timePlotScale);
+    Select(ID_channelGeometry,               (void *)&channelGeometry);
+    Select(ID_radius,                        (void *)&radius);
+    Select(ID_divergence,                    (void *)&divergence);
+    Select(ID_channelProfile,                (void *)&channelProfile);
+    Select(ID_standardDeviation,             (void *)&standardDeviation);
+    Select(ID_sampleDistance,                (void *)&sampleDistance);
+    Select(ID_sampleVolume,                  (void *)&sampleVolume);
+    Select(ID_sampleArc,                     (void *)&sampleArc);
+    Select(ID_channelIntegration,            (void *)&channelIntegration);
+    Select(ID_toroidalIntegration,           (void *)&toroidalIntegration);
+    Select(ID_toroidalAngleSampling,         (void *)&toroidalAngleSampling);
+    Select(ID_toroidalAngleStart,            (void *)&toroidalAngleStart);
+    Select(ID_toroidalAngleStop,             (void *)&toroidalAngleStop);
+    Select(ID_toroidalAngleStride,           (void *)&toroidalAngleStride);
+    Select(ID_timeSampling,                  (void *)&timeSampling);
+    Select(ID_timeStepStart,                 (void *)&timeStepStart);
+    Select(ID_timeStepStop,                  (void *)&timeStepStop);
+    Select(ID_timeStepStride,                (void *)&timeStepStride);
+    Select(ID_channelList,                   (void *)&channelList);
+    Select(ID_nChannelListArrays,            (void *)&nChannelListArrays);
+    Select(ID_channelListToroidalArrayAngle, (void *)&channelListToroidalArrayAngle);
+    Select(ID_channelListToroidalAngle,      (void *)&channelListToroidalAngle);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -951,10 +1107,22 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("arrayConfiguration", ArrayConfiguration_ToString(arrayConfiguration)));
     }
 
+    if(completeSave || !FieldsEqual(ID_boundary, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("boundary", Boundary_ToString(boundary)));
+    }
+
     if(completeSave || !FieldsEqual(ID_nArrays, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("nArrays", nArrays));
+    }
+
+    if(completeSave || !FieldsEqual(ID_toroidalArrayAngle, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("toroidalArrayAngle", toroidalArrayAngle));
     }
 
     if(completeSave || !FieldsEqual(ID_nChannels, &defaultObject))
@@ -963,16 +1131,16 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("nChannels", nChannels));
     }
 
-    if(completeSave || !FieldsEqual(ID_toroialArrayAngle, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_channelProjection, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("toroialArrayAngle", toroialArrayAngle));
+        node->AddNode(new DataNode("channelProjection", ChannelProjection_ToString(channelProjection)));
     }
 
-    if(completeSave || !FieldsEqual(ID_arrayProjection, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_channelLayoutType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("arrayProjection", ArrayProjection_ToString(arrayProjection)));
+        node->AddNode(new DataNode("channelLayoutType", ChannelLayoutType_ToString(channelLayoutType)));
     }
 
     if(completeSave || !FieldsEqual(ID_channelOffset, &defaultObject))
@@ -1011,6 +1179,18 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("arrayAxis", ArrayAxis_ToString(arrayAxis)));
     }
 
+    if(completeSave || !FieldsEqual(ID_poloidalAngleStart, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("poloidalAngleStart", poloidalAngleStart));
+    }
+
+    if(completeSave || !FieldsEqual(ID_poloidalAngleStop, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("poloidalAngleStop", poloidalAngleStop));
+    }
+
     if(completeSave || !FieldsEqual(ID_poloialAngle, &defaultObject))
     {
         addToParent = true;
@@ -1029,10 +1209,10 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("poloialZTilt", poloialZTilt));
     }
 
-    if(completeSave || !FieldsEqual(ID_toroialAngle, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_toroidalAngle, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("toroialAngle", toroialAngle));
+        node->AddNode(new DataNode("toroidalAngle", toroidalAngle));
     }
 
     if(completeSave || !FieldsEqual(ID_viewDimension, &defaultObject))
@@ -1065,10 +1245,10 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("timePlotScale", timePlotScale));
     }
 
-    if(completeSave || !FieldsEqual(ID_beamShape, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_channelGeometry, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("beamShape", BeamShape_ToString(beamShape)));
+        node->AddNode(new DataNode("channelGeometry", ChannelGeometry_ToString(channelGeometry)));
     }
 
     if(completeSave || !FieldsEqual(ID_radius, &defaultObject))
@@ -1083,10 +1263,10 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("divergence", divergence));
     }
 
-    if(completeSave || !FieldsEqual(ID_beamType, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_channelProfile, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("beamType", BeamType_ToString(beamType)));
+        node->AddNode(new DataNode("channelProfile", ChannelProfile_ToString(channelProfile)));
     }
 
     if(completeSave || !FieldsEqual(ID_standardDeviation, &defaultObject))
@@ -1101,28 +1281,52 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("sampleDistance", sampleDistance));
     }
 
+    if(completeSave || !FieldsEqual(ID_sampleVolume, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("sampleVolume", sampleVolume));
+    }
+
     if(completeSave || !FieldsEqual(ID_sampleArc, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("sampleArc", sampleArc));
     }
 
-    if(completeSave || !FieldsEqual(ID_channelSampling, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_channelIntegration, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("channelSampling", ChannelSampling_ToString(channelSampling)));
+        node->AddNode(new DataNode("channelIntegration", ChannelIntegration_ToString(channelIntegration)));
     }
 
-    if(completeSave || !FieldsEqual(ID_toroidalSampling, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_toroidalIntegration, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("toroidalSampling", ToroidalSampling_ToString(toroidalSampling)));
+        node->AddNode(new DataNode("toroidalIntegration", ToroidalIntegration_ToString(toroidalIntegration)));
     }
 
-    if(completeSave || !FieldsEqual(ID_toroidalSamplingAngle, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_toroidalAngleSampling, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("toroidalSamplingAngle", toroidalSamplingAngle));
+        node->AddNode(new DataNode("toroidalAngleSampling", ToroidalAngleSampling_ToString(toroidalAngleSampling)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_toroidalAngleStart, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("toroidalAngleStart", toroidalAngleStart));
+    }
+
+    if(completeSave || !FieldsEqual(ID_toroidalAngleStop, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("toroidalAngleStop", toroidalAngleStop));
+    }
+
+    if(completeSave || !FieldsEqual(ID_toroidalAngleStride, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("toroidalAngleStride", toroidalAngleStride));
     }
 
     if(completeSave || !FieldsEqual(ID_timeSampling, &defaultObject))
@@ -1153,6 +1357,24 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("channelList", channelList));
+    }
+
+    if(completeSave || !FieldsEqual(ID_nChannelListArrays, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("nChannelListArrays", nChannelListArrays));
+    }
+
+    if(completeSave || !FieldsEqual(ID_channelListToroidalArrayAngle, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("channelListToroidalArrayAngle", channelListToroidalArrayAngle));
+    }
+
+    if(completeSave || !FieldsEqual(ID_channelListToroidalAngle, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("channelListToroidalAngle", channelListToroidalAngle));
     }
 
 
@@ -1223,26 +1445,58 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
                 SetArrayConfiguration(value);
         }
     }
+    if((node = searchNode->GetNode("boundary")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetBoundary(Boundary(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            Boundary value;
+            if(Boundary_FromString(node->AsString(), value))
+                SetBoundary(value);
+        }
+    }
     if((node = searchNode->GetNode("nArrays")) != 0)
         SetNArrays(node->AsInt());
+    if((node = searchNode->GetNode("toroidalArrayAngle")) != 0)
+        SetToroidalArrayAngle(node->AsDouble());
     if((node = searchNode->GetNode("nChannels")) != 0)
         SetNChannels(node->AsInt());
-    if((node = searchNode->GetNode("toroialArrayAngle")) != 0)
-        SetToroialArrayAngle(node->AsDouble());
-    if((node = searchNode->GetNode("arrayProjection")) != 0)
+    if((node = searchNode->GetNode("channelProjection")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 3)
-                SetArrayProjection(ArrayProjection(ival));
+                SetChannelProjection(ChannelProjection(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            ArrayProjection value;
-            if(ArrayProjection_FromString(node->AsString(), value))
-                SetArrayProjection(value);
+            ChannelProjection value;
+            if(ChannelProjection_FromString(node->AsString(), value))
+                SetChannelProjection(value);
+        }
+    }
+    if((node = searchNode->GetNode("channelLayoutType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetChannelLayoutType(ChannelLayoutType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ChannelLayoutType value;
+            if(ChannelLayoutType_FromString(node->AsString(), value))
+                SetChannelLayoutType(value);
         }
     }
     if((node = searchNode->GetNode("channelOffset")) != 0)
@@ -1271,14 +1525,18 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
                 SetArrayAxis(value);
         }
     }
+    if((node = searchNode->GetNode("poloidalAngleStart")) != 0)
+        SetPoloidalAngleStart(node->AsDouble());
+    if((node = searchNode->GetNode("poloidalAngleStop")) != 0)
+        SetPoloidalAngleStop(node->AsDouble());
     if((node = searchNode->GetNode("poloialAngle")) != 0)
         SetPoloialAngle(node->AsDouble());
     if((node = searchNode->GetNode("poloialRTilt")) != 0)
         SetPoloialRTilt(node->AsDouble());
     if((node = searchNode->GetNode("poloialZTilt")) != 0)
         SetPoloialZTilt(node->AsDouble());
-    if((node = searchNode->GetNode("toroialAngle")) != 0)
-        SetToroialAngle(node->AsDouble());
+    if((node = searchNode->GetNode("toroidalAngle")) != 0)
+        SetToroidalAngle(node->AsDouble());
     if((node = searchNode->GetNode("viewDimension")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1303,82 +1561,104 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         SetArrayPlotOffset(node->AsDouble());
     if((node = searchNode->GetNode("timePlotScale")) != 0)
         SetTimePlotScale(node->AsDouble());
-    if((node = searchNode->GetNode("beamShape")) != 0)
+    if((node = searchNode->GetNode("channelGeometry")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 4)
-                SetBeamShape(BeamShape(ival));
+                SetChannelGeometry(ChannelGeometry(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            BeamShape value;
-            if(BeamShape_FromString(node->AsString(), value))
-                SetBeamShape(value);
+            ChannelGeometry value;
+            if(ChannelGeometry_FromString(node->AsString(), value))
+                SetChannelGeometry(value);
         }
     }
     if((node = searchNode->GetNode("radius")) != 0)
         SetRadius(node->AsDouble());
     if((node = searchNode->GetNode("divergence")) != 0)
         SetDivergence(node->AsDouble());
-    if((node = searchNode->GetNode("beamType")) != 0)
+    if((node = searchNode->GetNode("channelProfile")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 2)
-                SetBeamType(BeamType(ival));
+                SetChannelProfile(ChannelProfile(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            BeamType value;
-            if(BeamType_FromString(node->AsString(), value))
-                SetBeamType(value);
+            ChannelProfile value;
+            if(ChannelProfile_FromString(node->AsString(), value))
+                SetChannelProfile(value);
         }
     }
     if((node = searchNode->GetNode("standardDeviation")) != 0)
         SetStandardDeviation(node->AsDouble());
     if((node = searchNode->GetNode("sampleDistance")) != 0)
         SetSampleDistance(node->AsDouble());
+    if((node = searchNode->GetNode("sampleVolume")) != 0)
+        SetSampleVolume(node->AsDouble());
     if((node = searchNode->GetNode("sampleArc")) != 0)
         SetSampleArc(node->AsDouble());
-    if((node = searchNode->GetNode("channelSampling")) != 0)
+    if((node = searchNode->GetNode("channelIntegration")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 2)
-                SetChannelSampling(ChannelSampling(ival));
+                SetChannelIntegration(ChannelIntegration(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            ChannelSampling value;
-            if(ChannelSampling_FromString(node->AsString(), value))
-                SetChannelSampling(value);
+            ChannelIntegration value;
+            if(ChannelIntegration_FromString(node->AsString(), value))
+                SetChannelIntegration(value);
         }
     }
-    if((node = searchNode->GetNode("toroidalSampling")) != 0)
+    if((node = searchNode->GetNode("toroidalIntegration")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetToroidalIntegration(ToroidalIntegration(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ToroidalIntegration value;
+            if(ToroidalIntegration_FromString(node->AsString(), value))
+                SetToroidalIntegration(value);
+        }
+    }
+    if((node = searchNode->GetNode("toroidalAngleSampling")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 2)
-                SetToroidalSampling(ToroidalSampling(ival));
+                SetToroidalAngleSampling(ToroidalAngleSampling(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            ToroidalSampling value;
-            if(ToroidalSampling_FromString(node->AsString(), value))
-                SetToroidalSampling(value);
+            ToroidalAngleSampling value;
+            if(ToroidalAngleSampling_FromString(node->AsString(), value))
+                SetToroidalAngleSampling(value);
         }
     }
-    if((node = searchNode->GetNode("toroidalSamplingAngle")) != 0)
-        SetToroidalSamplingAngle(node->AsDouble());
+    if((node = searchNode->GetNode("toroidalAngleStart")) != 0)
+        SetToroidalAngleStart(node->AsDouble());
+    if((node = searchNode->GetNode("toroidalAngleStop")) != 0)
+        SetToroidalAngleStop(node->AsDouble());
+    if((node = searchNode->GetNode("toroidalAngleStride")) != 0)
+        SetToroidalAngleStride(node->AsDouble());
     if((node = searchNode->GetNode("timeSampling")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1403,6 +1683,12 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         SetTimeStepStride(node->AsInt());
     if((node = searchNode->GetNode("channelList")) != 0)
         SetChannelList(node->AsDoubleVector());
+    if((node = searchNode->GetNode("nChannelListArrays")) != 0)
+        SetNChannelListArrays(node->AsInt());
+    if((node = searchNode->GetNode("channelListToroidalArrayAngle")) != 0)
+        SetChannelListToroidalArrayAngle(node->AsDouble());
+    if((node = searchNode->GetNode("channelListToroidalAngle")) != 0)
+        SetChannelListToroidalAngle(node->AsDouble());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1424,10 +1710,24 @@ LineSamplerAttributes::SetArrayConfiguration(LineSamplerAttributes::ArrayConfigu
 }
 
 void
+LineSamplerAttributes::SetBoundary(LineSamplerAttributes::Boundary boundary_)
+{
+    boundary = boundary_;
+    Select(ID_boundary, (void *)&boundary);
+}
+
+void
 LineSamplerAttributes::SetNArrays(int nArrays_)
 {
     nArrays = nArrays_;
     Select(ID_nArrays, (void *)&nArrays);
+}
+
+void
+LineSamplerAttributes::SetToroidalArrayAngle(double toroidalArrayAngle_)
+{
+    toroidalArrayAngle = toroidalArrayAngle_;
+    Select(ID_toroidalArrayAngle, (void *)&toroidalArrayAngle);
 }
 
 void
@@ -1438,17 +1738,17 @@ LineSamplerAttributes::SetNChannels(int nChannels_)
 }
 
 void
-LineSamplerAttributes::SetToroialArrayAngle(double toroialArrayAngle_)
+LineSamplerAttributes::SetChannelProjection(LineSamplerAttributes::ChannelProjection channelProjection_)
 {
-    toroialArrayAngle = toroialArrayAngle_;
-    Select(ID_toroialArrayAngle, (void *)&toroialArrayAngle);
+    channelProjection = channelProjection_;
+    Select(ID_channelProjection, (void *)&channelProjection);
 }
 
 void
-LineSamplerAttributes::SetArrayProjection(LineSamplerAttributes::ArrayProjection arrayProjection_)
+LineSamplerAttributes::SetChannelLayoutType(LineSamplerAttributes::ChannelLayoutType channelLayoutType_)
 {
-    arrayProjection = arrayProjection_;
-    Select(ID_arrayProjection, (void *)&arrayProjection);
+    channelLayoutType = channelLayoutType_;
+    Select(ID_channelLayoutType, (void *)&channelLayoutType);
 }
 
 void
@@ -1496,6 +1796,20 @@ LineSamplerAttributes::SetArrayAxis(LineSamplerAttributes::ArrayAxis arrayAxis_)
 }
 
 void
+LineSamplerAttributes::SetPoloidalAngleStart(double poloidalAngleStart_)
+{
+    poloidalAngleStart = poloidalAngleStart_;
+    Select(ID_poloidalAngleStart, (void *)&poloidalAngleStart);
+}
+
+void
+LineSamplerAttributes::SetPoloidalAngleStop(double poloidalAngleStop_)
+{
+    poloidalAngleStop = poloidalAngleStop_;
+    Select(ID_poloidalAngleStop, (void *)&poloidalAngleStop);
+}
+
+void
 LineSamplerAttributes::SetPoloialAngle(double poloialAngle_)
 {
     poloialAngle = poloialAngle_;
@@ -1517,10 +1831,10 @@ LineSamplerAttributes::SetPoloialZTilt(double poloialZTilt_)
 }
 
 void
-LineSamplerAttributes::SetToroialAngle(double toroialAngle_)
+LineSamplerAttributes::SetToroidalAngle(double toroidalAngle_)
 {
-    toroialAngle = toroialAngle_;
-    Select(ID_toroialAngle, (void *)&toroialAngle);
+    toroidalAngle = toroidalAngle_;
+    Select(ID_toroidalAngle, (void *)&toroidalAngle);
 }
 
 void
@@ -1559,10 +1873,10 @@ LineSamplerAttributes::SetTimePlotScale(double timePlotScale_)
 }
 
 void
-LineSamplerAttributes::SetBeamShape(LineSamplerAttributes::BeamShape beamShape_)
+LineSamplerAttributes::SetChannelGeometry(LineSamplerAttributes::ChannelGeometry channelGeometry_)
 {
-    beamShape = beamShape_;
-    Select(ID_beamShape, (void *)&beamShape);
+    channelGeometry = channelGeometry_;
+    Select(ID_channelGeometry, (void *)&channelGeometry);
 }
 
 void
@@ -1580,10 +1894,10 @@ LineSamplerAttributes::SetDivergence(double divergence_)
 }
 
 void
-LineSamplerAttributes::SetBeamType(LineSamplerAttributes::BeamType beamType_)
+LineSamplerAttributes::SetChannelProfile(LineSamplerAttributes::ChannelProfile channelProfile_)
 {
-    beamType = beamType_;
-    Select(ID_beamType, (void *)&beamType);
+    channelProfile = channelProfile_;
+    Select(ID_channelProfile, (void *)&channelProfile);
 }
 
 void
@@ -1601,6 +1915,13 @@ LineSamplerAttributes::SetSampleDistance(double sampleDistance_)
 }
 
 void
+LineSamplerAttributes::SetSampleVolume(double sampleVolume_)
+{
+    sampleVolume = sampleVolume_;
+    Select(ID_sampleVolume, (void *)&sampleVolume);
+}
+
+void
 LineSamplerAttributes::SetSampleArc(double sampleArc_)
 {
     sampleArc = sampleArc_;
@@ -1608,24 +1929,45 @@ LineSamplerAttributes::SetSampleArc(double sampleArc_)
 }
 
 void
-LineSamplerAttributes::SetChannelSampling(LineSamplerAttributes::ChannelSampling channelSampling_)
+LineSamplerAttributes::SetChannelIntegration(LineSamplerAttributes::ChannelIntegration channelIntegration_)
 {
-    channelSampling = channelSampling_;
-    Select(ID_channelSampling, (void *)&channelSampling);
+    channelIntegration = channelIntegration_;
+    Select(ID_channelIntegration, (void *)&channelIntegration);
 }
 
 void
-LineSamplerAttributes::SetToroidalSampling(LineSamplerAttributes::ToroidalSampling toroidalSampling_)
+LineSamplerAttributes::SetToroidalIntegration(LineSamplerAttributes::ToroidalIntegration toroidalIntegration_)
 {
-    toroidalSampling = toroidalSampling_;
-    Select(ID_toroidalSampling, (void *)&toroidalSampling);
+    toroidalIntegration = toroidalIntegration_;
+    Select(ID_toroidalIntegration, (void *)&toroidalIntegration);
 }
 
 void
-LineSamplerAttributes::SetToroidalSamplingAngle(double toroidalSamplingAngle_)
+LineSamplerAttributes::SetToroidalAngleSampling(LineSamplerAttributes::ToroidalAngleSampling toroidalAngleSampling_)
 {
-    toroidalSamplingAngle = toroidalSamplingAngle_;
-    Select(ID_toroidalSamplingAngle, (void *)&toroidalSamplingAngle);
+    toroidalAngleSampling = toroidalAngleSampling_;
+    Select(ID_toroidalAngleSampling, (void *)&toroidalAngleSampling);
+}
+
+void
+LineSamplerAttributes::SetToroidalAngleStart(double toroidalAngleStart_)
+{
+    toroidalAngleStart = toroidalAngleStart_;
+    Select(ID_toroidalAngleStart, (void *)&toroidalAngleStart);
+}
+
+void
+LineSamplerAttributes::SetToroidalAngleStop(double toroidalAngleStop_)
+{
+    toroidalAngleStop = toroidalAngleStop_;
+    Select(ID_toroidalAngleStop, (void *)&toroidalAngleStop);
+}
+
+void
+LineSamplerAttributes::SetToroidalAngleStride(double toroidalAngleStride_)
+{
+    toroidalAngleStride = toroidalAngleStride_;
+    Select(ID_toroidalAngleStride, (void *)&toroidalAngleStride);
 }
 
 void
@@ -1663,6 +2005,27 @@ LineSamplerAttributes::SetChannelList(const doubleVector &channelList_)
     Select(ID_channelList, (void *)&channelList);
 }
 
+void
+LineSamplerAttributes::SetNChannelListArrays(int nChannelListArrays_)
+{
+    nChannelListArrays = nChannelListArrays_;
+    Select(ID_nChannelListArrays, (void *)&nChannelListArrays);
+}
+
+void
+LineSamplerAttributes::SetChannelListToroidalArrayAngle(double channelListToroidalArrayAngle_)
+{
+    channelListToroidalArrayAngle = channelListToroidalArrayAngle_;
+    Select(ID_channelListToroidalArrayAngle, (void *)&channelListToroidalArrayAngle);
+}
+
+void
+LineSamplerAttributes::SetChannelListToroidalAngle(double channelListToroidalAngle_)
+{
+    channelListToroidalAngle = channelListToroidalAngle_;
+    Select(ID_channelListToroidalAngle, (void *)&channelListToroidalAngle);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1679,10 +2042,22 @@ LineSamplerAttributes::GetArrayConfiguration() const
     return ArrayConfiguration(arrayConfiguration);
 }
 
+LineSamplerAttributes::Boundary
+LineSamplerAttributes::GetBoundary() const
+{
+    return Boundary(boundary);
+}
+
 int
 LineSamplerAttributes::GetNArrays() const
 {
     return nArrays;
+}
+
+double
+LineSamplerAttributes::GetToroidalArrayAngle() const
+{
+    return toroidalArrayAngle;
 }
 
 int
@@ -1691,16 +2066,16 @@ LineSamplerAttributes::GetNChannels() const
     return nChannels;
 }
 
-double
-LineSamplerAttributes::GetToroialArrayAngle() const
+LineSamplerAttributes::ChannelProjection
+LineSamplerAttributes::GetChannelProjection() const
 {
-    return toroialArrayAngle;
+    return ChannelProjection(channelProjection);
 }
 
-LineSamplerAttributes::ArrayProjection
-LineSamplerAttributes::GetArrayProjection() const
+LineSamplerAttributes::ChannelLayoutType
+LineSamplerAttributes::GetChannelLayoutType() const
 {
-    return ArrayProjection(arrayProjection);
+    return ChannelLayoutType(channelLayoutType);
 }
 
 double
@@ -1746,6 +2121,18 @@ LineSamplerAttributes::GetArrayAxis() const
 }
 
 double
+LineSamplerAttributes::GetPoloidalAngleStart() const
+{
+    return poloidalAngleStart;
+}
+
+double
+LineSamplerAttributes::GetPoloidalAngleStop() const
+{
+    return poloidalAngleStop;
+}
+
+double
 LineSamplerAttributes::GetPoloialAngle() const
 {
     return poloialAngle;
@@ -1764,9 +2151,9 @@ LineSamplerAttributes::GetPoloialZTilt() const
 }
 
 double
-LineSamplerAttributes::GetToroialAngle() const
+LineSamplerAttributes::GetToroidalAngle() const
 {
-    return toroialAngle;
+    return toroidalAngle;
 }
 
 LineSamplerAttributes::ViewDimension
@@ -1799,10 +2186,10 @@ LineSamplerAttributes::GetTimePlotScale() const
     return timePlotScale;
 }
 
-LineSamplerAttributes::BeamShape
-LineSamplerAttributes::GetBeamShape() const
+LineSamplerAttributes::ChannelGeometry
+LineSamplerAttributes::GetChannelGeometry() const
 {
-    return BeamShape(beamShape);
+    return ChannelGeometry(channelGeometry);
 }
 
 double
@@ -1817,10 +2204,10 @@ LineSamplerAttributes::GetDivergence() const
     return divergence;
 }
 
-LineSamplerAttributes::BeamType
-LineSamplerAttributes::GetBeamType() const
+LineSamplerAttributes::ChannelProfile
+LineSamplerAttributes::GetChannelProfile() const
 {
-    return BeamType(beamType);
+    return ChannelProfile(channelProfile);
 }
 
 double
@@ -1836,27 +2223,51 @@ LineSamplerAttributes::GetSampleDistance() const
 }
 
 double
+LineSamplerAttributes::GetSampleVolume() const
+{
+    return sampleVolume;
+}
+
+double
 LineSamplerAttributes::GetSampleArc() const
 {
     return sampleArc;
 }
 
-LineSamplerAttributes::ChannelSampling
-LineSamplerAttributes::GetChannelSampling() const
+LineSamplerAttributes::ChannelIntegration
+LineSamplerAttributes::GetChannelIntegration() const
 {
-    return ChannelSampling(channelSampling);
+    return ChannelIntegration(channelIntegration);
 }
 
-LineSamplerAttributes::ToroidalSampling
-LineSamplerAttributes::GetToroidalSampling() const
+LineSamplerAttributes::ToroidalIntegration
+LineSamplerAttributes::GetToroidalIntegration() const
 {
-    return ToroidalSampling(toroidalSampling);
+    return ToroidalIntegration(toroidalIntegration);
+}
+
+LineSamplerAttributes::ToroidalAngleSampling
+LineSamplerAttributes::GetToroidalAngleSampling() const
+{
+    return ToroidalAngleSampling(toroidalAngleSampling);
 }
 
 double
-LineSamplerAttributes::GetToroidalSamplingAngle() const
+LineSamplerAttributes::GetToroidalAngleStart() const
 {
-    return toroidalSamplingAngle;
+    return toroidalAngleStart;
+}
+
+double
+LineSamplerAttributes::GetToroidalAngleStop() const
+{
+    return toroidalAngleStop;
+}
+
+double
+LineSamplerAttributes::GetToroidalAngleStride() const
+{
+    return toroidalAngleStride;
 }
 
 LineSamplerAttributes::TimeSampling
@@ -1893,6 +2304,24 @@ doubleVector &
 LineSamplerAttributes::GetChannelList()
 {
     return channelList;
+}
+
+int
+LineSamplerAttributes::GetNChannelListArrays() const
+{
+    return nChannelListArrays;
+}
+
+double
+LineSamplerAttributes::GetChannelListToroidalArrayAngle() const
+{
+    return channelListToroidalArrayAngle;
+}
+
+double
+LineSamplerAttributes::GetChannelListToroidalAngle() const
+{
+    return channelListToroidalAngle;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1935,42 +2364,53 @@ LineSamplerAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_coordinateSystem:      return "coordinateSystem";
-    case ID_arrayConfiguration:    return "arrayConfiguration";
-    case ID_nArrays:               return "nArrays";
-    case ID_nChannels:             return "nChannels";
-    case ID_toroialArrayAngle:     return "toroialArrayAngle";
-    case ID_arrayProjection:       return "arrayProjection";
-    case ID_channelOffset:         return "channelOffset";
-    case ID_channelAngle:          return "channelAngle";
-    case ID_nRows:                 return "nRows";
-    case ID_rowOffset:             return "rowOffset";
-    case ID_arrayOrigin:           return "arrayOrigin";
-    case ID_arrayAxis:             return "arrayAxis";
-    case ID_poloialAngle:          return "poloialAngle";
-    case ID_poloialRTilt:          return "poloialRTilt";
-    case ID_poloialZTilt:          return "poloialZTilt";
-    case ID_toroialAngle:          return "toroialAngle";
-    case ID_viewDimension:         return "viewDimension";
-    case ID_heightPlotScale:       return "heightPlotScale";
-    case ID_channelPlotOffset:     return "channelPlotOffset";
-    case ID_arrayPlotOffset:       return "arrayPlotOffset";
-    case ID_timePlotScale:         return "timePlotScale";
-    case ID_beamShape:             return "beamShape";
-    case ID_radius:                return "radius";
-    case ID_divergence:            return "divergence";
-    case ID_beamType:              return "beamType";
-    case ID_standardDeviation:     return "standardDeviation";
-    case ID_sampleDistance:        return "sampleDistance";
-    case ID_sampleArc:             return "sampleArc";
-    case ID_channelSampling:       return "channelSampling";
-    case ID_toroidalSampling:      return "toroidalSampling";
-    case ID_toroidalSamplingAngle: return "toroidalSamplingAngle";
-    case ID_timeSampling:          return "timeSampling";
-    case ID_timeStepStart:         return "timeStepStart";
-    case ID_timeStepStop:          return "timeStepStop";
-    case ID_timeStepStride:        return "timeStepStride";
-    case ID_channelList:           return "channelList";
+    case ID_coordinateSystem:              return "coordinateSystem";
+    case ID_arrayConfiguration:            return "arrayConfiguration";
+    case ID_boundary:                      return "boundary";
+    case ID_nArrays:                       return "nArrays";
+    case ID_toroidalArrayAngle:            return "toroidalArrayAngle";
+    case ID_nChannels:                     return "nChannels";
+    case ID_channelProjection:             return "channelProjection";
+    case ID_channelLayoutType:             return "channelLayoutType";
+    case ID_channelOffset:                 return "channelOffset";
+    case ID_channelAngle:                  return "channelAngle";
+    case ID_nRows:                         return "nRows";
+    case ID_rowOffset:                     return "rowOffset";
+    case ID_arrayOrigin:                   return "arrayOrigin";
+    case ID_arrayAxis:                     return "arrayAxis";
+    case ID_poloidalAngleStart:            return "poloidalAngleStart";
+    case ID_poloidalAngleStop:             return "poloidalAngleStop";
+    case ID_poloialAngle:                  return "poloialAngle";
+    case ID_poloialRTilt:                  return "poloialRTilt";
+    case ID_poloialZTilt:                  return "poloialZTilt";
+    case ID_toroidalAngle:                 return "toroidalAngle";
+    case ID_viewDimension:                 return "viewDimension";
+    case ID_heightPlotScale:               return "heightPlotScale";
+    case ID_channelPlotOffset:             return "channelPlotOffset";
+    case ID_arrayPlotOffset:               return "arrayPlotOffset";
+    case ID_timePlotScale:                 return "timePlotScale";
+    case ID_channelGeometry:               return "channelGeometry";
+    case ID_radius:                        return "radius";
+    case ID_divergence:                    return "divergence";
+    case ID_channelProfile:                return "channelProfile";
+    case ID_standardDeviation:             return "standardDeviation";
+    case ID_sampleDistance:                return "sampleDistance";
+    case ID_sampleVolume:                  return "sampleVolume";
+    case ID_sampleArc:                     return "sampleArc";
+    case ID_channelIntegration:            return "channelIntegration";
+    case ID_toroidalIntegration:           return "toroidalIntegration";
+    case ID_toroidalAngleSampling:         return "toroidalAngleSampling";
+    case ID_toroidalAngleStart:            return "toroidalAngleStart";
+    case ID_toroidalAngleStop:             return "toroidalAngleStop";
+    case ID_toroidalAngleStride:           return "toroidalAngleStride";
+    case ID_timeSampling:                  return "timeSampling";
+    case ID_timeStepStart:                 return "timeStepStart";
+    case ID_timeStepStop:                  return "timeStepStop";
+    case ID_timeStepStride:                return "timeStepStride";
+    case ID_channelList:                   return "channelList";
+    case ID_nChannelListArrays:            return "nChannelListArrays";
+    case ID_channelListToroidalArrayAngle: return "channelListToroidalArrayAngle";
+    case ID_channelListToroidalAngle:      return "channelListToroidalAngle";
     default:  return "invalid index";
     }
 }
@@ -1995,42 +2435,53 @@ LineSamplerAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_coordinateSystem:      return FieldType_enum;
-    case ID_arrayConfiguration:    return FieldType_enum;
-    case ID_nArrays:               return FieldType_int;
-    case ID_nChannels:             return FieldType_int;
-    case ID_toroialArrayAngle:     return FieldType_double;
-    case ID_arrayProjection:       return FieldType_enum;
-    case ID_channelOffset:         return FieldType_double;
-    case ID_channelAngle:          return FieldType_double;
-    case ID_nRows:                 return FieldType_int;
-    case ID_rowOffset:             return FieldType_double;
-    case ID_arrayOrigin:           return FieldType_doubleArray;
-    case ID_arrayAxis:             return FieldType_enum;
-    case ID_poloialAngle:          return FieldType_double;
-    case ID_poloialRTilt:          return FieldType_double;
-    case ID_poloialZTilt:          return FieldType_double;
-    case ID_toroialAngle:          return FieldType_double;
-    case ID_viewDimension:         return FieldType_enum;
-    case ID_heightPlotScale:       return FieldType_double;
-    case ID_channelPlotOffset:     return FieldType_double;
-    case ID_arrayPlotOffset:       return FieldType_double;
-    case ID_timePlotScale:         return FieldType_double;
-    case ID_beamShape:             return FieldType_enum;
-    case ID_radius:                return FieldType_double;
-    case ID_divergence:            return FieldType_double;
-    case ID_beamType:              return FieldType_enum;
-    case ID_standardDeviation:     return FieldType_double;
-    case ID_sampleDistance:        return FieldType_double;
-    case ID_sampleArc:             return FieldType_double;
-    case ID_channelSampling:       return FieldType_enum;
-    case ID_toroidalSampling:      return FieldType_enum;
-    case ID_toroidalSamplingAngle: return FieldType_double;
-    case ID_timeSampling:          return FieldType_enum;
-    case ID_timeStepStart:         return FieldType_int;
-    case ID_timeStepStop:          return FieldType_int;
-    case ID_timeStepStride:        return FieldType_int;
-    case ID_channelList:           return FieldType_doubleVector;
+    case ID_coordinateSystem:              return FieldType_enum;
+    case ID_arrayConfiguration:            return FieldType_enum;
+    case ID_boundary:                      return FieldType_enum;
+    case ID_nArrays:                       return FieldType_int;
+    case ID_toroidalArrayAngle:            return FieldType_double;
+    case ID_nChannels:                     return FieldType_int;
+    case ID_channelProjection:             return FieldType_enum;
+    case ID_channelLayoutType:             return FieldType_enum;
+    case ID_channelOffset:                 return FieldType_double;
+    case ID_channelAngle:                  return FieldType_double;
+    case ID_nRows:                         return FieldType_int;
+    case ID_rowOffset:                     return FieldType_double;
+    case ID_arrayOrigin:                   return FieldType_doubleArray;
+    case ID_arrayAxis:                     return FieldType_enum;
+    case ID_poloidalAngleStart:            return FieldType_double;
+    case ID_poloidalAngleStop:             return FieldType_double;
+    case ID_poloialAngle:                  return FieldType_double;
+    case ID_poloialRTilt:                  return FieldType_double;
+    case ID_poloialZTilt:                  return FieldType_double;
+    case ID_toroidalAngle:                 return FieldType_double;
+    case ID_viewDimension:                 return FieldType_enum;
+    case ID_heightPlotScale:               return FieldType_double;
+    case ID_channelPlotOffset:             return FieldType_double;
+    case ID_arrayPlotOffset:               return FieldType_double;
+    case ID_timePlotScale:                 return FieldType_double;
+    case ID_channelGeometry:               return FieldType_enum;
+    case ID_radius:                        return FieldType_double;
+    case ID_divergence:                    return FieldType_double;
+    case ID_channelProfile:                return FieldType_enum;
+    case ID_standardDeviation:             return FieldType_double;
+    case ID_sampleDistance:                return FieldType_double;
+    case ID_sampleVolume:                  return FieldType_double;
+    case ID_sampleArc:                     return FieldType_double;
+    case ID_channelIntegration:            return FieldType_enum;
+    case ID_toroidalIntegration:           return FieldType_enum;
+    case ID_toroidalAngleSampling:         return FieldType_enum;
+    case ID_toroidalAngleStart:            return FieldType_double;
+    case ID_toroidalAngleStop:             return FieldType_double;
+    case ID_toroidalAngleStride:           return FieldType_double;
+    case ID_timeSampling:                  return FieldType_enum;
+    case ID_timeStepStart:                 return FieldType_int;
+    case ID_timeStepStop:                  return FieldType_int;
+    case ID_timeStepStride:                return FieldType_int;
+    case ID_channelList:                   return FieldType_doubleVector;
+    case ID_nChannelListArrays:            return FieldType_int;
+    case ID_channelListToroidalArrayAngle: return FieldType_double;
+    case ID_channelListToroidalAngle:      return FieldType_double;
     default:  return FieldType_unknown;
     }
 }
@@ -2055,42 +2506,53 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_coordinateSystem:      return "enum";
-    case ID_arrayConfiguration:    return "enum";
-    case ID_nArrays:               return "int";
-    case ID_nChannels:             return "int";
-    case ID_toroialArrayAngle:     return "double";
-    case ID_arrayProjection:       return "enum";
-    case ID_channelOffset:         return "double";
-    case ID_channelAngle:          return "double";
-    case ID_nRows:                 return "int";
-    case ID_rowOffset:             return "double";
-    case ID_arrayOrigin:           return "doubleArray";
-    case ID_arrayAxis:             return "enum";
-    case ID_poloialAngle:          return "double";
-    case ID_poloialRTilt:          return "double";
-    case ID_poloialZTilt:          return "double";
-    case ID_toroialAngle:          return "double";
-    case ID_viewDimension:         return "enum";
-    case ID_heightPlotScale:       return "double";
-    case ID_channelPlotOffset:     return "double";
-    case ID_arrayPlotOffset:       return "double";
-    case ID_timePlotScale:         return "double";
-    case ID_beamShape:             return "enum";
-    case ID_radius:                return "double";
-    case ID_divergence:            return "double";
-    case ID_beamType:              return "enum";
-    case ID_standardDeviation:     return "double";
-    case ID_sampleDistance:        return "double";
-    case ID_sampleArc:             return "double";
-    case ID_channelSampling:       return "enum";
-    case ID_toroidalSampling:      return "enum";
-    case ID_toroidalSamplingAngle: return "double";
-    case ID_timeSampling:          return "enum";
-    case ID_timeStepStart:         return "int";
-    case ID_timeStepStop:          return "int";
-    case ID_timeStepStride:        return "int";
-    case ID_channelList:           return "doubleVector";
+    case ID_coordinateSystem:              return "enum";
+    case ID_arrayConfiguration:            return "enum";
+    case ID_boundary:                      return "enum";
+    case ID_nArrays:                       return "int";
+    case ID_toroidalArrayAngle:            return "double";
+    case ID_nChannels:                     return "int";
+    case ID_channelProjection:             return "enum";
+    case ID_channelLayoutType:             return "enum";
+    case ID_channelOffset:                 return "double";
+    case ID_channelAngle:                  return "double";
+    case ID_nRows:                         return "int";
+    case ID_rowOffset:                     return "double";
+    case ID_arrayOrigin:                   return "doubleArray";
+    case ID_arrayAxis:                     return "enum";
+    case ID_poloidalAngleStart:            return "double";
+    case ID_poloidalAngleStop:             return "double";
+    case ID_poloialAngle:                  return "double";
+    case ID_poloialRTilt:                  return "double";
+    case ID_poloialZTilt:                  return "double";
+    case ID_toroidalAngle:                 return "double";
+    case ID_viewDimension:                 return "enum";
+    case ID_heightPlotScale:               return "double";
+    case ID_channelPlotOffset:             return "double";
+    case ID_arrayPlotOffset:               return "double";
+    case ID_timePlotScale:                 return "double";
+    case ID_channelGeometry:               return "enum";
+    case ID_radius:                        return "double";
+    case ID_divergence:                    return "double";
+    case ID_channelProfile:                return "enum";
+    case ID_standardDeviation:             return "double";
+    case ID_sampleDistance:                return "double";
+    case ID_sampleVolume:                  return "double";
+    case ID_sampleArc:                     return "double";
+    case ID_channelIntegration:            return "enum";
+    case ID_toroidalIntegration:           return "enum";
+    case ID_toroidalAngleSampling:         return "enum";
+    case ID_toroidalAngleStart:            return "double";
+    case ID_toroidalAngleStop:             return "double";
+    case ID_toroidalAngleStride:           return "double";
+    case ID_timeSampling:                  return "enum";
+    case ID_timeStepStart:                 return "int";
+    case ID_timeStepStop:                  return "int";
+    case ID_timeStepStride:                return "int";
+    case ID_channelList:                   return "doubleVector";
+    case ID_nChannelListArrays:            return "int";
+    case ID_channelListToroidalArrayAngle: return "double";
+    case ID_channelListToroidalAngle:      return "double";
     default:  return "invalid index";
     }
 }
@@ -2127,9 +2589,19 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (arrayConfiguration == obj.arrayConfiguration);
         }
         break;
+    case ID_boundary:
+        {  // new scope
+        retval = (boundary == obj.boundary);
+        }
+        break;
     case ID_nArrays:
         {  // new scope
         retval = (nArrays == obj.nArrays);
+        }
+        break;
+    case ID_toroidalArrayAngle:
+        {  // new scope
+        retval = (toroidalArrayAngle == obj.toroidalArrayAngle);
         }
         break;
     case ID_nChannels:
@@ -2137,14 +2609,14 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (nChannels == obj.nChannels);
         }
         break;
-    case ID_toroialArrayAngle:
+    case ID_channelProjection:
         {  // new scope
-        retval = (toroialArrayAngle == obj.toroialArrayAngle);
+        retval = (channelProjection == obj.channelProjection);
         }
         break;
-    case ID_arrayProjection:
+    case ID_channelLayoutType:
         {  // new scope
-        retval = (arrayProjection == obj.arrayProjection);
+        retval = (channelLayoutType == obj.channelLayoutType);
         }
         break;
     case ID_channelOffset:
@@ -2182,6 +2654,16 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (arrayAxis == obj.arrayAxis);
         }
         break;
+    case ID_poloidalAngleStart:
+        {  // new scope
+        retval = (poloidalAngleStart == obj.poloidalAngleStart);
+        }
+        break;
+    case ID_poloidalAngleStop:
+        {  // new scope
+        retval = (poloidalAngleStop == obj.poloidalAngleStop);
+        }
+        break;
     case ID_poloialAngle:
         {  // new scope
         retval = (poloialAngle == obj.poloialAngle);
@@ -2197,9 +2679,9 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (poloialZTilt == obj.poloialZTilt);
         }
         break;
-    case ID_toroialAngle:
+    case ID_toroidalAngle:
         {  // new scope
-        retval = (toroialAngle == obj.toroialAngle);
+        retval = (toroidalAngle == obj.toroidalAngle);
         }
         break;
     case ID_viewDimension:
@@ -2227,9 +2709,9 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (timePlotScale == obj.timePlotScale);
         }
         break;
-    case ID_beamShape:
+    case ID_channelGeometry:
         {  // new scope
-        retval = (beamShape == obj.beamShape);
+        retval = (channelGeometry == obj.channelGeometry);
         }
         break;
     case ID_radius:
@@ -2242,9 +2724,9 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (divergence == obj.divergence);
         }
         break;
-    case ID_beamType:
+    case ID_channelProfile:
         {  // new scope
-        retval = (beamType == obj.beamType);
+        retval = (channelProfile == obj.channelProfile);
         }
         break;
     case ID_standardDeviation:
@@ -2257,24 +2739,44 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (sampleDistance == obj.sampleDistance);
         }
         break;
+    case ID_sampleVolume:
+        {  // new scope
+        retval = (sampleVolume == obj.sampleVolume);
+        }
+        break;
     case ID_sampleArc:
         {  // new scope
         retval = (sampleArc == obj.sampleArc);
         }
         break;
-    case ID_channelSampling:
+    case ID_channelIntegration:
         {  // new scope
-        retval = (channelSampling == obj.channelSampling);
+        retval = (channelIntegration == obj.channelIntegration);
         }
         break;
-    case ID_toroidalSampling:
+    case ID_toroidalIntegration:
         {  // new scope
-        retval = (toroidalSampling == obj.toroidalSampling);
+        retval = (toroidalIntegration == obj.toroidalIntegration);
         }
         break;
-    case ID_toroidalSamplingAngle:
+    case ID_toroidalAngleSampling:
         {  // new scope
-        retval = (toroidalSamplingAngle == obj.toroidalSamplingAngle);
+        retval = (toroidalAngleSampling == obj.toroidalAngleSampling);
+        }
+        break;
+    case ID_toroidalAngleStart:
+        {  // new scope
+        retval = (toroidalAngleStart == obj.toroidalAngleStart);
+        }
+        break;
+    case ID_toroidalAngleStop:
+        {  // new scope
+        retval = (toroidalAngleStop == obj.toroidalAngleStop);
+        }
+        break;
+    case ID_toroidalAngleStride:
+        {  // new scope
+        retval = (toroidalAngleStride == obj.toroidalAngleStride);
         }
         break;
     case ID_timeSampling:
@@ -2300,6 +2802,21 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_channelList:
         {  // new scope
         retval = (channelList == obj.channelList);
+        }
+        break;
+    case ID_nChannelListArrays:
+        {  // new scope
+        retval = (nChannelListArrays == obj.nChannelListArrays);
+        }
+        break;
+    case ID_channelListToroidalArrayAngle:
+        {  // new scope
+        retval = (channelListToroidalArrayAngle == obj.channelListToroidalArrayAngle);
+        }
+        break;
+    case ID_channelListToroidalAngle:
+        {  // new scope
+        retval = (channelListToroidalAngle == obj.channelListToroidalAngle);
         }
         break;
     default: retval = false;
