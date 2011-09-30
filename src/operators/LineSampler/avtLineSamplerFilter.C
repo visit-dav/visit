@@ -46,6 +46,8 @@
 #include <avtParallel.h>
 
 #include <avtIntervalTree.h>
+#include <avtDataAttributes.h>
+#include <avtExtents.h>
 #include <avtVector.h>
 
 #include <vtkAppendFilter.h>
@@ -73,7 +75,8 @@
 //
 // ****************************************************************************
 
-avtLineSamplerFilter::avtLineSamplerFilter() : haveData(true), composite_ds(0)
+avtLineSamplerFilter::avtLineSamplerFilter() :
+  haveData(true), composite_ds(0), newExtents(3)
 {
 }
 
@@ -174,7 +177,7 @@ avtLineSamplerFilter::ExamineContract(avtContract_p in_contract)
 
 
 // ****************************************************************************
-//  Method: avtPersistentParticlesFilter::Execute
+//  Method: avtLineSamplerFilter::Execute
 //
 //  Purpose: Defines what it means for this filter to "Execute". This
 //    is where the actual iteration over time happens. This functions
@@ -242,6 +245,8 @@ avtLineSamplerFilter::Execute(void)
     SetEndFrame(stopTimeSlice);
     SetStride( atts.GetTimeStepStride() );
 
+    cachedAngle = -180;
+
     // Clean-up the current output dataset if necessary
     if( composite_ds ) {
         composite_ds->Delete();
@@ -254,7 +259,7 @@ avtLineSamplerFilter::Execute(void)
 
 
 // ****************************************************************************
-//  Method: avtPersistentParticlesFilter::Iterate
+//  Method: avtLineSamplerFilter::Iterate
 //
 //  Purpose: This method is the mechanism where the base class shares
 //      the data from the current time slice with the derived
@@ -297,132 +302,158 @@ avtLineSamplerFilter::Iterate(int ts, avtDataTree_p tree)
     // Free the memory from the GetAllLeaves function call.
     delete [] dsets;
 
-    if( atts.GetTimeSampling() == LineSamplerAttributes::CurrentTimeStep )
+    vtkDataSet *tmp_ds;
+
+    double startAngle, stopAngle, deltaAngle;
+
+    if( atts.GetToroidalIntegration() ==
+        LineSamplerAttributes::ToroidalTimeSample )
     {
-      if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual )
-        composite_ds = ExecuteChannelData(currDs, 0, "");
-      else //if( atts.GetArrayConfiguration() == LineSamplerAttributes::List )
-        composite_ds = ExecuteChannelList(currDs, 0, "");
+      startAngle = atts.GetToroidalAngleStart();
+      stopAngle  = atts.GetToroidalAngleStop();
+      deltaAngle = atts.GetToroidalAngleStride();
     }
-    else //if( atts.GetTimeSampling() ==
-         //    LineSamplerAttributes::MultipleTimeSteps )
+    else
     {
-      if( atts.GetViewDimension() == LineSamplerAttributes::Two ||
-          atts.GetViewDimension() == LineSamplerAttributes::Three )
-      {
-        std::string msg;
-        msg += "The view dimension is not one. For collating multiple time " +
-          std::string("steps the resulting plots are one dimensional.");
+      startAngle = 0;
+      stopAngle = 1;
+      deltaAngle = 1;
+    }
 
-        avtCallback::IssueWarning(msg.c_str());
+    // Embed the sample toroidally as time in an outer loop.
+    for( cachedAngle=startAngle; cachedAngle<stopAngle; cachedAngle+=deltaAngle )
+    {
+      tmp_ds = ExecuteChannelData(currDs, 0, "");
+
+      if( atts.GetTimeSampling() == LineSamplerAttributes::CurrentTimeStep &&
+          atts.GetToroidalIntegration() != LineSamplerAttributes::ToroidalTimeSample )
+      {
+        composite_ds = tmp_ds;
       }
-
-
-      double heightPlotScale = atts.GetHeightPlotScale();
-      double timePlotScale = atts.GetTimePlotScale();
-
-      vtkDataSet *tmp_ds;
-
-      if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual )
-        tmp_ds = ExecuteChannelData(currDs, 0, "");
-      else //if( atts.GetArrayConfiguration() == LineSamplerAttributes::List )
-        tmp_ds = ExecuteChannelList(currDs, 0, "");
-
-      vtkUnstructuredGrid *uGrid;
-
-      // First dataset so use it as the basis for the summation.
-      if( composite_ds == NULL )
+      else //if( atts.GetTimeSampling() ==
+           //    LineSamplerAttributes::MultipleTimeSteps )
       {
-        //Create and initalize the new dataset
-        uGrid = vtkUnstructuredGrid::New();
-        uGrid->SetPoints( vtkPoints::New() );
-
-        vtkPointData* allData = tmp_ds->GetPointData();
-        uGrid->GetPointData()->ShallowCopy(allData);
-        uGrid->GetCellData()->ShallowCopy(tmp_ds->GetCellData());
-
-        composite_ds = uGrid;
-      }
-      else
-      {
-        uGrid = vtkUnstructuredGrid::SafeDownCast(composite_ds);
-      }
-
-      int tPoints = composite_ds->GetNumberOfPoints();
-      int nPoints = tmp_ds->GetNumberOfPoints();
-
-      int timeStep = tPoints / nPoints;
-
-      int nArrays = atts.GetNArrays();
-      int nChannels = atts.GetNChannels();
-
-      if( nPoints != nArrays* nChannels )
-      {
-        std::string msg;
-        msg += "The number of samples per channel is greater than one. " +
-          std::string("Each sample will be part of single 1D curve");
-
-        avtCallback::IssueWarning(msg.c_str());
-      }
-
-      // Traverse all points
-      for( unsigned int i=0; i<nPoints; ++i )
-      {
-        // Get the next point and update its coordinates if necessary
-        vtkDataArray *scalars = tmp_ds->GetPointData()->GetScalars();
-
-        double nextPathPoint[3] = { timeStep * timePlotScale,
-                                    i+heightPlotScale * *(scalars->GetTuple(i)),
-                                    0 };
-
-        vtkPoints* pathPoints = uGrid->GetPoints();
-        pathPoints->InsertNextPoint( nextPathPoint );
-        uGrid->SetPoints( pathPoints );
-
-        // The index of the new point
-        int  newPointIndex = uGrid->GetPoints()->GetNumberOfPoints()-1;
-        int  newCellIndex = uGrid->GetNumberOfCells()-1;
-        
-        // Copy the pointdata from the input mesh to the output mesh
-        vtkPointData* allData  = uGrid->GetPointData();
-        vtkPointData* currData = tmp_ds->GetPointData();
-
-        for( unsigned int j=0; j<allData->GetNumberOfArrays(); j++)
+        if( atts.GetViewDimension() == LineSamplerAttributes::Two ||
+            atts.GetViewDimension() == LineSamplerAttributes::Three )
         {
-          allData->GetArray(j)->
-            InsertTuple( newPointIndex, currData->GetArray(j)->GetTuple(i) );
+          std::string msg;
+          msg += "The view dimension is not one. For collating multiple time " +
+            std::string("steps the resulting plots are one dimensional.");
+          
+          avtCallback::IssueWarning(msg.c_str());
         }
 
-        vtkCellData* allCellData = uGrid->GetCellData();
-        vtkCellData* currCellData = tmp_ds->GetCellData();
+        double heightPlotScale = atts.GetHeightPlotScale();
+        double timePlotScale = atts.GetTimePlotScale();
 
-        for( unsigned int j=0; j<allCellData->GetNumberOfArrays(); j++)
+        vtkUnstructuredGrid *uGrid;
+
+        // First dataset so use it as the basis for the summation.
+        if( composite_ds == NULL )
         {
-          allCellData->GetArray(j)->
-            InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
+          //Create and initalize the new dataset
+          uGrid = vtkUnstructuredGrid::New();
+          uGrid->SetPoints( vtkPoints::New() );
+          
+          vtkPointData* allData = tmp_ds->GetPointData();
+          uGrid->GetPointData()->ShallowCopy(allData);
+          uGrid->GetCellData()->ShallowCopy(tmp_ds->GetCellData());
+          
+          composite_ds = uGrid;
+        }
+        else
+        {
+          uGrid = vtkUnstructuredGrid::SafeDownCast(composite_ds);
         }
         
-        newCellIndex++;
+        int tPoints = composite_ds->GetNumberOfPoints();
+        int nPoints = tmp_ds->GetNumberOfPoints();
+        
+        int timeStep = tPoints / nPoints;
 
-        // Add a new line segment
-        if( timeStep )
+        int nArrays, nChannels;
+
+        if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry )
         {
-          //define the points of the lines
-          int* pointList = new int[2];
-          pointList[0]   = newPointIndex - nPoints;
-          pointList[1]   = newPointIndex;
+          nArrays = atts.GetNArrays();
+          nChannels = atts.GetNChannels();
+        }
+        else //if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual )
+        {
+          nArrays = atts.GetNChannelListArrays();
+          std::vector<double> listOfChannels = atts.GetChannelList();
 
-          // Add a new line segment
-          uGrid->InsertNextCell( VTK_LINE, 2, pointList );
+          nChannels = listOfChannels.size() / 4;
+        }
 
+        if( nPoints != nArrays* nChannels )
+        {
+          std::string msg;
+          msg += "The number of samples per channel is greater than one. " +
+            std::string("Each sample will be part of single 1D curve");
+          
+          avtCallback::IssueWarning(msg.c_str());
+        }
+
+        // Traverse all points
+        for( unsigned int i=0; i<nPoints; ++i )
+        {
+          // Get the next point and update its coordinates if necessary
+          vtkDataArray *scalars = tmp_ds->GetPointData()->GetScalars();
+
+          double nextPathPoint[3] = { timeStep * timePlotScale,
+                                      i+heightPlotScale * *(scalars->GetTuple(i)),
+                                      0 };
+
+          vtkPoints* pathPoints = uGrid->GetPoints();
+          pathPoints->InsertNextPoint( nextPathPoint );
+          uGrid->SetPoints( pathPoints );
+
+          // The index of the new point
+          int  newPointIndex = uGrid->GetPoints()->GetNumberOfPoints()-1;
+          int  newCellIndex = uGrid->GetNumberOfCells()-1;
+        
+          // Copy the pointdata from the input mesh to the output mesh
+          vtkPointData* allData  = uGrid->GetPointData();
+          vtkPointData* currData = tmp_ds->GetPointData();
+
+          for( unsigned int j=0; j<allData->GetNumberOfArrays(); j++)
+          {
+            allData->GetArray(j)->
+              InsertTuple( newPointIndex, currData->GetArray(j)->GetTuple(i) );
+          }
+          
+          vtkCellData* allCellData = uGrid->GetCellData();
+          vtkCellData* currCellData = tmp_ds->GetCellData();
+          
           for( unsigned int j=0; j<allCellData->GetNumberOfArrays(); j++)
           {
             allCellData->GetArray(j)->
               InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
           }
-          
+        
           newCellIndex++;
-          delete[] pointList;
+
+          // Add a new line segment
+          if( timeStep )
+          {
+            //define the points of the lines
+            int* pointList = new int[2];
+            pointList[0]   = newPointIndex - nPoints;
+            pointList[1]   = newPointIndex;
+
+            // Add a new line segment
+            uGrid->InsertNextCell( VTK_LINE, 2, pointList );
+
+            for( unsigned int j=0; j<allCellData->GetNumberOfArrays(); j++)
+            {
+              allCellData->GetArray(j)->
+                InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
+            }
+          
+            newCellIndex++;
+            delete[] pointList;
+          }
         }
       }
     }
@@ -450,6 +481,22 @@ avtLineSamplerFilter::Iterate(int ts, avtDataTree_p tree)
 vtkDataSet *
 avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 {
+    
+    double bounds[6];
+    in_ds->GetBounds(bounds);
+
+//     std::cerr << bounds[0] << "  "
+//            << bounds[1] << "  "
+//            << bounds[2] << "  "
+//            << bounds[3] << "  "
+//            << bounds[4] << "  "
+//            << bounds[5] << "  "
+//            << std:: endl;
+
+    newExtents.Set( bounds );
+
+    UpdateDataObjectInfo();
+
     vtkDataSet *out_ds = NULL;
 
     vtkAppendFilter *appendFilter = vtkAppendFilter::New();
@@ -461,13 +508,33 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     vtkVisItProbeFilter *probeFilter = vtkVisItProbeFilter::New();
     probeFilter->SetSource( in_ds );
 
-    int nArrays = atts.GetNArrays();
-    double toroidalArrayAngle = atts.GetToroialArrayAngle();
+    std::vector<double> listOfChannels = atts.GetChannelList();
 
-    int nChannels = atts.GetNChannels();
+    int nArrays;
+    double toroidalArrayAngle, toroidalOffsetAngle;
+    int nChannels;
 
-    LineSamplerAttributes::ArrayProjection projection =
-      atts.GetArrayProjection();
+    if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry )
+    {
+      nArrays = atts.GetNArrays();
+      toroidalArrayAngle = atts.GetToroidalArrayAngle();
+
+      toroidalOffsetAngle = atts.GetToroidalAngle();
+
+      nChannels = atts.GetNChannels();
+    }
+    else //if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual )
+    {
+      nArrays = atts.GetNChannelListArrays();
+      toroidalArrayAngle = atts.GetChannelListToroidalArrayAngle();
+
+      toroidalOffsetAngle = atts.GetChannelListToroidalAngle();
+      
+      nChannels = listOfChannels.size() / 4;
+    }
+
+    LineSamplerAttributes::ChannelProjection projection =
+      atts.GetChannelProjection();
 
     int nRows =
       (projection == LineSamplerAttributes::Grid) ? atts.GetNRows() : 1;
@@ -475,10 +542,21 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     int nColumns = nChannels / nRows;
 
     double *arrayOrigin = atts.GetArrayOrigin();
-    double poloidalAngle = atts.GetPoloialAngle();
-    double rTilt = atts.GetPoloialRTilt();
-    double zTilt = atts.GetPoloialZTilt();
-    double toroidalAngle = atts.GetToroialAngle();
+
+    double poloidalOffsetAngle, rTilt, zTilt;
+
+    if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry )
+    {
+      poloidalOffsetAngle = atts.GetPoloialAngle();
+      rTilt = atts.GetPoloialRTilt();
+      zTilt = atts.GetPoloialZTilt();
+    }
+    else //if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual )
+    {
+      poloidalOffsetAngle = 0;
+      rTilt = 0;
+      zTilt = 0;
+    }
 
     double radius = atts.GetRadius();
     double divergence = atts.GetDivergence();
@@ -489,13 +567,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
     // Get the indexing offset so that it is easy to calculate the
     // line location based on a 0 to nChannels loop.
-    double indexOffset;
-
-    // Even number of channels
-    if( nChannels % 2 == 1 )
-      indexOffset = nChannels / 2.0 - 0.5;
-    else
-      indexOffset = nChannels / 2.0 - 1.0;
+    double indexOffset = nChannels / 2.0 - 0.5;
 
     avtVector channelOffsetVec(0,0,0);
     avtVector rowOffsetVec(0,0,0);
@@ -572,7 +644,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           
           // Stop point based on the channel direction With the normal being
           // at a 45 degree angle so that it can be rotated appropriately.
-          if( atts.GetArrayAxis() == LineSamplerAttributes::R )
+          if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual ||
+              atts.GetArrayAxis() == LineSamplerAttributes::R )
           {
               stopPoint = avtVector( -1, 0, 0 );
               normal = avtVector( 0, 1, 1 );
@@ -586,51 +659,101 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
           normal.normalize();
       
-          // Initial translation based on the user origin for the central
+          double r, phi, z, poloidalAngle;
+
+          if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry )
+          {
+            r   = arrayOrigin[0];
+            phi = arrayOrigin[1];
+            z   = arrayOrigin[2];
+
+            // Poloidal rotation
+            poloidalAngle = poloidalOffsetAngle;
+          }
+          else //if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual )
+          {
+            // Note: Coordiantes are displayed as R, Z, Phi. But in
+            // cylindrical it is R, Phi, Z.
+            r   = listOfChannels[c*4  ];
+            z   = listOfChannels[c*4+1];
+            phi = listOfChannels[c*4+2];
+
+            // Poloidal rotation
+            poloidalAngle = 180.0 - listOfChannels[c*4+3];
+          }         
+
+          // For a divergent channel set, set the angle to the next
           // channel.
-          avtVector translate( arrayOrigin[0], arrayOrigin[1], arrayOrigin[2] );
-          double poloidalChannelAngle = 0;
+          if( projection == LineSamplerAttributes::Divergent )
+            poloidalAngle += ((double) (c) - indexOffset) * channelAngle;
 
-          // For a parallel channel set add the offset to the next channel.
-          if( projection == LineSamplerAttributes::Parallel )
-            translate += ((double) (c) - indexOffset) * channelOffsetVec;
+          // Toroidal rotation
+          double toroidalAngle;
 
-          // For a divergent channel set, set the angle to the next channel.
-          else if( projection == LineSamplerAttributes::Divergent )
-            poloidalChannelAngle = ((double) (c) - indexOffset) * channelAngle;
+          if( atts.GetToroidalIntegration() ==
+              LineSamplerAttributes::ToroidalTimeSample )
+          {
+            if( atts.GetToroidalAngleSampling() ==
+                LineSamplerAttributes::ToroidalAngleAbsoluteSampling )
+              {
+                toroidalAngle = cachedAngle;
+              }
+            else if( atts.GetToroidalAngleSampling() ==
+                     LineSamplerAttributes::ToroidalAngleRelativeSampling )
+            {
+              toroidalAngle = phi + toroidalOffsetAngle + cachedAngle;
+            }
+          }
+          else
+            toroidalAngle = phi + toroidalOffsetAngle;
 
-          // For a parallel channel set add the offset to the next channel.
-          if( projection == LineSamplerAttributes::Grid )
-            translate +=
-              ((double) (c%nColumns) - indexOffset) * channelOffsetVec +
-              ((double) (c/nColumns)) * rowOffsetVec;
+          toroidalAngle += (double) a * toroidalArrayAngle;
 
+          // Initial translation based on the user origin for the
+          // central channel.
+          avtVector translate( r, 0, z );
+
+          if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry )
+          {
+            // For a parallel channel set add the offset to the next
+            // channel.
+            if( projection == LineSamplerAttributes::Parallel )
+              translate += ((double) (c) - indexOffset) * channelOffsetVec;
+            
+            // For a grid of channels set add the offset to the next
+            // channel.
+            if( projection == LineSamplerAttributes::Grid )
+              translate +=
+                ((double) (c%nColumns) - indexOffset) * channelOffsetVec +
+                ((double) (c/nColumns)) * rowOffsetVec;
+          }
+            
           // Now apply the transformations.
 
           // Set up the transform for the normal
           transform->Identity();
 
           // Rotate the channel poloidially.
-          if( poloidalChannelAngle || poloidalAngle )
-            transform->RotateY( poloidalChannelAngle + poloidalAngle );
+          if( poloidalAngle )
+            transform->RotateY( poloidalAngle );
 
           // Poloidal plane x axis tilting.
-          if( rTilt )
+          if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
+              rTilt )
             transform->RotateX( rTilt );
-
+          
           // Poloidal plane z axis tilting.
-          if( zTilt )
+          if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
+              zTilt )
             transform->RotateZ( zTilt );
 
           // Toroidal rotation.
-          if( toroidalAngle )
-            transform->RotateZ( toroidalAngle +
-                                (double) a * toroidalArrayAngle );
+          if( toroidalAngle != 0 )
+            transform->RotateZ( toroidalAngle );
 
           // Transform the normal
           applyTransform( transform, normal );
 
-        
           // Transform the start and stop points and check the extents so
           // that the channel goes from the start point through the dataset
           // appropriately.
@@ -648,11 +771,11 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           }
 
           // Rotate the channel poloidially.
-          if( poloidalChannelAngle || poloidalAngle )
+          if( poloidalAngle )
           {
               transform->Identity();
               transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
-              transform->RotateY( poloidalChannelAngle + poloidalAngle );
+              transform->RotateY( poloidalAngle );
               transform->Translate( startPoint.x, startPoint.y, startPoint.z );
               
               applyTransform( transform, startPoint );
@@ -661,8 +784,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               checkExtents( startPoint, stopPoint );
           }
 
-          // Poloidal plane rTilting.
-          if( rTilt )
+          // Poloidal plane R Tilting.
+          if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
+              rTilt )
           {
               transform->Identity();
               transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
@@ -675,8 +799,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               checkExtents( startPoint, stopPoint );
           }
 
-          // Poloidal plane rTilting.
-          if( zTilt ) 
+          // Poloidal plane Z Tilting.
+          if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
+              zTilt ) 
           {
               transform->Identity();
               transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
@@ -690,10 +815,10 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           }
 
           // Toroidal rotation.
-          if( toroidalAngle + (double) a * toroidalArrayAngle )
+          if( toroidalAngle != 0 )
           {
               transform->Identity();
-              transform->RotateZ( toroidalAngle + (double) a * toroidalArrayAngle );
+              transform->RotateZ( toroidalAngle );
 
               applyTransform( transform, startPoint );
               applyTransform( transform, stopPoint );
@@ -702,20 +827,22 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               // original plane.
           }
 
-          if( atts.GetToroidalSampling() ==
-              LineSamplerAttributes::SingleToroidalSampling )
+          if( atts.GetToroidalIntegration() ==
+              LineSamplerAttributes::NoToroidalIntegration ||
+              atts.GetToroidalIntegration() ==
+              LineSamplerAttributes::ToroidalTimeSample )
           {
             // Create the appropriate goemetry.
-            if( atts.GetBeamShape() == LineSamplerAttributes::Point )
+            if( atts.GetChannelGeometry() == LineSamplerAttributes::Point )
               out_ds = createPoint( startPoint, stopPoint, false );
 
-            else if( atts.GetBeamShape() == LineSamplerAttributes::Line )
+            else if( atts.GetChannelGeometry() == LineSamplerAttributes::Line )
               out_ds = createLine( startPoint, stopPoint, false );
 
-            else if( atts.GetBeamShape() == LineSamplerAttributes::Cylinder )
+            else if( atts.GetChannelGeometry() == LineSamplerAttributes::Cylinder )
               out_ds = createCone( startPoint, stopPoint, normal, radius, 0 );
 
-            else if( atts.GetBeamShape() == LineSamplerAttributes::Cone )
+            else if( atts.GetChannelGeometry() == LineSamplerAttributes::Cone )
               out_ds = createCone( startPoint, stopPoint, normal, 0, divergence );
           
             // Do the sampling of the original dataset
@@ -725,33 +852,55 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             out_ds = probeFilter->GetOutput();
           }
 
-          else //if( atts.GetToroidalSampling() ==
-               //    LineSamplerAttributes::SummationToroidalSampling )
+          else if( atts.GetToroidalIntegration() ==
+                   LineSamplerAttributes::IntegrateToroidally )
           {
             // Create the base line with a scalar field for summing the values.
-            if( atts.GetBeamShape() == LineSamplerAttributes::Point )
+            if( atts.GetChannelGeometry() == LineSamplerAttributes::Point )
               out_ds = createPoint( startPoint, stopPoint, true );
 
-            else if( atts.GetBeamShape() == LineSamplerAttributes::Line )
+            else if( atts.GetChannelGeometry() == LineSamplerAttributes::Line )
               out_ds = createLine( startPoint, stopPoint, true );
 
             int nChannelSamples = out_ds->GetPointData()->GetNumberOfTuples();
 
             double sampleDistance = atts.GetSampleDistance();
 
-            double deltaAngle = atts.GetToroidalSamplingAngle();
+            double startAngle = atts.GetToroidalAngleStart();
+            double stopAngle = atts.GetToroidalAngleStop();
+            double deltaAngle = atts.GetToroidalAngleStride();
 
-            // Adjust the angle so it is evenly divided into 360 degrees.
-            int nSamples = (int) (360.0/deltaAngle);
+            // Adjust the angle so it is evenly divided between the
+            // start and stop angles. The start angle is always
+            // inclusive while the stop angle is inclusive if absolute
+            // but exclusive if relative.
+            int nSamples = (int) ((stopAngle-startAngle)/deltaAngle);
 
-            deltaAngle = 360.0 / (double) nSamples;
+            double angle;
+
+            if( atts.GetToroidalAngleSampling() ==
+                LineSamplerAttributes::ToroidalAngleAbsoluteSampling )
+            {
+              deltaAngle = (stopAngle-startAngle) / (double) (nSamples-1);
+            }
+            else if( atts.GetToroidalAngleSampling() ==
+                     LineSamplerAttributes::ToroidalAngleRelativeSampling )
+            {
+              deltaAngle = (stopAngle-startAngle) / (double) (nSamples);
+
+              if( cachedAngle > 0 )
+                startAngle = cachedAngle + deltaAngle;
+            }
 
             double deltaVolume = sampleDistance * sampleDistance *
               (M_PI * deltaAngle / 180.0);
 
             // Loop through all of the sample toroidal angles.
-            for( double angle=0; angle<360; angle+=deltaAngle )
+            for( int n=0; n<nSamples; ++n )
             {
+              angle = startAngle + (double) n * deltaAngle;
+              cachedAngle = angle;
+
               transform->Identity();
               transform->RotateZ( angle );
 
@@ -793,9 +942,10 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 //          for( unsigned int i=0; i<nChannelSamples; ++i )
 //            *out_data++ /= (double) nSamples;
           }
-
-          if( atts.GetChannelSampling() ==
-              LineSamplerAttributes::SummationChannelSampling )
+ 
+          if( atts.GetViewDimension() == LineSamplerAttributes::One &&
+              atts.GetChannelIntegration() ==
+              LineSamplerAttributes::IntegrateAlongChannel )
           {
             vtkPoints *points = vtkPoints::New();
             vtkFloatArray *scalars = vtkFloatArray::New();
@@ -820,11 +970,11 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             float sum = 0;
 
             double sampleDistance = atts.GetSampleDistance();
-            double volume = sampleDistance * sampleDistance * sampleDistance;
+            double sampleVolume = atts.GetSampleVolume();
 
             // Do the summation for each channel
             for( unsigned int i=0; i<nChannelSamples; ++i )
-              sum += volume * *out_data++;
+              sum += sampleVolume * *out_data++;
 
             scalars->InsertTuple1(0, sum);
 
@@ -847,9 +997,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
           // If the user has elected to display the geometry in the Phi=0
           // plane then back out the toroidal rotation.
-          else if( atts.GetViewDimension() == LineSamplerAttributes::Two )
+          if( atts.GetViewDimension() == LineSamplerAttributes::Two )
           {
-              if( toroidalAngle + (double) a * toroidalArrayAngle )
+              if( toroidalAngle != 0 )
               {
                   transform->Identity();
 
@@ -872,8 +1022,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               transform->Identity();
 
               // Back out the toroidal transform.
-              if( toroidalAngle + (double) a * toroidalArrayAngle )
-                transform->RotateZ( -toroidalAngle - (double) a * toroidalArrayAngle );
+              if( toroidalAngle != 0 )
+                transform->RotateZ( -toroidalAngle );
 
               // Get the startPoint now that it is back Phi=0 plane.
               applyTransform( transform, startPoint );
@@ -883,26 +1033,29 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
 
               // Back out the zTilt plane transform.
-              if( zTilt )
+              if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
+                  zTilt )
                 transform->RotateZ( -zTilt );
 
               // Back out the rTilt plane transform.
-              if( rTilt )
+              if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
+                  rTilt )
                 transform->RotateX( -rTilt );
 
               // Back out the poloidal transform.
-              if( poloidalChannelAngle || poloidalAngle )
-                transform->RotateY( -(poloidalChannelAngle + poloidalAngle) );
+              if( poloidalAngle )
+                transform->RotateY( -poloidalAngle );
 
               // Rotate to be along the x axis.
-              if( atts.GetArrayAxis() == LineSamplerAttributes::R )
+              if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual ||
+                  atts.GetArrayAxis() == LineSamplerAttributes::R )
                 transform->RotateY( 180 );
               else if( atts.GetArrayAxis() == LineSamplerAttributes::Z )
                 transform->RotateY( -90 );
 
               // translate so each channel can be seen.
-              if( atts.GetBeamShape() == LineSamplerAttributes::Cylinder ||
-                  atts.GetBeamShape() == LineSamplerAttributes::Cone )
+              if( atts.GetChannelGeometry() == LineSamplerAttributes::Cylinder ||
+                  atts.GetChannelGeometry() == LineSamplerAttributes::Cone )
                 transform->Translate( 0, (double) c*0.1, 0 );
         
               transformFilter->SetTransform( transform );
@@ -912,21 +1065,23 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               out_ds->Update();
 
               // At this point the data can now be elevated.
-              if( atts.GetBeamShape() == LineSamplerAttributes::Point ||
-                  atts.GetBeamShape() == LineSamplerAttributes::Line )
+              if( atts.GetChannelGeometry() == LineSamplerAttributes::Point ||
+                  atts.GetChannelGeometry() == LineSamplerAttributes::Line )
               {
                   double pt[3];
 
                   float *points_ptr;
 
-                  if( atts.GetBeamShape() == LineSamplerAttributes::Point )
+                  if( atts.GetChannelIntegration() ==
+                      LineSamplerAttributes::IntegrateAlongChannel ||
+                      atts.GetChannelGeometry() == LineSamplerAttributes::Point )
                   {
                     vtkUnstructuredGrid* out_ug = vtkUnstructuredGrid::SafeDownCast(out_ds);
 
                     points_ptr =
                       (float *) out_ug->GetPoints()->GetVoidPointer(0);
                   }
-                  else //if( atts.GetBeamShape() == LineSamplerAttributes::Line )
+                  else //if( atts.GetChannelGeometry() == LineSamplerAttributes::Line )
                   {
                     vtkPolyData* out_pd = vtkPolyData::SafeDownCast(out_ds);
 
@@ -974,361 +1129,11 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     transform->Delete();
     transformFilter->Delete();
 
-    return out_ds;
-}
+    double newBounds[6];
+    out_ds->GetBounds( newBounds );
+    newExtents.Set( newBounds );
 
-
-// ****************************************************************************
-//  Method: avtLineSamplerFilter::ExecuteChannelList
-//
-//  Purpose:
-//      Sends the specified input and output through the LineSampler filter.
-//
-//  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
-//
-//  Returns:       The output dataset.
-//
-//  Programmer: allen -- generated by xml2avt
-//  Creation:   Wed Sep 29 13:42:47 PST 2010
-//
-// ****************************************************************************
-
-vtkDataSet *
-avtLineSamplerFilter::ExecuteChannelList(vtkDataSet *in_ds, int, std::string)
-{
-    vtkDataSet *out_ds = NULL;
-
-    vtkAppendFilter *appendFilter = vtkAppendFilter::New();
-
-    vtkTransformFilter *transformFilter = vtkTransformFilter::New();
-    vtkTransform *transform = vtkTransform::New();
-    transform->PostMultiply();
-
-    vtkVisItProbeFilter *probeFilter = vtkVisItProbeFilter::New();
-    probeFilter->SetSource( in_ds );
-
-    double heightPlotScale = atts.GetHeightPlotScale();
-    double channelPlotOffset  = atts.GetChannelPlotOffset();
-    double arrayPlotOffset = atts.GetArrayPlotOffset();
-
-    std::vector<double> listOfChannels = atts.GetChannelList();
-
-    int nChannels = listOfChannels.size() / 4;
-
-    // Loop through each channel.
-    for( int c=0, i=0; c<nChannels; ++c, i+=4 )
-    {
-      // Inital start point is the origin.
-      avtVector startPoint = avtVector( 0, 0,  0 );
-      avtVector stopPoint;
-      avtVector normal;
-          
-      stopPoint = avtVector( 0, 0, -1 );     
-      normal = avtVector( 1, 1, 0 );
-
-      normal.normalize();
-
-      // Initial translation based on the user origin for the central
-      // channel.
-      avtVector translate( listOfChannels[i],
-                           listOfChannels[i+1],
-                           listOfChannels[i+2] );
-
-      double poloidalChannelAngle = listOfChannels[i+3] - 90;
-
-      // Now apply the transformations.
-      
-      // Set up the transform for the normal
-      transform->Identity();
-      
-      // Rotate the channel poloidially.
-      if( poloidalChannelAngle )
-        transform->RotateY( poloidalChannelAngle );
-
-      // Transform the normal
-      applyTransform( transform, normal );
-
-      // Translate to the correct location
-      if( translate.length() > 0 )
-      {
-        transform->Identity();
-        transform->Translate( translate.x, translate.y, translate.z );
-
-        applyTransform( transform, startPoint );
-        applyTransform( transform, stopPoint );      
-
-        checkExtents( startPoint, stopPoint );
-      }
-
-      // Rotate the channel poloidially.
-      if( poloidalChannelAngle )
-      {
-        transform->Identity();
-        transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
-        transform->RotateY( poloidalChannelAngle );
-        transform->Translate( startPoint.x, startPoint.y, startPoint.z );
-              
-        applyTransform( transform, startPoint );
-        applyTransform( transform, stopPoint );
-              
-        checkExtents( startPoint, stopPoint );
-      }
-      
-      if( atts.GetToroidalSampling() ==
-          LineSamplerAttributes::SingleToroidalSampling )
-      {
-        // Create the appropriate goemetry.
-        if( atts.GetBeamShape() == LineSamplerAttributes::Point )
-          out_ds = createPoint( startPoint, stopPoint, false );
-
-        else if( atts.GetBeamShape() == LineSamplerAttributes::Line )
-          out_ds = createLine( startPoint, stopPoint, false );
-
-//      else if( atts.GetBeamShape() == LineSamplerAttributes::Cylinder )
-//        out_ds = createCone( startPoint, stopPoint, normal, radius, 0 );
-
-//      else if( atts.GetBeamShape() == LineSamplerAttributes::Cone )
-//        out_ds = createCone( startPoint, stopPoint, normal, 0, divergence );
-        
-        probeFilter->SetInput( out_ds );
-        probeFilter->Update();
-        
-        out_ds = probeFilter->GetOutput();
-      }
-
-      else //if( atts.GetToroidalSampling() ==
-        //    LineSamplerAttributes::SummationToroidalSampling )
-      {
-        out_ds = createLine( startPoint, stopPoint, true );
-        
-        int nChannelSamples = out_ds->GetPointData()->GetNumberOfTuples();
-        
-        double sampleDistance = atts.GetSampleDistance();
-        
-        double deltaAngle = atts.GetToroidalSamplingAngle();
-        
-        // Adjust the angle so it is evenly divided into 360 degrees.
-        int nSamples = (int) (360.0/deltaAngle);
-
-        deltaAngle = 360.0 / (double) nSamples;
-        
-        double deltaVolume = sampleDistance * sampleDistance *
-          (M_PI * deltaAngle / 180.0);
-        
-        // Loop through all of the sample toroidal angles.
-        for( double angle=0; angle<360; angle+=deltaAngle )
-        {
-          transform->Identity();
-          transform->RotateZ( angle );
-          
-          applyTransform( transform, startPoint );
-          applyTransform( transform, stopPoint );
-          
-          vtkDataSet *tmp_ds = createLine( startPoint, stopPoint, false );
-          
-          // Do the sampling of the original dataset
-          probeFilter->SetInput( tmp_ds );
-          probeFilter->Update();
-          
-          tmp_ds = probeFilter->GetOutput();
-          
-          float* out_data =
-            (float*) out_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
-          
-          float* tmp_data =
-            (float*) tmp_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
-          double pts[3];
-          
-          // Do the summation for each channel
-          for( unsigned int i=0; i<nChannelSamples; ++i )
-          {
-            tmp_ds->GetPoint(i, pts);
-
-            double volume =
-              deltaVolume * sqrt(pts[0]*pts[0] + pts[1]*pts[1]);
-
-            *out_data++ += volume * *tmp_data++;
-          }
-
-//            tmp_ds->Delete();
-        }
-
-//          float* out_data =
-//            (float*) out_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
-    
-//          for( unsigned int i=0; i<nChannelSamples; ++i )
-//            *out_data++ /= (double) nSamples;
-      }
-
-
-      if( atts.GetChannelSampling() ==
-          LineSamplerAttributes::SummationChannelSampling )
-      {
-        vtkPoints *points = vtkPoints::New();
-        vtkFloatArray *scalars = vtkFloatArray::New();
-    
-        points->SetNumberOfPoints(1);
-        scalars->Allocate(1);
-        
-        float *points_ptr = (float *) points->GetVoidPointer(0);
-        
-        double pts[3];
-        out_ds->GetPoint(0, pts);
-            
-        points_ptr[0] = pts[0];
-        points_ptr[1] = pts[1];
-        points_ptr[2] = pts[2];
-
-        int nChannelSamples = out_ds->GetPointData()->GetNumberOfTuples();
-
-        float* out_data =
-          (float*) out_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
-
-        float sum = 0;
-
-        double sampleDistance = atts.GetSampleDistance();
-        double volume = sampleDistance * sampleDistance * sampleDistance;
-
-        // Do the summation for each channel
-        for( unsigned int i=0; i<nChannelSamples; ++i )
-          sum += volume * *out_data++;
-
-        scalars->InsertTuple1(0, sum);
-
-        vtkUnstructuredGrid *uGrid = vtkUnstructuredGrid::New();
-        vtkIdType vertex = 0;
-
-        uGrid->SetPoints(points);
-        uGrid->Allocate(1);
-        uGrid->InsertNextCell(VTK_VERTEX, 1, &vertex);
-        scalars->SetName("colorVar");
-        uGrid->GetPointData()->SetScalars(scalars);
-
-        points->Delete();
-        scalars->Delete();
-
-//      out_ds->Delete();
-
-        out_ds = uGrid;
-      }
-
-      // If the user has elected to display the geometry in the Phi=0
-      // plane then back out the toroidal rotation.
-      else if( atts.GetViewDimension() == LineSamplerAttributes::Two )
-      {
-        double toroidalAngle =
-          atan2( startPoint.y, startPoint.x ) / M_PI * 180.0;
-
-        if( toroidalAngle )
-        {
-          transform->Identity();
-          
-          // Back out the toroidal transform.
-          transform->RotateZ( -toroidalAngle );
-          
-          transformFilter->SetTransform( transform );
-          transformFilter->SetInput( out_ds );
-          
-          out_ds = transformFilter->GetOutput();
-          out_ds->Update();
-        }
-      }
-      
-      // If the user has elected to display the geometry as a 1D plot
-      // then back out all of the transformations and put it into the
-      // XY plane.
-      else if( atts.GetViewDimension() == LineSamplerAttributes::One )
-      {
-        transform->Identity();
-        
-//      double toroidalAngle =
-//        atan2( startPoint.y, startPoint.x ) / M_PI * 180.0;
-
-//      // Back out the toroidal transform.
-//      if( toroidalAngle )
-//        transform->RotateZ( -toroidalAngle );
-        
-//      // Get the startPoint now that it is back Phi=0 plane.
-//      applyTransform( transform, startPoint );
-        
-        // Back out the translation.
-        if( startPoint.length() > 0 )
-          transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
-
-        if( poloidalChannelAngle )
-          transform->RotateY( -poloidalChannelAngle );
-
-        transform->RotateY( -90 );
-
-        transformFilter->SetTransform( transform );
-        transformFilter->SetInput( out_ds );
-        
-        out_ds = transformFilter->GetOutput();
-        out_ds->Update();
-        
-        // At this point the data can now be elevated.
-        if( atts.GetBeamShape() == LineSamplerAttributes::Point ||
-            atts.GetBeamShape() == LineSamplerAttributes::Line )
-        {
-          double pt[3];
-
-          float *points_ptr;
-
-          if( atts.GetBeamShape() == LineSamplerAttributes::Point )
-          {
-            vtkUnstructuredGrid* out_ug = vtkUnstructuredGrid::SafeDownCast(out_ds);
-            points_ptr =
-              (float *) out_ug->GetPoints()->GetVoidPointer(0);
-          }
-          else //if( atts.GetBeamShape() == LineSamplerAttributes::Line )
-          {
-            vtkPolyData* out_pd = vtkPolyData::SafeDownCast(out_ds);
-            
-            points_ptr =
-              (float *) out_pd->GetPoints()->GetVoidPointer(0);
-          }
-          
-          vtkDataArray *scalars = out_ds->GetPointData()->GetScalars();
-          
-          int nPts = scalars->GetNumberOfTuples();
-          
-          // Adjust the X coordinate for each array
-//        for( unsigned int i=0, j=0; i<nPts; ++i, j+=3)
-//        {
-//          points_ptr[j] += (double) a * arrayPlotOffset;
-//        }
-          
-          // Create a height field plot by adjusting Y
-          for( unsigned int i=0, j=1; i<nPts; ++i, j+=3)
-          {
-            points_ptr[j] = (double) c * channelPlotOffset +
-              heightPlotScale * *(scalars->GetTuple(i));
-          }
-        }
-      }
-
-      out_ds->Register(NULL);
-      out_ds->SetSource(NULL);
-      
-      // Merge all of the datasets together
-      appendFilter->AddInput( out_ds );
-    }
-
-    // Get the appended datasets.
-    appendFilter->Update();
-    out_ds = appendFilter->GetOutput();
-    out_ds->Register(NULL);
-    out_ds->SetSource(NULL);
-
-    // Nuke all the vtk filters
-    appendFilter->Delete();    
-    probeFilter->Delete();
-
-    transform->Delete();
-    transformFilter->Delete();
+    UpdateDataObjectInfo();
 
     return out_ds;
 }
@@ -1464,15 +1269,19 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
   int nSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
 
   axis.normalize();
-//  avtVector delta = axis * sampleDistance;
+  //  avtVector delta = axis * sampleDistance;
+
+  // Get the circumference
+  double circumference = 2.0 * M_PI * radius;
+
+  int nRadialSamples = (int) ceil( circumference / sampleDistance );
 
   // sampling offset between arcs.
-  double sampleArc = atts.GetSampleArc();
-  int nRadialSamples = (int) ceil( 360.0 / sampleArc );
+  double sampleArc = 360.0 / (double) nRadialSamples;
 
   double tangent = tan( 2.0 * M_PI * divergence / 360.0 );
 
-  // Create an unstructured quad for the island surface.
+  // Create an unstructured quad for the surface.
   vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
 
   vtkQuad *quad = vtkQuad::New();
@@ -1614,9 +1423,12 @@ avtLineSamplerFilter::checkExtents( avtVector &startPoint,
   avtDataset_p avtData = GetTypedInput();
   avtIntervalTree * avtIntTree =
     avtData->CalculateSpatialIntervalTree();
-
+  
   double extents[6];
   avtIntTree->GetExtents( extents );
+
+//   for( int i=0; i<6; ++i )
+//     extents[i] = bounds[i];
 
   // For cylindircal the extent is at R = 0, Y = 0.
   if( atts.GetCoordinateSystem() == LineSamplerAttributes::Cylindrical )
@@ -1740,7 +1552,46 @@ avtLineSamplerFilter::checkExtents( avtVector &startPoint,
 
 
 // ****************************************************************************
-//  Method: avtPersistentParticlesFilter::Finalize
+//  Method: avtTransform::UpdateDataObjectInfo
+//
+//  Purpose:
+//      Changes the extents by the transform.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   September 24, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Mar  5 15:55:29 PST 2002
+//    Also transformed current spatial extents.  Also told output that its
+//    points were transformed.
+//
+//    Hank Childs, Fri Jan 13 09:49:08 PST 2006
+//    Invalidate spatial meta-data.
+//
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
+// ****************************************************************************
+
+void
+avtLineSamplerFilter::UpdateDataObjectInfo(void)
+{
+    avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+
+    (*outAtts.GetOriginalSpatialExtents()) = newExtents;
+    (*outAtts.GetThisProcsOriginalSpatialExtents()) = newExtents;
+    (*outAtts.GetDesiredSpatialExtents()) = newExtents;
+    (*outAtts.GetActualSpatialExtents()) = newExtents;
+
+    GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
+    GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
+}
+
+
+// ****************************************************************************
+//  Method: avtLineSamplerFilter::Finalize
 //
 //  Purpose:
 //      This method is the mechanism for the base class to tell its derived

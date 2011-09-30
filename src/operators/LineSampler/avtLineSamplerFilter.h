@@ -48,6 +48,8 @@
 #include <avtPluginFilter.h>
 #include <avtExecuteThenTimeLoopFilter.h>
 
+#include <avtExtents.h>
+
 #include <LineSamplerAttributes.h>
 
 class vtkTransform;
@@ -83,9 +85,14 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
     virtual void         SetAtts(const AttributeGroup*);
     virtual bool         Equivalent(const AttributeGroup*);
 
+    virtual void         UpdateDataObjectInfo(void);
+
   protected:
     LineSamplerAttributes atts;
     int activeTimeStep;
+
+    double bounds[6];
+    avtExtents newExtents;
 
     virtual void ExamineContract(avtContract_p in_contract);
     virtual void Execute(void);
@@ -93,7 +100,7 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
     virtual void Finalize(void);
 
     virtual vtkDataSet *ExecuteChannelData(vtkDataSet *, int, std::string);
-    virtual vtkDataSet *ExecuteChannelList(vtkDataSet *, int, std::string);
+//  virtual vtkDataSet *ExecuteChannelList(vtkDataSet *, int, std::string);
 
     virtual vtkUnstructuredGrid* createPoint( avtVector startPoint,
                                               avtVector stopPoint,
@@ -121,6 +128,8 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
     bool haveData;
 
     vtkDataSet *composite_ds;
+
+    double cachedAngle;
 };
 
 #endif
