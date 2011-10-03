@@ -1104,6 +1104,9 @@ VisitInteractor::ZoomCamera2D(const int x, const int y)
 //    Eric Brugger, Thu May 26 12:37:11 PDT 2011
 //    Remove an unnecessary render call.
 //
+//    Kathleen Bonnell, Wed Jun  8 14:16:24 PDT 2011
+//    Subtract new x/y from old instead of vice-versa.
+//
 // ****************************************************************************
 
 void
@@ -1128,11 +1131,11 @@ VisitInteractor::PanImage3D(const int x, const int y)
 
         avtView3D newView3D = vw->GetView3D();
 
-        pan[0] = ((double)((x - OldX) / size[0])) / newView3D.imageZoom;
-        pan[1] = ((double)((y - OldY) / size[1])) / newView3D.imageZoom;
+        pan[0] = ((double)((OldX - x) / size[0])) / newView3D.imageZoom;
+        pan[1] = ((double)((OldY - y) / size[1])) / newView3D.imageZoom;
 
-        newView3D.imagePan[0] += pan[0];
-        newView3D.imagePan[1] += pan[1];
+        newView3D.imagePan[0] -= pan[0];
+        newView3D.imagePan[1] -= pan[1];
 
         OldX = x;
         OldY = y;

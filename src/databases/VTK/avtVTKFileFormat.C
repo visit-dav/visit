@@ -47,7 +47,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkVisItDataSetReader.h>
+#include <vtkDataSetReader.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
@@ -55,12 +55,11 @@
 #include <vtkStructuredPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkFloatArray.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkVisItXMLImageDataReader.h>
-#include <vtkVisItXMLPolyDataReader.h>
-#include <vtkVisItXMLRectilinearGridReader.h>
-#include <vtkVisItXMLStructuredGridReader.h>
-#include <vtkVisItXMLUnstructuredGridReader.h>
+#include <vtkXMLImageDataReader.h>
+#include <vtkXMLPolyDataReader.h>
+#include <vtkXMLRectilinearGridReader.h>
+#include <vtkXMLStructuredGridReader.h>
+#include <vtkXMLUnstructuredGridReader.h>
 
 #include <snprintf.h>
 #include <DebugStream.h>
@@ -249,11 +248,12 @@ avtVTKFileFormat::ReadInDataset(void)
         //
         // Create a file reader and set our dataset to be its output.
         //
-        vtkVisItDataSetReader *reader = vtkVisItDataSetReader::New();
+        vtkDataSetReader *reader = vtkDataSetReader::New();
         reader->ReadAllScalarsOn();
         reader->ReadAllVectorsOn();
         reader->ReadAllTensorsOn();
         reader->SetFileName(filename);
+        reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
@@ -271,8 +271,9 @@ avtVTKFileFormat::ReadInDataset(void)
     }
     else if (extension == "vti")
     {
-        vtkVisItXMLImageDataReader *reader = vtkVisItXMLImageDataReader::New();
+        vtkXMLImageDataReader *reader = vtkXMLImageDataReader::New();
         reader->SetFileName(filename);
+        reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
@@ -285,9 +286,10 @@ avtVTKFileFormat::ReadInDataset(void)
     } 
     else if (extension == "vtr") 
     {
-        vtkVisItXMLRectilinearGridReader *reader = 
-            vtkVisItXMLRectilinearGridReader::New();
+        vtkXMLRectilinearGridReader *reader = 
+            vtkXMLRectilinearGridReader::New();
         reader->SetFileName(filename);
+        reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
@@ -300,9 +302,10 @@ avtVTKFileFormat::ReadInDataset(void)
     } 
     else if (extension == "vts")
     {
-        vtkVisItXMLStructuredGridReader *reader = 
-            vtkVisItXMLStructuredGridReader::New();
+        vtkXMLStructuredGridReader *reader = 
+            vtkXMLStructuredGridReader::New();
         reader->SetFileName(filename);
+        reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
@@ -315,8 +318,9 @@ avtVTKFileFormat::ReadInDataset(void)
     } 
     else if (extension == "vtp") 
     {
-        vtkVisItXMLPolyDataReader *reader = vtkVisItXMLPolyDataReader::New();
+        vtkXMLPolyDataReader *reader = vtkXMLPolyDataReader::New();
         reader->SetFileName(filename);
+        reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
@@ -329,9 +333,10 @@ avtVTKFileFormat::ReadInDataset(void)
     } 
     else if (extension == "vtu") 
     {
-        vtkVisItXMLUnstructuredGridReader *reader = 
-            vtkVisItXMLUnstructuredGridReader::New();
+        vtkXMLUnstructuredGridReader *reader = 
+            vtkXMLUnstructuredGridReader::New();
         reader->SetFileName(filename);
+        reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {

@@ -508,7 +508,9 @@ ENDMACRO(VISIT_3RDPARTY_DEP libvar comment)
 VISIT_3RDPARTY_VAR(VTK_DIR    "Path containing the VTK library's bin and lib")
 VISIT_3RDPARTY_VAR(QT_BIN     "Path to the Qt library's bin (path containing qmake)")
 VISIT_3RDPARTY_VAR(PYTHON_DIR "Path containing the Python library's include and lib")
-VISIT_3RDPARTY_VAR(MESA_DIR   "Path containing the Mesa library's include and lib")
+IF (NOT WIN32)
+  VISIT_3RDPARTY_VAR(MESA_DIR   "Path containing the Mesa library's include and lib")
+ENDIF (NOT WIN32)
 VISIT_3RDPARTY_VAR(ICET_DIR   "Path containing the Ice-T library's include and lib")
 VISIT_3RDPARTY_VAR(TCMALLOC_DIR   "Path containing the tcmalloc library's include and lib")
 
@@ -777,9 +779,9 @@ IF(NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_DBIO_ONLY)
 
 # Configure Mesa support.
-IF(NOT VISIT_DBIO_ONLY)
+IF(NOT WIN32 AND NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
-ENDIF(NOT VISIT_DBIO_ONLY)
+ENDIF(NOT WIN32 AND NOT VISIT_DBIO_ONLY)
 
 # Configure VTK support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
@@ -1563,8 +1565,14 @@ IF(NOT VISIT_DISABLE_SELECT)
     ENDIF(WIN32)
 ENDIF(NOT VISIT_DISABLE_SELECT)
 
-MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to ${OSMESA_SIZE_LIMIT}")
-SET(VISIT_RENDERING_SIZE_LIMIT ${OSMESA_SIZE_LIMIT} CACHE INTERNAL "rendering size limit")
+IF (NOT WIN32)
+  MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to ${OSMESA_SIZE_LIMIT}")
+  SET(VISIT_RENDERING_SIZE_LIMIT ${OSMESA_SIZE_LIMIT} CACHE INTERNAL "rendering size limit")
+ELSE(NOT WIN32)
+  # totally arbitrary, but it is what Mesa was set to when built on Windows
+  MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to 16384")
+  SET(VISIT_RENDERING_SIZE_LIMIT 16384 CACHE INTERNAL "rendering size limit")
+ENDIF(NOT WIN32)
 
 CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/visit-cmake.h.in
                ${VISIT_BINARY_DIR}/include/visit-config.h @ONLY IMMEDIATE)

@@ -386,8 +386,8 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     //
     // Set the image pan and image zoom.
     //
-    viewInfo.imagePan[0] = imagePan[0];
-    viewInfo.imagePan[1] = imagePan[1];
+    viewInfo.imagePan[0] = -imagePan[0];
+    viewInfo.imagePan[1] = -imagePan[1];
     viewInfo.imageZoom   = imageZoom;
 
     //

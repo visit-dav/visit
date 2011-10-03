@@ -11,21 +11,9 @@
     </FilePatterns>
     <Files components="M">
       avtEnSightFileFormat.C
-      vtkVisItGenericEnSightReader.C
-      vtkVisItEnSightReader.C
-      vtkVisItEnSight6Reader.C
-      vtkVisItEnSight6BinaryReader.C
-      vtkVisItEnSightGoldReader.C
-      vtkVisItEnSightGoldBinaryReader.C
     </Files>
     <Files components="E">
       avtEnSightFileFormat.C
-      vtkVisItGenericEnSightReader.C
-      vtkVisItEnSightReader.C
-      vtkVisItEnSight6Reader.C
-      vtkVisItEnSight6BinaryReader.C
-      vtkVisItEnSightGoldReader.C
-      vtkVisItEnSightGoldBinaryReader.C
     </Files>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>

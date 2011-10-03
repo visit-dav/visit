@@ -212,14 +212,14 @@ avtCentroidQuery::PostExecute(void)
 void
 avtCentroidQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    int nCells = ds->GetNumberOfCells();
+    vtkIdType nCells = ds->GetNumberOfCells();
     vtkDataArray *ghosts = ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *var = ds->GetCellData()->GetArray("avt_mass");
     if (var == NULL)
     {
         EXCEPTION0(ImproperUseException);
     }
-    for (int i = 0 ; i < nCells ; i++)
+    for (vtkIdType i = 0 ; i < nCells ; i++)
     {
         if (ghosts != NULL && ghosts->GetTuple1(i) != 0.)
             continue;

@@ -1466,7 +1466,8 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
                                             nodes[p][j][i].y,
                                             nodes[p][j][i].z );
                     
-                    cells->InsertNextCell(1, (vtkIdType*) &i);
+                    vtkIdType id = (vtkIdType)i;
+                    cells->InsertNextCell(1, &id);
                     
                     if( color == DATA_PointOrder )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
@@ -1794,7 +1795,8 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
                                             nodes[p][j][i].y,
                                             nodes[p][j][i].z );
                   
-                    cells->InsertNextCell(1, (vtkIdType*) &i);
+                    vtkIdType id = (vtkIdType)i;
+                    cells->InsertNextCell(1, &id);
                   
                     if( color == DATA_PointOrder )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
@@ -2213,7 +2215,8 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
       else
         points->InsertNextPoint(nodes[i].x, nodes[i].y, nodes[i].z);
 
-      cells->InsertNextCell(1, (vtkIdType*) &i);
+      vtkIdType id = (vtkIdType)i;
+      cells->InsertNextCell(1, &id);
       
       if( color == DATA_PointOrder )
         color_value = i;
@@ -2288,7 +2291,8 @@ avtPoincareFilter::drawPoints( avtDataTree *dt,
     {      
       points->InsertNextPoint(nodes[i].x, nodes[i].y, nodes[i].z);
 
-      cells->InsertNextCell(1, (vtkIdType*) &i);
+      vtkIdType id = (vtkIdType)i;
+      cells->InsertNextCell(1, &id);
       
       scalars->InsertTuple1(i, 0);
     }

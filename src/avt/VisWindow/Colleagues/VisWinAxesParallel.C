@@ -1102,8 +1102,6 @@ VisWinAxesParallel::SetNumberOfAxes(int n)
             ax->GetPoint1Coordinate()->SetCoordinateSystemToNormalizedViewport();
             ax->GetPoint2Coordinate()->SetCoordinateSystemToNormalizedViewport();
             ax->PickableOff();
-            ax->SetEndStringVOffsetFactor(0);
-            ax->SetEndStringHOffsetFactor(-0.5);
             ax->SetUseOrientationAngle(1);
             ax->SetTitleAtEnd(0);
             ax->SetOrientationAngle(0.);

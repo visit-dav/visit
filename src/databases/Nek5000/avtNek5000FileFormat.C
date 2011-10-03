@@ -1270,7 +1270,7 @@ avtNek5000FileFormat::GetMesh(int /* timestate */, int domain, const char * /*me
 
     vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
     cellLocations->SetNumberOfValues(total_hexes);
-    int *cl = cellLocations->GetPointer(0);
+    vtkIdType *cl = cellLocations->GetPointer(0);
 
     int hexes_so_far = 0;
     int elements_so_far = 0;

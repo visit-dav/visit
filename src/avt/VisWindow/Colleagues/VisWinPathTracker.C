@@ -133,6 +133,10 @@ VisWinPathTracker::Instance()
     return instance;
 }
 
+void VisWinPathTracker::DeleteInstance() {
+  delete instance;
+  instance = NULL;
+}
 
 // ****************************************************************************
 //  Method: VisWinPathTracker::AddPath

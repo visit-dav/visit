@@ -105,10 +105,7 @@ ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 SET(VTK_EXTRA_LIBS
 vtkjpeg 
 vtkpng 
-vtkexpat
 vtkzlib 
-vtkDICOMParser 
-vtkMPEG2Encode 
 vtkfreetype 
 vtkftgl
 )

@@ -46,6 +46,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkCellArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
+#include <vtkPolyDataMapper2D.h>
+#include <vtkTextActor.h>
+#include <vtkTextMapper.h>
 #include <vtkTextProperty.h>
 #include <vtkProperty2D.h>
 #include <vtkViewport.h>
@@ -106,7 +109,11 @@ vtkStandardNewMacro(vtkVisItAxisActor2D);
 //    Brad Whitlock, Thu Mar 27 11:24:23 PDT 2008
 //    added title and label text properties.
 //
+//    Brad Whitlock, Thu Sep 29 16:39:20 PDT 2011
+//    I made changes for VTK 5.8.
+//
 // **********************************************************************
+
 vtkVisItAxisActor2D::vtkVisItAxisActor2D()
 {
   this->Point1Coordinate = vtkCoordinate::New();
@@ -158,13 +165,12 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->LogLabelFormat = new char[8]; 
   SNPRINTF(this->LogLabelFormat,8, "%s","%-#6.3f");
 
-  this->TitleMapper = vtkTextMapper::New();
-  this->TitleActor = vtkActor2D::New();
-  this->TitleActor->SetMapper(this->TitleMapper);
-  
+  this->TitleActor = vtkTextActor::New();
+  this->TitleJustification = -1;
+  this->TitleVerticalJustification = -1;
+
   // to avoid deleting/rebuilding create once up front
   this->NumberOfLabelsBuilt = 0;
-  this->LabelMappers = NULL; 
   this->LabelActors = NULL; 
 
   this->Axis = vtkPolyData::New();
@@ -188,8 +194,6 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->LogScale = 0;  
 
   this->EndStringReverseOrientation = false;
-  this->EndStringHOffsetFactor = 0;
-  this->EndStringVOffsetFactor = 0;
 
   this->UseSeparateColors = 0;
   nDecades = 2;  
@@ -220,11 +224,6 @@ vtkVisItAxisActor2D::~vtkVisItAxisActor2D()
     this->LogLabelFormat = NULL;
     }
  
-  if (this->TitleMapper)
-    {
-    this->TitleMapper->Delete();
-    this->TitleMapper = NULL;
-    }
   if (this->TitleActor)
     {
     this->TitleActor->Delete();
@@ -237,17 +236,14 @@ vtkVisItAxisActor2D::~vtkVisItAxisActor2D()
     this->Title = NULL;
     }
 
-  if (this->LabelMappers)
+  if (this->LabelActors)
     {
     for (int i=0; i < this->NumberOfLabelsBuilt; i++)
       {
-      this->LabelMappers[i]->Delete();
       this->LabelActors[i]->Delete();
       }
     this->NumberOfLabelsBuilt = 0;
-    delete [] this->LabelMappers;
     delete [] this->LabelActors;
-    this->LabelMappers = NULL;
     this->LabelActors = NULL;
     }
  
@@ -514,7 +510,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
   int numLabels, labelCount = 0;
   double outRange[2], deltaX, deltaY, xTick[3];
   double theta, val;
-  int *size, stringSize[2], maxLabelStringSize[2];
+  int *size, stringSize[2];
   char string[64];
   double  proportion[VTK_MAX_LABELS];
   double  ticksize[VTK_MAX_LABELS];
@@ -675,9 +671,9 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
     }
   
   // Build the labels
-  maxLabelStringSize[0] = 0;
-  maxLabelStringSize[1] = 0;
+  int maxStringLen = 0;
   bool useMinorForLabels = false;
+  bool verticalOrientation = (UseOrientationAngle && OrientationAngle != 0);
   if ( this->LabelVisibility )
     {
     // determine actual number of labels we need to build
@@ -770,7 +766,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
           iterations++;
       }
 
-      this->LabelMappers[labelCount]->SetInput(string);
+      this->LabelActors[labelCount]->SetInput(string);
       if (fabs(val) < 0.01)
       {
           // 
@@ -778,20 +774,23 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
           // The maximum number of digits that we allow past the decimal is 5.
           // 
           if (strcmp(string, "-0") == 0) 
-              this->LabelMappers[labelCount]->SetInput("0");
+              this->LabelActors[labelCount]->SetInput("0");
           else if (strcmp(string, "-0.0") == 0) 
-              this->LabelMappers[labelCount]->SetInput("0.0");
+              this->LabelActors[labelCount]->SetInput("0.0");
           else if (strcmp(string, "-0.00") == 0) 
-              this->LabelMappers[labelCount]->SetInput("0.00");
+              this->LabelActors[labelCount]->SetInput("0.00");
           else if (strcmp(string, "-0.000") == 0) 
-              this->LabelMappers[labelCount]->SetInput("0.000");
+              this->LabelActors[labelCount]->SetInput("0.000");
           else if (strcmp(string, "-0.0000") == 0)
-              this->LabelMappers[labelCount]->SetInput("0.0000");
+              this->LabelActors[labelCount]->SetInput("0.0000");
           else if (strcmp(string, "-0.00000") == 0)
-              this->LabelMappers[labelCount]->SetInput("0.00000");
+              this->LabelActors[labelCount]->SetInput("0.00000");
       }
 
-      vtkTextProperty *tprop = this->LabelMappers[labelCount]->GetTextProperty();
+      int stringLen = strlen(this->LabelActors[labelCount]->GetInput());
+      maxStringLen = (maxStringLen < stringLen) ? stringLen : maxStringLen;
+
+      vtkTextProperty *tprop = this->LabelActors[labelCount]->GetTextProperty();
       tprop->SetBold(this->LabelTextProperty->GetBold());
       tprop->SetItalic(this->LabelTextProperty->GetItalic());
       tprop->SetShadow(this->LabelTextProperty->GetShadow());
@@ -803,6 +802,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       tprop->SetFontSize((int)(this->LabelFontHeight*size[1]));
       labelCount++;
       }
+
     skipCount = 0; 
     for (i = 0, labelCount = 0; i < numLabels; i++)
       {
@@ -821,28 +821,31 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         }
       skipCount++; 
       pts->GetPoint(2*i+1, xTick);
-      this->LabelMappers[labelCount]->GetSize(viewport, stringSize);
-      // Fudge factor, the height of the digits varies roughly from
-      // 0.61 to 0.68 of the font height.  Use 0.68 to be conservative.
-      // This centers the labels properly on the tick marks.
-      stringSize[1] = (int) (0.68 * stringSize[1]);
-      this->SetOffsetPosition(xTick, theta, stringSize[0], stringSize[1],
-                              this->TickOffset, 
-                              this->LabelActors[labelCount++], 0,
-                              this->EndStringHOffsetFactor,
-                              this->EndStringVOffsetFactor);
-      maxLabelStringSize[0] = stringSize[0] > maxLabelStringSize[0] ?
-                              stringSize[0] : maxLabelStringSize[0];
-      maxLabelStringSize[1] = stringSize[1] > maxLabelStringSize[1] ?
-                              stringSize[1] : maxLabelStringSize[1];
+
+      double pos[2] = {xTick[0], xTick[1]};
+      if(verticalOrientation)
+        {
+        pos[0] -= this->TickOffset;
+
+        this->LabelActors[labelCount]->SetAlignmentPoint(5); // hright, vcenter
+        }
+      else
+        {
+        pos[1] -= this->TickOffset;
+
+        this->LabelActors[labelCount]->SetAlignmentPoint(7); // hcenter, vtop
+        }
+      this->LabelActors[labelCount]->SetPosition(pos[0], pos[1]);
+
+      labelCount++;
       }
     }// if labels visible
 
   // Now build the title
   if ( this->Title != NULL && this->Title[0] != 0 && this->TitleVisibility )
     {
-    this->TitleMapper->SetInput(this->Title);
-    vtkTextProperty *titleTprop = this->TitleMapper->GetTextProperty();
+    this->TitleActor->SetInput(this->Title);
+    vtkTextProperty *titleTprop = this->TitleActor->GetTextProperty();
     titleTprop->SetBold(this->TitleTextProperty->GetBold());
     titleTprop->SetItalic(this->TitleTextProperty->GetItalic());
     titleTprop->SetShadow(this->TitleTextProperty->GetShadow());
@@ -853,7 +856,6 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         titleTprop->SetColor(this->GetProperty()->GetColor());
     titleTprop->SetFontSize((int)(this->TitleFontHeight*size[1]));
 
-    bool verticalOrientation = (UseOrientationAngle && OrientationAngle != 0);
     if (verticalOrientation)
       {
       // Note: current implementation in VTK only allow for 0 and non-0, with
@@ -882,27 +884,45 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       xTick[1] = xTick[1] - (this->TickLength+this->TickOffset)*cos(theta);
       }
     
-    offset = 0.0;
-    if ( this->LabelVisibility)
+    if(verticalOrientation)
       {
-      offset = this->ComputeStringOffset(maxLabelStringSize[0],
-                                         maxLabelStringSize[1], theta);
+      double pos[2] = {xTick[0], xTick[1]};
+
+      pos[0] -= this->TickLength;
+
+      if (this->LabelVisibility && !this->TitleAtEnd)
+        {
+          pos[0] -= (0.8 * maxStringLen * 
+                     this->LabelActors[0]->GetTextProperty()->GetFontSize());
+        }
+      this->TitleActor->SetPosition(pos[0], pos[1]);
+      if(this->TitleAtEnd)
+          this->TitleActor->SetAlignmentPoint(1); // hcenter, vbottom
+      else
+          this->TitleActor->SetAlignmentPoint(5); // hright, vcenter
+      }
+    else
+      {
+      double pos[2] = {xTick[0], xTick[1]};
+
+      pos[1] -= this->TickLength;
+
+      if (this->LabelVisibility)
+        {
+          pos[1] -= (this->LabelActors[0]->GetTextProperty()->GetFontSize());
+        }
+      this->TitleActor->SetPosition(pos[0], pos[1]);
+      this->TitleActor->SetAlignmentPoint(7); // hcenter, vtop
       }
 
-    this->TitleMapper->GetSize(viewport, stringSize);
-    int stringSizeReal[2] = { stringSize[0], stringSize[1] };
-    if (verticalOrientation)
-      {
-      stringSizeReal[0] = stringSize[1];
-      stringSizeReal[1] = stringSize[0];
-      }
-    this->SetOffsetPosition(xTick,
-      (this->EndStringReverseOrientation && this->TitleAtEnd) ? -theta : theta,
-                            stringSizeReal[0], stringSizeReal[1], 
-                            static_cast<int>(offset), this->TitleActor, 
-                            this->TitleAtEnd,
-                            this->EndStringHOffsetFactor,
-                            this->EndStringVOffsetFactor);
+      // Optionally let the user override the alignment point.
+      if(this->TitleJustification >= 0 || this->TitleVerticalJustification >= 0)
+        {
+        int j = (this->TitleJustification >= 0) ? this->TitleJustification : 0;
+        int vj = (this->TitleVerticalJustification >= 0) ? this->TitleVerticalJustification : 0;
+        titleTprop->SetJustification(j);
+        titleTprop->SetVerticalJustification(vj);
+        }
     } //if title visible
 
   if ( this->AxisVisibility )
@@ -1236,53 +1256,6 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
     }
 }
 
-// Posiion text with respect to a point (xTick) where the angle of the line
-// from the point to the center of the text is given by theta. The offset
-// is the spacing between ticks and labels.
-//
-// Modifications:
-//    Jeremy Meredith, Thu Jan 31 10:16:04 EST 2008
-//    Use a string offset factor variable to allow appropriate
-//    centering for the titleAtEnd mode.
-//
-void vtkVisItAxisActor2D::SetOffsetPosition(double xTick[3], double theta, 
-                                       int stringWidth, int stringHeight, 
-                                       int offset, vtkActor2D *actor,
-                                       int titleAtEnd,
-                                       double endStringHOffsetFactor,
-                                       double endStringVOffsetFactor)
-{
-  double x, y, center[2];
-  int pos[2];
-   
-  if ( titleAtEnd )
-    {
-    pos[0] = (int)(xTick[0] + stringWidth * endStringHOffsetFactor);
-    pos[1] = (int)(xTick[1] + stringHeight * endStringVOffsetFactor);
-    }
-  else
-    {
-    x = stringWidth/2.0 + offset;
-    y = stringHeight/2.0 + offset;
-
-    center[0] = xTick[0] + x*sin(theta);
-    center[1] = xTick[1] - y*cos(theta);
-    
-    pos[0] = (int)(center[0] - stringWidth/2.0);
-    pos[1] = (int)(center[1] - stringHeight/2.0);
-    }
-  
-  actor->SetPosition(pos[0], pos[1]);
-}
-
-double vtkVisItAxisActor2D::ComputeStringOffset(double width, double height,
-                                          double theta)
-{
-  double f1 = height*cos(theta);
-  double f2 = width*sin(theta);
-  return (1.2 * sqrt(f1*f1 + f2*f2));
-}
-
 // ********************************************************************
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
@@ -1347,24 +1320,19 @@ vtkVisItAxisActor2D::SetNumberOfLabelsBuilt(const int numLabels)
     return;
     }
 
-  if (this->LabelMappers != NULL )
+  if (this->LabelActors != NULL )
     {
     for (int i=0; i < this->NumberOfLabelsBuilt; i++)
       {
-      this->LabelMappers[i]->Delete();
       this->LabelActors[i]->Delete();
       }
-    delete [] this->LabelMappers;
     delete [] this->LabelActors;
     }
 
-  this->LabelMappers = new vtkTextMapper * [numLabels];
-  this->LabelActors = new vtkActor2D * [numLabels];
+  this->LabelActors = new vtkTextActor * [numLabels];
   for ( int i=0; i < numLabels; i++)
     {
-    this->LabelMappers[i] = vtkTextMapper::New();
-    this->LabelActors[i] = vtkActor2D::New();
-    this->LabelActors[i]->SetMapper(this->LabelMappers[i]);
+    this->LabelActors[i] = vtkTextActor::New();
     }
   this->NumberOfLabelsBuilt = numLabels;
 }

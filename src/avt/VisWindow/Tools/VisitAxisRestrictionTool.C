@@ -293,7 +293,7 @@ VisitAxisRestrictionTool::CreateTextActors()
     for(int i = 0; i < posTextActors.size(); ++i)
     {
         posTextActors[i] = vtkTextActor::New();
-        posTextActors[i]->ScaledTextOff();
+        posTextActors[i]->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
         posTextActors[i]->GetTextProperty()->SetColor(color);
     }
 }

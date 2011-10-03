@@ -2,6 +2,7 @@
 #include <VisItViewer.h>
 #include <ViewerMethods.h>
 
+#include <QApplication>
 #include <QButtonGroup>
 #include <QDir>
 #include <QFileDialog>
@@ -12,6 +13,7 @@
 #include <QMenu>
 #include <QRadioButton>
 #include <QSpinBox>
+#include <QSplitter>
 #include <QWidget>
 
 // State objects that we use.

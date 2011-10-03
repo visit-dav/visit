@@ -838,7 +838,7 @@ avtDyna3DFileFormat::ReadFile(const char *name, int nLines)
             //
             // Read connectivity.
             //
-            int verts[8];
+            vtkIdType verts[8];
             for(int cellid = 0; cellid < nCells;)
             {
                 GetLine(ifile);

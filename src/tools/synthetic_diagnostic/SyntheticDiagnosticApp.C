@@ -3,12 +3,19 @@
 #include <ViewerMethods.h>
 #include <GlobalAttributes.h>
 
+#include <QApplication>
 #include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
 #include <QDir>
 #include <QFileDialog>
+#include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
 #include <QListWidget>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSplitter>
 #include <QTabWidget>
 #include <QMenuBar>
 #include <QMenu>

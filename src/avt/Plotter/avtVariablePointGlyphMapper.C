@@ -164,9 +164,11 @@ avtVariablePointGlyphMapper::CustomizeMappers(void)
                           "vtkVisItDataSetMapper") == 0)
                 {
                     vtkVisItDataSetMapper *dsm = (vtkVisItDataSetMapper *)mappers[i];
-                    dsm->SetPointTextureMethod(glyphType == 4 ?
+                    dsm->SetPointTextureMethod(glyphType == Sphere ?
                          vtkVisItDataSetMapper::TEXTURE_USING_POINTSPRITES :
                          vtkVisItDataSetMapper::TEXTURE_NO_POINTS);
+
+                    dsm->SetVertsReplacedWithGeomGlyphs(glyphType != Point && glyphType != Sphere);
                 }
             }
         }
@@ -368,11 +370,8 @@ avtVariablePointGlyphMapper::ScaleByVar(const std::string &sname)
 // ****************************************************************************
 
 void
-avtVariablePointGlyphMapper::SetGlyphType(const int type)
+avtVariablePointGlyphMapper::SetGlyphType(PointGlyphType type)
 {
-    if (type < 0 || type > 4) 
-        return; 
-
     if (glyphType != type)
     {
         // If we're going into point glyphing mode or out of point
@@ -380,12 +379,12 @@ avtVariablePointGlyphMapper::SetGlyphType(const int type)
         // We do this switch so we don't have to glyph points but we
         // can still switch from points to glyphs and vice versa.
         if(nMappers > 0 && 
-          (glyphType == 3 || type == 3 || glyphType == 4 || type == 4))
+          (glyphType == Point || type == Point || glyphType == Sphere || type == Sphere))
         {
             avtDataObject_p input = GetInput();
             if (*input != NULL)
             {
-                int tmp = glyphType;
+                PointGlyphType tmp = glyphType;
                 glyphType = type;
                 avtDataTree_p tree = GetInputDataTree();
                 vtkDataSet **children = tree->GetAllLeaves(nMappers);

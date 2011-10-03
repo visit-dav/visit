@@ -4774,7 +4774,7 @@ VisWindow::Pick(int x, int y)
     vtkMatrix4x4 *mat = vtkMatrix4x4::New();
  
     // get the perspective transformation from the active camera
-    mat->DeepCopy(cam->GetCompositePerspectiveTransformMatrix(1,0,1));
+    mat->DeepCopy(cam->GetCompositeProjectionTransformMatrix(1,0,1));
  
     // use the inverse matrix
     mat->Invert();

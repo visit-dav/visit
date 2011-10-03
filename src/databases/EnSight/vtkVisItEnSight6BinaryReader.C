@@ -862,7 +862,8 @@ int vtkVisItEnSight6BinaryReader::ReadMeasuredGeometryFile(const char* fileName,
   for (i = 0; i < this->NumberOfMeasuredPoints; i++)
     {
     points->InsertNextPoint(coords[3*i], coords[3*i+1], coords[3*i+2]);
-    pd->InsertNextCell(VTK_VERTEX, 1, (vtkIdType*)&pointIds[i]);
+    vtkIdType id = (vtkIdType)pointIds[i];
+    pd->InsertNextCell(VTK_VERTEX, 1, &id);
     }
 
   pd->SetPoints(points);

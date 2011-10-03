@@ -69,7 +69,7 @@ avtPointGlypher::avtPointGlypher()
 {
     glyph2D = 0;
     glyph3D = 0;
-    glyphType = 3;
+    glyphType = Point;
     colorByScalar = true;
     SetUpGlyph();
 
@@ -269,7 +269,7 @@ avtPointGlypher::SetUpGlyphs(int nGlyphs)
 vtkDataSet *
 avtPointGlypher::InsertGlyphs(vtkDataSet *ds, int whichGlyph, int spatDim)
 {
-    if (glyphType == 3 || glyphType == 4) // Point, Sphere
+    if (glyphType == Point || glyphType == Sphere) // Point, Sphere
         return ds;
 
     if (whichGlyph < 0 || whichGlyph >= nGlyphFilters)
@@ -357,11 +357,8 @@ avtPointGlypher::SetScale(double s)
 // ****************************************************************************
 
 void
-avtPointGlypher::SetGlyphType(const int type)
+avtPointGlypher::SetGlyphType(PointGlyphType type)
 {
-    if (type < 0 || type > 4) 
-        return; 
-
     if (glyphType != type)
     {
         glyphType = type;
@@ -407,7 +404,7 @@ avtPointGlypher::SetUpGlyph(void)
     //
     ClearGlyphs();
 
-    if (glyphType == 0)  // BOX
+    if (glyphType == Box)
     {
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(8);
@@ -449,7 +446,7 @@ avtPointGlypher::SetUpGlyph(void)
         vtkIdType ids2D[4] = { 0, 1, 2, 3};
         glyph2D->InsertNextCell(VTK_QUAD, 4, ids2D);
     }
-    else if (glyphType == 1) // AXIS
+    else if (glyphType == Axis)
     {
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(12);
@@ -494,7 +491,7 @@ avtPointGlypher::SetUpGlyph(void)
         glyph2D->InsertNextCell(VTK_LINE, 2, line1);
         glyph2D->InsertNextCell(VTK_LINE, 2, line2);
     }
-    else if (glyphType == 2) // ICOSAHEDRON
+    else if (glyphType == Icosahedron)
     {
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(60);
@@ -595,8 +592,7 @@ avtPointGlypher::SetUpGlyph(void)
             glyph2D->InsertNextCell(VTK_TRIANGLE, 3, tri);
         }
     }
-    else if (glyphType == 3 || // POINT
-             glyphType == 4)   // SPHERE (textured onto a point)
+    else if (glyphType == Point || glyphType == Sphere)
     {
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(1);

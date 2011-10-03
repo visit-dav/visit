@@ -1,8 +1,8 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
+* LLNL-CODE-400124
 * All rights reserved.
 *
 * This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
@@ -37,6 +37,7 @@
 *****************************************************************************/
 #include <QtCore>
 
+#include <GL/glew.h>
 #include <vtkQtGLWidget.h>
 #include <vtkQtRenderWindow.h>
 #include <vtkQtRenderWindowInteractor.h>
@@ -59,8 +60,9 @@
 //
 // ****************************************************************************
 
-vtkQtGLWidget::vtkQtGLWidget(QWidget *parent) : QGLWidget(parent)
+vtkQtGLWidget::vtkQtGLWidget(QWidget *parent, vtkQtRenderWindow *rw) : QGLWidget(parent)
 {
+    renWin = rw;
     lineSmoothing = false;
     interactor = 0;
 }
@@ -124,9 +126,7 @@ void
 vtkQtGLWidget::paintGL()
 {
     // Tell the parent to render.
-    vtkQtRenderWindow *parent = (vtkQtRenderWindow *)parentWidget();
-    if(parent)
-        parent->TriggerRender();
+    renWin->TriggerRender();
 }
 
 // ****************************************************************************
@@ -151,9 +151,7 @@ void
 vtkQtGLWidget::resizeGL(int w, int h)
 {
     // Tell the parent to render.
-    vtkQtRenderWindow *parent = (vtkQtRenderWindow *)parentWidget();
-    if(parent)
-        parent->TellGLSize(w, h);
+    renWin->TellGLSize(w, h);
 }
 
 // ****************************************************************************

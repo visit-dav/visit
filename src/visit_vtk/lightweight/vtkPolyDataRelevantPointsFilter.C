@@ -190,7 +190,7 @@ void vtkPolyDataRelevantPointsFilter::Execute()
   int nIdStoreSize = 1024;
   vtkIdType *pts = new vtkIdType[nIdStoreSize];
   vtkIdType *oldPts = NULL;
-  int nids = 0;
+  vtkIdType nids = 0;
   input->BuildCells();
   for (i = 0; i < numCells; i++) 
     {

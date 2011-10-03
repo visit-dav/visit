@@ -388,7 +388,7 @@ debug3 << "Labelling as indices" << endl;
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
                     unsigned int realCellId = originalCells->GetValue(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", realCellId + cellOrigin);
+                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%lld", realCellId + cellOrigin);
                 END_LABEL
             }
         }
@@ -400,7 +400,7 @@ debug3 << "Labelling as indices" << endl;
         {
             // float *vert = cellCenters->GetTuple3(id);
             BEGIN_LABEL
-                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", id + cellOrigin);
+                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%lld", id + cellOrigin);
             END_LABEL
         }
     }

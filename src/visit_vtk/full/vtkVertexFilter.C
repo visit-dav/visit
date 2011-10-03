@@ -170,7 +170,7 @@ void vtkVertexFilter::Execute(void)
       // so avoid that if possible.
       if (ugrid != NULL && ugrid->GetCellType(i) == VTK_CONVEX_POINT_SET)
       {
-          int npts;
+          vtkIdType npts;
           vtkIdType *pts;
           ugrid->GetCellPoints(i, npts, pts);
           point[0] = 0.;

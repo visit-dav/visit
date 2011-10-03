@@ -38,10 +38,13 @@
 
 #include <visit-config.h>
 
-#include <Engine.h>
+#include <cstring>
 
+#include <avtParallel.h>
 #include <DebugStream.h>
+#include <Engine.h>
 #include <TimingsManager.h>
+#include <vtkVisItUtility.h>
 
 #include <avtParallel.h>
 
@@ -284,6 +287,9 @@ void fooz(void)
 //    Add a print statement when the engine couldn't connect to the viewer, so
 //    we have a better idea when the engine is giving up.
 //
+//    Tom Fogal, Tue Sep 27 14:00:30 MDT 2011
+//    Cleanup VTK memory.
+//
 // ****************************************************************************
 
 int
@@ -333,6 +339,7 @@ main(int argc, char *argv[])
 
 #ifdef DEBUG_MEMORY_LEAKS
     delete engine;
+    vtkVisItUtility::CleanupStaticVTKObjects();
     avtFileDescriptorManager::DeleteInstance();
 #endif
 
@@ -341,4 +348,3 @@ main(int argc, char *argv[])
 #endif
     return 0;
 }
-

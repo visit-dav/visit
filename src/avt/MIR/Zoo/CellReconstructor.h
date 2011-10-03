@@ -74,7 +74,7 @@ class CellReconstructor
     CellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&, int, int, bool,
                       MIRConnectivity&, ZooMIR&);
     virtual ~CellReconstructor();
-    virtual void ReconstructCell(int, int, int, int*, double*) = 0;
+    virtual void ReconstructCell(int, int, int, vtkIdType*, double*) = 0;
 
   protected:
     vtkDataSet                             *mesh;
@@ -92,7 +92,7 @@ class CellReconstructor
   protected:
     int           cellid;
     int           celltype;
-    int          *ids;
+    vtkIdType    *ids;
     int           nids; 
 
     int           nodeIndices[MAX_NODES_PER_ZONE];

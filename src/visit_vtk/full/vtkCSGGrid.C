@@ -2364,7 +2364,7 @@ vtkCSGGrid::AddCutZones(vtkUnstructuredGrid *cutBox,
     {
         vtkCell *newCell = cutBox->GetCell(i);
         vtkPoints *cellPoints = newCell->GetPoints();
-        int *pointIds = new int[cellPoints->GetNumberOfPoints()]; 
+        vtkIdType *pointIds = new vtkIdType[cellPoints->GetNumberOfPoints()]; 
 
         //
         // Add the *unique* points for this cell
@@ -2413,7 +2413,7 @@ vtkCSGGrid::MakeMeshZone(const Box *theBox,
     coordmap_t& nodemap)
 {
     // Add points first
-    int pointIds[8] = {0,0,0,0,0,0,0,0};
+    vtkIdType pointIds[8] = {0,0,0,0,0,0,0,0};
     for (int i = 0; i < 8; i++)
     {
         double x, y, z;

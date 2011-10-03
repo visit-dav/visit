@@ -997,7 +997,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 
         vtkIdType *nl = cells->GetPointer();
         unsigned char *ct = cellTypes->GetPointer(0);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         for (i = 0 ; i < linesForThisPass ; i++)
         {
@@ -1037,7 +1037,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 int nInter = 0;
                 double inter[100];
 
-                int *ids = &(nl[cl[iCell]+1]);
+                vtkIdType *ids = &(nl[cl[iCell]+1]);
                 if (ct[iCell] == VTK_HEXAHEDRON)
                 {
                     double p0[3]={pts[ids[0]*3],pts[ids[0]*3+1],pts[ids[0]*3+2]};

@@ -45,6 +45,7 @@
 #include <math.h>
 #include <float.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>

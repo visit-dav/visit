@@ -981,12 +981,17 @@ avtVistaAle3dFileFormat::GetMesh(int domain, const char *meshname)
     vtkUnstructuredGrid    *ugrid   = vtkUnstructuredGrid::New();
     ugrid->SetPoints(points);
     ugrid->Allocate(numElems * numNodesPerElem);
+    vtkIdType verts[100];
     for (i = 0; i < numElems; i++)
     {
         int vtkCellType = VTK_HEXAHEDRON;
         if (numNodesPerElem == 4)
            vtkCellType = VTK_QUAD;
-        ugrid->InsertNextCell(vtkCellType, numNodesPerElem, &elemToNode[i*numNodesPerElem]);
+
+        for(int cc = 0; cc < numNodesPerElem; ++cc)
+           verts[cc] = (vtkIdType)elemToNode[i*numNodesPerElem + cc];
+
+        ugrid->InsertNextCell(vtkCellType, numNodesPerElem, verts);
     }
     points->Delete();
     delete [] elemToNode;

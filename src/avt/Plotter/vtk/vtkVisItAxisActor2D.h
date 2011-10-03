@@ -73,10 +73,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __vtkVisItAxisActor2D_h
 #include <plotter_exports.h>
 
-#include "vtkActor2D.h"
-#include "vtkPolyDataMapper2D.h"
-#include "vtkTextMapper.h"
-#include "vtkTextProperty.h"
+#include <vtkActor2D.h>
+#include <vtkTextProperty.h>
+
+class vtkPolyData;
+class vtkPolyDataMapper2D;
+class vtkTextActor;
 
 #define VTK_MAX_LABELS 1000
 
@@ -182,6 +184,14 @@ public:
   vtkGetStringMacro(Title);
 
   // Description:
+  // Set/Get the title alignment point. The default value of -1 lets the
+  // actor set the title alignment as needed. This is to override the value.
+  vtkSetMacro(TitleJustification, int);
+  vtkGetMacro(TitleJustification, int);
+  vtkSetMacro(TitleVerticalJustification, int);
+  vtkGetMacro(TitleVerticalJustification, int);
+
+  // Description:
   // Set/Get the title text property
   void SetTitleTextProperty(vtkTextProperty *);
   vtkGetMacro(TitleTextProperty, vtkTextProperty *);
@@ -279,15 +289,6 @@ public:
   vtkGetMacro(LogScale, int);
   vtkBooleanMacro(LogScale, int);
 
-  // Description:
-  // Set/Get the string width multiplier e.g. for horizontal title centering
-  vtkSetMacro(EndStringHOffsetFactor, double);
-  vtkGetMacro(EndStringHOffsetFactor, double);
-
-  // Set/Get the string height multiplier e.g. for vertical title centering
-  vtkSetMacro(EndStringVOffsetFactor, double);
-  vtkGetMacro(EndStringVOffsetFactor, double);
-
   // Set/Get the title end string orientation as being reversed from the
   // other centering.
   vtkSetMacro(EndStringReverseOrientation, int);
@@ -362,6 +363,8 @@ protected:
   double MinorTickSpacing;
   int    MinorTicksVisible;
   int    TitleAtEnd;
+  int    TitleJustification;
+  int    TitleVerticalJustification;
   double  LabelFontHeight;
   double  TitleFontHeight;
   int    TickLength;
@@ -386,8 +389,6 @@ protected:
 
   int    LogScale;
 
-  double EndStringHOffsetFactor;
-  double EndStringVOffsetFactor;
   int    EndStringReverseOrientation;
   
 private:
@@ -395,19 +396,12 @@ private:
   void operator=(const vtkVisItAxisActor2D&);
 
   void BuildAxis(vtkViewport *viewport);
-  static double ComputeStringOffset(double width, double height, double theta);
-  static void SetOffsetPosition(double xTick[3], double theta, int stringHeight, 
-                                int stringWidth, int offset, vtkActor2D *actor,
-                                int titleAtEnd, double endStringHOffsetFactor,
-                                double endStringVOffsetFactor);
 
   void           SetNumberOfLabelsBuilt(const int);
 
-  vtkTextMapper *TitleMapper;
-  vtkActor2D    *TitleActor;
+  vtkTextActor  *TitleActor;
 
-  vtkTextMapper **LabelMappers;
-  vtkActor2D    **LabelActors;
+  vtkTextActor **LabelActors;
 
   vtkPolyData         *Axis;
   vtkPolyDataMapper2D *AxisMapper;

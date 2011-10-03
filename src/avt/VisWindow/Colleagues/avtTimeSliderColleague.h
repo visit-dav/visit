@@ -42,7 +42,7 @@
 #include <avtAnnotationColleague.h>
 #include <ColorAttribute.h>
 
-class vtkTextActor;
+class vtkVisItTextActor;
 class vtkTimeSliderActor;
 
 // ****************************************************************************
@@ -66,6 +66,9 @@ class vtkTimeSliderActor;
 //
 //   Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
 //   Added $cycle support.
+//
+//   Brad Whitlock, Wed Sep 28 15:24:47 PDT 2011
+//   Change the text actor type.
 //
 // ****************************************************************************
 
@@ -102,7 +105,7 @@ private:
     void  GetSliderRect(double, double, double, double, double *) const;
 
     vtkTimeSliderActor *timeSlider;
-    vtkTextActor       *textActor;
+    vtkVisItTextActor  *textActor;
     char               *textFormatString;
     char               *textString;
     char               *timeFormatString;

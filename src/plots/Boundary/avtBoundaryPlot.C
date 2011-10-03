@@ -251,7 +251,18 @@ avtBoundaryPlot::SetAtts(const AttributeGroup *a)
     {
         levelsMapper->DataScalingOff();
     }
-    levelsMapper->SetGlyphType((int)atts.GetPointType());
+
+    if (atts.GetPointType() == BoundaryAttributes::Box)
+        levelsMapper->SetGlyphType(avtPointGlypher::Box);
+    else if (atts.GetPointType() == BoundaryAttributes::Axis)
+        levelsMapper->SetGlyphType(avtPointGlypher::Axis);
+    else if (atts.GetPointType() == BoundaryAttributes::Icosahedron)
+        levelsMapper->SetGlyphType(avtPointGlypher::Icosahedron);
+    else if (atts.GetPointType() == BoundaryAttributes::Point)
+        levelsMapper->SetGlyphType(avtPointGlypher::Point);
+    else if (atts.GetPointType() == BoundaryAttributes::Sphere)
+        levelsMapper->SetGlyphType(avtPointGlypher::Sphere);
+    
     SetPointGlyphSize();
 }
 

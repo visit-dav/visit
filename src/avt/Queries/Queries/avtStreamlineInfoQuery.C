@@ -254,7 +254,7 @@ avtStreamlineInfoQuery::Execute(vtkDataSet *data, const int chunk)
     float *scalar = (float *)data->GetPointData()->GetArray("colorVar");
     float *param = (float *)data->GetPointData()->GetArray("params");
 
-    int *segptr = segments;
+    vtkIdType *segptr = segments;
     double pt[3], p0[3];
     
     for (int i=0; i<ds->GetNumberOfLines(); i++)

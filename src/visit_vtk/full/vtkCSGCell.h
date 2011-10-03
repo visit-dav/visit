@@ -50,6 +50,8 @@
 
 #include "vtkCell.h"
 
+class vtkPointLocator;
+
 #define VTK_CSG_CELL 50
 
 class VISIT_VTK_API vtkCSGCell : public vtkCell
@@ -68,16 +70,10 @@ public:
   vtkCell *GetEdge(int) {return 0;};
   vtkCell *GetFace(int) {return 0;};
   int CellBoundary(int subId, double pcoords[3], vtkIdList *pts);
-  void Contour(double value, vtkDataArray *cellScalars, 
-               vtkPointLocator *locator, vtkCellArray *verts1, 
-               vtkCellArray *lines, vtkCellArray *verts2, 
-               vtkPointData *inPd, vtkPointData *outPd,
-               vtkCellData *inCd, vtkIdType cellId, vtkCellData *outCd);
-  void Clip(double value, vtkDataArray *cellScalars, 
-            vtkPointLocator *locator, vtkCellArray *pts,
-            vtkPointData *inPd, vtkPointData *outPd,
-            vtkCellData *inCd, vtkIdType cellId, vtkCellData *outCd,
-            int insideOut);
+
+  virtual void Contour(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkCellArray*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*);
+
+  virtual void Clip(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*, int);
 
   int EvaluatePosition(double x[3], double* closestPoint, 
                        int& subId, double pcoords[3], 

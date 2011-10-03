@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -52,6 +52,13 @@
 #   Kathleen Bonnell,  Thu Dec 2 15:30:05 MST 2010
 #   Add .lib files for Install on Windows.
 # 
+#   Tom Fogal, Fri Jan 28 13:35:29 MST 2011
+#   Account for new VTK installation structure.
+#
+#   Kathleen Bonnell, Tue Jun  7 11:10:51 PDT 2011
+#   Don't add VTK's MangledMesa directory to VTK_INCLUDE_DIRS unless VTK
+#   was built with MangledMesa.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -62,17 +69,19 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 # We rely on FindVTK to set it to the right value.
 SET(VTK_USE_MANGLED_MESA OFF CACHE INTERNAL "Set a cache variable that FindVTK can override")
 
-INCLUDE(${CMAKE_ROOT}/Modules/FindVTK.cmake)
+SET(VTK_DIR ${VISIT_VTK_DIR}/lib)
 
-# Add path to the directory that includes MangledMesa to the include 
-# directories.
-GET_FILENAME_COMPONENT(MANGLEMESADIR ${VTK_DIR}/../../include ABSOLUTE)
-SET(VTK_INCLUDE_DIRS ${VTK_INCLUDE_DIRS} ${MANGLEMESADIR})
+MESSAGE(STATUS "Checking for VTK in ${VTK_DIR}")
+INCLUDE(${CMAKE_ROOT}/Modules/FindVTK.cmake)
 
 # Set the VisIt mangled mesa off of the VTK mangled mesa variable.
 IF("${VTK_USE_MANGLED_MESA}" STREQUAL "ON")
    MESSAGE(STATUS "VTK uses mangled mesa")
    SET(VISIT_USE_MANGLED_MESA "ON" CACHE BOOL "Use mangled mesa in VisIt")
+   # Add path to the directory that includes MangledMesa to the include 
+   # directories.
+   GET_FILENAME_COMPONENT(MANGLEMESADIR ${VTK_DIR}/../../include ABSOLUTE)
+   SET(VTK_INCLUDE_DIRS ${VTK_INCLUDE_DIRS} ${MANGLEMESADIR})
 ENDIF("${VTK_USE_MANGLED_MESA}" STREQUAL "ON")
 
 # Add install commands for all of the VTK libraries. Is there a better way?
@@ -88,7 +97,6 @@ ENDIF(APPLE)
 
 FOREACH(VTKLIB vtkCommon
     vtkCommonPythonD
-    vtkDICOMParser
     vtkFiltering
     vtkFilteringPythonD
     vtkGenericFiltering
@@ -101,12 +109,10 @@ FOREACH(VTKLIB vtkCommon
     vtkIOPythonD
     vtkImaging
     vtkImagingPythonD
-    vtkMPEG2Encode
     vtkRendering
     vtkRenderingPythonD
     vtkVolumeRendering
     vtkVolumeRenderingPythonD
-    vtkexpat
     vtkfreetype
     vtkftgl
     vtkjpeg

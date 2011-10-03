@@ -1255,6 +1255,9 @@ VisWinRendering::ScreenReadback(bool doViewportOnly, bool doCanvasZBufferToo)
 //    Hank Childs, Wed Jan 14 17:45:06 CST 2009
 //    Beef up debug message in error condition.
 //
+//    Brad Whitlock, Tue Sep 27 16:03:21 PDT 2011
+//    Removed extra call to set pixel data.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1283,13 +1286,7 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p capturedImage,
     }
 
     // set pixel data
-    // Note that there appears to be a bug in VTK's implementation of the
-    // vtkRenderWindow::SetPixelData method such that the *first* call to
-    // set pixel data does NOT write to the correct portion of the framebuffer.
-    // However, succeeding calls do. So, as a work-around, we have an additional
-    // dummy call to SetPixelData. 
     pixels = capturedImage->GetImage().GetRGBBuffer();
-    renWin->SetPixelData(0, 0, 0, 0, pixels, useFrontBuffer); // Why? See above.
     renWin->SetPixelData(c0, r0, c0+w-1, r0+h-1, pixels, useFrontBuffer);
 
     // temporarily remove canvas and background renderers

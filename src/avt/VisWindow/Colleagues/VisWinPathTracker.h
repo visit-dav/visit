@@ -125,6 +125,7 @@ class VisWinPathTracker
 
     virtual                     ~VisWinPathTracker();
     static VisWinPathTracker    *Instance();
+    static void                  DeleteInstance();
 
     void                         AddPath(const std::string &path);
     void                         RemovePath(const std::string &path);

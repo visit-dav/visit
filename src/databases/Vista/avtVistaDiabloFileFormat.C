@@ -748,13 +748,17 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
     vtkUnstructuredGrid    *ugrid   = vtkUnstructuredGrid::New();
     ugrid->SetPoints(points);
     ugrid->Allocate(numElems * numNodesPerElem);
+    vtkIdType *verts = new vtkIdType[numNodesPerElem];
     for (i = 0; i < numElems; i++)
     {
         int vtkCellType = VTK_HEXAHEDRON;
         if (numNodesPerElem == 4)
            vtkCellType = VTK_QUAD;
-        ugrid->InsertNextCell(vtkCellType, numNodesPerElem, &elemToNode[i*numNodesPerElem]);
+        for (int j = 0; j < numNodesPerElem; j++)
+            verts[j] = elemToNode[i*numNodesPerElem + j];
+        ugrid->InsertNextCell(vtkCellType, numNodesPerElem, verts);
     }
+    delete [] verts;
     points->Delete();
     delete [] elemToNode;
     return ugrid;

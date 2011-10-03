@@ -165,10 +165,7 @@ TARGET_LINK_LIBRARIES(engine_ser_exe
     visit_verdict 
     vtkjpeg 
     vtkpng 
-    vtkexpat
     vtkzlib 
-    vtkDICOMParser 
-    vtkMPEG2Encode 
     vtkfreetype 
     vtkftgl
     ${ALL_THIRDPARTY_IO_LIB}
@@ -252,10 +249,7 @@ IF(VISIT_PARALLEL)
         visit_verdict 
         vtkjpeg 
         vtkpng 
-        vtkexpat
         vtkzlib 
-        vtkDICOMParser 
-        vtkMPEG2Encode 
         vtkfreetype 
         vtkftgl
         ${ALL_THIRDPARTY_IO_LIB}

@@ -602,8 +602,7 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
     int cellCnt = 0;
     for (i = 0 ; i < ncells ; i++)
     {
-        vtkIdType *ids;
-        int cellNPts;
+        vtkIdType *ids, cellNPts;
         ugrid->GetCellPoints(i, cellNPts, ids);
         bool closeToZero = false;
         bool closeToTwoPi = false;

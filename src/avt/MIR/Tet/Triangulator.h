@@ -43,6 +43,7 @@
 #include <vector>
 #include <MIROptions.h>
 #include "MaterialTriangle.h"
+#include <vtkType.h>
 
 // ****************************************************************************
 //  Class:  Triangulator
@@ -69,7 +70,7 @@ class MIR_API Triangulator
 {
   public:
     Triangulator(int nmat_);
-    void Triangulate(MIROptions::SubdivisionLevel, int, int, const int *,
+    void Triangulate(MIROptions::SubdivisionLevel, int, int, const vtkIdType *,
                      std::vector<float>,
                      std::vector<float>*,
                      std::vector<float>*);
@@ -89,7 +90,7 @@ class MIR_API Triangulator
     int        subdiv;
     int        celltype;
     int        npts;
-    const int *c_ptr;
+    const vtkIdType *c_ptr;
 
     int nmat;
     std::vector<float>   vf_zone;

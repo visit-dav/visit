@@ -190,9 +190,9 @@ vtkVisItScalarTree::BuildTree()
     // Now find the min/max for each bucket.
     for (int cellId = 0 ; cellId < nCells ; cellId++)
     {
-        int *pts;
+        vtkIdType*pts;
         int npts;
-        int arr8[8];
+        vtkIdType arr8[8];
         
         // Get the points
         if (meshType==VTK_RECTILINEAR_GRID || meshType==VTK_STRUCTURED_GRID)

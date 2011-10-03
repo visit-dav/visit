@@ -322,7 +322,8 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
                 
                 double rad = 1e-6, dist=0.0;
                 double p[3] = {X,Y,Z}, resPt[3]={0.0,0.0,0.0};
-                int foundCell = -1, subId = 0;
+                vtkIdType foundCell = -1;
+                int subId = 0;
 
                 if (cellLocator->FindClosestPointWithinRadius(p, rad, resPt,
                                                               foundCell, subId, dist))

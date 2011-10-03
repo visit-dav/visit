@@ -91,7 +91,7 @@ Tetrahedralizer::Tetrahedralizer(int nmat_)
 //
 // ****************************************************************************
 int
-Tetrahedralizer::GetLowTetNodesForTet(int nnodes,const int *nodes, int *tetnodes)
+Tetrahedralizer::GetLowTetNodesForTet(int nnodes,const vtkIdType *nodes, vtkIdType *tetnodes)
 {
     int ntet = 1;
     tetnodes[0] = 0;
@@ -135,7 +135,7 @@ Tetrahedralizer::GetLowTetNodesForTet(int nnodes,const int *nodes, int *tetnodes
 //
 // ****************************************************************************
 int
-Tetrahedralizer::GetLowTetNodesForVox(int nnodes,const int *nodes, int *tetnodes)
+Tetrahedralizer::GetLowTetNodesForVox(int nnodes,const vtkIdType *nodes, vtkIdType *tetnodes)
 {
     int n;
 
@@ -237,7 +237,7 @@ Tetrahedralizer::GetLowTetNodesForVox(int nnodes,const int *nodes, int *tetnodes
 //
 // ****************************************************************************
 int
-Tetrahedralizer::GetLowTetNodesForHex(int nnodes,const int *nodes, int *tetnodes)
+Tetrahedralizer::GetLowTetNodesForHex(int nnodes,const vtkIdType *nodes, vtkIdType *tetnodes)
 {
     int n;
 
@@ -335,7 +335,7 @@ Tetrahedralizer::GetLowTetNodesForHex(int nnodes,const int *nodes, int *tetnodes
 //
 // ****************************************************************************
 int
-Tetrahedralizer::GetLowTetNodesForWdg(int nnodes,const int *nodes, int *tetnodes)
+Tetrahedralizer::GetLowTetNodesForWdg(int nnodes,const vtkIdType *nodes, vtkIdType *tetnodes)
 {
     int n;
 
@@ -426,12 +426,12 @@ Tetrahedralizer::GetLowTetNodesForWdg(int nnodes,const int *nodes, int *tetnodes
 //
 // ****************************************************************************
 int
-Tetrahedralizer::GetLowTetNodesForPyr(int nnodes,const int *nodes, int *tetnodes)
+Tetrahedralizer::GetLowTetNodesForPyr(int nnodes,const vtkIdType *nodes, vtkIdType *tetnodes)
 {
     int n;
 
     // find the node with the lowest index
-    int minv = nodes[0];
+    vtkIdType minv = nodes[0];
     int minn = 0;
     for (n=1; n<nnodes; n++)
     {
@@ -665,7 +665,7 @@ Tetrahedralizer::fill_tets_low()
 // ****************************************************************************
 void
 Tetrahedralizer::Tetrahedralize(MIROptions::SubdivisionLevel s, int celltype,
-                                int npts, const int *c_ptr,
+                                int npts, const vtkIdType *c_ptr,
                                 vector<float>   vf_zone_,
                                 vector<float>  *vf_node_,
                                 vector<float>  *vf_face_,

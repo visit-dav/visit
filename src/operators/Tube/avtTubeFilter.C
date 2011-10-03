@@ -220,13 +220,12 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         ugridAsPD->GetPointData()->ShallowCopy(ugrid->GetPointData());
         ugridAsPD->GetCellData()->ShallowCopy(ugrid->GetCellData());
         ugridAsPD->GetFieldData()->ShallowCopy(ugrid->GetFieldData());
-        int ncells = ugrid->GetNumberOfCells();
+        vtkIdType ncells = ugrid->GetNumberOfCells();
         ugridAsPD->Allocate(ncells);
-        for (int i = 0 ; i < ncells ; i++)
+        for (vtkIdType i = 0 ; i < ncells ; i++)
         {
             int celltype = ugrid->GetCellType(i);
-            vtkIdType *pts;
-            int npts;
+            vtkIdType *pts, npts;
             ugrid->GetCellPoints(i, npts, pts);
             ugridAsPD->InsertNextCell(celltype, npts, pts);
         }

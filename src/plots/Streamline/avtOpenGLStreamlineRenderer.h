@@ -45,6 +45,9 @@
 
 #include <avtStreamlineRendererImplementation.h>
 #include <StreamlineAttributes.h>
+
+#include <vtkType.h>
+
 #include <string>
 
 #define MAX_DETAIL_LEVELS 4
@@ -133,10 +136,10 @@ class avtOpenGLStreamlineRenderer : public avtStreamlineRendererImplementation
     void DrawHeadGeom(vtkPolyData *data);
 
     vtkPolyData *MakeNewPolyline(vtkPolyData *data,
-                                 int *&segptr);
+                                 vtkIdType *&segptr);
     void DrawPolyData(vtkPolyData *data);
     bool GetEndPoints(vtkPolyData *data, 
-                      int *segptr,
+                      vtkIdType *segptr,
                       int nPts,
                       int &j0,
                       int &j1,

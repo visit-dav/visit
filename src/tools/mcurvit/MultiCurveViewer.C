@@ -38,8 +38,14 @@
 
 #include <MultiCurveViewer.h>
 
+#include <QApplication>
+#include <QDir>
+#include <QFileDialog>
+#include <QHBoxLayout>
+#include <QMenuBar>
 #include <QTabWidget>
 #include <QTimer>
+#include <QVBoxLayout>
 #include <QWidget>
 
 #include <QvisAnnotationWidget.h>

@@ -286,7 +286,7 @@ BeginPolyTriangleOrQuad(GLenum aGlFunction, GLenum &previousGlFunction,
 // ****************************************************************************
 
 static void 
-Draw01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+Draw01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
        vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *)
 {
     int i, j; 
@@ -361,7 +361,7 @@ Draw01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
          vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *)
 {
     int i, j;
@@ -441,7 +441,7 @@ DrawN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+DrawCN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
           vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *)
 {
     int i, j;
@@ -521,7 +521,7 @@ DrawCN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints
 // ****************************************************************************
 
 static void 
-DrawS01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawS01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *)
 {
     int i, j;
@@ -601,7 +601,7 @@ DrawS01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawNS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
           vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *)
 {
     int i, j;
@@ -762,7 +762,7 @@ DrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoint
 // ****************************************************************************
 
 static void 
-DrawT01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawT01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
         vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *t)
 {
     int i, j;
@@ -840,7 +840,7 @@ DrawT01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNT013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawNT013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
           vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *t)
 {
     int i, j;
@@ -1002,7 +1002,7 @@ DrawCNT013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoint
 // ****************************************************************************
 
 static void 
-DrawST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
          vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
     int i, j;
@@ -1083,7 +1083,7 @@ DrawST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
            vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
     int i, j;
@@ -1165,7 +1165,7 @@ DrawNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, 
+DrawCNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
             vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
     int i, j;
@@ -1249,7 +1249,7 @@ DrawCNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
 // ****************************************************************************
 
 static void 
-DrawCS01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+DrawCS01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
          vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *)
 {
     int i, j;
@@ -1411,7 +1411,7 @@ DrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoint
 // ****************************************************************************
 
 static void 
-DrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, 
+DrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
             vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *)
             
 {
@@ -1495,7 +1495,7 @@ DrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
 // ****************************************************************************
 
 static void 
-DrawCST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+DrawCST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
           vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
           
 {
@@ -1578,7 +1578,7 @@ DrawCST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints
 // ****************************************************************************
 
 static void 
-DrawNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, 
+DrawNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
             vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
             
 {
@@ -1663,7 +1663,7 @@ DrawNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
 // ****************************************************************************
 
 static void 
-DrawCNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, 
+DrawCNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
              vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
              
 {
@@ -1748,7 +1748,7 @@ DrawCNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
 // ****************************************************************************
 
 static void 
-Draw3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+Draw3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *)
       
 {
@@ -1827,7 +1827,7 @@ Draw3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
 {
     int i, j;
@@ -1907,7 +1907,7 @@ DrawS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawT3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawT3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
        vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *t) 
 {
     int i, j;
@@ -1987,7 +1987,7 @@ DrawT3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t) 
 {
     int i, j; 
@@ -2068,7 +2068,7 @@ DrawST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+DrawCS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
 {
     int i, j; 
@@ -2149,7 +2149,7 @@ DrawCS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *
 // ****************************************************************************
 
 static void 
-DrawCST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+DrawCST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
          vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
     int i, j; 
@@ -2232,7 +2232,7 @@ DrawCST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints 
 // ****************************************************************************
 
 static void 
-Draw2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+Draw2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *) 
 {
     int i, j;
@@ -2308,7 +2308,7 @@ Draw2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *)
 {
     int i, j;
@@ -2387,7 +2387,7 @@ DrawS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawT2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawT2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
        vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *t)
 {
     int i, j;
@@ -2466,7 +2466,7 @@ DrawT2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+DrawST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
     int i, j;
@@ -2548,7 +2548,7 @@ DrawST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+DrawCS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
 {
     int i, j; 
@@ -2629,7 +2629,7 @@ DrawCS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *
 // ****************************************************************************
 
 static void 
-DrawCST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+DrawCST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
          vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
     int i, j;
@@ -2712,7 +2712,7 @@ DrawCST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints 
 // ****************************************************************************
 
 static void 
-DrawW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, 
+DrawW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *) 
 {
     int i, j;
@@ -2787,7 +2787,7 @@ DrawW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, 
+DrawNW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
        vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *) 
 {
     int i, j;
@@ -2866,7 +2866,7 @@ DrawNW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, 
+DrawSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
 {
     int i, j;
@@ -2945,7 +2945,7 @@ DrawSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n, 
+DrawNSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n,
         vtkUnsignedCharArray *c, vtkDataArray *) 
 {
     int i, j; 
@@ -3027,7 +3027,7 @@ DrawNSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n,
 // ****************************************************************************
 
 static void 
-DrawTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *, 
+DrawTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *,
        vtkUnsignedCharArray *, vtkDataArray *t)
 {
     int i, j; 
@@ -3107,7 +3107,7 @@ DrawTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *,
 // ****************************************************************************
 
 static void 
-DrawNTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n, 
+DrawNTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n,
         vtkUnsignedCharArray *, vtkDataArray *t)
 {
     int i, j; 
@@ -3189,7 +3189,7 @@ DrawNTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n,
 // ****************************************************************************
 
 static void 
-DrawSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *, 
+DrawSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *,
         vtkUnsignedCharArray *c, vtkDataArray *t)
 {
     int i, j; 
@@ -3272,7 +3272,7 @@ DrawSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *,
 // ****************************************************************************
 
 static void 
-DrawNSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n, 
+DrawNSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n,
          vtkUnsignedCharArray *c, vtkDataArray *t)
 {
     int i, j; 
@@ -3646,6 +3646,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
 //
 //    Kathleen Bonnell, Thu Jun 13 10:26:49 PDT 2002    
 //    Renamed to DrawSurface2.
+//
+//    Tom Fogal, Fri Jan 28 14:42:57 MST 2011
+//    Typing fixes (vtkIdType).
+//
 // ****************************************************************************
 
 void 
@@ -3660,7 +3664,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     vtkDataArray *t;
     int tDim;
     int cellScalars = 0;
-    int cellNum = 0;
+    vtkIdType cellNum = 0;
     int cellNormals = 0;
   
     // get the representation (e.g., surface / wireframe / points)
@@ -3764,7 +3768,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     }
 
     // how do we draw points
-    void (*draw0)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
+    void (*draw0)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                   vtkUnsignedCharArray *, vtkDataArray *);
     switch (idx) 
     {
@@ -3789,7 +3793,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     }
 
     // how do we draw lines
-    void (*draw1)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
+    void (*draw1)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                   vtkUnsignedCharArray *, vtkDataArray *);
     switch (idx) 
     {
@@ -3814,9 +3818,9 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     }
 
     // how do we draw tstrips
-    void (*draw2)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
+    void (*draw2)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                   vtkUnsignedCharArray *, vtkDataArray *);
-    void (*draw2W)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
+    void (*draw2W)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                    vtkUnsignedCharArray *, vtkDataArray *);
     switch (idx) 
     {
@@ -3862,7 +3866,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     }
   
     // how do we draw polys
-    void (*draw3)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
+    void (*draw3)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                    vtkUnsignedCharArray *, vtkDataArray *);
     switch (idx) 
     {
@@ -4173,6 +4177,9 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 //    up in the call sequence to the routine DrawEdges so that it would
 //    always be executed when DrawEdges is executed.
 //
+//    Tom Fogal, Fri Jan 28 14:42:57 MST 2011
+//    Typing fixes (vtkIdType).
+//
 // ****************************************************************************
 
 void
@@ -4184,7 +4191,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     vtkDataArray *n;
     vtkDataArray *t;
     int tDim;
-    int cellNum = 0;
+    vtkIdType cellNum = 0;
     int cellNormals = 0;
 
     switch (prop->GetRepresentation()) 
@@ -4271,7 +4278,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     }
 
     // how do we draw points
-    void (*draw0)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
+    void (*draw0)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                   vtkUnsignedCharArray *, vtkDataArray *) = NULL;
 
     switch (idx)
@@ -4281,7 +4288,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     }
 
     // how do we draw lines
-    void (*draw1)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
+    void (*draw1)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                   vtkUnsignedCharArray *, vtkDataArray *);
     switch (idx) 
     {
@@ -4294,9 +4301,9 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     }
 
     // how do we draw tstrips
-    void (*draw2)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
+    void (*draw2)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                   vtkUnsignedCharArray *, vtkDataArray *);
-    void (*draw2W)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
+    void (*draw2W)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                    vtkUnsignedCharArray *, vtkDataArray *);
     switch (idx) 
     {
@@ -4318,7 +4325,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     }
   
     // how do we draw polys
-    void (*draw3)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
+    void (*draw3)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
                   vtkUnsignedCharArray *, vtkDataArray *);
     switch (idx) 
     {

@@ -61,6 +61,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //    much, possibly due to whitespace being included in the height.
 //    If this is reinstated, it should be more like 0.25 to 0.40.
 //
+//    Brad Whitlock, Thu Sep 29 17:05:04 PDT 2011
+//    Override title text justification.
+//
 // *****************************************************************
 
 vtkStandardNewMacro(vtkTriad2D);
@@ -80,6 +83,8 @@ vtkTriad2D::vtkTriad2D()
   this->XAxis->SetLabelVisibility(0);
   this->XAxis->SetShadow(0);
   this->XAxis->SetTitleAtEnd(1);
+  this->XAxis->SetTitleJustification(0);
+  this->XAxis->SetTitleVerticalJustification(0);
   this->XAxis->GetPoint1Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport(); 
   this->XAxis->GetPoint2Coordinate()
@@ -91,6 +96,8 @@ vtkTriad2D::vtkTriad2D()
   this->YAxis->SetLabelVisibility(0);
   this->YAxis->SetShadow(0);
   this->YAxis->SetTitleAtEnd(1);
+  this->YAxis->SetTitleJustification(0);
+  this->YAxis->SetTitleVerticalJustification(0);
   this->YAxis->GetPoint1Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport(); 
   this->YAxis->GetPoint2Coordinate()
@@ -102,6 +109,8 @@ vtkTriad2D::vtkTriad2D()
   this->ZAxis->SetLabelVisibility(0);
   this->ZAxis->SetShadow(0);
   this->ZAxis->SetTitleAtEnd(1);
+  this->ZAxis->SetTitleJustification(0);
+  this->ZAxis->SetTitleVerticalJustification(0);
   this->ZAxis->GetPoint1Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport(); 
   this->ZAxis->GetPoint2Coordinate()

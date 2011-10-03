@@ -17,8 +17,8 @@
 =========================================================================*/
 
 #define USE_MGL_NAMESPACE
-#include "MangleMesaInclude/osmesa.h"
-#include <MangleMesaInclude/gl.h>
+#include "GL/osmesa.h"
+#include "GL/gl.h"
 
 #include "vtkOSMesaRenderWindow.h"
 
@@ -469,6 +469,23 @@ void vtkOSMesaRenderWindow::SetNextWindowInfo(char*)
 {
     TraceBeginEnd("vtkOSMesaRenderWindow::SetNextWindowInfo");
 }
+
+bool vtkOSMesaRenderWindow::IsCurrent()
+{
+    TraceBeginEnd("vtkOSMesaRenderWindow::IsCurrent");
+    return true;
+}
+
+void vtkOSMesaRenderWindow::CreateAWindow()
+{
+    TraceBeginEnd("vtkOSMesaRenderWindow::CreateAWindow");
+}
+
+void vtkOSMesaRenderWindow::DestroyWindow()
+{
+    TraceBeginEnd("vtkOSMesaRenderWindow::DestroyWindow");
+}
+
 
 
 void

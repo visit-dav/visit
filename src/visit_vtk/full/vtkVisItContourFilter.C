@@ -389,9 +389,9 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
     int numIcantContour = 0;
     for (i = 0 ; i < nToProcess ; i++)
     {
-        int        cellId = (CellList != NULL ? CellList[i] : i);
+        vtkIdType  cellId = (CellList != NULL ? CellList[i] : i);
         int        cellType = ug->GetCellType(cellId);
-        int        npts;
+        vtkIdType  npts;
         vtkIdType *pts;
         ug->GetCellPoints(cellId, npts, pts);
         int *triangulation_table = NULL;

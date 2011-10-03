@@ -102,6 +102,9 @@ public:
    virtual void SetNextWindowId(void*);
    virtual void SetNextWindowInfo(char*);
 
+   virtual bool IsCurrent();
+   virtual void CreateAWindow();
+   virtual void DestroyWindow();
 
    void SavePPM(const char *filename);
 

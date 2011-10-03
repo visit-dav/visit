@@ -261,7 +261,7 @@ void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
 
   vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
   cellLocations->SetNumberOfValues(ncells);
-  int *cl = cellLocations->GetPointer(0);
+  vtkIdType *cl = cellLocations->GetPointer(0);
 
   vtkCellData *inCD = input->GetCellData();
   vtkCellData *outCD = output->GetCellData();

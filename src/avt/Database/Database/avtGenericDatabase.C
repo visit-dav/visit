@@ -2859,6 +2859,10 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //    Handle curve objects that are the result of re-interpreting some 1D
 //    scalar variables by requesting them from the plugin as we would any
 //    other scalar variable (e.g. GetScalarVarDataset()) 
+//
+//    Tom Fogal, Tue Sep 27 14:53:50 MDT 2011
+//    Ensure static VTK memory gets cleaned up.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2935,7 +2939,12 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         // of trivial producers.  Make one trivial producer for all
         // data sets here.
         //
-        static vtkTrivialProducer *tp = vtkTrivialProducer::New();
+        static vtkTrivialProducer* tp = NULL;
+        if(tp == NULL)
+        {
+            tp = vtkTrivialProducer::New();
+            vtkVisItUtility::RegisterStaticVTKObject(tp);
+        }
         tp->SetOutput(mesh);
         tp->SetOutput(NULL);
 

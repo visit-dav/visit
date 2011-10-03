@@ -404,12 +404,15 @@ ZoomInteractor::OnMouseMove()
 //    Retreive LastPos from RenderWindowInteractor as it is no longer a member
 //    of the parent class. 
 //    
+//    Kathleen Bonnell, Wed Jun  8 10:01:52 PDT 2011
+//    Use current EventPostion instead of last.
+//
 // ****************************************************************************
 
 void
 ZoomInteractor::OnTimer(void)
 {
-    int LastPos[2];
+    int Pos[2];
     if (!rubberBandMode)
     {
     
@@ -418,8 +421,8 @@ ZoomInteractor::OnTimer(void)
         switch (State)
         {
           case VTKIS_ZOOM:
-            rwi->GetLastEventPosition(LastPos);
-            ZoomCamera(LastPos[0], LastPos[1]);
+            rwi->GetEventPosition(Pos);
+            ZoomCamera(Pos[0], Pos[1]);
 
             rwi->CreateTimer(VTKI_TIMER_UPDATE);
             break;

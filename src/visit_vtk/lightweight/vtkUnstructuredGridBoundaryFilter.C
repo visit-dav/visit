@@ -259,7 +259,7 @@ class BQuad
   public:
                    BQuad() { ordering_case = 255; matched = false; };
 
-    int            AssignNodes(const int *);
+    int            AssignNodes(const vtkIdType *);
     bool           Equals(BQuad *);
     bool           Equals(BTri *);
     void           AddInRemainingTriangle(BTri *, int);
@@ -355,7 +355,7 @@ class BTri
   public:
                    BTri() { ordering_case = 255; matched = false; };
 
-    int            AssignNodes(const int *);
+    int            AssignNodes(const vtkIdType *);
     inline bool    Equals(BTri *&t)
                    {
                       if (t->nodes[0] == nodes[0] && t->nodes[1] == nodes[1])
@@ -435,7 +435,7 @@ class BLine
   public:
                    BLine() { ordering_case = 255; matched = false; };
 
-    int            AssignNodes(const int *);
+    int            AssignNodes(const vtkIdType *);
     inline bool    Equals(BLine *l)
                    {
                        return l->nodes[0] == nodes[0];
@@ -691,8 +691,8 @@ class BHashEntryList
                 BHashEntryList(int npts);
     virtual    ~BHashEntryList();
 
-    void        AddTri(const int *, int orig_zone, int cell_value);
-    void        AddQuad(const int *, int orig_zone, int cell_value);
+    void        AddTri(const vtkIdType *, int orig_zone, int cell_value);
+    void        AddQuad(const vtkIdType *, int orig_zone, int cell_value);
 
     inline void IncrementMatchedCount() { matchedCount++; }
 
@@ -736,7 +736,7 @@ class BHashEntryList2D
 
     inline void IncrementMatchedCount() { matchedCount++; }
 
-    void        AddLine(const int *, int orig_zone, int cell_value);
+    void        AddLine(const vtkIdType *, int orig_zone, int cell_value);
 
     inline void RemoveLine(void) { nlines--; };
     int         GetNumberOfMatchedLines(void) { return matchedCount; };
@@ -843,7 +843,7 @@ BQuad::RegisterMemoryManager(BQuadMemoryManager *mm)
 // ****************************************************************************
 
 int
-BQuad::AssignNodes(const int *n)
+BQuad::AssignNodes(const vtkIdType *n)
 {
     int smallest = 0;
     if (n[1] < n[smallest])
@@ -1246,7 +1246,7 @@ BQuad::AddInRemainingTriangle(int n, int node_0)
     n_list[0] = neighbors[(orig_quad_index+3)%4];
     n_list[1] = neighbors[orig_quad_index];
     n_list[2] = neighbors[(orig_quad_index+1)%4];
-    int tmp_nodes[3];
+    vtkIdType tmp_nodes[3];
     for (int i = 0 ; i < 3 ; i++)
     {
         tmp_nodes[i] = (n_list[i] == -1 ? node_0 : nodes[n_list[i]]);
@@ -1290,7 +1290,7 @@ BTri::RegisterMemoryManager(BTriMemoryManager *mm)
 // ****************************************************************************
 
 int
-BTri::AssignNodes(const int *n)
+BTri::AssignNodes(const vtkIdType *n)
 {
     int smallest = 0;
     if (n[0] < n[1])
@@ -1454,7 +1454,7 @@ BLine::RegisterMemoryManager(BLineMemoryManager *mm)
 // ****************************************************************************
 
 int
-BLine::AssignNodes(const int *n)
+BLine::AssignNodes(const vtkIdType *n)
 {
     int smallest = 0;
     if (n[0] < n[1])
@@ -2349,7 +2349,7 @@ BHashEntryList::~BHashEntryList()
 // ****************************************************************************
 
 void
-BHashEntryList::AddTri(const int *node_list, int orig_zone, int cell_value)
+BHashEntryList::AddTri(const vtkIdType *node_list, int orig_zone, int cell_value)
 {
     nfaces++;
     BTri *tri = tmm.GetFreeTri();
@@ -2384,7 +2384,7 @@ BHashEntryList::AddTri(const int *node_list, int orig_zone, int cell_value)
 // ****************************************************************************
 
 void
-BHashEntryList::AddQuad(const int *node_list, int orig_zone, int cell_value)
+BHashEntryList::AddQuad(const vtkIdType *node_list, int orig_zone, int cell_value)
 {
     nfaces++;
     BQuad *quad = qmm.GetFreeQuad();
@@ -2535,7 +2535,7 @@ BHashEntryList2D::~BHashEntryList2D()
 // ****************************************************************************
 
 void
-BHashEntryList2D::AddLine(const int *node_list, int orig_zone, int cell_value)
+BHashEntryList2D::AddLine(const vtkIdType *node_list, int orig_zone, int cell_value)
 {
     nlines++;
     BLine *line = lmm.GetFreeLine();

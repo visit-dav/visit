@@ -261,15 +261,15 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
                                                 nCells, conn, *this);
         }
 
-        int *conn_ptr = conn.connectivity;
+        vtkIdType *conn_ptr = conn.connectivity;
         double *actualVFStorage = new double[nMaterials];
         double *actualVFs = (options.numIterations>0) ? actualVFStorage : NULL;
         double maxdiff = 0;
         for (int c = 0 ; c < nCells ; c++, conn_ptr += (*conn_ptr) + 1)
         {
             int  celltype = conn.celltype[c];
-            int *ids      = conn_ptr+1;
-            int  nids     = *conn_ptr;
+            vtkIdType *ids = conn_ptr+1;
+            int nids       = (int)*conn_ptr;
 
             cr->ReconstructCell(c, celltype, nids, ids, actualVFs);
 
@@ -541,7 +541,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
 
     vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
     cellLocations->SetNumberOfValues(ncells);
-    int *cl = cellLocations->GetPointer(0);
+    vtkIdType *cl = cellLocations->GetPointer(0);
 
     int offset = 0;
     for (int i=0; i<ncells; i++)
@@ -552,7 +552,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
 
         const int nnodes = zonesList[c].nnodes;
         *nl++ = nnodes;
-        const int *indices = &indexList[zonesList[c].startindex];
+        const vtkIdType *indices = &indexList[zonesList[c].startindex];
         for (int j=0; j<nnodes; j++)
             *nl++ = indices[j];
         
@@ -785,12 +785,12 @@ ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
     // extract cells
     int        nCells  = conn.ncells;
     const int *matlist = mat->GetMatlist();
-    int *conn_ptr = conn.connectivity;
+    vtkIdType *conn_ptr = conn.connectivity;
     zonesList.resize(nCells);
     for (int c=0; c<nCells; c++)
     {
-        int        nIds = *conn_ptr;
-        const int *ids  = conn_ptr+1;
+        int              nIds = (int)*conn_ptr;
+        const vtkIdType *ids  = conn_ptr+1;
 
         ReconstructedZone &zone = zonesList[c];
         zone.origzone   = c;

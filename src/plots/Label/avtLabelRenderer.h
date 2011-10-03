@@ -113,8 +113,8 @@ public:
     void                    SetGlobalLabel(const std::string &L);
     void                    SetUseGlobalLabel(bool val);
     void                    SetRendererAction(int);
-    void                    SetCellOrigin(int);
-    void                    SetNodeOrigin(int);
+    void                    SetCellOrigin(vtkIdType);
+    void                    SetNodeOrigin(vtkIdType);
 
 protected:
     struct LabelInfo
@@ -148,8 +148,8 @@ protected:
     char                  *varname;
     bool                   treatAsASCII;
     bool                   renderLabels3D;
-    int                    cellOrigin;
-    int                    nodeOrigin;
+    vtkIdType              cellOrigin;
+    vtkIdType              nodeOrigin;
     double                 fgColor[4];
     float                  spatialExtents[6];
     std::string            globalLabel;

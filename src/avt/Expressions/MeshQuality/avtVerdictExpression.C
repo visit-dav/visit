@@ -169,6 +169,9 @@ avtVerdictExpression::~avtVerdictExpression()
 //    Jeremy Meredith, Thu Aug  7 14:30:46 EDT 2008
 //    Made string literal const char*, not char*.
 //
+//   Dave Pugmire, Fri Jul 22 07:21:02 EDT 2011
+//   vtkIdType != int.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -198,7 +201,7 @@ avtVerdictExpression::DeriveVariable(vtkDataSet *in_ds)
         double coordinates[MAXPOINTS][3];
         for (i = 0; i < nCells; i++)    
         {
-            vtkCell *cell = in_ds->GetCell(i);
+            vtkCell *cell = in_ds->GetCell((vtkIdType)i);
             
             int numPointsForThisCell = cell->GetNumberOfPoints();
             // Grab a pointer to the cell's points' underlying data array

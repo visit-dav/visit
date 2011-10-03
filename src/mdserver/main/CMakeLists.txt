@@ -115,12 +115,9 @@ TARGET_LINK_LIBRARIES(mdserver
     vtkCommon 
     vtkIO 
     vtktiff 
-    vtkexpat 
     vtkzlib 
     vtkpng 
-    vtkDICOMParser 
     vtkjpeg 
-    vtkMPEG2Encode 
     ${ZLIB_LIB} 
     ${CMAKE_THREAD_LIBS} 
     ${DL_LIB}

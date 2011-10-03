@@ -72,27 +72,29 @@ class     vtkRenderWindow;
 //      Gunther H. Weber, Mon Jul 18 16:18:35 PDT 2011
 //      Add ActivateWindow.
 //
+//      Brad Whitlock, Fri Sep 30 18:13:20 PDT 2011
+//      Override SetImmediateModeRendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRenderingWithoutWindow : public VisWinRendering
 {
   public:
-                                       VisWinRenderingWithoutWindow(
-                                                    VisWindowColleagueProxy &);
-    virtual                           ~VisWinRenderingWithoutWindow();
+    VisWinRenderingWithoutWindow(VisWindowColleagueProxy &);
+    virtual ~VisWinRenderingWithoutWindow();
 
-    virtual void                       Iconify(void) {;};
-    virtual void                       DeIconify(void) {;};
-    virtual void                       Show(void) {;};
-    virtual void                       Hide(void) {;};
-    virtual void                       Raise(void) {;};
-    virtual void                       Lower(void) {;};
-    virtual void                       ActivateWindow(void) {;};
+    virtual void Iconify(void) {;};
+    virtual void DeIconify(void) {;};
+    virtual void Show(void) {;};
+    virtual void Hide(void) {;};
+    virtual void Raise(void) {;};
+    virtual void Lower(void) {;};
+    virtual void ActivateWindow(void) {;};
 
-    virtual void                       SetResizeEvent(void(*callback)(void *), void *){;};
-    virtual void                       SetCloseCallback(void(*callback)(void *), void *)
-                                                                           {;};
+    virtual void SetResizeEvent(void(*callback)(void *), void *) {;};
+    virtual void SetCloseCallback(void(*callback)(void *), void *) {;};
 
+    virtual void SetImmediateModeRendering(bool immediateMode);
   protected:
     vtkRenderWindow                   *renWin;
 

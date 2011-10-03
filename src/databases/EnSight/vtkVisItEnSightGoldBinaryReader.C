@@ -1020,7 +1020,8 @@ int vtkVisItEnSightGoldBinaryReader::ReadMeasuredGeometryFile(const char* fileNa
   for (i = 0; i < this->NumberOfMeasuredPoints; i++)
     {
     points->InsertNextPoint(xCoords[i], yCoords[i], zCoords[i]);
-    pd->InsertNextCell(VTK_VERTEX, 1, (vtkIdType*)&pointIds[i]);
+    vtkIdType id = (vtkIdType)pointIds[i];
+    pd->InsertNextCell(VTK_VERTEX, 1, &id);
     }
 
   pd->SetPoints(points);

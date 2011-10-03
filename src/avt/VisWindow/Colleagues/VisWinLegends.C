@@ -43,12 +43,13 @@
 #include <VisWinLegends.h>
 
 #include <vtkRenderer.h>
-#include <vtkTextActor.h>
 #include <vtkTextProperty.h>
 #include <vtkTextMapper.h>
 
 #include <VisWindow.h>
 #include <VisWinPathTracker.h>
+
+#include <vtkVisItTextActor.h>
 
 #include <avtActor.h>
 #include <avtLegend.h>
@@ -57,12 +58,9 @@
 using std::string;
 using std::vector;
 
-
 const double   VisWinLegends::leftColumnPosition  = 0.05;
 const double   VisWinLegends::rightColumnPosition = 0.80;
 const double   VisWinLegends::dbInfoHeight        = 0.07;
-const double   VisWinLegends::dbInfoWidth         = 0.21;
-
 
 // ****************************************************************************
 //  Method: VisWinLegends constructor
@@ -93,6 +91,15 @@ const double   VisWinLegends::dbInfoWidth         = 0.21;
 //    Brad Whitlock, Mon Mar  2 14:11:07 PST 2009
 //    I added dbInfoTimeScale and dbInfoTimeOffset.
 //
+//    Tom Fogal, Fri Jan 28 15:24:25 MST 2011
+//    Account for VTK API change.
+//
+//    Kathleen Biagas, Thu Aug 4 15:59:27 MST 2011
+//    Set text scale mode to viewport for dbInfoActor.
+//
+//    Brad Whitlock, Mon Sep 19 16:07:53 PDT 2011
+//    Switch to vtkVisItTextActor.
+//
 //    Kathleen Biagas, Wed Sep  7 16:23:57 PDT 2011
 //    Added timeVisible.
 //
@@ -101,9 +108,8 @@ const double   VisWinLegends::dbInfoWidth         = 0.21;
 VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p),
     dbInfoTextAttributes()
 {
-    dbInfoActor  = vtkTextActor::New();
-    dbInfoActor->ScaledTextOn();
-    dbInfoActor->SetWidth(dbInfoWidth);
+    dbInfoActor  = vtkVisItTextActor::New();
+    dbInfoActor->SetTextScaleModeToViewport();
     dbInfoActor->SetHeight(dbInfoHeight);
     dbInfoActor->GetTextProperty()->SetJustificationToLeft();
     dbInfoActor->GetTextProperty()->SetLineOffset(0);
@@ -352,6 +358,9 @@ VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
 //    Brad Whitlock, Wed Mar 26 14:36:45 PDT 2008
 //    Changed the height to scale.
 //
+//    Brad Whitlock, Mon Sep 19 16:08:43 PDT 2011
+//    I removed some code to set the width.
+//
 // ****************************************************************************
 
 void
@@ -426,27 +435,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         bool hasTime = CreateDatabaseInfo(info,dbname,atts);
 
         dbInfoActor->SetInput(info);
-
-        //
-        //  If we are adding time, we need a larger width
-        //
-
-        double scale = dbInfoTextAttributes.scale;
-        float info_width = dbInfoWidth; 
-        if (hasTime)
-            info_width += 0.03;
-        
-        // scale text width if necessary when path expansion is enabled
-        if(pathExpansionMode > 0)
-        {
-            if(info_width < dbname.size() * .01)
-                info_width = dbname.size() * .01;
-            if(info_width  > .8)
-                info_width = .8;
-        }
-        
         dbInfoActor->SetHeight(dbInfoHeight+0.04);        
-        dbInfoActor->SetWidth(info_width * scale);
         
         double x = leftColumnPosition;
         double y = 0.98 - dbInfoHeight;

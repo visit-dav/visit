@@ -245,7 +245,7 @@ avtExtrudedVolFileFormat::GetMesh(int domain, const char *meshname)
         {
             EXCEPTION1(InvalidVariableException, meshname);
         }
-        int wedge[6];
+        vtkIdType wedge[6];
         wedge[0] = cell->GetPointId(0);
         wedge[1] = cell->GetPointId(1);
         wedge[2] = cell->GetPointId(2);

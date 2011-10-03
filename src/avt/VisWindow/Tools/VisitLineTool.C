@@ -553,10 +553,10 @@ void
 VisitLineTool::CreateTextActors()
 {
     pointTextActor[0] = vtkTextActor::New();
-    pointTextActor[0]->ScaledTextOff();
+    pointTextActor[0]->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
 
     pointTextActor[1] = vtkTextActor::New();
-    pointTextActor[1]->ScaledTextOff();
+    pointTextActor[1]->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
 }
 
 // ****************************************************************************

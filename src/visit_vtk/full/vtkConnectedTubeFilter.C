@@ -602,7 +602,7 @@ void vtkConnectedTubeFilter::Execute()
             {
                 for (int j=0; j<NumberOfSides; j++)
                 {
-                    int p[4] =
+                    vtkIdType p[4] =
                     {
                         firstIndex + j,
                         firstIndex + j - NumberOfSides,

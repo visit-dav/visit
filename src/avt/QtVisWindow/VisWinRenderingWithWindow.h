@@ -45,10 +45,7 @@
 #include <qtviswindow_exports.h>
 #include <VisWinRendering.h>
 
-
 class     vtkQtRenderWindow;
-class     vtkQtRenderWindowInteractor;
-
 
 // ****************************************************************************
 //  Class: VisWinRenderingWithWindow
@@ -88,6 +85,10 @@ class     vtkQtRenderWindowInteractor;
 //    Brad Whitlock, Mon Aug 18 14:44:46 PDT 2008
 //    Pass in the vtkQtRenderWindow that we'll be using.
 //
+//    Brad Whitlock, Tue Feb 22 15:07:17 PST 2011
+//    Added methods that let us control the render window in more ways since
+//    it is no longer a subclass of vtkRenderWindow.
+//
 //    Gunther H. Weber, Mon Jul 18 16:14:56 PDT 2011
 //    Added ActivateWindow method
 //
@@ -102,7 +103,11 @@ class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
                                            VisWindowColleagueProxy &);
     virtual                           ~VisWinRenderingWithWindow();
 
-    virtual void                       GetWindowSize(int &w, int &h);
+    virtual void                       SetSize(int, int);
+    virtual void                       GetWindowSize(int&, int&);
+    virtual void                       SetLocation(int, int);
+    virtual void                       GetLocation(int&, int&);
+    virtual void                       SetTitle(const char *);
     virtual void                       Iconify(void);
     virtual void                       DeIconify(void);
     virtual void                       Show(void);
@@ -124,7 +129,6 @@ class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
 
   protected:
     vtkQtRenderWindow                 *renWin;
-    vtkQtRenderWindowInteractor       *iren;
 
     virtual vtkRenderWindow           *GetRenderWindow(void);
     virtual vtkRenderWindowInteractor *GetRenderWindowInteractor(void);
@@ -134,6 +138,7 @@ class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
     int                                cursorIndex;
     bool                               fullScreenMode;
     bool                               ownRenderWindow;
+    bool                               useLargeIcons;
 };
 
 

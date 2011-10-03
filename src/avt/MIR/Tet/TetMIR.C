@@ -121,16 +121,16 @@ static ZoneCleanList *CreateZoneCleanList(MIRConnectivity &, int,
 
 static void SubsampleVFsAndCreateNodeList(MIRConnectivity &, int,
                               avtMaterial*,int*,NodeList*,FaceHash*,EdgeHash*);
-static void ExtractCellVFs(int, int, const int *, int, int, float *,
-                                NodeList*, FaceHash*, EdgeHash*,
-                                vector<float>&,
-                                vector<float>*,
-                                vector<float>*,
-                                vector<float>*);
+static void ExtractCellVFs(int, int, const vtkIdType *, int, int, float *,
+                           NodeList*, FaceHash*, EdgeHash*,
+                           vector<float>&,
+                           vector<float>*,
+                           vector<float>*,
+                           vector<float>*);
 static void SetUpCoords(vtkDataSet *, vector<TetMIR::ReconstructedCoord> &);
-static void AddFaces(int, const int *, FaceHash *, int, int=0, int* =NULL, float* =NULL);
-static void AddEdges(int, const int *, EdgeHash *, int, int=0, int* =NULL, float* =NULL);
-static void AddNodes(int, const int *, NodeList *, int, int=0, int* =NULL, float* =NULL);
+static void AddFaces(int, const vtkIdType *, FaceHash *, int, int=0, int* =NULL, float* =NULL);
+static void AddEdges(int, const vtkIdType *, EdgeHash *, int, int=0, int* =NULL, float* =NULL);
+static void AddNodes(int, const vtkIdType *, NodeList *, int, int=0, int* =NULL, float* =NULL);
 
 // ----------------------------------------------------------------------------
 //                             Class Methods
@@ -509,7 +509,7 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     int *mix_index = new int[nmat];
     float *zone_vf = new float[nmat];
     Tetrahedralizer tetrahedralizer(nmat);
-    const int *c_ptr = conn.connectivity;
+    const vtkIdType *c_ptr = conn.connectivity;
     for (int c=0; c<nCells; c++,  c_ptr += (*c_ptr)+1)
     {
         bool clean       = (*real_clean_zones)[c];
@@ -530,7 +530,7 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
                        vf_zone, vf_node, vf_face, vf_edge);
 
         tetrahedralizer.Tetrahedralize(subdivisionLevel, conn.celltype[c],
-                          *c_ptr, c_ptr+1, vf_zone, vf_node, vf_face, vf_edge);
+                                       *c_ptr, c_ptr+1, vf_zone, vf_node, vf_face, vf_edge);
         for (int t=0; t<tetrahedralizer.GetNumberOfTets(); t++)
         {
             if (clean)
@@ -780,7 +780,7 @@ TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     int *mix_index = new int[nmat];
     float *zone_vf = new float[nmat];
     Triangulator triangulator(nmat);
-    const int *c_ptr = conn.connectivity;
+    const vtkIdType *c_ptr = conn.connectivity;
     for (int c=0; c<nCells; c++,  c_ptr += (*c_ptr)+1)
     {
         bool clean       = (*real_clean_zones)[c];
@@ -898,12 +898,12 @@ TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
     // extract cells
     int        nCells  = conn.ncells;
     const int *matlist = mat->GetMatlist();
-    int *conn_ptr = conn.connectivity;
+    vtkIdType *conn_ptr = conn.connectivity;
     zonesList.resize(nCells);
     for (int c=0; c<nCells; c++)
     {
         int        nIds = *conn_ptr;
-        const int *ids  = conn_ptr+1;
+        const vtkIdType *ids = conn_ptr+1;
 
         ReconstructedZone &zone = zonesList[c];
         zone.origzone   = c;
@@ -1219,7 +1219,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
 //
 // ****************************************************************************
 void
-TetMIR::IndexTetNode(Tet::Node &node, int c, int npts, const int *c_ptr,
+TetMIR::IndexTetNode(Tet::Node &node, int c, int npts, const vtkIdType *c_ptr,
                   const MaterialTetrahedron &mattet)
 {
     if (node.index != -1)
@@ -1302,7 +1302,7 @@ TetMIR::IndexTetNode(Tet::Node &node, int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 void
-TetMIR::IndexTriNode(Tri::Node &node, int c, int npts, const int *c_ptr,
+TetMIR::IndexTriNode(Tri::Node &node, int c, int npts, const vtkIdType *c_ptr,
                   const MaterialTriangle &mattri)
 {
     if (node.index != -1)
@@ -1362,7 +1362,7 @@ TetMIR::IndexTriNode(Tri::Node &node, int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 void
-TetMIR::ReconstructCleanCell(int matno, int c, int nIds, const int *ids,
+TetMIR::ReconstructCleanCell(int matno, int c, int nIds, const vtkIdType *ids,
                           int celltype)
 {
     ReconstructedZone zone;
@@ -1449,7 +1449,7 @@ TetMIR::ReconstructCleanCell(int matno, int c, int nIds, const int *ids,
 //
 // ****************************************************************************
 void
-TetMIR::ReconstructTet(int c, int npts, const int *c_ptr,
+TetMIR::ReconstructTet(int c, int npts, const vtkIdType *c_ptr,
                      const MaterialTetrahedron &mattet,
                      const vector<float> &vf, int *mix_index, int nmat)
 {
@@ -1594,23 +1594,23 @@ TetMIR::ReconstructTet(int c, int npts, const int *c_ptr,
             Wedge &wedge = wedgelist[t];
 
             // get the tets
-            int nodes[6] = {wedge.node[0].index,
+            vtkIdType nodes[6] = {wedge.node[0].index,
                             wedge.node[1].index,
                             wedge.node[2].index,
                             wedge.node[3].index,
                             wedge.node[4].index,
                             wedge.node[5].index};
 
-            static int indices[12];
+            static vtkIdType indices[12];
             int ntets = Tetrahedralizer::GetLowTetNodesForWdg(6,nodes, indices);
 
             for (int t=0; t<ntets; t++)
             {
                 // indices for the nodes of the new tet
-                int ax = indices[t*4 + 0];
-                int bx = indices[t*4 + 1];
-                int cx = indices[t*4 + 2];
-                int dx = indices[t*4 + 3];
+                vtkIdType ax = indices[t*4 + 0];
+                vtkIdType bx = indices[t*4 + 1];
+                vtkIdType cx = indices[t*4 + 2];
+                vtkIdType dx = indices[t*4 + 3];
 
                 tetlist.AddTet(wedge.zone_num, wedge.mat,
                                wedge.node[ax],
@@ -1684,7 +1684,7 @@ TetMIR::ReconstructTet(int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 void
-TetMIR::ReconstructCleanTet(int matno, int c, int npts, const int *c_ptr,
+TetMIR::ReconstructCleanTet(int matno, int c, int npts, const vtkIdType *c_ptr,
                          const MaterialTetrahedron &mattet)
 {
     ReconstructedZone zone;
@@ -1781,7 +1781,7 @@ TetMIR::ReconstructCleanTet(int matno, int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 void
-TetMIR::ReconstructTri(int c, int npts, const int *c_ptr,
+TetMIR::ReconstructTri(int c, int npts, const vtkIdType *c_ptr,
                      const MaterialTriangle &mattri,
                      const vector<float> &vf, int *mix_index, int nmat)
 {
@@ -1913,7 +1913,7 @@ TetMIR::ReconstructTri(int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 void
-TetMIR::ReconstructCleanTri(int matno, int c, int npts, const int *c_ptr,
+TetMIR::ReconstructCleanTri(int matno, int c, int npts, const vtkIdType *c_ptr,
                          const MaterialTriangle &mattri)
 {
     Tri tri(c,mattri,matno);
@@ -2053,7 +2053,7 @@ FindIntersect(double a1, double b1, double a2, double b2)
 // ****************************************************************************
 void
 TetMIR::MergeTetsHelper(TetList &tetlist, WedgeList &wedgelist,
-                     int c, int npts, const int *c_ptr,
+                     int c, int npts, const vtkIdType *c_ptr,
                      const MaterialTetrahedron &mattet, int *maxmat,
                      const Tet &tet1, const Tet &tet2,
                      int forcedMat)
@@ -2247,7 +2247,7 @@ TetMIR::MergeTetsHelper(TetList &tetlist, WedgeList &wedgelist,
 //
 // ****************************************************************************
 void
-TetMIR::MergeTrisHelper(TriList &trilist, int c, int npts, const int *c_ptr,
+TetMIR::MergeTrisHelper(TriList &trilist, int c, int npts, const vtkIdType *c_ptr,
                      const MaterialTriangle &mattri, int *maxmat,
                      const Tri &tri1, const Tri &tri2,
                      int forcedMat)
@@ -2361,7 +2361,7 @@ TetMIR::MergeTrisHelper(TriList &trilist, int c, int npts, const int *c_ptr,
 // ****************************************************************************
 void
 TetMIR::MergeWedges(TetList &tetlist, WedgeList &wedgelist,
-                 int c, int npts, const int *c_ptr,
+                 int c, int npts, const vtkIdType *c_ptr,
                  const MaterialTetrahedron &mattet,
                  const Wedge &wedge1, const Wedge &wedge2,
                  int forcedMat)
@@ -2393,14 +2393,14 @@ TetMIR::MergeWedges(TetList &tetlist, WedgeList &wedgelist,
     else
     {
         // get the tets
-        int nodes[6] = {wedge1.node[0].index,
-                        wedge1.node[1].index,
-                        wedge1.node[2].index,
-                        wedge1.node[3].index,
-                        wedge1.node[4].index,
-                        wedge1.node[5].index};
+        vtkIdType nodes[6] = {wedge1.node[0].index,
+                              wedge1.node[1].index,
+                              wedge1.node[2].index,
+                              wedge1.node[3].index,
+                              wedge1.node[4].index,
+                              wedge1.node[5].index};
 
-        static int indices[12];
+        static vtkIdType indices[12];
         int ntets = Tetrahedralizer::GetLowTetNodesForWdg(6,nodes, indices);
 
         for (int t=0; t<ntets; t++)
@@ -2456,7 +2456,7 @@ TetMIR::MergeWedges(TetList &tetlist, WedgeList &wedgelist,
 // ****************************************************************************
 void
 TetMIR::MergeTets(TetList &tetlist, WedgeList &wedgelist,
-               int c, int npts, const int *c_ptr,
+               int c, int npts, const vtkIdType *c_ptr,
                const MaterialTetrahedron &mattet,
                const Tet &tet1, const Tet &tet2,
                int forcedMat)
@@ -2518,7 +2518,7 @@ TetMIR::MergeTets(TetList &tetlist, WedgeList &wedgelist,
 //
 // ****************************************************************************
 void
-TetMIR::MergeTris(TriList &trilist, int c, int npts, const int *c_ptr,
+TetMIR::MergeTris(TriList &trilist, int c, int npts, const vtkIdType *c_ptr,
                const MaterialTriangle &mattri, const Tri &tri1,const Tri &tri2,
                int forcedMat)
 {
@@ -2578,7 +2578,7 @@ CreateFaceHash(MIRConnectivity &conn, int nmat,
     FaceHash *face_hash = new FaceHash(conn.ncells*3, hashfunc);
 
     int nCells = conn.ncells;
-    int *c_ptr = conn.connectivity;
+    vtkIdType *c_ptr = conn.connectivity;
     for (int c=0; c<nCells; c++)
     {
         AddFaces(conn.celltype[c], c_ptr+1, face_hash, nmat);
@@ -2615,7 +2615,7 @@ CreateFaceHash(MIRConnectivity &conn, int nmat,
 //
 // ****************************************************************************
 static void
-AddFaces(int celltype, const int *cellids, FaceHash *face_hash, int nmat,
+AddFaces(int celltype, const vtkIdType *cellids, FaceHash *face_hash, int nmat,
          int nRealMat, int *materials, float *vf)
 {
     static int hexfaces[6][4] = { {0,4,7,3}, {1,2,6,5}, {0,1,5,4}, {3,7,6,2},
@@ -2739,7 +2739,7 @@ CreateEdgeHash(MIRConnectivity &conn, int nmat,
     int nCells = conn.ncells;
     EdgeHash *edge_hash = new EdgeHash(nCells*3, hashfunc);
 
-    const int *c_ptr = conn.connectivity;
+    const vtkIdType *c_ptr = conn.connectivity;
     for (int c=0; c<nCells; c++)
     {
         AddEdges(conn.celltype[c], c_ptr+1, edge_hash, nmat);
@@ -2776,7 +2776,7 @@ CreateEdgeHash(MIRConnectivity &conn, int nmat,
 //
 // ****************************************************************************
 static void
-AddEdges(int celltype, const int *cellids, EdgeHash *edge_hash, int nmat,
+AddEdges(int celltype, const vtkIdType *cellids, EdgeHash *edge_hash, int nmat,
          int nRealMat, int *materials, float *vf)
 {
     static int tetra_edges[6][2] = { {0,1}, {1,2}, {2,0}, {0,3}, {1,3}, {2,3}};
@@ -2819,7 +2819,7 @@ AddEdges(int celltype, const int *cellids, EdgeHash *edge_hash, int nmat,
         nEdges = 4;
         break;
     }
-    int ids[2];
+    vtkIdType ids[2];
     for (int e=0; e<nEdges; e++)
     {
         ids[0] = cellids[edgelist[e][0]];
@@ -2866,7 +2866,7 @@ AddEdges(int celltype, const int *cellids, EdgeHash *edge_hash, int nmat,
 //
 // ****************************************************************************
 static void
-AddNodes(int nPts, const int *cellids, NodeList *node_list, int nmat,
+AddNodes(int nPts, const vtkIdType *cellids, NodeList *node_list, int nmat,
          int nRealMat, int *materials, float *vf)
 {
     for (int n=0; n<nPts; n++)
@@ -2935,7 +2935,7 @@ CreateZoneCleanList(MIRConnectivity &conn, int nPts, avtMaterial *mat,
     {
         dom_mat[i] = -1;
     }
-    const int *c_ptr = conn.connectivity;
+    const vtkIdType *c_ptr = conn.connectivity;
     for (int c=0; c<nCells; c++)
     {
         if (mat->GetMatlist()[c] < 0)
@@ -2946,7 +2946,7 @@ CreateZoneCleanList(MIRConnectivity &conn, int nPts, avtMaterial *mat,
         }
         int        clean_mat = mat->GetMatlist()[c];
         int        nPts = *c_ptr;
-        const int *ids  = c_ptr+1;
+        const vtkIdType *ids  = c_ptr+1;
 
         bool       real_clean = mat_cnt[c] < 3;
         for (int n=0; n<nPts && real_clean; n++)
@@ -3046,12 +3046,12 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
     // Go through each cell, extract the materials from the avtMaterial,
     // and subsample the zone volume fractions to the nodes and the faces.
     //
-    const int *c_ptr = conn.connectivity;
+    const vtkIdType *c_ptr = conn.connectivity;
     int c;
     for (c=0; c<nCells; c++)
     {
         int        nPts = *c_ptr;
-        const int *ids  = c_ptr+1;
+        const vtkIdType *ids  = c_ptr+1;
 
         //
         // Create a list of materials and their corresponding volume
@@ -3139,7 +3139,7 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
     for (c=0; c<nCells; c++)
     {
         int        nPts = *c_ptr;
-        const int *ids  = c_ptr+1;
+        const vtkIdType *ids  = c_ptr+1;
 
         mat_cnt[c] = 0;
         for (int m=0; m<nMat; m++)
@@ -3202,7 +3202,7 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
 //
 // ****************************************************************************
 static void
-ExtractCellVFs(int c, int nPts, const int *ids, int celltype, int nmat,
+ExtractCellVFs(int c, int nPts, const vtkIdType *ids, int celltype, int nmat,
                float                     *zone_vf,
                NodeList                  *node_list,
                FaceHash                  *face_hash,
@@ -3219,7 +3219,7 @@ ExtractCellVFs(int c, int nPts, const int *ids, int celltype, int nmat,
     // nodes
     for (int n=0; n<nPts; n++)
     {
-        int id = ids[n];
+        vtkIdType id = ids[n];
         for (int m=0; m<nmat; m++)
             vf_node[n][m] = (*node_list)[id].vf[m];
     }

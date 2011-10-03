@@ -408,9 +408,12 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
             SNPRINTF(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", meshname);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
-
+        
         for (i = 0; i < nssize; i++)
-            ugrid->InsertNextCell(VTK_VERTEX, 1, (vtkIdType*) &nodelist[i]);
+        {
+            vtkIdType id = (vtkIdType) nodelist[i];
+            ugrid->InsertNextCell(VTK_VERTEX, 1, &id);
+        }
 
         free(nodelist);
 

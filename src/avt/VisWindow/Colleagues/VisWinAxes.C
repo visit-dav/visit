@@ -1444,6 +1444,9 @@ VisWinAxes::SetLineWidth(int width)
 //    Kathleen Bonnell, Tue Jul 20 11:44:36 PDT 2004 
 //    Use 'x10^' insted of '10e' when diplaying scientific notation. 
 //
+//    Brad Whitlock, Wed Aug 31 14:35:43 PDT 2011
+//    Remove end of line for Y-axis units.
+//
 // ****************************************************************************
 
 void
@@ -1471,14 +1474,14 @@ VisWinAxes::SetTitle(void)
         if (unitsY[0] == '\0')
             SNPRINTF(buffer, 1024, "%s", yTitle);
         else
-            SNPRINTF(buffer, 1024, "%s\n (%s)", yTitle, unitsY);
+            SNPRINTF(buffer, 1024, "%s (%s)", yTitle, unitsY);
     }
     else
     {
         if (unitsY[0] == '\0')
-            SNPRINTF(buffer, 1024, "%s\n (x10^%d)", yTitle, powY);
+            SNPRINTF(buffer, 1024, "%s (x10^%d)", yTitle, powY);
         else
-            SNPRINTF(buffer, 1024, " %s\n(x10^%d %s)", yTitle, powY, unitsY);
+            SNPRINTF(buffer, 1024, " %s (x10^%d %s)", yTitle, powY, unitsY);
     }
     yAxis->SetTitle(buffer);
 }

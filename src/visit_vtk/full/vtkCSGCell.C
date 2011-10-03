@@ -70,17 +70,13 @@ int vtkCSGCell::CellBoundary(int vtkNotUsed(subId),
   return 0;
 }
 
-void vtkCSGCell::Contour(double vtkNotUsed(value), 
-                           vtkDataArray *vtkNotUsed(cellScalars), 
-                           vtkPointLocator *vtkNotUsed(locator),
-                           vtkCellArray *vtkNotUsed(verts), 
-                           vtkCellArray *vtkNotUsed(lines), 
-                           vtkCellArray *vtkNotUsed(polys), 
-                           vtkPointData *vtkNotUsed(inPd),
-                           vtkPointData *vtkNotUsed(outPd),
-                           vtkCellData *vtkNotUsed(inCd),
-                           vtkIdType vtkNotUsed(cellId), 
-                           vtkCellData *vtkNotUsed(outCd))
+void
+vtkCSGCell::Contour(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkCellArray*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*)
+{
+}
+
+void
+vtkCSGCell::Clip(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*, int)
 {
 }
 
@@ -115,15 +111,3 @@ void vtkCSGCell::Derivatives(int vtkNotUsed(subId),
 {
 }
 
-void vtkCSGCell::Clip(double vtkNotUsed(value), 
-                        vtkDataArray *vtkNotUsed(cellScalars), 
-                        vtkPointLocator *vtkNotUsed(locator), 
-                        vtkCellArray *vtkNotUsed(verts),    
-                        vtkPointData *vtkNotUsed(inPD),
-                        vtkPointData *vtkNotUsed(outPD),
-                        vtkCellData *vtkNotUsed(inCD), 
-                        vtkIdType vtkNotUsed(cellId),
-                        vtkCellData *vtkNotUsed(outCD),
-                        int vtkNotUsed(insideOut))
-{
-}

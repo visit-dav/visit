@@ -536,12 +536,12 @@ void
 VisitBoxTool::CreateTextActors()
 {
     originTextActor = vtkTextActor::New();
-    originTextActor->ScaledTextOff(); 
+    originTextActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE); 
 
     for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
     {
         labelTextActor[i] = vtkTextActor::New();
-        labelTextActor[i]->ScaledTextOff();
+        labelTextActor[i]->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
     }
 }
 
@@ -798,7 +798,7 @@ VisitBoxTool::CreateOutline()
     for(i = 0; i < 4; ++i)
     {
         outlineTextActor[i] = vtkTextActor::New();
-        outlineTextActor[i]->ScaledTextOff();
+        outlineTextActor[i]->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
     }
 }
 

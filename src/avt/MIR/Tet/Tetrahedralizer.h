@@ -43,6 +43,7 @@
 #include <vector>
 #include <MIROptions.h>
 #include "MaterialTetrahedron.h"
+#include <vtkType.h>
 
 
 // ****************************************************************************
@@ -76,7 +77,7 @@ class MIR_API Tetrahedralizer
 {
   public:
     Tetrahedralizer(int nmat_);
-    void Tetrahedralize(MIROptions::SubdivisionLevel, int, int, const int *,
+    void Tetrahedralize(MIROptions::SubdivisionLevel, int, int, const vtkIdType *,
                         std::vector<float>,
                         std::vector<float>*,
                         std::vector<float>*,
@@ -86,11 +87,11 @@ class MIR_API Tetrahedralizer
     MaterialTetrahedron &GetTet(int t) {return tet[t];}
 
   public:
-    static int GetLowTetNodesForTet(int, const int *, int *);
-    static int GetLowTetNodesForHex(int, const int *, int *);
-    static int GetLowTetNodesForWdg(int, const int *, int *);
-    static int GetLowTetNodesForPyr(int, const int *, int *);
-    static int GetLowTetNodesForVox(int, const int *, int *);
+    static int GetLowTetNodesForTet(int, const vtkIdType *, vtkIdType *);
+    static int GetLowTetNodesForHex(int, const vtkIdType *, vtkIdType *);
+    static int GetLowTetNodesForWdg(int, const vtkIdType *, vtkIdType *);
+    static int GetLowTetNodesForPyr(int, const vtkIdType *, vtkIdType *);
+    static int GetLowTetNodesForVox(int, const vtkIdType *, vtkIdType *);
 
   private:
     void calc_hex_low();
@@ -103,7 +104,7 @@ class MIR_API Tetrahedralizer
   private:
     int         subdiv;
     int         nnodes;
-    const int  *nodes;
+    const vtkIdType  *nodes;
 
     int nmat;
     std::vector<float>   vf_zone;
@@ -114,7 +115,7 @@ class MIR_API Tetrahedralizer
     int ntet;
     MaterialTetrahedron tet[MAX_TETS_PER_CELL];
 
-    int tetnodes_low[4*MAX_TETS_PER_CELL];
+    vtkIdType tetnodes_low[4*MAX_TETS_PER_CELL];
 };
 
 #endif

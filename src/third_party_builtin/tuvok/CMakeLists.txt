@@ -35,8 +35,6 @@
 # DAMAGE.
 #
 # Modifications:
-#   Kathleen Bonnell, Wed Jan 05 10:22:08 PST 2010
-#   Add folder property.
 #
 #****************************************************************************/
 
@@ -239,7 +237,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/tuvok
 ${CMAKE_CURRENT_SOURCE_DIR}/tuvok/3rdParty
 ${CMAKE_CURRENT_SOURCE_DIR}/tuvok/IO/3rdParty
 ${CMAKE_CURRENT_SOURCE_DIR}/tuvok/IO/3rdParty/boost
-${VISIT_SOURCE_DIR}/third_party_builtin/glew/glew/include
+${GLEW_INCLUDE_DIR}
 ${QT_INCLUDES}
 )
 
@@ -251,7 +249,6 @@ ADD_DEFINITIONS(-DQT_SHARED -DTUVOK_NO_IO -DGLSL_DEBUG)
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR})
 
 ADD_LIBRARY(tuvok ${TUVOK_SOURCES})
-SET_TARGET_PROPERTIES(tuvok PROPERTIES FOLDER thirdparty_builtin/tuvok)
 
 ##
 ## These are needed when building tuvok as a shared library.
@@ -259,7 +256,7 @@ SET_TARGET_PROPERTIES(tuvok PROPERTIES FOLDER thirdparty_builtin/tuvok)
 
 #TARGET_LINK_LIBRARIES(tuvok
 #visitcommon
-#GLEW
+#${GLEW_LIB}
 #${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} 
 #z
 #)

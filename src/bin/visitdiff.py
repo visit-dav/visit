@@ -256,8 +256,8 @@ def GetVarType(metadata, varname):
     # if we don't have an answer, look at currently defined expressions 
     if theType == "Unknown":
         el = Expressions()
-	i = 0
-	while i < len(el) and theType == "Unknown":
+        i = 0
+        while i < len(el) and theType == "Unknown":
 	    exp = el[i]
             if exp[0] == varname:
 	        theType = "Scalar" # assume its a scalar
@@ -870,17 +870,17 @@ def Initialize():
         sys.exit(5)
 
     # Set up text annotations.
-    windowsToAnnots = {1 : "L-ConnCMFE(R)", 2 : "       Unused", 3 : "      Left-db", 4 : "     Right-db"}
+    windowsToAnnots = {1 : "L-ConnCMFE(R)", 2 : "Unused", 3 : "Left-db", 4 : "Right-db"}
     if cmfeMode == 1:
-        windowsToAnnots = {1 : " L-PosCMFE(R)", 2 : " R-PosCMFE(L)", 3 : "      Left-db", 4 : "     Right-db"}
+        windowsToAnnots = {1 : "L-PosCMFE(R)", 2 : "R-PosCMFE(L)", 3 : "Left-db", 4 : "Right-db"}
     for win in (1,2,3,4):
         if win == 2 and cmfeMode == 0:
             continue
         SetActiveWindow(win)
         annot = CreateAnnotationObject("Text2D")
         annot.text = windowsToAnnots[win]
-        annot.width = 0.2
-        annot.position = (0.80,0.95)
+        annot.height = 0.03
+        annot.position = (0.70,0.95)
         annot.useForegroundForTextColor = 0
         annot.textColor = (255,0,0,255)
         annot.fontBold = 1
@@ -1372,20 +1372,21 @@ def SyncWindows(srcWin):
 	    if cmfeMode == 0:
                 ao.text = "L-ConnCMFE(R)"
 	    else:
-                ao.text = " L-PosCMFE(R)"
+                ao.text = "L-PosCMFE(R)"
         elif win == 2:
             ReplaceDatabase(dbr)
 	    if cmfeMode == 0:
-                ao.text = "       Unused"
+                ao.text = "Unused"
             else:
-                ao.text = " R-PosCMFE(L)"
+                ao.text = "R-PosCMFE(L)"
 	elif win == 3:
             ReplaceDatabase(dbl)
-            ao.text = "      Left-db"
+            ao.text =     "Left-db"
         elif win == 4:
             ReplaceDatabase(dbr)
-            ao.text = "     Right-db"
-
+            ao.text =     "Right-db"
+        ao.position = (0.7, 0.95)
+	
 	# reset the plot variables
         plots = GetPlotList()
         for p in range(plots.GetNumPlots()):

@@ -342,7 +342,7 @@ avtLocateCellQuery::FindClosestCell(vtkDataSet *ds, double &minDist, double isec
     {
         return -1;
     }
-    int foundCell = -1;
+    vtkIdType foundCell = -1;
     double *rayPt1 = pickAtts.GetRayPoint1();
     double pt[3] = {rayPt1[0], rayPt1[1], 0.};
     double dist, rad = minDist;

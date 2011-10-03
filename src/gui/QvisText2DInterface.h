@@ -61,7 +61,9 @@ class QvisScreenPositionEdit;
 // Creation:   Fri Oct 31 12:47:34 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Sep 16 16:12:59 PDT 2011
+//   Remove width and use height.
+//
 // ****************************************************************************
 
 class GUI_API QvisText2DInterface : public QvisAnnotationObjectInterface
@@ -79,7 +81,6 @@ protected:
     virtual void UpdateControls();
 private slots:
     void positionChanged(double, double);
-    void widthChanged(int);
     void heightChanged(int);
     void textChanged();
     void textColorChanged(const QColor &);
@@ -92,7 +93,6 @@ private slots:
     void visibilityToggled(bool);
 private:
     QvisScreenPositionEdit *positionEdit;
-    QSpinBox               *widthSpinBox;
     QSpinBox               *heightSpinBox;
     QLineEdit              *textLineEdit;
     QvisColorButton        *textColorButton;

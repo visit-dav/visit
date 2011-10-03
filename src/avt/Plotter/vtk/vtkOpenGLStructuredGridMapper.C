@@ -29,6 +29,8 @@
 #include "vtkCellData.h"
 #include "vtkCommand.h"
 #include "vtkDataArray.h"
+#include "vtkFloatArray.h"
+#include "vtkImageData.h"
 #include "vtkMatrix4x4.h"
 #include "vtkObjectFactory.h"
 #include "vtkOpenGLRenderer.h"
@@ -52,46 +54,6 @@ static const int dlSize = 8192;
 vtkCxxRevisionMacro(vtkOpenGLStructuredGridMapper, "$Revision: 1.78 $");
 vtkStandardNewMacro(vtkOpenGLStructuredGridMapper);
 
-static float vtk1Over255[] = {
-0.f, 0.00392157f, 0.00784314f, 0.0117647f, 0.0156863f, 0.0196078f, 0.0235294f,
-0.027451f, 0.0313725f, 0.0352941f, 0.0392157f, 0.0431373f, 0.0470588f, 0.0509804f,
-0.054902f, 0.0588235f, 0.0627451f, 0.0666667f, 0.0705882f, 0.0745098f, 0.0784314f,
-0.0823529f, 0.0862745f, 0.0901961f, 0.0941176f, 0.0980392f, 0.101961f, 0.105882f,
-0.109804f, 0.113725f, 0.117647f, 0.121569f, 0.12549f, 0.129412f, 0.133333f,
-0.137255f, 0.141176f, 0.145098f, 0.14902f, 0.152941f, 0.156863f, 0.160784f,
-0.164706f, 0.168627f, 0.172549f, 0.176471f, 0.180392f, 0.184314f, 0.188235f,
-0.192157f, 0.196078f, 0.2f, 0.203922f, 0.207843f, 0.211765f, 0.215686f, 0.219608f,
-0.223529f, 0.227451f, 0.231373f, 0.235294f, 0.239216f, 0.243137f, 0.247059f,
-0.25098f, 0.254902f, 0.258824f, 0.262745f, 0.266667f, 0.270588f, 0.27451f,
-0.278431f, 0.282353f, 0.286275f, 0.290196f, 0.294118f, 0.298039f, 0.301961f,
-0.305882f, 0.309804f, 0.313725f, 0.317647f, 0.321569f, 0.32549f, 0.329412f,
-0.333333f, 0.337255f, 0.341176f, 0.345098f, 0.34902f, 0.352941f, 0.356863f,
-0.360784f, 0.364706f, 0.368627f, 0.372549f, 0.376471f, 0.380392f, 0.384314f,
-0.388235f, 0.392157f, 0.396078f, 0.4f, 0.403922f, 0.407843f, 0.411765f, 0.415686f,
-0.419608f, 0.423529f, 0.427451f, 0.431373f, 0.435294f, 0.439216f, 0.443137f,
-0.447059f, 0.45098f, 0.454902f, 0.458824f, 0.462745f, 0.466667f, 0.470588f,
-0.47451f, 0.478431f, 0.482353f, 0.486275f, 0.490196f, 0.494118f, 0.498039f,
-0.501961f, 0.505882f, 0.509804f, 0.513725f, 0.517647f, 0.521569f, 0.52549f,
-0.529412f, 0.533333f, 0.537255f, 0.541176f, 0.545098f, 0.54902f, 0.552941f,
-0.556863f, 0.560784f, 0.564706f, 0.568627f, 0.572549f, 0.576471f, 0.580392f,
-0.584314f, 0.588235f, 0.592157f, 0.596078f, 0.6f, 0.603922f, 0.607843f, 0.611765f,
-0.615686f, 0.619608f, 0.623529f, 0.627451f, 0.631373f, 0.635294f, 0.639216f,
-0.643137f, 0.647059f, 0.65098f, 0.654902f, 0.658824f, 0.662745f, 0.666667f,
-0.670588f, 0.67451f, 0.678431f, 0.682353f, 0.686275f, 0.690196f, 0.694118f,
-0.698039f, 0.701961f, 0.705882f, 0.709804f, 0.713725f, 0.717647f, 0.721569f,
-0.72549f, 0.729412f, 0.733333f, 0.737255f, 0.741176f, 0.745098f, 0.74902f,
-0.752941f, 0.756863f, 0.760784f, 0.764706f, 0.768627f, 0.772549f, 0.776471f,
-0.780392f, 0.784314f, 0.788235f, 0.792157f, 0.796078f, 0.8f, 0.803922f, 0.807843f,
-0.811765f, 0.815686f, 0.819608f, 0.823529f, 0.827451f, 0.831373f, 0.835294f,
-0.839216f, 0.843137f, 0.847059f, 0.85098f, 0.854902f, 0.858824f, 0.862745f,
-0.866667f, 0.870588f, 0.87451f, 0.878431f, 0.882353f, 0.886275f, 0.890196f,
-0.894118f, 0.898039f, 0.901961f, 0.905882f, 0.909804f, 0.913725f, 0.917647f,
-0.921569f, 0.92549f, 0.929412f, 0.933333f, 0.937255f, 0.941176f, 0.945098f,
-0.94902f, 0.952941f, 0.956863f, 0.960784f, 0.964706f, 0.968627f, 0.972549f,
-0.976471f, 0.980392f, 0.984314f, 0.988235f, 0.992157f, 0.996078f, 1.f
-};
-
-
 vtkOpenGLStructuredGridMapper::vtkOpenGLStructuredGridMapper()
 {
   this->ListStart = 0;
@@ -100,13 +62,11 @@ vtkOpenGLStructuredGridMapper::vtkOpenGLStructuredGridMapper()
   this->nLists = 0;
   this->CurrentList = 0;
 
-  this->EnableColorTexturing = false;
   this->ColorTexturingAllowed = false;
   this->ColorTextureLoaded = false;
   this->ColorTextureName = 0;
   this->ColorTexture = 0;
   this->ColorTextureSize = 0;
-  this->ColorTextureLooksDiscrete = false;
   this->OpenGLSupportsVersion1_2 = false;
 
   this->LastOpacity = -1;
@@ -157,6 +117,10 @@ void vtkOpenGLStructuredGridMapper::ReleaseGraphicsResources(vtkWindow *win)
 //   Kathleen Bonnell, Tue Feb 16 15:49:17 MST 2010
 //   Remove initialization of GLEW, it is handled elsewhere.
 //
+//   Brad Whitlock, Wed Sep 28 17:05:03 PDT 2011
+//   Push/pop lighting state so changes we make to lighting and materials
+//   here do not bleed into other modules.
+//
 // ***************************************************************************
 
 void vtkOpenGLStructuredGridMapper::Render(vtkRenderer *ren, vtkActor *act)
@@ -204,6 +168,7 @@ void vtkOpenGLStructuredGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 // make sure our window is current
   ren->GetRenderWindow()->MakeCurrent();
 
+  glPushAttrib(GL_LIGHTING_BIT);
 
   clipPlanes = this->ClippingPlanes;
 
@@ -393,7 +358,16 @@ void vtkOpenGLStructuredGridMapper::Render(vtkRenderer *ren, vtkActor *act)
     {
     glDisable((GLenum)(GL_CLIP_PLANE0+i));
     }
+
+  glPopAttrib();
 }
+
+// ****************************************************************************
+// Modifications:
+//   Brad Whitlock, Wed Aug 10 11:21:09 PDT 2011
+//   I changed how we do 1D texturing.
+//
+// ****************************************************************************
 
 int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
 {
@@ -480,6 +454,10 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
 
    float *pts = (float *) input->GetPoints()->GetVoidPointer(0);
 
+   const float *texCoords = NULL;
+   if(this->ColorCoordinates != NULL)
+       texCoords = (const float *)this->ColorCoordinates->GetVoidPointer(0);
+
    int Iorder[4] = { 0, 1, 1, 0 };
    int Jorder[4] = { 0, 0, 1, 1 };
 
@@ -531,7 +509,7 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
                   continue;
            }
 
-           if (colors == NULL)
+           if (colors == NULL && texCoords == NULL)
            {
                if (n != NULL && cellNormals)
                {
@@ -553,10 +531,12 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
                if (!nodeData)
                {
                    int idx = j*(fastDim-1) + i;
-                   if (!this->ColorTexturingAllowed)
+
+                   if(texCoords != NULL)
+                       glTexCoord1f(texCoords[idx]);
+                   else if(colors != NULL)
                        glColor4ubv(colors + 4*idx);
-                   else
-                       glTexCoord1f(vtk1Over255[(colors + 4*idx)[0]]);
+
                    if (n != NULL && cellNormals)
                        glNormal3fv(n + 3*idx);
                    for (int k = 0 ; k < 4 ; k++)
@@ -581,10 +561,12 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
                        int I = i + Iorder[k];
                        int J = j + Jorder[k];
                        int idx = J*fastDim + I;
-                       if (!this->ColorTexturingAllowed)
-                           glColor4ubv(colors + 4*idx);
-                       else
-                           glTexCoord1f(vtk1Over255[colors[4*idx]]);
+
+                       if(texCoords != NULL)
+                           glTexCoord1f(texCoords[idx]);
+                       else if(colors != NULL)
+                            glColor4ubv(colors + 4*idx);
+
                        if (n != NULL && !cellNormals)
                            glNormal3fv(n + 3*idx);
                        glVertex3fv(pts + 3*idx);
@@ -647,15 +629,18 @@ void vtkOpenGLStructuredGridMapper::PrintSelf(ostream& os, vtkIndent indent)
 // Creation:   December 27, 2006
 //
 // Modifications:
-//    Jeremy Meredith, Tue Jun 24 17:40:19 EDT 2008
-//    Check for NULL version string before scanf.
+//   Jeremy Meredith, Tue Jun 24 17:40:19 EDT 2008
+//   Check for NULL version string before scanf.
+//
+//   Brad Whitlock, Wed Aug 10 11:16:58 PDT 2011
+//   I was able to simplify the routine.
 //
 // ****************************************************************************
 
 bool
 vtkOpenGLStructuredGridMapper::MapScalarsWithTextureSupport(double opacity)
 {
-    bool saveColors = this->EnableColorTexturing &&
+    bool saveColors = this->InterpolateScalarsBeforeMapping &&
                       this->LookupTable != NULL &&
                       this->LookupTable->IsA("vtkLookupTable");
 
@@ -670,96 +655,6 @@ vtkOpenGLStructuredGridMapper::MapScalarsWithTextureSupport(double opacity)
         }
     }
 
-    vtkLookupTable *LUT_src = (vtkLookupTable *)this->LookupTable;
-    LUT_src->Register(NULL);
-    if(saveColors)
-    {
-        vtkLookupTable *LUT = NULL;
-        if (LUT_src->IsA("vtkSkewLookupTable"))
-        {
-            vtkSkewLookupTable *sLUT = vtkSkewLookupTable::New();
-            sLUT->DeepCopy(LUT_src);
-            vtkSkewLookupTable *lut2 = (vtkSkewLookupTable *) LUT_src;
-            sLUT->SetSkewFactor(lut2->GetSkewFactor());
-            LUT = sLUT;
-        }
-        else
-        {
-            LUT = vtkLookupTable::New();
-            LUT->DeepCopy(LUT_src);
-        }
-
-        // Save the LUT's colors into a color texture.
-        int NewColorTextureSize = LUT->GetNumberOfTableValues();
-        int two_to_the_power = 2;
-        for(int power = 1; power < 32; ++power)
-        {
-            if(two_to_the_power >= NewColorTextureSize)
-            {
-                NewColorTextureSize = two_to_the_power;
-                break;
-            }
-            two_to_the_power <<= 1;
-        }
-
-        float *NewColorTexture = new float[NewColorTextureSize * 4];
-        memset(NewColorTexture, 0, sizeof(float) * NewColorTextureSize);
-        for(int i = 0; i < LUT->GetNumberOfTableValues(); ++i)
-        {
-            double *rgba = LUT->GetTableValue(i);
-            NewColorTexture[4*i] = rgba[0];
-            NewColorTexture[4*i+1] = rgba[1];
-            NewColorTexture[4*i+2] = rgba[2];
-            NewColorTexture[4*i+3] = rgba[3];
-        }
-
-        // Replace the current LUT's colors with black->white that we can use
-        // as texture indices.
-        for(int i = 0; i < LUT->GetNumberOfTableValues(); ++i)
-        {
-            double r,g,b,a;
-            r = double(i) / double(LUT->GetNumberOfTableValues()-1);
-            g = b = 0.;
-            a = 1.;
-            LUT->SetTableValue(i, r,g,b,a);
-        }
-
-        // Analyize the colors so we can make a guess as to whether the
-        // colors in the LUT came from a continuous or discrete lookup
-        // table. Just assume that the color table is discrete if the
-        // colors are the same for 3 consecutive bins if we sample some
-        // number of locations in the color table.
-        int same_count = 0;
-        for(int i = 0; i < 5; ++i)
-        {
-            float t = float(i) / float(LUT->GetNumberOfTableValues()-1);
-            int index = int(t * (LUT->GetNumberOfTableValues() - 2));
-
-            unsigned char c0[3], c1[3];
-            c0[0] = (unsigned char)(255. * NewColorTexture[(index * 4) + 0]);
-            c0[1] = (unsigned char)(255. * NewColorTexture[(index * 4) + 1]);
-            c0[2] = (unsigned char)(255. * NewColorTexture[(index * 4) + 2]);
-
-            c1[0] = (unsigned char)(255. * NewColorTexture[((index+1) * 4) + 0]);
-            c1[1] = (unsigned char)(255. * NewColorTexture[((index+1) * 4) + 1]);
-            c1[2] = (unsigned char)(255. * NewColorTexture[((index+1) * 4) + 2]);
-
-            if(c0[0] == c1[0] && c0[1] == c1[1] && c0[2] == c1[2])
-            {
-                ++same_count;
-            }
-        }
-        this->ColorTextureLooksDiscrete = same_count >= 3;
-
-        // Save the texture array.
-        if(this->ColorTexture)
-            delete [] this->ColorTexture;
-        this->ColorTexture = NewColorTexture;
-        this->ColorTextureSize = NewColorTextureSize;
-        SetLookupTable(LUT);
-        LUT->Delete();
-    }
-
     if (opacity != this->LastOpacity)
     {
        // VTK can get confused about whether or not the opacities are
@@ -769,37 +664,70 @@ vtkOpenGLStructuredGridMapper::MapScalarsWithTextureSupport(double opacity)
            this->Colors->Delete();
        this->Colors = NULL;
     }
-    // sets this->Colors as side effect
+
+    // sets this->Colors and this->ColorCoordinates as side effect
     this->MapScalars(opacity);
     this->LastOpacity = opacity;
 
+    return saveColors;
+}
 
-    if(saveColors)
+// ****************************************************************************
+// Method: vtkOpenGLStructuredGridMapper::LooksDiscrete
+//
+// Purpose: 
+//   Look at the color table to see if it looks discrete.
+//
+// Arguments:
+//
+// Returns:    True if the color table looks discrete.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 10 10:50:45 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+vtkOpenGLStructuredGridMapper::LooksDiscrete() const
+{
+    bool looksDiscrete = false;
+
+    if(this->ColorTexture != NULL)
     {
-        SetLookupTable(LUT_src);
-        LUT_src->Delete();
+        // Analyize the colors so we can make a guess as to whether the
+        // colors in the LUT came from a continuous or discrete lookup
+        // table. Just assume that the color table is discrete if the
+        // colors are the same for 3 consecutive bins if we sample some
+        // number of locations in the color table.
+        int same_count = 0;
+        for(int i = 0; i < 5; ++i)
+        {
+            float t = float(i) / float(this->ColorTextureSize-1);
+            int index = int(t * (this->ColorTextureSize - 2));
 
-#ifdef GL_VERSION_1_2
-        // Figure out the OpenGL version.
-        const char *gl_ver = (const char *)glGetString(GL_VERSION);
-        int major, minor;
-        if(gl_ver && sscanf(gl_ver, "%d.%d", &major, &minor) == 2)
-        {
-            if(major == 1)
-                this->OpenGLSupportsVersion1_2 = minor >= 2;
-            else
-                this->OpenGLSupportsVersion1_2 = major > 1;
+            unsigned char c0[3], c1[3];
+            c0[0] = (unsigned char)(255. * this->ColorTexture[(index * 4) + 0]);
+            c0[1] = (unsigned char)(255. * this->ColorTexture[(index * 4) + 1]);
+            c0[2] = (unsigned char)(255. * this->ColorTexture[(index * 4) + 2]);
+
+            c1[0] = (unsigned char)(255. * this->ColorTexture[((index+1) * 4) + 0]);
+            c1[1] = (unsigned char)(255. * this->ColorTexture[((index+1) * 4) + 1]);
+            c1[2] = (unsigned char)(255. * this->ColorTexture[((index+1) * 4) + 2]);
+
+            if(c0[0] == c1[0] && c0[1] == c1[1] && c0[2] == c1[2])
+            {
+                ++same_count;
+            }
         }
-        else
-        {
-#endif
-            this->OpenGLSupportsVersion1_2 = false;
-#ifdef GL_VERSION_1_2
-        }
-#endif
+
+        looksDiscrete = same_count >= 3;
     }
 
-    return saveColors;
+    return looksDiscrete;
 }
 
 // ****************************************************************************
@@ -822,6 +750,9 @@ vtkOpenGLStructuredGridMapper::MapScalarsWithTextureSupport(double opacity)
 //   Tom Fogal,  Tue Apr 27 11:13:10 MDT 2010
 //   Remove special case Mesa handling.
 //
+//   Brad Whitlock, Wed Aug 10 11:00:42 PDT 2011
+//   Make same changes as in the rectilinear mapper.
+//
 // ****************************************************************************
 
 void
@@ -832,8 +763,40 @@ vtkOpenGLStructuredGridMapper::BeginColorTexturing()
 
     if(!this->ColorTextureLoaded)
     {
+        // Copy the image data texture that VTK created but convert to GL_FLOAT
+        vtkDataArray *textColors = this->ColorTextureMap->GetPointData()->
+            GetScalars();
+        const unsigned char *rgba = (const unsigned char *)textColors->
+            GetVoidPointer(0);
+        if(this->ColorTexture != NULL)
+            delete [] this->ColorTexture;
+        this->ColorTextureSize = textColors->GetNumberOfTuples();
+        this->ColorTexture = new float[this->ColorTextureSize * 4];
+        for(int i = 0; i < this->ColorTextureSize * 4; ++i)
+            this->ColorTexture[i] = float(rgba[i]) / 256.f;
+
+        // Create a GL texture name for texture.
         glGenTextures(1, (GLuint*)&this->ColorTextureName);
         glBindTexture(GL_TEXTURE_1D, this->ColorTextureName);
+
+#ifdef GL_VERSION_1_2
+        // Figure out the OpenGL version.
+        const char *gl_ver = (const char *)glGetString(GL_VERSION);
+        int major, minor;
+        if(gl_ver && sscanf(gl_ver, "%d.%d", &major, &minor) == 2)
+        {
+            if(major == 1)
+                this->OpenGLSupportsVersion1_2 = minor >= 2;
+            else
+                this->OpenGLSupportsVersion1_2 = major > 1;
+        }
+        else
+        {
+#endif
+            this->OpenGLSupportsVersion1_2 = false;
+#ifdef GL_VERSION_1_2
+        }
+#endif
 
 #ifdef GL_VERSION_1_2
         // If we have OpenGL 1.2 then let's use clamp to edge so the colors
@@ -855,7 +818,7 @@ vtkOpenGLStructuredGridMapper::BeginColorTexturing()
 
         // Vary the filter based on what we think of the color table. Discrete
         // color tables won't have their colors blended.
-        GLint m = this->ColorTextureLooksDiscrete ? GL_NEAREST : GL_LINEAR;
+        GLint m = this->LooksDiscrete() ? GL_NEAREST : GL_LINEAR;
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, m);
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, m);
         glTexImage1D(GL_TEXTURE_1D, 0, 4, this->ColorTextureSize,
@@ -869,25 +832,6 @@ vtkOpenGLStructuredGridMapper::BeginColorTexturing()
         glEnable(GL_TEXTURE_1D);
         glBindTexture(GL_TEXTURE_1D, this->ColorTextureName);
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    }
-
-    // Make the appropriate changes in the vtk1Over255 lookup table
-    // so we can change the lookups so the first and last ones are not
-    // used when we do GL_NEAREST. This may make the colors slightly off
-    // but we won't get color values blended between the first and last
-    // texture elements and the border color.
-    if(!this->OpenGLSupportsVersion1_2)
-    {
-        if(this->ColorTextureLooksDiscrete)
-        {
-            vtk1Over255[0] = 0.f;
-            vtk1Over255[255] = 1.f;
-        }
-        else
-        {
-            vtk1Over255[0] = 1. / 255.f;
-            vtk1Over255[255] = 254. / 255.f;
-        }
     }
 
     //

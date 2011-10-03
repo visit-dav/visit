@@ -1,8 +1,8 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
+* LLNL-CODE-400124
 * All rights reserved.
 *
 * This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
@@ -41,6 +41,7 @@
 #include <vtkqt_exports.h>
 #include <QtOpenGL>
 
+class vtkQtRenderWindow;
 class vtkQtRenderWindowInteractor;
 
 // ****************************************************************************
@@ -73,7 +74,7 @@ class VTKQT_API vtkQtGLWidget : public QGLWidget
 {
     Q_OBJECT
 public:
-    vtkQtGLWidget(QWidget *parent);
+    vtkQtGLWidget(QWidget *parent, vtkQtRenderWindow *rw);
     virtual ~vtkQtGLWidget()        { }
     void setLineSmoothing(bool val) { lineSmoothing = val; }
     bool getLineSmoothing() const   { return lineSmoothing; }
@@ -95,6 +96,7 @@ protected:
     virtual void keyPressEvent(QKeyEvent*);
 private:
     bool                         lineSmoothing;
+    vtkQtRenderWindow           *renWin;
     vtkQtRenderWindowInteractor *interactor;
 };
 

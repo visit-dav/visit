@@ -291,7 +291,7 @@ Triangulator::calc_poly_high()
 // ****************************************************************************
 void
 Triangulator::Triangulate(MIROptions::SubdivisionLevel s, int ct, int np,
-                          const int *cptr,
+                          const vtkIdType *cptr,
                           vector<float>   vf_zone_,
                           vector<float>  *vf_node_,
                           vector<float>  *vf_edge_)

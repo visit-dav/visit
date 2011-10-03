@@ -264,7 +264,18 @@ avtFilledBoundaryPlot::SetAtts(const AttributeGroup *a)
     {
         levelsMapper->DataScalingOff();
     }
-    levelsMapper->SetGlyphType((int)atts.GetPointType());
+    avtPointGlypher::PointGlyphType glyphType = avtPointGlypher::Point;
+    if (atts.GetPointType() == FilledBoundaryAttributes::Box)
+        levelsMapper->SetGlyphType(avtPointGlypher::Box);
+    else if (atts.GetPointType() == FilledBoundaryAttributes::Axis)
+        levelsMapper->SetGlyphType(avtPointGlypher::Axis);
+    else if (atts.GetPointType() == FilledBoundaryAttributes::Icosahedron)
+        levelsMapper->SetGlyphType(avtPointGlypher::Icosahedron);
+    else if (atts.GetPointType() == FilledBoundaryAttributes::Point)
+        levelsMapper->SetGlyphType(avtPointGlypher::Point);
+    else if (atts.GetPointType() == FilledBoundaryAttributes::Sphere)
+        levelsMapper->SetGlyphType(avtPointGlypher::Sphere);
+
     SetPointGlyphSize();
 }
 

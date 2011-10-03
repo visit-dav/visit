@@ -82,7 +82,7 @@ using     std::string;
 using     std::vector;
 using     std::sort;
 
-static void  OrderWedgePoints(const vector< vector<int> > &, int *);
+static void  OrderWedgePoints(const vector< vector<int> > &, vtkIdType *);
 
 //
 // Define the static const's
@@ -532,7 +532,7 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
 
     if (type == VTK_HEXAHEDRON)
     {
-        int points[8];
+        vtkIdType points[8];
     
         // Take one face for the first 8 nodes
         points[0] = nodes[0][0];
@@ -637,7 +637,7 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
     else if (type == VTK_TETRA)
     {
         // Because there's only 4 points, order doesn't matter.
-        int points[4];
+        vtkIdType points[4];
         // Get one face
         points[0] = nodes[0][0];
         points[1] = nodes[0][1];
@@ -658,7 +658,7 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
     }
     else if (type == VTK_PYRAMID)
     {
-        int points[5];
+        vtkIdType points[5];
         // Find the base
         int base;
         for (base = 0; base < nodes.size(); base++)
@@ -698,7 +698,7 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
     }
     else if (type == VTK_WEDGE)
     {
-        int points[6];
+        vtkIdType points[6];
         OrderWedgePoints(nodes, points);
 
         cellId = ugrid->InsertNextCell(type,6,points);
@@ -2399,7 +2399,7 @@ avtKullLiteFileFormat::ReadNumberRecvZones()
 // ****************************************************************************
 
 static void
-OrderWedgePoints(const vector< vector<int> > &nodes, int *points)
+OrderWedgePoints(const vector< vector<int> > &nodes, vtkIdType *points)
 {
     const int nWedgeFaces = 5;
 

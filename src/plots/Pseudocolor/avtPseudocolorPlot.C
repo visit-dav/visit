@@ -580,7 +580,16 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     {
         glyphMapper->DataScalingOff();
     }
-    glyphMapper->SetGlyphType((int)atts.GetPointType());
+    if (atts.GetPointType() == PseudocolorAttributes::Box)
+        glyphMapper->SetGlyphType(avtPointGlypher::Box);
+    else if (atts.GetPointType() == PseudocolorAttributes::Axis)
+        glyphMapper->SetGlyphType(avtPointGlypher::Axis);
+    else if (atts.GetPointType() == PseudocolorAttributes::Icosahedron)
+        glyphMapper->SetGlyphType(avtPointGlypher::Icosahedron);
+    else if (atts.GetPointType() == PseudocolorAttributes::Point)
+        glyphMapper->SetGlyphType(avtPointGlypher::Point);
+    else if (atts.GetPointType() == PseudocolorAttributes::Sphere)
+        glyphMapper->SetGlyphType(avtPointGlypher::Sphere);
     SetPointGlyphSize();
 
     if (varname != NULL)

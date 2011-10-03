@@ -76,6 +76,10 @@ Dolly3D::Dolly3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //  Programmer: Eric Brugger
 //  Creation:   December 27, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jun  8 10:03:41 PDT 2011
+//    Use current EventPosition instead of last.
+//
 // ****************************************************************************
 
 void
@@ -83,26 +87,26 @@ Dolly3D::OnTimer(void)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
-    int LastPos[2];
-    rwi->GetLastEventPosition(LastPos);
+    int Pos[2];
+    rwi->GetEventPosition(Pos);
 
     bool matchedUpState = true;
     switch (State)
     {
       case VTKIS_ROTATE:
-        RotateAboutFocus3D(LastPos[0], LastPos[1], true);
+        RotateAboutFocus3D(Pos[0], Pos[1], true);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
       case VTKIS_PAN:
-        PanCamera3D(LastPos[0], LastPos[1]);
+        PanCamera3D(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
       case VTKIS_ZOOM:
-        DollyCameraTowardFocus3D(LastPos[0], LastPos[1]);
+        DollyCameraTowardFocus3D(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;

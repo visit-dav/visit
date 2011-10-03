@@ -536,8 +536,7 @@ avtConeFilter::SetUpCone(void)
     if (cross[0] != 0. || cross[1] != 0. || cross[2] != 0.)
     {
         double dot = normal_normalized[0];
-        double angle = -acos(dot);
-        angle /= vtkMath::DegreesToRadians();
+        double angle = vtkMath::DegreesFromRadians(-acos(dot));
         trans->RotateWXYZ(angle, cross[0], cross[1], cross[2]);
     }
     cone->SetTransform(trans);
@@ -877,7 +876,7 @@ avtConeFilter::UpdateDataObjectInfo(void)
 
     double angle = atts.GetAngle();
     double length = atts.GetLength();
-    angle *= vtkMath::DegreesToRadians();
+    angle = vtkMath::RadiansFromDegrees(angle);
 
     //
     //             |------/
@@ -946,7 +945,6 @@ avtConeFilter::UpdateDataObjectInfo(void)
         outAtts.SetCanUseTransform(false);
  
         double b[6];
- 
         if (inAtts.GetOriginalSpatialExtents()->HasExtents())
         {
             inAtts.GetOriginalSpatialExtents()->CopyTo(b);

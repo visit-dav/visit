@@ -48,8 +48,7 @@
 #include <FiveFoldTetSubdivisionAttributes.h>
 #include "Branch.h"
 
-class vtkDataSet;
-
+#include <vtkDataSet.h>
 
 // ****************************************************************************
 //  Class: avtFiveFoldTetSubdivisionFilter
@@ -87,7 +86,7 @@ class avtFiveFoldTetSubdivisionFilter : public avtPluginDataTreeIterator
     virtual void          UpdateDataObjectInfo(void);
     virtual avtContract_p ModifyContract(avtContract_p);
     virtual void          PreExecute(void);
-    void addBranchIds(int [4], vtkDataArray *, vtkDataArray *, vtkDataArray *, vtkDataArray *, vtkDataArray *, vtkDataArray *, vtkDataArray *);
+    void addBranchIds(vtkIdType [4], vtkDataArray *, vtkDataArray *, vtkDataArray *, vtkDataArray *, vtkDataArray *, vtkDataArray *, vtkDataArray *);
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
 };
 

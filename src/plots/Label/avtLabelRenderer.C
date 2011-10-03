@@ -431,7 +431,7 @@ avtLabelRenderer::SetTreatAsASCII(bool val)
 // ****************************************************************************
 
 void
-avtLabelRenderer::SetCellOrigin(int origin)
+avtLabelRenderer::SetCellOrigin(vtkIdType origin)
 {
     cellOrigin = origin;
 }
@@ -457,7 +457,7 @@ avtLabelRenderer::SetCellOrigin(int origin)
 // ****************************************************************************
 
 void
-avtLabelRenderer::SetNodeOrigin(int origin)
+avtLabelRenderer::SetNodeOrigin(vtkIdType origin)
 {
     nodeOrigin = origin;
 }

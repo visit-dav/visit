@@ -118,7 +118,7 @@ RecursiveCellReconstructor::RecursiveCellReconstructor(vtkDataSet *d,
 // ****************************************************************************
 void
 RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
-                                            int nids_, int *ids_,
+                                            int nids_, vtkIdType *ids_,
                                             double *outputvfs)
 {
     cellid = cellid_;

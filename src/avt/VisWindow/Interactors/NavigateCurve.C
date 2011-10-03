@@ -72,6 +72,10 @@ NavigateCurve::NavigateCurve(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //  Programmer: Eric Brugger
 //  Creation:   October 15, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jun  8 10:05:08 PDT 2011
+//    Use current EventPosition instead of Last.
+//
 // ****************************************************************************
 
 void
@@ -79,19 +83,19 @@ NavigateCurve::OnTimer(void)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
-    int LastPos[2];
-    rwi->GetLastEventPosition(LastPos);
+    int Pos[2];
+    rwi->GetEventPosition(Pos);
 
     switch (State)
     {
       case VTKIS_PAN:
-        PanCamera(LastPos[0], LastPos[1]);
+        PanCamera(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
       case VTKIS_DOLLY:
-        ZoomCamera(LastPos[0], LastPos[1]);
+        ZoomCamera(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;

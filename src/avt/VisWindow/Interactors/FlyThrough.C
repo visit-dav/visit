@@ -81,6 +81,9 @@ FlyThrough::FlyThrough(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //    I moved RotateCamera, PanCamera and ZoomCamera to the VisitInteractor
 //    class as RotateAboutCamera3D, PanCamera3D and DollyCameraAndFocus3D.
 //
+//    Kathleen Bonnell, Wed Jun  8 10:04:17 PDT 2011
+//    Use current EventPosition instead of Last.
+//
 // ****************************************************************************
 
 void
@@ -88,26 +91,26 @@ FlyThrough::OnTimer(void)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
-    int LastPos[2];
-    rwi->GetLastEventPosition(LastPos);
+    int Pos[2];
+    rwi->GetEventPosition(Pos);
 
     bool matchedUpState = true;
     switch (State)
     {
       case VTKIS_ROTATE:
-        RotateAboutCamera3D(LastPos[0], LastPos[1]);
+        RotateAboutCamera3D(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
       case VTKIS_PAN:
-        PanCamera3D(LastPos[0], LastPos[1]);
+        PanCamera3D(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
       case VTKIS_ZOOM:
-        DollyCameraAndFocus3D(LastPos[0], LastPos[1]);
+        DollyCameraAndFocus3D(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;

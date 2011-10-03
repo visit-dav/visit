@@ -68,6 +68,7 @@
 #include <DebugStream.h>
 #include <visitstream.h>
 #include <snprintf.h>
+#include <vtkVisItUtility.h>
 
 using std::string;
 using std::ostringstream;
@@ -981,6 +982,9 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Kathleen Bonnell, Tue Dec 14 12:31:40 PST 2010
 //    std::string doesn't like assignment to a NULL const char *, so don't
 //    assume array->GetName() doesn't return NULL.
+//
+//    Tom Fogal, Tue Sep 27 11:04:08 MDT 2011
+//    Fix warning.
 //
 // ****************************************************************************
 

@@ -408,7 +408,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         for (i = 0 ; i < numElements ; i++)
         {
@@ -428,7 +428,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         for (i = 0 ; i < numElements ; i++)
         {
@@ -452,7 +452,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements2);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         int iCell = 0;
         for (i = 0 ; i < numElements ; i++)
@@ -504,7 +504,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements2);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         int iCell = 0;
         for (i = 0 ; i < numElements ; i++)
@@ -553,7 +553,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         for (i = 0 ; i < numElements ; i++)
         {
@@ -578,7 +578,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements2);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         int iCell = 0;
         for (i = 0 ; i < numElements ; i++)
@@ -646,7 +646,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements2);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         int iCell = 0;
         for (i = 0 ; i < numElements ; i++)
@@ -677,7 +677,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         for (i = 0 ; i < numElements ; i++)
         {
@@ -701,7 +701,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements2);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         int iCell = 0;
         for (i = 0 ; i < numElements ; i++)
@@ -777,7 +777,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements2);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         int iCell = 0;
         for (i = 0 ; i < numElements ; i++)
@@ -1014,7 +1014,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         for (i = 0 ; i < numElements ; i++)
         {
@@ -1040,7 +1040,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements2);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         int iCell = 0;
         for (i = 0 ; i < numElements ; i++)
@@ -1155,7 +1155,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements2);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         int iCell = 0;
         int hoffset = ((nx + 1) * (nx + 2)) / 2;
@@ -1235,7 +1235,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         for (i = 0 ; i < numElements ; i++)
         {
@@ -1261,7 +1261,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         for (i = 0 ; i < numElements ; i++)
         {
@@ -1303,7 +1303,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements2);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         int iCell = 0;
         for (i = 0 ; i < numElements ; i++)
@@ -1352,7 +1352,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
         unsigned char *ct = cellTypes->GetPointer(0);
 
         cellLocations->SetNumberOfValues(numElements2);
-        int *cl = cellLocations->GetPointer(0);
+        vtkIdType *cl = cellLocations->GetPointer(0);
 
         int iCell = 0;
         for (i = 0 ; i < numElements ; i++)

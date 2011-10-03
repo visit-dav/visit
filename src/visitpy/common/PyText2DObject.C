@@ -182,7 +182,7 @@ Text2DObject_GetPosition(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-Text2DObject_SetWidth(PyObject *self, PyObject *args)
+Text2DObject_SetHeight(PyObject *self, PyObject *args)
 {
     Text2DObjectObject *obj = (Text2DObjectObject *)self;
 
@@ -190,7 +190,7 @@ Text2DObject_SetWidth(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the width in the object.
+    // Set the height in the object.
 /*CUSTOM*/
     double *pos2 = obj->data->GetPosition2();
     pos2[0] = dval;
@@ -202,7 +202,7 @@ Text2DObject_SetWidth(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-Text2DObject_GetWidth(PyObject *self, PyObject *args)
+Text2DObject_GetHeight(PyObject *self, PyObject *args)
 {
     Text2DObjectObject *obj = (Text2DObjectObject *)self;
 /*CUSTOM*/
@@ -482,8 +482,8 @@ static struct PyMethodDef Text2DObject_methods[] = {
     {"GetActive", Text2DObject_GetActive, METH_VARARGS},
     {"SetPosition", Text2DObject_SetPosition, METH_VARARGS},
     {"GetPosition", Text2DObject_GetPosition, METH_VARARGS},
-    {"SetWidth", Text2DObject_SetWidth, METH_VARARGS},
-    {"GetWidth", Text2DObject_GetWidth, METH_VARARGS},
+    {"SetHeight", Text2DObject_SetHeight, METH_VARARGS},
+    {"GetHeight", Text2DObject_GetHeight, METH_VARARGS},
     {"SetTextColor", Text2DObject_SetTextColor, METH_VARARGS},
     {"GetTextColor", Text2DObject_GetTextColor, METH_VARARGS},
     {"SetUseForegroundForTextColor", Text2DObject_SetUseForegroundForTextColor, METH_VARARGS},
@@ -531,8 +531,8 @@ Text2DObject_getattr(PyObject *self, char *name)
         return Text2DObject_GetActive(self, NULL);
     if(strcmp(name, "position") == 0)
         return Text2DObject_GetPosition(self, NULL);
-    if(strcmp(name, "width") == 0)
-        return Text2DObject_GetWidth(self, NULL);
+    if(strcmp(name, "height") == 0)
+        return Text2DObject_GetHeight(self, NULL);
     if(strcmp(name, "textColor") == 0)
         return Text2DObject_GetTextColor(self, NULL);
     if(strcmp(name, "useForegroundForTextColor") == 0)
@@ -574,8 +574,8 @@ Text2DObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (Text2DObject_SetActive(self, tuple) != NULL);
     else if(strcmp(name, "position") == 0)
         retval = (Text2DObject_SetPosition(self, tuple) != NULL);
-    else if(strcmp(name, "width") == 0)
-        retval = (Text2DObject_SetWidth(self, tuple) != NULL);
+    else if(strcmp(name, "height") == 0)
+        retval = (Text2DObject_SetHeight(self, tuple) != NULL);
     else if(strcmp(name, "textColor") == 0)
         retval = (Text2DObject_SetTextColor(self, tuple) != NULL);
     else if(strcmp(name, "useForegroundForTextColor") == 0)
@@ -613,7 +613,7 @@ Text2DObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "position = (%g, %g)\n", position[0], position[1]);
     }
     const double *position2 = obj->data->GetPosition2();
-    fprintf(fp, "width = %g\n", position2[0]);
+    fprintf(fp, "height = %g\n", position2[0]);
     const unsigned char *textColor = obj->data->GetTextColor().GetColor();
     fprintf(fp, "textColor = (%d, %d, %d, %d)\n", int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
     if(obj->data->GetUseForegroundForTextColor())

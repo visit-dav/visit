@@ -430,7 +430,7 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
     double cur_clip_range[2];
     cur_cam->GetClippingRange(cur_clip_range);
     vtkMatrix4x4 *cur_trans =
-                       cur_cam->GetCompositePerspectiveTransformMatrix(aspect,
+                       cur_cam->GetCompositeProjectionTransformMatrix(aspect,
                                        cur_clip_range[0], cur_clip_range[1]);
     vtkMatrix4x4 *cur_inverse = vtkMatrix4x4::New();
     vtkMatrix4x4::Invert(cur_trans, cur_inverse);
@@ -445,7 +445,7 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
     double light_clip_range[2];
     light_cam->GetClippingRange(light_clip_range);
     vtkMatrix4x4 *light_trans =
-                     light_cam->GetCompositePerspectiveTransformMatrix(
+                     light_cam->GetCompositeProjectionTransformMatrix(
                                     light_aspect,
                                     light_clip_range[0], light_clip_range[1]);
     vtkMatrix4x4 *light_inverse = vtkMatrix4x4::New();
@@ -653,7 +653,7 @@ avtSoftwareShader::AddDepthCueing(avtImage_p current_image,
     double cur_clip_range[2];
     cur_cam->GetClippingRange(cur_clip_range);
     vtkMatrix4x4 *cur_trans =
-                       cur_cam->GetCompositePerspectiveTransformMatrix(aspect,
+                       cur_cam->GetCompositeProjectionTransformMatrix(aspect,
                                        cur_clip_range[0], cur_clip_range[1]);
     vtkMatrix4x4 *cur_inverse = vtkMatrix4x4::New();
     vtkMatrix4x4::Invert(cur_trans, cur_inverse);
@@ -809,7 +809,7 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
     double cur_clip_range[2];
     cur_cam->GetClippingRange(cur_clip_range);
     vtkMatrix4x4 *cur_trans =
-                       cur_cam->GetCompositePerspectiveTransformMatrix(aspect,
+                       cur_cam->GetCompositeProjectionTransformMatrix(aspect,
                                         cur_clip_range[0], cur_clip_range[1]);
     vtkMatrix4x4 *cur_inverse = vtkMatrix4x4::New();
     vtkMatrix4x4::Invert(cur_trans, cur_inverse);
@@ -825,7 +825,7 @@ avtSoftwareShader::FindLightView(avtImage_p current_image,
     double light_clip_range[2];
     light_cam->GetClippingRange(light_clip_range);
     vtkMatrix4x4 *light_trans =
-                     light_cam->GetCompositePerspectiveTransformMatrix(
+                     light_cam->GetCompositeProjectionTransformMatrix(
                                     light_aspect,
                                     light_clip_range[0], light_clip_range[1]);
     vtkMatrix4x4 *light_inverse = vtkMatrix4x4::New();
