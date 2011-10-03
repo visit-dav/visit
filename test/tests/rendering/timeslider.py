@@ -22,6 +22,8 @@
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Update due to change 
 #
+#    Brad Whitlock, Wed Sep 28 14:12:00 PDT 2011
+#    Move the time slider around a couple times.
 # ----------------------------------------------------------------------------
 
 # Set up the annotation colors, etc.
@@ -142,10 +144,13 @@ slider.timeDisplay = slider.UserSpecified
 slider.text = "Using percentComplete manually"
 testnum = 13
 nsteps = 10
+moves = {4 : (0.02, 0.5), 8 : (0.2, 0.9)}
 # Set the percentComplete manually
 for i in range(nsteps):
     t = float(i) / float(nsteps - 1)
     slider.percentComplete = t * 100.
+    if i in moves.keys():
+        slider.position = moves[i]
     v = v0 * (1. - t) + v1 * t
     SetView3D(v)
     Test("timeslider%02d" % testnum)

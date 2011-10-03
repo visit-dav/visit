@@ -31,6 +31,9 @@
 #    Cyrus Harrison, Wed Aug 25 14:25:13 PDT 2010
 #    SIL id shift (from 4 to 5) due to changes in SIL generation.
 #
+#    Brad Whitlock, Wed Sep 28 11:48:16 PDT 2011
+#    Zoom in a little so we have more pixels covered.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -75,6 +78,7 @@ DrawPlots()
 v=GetView3D()
 v.viewNormal=(0.507832, -0.301407, -0.807007)
 v.viewUp=(-0.831783, -0.415313, -0.368309)
+v.imageZoom = 2.
 SetView3D(v)
 
 # test fast volume render

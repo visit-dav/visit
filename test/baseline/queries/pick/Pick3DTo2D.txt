@@ -130,7 +130,7 @@ u:  <nodal>
 I:  globe.silo  timestep 0
 mesh1 
 Point: (in transformed space) 
-       <-0.650388, 1.08398, 0>
+       <-0.650387, 1.08398, 0>
 Zone:  506
 Incident Nodes:  347  348  339  338  401  402  393  392  
 u:  <nodal> 
