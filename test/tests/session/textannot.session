@@ -2306,7 +2306,7 @@
                                 <Field name="visible" type="bool">true</Field>
                                 <Field name="active" type="bool">false</Field>
                                 <Field name="position" type="doubleArray" length="3">0.35 0.95 0 </Field>
-                                <Field name="position2" type="doubleArray" length="3">0.3 0.3 0 </Field>
+                                <Field name="position2" type="doubleArray" length="3">0.045 0 0 </Field>
                                 <Object name="textColor">
                                     <Object name="ColorAttribute">
                                         <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
@@ -2337,7 +2337,7 @@
                                 <Field name="visible" type="bool">true</Field>
                                 <Field name="active" type="bool">false</Field>
                                 <Field name="position" type="doubleArray" length="3">0.5 0.8 0 </Field>
-                                <Field name="position2" type="doubleArray" length="3">0.41 0.41 0 </Field>
+                                <Field name="position2" type="doubleArray" length="3">0.025 0 0 </Field>
                                 <Object name="textColor">
                                     <Object name="ColorAttribute">
                                         <Field name="color" type="unsignedCharArray" length="4">255 0 0 255 </Field>
@@ -2368,7 +2368,7 @@
                                 <Field name="visible" type="bool">true</Field>
                                 <Field name="active" type="bool">false</Field>
                                 <Field name="position" type="doubleArray" length="3">0.5 0.75 0 </Field>
-                                <Field name="position2" type="doubleArray" length="3">0.41 0.41 0 </Field>
+                                <Field name="position2" type="doubleArray" length="3">0.025 0 0 </Field>
                                 <Object name="textColor">
                                     <Object name="ColorAttribute">
                                         <Field name="color" type="unsignedCharArray" length="4">255 0 255 255 </Field>
@@ -2399,7 +2399,7 @@
                                 <Field name="visible" type="bool">true</Field>
                                 <Field name="active" type="bool">false</Field>
                                 <Field name="position" type="doubleArray" length="3">0.5 0.7 0 </Field>
-                                <Field name="position2" type="doubleArray" length="3">0.41 0.41 0 </Field>
+                                <Field name="position2" type="doubleArray" length="3">0.025 0 0 </Field>
                                 <Object name="textColor">
                                     <Object name="ColorAttribute">
                                         <Field name="color" type="unsignedCharArray" length="4">255 204 0 255 </Field>
@@ -2430,7 +2430,7 @@
                                 <Field name="visible" type="bool">true</Field>
                                 <Field name="active" type="bool">true</Field>
                                 <Field name="position" type="doubleArray" length="3">0.28 0.47 0 </Field>
-                                <Field name="position2" type="doubleArray" length="3">0.41 0.41 0 </Field>
+                                <Field name="position2" type="doubleArray" length="3">0.08 0 0 </Field>
                                 <Object name="textColor">
                                     <Object name="ColorAttribute">
                                         <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>

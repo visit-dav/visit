@@ -424,7 +424,7 @@ def TestTimeVaryingSIL():
     s = GetQueryOutputString()
     text = CreateAnnotationObject("Text2D")
     text.text =  s
-    text.width = 0.35
+    text.height = 0.02
     text.position = (0.55, 0.4)
     
     Test("TimeQuery_sil_01")

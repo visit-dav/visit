@@ -322,7 +322,7 @@ def TestLegendCopying(a):
     # Create another annotation object.
     text2d = CreateAnnotationObject("Text2D", "text_obj")
     text2d.position = (0.45, 0.5)
-    text2d.width = 0.5
+    text2d.height = 0.05
     text2d.textColor = (255, 0, 0, 255)
     text2d.useForegroundForTextColor = 0
     text2d.text = "Text annotation"

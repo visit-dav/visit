@@ -80,7 +80,8 @@ Test("persistent_particles_04")
 AddOperator("Tube", 1)
 TubeAtts = TubeAttributes()
 TubeAtts.scaleByVarFlag = 0
-TubeAtts.width = 0.0005
+TubeAtts.tubeRadiusType = TubeAtts.Absolute
+TubeAtts.radiusAbsolute = 0.0005
 TubeAtts.scaleVariable = "default"
 TubeAtts.fineness = 10
 TubeAtts.capping = 0

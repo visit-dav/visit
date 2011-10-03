@@ -33,7 +33,7 @@ DrawPlots()
 # Create a Text2D object
 text = CreateAnnotationObject("Text2D")
 text.text = "Pseudocolor plot!"
-text.width = 0.6
+text.height = 0.05
 text.position = (0.25, 0.45)
 Test("text2d00")
 
@@ -50,26 +50,27 @@ text.textColor = (0, 255, 0, 255)
 Test("text2d02")
 
 # Test text opacity
-text.width = 2
+text.height = 0.18
+text.position = (0.25, 0.45)
 text.textColor = (255,255,255,150)
 Test("text2d03")
 
 # Set the text atts
 text.textColor = (255,255,255,255)
 text.useForegroundForTextColor = 1
-text.width = 0.6
+text.height = 0.05
 
 # Create more text objects
 courier = CreateAnnotationObject("Text2D")
 courier.text = "Courier"
 courier.fontFamily = courier.Courier
 courier.position = (0.25, 0.35)
-courier.width = 0.35
+courier.height = 0.06
 times = CreateAnnotationObject("Text2D")
 times.text = "Times"
 times.fontFamily = courier.Times
 times.position = (0.25, 0.25)
-times.width = 0.25
+times.height = 0.07
 Test("text2d04")
 
 # Set the bold flag
