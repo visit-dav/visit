@@ -143,8 +143,8 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
             int cell_idx = 0;
             cellindex = new int[ncells];
             celltype = new int[ncells];
-            connectivity = new int[9*ncells];
-            int *c = connectivity;
+            connectivity = new vtkIdType[9*ncells];
+            vtkIdType *c = connectivity;
             for (int k = 0 ; k < nz ; k++)
             {
                 int zOff  = k*(nx+1)*(ny+1);
@@ -192,8 +192,8 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
             int cell_idx = 0;
             cellindex = new int[ncells];
             celltype = new int[ncells];
-            connectivity = new int[5*ncells];
-            int *c = connectivity;
+            connectivity = new vtkIdType[5*ncells];
+            vtkIdType *c = connectivity;
             for (int j = 0 ; j < ny ; j++)
             {
                 int yOff  = j*(nx+1);
@@ -229,9 +229,9 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
         vtkCellArray *ca = ug->GetCells();
         ncells = ca->GetNumberOfCells();
         int buff_size = ca->GetSize();
-        connectivity = new int[buff_size];
+        connectivity = new vtkIdType[buff_size];
         vtkIdType *ptr = ca->GetPointer();
-        memcpy(connectivity, ptr, buff_size*sizeof(int));
+        memcpy(connectivity, ptr, buff_size*sizeof(vtkIdType));
         debug5 << "Setting up connectivity array for " << ncells
                << " (unstructured grid)." << endl;
 

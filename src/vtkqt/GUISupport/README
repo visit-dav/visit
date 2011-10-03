@@ -1,0 +1,26 @@
+These classes were borrowed from VTK's GUISupport library so we can have a
+VTK/Qt widget that we don't have to maintain.
+
+We would have used the GUISupport directly from VTK but building VTK with Qt
+support currently introduces a Qt dependency into the vtkRendering library. We
+are not willing to introduce that dependency since it adds Qt to our compute 
+engine.
+
+
+Changes:
+=========
+1. I made QVTKWin32Header.h define QVTK_EXPORT in a way that will hide the
+   VTK widget code from being made public in the vtkqt shared library.
+
+Bugs fixed:
+============
+1. When QVTKWidget2 gets a mouse event, it sends it to QVTKInteractorAdaptor
+   to turn it into a command for a vtkRenderWindowInteractor. It uses 
+   iren->SetEventInformationFlipY which in turn wants the window size to flip
+   the Y value. QVTKWidget2 was sending a QResizeEvent to the interactor
+   adaptor that had size(0,0) and oldSize(w,h). The interactor adaptor used
+   the size value to set the size of the interactor, causing negative values
+   to be used for the pixel coordinates of the event. I changed it so it passes
+   size(w,h) for the resize event and now the interactor size gets set 
+   properly.
+

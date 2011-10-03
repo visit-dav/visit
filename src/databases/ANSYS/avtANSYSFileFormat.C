@@ -233,7 +233,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
 
     char  line[1024];
     float pt[3];
-    int   verts[8];
+    vtkIdType   verts[8];
     bool  recognized = false;
     bool  fatalError = false;
     bool  readingCoordinates = false;

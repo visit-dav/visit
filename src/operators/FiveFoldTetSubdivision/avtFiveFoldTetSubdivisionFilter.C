@@ -228,7 +228,7 @@ void avtFiveFoldTetSubdivisionFilter::PreExecute()
     }
 }
 
-void avtFiveFoldTetSubdivisionFilter::addBranchIds(int vtxIds[4], vtkDataArray *valArray, vtkDataArray *idArray, vtkDataArray *minIdArray, vtkDataArray *maxIdArray, vtkDataArray *sIdArray, vtkDataArray *selectedArray, vtkDataArray *highlightedArray)
+void avtFiveFoldTetSubdivisionFilter::addBranchIds(vtkIdType vtxIds[4], vtkDataArray *valArray, vtkDataArray *idArray, vtkDataArray *minIdArray, vtkDataArray *maxIdArray, vtkDataArray *sIdArray, vtkDataArray *selectedArray, vtkDataArray *highlightedArray)
 {
     int minVtx = 0;
     double minVal = valArray->GetTuple1(vtxIds[0]);
@@ -387,27 +387,27 @@ avtFiveFoldTetSubdivisionFilter::ExecuteData(vtkDataSet *in_ds, int, std::string
         for (int j=0; j<dims[1]-1; ++j)
             for (int i=0; i<dims[0]-1; ++i)
             {
-                int cellId = (k*(dims[1]-1) + j)*(dims[0]-1) + i;
+                //vtkIdType cellId = (k*(dims[1]-1) + j)*(dims[0]-1) + i;
 #define POINT_ID(I,J,K) ((K)*dims[1]+J)*dims[0]+I
-                int pt0Id = POINT_ID(i  , j  , k  );
-                int pt1Id = POINT_ID(i+1, j  , k  );
-                int pt2Id = POINT_ID(i+1, j+1, k  );
-                int pt3Id = POINT_ID(i  , j+1, k  );
-                int pt4Id = POINT_ID(i  , j  , k+1);
-                int pt5Id = POINT_ID(i+1, j  , k+1);
-                int pt6Id = POINT_ID(i+1, j+1, k+1);
-                int pt7Id = POINT_ID(i  , j+1, k+1);
+                vtkIdType pt0Id = POINT_ID(i  , j  , k  );
+                vtkIdType pt1Id = POINT_ID(i+1, j  , k  );
+                vtkIdType pt2Id = POINT_ID(i+1, j+1, k  );
+                vtkIdType pt3Id = POINT_ID(i  , j+1, k  );
+                vtkIdType pt4Id = POINT_ID(i  , j  , k+1);
+                vtkIdType pt5Id = POINT_ID(i+1, j  , k+1);
+                vtkIdType pt6Id = POINT_ID(i+1, j+1, k+1);
+                vtkIdType pt7Id = POINT_ID(i  , j+1, k+1);
 #undef POINT_ID
 
                 int vtx0HasSixNeighborsParity = atts.GetOddParityHasSixNeighborhood() ? 0 : 1;
 
                 if (((i+j+k) % 2) == vtx0HasSixNeighborsParity)
                 {
-                    int tet0[4]  = {pt1Id, pt4Id, pt3Id, pt0Id};
-                    int tet1[4]  = {pt1Id, pt3Id, pt6Id, pt2Id};
-                    int tet2[4]  = {pt1Id, pt6Id, pt4Id, pt5Id};
-                    int tet3[4]  = {pt3Id, pt4Id, pt6Id, pt7Id};
-                    int tet4[4]  = {pt1Id, pt3Id, pt4Id, pt6Id};
+                    vtkIdType tet0[4]  = {pt1Id, pt4Id, pt3Id, pt0Id};
+                    vtkIdType tet1[4]  = {pt1Id, pt3Id, pt6Id, pt2Id};
+                    vtkIdType tet2[4]  = {pt1Id, pt6Id, pt4Id, pt5Id};
+                    vtkIdType tet3[4]  = {pt3Id, pt4Id, pt6Id, pt7Id};
+                    vtkIdType tet4[4]  = {pt1Id, pt3Id, pt4Id, pt6Id};
                     ugrid->InsertNextCell(VTK_TETRA, 4, tet0);
                     ugrid->InsertNextCell(VTK_TETRA, 4, tet1);
                     ugrid->InsertNextCell(VTK_TETRA, 4, tet2);
@@ -424,11 +424,11 @@ avtFiveFoldTetSubdivisionFilter::ExecuteData(vtkDataSet *in_ds, int, std::string
                 }
                 else
                 {
-                    int tet0[4]  = {pt0Id, pt2Id, pt5Id, pt1Id};
-                    int tet1[4]  = {pt0Id, pt7Id, pt2Id, pt3Id};
-                    int tet2[4]  = {pt0Id, pt5Id, pt7Id, pt4Id};
-                    int tet3[4]  = {pt2Id, pt7Id, pt5Id, pt6Id};
-                    int tet4[4]  = {pt0Id, pt7Id, pt5Id, pt2Id};
+                    vtkIdType tet0[4]  = {pt0Id, pt2Id, pt5Id, pt1Id};
+                    vtkIdType tet1[4]  = {pt0Id, pt7Id, pt2Id, pt3Id};
+                    vtkIdType tet2[4]  = {pt0Id, pt5Id, pt7Id, pt4Id};
+                    vtkIdType tet3[4]  = {pt2Id, pt7Id, pt5Id, pt6Id};
+                    vtkIdType tet4[4]  = {pt0Id, pt7Id, pt5Id, pt2Id};
                     ugrid->InsertNextCell(VTK_TETRA, 4, tet0);
                     ugrid->InsertNextCell(VTK_TETRA, 4, tet1);
                     ugrid->InsertNextCell(VTK_TETRA, 4, tet2);

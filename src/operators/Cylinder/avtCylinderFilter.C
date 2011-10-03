@@ -152,7 +152,7 @@ avtCylinderFilter::SetAtts(const AttributeGroup *a)
     {
         double dot = normal_normalized[1];
         double angle = -acos(dot);
-        angle /= vtkMath::DegreesToRadians();
+        angle = vtkMath::RadiansFromDegrees(angle);
         trans->RotateWXYZ(angle, cross[0], cross[1], cross[2]);
     }
     c->SetTransform(trans);

@@ -168,11 +168,11 @@ ResampledMat::CountMatsAtAdjacentNodes()
     // Go through each cell, extract the materials from the avtMaterial,
     // and subsample the zone volume fractions to the nodes and the faces.
     //
-    const int *c_ptr = conn->connectivity;
+    const vtkIdType *c_ptr = conn->connectivity;
     for (int c=0; c<nCells; c++)
     {
-        int        nPts = *c_ptr;
-        const int *ids  = c_ptr+1;
+        int        nPts = (int)*c_ptr;
+        const vtkIdType *ids  = c_ptr+1;
 
         //
         // Create a list of materials and their corresponding volume
@@ -266,11 +266,11 @@ ResampledMat::AccumulateVFsToMatArray()
     nCellsAdjacentToNode = new unsigned char[nPoints];
     memset(matArrayNodeVF, 0, matArrayLen * sizeof(float));
     memset(nCellsAdjacentToNode, 0, nPoints);
-    const int *c_ptr = conn->connectivity;
+    const vtkIdType *c_ptr = conn->connectivity;
     for (int c=0; c<nCells; c++)
     {
-        int        nPts = *c_ptr;
-        const int *ids  = c_ptr+1;
+        int        nPts = (int)*c_ptr;
+        const vtkIdType *ids  = c_ptr+1;
 
         for (int n=0; n<nPts; n++)
         {
@@ -364,11 +364,11 @@ ResampledMat::CountMatsAtAdjacentCells()
     //
     matsAtCellOneAway = new unsigned char[nBPE * nCells];
     memset(matsAtCellOneAway, 0, nBPE*nCells);
-    const int *c_ptr = conn->connectivity;
+    const vtkIdType *c_ptr = conn->connectivity;
     for (int c=0; c<nCells; c++)
     {
-        int        nPts = *c_ptr;
-        const int *ids  = c_ptr+1;
+        int        nPts = (int)*c_ptr;
+        const vtkIdType *ids  = c_ptr+1;
 
         unsigned char *cm = &matsAtCellOneAway[nBPE*c];
         for (int n=0; n<nPts; n++)

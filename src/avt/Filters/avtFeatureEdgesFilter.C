@@ -190,7 +190,7 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
              outCD->CopyData(inCD, 0, i);
              vtkCell *edge = cell->GetEdge(i);
              vtkIdList *edge_ids = edge->GetPointIds();
-             int line[2];
+             vtkIdType line[2];
              int origId0 = edge_ids->GetId(0);
              int origId1 = edge_ids->GetId(1);
              int newId0 = 0, newId1 = 0;

@@ -1242,7 +1242,7 @@ void vtkCracksClipper::UnstructuredGridExecute(void)
     {
     int        cellId = (this->CellList != NULL ? this->CellList[i] : i);
     int        cellType = ug->GetCellType(cellId);
-    int        npts;
+    vtkIdType  npts;
     vtkIdType *pts;
     ug->GetCellPoints(cellId, npts, pts);
     bool canClip = false;
@@ -1670,9 +1670,9 @@ void vtkCracksClipper::PolyDataExecute(void)
   int numIcantClip = 0;
   for (i = 0 ; i < nToProcess ; i++)
     {
-    int        cellId = (this->CellList != NULL ? this->CellList[i] : i);
+    vtkIdType  cellId = (this->CellList != NULL ? this->CellList[i] : i);
     int        cellType = pd->GetCellType(cellId);
-    int        npts;
+    vtkIdType  npts;
     vtkIdType *pts;
     pd->GetCellPoints(cellId, npts, pts);
     bool canClip = false;

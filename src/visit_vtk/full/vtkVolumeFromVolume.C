@@ -1020,7 +1020,7 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
 
     vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
     cellLocations->SetNumberOfValues(ncells);
-    int *cl = cellLocations->GetPointer(0);
+    vtkIdType *cl = cellLocations->GetPointer(0);
 
     vtkIdType ids[1024]; // 8 (for hex) should be max, but...
     int current_index = 0;

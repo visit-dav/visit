@@ -413,7 +413,17 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     {
         glyphMapper->DataScalingOff();
     }
-    glyphMapper->SetGlyphType((int)atts.GetPointType());
+    if (atts.GetPointType() == MeshAttributes::Box)
+        glyphMapper->SetGlyphType(avtPointGlypher::Box);
+    else if (atts.GetPointType() == MeshAttributes::Axis)
+        glyphMapper->SetGlyphType(avtPointGlypher::Axis);
+    else if (atts.GetPointType() == MeshAttributes::Icosahedron)
+        glyphMapper->SetGlyphType(avtPointGlypher::Icosahedron);
+    else if (atts.GetPointType() == MeshAttributes::Point)
+        glyphMapper->SetGlyphType(avtPointGlypher::Point);
+    else if (atts.GetPointType() == MeshAttributes::Sphere)
+        glyphMapper->SetGlyphType(avtPointGlypher::Sphere);
+
     SetPointGlyphSize();
 
     //

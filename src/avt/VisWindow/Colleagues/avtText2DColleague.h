@@ -46,7 +46,7 @@
 #include <avtAnnotationColleague.h>
 #include <ColorAttribute.h>
 
-class vtkTextActor;
+class vtkVisItTextActor;
 
 // ****************************************************************************
 // Class: avtText2DColleague
@@ -62,7 +62,10 @@ class vtkTextActor;
 // Modifications:
 //    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
 //    Added $cycle support.
-//   
+//
+//    Brad Whitlock, Mon Sep 19 15:44:40 PDT 2011
+//    Switch to vtkVisItTextActor.
+//
 // ****************************************************************************
 
 class VISWINDOW_API avtText2DColleague : public avtAnnotationColleague
@@ -90,7 +93,7 @@ protected:
     bool ShouldBeAddedToRenderer() const;
     void SetText(const char *text);
 
-    vtkTextActor   *textActor;
+    vtkVisItTextActor *textActor;
     char           *textFormatString;
     char           *textString;
     double          currentTime;

@@ -43,18 +43,20 @@
 #include <VisWindowColleagueProxy.h>
 
 #include <vtkRenderer.h>
-#include <vtkTextActor.h>
 #include <vtkTextProperty.h>
 #include <vtkTimeSliderActor.h>
+
+#include <vtkVisItTextActor.h>
 
 #include <snprintf.h>
 
 #define DEFAULT_X       0.01
 #define DEFAULT_Y       0.01
 #define DEFAULT_WIDTH   0.4
-#define DEFAULT_HEIGHT  0.04
+#define DEFAULT_HEIGHT  0.05
 #define TIME_IDENTIFIER "$time"
 #define CYCLE_IDENTIFIER "$cycle"
+#define TEXT_SCALING_CORRECTION 0.9
 
 // ****************************************************************************
 // Method: avtTimeSliderColleague::avtTimeSliderColleague
@@ -81,6 +83,12 @@
 //
 //    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
 //    Added $cycle support.
+//
+//    Tom Fogal, Fri Jan 28 15:27:47 MST 2011
+//    Account for VTK API change.
+//
+//    Brad Whitlock, Wed Sep 28 15:24:47 PDT 2011
+//    Change the text actor type.
 //
 // ****************************************************************************
 
@@ -112,16 +120,15 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     //
     // Create and position the start text actor.
     //
-    textActor = vtkTextActor::New();
-    textActor->ScaledTextOn();
+    textActor = vtkVisItTextActor::New();
+    textActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_VIEWPORT);
     std::string defaultString("Time="); defaultString += TIME_IDENTIFIER;
     SetText(defaultString.c_str(), "%g");
     vtkCoordinate *pos = textActor->GetPositionCoordinate();
     pos->SetCoordinateSystemToNormalizedViewport();
     GetTextRect(DEFAULT_X, DEFAULT_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT, rect);
     pos->SetValue(rect[0], rect[1], 0.);
-    textActor->SetWidth(rect[2]);
-    textActor->SetHeight(rect[3]);
+    textActor->SetTextHeight(rect[3] * TEXT_SCALING_CORRECTION);
 
     // Make sure that the text actors initially has the right fg color.
     double fgColor[3];
@@ -303,6 +310,9 @@ avtTimeSliderColleague::ShouldBeAddedToRenderer() const
 //    Brad Whitlock, Thu Mar 22 15:02:23 PST 2007
 //    Changed FieldsEqual due to state object changes.
 //
+//    Brad Whitlock, Wed Sep 28 15:24:47 PDT 2011
+//    Change how the text size gets set.
+//
 // ****************************************************************************
 
 void
@@ -398,8 +408,7 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
         pos->SetCoordinateSystemToNormalizedViewport();
         GetTextRect(p1[0], p1[1], p2[0], p2[1], rect);
         pos->SetValue(rect[0], rect[1], 0.);
-        textActor->SetWidth(rect[2]);
-        textActor->SetHeight(rect[3]);
+        textActor->SetTextHeight(rect[3] * TEXT_SCALING_CORRECTION);
     }
 
     //
@@ -482,6 +491,9 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
 //    I made the time format string be encoded in the options as the 2nd
 //    entry in the text vector.
 //
+//    Brad Whitlock, Wed Sep 28 14:57:23 PDT 2011
+//    Fix return of size since I changed the text actor.
+//
 // ****************************************************************************
 
 void
@@ -492,14 +504,13 @@ avtTimeSliderColleague::GetOptions(AnnotationObject &annot)
     annot.SetActive(GetActive());
 
     const double *p1 = textActor->GetPosition();
-    const double *p2 = textActor->GetPosition2();
     const double *p3 = timeSlider->GetPosition2();
     annot.SetPosition(p1);
     // Store the width and height in position2.
     double p2wh[3];
-    p2wh[0] = p2[0];
-    p2wh[1] = p2[1] + p3[1];
-    p2wh[2] = p2[2];
+    p2wh[0] = p3[0];
+    p2wh[1] = p3[1] + textActor->GetTextHeight() * (1. / TEXT_SCALING_CORRECTION);
+    p2wh[2] = p3[2];
     annot.SetPosition2(p2wh);
 
     double fColor[4]; int iColor[4];

@@ -557,7 +557,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
            << "yExtents = [" << yMin << ", " << yMax << "] "
            << "zExtents = [" << zMin << ", " << zMax << "]" << endl;
 
-    int nCells = 0;
+    vtkIdType nCells = 0;
     avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
     const float EPSILON = 1.e-9;
 

@@ -52,11 +52,6 @@ public:
   // Draw method for OpenGL.
   virtual int Draw(vtkRenderer *ren, vtkActor *a);
 
-  // Description:
-  // Sets/Gets the whether color texturing is enabled.
-  vtkSetMacro(EnableColorTexturing, bool);
-  vtkGetMacro(EnableColorTexturing, bool);
-
 protected:
   vtkOpenGLRectilinearGridMapper();
   ~vtkOpenGLRectilinearGridMapper();
@@ -67,10 +62,8 @@ protected:
   bool doingDisplayLists;
   int  primsInCurrentList;
 
-  bool          EnableColorTexturing;
   bool          ColorTexturingAllowed;
   bool          ColorTextureLoaded;
-  bool          ColorTextureLooksDiscrete;
   unsigned int  ColorTextureName;
   float        *ColorTexture;
   int           ColorTextureSize;
@@ -78,6 +71,7 @@ protected:
   bool          GLEW_initialized;
   double        LastOpacity;
 
+  bool LooksDiscrete() const;
   bool MapScalarsWithTextureSupport(double);
   void BeginColorTexturing();
   void EndColorTexturing();

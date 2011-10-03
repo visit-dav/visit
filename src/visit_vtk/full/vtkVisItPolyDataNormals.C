@@ -817,7 +817,7 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
         // vtkPolygon::ComputeNormal, but changed to make it work better.
         //
         int nVerts = *connPtr++;
-        int *cell = connPtr;
+        vtkIdType *cell = connPtr;
 
         double v0[3], v1[3], v2[3];
         double normal[3] = {0, 0, 0};

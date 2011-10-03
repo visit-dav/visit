@@ -163,7 +163,7 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
         }
     }
     
-    int cell = -1;
+    vtkIdType cell = -1;
 
     // This is vtkVisItUtility::FindCell, except we cache the locator.
     // I should probably refactor that method, but I'm short on time.

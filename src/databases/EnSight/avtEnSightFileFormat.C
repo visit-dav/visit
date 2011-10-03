@@ -51,12 +51,13 @@
 #include <vtkDataArraySelection.h>
 #include <vtkPointData.h>
 #include <vtkDataSet.h>
-#include <vtkVisItEnSightReader.h>
-#include <vtkVisItEnSightGoldBinaryReader.h>
-#include <vtkVisItEnSightGoldReader.h>
-#include <vtkVisItEnSight6BinaryReader.h>
-#include <vtkVisItEnSight6Reader.h>
-#include <vtkVisItGenericEnSightReader.h>
+#include <vtkEnSightReader.h>
+#include <vtkEnSightGoldBinaryReader.h>
+#include <vtkEnSightGoldReader.h>
+#include <vtkEnSight6BinaryReader.h>
+#include <vtkEnSight6Reader.h>
+#include <vtkGenericEnSightReader.h>
+#include <vtkMultiBlockDataSet.h>
 
 #include <avtDatabaseMetaData.h>
 
@@ -115,7 +116,6 @@ avtEnSightFileFormat::avtEnSightFileFormat(const char *fname)
 //    Cyrus Harrison, Mon Mar 21 13:19:32 PDT 2011
 //    Extended the binary file header check to include the strings
 //     "binary" && "BINARY"
-//
 //
 // ****************************************************************************
 
@@ -234,7 +234,7 @@ avtEnSightFileFormat::InstantiateReader(const char *fname)
 
     char buff[256];
     geo_file.read(buff, 256);
-
+    
     bool isBinary = false;
     int bin_str_len = strlen("Binary");
     int end = 256 - bin_str_len;
@@ -255,14 +255,14 @@ avtEnSightFileFormat::InstantiateReader(const char *fname)
 
     if (isBinary)
         if (isGold)
-            reader = vtkVisItEnSightGoldBinaryReader::New();
+            reader = vtkEnSightGoldBinaryReader::New();
         else
-            reader = vtkVisItEnSight6BinaryReader::New();
+            reader = vtkEnSight6BinaryReader::New();
     else
         if (isGold)
-            reader = vtkVisItEnSightGoldReader::New();
+            reader = vtkEnSightGoldReader::New();
         else
-            reader = vtkVisItEnSight6Reader::New();
+            reader = vtkEnSight6Reader::New();
    
     reader->SetCaseFileName(case_name);
     if (path[0] != '\0')
@@ -345,7 +345,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             for (i = 0 ; i < nsn ; i++)
             {
                 const char *desc = reader->GetDescription(i, 
-                                       vtkVisItEnSightReader::SCALAR_PER_NODE);
+                                       vtkEnSightReader::SCALAR_PER_NODE);
                 if (strcmp(name, desc) == 0)
                 {
                     isNodal = true;
@@ -360,7 +360,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             for (i = 0 ; i < nsz ; i++)
             {
                 const char *desc = reader->GetDescription(i, 
-                                    vtkVisItEnSightReader::SCALAR_PER_ELEMENT);
+                                    vtkEnSightReader::SCALAR_PER_ELEMENT);
                 if (strcmp(name, desc) == 0)
                 {
                     isNodal = false;
@@ -375,7 +375,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             for (i = 0 ; i < nsn ; i++)
             {
                 const char *desc = reader->GetDescription(i, 
-                                       vtkVisItEnSightReader::VECTOR_PER_NODE);
+                                       vtkEnSightReader::VECTOR_PER_NODE);
                 if (strcmp(name, desc) == 0)
                 {
                     isNodal = true;
@@ -390,7 +390,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             for (i = 0 ; i < nsz ; i++)
             {
                 const char *desc = reader->GetDescription(i, 
-                                    vtkVisItEnSightReader::VECTOR_PER_ELEMENT);
+                                    vtkEnSightReader::VECTOR_PER_ELEMENT);
                 if (strcmp(name, desc) == 0)
                 {
                     isNodal = false;
@@ -578,8 +578,8 @@ avtEnSightFileFormat::GetMesh(int ts, int dom, const char *name)
         reader->Update();
         doneUpdate = true;
     }
-    vtkDataSet *rv = (vtkDataSet *) reader->GetOutput(dom)->NewInstance();
-    rv->CopyStructure(reader->GetOutput(dom));
+    vtkDataSet *rv = (vtkDataSet *)reader->GetOutput()->GetBlock(dom)->NewInstance();
+    rv->CopyStructure((vtkDataSet *)reader->GetOutput()->GetBlock(dom));
 
     return rv;
 }
@@ -622,17 +622,16 @@ avtEnSightFileFormat::GetVar(int ts, int dom, const char *name)
     }
 
     vtkDataArray *rv = NULL;
-    if (reader->GetOutput(dom)->GetPointData()->GetArray(name) != NULL)
+    vtkDataSet *block = (vtkDataSet *) reader->GetOutput()->GetBlock(dom);
+    if (block->GetPointData()->GetArray(name) != NULL)
     {
-        vtkDataArray *dat = 
-                       reader->GetOutput(dom)->GetPointData()->GetArray(name);
+        vtkDataArray *dat = block->GetPointData()->GetArray(name);
         rv = dat;
         rv->Register(NULL);
     }
-    else if (reader->GetOutput(dom)->GetCellData()->GetArray(name) != NULL)
+    else if (block->GetCellData()->GetArray(name) != NULL)
     {
-        vtkDataArray *dat =
-                        reader->GetOutput(dom)->GetCellData()->GetArray(name);
+        vtkDataArray *dat = block->GetCellData()->GetArray(name);
         rv = dat;
         rv->Register(NULL);
     }
@@ -683,17 +682,16 @@ avtEnSightFileFormat::GetVectorVar(int ts, int dom, const char *name)
     }
 
     vtkDataArray *rv = NULL;
-    if (reader->GetOutput(dom)->GetPointData()->GetArray(name) != NULL)
+    vtkDataSet *block = (vtkDataSet *) reader->GetOutput()->GetBlock(dom);
+    if (block->GetPointData()->GetArray(name) != NULL)
     {
-        vtkDataArray *dat = 
-                       reader->GetOutput(dom)->GetPointData()->GetArray(name);
+        vtkDataArray *dat = block->GetPointData()->GetArray(name);
         rv = dat;
         rv->Register(NULL);
     }
-    else if (reader->GetOutput(dom)->GetCellData()->GetArray(name) != NULL)
+    else if (block->GetCellData()->GetArray(name) != NULL)
     {
-        vtkDataArray *dat =
-                        reader->GetOutput(dom)->GetCellData()->GetArray(name);
+        vtkDataArray *dat = block->GetCellData()->GetArray(name);
         rv = dat;
         rv->Register(NULL);
     }
@@ -727,10 +725,8 @@ avtEnSightFileFormat::GetVectorVar(int ts, int dom, const char *name)
 
 void
 avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
-    int timeState)
+                                               int timeState)
 {
-    reader->ExecuteInformation();
-
     // Need this to get number of outputs.
     reader->SetReadAllVariables(0);
     reader->GetPointDataArraySelection()->RemoveAllArrays();
@@ -742,7 +738,7 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "mesh";
     mesh->meshType = AVT_UNSTRUCTURED_MESH;
-    mesh->numBlocks = reader->GetNumberOfOutputs();
+    mesh->numBlocks = reader->GetOutput()->GetNumberOfBlocks();
     mesh->blockOrigin = 1;
     mesh->blockTitle = "parts";
     mesh->blockPieceName = "part";
@@ -754,28 +750,28 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     for (i = 0 ; i < reader->GetNumberOfScalarsPerNode() ; i++)
     {
         const char *name = reader->GetDescription(i, 
-                                       vtkVisItEnSightReader::SCALAR_PER_NODE);
+                                       vtkEnSightReader::SCALAR_PER_NODE);
         AddScalarVarToMetaData(md, name, "mesh", AVT_NODECENT);
     }
 
     for (i = 0 ; i < reader->GetNumberOfScalarsPerElement() ; i++)
     {
         const char *name = reader->GetDescription(i, 
-                                    vtkVisItEnSightReader::SCALAR_PER_ELEMENT);
+                                    vtkEnSightReader::SCALAR_PER_ELEMENT);
         AddScalarVarToMetaData(md, name, "mesh", AVT_ZONECENT);
     }
 
     for (i = 0 ; i < reader->GetNumberOfVectorsPerNode() ; i++)
     {
         const char *name = reader->GetDescription(i, 
-                                       vtkVisItEnSightReader::VECTOR_PER_NODE);
+                                       vtkEnSightReader::VECTOR_PER_NODE);
         AddVectorVarToMetaData(md, name, "mesh", AVT_NODECENT);
     }
 
     for (i = 0 ; i < reader->GetNumberOfVectorsPerElement() ; i++)
     {
         const char *name = reader->GetDescription(i, 
-                                    vtkVisItEnSightReader::VECTOR_PER_ELEMENT);
+                                    vtkEnSightReader::VECTOR_PER_ELEMENT);
         AddVectorVarToMetaData(md, name, "mesh", AVT_ZONECENT);
     }
 }

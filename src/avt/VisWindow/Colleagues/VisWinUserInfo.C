@@ -80,6 +80,9 @@ const float VisWinUserInfo::defaultUserInfoWidth = 0.2;
 //    Brad Whitlock, Wed Jan 30 15:21:05 PST 2008
 //    Added textAttributes. Moved size and placement code to UpdateUserText.
 //
+//    Tom Fogal, Fri Jan 28 15:25:43 MST 2011
+//    Account for VTK API change.
+//
 // ****************************************************************************
 
 VisWinUserInfo::VisWinUserInfo(VisWindowColleagueProxy &p) 
@@ -91,7 +94,7 @@ VisWinUserInfo::VisWinUserInfo(VisWindowColleagueProxy &p)
     // Create and position the actors.
     //
     infoActor = vtkTextActor::New();
-    infoActor->ScaledTextOn();
+    infoActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_PROP);
     UpdateUserText();
 
     //

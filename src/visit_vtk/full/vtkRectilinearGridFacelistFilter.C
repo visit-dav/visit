@@ -827,7 +827,7 @@ void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
 
   int numOutCells;
   int numOutPoints;
-  int (*quads)[4];
+  vtkIdType (*quads)[4];
   int *ptIds;
 
   int nX = input->GetXCoordinates()->GetNumberOfTuples();
@@ -835,7 +835,7 @@ void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
   int nZ = input->GetZCoordinates()->GetNumberOfTuples();
   if (nX == 1)
   {
-      static int quads2[1][4] = { { 0, 1, 2, 3 } };
+      static vtkIdType quads2[1][4] = { { 0, 1, 2, 3 } };
       static int ptIds2[4];
       ptIds2[0] = 0;
       ptIds2[1] = nY-1;
@@ -849,7 +849,7 @@ void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
   }
   else if (nY == 1)
   {
-      static int quads2[1][4] = { { 0, 1, 2, 3 } };
+      static vtkIdType quads2[1][4] = { { 0, 1, 2, 3 } };
       static int ptIds2[4];
       ptIds2[0] = 0;
       ptIds2[1] = nX-1;
@@ -863,7 +863,7 @@ void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
   }
   else if (nZ == 1)
   {
-      static int quads2[1][4] = { { 0, 1, 2, 3 } };
+      static vtkIdType quads2[1][4] = { { 0, 1, 2, 3 } };
       static int ptIds2[4];
       ptIds2[0] = 0;
       ptIds2[1] = nX-1;
@@ -877,7 +877,7 @@ void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
   }
   else
   {
-      static int quads3[6][4] = { { 0, 1, 2, 3 }, { 0, 4, 5, 1 }, 
+      static vtkIdType quads3[6][4] = { { 0, 1, 2, 3 }, { 0, 4, 5, 1 }, 
                                   { 1, 5, 6, 2 }, { 2, 6, 7, 3 },
                                   { 3, 7, 4, 0 }, { 4, 7, 6, 5 } };
       static int ptIds3[8];

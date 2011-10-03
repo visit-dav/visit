@@ -735,6 +735,9 @@ avtVolumeFilter::GetNumberOfStages(const WindowAttributes &a)
 //    Modified to handle the splitting of the view attributes into 2d and
 //    3d parts.
 //
+//    Brad Whitlock, Wed Sep 28 13:54:02 PDT 2011
+//    Negate the image pan to account for changes in avtView3D.
+//
 // ****************************************************************************
 
 void
@@ -758,8 +761,8 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
     view3d.nearPlane = view.GetNearPlane();
     view3d.farPlane = view.GetFarPlane();
     view3d.perspective = view.GetPerspective();
-    view3d.imagePan[0] = view.GetImagePan()[0];
-    view3d.imagePan[1] = view.GetImagePan()[1];
+    view3d.imagePan[0] = -view.GetImagePan()[0];
+    view3d.imagePan[1] = -view.GetImagePan()[1];
     view3d.imageZoom = view.GetImageZoom();
 
     //

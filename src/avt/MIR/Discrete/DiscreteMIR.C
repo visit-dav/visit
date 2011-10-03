@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -543,7 +543,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
     // cleanish.  Cleanish cells are non-mixed cells incident to mixed
     // cells.  They'll need some special handling to connect with
     // mixed cells.
-    int *conn_ptr = conn.connectivity;
+    vtkIdType *conn_ptr = conn.connectivity;
     zonesList.reserve(nCells);
     for(int k = 0; k < dimensions[2]; ++k)
         for(int j = 0; j < dimensions[1]; ++j)
@@ -553,7 +553,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
                 int cellid = id(cell);
 
                 int nIds = *conn_ptr;
-                const int *ids = conn_ptr+1;
+                const vtkIdType *ids = conn_ptr+1;
 
                 conn_ptr += nIds+1;
 
@@ -1443,7 +1443,7 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
 
     vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
     cellLocations->SetNumberOfValues(ncells);
-    int *cl = cellLocations->GetPointer(0);
+    vtkIdType *cl = cellLocations->GetPointer(0);
 
     int offset = 0;
     for (int i=0; i<ncells; i++)
@@ -1454,7 +1454,7 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
 
         const int nnodes = zonesList[c].nnodes;
         *nl++ = nnodes;
-        const int *indices = &indexList[zonesList[c].startindex];
+        const vtkIdType *indices = &indexList[zonesList[c].startindex];
         for (int j=0; j<nnodes; j++)
             *nl++ = indices[j];
 
@@ -1678,12 +1678,12 @@ DiscreteMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
     // extract cells
     int        nCells  = conn.ncells;
     const int *matlist = mat->GetMatlist();
-    int *conn_ptr = conn.connectivity;
+    vtkIdType *conn_ptr = conn.connectivity;
     zonesList.resize(nCells);
     for (int c=0; c<nCells; c++)
     {
-        int        nIds = *conn_ptr;
-        const int *ids  = conn_ptr+1;
+        int        nIds = (int)*conn_ptr;
+        const vtkIdType *ids  = conn_ptr+1;
 
         ReconstructedZone &zone = zonesList[c];
         zone.origzone   = c;

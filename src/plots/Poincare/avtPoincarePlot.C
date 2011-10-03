@@ -516,7 +516,16 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
     glyphMapper->SetScale(atts.GetPointSize());
     glyphMapper->DataScalingOff();
-    glyphMapper->SetGlyphType((int)atts.GetPointType());
+    if (atts.GetPointType() == PoincareAttributes::Box)
+        glyphMapper->SetGlyphType(avtPointGlypher::Box);
+    else if (atts.GetPointType() == PoincareAttributes::Axis)
+        glyphMapper->SetGlyphType(avtPointGlypher::Axis);
+    else if (atts.GetPointType() == PoincareAttributes::Icosahedron)
+        glyphMapper->SetGlyphType(avtPointGlypher::Icosahedron);
+    else if (atts.GetPointType() == PoincareAttributes::Point)
+        glyphMapper->SetGlyphType(avtPointGlypher::Point);
+    else if (atts.GetPointType() == PoincareAttributes::Sphere)
+        glyphMapper->SetGlyphType(avtPointGlypher::Sphere);
     SetPointGlyphSize();
 
     if (varname != NULL)

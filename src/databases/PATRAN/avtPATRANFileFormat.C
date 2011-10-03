@@ -350,7 +350,7 @@ AddCell(char *line, const int cellNumNodes, const int IV,
     {
         char *valstart = line + (cellNumNodes-1) * SHORT_FIELD_WIDTH;
         char *valend = valstart + SHORT_FIELD_WIDTH;
-        int   verts[8];
+        vtkIdType verts[8];
 
         for(int v = 0; v < cellNumNodes; ++v)
         {

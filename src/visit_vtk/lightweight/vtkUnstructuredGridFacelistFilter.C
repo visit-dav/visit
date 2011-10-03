@@ -197,7 +197,7 @@ class Quad
   public:
                    Quad() { ordering_case = 255; };
 
-    int            AssignNodes(const int *);
+    int            AssignNodes(const vtkIdType *);
     bool           Equals(Quad *);
     bool           Equals(Tri *);
     void           AddInRemainingTriangle(Tri *, int);
@@ -217,8 +217,8 @@ class Quad
 
   protected:
     unsigned char ordering_case;
-    int           nodes[3];
-    int           orig_zone;
+    vtkIdType     nodes[3];
+    vtkIdType     orig_zone;
 
     static HashEntryList     *list;
     static QuadMemoryManager *MemoryManager;
@@ -283,7 +283,7 @@ class Tri
   public:
                    Tri() { ordering_case = 255; };
 
-    int            AssignNodes(const int *);
+    int            AssignNodes(const vtkIdType *);
     inline bool    Equals(Tri *&t)
                    {
                       if (t->nodes[0] == nodes[0] && t->nodes[1] == nodes[1])
@@ -311,8 +311,8 @@ class Tri
 
   protected:
     unsigned char ordering_case;
-    int           nodes[2];
-    int           orig_zone;
+    vtkIdType     nodes[2];
+    vtkIdType     orig_zone;
 
     static TriMemoryManager *MemoryManager;
     static int               npts;
@@ -449,8 +449,8 @@ class HashEntryList
                 HashEntryList(int npts);
     virtual    ~HashEntryList();
 
-    void        AddTri(const int *, int orig_zone);
-    void        AddQuad(const int *, int orig_zone);
+    void        AddTri(const vtkIdType *, vtkIdType orig_zone);
+    void        AddQuad(const vtkIdType *, vtkIdType orig_zone);
 
     inline void RemoveFace(void) { nfaces--; };
     int         GetNumberOfFaces(void) { return nfaces; };
@@ -573,7 +573,7 @@ Quad::RegisterMemoryManager(QuadMemoryManager *mm)
 // ****************************************************************************
 
 int
-Quad::AssignNodes(const int *n)
+Quad::AssignNodes(const vtkIdType *n)
 {
     int smallest = 0;
     if (n[1] < n[smallest])
@@ -981,7 +981,7 @@ Quad::AddInRemainingTriangle(int n, int node_0)
     n_list[0] = neighbors[(orig_quad_index+3)%4];
     n_list[1] = neighbors[orig_quad_index];
     n_list[2] = neighbors[(orig_quad_index+1)%4];
-    int tmp_nodes[3];
+    vtkIdType tmp_nodes[3];
     for (int i = 0 ; i < 3 ; i++)
     {
         tmp_nodes[i] = (n_list[i] == -1 ? node_0 : nodes[n_list[i]]);
@@ -1025,7 +1025,7 @@ Tri::RegisterMemoryManager(TriMemoryManager *mm)
 // ****************************************************************************
 
 int
-Tri::AssignNodes(const int *n)
+Tri::AssignNodes(const vtkIdType *n)
 {
     int smallest = 0;
     if (n[0] < n[1])
@@ -1652,7 +1652,7 @@ HashEntryList::~HashEntryList()
 // ****************************************************************************
 
 void
-HashEntryList::AddTri(const int *node_list, int orig_zone)
+HashEntryList::AddTri(const vtkIdType *node_list, vtkIdType orig_zone)
 {
     nfaces++;
     Tri *tri = tmm.GetFreeTri();
@@ -1682,7 +1682,7 @@ HashEntryList::AddTri(const int *node_list, int orig_zone)
 // ****************************************************************************
 
 void
-HashEntryList::AddQuad(const int *node_list, int orig_zone)
+HashEntryList::AddQuad(const vtkIdType *node_list, vtkIdType orig_zone)
 {
     nfaces++;
     Quad *quad = qmm.GetFreeQuad();

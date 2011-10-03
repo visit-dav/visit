@@ -232,6 +232,9 @@ NewHandler(void)
 //    Use InstallationFunction GetUserVisItDirectory instead of retreiving
 //    VISITUSERHOME directly from environment (in case it is not set).
 //
+//    Tom Fogal, Wed Sep 28 13:40:21 MDT 2011
+//    Fix a UMR that valgrind complained about.
+//
 // ****************************************************************************
 
 void
@@ -372,7 +375,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
         strcpy(progname_wo_dir, homedir.c_str());
     }
 #endif
-    char progname[256];
+    char progname[256] = {0};
     if (n > 1)
     {
         sprintf(progname, "%s.%03d", progname_wo_dir, r);

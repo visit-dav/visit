@@ -107,10 +107,7 @@ SET(VTK_EXTRA_LIBS
 vtktiff
 vtkjpeg 
 vtkpng 
-vtkexpat
 vtkzlib 
-vtkDICOMParser 
-vtkMPEG2Encode 
 vtkfreetype 
 vtkftgl
 )

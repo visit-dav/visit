@@ -72,6 +72,11 @@ Navigate2D::Navigate2D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //  Programmer: Eric Brugger
 //  Creation:   October 10, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jun  7 14:52:29 PDT 2011
+//    Use current event position instead of Last, appears to work better with
+//    new vtk.
+//
 // ****************************************************************************
 
 void
@@ -79,19 +84,19 @@ Navigate2D::OnTimer(void)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
-    int LastPos[2];
-    rwi->GetLastEventPosition(LastPos);
+    int Pos[2];
+    rwi->GetEventPosition(Pos);
 
     switch (State)
     {
       case VTKIS_PAN:
-        PanCamera(LastPos[0], LastPos[1]);
+        PanCamera(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
       case VTKIS_DOLLY:
-        ZoomCamera(LastPos[0], LastPos[1]);
+        ZoomCamera(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;

@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Brad Whitlock, Wed Aug 24 13:11:30 PDT 2011
+#   Add vtkTexturedPointsPainter and remove some obsolete files.
 #
 #****************************************************************************/
 
@@ -56,8 +58,7 @@ avtOpenGLSurfaceAndWireframeRenderer.C
 vtk/vtkOpenGLRectilinearGridMapper.C 
 vtk/vtkOpenGLStructuredGridMapper.C 
 vtk/vtkOpenGLTexturedBackgroundMapper.C 
-vtk/vtkVisItOpenGLPolyDataMapper.C 
-vtk/vtkVisItOpenGLTexture.C
+vtk/vtkTexturedPointsPainter.C
 )
 
 SET_SOURCE_FILES_PROPERTIES(
@@ -87,6 +88,7 @@ vtk/vtkVisItCubeAxesActor.C
 vtk/vtkVisItDataSetMapper.C 
 vtk/vtkVisItScalarBarActor.C 
 vtk/vtkVisItScalarBarWithOpacityActor.C 
+vtk/vtkVisItTextActor.C
 )
 
 IF(X11_FOUND)
@@ -176,7 +178,7 @@ ENDIF(QT_MAC_USE_COCOA)
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtplotter_ser ${AVTPLOTTER_SOURCES})
-TARGET_LINK_LIBRARIES(avtplotter_ser visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk lightweight_visit_vtk vtkHybrid ${GLEW_LIB}) #${OPENGL_gl_LIBRARY} ${MESA_LIB})
+TARGET_LINK_LIBRARIES(avtplotter_ser visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk lightweight_visit_vtk vtkHybrid ${GLEW_LIB} ${MESA_LIB}) #${OPENGL_gl_LIBRARY} ${MESA_LIB})
 IF(QT_MAC_USE_COCOA)
     TARGET_LINK_LIBRARIES(avtplotter_ser ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
 ENDIF(QT_MAC_USE_COCOA)
@@ -185,7 +187,7 @@ VISIT_INSTALL_TARGETS(avtplotter_ser)
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtplotter_par ${AVTPLOTTER_SOURCES})
-    TARGET_LINK_LIBRARIES(avtplotter_par visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk lightweight_visit_vtk vtkHybrid ${GLEW_LIB}) #${OPENGL_gl_LIBRARY} ${MESA_LIB})
+    TARGET_LINK_LIBRARIES(avtplotter_par visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk lightweight_visit_vtk vtkHybrid ${GLEW_LIB} ${MESA_LIB}) #${OPENGL_gl_LIBRARY} ${MESA_LIB})
     IF(QT_MAC_USE_COCOA)
         TARGET_LINK_LIBRARIES(avtplotter_par ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
     ENDIF(QT_MAC_USE_COCOA)

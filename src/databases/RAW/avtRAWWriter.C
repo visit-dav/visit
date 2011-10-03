@@ -46,6 +46,8 @@
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
 #ifndef MDSERVER
 #include <vtkRectilinearGridFacelistFilter.h>
 #include <vtkStructuredGridFacelistFilter.h>

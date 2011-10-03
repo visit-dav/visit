@@ -884,16 +884,16 @@ void
 VisitPlaneTool::CreateTextActors()
 {
     normalTextActor = vtkTextActor::New();
-    normalTextActor->ScaledTextOff();
+    normalTextActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
 
     originTextActor = vtkTextActor::New();
-    originTextActor->ScaledTextOff();
+    originTextActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
 
     upAxisTextActor = vtkTextActor::New();
-    upAxisTextActor->ScaledTextOff();
+    upAxisTextActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
 
     radiusTextActor = vtkTextActor::New();
-    radiusTextActor->ScaledTextOff();
+    radiusTextActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
 }
 
 // ****************************************************************************

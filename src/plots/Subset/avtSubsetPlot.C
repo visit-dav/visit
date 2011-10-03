@@ -309,7 +309,16 @@ avtSubsetPlot::SetAtts(const AttributeGroup *a)
     {
         levelsMapper->DataScalingOff();
     }
-    levelsMapper->SetGlyphType((int)atts.GetPointType());
+    if (atts.GetPointType() == SubsetAttributes::Box)
+        levelsMapper->SetGlyphType(avtPointGlypher::Box);
+    else if (atts.GetPointType() == SubsetAttributes::Axis)
+        levelsMapper->SetGlyphType(avtPointGlypher::Axis);
+    else if (atts.GetPointType() == SubsetAttributes::Icosahedron)
+        levelsMapper->SetGlyphType(avtPointGlypher::Icosahedron);
+    else if (atts.GetPointType() == SubsetAttributes::Point)
+        levelsMapper->SetGlyphType(avtPointGlypher::Point);
+    else if (atts.GetPointType() == SubsetAttributes::Sphere)
+        levelsMapper->SetGlyphType(avtPointGlypher::Sphere);
     SetPointGlyphSize();
 }
 

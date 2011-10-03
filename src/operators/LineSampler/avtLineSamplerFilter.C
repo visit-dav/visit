@@ -438,7 +438,7 @@ avtLineSamplerFilter::Iterate(int ts, avtDataTree_p tree)
           if( timeStep )
           {
             //define the points of the lines
-            int* pointList = new int[2];
+            vtkIdType* pointList = new vtkIdType[2];
             pointList[0]   = newPointIndex - nPoints;
             pointList[1]   = newPointIndex;
 

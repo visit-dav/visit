@@ -202,10 +202,11 @@ avtVariableMapper::CustomizeMappers(void)
             mappers[i]->SetLookupTable(lut);
 
             // Turn on color texturing in the mapper.
+            mappers[i]->SetInterpolateScalarsBeforeMapping(colorTexturingFlag?1:0);
+
             if(strcmp(mappers[i]->GetClassName(), "vtkVisItDataSetMapper")==0)
             {
                 vtkVisItDataSetMapper *m = (vtkVisItDataSetMapper *)mappers[i];
-                m->SetEnableColorTexturing(colorTexturingFlag);
                 m->SetSceneIs3D(GetInput()->GetInfo().GetAttributes().
                                                    GetSpatialDimension() == 3);
             }
@@ -981,6 +982,9 @@ avtVariableMapper::SetColorTexturingFlagAllowed(bool val)
 //   Brad Whitlock, Tue Apr 24 16:02:43 PST 2007
 //   Return if setting the color texturing flag is not allowed.
 //
+//   Brad Whitlock, Mon Aug  8 16:40:38 PDT 2011
+//   Set the color texturing flag another way.
+//
 // ****************************************************************************
 
 void
@@ -993,13 +997,6 @@ avtVariableMapper::SetColorTexturingFlag(bool val)
     for (int i = 0 ; i < nMappers ; i++)
     {
         if (mappers[i] != NULL)
-        {
-            // Turn on color texturing in the mapper.
-            if(strcmp(mappers[i]->GetClassName(), "vtkVisItDataSetMapper")==0)
-            {
-                vtkVisItDataSetMapper *m = (vtkVisItDataSetMapper *)mappers[i];
-                m->SetEnableColorTexturing(colorTexturingFlag);
-            }
-        }
+            mappers[i]->SetInterpolateScalarsBeforeMapping(colorTexturingFlag?1:0);
     }
 }

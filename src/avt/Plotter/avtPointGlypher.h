@@ -72,6 +72,13 @@ class     vtkVisItPolyDataNormals;
 class PLOTTER_API  avtPointGlypher  
 {
   public:
+    typedef enum {Box,
+                  Axis,
+                  Icosahedron,
+                  Point,
+                  Sphere
+                 } PointGlyphType;
+
                                avtPointGlypher();
     virtual                   ~avtPointGlypher();
 
@@ -79,7 +86,7 @@ class PLOTTER_API  avtPointGlypher
     void                       DataScalingOff(void);
 
     void                       SetScale(double);
-    void                       SetGlyphType(const int);
+    void                       SetGlyphType(PointGlyphType);
 
     void                       ColorByScalarOn(const std::string &);
     void                       ColorByScalarOff(void);
@@ -91,7 +98,7 @@ class PLOTTER_API  avtPointGlypher
     std::string                scalingVarName;
     std::string                coloringVarName;
     int                        scalingVarDim;
-    int                        glyphType;
+    PointGlyphType             glyphType;
     bool                       dataScaling;
     bool                       colorByScalar;
 

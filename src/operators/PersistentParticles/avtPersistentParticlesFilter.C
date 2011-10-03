@@ -607,12 +607,12 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     //should be traced. Check if particle ID is unique, if not then
     //stop tracing of that particle
     int nPoints = uGrid->GetNumberOfPoints();
-    std::map<double , bool> trace;
+    std::map<double, bool> trace;
     int numSkipped = 0;
     for( unsigned int i=0 ; i<nPoints ;++i )
     {
         //if particle ID is not already in the map then true, else false
-        std::map<double , bool >::iterator fP =
+        std::map<double, bool >::iterator fP =
           trace.find( currWeight->GetTuple1(i) );
 
         trace[currWeight->GetTuple1(i)] = (fP==trace.end());
@@ -621,15 +621,14 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
           numSkipped++;
         }
     }
-
     //Traverse all points
     for( unsigned int i=0 ; i<nPoints ; ++i )
     {
       //trace only if particle id is unique
-      if( trace[ currWeight->GetTuple1(i)] )
+      if (trace[currWeight->GetTuple1(i)])
       {
           //Get the current particle path if it is already defined
-          std::map<double , int >::iterator lastPoint =
+          std::map<double, vtkIdType>::iterator lastPoint =
             particlePaths.find( currWeight->GetTuple1(i) );
 
           //Get the next point and update its coordinates if necessary
@@ -676,7 +675,7 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
           if( lastPoint != particlePaths.end() )
           {
             //define the points that make the line
-            int* pointList = new int[2];
+            vtkIdType *pointList = new vtkIdType[2];
             pointList[0]   = (*lastPoint).second;
             pointList[1]   = newPointIndex;
 
@@ -690,8 +689,7 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
                allCellData->GetArray(j)->
                  InsertTuple( newCellIndex,
                               currCellData->GetArray(j)->GetTuple(i) );
-             }
-
+            }
             delete[] pointList;
           }
 
@@ -754,7 +752,7 @@ avtPersistentParticlesFilter::Finalize(void)
             avtDataTree_p newTree = new avtDataTree( particlePathData , 0 );
             SetOutputDataTree(newTree);
             particlePaths.clear(); //Clear the map for the next run
-            particlePaths = std::map<double , int>();
+            particlePaths = std::map<double, vtkIdType>();
             particlePathData->Delete();
             particlePathData = NULL;
       }

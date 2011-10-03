@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -39,16 +39,24 @@
 #****************************************************************************/
 
 SET(VTKQT_SOURCES
-vtkQtGLWidget.C
 vtkQtRenderWindow.C
-vtkQtRenderWindowInteractor.C
 vtkQtImagePrinter.C
+GUISupport/QVTKInteractor.cxx
+GUISupport/QVTKInteractorAdapter.cxx
+GUISupport/QVTKPaintEngine.cxx
+GUISupport/QVTKWidget.cxx
+GUISupport/QVTKWidget2.cxx
+GUISupport/vtkEventQtSlotConnect.cxx
+GUISupport/vtkQtConnection.cxx
 )
 
 # List the files that we'll run moc on
 SET(VTKQT_MOC_SOURCES
-vtkQtRenderWindowInteractor.h
-vtkQtGLWidget.h
+GUISupport/QVTKInteractorAdapter.h
+GUISupport/QVTKInteractorInternal.h
+GUISupport/QVTKWidget.h
+GUISupport/QVTKWidget2.h
+GUISupport/vtkQtConnection.h
 )
 QT_WRAP_CPP(VTKQT VTKQT_SOURCES ${VTKQT_MOC_SOURCES} )
 
@@ -56,6 +64,7 @@ INCLUDE_DIRECTORIES(
 ${VISIT_BINARY_DIR}/include
 ${VISIT_SOURCE_DIR}/include
 ${VISIT_SOURCE_DIR}/vtkqt
+${VISIT_SOURCE_DIR}/vtkqt/GUISupport
 ${VISIT_SOURCE_DIR}/common/utility
 ${VTK_INCLUDE_DIRS}
 ${QT_INCLUDE_DIR}

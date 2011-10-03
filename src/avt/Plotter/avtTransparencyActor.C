@@ -974,6 +974,12 @@ avtTransparencyActor::SetUpActor(void)
 //    These should all be 2D grids (i.e. external polygons) anyway, so the
 //    performance penalty is small.
 //
+//    Brad Whitlock, Tue Aug 16 16:12:44 PDT 2011
+//    Change to new SetInputConnection, GetOutputPort style. Also disable
+//    color texturing on the mapper prior to calling MapScalars since when the
+//    mapper is doing color texturing, it will not return a colors array from
+//    MapScalars.
+//
 // ****************************************************************************
 
 void
@@ -1060,7 +1066,7 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
     else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
         gf->SetInput(in_ds);
-        ghost_filter->SetInput(gf->GetOutput());
+        ghost_filter->SetInputConnection(gf->GetOutputPort());
         ghost_filter->Update();
         pd = (vtkPolyData *) ghost_filter->GetOutput();
     }
@@ -1070,16 +1076,18 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
         if (mapper->GetScalarVisibility() != 0 &&
             in_ds->GetPointData()->GetScalars() == NULL &&
             in_ds->GetCellData()->GetScalars() != NULL)
+        {
             normals->SetNormalTypeToCell();
-        normals->SetInput(gf->GetOutput());
-        ghost_filter->SetInput(normals->GetOutput());
+        }
+        normals->SetInputConnection(gf->GetOutputPort());
+        ghost_filter->SetInputConnection(normals->GetOutputPort());
         // Apply any inherent rectilinear grid transforms from the input.
         if (in_ds->GetFieldData()->GetArray("RectilinearGridTransform"))
         {
             vtkDoubleArray *matrix = (vtkDoubleArray*)in_ds->GetFieldData()->
                                           GetArray("RectilinearGridTransform");
             xform->SetMatrix(matrix->GetPointer(0));
-            xform_filter->SetInput(ghost_filter->GetOutput());
+            xform_filter->SetInputConnection(ghost_filter->GetOutputPort());
             xform_filter->SetTransform(xform);
             xform_filter->Update();
             pd = (vtkPolyData *) xform_filter->GetOutput();
@@ -1093,8 +1101,8 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
     else
     {
         gf->SetInput(in_ds);
+        gf->Update();
         pd = gf->GetOutput();
-        pd->Update();
     }
     mapper->SetInput(pd);
 
@@ -1152,13 +1160,19 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             colors->SetName("Colors");
             unsigned char *ptr = (unsigned char *) colors->GetVoidPointer(0);
 
+            // Disable interpolate scalars
+            int interpolateScalars = mapper->GetInterpolateScalarsBeforeMapping();
+            if(interpolateScalars > 0)
+                mapper->InterpolateScalarsBeforeMappingOff();
+
             //
             // Now let the mapper create the buffer of unsigned chars that it
             // would have created if we were to let it do the actual mapping.
             //
             double opacity = actor->GetProperty()->GetOpacity();
+            vtkUnsignedCharArray *mappedColors = mapper->MapScalars(opacity);
             unsigned char *buff = 
-              (unsigned char *) mapper->MapScalars(opacity)->GetVoidPointer(0);
+              (unsigned char *) mappedColors->GetVoidPointer(0);
 
             //
             // Now copy over the buffer and store it back with the dataset.
@@ -1174,6 +1188,10 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
                 prepDS->GetPointData()->SetNormals(
                                              pd->GetPointData()->GetNormals());
             }
+
+            // Restore interpolate scalars
+            if(interpolateScalars > 0)
+                mapper->InterpolateScalarsBeforeMappingOn();
         }
         else if (pd->GetCellData()->GetScalars() != NULL)
         {

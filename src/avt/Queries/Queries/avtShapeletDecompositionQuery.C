@@ -50,6 +50,7 @@
 #include <avtSourceFromAVTDataset.h>
 
 #include <vtkCellData.h>
+#include <vtkDataArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
 

@@ -24,7 +24,7 @@
 #       SuSE,   x86_64,		GCC 4.0.2	antares.lbl.gov
 #       SuSE,   x86_64,		GCC 4.1.0	octagon.lbl.gov
 #       MacOSX  i386,		GCC 4.0.1	corellia.llnl.gov
-#       MacOSX  x86_64          GCC 4.2.1       dantooine.llnl.gov
+#       MacOSX  x86_64          GCC 4.2.1       galvatron.llnl.gov
 #       MacOSX  ppc,		GCC 4.0.1	snailbait.llnl.gov
 #
 #   It is believed that this script will also work with other Linux variations.
@@ -43,7 +43,7 @@
 #          Qt       qt-everywhere-opensource-src-4.6.1.tar.gz
 #          Mesa     MesaLib-7.10.2.tar.gz
 #          Python   Python-2.6.4tgz
-#          VTK      vtk-5.0.0i.tar.gz
+#          VTK      vtk-5.8.0.tar.gz
 #          CMake    cmake-2.8.0.tar.gz
 #
 #        The following optional libraries need to be in the current directory
@@ -851,18 +851,18 @@ if [[ "$VISIT_FILE" != "" ]] ; then
 fi
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
-export VTK_FILE=${VTK_FILE:-"vtk-5.0.0i.tar.gz"}
-export VTK_VERSION=${VTK_VERSION:-"5.0.0i"}
-export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK"}
+export VTK_FILE=${VTK_FILE:-"visit-vtk-5.8.tar.gz"}
+export VTK_VERSION=${VTK_VERSION:-"5.8.0"}
+export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"visit-vtk-5.8"}
 
 export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.3.tar.gz"}
 export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.3"}
 export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.3"}
 
-export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
-export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
-export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
-export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2"
+export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
+export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
+export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
+export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.10.2"
 
 export PYTHON_FILE_SUFFIX="tgz"
 export PYTHON_VERSION="2.6.4"
@@ -1644,7 +1644,7 @@ function check_required_3rdparty
     fi
 
     if [[ "$DO_VTK" == "yes" ]] ; then
-        ensure_built_or_ready "vtk"    $VTK_VERSION    $VTK_BUILD_DIR    $VTK_FILE
+        ensure_built_or_ready "vtk" $VTK_VERSION $VTK_BUILD_DIR $VTK_FILE
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -3660,6 +3660,13 @@ function build_cmake
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
 
+function issue_command
+{
+    echo $@
+    $@
+    return $?
+}
+
 function build_vtk
 {
     #
@@ -3682,7 +3689,6 @@ function build_vtk
     #
     VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-"$VISITDIR/python/${PYTHON_VERSION}/${VISITARCH}"}
     PYTHON_INSTALL="${VISIT_PYTHON_DIR}/bin"
-echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
     if [[ -e ${PYTHON_INSTALL}/python ]] ; then
        info "VTK: Python found"
     else
@@ -3711,14 +3717,12 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
        fi
     fi
 
+    # Extract the sources
     if [[ -d $VTK_BUILD_DIR ]] ; then
         if [[ ! -f $VTK_FILE ]] ; then
-#           if [[ -f vtk-5.0.0g.tar.gz ]] ; then
-#               warn "I believe your VTK directory is from VTK5.0.0g.  Deleting"
-               warn "The directory VTK exists, deleting before uncompressing"
-               rm -Rf $VTK_BUILD_DIR
-               ensure_built_or_ready "vtk"    $VTK_VERSION    $VTK_BUILD_DIR    $VTK_FILE
-#           fi
+            warn "The directory VTK exists, deleting before uncompressing"
+            rm -Rf $VTK_BUILD_DIR
+            ensure_built_or_ready "vtk"    $VTK_VERSION    $VTK_BUILD_DIR    $VTK_FILE
         fi
     fi
     prepare_build_dir $VTK_BUILD_DIR $VTK_FILE
@@ -3726,6 +3730,15 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
     if [[ $untarred_vtk == -1 ]] ; then
        warn "Unable to prepare VTK build directory. Giving Up!"
        return 1
+    fi
+
+    # Make a build directory for an out-of-source build.. Change the
+    # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
+    VTK_SRC_DIR=$VTK_BUILD_DIR
+    VTK_BUILD_DIR="${VTK_SRC_DIR}-build"
+    if [[ ! -d $VTK_BUILD_DIR ]] ; then
+        echo "Making build directory $VTK_BUILD_DIR"
+        mkdir $VTK_BUILD_DIR
     fi
 
     # 
@@ -3751,242 +3764,123 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
         export VTK_PY_LIBS="$VTK_PY_LIBS -ldl -lutil -lm"
     fi
 
-    #
-    # Determine if we need to lower the optimizatoin for gcc 4.5.1.
-    #
-    if [[ "$CXX_COMPILER" == "g++" ]] ; then
-        GCC_VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3)
-        if [[ "$GCC_VERSION" == "4.5.1" ]] ; then
-           BUILD_TYPE_STRING=""
-           CXX_OPTIMIZATION_STRING="-O2"
-        else
-           BUILD_TYPE_STRING="-DCMAKE_BUILD_TYPE:STRING=Release"
-           CXX_OPTIMIZATION_STRING=""
-        fi
+    vopts=""
+    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=Release"
+    vopts="${vopts} -DVTK_DEBUG_LEAKS:BOOL=OFF"
+    if test "x${DO_STATIC_BUILD}" = "xyes" ; then
+      vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
+    else
+      vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
 
-    #
-    # Execute CMake, which will set up the Makefiles for VTK.  (like configure)
-    #
-    # Linking OSMesa for MANGLED_MESA_LIBRARY is correct here; we'll never use
-    # MesaGL, as that is a xlib-based software path.  If we have an X context,
-    # we always want to use the 'system's GL library.
-    info "Executing CMake on VTK"
-    cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
-    CMAKE_BIN=${CMAKE_INSTALL}/cmake
-    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
-        VTK_SHARED_LIBS="OFF"
-        LIBEXT="a"
-    else
-        VTK_SHARED_LIBS="ON"
-        LIBEXT="${SO_EXT}"
+    vtk_inst_path="${VISITDIR}/vtk/${VTK_VERSION}/${VISITARCH}"
+    vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${vtk_inst_path}"
+    vopts="${vopts} -DVTK_INSTALL_INCLUDE_DIR:PATH=/include/"
+    vopts="${vopts} -DVTK_INSTALL_LIB_DIR:PATH=/lib/"
+    vopts="${vopts} -DBUILD_TESTING:BOOL=OFF"
+    vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=OFF"
+    vopts="${vopts} -DVTK_USE_NETCDF:BOOL=OFF"
+    vopts="${vopts} -DVTK_USE_EXODUS:BOOL=OFF"
+    vopts="${vopts} -DVTK_USE_TK:BOOL=OFF"
+    vopts="${vopts} -DVTK_USE_64BIT_IDS:BOOL=ON"
+    vopts="${vopts} -DVTK_USE_INFOVIS:BOOL=OFF"
+    vopts="${vopts} -DVTK_USE_METAIO:BOOL=OFF"
+    vopts="${vopts} -DVTK_USE_PARALLEL:BOOL=OFF"
+    vopts="${vopts} -DVTK_LEGACY_REMOVE:BOOL=ON"
+    vopts="${vopts} -DVTK_USE_SYSTEM_JPEG:BOOL=OFF"
+    vopts="${vopts} -DVTK_USE_SYSTEM_PNG:BOOL=OFF"
+    vopts="${vopts} -DVTK_USE_SYSTEM_TIFF:BOOL=OFF"
+    vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=OFF"
+    vopts="${vopts} -DVTK_USE_SYSTEM_HDF5:BOOL=ON"
+    vopts="${vopts} -DHDF5_C_INCLUDE_DIR:PATH=${VISIT_HDF5_DIR}/include"
+    vopts="${vopts} -DHDF5_INCLUDE_DIR:PATH=${VISIT_HDF5_DIR}/include"
+    h5diff="${VISIT_HDF5_DIR}/bin/hdf5diff"
+    vopts="${vopts} -DHDF5_DIFF_EXECUTABLE:FILEPATH=${h5diff}"
+    h5lib="${VISIT_HDF5_DIR}/lib/libhdf5"
+    for ext in a so dylib ; do
+      if test -f ${h5lib}.${ext} ; then h5lib="${h5lib}.${ext}" ; fi
+    done
+    h5hl="${VISIT_HDF5_DIR}/lib/libhdf5_hl"
+    for ext in a so dylib ; do
+      if test -f ${h5hl}.${ext} ; then h5hl="${h5hl}.${ext}" ; fi
+    done
+    vopts="${vopts} -DHDF5_LIBRARY=${h5lib}"
+    vopts="${vopts} -DHDF5_hdf5_LIBRARY:FILEPATH=${h5lib}"
+    vopts="${vopts} -DHDF5_hdf5_LIBRARY_RELEASE:FILEPATH=${h5lib}"
+    vopts="${vopts} -DHDF5_hdf5_hl_LIBRARY:FILEPATH=${h5hl}"
+    vopts="${vopts} -DHDF5_hdf5_hl_LIBRARY_RELEASE:FILEPATH=${h5hl}"
+    vopts="${vopts} -DVTK_USE_CARBON:BOOL=OFF"
+    vopts="${vopts} -DVTK_USE_ANSI_STD_LIB:BOOL=ON"
+
+    if test "${OPSYS}" = "Darwin" ; then
+      lo="-Wl,-headerpad_max_install_names"
+      lo="${lo},-compatibility_version,5.7"
+      lo="${lo},-current_version,5.7.0"
+      vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lo}"
+      vopts="${vopts} -DVTK_USE_COCOA:BOOL=ON"
     fi
-    if [[ "$OPSYS" == "Darwin" ]]; then
-    VER=$(uname -r)
-    if [[ ${VER%%.*} -ge 10 ]] ; then
-        echo Snow Leopard detected. Disabling Carbon.
-        ${CMAKE_BIN} \
-            -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
-            -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
-            -DVTK_USE_CARBON:BOOL=OFF\
-            -DVTK_USE_COCOA:BOOL=ON\
-            -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
-            -DBUILD_TESTING:BOOL=OFF\
-            -DUSE_ANSI_STD_LIB:BOOL=ON\
-            -DVTK_USE_MANGLED_MESA:BOOL=ON\
-            -DVTK_USE_HYBRID:BOOL=ON\
-            ${BUILD_TYPE_STRING}\
-            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
-            -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-            -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
-            -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-            -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
-            -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-            -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-            -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-            -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-            -DVTK_USE_TK:BOOL=OFF\
-            -DTK_INCLUDE_PATH:FILEPATH=""\
-            -DTK_LIBRARY:FILEPATH=""\
-            -DVTK_WRAP_PYTHON:BOOL=ON\
-            -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
-            -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
-            -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
-            -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
-            .
-    elif [[ ${VER%%.*} -ge 9 ]] ; then
-        echo "10.5 detected. Enable Python filters"
-        ${CMAKE_BIN} \
-            -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
-            -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
-            -DBUILD_TESTING:BOOL=OFF\
-            -DUSE_ANSI_STD_LIB:BOOL=ON\
-            -DVTK_USE_MANGLED_MESA:BOOL=ON\
-            -DVTK_USE_HYBRID:BOOL=ON\
-            ${BUILD_TYPE_STRING}\
-            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
-            -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-            -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
-            -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-            -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
-            -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-            -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-            -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-            -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-            -DVTK_USE_TK:BOOL=OFF\
-            -DTK_INCLUDE_PATH:FILEPATH=""\
-            -DTK_LIBRARY:FILEPATH=""\
-            -DVTK_WRAP_PYTHON:BOOL=ON\
-            -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
-            -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
-            -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
-            -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
-            .
-    else
-        echo "10.4 detected. Disable Python filters"
-        ${CMAKE_BIN} \
-            -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
-            -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
-            -DBUILD_TESTING:BOOL=OFF\
-            -DUSE_ANSI_STD_LIB:BOOL=ON\
-            -DVTK_USE_MANGLED_MESA:BOOL=ON\
-            -DVTK_USE_HYBRID:BOOL=ON\
-            ${BUILD_TYPE_STRING}\
-            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
-            -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-            -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
-            -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-            -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names\
-            -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-            -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-            -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-            -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-            -DVTK_USE_TK:BOOL=OFF\
-            -DTK_INCLUDE_PATH:FILEPATH=""\
-            -DTK_LIBRARY:FILEPATH=""\
-            .
+
+    lf=""
+    if test "${OPSYS}" = "IRIX64" ; then
+      CFLAGS="${CFLAGS} -LANG:std -64"
+      lf="${lf} -LANG:std -64"
     fi
-    elif [[ "$OPSYS" == "IRIX64" ]]; then
-      ${CMAKE_BIN} \
-        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
-        -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
-        -DBUILD_TESTING:BOOL=OFF\
-        -DUSE_ANSI_STD_LIB:BOOL=ON\
-        -DVTK_USE_MANGLED_MESA:BOOL=ON\
-        -DVTK_USE_HYBRID:BOOL=ON\
-        ${BUILD_TYPE_STRING}\
-        -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS} -LANG:std -64"\
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}" \
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-        -DCMAKE_EXE_LINKER_FLAGS:STRING=-LANG:std -64\
-        -DCMAKE_MODULE_LINKER_FLAGS:STRING=-LANG:std -64\
-        -DCMAKE_SHARED_LINKER_FLAGS:STRING=-LANG:std -64\
-        -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-        -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${LIBEXT}"\
-        -DVTK_USE_TK:BOOL=OFF\
-        -DTK_INCLUDE_PATH:FILEPATH=""\
-        -DTK_LIBRARY:FILEPATH=""\
-        -DVTK_WRAP_PYTHON:BOOL=ON\
-        -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
-        -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
-        -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
-        -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
-        .
-    else
-       if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
-           ${CMAKE_BIN} \
-               -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
-               -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
-               -DBUILD_TESTING:BOOL=OFF\
-               -DUSE_ANSI_STD_LIB:BOOL=ON\
-               -DVTK_USE_MANGLED_MESA:BOOL=OFF\
-               -DVTK_USE_HYBRID:BOOL=ON\
-               ${BUILD_TYPE_STRING}\
-               -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
-               -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-               -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
-               -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-               -DVTK_USE_TK:BOOL=OFF\
-               -DTK_INCLUDE_PATH:FILEPATH=""\
-               -DTK_LIBRARY:FILEPATH=""\
-               -DVTK_WRAP_PYTHON:BOOL=OFF\
-               .
-       else
-           if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
-           # We can't build Python wrappers with static
-           ${CMAKE_BIN} \
-               -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
-               -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
-               -DBUILD_TESTING:BOOL=OFF\
-               -DUSE_ANSI_STD_LIB:BOOL=ON\
-               -DVTK_USE_MANGLED_MESA:BOOL=ON\
-               -DVTK_USE_HYBRID:BOOL=ON\
-               ${BUILD_TYPE_STRING}\
-               -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
-               -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-               -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
-               -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-               -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-               -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${LIBEXT}"\
-               -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-               -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-               -DVTK_USE_TK:BOOL=OFF\
-               -DTK_INCLUDE_PATH:FILEPATH=""\
-               -DTK_LIBRARY:FILEPATH=""\
-               .
-           else
-           ${CMAKE_BIN} \
-               -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
-               -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
-               -DBUILD_TESTING:BOOL=OFF\
-               -DUSE_ANSI_STD_LIB:BOOL=ON\
-               -DVTK_USE_MANGLED_MESA:BOOL=ON\
-               -DVTK_USE_HYBRID:BOOL=ON\
-               ${BUILD_TYPE_STRING}\
-               -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
-               -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-               -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
-               -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-               -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-               -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-               -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-               -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${LIBEXT}"\
-               -DVTK_USE_TK:BOOL=OFF\
-               -DTK_INCLUDE_PATH:FILEPATH=""\
-               -DTK_LIBRARY:FILEPATH=""\
-               -DVTK_WRAP_PYTHON:BOOL=ON\
-               -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
-               -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
-               -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
-               -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
-               .
-           fi
-       fi
+    vopts="${vopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+    vopts="${vopts} -DCMAKE_C_FLAGS:STRING=${CFLAGS}"
+    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=${CXXFLAGS}"
+    vopts="${vopts} -DCMAKE_EXE_LINKER_FLAGS:STRING=${lf}"
+    vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
+    vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
+
+    if test "x${DO_DBIO_ONLY}" != "xyes" ; then
+      # mesa
+      mm="${VISITDIR}/mesa/${MESA_VERSION}/${VISITARCH}"
+      vopts="${vopts} -DVTK_USE_MANGLED_MESA:BOOL=OFF"
+      vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+      vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${mm}/include"
+      osm_lib="${mm}/lib/libOSMesa"
+      mm_lib="${mm}/lib/libMesaGL"
+      for ext in a so dylib ; do
+        if test -f ${osm_lib}.${ext} ; then osm_lib="${osm_lib}.${ext}" ; fi
+        if test -f ${mm_lib}.${ext} ; then mm_lib="${mm_lib}.${ext}" ; fi
+      done
+      vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=${osm_lib}"
+
+      # python... but static libs and python filters are incompatible.
+      if test "x${DO_STATIC_BUILD}" != "xyes" ; then
+        vopts="${vopts} -DVTK_WRAP_PYTHON:BOOL=ON"
+        py="${VISIT_PYTHON_DIR}/bin/python"
+        pycompat="${PYTHON_COMPATIBILITY_VERSION}"
+        vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
+        pyinc="${VISIT_PYTHON_DIR}/include/python${pycompat}"
+        vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
+        pylib="${VISIT_PYTHON_DIR}/lib/libpython${pycompat}"
+        for ext in a so dylib ; do
+          if test -f ${pylib}.${ext} ; then pylib="${pylib}.${ext}" ; fi
+        done
+        vopts="${vopts} -DPYTHON_LIBRARY:FILEPATH=${pylib}"
+        vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
+      else
+        warn "Forgetting python filters because we are doing a static build."
+      fi
     fi
-    if [[ $? != 0 ]] ; then
-       warn "Cannot get CMAKE to create the makefiles.  Giving up."
-       return 1
-    fi
+
+    CMAKE_BIN="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin/cmake"
+    cd ${VTK_BUILD_DIR}
+    issue_command ${CMAKE_BIN} \
+      ${vopts} \
+      ../${VTK_SRC_DIR} || error "VTK configuration failed."
 
     #
     # Now build VTK.
     #
     info "Building VTK . . . (~20 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
-    if [[ $? != 0 ]] ; then
-       warn "VTK did not build correctly.  Giving up."
-       return 1
-    fi
+    env DYLD_LIBRARY_PATH=`pwd`/bin $MAKE $MAKE_OPT_FLAGS || \
+      error "VTK did not build correctly.  Giving up."
 
     info "Installing VTK . . . "
-    $MAKE install
-    if [[ $? != 0 ]] ; then
-       warn "VTK did not install correctly.  Giving up."
-       return 1
-    fi
+    $MAKE install || error "VTK did not install correctly."
 
     #
     # If on Darwin, fix install names
@@ -4001,13 +3895,17 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
         #
         # first change the libraries name and identification by executing the
         # following bourne shell script
-        for i in libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering \
-        libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD \
-        libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkIO \
-        libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
-        libvtkRenderingPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkexpat \
-        libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
-        libvtktiff libvtkzlib
+        for i in libvtkCommon libvtkCommonPythonD libvtkDICOMParser \
+                 libvtkFiltering libvtkFilteringPythonD \
+                 libvtkGenericFiltering libvtkGenericFilteringPythonD \
+                 libvtkGraphics libvtkGraphicsPythonD libvtkHybrid \
+                 libvtkHybridPythonD libvtkIO libvtkIOPythonD libvtkImaging \
+                 libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
+                 libvtkRenderingPythonD libvtkVolumeRendering \
+                 libvtkVolumeRenderingPythonD libvtkexpat libvtkfreetype \
+                 libvtkftgl libvtkjpeg libvtkpng libvtksys libvtktiff \
+                 libvtkzlib libvtkverdict libvtkNetCDF libvtkNetCDF_cxx \
+                 libvtksqlite
         do
            install_name_tool -id \
              $INSTALLNAMEPATH/$i.$SO_EXT \
@@ -4016,35 +3914,50 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
 
         #
         # Next change the dependent libraries names and paths
-        for i in libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering \
-        libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD \
-        libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkIO \
-        libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
-        libvtkRenderingPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkexpat \
-        libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
-        libvtktiff libvtkzlib
+        for i in libvtkCommon libvtkCommonPythonD libvtkDICOMParser \
+                 libvtkFiltering libvtkFilteringPythonD \
+                 libvtkGenericFiltering libvtkGenericFilteringPythonD \
+                 libvtkGraphics libvtkGraphicsPythonD libvtkHybrid \
+                 libvtkHybridPythonD libvtkIO libvtkIOPythonD \
+                 libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode \
+                 libvtkRendering libvtkRenderingPythonD \
+                 libvtkVolumeRendering libvtkVolumeRenderingPythonD \
+                 libvtkexpat libvtkfreetype libvtkftgl libvtkjpeg \
+                 libvtkpng libvtksys libvtktiff libvtkzlib \
+                 libvtkverdict libvtkNetCDF libvtkNetCDF_cxx \
+                 libvtksqlite
         do
-          for j in libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering \
-          libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD \
-          libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkIO \
-          libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
-          libvtkRenderingPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkexpat \
-          libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
-          libvtktiff libvtkzlib
+          for j in libvtkCommon libvtkCommonPythonD libvtkDICOMParser \
+                   libvtkFiltering libvtkFilteringPythonD \
+                   libvtkGenericFiltering libvtkGenericFilteringPythonD \
+                   libvtkGraphics libvtkGraphicsPythonD libvtkHybrid \
+                   libvtkHybridPythonD libvtkIO libvtkIOPythonD \
+                   libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode \
+                   libvtkRendering libvtkRenderingPythonD \
+                   libvtkVolumeRendering libvtkVolumeRenderingPythonD \
+                   libvtkexpat libvtkfreetype libvtkftgl libvtkjpeg \
+                   libvtkpng libvtksys libvtktiff libvtkzlib \
+                   libvtkverdict libvtkNetCDF libvtkNetCDF_cxx \
+                   libvtksqlite
           do
              install_name_tool -change \
-                $j.5.0.$SO_EXT \
+                $j.5.8.$SO_EXT \
                 $INSTALLNAMEPATH/$j.$SO_EXT \
                 $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
           done
+          install_name_tool -change \
+                libvtkNetCDF_cxx.dylib $INSTALLNAMEPATH/libvtkNetCDF_cxx.dylib \
+                $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
         done
 
         #
         # Fix vtk python wrapper module intall names.
         #
-        for i in libvtkCommonPython.so libvtkFilteringPython.so libvtkGenericFilteringPython.so \
-        libvtkGraphicsPython.so libvtkHybridPython.so libvtkIOPython.so libvtkImagingPython.so \
-        libvtkRenderingPython.so libvtkVolumeRenderingPython.so 
+        for i in libvtkCommonPython.so libvtkFilteringPython.so \
+                 libvtkGenericFilteringPython.so libvtkGraphicsPython.so \
+                 libvtkHybridPython.so libvtkIOPython.so \
+                 libvtkImagingPython.so libvtkRenderingPython.so \
+                 libvtkVolumeRenderingPython.so
         do
             install_name_tool -id \
              $INSTALLNAMEPATH/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/vtk/$i \
@@ -4052,54 +3965,37 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
         done
 
         #
-        # The vtk python module libs depend on the main vtk libs, resolve these install names.
+        # The vtk python module libs depend on the main vtk libs,
+        # resolve these install names.
         #
-        for i in libvtkCommonPython.so libvtkFilteringPython.so libvtkGenericFilteringPython.so \
-        libvtkGraphicsPython.so libvtkHybridPython.so libvtkIOPython.so libvtkImagingPython.so \
-        libvtkRenderingPython.so libvtkVolumeRenderingPython.so 
+        for i in libvtkCommonPython.so libvtkFilteringPython.so \
+                 libvtkGenericFilteringPython.so libvtkGraphicsPython.so \
+                 libvtkHybridPython.so libvtkIOPython.so \
+                 libvtkImagingPython.so libvtkRenderingPython.so \
+                 libvtkVolumeRenderingPython.so
         do
-          for j in libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering \
-          libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD \
-          libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkIO \
-          libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
-          libvtkRenderingPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkexpat \
-          libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
-          libvtktiff libvtkzlib
+
+          for j in libvtkCommon libvtkCommonPythonD \
+                   libvtkDICOMParser libvtkFiltering libvtkFilteringPythonD \
+                   libvtkGenericFiltering libvtkGenericFilteringPythonD \
+                   libvtkGraphics libvtkGraphicsPythonD libvtkHybrid \
+                   libvtkHybridPythonD libvtkIO libvtkIOPythonD libvtkImaging \
+                   libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
+                   libvtkRenderingPythonD libvtkVolumeRendering \
+                   libvtkVolumeRenderingPythonD libvtkexpat libvtkfreetype \
+                   libvtkftgl libvtkjpeg libvtkpng libvtksys libvtktiff \
+                   libvtkzlib
           do
              install_name_tool -change \
-                $j.5.0.$SO_EXT \
+                $j.5.6.$SO_EXT \
                 $INSTALLNAMEPATH/$j.$SO_EXT \
                 $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/vtk/$i
           done
         done
-
-
     fi
 
-    #
-    # Manually install the Mangled Mesa headers
-    #
-    # The MangleMesa headers have absolute paths.  Correct these headers now for
-    # the new location they have been copied into.
-    #
-
-    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-         echo "Copying MangleMesaInclude directory"
-         mkdir -p VISIT_VTK_MANGLED_MESA_MOVE_DIR
-         cd VISIT_VTK_MANGLED_MESA_MOVE_DIR
-         echo "cmake_minimum_required(version 2.8)" > CMakeLists.txt
-         echo "use_mangled_mesa($VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include/GL $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude)" >> CMakeLists.txt
-         
-         #this will call cmake to copy the MesaGL to the VTK install directory
-         ${CMAKE_INSTALL}/cmake .
-         cd ../
-
-         #remove the tmp directory
-         rm -fR VISIT_VTK_MANGLED_MESA_MOVE_DIR
-    fi
-
+    chmod -R ug+w,a+rX ${VISITDIR}/vtk
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/vtk"
        chgrp -R ${GROUP} "$VISITDIR/vtk"
     fi
     cd "$START_DIR"
@@ -6141,8 +6037,8 @@ function build_hdf4
         # configure, we wrap the invokation in 'sh -c "..."' syntax
         sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-        CPPFLAGS=\"-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0 \
-        -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0/vtkjpeg\" \
+        CPPFLAGS=\"-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/ \
+        -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtkjpeg\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH\" \
@@ -6160,8 +6056,8 @@ function build_hdf4
         # configure, we wrap the invokation in 'sh -c "..."' syntax
         sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" LIBS=\"-lm\" \
-        CPPFLAGS=\"-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0 \
-        -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0/vtkjpeg\" \
+        CPPFLAGS=\"-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/ \
+        -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtkjpeg\" \
         $FOTRANARGS \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH\" \
@@ -8585,7 +8481,7 @@ function build_hostconf
     echo \
 "## Specify the location of the vtk." >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/vtk/$VTK_VERSION/\${VISITARCH}/lib/vtk-5.0/)" >> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/vtk/$VTK_VERSION/\${VISITARCH})" >> $HOSTCONF
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## Specify the Qt4 binary dir. " >> $HOSTCONF

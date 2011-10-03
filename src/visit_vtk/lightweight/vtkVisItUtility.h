@@ -48,6 +48,7 @@
 
 class vtkCell;
 class vtkDataSet;
+class vtkObject;
 class vtkPoints;
 class vtkRectilinearGrid;
 
@@ -62,6 +63,9 @@ class vtkRectilinearGrid;
 //
 //    Kathleen Bonnell, Thu Feb 17 08:53:30 PST 2011
 //    Added CreateEmptyRGrid.
+//
+//    Tom Fogal, Tue Sep 27 12:25:55 MDT 2011
+//    Add API for keeping track of static VTK objects.
 //
 // ****************************************************************************
 
@@ -106,8 +110,7 @@ namespace vtkVisItUtility
                                                     int type = VTK_FLOAT); 
     VISIT_VTK_LIGHT_API bool       PointsEqual(double p1[3], double p2[3],
                                                const double *_eps = 0);
+    VISIT_VTK_LIGHT_API void       RegisterStaticVTKObject(vtkObject*);
+    VISIT_VTK_LIGHT_API void       CleanupStaticVTKObjects();
 }
-
 #endif
-
-

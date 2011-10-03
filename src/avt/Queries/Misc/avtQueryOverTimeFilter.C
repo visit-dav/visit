@@ -42,6 +42,9 @@
 
 #include <float.h>
 #include <snprintf.h>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include <avtDataObjectQuery.h>
 #include <avtQueryFactory.h>
@@ -67,9 +70,6 @@
 #include <VisItException.h>
 #include <DebugStream.h>
 #include <MapNode.h>
-
-#include <string>
-#include <vector>
 
 // ****************************************************************************
 //  Method: avtQueryOverTimeFilter constructor
@@ -528,6 +528,9 @@ avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
 //    Kathleen Biagas, Thu Jul  7 11:26:31 PDT 2011
 //    Fixed incorrect generation of warning when nResults > 2.
 //
+//    Tom Fogal, Thu Jul 21 15:42:59 MDT 2011
+//    Do not use deprecated C++ streams.
+//
 // ****************************************************************************
 
 void
@@ -617,7 +620,7 @@ avtQueryOverTimeFilter::CreateFinalOutput()
     }
     if (skippedTimes.size() != 0)
     {
-        ostrstream osm;
+        std::ostringstream osm;
         osm << "\nQueryOverTime (" << atts.GetQueryAtts().GetName().c_str()
             << ") experienced\n"
             << "problems with the following timesteps and \n"
@@ -627,7 +630,7 @@ avtQueryOverTimeFilter::CreateFinalOutput()
             osm << skippedTimes[j] << " ";
         osm << "\nLast message received: " << errorMessage.c_str() << ends;
         debug4 << osm.str() << endl;
-        avtCallback::IssueWarning(osm.str());
+        avtCallback::IssueWarning(osm.str().c_str());
     }
 
     stringVector vars = atts.GetQueryAtts().GetVariables();

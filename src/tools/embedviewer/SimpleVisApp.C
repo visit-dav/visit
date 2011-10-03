@@ -2,6 +2,7 @@
 #include <VisItViewer.h>
 #include <ViewerMethods.h>
 
+#include <QApplication>
 #include <QButtonGroup>
 #include <QDir>
 #include <QFileDialog>

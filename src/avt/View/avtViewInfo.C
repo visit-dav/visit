@@ -304,7 +304,13 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //    Add shear for oblique projection support.
 //
+//    Kathleen Bonnell, Wed Jun  8 14:17:36 PDT 2011
+//    Set user transform matrix when zooming (used to be done by hack inside
+//    vtkCamera).
+//
 // ****************************************************************************
+#include<vtkMatrix4x4.h>
+#include<vtkTransform.h>
 
 void
 avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
@@ -323,6 +329,21 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     vtkcam->SetViewUp(viewUp);
     vtkcam->SetWindowCenter(2.0*imagePan[0], 2.0*imagePan[1]);
     vtkcam->SetFocalDisk(imageZoom);
+    if (imageZoom != 1.0)
+    {
+        double matrix[4][4];
+        vtkMatrix4x4::Identity(*matrix);
+ 
+        matrix[0][0] = imageZoom;
+        matrix[1][1] = imageZoom;
+        vtkTransform *trans = vtkTransform::New();
+        trans->SetMatrix(*matrix); 
+        vtkcam->SetUserTransform(trans);
+    }
+    else
+    {
+        vtkcam->SetUserTransform(NULL);
+    }
 }
 
 

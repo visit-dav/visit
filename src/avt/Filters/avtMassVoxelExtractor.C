@@ -347,7 +347,7 @@ avtMassVoxelExtractor::SetGridsAreInWorldSpace(bool val, const avtViewInfo &v,
     vtkCamera *cam = vtkCamera::New();
     view.SetCameraFromView(cam);
     cam->GetClippingRange(cur_clip_range);
-    vtkMatrix4x4 *mat = cam->GetCompositePerspectiveTransformMatrix(aspect,
+    vtkMatrix4x4 *mat = cam->GetCompositeProjectionTransformMatrix(aspect,
                                          cur_clip_range[0], cur_clip_range[1]);
 
     if (xform)

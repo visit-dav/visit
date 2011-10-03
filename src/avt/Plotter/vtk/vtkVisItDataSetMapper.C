@@ -25,9 +25,12 @@
 #include "vtkRectilinearGridMapper.h"
 #include "vtkToolkits.h"
 
+#include <vtkPainterPolyDataMapper.h>
+#include <vtkChooserPainter.h>
+#include <vtkTexturedPointsPainter.h>
+
 #include "vtkOpenGLRectilinearGridMapper.h"
 #include "vtkOpenGLStructuredGridMapper.h"
-#include <vtkVisItOpenGLPolyDataMapper.h>
 
 vtkCxxRevisionMacro(vtkVisItDataSetMapper, "$Revision: 1.70 $");
 vtkStandardNewMacro(vtkVisItDataSetMapper);
@@ -49,15 +52,21 @@ vtkStandardNewMacro(vtkVisItDataSetMapper);
 //   Dave Bremer, Wed Feb 27 15:59:48 PST 2008
 //   Make this class derive from vtkDataSetMapper, letting it
 //   initialize two members that we had been initializing.
+//
+//   Brad Whitlock, Wed Aug 24 16:24:03 PDT 2011
+//   Added texture point painter.
+//
 // ****************************************************************************
 
 vtkVisItDataSetMapper::vtkVisItDataSetMapper()
 {
+  this->TexturedPointsPainter = NULL;
   this->RectilinearGridMapper = NULL;
   this->StructuredGridMapper = NULL;
   this->PointTextureMethod = TEXTURE_NO_POINTS;
   this->EnableColorTexturing = false;
   this->SceneIs3D = true;
+  this->VertsReplacedWithGeomGlyphs = false;
 }
 
 
@@ -66,9 +75,18 @@ vtkVisItDataSetMapper::vtkVisItDataSetMapper()
 //   Dave Bremer, Wed Feb 27 15:59:48 PST 2008
 //   Make this class derive from vtkDataSetMapper, letting it
 //   delete two members that we had been deleting.
+//
+//   Brad Whitlock, Wed Aug 24 16:24:03 PDT 2011
+//   Added texture point painter.
+//
 // ****************************************************************************
+
 vtkVisItDataSetMapper::~vtkVisItDataSetMapper()
 {
+  if(this->TexturedPointsPainter)
+    {
+    this->TexturedPointsPainter->Delete();
+    }
   if ( this->RectilinearGridMapper )
     {
     this->RectilinearGridMapper->Delete();
@@ -126,6 +144,13 @@ void vtkVisItDataSetMapper::ReleaseGraphicsResources( vtkWindow *renWin )
 //   Hank Childs, Thu Dec 28 11:08:51 PST 2006
 //   Tell our rectilinear mapper whether or not the scene is 3D.
 //
+//   Brad Whitlock, Wed Aug 24 16:24:38 PDT 2011
+//   I added code to create a textured points painter if we create a 
+//   painter polydata mapper. We use this to do sphere points.
+//
+//   Brad Whitlock, Wed Sep 14 15:30:14 PDT 2011
+//   Remove setting the painting delegate to make textured points work in SR.
+//
 // ****************************************************************************
 
 void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
@@ -156,6 +181,18 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
     vtkStructuredGridMapper *sgm = vtkStructuredGridMapper::New();
     pm->SetInput(gf->GetOutput());
 
+    // Install a textured point painter on the polydata mapper.
+    vtkPainterPolyDataMapper *ppdm = vtkPainterPolyDataMapper::SafeDownCast(pm);
+    if(ppdm != NULL)
+    {
+        vtkChooserPainter *cp = vtkChooserPainter::SafeDownCast(ppdm->GetPainter()->GetDelegatePainter());
+        if(cp != NULL)
+        {
+           this->TexturedPointsPainter = vtkTexturedPointsPainter::New();
+           cp->SetVertPainter(this->TexturedPointsPainter);
+        }
+    }
+
     this->GeometryExtractor = gf;
     this->PolyDataMapper = pm;
     this->RectilinearGridMapper = rgm;
@@ -168,6 +205,7 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
   // For efficiency: if input type is vtkPolyData, there's no need to 
   // pass it thru the geometry filter.
   //
+  bool haveVertices = false;
   if ( this->GetInput()->GetDataObjectType() == VTK_RECTILINEAR_GRID )
     {
     this->RectilinearGridMapper->SetInput((vtkRectilinearGrid *)(this->GetInput()));
@@ -178,12 +216,17 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
     }
   else if ( this->GetInput()->GetDataObjectType() == VTK_POLY_DATA )
     {
-    this->PolyDataMapper->SetInput((vtkPolyData *)(this->GetInput()));
+    vtkPolyData *pd = (vtkPolyData *)(this->GetInput());
+    haveVertices = (pd->GetNumberOfVerts() > 0);
+    this->PolyDataMapper->SetInput(pd);
     }
   else
     {
     this->GeometryExtractor->SetInput(this->GetInput());
-    this->PolyDataMapper->SetInput(this->GeometryExtractor->GetOutput());
+    vtkPolyData *pd = this->GeometryExtractor->GetOutput();
+    pd->Update();
+    haveVertices = (pd->GetNumberOfVerts() > 0);
+    this->PolyDataMapper->SetInput(pd);
     }
   
   vtkMapper *mapper = NULL;
@@ -206,7 +249,6 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
     {
     mapper->SetClippingPlanes(this->ClippingPlanes);
     }
-
   mapper->SetLookupTable(this->GetLookupTable());
   mapper->SetScalarVisibility(this->GetScalarVisibility());
   mapper->SetUseLookupTableScalarRange(
@@ -215,7 +257,8 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
   mapper->SetImmediateModeRendering(
       this->GetImmediateModeRendering());
   mapper->SetColorMode(this->GetColorMode());
-  mapper->SetInterpolateScalarsBeforeMapping(
+  bool spriteTexturing = this->PointTextureMethod != TEXTURE_NO_POINTS;
+  mapper->SetInterpolateScalarsBeforeMapping((spriteTexturing || haveVertices || this->VertsReplacedWithGeomGlyphs)?0:
                                  this->GetInterpolateScalarsBeforeMapping());
   mapper->SetScalarMode(this->GetScalarMode());
   if ( this->ScalarMode == VTK_SCALAR_MODE_USE_POINT_FIELD_DATA ||
@@ -307,29 +350,24 @@ void vtkVisItDataSetMapper::ReportReferences(vtkGarbageCollector* collector)
 //   Tom Fogal, Tue Apr 27 11:19:53 MDT 2010
 //   Remove Mesa-specific coding.
 //
+//   Brad Whitlock, Wed Aug 24 16:28:03 PDT 2011
+//   Rewrote for new VTK.
+//
 // ****************************************************************************
 
 void
 vtkVisItDataSetMapper::SetPointTextureMethod(
     vtkVisItDataSetMapper::PointTextureMode m)
 {
-  this->PointTextureMethod = m;
+    this->PointTextureMethod = m;
 
-  if(this->PolyDataMapper != NULL)
-    {
-    if(strcmp(this->PolyDataMapper->GetClassName(),
-              "vtkVisItOpenGLPolyDataMapper") == 0)
-      {
-        vtkVisItOpenGLPolyDataMapper *m = 
-            (vtkVisItOpenGLPolyDataMapper *)this->PolyDataMapper;
-        if(this->PointTextureMethod == TEXTURE_NO_POINTS)
-            m->SetPointTextureMethod(
-                vtkVisItOpenGLPolyDataMapper::TEXTURE_NO_POINTS);
-        else if(this->PointTextureMethod == TEXTURE_USING_POINTSPRITES)
-            m->SetPointTextureMethod(
-                vtkVisItOpenGLPolyDataMapper::TEXTURE_USING_POINTSPRITES);
-      }
-    }
+    int doIt = (this->PointTextureMethod == TEXTURE_USING_POINTSPRITES)?1:0;
+    if(this->TexturedPointsPainter != NULL)
+        this->TexturedPointsPainter->SetDoTexturing(doIt);
+
+    // We can't do color texturing if we are also doing point sprites.
+    if(doIt > 0)
+        SetEnableColorTexturing(false);
 }
 
 // ****************************************************************************
@@ -358,6 +396,9 @@ vtkVisItDataSetMapper::SetPointTextureMethod(
 //   Tom Fogal, Tue Apr 27 11:20:11 MDT 2010
 //   Remove Mesa-specific code.
 //
+//   Brad Whitlock, Tue Aug  9 14:17:40 PDT 2011
+//   Rely on SetInterpolateScalarsBeforeMapping.
+//
 // ****************************************************************************
 
 void
@@ -367,34 +408,20 @@ vtkVisItDataSetMapper::SetEnableColorTexturing(bool val)
 
   if(this->PolyDataMapper != NULL)
     {
-    if(strcmp(this->PolyDataMapper->GetClassName(),
-              "vtkVisItOpenGLPolyDataMapper") == 0)
-      {
-        vtkVisItOpenGLPolyDataMapper *m = 
-            (vtkVisItOpenGLPolyDataMapper *)this->PolyDataMapper;
-        m->SetEnableColorTexturing(val);
-      }
+       this->PolyDataMapper->SetInterpolateScalarsBeforeMapping(val?1:0);
     }
   if(this->RectilinearGridMapper != NULL)
     {
-    if(strcmp(this->RectilinearGridMapper->GetClassName(),
-              "vtkOpenGLRectilinearGridMapper") == 0)
-      {
-        vtkOpenGLRectilinearGridMapper *m = 
-            (vtkOpenGLRectilinearGridMapper *)this->RectilinearGridMapper;
-        m->SetEnableColorTexturing(val);
-      }
+       this->RectilinearGridMapper->SetInterpolateScalarsBeforeMapping(val?1:0);
     }
   if(this->StructuredGridMapper != NULL)
     {
-    if(strcmp(this->StructuredGridMapper->GetClassName(),
-              "vtkOpenGLStructuredGridMapper") == 0)
-      {
-        vtkOpenGLStructuredGridMapper *m = 
-            (vtkOpenGLStructuredGridMapper *)this->StructuredGridMapper;
-        m->SetEnableColorTexturing(val);
-      }
+       this->StructuredGridMapper->SetInterpolateScalarsBeforeMapping(val?1:0);
     }
+
+  // We can't do point sprites if we are color texturing.
+  if(val)
+      SetPointTextureMethod(TEXTURE_NO_POINTS);
 }
 
 

@@ -633,7 +633,7 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
 
     vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
     cellLocations->SetNumberOfValues(numElements);
-    int *cl = cellLocations->GetPointer(0);
+    vtkIdType *cl = cellLocations->GetPointer(0);
 
     int offset = 0;
     for (int c=0; c<numElements; c++)

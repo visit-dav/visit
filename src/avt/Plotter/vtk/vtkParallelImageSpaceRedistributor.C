@@ -920,7 +920,7 @@ vtkParallelImageSpaceRedistributor::CreateWorldToDisplayMatrix()
     // Get world->view matrix
     vtkMatrix4x4 *M1 = vtkMatrix4x4::New();
     M1->DeepCopy(ren->GetActiveCamera()->
-                                GetCompositePerspectiveTransformMatrix(1,0,1));
+                                GetCompositeProjectionTransformMatrix(1,0,1));
 
     // Set up view->display matrix
     vtkMatrix4x4 *M2 = vtkMatrix4x4::New();

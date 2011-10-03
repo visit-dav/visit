@@ -3016,6 +3016,9 @@ avtVisItXdmfFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
 //    Eric Brugger, Tue Apr  8 14:25:31 PDT 2008
 //    Added the arguments baseOffset and order.
 //
+//    Tom Fogal, Thu Jul 21 15:46:34 MDT 2011
+//    vtkIdType fix.
+//
 // ****************************************************************************
 
 void
@@ -3036,7 +3039,7 @@ avtVisItXdmfFileFormat::PopulateCellInformation(vtkUnstructuredGrid *ugrid,
 
     vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
     cellLocations->SetNumberOfValues(nCells);
-    int *cl = cellLocations->GetPointer(0);
+    vtkIdType *cl = cellLocations->GetPointer(0);
 
     int iCell = 0;
     int index = 0;

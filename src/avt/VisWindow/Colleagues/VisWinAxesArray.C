@@ -1155,8 +1155,6 @@ VisWinAxesArray::SetNumberOfAxes(int n)
             ax->GetPoint1Coordinate()->SetCoordinateSystemToNormalizedViewport();
             ax->GetPoint2Coordinate()->SetCoordinateSystemToNormalizedViewport();
             ax->PickableOff();
-            ax->SetEndStringVOffsetFactor(0);
-            ax->SetEndStringHOffsetFactor(-0.5);
             ax->SetUseOrientationAngle(1);
             ax->SetTitleAtEnd(1);
             // Note -- this little bit of logic makes the

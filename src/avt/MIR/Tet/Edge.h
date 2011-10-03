@@ -41,6 +41,7 @@
 #include <mir_exports.h>
 
 #include <limits.h>
+#include <vtkType.h>
 
 // ****************************************************************************
 //  Class:  Edge
@@ -58,12 +59,12 @@ class MIR_API Edge
 {
   public:
     Edge();
-    Edge(int *);
+    Edge(vtkIdType *);
     void operator=(const Edge &rhs);
     bool operator==(const Edge &rhs);
     static unsigned int HashFunction(Edge &edge);
   private:
-    int a,b;
+    vtkIdType a,b;
 };
 
 
@@ -105,14 +106,14 @@ Edge::Edge()
 //
 // ****************************************************************************
 inline
-Edge::Edge(int *edges)
+Edge::Edge(vtkIdType *edges)
 {
     a = INT_MAX;
     b = INT_MAX;
 
     for (int i=0; i<2; i++)
     {
-        int node = edges[i];
+        vtkIdType node = edges[i];
         if (node < a)     { b=a; a=node; }
         else if (node < b)     { b=node; }
     }

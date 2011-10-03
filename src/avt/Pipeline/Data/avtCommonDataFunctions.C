@@ -435,9 +435,9 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
         out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
         out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
         out_pd->GetFieldData()->ShallowCopy(ugrid->GetFieldData());
-        int ncells = ugrid->GetNumberOfCells();
+        vtkIdType ncells = ugrid->GetNumberOfCells();
         out_pd->Allocate(ncells);
-        for (int i = 0 ; i < ncells ; i++)
+        for (vtkIdType i = 0 ; i < ncells ; i++)
         {
             int celltype = ugrid->GetCellType(i);
             if (celltype == VTK_HEXAHEDRON || celltype == VTK_VOXEL || 
@@ -459,8 +459,7 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
                 }
                 continue;
             }
-            vtkIdType *pts;
-            int npts;
+            vtkIdType *pts, npts;
             ugrid->GetCellPoints(i, npts, pts);
             out_pd->InsertNextCell(celltype, npts, pts);
         }
@@ -500,6 +499,9 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
 //    This will reduce the amount of VTK overhead/bloat, especially
 //    in terms of garbage collection.
 //
+//    Tom Fogal, Tue Sep 27 14:07:30 MDT 2011
+//    Ensure static vtk memory gets cleaned up.
+//
 // ****************************************************************************
 
 void
@@ -512,7 +514,12 @@ CBreakVTKPipelineConnections(avtDataRepresentation &data, void *arg, bool &)
 
     vtkDataSet *ds = data.GetDataVTK();
 
-    static vtkTrivialProducer *producer = vtkTrivialProducer::New();
+    static vtkTrivialProducer *producer = NULL;
+    if(producer == NULL)
+    {
+        producer = vtkTrivialProducer::New();
+        vtkVisItUtility::RegisterStaticVTKObject(producer);
+    }
     producer->SetOutput(ds);
     producer->SetOutput(NULL);
 }

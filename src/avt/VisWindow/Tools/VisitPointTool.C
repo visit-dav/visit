@@ -421,7 +421,7 @@ void
 VisitPointTool::CreateTextActors()
 {
     pointTextActor = vtkTextActor::New();
-    pointTextActor->ScaledTextOff();
+    pointTextActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
 }
 
 // ****************************************************************************

@@ -745,7 +745,7 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
         hasVertex[atom] = true;
     }
 
-    int *segptr = segments;
+    vtkIdType *segptr = segments;
     for (int i=0; i<data->GetNumberOfLines(); i++)
     {
         if (*segptr == 2)

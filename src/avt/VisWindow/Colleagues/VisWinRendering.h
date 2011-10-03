@@ -258,13 +258,13 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     avtImage_p               PostProcessScreenCapture(avtImage_p capturedImage,
                                  bool doViewportOnly, bool keepZBuffer);
 
-    void                     SetSize(int, int);
-    void                     GetSize(int&, int&);
+    virtual void             SetSize(int, int);
+    virtual void             GetSize(int&, int&);
     virtual void             SetWindowSize(int, int);
     virtual void             GetWindowSize(int&, int&);
-    void                     SetLocation(int, int);
-    void                     GetLocation(int&, int&);
-    void                     SetTitle(const char *);
+    virtual void             SetLocation(int, int);
+    virtual void             GetLocation(int&, int&);
+    virtual void             SetTitle(const char *);
     virtual void             Iconify(void) = 0;
     virtual void             DeIconify(void) = 0;
     virtual void             Show() = 0;

@@ -40,9 +40,12 @@
 //                             vtkVisItUtility.C                             //
 // ************************************************************************* //
 
+#include <algorithm>
+#include <float.h>
+#include <list>
+
 #include <vtkVisItUtility.h>
 
-#include <float.h>
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
@@ -59,6 +62,9 @@
 #include <vtkVisItPointLocator.h>
 #include <vtkDataSetWriter.h>
 
+#include <DebugStream.h>
+
+static std::list<vtkObject*> vtkobjects;
 
 // ****************************************************************************
 //  Function: GetPoints
@@ -1152,3 +1158,52 @@ vtkVisItUtility::PointsEqual(double pt1[3], double pt2[3], const double *_eps)
     return e1 && e2 && e3;
 }
 
+// ****************************************************************************
+//  Function: RegisterStaticVTKObject
+//
+//  Purpose:
+//    Register a VTK object which will exist for the life of the program.  All
+//    registered objects can be deleted with the corresponding Cleanup method.
+//
+//  Arguments:
+//
+//  Programmer: Tom Fogal
+//  Creation:   September 27, 2011
+//
+//  Modifications:
+// ****************************************************************************
+void vtkVisItUtility::RegisterStaticVTKObject(vtkObject* obj)
+{
+  vtkobjects.push_front(obj);
+}
+
+// ****************************************************************************
+//  Function: RegisterStaticVTKObject
+//
+//  Purpose:
+//    Decrements the reference count on any registered VTK object.
+//
+//  Arguments:
+//
+//  Programmer: Tom Fogal
+//  Creation:   September 27, 2011
+//
+//  Modifications:
+// ****************************************************************************
+namespace {
+  template <class T> static void DeleteVTK(T* t) { t->Delete(); }
+#ifndef NDEBUG
+  template <class T> static void PrintVTK(T* t) {
+    debug5 << "  obj: " << t->GetClassName() << "\n";
+  }
+#endif
+}
+void vtkVisItUtility::CleanupStaticVTKObjects()
+{
+  debug1 << "Cleaning up " << vtkobjects.size() << " VTK objects.\n";
+#ifndef NDEBUG
+  std::for_each(vtkobjects.begin(), vtkobjects.end(), PrintVTK<vtkObject>);
+#endif
+  std::for_each(vtkobjects.begin(), vtkobjects.end(), DeleteVTK<vtkObject>);
+  vtkobjects.clear();
+}

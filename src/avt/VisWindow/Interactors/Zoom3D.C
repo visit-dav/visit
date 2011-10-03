@@ -247,6 +247,9 @@ Zoom3D::EndMiddleButtonAction()
 //    Eric Brugger, Thu May 26 12:29:20 PDT 2011
 //    Remove an unnecessary render call.
 //
+//    Kathleen Bonnell, Wed Jun  8 14:11:39 PDT 2011
+//    Add to (instead of subtract from ) imagePan when doing zoom.
+//
 // ****************************************************************************
 
 void

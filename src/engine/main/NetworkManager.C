@@ -391,6 +391,9 @@ NetworkManager::GetPlotPluginManager() const
 //    Hank Childs, Thu Mar  2 10:06:33 PST 2006
 //    Added support for image based plots.
 //
+//    Tom Fogal, Wed Sep 28 12:52:49 MDT 2011
+//    Allow lazy init of visualization window.
+//
 //    Brad Whitlock, Wed Sep  7 13:31:27 PDT 2011
 //    Tell the NSM to clear its cache.
 //
@@ -429,7 +432,8 @@ NetworkManager::ClearAllNetworks(void)
         delete it->second.viswin;
     }
     viswinMap.clear();
-    NewVisWindow(0);
+
+    avtNamedSelectionManager::GetInstance()->ClearCache();
 
     avtNamedSelectionManager::GetInstance()->ClearCache();
 }

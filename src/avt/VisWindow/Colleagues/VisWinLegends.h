@@ -47,8 +47,7 @@
 
 #include <VisWinColleague.h>
 
-class     vtkTextActor;
-
+class     vtkVisItTextActor;
 
 // ****************************************************************************
 //  Class: VisWinLegends
@@ -93,6 +92,9 @@ class     vtkTextActor;
 //    Kathleen Biagas, Wed Sep  7 16:22:39 PDT 2011
 //    Added timeInfo to SetVisibility call.
 //
+//    Brad Whitlock, Mon Sep 19 16:06:46 PDT 2011
+//    Switch to vtkVisItTextActor.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinLegends : public VisWinColleague
@@ -112,7 +114,7 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
                                       const VisWinTextAttributes &);
     void                          SetTimeScaleAndOffset(double,double);
   protected:
-    vtkTextActor                 *dbInfoActor;
+    vtkVisItTextActor            *dbInfoActor;
     bool                          dbInfoIsAdded;
     bool                          dbInfoVisible;
     bool                          timeVisible;
@@ -127,7 +129,6 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
     static const double            leftColumnPosition;
     static const double            rightColumnPosition;
     static const double            dbInfoHeight;
-    static const double            dbInfoWidth;
 
     void                          UpdateLegendInfo(std::vector<avtActor_p> &);
     void                          UpdateDBInfo(std::vector<avtActor_p> &);

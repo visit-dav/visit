@@ -132,7 +132,7 @@ avtImageMapper::Draw(vtkRenderer *ren)
 {
     actor->RenderOverlay(ren);
     actor->RenderOpaqueGeometry(ren);
-    actor->RenderTranslucentGeometry(ren);
+    actor->RenderTranslucentPolygonalGeometry(ren);
 }
 
 

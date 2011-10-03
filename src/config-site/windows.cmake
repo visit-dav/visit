@@ -36,13 +36,12 @@ OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS." ON)
 ##
 ##############################################################
 
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR   ${VISITHOME}/Mesa)
 
 ##
 ## VTK
 ##
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR    
-    ${VISITHOME}/vtk-5.0.0i/${VISIT_MSVC_VERSION}/lib/vtk-5.0)
+    ${VISITHOME}/vtk-5.8/${VISIT_MSVC_VERSION})
 
 ##
 ## QT

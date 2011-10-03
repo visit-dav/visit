@@ -431,12 +431,12 @@ void
 VisitSphereTool::CreateTextActors()
 {
     originTextActor = vtkTextActor::New();
-    originTextActor->ScaledTextOff();
+    originTextActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
 
     for(int i = 0; i < 3; ++i)
     {
         radiusTextActor[i] = vtkTextActor::New();
-        radiusTextActor[i]->ScaledTextOff();
+        radiusTextActor[i]->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
     }
 }
 

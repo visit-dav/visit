@@ -242,7 +242,7 @@ static void AddNodeToMaps(vtkIdType ptId,
 // also its nodes to the node map.
 //
 static void AddEdgeToMaps(vtkCell *edgeCell,
-    map<unsigned int, vector<int> > &edgeMap,
+    map<unsigned int, vector<vtkIdType> > &edgeMap,
     map<vtkIdType, unsigned char> &nodeMap)
 {
     unsigned int hval;
@@ -265,8 +265,8 @@ static void AddEdgeToMaps(vtkCell *edgeCell,
 // map.
 //
 static void AddFaceToMaps(vtkCell *faceCell,
-    map<unsigned int, vector<int> > &faceMap,
-    map<unsigned int, vector<int> > &edgeMap,
+    map<unsigned int, vector<vtkIdType> > &faceMap,
+    map<unsigned int, vector<vtkIdType> > &edgeMap,
     map<vtkIdType, unsigned char> &nodeMap)
 {
     unsigned int hval;
@@ -336,7 +336,8 @@ int vtkEnumThreshold::RequestData(
     vtkIdList *newCellPts;
     vtkCell *cell;
     vtkPoints *newPoints;
-    int i, ptId, newId, numPts;
+    int i, newId, numPts;
+    vtkIdType ptId;
     int numCellPts;
     double x[3];
     vtkPointData *pd=input->GetPointData(), *outPD=output->GetPointData();

@@ -47,7 +47,7 @@
 #include <avtPluginFilter.h>
 
 #include <PersistentParticlesAttributes.h>
-
+#include <vtkType.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -93,7 +93,7 @@ class avtPersistentParticlesFilter
   protected:
     PersistentParticlesAttributes   atts;
     std::vector<avtDataTree_p>      trees;
-    std::map<double , int >         particlePaths;
+    std::map<double, vtkIdType>     particlePaths;
     vtkUnstructuredGrid*            particlePathData;
 
 

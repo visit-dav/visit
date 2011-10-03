@@ -694,6 +694,9 @@ avtShapefileFileFormat::CountCellsForShape(esriShapeType_t shapeType) const
 //    Made sure that we're initialized in case the order of the calls is
 //    not what we expect.
 //
+//    Brad Whitlock, Thu Sep 15 14:11:12 PDT 2011
+//    Fix point mesh variable centering.
+//
 // ****************************************************************************
 
 void
@@ -876,13 +879,18 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug4 << mName << "nMeshes = " << meshes.size() << endl;
         for(int m = 0; m < meshes.size(); ++m)
         {
+            // Ensure that point meshes use node centering.
+            avtCentering centering = AVT_ZONECENT;
+            if(meshes[m] == "point" || meshes[m] == "pointZ")
+                centering = AVT_NODECENT;
+
             dbfFieldDescriptor_t *fieldDescriptor = 
                 dbfFile->header.fieldDescriptors;
             for(int i = 0; i < dbfFile->header.numFieldDescriptors; ++i)
             {
                 std::string varName;
                 if(meshes.size() > 1)
-                    varName = meshes[i] + "/";
+                    varName = meshes[m] + "/";
                 varName += fieldDescriptor->fieldName;
 
                 if(fieldDescriptor->fieldType == dbfFieldChar ||
@@ -892,7 +900,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     lmd->name = varName;
                     lmd->originalName = varName;
                     lmd->meshName = meshes[m];
-                    lmd->centering = AVT_ZONECENT;
+                    lmd->centering = centering;
                     lmd->validVariable = true;
                     md->Add(lmd);
 
@@ -904,7 +912,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     smd->name = varName;
                     smd->originalName = varName;
                     smd->meshName = tessmeshes[m];
-                    smd->centering = AVT_ZONECENT;
+                    smd->centering = centering;
                     smd->hasDataExtents = false;
                     smd->minDataExtents = 0.f;
                     smd->maxDataExtents = 0.f;

@@ -31,6 +31,7 @@ class vtkPolyDataMapper;
 class vtkRectilinearGridMapper;
 class vtkStructuredGridMapper;
 class vtkDataSetSurfaceFilter;
+class vtkTexturedPointsPainter;
 
 // ****************************************************************************
 // Modifications:
@@ -68,6 +69,9 @@ public:
   void SetPointTextureMethod(PointTextureMode);
   vtkGetMacro(PointTextureMethod, PointTextureMode);
 
+  vtkSetMacro(VertsReplacedWithGeomGlyphs, bool);
+  vtkGetMacro(VertsReplacedWithGeomGlyphs, bool);
+
   // Description:
   // Sets/Gets the color texturing mode. 
   void SetEnableColorTexturing(bool);
@@ -82,9 +86,11 @@ protected:
   vtkVisItDataSetMapper();
   ~vtkVisItDataSetMapper();
 
+  vtkTexturedPointsPainter  *TexturedPointsPainter;
   vtkRectilinearGridMapper  *RectilinearGridMapper;
   vtkStructuredGridMapper   *StructuredGridMapper;
   PointTextureMode           PointTextureMethod;
+  bool                       VertsReplacedWithGeomGlyphs;
   bool                       EnableColorTexturing;
   bool                       SceneIs3D;
 
@@ -95,5 +101,3 @@ private:
 };
 
 #endif
-
-

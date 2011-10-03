@@ -57,7 +57,7 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 IF (WIN32)
     SET_UP_THIRD_PARTY(MESA lib/${VISIT_MSVC_VERSION} include MesaGL32 osmesa32)
 ELSE (WIN32)
-    SET_UP_THIRD_PARTY(MESA lib include MesaGL OSMesa)
+    SET_UP_THIRD_PARTY(MESA lib include OSMesa)
 
     # If we're on Apple, set up MesaGLU too. This is mostly to ensure that it gets installed.
     IF(APPLE)

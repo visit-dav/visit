@@ -424,7 +424,17 @@ avtScatterPlot::SetAtts(const AttributeGroup *a)
 
     glyphMapper->SetScale(atts.GetPointSize());
     glyphMapper->DataScalingOff();
-    glyphMapper->SetGlyphType((int)atts.GetPointType());
+
+    if (atts.GetPointType() == ScatterAttributes::Box)
+        glyphMapper->SetGlyphType(avtPointGlypher::Box);
+    else if (atts.GetPointType() == ScatterAttributes::Axis)
+        glyphMapper->SetGlyphType(avtPointGlypher::Axis);
+    else if (atts.GetPointType() == ScatterAttributes::Icosahedron)
+        glyphMapper->SetGlyphType(avtPointGlypher::Icosahedron);
+    else if (atts.GetPointType() == ScatterAttributes::Point)
+        glyphMapper->SetGlyphType(avtPointGlypher::Point);
+    else if (atts.GetPointType() == ScatterAttributes::Sphere)
+        glyphMapper->SetGlyphType(avtPointGlypher::Sphere);
 
     // Get color information.
     std::string colorString;

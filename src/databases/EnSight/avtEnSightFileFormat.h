@@ -49,7 +49,7 @@
 #include <string>
 
 
-class     vtkVisItGenericEnSightReader;
+class     vtkGenericEnSightReader;
 
 
 // ****************************************************************************
@@ -95,7 +95,7 @@ class avtEnSightFileFormat : public avtMTMDFileFormat
                                                const std::vector<CharStrRef>&);
 
   protected:
-    vtkVisItGenericEnSightReader *reader;
+    vtkGenericEnSightReader *reader;
     bool                  doneUpdate;
 
     void                  PrepReader(int);

@@ -47,7 +47,7 @@
 #include <snprintf.h>
 
 #include <vtkRenderer.h>
-#include <vtkTextActor.h>
+#include <vtkVisItTextActor.h>
 #include <vtkTextProperty.h>
 
 #define TIME_IDENTIFIER "$time"
@@ -68,6 +68,9 @@
 // Modifications:
 //    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
 //    Added $cycle support.
+//
+//    Tom Fogal, Fri Jan 28 15:26:59 MST 2011
+//    VTK API change.
 //   
 // ****************************************************************************
 
@@ -84,14 +87,13 @@ avtText2DColleague::avtText2DColleague(VisWindowColleagueProxy &m)
     //
     // Create and position the actor.
     //
-    textActor = vtkTextActor::New();
-    textActor->ScaledTextOn();
+    textActor = vtkVisItTextActor::New();
+    textActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_VIEWPORT);
+    textActor->SetTextHeight(0.03);
     SetText("2D text annotation");
     vtkCoordinate *pos = textActor->GetPositionCoordinate();
     pos->SetCoordinateSystemToNormalizedViewport();
     pos->SetValue(0.5, 0.5, 0.);
-    textActor->SetWidth(0.25);
-    textActor->SetHeight(0.1);
 
     // Make sure that the actor initially has the right fg color.
     double fgColor[3];
@@ -307,9 +309,6 @@ avtText2DColleague::SetOptions(const AnnotationObject &annot)
             SetText(text[0].c_str());
         else
             SetText("");
-        // Set the width to a size we don't want so we can update it later.
-        textActor->SetWidth(0.1);
-        textActor->SetHeight(0.1);
         textChanged = true;
     }
 
@@ -344,8 +343,7 @@ avtText2DColleague::SetOptions(const AnnotationObject &annot)
         vtkCoordinate *pos = textActor->GetPositionCoordinate();
         pos->SetCoordinateSystemToNormalizedViewport();
         pos->SetValue(p1[0], p1[1], 0.);
-        textActor->SetWidth(p2[0]);
-        textActor->SetHeight(p2[0]);
+        textActor->SetTextHeight(p2[0]);
     }
 
     //
@@ -388,9 +386,9 @@ avtText2DColleague::GetOptions(AnnotationObject &annot)
     annot.SetPosition(textActor->GetPosition());
     // Store the width and height in position2.
     double p2wh[3];
-    p2wh[0] = textActor->GetWidth();
-    p2wh[1] = textActor->GetHeight();
-    p2wh[2] = 0.f;
+    p2wh[0] = textActor->GetTextHeight();
+    p2wh[1] = 0.;
+    p2wh[2] = 0.;
     annot.SetPosition2(p2wh);
 
     // Store the text color and opacity.

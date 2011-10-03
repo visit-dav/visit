@@ -227,35 +227,35 @@ class MIR_API TetMIR : public MIR
     std::vector<int>                        mapUsedMatToMat;
 
     // These are the helper functions and supporting data structures
-    void ReconstructCleanCell(int, int, int, const int *, int);
+    void ReconstructCleanCell(int, int, int, const vtkIdType *, int);
     bool ReconstructCleanMesh(vtkDataSet *, avtMaterial *, MIRConnectivity &);
-    void ReconstructTet(int, int, const int *, const MaterialTetrahedron &,
+    void ReconstructTet(int, int, const vtkIdType *, const MaterialTetrahedron &,
                         const std::vector<float>&, int *, int);
-    void ReconstructCleanTet(int, int, int, const int *, 
+    void ReconstructCleanTet(int, int, int, const vtkIdType *, 
                              const MaterialTetrahedron &);
-    void ReconstructTri(int, int, const int *, const MaterialTriangle &,
+    void ReconstructTri(int, int, const vtkIdType *, const MaterialTriangle &,
                         const std::vector<float>&, int *, int);
-    void ReconstructCleanTri(int, int, int, const int *,
+    void ReconstructCleanTri(int, int, int, const vtkIdType *,
                              const MaterialTriangle &);
 
-    void IndexTetNode(Tet::Node&, int, int, const int *,
+    void IndexTetNode(Tet::Node&, int, int, const vtkIdType *,
                       const MaterialTetrahedron&);
-    void IndexTriNode(Tri::Node&, int, int, const int *,
+    void IndexTriNode(Tri::Node&, int, int, const vtkIdType *,
                       const MaterialTriangle&);
 
-    void  MergeWedges(TetList&, WedgeList&, int, int, const int *,
+    void  MergeWedges(TetList&, WedgeList&, int, int, const vtkIdType *,
                       const MaterialTetrahedron&,
                       const Wedge&, const Wedge&, int forcedMat);
-    void  MergeTets(TetList&, WedgeList&, int, int, const int *,
+    void  MergeTets(TetList&, WedgeList&, int, int, const vtkIdType *,
                     const MaterialTetrahedron&,
                     const Tet&, const Tet&, int forcedMat);
-    void  MergeTetsHelper(TetList&, WedgeList&, int, int, const int *, 
+    void  MergeTetsHelper(TetList&, WedgeList&, int, int, const vtkIdType *, 
                           const MaterialTetrahedron&,
                           int*, const Tet&, const Tet&, int forcedMat);
 
-    void  MergeTris(TriList&, int, int, const int *, const MaterialTriangle&,
+    void  MergeTris(TriList&, int, int, const vtkIdType *, const MaterialTriangle&,
                     const Tri&, const Tri&, int forcedMat);
-    void  MergeTrisHelper(TriList&, int, int, const int *,
+    void  MergeTrisHelper(TriList&, int, int, const vtkIdType *,
                           const MaterialTriangle&,
                           int*, const Tri&, const Tri&, int forcedMat);
 };

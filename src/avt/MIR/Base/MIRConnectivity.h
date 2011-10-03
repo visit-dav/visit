@@ -38,6 +38,7 @@
 
 #ifndef MIR_CONNECTIVITY
 #define MIR_CONNECTIVITY
+#include <vtkType.h>
 
 class vtkDataSet;
 
@@ -57,7 +58,7 @@ class vtkDataSet;
 // ****************************************************************************
 struct MIRConnectivity
 {
-    int *connectivity;
+    vtkIdType *connectivity;
     int  ncells;
     int *celltype;
     int *cellindex;

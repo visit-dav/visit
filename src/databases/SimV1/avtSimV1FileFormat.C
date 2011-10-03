@@ -1021,7 +1021,7 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
 
             vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
             cellLocations->SetNumberOfValues(umesh->nzones);
-            int *cl = cellLocations->GetPointer(0);
+            vtkIdType *cl = cellLocations->GetPointer(0);
 
             int numCells = 0;
             int offset = 0;

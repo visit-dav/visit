@@ -421,7 +421,10 @@ vtkOpenGLTexturedBackgroundMapper::DrawSphere(int X_RES, int Y_RES, float radius
 // Creation:   Mon Nov 19 12:43:57 PST 2007
 //
 // Modifications:
-//   
+//
+//   Tom Fogal, Fri Jan 28 14:48:12 MST 2011
+//   VTK API change: perspective -> projection.
+//
 // ****************************************************************************
 
 void
@@ -496,7 +499,7 @@ canvas->GetActiveCamera()->Print(cout);
         canvas->GetTiledSizeAndOrigin(&usize,&vsize,lowerLeft,lowerLeft+1);
         if(usize && vsize)
         {
-            matrix->DeepCopy(canvas->GetActiveCamera()->GetPerspectiveTransformMatrix(
+            matrix->DeepCopy(canvas->GetActiveCamera()->GetProjectionTransformMatrix(
                 aspectModification*usize/vsize, -1,1));
 #ifdef DEBUG_PRINT
 cout << "Projection = ";

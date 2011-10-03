@@ -71,6 +71,9 @@
 //   Brad Whitlock, Mon Jul 21 10:58:05 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Fri Sep 16 16:13:15 PDT 2011
+//   Remove width.
+//
 // ****************************************************************************
 
 QvisText2DInterface::QvisText2DInterface(QWidget *parent) : 
@@ -91,24 +94,15 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent) :
     cLayout->addWidget(new QLabel(tr("Lower left"), this), 0, 0);
 
     // Add controls for position2
-    widthSpinBox = new QSpinBox(this);
-    widthSpinBox->setMinimum(1);
-    widthSpinBox->setMaximum(100);
-    widthSpinBox->setSuffix("%");
-    widthSpinBox->setButtonSymbols(QSpinBox::PlusMinus);
-    connect(widthSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(widthChanged(int)));
-    cLayout->addWidget(widthSpinBox, 1, 1);
-    cLayout->addWidget(new QLabel(tr("Width"), this), 1, 0);
-#if 0
-    heightSpinBox = new QSpinBox(1, 100, 1, this);
+    heightSpinBox = new QSpinBox(this);
+    heightSpinBox->setMinimum(1);
+    heightSpinBox->setMaximum(100);
     heightSpinBox->setSuffix("%");
     heightSpinBox->setButtonSymbols(QSpinBox::PlusMinus);
     connect(heightSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(heightChanged(int)));
-    cLayout->addWidget(heightSpinBox, 1, 3);
-    cLayout->addWidget(new QLabel(tr("Height"), this), 1, 2);
-#endif
+    cLayout->addWidget(heightSpinBox, 1, 1);
+    cLayout->addWidget(new QLabel(tr("Height"), this), 1, 0);
 
     // Add controls for entering the text
     textLineEdit = new QLineEdit(this);
@@ -232,7 +226,10 @@ QvisText2DInterface::GetMenuText(const AnnotationObject &annot) const
 //   Eric Brugger, Fri Sep 17 13:54:07 PDT 2004
 //   Modify the float to percent conversion for the width and height to
 //   avoid numeric issues where the percent value would be one too small.
-//   
+//
+//   Brad Whitlock, Fri Sep 16 16:14:38 PDT 2011
+//   Use height.
+//
 // ****************************************************************************
 
 void
@@ -241,19 +238,14 @@ QvisText2DInterface::UpdateControls()
     // Set the start position.
     positionEdit->setPosition(annot->GetPosition()[0], annot->GetPosition()[1]);
 
-    // Set the spinbox values for the width and height.  The 0.5 is added
+    // Set the spinbox values for the height.  The 0.5 is added
     // to avoid numeric issues converting back and forth between float and
     // integer.
-    int w(int(annot->GetPosition2()[0] * 100.f + 0.5f));
-    widthSpinBox->blockSignals(true);
-    widthSpinBox->setValue(w);
-    widthSpinBox->blockSignals(false);
-#if 0
-    int h(int(annot->GetPosition2()[1] * 100.f + 0.5f));
+    int h(int(annot->GetPosition2()[0] * 100.f + 0.5f));
     heightSpinBox->blockSignals(true);
     heightSpinBox->setValue(h);
     heightSpinBox->blockSignals(false);
-#endif
+
     //
     // Set the text color. If we're using the foreground color for the text
     // color then make the button be white and only let the user change the 
@@ -356,8 +348,8 @@ QvisText2DInterface::GetCurrentValues(int which_widget)
     if(which_widget == 2 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(widthSpinBox);
-        int w = widthSpinBox->value();
+        ForceSpinBoxUpdate(heightSpinBox);
+        int w = heightSpinBox->value();
         double pos2[3];
         pos2[0] = double(w) * 0.01;
         pos2[1] = annot->GetPosition2()[1];
@@ -394,14 +386,14 @@ QvisText2DInterface::positionChanged(double x, double y)
 }
 
 // ****************************************************************************
-// Method: QvisText2DInterface::widthChanged
+// Method: QvisText2DInterface::heightChanged
 //
 // Purpose: 
-//   This is a Qt slot function that is called when the value of the width
+//   This is a Qt slot function that is called when the value of the height
 //   spin box changes.
 //
 // Arguments:
-//   w : The new width in percent.
+//   h : The new height in percent.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 5 11:49:46 PDT 2003
@@ -411,40 +403,11 @@ QvisText2DInterface::positionChanged(double x, double y)
 // ****************************************************************************
 
 void
-QvisText2DInterface::widthChanged(int w)
-{
-    double pos2[3];
-    pos2[0] = double(w) * 0.01;
-    pos2[1] = annot->GetPosition2()[1];
-    pos2[2] = annot->GetPosition2()[2];
-    annot->SetPosition2(pos2);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisText2DInterface::heightChanged
-//
-// Purpose: 
-//   This a Qt slot function that is called when the value of the height spin
-//   box changes.
-//
-// Arguments:
-//   h : The new height in percent.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 11:50:58 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
 QvisText2DInterface::heightChanged(int h)
 {
     double pos2[3];
-    pos2[0] = annot->GetPosition2()[0];
-    pos2[1] = double(h) * 0.01;
+    pos2[0] = double(h) * 0.01;
+    pos2[1] = annot->GetPosition2()[1];
     pos2[2] = annot->GetPosition2()[2];
     annot->SetPosition2(pos2);
     SetUpdate(false);

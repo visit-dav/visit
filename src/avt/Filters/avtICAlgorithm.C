@@ -90,6 +90,17 @@ avtICAlgorithm::avtICAlgorithm( avtPICSFilter *f ) :
     picsFilter = f;
     numDomains = picsFilter->numDomains;
     numTimeSteps = picsFilter->numTimeSteps;
+
+    domainsUsed = 0;
+    totDomainsLoaded = 0;
+    domainLoadedMin = 0;
+    domainLoadedMax = 0;
+    globalDomainsUsed = 0;
+    globalTotDomainsLoaded = 0;
+    globalDomainLoadedMin = 0;
+    globalDomainLoadedMax = 0;
+    avgDomainLoaded = 0.f;
+    globalAvgDomainLoaded = 0.f;
 }
 
 // ****************************************************************************

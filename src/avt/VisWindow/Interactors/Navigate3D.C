@@ -102,6 +102,9 @@ Navigate3D::Navigate3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //    Hank Childs, Thu Dec 29 10:30:53 PST 2005
 //    Issue a view callback when in spin mode.  ['4231]
 //
+//    Kathleen Bonnell, Wed Jun  8 09:57:09 PDT 2011
+//    Use current EventPosition instead of Last.
+//
 // ****************************************************************************
 
 void
@@ -109,26 +112,26 @@ Navigate3D::OnTimer(void)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
-    int LastPos[2];
-    rwi->GetLastEventPosition(LastPos);
+    int Pos[2];
+    rwi->GetEventPosition(Pos);
 
     bool matchedUpState = true;
     switch (State)
     {
       case VTKIS_ROTATE:
-        RotateAboutFocus3D(LastPos[0], LastPos[1], false);
+        RotateAboutFocus3D(Pos[0], Pos[1], false);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
       case VTKIS_PAN:
-        PanImage3D(LastPos[0], LastPos[1]);
+        PanImage3D(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
       case VTKIS_ZOOM:
-        ZoomImage3D(LastPos[0], LastPos[1]);
+        ZoomImage3D(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;

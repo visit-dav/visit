@@ -49,16 +49,15 @@ ADD_SUBDIRECTORY(teem-1.9.0-src)
 # Let's define some variables to make slivr's build think it's being done 
 # within SCIrun.
 SET(SCIRUN_SLIVR_BUILD 1)
-SET(SCI_GLEW_LIBRARY GLEW)
+SET(SCI_GLEW_LIBRARY ${GLEW_LIB})
 
 MACRO(SCIRUN_ADD_LIBRARY target)
     ADD_LIBRARY(${target} ${ARGN})
-    SET_TARGET_PROPERTIES(${target} PROPERTIES FOLDER thirdparty_builtin/slivr)
 ENDMACRO(SCIRUN_ADD_LIBRARY target)
 INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/teem-1.9.0-src/src
-  ${CMAKE_CURRENT_SOURCE_DIR}/../glew/glew/include
+  ${GLEW_INCLUDE_DIR}
 )
 ADD_SUBDIRECTORY(slivr)
 

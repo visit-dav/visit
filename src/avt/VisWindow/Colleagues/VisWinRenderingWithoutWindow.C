@@ -42,6 +42,7 @@
 
 #include <VisWinRenderingWithoutWindow.h>
 
+#include <vtkMapper.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 
@@ -139,4 +140,30 @@ VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
   // shouldn't be as heavy as it looks at first glance.
   renWin->SetSize(300,300);
   renWin->Render();
+}
+
+// ****************************************************************************
+//  Method: VisWinRenderingWithoutWindow::SetImmediateRenderingMode
+//
+//  Purpose:
+//      Prevent VTK from using display lists.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Sep 30 18:20:10 PDT 2011
+//
+//  Notes: This offscreen rendering colleague is responsible for rendering
+//         using Mesa. As of VTK 5.8 and Mesa 7.8.2, there are some rare
+//         glitches with offscreen Mesa vbo's that cause text to go missing.
+//         By forcing all of VTK to not use display lists, we avoid the 
+//         problems.
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinRenderingWithoutWindow::SetImmediateModeRendering(bool)
+{
+    // In offscreen rendering, never use display lists.
+    vtkMapper::GlobalImmediateModeRenderingOn();
 }

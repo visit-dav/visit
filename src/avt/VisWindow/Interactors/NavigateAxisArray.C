@@ -87,6 +87,9 @@ NavigateAxisArray::NavigateAxisArray(VisWindowInteractorProxy &v) : VisitInterac
 //    Jeremy Meredith, Thu Feb  7 17:58:11 EST 2008
 //    Added support for toggling horizontal snap-to-grid.
 //
+//    Kathleen Bonnell, Wed Jun  8 10:04:38 PDT 2011
+//    Use current EventPosition instead of Last.
+//
 // ****************************************************************************
 
 void
@@ -94,8 +97,8 @@ NavigateAxisArray::OnTimer(void)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
-    int LastPos[2];
-    rwi->GetLastEventPosition(LastPos);
+    int Pos[2];
+    rwi->GetEventPosition(Pos);
 
     VisWindow *win = proxy;
     shouldSnap = win->GetInteractorAtts()->GetAxisArraySnap();
@@ -103,13 +106,13 @@ NavigateAxisArray::OnTimer(void)
     switch (State)
     {
       case VTKIS_PAN:
-        PanCamera(LastPos[0], LastPos[1], shouldSnap);
+        PanCamera(Pos[0], Pos[1], shouldSnap);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
       case VTKIS_DOLLY:
-        ZoomCamera(LastPos[0], LastPos[1]);
+        ZoomCamera(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;

@@ -500,7 +500,7 @@ vtkVisItSplitter::Execute()
 
     const int max_pts = 8;
     int cellType = twoD ? VTK_QUAD : VTK_HEXAHEDRON; // constant for struct grd
-    int nCellPts = twoD ? 4 : 8;                     // constant for struct grd
+    vtkIdType nCellPts = twoD ? 4 : 8;                     // constant for struct grd
     vtkIdType cellPtsStruct[8];
     vtkIdType *cellPts = cellPtsStruct; // for struct grd, we'll fill it
 
@@ -509,7 +509,7 @@ vtkVisItSplitter::Execute()
     for (int i = 0 ; i < nToProcess ; i++)
     {
         // Get the cell details
-        int cellId = (CellList != NULL ? CellList[i] : i);
+        vtkIdType cellId = (CellList != NULL ? CellList[i] : i);
         int cellI = -1;
         int cellJ = -1;
         int cellK = -1;

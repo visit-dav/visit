@@ -389,7 +389,7 @@ debug3 << "Labelling nodes with original node indices: "
                     }
                     else
                     {
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", realNodeId + nodeOrigin);
+                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%lld", realNodeId + nodeOrigin);
                     }
                 END_LABEL
             }
@@ -407,7 +407,7 @@ debug3 << "Labelling nodes with original node indices: "
         {
             // const float *vert = p->GetPoint(id);
             BEGIN_LABEL
-                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", id + nodeOrigin);
+                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%lld", id + nodeOrigin);
             END_LABEL
         }
     }

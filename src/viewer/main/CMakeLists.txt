@@ -230,12 +230,9 @@ TARGET_LINK_LIBRARIES(viewer_exe
     ${viewer_exe_IPlot}
     ${viewer_exe_VPlot}
     viewer
-    vtkexpat
     vtkpng
     vtkjpeg
     vtkzlib
-    vtkMPEG2Encode
-    vtkDICOMParser
     vtkfreetype
     vtkftgl
 )
