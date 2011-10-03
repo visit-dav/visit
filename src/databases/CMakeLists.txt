@@ -282,6 +282,7 @@ Tecplot
 VASP
 VTK
 WavefrontOBJ
+XSF
 XYZ
 Xmdv
 lata
