@@ -95,8 +95,11 @@ ELSE(APPLE)
     ENDIF(WIN32)
 ENDIF(APPLE)
 
-FOREACH(VTKLIB vtkCommon
+FOREACH(VTKLIB MapReduceMPI
+    mpistubs
+    vtkCommon
     vtkCommonPythonD
+    vtkDICOMParser
     vtkFiltering
     vtkFilteringPythonD
     vtkGenericFiltering
@@ -109,16 +112,25 @@ FOREACH(VTKLIB vtkCommon
     vtkIOPythonD
     vtkImaging
     vtkImagingPythonD
+    vtkPythonCore
     vtkRendering
     vtkRenderingPythonD
     vtkVolumeRendering
     vtkVolumeRenderingPythonD
+    vtkWidgets
+    vtkWidgetsPythonD
+    vtkalglib
+    vtkexpat
     vtkfreetype
     vtkftgl
     vtkjpeg
+    vtklibxml2
     vtkpng
+    vtkproj4
+    vtksqlite
     vtksys
     vtktiff
+    vtkverdict
     vtkzlib
 )
     IF(WIN32)
