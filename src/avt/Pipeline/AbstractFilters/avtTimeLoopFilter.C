@@ -150,10 +150,16 @@ avtTimeLoopFilter::Update(avtContract_p spec)
 {
     int i;
     bool modified = false;
+
     avtDataRequest_p orig_DS = spec->GetDataRequest();
     avtSILRestriction_p orig_SILR = orig_DS->GetRestriction();
 
     parallelizingOverTime = CanDoTimeParallelization();
+
+    // Get the current time of the originating time slice so that
+    // derived filters can use it for setting the start and stop
+    // times.
+    currentTime = spec->GetDataRequest()->GetTimestep();
 
     FinalizeTimeLoop();
 
@@ -327,7 +333,12 @@ avtTimeLoopFilter::DataCanBeParallelizedOverTime(void)
 void
 avtTimeLoopFilter::FinalizeTimeLoop()
 {
-    int numStates = GetInput()->GetInfo().GetAttributes().GetNumStates(); 
+    // Hook for derived types to set the start, stop, and stride
+    // possibly using the currentTime. Not always needed.
+    InitializeTimeLoop();
+
+    int numStates = GetInput()->GetInfo().GetAttributes().GetNumStates();
+    
     if (startTime < 0)
     {
         startTime = 0;
@@ -340,28 +351,31 @@ avtTimeLoopFilter::FinalizeTimeLoop()
     {
         stride = 1;
     }
+
     if (endTime >= numStates)
     {
-        endTime = numStates -1;
+        endTime = numStates - 1;
         std::ostringstream oss;
         oss << GetType() 
-            << ": Clamping end time to number of available timesteps"
+            << ": Clamping end time (" << endTime
+            << ") to number of available timesteps"
             << "(" << numStates-1 << ").";
         std::string msg(oss.str());
         avtCallback::IssueWarning(msg.c_str());
     }
-    if (startTime >= endTime)
+    if (startTime > endTime)
     {
         std::ostringstream oss;
-        oss << " (for " << GetType() << ") startTime < endTime (" 
-            << endTime << ")";
+        oss << " (for " << GetType()
+            << ") startTime (" << startTime
+            << ") < endTime (" << endTime << ")";
         std::string expected(oss.str());
         EXCEPTION2(UnexpectedValueException, expected, startTime);
     }
 
     nFrames = (int) ceil((((float)endTime -startTime))/(float)stride) + 1; 
 
-    if (nFrames <= 1)
+    if (nFrames < 1)
     {
         std::ostringstream oss1, oss2;
         oss1 << " (for " << GetType() << ") nFrames > 1";

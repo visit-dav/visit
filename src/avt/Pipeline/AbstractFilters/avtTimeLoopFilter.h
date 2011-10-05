@@ -115,6 +115,7 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
     int                                 actualEnd;
     bool                                parallelizingOverTime;
 
+    virtual void                        InitializeTimeLoop(void) {};
     void                                FinalizeTimeLoop(void);
 
   protected:
