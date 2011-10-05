@@ -263,6 +263,44 @@ LineSamplerAttributes::ArrayAxis_FromString(const std::string &s, LineSamplerAtt
 }
 
 //
+// Enum conversion methods for LineSamplerAttributes::ViewGeometry
+//
+
+static const char *ViewGeometry_strings[] = {
+"Points", "Lines", "Surfaces"
+};
+
+std::string
+LineSamplerAttributes::ViewGeometry_ToString(LineSamplerAttributes::ViewGeometry t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return ViewGeometry_strings[index];
+}
+
+std::string
+LineSamplerAttributes::ViewGeometry_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return ViewGeometry_strings[index];
+}
+
+bool
+LineSamplerAttributes::ViewGeometry_FromString(const std::string &s, LineSamplerAttributes::ViewGeometry &val)
+{
+    val = LineSamplerAttributes::Points;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == ViewGeometry_strings[i])
+        {
+            val = (ViewGeometry)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for LineSamplerAttributes::ChannelGeometry
 //
 
@@ -563,6 +601,7 @@ void LineSamplerAttributes::Init()
     poloialRTilt = 0;
     poloialZTilt = 0;
     toroidalAngle = 0;
+    viewGeometry = Surfaces;
     viewDimension = Three;
     heightPlotScale = 1;
     channelPlotOffset = 1;
@@ -637,6 +676,7 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
     poloialRTilt = obj.poloialRTilt;
     poloialZTilt = obj.poloialZTilt;
     toroidalAngle = obj.toroidalAngle;
+    viewGeometry = obj.viewGeometry;
     viewDimension = obj.viewDimension;
     heightPlotScale = obj.heightPlotScale;
     channelPlotOffset = obj.channelPlotOffset;
@@ -846,6 +886,7 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
             (poloialRTilt == obj.poloialRTilt) &&
             (poloialZTilt == obj.poloialZTilt) &&
             (toroidalAngle == obj.toroidalAngle) &&
+            (viewGeometry == obj.viewGeometry) &&
             (viewDimension == obj.viewDimension) &&
             (heightPlotScale == obj.heightPlotScale) &&
             (channelPlotOffset == obj.channelPlotOffset) &&
@@ -1036,6 +1077,7 @@ LineSamplerAttributes::SelectAll()
     Select(ID_poloialRTilt,                  (void *)&poloialRTilt);
     Select(ID_poloialZTilt,                  (void *)&poloialZTilt);
     Select(ID_toroidalAngle,                 (void *)&toroidalAngle);
+    Select(ID_viewGeometry,                  (void *)&viewGeometry);
     Select(ID_viewDimension,                 (void *)&viewDimension);
     Select(ID_heightPlotScale,               (void *)&heightPlotScale);
     Select(ID_channelPlotOffset,             (void *)&channelPlotOffset);
@@ -1213,6 +1255,12 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("toroidalAngle", toroidalAngle));
+    }
+
+    if(completeSave || !FieldsEqual(ID_viewGeometry, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("viewGeometry", ViewGeometry_ToString(viewGeometry)));
     }
 
     if(completeSave || !FieldsEqual(ID_viewDimension, &defaultObject))
@@ -1537,6 +1585,22 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         SetPoloialZTilt(node->AsDouble());
     if((node = searchNode->GetNode("toroidalAngle")) != 0)
         SetToroidalAngle(node->AsDouble());
+    if((node = searchNode->GetNode("viewGeometry")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetViewGeometry(ViewGeometry(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ViewGeometry value;
+            if(ViewGeometry_FromString(node->AsString(), value))
+                SetViewGeometry(value);
+        }
+    }
     if((node = searchNode->GetNode("viewDimension")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1835,6 +1899,13 @@ LineSamplerAttributes::SetToroidalAngle(double toroidalAngle_)
 {
     toroidalAngle = toroidalAngle_;
     Select(ID_toroidalAngle, (void *)&toroidalAngle);
+}
+
+void
+LineSamplerAttributes::SetViewGeometry(LineSamplerAttributes::ViewGeometry viewGeometry_)
+{
+    viewGeometry = viewGeometry_;
+    Select(ID_viewGeometry, (void *)&viewGeometry);
 }
 
 void
@@ -2156,6 +2227,12 @@ LineSamplerAttributes::GetToroidalAngle() const
     return toroidalAngle;
 }
 
+LineSamplerAttributes::ViewGeometry
+LineSamplerAttributes::GetViewGeometry() const
+{
+    return ViewGeometry(viewGeometry);
+}
+
 LineSamplerAttributes::ViewDimension
 LineSamplerAttributes::GetViewDimension() const
 {
@@ -2384,6 +2461,7 @@ LineSamplerAttributes::GetFieldName(int index) const
     case ID_poloialRTilt:                  return "poloialRTilt";
     case ID_poloialZTilt:                  return "poloialZTilt";
     case ID_toroidalAngle:                 return "toroidalAngle";
+    case ID_viewGeometry:                  return "viewGeometry";
     case ID_viewDimension:                 return "viewDimension";
     case ID_heightPlotScale:               return "heightPlotScale";
     case ID_channelPlotOffset:             return "channelPlotOffset";
@@ -2455,6 +2533,7 @@ LineSamplerAttributes::GetFieldType(int index) const
     case ID_poloialRTilt:                  return FieldType_double;
     case ID_poloialZTilt:                  return FieldType_double;
     case ID_toroidalAngle:                 return FieldType_double;
+    case ID_viewGeometry:                  return FieldType_enum;
     case ID_viewDimension:                 return FieldType_enum;
     case ID_heightPlotScale:               return FieldType_double;
     case ID_channelPlotOffset:             return FieldType_double;
@@ -2526,6 +2605,7 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
     case ID_poloialRTilt:                  return "double";
     case ID_poloialZTilt:                  return "double";
     case ID_toroidalAngle:                 return "double";
+    case ID_viewGeometry:                  return "enum";
     case ID_viewDimension:                 return "enum";
     case ID_heightPlotScale:               return "double";
     case ID_channelPlotOffset:             return "double";
@@ -2682,6 +2762,11 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_toroidalAngle:
         {  // new scope
         retval = (toroidalAngle == obj.toroidalAngle);
+        }
+        break;
+    case ID_viewGeometry:
+        {  // new scope
+        retval = (viewGeometry == obj.viewGeometry);
         }
         break;
     case ID_viewDimension:

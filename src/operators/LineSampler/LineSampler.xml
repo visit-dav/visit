@@ -28,6 +28,11 @@
         R
         Z
       </Enum>
+      <Enum name="ViewGeometry">
+        Points
+        Lines
+        Surfaces
+      </Enum>
       <Enum name="ChannelGeometry">
         Point
         Line
@@ -123,6 +128,9 @@
       </Field>
       <Field name="toroidalAngle" label="Toroidal angle" type="double">
         0.000000
+      </Field>
+      <Field name="viewGeometry" label="View geometry" type="enum" subtype="ViewGeometry">
+        Surfaces
       </Field>
       <Field name="viewDimension" label="View dimension" type="enum" subtype="ViewDimension">
         Three

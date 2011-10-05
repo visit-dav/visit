@@ -91,6 +91,12 @@ public:
         R,
         Z
     };
+    enum ViewGeometry
+    {
+        Points,
+        Lines,
+        Surfaces
+    };
     enum ChannelGeometry
     {
         Point,
@@ -180,6 +186,7 @@ public:
     void SetPoloialRTilt(double poloialRTilt_);
     void SetPoloialZTilt(double poloialZTilt_);
     void SetToroidalAngle(double toroidalAngle_);
+    void SetViewGeometry(ViewGeometry viewGeometry_);
     void SetViewDimension(ViewDimension viewDimension_);
     void SetHeightPlotScale(double heightPlotScale_);
     void SetChannelPlotOffset(double channelPlotOffset_);
@@ -230,6 +237,7 @@ public:
     double             GetPoloialRTilt() const;
     double             GetPoloialZTilt() const;
     double             GetToroidalAngle() const;
+    ViewGeometry       GetViewGeometry() const;
     ViewDimension      GetViewDimension() const;
     double             GetHeightPlotScale() const;
     double             GetChannelPlotOffset() const;
@@ -293,6 +301,11 @@ public:
     static bool ArrayAxis_FromString(const std::string &, ArrayAxis &);
 protected:
     static std::string ArrayAxis_ToString(int);
+public:
+    static std::string ViewGeometry_ToString(ViewGeometry);
+    static bool ViewGeometry_FromString(const std::string &, ViewGeometry &);
+protected:
+    static std::string ViewGeometry_ToString(int);
 public:
     static std::string ChannelGeometry_ToString(ChannelGeometry);
     static bool ChannelGeometry_FromString(const std::string &, ChannelGeometry &);
@@ -359,6 +372,7 @@ public:
         ID_poloialRTilt,
         ID_poloialZTilt,
         ID_toroidalAngle,
+        ID_viewGeometry,
         ID_viewDimension,
         ID_heightPlotScale,
         ID_channelPlotOffset,
@@ -410,6 +424,7 @@ private:
     double       poloialRTilt;
     double       poloialZTilt;
     double       toroidalAngle;
+    int          viewGeometry;
     int          viewDimension;
     double       heightPlotScale;
     double       channelPlotOffset;
@@ -442,6 +457,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LINESAMPLERATTRIBUTES_TMFS "iiiidiiiddidDiddddddiddddiddiddddiiidddiiiid*idd"
+#define LINESAMPLERATTRIBUTES_TMFS "iiiidiiiddidDiddddddiiddddiddiddddiiidddiiiid*idd"
 
 #endif
