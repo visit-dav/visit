@@ -799,8 +799,36 @@ QvisLineSamplerWindow::CreateWindowContents()
     
     mainLayout = new QGridLayout(viewTab);
 
+    viewGeometryLabel = new QLabel(tr("View geometry"), central);
+    mainLayout->addWidget(viewGeometryLabel,0,0);
+
+    viewGeometry = new QWidget(central);
+    viewGeometryButtonGroup= new QButtonGroup(viewGeometry);
+    QHBoxLayout *viewGeometryLayout = new QHBoxLayout(viewGeometry);
+    viewGeometryLayout->setMargin(0);
+    viewGeometryLayout->setSpacing(10);
+
+
+    QRadioButton *viewGeometryOne = new QRadioButton(tr("Points"), viewGeometry);
+    viewGeometryButtonGroup->addButton(viewGeometryOne,0);
+    viewGeometryLayout->addWidget(viewGeometryOne);
+
+    QRadioButton *viewGeometryTwo = new QRadioButton(tr("Lines"), viewGeometry);
+    viewGeometryButtonGroup->addButton(viewGeometryTwo,1);
+    viewGeometryLayout->addWidget(viewGeometryTwo);
+
+    QRadioButton *viewGeometryThree = new QRadioButton(tr("Surfaces"), viewGeometry);
+    viewGeometryButtonGroup->addButton(viewGeometryThree,2);
+    viewGeometryLayout->addWidget(viewGeometryThree);
+
+    connect(viewGeometryButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(viewGeometryChanged(int)));
+
+    mainLayout->addWidget(viewGeometry,0,1);
+
+
     viewDimensionLabel = new QLabel(tr("View dimension"), central);
-    mainLayout->addWidget(viewDimensionLabel,0,0);
+    mainLayout->addWidget(viewDimensionLabel,1,0);
 
     viewDimension = new QWidget(central);
     viewDimensionButtonGroup= new QButtonGroup(viewDimension);
@@ -824,13 +852,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     connect(viewDimensionButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(viewDimensionChanged(int)));
 
-    mainLayout->addWidget(viewDimension,0,1);
+    mainLayout->addWidget(viewDimension,1,1);
 
 
     // Create the oneDPlot group box.
     oneDPlotGroup = new QGroupBox(viewTab);
     oneDPlotGroup->setTitle(tr("1D Plot viewing parameters"));
-    mainLayout->addWidget(oneDPlotGroup, 1, 0, 2, 7);
+    mainLayout->addWidget(oneDPlotGroup, 2, 0, 2, 7);
 
     QGridLayout *oneDPlotLayout = new QGridLayout(oneDPlotGroup);
     oneDPlotLayout->setMargin(5);
@@ -1001,6 +1029,12 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             break;
           case LineSamplerAttributes::ID_toroidalAngle:
             toroidalAngle->setText(DoubleToQString(atts->GetToroidalAngle()));
+            break;
+          case LineSamplerAttributes::ID_viewGeometry:
+            viewGeometryButtonGroup->blockSignals(true);
+            if(viewGeometryButtonGroup->button((int)atts->GetViewGeometry()) != 0)
+                viewGeometryButtonGroup->button((int)atts->GetViewGeometry())->setChecked(true);
+            viewGeometryButtonGroup->blockSignals(false);
             break;
           case LineSamplerAttributes::ID_viewDimension:
             viewDimensionButtonGroup->blockSignals(true);
@@ -1816,6 +1850,17 @@ QvisLineSamplerWindow::toroidalAngleProcessText()
 {
     GetCurrentValues(LineSamplerAttributes::ID_toroidalAngle);
     Apply();
+}
+
+
+void
+QvisLineSamplerWindow::viewGeometryChanged(int val)
+{
+    if(val != atts->GetViewGeometry())
+    {
+        atts->SetViewGeometry(LineSamplerAttributes::ViewGeometry(val));
+        Apply();
+    }
 }
 
 

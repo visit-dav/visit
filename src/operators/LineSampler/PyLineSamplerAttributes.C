@@ -212,6 +212,25 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%storoidalAngle = %g\n", prefix, atts->GetToroidalAngle());
     str += tmpStr;
+    const char *viewGeometry_names = "Points, Lines, Surfaces";
+    switch (atts->GetViewGeometry())
+    {
+      case LineSamplerAttributes::Points:
+          SNPRINTF(tmpStr, 1000, "%sviewGeometry = %sPoints  # %s\n", prefix, prefix, viewGeometry_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::Lines:
+          SNPRINTF(tmpStr, 1000, "%sviewGeometry = %sLines  # %s\n", prefix, prefix, viewGeometry_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::Surfaces:
+          SNPRINTF(tmpStr, 1000, "%sviewGeometry = %sSurfaces  # %s\n", prefix, prefix, viewGeometry_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     const char *viewDimension_names = "One, Two, Three";
     switch (atts->GetViewDimension())
     {
@@ -284,6 +303,8 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     SNPRINTF(tmpStr, 1000, "%sstandardDeviation = %g\n", prefix, atts->GetStandardDeviation());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssampleDistance = %g\n", prefix, atts->GetSampleDistance());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%ssampleVolume = %g\n", prefix, atts->GetSampleVolume());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssampleArc = %g\n", prefix, atts->GetSampleArc());
     str += tmpStr;
@@ -962,6 +983,39 @@ LineSamplerAttributes_GetToroidalAngle(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LineSamplerAttributes_SetViewGeometry(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the viewGeometry in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetViewGeometry(LineSamplerAttributes::ViewGeometry(ival));
+    else
+    {
+        fprintf(stderr, "An invalid viewGeometry value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "Points, Lines, Surfaces.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetViewGeometry(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetViewGeometry()));
+    return retval;
+}
+
+/*static*/ PyObject *
 LineSamplerAttributes_SetViewDimension(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
@@ -1249,6 +1303,30 @@ LineSamplerAttributes_GetSampleDistance(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleDistance());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetSampleVolume(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the sampleVolume in the object.
+    obj->data->SetSampleVolume(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetSampleVolume(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleVolume());
     return retval;
 }
 
@@ -1731,6 +1809,8 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetPoloialZTilt", LineSamplerAttributes_GetPoloialZTilt, METH_VARARGS},
     {"SetToroidalAngle", LineSamplerAttributes_SetToroidalAngle, METH_VARARGS},
     {"GetToroidalAngle", LineSamplerAttributes_GetToroidalAngle, METH_VARARGS},
+    {"SetViewGeometry", LineSamplerAttributes_SetViewGeometry, METH_VARARGS},
+    {"GetViewGeometry", LineSamplerAttributes_GetViewGeometry, METH_VARARGS},
     {"SetViewDimension", LineSamplerAttributes_SetViewDimension, METH_VARARGS},
     {"GetViewDimension", LineSamplerAttributes_GetViewDimension, METH_VARARGS},
     {"SetHeightPlotScale", LineSamplerAttributes_SetHeightPlotScale, METH_VARARGS},
@@ -1753,6 +1833,8 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetStandardDeviation", LineSamplerAttributes_GetStandardDeviation, METH_VARARGS},
     {"SetSampleDistance", LineSamplerAttributes_SetSampleDistance, METH_VARARGS},
     {"GetSampleDistance", LineSamplerAttributes_GetSampleDistance, METH_VARARGS},
+    {"SetSampleVolume", LineSamplerAttributes_SetSampleVolume, METH_VARARGS},
+    {"GetSampleVolume", LineSamplerAttributes_GetSampleVolume, METH_VARARGS},
     {"SetSampleArc", LineSamplerAttributes_SetSampleArc, METH_VARARGS},
     {"GetSampleArc", LineSamplerAttributes_GetSampleArc, METH_VARARGS},
     {"SetChannelIntegration", LineSamplerAttributes_SetChannelIntegration, METH_VARARGS},
@@ -1883,6 +1965,15 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return LineSamplerAttributes_GetPoloialZTilt(self, NULL);
     if(strcmp(name, "toroidalAngle") == 0)
         return LineSamplerAttributes_GetToroidalAngle(self, NULL);
+    if(strcmp(name, "viewGeometry") == 0)
+        return LineSamplerAttributes_GetViewGeometry(self, NULL);
+    if(strcmp(name, "Points") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Points));
+    if(strcmp(name, "Lines") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Lines));
+    if(strcmp(name, "Surfaces") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Surfaces));
+
     if(strcmp(name, "viewDimension") == 0)
         return LineSamplerAttributes_GetViewDimension(self, NULL);
     if(strcmp(name, "One") == 0)
@@ -1926,6 +2017,8 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return LineSamplerAttributes_GetStandardDeviation(self, NULL);
     if(strcmp(name, "sampleDistance") == 0)
         return LineSamplerAttributes_GetSampleDistance(self, NULL);
+    if(strcmp(name, "sampleVolume") == 0)
+        return LineSamplerAttributes_GetSampleVolume(self, NULL);
     if(strcmp(name, "sampleArc") == 0)
         return LineSamplerAttributes_GetSampleArc(self, NULL);
     if(strcmp(name, "channelIntegration") == 0)
@@ -2032,6 +2125,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetPoloialZTilt(self, tuple);
     else if(strcmp(name, "toroidalAngle") == 0)
         obj = LineSamplerAttributes_SetToroidalAngle(self, tuple);
+    else if(strcmp(name, "viewGeometry") == 0)
+        obj = LineSamplerAttributes_SetViewGeometry(self, tuple);
     else if(strcmp(name, "viewDimension") == 0)
         obj = LineSamplerAttributes_SetViewDimension(self, tuple);
     else if(strcmp(name, "heightPlotScale") == 0)
@@ -2054,6 +2149,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetStandardDeviation(self, tuple);
     else if(strcmp(name, "sampleDistance") == 0)
         obj = LineSamplerAttributes_SetSampleDistance(self, tuple);
+    else if(strcmp(name, "sampleVolume") == 0)
+        obj = LineSamplerAttributes_SetSampleVolume(self, tuple);
     else if(strcmp(name, "sampleArc") == 0)
         obj = LineSamplerAttributes_SetSampleArc(self, tuple);
     else if(strcmp(name, "channelIntegration") == 0)

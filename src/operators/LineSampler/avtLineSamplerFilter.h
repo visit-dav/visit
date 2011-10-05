@@ -46,7 +46,8 @@
 
 //#include <avtPluginDataTreeIterator.h>
 #include <avtPluginFilter.h>
-#include <avtExecuteThenTimeLoopFilter.h>
+#include <avtTimeLoopFilter.h>
+#include <avtDatasetToDatasetFilter.h>
 
 #include <avtExtents.h>
 
@@ -70,7 +71,8 @@ class vtkUnstructuredGrid;
 // ****************************************************************************
 
 class avtLineSamplerFilter : virtual public avtPluginFilter,
-                             virtual public avtExecuteThenTimeLoopFilter
+                             virtual public avtTimeLoopFilter,
+                             virtual public avtDatasetToDatasetFilter
 {
   public:
                          avtLineSamplerFilter();
@@ -89,32 +91,33 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
 
   protected:
     LineSamplerAttributes atts;
-    int activeTimeStep;
 
     double bounds[6];
     avtExtents newExtents;
 
+    virtual void InitializeTimeLoop(void);
+
     virtual void ExamineContract(avtContract_p in_contract);
     virtual void Execute(void);
-    virtual void Iterate(int, avtDataTree_p);
-    virtual void Finalize(void);
+    virtual void CreateFinalOutput(void);
+    virtual bool ExecutionSuccessful(void);
 
     virtual vtkDataSet *ExecuteChannelData(vtkDataSet *, int, std::string);
 //  virtual vtkDataSet *ExecuteChannelList(vtkDataSet *, int, std::string);
 
-    virtual vtkUnstructuredGrid* createPoint( avtVector startPoint,
-                                              avtVector stopPoint,
-                                              bool allocateScalars );
-  
-    virtual vtkPolyData *createLine( avtVector startPoint,
+    virtual vtkDataSet* createPoint( avtVector startPoint,
                                      avtVector stopPoint,
                                      bool allocateScalars );
   
-    virtual vtkUnstructuredGrid *createCone( avtVector startPoint,
-                                             avtVector stopPoint,
-                                             avtVector normal,
-                                             double radius,
-                                             double divergence );
+    virtual vtkDataSet *createLine( avtVector startPoint,
+                                    avtVector stopPoint,
+                                    bool allocateScalars );
+  
+    virtual vtkDataSet *createCone( avtVector startPoint,
+                                    avtVector stopPoint,
+                                    avtVector normal,
+                                    double radius,
+                                    double divergence );
 
     avtVector ProjectPointOnPlane( avtVector planePoint,
                                    avtVector planeNormal,
