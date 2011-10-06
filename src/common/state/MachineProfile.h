@@ -117,6 +117,10 @@ public:
     void SetClientHostDetermination(ClientHostDetermination clientHostDetermination_);
     void SetManualClientHostName(const std::string &manualClientHostName_);
     void SetTunnelSSH(bool tunnelSSH_);
+    void SetMaximumNodesValid(bool maximumNodesValid_);
+    void SetMaximumNodes(int maximumNodes_);
+    void SetMaximumProcessorsValid(bool maximumProcessorsValid_);
+    void SetMaximumProcessors(int maximumProcessors_);
     void SetActiveProfile(int activeProfile_);
 
     // Property getting methods
@@ -140,6 +144,10 @@ public:
     const std::string &GetManualClientHostName() const;
           std::string &GetManualClientHostName();
     bool              GetTunnelSSH() const;
+    bool              GetMaximumNodesValid() const;
+    int               GetMaximumNodes() const;
+    bool              GetMaximumProcessorsValid() const;
+    int               GetMaximumProcessors() const;
     const AttributeGroupVector &GetLaunchProfiles() const;
           AttributeGroupVector &GetLaunchProfiles();
     int               GetActiveProfile() const;
@@ -199,6 +207,10 @@ public:
         ID_clientHostDetermination,
         ID_manualClientHostName,
         ID_tunnelSSH,
+        ID_maximumNodesValid,
+        ID_maximumNodes,
+        ID_maximumProcessorsValid,
+        ID_maximumProcessors,
         ID_launchProfiles,
         ID_activeProfile,
         ID__LAST
@@ -220,6 +232,10 @@ private:
     int                  clientHostDetermination;
     std::string          manualClientHostName;
     bool                 tunnelSSH;
+    bool                 maximumNodesValid;
+    int                  maximumNodes;
+    bool                 maximumProcessorsValid;
+    int                  maximumProcessors;
     AttributeGroupVector launchProfiles;
     int                  activeProfile;
 
@@ -227,6 +243,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MACHINEPROFILE_TMFS "sssssbbibsisba*i"
+#define MACHINEPROFILE_TMFS "sssssbbibsisbbibia*i"
 
 #endif

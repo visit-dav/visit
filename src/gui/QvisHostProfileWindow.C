@@ -65,7 +65,7 @@
 
 #include <string>
 
-#define HOST_PROFILE_SPACING 2
+#define HOST_PROFILE_SPACING 5
 
 // ****************************************************************************
 // Method: QvisHostProfileWindow::QvisHostProfileWindow
@@ -174,10 +174,10 @@ QvisHostProfileWindow::CreateWindowContents()
     machineTabs = new QTabWidget(central);
     mainLayout->addWidget(machineTabs, 0,3, 3,1);
 
-    CreateMachineSettingsGroup();
+    machineSettingsGroup = CreateMachineSettingsGroup();
     machineTabs->addTab(machineSettingsGroup, tr("Host Settings"));
 
-    CreateLaunchProfilesGroup();
+    launchProfilesGroup = CreateLaunchProfilesGroup();
     machineTabs->addTab(launchProfilesGroup, tr("Launch Profiles"));
 }
 
@@ -198,79 +198,148 @@ QvisHostProfileWindow::CreateWindowContents()
 //   I added the ability to specify a gateway machine to use to get to the
 //   remote host.
 //
+//   Brad Whitlock, Thu Oct  6 10:55:59 PDT 2011
+//   I added max nodes and max processors.
+//
 // ****************************************************************************
-void
+
+QWidget *
 QvisHostProfileWindow::CreateMachineSettingsGroup()
 {
-    machineSettingsGroup = new QWidget();
-    QWidget *currentGroup = machineSettingsGroup;
+    QWidget *currentGroup = new QWidget();
 
-    int row = 0;
-    QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
-    QGridLayout *layout = new QGridLayout();
-    tmpLayout->addLayout(layout);
-    layout->setSpacing(6);
-    tmpLayout->addStretch(5);
-    
-    layout->setColumnMinimumWidth(0,15);
-    layout->setColumnStretch(0,0);
-    layout->setColumnStretch(1,0);
-    layout->setColumnStretch(2,0);
-    layout->setColumnStretch(3,100);
+    QVBoxLayout *layout = new QVBoxLayout(currentGroup);
+    layout->setMargin(5);
 
-    hostName = new QLineEdit(currentGroup);
+    //
+    // Machine group
+    //
+    QGroupBox *machineGroup = new QGroupBox(tr("Machine"), currentGroup);
+    layout->addWidget(machineGroup);
+    int mRow = 0;
+    QGridLayout *mLayout = new QGridLayout(machineGroup);
+    mLayout->setMargin(5);
+    mLayout->setSpacing(HOST_PROFILE_SPACING);
+
+    hostName = new QLineEdit(machineGroup);
     connect(hostName, SIGNAL(textChanged(const QString &)),
             this, SLOT(hostNameChanged(const QString &)));
-    hostNameLabel = new QLabel(tr("Remote host name"), currentGroup);
-    layout->addWidget(hostNameLabel, row, 0, 1,2);
-    layout->addWidget(hostName, row, 2, 1,2);
-    row++;
+    hostNameLabel = new QLabel(tr("Remote host name"), machineGroup);
+    mLayout->addWidget(hostNameLabel, mRow, 0);
+    mLayout->addWidget(hostName, mRow, 1);
+    mRow++;
 
-    hostAliases = new QLineEdit(currentGroup);
+    hostAliases = new QLineEdit(machineGroup);
     connect(hostAliases, SIGNAL(textChanged(const QString &)),
             this, SLOT(hostAliasesChanged(const QString &)));
-    hostAliasesLabel = new QLabel(tr("Host name aliases"), currentGroup);
-    layout->addWidget(hostAliasesLabel, row, 0, 1,2);
-    layout->addWidget(hostAliases, row, 2, 1,2);
-    row++;
+    hostAliasesLabel = new QLabel(tr("Host name aliases"), machineGroup);
+    mLayout->addWidget(hostAliasesLabel, mRow, 0);
+    mLayout->addWidget(hostAliases, mRow, 1);
+    mRow++;
 
-    hostNickname = new QLineEdit(currentGroup);
+    hostNickname = new QLineEdit(machineGroup);
     connect(hostNickname, SIGNAL(textChanged(const QString &)),
             this, SLOT(hostNicknameChanged(const QString &)));
-    hostNicknameLabel = new QLabel(tr("Host nickname"), currentGroup);
-    layout->addWidget(hostNicknameLabel, row, 0, 1,2);
-    layout->addWidget(hostNickname, row, 2, 1,2);
-    row++;
+    hostNicknameLabel = new QLabel(tr("Host nickname"), machineGroup);
+    mLayout->addWidget(hostNicknameLabel, mRow, 0);
+    mLayout->addWidget(hostNickname, mRow, 1);
+    mRow++;
 
-    userName = new QLineEdit(currentGroup);
-    connect(userName, SIGNAL(textChanged(const QString &)),
-            this, SLOT(userNameChanged(const QString &)));
-    userNameLabel = new QLabel(tr("Username"), currentGroup);
-    layout->addWidget(userNameLabel, row, 0, 1,2);
-    layout->addWidget(userName, row, 2, 1,2);
-    row++;
+    QFrame *sep1 = new QFrame(machineGroup);
+    sep1->setFrameStyle(QFrame::HLine + QFrame::Sunken);
+    mLayout->addWidget(sep1, mRow, 0, 1, 2);
+    mRow++;
+
+    maxNodesCheckBox = new QCheckBox(tr("Maximum nodes"), machineGroup);
+    connect(maxNodesCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleUseMaxNodes(bool)));
+    maxNodes = new QSpinBox(machineGroup);
+    maxNodes->setRange(1, 1000000);
+    connect(maxNodes, SIGNAL(valueChanged(int)),
+            this, SLOT(maxNodesChanged(int)));
+    mLayout->addWidget(maxNodesCheckBox, mRow, 0);
+    mLayout->addWidget(maxNodes, mRow, 1);
+    mRow++;
+
+    maxProcessorsCheckBox = new QCheckBox(tr("Maximum processors"), machineGroup);
+    connect(maxProcessorsCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleUseMaxProcessors(bool)));
+    maxProcessors = new QSpinBox(machineGroup);
+    maxProcessors->setRange(1, 16000000);
+    connect(maxProcessors, SIGNAL(valueChanged(int)),
+            this, SLOT(maxProcessorsChanged(int)));
+    mLayout->addWidget(maxProcessorsCheckBox, mRow, 0);
+    mLayout->addWidget(maxProcessors, mRow, 1);
+    mRow++;
+
+    QFrame *sep2 = new QFrame(machineGroup);
+    sep2->setFrameStyle(QFrame::HLine + QFrame::Sunken);
+    mLayout->addWidget(sep2, mRow, 0, 1, 2);
+    mRow++;
+
+    directory = new QLineEdit(machineGroup);
+    connect(directory, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processDirectoryText(const QString &)));
+    directoryLabel = new QLabel(tr("Path to VisIt installation"),
+                                      machineGroup);
+    mLayout->addWidget(directoryLabel, mRow, 0);
+    mLayout->addWidget(directory, mRow, 1);
+    mRow++;
 
     shareMDServerCheckBox = new QCheckBox(tr("Share batch job with Metadata Server"),
-                                          currentGroup);
-    layout->addWidget(shareMDServerCheckBox, row,0, 1,4);
+                                          machineGroup);
+    mLayout->addWidget(shareMDServerCheckBox, mRow, 0, 1, 2);
     connect(shareMDServerCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleShareMDServer(bool)));
-    row++;
+    mRow++;
 
-    tunnelSSH = new QCheckBox(tr("Tunnel data connections through SSH"), currentGroup);
-    layout->addWidget(tunnelSSH, row,0, 1,4);
+    //
+    // Account group
+    //
+    QGroupBox *accountGroup = new QGroupBox(tr("Account"), currentGroup);
+    layout->addWidget(accountGroup);
+    int aRow = 0;
+    QGridLayout *aLayout = new QGridLayout(accountGroup);
+    aLayout->setMargin(5);
+    aLayout->setSpacing(HOST_PROFILE_SPACING);
+
+    userName = new QLineEdit(accountGroup);
+    connect(userName, SIGNAL(textChanged(const QString &)),
+            this, SLOT(userNameChanged(const QString &)));
+    userNameLabel = new QLabel(tr("Username"), accountGroup);
+    aLayout->addWidget(userNameLabel, aRow, 0);
+    aLayout->addWidget(userName, aRow, 1);
+    aRow++;
+
+    //
+    // Connection group
+    //
+    QGroupBox *connectionGroup = new QGroupBox(tr("Connection"), currentGroup);
+    layout->addWidget(connectionGroup);
+    int cRow = 0;
+    QGridLayout *cLayout = new QGridLayout(connectionGroup);
+    cLayout->setMargin(5);
+    cLayout->setSpacing(HOST_PROFILE_SPACING);
+    cLayout->setColumnMinimumWidth(0,15);
+    cLayout->setColumnStretch(0,0);
+    cLayout->setColumnStretch(1,0);
+    cLayout->setColumnStretch(2,0);
+    cLayout->setColumnStretch(3,100);
+
+    tunnelSSH = new QCheckBox(tr("Tunnel data connections through SSH"), connectionGroup);
+    cLayout->addWidget(tunnelSSH, cRow,0, 1,4);
     connect(tunnelSSH, SIGNAL(toggled(bool)),
             this, SLOT(toggleTunnelSSH(bool)));
-    row++;
+    cRow++;
 
-    clientHostNameMethod = new QButtonGroup(currentGroup);
+    clientHostNameMethod = new QButtonGroup(connectionGroup);
     connect(clientHostNameMethod, SIGNAL(buttonClicked(int)),
             this, SLOT(clientHostNameMethodChanged(int)));
-    chnMachineName = new QRadioButton(tr("Use local machine name"), currentGroup);
+    chnMachineName = new QRadioButton(tr("Use local machine name"), connectionGroup);
     chnParseFromSSHClient = new QRadioButton(tr("Parse from SSH_CLIENT environment variable"),
-                                             currentGroup);
+                                             connectionGroup);
     chnSpecifyManually = new QRadioButton(tr("Specify manually:"),
-                                          currentGroup);
+                                          connectionGroup);
     chnMachineName->setChecked(true);
     clientHostNameMethod->addButton(chnMachineName,0);
 
@@ -278,51 +347,45 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     clientHostNameMethod->addButton(chnSpecifyManually,2);
     clientHostNameMethodLabel =
         new QLabel(tr("Method used to determine local host name when not tunneling:"),
-                   currentGroup);
-    layout->addWidget(clientHostNameMethodLabel,
-                                  row, 0, 1, 4);
-    row++;
-    layout->addWidget(chnMachineName, row, 1, 1, 3);
-    row++;
-    layout->addWidget(chnParseFromSSHClient, row, 1, 1, 3);
-    row++;
-    layout->addWidget(chnSpecifyManually, row, 1, 1, 1);
+                   connectionGroup);
+    cLayout->addWidget(clientHostNameMethodLabel,
+                                  cRow, 0, 1, 4);
+    cRow++;
+    cLayout->addWidget(chnMachineName, cRow, 1, 1, 3);
+    cRow++;
+    cLayout->addWidget(chnParseFromSSHClient, cRow, 1, 1, 3);
+    cRow++;
+    cLayout->addWidget(chnSpecifyManually, cRow, 1, 1, 1);
     
-    clientHostName = new QLineEdit(currentGroup);
+    clientHostName = new QLineEdit(connectionGroup);
     connect(clientHostName, SIGNAL(textChanged(const QString &)),
             this, SLOT(clientHostNameChanged(const QString &)));
-    layout->addWidget(clientHostName, row, 2, 1,2);
-    row++;
+    cLayout->addWidget(clientHostName, cRow, 2, 1,2);
+    cRow++;
 
-    sshPort = new QLineEdit(currentGroup);
-    sshPortCheckBox = new QCheckBox(tr("Specify SSH port"), currentGroup);
+    sshPort = new QLineEdit(connectionGroup);
+    sshPortCheckBox = new QCheckBox(tr("Specify SSH port"), connectionGroup);
     connect(sshPort, SIGNAL(textChanged(const QString &)),
             this, SLOT(sshPortChanged(const QString &)));
     connect(sshPortCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleSSHPort(bool)));
-    layout->addWidget(sshPortCheckBox, row, 0, 1, 2);
-    layout->addWidget(sshPort, row, 2, 1, 2);
-    row++;
+    cLayout->addWidget(sshPortCheckBox, cRow, 0, 1, 2);
+    cLayout->addWidget(sshPort, cRow, 2, 1, 2);
+    cRow++;
 
-    gatewayHost = new QLineEdit(currentGroup);
-    useGatewayCheckBox = new QCheckBox(tr("Use gateway"), currentGroup);
+    gatewayHost = new QLineEdit(connectionGroup);
+    useGatewayCheckBox = new QCheckBox(tr("Use gateway"), connectionGroup);
     connect(gatewayHost, SIGNAL(textChanged(const QString &)),
             this, SLOT(gatewayHostChanged(const QString &)));
     connect(useGatewayCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleUseGateway(bool)));
-    layout->addWidget(useGatewayCheckBox, row, 0, 1, 2);
-    layout->addWidget(gatewayHost, row, 2, 1, 2);
-    row++;
+    cLayout->addWidget(useGatewayCheckBox, cRow, 0, 1, 2);
+    cLayout->addWidget(gatewayHost, cRow, 2, 1, 2);
+    cRow++;
 
-    directory = new QLineEdit(currentGroup);
-    connect(directory, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processDirectoryText(const QString &)));
-    directoryLabel = new QLabel(tr("Path to VisIt installation"),
-                                      currentGroup);
-    layout->addWidget(directoryLabel, row, 0, 1,2);
-    layout->addWidget(directory, row, 2, 1,2);
-    row++;
+    layout->addStretch(5);
 
+    return currentGroup;
 }
 
 // ****************************************************************************
@@ -337,56 +400,56 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//   Brad Whitlock, Thu Oct  6 12:00:57 PDT 2011
+//   I combined a couple tabs into the parallel tab.
+//
 // ****************************************************************************
-void
+
+QWidget *
 QvisHostProfileWindow::CreateLaunchProfilesGroup()
 {
-    launchProfilesGroup = new QWidget();
-    QWidget *currentGroup = launchProfilesGroup;
+    QWidget *currentGroup = new QWidget();
 
     int row = 0;
-    QGridLayout *layout = new QGridLayout(launchProfilesGroup);
+    QGridLayout *layout = new QGridLayout(currentGroup);
+    layout->setMargin(5);
 
-    profileHeaderLabel = new QLabel("", launchProfilesGroup);
-    layout->addWidget(profileHeaderLabel, row,0, 1,4);
-    row++;
-
-    profileList = new QListWidget(launchProfilesGroup);
+    profileList = new QListWidget(currentGroup);
     layout->addWidget(profileList, row,0, 1,4);
     connect(profileList, SIGNAL(itemSelectionChanged()),
             this, SLOT(currentLaunchChanged()));
     row++;
 
-    addProfile = new QPushButton(tr("New"), launchProfilesGroup);
+    addProfile = new QPushButton(tr("New"), currentGroup);
     layout->addWidget(addProfile, row,0);
     connect(addProfile, SIGNAL(clicked()), this, SLOT(addLaunchProfile()));
-    delProfile = new QPushButton(tr("Delete"), launchProfilesGroup);
+    delProfile = new QPushButton(tr("Delete"), currentGroup);
     connect(delProfile, SIGNAL(clicked()), this, SLOT(delLaunchProfile()));
     layout->addWidget(delProfile, row,1);
-    copyProfile = new QPushButton(tr("Copy"), launchProfilesGroup);
+    copyProfile = new QPushButton(tr("Copy"), currentGroup);
     connect(copyProfile, SIGNAL(clicked()), this, SLOT(copyLaunchProfile()));
     layout->addWidget(copyProfile, row,2);
     makeDefaultProfile = new QPushButton(tr("Make Default"),
-                                         launchProfilesGroup);
+                                         currentGroup);
     connect(makeDefaultProfile, SIGNAL(clicked()), this, SLOT(makeDefaultLaunchProfile()));
     layout->addWidget(makeDefaultProfile, row,3);
-    row++;
+    row += 2;
 
     profileTabs = new QTabWidget(central);
     layout->addWidget(profileTabs, row,0, 1,4);
     row++;
 
-    CreateBasicSettingsGroup();
+    basicSettingsGroup = CreateBasicSettingsGroup();
     profileTabs->addTab(basicSettingsGroup, tr("Settings"));
 
-    CreateLaunchSettingsGroup();
-    profileTabs->addTab(launchSettingsGroup, tr("Parallel"));
+    parallelSettingsGroup = CreateParallelSettingsGroup();
+    profileTabs->addTab(parallelSettingsGroup, tr("Parallel"));
 
-    CreateAdvancedSettingsGroup();
-    profileTabs->addTab(advancedSettingsGroup, tr("Advanced"));
+    hwAccelSettingsGroup = CreateHWAccelSettingsGroup();
+    profileTabs->addTab(hwAccelSettingsGroup, tr("GPU Acceleration"));
 
-    CreateHWAccelSettingsGroup();
-    profileTabs->addTab(hwAccelSettingsGroup, tr("GPU Accel"));
+    return currentGroup;
 }
 
 // ****************************************************************************
@@ -401,16 +464,22 @@ QvisHostProfileWindow::CreateLaunchProfilesGroup()
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//   Brad Whitlock, Thu Oct  6 11:49:38 PDT 2011
+//   I moved the parallel check box to the parallel tab.
+//
 // ****************************************************************************
-void
+
+QWidget *
 QvisHostProfileWindow::CreateBasicSettingsGroup()
 {
-    basicSettingsGroup = new QWidget();
-    QWidget *currentGroup = basicSettingsGroup;
+    QWidget *currentGroup = new QWidget();
 
     int row = 0;
     QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
+    tmpLayout->setMargin(0);
     QGridLayout *layout = new QGridLayout();
+    layout->setMargin(5);
     tmpLayout->addLayout(layout);
     layout->setSpacing(7);
     tmpLayout->addStretch(5);
@@ -442,15 +511,48 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
     layout->addWidget(engineArguments, row, 1, 1,3);
     row++;
 
+    return currentGroup;
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::CreateParallelSettingsGroup
+//
+// Purpose: 
+//   Create the parallel options together on this tab.
+//
+// Returns:    The widget that contains the parallel options.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  6 11:59:12 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QWidget *
+QvisHostProfileWindow::CreateParallelSettingsGroup()
+{
+    QWidget *currentGroup = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(currentGroup);
+    layout->setMargin(5);
+
     parallelCheckBox = new QCheckBox(
-                     tr("Launch (parallel) engine using job control system"),
+                     tr("Launch parallel engine"),
                                      currentGroup);
     connect(parallelCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleParallel(bool)));
-    layout->addWidget(parallelCheckBox, row, 0, 1,4);
-    row++;
-    
+    layout->addWidget(parallelCheckBox);
+
+    parallelTabs = new QTabWidget(currentGroup);
+    layout->addWidget(parallelTabs);
+
+    parallelTabs->addTab(CreateLaunchSettingsGroup(), tr("Launch"));
+    parallelTabs->addTab(CreateAdvancedSettingsGroup(), tr("Advanced"));
+    parallelTabs->setCurrentIndex(0);
+
+    return currentGroup;
 }
+
 
 // ****************************************************************************
 // Method:  QvisHostProfileWindow::CreateLaunchSettingsGroup
@@ -474,17 +576,22 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
 //   Eric Brugger, Thu May 12 16:12:59 PDT 2011
 //   Added support for sbatch/mpiexec.
 //
+//   Brad Whitlock, Thu Oct  6 11:56:32 PDT 2011
+//   Return the created widget.
+//
 // ****************************************************************************
-void
+
+QWidget *
 QvisHostProfileWindow::CreateLaunchSettingsGroup()
 {
-    launchSettingsGroup = new QWidget();
-    QWidget *currentGroup = launchSettingsGroup;
+    QWidget *currentGroup = new QWidget();
 
     int row = 0;
     QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
+    tmpLayout->setMargin(5);
     QGridLayout *layout = new QGridLayout();
     tmpLayout->addLayout(layout);
+    layout->setMargin(0);
     layout->setSpacing(HOST_PROFILE_SPACING);
     tmpLayout->addStretch(5);
     
@@ -584,6 +691,8 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     layout->addWidget(machinefileCheckBox, row, 0);
     layout->addWidget(machinefile, row, 1);
     row++;
+
+    return currentGroup;
 }
 
 
@@ -599,17 +708,23 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//   Brad Whitlock, Thu Oct  6 11:56:32 PDT 2011
+//   Return the created widget.
+//
 // ****************************************************************************
-void
+
+QWidget *
 QvisHostProfileWindow::CreateAdvancedSettingsGroup()
 {
-    advancedSettingsGroup = new QWidget();
-    QWidget *currentGroup = advancedSettingsGroup;
+    QWidget *currentGroup = new QWidget();
 
     int row = 0;
     QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
+    tmpLayout->setMargin(5);
     QGridLayout *layout = new QGridLayout();
     tmpLayout->addLayout(layout);
+    layout->setMargin(0);
     layout->setSpacing(HOST_PROFILE_SPACING);
     tmpLayout->addStretch(5);
 
@@ -672,6 +787,8 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
     layout->addWidget(sublaunchPostCmdCheckBox, row, 0);
     layout->addWidget(sublaunchPostCmd, row, 1);
     row++;
+
+    return currentGroup;
 }
 
 // ****************************************************************************
@@ -692,71 +809,82 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
 //   Add new X configuration widgets.
 //   Remove preCommand/postCommand widgets.
 //
+//   Brad Whitlock, Thu Oct  6 11:56:32 PDT 2011
+//   Return the created widget.
+//
 // ****************************************************************************
-void
+
+QWidget *
 QvisHostProfileWindow::CreateHWAccelSettingsGroup()
 {
-    hwAccelSettingsGroup = new QWidget();
-    QWidget *currentGroup = hwAccelSettingsGroup;
-
-    int row = 0;
-    QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
-    QGridLayout *layout = new QGridLayout();
-    tmpLayout->addLayout(layout);
-    layout->setSpacing(HOST_PROFILE_SPACING);
-    tmpLayout->addStretch(5);
+    QWidget *currentGroup = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(currentGroup);
+    layout->setMargin(5);
 
     QString str1(
        QString("<i>") + 
        tr("These options are for hardware accelerating the scalable rendering "
-          "feature on a parallel cluster. In other modes, VisIt will automatically "
+          "feature on a compute cluster. In other modes, VisIt will automatically "
           "use hardware acceleration. This tab only needs to be modified for "
-          "parallel clusters that have graphics cards.") +
+          "compute clusters that have graphics cards.") +
        QString("</i>"));
 
     hwdisclaimer = new QLabel(str1, currentGroup);
     hwdisclaimer->setWordWrap(true);
-    layout->addWidget(hwdisclaimer, row, 0, 1, 2);
-    row++;
+    layout->addWidget(hwdisclaimer);
 
-    canDoHW = new QCheckBox(tr("Use cluster's graphics cards"), currentGroup);
-    connect(canDoHW, SIGNAL(toggled(bool)),
+    // Spacer.
+    layout->addWidget(new QLabel(currentGroup));
+
+    //
+    // Hardware group
+    //
+    hardwareGroup = new QGroupBox(tr("Use cluster's graphics cards"), currentGroup);
+    hardwareGroup->setCheckable(true);
+    connect(hardwareGroup, SIGNAL(toggled(bool)),
             this, SLOT(toggleCanDoHW(bool)));
-    layout->addWidget(canDoHW, row, 0, 1, 2);
-    row++;
+    layout->addWidget(hardwareGroup);
+    int hRow = 0;
+    QGridLayout *hLayout = new QGridLayout(hardwareGroup);
+    hLayout->setMargin(5);
+    hLayout->setSpacing(HOST_PROFILE_SPACING);
 
-    QLabel* lblXDisplay = new QLabel(tr("DISPLAY:"), currentGroup);
-    txtXDisplay = new QLineEdit(currentGroup);
+    QLabel* lblXDisplay = new QLabel(tr("DISPLAY:"), hardwareGroup);
+    txtXDisplay = new QLineEdit(hardwareGroup);
     txtXDisplay->setText(":%l");
     connect(txtXDisplay, SIGNAL(textChanged(const QString&)), this,
             SLOT(xDisplayChanged(const QString&)));
-    layout->addWidget(lblXDisplay, row,0, 1,1);
-    layout->addWidget(txtXDisplay, row,1, 1,1);
-    row++;
+    hLayout->addWidget(lblXDisplay, hRow,0, 1,1);
+    hLayout->addWidget(txtXDisplay, hRow,1, 1,1);
+    hRow++;
 
-    cbLaunchX = new QCheckBox(tr("Have VisIt launch X servers"), currentGroup);
+    cbLaunchX = new QCheckBox(tr("Have VisIt launch X servers"), hardwareGroup);
     connect(cbLaunchX, SIGNAL(toggled(bool)), this, SLOT(toggleLaunchX(bool)));
-    layout->addWidget(cbLaunchX, row,0, 1,2);
-    row++;
+    hLayout->addWidget(cbLaunchX, hRow,0, 1,2);
+    hRow++;
 
-    QLabel* lblNGPUs = new QLabel(tr("Number of GPUs per node:"), currentGroup);
+    QLabel* lblNGPUs = new QLabel(tr("Number of GPUs per node:"), hardwareGroup);
     sbNGPUs = new QSpinBox();
     sbNGPUs->setRange(0, 2048);
     sbNGPUs->setEnabled(true);
     connect(sbNGPUs, SIGNAL(valueChanged(const QString&)), this,
             SLOT(nGPUsChanged(const QString&)));
-    layout->addWidget(lblNGPUs, row,0, 1,1);
-    layout->addWidget(sbNGPUs, row,1, 1,1);
-    row++;
+    hLayout->addWidget(lblNGPUs, hRow,0, 1,1);
+    hLayout->addWidget(sbNGPUs, hRow,1, 1,1);
+    hRow++;
 
-    cbXArgs = new QCheckBox(tr("X arguments:"), currentGroup);
-    txtXArgs = new QLineEdit(currentGroup);
+    cbXArgs = new QCheckBox(tr("X server arguments"), hardwareGroup);
+    txtXArgs = new QLineEdit(hardwareGroup);
     connect(cbXArgs, SIGNAL(toggled(bool)), this, SLOT(toggleXArgs(bool)));
     connect(txtXArgs, SIGNAL(textChanged(const QString&)), this,
             SLOT(xArgsChanged(const QString&)));
-    layout->addWidget(cbXArgs, row,0, 1,1);
-    layout->addWidget(txtXArgs, row,1, 1,1);
-    row++;
+    hLayout->addWidget(cbXArgs, hRow,0, 1,1);
+    hLayout->addWidget(txtXArgs, hRow,1, 1,1);
+    hRow++;
+
+    layout->addStretch(5);
+
+    return currentGroup;
 }
 
 // ****************************************************************************
@@ -845,7 +973,11 @@ QvisHostProfileWindow::UpdateWindow(bool doAll)
 //   I added the ability to specify a gateway machine to use to get to the
 //   remote host.
 //
+//   Brad Whitlock, Thu Oct  6 12:08:27 PDT 2011
+//   I added max node/processor widgets.
+//
 // ****************************************************************************
+
 void
 QvisHostProfileWindow::UpdateMachineProfile()
 {
@@ -862,6 +994,10 @@ QvisHostProfileWindow::UpdateMachineProfile()
     tunnelSSH->blockSignals(true);
     directory->blockSignals(true);
     shareMDServerCheckBox->blockSignals(true);
+    maxNodesCheckBox->blockSignals(true);
+    maxNodes->blockSignals(true);
+    maxProcessorsCheckBox->blockSignals(true);
+    maxProcessors->blockSignals(true);
 
     if (currentMachine == NULL)
     {
@@ -880,6 +1016,10 @@ QvisHostProfileWindow::UpdateMachineProfile()
         gatewayHost->setText("");
         tunnelSSH->setChecked(false);
         shareMDServerCheckBox->setChecked(false);
+        maxNodesCheckBox->setChecked(false);
+        maxNodes->setValue(1);
+        maxProcessorsCheckBox->setChecked(false);
+        maxProcessors->setValue(1);
 
         currentLaunch = NULL;
     }
@@ -895,8 +1035,11 @@ QvisHostProfileWindow::UpdateMachineProfile()
         // Update the contents of the machine settings tab
 
         hostName->setText(mp.GetHost().c_str());
+        hostName->setCursorPosition(0);
         hostAliases->setText(mp.GetHostAliases().c_str());
+        hostAliases->setCursorPosition(0);
         hostNickname->setText(mp.GetHostNickname().c_str());
+        hostNickname->setCursorPosition(0);
         if(mp.GetUserName() == "notset")
             userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
         else
@@ -923,6 +1066,10 @@ QvisHostProfileWindow::UpdateMachineProfile()
         tunnelSSH->setChecked(mp.GetTunnelSSH());
         shareMDServerCheckBox->setChecked(mp.GetShareOneBatchJob());
         directory->setText(mp.GetDirectory().c_str());
+        maxNodesCheckBox->setChecked(mp.GetMaximumNodesValid());
+        maxNodes->setValue(mp.GetMaximumNodes());
+        maxProcessorsCheckBox->setChecked(mp.GetMaximumProcessorsValid());
+        maxProcessors->setValue(mp.GetMaximumProcessors());
 
         // Update the contents of the launch profiles tab
         // Keep track of the old selection if it's still there.
@@ -976,7 +1123,10 @@ QvisHostProfileWindow::UpdateMachineProfile()
     tunnelSSH->blockSignals(false);
     directory->blockSignals(false);
     shareMDServerCheckBox->blockSignals(false);
-
+    maxNodesCheckBox->blockSignals(false);
+    maxNodes->blockSignals(false);
+    maxProcessorsCheckBox->blockSignals(false);
+    maxProcessors->blockSignals(false);
 
     UpdateLaunchProfile();
 }
@@ -1028,7 +1178,7 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     launchCheckBox->blockSignals(true);
     launchMethod->blockSignals(true);
     loadBalancing->blockSignals(true);
-    canDoHW->blockSignals(true);
+    hardwareGroup->blockSignals(true);
     timeout->blockSignals(true);
     engineArguments->blockSignals(true);
     cbLaunchX->blockSignals(true);
@@ -1161,7 +1311,7 @@ QvisHostProfileWindow::UpdateLaunchProfile()
         if (currentLaunch->GetForceDynamic())
             lb = 2;
         loadBalancing->setCurrentIndex(lb);
-        canDoHW->setChecked(currentLaunch->GetCanDoHWAccel());
+        hardwareGroup->setChecked(currentLaunch->GetCanDoHWAccel());
         timeout->setValue(currentLaunch->GetTimeout());
 
         QString temp;
@@ -1206,7 +1356,7 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     launchCheckBox->blockSignals(false);
     launchMethod->blockSignals(false);
     loadBalancing->blockSignals(false);
-    canDoHW->blockSignals(false);
+    hardwareGroup->blockSignals(false);
     timeout->blockSignals(false);
     engineArguments->blockSignals(false);
     cbLaunchX->blockSignals(false);
@@ -1318,6 +1468,9 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    Tom Fogal, Thu May  5 15:21:19 MDT 2011
 //    Enable/Disable new GPU options.
 //
+//    Brad Whitlock, Thu Oct  6 12:09:14 PDT 2011
+//    Set max node/processor enabled state.
+//
 // ****************************************************************************
 
 void
@@ -1359,6 +1512,10 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     gatewayHost->setEnabled(hostEnabled && currentMachine->GetUseGateway());
     tunnelSSH->setEnabled(hostEnabled);
     shareMDServerCheckBox->setEnabled(hostEnabled);
+    maxNodesCheckBox->setEnabled(hostEnabled);
+    maxNodes->setEnabled(hostEnabled && currentMachine->GetMaximumNodesValid());
+    maxProcessorsCheckBox->setEnabled(hostEnabled);
+    maxProcessors->setEnabled(hostEnabled && currentMachine->GetMaximumProcessorsValid());
     
 
     profileNameLabel->setEnabled(launchEnabled);
@@ -1383,8 +1540,16 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     sublaunchPostCmd->setEnabled(parEnabled && currentLaunch->GetSublaunchPostCmdSet());
     numProcLabel->setEnabled(parEnabled);
     numProcessors->setEnabled(parEnabled);
+    int maxP = 100000;
+    if(hostEnabled && currentMachine->GetMaximumProcessorsValid())
+        maxP = currentMachine->GetMaximumProcessors();
+    numProcessors->setRange(1, maxP);
     numNodesCheckBox->setEnabled(parEnabled);
     numNodes->setEnabled(parEnabled && currentLaunch->GetNumNodesSet());
+    int maxN = 100000;
+    if(hostEnabled && currentMachine->GetMaximumNodesValid())
+        maxN = currentMachine->GetMaximumNodes();
+    numNodes->setRange(1, maxN);
     partitionCheckBox->setEnabled(parEnabled);
     partitionName->setEnabled(parEnabled && currentLaunch->GetPartitionSet());
     bankCheckBox->setEnabled(parEnabled);
@@ -1402,7 +1567,7 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 #endif
 
     hwdisclaimer->setEnabled(launchEnabled);
-    canDoHW->setEnabled(launchEnabled);
+    hardwareGroup->setEnabled(launchEnabled);
     sbNGPUs->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
     cbXArgs->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
     txtXArgs->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel() &&
@@ -3670,3 +3835,110 @@ QvisHostProfileWindow::makeDefaultLaunchProfile()
     makeDefaultProfile->setEnabled(false);
 }
 
+// ****************************************************************************
+// Method: QvisHostProfileWindow::toggleUseMaxNodes
+//
+// Purpose: 
+//   Called when we click on the max nodes check box.
+//
+// Arguments:
+//   val : Whether we want to set the max # nodes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  6 11:15:23 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleUseMaxNodes(bool val)
+{
+    if (currentMachine == NULL)
+        return;
+
+    currentMachine->SetMaximumNodesValid(val);
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::maxNodesChanged
+//
+// Purpose: 
+//   Set a new max # nodes.
+//
+// Arguments:
+//   val : The new max # nodes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  6 11:16:24 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::maxNodesChanged(int val)
+{
+    if (currentMachine == NULL)
+        return;
+
+    currentMachine->SetMaximumNodes(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::toggleUseMaxProcessors
+//
+// Purpose: 
+//   Called when we click on the max processors check box.
+//
+// Arguments:
+//   val : Whether we want to set the max # nodes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  6 11:15:23 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleUseMaxProcessors(bool val)
+{
+    if (currentMachine == NULL)
+        return;
+
+    currentMachine->SetMaximumProcessorsValid(val);
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::maxProcessorsChanged
+//
+// Purpose: 
+//   Set a new max # processors.
+//
+// Arguments:
+//   val : The new max # processors.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  6 11:16:24 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::maxProcessorsChanged(int val)
+{
+    if (currentMachine == NULL)
+        return;
+
+    currentMachine->SetMaximumProcessors(val);
+    Apply();
+}

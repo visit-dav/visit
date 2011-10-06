@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class MachineProfile extends AttributeSubject
 {
-    private static int MachineProfile_numAdditionalAtts = 15;
+    private static int MachineProfile_numAdditionalAtts = 19;
 
     // Enum values
     public final static int CLIENTHOSTDETERMINATION_MACHINENAME = 0;
@@ -82,6 +82,10 @@ public class MachineProfile extends AttributeSubject
         clientHostDetermination = CLIENTHOSTDETERMINATION_MACHINENAME;
         manualClientHostName = new String("");
         tunnelSSH = false;
+        maximumNodesValid = false;
+        maximumNodes = 1;
+        maximumProcessorsValid = false;
+        maximumProcessors = 1;
         launchProfiles = new Vector();
         activeProfile = -1;
     }
@@ -103,6 +107,10 @@ public class MachineProfile extends AttributeSubject
         clientHostDetermination = CLIENTHOSTDETERMINATION_MACHINENAME;
         manualClientHostName = new String("");
         tunnelSSH = false;
+        maximumNodesValid = false;
+        maximumNodes = 1;
+        maximumProcessorsValid = false;
+        maximumProcessors = 1;
         launchProfiles = new Vector();
         activeProfile = -1;
     }
@@ -126,6 +134,10 @@ public class MachineProfile extends AttributeSubject
         clientHostDetermination = obj.clientHostDetermination;
         manualClientHostName = new String(obj.manualClientHostName);
         tunnelSSH = obj.tunnelSSH;
+        maximumNodesValid = obj.maximumNodesValid;
+        maximumNodes = obj.maximumNodes;
+        maximumProcessorsValid = obj.maximumProcessorsValid;
+        maximumProcessors = obj.maximumProcessors;
         // *** Copy the launchProfiles field ***
         launchProfiles = new Vector(obj.launchProfiles.size());
         for(i = 0; i < obj.launchProfiles.size(); ++i)
@@ -176,6 +188,10 @@ public class MachineProfile extends AttributeSubject
                 (clientHostDetermination == obj.clientHostDetermination) &&
                 (manualClientHostName.equals(obj.manualClientHostName)) &&
                 (tunnelSSH == obj.tunnelSSH) &&
+                (maximumNodesValid == obj.maximumNodesValid) &&
+                (maximumNodes == obj.maximumNodes) &&
+                (maximumProcessorsValid == obj.maximumProcessorsValid) &&
+                (maximumProcessors == obj.maximumProcessors) &&
                 launchProfiles_equal &&
                 (activeProfile == obj.activeProfile));
     }
@@ -259,10 +275,34 @@ public class MachineProfile extends AttributeSubject
         Select(12);
     }
 
+    public void SetMaximumNodesValid(boolean maximumNodesValid_)
+    {
+        maximumNodesValid = maximumNodesValid_;
+        Select(13);
+    }
+
+    public void SetMaximumNodes(int maximumNodes_)
+    {
+        maximumNodes = maximumNodes_;
+        Select(14);
+    }
+
+    public void SetMaximumProcessorsValid(boolean maximumProcessorsValid_)
+    {
+        maximumProcessorsValid = maximumProcessorsValid_;
+        Select(15);
+    }
+
+    public void SetMaximumProcessors(int maximumProcessors_)
+    {
+        maximumProcessors = maximumProcessors_;
+        Select(16);
+    }
+
     public void SetActiveProfile(int activeProfile_)
     {
         activeProfile = activeProfile_;
-        Select(14);
+        Select(18);
     }
 
     // Property getting methods
@@ -279,6 +319,10 @@ public class MachineProfile extends AttributeSubject
     public int     GetClientHostDetermination() { return clientHostDetermination; }
     public String  GetManualClientHostName() { return manualClientHostName; }
     public boolean GetTunnelSSH() { return tunnelSSH; }
+    public boolean GetMaximumNodesValid() { return maximumNodesValid; }
+    public int     GetMaximumNodes() { return maximumNodes; }
+    public boolean GetMaximumProcessorsValid() { return maximumProcessorsValid; }
+    public int     GetMaximumProcessors() { return maximumProcessors; }
     public Vector  GetLaunchProfiles() { return launchProfiles; }
     public int     GetActiveProfile() { return activeProfile; }
 
@@ -312,6 +356,14 @@ public class MachineProfile extends AttributeSubject
         if(WriteSelect(12, buf))
             buf.WriteBool(tunnelSSH);
         if(WriteSelect(13, buf))
+            buf.WriteBool(maximumNodesValid);
+        if(WriteSelect(14, buf))
+            buf.WriteInt(maximumNodes);
+        if(WriteSelect(15, buf))
+            buf.WriteBool(maximumProcessorsValid);
+        if(WriteSelect(16, buf))
+            buf.WriteInt(maximumProcessors);
+        if(WriteSelect(17, buf))
         {
             buf.WriteInt(launchProfiles.size());
             for(int i = 0; i < launchProfiles.size(); ++i)
@@ -320,7 +372,7 @@ public class MachineProfile extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(14, buf))
+        if(WriteSelect(18, buf))
             buf.WriteInt(activeProfile);
     }
 
@@ -368,6 +420,18 @@ public class MachineProfile extends AttributeSubject
             SetTunnelSSH(buf.ReadBool());
             break;
         case 13:
+            SetMaximumNodesValid(buf.ReadBool());
+            break;
+        case 14:
+            SetMaximumNodes(buf.ReadInt());
+            break;
+        case 15:
+            SetMaximumProcessorsValid(buf.ReadBool());
+            break;
+        case 16:
+            SetMaximumProcessors(buf.ReadInt());
+            break;
+        case 17:
             {
                 int len = buf.ReadInt();
                 launchProfiles.clear();
@@ -378,9 +442,9 @@ public class MachineProfile extends AttributeSubject
                     launchProfiles.addElement(tmp);
                 }
             }
-            Select(13);
+            Select(17);
             break;
-        case 14:
+        case 18:
             SetActiveProfile(buf.ReadInt());
             break;
         }
@@ -409,6 +473,10 @@ public class MachineProfile extends AttributeSubject
         str = str + "\n";
         str = str + stringToString("manualClientHostName", manualClientHostName, indent) + "\n";
         str = str + boolToString("tunnelSSH", tunnelSSH, indent) + "\n";
+        str = str + boolToString("maximumNodesValid", maximumNodesValid, indent) + "\n";
+        str = str + intToString("maximumNodes", maximumNodes, indent) + "\n";
+        str = str + boolToString("maximumProcessorsValid", maximumProcessorsValid, indent) + "\n";
+        str = str + intToString("maximumProcessors", maximumProcessors, indent) + "\n";
         str = str + indent + "launchProfiles = {\n";
         for(int i = 0; i < launchProfiles.size(); ++i)
         {
@@ -427,13 +495,13 @@ public class MachineProfile extends AttributeSubject
     public void AddLaunchProfiles(LaunchProfile obj)
     {
         launchProfiles.addElement(new LaunchProfile(obj));
-        Select(13);
+        Select(17);
     }
 
     public void ClearLaunchProfiles()
     {
         launchProfiles.clear();
-        Select(13);
+        Select(17);
     }
 
     public void RemoveLaunchProfiles(int index)
@@ -441,7 +509,7 @@ public class MachineProfile extends AttributeSubject
         if(index >= 0 && index < launchProfiles.size())
         {
             launchProfiles.remove(index);
-            Select(13);
+            Select(17);
         }
     }
 
@@ -471,6 +539,10 @@ public class MachineProfile extends AttributeSubject
     private int     clientHostDetermination;
     private String  manualClientHostName;
     private boolean tunnelSSH;
+    private boolean maximumNodesValid;
+    private int     maximumNodes;
+    private boolean maximumProcessorsValid;
+    private int     maximumProcessors;
     private Vector  launchProfiles; // vector of LaunchProfile objects
     private int     activeProfile;
 }

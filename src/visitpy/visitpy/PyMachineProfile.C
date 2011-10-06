@@ -132,6 +132,20 @@ PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%stunnelSSH = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetMaximumNodesValid())
+        SNPRINTF(tmpStr, 1000, "%smaximumNodesValid = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%smaximumNodesValid = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smaximumNodes = %d\n", prefix, atts->GetMaximumNodes());
+    str += tmpStr;
+    if(atts->GetMaximumProcessorsValid())
+        SNPRINTF(tmpStr, 1000, "%smaximumProcessorsValid = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%smaximumProcessorsValid = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smaximumProcessors = %d\n", prefix, atts->GetMaximumProcessors());
+    str += tmpStr;
     { // new scope
         int index = 0;
         // Create string representation of launchProfiles from atts.
@@ -481,6 +495,102 @@ MachineProfile_GetTunnelSSH(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+MachineProfile_SetMaximumNodesValid(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the maximumNodesValid in the object.
+    obj->data->SetMaximumNodesValid(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MachineProfile_GetMaximumNodesValid(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetMaximumNodesValid()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+MachineProfile_SetMaximumNodes(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the maximumNodes in the object.
+    obj->data->SetMaximumNodes((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MachineProfile_GetMaximumNodes(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaximumNodes()));
+    return retval;
+}
+
+/*static*/ PyObject *
+MachineProfile_SetMaximumProcessorsValid(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the maximumProcessorsValid in the object.
+    obj->data->SetMaximumProcessorsValid(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MachineProfile_GetMaximumProcessorsValid(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetMaximumProcessorsValid()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+MachineProfile_SetMaximumProcessors(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the maximumProcessors in the object.
+    obj->data->SetMaximumProcessors((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MachineProfile_GetMaximumProcessors(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaximumProcessors()));
+    return retval;
+}
+
+/*static*/ PyObject *
 MachineProfile_GetLaunchProfiles(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
@@ -649,6 +759,14 @@ PyMethodDef PyMachineProfile_methods[MACHINEPROFILE_NMETH] = {
     {"GetManualClientHostName", MachineProfile_GetManualClientHostName, METH_VARARGS},
     {"SetTunnelSSH", MachineProfile_SetTunnelSSH, METH_VARARGS},
     {"GetTunnelSSH", MachineProfile_GetTunnelSSH, METH_VARARGS},
+    {"SetMaximumNodesValid", MachineProfile_SetMaximumNodesValid, METH_VARARGS},
+    {"GetMaximumNodesValid", MachineProfile_GetMaximumNodesValid, METH_VARARGS},
+    {"SetMaximumNodes", MachineProfile_SetMaximumNodes, METH_VARARGS},
+    {"GetMaximumNodes", MachineProfile_GetMaximumNodes, METH_VARARGS},
+    {"SetMaximumProcessorsValid", MachineProfile_SetMaximumProcessorsValid, METH_VARARGS},
+    {"GetMaximumProcessorsValid", MachineProfile_GetMaximumProcessorsValid, METH_VARARGS},
+    {"SetMaximumProcessors", MachineProfile_SetMaximumProcessors, METH_VARARGS},
+    {"GetMaximumProcessors", MachineProfile_GetMaximumProcessors, METH_VARARGS},
     {"GetLaunchProfiles", MachineProfile_GetLaunchProfiles, METH_VARARGS},
     {"GetNumLaunchProfiles", MachineProfile_GetNumLaunchProfiles, METH_VARARGS},
     {"AddLaunchProfiles", MachineProfile_AddLaunchProfiles, METH_VARARGS},
@@ -717,6 +835,14 @@ PyMachineProfile_getattr(PyObject *self, char *name)
         return MachineProfile_GetManualClientHostName(self, NULL);
     if(strcmp(name, "tunnelSSH") == 0)
         return MachineProfile_GetTunnelSSH(self, NULL);
+    if(strcmp(name, "maximumNodesValid") == 0)
+        return MachineProfile_GetMaximumNodesValid(self, NULL);
+    if(strcmp(name, "maximumNodes") == 0)
+        return MachineProfile_GetMaximumNodes(self, NULL);
+    if(strcmp(name, "maximumProcessorsValid") == 0)
+        return MachineProfile_GetMaximumProcessorsValid(self, NULL);
+    if(strcmp(name, "maximumProcessors") == 0)
+        return MachineProfile_GetMaximumProcessors(self, NULL);
     if(strcmp(name, "launchProfiles") == 0)
         return MachineProfile_GetLaunchProfiles(self, NULL);
     if(strcmp(name, "activeProfile") == 0)
@@ -761,6 +887,14 @@ PyMachineProfile_setattr(PyObject *self, char *name, PyObject *args)
         obj = MachineProfile_SetManualClientHostName(self, tuple);
     else if(strcmp(name, "tunnelSSH") == 0)
         obj = MachineProfile_SetTunnelSSH(self, tuple);
+    else if(strcmp(name, "maximumNodesValid") == 0)
+        obj = MachineProfile_SetMaximumNodesValid(self, tuple);
+    else if(strcmp(name, "maximumNodes") == 0)
+        obj = MachineProfile_SetMaximumNodes(self, tuple);
+    else if(strcmp(name, "maximumProcessorsValid") == 0)
+        obj = MachineProfile_SetMaximumProcessorsValid(self, tuple);
+    else if(strcmp(name, "maximumProcessors") == 0)
+        obj = MachineProfile_SetMaximumProcessors(self, tuple);
     else if(strcmp(name, "activeProfile") == 0)
         obj = MachineProfile_SetActiveProfile(self, tuple);
 
