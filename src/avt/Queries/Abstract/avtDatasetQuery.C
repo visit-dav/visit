@@ -162,16 +162,17 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     if (*tree != NULL && !tree->IsEmpty())
     {
         validInputTree = 1;
+        totalNodes = tree->GetNumberOfLeaves();
     }
     else 
     {
         validInputTree |= 0;
+        totalNodes = 0;
         debug4 << "Query encountered EMPTY InputDataTree after ApplyFilters.  "
                << "This may be a valid state if running parallel and there "
                << "are more processors than domains." << endl;
     }
 
-    totalNodes = tree->GetNumberOfLeaves();
     bool hadError = false;
     PreExecute();
     TRY
