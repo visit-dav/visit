@@ -2,7 +2,7 @@
 ##
 ## ../visit_svn/trunk/src/svn_bin/build_visit generated host.cmake
 ## created: Mon Jan  4 19:13:25 PST 2010
-## system: Darwin fry.local 10.2.0 Darwin Kernel Version 10.2.0: Tue Nov  3 10:37:10 PST 2009; root:xnu-1486.2.11~1/RELEASE_I386 i386
+## system: Darwin fry.lbl.gov 11.1.0 Darwin Kernel Version 11.1.0: Tue Jul 26 16:07:11 PDT 2011; root:xnu-1699.22.81~1/RELEASE_X86_64 x86_64
 ## by: ghweber
 
 ##
@@ -19,12 +19,12 @@ VISIT_OPTION_DEFAULT(VISIT_CREATE_APPBUNDLE_PACKAGE ON)
 ##
 ## Specify the location of Mesa.
 ##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
 
 ##
 ## Specify the location of VTK.
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0i/${VISITARCH}/lib/vtk-5.0/)
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
 
 ##
 ## Specify the Qt4 binary dir. 
@@ -57,6 +57,13 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 ##############################################################
 ##
 ## Database reader plugin support libraries
+##
+## The HDF4, HDF5 and NetCDF libraries must be first so that
+## their libdeps are defined for any plugins that need them.
+##
+## For libraries with LIBDEP settings, order matters.
+## Libraries with LIBDEP settings that depend on other
+## Library's LIBDEP settings must come after them.
 ##
 ##############################################################
 
