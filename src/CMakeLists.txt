@@ -246,6 +246,9 @@
 #    Use NERSC_HOST environment variable instead of hostname to determine if
 #    we are running on Franklin or Hopper.
 #
+#    Gunther H. Weber, Wed Oct  5 19:14:27 PDT 2011
+#    Change NERSC_HOST to VISIT_HOSTNAME to make it more general
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -276,11 +279,9 @@ SITE_NAME(HOSTNAME)
 # Use NERSC_HOST environment variable to determine if we are running on Franklin
 # or Hopper. If so, use that hostname instead of the result of SITE_NAME which is
 # only the name of the login node we are running on.
-IF(NOT "$ENV{NERSC_HOST}" STREQUAL "")
-    IF (($ENV{NERSC_HOST} STREQUAL "franklin") OR ($ENV{NERSC_HOST} STREQUAL "hopper"))
-        SET(HOSTNAME "$ENV{NERSC_HOST}.nersc.gov")
-    ENDIF (($ENV{NERSC_HOST} STREQUAL "franklin") OR ($ENV{NERSC_HOST} STREQUAL "hopper"))
-ENDIF(NOT "$ENV{NERSC_HOST}" STREQUAL "")
+IF(NOT "$ENV{VISIT_HOSTNAME}" STREQUAL "")
+    SET(HOSTNAME "$ENV{VISIT_HOSTNAME}")
+ENDIF(NOT "$ENV{VISIT_HOSTNAME}" STREQUAL "")
 
 
 #-----------------------------------------------------------------------------
