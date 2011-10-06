@@ -244,6 +244,10 @@ private slots:
     void xArgsChanged(const QString&);
     void toggleLaunchX(bool);
     void xDisplayChanged(const QString&);
+    void toggleUseMaxNodes(bool);
+    void maxNodesChanged(int);
+    void toggleUseMaxProcessors(bool);
+    void maxProcessorsChanged(int);
 private:
     // Main Window
     QListWidget *hostList;
@@ -254,11 +258,10 @@ private:
     QTabWidget *machineTabs;
     QWidget    *machineSettingsGroup;
     QWidget    *launchProfilesGroup;
-    void CreateMachineSettingsGroup();
-    void CreateLaunchProfilesGroup();
+    QWidget    *CreateMachineSettingsGroup();
+    QWidget    *CreateLaunchProfilesGroup();
 
     // Launch Profiles
-    QLabel      *profileHeaderLabel;
     QListWidget *profileList;
     QPushButton *addProfile;
     QPushButton *delProfile;
@@ -271,15 +274,16 @@ private:
 
     QTabWidget *profileTabs;
     QWidget    *basicSettingsGroup;
-    QWidget    *launchSettingsGroup;
-    QWidget    *advancedSettingsGroup;
+    QWidget    *parallelSettingsGroup;
     QWidget    *hwAccelSettingsGroup;
-    void CreateBasicSettingsGroup();
-    void CreateLaunchSettingsGroup();
-    void CreateAdvancedSettingsGroup();
-    void CreateHWAccelSettingsGroup();
+    QWidget    *CreateBasicSettingsGroup();
+    QWidget    *CreateParallelSettingsGroup();
+    QWidget    *CreateLaunchSettingsGroup();
+    QWidget    *CreateAdvancedSettingsGroup();
+    QWidget    *CreateHWAccelSettingsGroup();
 
-    // Launch Basic Settings
+    // Parallel Basic Settings
+    QTabWidget   *parallelTabs;
     QCheckBox    *launchCheckBox;
     QComboBox    *launchMethod;
     QCheckBox    *partitionCheckBox;
@@ -295,7 +299,7 @@ private:
     QCheckBox    *machinefileCheckBox;
     QLineEdit    *machinefile;
 
-    // Launch Advanced Settings
+    // Parallel Advanced Settings
     QCheckBox    *useVisItScriptForEnvCheckBox;
     QLabel       *loadBalancingLabel;
     QComboBox    *loadBalancing;
@@ -312,7 +316,7 @@ private:
 
     // Launch HW Accel Settings
     QLabel       *hwdisclaimer;
-    QCheckBox    *canDoHW;
+    QGroupBox    *hardwareGroup;
     QCheckBox    *cbLaunchX;
     QSpinBox     *sbNGPUs;
     QCheckBox    *cbXArgs;
@@ -344,6 +348,10 @@ private:
     QLineEdit    *engineArguments;
     QLabel       *directoryLabel;
     QLineEdit    *directory;
+    QCheckBox    *maxNodesCheckBox;
+    QSpinBox     *maxNodes;
+    QCheckBox    *maxProcessorsCheckBox;
+    QSpinBox     *maxProcessors;
 
     // other stuff
     int          profileCounter;

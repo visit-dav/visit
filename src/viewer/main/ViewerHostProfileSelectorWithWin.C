@@ -92,7 +92,7 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
     waitingOnUser = false;
 
     QVBoxLayout *topLayout = new QVBoxLayout(this);
-
+    topLayout->setMargin(0);
     QGridLayout *layout = new QGridLayout;
     topLayout->addLayout(layout);
     layout->setMargin(10);
@@ -239,6 +239,9 @@ ViewerHostProfileSelectorWithWin::~ViewerHostProfileSelectorWithWin()
 //    window correctly the first time.  Just don't set it to a bad
 //    index before you set it to the right one.
 //
+//    Brad Whitlock, Thu Oct  6 16:16:10 PDT 2011
+//    Constrain the number of processors and nodes.
+//
 // ****************************************************************************
 
 bool 
@@ -304,6 +307,14 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
              profile.GetLaunchProfiles(0).GetParallel()))
         {
             debug2 << "   Presenting a choice to the user.\n";
+
+            // Constrain the max nodes and processors.
+            int maxP = profile.GetMaximumProcessorsValid() ? 
+                profile.GetMaximumProcessors() : 99999;
+            int maxN = profile.GetMaximumNodesValid() ? 
+                profile.GetMaximumNodes() : 99999;
+            numProcs->setMaximum(maxP);
+            numNodes->setMaximum(maxN);
 
             profiles->blockSignals(true);
             profiles->clear();
@@ -385,6 +396,10 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
 //    Jeremy Meredith, Thu Feb 25 10:11:36 EST 2010
 //    Fixed a bug where it didn't let the user change from the default profile.
 //
+//    Brad Whitlock, Thu Oct  6 16:13:25 PDT 2011
+//    Make sure that the number of nodes and processors is never more than
+//    the maximum allowable.
+//
 // ****************************************************************************
 
 void
@@ -398,13 +413,25 @@ ViewerHostProfileSelectorWithWin::newProfileSelected()
     LaunchProfile &lp = profile.GetLaunchProfiles(index);
     bool parallel = lp.GetParallel();
 
+    int np = lp.GetNumProcessors();
+    if(profile.GetMaximumProcessorsValid() && 
+       np > profile.GetMaximumProcessors())
+    {
+        np = profile.GetMaximumProcessors();
+    }
     numProcsLabel->setEnabled(parallel);
     numProcs->setEnabled(parallel);
-    numProcs->setValue(lp.GetNumProcessors());
+    numProcs->setValue(np);
 
+    int nn = lp.GetNumNodesSet() ? lp.GetNumNodes() : 1;
+    if(profile.GetMaximumNodesValid() && 
+       nn > profile.GetMaximumNodes())
+    {
+        nn = profile.GetMaximumNodes();
+    }
     numNodesLabel->setEnabled(parallel && lp.GetNumNodesSet());
     numNodes->setEnabled(parallel && lp.GetNumNodesSet());
-    numNodes->setValue(lp.GetNumNodes());
+    numNodes->setValue(nn);
 
     bankNameLabel->setEnabled(parallel && lp.GetBankSet());
     bankName->setEnabled(parallel && lp.GetBankSet());

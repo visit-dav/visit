@@ -263,6 +263,9 @@ Definition:
 //   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
 //   Added useGateway and gatewayHost.
 //
+//   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
+//   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
+//
 // ****************************************************************************
 
 void
@@ -319,6 +322,22 @@ MachineProfile::SetFromNode(DataNode *parentNode)
         SetManualClientHostName(node->AsString());
     if((node = searchNode->GetNode("tunnelSSH")) != 0)
         SetTunnelSSH(node->AsBool());
+    if((node = searchNode->GetNode("maximumNodesValid")) != 0)
+        SetMaximumNodesValid(node->AsBool());
+    if((node = searchNode->GetNode("maximumNodes")) != 0)
+    {
+        int ival = node->AsInt();
+        if(ival > 0)
+            SetMaximumNodes(ival);
+    }
+    if((node = searchNode->GetNode("maximumProcessorsValid")) != 0)
+        SetMaximumProcessorsValid(node->AsBool());
+    if((node = searchNode->GetNode("maximumProcessors")) != 0)
+    {
+        int ival = node->AsInt();
+        if(ival > 0)
+            SetMaximumProcessors(ival);
+    }
 
     // Go through all of the children 
     children = searchNode->GetChildren();
@@ -366,7 +385,6 @@ MachineProfile::SetFromNode(DataNode *parentNode)
         SetActiveProfile(GetNumLaunchProfiles() > 0 ? 0 : -1); 
 }
 
-
 Function: CreateNode
 Declaration: bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
 Definition:
@@ -395,6 +413,9 @@ Definition:
 //   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
 //   Added useGateway and gatewayHost.
 //   
+//   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
+//   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
+//
 // ****************************************************************************
 
 bool
@@ -445,6 +466,18 @@ MachineProfile::CreateNode(DataNode *parentNode,
     if(completeSave || IsSelected(ID_tunnelSSH))
         node->AddNode(new DataNode("tunnelSSH", tunnelSSH));
 
+    if(completeSave || IsSelected(ID_maximumNodesValid))
+        node->AddNode(new DataNode("maximumNodesValid", maximumNodesValid));
+
+    if(completeSave || IsSelected(ID_maximumNodes))
+        node->AddNode(new DataNode("maximumNodes", maximumNodes));
+
+    if(completeSave || IsSelected(ID_maximumProcessorsValid))
+        node->AddNode(new DataNode("maximumProcessorsValid", maximumProcessorsValid));
+
+    if(completeSave || IsSelected(ID_maximumProcessors))
+        node->AddNode(new DataNode("maximumProcessors", maximumProcessors));
+
     for(size_t i = 0; i < launchProfiles.size(); ++i)
         launchProfiles[i]->CreateNode(node, completeSave,
                      completeSave); // (only force an add for a complete save)
@@ -475,6 +508,9 @@ Definition:
 // Modifications:
 //   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
 //   Added useGateway and gatewayHost.
+//
+//   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
+//   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
 //   
 // ****************************************************************************
 
@@ -511,6 +547,14 @@ MachineProfile::SelectOnlyDifferingFields(MachineProfile &other)
         Select(ID_tunnelSSH,               (void *)&tunnelSSH);
     if (activeProfile != other.activeProfile)
         Select(ID_activeProfile,           (void *)&activeProfile);
+    if(maximumNodesValid != other.maximumNodesValid)
+        Select(ID_maximumNodesValid,       (void *)&maximumNodesValid);
+    if(maximumNodes != other.maximumNodes)
+        Select(ID_maximumNodes,            (void *)&maximumNodes);
+    if(maximumProcessorsValid != other.maximumProcessorsValid)
+        Select(ID_maximumProcessorsValid,  (void *)&maximumProcessorsValid);
+    if(maximumProcessors != other.maximumProcessors)
+        Select(ID_maximumProcessors,       (void *)&maximumProcessors);
 
     for (int i=0; i<GetNumLaunchProfiles(); i++)
     {
@@ -527,3 +571,58 @@ MachineProfile::SelectOnlyDifferingFields(MachineProfile &other)
         }
     }
 }
+
+Function: SetMaximumNodes
+Declaration: void SetMaximumNodes(int);
+Definition:
+void
+MachineProfile::SetMaximumNodes(int nnodes)
+{
+    maximumNodes = nnodes;
+    Select(ID_maximumNodes, (void *)&maximumNodes);
+    if(maximumNodesValid)
+    {
+        // Make sure that no profiles have larger #nodes.
+        bool changed = false;
+        for (int i=0; i<GetNumLaunchProfiles(); i++)
+        {
+            LaunchProfile &lp = GetLaunchProfiles(i);
+            lp.SelectAll();
+            if (lp.GetNumNodesSet() && lp.GetNumNodes() > nnodes)
+            {
+                lp.SetNumNodes(nnodes);
+                changed = true;
+            }
+        }
+        if(changed)
+            SelectLaunchProfiles();
+    }
+}
+
+Function: SetMaximumProcessors
+Declaration: void SetMaximumProcessors(int);
+Definition:
+void
+MachineProfile::SetMaximumProcessors(int nprocs)
+{
+    maximumProcessors = nprocs;
+    Select(ID_maximumProcessors, (void *)&maximumProcessors);
+    if(maximumProcessorsValid)
+    {
+        // Make sure that no profiles have larger #processors.
+        bool changed = false;
+        for (int i=0; i<GetNumLaunchProfiles(); i++)
+        {
+            LaunchProfile &lp = GetLaunchProfiles(i);
+            lp.SelectAll();
+            if (lp.GetNumProcessors() > nprocs)
+            {
+                lp.SetNumProcessors(nprocs);
+                changed = true;
+            }
+        }
+        if(changed)
+            SelectLaunchProfiles();
+    }
+}
+
