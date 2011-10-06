@@ -907,6 +907,10 @@ avtImageFileFormat::GetMesh(const char *meshname)
 //
 //    Mark C. Miller, Fri Apr 23 17:27:41 PDT 2010
 //    Replaced ghost nodes with ghost zones.
+//
+//    Cyrus Harrison, Thu Oct  6 10:31:59 PDT 2011
+//    Removed zonal shift of -.5, added ZStart offset.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -968,7 +972,7 @@ avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
     vtkFloatArray *z = vtkFloatArray::New();
     z->SetNumberOfTuples(dims[2]);
     for (i = 0 ; i < dims[2]; i++)
-        z->SetTuple1(i, (start + i - (isNodal?0.:.5)) * ZStep);
+        z->SetTuple1(i, globalZStart + (start + i) * ZStep);
     rgrid->SetDimensions(dims);
     rgrid->SetZCoordinates(z);
     z->Delete();
@@ -1032,6 +1036,10 @@ avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
 //
 //    Mark C. Miller, Fri Apr 23 23:30:59 PDT 2010
 //    Changed logic to use 'isNodal' so its consistent with GetImageVolumeMesh
+//
+//    Cyrus Harrison, Thu Oct  6 10:31:59 PDT 2011
+//    Removed zonal shift of -.5.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1052,13 +1060,13 @@ avtImageFileFormat::GetOneMesh(const char *meshname)
     int i;
     vtkFloatArray *xCoords = vtkFloatArray::New();
     for(i=0; i<xdim + !isNodal; i++)
-        xCoords->InsertNextValue((float) xStart + i*xStep - (isNodal?0.:.5));
+        xCoords->InsertNextValue((float) xStart + i*xStep);
     vtkFloatArray *yCoords = vtkFloatArray::New();
     for(i=0; i<ydim + !isNodal; i++)
-        yCoords->InsertNextValue((float) yStart + i*yStep - (isNodal?0.:.5));
+        yCoords->InsertNextValue((float) yStart + i*yStep);
     vtkFloatArray *zCoords = vtkFloatArray::New();
     zCoords->InsertNextValue(0.0);
-    
+
     vtkRectilinearGrid *dataset = vtkRectilinearGrid::New();
     dataset->SetDimensions(xdim+!isNodal,ydim+!isNodal,1);
     dataset->SetXCoordinates(xCoords);
