@@ -48,6 +48,9 @@
 #  Kathleen Bonnell, Wed Apr 20 12:10:37 MST 2011
 #  Allow visitfrontend to be built on windows.
 #
+#  Cyrus Harrison, Thu Sep 29 15:57:46 PDT 2011
+#  Added PySide.
+#
 #****************************************************************************/
 
 SET(COMMON_SOURCES
@@ -273,5 +276,9 @@ IF(VISIT_PYTHON_FILTERS)
     ADD_SUBDIRECTORY(pyavt)
     ADD_SUBDIRECTORY(mpicom)
 ENDIF(VISIT_PYTHON_FILTERS)
+
+IF(HAVE_PYSIDE)
+    ADD_SUBDIRECTORY(pyside)
+ENDIF(HAVE_PYSIDE)
 
 

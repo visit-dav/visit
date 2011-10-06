@@ -530,6 +530,7 @@ ENDIF(WIN32)
 #       needs to link but not to compile). Use the plugin's .xml file for
 #       libs a plugin is DIRECTLY dependent on (e.g. needs to both compile
 #       and link).
+VISIT_3RDPARTY_VAR(PYSIDE_DIR    "Path containing the PySide installation")
 VISIT_3RDPARTY_VAR(ADIOS_DIR     "Path containing the ADIOS library's include and lib")
 VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
 VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include and lib")
@@ -682,13 +683,27 @@ MACRO(VISIT_INSTALL_TARGETS)
             FOREACH(target ${ARGN})
                 GET_TARGET_PROPERTY(type ${target} TYPE)
                 IF(${type} STREQUAL "SHARED_LIBRARY")
-                    SET(filename lib${target}.dylib)
+                    # This turns out to be a better way to get the 
+                    # base filename of the output target.
+                    GET_TARGET_PROPERTY(filename ${target} LOCATION)
+                    GET_FILENAME_COMPONENT(filename ${filename} NAME)
                     INSTALL(CODE 
                         "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
                              COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${filename}\"
                              OUTPUT_VARIABLE OSXOUT)
                          MESSAGE(STATUS \"\${OSXOUT}\")
                         ")
+                ELSEIF(${type} STREQUAL "MODULE_LIBRARY")
+                    # This turns out to be a better way to get the 
+                    # base filename of the output target.
+                    GET_TARGET_PROPERTY(filename ${target} LOCATION)
+                    GET_FILENAME_COMPONENT(filename ${filename} NAME)
+                    INSTALL(CODE 
+                        "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+                             COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${filename}\"
+                             OUTPUT_VARIABLE OSXOUT)
+                         MESSAGE(STATUS \"\${OSXOUT}\")
+                        ")                
                 ELSEIF(${type} STREQUAL "EXECUTABLE")
                     GET_TARGET_PROPERTY(filename ${target} OUTPUT_NAME)
                     IF(filename STREQUAL "filename-NOTFOUND")
@@ -819,6 +834,14 @@ ENDIF(VISIT_PYTHON_FILTERS AND VISIT_DBIO_ONLY)
 # Configure Qt4 support.
 IF(NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt4.cmake)
+ENDIF(NOT VISIT_DBIO_ONLY)
+
+# Configure PySide Support
+IF(NOT VISIT_DBIO_ONLY)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
+    IF(PYSIDE_FOUND)
+        SET(HAVE_PYSIDE 1)
+    ENDIF(PYSIDE_FOUND)
 ENDIF(NOT VISIT_DBIO_ONLY)
 
 # Treat GLEW as a 3rd party builtin.

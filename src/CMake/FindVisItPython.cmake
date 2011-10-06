@@ -72,6 +72,10 @@
 #   this actually excluded parts of the std python lib.
 #   Instead use visit.*, visitmodule.* and visit_writer.*
 #
+#   Cyrus Harrison, Mon Oct  3 15:55:53 PDT 2011
+#   Exclude install of PySide module (FindPySide.cmake handles this)
+#
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -326,6 +330,7 @@ IF(PYTHONLIBS_FOUND)
                     PATTERN "visit.*" EXCLUDE
                     PATTERN "visitmodule.*" EXCLUDE
                     PATTERN "visit_writer.*" EXCLUDE
+                    PATTERN "PySide" EXCLUDE
                     PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE
                 )
             ENDIF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
@@ -403,6 +408,7 @@ IF(PYTHONLIBS_FOUND)
                     PATTERN "visit.*" EXCLUDE
                     PATTERN "visitmodule.*" EXCLUDE
                     PATTERN "visit_writer.*" EXCLUDE
+                    PATTERN "PySide" EXCLUDE
                     PATTERN ".svn"   EXCLUDE
                     PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE
                 )

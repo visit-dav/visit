@@ -49,6 +49,10 @@
 #   Allow for using installed QT on Windows (follow same path as on *nix).
 #   Simplified code when using windowsbuild version of QT.
 #
+#   Cyrus Harrisond, Tue Oct  4 16:18:24 PDT 2011
+#   Add back QtScript, we may want to use it in conjunction w/ 
+#   PySide & QtDesigner
+#
 #****************************************************************************/
 
 #
@@ -165,6 +169,7 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
           QT_QTWEBKIT
           QT_QTXMLPATTERNS
           QT_PHONON
+          QT_QTSCRIPT
   )
     IF(${${QTLIB}_FOUND})
       IF(EXISTS ${${QTLIB}_LIBRARY_RELEASE})

@@ -47,7 +47,29 @@
 #   I corrected a typo I made that prevented archives from being included
 #   in a binary distribution when VISIT_INSTALL_THIRD_PARTY was defined.
 #
+#   Cyrus Harrison, Tue Oct  4 13:26:03 PDT 2011
+#   Improved support for installing lib symlinks on OSX & Linux. 
+#   The PySide libs have names that include "." in the base file name
+#   causing GET_FILENAME_COMPONENT(NAME_WE,EXT) to return invalid names.
+#   To resolve this I added a more robust way to construct the list of 
+#   libs symlinks to try to install.
+#
 #****************************************************************************/
+
+#
+# This function finds the portion of the filename after the last '.'
+#
+
+FUNCTION(GET_FILENAME_SHORTEXT EXTOUT FNAME)
+  # we want the ext after the last "."
+  GET_FILENAME_COMPONENT(tmp ${FNAME} EXT)
+  STRING(REPLACE "." ";" tmp ${tmp})
+  # get last element in the list
+  FOREACH(X ${tmp})
+    SET(${EXTOUT} ".${X}" PARENT_SCOPE)
+  ENDFOREACH(X)
+ENDFUNCTION(GET_FILENAME_SHORTEXT)
+
 
 #
 # This function installs a library and any of its needed symlink variants.
@@ -63,6 +85,10 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
         GET_FILENAME_COMPONENT(LIBREALPATH ${tmpLIBFILE} REALPATH)
         GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
         GET_FILENAME_COMPONENT(curNAMEWE ${LIBREALPATH} NAME_WE)
+        #
+        # Windows TODO: check if libshiboken & libpyside have the same "python2.6" suffix
+        # that causes issues w/ NAME_WE on OSX.
+        # 
         SET(curNAME "${curPATH}/${curNAMEWE}")
         SET(dllNAME "${curNAME}.dll")
         SET(libNAME "${curNAME}.lib")
@@ -91,7 +117,9 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
   ELSE(WIN32)
 
     SET(tmpLIBFILE ${LIBFILE})
-    GET_FILENAME_COMPONENT(LIBEXT ${tmpLIBFILE} EXT)
+    # GET_FILENAME_COMPONENT(EXT) will not always give us what we want here,
+    # use new helper.
+    GET_FILENAME_SHORTEXT(LIBEXT ${tmpLIBFILE})
     IF(NOT ${LIBEXT} STREQUAL ".a")
         SET(isSHAREDLIBRARY "YES")
     ELSE(NOT ${LIBEXT} STREQUAL ".a")
@@ -113,15 +141,20 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
 
     IF(${isSHAREDLIBRARY} STREQUAL "YES")
         GET_FILENAME_COMPONENT(LIBREALPATH ${tmpLIBFILE} REALPATH)
-#        MESSAGE("***tmpLIBFILE=${tmpLIBFILE}, LIBREALPATH=${LIBREALPATH}")
+        ## MESSAGE("***tmpLIBFILE=${tmpLIBFILE}, LIBREALPATH=${LIBREALPATH}")
         IF(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
             # We need to install a library and its symlinks
             GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
             IF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
-                GET_FILENAME_COMPONENT(curNAMEWE ${LIBREALPATH} NAME_WE)
-                GET_FILENAME_COMPONENT(curEXT ${LIBREALPATH} EXT)
+                # Extract proper base name by comparing the input lib path w/ the real path.
+                GET_FILENAME_COMPONENT(realNAME ${LIBREALPATH} NAME)
+                GET_FILENAME_COMPONENT(inptNAME ${tmpLIBFILE}  NAME)
+                STRING(REPLACE ${LIBEXT} "" inptNAME ${inptNAME})
+                STRING(REPLACE ${inptNAME} "" curEXT ${realNAME})
+                # We will have a "." at the end of the string, remove it
+                STRING(REGEX REPLACE "\\.$" "" inptNAME ${inptNAME})
                 STRING(REPLACE "." ";" extList ${curEXT})
-                SET(curNAME "${curPATH}/${curNAMEWE}")
+                SET(curNAME "${curPATH}/${inptNAME}")
                 # Come up with all of the possible library and symlink names
                 SET(allNAMES "${curNAME}${LIBEXT}")
                 SET(allNAMES ${allNAMES} "${curNAME}.a")
@@ -135,8 +168,9 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
 
                 # Add the names that exist to the install.
                 FOREACH(curNAMEWithExt ${allNAMES})
+                    ## MESSAGE("** Checking ${curNAMEWithExt}")
                     IF(EXISTS ${curNAMEWithExt})
-                        #MESSAGE("** Need to install ${curNAMEWithExt}")
+                        ## MESSAGE("** Need to install ${curNAMEWithExt}")
                         IF(IS_DIRECTORY ${curNAMEWithExt})
                             # It is a framework, install as a directory
                             INSTALL(DIRECTORY ${curNAMEWithExt}

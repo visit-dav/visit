@@ -174,6 +174,9 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //    Hank Childs, Fri Oct 29 12:32:26 PDT 2010
 //    Change while (1) to select based on guidance from Sean Ahern.
 //
+//    Cyrus Harrison, Thu Sep 29 15:04:16 PDT 2011
+//    Add PySide Support.
+//
 // ****************************************************************************
 
 int
@@ -183,6 +186,7 @@ main(int argc, char *argv[])
     int  debugLevel = 0;
     bool bufferDebug = false;
     bool verbose = false, s_found = false;
+    bool pyside = false;
     char *runFile = 0, *loadFile = 0, tmpArg[512];
     char **argv2 = new char *[argc];
     char **argv_after_s = new char *[argc];
@@ -313,6 +317,11 @@ main(int argc, char *argv[])
             // Skip the rate that comes along with -fps.
             ++i;
         }
+        else if(strcmp(argv[i], "-pyside") == 0)
+        {
+            pyside = true;
+            ++i;
+        }
         else
         {
             // Pass the array along to the visitmodule.
@@ -349,6 +358,26 @@ main(int argc, char *argv[])
         // Run some Python commands that import VisIt and launch the viewer.
         PyRun_SimpleString((char*)"from visit import *");
         PyRun_SimpleString((char*)"Launch()");
+
+        if(pyside)
+        {
+            PyRun_SimpleString((char*)"import sys");
+            PyRun_SimpleString((char*)"from PySide.QtCore import *");
+            PyRun_SimpleString((char*)"from PySide.QtGui import *");
+            PyRun_SimpleString((char*)"from PySide.QtOpenGL import *");
+            PyRun_SimpleString((char*)"from PySide.QtUiTools import *");
+
+            // add lib to sys.path to pickup pyside dylibs. 
+            std::string varchdir = GetVisItArchitectureDirectory();
+            std::string vlibdir  = varchdir + VISIT_SLASH_CHAR + "lib";
+            std::ostringstream oss;
+            oss << "sys.path.append(\"" << vlibdir  <<"\")";
+            PyRun_SimpleString(oss.str().c_str());
+            PyRun_SimpleString((char*)"import pyside_visithook");
+            PyRun_SimpleString((char*)"pyside_visithook.SetHook()");
+            PyRun_SimpleString((char*)"__qtapp = QApplication(sys.argv)");
+        }
+
 
         // If a visitrc file exists, execute it.
         std::string visitSystemRc(GetSystemVisItRCFile());
