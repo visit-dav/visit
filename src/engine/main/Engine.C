@@ -3850,6 +3850,9 @@ Engine::GetProcessAttributes()
 //    Tom Fogal, Wed May 11 07:14:04 MDT 2011
 //    (Hopefully) fix Win32 compilation problem.
 //
+//    Tom Fogal, Thu Sep 22 17:23:51 MDT 2011
+//    Add missing newline to debug print.
+//
 // ****************************************************************************
 
 void
@@ -3914,7 +3917,7 @@ Engine::SetupDisplay()
         {
             debug1 << "Display initialization succeeded, but connection "
                       "failed.  Try running with -debug_engine 5 and "
-                      "examining the log files.";
+                      "examining the log files.\n";
         }
     }
     else
