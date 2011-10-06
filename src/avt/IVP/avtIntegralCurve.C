@@ -360,11 +360,12 @@ void avtIntegralCurve::Advance( avtIVPField* field )
                 double ext[6];
                 field->GetExtents( ext );
 
+                avtVector dir = v / v.length();
                 const double eps = 1e-6;
 
-                ext[0] = std::abs( v.x ? eps * (ext[1] - ext[0]) / v.x : 0.0 );
-                ext[1] = std::abs( v.y ? eps * (ext[3] - ext[2]) / v.y : 0.0 );
-                ext[2] = std::abs( v.z ? eps * (ext[5] - ext[4]) / v.z : 0.0 );
+                ext[0] = std::abs( v.x * eps * (ext[1] - ext[0]) );
+                ext[1] = std::abs( v.y * eps * (ext[3] - ext[2]) );
+                ext[2] = std::abs( v.z * eps * (ext[5] - ext[4]) );
 
                 // TODO: max maybe to big of a step, min to small. Need to look at the middle value.
                 double hmin = std::max( ext[0], std::max( ext[1], ext[2] ) );

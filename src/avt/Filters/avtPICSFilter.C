@@ -377,14 +377,16 @@ avtPICSFilter::SetDomain(avtIntegralCurve *ic)
     }
 
     if (DebugStream::Level5())
-        debug5<<"SetDomain: "<<ic->domain<<endl;
-    /*
-    debug1<<"::SetDomain() pt=["<<endPt.xyz[0]<<" "<<endPt.xyz[1]
-          <<" "<<endPt.xyz[2]<<"] in domains: ";
-    for (int i = 0; i < ic->seedPtDomainList.size(); i++)
-        debug1<<ic->seedPtDomainList[i]<<", ";
-    debug1<<endl;
-    */
+    {
+        debug5<<"SetDomain: id: "<<ic->id<<" time: "<<t<<" Domain:"<<ic->domain<<endl;
+        /*
+        debug1<<"::SetDomain() pt=["<<endPt.xyz[0]<<" "<<endPt.xyz[1]
+            <<" "<<endPt.xyz[2]<<"] in domains: ";
+        for (int i = 0; i < ic->seedPtDomainList.size(); i++)
+            debug1<<ic->seedPtDomainList[i]<<", ";
+        debug1<<endl;
+        */
+    }
 }
 
 
@@ -2013,7 +2015,7 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic, vtkDataSet *ds, int maxSteps
     int t0 = visitTimer->StartTimer();
 
     if (DebugStream::Level4())
-        debug4<<"avtPICSFilter::AdvectParticle(dom= "<<ic->domain<<")"<<endl;
+        debug4<<"avtPICSFilter::AdvectParticle(id="<<ic->id<<" dom= "<<ic->domain<<")"<<endl;
 
     if (ic->status == avtIntegralCurve::STATUS_OK)
     {
@@ -2502,6 +2504,12 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         intervalTree->GetElementsListFromRange(xyz, xyz, dl);
         
         vector<int> seedPtIds;
+
+        // Need a single ID for the IC even if there are many domains.
+        int currentID = GetNextCurveID();
+        int nextID = -1;
+        if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
+            nextID = GetNextCurveID();
         
         for (int j = 0; j < dl.size(); j++)
         {
@@ -2509,10 +2517,6 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 
             if (!PointInDomain(seedPt, dom))
             {
-                // Need to keep the ID insink with the other ranks.
-                GetNextCurveID();
-                if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
-                    GetNextCurveID();
                 continue;
             }
 
@@ -2522,10 +2526,11 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                   CreateIntegralCurve(solver,
                                       avtIntegralCurve::DIRECTION_FORWARD,
                                       seedTime0, seedPt, seedVel, 
-                                      GetNextCurveID());
+                                      currentID);
                 ic->domain = dom;
                 curves.push_back(ic);
                 seedPtIds.push_back(ic->id);
+                break;
             }
             else if (integrationDirection == VTK_INTEGRATE_BACKWARD)
             {
@@ -2533,10 +2538,11 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                   CreateIntegralCurve(solver,
                                       avtIntegralCurve::DIRECTION_BACKWARD,
                                       seedTime0, seedPt, seedVel,
-                                      GetNextCurveID());
+                                      currentID);
                 ic->domain = dom;
                 curves.push_back(ic);
                 seedPtIds.push_back(ic->id);
+                break;
             }
             else if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
             {
@@ -2544,7 +2550,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                   CreateIntegralCurve(solver,
                                       avtIntegralCurve::DIRECTION_FORWARD,
                                       seedTime0, seedPt, seedVel,
-                                      GetNextCurveID());
+                                      currentID);
                 ic0->domain = dom;
                 curves.push_back(ic0);
                 seedPtIds.push_back(ic0->id);
@@ -2553,12 +2559,13 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                   CreateIntegralCurve(solver,
                                       avtIntegralCurve::DIRECTION_BACKWARD,
                                       seedTime0, seedPt, seedVel,
-                                      GetNextCurveID());
+                                      nextID);
                 ic1->domain = dom;
                 curves.push_back(ic1);
                 seedPtIds.push_back(ic1->id);
 
                 fwdBwdICPairs.push_back(std::pair<int,int> (ic0->id, ic1->id));
+                break;
             }
         }
         

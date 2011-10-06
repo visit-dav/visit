@@ -1358,7 +1358,12 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
         N = numSeedPoints;
     
     long *idBuffer = new long[N], *myIDs = new long[N];
-    int *sendList = new int[nProcs], *mySendList = new int[nProcs];
+    int *sendList, *mySendList;
+    if (!uniformlyDistrubute)
+    {
+        sendList = new int[nProcs];
+        mySendList = new int[nProcs];
+    }
 
     int minId = 0;
     int maxId = N-1;
@@ -1381,11 +1386,15 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
             myIDs[i] = 0;
         }
         
-        for (int i = 0; i < nProcs; i++)
+        if (!uniformlyDistrubute)
         {
-            sendList[i] = 0;
-            mySendList[i] = 0;
+            for (int i = 0; i < nProcs; i++)
+            {
+                sendList[i] = 0;
+                mySendList[i] = 0;
+            }
         }
+
         //Count ICs by id (could have multiple IDs).
         list<avtIntegralCurve*>::iterator it = allICs.begin();
         while (it != allICs.end() && (*it)->id <= maxId)
@@ -1396,22 +1405,31 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
                 int idx = ic->id % N;
                 myIDs[idx] ++;
                 //debug1<<"I have id= "<<(*it)->id<<" : "<<(((avtStateRecorderIntegralCurve *)*it))->sequenceCnt<<" idx= "<<idx<<" originatingRank= "<<(*it)->originatingRank<<endl;
-                if (ic->originatingRank != rank)
+                if (!uniformlyDistrubute && ic->originatingRank != rank)
                     mySendList[ic->originatingRank] ++;
             }
             it++;
         }
-        debug1<<"mySendList= [";
-        for(int i=0;i<nProcs;i++) debug1<<mySendList[i]<<" ";
-        debug1<<"]"<<endl;
+        //if (DebugStream::Level1())
+        //{
+            //debug1<<"mySendList= [";
+            //for(int i=0;i<nProcs;i++) debug1<<mySendList[i]<<" ";
+            //debug1<<"]"<<endl;
+        //}
 
         //Exchange ID owners and sequence counts.
         MPI_Allreduce(myIDs, idBuffer, N, MPI_LONG, MPI_SUM, VISIT_MPI_COMM);
         if (!uniformlyDistrubute)
+        {
             MPI_Allreduce(mySendList, sendList, nProcs, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
-        //debug1<<"sendList= [";
-        //for(int i=0;i<nProcs;i++) debug1<<sendList[i]<<" ";
-        //debug1<<"]"<<endl;
+
+            //if (DebugStream::Level1())
+            //{
+                //debug1<<"sendList= [";
+                //for(int i=0;i<nProcs;i++) debug1<<sendList[i]<<" ";
+                //debug1<<"]"<<endl;
+            //}
+        }
         
         //Now we know where all ICs belong and how many sequences for each.
         //Send communicatedICs to the owners.
@@ -1482,14 +1500,14 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
                 if (i % nProcs == rank)
                     numICsToBeRecvd += idBuffer[i%N];
             }
+            numICsToBeRecvd -= numSeqAlreadyHere;
         }
         else
         {
             numICsToBeRecvd += sendList[rank];
         }
         //debug1<<"numICsToBeRecvd= "<<numICsToBeRecvd<<endl;
-        //numICsToBeRecvd -= numSeqAlreadyHere;
-        debug1<<"numICsToBeRecvd= "<<numICsToBeRecvd<<endl;
+
         while (numICsToBeRecvd > 0)
         {
             list<ICCommData> ICs;
@@ -1517,8 +1535,11 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
 
     delete [] idBuffer;
     delete [] myIDs;
-    delete [] sendList;
-    delete [] mySendList;
+    if (!uniformlyDistrubute)
+    {
+        delete [] sendList;
+        delete [] mySendList;
+    }
 }
 
 
