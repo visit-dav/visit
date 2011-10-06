@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<typesystem package="pyside_visithook">
+
+  <inject-code class="native" position="beginning">
+#include &lt;QCoreApplication&gt;
+#include &lt;QThread&gt;
+
+#if defined(Q_OS_WIN32)
+#include &lt;conio.h&gt;
+#include &lt;QTimer&gt;
+#else
+#include &lt;QSocketNotifier&gt;
+#endif
+
+static int input_hook()
+{
+    QCoreApplication *app = QCoreApplication::instance();
+
+    if (app &amp;&amp; app->thread() == QThread::currentThread())
+    {
+#if defined(Q_OS_WIN32)
+        QTimer timer;
+        QObject::connect(&amp;timer, SIGNAL(timeout()), app, SLOT(quit()));
+
+        do
+        {
+            timer.start(100);
+            QCoreApplication::exec();
+            timer.stop();
+        }
+        while (!_kbhit());
+
+        QObject::disconnect(&amp;timer, SIGNAL(timeout()), app, SLOT(quit()));
+#else
+        QSocketNotifier notifier(0, QSocketNotifier::Read, 0);
+        QObject::connect(&amp;notifier, SIGNAL(activated(int)), app, SLOT(quit()));
+        QCoreApplication::exec();
+        QObject::disconnect(&amp;notifier, SIGNAL(activated(int)), app, SLOT(quit()));
+        //QCoreApplication::processEvents();
+#endif
+    }
+
+    return 0;
+}
+
+  </inject-code>
+
+  <add-function signature="SetHook(void)" return-type="void">
+  <inject-code class="target" position="beginning">
+    PyOS_InputHook = input_hook;
+  </inject-code>
+  </add-function>
+
+  <add-function signature="UnSetHook(void)" return-type="void">
+  <inject-code class="target" position="beginning">
+    PyOS_InputHook = 0;
+  </inject-code>
+  </add-function>
+
+  <object-type name="PySideHook">
+  </object-type>
+
+</typesystem>
+
