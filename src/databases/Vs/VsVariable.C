@@ -57,17 +57,7 @@ bool VsVariable::isCompMajor() {
 
 // Get dims
 std::vector<int> VsVariable::getDims() {
-
-  std::vector<int> dims = dataset->getDims();
-
-  // If the last dim is one lop it off as it will not be seen as a
-  // compent variable.
-  int nDims = dims.size();
-
-  if( nDims > 1 && dims[ nDims-1 ] == 1 )
-    dims.resize( nDims-1 );
-
-  return dims;
+  return dataset->getDims();
 }
 
 // Get mesh name
