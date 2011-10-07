@@ -54,6 +54,7 @@
 #include <avtSimilarityTransformFilter.h>
 #include <avtSourceFromAVTDataset.h>
 
+static float DegreesToRadians() {return 0.017453292f;};
 
 // ****************************************************************************
 //  Method: avtSurfCompPrepFilter constructor
@@ -234,8 +235,8 @@ avtSurfCompPrepFilter::Execute(void)
       }  
       case SurfCompPrepAttributes::Cylindrical:
       {
-        double X1 = atts.GetThetaStart() * vtkMath::DegreesToRadians();
-        double X2 = atts.GetThetaStop() * vtkMath::DegreesToRadians();
+        double X1 = atts.GetThetaStart() * DegreesToRadians();
+        double X2 = atts.GetThetaStop() * DegreesToRadians();
         double center = (X1 + X2) / 2;
         double range = X2 - X1;
         range = (range == 0. ? 1 : range); 
@@ -262,16 +263,16 @@ avtSurfCompPrepFilter::Execute(void)
       }
       case SurfCompPrepAttributes::Spherical:
       {
-        double X1 = atts.GetThetaStart() * vtkMath::DegreesToRadians();
-        double X2 = atts.GetThetaStop() * vtkMath::DegreesToRadians();
+        double X1 = atts.GetThetaStart() * DegreesToRadians();
+        double X2 = atts.GetThetaStop() * DegreesToRadians();
         double center = (X1 + X2) / 2;
         double range = X2 - X1;
         range = (range == 0. ? 1 : range); 
         double scale = 2. / range;
         st_atts.SetScaleX(scale);
         st_atts.SetTranslateX(-center*scale);
-        double Y1 = atts.GetPhiStart() * vtkMath::DegreesToRadians();
-        double Y2 = atts.GetPhiStop() * vtkMath::DegreesToRadians();
+        double Y1 = atts.GetPhiStart() * DegreesToRadians();
+        double Y2 = atts.GetPhiStop() * DegreesToRadians();
         center = (Y1 + Y2) / 2;
         range = Y2 - Y1;
         range = (range == 0. ? 1 : range); 
@@ -414,8 +415,8 @@ avtSurfCompPrepFilter::Execute(void)
       }  
       case SurfCompPrepAttributes::Cylindrical:
       {
-        double X1 = atts.GetThetaStart() * vtkMath::DegreesToRadians();
-        double X2 = atts.GetThetaStop() * vtkMath::DegreesToRadians();
+        double X1 = atts.GetThetaStart() * DegreesToRadians();
+        double X2 = atts.GetThetaStop() * DegreesToRadians();
         double center = (X1 + X2) / 2;
         double range = X2 - X1;
         range = (range == 0. ? 1 : range); 
@@ -442,16 +443,16 @@ avtSurfCompPrepFilter::Execute(void)
       }
       case SurfCompPrepAttributes::Spherical:
       {
-        double X1 = atts.GetThetaStart() * vtkMath::DegreesToRadians();
-        double X2 = atts.GetThetaStop() * vtkMath::DegreesToRadians();
+        double X1 = atts.GetThetaStart() * DegreesToRadians();
+        double X2 = atts.GetThetaStop() * DegreesToRadians();
         double center = (X1 + X2) / 2;
         st_atts.SetTranslateX(center);
         double range = X2 - X1;
         range = (range == 0. ? 1 : range); 
         double scale = range / 2.;
         st_atts.SetScaleX(scale);
-        double Y1 = atts.GetPhiStart() * vtkMath::DegreesToRadians();
-        double Y2 = atts.GetPhiStop() * vtkMath::DegreesToRadians();
+        double Y1 = atts.GetPhiStart() * DegreesToRadians();
+        double Y2 = atts.GetPhiStop() * DegreesToRadians();
         center = (Y1 + Y2) / 2;
         st_atts.SetTranslateY(center);
         range = Y2 - Y1;
