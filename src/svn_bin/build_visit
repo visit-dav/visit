@@ -41,7 +41,7 @@
 #       try to download them.
 #       You must have:
 #          Qt       qt-everywhere-opensource-src-4.7.4.tar.gz
-#          Mesa     MesaLib-7.10.2.tar.gz
+#          Mesa     MesaLib-7.8.2.tar.gz
 #          Python   Python-2.6.4tgz
 #          VTK      vtk-5.8.0.tar.gz
 #          CMake    cmake-2.8.0.tar.gz
@@ -479,6 +479,9 @@
 #     Cyrus Harrison, Wed Sep 28 11:13:52 PDT 2011
 #     Updated to Qt 4.7.4 & added PySide support.
 #
+#     Cyrus Harrison, Fri Oct  7 10:48:22 PDT 2011
+#     Back to using mesa 7.8.2 on all platforms.
+#
 # *****************************************************************************
 
 
@@ -865,10 +868,10 @@ export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.3.tar.gz"}
 export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.3"}
 export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.3"}
 
-export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
-export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
-export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
-export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.10.2"
+export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
+export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
+export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
+export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2/"
 
 export PYTHON_FILE_SUFFIX="tgz"
 export PYTHON_VERSION="2.6.4"
@@ -6125,7 +6128,7 @@ function apply_hdf4_patch
 
 function build_hdf4
 {
-#
+    #
     # Prepare build dir
     #
     prepare_build_dir $HDF4_BUILD_DIR $HDF4_FILE
