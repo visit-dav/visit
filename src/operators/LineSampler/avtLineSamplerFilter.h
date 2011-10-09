@@ -87,13 +87,8 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
     virtual void         SetAtts(const AttributeGroup*);
     virtual bool         Equivalent(const AttributeGroup*);
 
-    virtual void         UpdateDataObjectInfo(void);
-
   protected:
     LineSamplerAttributes atts;
-
-    double bounds[6];
-    avtExtents newExtents;
 
     virtual void InitializeTimeLoop(void);
 
@@ -117,7 +112,8 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
                                     avtVector stopPoint,
                                     avtVector normal,
                                     double radius,
-                                    double divergence );
+                                    double divergence,
+                                    bool allocateScalars );
 
     avtVector ProjectPointOnPlane( avtVector planePoint,
                                    avtVector planeNormal,
@@ -126,9 +122,10 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
 
     void applyTransform( vtkTransform* transform, avtVector &point );
 
-    void checkExtents( avtVector &startPoint, avtVector &stopPoint );
+    void checkBounds( vtkDataSet *in_ds,
+                      avtVector &startPoint, avtVector &stopPoint );
 
-    bool haveData;
+    void checkWall( avtVector &startPoint, avtVector &stopPoint );
 
     vtkDataSet *composite_ds;
 

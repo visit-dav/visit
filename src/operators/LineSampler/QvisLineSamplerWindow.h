@@ -132,15 +132,15 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void timeStepStartProcessText();
     void timeStepStopProcessText();
     void timeStepStrideProcessText();
-    void textChanged(const QString &currentText);
     void addChannel();
     void deleteChannel();
     void deleteChannels();
     void readChannels();
     void readWall();
-    void channelListProcessText();
     void channelListClicked(QListWidgetItem*);
     void channelListDoubleClicked(QListWidgetItem*);
+    void channelListTextChanged(const QString &currentText);
+    void wallListTextChanged(const QString &currentText);
     void nChannelListArraysProcessText();
     void channelListToroidalArrayAngleProcessText();
     void channelListToroidalAngleProcessText();

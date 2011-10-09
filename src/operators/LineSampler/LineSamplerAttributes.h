@@ -164,6 +164,7 @@ public:
     virtual void SelectAll();
     void SelectArrayOrigin();
     void SelectChannelList();
+    void SelectWallList();
 
     // Property setting methods
     void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
@@ -211,6 +212,7 @@ public:
     void SetTimeStepStop(int timeStepStop_);
     void SetTimeStepStride(int timeStepStride_);
     void SetChannelList(const doubleVector &channelList_);
+    void SetWallList(const doubleVector &wallList_);
     void SetNChannelListArrays(int nChannelListArrays_);
     void SetChannelListToroidalArrayAngle(double channelListToroidalArrayAngle_);
     void SetChannelListToroidalAngle(double channelListToroidalAngle_);
@@ -263,6 +265,8 @@ public:
     int                GetTimeStepStride() const;
     const doubleVector &GetChannelList() const;
           doubleVector &GetChannelList();
+    const doubleVector &GetWallList() const;
+          doubleVector &GetWallList();
     int                GetNChannelListArrays() const;
     double             GetChannelListToroidalArrayAngle() const;
     double             GetChannelListToroidalAngle() const;
@@ -397,6 +401,7 @@ public:
         ID_timeStepStop,
         ID_timeStepStride,
         ID_channelList,
+        ID_wallList,
         ID_nChannelListArrays,
         ID_channelListToroidalArrayAngle,
         ID_channelListToroidalAngle,
@@ -449,6 +454,7 @@ private:
     int          timeStepStop;
     int          timeStepStride;
     doubleVector channelList;
+    doubleVector wallList;
     int          nChannelListArrays;
     double       channelListToroidalArrayAngle;
     double       channelListToroidalAngle;
@@ -457,6 +463,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LINESAMPLERATTRIBUTES_TMFS "iiiidiiiddidDiddddddiiddddiddiddddiiidddiiiid*idd"
+#define LINESAMPLERATTRIBUTES_TMFS "iiiidiiiddidDiddddddiiddddiddiddddiiidddiiiid*d*idd"
 
 #endif

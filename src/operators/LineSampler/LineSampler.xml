@@ -139,7 +139,7 @@
         1.000000
       </Field>
       <Field name="channelPlotOffset" label="1D plot channel offset" type="double">
-        1.000000
+        0.000000
       </Field>
       <Field name="arrayPlotOffset" label="1D plot array offset" type="double">
         1.000000
@@ -207,6 +207,10 @@
         0.000000
         0.000000
         90.000000
+      </Field>
+      <Field name="wallList" label="Wall point list" type="doubleVector">
+        0.000000
+        0.000000
       </Field>
       <Field name="nChannelListArrays" label="Number of arrays" type="int">
         1

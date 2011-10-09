@@ -400,6 +400,22 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const doubleVector &wallList = atts->GetWallList();
+        SNPRINTF(tmpStr, 1000, "%swallList = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < wallList.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", wallList[i]);
+            str += tmpStr;
+            if(i < wallList.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     SNPRINTF(tmpStr, 1000, "%snChannelListArrays = %d\n", prefix, atts->GetNChannelListArrays());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%schannelListToroidalArrayAngle = %g\n", prefix, atts->GetChannelListToroidalArrayAngle());
@@ -1694,6 +1710,69 @@ LineSamplerAttributes_GetChannelList(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LineSamplerAttributes_SetWallList(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    doubleVector  &vec = obj->data->GetWallList();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                vec[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = PyLong_AsDouble(item);
+            else
+                vec[i] = 0.;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyFloat_AS_DOUBLE(tuple);
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = double(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyLong_AsDouble(tuple);
+    }
+    else
+        return NULL;
+
+    // Mark the wallList in the object as modified.
+    obj->data->SelectWallList();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetWallList(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the wallList.
+    const doubleVector &wallList = obj->data->GetWallList();
+    PyObject *retval = PyTuple_New(wallList.size());
+    for(size_t i = 0; i < wallList.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(wallList[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
 LineSamplerAttributes_SetNChannelListArrays(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
@@ -1859,6 +1938,8 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetTimeStepStride", LineSamplerAttributes_GetTimeStepStride, METH_VARARGS},
     {"SetChannelList", LineSamplerAttributes_SetChannelList, METH_VARARGS},
     {"GetChannelList", LineSamplerAttributes_GetChannelList, METH_VARARGS},
+    {"SetWallList", LineSamplerAttributes_SetWallList, METH_VARARGS},
+    {"GetWallList", LineSamplerAttributes_GetWallList, METH_VARARGS},
     {"SetNChannelListArrays", LineSamplerAttributes_SetNChannelListArrays, METH_VARARGS},
     {"GetNChannelListArrays", LineSamplerAttributes_GetNChannelListArrays, METH_VARARGS},
     {"SetChannelListToroidalArrayAngle", LineSamplerAttributes_SetChannelListToroidalArrayAngle, METH_VARARGS},
@@ -2065,6 +2146,8 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return LineSamplerAttributes_GetTimeStepStride(self, NULL);
     if(strcmp(name, "channelList") == 0)
         return LineSamplerAttributes_GetChannelList(self, NULL);
+    if(strcmp(name, "wallList") == 0)
+        return LineSamplerAttributes_GetWallList(self, NULL);
     if(strcmp(name, "nChannelListArrays") == 0)
         return LineSamplerAttributes_GetNChannelListArrays(self, NULL);
     if(strcmp(name, "channelListToroidalArrayAngle") == 0)
@@ -2175,6 +2258,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetTimeStepStride(self, tuple);
     else if(strcmp(name, "channelList") == 0)
         obj = LineSamplerAttributes_SetChannelList(self, tuple);
+    else if(strcmp(name, "wallList") == 0)
+        obj = LineSamplerAttributes_SetWallList(self, tuple);
     else if(strcmp(name, "nChannelListArrays") == 0)
         obj = LineSamplerAttributes_SetNChannelListArrays(self, tuple);
     else if(strcmp(name, "channelListToroidalArrayAngle") == 0)
