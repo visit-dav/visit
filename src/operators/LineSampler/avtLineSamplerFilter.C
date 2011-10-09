@@ -505,6 +505,16 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
       toroidalOffsetAngle = atts.GetToroidalAngle();
 
       nChannels = atts.GetNChannels();
+
+      if( nChannels < 1 )
+      {
+        std::string msg;
+        msg += "The number of channels is less than one. Returning.";
+          
+        avtCallback::IssueWarning(msg.c_str());
+
+        return NULL;
+      }
     }
     else //if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual )
     {
@@ -514,6 +524,27 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
       toroidalOffsetAngle = atts.GetChannelListToroidalAngle();
       
       nChannels = listOfChannels.size() / 4;
+
+      if( nChannels < 1 )
+      {
+        std::string msg;
+        msg += "The number of channels is less than one. Returning.";
+          
+        avtCallback::IssueWarning(msg.c_str());
+
+        return NULL;
+      }
+    }
+
+    if( nArrays > 1 && toroidalArrayAngle == 0)
+    {
+      std::string msg;
+      msg += "The number of array is greater than one. " +
+        std::string("But the angle between is zero, returning a single array." );
+          
+      avtCallback::IssueWarning(msg.c_str());
+
+      nArrays = 1;
     }
 
     LineSamplerAttributes::ChannelProjection projection =
@@ -522,8 +553,17 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     int nRows =
       (projection == LineSamplerAttributes::Grid) ? atts.GetNRows() : 1;
 
-    int nColumns = nChannels / nRows;
+    if( nRows < 1 )
+    {
+      std::string msg;
+      msg += "The number of rows is less than one. " +
+        std::string("Returning a single row." );
+          
+      avtCallback::IssueWarning(msg.c_str());
 
+      nRows = 1;
+    }
+    
     double *arrayOrigin = atts.GetArrayOrigin();
 
     double poloidalOffsetAngle, rTilt, zTilt;
@@ -544,41 +584,125 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     double radius = atts.GetRadius();
     double divergence = atts.GetDivergence();
 
+    if( atts.GetSampleDistance() < 0 )
+    {
+      std::string msg;
+      msg += "The sample distance is less than zero. " +
+          std::string("Can not create channel(s), returning." );
+      
+      avtCallback::IssueWarning(msg.c_str());
+      
+      return NULL;
+    }
+
+    if( atts.GetChannelGeometry() == LineSamplerAttributes::Cylinder &&
+        radius < 0 )
+    {
+      std::string msg;
+      msg += "The radius is less than zero. " +
+          std::string("Can not create cylindrical channel(s), returning." );
+      
+      avtCallback::IssueWarning(msg.c_str());
+      
+      return NULL;
+    }
+
+    if( atts.GetChannelGeometry() == LineSamplerAttributes::Cone &&
+        divergence < 0 )
+    {
+      std::string msg;
+      msg += "The divergence is less than zero. " +
+          std::string("Can not create conical channel(s), returning." );
+      
+      avtCallback::IssueWarning(msg.c_str());
+      
+      return NULL;
+    }
+
     double heightPlotScale = atts.GetHeightPlotScale();
     double channelPlotOffset  = atts.GetChannelPlotOffset();
     double arrayPlotOffset = atts.GetArrayPlotOffset();
 
     // Get the indexing offset so that it is easy to calculate the
     // line location based on a 0 to nChannels loop.
-    double indexOffset = nChannels / 2.0 - 0.5;
+    double channelIndexOffset = nChannels / 2.0 - 0.5;
+    double rowIndexOffset     =     nRows / 2.0 - 0.5;
 
     avtVector channelOffsetVec(0,0,0);
     avtVector rowOffsetVec(0,0,0);
     double channelAngle(0);
 
     // For a parallel set of channels set the offset between channels
-    if( projection == LineSamplerAttributes::Parallel ||
-        projection == LineSamplerAttributes::Grid )
+    if( projection == LineSamplerAttributes::Parallel )
     {
       double channelOffset = atts.GetChannelOffset();
 
-      double rowOffset = atts.GetRowOffset();
+      if( nChannels > 1 && channelOffset == 0 )
+      {
+        std::string msg;
+        msg += "The number of channels is greater than one. " +
+          std::string("But the distance between is zero, ") +
+          std::string("returning a single channel." );
+        
+        avtCallback::IssueWarning(msg.c_str());
+
+        nChannels = 1;
+      }
 
       // Channel is in the R direction.
       if( atts.GetArrayAxis() == LineSamplerAttributes::R )
       {
         channelOffsetVec = avtVector( 0, 0, channelOffset );
-
-        if( projection == LineSamplerAttributes::Grid )
-          rowOffsetVec = avtVector( 0, 0, rowOffset );
       }
       // Channel is in the Z direction.
       else // if( atts.GetArrayAxis() == LineSamplerAttributes::Z )
       {
         channelOffsetVec = avtVector( channelOffset, 0, 0 );
+      }
+    }
 
-        if( projection == LineSamplerAttributes::Grid )
-          rowOffsetVec = avtVector( rowOffset, 0, 0 );
+    // For a parallel set of channels set the offset between channels
+    else if( projection == LineSamplerAttributes::Grid )
+    {
+      double channelOffset = atts.GetChannelOffset();
+
+      if( nChannels > 1 && channelOffset == 0 )
+      {
+        std::string msg;
+        msg += "The number of channels is greater than one. " +
+          std::string("But the distance between is zero, ") +
+          std::string("returning a single channel." );
+        
+        avtCallback::IssueWarning(msg.c_str());
+
+        nChannels = 1;
+      }
+
+      double rowOffset = atts.GetRowOffset();
+
+      if( nRows > 1 && rowOffset == 0 )
+      {
+        std::string msg;
+        msg += "The number of rows is greater than one. " +
+          std::string("But the distance between is zero, ") +
+          std::string("returning a single row." );
+        
+        avtCallback::IssueWarning(msg.c_str());
+
+        nRows = 1;
+      }
+
+      // Channel is in the R direction.
+      if( atts.GetArrayAxis() == LineSamplerAttributes::R )
+      {
+        channelOffsetVec = avtVector( 0, 0, channelOffset );
+        rowOffsetVec = avtVector( 0, rowOffset, 0 );
+      }
+      // Channel is in the Z direction.
+      else // if( atts.GetArrayAxis() == LineSamplerAttributes::Z )
+      {
+        channelOffsetVec = avtVector( channelOffset, 0, 0 );
+        rowOffsetVec = avtVector( 0, rowOffset, 0 );
       }
     }
 
@@ -586,6 +710,18 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     else if( projection == LineSamplerAttributes::Divergent )
     {
       channelAngle = atts.GetChannelAngle();
+
+      if( nChannels > 1 && channelAngle == 0 )
+      {
+        std::string msg;
+        msg += "The number of channels is greater than one. " +
+          std::string("But the angle between is zero, ") +
+          std::string("returning a single channel." );
+        
+        avtCallback::IssueWarning(msg.c_str());
+
+        nChannels = 1;
+      }
     }
 
     avtVector channelDirection;
@@ -604,7 +740,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     for( int a=0; a<nArrays; ++a ) 
     {
       // Loop through each channel.
-      for( int c=0; c<nChannels; ++c ) 
+      for( int c=0; c<nChannels*nRows; ++c ) 
       {
           // Inital start point is the origin.
           avtVector startPoint = avtVector( 0, 0, 0 );
@@ -656,7 +792,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           // For a divergent channel set, set the angle to the next
           // channel.
           if( projection == LineSamplerAttributes::Divergent )
-            poloidalAngle += ((double) (c) - indexOffset) * channelAngle;
+            poloidalAngle += ((double) (c) - channelIndexOffset) * channelAngle;
 
           // Toroidal rotation
           double toroidalAngle;
@@ -666,9 +802,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           {
             if( atts.GetToroidalAngleSampling() ==
                 LineSamplerAttributes::ToroidalAngleAbsoluteSampling )
-              {
+            {
                 toroidalAngle = cachedAngle;
-              }
+            }
             else if( atts.GetToroidalAngleSampling() ==
                      LineSamplerAttributes::ToroidalAngleRelativeSampling )
             {
@@ -689,14 +825,14 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             // For a parallel channel set add the offset to the next
             // channel.
             if( projection == LineSamplerAttributes::Parallel )
-              translate += ((double) (c) - indexOffset) * channelOffsetVec;
+              translate += ((double) (c) - channelIndexOffset) * channelOffsetVec;
             
             // For a grid of channels set add the offset to the next
             // channel.
             if( projection == LineSamplerAttributes::Grid )
               translate +=
-                ((double) (c%nColumns) - indexOffset) * channelOffsetVec +
-                ((double) (c/nColumns)) * rowOffsetVec;
+                ((double) (c%nChannels) - channelIndexOffset) * channelOffsetVec +
+                ((double) (c/nChannels) -     rowIndexOffset) * rowOffsetVec;
           }
             
           // Now apply the transformations.
@@ -737,8 +873,6 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
               applyTransform( transform, startPoint );
               applyTransform( transform, stopPoint );      
-
-              checkBounds( in_ds, startPoint, stopPoint );
           }
 
           // Rotate the channel poloidially.
@@ -751,8 +885,6 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               
               applyTransform( transform, startPoint );
               applyTransform( transform, stopPoint );
-              
-              checkBounds( in_ds, startPoint, stopPoint );
           }
 
           if( atts.GetBoundary() == LineSamplerAttributes::Wall )
@@ -769,7 +901,6 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 std::string("but the sampling may not be complete.");
           
               avtCallback::IssueWarning(msg.c_str());
-
             }
           }
 
@@ -784,8 +915,6 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
               applyTransform( transform, startPoint );
               applyTransform( transform, stopPoint );
-          
-              checkBounds( in_ds, startPoint, stopPoint );
           }
 
           // Poloidal plane Z Tilting.
@@ -799,9 +928,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
               applyTransform( transform, startPoint );
               applyTransform( transform, stopPoint );
-          
-              checkBounds( in_ds, startPoint, stopPoint );
           }
+
+          checkBounds( in_ds, startPoint, stopPoint );
 
           // Toroidal rotation.
           if( toroidalAngle != 0 )
@@ -823,6 +952,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             // Get the base channel at r = 0
             out_ds = createLine( startPoint, stopPoint, true );
 
+            if( out_ds == NULL )
+              return NULL;
+
             // Do the sampling of the original dataset at r = 0
             probeFilter->SetInput( out_ds );
             probeFilter->Update();
@@ -832,10 +964,32 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             double sampleDistance = atts.GetSampleDistance();
             double sampleVolume   = atts.GetSampleVolume();
 
+            if( sampleDistance < 0 || sampleVolume < 0 )
+            {
+              std::string msg;
+              msg += "The sample distance and/or volume is less than zero. " +
+                std::string("Can not sum cylindrical channel(s), returning." );
+        
+              avtCallback::IssueWarning(msg.c_str());
+              
+              return NULL;
+            }
+
             double a, sd, weight, total=0;
 
             if( atts.GetChannelProfile() == LineSamplerAttributes::Gaussian )
             {
+              if( atts.GetStandardDeviation() < 0 )
+              {
+                std::string msg;
+                msg += "The standard deviation is less than zero. " +
+                  std::string("Can not sum cylindrical channel(s), returning." );
+                
+                avtCallback::IssueWarning(msg.c_str());
+                
+                return NULL;
+              }
+
               a = 1.0 / (atts.GetStandardDeviation() * sqrt(2.0 * M_PI));
               sd = atts.GetStandardDeviation();
 
@@ -910,6 +1064,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
                 vtkDataSet *tmp_ds = createLine( startPoint, stopPoint, false );
 
+                if( tmp_ds == NULL )
+                  return NULL;
+
                 // Do the sampling of the outer radial locations.
                 probeFilter->SetInput( tmp_ds );
                 probeFilter->Update();
@@ -949,6 +1106,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             else if( atts.GetChannelGeometry() == LineSamplerAttributes::Cone )
               out_ds = createCone( startPoint, stopPoint, normal, 0, divergence, false );
           
+            if( out_ds == NULL )
+              return NULL;
+
             // Do the sampling of the original dataset
             probeFilter->SetInput( out_ds );
             probeFilter->Update();
@@ -985,6 +1145,17 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
             double sampleDistance = atts.GetSampleDistance();
             double sampleVolume = atts.GetSampleVolume();
+
+            if( sampleDistance < 0 || sampleVolume < 0 )
+            {
+              std::string msg;
+              msg += "The sample distance and/or volume is less than zero. " +
+                std::string("Can not integrate along the channel(s), returning." );
+        
+              avtCallback::IssueWarning(msg.c_str());
+              
+              return NULL;
+            }
 
             // Do the summation for each channel
             for( unsigned int i=0; i<nChannelSamples; ++i )
@@ -1168,6 +1339,17 @@ avtLineSamplerFilter::createPoint( avtVector startPoint,
   // Sampling offset between points.
   double sampleDistance = atts.GetSampleDistance();
 
+  if( sampleDistance < 0 )
+  {
+    std::string msg;
+    msg += "The sample distance is less than zero. " +
+      std::string("Can not create point(s), returning." );
+    
+    avtCallback::IssueWarning(msg.c_str());
+    
+    return NULL;
+  }
+
   axis.normalize();
   avtVector delta = axis * sampleDistance;
 
@@ -1229,8 +1411,20 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
 {
   avtVector axis = (stopPoint - startPoint);
 
-  // sampling offset between points.
+  // Sampling offset between points.
   double sampleDistance = atts.GetSampleDistance();
+
+  if( sampleDistance < 0 )
+  {
+    std::string msg;
+    msg += "The sample distance is less than zero. " +
+      std::string("Can not create point(s), returning." );
+    
+    avtCallback::IssueWarning(msg.c_str());
+    
+    return NULL;
+  }
+
   int nSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
 
   axis.normalize();
@@ -1365,8 +1559,20 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
 {
   avtVector axis = (stopPoint - startPoint);
 
-  // sampling offset between points.
+  // Sampling offset between points.
   double sampleDistance = atts.GetSampleDistance();
+
+  if( sampleDistance < 0 )
+  {
+    std::string msg;
+    msg += "The sample distance is less than zero. " +
+      std::string("Can not create cylinder(s), returning." );
+    
+    avtCallback::IssueWarning(msg.c_str());
+    
+    return NULL;
+  }
+
   int nSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
 
   axis.normalize();
@@ -1582,6 +1788,10 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
   avtVector axis = stopPoint - startPoint;
   axis.normalize();
 
+//  std::cerr << __LINE__ << "  axis " << axis << std::endl;
+
+//  std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
+
   // Check against the R axis first.
   if( axis != avtVector( 1, 0, 0 ) && axis != avtVector( -1, 0, 0 ) )
   {
@@ -1608,14 +1818,14 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
       {
         if( stopPoint.y < bounds[2] )
           // Find the intersection of the channel with the min Y plane.
-          stopPoint = ProjectPointOnPlane( avtVector( 0, 0, bounds[2] ),
+          stopPoint = ProjectPointOnPlane( avtVector( 0, bounds[2], 0 ),
                                            avtVector( 0, 1, 0 ),
                                            startPoint,
                                            axis );
         
-        else if( stopPoint.z > bounds[3] )
+        else if( stopPoint.y > bounds[3] )
           // Find the intersection of the channel with the max Y plane.
-          stopPoint = ProjectPointOnPlane( avtVector( 0, 0, bounds[3] ),
+          stopPoint = ProjectPointOnPlane( avtVector( 0, bounds[3], 0 ),
                                            avtVector( 0, -1, 0 ),
                                            startPoint,
                                            axis );
