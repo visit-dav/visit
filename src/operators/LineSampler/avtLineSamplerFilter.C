@@ -389,7 +389,6 @@ avtLineSamplerFilter::Execute()
               LineSamplerAttributes::ToroidalTimeSample )
           {
             nextPathPoint[0] = ts * (stopAngle-startAngle) + cachedAngle; // * timePlotScale,
-            std::cerr << __LINE__ << "  " << nextPathPoint[0] << std::endl;
           }
 
           else if( atts.GetTimeSampling() ==
@@ -617,13 +616,15 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual ||
               atts.GetArrayAxis() == LineSamplerAttributes::R )
           {
-              stopPoint = (localBounds[1] - localBounds[0]) * avtVector( -2, 0, 0 );
+              stopPoint =
+                (localBounds[1] - localBounds[0]) * avtVector( -2, 0, 0 );
               normal = avtVector( 0, 1, 1 );
           }
           
           else //if( atts.GetArrayAxis() == LineSamplerAttributes::Z )
           {
-              stopPoint = (localBounds[5] - localBounds[4]) * avtVector( 0, 0, -2 );
+              stopPoint =
+                (localBounds[5] - localBounds[4]) * avtVector( 0, 0, -2 );
               normal = avtVector( 1, 1, 0 );
           }
 
@@ -820,7 +821,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               atts.GetChannelGeometry() == LineSamplerAttributes::Cylinder )
           {
             // Get the base channel at r = 0
-            out_ds = createLine( startPoint, stopPoint, false );
+            out_ds = createLine( startPoint, stopPoint, true );
 
             // Do the sampling of the original dataset at r = 0
             probeFilter->SetInput( out_ds );
@@ -929,7 +930,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               }
             }
 
-            std::cerr << "total weight " << total << std::endl;
+//            std::cerr << "total weight " << total << std::endl;
 
           }
           else
