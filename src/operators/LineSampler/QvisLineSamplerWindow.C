@@ -209,6 +209,9 @@ QvisLineSamplerWindow::CreateWindowContents()
     wallList->setSelectionMode(QAbstractItemView::NoSelection);
     mainLayout->addWidget(wallList, 4, 2, 3, 1);
 
+    connect(wallList, SIGNAL(currentTextChanged(const QString&)),
+            this, SLOT(wallListTextChanged(QString)));
+
 
     // ----------------------------------------------------------------------
     // Geometry tab
@@ -488,7 +491,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     connect(channelList, SIGNAL(itemClicked(QListWidgetItem*)),
             this, SLOT(channelListClicked(QListWidgetItem*)));
     connect(channelList, SIGNAL(currentTextChanged(const QString&)),
-            this, SLOT(textChanged(QString)));
+            this, SLOT(channelListTextChanged(QString)));
 
     channelListReadChannels =
       new QPushButton(tr("Read channel configuration file"), central);
@@ -1151,6 +1154,23 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
           case LineSamplerAttributes::ID_timeStepStride:
             timeStepStride->setText(IntToQString(atts->GetTimeStepStride()));
             break;
+          case LineSamplerAttributes::ID_wallList:
+            {
+              std::vector<double> pts = atts->GetWallList();
+              wallList->clear();
+
+              for (int i = 0; i < pts.size(); i+= 2)
+              {
+                char tmp[256];
+                sprintf(tmp, "%lf %lf", pts[i], pts[i+1]);
+                QString str( tmp );
+                QListWidgetItem *item = new QListWidgetItem(str, wallList);
+                item->setFlags(item->flags() | Qt::ItemIsEditable);
+                wallList->setCurrentItem(item);
+              }
+              
+              break;
+            }
           case LineSamplerAttributes::ID_channelList:
             {
               std::vector<double> channels = atts->GetChannelList();
@@ -1262,7 +1282,9 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
             (atts->GetChannelProjection() == 2 &&
              LineEditGetDouble(channelGridOffset, val)) )
           atts->SetChannelOffset(val);
-        else
+
+        else if( atts->GetChannelProjection() == 1 ||
+                 atts->GetChannelProjection() == 2 )
         {
             ResettingError(tr("Parallel/Grid: Offset between channels"),
                 DoubleToQString(atts->GetChannelOffset()));
@@ -1604,6 +1626,25 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
                 IntToQString(atts->GetTimeStepStride()));
             atts->SetTimeStepStride(atts->GetTimeStepStride());
         }
+    }
+
+    // Do wallList
+    if(which_widget == LineSamplerAttributes::ID_wallList || doAll)
+    {
+        std::vector<double> walls;
+        double r, z, phi, ang;
+        for (int i = 0; i < wallList->count(); i++)
+        {
+            QListWidgetItem *item = wallList->item(i);
+            if (item)
+            {
+                std::string str = item->text().toLatin1().data();
+                sscanf(str.c_str(), "%lf %lf", &r, &z);
+                walls.push_back(r);
+                walls.push_back(z);
+            }
+        }
+        atts->SetWallList(walls);
     }
 
     // Do channelList
@@ -2071,13 +2112,6 @@ QvisLineSamplerWindow::timeStepStrideProcessText()
 
 
 void
-QvisLineSamplerWindow::channelListProcessText()
-{
-    GetCurrentValues(LineSamplerAttributes::ID_channelList);
-    Apply();
-}
-
-void
 QvisLineSamplerWindow::channelListClicked(QListWidgetItem *item)
 {
 }
@@ -2091,7 +2125,13 @@ QvisLineSamplerWindow::channelListDoubleClicked(QListWidgetItem *item)
 
 
 void
-QvisLineSamplerWindow::textChanged(const QString &currentText)
+QvisLineSamplerWindow::channelListTextChanged(const QString &currentText)
+{
+}
+
+
+void
+QvisLineSamplerWindow::wallListTextChanged(const QString &currentText)
 {
 }
 
@@ -2346,6 +2386,4 @@ QvisLineSamplerWindow::readWall()
     }
 
     f.close();
-
-
 }

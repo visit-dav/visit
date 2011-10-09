@@ -604,7 +604,7 @@ void LineSamplerAttributes::Init()
     viewGeometry = Surfaces;
     viewDimension = Three;
     heightPlotScale = 1;
-    channelPlotOffset = 1;
+    channelPlotOffset = 0;
     arrayPlotOffset = 1;
     timePlotScale = 1;
     channelGeometry = Line;
@@ -629,6 +629,8 @@ void LineSamplerAttributes::Init()
     channelList.push_back(0);
     channelList.push_back(0);
     channelList.push_back(90);
+    wallList.push_back(0);
+    wallList.push_back(0);
     nChannelListArrays = 1;
     channelListToroidalArrayAngle = 5;
     channelListToroidalAngle = 0;
@@ -701,6 +703,7 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
     timeStepStop = obj.timeStepStop;
     timeStepStride = obj.timeStepStride;
     channelList = obj.channelList;
+    wallList = obj.wallList;
     nChannelListArrays = obj.nChannelListArrays;
     channelListToroidalArrayAngle = obj.channelListToroidalArrayAngle;
     channelListToroidalAngle = obj.channelListToroidalAngle;
@@ -911,6 +914,7 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
             (timeStepStop == obj.timeStepStop) &&
             (timeStepStride == obj.timeStepStride) &&
             (channelList == obj.channelList) &&
+            (wallList == obj.wallList) &&
             (nChannelListArrays == obj.nChannelListArrays) &&
             (channelListToroidalArrayAngle == obj.channelListToroidalArrayAngle) &&
             (channelListToroidalAngle == obj.channelListToroidalAngle));
@@ -1102,6 +1106,7 @@ LineSamplerAttributes::SelectAll()
     Select(ID_timeStepStop,                  (void *)&timeStepStop);
     Select(ID_timeStepStride,                (void *)&timeStepStride);
     Select(ID_channelList,                   (void *)&channelList);
+    Select(ID_wallList,                      (void *)&wallList);
     Select(ID_nChannelListArrays,            (void *)&nChannelListArrays);
     Select(ID_channelListToroidalArrayAngle, (void *)&channelListToroidalArrayAngle);
     Select(ID_channelListToroidalAngle,      (void *)&channelListToroidalAngle);
@@ -1405,6 +1410,12 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("channelList", channelList));
+    }
+
+    if(completeSave || !FieldsEqual(ID_wallList, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("wallList", wallList));
     }
 
     if(completeSave || !FieldsEqual(ID_nChannelListArrays, &defaultObject))
@@ -1747,6 +1758,8 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         SetTimeStepStride(node->AsInt());
     if((node = searchNode->GetNode("channelList")) != 0)
         SetChannelList(node->AsDoubleVector());
+    if((node = searchNode->GetNode("wallList")) != 0)
+        SetWallList(node->AsDoubleVector());
     if((node = searchNode->GetNode("nChannelListArrays")) != 0)
         SetNChannelListArrays(node->AsInt());
     if((node = searchNode->GetNode("channelListToroidalArrayAngle")) != 0)
@@ -2077,6 +2090,13 @@ LineSamplerAttributes::SetChannelList(const doubleVector &channelList_)
 }
 
 void
+LineSamplerAttributes::SetWallList(const doubleVector &wallList_)
+{
+    wallList = wallList_;
+    Select(ID_wallList, (void *)&wallList);
+}
+
+void
 LineSamplerAttributes::SetNChannelListArrays(int nChannelListArrays_)
 {
     nChannelListArrays = nChannelListArrays_;
@@ -2383,6 +2403,18 @@ LineSamplerAttributes::GetChannelList()
     return channelList;
 }
 
+const doubleVector &
+LineSamplerAttributes::GetWallList() const
+{
+    return wallList;
+}
+
+doubleVector &
+LineSamplerAttributes::GetWallList()
+{
+    return wallList;
+}
+
 int
 LineSamplerAttributes::GetNChannelListArrays() const
 {
@@ -2415,6 +2447,12 @@ void
 LineSamplerAttributes::SelectChannelList()
 {
     Select(ID_channelList, (void *)&channelList);
+}
+
+void
+LineSamplerAttributes::SelectWallList()
+{
+    Select(ID_wallList, (void *)&wallList);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2486,6 +2524,7 @@ LineSamplerAttributes::GetFieldName(int index) const
     case ID_timeStepStop:                  return "timeStepStop";
     case ID_timeStepStride:                return "timeStepStride";
     case ID_channelList:                   return "channelList";
+    case ID_wallList:                      return "wallList";
     case ID_nChannelListArrays:            return "nChannelListArrays";
     case ID_channelListToroidalArrayAngle: return "channelListToroidalArrayAngle";
     case ID_channelListToroidalAngle:      return "channelListToroidalAngle";
@@ -2558,6 +2597,7 @@ LineSamplerAttributes::GetFieldType(int index) const
     case ID_timeStepStop:                  return FieldType_int;
     case ID_timeStepStride:                return FieldType_int;
     case ID_channelList:                   return FieldType_doubleVector;
+    case ID_wallList:                      return FieldType_doubleVector;
     case ID_nChannelListArrays:            return FieldType_int;
     case ID_channelListToroidalArrayAngle: return FieldType_double;
     case ID_channelListToroidalAngle:      return FieldType_double;
@@ -2630,6 +2670,7 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
     case ID_timeStepStop:                  return "int";
     case ID_timeStepStride:                return "int";
     case ID_channelList:                   return "doubleVector";
+    case ID_wallList:                      return "doubleVector";
     case ID_nChannelListArrays:            return "int";
     case ID_channelListToroidalArrayAngle: return "double";
     case ID_channelListToroidalAngle:      return "double";
@@ -2887,6 +2928,11 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_channelList:
         {  // new scope
         retval = (channelList == obj.channelList);
+        }
+        break;
+    case ID_wallList:
+        {  // new scope
+        retval = (wallList == obj.wallList);
         }
         break;
     case ID_nChannelListArrays:

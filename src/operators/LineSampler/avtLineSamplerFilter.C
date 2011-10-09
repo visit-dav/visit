@@ -48,7 +48,6 @@
 #include <avtIntervalTree.h>
 #include <avtDataAttributes.h>
 #include <avtExtents.h>
-#include <avtVector.h>
 
 #include <vtkAppendFilter.h>
 #include <vtkUnstructuredGrid.h>
@@ -76,7 +75,7 @@
 // ****************************************************************************
 
 avtLineSamplerFilter::avtLineSamplerFilter() :
-  haveData(true), composite_ds(0), newExtents(3)
+  composite_ds(0)
 {
 }
 
@@ -158,10 +157,8 @@ avtLineSamplerFilter::Equivalent(const AttributeGroup *a)
 //    slider. The time slider state is needed in case that the start
 //    and end time are relative to the time slider.
 //
-//  Programmer: Oliver Ruebel
-//  Creation:   May 07, 2009
-//
-//    Oliver Ruebel, Thu May 11 10:50
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
 //
 // ****************************************************************************
 void
@@ -241,19 +238,19 @@ avtLineSamplerFilter::InitializeTimeLoop(void)
 //    end-time of the iteration.  The iteration over time is performed
 //    using avtExecuteThenTimeLoopFilter::Execute(void)
 //
-//  Programmer: Oliver Ruebel
-//  Creation:   May 07, 2009
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
 //
 // ****************************************************************************
 
 void
 avtLineSamplerFilter::Execute()
 {
-  int ts = currentTime;
+    int ts = currentTime;
 
     avtDataTree_p tree = GetInputDataTree();
 
-    //Ask for the dataset
+    // Ask for the dataset
     int nds;
     vtkDataSet **dsets = tree->GetAllLeaves(nds);
 
@@ -273,7 +270,6 @@ avtLineSamplerFilter::Execute()
         // Free the memory from the GetAllLeaves function call.
         delete [] dsets;
 
-        haveData = false;
         return;
     }
 
@@ -318,9 +314,14 @@ avtLineSamplerFilter::Execute()
         {
           std::string msg;
           msg += "The view dimension is not one. For collating multiple time " +
-            std::string("steps the resulting plots are one dimensional.");
+            std::string("steps the resulting plots are one dimensional. ") +
+            std::string("Showing the original channel sampling");
           
           avtCallback::IssueWarning(msg.c_str());
+
+          composite_ds = tmp_ds;
+
+          return;
         }
 
         double heightPlotScale = atts.GetHeightPlotScale();
@@ -335,8 +336,7 @@ avtLineSamplerFilter::Execute()
           uGrid = vtkUnstructuredGrid::New();
           uGrid->SetPoints( vtkPoints::New() );
           
-          vtkPointData* allData = tmp_ds->GetPointData();
-          uGrid->GetPointData()->ShallowCopy(allData);
+          uGrid->GetPointData()->ShallowCopy(tmp_ds->GetPointData());
           uGrid->GetCellData()->ShallowCopy(tmp_ds->GetCellData());
           
           composite_ds = uGrid;
@@ -349,8 +349,6 @@ avtLineSamplerFilter::Execute()
         int tPoints = composite_ds->GetNumberOfPoints();
         int nPoints = tmp_ds->GetNumberOfPoints();
         
-        int timeStep = tPoints / nPoints;
-
         int nArrays, nChannels;
 
         if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry )
@@ -381,13 +379,32 @@ avtLineSamplerFilter::Execute()
           // Get the next point and update its coordinates if necessary
           vtkDataArray *scalars = tmp_ds->GetPointData()->GetScalars();
 
-          double nextPathPoint[3] = { timeStep * timePlotScale,
+          double nextPathPoint[3] = { ts, //* timePlotScale,
                                       i+heightPlotScale * *(scalars->GetTuple(i)),
                                       0 };
 
+          if( atts.GetTimeSampling() ==
+              LineSamplerAttributes::MultipleTimeSteps &&
+              atts.GetToroidalIntegration() ==
+              LineSamplerAttributes::ToroidalTimeSample )
+          {
+            nextPathPoint[0] = ts * (stopAngle-startAngle) + cachedAngle; // * timePlotScale,
+            std::cerr << __LINE__ << "  " << nextPathPoint[0] << std::endl;
+          }
+
+          else if( atts.GetTimeSampling() ==
+              LineSamplerAttributes::MultipleTimeSteps )
+          {
+              nextPathPoint[0] = ts; // * timePlotScale,
+          }
+          else if( atts.GetToroidalIntegration() ==
+                   LineSamplerAttributes::ToroidalTimeSample )
+          {
+              nextPathPoint[0] = cachedAngle;
+          }
+
           vtkPoints* pathPoints = uGrid->GetPoints();
           pathPoints->InsertNextPoint( nextPathPoint );
-          uGrid->SetPoints( pathPoints );
 
           // The index of the new point
           int  newPointIndex = uGrid->GetPoints()->GetNumberOfPoints()-1;
@@ -415,7 +432,7 @@ avtLineSamplerFilter::Execute()
           newCellIndex++;
 
           // Add a new line segment
-          if( timeStep )
+          if( tPoints )
           {
             //define the points of the lines
             vtkIdType* pointList = new vtkIdType[2];
@@ -453,29 +470,16 @@ avtLineSamplerFilter::Execute()
 //
 //  Returns:       The output dataset.
 //
-//  Programmer: allen -- generated by xml2avt
-//  Creation:   Wed Sep 29 13:42:47 PST 2010
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 {
-    
-    double bounds[6];
-    in_ds->GetBounds(bounds);
-
-//     std::cerr << bounds[0] << "  "
-//            << bounds[1] << "  "
-//            << bounds[2] << "  "
-//            << bounds[3] << "  "
-//            << bounds[4] << "  "
-//            << bounds[5] << "  "
-//            << std:: endl;
-
-    newExtents.Set( bounds );
-
-    UpdateDataObjectInfo();
+    double localBounds[6];
+    in_ds->GetBounds(localBounds);
 
     vtkDataSet *out_ds = NULL;
 
@@ -561,35 +565,21 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
       double rowOffset = atts.GetRowOffset();
 
-      // When the channel is in the R direction we also need to include the
-      // rTilt into the offset otherwise it is a rotation about itself.
+      // Channel is in the R direction.
       if( atts.GetArrayAxis() == LineSamplerAttributes::R )
       {
-        channelOffsetVec = avtVector( 0,
-                                      channelOffset*sin(2.0*M_PI*rTilt/360.0),
-                                      channelOffset*cos(2.0*M_PI*rTilt/360.0) );
+        channelOffsetVec = avtVector( 0, 0, channelOffset );
 
         if( projection == LineSamplerAttributes::Grid )
-          rowOffsetVec = avtVector( 0,
-                                    rowOffset*cos(2.0*M_PI*rTilt/360.0),
-                                    rowOffset*sin(2.0*M_PI*rTilt/360.0) );
-
-        rTilt = 0;
+          rowOffsetVec = avtVector( 0, 0, rowOffset );
       }
-      // When the channel is in the Z direction we also need to include the
-      // zTilt into the offset otherwise it is a rotation about itself.
+      // Channel is in the Z direction.
       else // if( atts.GetArrayAxis() == LineSamplerAttributes::Z )
       {
-        channelOffsetVec = avtVector( channelOffset*cos(2.0*M_PI*zTilt/360.0),
-                                      channelOffset*sin(2.0*M_PI*zTilt/360.0),
-                                      0 );
+        channelOffsetVec = avtVector( channelOffset, 0, 0 );
 
         if( projection == LineSamplerAttributes::Grid )
-          rowOffsetVec = avtVector( rowOffset*sin(2.0*M_PI*zTilt/360.0),
-                                    rowOffset*cos(2.0*M_PI*zTilt/360.0),
-                                    0 );
-
-        zTilt = 0;
+          rowOffsetVec = avtVector( rowOffset, 0, 0 );
       }
     }
 
@@ -618,7 +608,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
       for( int c=0; c<nChannels; ++c ) 
       {
           // Inital start point is the origin.
-          avtVector startPoint = avtVector( 0, 0,  0 );
+          avtVector startPoint = avtVector( 0, 0, 0 );
           avtVector stopPoint;
           avtVector normal;
           
@@ -627,13 +617,13 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual ||
               atts.GetArrayAxis() == LineSamplerAttributes::R )
           {
-              stopPoint = avtVector( -1, 0, 0 );
+              stopPoint = (localBounds[1] - localBounds[0]) * avtVector( -2, 0, 0 );
               normal = avtVector( 0, 1, 1 );
           }
           
           else //if( atts.GetArrayAxis() == LineSamplerAttributes::Z )
           {
-              stopPoint = avtVector( 0, 0, -1 );     
+              stopPoint = (localBounds[5] - localBounds[4]) * avtVector( 0, 0, -2 );
               normal = avtVector( 1, 1, 0 );
           }
 
@@ -747,7 +737,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               applyTransform( transform, startPoint );
               applyTransform( transform, stopPoint );      
 
-              checkExtents( startPoint, stopPoint );
+              checkBounds( in_ds, startPoint, stopPoint );
           }
 
           // Rotate the channel poloidially.
@@ -761,7 +751,25 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               applyTransform( transform, startPoint );
               applyTransform( transform, stopPoint );
               
-              checkExtents( startPoint, stopPoint );
+              checkBounds( in_ds, startPoint, stopPoint );
+          }
+
+          if( atts.GetBoundary() == LineSamplerAttributes::Wall )
+          {
+            checkWall(  startPoint, stopPoint );
+
+            if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
+                (rTilt || zTilt) )
+            {
+              std::string msg;
+              msg += "Clipping against the wall requires that there be no " +
+                std::string("poloidal plane R and/or Z tilting as the wall is 2D only. ") +
+                std::string("Poloidal plane R and/or Z tilting will be performed ") +
+                std::string("but the sampling may not be complete.");
+          
+              avtCallback::IssueWarning(msg.c_str());
+
+            }
           }
 
           // Poloidal plane R Tilting.
@@ -769,14 +777,14 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               rTilt )
           {
               transform->Identity();
-              transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
+              transform->Translate( -r, -0, -z );
               transform->RotateX( rTilt );
-              transform->Translate( startPoint.x, startPoint.y, startPoint.z );
+              transform->Translate( r, 0, z );
 
               applyTransform( transform, startPoint );
               applyTransform( transform, stopPoint );
           
-              checkExtents( startPoint, stopPoint );
+              checkBounds( in_ds, startPoint, stopPoint );
           }
 
           // Poloidal plane Z Tilting.
@@ -784,14 +792,14 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               zTilt ) 
           {
               transform->Identity();
-              transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
+              transform->Translate( -r, -0, -z );
               transform->RotateZ( zTilt );
-              transform->Translate( startPoint.x, startPoint.y, startPoint.z );
+              transform->Translate( r, 0, z );
 
               applyTransform( transform, startPoint );
               applyTransform( transform, stopPoint );
           
-              checkExtents( startPoint, stopPoint );
+              checkBounds( in_ds, startPoint, stopPoint );
           }
 
           // Toroidal rotation.
@@ -812,7 +820,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               atts.GetChannelGeometry() == LineSamplerAttributes::Cylinder )
           {
             // Get the base channel at r = 0
-            out_ds = createLine( startPoint, stopPoint, true );
+            out_ds = createLine( startPoint, stopPoint, false );
 
             // Do the sampling of the original dataset at r = 0
             probeFilter->SetInput( out_ds );
@@ -822,6 +830,32 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
             double sampleDistance = atts.GetSampleDistance();
             double sampleVolume   = atts.GetSampleVolume();
+
+            double a, sd, weight, total=0;
+
+            if( atts.GetChannelProfile() == LineSamplerAttributes::Gaussian )
+            {
+              a = 1.0 / (atts.GetStandardDeviation() * sqrt(2.0 * M_PI));
+              sd = atts.GetStandardDeviation();
+
+              weight = a;
+
+              total += weight;
+            }
+            else if( atts.GetChannelProfile() == LineSamplerAttributes::TopHat )
+            {
+              weight = 1;
+            }
+
+            float* out_data =
+              (float*) out_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
+
+            // Do the summation for each channel
+            for( unsigned int i=0; i<nChannelSamples; ++i )
+            {
+              float value = *out_data;
+              *out_data++ += sampleVolume * weight * value;
+            }
 
             avtVector axis = stopPoint - startPoint;
 
@@ -834,9 +868,6 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             avtVector normal = startPoint + u * axis;
             normal.normalize();
 
-            std::cerr << "axis  " << axis << "  "
-                      << "normal  " << normal << std::endl;
-
             // Loop through each radius.
             for( double r=sampleDistance; r<=radius; r+=sampleDistance )
             {
@@ -847,6 +878,19 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
               double deltaAngle = 360.0 / nRadialSamples;
 
+              if( atts.GetChannelProfile() == LineSamplerAttributes::Gaussian )
+              {
+                double r_norm = r / radius;
+
+                weight = a * exp( -(r_norm*r_norm)/(2*sd*sd) );
+
+                total += weight;
+              }
+              else if( atts.GetChannelProfile() == LineSamplerAttributes::TopHat )
+              {
+                weight = 1;
+              }
+                  
               // Loop through all of the sample toroidal angles.
               for( int n=0; n<nRadialSamples; ++n )
               {
@@ -856,20 +900,16 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
                 transform->RotateWXYZ( angle, axis.x, axis.y, axis.z );
 
-                avtVector offset = normal * radius;
+                avtVector offset = normal * r;
 
                 applyTransform( transform, offset );
 
                 avtVector startBase = startPoint + offset;
                 avtVector stopBase  = stopPoint  + offset;
 
-                std::cerr << "startBase  " << startBase << "  "
-                          << "stopBase  " << stopBase << std::endl;
-
-
                 vtkDataSet *tmp_ds = createLine( startPoint, stopPoint, false );
 
-                // Do the sampling of the original dataset
+                // Do the sampling of the outer radial locations.
                 probeFilter->SetInput( tmp_ds );
                 probeFilter->Update();
               
@@ -880,18 +920,17 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 
                 float* tmp_data =
                   (float*) tmp_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
-                double pts[3];
-                
                 // Do the summation for each channel
                 for( unsigned int i=0; i<nChannelSamples; ++i )
                 {
-                  tmp_ds->GetPoint(i, pts);
-                  
-                  *out_data++ += sampleVolume * *tmp_data++;
+                  *out_data++ += sampleVolume * weight * *tmp_data++;
                 }
 //            tmp_ds->Delete();
               }
             }
+
+            std::cerr << "total weight " << total << std::endl;
+
           }
           else
           {
@@ -899,14 +938,15 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             if( atts.GetChannelGeometry() == LineSamplerAttributes::Point )
               out_ds = createPoint( startPoint, stopPoint, false );
 
-            else if( atts.GetChannelGeometry() == LineSamplerAttributes::Line )
+            else if( atts.GetChannelGeometry() == LineSamplerAttributes::Line ||
+                     atts.GetViewGeometry() != LineSamplerAttributes::Surfaces )
               out_ds = createLine( startPoint, stopPoint, false );
 
             else if( atts.GetChannelGeometry() == LineSamplerAttributes::Cylinder )
-              out_ds = createCone( startPoint, stopPoint, normal, radius, 0 );
+              out_ds = createCone( startPoint, stopPoint, normal, radius, 0, false );
 
             else if( atts.GetChannelGeometry() == LineSamplerAttributes::Cone )
-              out_ds = createCone( startPoint, stopPoint, normal, 0, divergence );
+              out_ds = createCone( startPoint, stopPoint, normal, 0, divergence, false );
           
             // Do the sampling of the original dataset
             probeFilter->SetInput( out_ds );
@@ -957,8 +997,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             uGrid->SetPoints(points);
             uGrid->Allocate(1);
             uGrid->InsertNextCell(VTK_VERTEX, 1, &vertex);
-            scalars->SetName("colorVar");
+            scalars->SetName("T_e");
             uGrid->GetPointData()->SetScalars(scalars);
+            uGrid->GetPointData()->SetActiveScalars("T_e");
 
             points->Delete();
             scalars->Delete();
@@ -1103,16 +1144,19 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     transform->Delete();
     transformFilter->Delete();
 
-    double newBounds[6];
-    out_ds->GetBounds( newBounds );
-    newExtents.Set( newBounds );
-
-    UpdateDataObjectInfo();
-
     return out_ds;
 }
 
 
+// ****************************************************************************
+//  Method: avtLineSamplerFilter::createPoint
+//
+//  Purpose:
+//
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
+//
+// ****************************************************************************
 vtkDataSet*
 avtLineSamplerFilter::createPoint( avtVector startPoint,
                                    avtVector stopPoint,
@@ -1156,7 +1200,7 @@ avtLineSamplerFilter::createPoint( avtVector startPoint,
 
   if( allocateScalars && scalars )
   {
-    scalars->SetName("colorVar");
+    scalars->SetName(activeVariable);
     uGrid->GetPointData()->SetScalars(scalars);
   }
 
@@ -1168,6 +1212,15 @@ avtLineSamplerFilter::createPoint( avtVector startPoint,
 }
 
 
+// ****************************************************************************
+//  Method: avtLineSamplerFilter::createLine
+//
+//  Purpose:
+//
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
+//
+// ****************************************************************************
 vtkDataSet*
 avtLineSamplerFilter::createLine( avtVector startPoint,
                                   avtVector stopPoint,
@@ -1185,7 +1238,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
   avtVector basePoint;
   avtVector delta = (stopPoint - startPoint) / (double) (nSamples-1);
 
-  if( atts.GetViewGeometry() == 0 )
+  if( atts.GetViewGeometry() == LineSamplerAttributes::Points )
   {
     if( delta.length() > (stopPoint - startPoint).length() )
       basePoint = stopPoint;
@@ -1218,7 +1271,6 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
       if( allocateScalars && scalars )
         scalars->InsertTuple1(i, 0.0);
     }
-         
 
     // Create a new VTK unstructured grid.
     vtkUnstructuredGrid *uGrid = vtkUnstructuredGrid::New();
@@ -1235,7 +1287,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
 
     if( allocateScalars && scalars )
     {
-      scalars->SetName("colorVar");
+      scalars->SetName(activeVariable);
       uGrid->GetPointData()->SetScalars(scalars);
     }
 
@@ -1279,7 +1331,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
     polydata->SetLines(cells);
     if( allocateScalars && scalars )
     {
-      scalars->SetName("colorVar");
+      scalars->SetName(activeVariable);
       polydata->GetPointData()->SetScalars(scalars);
     }
 
@@ -1293,12 +1345,22 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
 }
 
 
+// ****************************************************************************
+//  Method: avtLineSamplerFilter::createCone
+//
+//  Purpose:
+//
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
+//
+// ****************************************************************************
 vtkDataSet *
 avtLineSamplerFilter::createCone( avtVector startPoint,
                                   avtVector stopPoint,
                                   avtVector normal,
                                   double radius,
-                                  double divergence )
+                                  double divergence,
+                                  bool allocateScalars )
 {
   avtVector axis = (stopPoint - startPoint);
 
@@ -1308,6 +1370,10 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
 
   axis.normalize();
   //  avtVector delta = axis * sampleDistance;
+
+  // sampling offset between points.
+  avtVector basePoint;
+  avtVector delta = (stopPoint - startPoint) / (double) (nSamples-1);
 
   // Get the circumference
   double circumference = 2.0 * M_PI * radius;
@@ -1327,37 +1393,36 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
 
   vtkQuad *quad = vtkQuad::New();
   vtkPoints *points = vtkPoints::New();
-//  vtkFloatArray *scalars = vtkFloatArray::New();
-    
+
   points->SetNumberOfPoints(nSamples*nRadialSamples);
-//  scalars->Allocate(nSamples*nRadialSamples);
+
+  vtkFloatArray *scalars = (allocateScalars ? vtkFloatArray::New() : NULL );
+    
+  if( allocateScalars && scalars )
+    scalars->Allocate(nSamples*nRadialSamples);
     
   float *points_ptr = (float *) points->GetVoidPointer(0);
 
-  // sampling offset between points.
-  avtVector basePoint;
-  avtVector delta = (stopPoint - startPoint) / (double) (nSamples-1);
-
   double deltaAngle = 360.0 / (double) (nRadialSamples);
-
+    
   for( unsigned int i=0, index=0; i<nSamples; ++i )
   {
     if( (double) i * delta.length() > (stopPoint - startPoint).length() )
       basePoint = stopPoint;
     else
       basePoint = startPoint + (double) i * delta;
-
+    
     double dradius = ((double) i * delta.length()) * tangent;
-
+    
     avtVector radialPoint = basePoint + (radius+dradius) * normal;
-
+    
     for( unsigned int j=0; j<nRadialSamples; ++j, ++index )
     {
       double angle = (double) j * sampleArc;
-
+      
       // Now apply the transformations.
       vtkTransform *transform = vtkTransform::New();
-
+      
       transform->Identity();
       transform->PostMultiply();
 
@@ -1368,36 +1433,37 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
       transform->Translate( basePoint.x, basePoint.y, basePoint.z );
 
       vtkMatrix4x4 *matrix = transform->GetMatrix();
-
+      
       float tmpPt[4];
-
+      
       // Transform the start point
       tmpPt[0] = radialPoint.x;
       tmpPt[1] = radialPoint.y;
       tmpPt[2] = radialPoint.z;
       tmpPt[3] = 1.0;
-
+      
       matrix->MultiplyPoint( tmpPt, tmpPt );
-
+      
       points_ptr[index*3  ] = tmpPt[0];
       points_ptr[index*3+1] = tmpPt[1];
       points_ptr[index*3+2] = tmpPt[2];
-        
+          
       transform->Delete();
-
-//      scalars->InsertTuple1(index, index);
-
+      
+      if( allocateScalars && scalars )
+        scalars->InsertTuple1(index, index);
+      
       // Create the quad.
       if( i<nSamples-1 )
       {
         int i1 = i+1;
         int j1 = (j+1) % nRadialSamples;
-          
+        
         quad->GetPointIds()->SetId( 0, i  * nRadialSamples + j  );
         quad->GetPointIds()->SetId( 1, i1 * nRadialSamples + j  );
         quad->GetPointIds()->SetId( 2, i1 * nRadialSamples + j1 );
         quad->GetPointIds()->SetId( 3, i  * nRadialSamples + j1 );
-
+        
         grid->InsertNextCell( quad->GetCellType(),
                               quad->GetPointIds() );                
       }
@@ -1406,16 +1472,32 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
 
   // Stuff the points and scalars into the VTK unstructure grid.
   grid->SetPoints(points);
-//  scalars->SetName("colorVar");
-//  grid->GetPointData()->SetScalars(scalars);
 
+  if( allocateScalars && scalars )
+  {
+    scalars->SetName(activeVariable);
+    grid->GetPointData()->SetScalars(scalars);
+  }
+    
   quad->Delete();
   points->Delete();
-//  scalars->Delete();
+  if( allocateScalars && scalars )
+    scalars->Delete();
 
   return grid;
+
 }
 
+
+// ****************************************************************************
+//  Method: avtLineSamplerFilter::ProjectPointOnPlane
+//
+//  Purpose:
+//
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
+//
+// ****************************************************************************
 avtVector
 avtLineSamplerFilter::ProjectPointOnPlane( avtVector planePoint,
                                            avtVector planeNormal,
@@ -1434,6 +1516,15 @@ avtLineSamplerFilter::ProjectPointOnPlane( avtVector planePoint,
   return intersectingPoint;
 }
 
+// ****************************************************************************
+//  Method: avtLineSamplerFilter::applyTransform
+//
+//  Purpose:
+//
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
+//
+// ****************************************************************************
 void
 avtLineSamplerFilter::applyTransform( vtkTransform* transform,
                                       avtVector &point )
@@ -1457,36 +1548,34 @@ avtLineSamplerFilter::applyTransform( vtkTransform* transform,
 }
 
 
+// ****************************************************************************
+//  Method: avtLineSamplerFilter::checkBounds
+//
+//  Purpose:
+//
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
+//
+// ****************************************************************************
 void
-avtLineSamplerFilter::checkExtents( avtVector &startPoint,
-                                    avtVector &stopPoint )
+avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds, 
+                                   avtVector &startPoint,
+                                   avtVector &stopPoint )
 {
-  avtDataset_p avtData = GetTypedInput();
-  avtIntervalTree * avtIntTree =
-    avtData->CalculateSpatialIntervalTree();
-  
-  double extents[6];
-  avtIntTree->GetExtents( extents );
-
-  std::cerr << extents[0] << "  " << extents[1] << "  "
-            << extents[2] << "  " << extents[3] << "  "
-            << extents[4] << "  " << extents[5] << "  "
-            << std::endl;
-
-//   for( int i=0; i<6; ++i )
-//     extents[i] = bounds[i];
+  double bounds[6];
+  in_ds->GetBounds(bounds);
 
   // For cylindircal the extent is at R = 0, Y = 0.
   if( atts.GetCoordinateSystem() == LineSamplerAttributes::Cylindrical )
   {
     if( startPoint.x >= 0 && startPoint.y >= 0 )
-      extents[0] = extents[2] = 0;
+      bounds[0] = bounds[2] = 0;
     else if( startPoint.x >= 0 && startPoint.y < 0 )
-      extents[0] = extents[3] = 0;
+      bounds[0] = bounds[3] = 0;
     else if( startPoint.x < 0 && startPoint.y >= 0 )
-      extents[1] = extents[2] = 0;
+      bounds[1] = bounds[2] = 0;
     else if( startPoint.x < 0 && startPoint.y < 0 )
-      extents[1] = extents[3] = 0;
+      bounds[1] = bounds[3] = 0;
   }
 
   avtVector axis = stopPoint - startPoint;
@@ -1497,36 +1586,39 @@ avtLineSamplerFilter::checkExtents( avtVector &startPoint,
   {
     if( axis.x < 0 )
       // Find the intersection of the channel with the min R plane.
-      stopPoint = ProjectPointOnPlane( avtVector( extents[0], 0, 0 ),
+      stopPoint = ProjectPointOnPlane( avtVector( bounds[0], 0, 0 ),
                                        avtVector( 1, 0, 0 ),
                                        startPoint,
                                        axis );
-    else //if( axis.x >= 0 )
+    else if( axis.x > 0 )
       // Find the intersection of the channel with the max R plane.
-      stopPoint = ProjectPointOnPlane( avtVector( extents[1], 0, 0 ),
+      stopPoint = ProjectPointOnPlane( avtVector( bounds[1], 0, 0 ),
                                        avtVector( -1, 0, 0 ),
                                        startPoint,
                                        axis );
+
+//     std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
     
     // Y value is below the Y min or above the Y max then the
     // intersecting plane is that plane rather than the R plane.
-    if( stopPoint.y < extents[2] || extents[3] < stopPoint.y )
+    if( stopPoint.y < bounds[2] || bounds[3] < stopPoint.y )
     {
       if( axis != avtVector( 0, 1, 0 ) && axis != avtVector( 0, -1, 0 ) )
       {
-        if( stopPoint.y < extents[2] )
+        if( stopPoint.y < bounds[2] )
           // Find the intersection of the channel with the min Y plane.
-          stopPoint = ProjectPointOnPlane( avtVector( 0, 0, extents[2] ),
+          stopPoint = ProjectPointOnPlane( avtVector( 0, 0, bounds[2] ),
                                            avtVector( 0, 1, 0 ),
                                            startPoint,
                                            axis );
         
-        else if( stopPoint.z > extents[3] )
+        else if( stopPoint.z > bounds[3] )
           // Find the intersection of the channel with the max Y plane.
-          stopPoint = ProjectPointOnPlane( avtVector( 0, 0, extents[3] ),
+          stopPoint = ProjectPointOnPlane( avtVector( 0, 0, bounds[3] ),
                                            avtVector( 0, -1, 0 ),
                                            startPoint,
                                            axis );
+//      std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
       }
 
       // Special case when the axis is in line with Y axis.
@@ -1535,32 +1627,34 @@ avtLineSamplerFilter::checkExtents( avtVector &startPoint,
         stopPoint = startPoint;
         // Min Y plane
         if( axis.y < 0 )
-          stopPoint.y = extents[2];
+          stopPoint.y = bounds[2];
         // Max Y plane
         else if( axis.y >= 0 )
-          stopPoint.y = extents[3];
+          stopPoint.y = bounds[3];
+//      std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
       }
     }
 
     // Z value is below the Z min or above the Z max then the
     // intersecting plane is that plane rather than the R plane.
-    if( stopPoint.z < extents[4] || extents[5] < stopPoint.z )
+    if( stopPoint.z < bounds[4] || bounds[5] < stopPoint.z )
     {
       if( axis != avtVector( 0, 0, 1 ) && axis != avtVector( 0, 0, -1 ) )
       {
-        if( stopPoint.z < extents[4] )
+        if( stopPoint.z < bounds[4] )
           // Find the intersection of the channel with the min Z plane.
-          stopPoint = ProjectPointOnPlane( avtVector( 0, 0, extents[4] ),
+          stopPoint = ProjectPointOnPlane( avtVector( 0, 0, bounds[4] ),
                                            avtVector( 0, 0, 1 ),
                                            startPoint,
                                            axis );
         
-        else if( stopPoint.z > extents[5] )
+        else if( stopPoint.z > bounds[5] )
           // Find the intersection of the channel with the max Z plane.
-          stopPoint = ProjectPointOnPlane( avtVector( 0, 0, extents[5] ),
+          stopPoint = ProjectPointOnPlane( avtVector( 0, 0, bounds[5] ),
                                            avtVector( 0, 0, -1 ),
                                            startPoint,
                                            axis );
+//      std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
       }
 
       // Special case when the axis is in line with Z axis.
@@ -1569,10 +1663,11 @@ avtLineSamplerFilter::checkExtents( avtVector &startPoint,
         stopPoint = startPoint;
         // Min Z plane
         if( axis.z < 0 )
-          stopPoint.z = extents[4];
+          stopPoint.z = bounds[4];
         // Max Z plane
         else if( axis.z >= 0 )
-          stopPoint.z = extents[5];
+          stopPoint.z = bounds[5];
+//      std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
       }
     }
   }
@@ -1589,50 +1684,96 @@ avtLineSamplerFilter::checkExtents( avtVector &startPoint,
       stopPoint.x = 0;
     // Min R plane
     else if( axis.x < 0 )
-      stopPoint.x = extents[0];
+      stopPoint.x = bounds[0];
     // Max R plane
     else if( axis.x >= 0 )
-      stopPoint.x = extents[1];
+      stopPoint.x = bounds[1];
   }
 }
 
 
 // ****************************************************************************
-//  Method: avtTransform::UpdateDataObjectInfo
+//  Method: avtLineSamplerFilter::checkWall
 //
 //  Purpose:
-//      Changes the extents by the transform.
 //
-//  Programmer: Jeremy Meredith
-//  Creation:   September 24, 2001
-//
-//  Modifications:
-//
-//    Hank Childs, Tue Mar  5 15:55:29 PST 2002
-//    Also transformed current spatial extents.  Also told output that its
-//    points were transformed.
-//
-//    Hank Childs, Fri Jan 13 09:49:08 PST 2006
-//    Invalidate spatial meta-data.
-//
-//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
-//    Change extents names.
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
 //
 // ****************************************************************************
-
 void
-avtLineSamplerFilter::UpdateDataObjectInfo(void)
+avtLineSamplerFilter::checkWall( avtVector &startPoint,
+                                 avtVector &stopPoint )
 {
-    avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
-    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+  // Get the wall points.
+  std::vector<double> wallList = atts.GetWallList();
+  
+  int npts = wallList.size() / 2;
+  
+  // Need at least three point plus the first and last must be the
+  // same.
+  if( npts <= 4 ||
+      wallList[0] != wallList[npts*2-2] || wallList[1] != wallList[npts*2-1] )
+    return;
 
-    (*outAtts.GetOriginalSpatialExtents()) = newExtents;
-    (*outAtts.GetThisProcsOriginalSpatialExtents()) = newExtents;
-    (*outAtts.GetDesiredSpatialExtents()) = newExtents;
-    (*outAtts.GetActualSpatialExtents()) = newExtents;
+  // Assume both the start and stop points are OUTSIDE the wall.
+  double  x1 = startPoint.x;
+  double  z1 = startPoint.z;
 
-    GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
-    GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
+  double  x2 = stopPoint.x;
+  double  z2 = stopPoint.z;
+
+  avtVector testPoint, clippedPoint0 = stopPoint, clippedPoint1 = stopPoint;
+
+  // Find the frist two intersecting points, assume the startPoint is
+  // outside the wall. The first clipped point will be intering point
+  // and the second will be the exiting point.
+  for( int i=0,j=1; j<npts; ++i, ++j )
+  {
+    double  x3 = wallList[2*i];
+    double  z3 = wallList[2*i+1];
+    
+    double  x4 = wallList[2*j];
+    double  z4 = wallList[2*j+1];
+
+    // Intersection test 
+    float u1 = ( ((x4 - x3) * (z1 - z3) - (z4 - z3) * (x1 -x3)) /
+                 ((z4 - z3) * (x2 - x1) - (x4 - x3) * (z2 -z1)) );
+
+    float u2 = ( ((x2 - x1) * (z1 - z3) - (z2 - z1) * (x1 -x3)) /
+                 ((z4 - z3) * (x2 - x1) - (x4 - x3) * (z2 -z1)) );
+    
+    // If both u1 and and u2 are between 0 and 1 then the line
+    // segments intersect.
+    if( 0 <= u1 && u1 <= 1.0 && 0 <= u2 && u2 <= 1.0 )
+    {
+      testPoint.x = startPoint.x + u1 * (stopPoint.x-startPoint.x);
+      testPoint.z = startPoint.z + u1 * (stopPoint.z-startPoint.z);
+
+      // Test for a new enterance point.
+      if( (startPoint - clippedPoint0).length() >
+          (startPoint - testPoint).length() )
+      {
+        // Previous enterance point is now the exit point.
+        clippedPoint1 = clippedPoint0;
+
+        // New enterance point.
+        clippedPoint0 = testPoint;
+      }
+      // Test for a new exit point.
+      else if( (startPoint - clippedPoint1).length() >
+               (startPoint - testPoint).length() )
+      {
+        // New exit point.
+        clippedPoint1 = testPoint;
+      }
+    }
+  }
+
+  if( clippedPoint0 != stopPoint)
+    startPoint = clippedPoint0;
+  if( clippedPoint1 != stopPoint)
+    stopPoint = clippedPoint1;
 }
 
 
@@ -1641,14 +1782,14 @@ avtLineSamplerFilter::UpdateDataObjectInfo(void)
 //
 //  Purpose:
 //
-//  Programmer: Hank Childs
-//  Creation:   January 25, 2008
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
 //
 // ****************************************************************************
 bool
 avtLineSamplerFilter::ExecutionSuccessful(void)
 {
-  return haveData;
+  return (composite_ds != 0);
 }
 
 
@@ -1662,17 +1803,69 @@ avtLineSamplerFilter::ExecutionSuccessful(void)
 //      either all points of the different time slices or the dataset with
 //      the particle paths.
 //
-//  Programmer: Hank Childs
-//  Creation:   January 25, 2008
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
 //
 // ****************************************************************************
 
 void
 avtLineSamplerFilter::CreateFinalOutput(void)
 {
-     if (! haveData)
-         return;
+     if( composite_ds )
+     {
+       avtDataTree_p newTree = new avtDataTree(composite_ds, 0);
+       SetOutputDataTree(newTree);
+       
+       double bounds[6];
+       composite_ds->Update();
+       composite_ds->GetBounds( bounds );
 
-     avtDataTree_p newTree = new avtDataTree(composite_ds, 0);
-     SetOutputDataTree(newTree);
+       avtExtents newExtents(3);
+       newExtents.Set( bounds );
+
+       avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
+       avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+
+       (*outAtts.GetOriginalSpatialExtents()) = newExtents;
+       (*outAtts.GetThisProcsOriginalSpatialExtents()) = newExtents;
+       (*outAtts.GetDesiredSpatialExtents()) = newExtents;
+       (*outAtts.GetActualSpatialExtents()) = newExtents;
+
+       GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
+       GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
+
+       if( atts.GetViewDimension() == LineSamplerAttributes::One )
+       {
+         outAtts.SetTopologicalDimension(1);
+         outAtts.SetSpatialDimension(2);
+
+         if( atts.GetChannelIntegration() ==
+             LineSamplerAttributes::NoChannelIntegration )
+         {
+           outAtts.SetYLabel( inAtts.GetVariableName() );
+           outAtts.SetYUnits( inAtts.GetVariableUnits() );
+         }
+
+         else if( atts.GetChannelIntegration() ==
+                  LineSamplerAttributes::IntegrateAlongChannel )
+         {
+           outAtts.SetYLabel( "Integrated " + inAtts.GetVariableName() );
+           outAtts.SetYUnits( inAtts.GetVariableUnits() );
+         }
+
+
+         if( atts.GetToroidalIntegration() ==
+             LineSamplerAttributes::ToroidalTimeSample )
+         {
+           outAtts.SetXLabel("Angle");
+           outAtts.SetXUnits("Degrees");
+         }
+         else if( atts.GetTimeSampling() ==
+                  LineSamplerAttributes::MultipleTimeSteps )
+         {
+           outAtts.SetXLabel("Time Step");
+           outAtts.SetXUnits("");
+         }
+       }
+     }
 }
