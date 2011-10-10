@@ -60,12 +60,20 @@
 //    Tom Fogal, Tue May 25 16:08:39 MDT 2010
 //    Made ::Connect return a bool, to detect errors.
 //
+//    Brad Whitlock, Mon Oct 10 11:37:25 PDT 2011
+//    Added GetDisplayType method.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API VisItDisplay
 {
   public:
     virtual ~VisItDisplay() {}
+
+    typedef enum {
+        D_MESA, // mesa based SW rendering
+        D_X     // utilize an X server for HW rendering
+    } DisplayType;
 
     /// Initializes a VisItDisplay.  Rendering is only possible after
     /// `Initialize' and before `Teardown'.  `Initialize' must be called prior
@@ -88,6 +96,9 @@ class ENGINE_MAIN_API VisItDisplay
     /// safe to use `Teardown' before `Initialize'.  This implicitly breaks any
     /// previous connections.
     virtual void   Teardown() = 0;
+
+    // return the display type.
+    virtual DisplayType GetDisplayType() const = 0;
 };
 
 // Methods helpful in argument vector creation.
@@ -97,13 +108,9 @@ std::string display_format(std::string s, size_t node, size_t display);
 std::vector<std::string> split(std::string, size_t, size_t);
 
 namespace VDisplay {
-    enum visitDisplayType {
-        D_MESA, // mesa based SW rendering
-        D_X     // utilize an X server for HW rendering
-    };
     /// Creates a display type based on the given parameter.  It is the
     /// caller's responsibility to deallocate the display via `delete'.
-    VisItDisplay *Create(enum visitDisplayType);
+    VisItDisplay *Create(VisItDisplay::DisplayType t);
 };
 
 #endif /* VISIT_VISIT_DISPLAY_H */

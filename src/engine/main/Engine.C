@@ -336,6 +336,9 @@ protected:
 //    Kathleen Biagas, Fri Jul 15 11:08:44 PDT 2011
 //    Add queryParametersRPC.
 //
+//    Brad Whitlock, Mon Oct 10 11:22:45 PDT 2011
+//    Added enginePropertiesRPC.
+//
 // ****************************************************************************
 
 Engine::Engine() : viewerArgs()
@@ -388,6 +391,7 @@ Engine::Engine() : viewerArgs()
     procInfoRPC = NULL;
     simulationCommandRPC = NULL;
     setEFileOpenOptionsRPC = NULL;
+    enginePropertiesRPC = NULL;
 
 #if defined(PARALLEL) && defined(HAVE_ICET)
     useIceT = true;
@@ -431,6 +435,9 @@ Engine::Engine() : viewerArgs()
 //    Kathleen Biagas, Fri Jul 15 11:08:44 PDT 2011
 //    Add queryParametersRPC.
 //
+//    Brad Whitlock, Mon Oct 10 11:23:14 PDT 2011
+//    Added enginePropertiesRPC.
+//
 // ****************************************************************************
 
 Engine::~Engine()
@@ -472,6 +479,7 @@ Engine::~Engine()
     delete constructDataBinningRPC;
     delete namedSelectionRPC;
     delete setEFileOpenOptionsRPC;
+    delete enginePropertiesRPC;
 
     delete viewer;
     delete viewerP;
@@ -883,6 +891,9 @@ public:
 //    Kathleen Biagas, Fri Jul 15 11:08:44 PDT 2011
 //    Add queryParametersRPC.
 //
+//    Brad Whitlock, Mon Oct 10 11:23:14 PDT 2011
+//    Added enginePropertiesRPC.
+//
 // ****************************************************************************
 
 void
@@ -1031,6 +1042,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     constructDataBinningRPC         = new ConstructDataBinningRPC;
     namedSelectionRPC               = new NamedSelectionRPC;
     setEFileOpenOptionsRPC          = new SetEFileOpenOptionsRPC;
+    enginePropertiesRPC             = new EnginePropertiesRPC;
 
     xfer->Add(quitRPC);
     xfer->Add(keepAliveRPC);
@@ -1058,6 +1070,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(constructDataBinningRPC);
     xfer->Add(namedSelectionRPC);
     xfer->Add(setEFileOpenOptionsRPC);
+    xfer->Add(enginePropertiesRPC);
 
     // Create an object to implement the RPCs
     rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
@@ -1089,6 +1102,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<ConstructDataBinningRPC>(constructDataBinningRPC));
     rpcExecutors.push_back(new RPCExecutor<NamedSelectionRPC>(namedSelectionRPC));
     rpcExecutors.push_back(new RPCExecutor<SetEFileOpenOptionsRPC>(setEFileOpenOptionsRPC));
+    rpcExecutors.push_back(new RPCExecutor<EnginePropertiesRPC>(enginePropertiesRPC));
 
     // Hook up the expression list as an observed object.
     Parser *p = new ExprParser(new avtExprNodeFactory());
@@ -3801,6 +3815,52 @@ Engine::GetProcessAttributes()
 }
 
 // ****************************************************************************
+// Method: Engine::GetEngineProperties
+//
+// Purpose: 
+//   Return engine properties.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 10 12:01:23 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+EngineProperties
+Engine::GetEngineProperties()
+{
+    EngineProperties props;
+
+    // The number of processors
+    props.SetNumProcessors(PAR_Size());
+
+    // Determine how many of the processors are using GPUs.
+    int usingGPU = 0;
+    if(this->renderingDisplay != NULL &&
+       this->renderingDisplay->GetDisplayType() == VisItDisplay::D_X)
+    {
+        usingGPU = 1;
+    }
+    SumIntAcrossAllProcessors(usingGPU);
+    props.SetNumProcessorsUsingGPUs(usingGPU);
+
+    // Determine the load balancing method.
+    props.SetDynamicLoadBalancing(LoadBalancer::GetAllowDynamic());
+    props.SetLoadBalancingScheme(LoadBalancer::GetSchemeAsString());
+
+    // Should we stick arbitrary stuff in a MapNode?
+
+    return props;
+}
+
+// ****************************************************************************
 //  Method: SetupDisplay
 //
 //  Purpose:
@@ -3881,14 +3941,14 @@ Engine::SetupDisplay()
                static_cast<size_t>(rank-min) < this->nDisplays)
             {
                 display_num = rank-min;
-                this->renderingDisplay = VDisplay::Create(VDisplay::D_X);
+                this->renderingDisplay = VDisplay::Create(VisItDisplay::D_X);
             }
         }
     }
 #else
     if(this->nDisplays > 0)
     {
-        this->renderingDisplay = VDisplay::Create(VDisplay::D_X);
+        this->renderingDisplay = VDisplay::Create(VisItDisplay::D_X);
         avtCallback::SetSoftwareRendering(false);
         display_num = 0;
     }
@@ -3907,7 +3967,7 @@ Engine::SetupDisplay()
 
     if(this->renderingDisplay == NULL)
     {
-        this->renderingDisplay = VDisplay::Create(VDisplay::D_MESA);
+        this->renderingDisplay = VDisplay::Create(VisItDisplay::D_MESA);
         avtCallback::SetSoftwareRendering(true);
     }
     if(this->renderingDisplay->Initialize(disp,

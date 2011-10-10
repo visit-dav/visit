@@ -45,6 +45,7 @@ class ClearCacheRPC;
 class CloneNetworkRPC;
 class ConstructDataBinningRPC;
 class DefineVirtualDatabaseRPC;
+#include <EnginePropertiesRPC.h>
 class ExecuteRPC;
 class ExportDatabaseRPC;
 class KeepAliveRPC;
@@ -275,6 +276,9 @@ class ENGINE_MAIN_API Engine
     // Method to get unix process information
     ProcessAttributes *GetProcessAttributes();
 
+    // Method to get engine properties.
+    EngineProperties GetEngineProperties();
+
     // Various callbacks
     static bool     EngineAbortCallback(void *);
     static bool     EngineAbortCallbackParallel(void*, bool);
@@ -376,6 +380,7 @@ class ENGINE_MAIN_API Engine
     ConstructDataBinningRPC  *constructDataBinningRPC;
     NamedSelectionRPC        *namedSelectionRPC;
     SetEFileOpenOptionsRPC   *setEFileOpenOptionsRPC;
+    EnginePropertiesRPC      *enginePropertiesRPC;
 
 #ifdef DEBUG_MEMORY_LEAKS
     ParsingExprList          *parsingExprList;

@@ -283,7 +283,11 @@ EngineProxy::Connect(const stringVector &args)
 //    Kathleen Biagas, Fri Jul 15 11:06:13 PDT 2011
 //    Added queryParametersRPC.
 //
+//    Brad Whitlock, Mon Oct 10 12:11:42 PDT 2011
+//    Added enginePropertiesRPC.
+//
 // ****************************************************************************
+
 void
 EngineProxy::SetupComponentRPCs()
 {
@@ -314,6 +318,8 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&constructDataBinningRPC);
     xfer.Add(&namedSelectionRPC);
     xfer.Add(&setEFileOpenOptionsRPC);
+    xfer.Add(&enginePropertiesRPC);
+
     xfer.Add(&exprList);
 
     //
@@ -2003,4 +2009,55 @@ void
 EngineProxy::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 {
     setEFileOpenOptionsRPC(opts);
+}
+
+// ****************************************************************************
+// Method: EngineProxy::GetEngineProperties
+//
+// Purpose: 
+//   Return engine properties.
+//
+// Returns:    The engine properties.
+//
+// Note:       The number of nodes is retained from the command line used to
+//             initiate the engine connection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 10 12:16:05 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+EngineProperties
+EngineProxy::GetEngineProperties()
+{
+    enginePropertiesRPC();
+
+    // Get the reply and update the progress bar
+    while (enginePropertiesRPC.GetStatus() == VisItRPC::incomplete ||
+           enginePropertiesRPC.GetStatus() == VisItRPC::warning)
+    {
+        enginePropertiesRPC.RecvReply();
+    }
+ 
+    // Check for abort
+    if (enginePropertiesRPC.GetStatus() == VisItRPC::abort)
+    {
+        ClearStatus();
+        EXCEPTION0(AbortException);
+    }
+
+    // Check for an error
+    if (enginePropertiesRPC.GetStatus() == VisItRPC::error)    
+    {
+        RECONSTITUTE_EXCEPTION(enginePropertiesRPC.GetExceptionType(),
+                               enginePropertiesRPC.Message());
+    }
+
+    EngineProperties props(enginePropertiesRPC.GetReturnAtts());
+    if(numNodes > props.GetNumNodes())
+        props.SetNumNodes(numNodes);
+
+    return props;
 }

@@ -189,8 +189,10 @@ class ENGINE_MAIN_API LoadBalancer
     static void                   RegisterAbortCallback(ParAbortCallback,
                                                         void *);
     static void                   AllowDynamic();
+    static bool                   GetAllowDynamic();
     static void                   SetScheme(LoadBalanceScheme);
-
+    static LoadBalanceScheme      GetScheme();
+    static std::string            GetSchemeAsString();
   protected:
     bool                          CheckAbort(bool);
     void                          UpdateProgress(int, int);

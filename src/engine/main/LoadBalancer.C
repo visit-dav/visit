@@ -114,6 +114,12 @@ LoadBalancer::AllowDynamic()
     LoadBalancer::allowDynamic = true;
 }
 
+bool
+LoadBalancer::GetAllowDynamic()
+{
+    return LoadBalancer::allowDynamic;
+}
+
 // ****************************************************************************
 //  Method:  LoadBalancer::SetScheme
 //
@@ -129,6 +135,58 @@ void
 LoadBalancer::SetScheme(LoadBalanceScheme s)
 {
     LoadBalancer::scheme = s;
+}
+
+// ****************************************************************************
+// Method: LoadBalancer::GetScheme
+//
+// Purpose: 
+//   Return the static load balancing scheme.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 10 11:50:01 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+LoadBalanceScheme
+LoadBalancer::GetScheme()
+{
+    return LoadBalancer::scheme;
+}
+
+std::string
+LoadBalancer::GetSchemeAsString()
+{
+    std::string str;
+    switch(LoadBalancer::scheme)
+    {
+    case LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER:
+        str = "Contiguous Blocks Together";
+        break;
+    case LOAD_BALANCE_STRIDE_ACROSS_BLOCKS:
+        str = "Stride Across Blocks";
+        break;
+    case LOAD_BALANCE_RANDOM_ASSIGNMENT:
+        str = "Random Assignment";
+        break;
+    case LOAD_BALANCE_DBPLUGIN_DYNAMIC:
+        str = "Database Plugin Dynamic";
+        break;
+    case LOAD_BALANCE_RESTRICTED:
+        str = "Restricted";
+        break;
+    case LOAD_BALANCE_ABSOLUTE:
+        str = "Absolute";
+        break;
+    case LOAD_BALANCE_STREAM:
+        str = "Stream";
+        break;
+    default:
+        break;
+    }
+    return str;
 }
 
 // ****************************************************************************

@@ -68,6 +68,7 @@
 #include <CloneNetworkRPC.h>
 #include <ConstructDataBinningRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
+#include <EnginePropertiesRPC.h>
 #include <ExecuteRPC.h>
 #include <ExportDatabaseRPC.h>
 #include <KeepAliveRPC.h>
@@ -1106,6 +1107,35 @@ RPCExecutor<ProcInfoRPC>::Execute(ProcInfoRPC *rpc)
     TRY
     {
         rpc->SendReply(engine->GetProcessAttributes());
+    }
+    CATCH2(VisItException, e)
+    {
+        rpc->SendError(e.Message(), e.GetExceptionType());
+    }
+    ENDTRY
+}
+
+// ****************************************************************************
+//  Method: RPCExecutor<EnginePropertiesRPC>::Execute
+//
+//  Purpose:  Execute a request for process infor.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Oct 10 11:17:03 PDT 2011
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<EnginePropertiesRPC>::Execute(EnginePropertiesRPC *rpc)
+{
+    Engine *engine = Engine::Instance();
+
+    debug2 << "Executing EnginePropertiesRPC: " << endl;
+
+    TRY
+    {
+        EngineProperties props(engine->GetEngineProperties());
+        rpc->SendReply(&props);
     }
     CATCH2(VisItException, e)
     {

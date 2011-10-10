@@ -3720,7 +3720,7 @@ visit_CloseComputeEngine(PyObject *self, PyObject *args)
     MUTEX_LOCK();
          if(useFirstEngine)
          {
-             const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
+             const stringVector &engines = GetViewerState()->GetEngineList()->GetEngineName();
              const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
              if(engines.size() > 0)
              {
@@ -3730,7 +3730,7 @@ visit_CloseComputeEngine(PyObject *self, PyObject *args)
          }
          else if (useFirstSimulation)
          {
-             const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
+             const stringVector &engines = GetViewerState()->GetEngineList()->GetEngineName();
              const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
              for (int i=0; i<engines.size(); i++)
              {
@@ -4972,7 +4972,7 @@ visit_GetEngineList(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     // Allocate a tuple the with enough entries to hold the engine list.
-    const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
+    const stringVector &engines = GetViewerState()->GetEngineList()->GetEngineName();
     PyObject *retval = PyTuple_New(engines.size());
     for(int i = 0; i < engines.size(); ++i)
     {
@@ -14171,7 +14171,7 @@ visit_LoadNamedSelection(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         if(useFirstEngine)
         {
-            const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
+            const stringVector &engines = GetViewerState()->GetEngineList()->GetEngineName();
             const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
             if(engines.size() > 0)
             {
@@ -14181,7 +14181,7 @@ visit_LoadNamedSelection(PyObject *self, PyObject *args)
         }
         else if (useFirstSimulation)
         {
-            const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
+            const stringVector &engines = GetViewerState()->GetEngineList()->GetEngineName();
             const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
             for (int i=0; i<engines.size(); i++)
             {

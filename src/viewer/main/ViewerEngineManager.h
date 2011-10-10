@@ -48,6 +48,7 @@
 #include <avtDataObjectReader.h>
 #include <vectortypes.h>
 #include <EngineKey.h>
+#include <EngineProperties.h>
 #include <MachineProfile.h>
 #include <ExternalRenderRequestInfo.h>
 
@@ -311,6 +312,9 @@ class SelectionProperties;
 //    Brad Whitlock, Mon Aug 22 10:48:39 PDT 2011
 //    Remove ApplyNamedSelection.
 //
+//    Brad Whitlock, Mon Oct 10 12:26:40 PDT 2011
+//    Store EngineProperties with the engine information.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -318,8 +322,9 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
 {
     struct EngineInformation
     {
-        EngineProxy *proxy;
-        MachineProfile  profile;
+        EngineProxy     *proxy;
+        EngineProperties properties;
+        MachineProfile   profile;
     };
   public:
     virtual ~ViewerEngineManager();

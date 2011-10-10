@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+  <Attribute name="EngineProperties" purpose="This class contains properties about running engines." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="numNodes" type="int">
+      -1
+    </Field>
+    <Field name="numProcessors" type="int">
+      1
+    </Field>
+    <Field name="numProcessorsUsingGPUs" type="int">
+      0
+    </Field>
+    <Field name="dynamicLoadBalancing" type="bool">
+      false
+    </Field>
+    <Field name="loadBalancingScheme" type="string">
+    </Field>
+  </Attribute>

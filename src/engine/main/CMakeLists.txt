@@ -215,6 +215,10 @@ IF(VISIT_PARALLEL)
         SET_TARGET_PROPERTIES(engine_par PROPERTIES 
             COMPILE_DEFINITIONS ${PAR_DEFS}
         )
+        IF(APPLE)
+            # We need to link with OpenGL on Mac when we have IceT.
+            SET(ICET_OPENGL ${OPENGL_gl_LIBRARY})
+        ENDIF(APPLE)
     ENDIF(ICET_FOUND)
 
     TARGET_LINK_LIBRARIES(engine_par
@@ -227,7 +231,7 @@ IF(VISIT_PARALLEL)
         avtviswindow_par
         avtpipeline_par
         cognomen
-        ${ICET_LIB}
+        ${ICET_LIB} ${ICET_OPENGL}
     )
 
     IF(VISIT_NOLINK_MPI_WITH_LIBRARIES)

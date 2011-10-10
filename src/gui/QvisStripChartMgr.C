@@ -871,9 +871,9 @@ int QvisStripChartMgr::sendCMD(QString sig, const QObject *ui, QString value)
     }
 
     // check that there is at least one engine
-    const stringVector &s = engines->GetEngines();
+    const stringVector &s = engines->GetEngineName();
     if ( s.size() < 1) return 0;
-    string host = engines->GetEngines()[simIndex];
+    string host = engines->GetEngineName()[simIndex];
     string sim  = engines->GetSimulationName()[simIndex];
 
     QString cmd = sig + ";" + ui->objectName() + ";" + ui->metaObject()->className() + ";" +
@@ -906,9 +906,9 @@ int QvisStripChartMgr::sendCMD(QString cmd)
         return -1;
     }
     // check that there is at least one engine
-    const stringVector &s = engines->GetEngines();
+    const stringVector &s = engines->GetEngineName();
     if ( s.size() < 1) return 0;
-    string host = engines->GetEngines()[simIndex];
+    string host = engines->GetEngineName()[simIndex];
     string sim  = engines->GetSimulationName()[simIndex];
     viewer->GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString());
     return 0;

@@ -8667,7 +8667,7 @@ ViewerSubject::ProcessSpecialOpcodes(int opcode)
         debug1 << "Interrupt: telling engines to interrupt." << endl;
         ViewerEngineManager *eM = ViewerEngineManager::Instance();
         EngineList *engines = eM->GetEngineList();
-        const stringVector &hosts = engines->GetEngines();
+        const stringVector &hosts = engines->GetEngineName();
         const stringVector &sims  = engines->GetSimulationName();
         for(int i = 0; i < hosts.size(); ++i)
             eM->InterruptEngine(EngineKey(hosts[i], sims[i]));

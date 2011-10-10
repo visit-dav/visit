@@ -46,6 +46,7 @@
 #include <QMessageBox>
 
 #include <EngineList.h>
+#include <EngineProperties.h>
 #include <StatusAttributes.h>
 #include <UnicodeHelper.h>
 #include <ViewerProxy.h>
@@ -143,6 +144,9 @@ QvisEngineWindow::~QvisEngineWindow()
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Brad Whitlock, Mon Oct 10 12:55:52 PDT 2011
+//    I added some information.
+//
 // ****************************************************************************
 
 void
@@ -169,20 +173,40 @@ QvisEngineWindow::CreateWindowContents()
     QGridLayout *infoLayout = new QGridLayout();
     infoTopLayout->addLayout(infoLayout);
 
-    engineNP = new QLabel(engineInfo);
-    infoLayout->addWidget(engineNP, 0, 1);
-    QLabel *engineNPLabel = new QLabel(tr("Number of processors:"),engineInfo);
-    infoLayout->addWidget(engineNPLabel, 0, 0);
-
+    int row = 0;
     engineNN = new QLabel(engineInfo);
-    infoLayout->addWidget(engineNN, 1, 1);
-    QLabel *engineNNLabel = new QLabel(tr("Number of nodes:"),engineInfo);
-    infoLayout->addWidget(engineNNLabel, 1, 0);
+    infoLayout->addWidget(engineNN, row, 1);
+    QLabel *engineNNLabel = new QLabel(tr("Nodes:"),engineInfo);
+    infoLayout->addWidget(engineNNLabel, row, 0);
+    ++row;
+
+    engineNP = new QLabel(engineInfo);
+    infoLayout->addWidget(engineNP, row, 1);
+    QLabel *engineNPLabel = new QLabel(tr("Processors:"),engineInfo);
+    infoLayout->addWidget(engineNPLabel, row, 0);
+    ++row;
+
+    QString gpuTxt(tr("The number of processors using GPUs is affected using "
+        "the controls of the GPU Acceleration tab in the Host Profiles window."));
+    engineNP_GPU = new QLabel(engineInfo);
+    engineNP_GPU->setToolTip(gpuTxt);
+    infoLayout->addWidget(engineNP_GPU, row, 1);
+    QLabel *engineNPGPULabel = new QLabel(tr("Processors using GPUs:"),engineInfo);
+    engineNPGPULabel->setToolTip(gpuTxt);
+    infoLayout->addWidget(engineNPGPULabel, row, 0);
+    ++row;
 
     engineLB = new QLabel(engineInfo);
-    infoLayout->addWidget(engineLB, 2, 1);
+    infoLayout->addWidget(engineLB, row, 1);
     QLabel *engineLBLabel = new QLabel(tr("Load balancing:"),engineInfo);
-    infoLayout->addWidget(engineLBLabel, 2, 0);
+    infoLayout->addWidget(engineLBLabel, row, 0);
+    ++row;
+
+    engineLB_Scheme = new QLabel(engineInfo);
+    infoLayout->addWidget(engineLB_Scheme, row, 1);
+    QLabel *engineLBSLabel = new QLabel(tr("Domain assignment:"),engineInfo);
+    infoLayout->addWidget(engineLBSLabel, row, 0);
+    ++row;
 
     // Create the status bars.
     totalStatusLabel = new QLabel(tr("Total status:"), central);
@@ -315,7 +339,7 @@ QvisEngineWindow::UpdateWindow(bool doAll)
 {
     if(caller == engines || doAll)
     {
-        const stringVector &host = engines->GetEngines();
+        const stringVector &host = engines->GetEngineName();
         const stringVector &sim  = engines->GetSimulationName();
 
         // Add the engines to the widget.
@@ -418,20 +442,25 @@ QvisEngineWindow::UpdateWindow(bool doAll)
 //    Jeremy Meredith, Tue Mar 30 09:34:03 PST 2004
 //    I added support for simulations.
 //
+//    Brad Whitlock, Mon Oct 10 12:49:25 PDT 2011
+//    I added more information.
+//
 // ****************************************************************************
 
 void
 QvisEngineWindow::UpdateInformation(int index)
 {
-    const stringVector &s = engines->GetEngines();
+    const stringVector &s = engines->GetEngineName();
 
     // Set the values of the engine information widgets.
     if(index == -1 || s.size() < 1)
     {
         engineLabel->setText(tr("Engine:"));
-        engineNP->setText("");
         engineNN->setText("");
+        engineNP->setText("");
+        engineNP_GPU->setText("");
         engineLB->setText("");
+        engineLB_Scheme->setText("");
         engineInfo->setEnabled(false);
     }
     else
@@ -447,22 +476,26 @@ QvisEngineWindow::UpdateInformation(int index)
             closeEngineButton->setText(tr("Close engine"));
         }
 
-        QString tmp;
-        tmp.sprintf("%d", engines->GetNumProcessors()[index]);
-        engineNP->setText(tmp);
+        const EngineProperties &props = engines->GetProperties(index);
 
-        if(engines->GetNumNodes()[index] == -1)
+        if(props.GetNumNodes() == -1)
             engineNN->setText(tr("Default"));
         else 
-        {
-            tmp.sprintf("%d", engines->GetNumNodes()[index]);
-            engineNN->setText(tmp);
-        }
+            engineNN->setText(QString("%1").arg(props.GetNumNodes()));
 
-        if(engines->GetLoadBalancing()[index] == 0)
-            engineLB->setText(tr("Static"));
-        else
+        engineNP->setText(QString("%1").arg(props.GetNumProcessors()));
+        engineNP_GPU->setText(QString("%1").arg(props.GetNumProcessorsUsingGPUs()));
+
+        if(props.GetDynamicLoadBalancing())
+        {
             engineLB->setText(tr("Dynamic"));
+            engineLB_Scheme->setText(tr("Dynamic"));
+        }
+        else
+        {
+            engineLB->setText(tr("Static"));
+            engineLB_Scheme->setText(props.GetLoadBalancingScheme().c_str());
+        }
 
         engineInfo->setEnabled(true);
     }
@@ -699,7 +732,7 @@ QvisEngineWindow::closeEngine()
     if (index < 0)
         return;
 
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
     // Create a prompt for the user.
@@ -753,7 +786,7 @@ QvisEngineWindow::interruptEngine()
     int index = engineCombo->currentIndex();
     if (index < 0)
         return;
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
     GetViewerProxy()->InterruptComputeEngine(host, sim);
@@ -784,7 +817,7 @@ QvisEngineWindow::clearCache()
     int index = engineCombo->currentIndex();
     if (index < 0)
         return;
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
     if(GetViewerProxy()->GetLocalHostName() == host)
@@ -820,10 +853,10 @@ QvisEngineWindow::selectEngine(int index)
 {
     if (engines->GetSimulationName()[index]=="")
         activeEngine = QString().sprintf("%s",
-                                         engines->GetEngines()[index].c_str());
+                                         engines->GetEngineName()[index].c_str());
     else
         activeEngine = QString().sprintf("%s:%s",
-                                  engines->GetEngines()[index].c_str(),
+                                  engines->GetEngineName()[index].c_str(),
                                   engines->GetSimulationName()[index].c_str());
 
     // Update the rest of the widgets using the information for the

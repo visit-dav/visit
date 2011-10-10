@@ -112,7 +112,7 @@ int SimCommandSlots::SendCMD(QString sig, const QObject *ui, QString value)
         return -1;
     }
 
-    string host = engines->GetEngines()[simIndex];
+    string host = engines->GetEngineName()[simIndex];
     string sim  = engines->GetSimulationName()[simIndex];
 
     QString cmd = QString("UI;%1;%2;%3;%4").arg(ui->objectName())

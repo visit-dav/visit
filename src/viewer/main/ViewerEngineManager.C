@@ -423,6 +423,9 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    I added the ability to use a gateway machine when connecting to a
 //    remote host.
 //
+//    Brad Whitlock, Mon Oct 10 12:30:54 PDT 2011
+//    Replace a keep-alive with a call to get engine properties.
+//
 // ****************************************************************************
 
 bool
@@ -556,13 +559,10 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
                                   OpenWithLauncher, (void *)dialog, true);
             }
 
-            // Do a keep alive immediately to ensure that data is sent
-            // over the engine socket. The other 2 sockets share data when
-            // exchanging type representations on connect. This ensures that
-            // data has come through all sockets, thwarting some evil firewalls
-            // that try to close sockets that don't send data within some
-            // small amount of time.
-            newEngine.proxy->SendKeepAlive();
+            // Request the engine properties so we have a better idea of
+            // what we're talking to. This also takes the place of a keep-alive
+            // that used to be here.
+            newEngine.properties = newEngine.proxy->GetEngineProperties();
         }
         CATCHALL
         {
@@ -726,6 +726,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    I added the ability to use a gateway machine when connecting to a
 //    remote host.
 //
+//    Brad Whitlock, Mon Oct 10 12:32:22 PDT 2011
+//    Get the engine properties.
+//
 // ****************************************************************************
 
 bool
@@ -822,6 +825,8 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
                           useGateway, gatewayHost,
                           SimConnectThroughLauncher, (void *)&simData,
                           true);
+
+        newEngine.properties = newEngine.proxy->GetEngineProperties();
 
         engines[ek] = newEngine;
 
@@ -2576,14 +2581,15 @@ ViewerEngineManager::RemoveFailedEngine(const EngineKey &ek)
 //   Brad Whitlock, Wed Aug 4 17:28:35 PST 2004
 //   Changed EngineMap.
 //
+//   Brad Whitlock, Mon Oct 10 12:36:58 PDT 2011
+//   Rewrite.
+//
 // ****************************************************************************
 
 void
 ViewerEngineManager::UpdateEngineList()
 {
     vector<EngineKey> ids;
-    stringVector hostNames, simulationNames;
-    intVector    numProcs, numNodes, loadBalancing;
     
     // Go through the list of engines and add each engine to the engine list
     // that gets returned to the viewer's client.
@@ -2597,27 +2603,22 @@ ViewerEngineManager::UpdateEngineList()
     if (ids.size() > 1)
         std::sort(ids.begin(), ids.end());
 
+    EngineList newEL;
+
     // Add the other information about the engine.
     for(i = 0; i < ids.size(); ++i) 
     {
         EngineKey ek = ids[i];
         if (EngineExists(ek))
         {
-            EngineProxy *engine = engines[ek].proxy;
-            numProcs.push_back(engine->NumProcessors());
-            numNodes.push_back(engine->NumNodes());
-            loadBalancing.push_back(engine->LoadBalancing());
-            hostNames.push_back(ek.HostName());
-            simulationNames.push_back(ek.SimName());
+            newEL.GetEngineName().push_back(ek.HostName());
+            newEL.GetSimulationName().push_back(ek.SimName());
+            newEL.AddProperties(engines[ek].properties);
         }
     }
 
     // Send the engine list to the viewer's client.
-    clientEngineAtts->SetEngines(hostNames);
-    clientEngineAtts->SetSimulationName(simulationNames);
-    clientEngineAtts->SetNumProcessors(numProcs);
-    clientEngineAtts->SetNumNodes(numNodes);
-    clientEngineAtts->SetLoadBalancing(loadBalancing);
+    *clientEngineAtts = newEL;
     clientEngineAtts->Notify();
 }
 
