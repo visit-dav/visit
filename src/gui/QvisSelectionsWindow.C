@@ -795,7 +795,7 @@ QvisSelectionsWindow::GetLoadHost() const
     }
     if(loadHost.isEmpty())
     {
-        stringVector engines(engineList->GetEngines());
+        const stringVector &engines = engineList->GetEngineName();
         if(engines.size() == 1) 
             loadHost = QString(engines[0].c_str());
     }

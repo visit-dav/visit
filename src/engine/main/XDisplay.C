@@ -105,6 +105,25 @@ XDisplay::~XDisplay()
 }
 
 // ****************************************************************************
+// Method: XDisplay::GetDisplayType
+//
+// Purpose: 
+//   Return the display type.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 10 11:39:18 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VisItDisplay::DisplayType
+XDisplay::GetDisplayType() const
+{
+    return VisItDisplay::D_X;
+}
+
+// ****************************************************************************
 //  Method: XDisplay::Initialize
 //
 //  Purpose:

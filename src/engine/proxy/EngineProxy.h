@@ -53,6 +53,7 @@
 #include <CloneNetworkRPC.h>
 #include <ConstructDataBinningRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
+#include <EnginePropertiesRPC.h>
 #include <ExportDatabaseRPC.h>
 #include <MakePlotRPC.h>
 #include <NamedSelectionRPC.h>
@@ -445,6 +446,7 @@ public:
     void                     ExecuteSimulationControlCommand(
                                                       const std::string &cmd,
                                                       const std::string &arg);
+    EngineProperties         GetEngineProperties();
 
 protected:
     virtual void             SetupComponentRPCs();
@@ -484,6 +486,7 @@ private:
     ConstructDataBinningRPC  constructDataBinningRPC;
     NamedSelectionRPC        namedSelectionRPC;
     SetEFileOpenOptionsRPC   setEFileOpenOptionsRPC;
+    EnginePropertiesRPC      enginePropertiesRPC;
 
     // For indicating status.
     StatusAttributes        *statusAtts;

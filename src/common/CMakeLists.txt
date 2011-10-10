@@ -217,6 +217,7 @@ state/DataNode.C
 state/DBOptionsAttributes.C
 state/DBPluginInfoAttributes.C
 state/EngineList.C
+state/EngineProperties.C
 state/ExportDBAttributes.C
 state/Expression.C
 state/ExpressionList.C

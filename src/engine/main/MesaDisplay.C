@@ -76,6 +76,25 @@ MesaDisplay::~MesaDisplay()
 }
 
 // ****************************************************************************
+// Method: XDisplay::GetDisplayType
+//
+// Purpose: 
+//   Return the display type.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 10 11:39:18 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VisItDisplay::DisplayType
+MesaDisplay::GetDisplayType() const
+{
+    return VisItDisplay::D_MESA;
+}
+
+// ****************************************************************************
 //  Method: MesaDisplay::Initialize
 //
 //  Purpose:

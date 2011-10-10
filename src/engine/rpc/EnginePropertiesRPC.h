@@ -36,45 +36,40 @@
 *
 *****************************************************************************/
 
-#ifndef VISIT_MESA_DISPLAY_H
-#define VISIT_MESA_DISPLAY_H
-
-#include <VisItDisplay.h>
-#include <engine_main_exports.h>
+#ifndef ENGINE_PROPERTIES_RPC_H 
+#define ENGINE_PROPERTIES_RPC_H 
+#include <engine_rpc_exports.h>
+#include <VisItRPC.h>
+#include <EngineProperties.h>
 
 // ****************************************************************************
-//  Class:  MesaDisplay
+//  Class:  EnginePropertiesRPC
 //
 //  Purpose:
-//    Initializes a Mesa display; mostly delegates to InitVTK.
+//    Implements an RPC to get engine properties.
 //
-//  Programmer:  Tom Fogal
-//  Creation:    September 1, 2008
-//
-//  Modifications:
-//
-//    Tom Fogal, Tue May 25 16:08:23 MDT 2010
-//    Made connect return a bool.
-//
-//    Tom Fogal, Wed May  4 14:59:45 MDT 2011
-//    'Initialize' changed signature.
-//
-//    Brad Whitlock, Mon Oct 10 11:40:10 PDT 2011
-//    Added GetDisplayType.
+//  Programmer:  Brad Whitlock
+//  Creation:    Mon Oct 10 11:11:05 PDT 2011
 //
 // ****************************************************************************
 
-class ENGINE_MAIN_API MesaDisplay : public VisItDisplay
+class ENGINE_RPC_API EnginePropertiesRPC : public NonBlockingRPC
 {
-  public:
-                   MesaDisplay();
-    virtual       ~MesaDisplay();
+public:
+    EnginePropertiesRPC();
+    virtual ~EnginePropertiesRPC() { };
 
-    virtual bool   Initialize(std::string display,
-                              const std::vector<std::string> &args);
-    virtual bool   Connect();
-    virtual void   Teardown();
+    virtual const std::string TypeName() const { return "EnginePropertiesRPC"; }
 
-    virtual DisplayType GetDisplayType() const;
+    // Invokation method
+    void operator()() { Execute(); };
+
+    void SelectAll() { };
+
+    // Property getting methods
+    EngineProperties GetReturnAtts() { return returnAtts; } ; 
+
+    EngineProperties returnAtts; 
 };
-#endif /* VISIT_MESA_DISPLAY_H */
+
+#endif

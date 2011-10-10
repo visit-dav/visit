@@ -83,6 +83,9 @@ class StatusAttributes;
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Brad Whitlock, Mon Oct 10 12:40:06 PDT 2011
+//    I added more information.
+//
 // ****************************************************************************
 
 class GUI_API QvisEngineWindow : public QvisPostableWindowObserver
@@ -122,9 +125,11 @@ private:
     QLabel           *engineLabel;
     QComboBox        *engineCombo;
     QGroupBox        *engineInfo;
-    QLabel           *engineNP;
     QLabel           *engineNN;
+    QLabel           *engineNP;
+    QLabel           *engineNP_GPU;
     QLabel           *engineLB;
+    QLabel           *engineLB_Scheme;
     QLabel           *totalStatusLabel;
     QProgressBar     *totalProgressBar;
     QLabel           *stageStatusLabel;

@@ -39,7 +39,6 @@
 package llnl.visit;
 
 import java.util.Vector;
-import java.lang.Integer;
 
 // ****************************************************************************
 // Class: EngineList
@@ -58,28 +57,24 @@ import java.lang.Integer;
 
 public class EngineList extends AttributeSubject
 {
-    private static int EngineList_numAdditionalAtts = 5;
+    private static int EngineList_numAdditionalAtts = 3;
 
     public EngineList()
     {
         super(EngineList_numAdditionalAtts);
 
-        engines = new Vector();
-        numProcessors = new Vector();
-        numNodes = new Vector();
-        loadBalancing = new Vector();
+        engineName = new Vector();
         simulationName = new Vector();
+        properties = new Vector();
     }
 
     public EngineList(int nMoreFields)
     {
         super(EngineList_numAdditionalAtts + nMoreFields);
 
-        engines = new Vector();
-        numProcessors = new Vector();
-        numNodes = new Vector();
-        loadBalancing = new Vector();
+        engineName = new Vector();
         simulationName = new Vector();
+        properties = new Vector();
     }
 
     public EngineList(EngineList obj)
@@ -88,31 +83,21 @@ public class EngineList extends AttributeSubject
 
         int i;
 
-        engines = new Vector(obj.engines.size());
-        for(i = 0; i < obj.engines.size(); ++i)
-            engines.addElement(new String((String)obj.engines.elementAt(i)));
+        engineName = new Vector(obj.engineName.size());
+        for(i = 0; i < obj.engineName.size(); ++i)
+            engineName.addElement(new String((String)obj.engineName.elementAt(i)));
 
-        numProcessors = new Vector();
-        for(i = 0; i < obj.numProcessors.size(); ++i)
-        {
-            Integer iv = (Integer)obj.numProcessors.elementAt(i);
-            numProcessors.addElement(new Integer(iv.intValue()));
-        }
-        numNodes = new Vector();
-        for(i = 0; i < obj.numNodes.size(); ++i)
-        {
-            Integer iv = (Integer)obj.numNodes.elementAt(i);
-            numNodes.addElement(new Integer(iv.intValue()));
-        }
-        loadBalancing = new Vector();
-        for(i = 0; i < obj.loadBalancing.size(); ++i)
-        {
-            Integer iv = (Integer)obj.loadBalancing.elementAt(i);
-            loadBalancing.addElement(new Integer(iv.intValue()));
-        }
         simulationName = new Vector(obj.simulationName.size());
         for(i = 0; i < obj.simulationName.size(); ++i)
             simulationName.addElement(new String((String)obj.simulationName.elementAt(i)));
+
+        // *** Copy the properties field ***
+        properties = new Vector(obj.properties.size());
+        for(i = 0; i < obj.properties.size(); ++i)
+        {
+            EngineProperties oldObj = (EngineProperties)obj.properties.elementAt(i);
+            properties.addElement(new EngineProperties(oldObj));
+        }
 
 
         SelectAll();
@@ -132,41 +117,14 @@ public class EngineList extends AttributeSubject
     {
         int i;
 
-        // Compare the elements in the engines vector.
-        boolean engines_equal = (obj.engines.size() == engines.size());
-        for(i = 0; (i < engines.size()) && engines_equal; ++i)
+        // Compare the elements in the engineName vector.
+        boolean engineName_equal = (obj.engineName.size() == engineName.size());
+        for(i = 0; (i < engineName.size()) && engineName_equal; ++i)
         {
             // Make references to String from Object.
-            String engines1 = (String)engines.elementAt(i);
-            String engines2 = (String)obj.engines.elementAt(i);
-            engines_equal = engines1.equals(engines2);
-        }
-        // Compare the elements in the numProcessors vector.
-        boolean numProcessors_equal = (obj.numProcessors.size() == numProcessors.size());
-        for(i = 0; (i < numProcessors.size()) && numProcessors_equal; ++i)
-        {
-            // Make references to Integer from Object.
-            Integer numProcessors1 = (Integer)numProcessors.elementAt(i);
-            Integer numProcessors2 = (Integer)obj.numProcessors.elementAt(i);
-            numProcessors_equal = numProcessors1.equals(numProcessors2);
-        }
-        // Compare the elements in the numNodes vector.
-        boolean numNodes_equal = (obj.numNodes.size() == numNodes.size());
-        for(i = 0; (i < numNodes.size()) && numNodes_equal; ++i)
-        {
-            // Make references to Integer from Object.
-            Integer numNodes1 = (Integer)numNodes.elementAt(i);
-            Integer numNodes2 = (Integer)obj.numNodes.elementAt(i);
-            numNodes_equal = numNodes1.equals(numNodes2);
-        }
-        // Compare the elements in the loadBalancing vector.
-        boolean loadBalancing_equal = (obj.loadBalancing.size() == loadBalancing.size());
-        for(i = 0; (i < loadBalancing.size()) && loadBalancing_equal; ++i)
-        {
-            // Make references to Integer from Object.
-            Integer loadBalancing1 = (Integer)loadBalancing.elementAt(i);
-            Integer loadBalancing2 = (Integer)obj.loadBalancing.elementAt(i);
-            loadBalancing_equal = loadBalancing1.equals(loadBalancing2);
+            String engineName1 = (String)engineName.elementAt(i);
+            String engineName2 = (String)obj.engineName.elementAt(i);
+            engineName_equal = engineName1.equals(engineName2);
         }
         // Compare the elements in the simulationName vector.
         boolean simulationName_equal = (obj.simulationName.size() == simulationName.size());
@@ -177,65 +135,55 @@ public class EngineList extends AttributeSubject
             String simulationName2 = (String)obj.simulationName.elementAt(i);
             simulationName_equal = simulationName1.equals(simulationName2);
         }
+        // Compare the elements in the properties vector.
+        boolean properties_equal = (obj.properties.size() == properties.size());
+        for(i = 0; (i < properties.size()) && properties_equal; ++i)
+        {
+            // Make references to EngineProperties from Object.
+            EngineProperties properties1 = (EngineProperties)properties.elementAt(i);
+            EngineProperties properties2 = (EngineProperties)obj.properties.elementAt(i);
+            properties_equal = properties1.equals(properties2);
+        }
         // Create the return value
-        return (engines_equal &&
-                numProcessors_equal &&
-                numNodes_equal &&
-                loadBalancing_equal &&
-                simulationName_equal);
+        return (engineName_equal &&
+                simulationName_equal &&
+                properties_equal);
     }
 
     // Property setting methods
-    public void SetEngines(Vector engines_)
+    public void SetEngineName(Vector engineName_)
     {
-        engines = engines_;
+        engineName = engineName_;
         Select(0);
-    }
-
-    public void SetNumProcessors(Vector numProcessors_)
-    {
-        numProcessors = numProcessors_;
-        Select(1);
-    }
-
-    public void SetNumNodes(Vector numNodes_)
-    {
-        numNodes = numNodes_;
-        Select(2);
-    }
-
-    public void SetLoadBalancing(Vector loadBalancing_)
-    {
-        loadBalancing = loadBalancing_;
-        Select(3);
     }
 
     public void SetSimulationName(Vector simulationName_)
     {
         simulationName = simulationName_;
-        Select(4);
+        Select(1);
     }
 
     // Property getting methods
-    public Vector GetEngines() { return engines; }
-    public Vector GetNumProcessors() { return numProcessors; }
-    public Vector GetNumNodes() { return numNodes; }
-    public Vector GetLoadBalancing() { return loadBalancing; }
+    public Vector GetEngineName() { return engineName; }
     public Vector GetSimulationName() { return simulationName; }
+    public Vector GetProperties() { return properties; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteStringVector(engines);
+            buf.WriteStringVector(engineName);
         if(WriteSelect(1, buf))
-            buf.WriteIntVector(numProcessors);
-        if(WriteSelect(2, buf))
-            buf.WriteIntVector(numNodes);
-        if(WriteSelect(3, buf))
-            buf.WriteIntVector(loadBalancing);
-        if(WriteSelect(4, buf))
             buf.WriteStringVector(simulationName);
+        if(WriteSelect(2, buf))
+        {
+            buf.WriteInt(properties.size());
+            for(int i = 0; i < properties.size(); ++i)
+            {
+                EngineProperties tmp = (EngineProperties)properties.elementAt(i);
+                tmp.Write(buf);
+            }
+        }
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -243,19 +191,23 @@ public class EngineList extends AttributeSubject
         switch(index)
         {
         case 0:
-            SetEngines(buf.ReadStringVector());
+            SetEngineName(buf.ReadStringVector());
             break;
         case 1:
-            SetNumProcessors(buf.ReadIntVector());
+            SetSimulationName(buf.ReadStringVector());
             break;
         case 2:
-            SetNumNodes(buf.ReadIntVector());
-            break;
-        case 3:
-            SetLoadBalancing(buf.ReadIntVector());
-            break;
-        case 4:
-            SetSimulationName(buf.ReadStringVector());
+            {
+                int len = buf.ReadInt();
+                properties.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    EngineProperties tmp = new EngineProperties();
+                    tmp.Read(buf);
+                    properties.addElement(tmp);
+                }
+            }
+            Select(2);
             break;
         }
     }
@@ -263,20 +215,58 @@ public class EngineList extends AttributeSubject
     public String toString(String indent)
     {
         String str = new String();
-        str = str + stringVectorToString("engines", engines, indent) + "\n";
-        str = str + intVectorToString("numProcessors", numProcessors, indent) + "\n";
-        str = str + intVectorToString("numNodes", numNodes, indent) + "\n";
-        str = str + intVectorToString("loadBalancing", loadBalancing, indent) + "\n";
+        str = str + stringVectorToString("engineName", engineName, indent) + "\n";
         str = str + stringVectorToString("simulationName", simulationName, indent) + "\n";
+        str = str + indent + "properties = {\n";
+        for(int i = 0; i < properties.size(); ++i)
+        {
+            AttributeSubject s = (AttributeSubject)properties.elementAt(i);
+            str = str + s.toString(indent + "    ");
+            if(i < properties.size()-1)
+                str = str + ", ";
+            str = str + "\n";
+        }
+        str = str + "}\n";
         return str;
+    }
+
+    // Attributegroup convenience methods
+    public void AddProperties(EngineProperties obj)
+    {
+        properties.addElement(new EngineProperties(obj));
+        Select(2);
+    }
+
+    public void ClearProperties()
+    {
+        properties.clear();
+        Select(2);
+    }
+
+    public void RemoveProperties(int index)
+    {
+        if(index >= 0 && index < properties.size())
+        {
+            properties.remove(index);
+            Select(2);
+        }
+    }
+
+    public int GetNumProperties()
+    {
+        return properties.size();
+    }
+
+    public EngineProperties GetProperties(int i)
+    {
+        EngineProperties tmp = (EngineProperties)properties.elementAt(i);
+        return tmp;
     }
 
 
     // Attributes
-    private Vector engines; // vector of String objects
-    private Vector numProcessors; // vector of Integer objects
-    private Vector numNodes; // vector of Integer objects
-    private Vector loadBalancing; // vector of Integer objects
+    private Vector engineName; // vector of String objects
     private Vector simulationName; // vector of String objects
+    private Vector properties; // vector of EngineProperties objects
 }
 

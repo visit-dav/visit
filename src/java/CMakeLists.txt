@@ -101,6 +101,7 @@ DBPluginInfoAttributes.java
 DatabaseCorrelation.java 
 DatabaseCorrelationList.java 
 EngineList.java 
+EngineProperties.java 
 ExportDBAttributes.java 
 Expression.java 
 ExpressionList.java 

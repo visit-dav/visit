@@ -63,6 +63,9 @@
 //    Tom Fogal, Wed May  4 14:30:00 MDT 2011
 //    Change display to a string for more flexibility.
 //
+//    Brad Whitlock, Mon Oct 10 11:40:10 PDT 2011
+//    Added GetDisplayType.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API XDisplay : public VisItDisplay
@@ -75,6 +78,8 @@ class ENGINE_MAIN_API XDisplay : public VisItDisplay
                               const std::vector<std::string> &args);
     virtual bool   Connect();
     virtual void   Teardown();
+
+    virtual DisplayType GetDisplayType() const;
 
     // Tell the implementation whether it should launch the X server or just
     // use it.  Must be set before Initialize!

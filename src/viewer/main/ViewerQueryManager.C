@@ -5560,7 +5560,7 @@ ViewerQueryManager::GetQueryParameters(const string &qName)
         // see if we can find an engine key another way.
         ViewerEngineManager *em = ViewerEngineManager::Instance();
         EngineList *engines = em->GetEngineList();
-        const stringVector &hosts = engines->GetEngines();
+        const stringVector &hosts = engines->GetEngineName();
         const stringVector &sims  = engines->GetSimulationName();
         if (hosts.empty())
         {

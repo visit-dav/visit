@@ -66,6 +66,7 @@
 
 #include <DebugStream.h>
 #include <EngineList.h>
+#include <EngineProperties.h>
 #include <SimulationUIValues.h>
 #include <StatusAttributes.h>
 #include <ViewerProxy.h>
@@ -886,7 +887,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 {
     if (caller == engines || doAll)
     {
-        const stringVector &host = engines->GetEngines();
+        const stringVector &host = engines->GetEngineName();
         const stringVector &sim  = engines->GetSimulationName();
 
         // If we have zero hosts but we have a dynamic command window then
@@ -1072,9 +1073,9 @@ QvisSimulationWindow::MakeKey(const std::string &host, const std::string &sim) c
 int
 QvisSimulationWindow::GetEngineListIndex(const QString &key) const
 {
-    for(int i = 0; i < engines->GetEngines().size(); ++i)
+    for(int i = 0; i < engines->GetEngineName().size(); ++i)
     {
-        QString testkey(MakeKey(engines->GetEngines()[i],
+        QString testkey(MakeKey(engines->GetEngineName()[i],
                                 engines->GetSimulationName()[i]));
         if(testkey == key)
             return i;
@@ -1130,7 +1131,7 @@ QvisSimulationWindow::GetEngineListIndex(const QString &key) const
 void
 QvisSimulationWindow::UpdateInformation()
 {
-    const stringVector &s = engines->GetEngines();
+    const stringVector &s = engines->GetEngineName();
     debug5 << "Update Information was called" << endl;
 
     // Clear the sim information.
@@ -1153,10 +1154,10 @@ QvisSimulationWindow::UpdateInformation()
         int index = GetEngineListIndex(activeEngine);
         int np = 1;
         std::string sim;
-        if(index >= 0 && index < engines->GetEngines().size())
+        if(index >= 0 && index < engines->GetEngineName().size())
         {
             sim = engines->GetSimulationName()[index];
-            np = engines->GetNumProcessors()[index];
+            np = engines->GetProperties(index).GetNumProcessors();
         }
 
         // Use the metadata we looked up to populate the window.
@@ -1623,7 +1624,7 @@ QvisSimulationWindow::closeEngine()
         return;
     int index = simulationToEngineListMap[simindex];
 
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
     // Create a prompt for the user.
@@ -1677,7 +1678,7 @@ QvisSimulationWindow::interruptEngine()
         return;
     int index = simulationToEngineListMap[simindex];
 
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
     GetViewerProxy()->InterruptComputeEngine(host, sim);
@@ -1706,7 +1707,7 @@ void
 QvisSimulationWindow::selectEngine(int simindex)
 {
     int index = simulationToEngineListMap[simindex];
-    activeEngine = MakeKey(engines->GetEngines()[index],
+    activeEngine = MakeKey(engines->GetEngineName()[index],
                            engines->GetSimulationName()[index]);
 
     // Update the rest of the widgets using the information for the
@@ -1743,7 +1744,7 @@ QvisSimulationWindow::clearCache()
         return;
     int index = simulationToEngineListMap[simindex];
 
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
     if (GetViewerProxy()->GetLocalHostName() == host)
@@ -1804,7 +1805,7 @@ QvisSimulationWindow::executePushButtonCommand(const QString &btncmd)
     if (simindex < 0)
         return;
     int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
     QString cmd(btncmd);
@@ -1834,7 +1835,7 @@ QvisSimulationWindow::executeEnableTimeRange(const QString &value)
     if (simindex < 0)
         return;
     int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
     QString cmd("TimeLimitsEnabled");
@@ -1870,7 +1871,7 @@ QvisSimulationWindow::executeStartCommand(const QString &value)
     if (simindex < 0)
         return;
     int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
     QString cmd("StartCycle");
@@ -1905,7 +1906,7 @@ QvisSimulationWindow::executeStepCommand(const QString &value)
     if (simindex < 0)
         return;
     int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
     QString cmd("StepCycle");
@@ -1936,7 +1937,7 @@ QvisSimulationWindow::executeStopCommand(const QString &value)
     if (simindex < 0)
         return;
     int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
     QString cmd("StopCycle");
@@ -1971,7 +1972,7 @@ QvisSimulationWindow::ViewerSendCMD (int simIndex, QString cmd)
     if (simIndex < 0)
         return;
     int index = simulationToEngineListMap[simIndex];
-    string host = engines->GetEngines()[index];
+    string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
     GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString().c_str());
 }

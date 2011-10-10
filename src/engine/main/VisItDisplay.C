@@ -145,16 +145,16 @@ split(std::string str, size_t node, size_t display)
 //
 // ****************************************************************************
 VisItDisplay *
-VDisplay::Create(enum visitDisplayType vtype)
+VDisplay::Create(VisItDisplay::DisplayType vtype)
 {
     switch(vtype)
     {
-        case D_MESA:
+        case VisItDisplay::D_MESA:
             debug3 << "Creating Mesa (SW-based) display." << std::endl;
             return new MesaDisplay();
             break;
 #ifndef WIN32
-        case D_X:
+        case VisItDisplay::D_X:
             debug3 << "Creating X (HW-based) display." << std::endl;
             return new XDisplay();
             break;
