@@ -1331,6 +1331,9 @@ QvisCMFEWizard::GetMeshForTargetDatabase(void)
 //   expression. Also account for difference variables that contain special
 //   characters.
 //
+//   Hank Childs, Mon Oct 10 10:54:45 PDT 2011
+//   Increment the expression name after creating the CMFE.  (cmfe0->cmfe1)
+//
 // ****************************************************************************
 
 void
@@ -1421,6 +1424,12 @@ QvisCMFEWizard::AddCMFEExpression(void)
     const std::string &active_src = windowInfo->GetActiveSource();
     if(active_src != decision_targetDatabase)
         GetViewerMethods()->ActivateDatabase(decision_targetDatabase);
+
+    char str[1024];
+    SNPRINTF(str, 1024, "cmfe%d", timesCompleted);
+    decision_exprname = str;
+    exprNameTxt->setText(tr(decision_exprname.c_str()));
+    timesCompleted++;
 }
 
 
