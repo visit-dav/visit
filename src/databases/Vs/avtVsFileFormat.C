@@ -2505,12 +2505,12 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       if( meshMetaPtr->isStructuredMesh() || meshMetaPtr->isUnstructuredMesh() )
         numTopologicalDims -= 1;
 
-      if( varDims.size() - (int) isAComponent != numTopologicalDims )
+      if (varDims.size() - (int) isAComponent != numTopologicalDims )
       {
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "Var and mesh do not have the topological dimension"
-                          << "Returning NULL." << std::endl;
-        return NULL;
+                          << "WARNING: We don't think that var and mesh have the same topological dimension." <<std::endl;
+        //                          << "Returning NULL." << std::endl;
+        //return NULL;
       }
 
       // For unstructured data, the variable can be subselected only when
