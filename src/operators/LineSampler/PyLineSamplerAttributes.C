@@ -256,19 +256,19 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sarrayPlotOffset = %g\n", prefix, atts->GetArrayPlotOffset());
     str += tmpStr;
-    const char *viewTime_names = "Step, Time, Cycle";
-    switch (atts->GetViewTime())
+    const char *displayTime_names = "Step, Time, Cycle";
+    switch (atts->GetDisplayTime())
     {
       case LineSamplerAttributes::Step:
-          SNPRINTF(tmpStr, 1000, "%sviewTime = %sStep  # %s\n", prefix, prefix, viewTime_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayTime = %sStep  # %s\n", prefix, prefix, displayTime_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Time:
-          SNPRINTF(tmpStr, 1000, "%sviewTime = %sTime  # %s\n", prefix, prefix, viewTime_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayTime = %sTime  # %s\n", prefix, prefix, displayTime_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Cycle:
-          SNPRINTF(tmpStr, 1000, "%sviewTime = %sCycle  # %s\n", prefix, prefix, viewTime_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayTime = %sCycle  # %s\n", prefix, prefix, displayTime_names);
           str += tmpStr;
           break;
       default:
@@ -1154,7 +1154,7 @@ LineSamplerAttributes_GetArrayPlotOffset(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetViewTime(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetDisplayTime(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
@@ -1162,12 +1162,12 @@ LineSamplerAttributes_SetViewTime(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the viewTime in the object.
+    // Set the displayTime in the object.
     if(ival >= 0 && ival < 3)
-        obj->data->SetViewTime(LineSamplerAttributes::ViewTime(ival));
+        obj->data->SetDisplayTime(LineSamplerAttributes::DisplayTime(ival));
     else
     {
-        fprintf(stderr, "An invalid viewTime value was given. "
+        fprintf(stderr, "An invalid displayTime value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Step, Time, Cycle.");
@@ -1179,10 +1179,10 @@ LineSamplerAttributes_SetViewTime(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetViewTime(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetDisplayTime(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetViewTime()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplayTime()));
     return retval;
 }
 
@@ -1924,8 +1924,8 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetChannelPlotOffset", LineSamplerAttributes_GetChannelPlotOffset, METH_VARARGS},
     {"SetArrayPlotOffset", LineSamplerAttributes_SetArrayPlotOffset, METH_VARARGS},
     {"GetArrayPlotOffset", LineSamplerAttributes_GetArrayPlotOffset, METH_VARARGS},
-    {"SetViewTime", LineSamplerAttributes_SetViewTime, METH_VARARGS},
-    {"GetViewTime", LineSamplerAttributes_GetViewTime, METH_VARARGS},
+    {"SetDisplayTime", LineSamplerAttributes_SetDisplayTime, METH_VARARGS},
+    {"GetDisplayTime", LineSamplerAttributes_GetDisplayTime, METH_VARARGS},
     {"SetChannelGeometry", LineSamplerAttributes_SetChannelGeometry, METH_VARARGS},
     {"GetChannelGeometry", LineSamplerAttributes_GetChannelGeometry, METH_VARARGS},
     {"SetRadius", LineSamplerAttributes_SetRadius, METH_VARARGS},
@@ -2096,8 +2096,8 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return LineSamplerAttributes_GetChannelPlotOffset(self, NULL);
     if(strcmp(name, "arrayPlotOffset") == 0)
         return LineSamplerAttributes_GetArrayPlotOffset(self, NULL);
-    if(strcmp(name, "viewTime") == 0)
-        return LineSamplerAttributes_GetViewTime(self, NULL);
+    if(strcmp(name, "displayTime") == 0)
+        return LineSamplerAttributes_GetDisplayTime(self, NULL);
     if(strcmp(name, "Step") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Step));
     if(strcmp(name, "Time") == 0)
@@ -2251,8 +2251,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetChannelPlotOffset(self, tuple);
     else if(strcmp(name, "arrayPlotOffset") == 0)
         obj = LineSamplerAttributes_SetArrayPlotOffset(self, tuple);
-    else if(strcmp(name, "viewTime") == 0)
-        obj = LineSamplerAttributes_SetViewTime(self, tuple);
+    else if(strcmp(name, "displayTime") == 0)
+        obj = LineSamplerAttributes_SetDisplayTime(self, tuple);
     else if(strcmp(name, "channelGeometry") == 0)
         obj = LineSamplerAttributes_SetChannelGeometry(self, tuple);
     else if(strcmp(name, "radius") == 0)

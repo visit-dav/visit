@@ -109,7 +109,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void poloialZTiltProcessText();
     void toroidalAngleProcessText();
     void viewGeometryChanged(int val);
-    void viewTimeChanged(int val);
+    void displayTimeChanged(int val);
     void viewDimensionChanged(int val);
     void heightPlotScaleProcessText();
     void channelPlotOffsetProcessText();
@@ -201,8 +201,8 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QButtonGroup *viewDimensionButtonGroup;
     QWidget      *viewGeometry;
     QButtonGroup *viewGeometryButtonGroup;
-    QWidget      *viewTime;
-    QButtonGroup *viewTimeButtonGroup;
+    QWidget      *displayTime;
+    QButtonGroup *displayTimeButtonGroup;
     QLineEdit *heightPlotScale;
     QLineEdit *channelPlotOffset;
     QLineEdit *arrayPlotOffset;
@@ -262,7 +262,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLabel *poloialZTiltLabel;
     QLabel *toroidalAngleLabel;
     QLabel *viewGeometryLabel;
-    QLabel *viewTimeLabel;
+    QLabel *displayTimeLabel;
     QLabel *viewDimensionLabel;
     QLabel *heightPlotScaleLabel;
     QLabel *channelPlotOffsetLabel;

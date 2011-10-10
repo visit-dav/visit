@@ -866,31 +866,31 @@ QvisLineSamplerWindow::CreateWindowContents()
     oneDPlotLayout->addWidget(arrayPlotOffset,2,1);
 
     // Time axis
-    viewTimeLabel = new QLabel(tr("View time"), central);
-    oneDPlotLayout->addWidget(viewTimeLabel,3,0);
+    displayTimeLabel = new QLabel(tr("Display time using"), central);
+    oneDPlotLayout->addWidget(displayTimeLabel,3,0);
 
-    viewTime = new QWidget(central);
-    viewTimeButtonGroup= new QButtonGroup(viewTime);
-    QHBoxLayout *viewTimeLayout = new QHBoxLayout(viewTime);
-    viewTimeLayout->setMargin(0);
-    viewTimeLayout->setSpacing(10);
+    displayTime = new QWidget(central);
+    displayTimeButtonGroup= new QButtonGroup(displayTime);
+    QHBoxLayout *displayTimeLayout = new QHBoxLayout(displayTime);
+    displayTimeLayout->setMargin(0);
+    displayTimeLayout->setSpacing(10);
 
-    QRadioButton *viewTimeOne = new QRadioButton(tr("Step"), viewTime);
-    viewTimeButtonGroup->addButton(viewTimeOne,0);
-    viewTimeLayout->addWidget(viewTimeOne);
+    QRadioButton *displayTimeStep = new QRadioButton(tr("Step"), displayTime);
+    displayTimeButtonGroup->addButton(displayTimeStep,0);
+    displayTimeLayout->addWidget(displayTimeStep);
 
-    QRadioButton *viewTimeTwo = new QRadioButton(tr("Time"), viewTime);
-    viewTimeButtonGroup->addButton(viewTimeTwo,1);
-    viewTimeLayout->addWidget(viewTimeTwo);
+    QRadioButton *displayTimeTime = new QRadioButton(tr("Time"), displayTime);
+    displayTimeButtonGroup->addButton(displayTimeTime,1);
+    displayTimeLayout->addWidget(displayTimeTime);
 
-    QRadioButton *viewTimeThree = new QRadioButton(tr("Cycle"), viewTime);
-    viewTimeButtonGroup->addButton(viewTimeThree,2);
-    viewTimeLayout->addWidget(viewTimeThree);
+    QRadioButton *displayTimeCycle = new QRadioButton(tr("Cycle"), displayTime);
+    displayTimeButtonGroup->addButton(displayTimeCycle,2);
+    displayTimeLayout->addWidget(displayTimeCycle);
 
-    connect(viewTimeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(viewTimeChanged(int)));
+    connect(displayTimeButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(displayTimeChanged(int)));
 
-    oneDPlotLayout->addWidget(viewTime,3,1);
+    oneDPlotLayout->addWidget(displayTime,3,1);
 
     // Create the misc group box.
     QGroupBox *miscGroup = new QGroupBox(viewTab);
@@ -1071,11 +1071,11 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 viewGeometryButtonGroup->button((int)atts->GetViewGeometry())->setChecked(true);
             viewGeometryButtonGroup->blockSignals(false);
             break;
-          case LineSamplerAttributes::ID_viewTime:
-            viewTimeButtonGroup->blockSignals(true);
-            if(viewTimeButtonGroup->button((int)atts->GetViewTime()) != 0)
-                viewTimeButtonGroup->button((int)atts->GetViewTime())->setChecked(true);
-            viewTimeButtonGroup->blockSignals(false);
+          case LineSamplerAttributes::ID_displayTime:
+            displayTimeButtonGroup->blockSignals(true);
+            if(displayTimeButtonGroup->button((int)atts->GetDisplayTime()) != 0)
+                displayTimeButtonGroup->button((int)atts->GetDisplayTime())->setChecked(true);
+            displayTimeButtonGroup->blockSignals(false);
             break;
           case LineSamplerAttributes::ID_viewDimension:
             viewDimensionButtonGroup->blockSignals(true);
@@ -1150,6 +1150,12 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 toroidalIntegrationButtonGroup->button((int)atts->GetToroidalIntegration())->setChecked(true);
             toroidalIntegrationButtonGroup->blockSignals(false);
             toroidalGroup->setEnabled( (int)atts->GetToroidalIntegration() == 1 );
+
+            displayTimeLabel->setEnabled( (int)atts->GetTimeSampling()==1 &&
+                                          (int)atts->GetToroidalIntegration()==0);
+
+            displayTime->setEnabled( (int)atts->GetTimeSampling()==1 &&
+                                     (int)atts->GetToroidalIntegration()==0);
             break;
           case LineSamplerAttributes::ID_toroidalAngleSampling:
             toroidalAngleSamplingButtonGroup->blockSignals(true);
@@ -1172,11 +1178,11 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 timeSamplingButtonGroup->button((int)atts->GetTimeSampling())->setChecked(true);
             timeSamplingButtonGroup->blockSignals(false);
             
-            viewTimeLabel->setEnabled( (int)atts->GetTimeSampling()==1 &&
-                                       (int)atts->GetToroidalIntegration()==0);
+            displayTimeLabel->setEnabled( (int)atts->GetTimeSampling()==1 &&
+                                          (int)atts->GetToroidalIntegration()==0);
 
-            viewTime->setEnabled( (int)atts->GetTimeSampling()==1 &&
-                                  (int)atts->GetToroidalIntegration()==0);
+            displayTime->setEnabled( (int)atts->GetTimeSampling()==1 &&
+                                     (int)atts->GetToroidalIntegration()==0);
 
             timeStepLabel->setEnabled((int)atts->GetTimeSampling()==1);
             timeStepStartLabel->setEnabled((int)atts->GetTimeSampling()==1);
@@ -1934,11 +1940,11 @@ QvisLineSamplerWindow::viewGeometryChanged(int val)
 
 
 void
-QvisLineSamplerWindow::viewTimeChanged(int val)
+QvisLineSamplerWindow::displayTimeChanged(int val)
 {
-    if(val != atts->GetViewTime())
+    if(val != atts->GetDisplayTime())
     {
-        atts->SetViewTime(LineSamplerAttributes::ViewTime(val));
+        atts->SetDisplayTime(LineSamplerAttributes::DisplayTime(val));
         Apply();
     }
 }

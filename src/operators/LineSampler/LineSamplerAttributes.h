@@ -97,7 +97,7 @@ public:
         Lines,
         Surfaces
     };
-    enum ViewTime
+    enum DisplayTime
     {
         Step,
         Time,
@@ -198,7 +198,7 @@ public:
     void SetHeightPlotScale(double heightPlotScale_);
     void SetChannelPlotOffset(double channelPlotOffset_);
     void SetArrayPlotOffset(double arrayPlotOffset_);
-    void SetViewTime(ViewTime viewTime_);
+    void SetDisplayTime(DisplayTime displayTime_);
     void SetChannelGeometry(ChannelGeometry channelGeometry_);
     void SetRadius(double radius_);
     void SetDivergence(double divergence_);
@@ -250,7 +250,7 @@ public:
     double             GetHeightPlotScale() const;
     double             GetChannelPlotOffset() const;
     double             GetArrayPlotOffset() const;
-    ViewTime           GetViewTime() const;
+    DisplayTime        GetDisplayTime() const;
     ChannelGeometry    GetChannelGeometry() const;
     double             GetRadius() const;
     double             GetDivergence() const;
@@ -317,10 +317,10 @@ public:
 protected:
     static std::string ViewGeometry_ToString(int);
 public:
-    static std::string ViewTime_ToString(ViewTime);
-    static bool ViewTime_FromString(const std::string &, ViewTime &);
+    static std::string DisplayTime_ToString(DisplayTime);
+    static bool DisplayTime_FromString(const std::string &, DisplayTime &);
 protected:
-    static std::string ViewTime_ToString(int);
+    static std::string DisplayTime_ToString(int);
 public:
     static std::string ChannelGeometry_ToString(ChannelGeometry);
     static bool ChannelGeometry_FromString(const std::string &, ChannelGeometry &);
@@ -392,7 +392,7 @@ public:
         ID_heightPlotScale,
         ID_channelPlotOffset,
         ID_arrayPlotOffset,
-        ID_viewTime,
+        ID_displayTime,
         ID_channelGeometry,
         ID_radius,
         ID_divergence,
@@ -445,7 +445,7 @@ private:
     double       heightPlotScale;
     double       channelPlotOffset;
     double       arrayPlotOffset;
-    int          viewTime;
+    int          displayTime;
     int          channelGeometry;
     double       radius;
     double       divergence;

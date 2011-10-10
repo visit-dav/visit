@@ -33,7 +33,7 @@
         Lines
         Surfaces
       </Enum>
-      <Enum name="ViewTime">
+      <Enum name="DisplayTime">
         Step
         Time
         Cycle
@@ -149,7 +149,7 @@
       <Field name="arrayPlotOffset" label="1D plot array offset" type="double">
         1.000000
       </Field>
-      <Field name="viewTime" label="View time" type="enum" subtype="ViewTime">
+      <Field name="displayTime" label="View time" type="enum" subtype="DisplayTime">
         Step
       </Field>
       <Field name="channelGeometry" label="Channel geometry" type="enum" subtype="ChannelGeometry">

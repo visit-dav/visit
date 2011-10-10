@@ -87,9 +87,9 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public final static int VIEWGEOMETRY_LINES = 1;
     public final static int VIEWGEOMETRY_SURFACES = 2;
 
-    public final static int VIEWTIME_STEP = 0;
-    public final static int VIEWTIME_TIME = 1;
-    public final static int VIEWTIME_CYCLE = 2;
+    public final static int DISPLAYTIME_STEP = 0;
+    public final static int DISPLAYTIME_TIME = 1;
+    public final static int DISPLAYTIME_CYCLE = 2;
 
     public final static int CHANNELGEOMETRY_POINT = 0;
     public final static int CHANNELGEOMETRY_LINE = 1;
@@ -149,7 +149,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         heightPlotScale = 1;
         channelPlotOffset = 0;
         arrayPlotOffset = 1;
-        viewTime = VIEWTIME_STEP;
+        displayTime = DISPLAYTIME_STEP;
         channelGeometry = CHANNELGEOMETRY_LINE;
         radius = 0.1;
         divergence = 1;
@@ -213,7 +213,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         heightPlotScale = 1;
         channelPlotOffset = 0;
         arrayPlotOffset = 1;
-        viewTime = VIEWTIME_STEP;
+        displayTime = DISPLAYTIME_STEP;
         channelGeometry = CHANNELGEOMETRY_LINE;
         radius = 0.1;
         divergence = 1;
@@ -280,7 +280,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         heightPlotScale = obj.heightPlotScale;
         channelPlotOffset = obj.channelPlotOffset;
         arrayPlotOffset = obj.arrayPlotOffset;
-        viewTime = obj.viewTime;
+        displayTime = obj.displayTime;
         channelGeometry = obj.channelGeometry;
         radius = obj.radius;
         divergence = obj.divergence;
@@ -383,7 +383,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
                 (heightPlotScale == obj.heightPlotScale) &&
                 (channelPlotOffset == obj.channelPlotOffset) &&
                 (arrayPlotOffset == obj.arrayPlotOffset) &&
-                (viewTime == obj.viewTime) &&
+                (displayTime == obj.displayTime) &&
                 (channelGeometry == obj.channelGeometry) &&
                 (radius == obj.radius) &&
                 (divergence == obj.divergence) &&
@@ -573,9 +573,9 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         Select(24);
     }
 
-    public void SetViewTime(int viewTime_)
+    public void SetDisplayTime(int displayTime_)
     {
-        viewTime = viewTime_;
+        displayTime = displayTime_;
         Select(25);
     }
 
@@ -743,7 +743,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public double   GetHeightPlotScale() { return heightPlotScale; }
     public double   GetChannelPlotOffset() { return channelPlotOffset; }
     public double   GetArrayPlotOffset() { return arrayPlotOffset; }
-    public int      GetViewTime() { return viewTime; }
+    public int      GetDisplayTime() { return displayTime; }
     public int      GetChannelGeometry() { return channelGeometry; }
     public double   GetRadius() { return radius; }
     public double   GetDivergence() { return divergence; }
@@ -822,7 +822,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(24, buf))
             buf.WriteDouble(arrayPlotOffset);
         if(WriteSelect(25, buf))
-            buf.WriteInt(viewTime);
+            buf.WriteInt(displayTime);
         if(WriteSelect(26, buf))
             buf.WriteInt(channelGeometry);
         if(WriteSelect(27, buf))
@@ -951,7 +951,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             SetArrayPlotOffset(buf.ReadDouble());
             break;
         case 25:
-            SetViewTime(buf.ReadInt());
+            SetDisplayTime(buf.ReadInt());
             break;
         case 26:
             SetChannelGeometry(buf.ReadInt());
@@ -1099,13 +1099,13 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("heightPlotScale", heightPlotScale, indent) + "\n";
         str = str + doubleToString("channelPlotOffset", channelPlotOffset, indent) + "\n";
         str = str + doubleToString("arrayPlotOffset", arrayPlotOffset, indent) + "\n";
-        str = str + indent + "viewTime = ";
-        if(viewTime == VIEWTIME_STEP)
-            str = str + "VIEWTIME_STEP";
-        if(viewTime == VIEWTIME_TIME)
-            str = str + "VIEWTIME_TIME";
-        if(viewTime == VIEWTIME_CYCLE)
-            str = str + "VIEWTIME_CYCLE";
+        str = str + indent + "displayTime = ";
+        if(displayTime == DISPLAYTIME_STEP)
+            str = str + "DISPLAYTIME_STEP";
+        if(displayTime == DISPLAYTIME_TIME)
+            str = str + "DISPLAYTIME_TIME";
+        if(displayTime == DISPLAYTIME_CYCLE)
+            str = str + "DISPLAYTIME_CYCLE";
         str = str + "\n";
         str = str + indent + "channelGeometry = ";
         if(channelGeometry == CHANNELGEOMETRY_POINT)
@@ -1196,7 +1196,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     private double   heightPlotScale;
     private double   channelPlotOffset;
     private double   arrayPlotOffset;
-    private int      viewTime;
+    private int      displayTime;
     private int      channelGeometry;
     private double   radius;
     private double   divergence;
