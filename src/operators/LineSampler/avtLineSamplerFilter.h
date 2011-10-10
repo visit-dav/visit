@@ -130,6 +130,9 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
     vtkDataSet *composite_ds;
 
     double cachedAngle;
+
+    bool validTimeAxis;
+    double lastTimeStep;
 };
 
 #endif

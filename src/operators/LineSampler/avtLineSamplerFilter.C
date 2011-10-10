@@ -75,7 +75,7 @@
 // ****************************************************************************
 
 avtLineSamplerFilter::avtLineSamplerFilter() :
-  composite_ds(0)
+  composite_ds(0), cachedAngle(0), validTimeAxis(true), lastTimeStep(-1.0e12)
 {
 }
 
@@ -282,19 +282,6 @@ avtLineSamplerFilter::Execute()
 
     vtkDataSet *tmp_ds;
 
-    int timestep;
-
-    if( atts.GetViewTime() == LineSamplerAttributes::Time &&
-        GetInput()->GetInfo().GetAttributes().TimeIsAccurate() )
-      timestep = GetInput()->GetInfo().GetAttributes().GetTime();
-
-    else if( atts.GetViewTime() == LineSamplerAttributes::Cycle &&
-             GetInput()->GetInfo().GetAttributes().CycleIsAccurate() )
-      timestep = GetInput()->GetInfo().GetAttributes().GetCycle();
-
-    else
-      timestep = currentTime;
-
     double startAngle, stopAngle, deltaAngle;
 
     if( atts.GetToroidalIntegration() ==
@@ -403,7 +390,7 @@ avtLineSamplerFilter::Execute()
           // Get the next point and update its coordinates if necessary
           vtkDataArray *scalars = tmp_ds->GetPointData()->GetScalars();
 
-          double nextPathPoint[3] = { timestep,
+          double nextPathPoint[3] = { 0,
                                       i+heightPlotScale * *(scalars->GetTuple(i)),
                                       0 };
 
@@ -419,7 +406,23 @@ avtLineSamplerFilter::Execute()
           else if( atts.GetTimeSampling() ==
               LineSamplerAttributes::MultipleTimeSteps )
           {
-              nextPathPoint[0] = timestep;
+            if( atts.GetDisplayTime() == LineSamplerAttributes::Time &&
+                GetInput()->GetInfo().GetAttributes().TimeIsAccurate() )
+              nextPathPoint[0] =
+                GetInput()->GetInfo().GetAttributes().GetTime();
+            
+            else if( atts.GetDisplayTime() == LineSamplerAttributes::Cycle &&
+                     GetInput()->GetInfo().GetAttributes().CycleIsAccurate() )
+              nextPathPoint[0] =
+                GetInput()->GetInfo().GetAttributes().GetCycle();
+            else
+              nextPathPoint[0] = currentTime;
+
+            if( lastTimeStep >= nextPathPoint[0] )
+              validTimeAxis = false;
+
+            lastTimeStep = nextPathPoint[0];
+
           }
           else if( atts.GetToroidalIntegration() ==
                    LineSamplerAttributes::ToroidalTimeSample )
@@ -2060,84 +2063,105 @@ avtLineSamplerFilter::ExecutionSuccessful(void)
 void
 avtLineSamplerFilter::CreateFinalOutput(void)
 {
-     if( composite_ds )
-     {
-       avtDataTree_p newTree = new avtDataTree(composite_ds, 0);
-       SetOutputDataTree(newTree);
+
+  if( !validTimeAxis )
+  {
+    std::string msg;
+
+    if( atts.GetDisplayTime() == LineSamplerAttributes::Time )
+      msg += "The time ";
+    else if( atts.GetDisplayTime() == LineSamplerAttributes::Cycle )
+      msg += "The cycle. ";
+    else 
+      msg += "The time step ";
+
+
+    msg += std::string("axis values are present but not valid ") +
+      std::string("(not in increasing order). ") +
+      std::string("The resulting plot may not be correct. ") +
+      std::string("Try using another value for the displaying the time axis.");
+                       
+    avtCallback::IssueWarning(msg.c_str());
+  }
+
+  if( composite_ds )
+  {
+    avtDataTree_p newTree = new avtDataTree(composite_ds, 0);
+    SetOutputDataTree(newTree);
        
-       double bounds[6];
-       composite_ds->Update();
-       composite_ds->GetBounds( bounds );
+    double bounds[6];
+    composite_ds->Update();
+    composite_ds->GetBounds( bounds );
 
-       avtExtents newExtents(3);
-       newExtents.Set( bounds );
+    avtExtents newExtents(3);
+    newExtents.Set( bounds );
 
-       avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
-       avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
 
-       (*outAtts.GetOriginalSpatialExtents()) = newExtents;
-       (*outAtts.GetThisProcsOriginalSpatialExtents()) = newExtents;
-       (*outAtts.GetDesiredSpatialExtents()) = newExtents;
-       (*outAtts.GetActualSpatialExtents()) = newExtents;
+    (*outAtts.GetOriginalSpatialExtents()) = newExtents;
+    (*outAtts.GetThisProcsOriginalSpatialExtents()) = newExtents;
+    (*outAtts.GetDesiredSpatialExtents()) = newExtents;
+    (*outAtts.GetActualSpatialExtents()) = newExtents;
 
-       GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
-       GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
+    GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
+    GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 
-       if( atts.GetViewDimension() == LineSamplerAttributes::One )
-       {
-         outAtts.SetTopologicalDimension(1);
-         outAtts.SetSpatialDimension(2);
+    if( atts.GetViewDimension() == LineSamplerAttributes::One )
+    {
+      outAtts.SetTopologicalDimension(1);
+      outAtts.SetSpatialDimension(2);
+      
+      if( atts.GetChannelIntegration() ==
+          LineSamplerAttributes::NoChannelIntegration )
+      {
+        outAtts.SetYLabel( inAtts.GetVariableName() );
+        outAtts.SetYUnits( inAtts.GetVariableUnits() );
+      }
 
-         if( atts.GetChannelIntegration() ==
-             LineSamplerAttributes::NoChannelIntegration )
-         {
-           outAtts.SetYLabel( inAtts.GetVariableName() );
-           outAtts.SetYUnits( inAtts.GetVariableUnits() );
-         }
-
-         else if( atts.GetChannelIntegration() ==
-                  LineSamplerAttributes::IntegrateAlongChannel )
-         {
-           outAtts.SetYLabel( "Integrated " + inAtts.GetVariableName() );
-           outAtts.SetYUnits( inAtts.GetVariableUnits() );
-         }
+      else if( atts.GetChannelIntegration() ==
+               LineSamplerAttributes::IntegrateAlongChannel )
+      {
+        outAtts.SetYLabel( "Integrated " + inAtts.GetVariableName() );
+        outAtts.SetYUnits( inAtts.GetVariableUnits() );
+      }
 
 
-         if( atts.GetToroidalIntegration() ==
-             LineSamplerAttributes::ToroidalTimeSample &&
-             atts.GetTimeSampling() ==
-             LineSamplerAttributes::MultipleTimeSteps )
-         {
-           outAtts.SetXLabel("Time with Angle");
-           outAtts.SetXUnits("");
-         }
-         else if( atts.GetToroidalIntegration() ==
-                  LineSamplerAttributes::ToroidalTimeSample )
-         {
-           outAtts.SetXLabel("Angle");
-           outAtts.SetXUnits("Degrees");
-         }
-         else if( atts.GetTimeSampling() ==
-                  LineSamplerAttributes::MultipleTimeSteps )
-         {
-           if( atts.GetViewTime() == LineSamplerAttributes::Time &&
-               GetInput()->GetInfo().GetAttributes().TimeIsAccurate() )
-           {
-             outAtts.SetXLabel("Time");
-             outAtts.SetXUnits("seconds");
-           }
-           else if( atts.GetViewTime() == LineSamplerAttributes::Cycle &&
-                    GetInput()->GetInfo().GetAttributes().CycleIsAccurate() )
-           {
-             outAtts.SetXLabel("Cycles");
-             outAtts.SetXUnits("");
-           }
-           else
-           {
-             outAtts.SetXLabel("Time Step");
-             outAtts.SetXUnits("");
-           }
-         }
-       }
-     }
+      if( atts.GetToroidalIntegration() ==
+          LineSamplerAttributes::ToroidalTimeSample &&
+          atts.GetTimeSampling() ==
+          LineSamplerAttributes::MultipleTimeSteps )
+        {
+          outAtts.SetXLabel("Time with Angle");
+          outAtts.SetXUnits("");
+        }
+      else if( atts.GetToroidalIntegration() ==
+               LineSamplerAttributes::ToroidalTimeSample )
+      {
+        outAtts.SetXLabel("Angle");
+        outAtts.SetXUnits("Degrees");
+      }
+      else if( atts.GetTimeSampling() ==
+               LineSamplerAttributes::MultipleTimeSteps )
+      {
+        if( atts.GetDisplayTime() == LineSamplerAttributes::Time &&
+            GetInput()->GetInfo().GetAttributes().TimeIsAccurate() )
+        {
+          outAtts.SetXLabel("Time");
+          outAtts.SetXUnits("seconds");
+        }
+        else if( atts.GetDisplayTime() == LineSamplerAttributes::Cycle &&
+                 GetInput()->GetInfo().GetAttributes().CycleIsAccurate() )
+        {
+          outAtts.SetXLabel("Cycles");
+          outAtts.SetXUnits("");
+        }
+        else
+        {
+          outAtts.SetXLabel("Time Step");
+          outAtts.SetXUnits("");
+        }
+      }
+    }
+  }
 }
