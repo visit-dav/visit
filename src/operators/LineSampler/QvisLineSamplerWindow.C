@@ -802,36 +802,9 @@ QvisLineSamplerWindow::CreateWindowContents()
     
     mainLayout = new QGridLayout(viewTab);
 
-    viewGeometryLabel = new QLabel(tr("View geometry"), central);
-    mainLayout->addWidget(viewGeometryLabel,0,0);
-
-    viewGeometry = new QWidget(central);
-    viewGeometryButtonGroup= new QButtonGroup(viewGeometry);
-    QHBoxLayout *viewGeometryLayout = new QHBoxLayout(viewGeometry);
-    viewGeometryLayout->setMargin(0);
-    viewGeometryLayout->setSpacing(10);
-
-
-    QRadioButton *viewGeometryOne = new QRadioButton(tr("Points"), viewGeometry);
-    viewGeometryButtonGroup->addButton(viewGeometryOne,0);
-    viewGeometryLayout->addWidget(viewGeometryOne);
-
-    QRadioButton *viewGeometryTwo = new QRadioButton(tr("Lines"), viewGeometry);
-    viewGeometryButtonGroup->addButton(viewGeometryTwo,1);
-    viewGeometryLayout->addWidget(viewGeometryTwo);
-
-    QRadioButton *viewGeometryThree = new QRadioButton(tr("Surfaces"), viewGeometry);
-    viewGeometryButtonGroup->addButton(viewGeometryThree,2);
-    viewGeometryLayout->addWidget(viewGeometryThree);
-
-    connect(viewGeometryButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(viewGeometryChanged(int)));
-
-    mainLayout->addWidget(viewGeometry,0,1);
-
-
+    // View dimension
     viewDimensionLabel = new QLabel(tr("View dimension"), central);
-    mainLayout->addWidget(viewDimensionLabel,1,0);
+    mainLayout->addWidget(viewDimensionLabel,0,0);
 
     viewDimension = new QWidget(central);
     viewDimensionButtonGroup= new QButtonGroup(viewDimension);
@@ -855,13 +828,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     connect(viewDimensionButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(viewDimensionChanged(int)));
 
-    mainLayout->addWidget(viewDimension,1,1);
+    mainLayout->addWidget(viewDimension,0,1);
 
 
     // Create the oneDPlot group box.
     oneDPlotGroup = new QGroupBox(viewTab);
     oneDPlotGroup->setTitle(tr("1D Plot viewing parameters"));
-    mainLayout->addWidget(oneDPlotGroup, 2, 0, 2, 7);
+    mainLayout->addWidget(oneDPlotGroup, 1, 0, 4, 4);
 
     QGridLayout *oneDPlotLayout = new QGridLayout(oneDPlotGroup);
     oneDPlotLayout->setMargin(5);
@@ -892,13 +865,72 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(arrayPlotOffsetProcessText()));
     oneDPlotLayout->addWidget(arrayPlotOffset,2,1);
 
-    timePlotScaleLabel = new QLabel(tr("1D Plot Time scaling"), central);
-    oneDPlotLayout->addWidget(timePlotScaleLabel,3,0);
-    timePlotScale = new QLineEdit(central);
-    timePlotScale->setMaximumWidth(width);
-    connect(timePlotScale, SIGNAL(returnPressed()),
-            this, SLOT(timePlotScaleProcessText()));
-    oneDPlotLayout->addWidget(timePlotScale,3,1);
+    // Time axis
+    viewTimeLabel = new QLabel(tr("View time"), central);
+    oneDPlotLayout->addWidget(viewTimeLabel,3,0);
+
+    viewTime = new QWidget(central);
+    viewTimeButtonGroup= new QButtonGroup(viewTime);
+    QHBoxLayout *viewTimeLayout = new QHBoxLayout(viewTime);
+    viewTimeLayout->setMargin(0);
+    viewTimeLayout->setSpacing(10);
+
+    QRadioButton *viewTimeOne = new QRadioButton(tr("Step"), viewTime);
+    viewTimeButtonGroup->addButton(viewTimeOne,0);
+    viewTimeLayout->addWidget(viewTimeOne);
+
+    QRadioButton *viewTimeTwo = new QRadioButton(tr("Time"), viewTime);
+    viewTimeButtonGroup->addButton(viewTimeTwo,1);
+    viewTimeLayout->addWidget(viewTimeTwo);
+
+    QRadioButton *viewTimeThree = new QRadioButton(tr("Cycle"), viewTime);
+    viewTimeButtonGroup->addButton(viewTimeThree,2);
+    viewTimeLayout->addWidget(viewTimeThree);
+
+    connect(viewTimeButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(viewTimeChanged(int)));
+
+    oneDPlotLayout->addWidget(viewTime,3,1);
+
+    // Create the misc group box.
+    QGroupBox *miscGroup = new QGroupBox(viewTab);
+    miscGroup->setTitle(tr("Misc viewing parameters"));
+    mainLayout->addWidget(miscGroup, 5, 0, 2, 4);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+
+
+    viewGeometryLabel = new QLabel(tr("View geometry"), central);
+    miscLayout->addWidget(viewGeometryLabel,0,0);
+
+    viewGeometry = new QWidget(central);
+    viewGeometryButtonGroup= new QButtonGroup(viewGeometry);
+    QHBoxLayout *viewGeometryLayout = new QHBoxLayout(viewGeometry);
+    viewGeometryLayout->setMargin(0);
+    viewGeometryLayout->setSpacing(10);
+
+
+    QRadioButton *viewGeometryOne = new QRadioButton(tr("Points"), viewGeometry);
+    viewGeometryButtonGroup->addButton(viewGeometryOne,0);
+    viewGeometryLayout->addWidget(viewGeometryOne);
+
+    QRadioButton *viewGeometryTwo = new QRadioButton(tr("Lines"), viewGeometry);
+    viewGeometryButtonGroup->addButton(viewGeometryTwo,1);
+    viewGeometryLayout->addWidget(viewGeometryTwo);
+
+    QRadioButton *viewGeometryThree = new QRadioButton(tr("Surfaces"), viewGeometry);
+    viewGeometryButtonGroup->addButton(viewGeometryThree,2);
+    viewGeometryLayout->addWidget(viewGeometryThree);
+
+    connect(viewGeometryButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(viewGeometryChanged(int)));
+
+   miscLayout->addWidget(viewGeometry,0,1);
+
+
+
 }
 
 
@@ -1039,6 +1071,12 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 viewGeometryButtonGroup->button((int)atts->GetViewGeometry())->setChecked(true);
             viewGeometryButtonGroup->blockSignals(false);
             break;
+          case LineSamplerAttributes::ID_viewTime:
+            viewTimeButtonGroup->blockSignals(true);
+            if(viewTimeButtonGroup->button((int)atts->GetViewTime()) != 0)
+                viewTimeButtonGroup->button((int)atts->GetViewTime())->setChecked(true);
+            viewTimeButtonGroup->blockSignals(false);
+            break;
           case LineSamplerAttributes::ID_viewDimension:
             viewDimensionButtonGroup->blockSignals(true);
             if(viewDimensionButtonGroup->button((int)atts->GetViewDimension()) != 0)
@@ -1055,9 +1093,6 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             break;
           case LineSamplerAttributes::ID_arrayPlotOffset:
             arrayPlotOffset->setText(DoubleToQString(atts->GetArrayPlotOffset()));
-            break;
-          case LineSamplerAttributes::ID_timePlotScale:
-            timePlotScale->setText(DoubleToQString(atts->GetTimePlotScale()));
             break;
           case LineSamplerAttributes::ID_channelGeometry:
             channelGeometryButtonGroup->blockSignals(true);
@@ -1136,6 +1171,12 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             if(timeSamplingButtonGroup->button((int)atts->GetTimeSampling()) != 0)
                 timeSamplingButtonGroup->button((int)atts->GetTimeSampling())->setChecked(true);
             timeSamplingButtonGroup->blockSignals(false);
+            
+            viewTimeLabel->setEnabled( (int)atts->GetTimeSampling()==1 &&
+                                       (int)atts->GetToroidalIntegration()==0);
+
+            viewTime->setEnabled( (int)atts->GetTimeSampling()==1 &&
+                                  (int)atts->GetToroidalIntegration()==0);
 
             timeStepLabel->setEnabled((int)atts->GetTimeSampling()==1);
             timeStepStartLabel->setEnabled((int)atts->GetTimeSampling()==1);
@@ -1446,19 +1487,6 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do timePlotScale
-    if(which_widget == LineSamplerAttributes::ID_timePlotScale || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(timePlotScale, val))
-            atts->SetTimePlotScale(val);
-        else
-        {
-            ResettingError(tr("1D plot time scaling"),
-                DoubleToQString(atts->GetTimePlotScale()));
-            atts->SetTimePlotScale(atts->GetTimePlotScale());
-        }
-    }
 
     // Do radius
     if(which_widget == LineSamplerAttributes::ID_radius || doAll)
@@ -1906,6 +1934,17 @@ QvisLineSamplerWindow::viewGeometryChanged(int val)
 
 
 void
+QvisLineSamplerWindow::viewTimeChanged(int val)
+{
+    if(val != atts->GetViewTime())
+    {
+        atts->SetViewTime(LineSamplerAttributes::ViewTime(val));
+        Apply();
+    }
+}
+
+
+void
 QvisLineSamplerWindow::viewDimensionChanged(int val)
 {
     if(val != atts->GetViewDimension())
@@ -1936,14 +1975,6 @@ void
 QvisLineSamplerWindow::arrayPlotOffsetProcessText()
 {
     GetCurrentValues(LineSamplerAttributes::ID_arrayPlotOffset);
-    Apply();
-}
-
-
-void
-QvisLineSamplerWindow::timePlotScaleProcessText()
-{
-    GetCurrentValues(LineSamplerAttributes::ID_timePlotScale);
     Apply();
 }
 

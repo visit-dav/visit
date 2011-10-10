@@ -97,6 +97,12 @@ public:
         Lines,
         Surfaces
     };
+    enum ViewTime
+    {
+        Step,
+        Time,
+        Cycle
+    };
     enum ChannelGeometry
     {
         Point,
@@ -192,7 +198,7 @@ public:
     void SetHeightPlotScale(double heightPlotScale_);
     void SetChannelPlotOffset(double channelPlotOffset_);
     void SetArrayPlotOffset(double arrayPlotOffset_);
-    void SetTimePlotScale(double timePlotScale_);
+    void SetViewTime(ViewTime viewTime_);
     void SetChannelGeometry(ChannelGeometry channelGeometry_);
     void SetRadius(double radius_);
     void SetDivergence(double divergence_);
@@ -244,7 +250,7 @@ public:
     double             GetHeightPlotScale() const;
     double             GetChannelPlotOffset() const;
     double             GetArrayPlotOffset() const;
-    double             GetTimePlotScale() const;
+    ViewTime           GetViewTime() const;
     ChannelGeometry    GetChannelGeometry() const;
     double             GetRadius() const;
     double             GetDivergence() const;
@@ -310,6 +316,11 @@ public:
     static bool ViewGeometry_FromString(const std::string &, ViewGeometry &);
 protected:
     static std::string ViewGeometry_ToString(int);
+public:
+    static std::string ViewTime_ToString(ViewTime);
+    static bool ViewTime_FromString(const std::string &, ViewTime &);
+protected:
+    static std::string ViewTime_ToString(int);
 public:
     static std::string ChannelGeometry_ToString(ChannelGeometry);
     static bool ChannelGeometry_FromString(const std::string &, ChannelGeometry &);
@@ -381,7 +392,7 @@ public:
         ID_heightPlotScale,
         ID_channelPlotOffset,
         ID_arrayPlotOffset,
-        ID_timePlotScale,
+        ID_viewTime,
         ID_channelGeometry,
         ID_radius,
         ID_divergence,
@@ -434,7 +445,7 @@ private:
     double       heightPlotScale;
     double       channelPlotOffset;
     double       arrayPlotOffset;
-    double       timePlotScale;
+    int          viewTime;
     int          channelGeometry;
     double       radius;
     double       divergence;
@@ -463,6 +474,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LINESAMPLERATTRIBUTES_TMFS "iiiidiiiddidDiddddddiiddddiddiddddiiidddiiiid*d*idd"
+#define LINESAMPLERATTRIBUTES_TMFS "iiiidiiiddidDiddddddiidddiiddiddddiiidddiiiid*d*idd"
 
 #endif

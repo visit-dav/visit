@@ -109,11 +109,11 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void poloialZTiltProcessText();
     void toroidalAngleProcessText();
     void viewGeometryChanged(int val);
+    void viewTimeChanged(int val);
     void viewDimensionChanged(int val);
     void heightPlotScaleProcessText();
     void channelPlotOffsetProcessText();
     void arrayPlotOffsetProcessText();
-    void timePlotScaleProcessText();
     void channelGeometryChanged(int val);
     void radiusProcessText();
 //     void divergenceProcessText();
@@ -201,10 +201,11 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QButtonGroup *viewDimensionButtonGroup;
     QWidget      *viewGeometry;
     QButtonGroup *viewGeometryButtonGroup;
+    QWidget      *viewTime;
+    QButtonGroup *viewTimeButtonGroup;
     QLineEdit *heightPlotScale;
     QLineEdit *channelPlotOffset;
     QLineEdit *arrayPlotOffset;
-    QLineEdit *timePlotScale;
     QWidget      *channelGeometry;
     QButtonGroup *channelGeometryButtonGroup;
     QLineEdit *radius;
@@ -261,11 +262,11 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLabel *poloialZTiltLabel;
     QLabel *toroidalAngleLabel;
     QLabel *viewGeometryLabel;
+    QLabel *viewTimeLabel;
     QLabel *viewDimensionLabel;
     QLabel *heightPlotScaleLabel;
     QLabel *channelPlotOffsetLabel;
     QLabel *arrayPlotOffsetLabel;
-    QLabel *timePlotScaleLabel;
     QLabel *channelGeometryLabel;
     QLabel *radiusLabel;
 //     QLabel *divergenceLabel;
