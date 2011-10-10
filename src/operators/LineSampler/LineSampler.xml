@@ -33,6 +33,11 @@
         Lines
         Surfaces
       </Enum>
+      <Enum name="ViewTime">
+        Step
+        Time
+        Cycle
+      </Enum>
       <Enum name="ChannelGeometry">
         Point
         Line
@@ -144,8 +149,8 @@
       <Field name="arrayPlotOffset" label="1D plot array offset" type="double">
         1.000000
       </Field>
-      <Field name="timePlotScale" label="1D plot time scaling" type="double">
-        1.000000
+      <Field name="viewTime" label="View time" type="enum" subtype="ViewTime">
+        Step
       </Field>
       <Field name="channelGeometry" label="Channel geometry" type="enum" subtype="ChannelGeometry">
         Line

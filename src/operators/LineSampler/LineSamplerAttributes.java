@@ -61,7 +61,7 @@ import java.util.Vector;
 
 public class LineSamplerAttributes extends AttributeSubject implements Plugin
 {
-    private static int LineSamplerAttributes_numAdditionalAtts = 48;
+    private static int LineSamplerAttributes_numAdditionalAtts = 49;
 
     // Enum values
     public final static int COORDINATESYSTEM_CARTESIAN = 0;
@@ -86,6 +86,10 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public final static int VIEWGEOMETRY_POINTS = 0;
     public final static int VIEWGEOMETRY_LINES = 1;
     public final static int VIEWGEOMETRY_SURFACES = 2;
+
+    public final static int VIEWTIME_STEP = 0;
+    public final static int VIEWTIME_TIME = 1;
+    public final static int VIEWTIME_CYCLE = 2;
 
     public final static int CHANNELGEOMETRY_POINT = 0;
     public final static int CHANNELGEOMETRY_LINE = 1;
@@ -145,7 +149,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         heightPlotScale = 1;
         channelPlotOffset = 0;
         arrayPlotOffset = 1;
-        timePlotScale = 1;
+        viewTime = VIEWTIME_STEP;
         channelGeometry = CHANNELGEOMETRY_LINE;
         radius = 0.1;
         divergence = 1;
@@ -169,6 +173,9 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         channelList.addElement(new Double(0));
         channelList.addElement(new Double(0));
         channelList.addElement(new Double(90));
+        wallList = new Vector();
+        wallList.addElement(new Double(0));
+        wallList.addElement(new Double(0));
         nChannelListArrays = 1;
         channelListToroidalArrayAngle = 5;
         channelListToroidalAngle = 0;
@@ -206,7 +213,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         heightPlotScale = 1;
         channelPlotOffset = 0;
         arrayPlotOffset = 1;
-        timePlotScale = 1;
+        viewTime = VIEWTIME_STEP;
         channelGeometry = CHANNELGEOMETRY_LINE;
         radius = 0.1;
         divergence = 1;
@@ -230,6 +237,9 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         channelList.addElement(new Double(0));
         channelList.addElement(new Double(0));
         channelList.addElement(new Double(90));
+        wallList = new Vector();
+        wallList.addElement(new Double(0));
+        wallList.addElement(new Double(0));
         nChannelListArrays = 1;
         channelListToroidalArrayAngle = 5;
         channelListToroidalAngle = 0;
@@ -270,7 +280,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         heightPlotScale = obj.heightPlotScale;
         channelPlotOffset = obj.channelPlotOffset;
         arrayPlotOffset = obj.arrayPlotOffset;
-        timePlotScale = obj.timePlotScale;
+        viewTime = obj.viewTime;
         channelGeometry = obj.channelGeometry;
         radius = obj.radius;
         divergence = obj.divergence;
@@ -294,6 +304,13 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         {
             Double dv = (Double)obj.channelList.elementAt(i);
             channelList.addElement(new Double(dv.doubleValue()));
+        }
+
+        wallList = new Vector(obj.wallList.size());
+        for(i = 0; i < obj.wallList.size(); ++i)
+        {
+            Double dv = (Double)obj.wallList.elementAt(i);
+            wallList.addElement(new Double(dv.doubleValue()));
         }
 
         nChannelListArrays = obj.nChannelListArrays;
@@ -331,6 +348,15 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             Double channelList2 = (Double)obj.channelList.elementAt(i);
             channelList_equal = channelList1.equals(channelList2);
         }
+        // Compare the elements in the wallList vector.
+        boolean wallList_equal = (obj.wallList.size() == wallList.size());
+        for(i = 0; (i < wallList.size()) && wallList_equal; ++i)
+        {
+            // Make references to Double from Object.
+            Double wallList1 = (Double)wallList.elementAt(i);
+            Double wallList2 = (Double)obj.wallList.elementAt(i);
+            wallList_equal = wallList1.equals(wallList2);
+        }
         // Create the return value
         return ((coordinateSystem == obj.coordinateSystem) &&
                 (arrayConfiguration == obj.arrayConfiguration) &&
@@ -357,7 +383,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
                 (heightPlotScale == obj.heightPlotScale) &&
                 (channelPlotOffset == obj.channelPlotOffset) &&
                 (arrayPlotOffset == obj.arrayPlotOffset) &&
-                (timePlotScale == obj.timePlotScale) &&
+                (viewTime == obj.viewTime) &&
                 (channelGeometry == obj.channelGeometry) &&
                 (radius == obj.radius) &&
                 (divergence == obj.divergence) &&
@@ -377,6 +403,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
                 (timeStepStop == obj.timeStepStop) &&
                 (timeStepStride == obj.timeStepStride) &&
                 channelList_equal &&
+                wallList_equal &&
                 (nChannelListArrays == obj.nChannelListArrays) &&
                 (channelListToroidalArrayAngle == obj.channelListToroidalArrayAngle) &&
                 (channelListToroidalAngle == obj.channelListToroidalAngle));
@@ -546,9 +573,9 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         Select(24);
     }
 
-    public void SetTimePlotScale(double timePlotScale_)
+    public void SetViewTime(int viewTime_)
     {
-        timePlotScale = timePlotScale_;
+        viewTime = viewTime_;
         Select(25);
     }
 
@@ -666,22 +693,28 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         Select(44);
     }
 
+    public void SetWallList(Vector wallList_)
+    {
+        wallList = wallList_;
+        Select(45);
+    }
+
     public void SetNChannelListArrays(int nChannelListArrays_)
     {
         nChannelListArrays = nChannelListArrays_;
-        Select(45);
+        Select(46);
     }
 
     public void SetChannelListToroidalArrayAngle(double channelListToroidalArrayAngle_)
     {
         channelListToroidalArrayAngle = channelListToroidalArrayAngle_;
-        Select(46);
+        Select(47);
     }
 
     public void SetChannelListToroidalAngle(double channelListToroidalAngle_)
     {
         channelListToroidalAngle = channelListToroidalAngle_;
-        Select(47);
+        Select(48);
     }
 
     // Property getting methods
@@ -710,7 +743,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public double   GetHeightPlotScale() { return heightPlotScale; }
     public double   GetChannelPlotOffset() { return channelPlotOffset; }
     public double   GetArrayPlotOffset() { return arrayPlotOffset; }
-    public double   GetTimePlotScale() { return timePlotScale; }
+    public int      GetViewTime() { return viewTime; }
     public int      GetChannelGeometry() { return channelGeometry; }
     public double   GetRadius() { return radius; }
     public double   GetDivergence() { return divergence; }
@@ -730,6 +763,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public int      GetTimeStepStop() { return timeStepStop; }
     public int      GetTimeStepStride() { return timeStepStride; }
     public Vector   GetChannelList() { return channelList; }
+    public Vector   GetWallList() { return wallList; }
     public int      GetNChannelListArrays() { return nChannelListArrays; }
     public double   GetChannelListToroidalArrayAngle() { return channelListToroidalArrayAngle; }
     public double   GetChannelListToroidalAngle() { return channelListToroidalAngle; }
@@ -788,7 +822,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(24, buf))
             buf.WriteDouble(arrayPlotOffset);
         if(WriteSelect(25, buf))
-            buf.WriteDouble(timePlotScale);
+            buf.WriteInt(viewTime);
         if(WriteSelect(26, buf))
             buf.WriteInt(channelGeometry);
         if(WriteSelect(27, buf))
@@ -828,10 +862,12 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(44, buf))
             buf.WriteDoubleVector(channelList);
         if(WriteSelect(45, buf))
-            buf.WriteInt(nChannelListArrays);
+            buf.WriteDoubleVector(wallList);
         if(WriteSelect(46, buf))
-            buf.WriteDouble(channelListToroidalArrayAngle);
+            buf.WriteInt(nChannelListArrays);
         if(WriteSelect(47, buf))
+            buf.WriteDouble(channelListToroidalArrayAngle);
+        if(WriteSelect(48, buf))
             buf.WriteDouble(channelListToroidalAngle);
     }
 
@@ -915,7 +951,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             SetArrayPlotOffset(buf.ReadDouble());
             break;
         case 25:
-            SetTimePlotScale(buf.ReadDouble());
+            SetViewTime(buf.ReadInt());
             break;
         case 26:
             SetChannelGeometry(buf.ReadInt());
@@ -975,12 +1011,15 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             SetChannelList(buf.ReadDoubleVector());
             break;
         case 45:
-            SetNChannelListArrays(buf.ReadInt());
+            SetWallList(buf.ReadDoubleVector());
             break;
         case 46:
-            SetChannelListToroidalArrayAngle(buf.ReadDouble());
+            SetNChannelListArrays(buf.ReadInt());
             break;
         case 47:
+            SetChannelListToroidalArrayAngle(buf.ReadDouble());
+            break;
+        case 48:
             SetChannelListToroidalAngle(buf.ReadDouble());
             break;
         }
@@ -1060,7 +1099,14 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("heightPlotScale", heightPlotScale, indent) + "\n";
         str = str + doubleToString("channelPlotOffset", channelPlotOffset, indent) + "\n";
         str = str + doubleToString("arrayPlotOffset", arrayPlotOffset, indent) + "\n";
-        str = str + doubleToString("timePlotScale", timePlotScale, indent) + "\n";
+        str = str + indent + "viewTime = ";
+        if(viewTime == VIEWTIME_STEP)
+            str = str + "VIEWTIME_STEP";
+        if(viewTime == VIEWTIME_TIME)
+            str = str + "VIEWTIME_TIME";
+        if(viewTime == VIEWTIME_CYCLE)
+            str = str + "VIEWTIME_CYCLE";
+        str = str + "\n";
         str = str + indent + "channelGeometry = ";
         if(channelGeometry == CHANNELGEOMETRY_POINT)
             str = str + "CHANNELGEOMETRY_POINT";
@@ -1116,6 +1162,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         str = str + intToString("timeStepStop", timeStepStop, indent) + "\n";
         str = str + intToString("timeStepStride", timeStepStride, indent) + "\n";
         str = str + doubleVectorToString("channelList", channelList, indent) + "\n";
+        str = str + doubleVectorToString("wallList", wallList, indent) + "\n";
         str = str + intToString("nChannelListArrays", nChannelListArrays, indent) + "\n";
         str = str + doubleToString("channelListToroidalArrayAngle", channelListToroidalArrayAngle, indent) + "\n";
         str = str + doubleToString("channelListToroidalAngle", channelListToroidalAngle, indent) + "\n";
@@ -1149,7 +1196,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     private double   heightPlotScale;
     private double   channelPlotOffset;
     private double   arrayPlotOffset;
-    private double   timePlotScale;
+    private int      viewTime;
     private int      channelGeometry;
     private double   radius;
     private double   divergence;
@@ -1169,6 +1216,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     private int      timeStepStop;
     private int      timeStepStride;
     private Vector   channelList; // vector of Double objects
+    private Vector   wallList; // vector of Double objects
     private int      nChannelListArrays;
     private double   channelListToroidalArrayAngle;
     private double   channelListToroidalAngle;

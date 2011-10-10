@@ -219,7 +219,11 @@ avtLineSamplerFilter::InitializeTimeLoop(void)
     }
 
     // Misc initializations
-    cachedAngle = -180;
+    if( atts.GetToroidalIntegration() ==
+        LineSamplerAttributes::ToroidalTimeSample )
+      cachedAngle = 0;
+    else
+      cachedAngle = -180;
 
     // Clean-up the current output dataset if necessary
     if( composite_ds ) {
@@ -246,8 +250,6 @@ avtLineSamplerFilter::InitializeTimeLoop(void)
 void
 avtLineSamplerFilter::Execute()
 {
-    int ts = currentTime;
-
     avtDataTree_p tree = GetInputDataTree();
 
     // Ask for the dataset
@@ -280,16 +282,35 @@ avtLineSamplerFilter::Execute()
 
     vtkDataSet *tmp_ds;
 
+    int timestep;
+
+    if( atts.GetViewTime() == LineSamplerAttributes::Time &&
+        GetInput()->GetInfo().GetAttributes().TimeIsAccurate() )
+      timestep = GetInput()->GetInfo().GetAttributes().GetTime();
+
+    else if( atts.GetViewTime() == LineSamplerAttributes::Cycle &&
+             GetInput()->GetInfo().GetAttributes().CycleIsAccurate() )
+      timestep = GetInput()->GetInfo().GetAttributes().GetCycle();
+
+    else
+      timestep = currentTime;
+
     double startAngle, stopAngle, deltaAngle;
 
     if( atts.GetToroidalIntegration() ==
         LineSamplerAttributes::ToroidalTimeSample )
     {
-      startAngle = atts.GetToroidalAngleStart();
-      stopAngle  = atts.GetToroidalAngleStop();
+      // Reset the cached angle for absolute sampling.
+      if( atts.GetToroidalAngleSampling() ==
+          LineSamplerAttributes::ToroidalAngleAbsoluteSampling )
+        cachedAngle = 0;
+
+      startAngle = cachedAngle + atts.GetToroidalAngleStart();
+      stopAngle  = cachedAngle + atts.GetToroidalAngleStop();
       deltaAngle = atts.GetToroidalAngleStride();
     }
-    else
+    else // if( atts.GetToroidalIntegration() ==
+         //    LineSamplerAttributes::NoToroidalIntegration )
     {
       startAngle = 0;
       stopAngle = 1;
@@ -301,13 +322,17 @@ avtLineSamplerFilter::Execute()
     {
       tmp_ds = ExecuteChannelData(currDs, 0, "");
 
-      if( atts.GetTimeSampling() == LineSamplerAttributes::CurrentTimeStep &&
-          atts.GetToroidalIntegration() != LineSamplerAttributes::ToroidalTimeSample )
+      if( atts.GetTimeSampling() ==
+          LineSamplerAttributes::CurrentTimeStep &&
+          atts.GetToroidalIntegration() ==
+          LineSamplerAttributes::NoToroidalIntegration )
       {
         composite_ds = tmp_ds;
       }
-      else //if( atts.GetTimeSampling() ==
-           //    LineSamplerAttributes::MultipleTimeSteps )
+      else // if( atts.GetTimeSampling() ==
+           //     LineSamplerAttributes::MultipleTimeSteps ||
+           //     atts.GetToroidalIntegration() ==
+           //     LineSamplerAttributes::ToroidalTimeSample )
       {
         if( atts.GetViewDimension() == LineSamplerAttributes::Two ||
             atts.GetViewDimension() == LineSamplerAttributes::Three )
@@ -315,7 +340,7 @@ avtLineSamplerFilter::Execute()
           std::string msg;
           msg += "The view dimension is not one. For collating multiple time " +
             std::string("steps the resulting plots are one dimensional. ") +
-            std::string("Showing the original channel sampling");
+            std::string("Showing the original channel sampling.");
           
           avtCallback::IssueWarning(msg.c_str());
 
@@ -325,7 +350,6 @@ avtLineSamplerFilter::Execute()
         }
 
         double heightPlotScale = atts.GetHeightPlotScale();
-        double timePlotScale = atts.GetTimePlotScale();
 
         vtkUnstructuredGrid *uGrid;
 
@@ -379,7 +403,7 @@ avtLineSamplerFilter::Execute()
           // Get the next point and update its coordinates if necessary
           vtkDataArray *scalars = tmp_ds->GetPointData()->GetScalars();
 
-          double nextPathPoint[3] = { ts, //* timePlotScale,
+          double nextPathPoint[3] = { timestep,
                                       i+heightPlotScale * *(scalars->GetTuple(i)),
                                       0 };
 
@@ -388,18 +412,20 @@ avtLineSamplerFilter::Execute()
               atts.GetToroidalIntegration() ==
               LineSamplerAttributes::ToroidalTimeSample )
           {
-            nextPathPoint[0] = ts * (stopAngle-startAngle) + cachedAngle; // * timePlotScale,
+            nextPathPoint[0] = currentTime * (stopAngle-startAngle) +
+              cachedAngle - (double) (360.0 * (int) (cachedAngle / 360.0));
           }
 
           else if( atts.GetTimeSampling() ==
               LineSamplerAttributes::MultipleTimeSteps )
           {
-              nextPathPoint[0] = ts; // * timePlotScale,
+              nextPathPoint[0] = timestep;
           }
           else if( atts.GetToroidalIntegration() ==
                    LineSamplerAttributes::ToroidalTimeSample )
           {
-              nextPathPoint[0] = cachedAngle;
+              nextPathPoint[0] =
+                cachedAngle - (double) (360.0 * (int) (cachedAngle / 360.0));
           }
 
           vtkPoints* pathPoints = uGrid->GetPoints();
@@ -803,7 +829,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             if( atts.GetToroidalAngleSampling() ==
                 LineSamplerAttributes::ToroidalAngleAbsoluteSampling )
             {
-                toroidalAngle = cachedAngle;
+              toroidalAngle = cachedAngle;
             }
             else if( atts.GetToroidalAngleSampling() ==
                      LineSamplerAttributes::ToroidalAngleRelativeSampling )
@@ -1117,68 +1143,80 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           }
 
           // Integrate along the channel
-          if( atts.GetViewDimension() == LineSamplerAttributes::One &&
-              atts.GetChannelIntegration() ==
+          if( atts.GetChannelIntegration() ==
               LineSamplerAttributes::IntegrateAlongChannel )
           {
-            vtkPoints *points = vtkPoints::New();
-            vtkFloatArray *scalars = vtkFloatArray::New();
-    
-            points->SetNumberOfPoints(1);
-            scalars->Allocate(1);
-
-            float *points_ptr = (float *) points->GetVoidPointer(0);
-
-            double pts[3];
-            out_ds->GetPoint(0, pts);
-
-            points_ptr[0] = pts[0];
-            points_ptr[1] = pts[1];
-            points_ptr[2] = pts[2];
-
-            int nChannelSamples = out_ds->GetPointData()->GetNumberOfTuples();
-
-            float* out_data =
-              (float*) out_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
-
-            float sum = 0;
-
-            double sampleDistance = atts.GetSampleDistance();
-            double sampleVolume = atts.GetSampleVolume();
-
-            if( sampleDistance < 0 || sampleVolume < 0 )
+            if( atts.GetViewDimension() == LineSamplerAttributes::Two ||
+                atts.GetViewDimension() == LineSamplerAttributes::Three )
             {
               std::string msg;
-              msg += "The sample distance and/or volume is less than zero. " +
-                std::string("Can not integrate along the channel(s), returning." );
-        
-              avtCallback::IssueWarning(msg.c_str());
+              msg += "The view dimension is not one. For integrating along the " +
+                std::string("channel the resulting plots are one dimensional. ") +
+                std::string("Showing the original channel sampling.");
               
-              return NULL;
+              avtCallback::IssueWarning(msg.c_str());         
             }
+            else //if( atts.GetViewDimension() == LineSamplerAttributes::One )
+            {
+              vtkPoints *points = vtkPoints::New();
+              vtkFloatArray *scalars = vtkFloatArray::New();
+    
+              points->SetNumberOfPoints(1);
+              scalars->Allocate(1);
 
-            // Do the summation for each channel
-            for( unsigned int i=0; i<nChannelSamples; ++i )
-              sum += sampleVolume * *out_data++;
+              float *points_ptr = (float *) points->GetVoidPointer(0);
 
-            scalars->InsertTuple1(0, sum);
+              double pts[3];
+              out_ds->GetPoint(0, pts);
 
-            vtkUnstructuredGrid *uGrid = vtkUnstructuredGrid::New();
-            vtkIdType vertex = 0;
+              points_ptr[0] = pts[0];
+              points_ptr[1] = pts[1];
+              points_ptr[2] = pts[2];
 
-            uGrid->SetPoints(points);
-            uGrid->Allocate(1);
-            uGrid->InsertNextCell(VTK_VERTEX, 1, &vertex);
-            scalars->SetName("T_e");
-            uGrid->GetPointData()->SetScalars(scalars);
-            uGrid->GetPointData()->SetActiveScalars("T_e");
+              int nChannelSamples = out_ds->GetPointData()->GetNumberOfTuples();
 
-            points->Delete();
-            scalars->Delete();
+              float* out_data =
+                (float*) out_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
 
-//          out_ds->Delete();
+              float sum = 0;
 
-            out_ds = uGrid;
+              double sampleDistance = atts.GetSampleDistance();
+              double sampleVolume = atts.GetSampleVolume();
+
+              if( sampleDistance < 0 || sampleVolume < 0 )
+              {
+                std::string msg;
+                msg += "The sample distance and/or volume is less than zero. " +
+                  std::string("Can not integrate along the channel(s), returning." );
+                
+                avtCallback::IssueWarning(msg.c_str());
+                
+                return NULL;
+              }
+
+              // Do the summation for each channel
+              for( unsigned int i=0; i<nChannelSamples; ++i )
+                sum += sampleVolume * *out_data++;
+
+              scalars->InsertTuple1(0, sum);
+
+              vtkUnstructuredGrid *uGrid = vtkUnstructuredGrid::New();
+              vtkIdType vertex = 0;
+
+              uGrid->SetPoints(points);
+              uGrid->Allocate(1);
+              uGrid->InsertNextCell(VTK_VERTEX, 1, &vertex);
+              scalars->SetName("T_e");
+              uGrid->GetPointData()->SetScalars(scalars);
+              uGrid->GetPointData()->SetActiveScalars("T_e");
+
+              points->Delete();
+              scalars->Delete();
+
+              //          out_ds->Delete();
+
+              out_ds = uGrid;
+            }
           }
 
           // If the user has elected to display the geometry in the Phi=0
@@ -2066,7 +2104,15 @@ avtLineSamplerFilter::CreateFinalOutput(void)
 
 
          if( atts.GetToroidalIntegration() ==
-             LineSamplerAttributes::ToroidalTimeSample )
+             LineSamplerAttributes::ToroidalTimeSample &&
+             atts.GetTimeSampling() ==
+             LineSamplerAttributes::MultipleTimeSteps )
+         {
+           outAtts.SetXLabel("Time with Angle");
+           outAtts.SetXUnits("");
+         }
+         else if( atts.GetToroidalIntegration() ==
+                  LineSamplerAttributes::ToroidalTimeSample )
          {
            outAtts.SetXLabel("Angle");
            outAtts.SetXUnits("Degrees");
@@ -2074,8 +2120,23 @@ avtLineSamplerFilter::CreateFinalOutput(void)
          else if( atts.GetTimeSampling() ==
                   LineSamplerAttributes::MultipleTimeSteps )
          {
-           outAtts.SetXLabel("Time Step");
-           outAtts.SetXUnits("");
+           if( atts.GetViewTime() == LineSamplerAttributes::Time &&
+               GetInput()->GetInfo().GetAttributes().TimeIsAccurate() )
+           {
+             outAtts.SetXLabel("Time");
+             outAtts.SetXUnits("seconds");
+           }
+           else if( atts.GetViewTime() == LineSamplerAttributes::Cycle &&
+                    GetInput()->GetInfo().GetAttributes().CycleIsAccurate() )
+           {
+             outAtts.SetXLabel("Cycles");
+             outAtts.SetXUnits("");
+           }
+           else
+           {
+             outAtts.SetXLabel("Time Step");
+             outAtts.SetXUnits("");
+           }
          }
        }
      }

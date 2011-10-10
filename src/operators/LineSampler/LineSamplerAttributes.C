@@ -301,6 +301,44 @@ LineSamplerAttributes::ViewGeometry_FromString(const std::string &s, LineSampler
 }
 
 //
+// Enum conversion methods for LineSamplerAttributes::ViewTime
+//
+
+static const char *ViewTime_strings[] = {
+"Step", "Time", "Cycle"
+};
+
+std::string
+LineSamplerAttributes::ViewTime_ToString(LineSamplerAttributes::ViewTime t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return ViewTime_strings[index];
+}
+
+std::string
+LineSamplerAttributes::ViewTime_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return ViewTime_strings[index];
+}
+
+bool
+LineSamplerAttributes::ViewTime_FromString(const std::string &s, LineSamplerAttributes::ViewTime &val)
+{
+    val = LineSamplerAttributes::Step;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == ViewTime_strings[i])
+        {
+            val = (ViewTime)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for LineSamplerAttributes::ChannelGeometry
 //
 
@@ -606,7 +644,7 @@ void LineSamplerAttributes::Init()
     heightPlotScale = 1;
     channelPlotOffset = 0;
     arrayPlotOffset = 1;
-    timePlotScale = 1;
+    viewTime = Step;
     channelGeometry = Line;
     radius = 0.1;
     divergence = 1;
@@ -683,7 +721,7 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
     heightPlotScale = obj.heightPlotScale;
     channelPlotOffset = obj.channelPlotOffset;
     arrayPlotOffset = obj.arrayPlotOffset;
-    timePlotScale = obj.timePlotScale;
+    viewTime = obj.viewTime;
     channelGeometry = obj.channelGeometry;
     radius = obj.radius;
     divergence = obj.divergence;
@@ -894,7 +932,7 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
             (heightPlotScale == obj.heightPlotScale) &&
             (channelPlotOffset == obj.channelPlotOffset) &&
             (arrayPlotOffset == obj.arrayPlotOffset) &&
-            (timePlotScale == obj.timePlotScale) &&
+            (viewTime == obj.viewTime) &&
             (channelGeometry == obj.channelGeometry) &&
             (radius == obj.radius) &&
             (divergence == obj.divergence) &&
@@ -1086,7 +1124,7 @@ LineSamplerAttributes::SelectAll()
     Select(ID_heightPlotScale,               (void *)&heightPlotScale);
     Select(ID_channelPlotOffset,             (void *)&channelPlotOffset);
     Select(ID_arrayPlotOffset,               (void *)&arrayPlotOffset);
-    Select(ID_timePlotScale,                 (void *)&timePlotScale);
+    Select(ID_viewTime,                      (void *)&viewTime);
     Select(ID_channelGeometry,               (void *)&channelGeometry);
     Select(ID_radius,                        (void *)&radius);
     Select(ID_divergence,                    (void *)&divergence);
@@ -1292,10 +1330,10 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("arrayPlotOffset", arrayPlotOffset));
     }
 
-    if(completeSave || !FieldsEqual(ID_timePlotScale, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_viewTime, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("timePlotScale", timePlotScale));
+        node->AddNode(new DataNode("viewTime", ViewTime_ToString(viewTime)));
     }
 
     if(completeSave || !FieldsEqual(ID_channelGeometry, &defaultObject))
@@ -1634,8 +1672,22 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         SetChannelPlotOffset(node->AsDouble());
     if((node = searchNode->GetNode("arrayPlotOffset")) != 0)
         SetArrayPlotOffset(node->AsDouble());
-    if((node = searchNode->GetNode("timePlotScale")) != 0)
-        SetTimePlotScale(node->AsDouble());
+    if((node = searchNode->GetNode("viewTime")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetViewTime(ViewTime(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ViewTime value;
+            if(ViewTime_FromString(node->AsString(), value))
+                SetViewTime(value);
+        }
+    }
     if((node = searchNode->GetNode("channelGeometry")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1950,10 +2002,10 @@ LineSamplerAttributes::SetArrayPlotOffset(double arrayPlotOffset_)
 }
 
 void
-LineSamplerAttributes::SetTimePlotScale(double timePlotScale_)
+LineSamplerAttributes::SetViewTime(LineSamplerAttributes::ViewTime viewTime_)
 {
-    timePlotScale = timePlotScale_;
-    Select(ID_timePlotScale, (void *)&timePlotScale);
+    viewTime = viewTime_;
+    Select(ID_viewTime, (void *)&viewTime);
 }
 
 void
@@ -2277,10 +2329,10 @@ LineSamplerAttributes::GetArrayPlotOffset() const
     return arrayPlotOffset;
 }
 
-double
-LineSamplerAttributes::GetTimePlotScale() const
+LineSamplerAttributes::ViewTime
+LineSamplerAttributes::GetViewTime() const
 {
-    return timePlotScale;
+    return ViewTime(viewTime);
 }
 
 LineSamplerAttributes::ChannelGeometry
@@ -2504,7 +2556,7 @@ LineSamplerAttributes::GetFieldName(int index) const
     case ID_heightPlotScale:               return "heightPlotScale";
     case ID_channelPlotOffset:             return "channelPlotOffset";
     case ID_arrayPlotOffset:               return "arrayPlotOffset";
-    case ID_timePlotScale:                 return "timePlotScale";
+    case ID_viewTime:                      return "viewTime";
     case ID_channelGeometry:               return "channelGeometry";
     case ID_radius:                        return "radius";
     case ID_divergence:                    return "divergence";
@@ -2577,7 +2629,7 @@ LineSamplerAttributes::GetFieldType(int index) const
     case ID_heightPlotScale:               return FieldType_double;
     case ID_channelPlotOffset:             return FieldType_double;
     case ID_arrayPlotOffset:               return FieldType_double;
-    case ID_timePlotScale:                 return FieldType_double;
+    case ID_viewTime:                      return FieldType_enum;
     case ID_channelGeometry:               return FieldType_enum;
     case ID_radius:                        return FieldType_double;
     case ID_divergence:                    return FieldType_double;
@@ -2650,7 +2702,7 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
     case ID_heightPlotScale:               return "double";
     case ID_channelPlotOffset:             return "double";
     case ID_arrayPlotOffset:               return "double";
-    case ID_timePlotScale:                 return "double";
+    case ID_viewTime:                      return "enum";
     case ID_channelGeometry:               return "enum";
     case ID_radius:                        return "double";
     case ID_divergence:                    return "double";
@@ -2830,9 +2882,9 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (arrayPlotOffset == obj.arrayPlotOffset);
         }
         break;
-    case ID_timePlotScale:
+    case ID_viewTime:
         {  // new scope
-        retval = (timePlotScale == obj.timePlotScale);
+        retval = (viewTime == obj.viewTime);
         }
         break;
     case ID_channelGeometry:
