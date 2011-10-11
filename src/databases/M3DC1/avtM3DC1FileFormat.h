@@ -146,8 +146,6 @@ public:
     unsigned int scalar_size;
     
   protected:
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+    virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 };
-
-
 #endif
