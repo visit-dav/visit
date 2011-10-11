@@ -559,9 +559,16 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
                                   OpenWithLauncher, (void *)dialog, true);
             }
 
+            // Do a keep alive immediately to ensure that data is sent
+            // over the engine socket. The other 2 sockets share data when
+            // exchanging type representations on connect. This ensures that
+            // data has come through all sockets, thwarting some evil firewalls
+            // that try to close sockets that don't send data within some
+            // small amount of time.
+            newEngine.proxy->SendKeepAlive();
+
             // Request the engine properties so we have a better idea of
-            // what we're talking to. This also takes the place of a keep-alive
-            // that used to be here.
+            // what we're talking to.
             newEngine.properties = newEngine.proxy->GetEngineProperties();
         }
         CATCHALL
