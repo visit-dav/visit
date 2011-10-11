@@ -112,7 +112,7 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
     }
 
     if( m_refinement < 0 )      m_refinement = 0;
-    else if( m_refinement > 5 ) m_refinement = 5;
+    else if( m_refinement > 9 ) m_refinement = 9;
 
     if( processDataSelections && m_refinement )
     {
@@ -988,13 +988,6 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   // Add the points to the VTK grid.
   int npts = vtkPts->GetNumberOfPoints();
   grid->SetPoints( vtkPts );
-
-  std::cerr << meshnamePtr << " refinement " << refinement << std::endl;
-
-  std::cerr << "nplanes " << nplanes << "  " << "nelms " << nelms << std::endl;
-
-  std::cerr << "maxs[0] " << maxs[0] << "  " << "telms " << npts/6 << std::endl;
-  
 
   delete [] elements;
 

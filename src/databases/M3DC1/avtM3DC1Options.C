@@ -79,6 +79,11 @@ GetM3DC1ReadOptions(void)
     refinement.push_back("3");
     refinement.push_back("4");
     refinement.push_back("5");
+    refinement.push_back("6");
+    refinement.push_back("7");
+    refinement.push_back("8");
+    refinement.push_back("9");
+    refinement.push_back("10");
 //    refinement.push_back("Variable");
     rv->SetEnumStrings("Mesh refinement", refinement);
 
