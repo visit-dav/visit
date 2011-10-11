@@ -92,7 +92,7 @@ class IVP_API DomainType
     bool operator<(const DomainType &dt) const
     {
         return (domain < dt.domain) ||
-               (!(domain < dt.domain) && timeStep < dt.timeStep);
+               ((domain == dt.domain) && timeStep < dt.timeStep);
     }
 
     //Members
