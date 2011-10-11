@@ -114,6 +114,14 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
     if( m_refinement < 0 )      m_refinement = 0;
     else if( m_refinement > 5 ) m_refinement = 5;
 
+    if( processDataSelections && m_refinement )
+    {
+        EXCEPTION2( NonCompliantException, "M3DC1 Mesh",
+                    "Can not subselect a refined mesh. " +
+                    std::string(" Set the mesh refinement to 1 or disable") +
+                    std::string(" processing data selections in the reader.") );
+    }
+
     LoadFile();
 }
 
@@ -578,8 +586,7 @@ avtM3DC1FileFormat::GetElements(int timestate, const char *meshname)
 // ****************************************************************************
 
 vtkPoints *
-avtM3DC1FileFormat::GetMeshPoints(float *elements,
-                                  int refinement)
+avtM3DC1FileFormat::GetMeshPoints( float *elements, int refinement )
 {
   // Inital number of triangles before refinement.
   int npts = nelms * nvertices;
@@ -895,6 +902,29 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   bool haveDataSelections;
   int mins[3], maxs[3], strides[3];
   
+  // Parse the mesh variable name to get the true mesh name and the
+  // refiement level in the meshnamePtr.
+  if( strncmp(meshnamePtr, "equilibrium/mesh", 16 ) == 0 )
+  {
+    meshnamePtr = &(meshnamePtr[16]);
+    sprintf( meshStr, "equilibrium/mesh" );    
+  }
+  else if( strncmp(meshnamePtr, "mesh", 4 ) == 0 ) {
+    meshnamePtr = &(meshnamePtr[4]);
+    sprintf( meshStr, "mesh" );    
+  }
+  else
+    EXCEPTION2( NonCompliantException, "M3DC1 Mesh Name",
+                "Can not find '" + string(meshnamePtr) + "'" );
+
+  // Parse the mesh variable name to get the refinement level.
+  int refinement;
+
+  if( strlen(meshnamePtr) && atoi(&(meshnamePtr[1])) == m_refinement )
+      refinement = m_refinement;
+  else
+    refinement = 0;
+
   // If hidden only one poloidal plane as the mesh will be used for
   // interpolation. There should also be no refinement.
   if( strncmp(meshname, "hidden/", 7 ) == 0 )
@@ -914,6 +944,14 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
     // Adjust for the data selections which are NODAL.
     if( haveDataSelections = ProcessDataSelections(mins, maxs, strides) )
     {
+      if( refinement == 0 )
+      {
+        EXCEPTION2( NonCompliantException, "M3DC1 Mesh Name",
+                    "Can not subselect a refined mesh '" +
+                    std::string(meshnamePtr) +
+                    std::string("'. Set the mesh refinement to 1.") );
+      }
+
       debug5
         << "Have a logical cell selection for mesh  " << meshname << "  "
         << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
@@ -926,36 +964,18 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
     else
     {
       mins[0] = 0;
-      maxs[0] = nelms-1;
+
+      if ( refinement == 0 )
+        maxs[0] = nelms-1;
+      else
+        maxs[0] = nelms*pow((double) refinement+1.0, 3.0)-1;
+
       strides[0] = 1;
       
       haveReadWholeData = true;
     }
   }
   
-  // Parse the mesh variable name to get the true mesh name and the
-  // refiement level in the meshnamePtr.
-  if( strncmp(meshnamePtr, "equilibrium/mesh", 16 ) == 0 )
-  {
-    meshnamePtr = &(meshnamePtr[16]);
-    sprintf( meshStr, "equilibrium/mesh" );    
-  }
-  else if( strncmp(meshnamePtr, "mesh", 4 ) == 0 ) {
-    meshnamePtr = &(meshnamePtr[4]);
-    sprintf( meshStr, "mesh" );    
-  }
-  else
-    EXCEPTION2( NonCompliantException, "M3DC1 Mesh Name",
-                "Can not find '" + string(meshnamePtr) );
-
-  // Parse the mesh variable name to get the refinement level.
-  int refinement;
-
-  if( strlen(meshnamePtr) && atoi(&(meshnamePtr[1])) == m_refinement )
-      refinement = m_refinement;
-  else
-    refinement = 0;
-
   // Get the C1 elements.
   float* elements = GetElements(timestate, meshStr);
 
@@ -968,6 +988,13 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   // Add the points to the VTK grid.
   int npts = vtkPts->GetNumberOfPoints();
   grid->SetPoints( vtkPts );
+
+  std::cerr << meshnamePtr << " refinement " << refinement << std::endl;
+
+  std::cerr << "nplanes " << nplanes << "  " << "nelms " << nelms << std::endl;
+
+  std::cerr << "maxs[0] " << maxs[0] << "  " << "telms " << npts/6 << std::endl;
+  
 
   delete [] elements;
 
