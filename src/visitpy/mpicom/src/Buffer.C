@@ -277,6 +277,9 @@ Buffer::Init(int type_id, int data_size)
  *   Use pickle to encode empty python sequences & use faster
  *   PyObject_CallFunctionObjArgs() instead of PyObject_CallFunction().
  *
+ *   Cyrus Harrison, Tue Oct 11 10:48:06 PDT 2011
+ *   Use long instead of int.
+ * 
  * ***************************************************************************/
 void
 Buffer::Init(PyObject *py_obj)
@@ -285,10 +288,15 @@ Buffer::Init(PyObject *py_obj)
 
     if(py_obj == NULL)
         Reset();
-    else if(PyInt_Check(py_obj))
+    else if(PyInt_CheckExact(py_obj))
     {
         Init(INTEGER,1);
         DataAsIntPtr()[0] = PyInt_AS_LONG(py_obj);
+    }
+    else if(PyLong_CheckExact(py_obj))
+    {
+        Init(INTEGER,1);
+        DataAsIntPtr()[0] = PyLong_AsLong(py_obj);
     }
     else if(PyFloat_Check(py_obj))
     {
@@ -398,6 +406,8 @@ Buffer::Reset()
  * Creation:   Wed Jan  7 10:05:02 PST 2009
  *
  * Modifications:
+ *   Cyrus Harrison, Tue Oct 11 10:48:06 PDT 2011
+ *   Use long instead of int.
  *
  * ***************************************************************************/
 MPI_Datatype
@@ -405,7 +415,7 @@ Buffer::MPIType()
 {
     int type_id = TypeId();
     if(type_id == INTEGER)
-        return MPI_INT;
+        return MPI_LONG;
     else if(type_id == DOUBLE)
         return MPI_DOUBLE;
     else if(type_id  == STRING || type_id == OBJECT)
@@ -440,12 +450,12 @@ Buffer::ToPyObject()
     {
         int *ptr = (int*)data;
         if(data_size == 1)
-            return PyInt_FromLong(ptr[0]);
+            return PyLong_FromLong(ptr[0]);
         else // return a list containing the int vals
         {
             PyObject *res = PyList_New(data_size);
             for(int i=0; i < data_size; i++)
-                PyList_SET_ITEM(res,i,PyInt_FromLong(ptr[i]));
+                PyList_SET_ITEM(res,i,PyLong_FromLong(ptr[i]));
             return res;
         }
     }
@@ -567,6 +577,8 @@ Buffer::PickleCleanup()
  * Creation:   Fri Feb 19 08:12:50 PST 2010
  *
  * Modifications:
+ *   Cyrus Harrison, Tue Oct 11 10:48:06 PDT 2011
+ *   Use long instead of int.
  *
  * ***************************************************************************/
 
@@ -578,7 +590,7 @@ Buffer::TotalBufferSize(int type_id, int data_size)
 
     if(type_id == INTEGER)
     {
-        res = header_size +  sizeof(int) * data_size;
+        res = header_size +  sizeof(long) * data_size;
     }
     else if(type_id == DOUBLE)
     {
