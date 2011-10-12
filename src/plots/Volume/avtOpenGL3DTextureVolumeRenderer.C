@@ -200,6 +200,9 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    Simplified greatly by querying for extension directly, independent of
 //    Mesa queries.
 //
+//    Hank Childs, Wed Oct 12 05:45:27 PDT 2011
+//    Increase the number of possible slices to 1000.
+//
 // ****************************************************************************
 
 void
@@ -545,8 +548,8 @@ avtOpenGL3DTextureVolumeRenderer::Render(
     int ns = props.atts.GetNum3DSlices();
     if (ns < 1)
         ns = 1;
-    if (ns > 500)
-        ns = 500;
+    if (ns > 1000)
+        ns = 1000;
 
     float tr[15], ts[15], tt[15];
     float vx[15], vy[15], vz[15];
