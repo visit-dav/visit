@@ -1402,6 +1402,9 @@ bool avtXdmfFileFormat::GetWholeExtent(XdmfGrid* grid, int extents[6])
 //   Hank Childs, Thu Aug 18 17:22:19 PDT 2011
 //   Make sure the times are set.
 //
+//   Jean Favre/Hank Childs, Wed Oct 12 05:31:51 PDT 2011
+//   Fix problem with time setting.  (Fix by Jean, commit by Hank)
+//
 // ****************************************************************************
 
 void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
@@ -1441,6 +1444,8 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
         }
 
         AddMeshToMetaData(md, grid->GetName(), mt, extents, nblocks, block_origin, spatial_dimension, topological_dimension);
+ 
+        md->SetTimes(timesteps);
 
         for (int i = 0; i < gridToExamine->GetNumberOfAttributes(); ++i) {
             XdmfAttribute * attribute = gridToExamine->GetAttribute(i);
@@ -1520,8 +1525,6 @@ void avtXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ti
         }
         delete grid;
     }
-    std::vector<double> times;
-    GetTimes(times);
 }
 
 // ****************************************************************************
