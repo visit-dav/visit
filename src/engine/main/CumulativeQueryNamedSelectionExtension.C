@@ -587,7 +587,9 @@ CumulativeQuery::CreateSelection(const SelectionProperties &props,
 // Creation:   Fri May 20 14:33:41 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 12 12:08:16 PDT 2011
+//   I made histogram variable be a string instead of an index.
+//
 // ****************************************************************************
 
 void
@@ -607,14 +609,7 @@ CumulativeQuery::CalculateFrequency(const SelectionProperties &props,
     std::string histVar;
     if(props.GetHistogramType() == SelectionProperties::HistogramVariable)
     {
-        // We need to extract another variable.
-        if(props.GetHistogramVariableIndex() < 0 ||
-           props.GetHistogramVariableIndex() >= int(props.GetVariables().size()))
-        {
-            EXCEPTION1(ImproperUseException, "An invalid histogram variable was specified");
-        }
-
-        histVar = props.GetVariables()[props.GetHistogramVariableIndex()];
+        histVar = props.GetHistogramVariable();
         debug5 << "We're doing histogram by variable " << histVar << endl;
     }
 
@@ -1267,7 +1262,9 @@ CQFilter::ExecuteAllTimesteps(std::vector<avtDataTree_p> &timesteps)
 // Creation:   Thu Jun  9 10:50:51 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 12 12:09:52 PDT 2011
+//   I changed histogram variable from an index to a string.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -1278,13 +1275,7 @@ CQFilter::ModifyContract(avtContract_p contract)
     // We may need to extract another variable.
     if(props.GetHistogramType() == SelectionProperties::HistogramVariable)
     {
-        if(props.GetHistogramVariableIndex() < 0 ||
-           props.GetHistogramVariableIndex() >= int(props.GetVariables().size()))
-        {
-            EXCEPTION1(ImproperUseException, "An invalid histogram variable was specified");
-        }
-
-        std::string histVar = props.GetVariables()[props.GetHistogramVariableIndex()];
+        const std::string &histVar = props.GetHistogramVariable();
         debug5 << "We're doing histogram by variable " << histVar << endl;
 
         std::string origvar(newContract->GetDataRequest()->GetOriginalVariable());
@@ -1506,7 +1497,9 @@ CumulativeQueryNamedSelectionExtension::CreateSelectionKey(const SelectionProper
 // Creation:   Wed Sep  7 15:06:55 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 12 12:11:01 PDT 2011
+//   I changed histogram variable to a string from an index.
+//
 // ****************************************************************************
 
 bool
@@ -1529,7 +1522,7 @@ CumulativeQueryNamedSelectionExtension::CheckProperties(const SelectionPropertie
     if(newProps.GetHistogramType() == oldProps.GetHistogramType())
     {
         if(newProps.GetHistogramType() == SelectionProperties::HistogramVariable &&
-           newProps.GetHistogramVariableIndex() != oldProps.GetHistogramVariableIndex())
+           newProps.GetHistogramVariable() != oldProps.GetHistogramVariable())
         {
             typeCloseEnough = false;
         }

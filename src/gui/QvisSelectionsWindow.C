@@ -450,7 +450,9 @@ QvisSelectionsWindow::CreateTimeControls(QWidget *parent)
 // Creation:   Fri May 20 16:06:09 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 12 12:23:00 PDT 2011
+//   Change cqHistogramVariable into a variable button.
+//
 // ****************************************************************************
 
 QWidget *
@@ -507,10 +509,14 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     aLayout->addWidget(matches, 0, 2);
     aLayout->addWidget(cqHistogramVariableButton, 1, 2);
 
-    cqHistogramVariable = new QComboBox(axisGroup);
+    cqHistogramVariable = new QvisVariableButton(axisGroup);
+    cqHistogramVariable->setAddExpr(true);
+    cqHistogramVariable->setAddDefault(false);
+    cqHistogramVariable->setVarTypes(QvisVariableButton::Scalars);
+    cqHistogramVariable->setChangeTextOnVariableChange(true);
     aLayout->addWidget(cqHistogramVariable, 1, 3);
-    connect(cqHistogramVariable, SIGNAL(activated(int)),
-            this, SLOT(histogramVariableChanged(int)));
+    connect(cqHistogramVariable, SIGNAL(activated(const QString &)),
+            this, SLOT(histogramVariableChanged(const QString &)));
 
     cqHistogramNumBinsLabel = new QLabel(tr("Number of bins"), axisGroup);
     aLayout->addWidget(cqHistogramNumBinsLabel, 2, 0);
@@ -1051,10 +1057,6 @@ QvisSelectionsWindow::UpdateSelectionProperties()
         cqHistogramType->blockSignals(false);
         cqHistogramVariableButton->setEnabled(true);
 
-        cqHistogramVariable->blockSignals(true);
-        cqHistogramVariable->clear();
-        cqHistogramVariable->blockSignals(false);
-
         SelectionProperties defaults;
         cqHistogramNumBins->blockSignals(true);
         cqHistogramNumBins->setValue(defaults.GetHistogramNumBins());
@@ -1165,14 +1167,7 @@ QvisSelectionsWindow::UpdateSelectionProperties()
         cqHistogramVariableButton->setEnabled(!selectionProps.GetVariables().empty());
 
         cqHistogramVariable->blockSignals(true);
-        cqHistogramVariable->clear();
-        for(size_t v = 0; v < selectionProps.GetVariables().size(); ++v)
-            cqHistogramVariable->addItem(QString(selectionProps.GetVariables()[v].c_str()));
-        if(selectionProps.GetHistogramVariableIndex() > 0 &&
-           selectionProps.GetHistogramVariableIndex() < 4)
-        {
-            cqHistogramVariable->setCurrentIndex(selectionProps.GetHistogramVariableIndex());
-        }
+        cqHistogramVariable->setVariable(selectionProps.GetHistogramVariable().c_str());
         cqHistogramVariable->blockSignals(false);
         cqHistogramVariable->setEnabled(!selectionProps.GetVariables().empty() &&
             selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable);
@@ -1859,7 +1854,9 @@ QvisSelectionsWindow::initializeVariableList()
 // Creation:   Thu Jun  9 16:06:27 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 12 12:27:41 PDT 2011
+//   I removed some error checking that was no longer needed.
+//
 // ****************************************************************************
 
 void
@@ -1877,27 +1874,7 @@ QvisSelectionsWindow::histogramTypeChanged(int value)
         selectionProps.SetHistogramType(SelectionProperties::HistogramID);
         break;
     case 3:
-        { // new scope.
-        bool err = false;
-
-        if(selectionProps.GetHistogramVariableIndex() < 0)
-        {
-           if(selectionProps.GetVariables().size() > 0)
-           {
-              // Select the first variable in the list.
-              selectionProps.SetHistogramVariableIndex(0);
-           }
-           else
-           {
-              Error(tr("Variable display is not supported when the selection "
-                       "does not have any variables."));
-              err = true;
-           }
-        }
-
-        if(!err)
-            selectionProps.SetHistogramType(SelectionProperties::HistogramVariable);
-        }
+        selectionProps.SetHistogramType(SelectionProperties::HistogramVariable);
         break;
     }
 
@@ -1924,19 +1901,21 @@ QvisSelectionsWindow::histogramTypeChanged(int value)
 //   This Qt slot function is called when we change the histogram variable.
 //
 // Arguments:
-//   index : The histogram variable.
+//   var : The histogram variable.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun  9 16:08:26 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 12 12:25:54 PDT 2011
+//   I changed the histogram variable to a string.
+//
 // ****************************************************************************
 
 void
-QvisSelectionsWindow::histogramVariableChanged(int index)
+QvisSelectionsWindow::histogramVariableChanged(const QString &var)
 {
-    selectionProps.SetHistogramVariableIndex(index);
+    selectionProps.SetHistogramVariable(var.toStdString());
     Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
 }
 

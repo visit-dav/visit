@@ -77,6 +77,8 @@ class WindowInformation;
 // Creation:   Fri Aug  6 15:35:12 PDT 2010
 //
 // Modifications:
+//   Brad Whitlock, Wed Oct 12 12:18:09 PDT 2011
+//   Make histogram variable into a variable button instead of combo box.
 //
 // ****************************************************************************
 
@@ -136,7 +138,7 @@ private slots:
 
     void    histogramTypeChanged(int value);
     void    summationChanged(int);
-    void    histogramVariableChanged(int);
+    void    histogramVariableChanged(const QString &);
     void    histogramNumBinsChanged(int);
     void    histogramStartChanged(int);
     void    histogramEndChanged(int);
@@ -178,7 +180,7 @@ private:
     QLabel                  *cqHistogramTitle;
     QButtonGroup            *cqHistogramType;
     QRadioButton            *cqHistogramVariableButton;
-    QComboBox               *cqHistogramVariable;
+    QvisVariableButton      *cqHistogramVariable;
     QLabel                  *cqHistogramNumBinsLabel;
     QSpinBox                *cqHistogramNumBins;
     QLabel                  *cqHistogramMinLabel;
