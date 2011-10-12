@@ -95,6 +95,27 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
           break;
     }
 
+    const char *idVariableType_names = "UseZoneIDForID, UseGlobalZoneIDForID, UseVariableForID";
+    switch (atts->GetIdVariableType())
+    {
+      case SelectionProperties::UseZoneIDForID:
+          SNPRINTF(tmpStr, 1000, "%sidVariableType = %sUseZoneIDForID  # %s\n", prefix, prefix, idVariableType_names);
+          str += tmpStr;
+          break;
+      case SelectionProperties::UseGlobalZoneIDForID:
+          SNPRINTF(tmpStr, 1000, "%sidVariableType = %sUseGlobalZoneIDForID  # %s\n", prefix, prefix, idVariableType_names);
+          str += tmpStr;
+          break;
+      case SelectionProperties::UseVariableForID:
+          SNPRINTF(tmpStr, 1000, "%sidVariableType = %sUseVariableForID  # %s\n", prefix, prefix, idVariableType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sidVariable = \"%s\"\n", prefix, atts->GetIdVariable().c_str());
+    str += tmpStr;
     {   const stringVector &variables = atts->GetVariables();
         SNPRINTF(tmpStr, 1000, "%svariables = (", prefix);
         str += tmpStr;
@@ -193,7 +214,7 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%shistogramEndBin = %d\n", prefix, atts->GetHistogramEndBin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shistogramVariableIndex = %d\n", prefix, atts->GetHistogramVariableIndex());
+    SNPRINTF(tmpStr, 1000, "%shistogramVariable = \"%s\"\n", prefix, atts->GetHistogramVariable().c_str());
     str += tmpStr;
     return str;
 }
@@ -285,6 +306,63 @@ SelectionProperties_GetSelectionType(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSelectionType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetIdVariableType(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the idVariableType in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetIdVariableType(SelectionProperties::IDVariableType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid idVariableType value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "UseZoneIDForID, UseGlobalZoneIDForID, UseVariableForID.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetIdVariableType(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetIdVariableType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetIdVariable(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the idVariable in the object.
+    obj->data->SetIdVariable(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetIdVariable(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetIdVariable().c_str());
     return retval;
 }
 
@@ -674,26 +752,26 @@ SelectionProperties_GetHistogramEndBin(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-SelectionProperties_SetHistogramVariableIndex(PyObject *self, PyObject *args)
+SelectionProperties_SetHistogramVariable(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
         return NULL;
 
-    // Set the histogramVariableIndex in the object.
-    obj->data->SetHistogramVariableIndex((int)ival);
+    // Set the histogramVariable in the object.
+    obj->data->SetHistogramVariable(std::string(str));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-SelectionProperties_GetHistogramVariableIndex(PyObject *self, PyObject *args)
+SelectionProperties_GetHistogramVariable(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramVariableIndex()));
+    PyObject *retval = PyString_FromString(obj->data->GetHistogramVariable().c_str());
     return retval;
 }
 
@@ -707,6 +785,10 @@ PyMethodDef PySelectionProperties_methods[SELECTIONPROPERTIES_NMETH] = {
     {"GetSource", SelectionProperties_GetSource, METH_VARARGS},
     {"SetSelectionType", SelectionProperties_SetSelectionType, METH_VARARGS},
     {"GetSelectionType", SelectionProperties_GetSelectionType, METH_VARARGS},
+    {"SetIdVariableType", SelectionProperties_SetIdVariableType, METH_VARARGS},
+    {"GetIdVariableType", SelectionProperties_GetIdVariableType, METH_VARARGS},
+    {"SetIdVariable", SelectionProperties_SetIdVariable, METH_VARARGS},
+    {"GetIdVariable", SelectionProperties_GetIdVariable, METH_VARARGS},
     {"SetVariables", SelectionProperties_SetVariables, METH_VARARGS},
     {"GetVariables", SelectionProperties_GetVariables, METH_VARARGS},
     {"SetVariableMins", SelectionProperties_SetVariableMins, METH_VARARGS},
@@ -729,8 +811,8 @@ PyMethodDef PySelectionProperties_methods[SELECTIONPROPERTIES_NMETH] = {
     {"GetHistogramStartBin", SelectionProperties_GetHistogramStartBin, METH_VARARGS},
     {"SetHistogramEndBin", SelectionProperties_SetHistogramEndBin, METH_VARARGS},
     {"GetHistogramEndBin", SelectionProperties_GetHistogramEndBin, METH_VARARGS},
-    {"SetHistogramVariableIndex", SelectionProperties_SetHistogramVariableIndex, METH_VARARGS},
-    {"GetHistogramVariableIndex", SelectionProperties_GetHistogramVariableIndex, METH_VARARGS},
+    {"SetHistogramVariable", SelectionProperties_SetHistogramVariable, METH_VARARGS},
+    {"GetHistogramVariable", SelectionProperties_GetHistogramVariable, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -770,6 +852,17 @@ PySelectionProperties_getattr(PyObject *self, char *name)
     if(strcmp(name, "CumulativeQuerySelection") == 0)
         return PyInt_FromLong(long(SelectionProperties::CumulativeQuerySelection));
 
+    if(strcmp(name, "idVariableType") == 0)
+        return SelectionProperties_GetIdVariableType(self, NULL);
+    if(strcmp(name, "UseZoneIDForID") == 0)
+        return PyInt_FromLong(long(SelectionProperties::UseZoneIDForID));
+    if(strcmp(name, "UseGlobalZoneIDForID") == 0)
+        return PyInt_FromLong(long(SelectionProperties::UseGlobalZoneIDForID));
+    if(strcmp(name, "UseVariableForID") == 0)
+        return PyInt_FromLong(long(SelectionProperties::UseVariableForID));
+
+    if(strcmp(name, "idVariable") == 0)
+        return SelectionProperties_GetIdVariable(self, NULL);
     if(strcmp(name, "variables") == 0)
         return SelectionProperties_GetVariables(self, NULL);
     if(strcmp(name, "variableMins") == 0)
@@ -806,8 +899,8 @@ PySelectionProperties_getattr(PyObject *self, char *name)
         return SelectionProperties_GetHistogramStartBin(self, NULL);
     if(strcmp(name, "histogramEndBin") == 0)
         return SelectionProperties_GetHistogramEndBin(self, NULL);
-    if(strcmp(name, "histogramVariableIndex") == 0)
-        return SelectionProperties_GetHistogramVariableIndex(self, NULL);
+    if(strcmp(name, "histogramVariable") == 0)
+        return SelectionProperties_GetHistogramVariable(self, NULL);
 
     return Py_FindMethod(PySelectionProperties_methods, self, name);
 }
@@ -828,6 +921,10 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
         obj = SelectionProperties_SetSource(self, tuple);
     else if(strcmp(name, "selectionType") == 0)
         obj = SelectionProperties_SetSelectionType(self, tuple);
+    else if(strcmp(name, "idVariableType") == 0)
+        obj = SelectionProperties_SetIdVariableType(self, tuple);
+    else if(strcmp(name, "idVariable") == 0)
+        obj = SelectionProperties_SetIdVariable(self, tuple);
     else if(strcmp(name, "variables") == 0)
         obj = SelectionProperties_SetVariables(self, tuple);
     else if(strcmp(name, "variableMins") == 0)
@@ -850,8 +947,8 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
         obj = SelectionProperties_SetHistogramStartBin(self, tuple);
     else if(strcmp(name, "histogramEndBin") == 0)
         obj = SelectionProperties_SetHistogramEndBin(self, tuple);
-    else if(strcmp(name, "histogramVariableIndex") == 0)
-        obj = SelectionProperties_SetHistogramVariableIndex(self, tuple);
+    else if(strcmp(name, "histogramVariable") == 0)
+        obj = SelectionProperties_SetHistogramVariable(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

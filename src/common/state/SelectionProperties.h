@@ -78,6 +78,12 @@ public:
         HistogramID,
         HistogramVariable
     };
+    enum IDVariableType
+    {
+        UseZoneIDForID,
+        UseGlobalZoneIDForID,
+        UseVariableForID
+    };
 
     // These constructors are for objects of this class
     SelectionProperties();
@@ -106,14 +112,18 @@ public:
     virtual void SelectAll();
     void SelectName();
     void SelectSource();
+    void SelectIdVariable();
     void SelectVariables();
     void SelectVariableMins();
     void SelectVariableMaxs();
+    void SelectHistogramVariable();
 
     // Property setting methods
     void SetName(const std::string &name_);
     void SetSource(const std::string &source_);
     void SetSelectionType(SelectionType selectionType_);
+    void SetIdVariableType(IDVariableType idVariableType_);
+    void SetIdVariable(const std::string &idVariable_);
     void SetVariables(const stringVector &variables_);
     void SetVariableMins(const doubleVector &variableMins_);
     void SetVariableMaxs(const doubleVector &variableMaxs_);
@@ -125,7 +135,7 @@ public:
     void SetHistogramNumBins(int histogramNumBins_);
     void SetHistogramStartBin(int histogramStartBin_);
     void SetHistogramEndBin(int histogramEndBin_);
-    void SetHistogramVariableIndex(int histogramVariableIndex_);
+    void SetHistogramVariable(const std::string &histogramVariable_);
 
     // Property getting methods
     const std::string  &GetName() const;
@@ -133,6 +143,9 @@ public:
     const std::string  &GetSource() const;
           std::string  &GetSource();
     SelectionType      GetSelectionType() const;
+    IDVariableType     GetIdVariableType() const;
+    const std::string  &GetIdVariable() const;
+          std::string  &GetIdVariable();
     const stringVector &GetVariables() const;
           stringVector &GetVariables();
     const doubleVector &GetVariableMins() const;
@@ -147,7 +160,8 @@ public:
     int                GetHistogramNumBins() const;
     int                GetHistogramStartBin() const;
     int                GetHistogramEndBin() const;
-    int                GetHistogramVariableIndex() const;
+    const std::string  &GetHistogramVariable() const;
+          std::string  &GetHistogramVariable();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -169,6 +183,11 @@ public:
 protected:
     static std::string HistogramType_ToString(int);
 public:
+    static std::string IDVariableType_ToString(IDVariableType);
+    static bool IDVariableType_FromString(const std::string &, IDVariableType &);
+protected:
+    static std::string IDVariableType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -185,6 +204,8 @@ public:
         ID_name = 0,
         ID_source,
         ID_selectionType,
+        ID_idVariableType,
+        ID_idVariable,
         ID_variables,
         ID_variableMins,
         ID_variableMaxs,
@@ -196,7 +217,7 @@ public:
         ID_histogramNumBins,
         ID_histogramStartBin,
         ID_histogramEndBin,
-        ID_histogramVariableIndex,
+        ID_histogramVariable,
         ID__LAST
     };
 
@@ -204,6 +225,8 @@ private:
     std::string  name;
     std::string  source;
     int          selectionType;
+    int          idVariableType;
+    std::string  idVariable;
     stringVector variables;
     doubleVector variableMins;
     doubleVector variableMaxs;
@@ -215,12 +238,12 @@ private:
     int          histogramNumBins;
     int          histogramStartBin;
     int          histogramEndBin;
-    int          histogramVariableIndex;
+    std::string  histogramVariable;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SELECTIONPROPERTIES_TMFS "ssis*d*d*iiiiiiiii"
+#define SELECTIONPROPERTIES_TMFS "ssiiss*d*d*iiiiiiiis"
 
 #endif

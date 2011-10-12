@@ -14,12 +14,22 @@
       HistogramID
       HistogramVariable
     </Enum>
+    <Enum name="IDVariableType">
+      UseZoneIDForID
+      UseGlobalZoneIDForID
+      UseVariableForID
+    </Enum>
     <Field name="name" label="Name of the selection" type="string">
     </Field>
     <Field name="source" label="The source of data that defines the selection. This is a plot name or a database name." type="string">
     </Field>
     <Field name="selectionType" label="Selection type" type="enum" subtype="SelectionType">
       BasicSelection
+    </Field>
+    <Field name="idVariableType" label="ID variable type" type="enum" subtype="IDVariableType">
+      UseZoneIDForID
+    </Field>
+    <Field name="idVariable" label="ID variable" type="string">
     </Field>
     <Field name="variables" label="Variables" type="stringVector">
     </Field>
@@ -51,8 +61,7 @@
     <Field name="histogramEndBin" label="Ending bin for histogram selection" type="int">
        9
     </Field>
-    <Field name="histogramVariableIndex" label="Histogram variable index" type="int">
-       -1
+    <Field name="histogramVariable" label="Histogram variable" type="string">
     </Field>
     <Function name="GetOriginatingPlot" user="true" member="true">
     </Function>   
