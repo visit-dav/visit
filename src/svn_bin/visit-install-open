@@ -32,6 +32,9 @@
 #   Eric Brugger, Tue Sep  6 14:13:59 PDT 2011
 #   I added rzzeus.
 #
+#   Brad Whitlock, Wed Oct 12 10:01:07 PDT 2011
+#   Install as llnl_open_cz or llnl_open_rz depending on machine.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -275,7 +278,7 @@ fi
 rm -f aztec
 cat <<EOF > aztec
 #!/bin/sh
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_cz -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on aztec"           > resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -311,7 +314,7 @@ fi
 rm -f rzzeus
 cat <<EOF > rzzeus
 #!/bin/sh
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_rz -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on rzzeus"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -417,7 +420,7 @@ fi
 rm -f ellipse
 cat <<EOF > ellipse
 #!/bin/sh
-./visit-install -private -c llnl_open -b bdivp $ver linux-rhel4 visit > installlog 2>&1
+./visit-install -private -c llnl_open_cz -b bdivp $ver linux-rhel4 visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on ellipse"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1
