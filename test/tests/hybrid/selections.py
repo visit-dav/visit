@@ -347,7 +347,7 @@ def test4(datapath):
     s.variables = ("m2", "dist")
     s.variableMins = (0.5, 0.)
     s.variableMaxs = (1., 6.)
-    s.histogramVariableIndex = 1
+    s.histogramVariable = s.variables[1]
     s.histogramNumBins = 5
     s.histogramStartBin = 0
     s.histogramEndBin = 4
