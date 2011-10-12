@@ -73,7 +73,6 @@ sub get_norecursive ($@)
 if ($ARGV[0] eq "-dbio-only")
 {
     push @files, get_svn_norecursive  "./src";
-    push @files, get_svn_recursive    "./src/ac";
     push @files, get_svn_recursive    "./src/CMake";
     push @files, get_svn_norecursive  "./src/common";
     push @files, get_svn_norecursive  "./src/common/Exceptions";
@@ -114,7 +113,6 @@ if ($ARGV[0] eq "-dbio-only")
 else
 {
     push @files, get_svn_norecursive  "./src";
-    push @files, get_svn_recursive    "./src/ac";
     push @files, get_svn_recursive    "./src/CMake";
     push @files, get_svn_recursive    "./src/common";
     push @files, get_svn_recursive    "./src/visit_vtk";
