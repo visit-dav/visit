@@ -115,7 +115,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Named selections based directly on a database instead of a plot were not recreated when restoring a session.</li>
   <li>Cumulative query selections based on a database instead of a plot failed to be created when a compute engine did not already exist. Furthermore, if the selection used expressions that had not been previously used in plots, the selection would not be calculated.</li>
-  <li></li>
+  <li>The VisIt GUI would fail to connect to a remote computer if the remote username was changed in the <i>Change username</i> window while connecting to the remote computer. The viewer would connect to the remote computer but it would also send the gui a message that caused it to stop waiting for a connection from the metadata server.</li>
   <li></li>
   <li></li>
   <li></li>
