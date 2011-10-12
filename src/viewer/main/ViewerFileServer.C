@@ -1840,6 +1840,12 @@ ViewerFileServer::SendKeepAlives()
 //   Kathleen Bonnell, Thu Aug 14 16:21:57 PDT 2008
 //   Added call to SendFileOpenOptions.
 //
+//   Brad Whitlock, Wed Oct 12 15:39:39 PDT 2011
+//   Remove TerminateConnectionRequest for when we want to change usernames
+//   since that sends a message to the gui that stops it from waiting for
+//   a connection from the mdserver. We want it to keep waiting so when we
+//   change the username, the mdserver connects.
+//
 // ****************************************************************************
 
 void
@@ -1884,7 +1890,6 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
         {
             // set up a new username
             debug1 << "Asked to pick a new username" << endl;
-            TerminateConnectionRequest(args, 6);
             ViewerChangeUsernameWindow::changeUsername(mdServerHost.c_str());
             keepGoing = true;
         }
