@@ -855,6 +855,10 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
 //
+//    Hank Childs, Wed Oct 12 07:26:39 PDT 2011
+//    Don't disable shadowing or depth cueing ... they now manually force
+//    SR to always.
+//
 // ****************************************************************************
 
 void
@@ -874,16 +878,14 @@ QvisRenderingWindow::UpdateWindowSensitivity()
 
     scalrenAutoThreshold->setEnabled(scalableAuto);
     compactDomainsAutoThreshold->setEnabled(compactAuto);
-    shadowToggle->setEnabled(scalableAlways);
-    shadowStrengthSlider->setEnabled(scalableAlways && shadowOn);
-    shadowStrengthLabel->setEnabled(scalableAlways && shadowOn);
+    shadowStrengthSlider->setEnabled(shadowOn);
+    shadowStrengthLabel->setEnabled(shadowOn);
 
-    depthCueingToggle->setEnabled(scalableAlways);
-    depthCueingAutoToggle->setEnabled(scalableAlways && depthCueingOn);
-    depthCueingStartEdit->setEnabled(scalableAlways && depthCueingOn && !depthCueingAuto);
-    depthCueingStartLabel->setEnabled(scalableAlways && depthCueingOn && !depthCueingAuto);
-    depthCueingEndEdit->setEnabled(scalableAlways && depthCueingOn && !depthCueingAuto);
-    depthCueingEndLabel->setEnabled(scalableAlways && depthCueingOn && !depthCueingAuto);
+    depthCueingAutoToggle->setEnabled(depthCueingOn);
+    depthCueingStartEdit->setEnabled(depthCueingOn && !depthCueingAuto);
+    depthCueingStartLabel->setEnabled(depthCueingOn && !depthCueingAuto);
+    depthCueingEndEdit->setEnabled(depthCueingOn && !depthCueingAuto);
+    depthCueingEndLabel->setEnabled(depthCueingOn && !depthCueingAuto);
 
     redblue->setEnabled(stereoOn);
     interlace->setEnabled(stereoOn);
@@ -1560,13 +1562,26 @@ QvisRenderingWindow::scalrenCompressModeChanged(int mode)
 //    Jeremy Meredith, Wed Aug 29 15:28:05 EDT 2007
 //    Moved window sensitivity handling to its own function.
 //
+//    Hank Childs, Wed Oct 12 07:26:39 PDT 2011
+//    Add new behavior for switching SR to always when shadows are enabled.
+//
 // ****************************************************************************
 
 void
 QvisRenderingWindow::shadowToggled(bool val)
 {
+    bool doUpdate = false;
+    if (val == true)
+    {
+        if (renderAtts->GetScalableActivationMode() != RenderingAttributes::Always)
+        {
+            Warning(tr("As shadows only work with VisIt's software rendering mode, software rendering is now being enabled.  If you turn off shadows at a later time, you must manually disable software rendering.  You do this by setting \"Use scalable rendering\" to \"Auto\"."));
+            renderAtts->SetScalableActivationMode(RenderingAttributes::Always);
+            doUpdate = true;
+        }
+    }
     renderAtts->SetDoShadowing(val);
-    SetUpdate(false);
+    SetUpdate(doUpdate);
     Apply();
     UpdateWindowSensitivity();
 }
@@ -1701,13 +1716,28 @@ QvisRenderingWindow::colorTexturingToggled(bool val)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Oct 12 07:26:39 PDT 2011
+//    Add new behavior for switching SR to always when shadows are enabled.
+//
 // ****************************************************************************
 void
 QvisRenderingWindow::depthCueingToggled(bool val)
 {
+    bool doUpdate = false;
+    if (val == true)
+    {
+        if (renderAtts->GetScalableActivationMode() != RenderingAttributes::Always)
+        {
+            Warning(tr("As depth cueing only work with VisIt's software rendering mode, software rendering is now being enabled.  If you turn off depth cueing at a later time, you must manually disable software rendering.  You do this by setting \"Use scalable rendering\" to \"Auto\"."));
+            renderAtts->SetScalableActivationMode(RenderingAttributes::Always);
+            doUpdate = true;
+        }
+    }
     renderAtts->SetDoDepthCueing(val);
     UpdateWindowSensitivity();
-    SetUpdate(false);
+    SetUpdate(doUpdate);
     Apply();
 }
 
