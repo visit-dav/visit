@@ -19,8 +19,7 @@ VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
 ##
 ## Specify the location of the vtk.
 ##
-#VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0i/${VISITARCH}/lib/vtk-5.0/)
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR /scratch/kbonnell/VTK59/INSTALL_Debug)
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
 
 ##
 ## Specify the Qt4 binary dir. 
