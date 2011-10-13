@@ -7339,6 +7339,11 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Cyrus Harrison,
+//    Fixed bug preventing domain nesting from being applied if we have
+//    more MPI tasks than domains.
+//
 // ****************************************************************************
 
 bool
@@ -7351,7 +7356,7 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);
     string meshname = md->MeshForVar(spec->GetVariable());
-    
+
     void_ref_ptr vr = cache.GetVoidRef(meshname.c_str(),
                                    AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
                                    ts, -1);
@@ -7382,8 +7387,12 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
             shouldStop = 1;
         }
     }
-    else
+    else if(doms.size() != 0)
+    {
+        // we only want to signal 'shouldStop' if the current processor
+        // actually has datasets, but no avtDomainNesting object.
         shouldStop = 1;
+    }
 
 #ifdef PARALLEL
     if (canDoCollectiveCommunication)
@@ -7395,7 +7404,9 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
     }
 #endif
 
-    if (!shouldStop)  
+    // if dn is null (case were we have no datasets on this proc)
+    // make sure to skip 'dn->ApplyGhost'.
+    if (!shouldStop && dn != NULL)
     {
         int t0 = visitTimer->StartTimer();
         rv = dn->ApplyGhost(doms, allDoms, list);
