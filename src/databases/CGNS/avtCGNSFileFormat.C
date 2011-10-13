@@ -167,6 +167,7 @@ avtCGNSFileFormat::avtCGNSFileFormat(const char *filename)
     timesRead = false;
     cgnsCyclesAccurate = false;
     cgnsTimesAccurate = false;
+    initializedMaps = false;
 }
 
 // ****************************************************************************
@@ -1293,6 +1294,41 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             "their grid locations (variable centerings) are not supported by "
             "VisIt. VisIt currently supports node and cell centered variables.");
     }
+
+    // Indicate that we've initialized maps.
+    initializedMaps = true;
+}
+
+// ****************************************************************************
+// Method: avtCGNSFileFormat::InitializeMaps
+//
+// Purpose: 
+//   Populate a dummy metadata with side-effect of initializing variable maps
+//   that we need to read data.
+//
+// Arguments:
+//   timeState : The time state.
+//
+// Returns:    
+//
+// Note:       We call this method from GetMesh, GetVar so we can group files
+//             since PopulateDatabaseMetaData gets skipped for grouped files.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 13 11:11:11 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtCGNSFileFormat::InitializeMaps(int timeState)
+{
+    if(!initializedMaps)
+    {
+        avtDatabaseMetaData md;
+        PopulateDatabaseMetaData(&md, timeState);
+    }
 }
 
 // ****************************************************************************
@@ -1319,6 +1355,9 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //    Brad Whitlock, Wed Apr 16 10:06:46 PDT 2008
 //    Changed how we search MeshDomainMapping.
 //
+//    Brad Whitlock, Thu Oct 13 11:13:30 PDT 2011
+//    Call InitializeMaps so we can group files.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1327,6 +1366,8 @@ avtCGNSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     const char *mName = "avtCGNSFileFormat::GetMesh: ";
     debug4 << mName << "ts=" << timestate << ", dom=" << domain
            << ", mesh=" << meshname << endl;
+
+    InitializeMaps(timestate);
 
     //
     // See if this domain is turned off by default for this mesh.
@@ -2041,6 +2082,9 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
 //    Jeremy Meredith, Thu Aug  7 15:56:52 EDT 2008
 //    Added a default case for a switch.
 //
+//    Brad Whitlock, Thu Oct 13 11:13:30 PDT 2011
+//    Call InitializeMaps so we can group files.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2049,6 +2093,8 @@ avtCGNSFileFormat::GetVar(int timestate, int domain, const char *varname)
     const char *mName = "avtCGNSFileFormat::GetVar: ";
     debug4 << mName << "ts=" << timestate << ", dom=" << domain
            << ", var=" << varname << endl;
+
+    InitializeMaps(timestate);
 
     // Look up the base that contains the variable.
     int base = 1;

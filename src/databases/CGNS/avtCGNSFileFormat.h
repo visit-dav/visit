@@ -62,6 +62,10 @@
 //    Brad Whitlock, Tue Apr 15 10:20:10 PDT 2008
 //    Added methods that help us inspect the file contents.
 //
+//    Brad Whitlock, Thu Oct 13 11:14:18 PDT 2011
+//    I added InitializeMaps so we can call it from GetMesh, GetVar to ensure
+//    the file grouping works.
+//
 // ****************************************************************************
 
 class avtCGNSFileFormat : public avtMTMDFileFormat
@@ -141,6 +145,7 @@ protected:
                                const std::string &vecName);
     bool                   GetVariablesForBase(int base, BaseInformation &baseInfo);
     bool                   BaseContainsUnits(int base);
+    void                   InitializeMaps(int timeState);
 
     vtkDataSet *           GetCurvilinearMesh(int, int, const char *,
                                               const int *);
@@ -161,6 +166,7 @@ protected:
     std::map<std::string, BaseAndZoneList> MeshDomainMapping;
     std::map<std::string, int>             BaseNameToIndices;
     std::map<std::string, std::string>     VisItNameToCGNSName;
+    bool                                   initializedMaps;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 };
