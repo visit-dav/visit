@@ -132,7 +132,7 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
     double cachedAngle;
 
     bool validTimeAxis;
-    double lastTimeStep;
+    double lastTimeAxisValue;
 };
 
 #endif
