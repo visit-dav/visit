@@ -336,6 +336,7 @@ avtLineSamplerFilter::Execute()
           return;
         }
 
+        double channelPlotOffset = atts.GetChannelPlotOffset();
         double heightPlotScale = atts.GetHeightPlotScale();
 
         vtkUnstructuredGrid *uGrid;
@@ -391,7 +392,8 @@ avtLineSamplerFilter::Execute()
           vtkDataArray *scalars = tmp_ds->GetPointData()->GetScalars();
 
           double nextPathPoint[3] = { 0,
-                                      i+heightPlotScale * *(scalars->GetTuple(i)),
+                                      (double) i * channelPlotOffset +
+                                      heightPlotScale * *(scalars->GetTuple(i)),
                                       0 };
 
           if( atts.GetTimeSampling() ==
@@ -1295,21 +1297,17 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 //               if( atts.GetChannelGeometry() == LineSamplerAttributes::Point ||
 //                   atts.GetChannelGeometry() == LineSamplerAttributes::Line )
               {
-                  double pt[3];
-
                   float *points_ptr;
 
-                  if( atts.GetChannelIntegration() ==
-                      LineSamplerAttributes::IntegrateAlongChannel ||
-                      atts.GetChannelGeometry() == LineSamplerAttributes::Point ||
-                      atts.GetViewGeometry() == LineSamplerAttributes::Points )
+                  if( out_ds->IsA("vtkUnstructuredGrid") )
                   {
-                    vtkUnstructuredGrid* out_ug = vtkUnstructuredGrid::SafeDownCast(out_ds);
+                    vtkUnstructuredGrid* out_ug =
+                      vtkUnstructuredGrid::SafeDownCast(out_ds);
 
                     points_ptr =
                       (float *) out_ug->GetPoints()->GetVoidPointer(0);
                   }
-                  else //if( atts.GetChannelGeometry() == LineSamplerAttributes::Line )
+                  else if( out_ds->IsA("vtkPolyData") )
                   {
                     vtkPolyData* out_pd = vtkPolyData::SafeDownCast(out_ds);
 
