@@ -139,7 +139,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     mainTab = new QWidget();
     propertyTabs->addTab(mainTab, tr("Main"));
     
-    Qgridlayout *mainLayout = new QGridLayout(mainTab);
+    QGridLayout *mainLayout = new QGridLayout(mainTab);
 
     coordinateSystemLabel = new QLabel(tr("Coordinate system"), central);
     mainLayout->addWidget(coordinateSystemLabel,0,0);
