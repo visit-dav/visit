@@ -75,7 +75,7 @@
 // ****************************************************************************
 
 avtLineSamplerFilter::avtLineSamplerFilter() :
-  composite_ds(0), cachedAngle(0), validTimeAxis(true), lastTimeStep(-1.0e12)
+  composite_ds(0), cachedAngle(0), validTimeAxis(true), lastTimeAxisValue(-1.0e12)
 {
 }
 
@@ -280,6 +280,38 @@ avtLineSamplerFilter::Execute()
     // Free the memory from the GetAllLeaves function call.
     delete [] dsets;
 
+    // Time axis value 
+    double timeAxisValue;
+
+    if( atts.GetTimeSampling() ==
+        LineSamplerAttributes::MultipleTimeSteps &&
+        atts.GetToroidalIntegration() ==
+        LineSamplerAttributes::NoToroidalIntegration )
+    {
+      if( atts.GetDisplayTime() == LineSamplerAttributes::Time &&
+          GetInput()->GetInfo().GetAttributes().TimeIsAccurate() )
+        timeAxisValue =
+          GetInput()->GetInfo().GetAttributes().GetTime();
+            
+      else if( atts.GetDisplayTime() == LineSamplerAttributes::Cycle &&
+               GetInput()->GetInfo().GetAttributes().CycleIsAccurate() )
+        timeAxisValue =
+          GetInput()->GetInfo().GetAttributes().GetCycle();
+      else
+        timeAxisValue = currentTime;
+
+      if( lastTimeAxisValue >= timeAxisValue )
+        validTimeAxis = false;
+
+//     std::cerr << lastTimeAxisValue << "  " << timeAxisValue << "  "
+//            << validTimeAxis << "  " << currentTime << "  "
+//            << GetInput()->GetInfo().GetAttributes().GetTime() << "  "
+//            << GetInput()->GetInfo().GetAttributes().GetCycle() << "  "
+//            << std::endl;
+
+      lastTimeAxisValue = timeAxisValue;
+    }
+
     vtkDataSet *tmp_ds;
 
     double startAngle, stopAngle, deltaAngle;
@@ -325,8 +357,9 @@ avtLineSamplerFilter::Execute()
             atts.GetViewDimension() == LineSamplerAttributes::Three )
         {
           std::string msg;
-          msg += "The view dimension is not one. For collating multiple time " +
-            std::string("steps the resulting plots are one dimensional. ") +
+          msg += "The view dimension is not one. " +
+            std::string(" For collating multiple angles and/or time steps ") +
+            std::string("the resulting plots are one dimensional. ") +
             std::string("Showing the original channel sampling.");
           
           avtCallback::IssueWarning(msg.c_str());
@@ -391,10 +424,7 @@ avtLineSamplerFilter::Execute()
           // Get the next point and update its coordinates if necessary
           vtkDataArray *scalars = tmp_ds->GetPointData()->GetScalars();
 
-          double nextPathPoint[3] = { 0,
-                                      (double) i * channelPlotOffset +
-                                      heightPlotScale * *(scalars->GetTuple(i)),
-                                      0 };
+          double nextPathPoint[3];
 
           if( atts.GetTimeSampling() ==
               LineSamplerAttributes::MultipleTimeSteps &&
@@ -408,23 +438,7 @@ avtLineSamplerFilter::Execute()
           else if( atts.GetTimeSampling() ==
               LineSamplerAttributes::MultipleTimeSteps )
           {
-            if( atts.GetDisplayTime() == LineSamplerAttributes::Time &&
-                GetInput()->GetInfo().GetAttributes().TimeIsAccurate() )
-              nextPathPoint[0] =
-                GetInput()->GetInfo().GetAttributes().GetTime();
-            
-            else if( atts.GetDisplayTime() == LineSamplerAttributes::Cycle &&
-                     GetInput()->GetInfo().GetAttributes().CycleIsAccurate() )
-              nextPathPoint[0] =
-                GetInput()->GetInfo().GetAttributes().GetCycle();
-            else
-              nextPathPoint[0] = currentTime;
-
-            if( lastTimeStep >= nextPathPoint[0] )
-              validTimeAxis = false;
-
-            lastTimeStep = nextPathPoint[0];
-
+            nextPathPoint[0] = timeAxisValue;
           }
           else if( atts.GetToroidalIntegration() ==
                    LineSamplerAttributes::ToroidalTimeSample )
@@ -433,6 +447,12 @@ avtLineSamplerFilter::Execute()
                 cachedAngle - (double) (360.0 * (int) (cachedAngle / 360.0));
           }
 
+          nextPathPoint[1] = (double) i * channelPlotOffset +
+            heightPlotScale * *(scalars->GetTuple(i));
+
+          nextPathPoint[2] = 0;
+
+          // Insert the new point into the list.
           vtkPoints* pathPoints = uGrid->GetPoints();
           pathPoints->InsertNextPoint( nextPathPoint );
 
