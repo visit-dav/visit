@@ -136,10 +136,10 @@ QvisLineSamplerWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // Main tab
     // ----------------------------------------------------------------------
-    mainTab = new QWidget(central);
+    mainTab = new QWidget();
     propertyTabs->addTab(mainTab, tr("Main"));
     
-    QGridLayout *mainLayout = new QGridLayout(mainTab);
+    Qgridlayout *mainLayout = new QGridLayout(mainTab);
 
     coordinateSystemLabel = new QLabel(tr("Coordinate system"), central);
     mainLayout->addWidget(coordinateSystemLabel,0,0);
@@ -216,7 +216,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // Geometry tab
     // ----------------------------------------------------------------------
-    geometryTab = new QWidget(central);
+    geometryTab = new QWidget();
     propertyTabs->addTab(geometryTab, tr("Geometry"));
     
     mainLayout = new QGridLayout(geometryTab);
@@ -457,7 +457,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // List tab
     // ----------------------------------------------------------------------
-    listTab = new QWidget(central);
+    listTab = new QWidget();
     propertyTabs->addTab(listTab, tr("List"));
     
     mainLayout = new QGridLayout(listTab);
@@ -529,7 +529,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // Sampling tab
     // ----------------------------------------------------------------------
-    samplingTab = new QWidget(central);
+    samplingTab = new QWidget();
     propertyTabs->addTab(samplingTab, tr("Sampling"));
     
     mainLayout = new QGridLayout(samplingTab);
@@ -797,7 +797,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // View tab
     // ----------------------------------------------------------------------
-    viewTab = new QWidget(central);
+    viewTab = new QWidget();
     propertyTabs->addTab(viewTab, tr("View"));
     
     mainLayout = new QGridLayout(viewTab);
