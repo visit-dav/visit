@@ -144,6 +144,10 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void nChannelListArraysProcessText();
     void channelListToroidalArrayAngleProcessText();
     void channelListToroidalAngleProcessText();
+
+    void EnableGeometry(bool flag);
+    void EnableList(bool flag);
+
   private:
     QTabWidget  *propertyTabs;
     QWidget     *mainTab;
@@ -193,6 +197,8 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLineEdit *arrayOrigin;
     QWidget      *arrayAxis;
     QButtonGroup *arrayAxisButtonGroup;
+    QRadioButton *arrayAxisArrayAxisR;
+    QRadioButton *arrayAxisArrayAxisZ;
     QLineEdit *poloialAngle;
     QLineEdit *poloialRTilt;
     QLineEdit *poloialZTilt;
@@ -295,7 +301,4 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
 
     LineSamplerAttributes *atts;
 };
-
-
-
 #endif

@@ -131,7 +131,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     int width = 100;
 
     propertyTabs = new QTabWidget(central);
-    topLayout->addWidget(propertyTabs);
+    topLayout->addWidget(propertyTabs, 1, 0);
 
     // ----------------------------------------------------------------------
     // Main tab
@@ -412,10 +412,10 @@ QvisLineSamplerWindow::CreateWindowContents()
     QHBoxLayout *arrayAxisLayout = new QHBoxLayout(arrayAxis);
     arrayAxisLayout->setMargin(0);
     arrayAxisLayout->setSpacing(10);
-    QRadioButton *arrayAxisArrayAxisR = new QRadioButton(tr("R"), arrayAxis);
+    arrayAxisArrayAxisR = new QRadioButton(tr("R"), arrayAxis);
     arrayAxisButtonGroup->addButton(arrayAxisArrayAxisR,0);
     arrayAxisLayout->addWidget(arrayAxisArrayAxisR);
-    QRadioButton *arrayAxisArrayAxisZ = new QRadioButton(tr("Z"), arrayAxis);
+    arrayAxisArrayAxisZ = new QRadioButton(tr("Z"), arrayAxis);
     arrayAxisButtonGroup->addButton(arrayAxisArrayAxisZ,1);
     arrayAxisLayout->addWidget(arrayAxisArrayAxisZ);
     connect(arrayAxisButtonGroup, SIGNAL(buttonClicked(int)),
@@ -977,8 +977,8 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 arrayConfigurationButtonGroup->button((int)atts->GetArrayConfiguration())->setChecked(true);
             arrayConfigurationButtonGroup->blockSignals(false);
 
-            geometryTab->setEnabled((int)atts->GetArrayConfiguration()==0);
-            listTab->setEnabled((int)atts->GetArrayConfiguration()==1);
+            EnableGeometry((int)atts->GetArrayConfiguration()==0);
+            EnableList((int)atts->GetArrayConfiguration()==1);
             break;
           case LineSamplerAttributes::ID_boundary:
             boundaryButtonGroup->blockSignals(true);
@@ -2423,4 +2423,70 @@ QvisLineSamplerWindow::readWall()
     }
 
     f.close();
+}
+
+
+void
+QvisLineSamplerWindow::EnableGeometry(bool flag)
+{
+    nArraysLabel->setEnabled( flag );
+    nArrays->setEnabled( flag );
+    toroidalArrayAngleLabel->setEnabled( flag );
+    toroidalArrayAngle->setEnabled( flag );
+//    projectionTabs->setEnabled( flag );
+    nDChannelsLabel->setEnabled( flag );
+    nDChannels->setEnabled( flag );
+
+    channelAngleLabel->setEnabled( flag );
+    channelAngle->setEnabled( flag );
+
+    nPChannelsLabel->setEnabled( flag );
+    nPChannels->setEnabled( flag );
+    channelParallelOffsetLabel->setEnabled( flag );
+    channelParallelOffset->setEnabled( flag );
+
+    nGChannelsLabel->setEnabled( flag );
+    nGChannels->setEnabled( flag );
+    channelGridOffsetLabel->setEnabled( flag );
+    channelGridOffset->setEnabled( flag );
+
+    nRowsLabel->setEnabled( flag );
+    nRows->setEnabled( flag );
+    rowOffsetLabel->setEnabled( flag );
+    rowOffset->setEnabled( flag );
+
+    arrayOriginLabel->setEnabled( flag );
+    arrayOrigin->setEnabled( flag );
+
+    arrayAxisLabel->setEnabled( flag );
+    arrayAxis->setEnabled( flag );
+    arrayAxisArrayAxisR->setEnabled( flag );
+    arrayAxisArrayAxisZ->setEnabled( flag );
+
+    poloialAngleLabel->setEnabled( flag );
+    poloialAngle->setEnabled( flag );
+    poloialRTiltLabel->setEnabled( flag );
+    poloialRTilt->setEnabled( flag );
+    poloialZTiltLabel->setEnabled( flag );
+    poloialZTilt->setEnabled( flag );
+
+    toroidalAngleLabel->setEnabled( flag );
+    toroidalAngle->setEnabled( flag );
+}
+
+void
+QvisLineSamplerWindow::EnableList(bool flag)
+{
+    nChannelListArraysLabel->setEnabled( flag );
+    nChannelListArrays->setEnabled( flag );
+    channelListToroidalArrayAngleLabel->setEnabled( flag );
+    channelListToroidalArrayAngle->setEnabled( flag );
+    confFileCoordinateLabel->setEnabled( flag );
+    channelList->setEnabled( flag );
+    channelListReadChannels->setEnabled( flag );
+    channelListAddChannel->setEnabled( flag );
+    channelListDeleteChannel->setEnabled( flag );
+    channelListDeleteAllChannels->setEnabled( flag );
+    channelListToroidalAngleLabel->setEnabled( flag );
+    channelListToroidalAngle->setEnabled( flag );
 }
