@@ -153,7 +153,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     meshGeometryButtonGroup->addButton(meshGeometryCartesian,0);
     meshGeometryLayout->addWidget(meshGeometryCartesian);
     QRadioButton *meshGeometryCylindrical =
-      new QRadioButton(tr("Cylindrical"), meshGeometry);
+      new QRadioButton(tr("Cylindrical (R,Phi,Z)"), meshGeometry);
     meshGeometryButtonGroup->addButton(meshGeometryCylindrical,1);
     meshGeometryLayout->addWidget(meshGeometryCylindrical);
     QRadioButton *meshGeometryToroidal =
