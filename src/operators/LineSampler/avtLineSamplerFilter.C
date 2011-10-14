@@ -282,7 +282,7 @@ avtLineSamplerFilter::Execute()
     // Free the memory from the GetAllLeaves function call.
     delete [] dsets;
 
-    // Time axis value 
+    // Time axis value - only used when time sampling.
     double timeAxisValue;
 
     if( atts.GetTimeSampling() ==
@@ -314,8 +314,6 @@ avtLineSamplerFilter::Execute()
       lastTimeAxisValue = timeAxisValue;
     }
 
-    vtkDataSet *tmp_ds;
-
     double startAngle, stopAngle, deltaAngle;
 
     if( atts.GetToroidalIntegration() ==
@@ -341,7 +339,12 @@ avtLineSamplerFilter::Execute()
     // Embed the sample toroidally as time in an outer loop.
     for( cachedAngle=startAngle; cachedAngle<stopAngle; cachedAngle+=deltaAngle )
     {
-      tmp_ds = ExecuteChannelData(currDs, 0, "");
+      vtkDataSet *tmp_ds = ExecuteChannelData(currDs, 0, "");
+
+      if( tmp_ds == NULL )
+      {
+        return;
+      }
 
       if( atts.GetTimeSampling() ==
           LineSamplerAttributes::CurrentTimeStep &&
@@ -349,6 +352,8 @@ avtLineSamplerFilter::Execute()
           LineSamplerAttributes::NoToroidalIntegration )
       {
         composite_ds = tmp_ds;
+
+        return;
       }
       else // if( atts.GetTimeSampling() ==
            //     LineSamplerAttributes::MultipleTimeSteps ||
@@ -376,7 +381,7 @@ avtLineSamplerFilter::Execute()
 
         vtkUnstructuredGrid *uGrid;
 
-        // First dataset so use it as the basis for the summation.
+        // First time through, create a dataset for the collating.
         if( composite_ds == NULL )
         {
           //Create and initalize the new dataset
@@ -406,11 +411,13 @@ avtLineSamplerFilter::Execute()
         else //if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual )
         {
           nArrays = atts.GetNChannelListArrays();
-          std::vector<double> listOfChannels = atts.GetChannelList();
 
+          // Currently only one type of conf file.
+          std::vector<double> listOfChannels = atts.GetChannelList();
           nChannels = listOfChannels.size() / 4;
         }
 
+        // Sanity check.
         if( nPoints != nArrays* nChannels )
         {
           std::string msg;
@@ -428,6 +435,8 @@ avtLineSamplerFilter::Execute()
 
           double nextPathPoint[3];
 
+          // When samplng toroidally and over time use the time as the
+          // major "index" and the angle (0->360) as the minor "index".
           if( atts.GetTimeSampling() ==
               LineSamplerAttributes::MultipleTimeSteps &&
               atts.GetToroidalIntegration() ==
@@ -437,11 +446,15 @@ avtLineSamplerFilter::Execute()
               cachedAngle - (double) (360.0 * (int) (cachedAngle / 360.0));
           }
 
+          // Pure sampling over time so use the value specifed by the
+          // user.
           else if( atts.GetTimeSampling() ==
               LineSamplerAttributes::MultipleTimeSteps )
           {
             nextPathPoint[0] = timeAxisValue;
           }
+
+          // Toroidal sampling so use the angle (0->360).
           else if( atts.GetToroidalIntegration() ==
                    LineSamplerAttributes::ToroidalTimeSample )
           {
@@ -592,8 +605,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     if( nArrays > 1 && toroidalArrayAngle == 0)
     {
       std::string msg;
-      msg += "The number of array is greater than one. " +
-        std::string("But the angle between is zero, returning a single array." );
+      msg += "The number of arrays is greater than one. " +
+        std::string("But the angle/distance between each is zero, ") +
+        std::string("returning a single array." );
           
       avtCallback::IssueWarning(msg.c_str());
 
@@ -869,6 +883,21 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
           toroidalAngle += (double) a * toroidalArrayAngle;
 
+          if( atts.GetMeshGeometry() == LineSamplerAttributes::Cartesian )
+          {
+            double yOffset = localBounds[3] - localBounds[2];
+
+            while( toroidalAngle < localBounds[2] ) toroidalAngle += yOffset;
+            while( toroidalAngle > localBounds[3] ) toroidalAngle -= yOffset;
+          }
+          else if( atts.GetMeshGeometry() == LineSamplerAttributes::Cylindrical )
+          {
+            while( toroidalAngle <   0.0 ) toroidalAngle += 360.0;
+            while( toroidalAngle > 360.0 ) toroidalAngle -= 360.0;
+
+            toroidalAngle = 2.0 * M_PI * toroidalAngle/360.0;
+          }
+
           // Initial translation based on the user origin for the
           // central channel.
           avtVector translate( r, 0, z );
@@ -908,11 +937,14 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             transform->RotateZ( zTilt );
 
           // Toroidal rotation.
-          if( toroidalAngle != 0 )
+          if( atts.GetMeshGeometry() == LineSamplerAttributes::Toroidal &&
+              toroidalAngle != 0 )
             transform->RotateZ( toroidalAngle );
 
           // Transform the normal
           applyTransform( transform, normal );
+
+
 
           // Transform the start and stop points and check the extents so
           // that the channel goes from the start point through the dataset
@@ -985,8 +1017,24 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
           checkBounds( in_ds, startPoint, stopPoint );
 
+          // Toroidal translation.
+          if( (atts.GetMeshGeometry() == LineSamplerAttributes::Cartesian ||
+               atts.GetMeshGeometry() == LineSamplerAttributes::Cylindrical) &&
+              toroidalAngle != 0 )
+          {
+              transform->Identity();
+              transform->Translate( 0, toroidalAngle, 0 );
+
+              applyTransform( transform, startPoint );
+              applyTransform( transform, stopPoint );
+
+              // No extents checking as the channel is no longer in the
+              // original plane.
+          }
+
           // Toroidal rotation.
-          if( toroidalAngle != 0 )
+          else if( atts.GetMeshGeometry() == LineSamplerAttributes::Toroidal &&
+                   toroidalAngle != 0 )
           {
               transform->Identity();
               transform->RotateZ( toroidalAngle );
@@ -1250,19 +1298,36 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           // plane then back out the toroidal rotation.
           if( atts.GetViewDimension() == LineSamplerAttributes::Two )
           {
-              if( toroidalAngle != 0 )
-              {
-                  transform->Identity();
+            if( (atts.GetMeshGeometry() == LineSamplerAttributes::Cartesian ||
+                 atts.GetMeshGeometry() == LineSamplerAttributes::Cylindrical) &&
+                toroidalAngle != 0 )
+            {
+                transform->Identity();
 
-                  // Back out the toroidal transform.
-                  transform->RotateZ( -toroidalAngle - (double) a * toroidalArrayAngle );
+                // Back out the toroidal translation.
+                transform->Translate( 0, -toroidalAngle, 0 );
 
-                  transformFilter->SetTransform( transform );
-                  transformFilter->SetInput( out_ds );
+                transformFilter->SetTransform( transform );
+                transformFilter->SetInput( out_ds );
           
-                  out_ds = transformFilter->GetOutput();
-                  out_ds->Update();
-              }
+                out_ds = transformFilter->GetOutput();
+                out_ds->Update();
+            }
+
+            else if( atts.GetMeshGeometry() == LineSamplerAttributes::Toroidal &&
+                     toroidalAngle != 0 )
+            {
+                transform->Identity();
+                
+                // Back out the toroidal rotation.
+                transform->RotateZ( -toroidalAngle );
+                
+                transformFilter->SetTransform( transform );
+                transformFilter->SetInput( out_ds );
+                
+                out_ds = transformFilter->GetOutput();
+                out_ds->Update();
+            }
           }
 
           // If the user has elected to display the geometry as a 1D plot
@@ -1272,8 +1337,15 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           {
               transform->Identity();
 
-              // Back out the toroidal transform.
-              if( toroidalAngle != 0 )
+              // Back out the toroidal translation.
+              if( (atts.GetMeshGeometry() == LineSamplerAttributes::Cartesian ||
+                   atts.GetMeshGeometry() == LineSamplerAttributes::Cylindrical) &&
+                  toroidalAngle != 0 )
+                transform->Translate( 0, -toroidalAngle, 0 );
+
+              // Back out the toroidal rotation.
+              else if( atts.GetMeshGeometry() == LineSamplerAttributes::Toroidal &&
+                  toroidalAngle != 0 )
                 transform->RotateZ( -toroidalAngle );
 
               // Get the startPoint now that it is back Phi=0 plane.
@@ -1834,7 +1906,7 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
   in_ds->GetBounds(bounds);
 
   // For cylindircal the extent is at R = 0, Y = 0.
-  if( atts.GetCoordinateSystem() == LineSamplerAttributes::Cylindrical )
+  if( atts.GetMeshGeometry() == LineSamplerAttributes::Toroidal )
   {
     if( startPoint.x >= 0 && startPoint.y >= 0 )
       bounds[0] = bounds[2] = 0;
@@ -1950,7 +2022,7 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
     stopPoint = startPoint;
 
     // For cylindircal the extent is at R = 0.
-    if( atts.GetCoordinateSystem() == LineSamplerAttributes::Cylindrical &&
+    if( atts.GetMeshGeometry() == LineSamplerAttributes::Toroidal &&
         ((startPoint.x >= 0 && axis.x < 0) ||
          (startPoint.x <  0 && axis.x > 0)) )
       stopPoint.x = 0;

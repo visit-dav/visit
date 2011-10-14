@@ -3,9 +3,10 @@
     <Files components="W">
     </Files>
     <Attribute name="LineSamplerAttributes" purpose="This class contains attributes for the line sampler operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
-      <Enum name="CoordinateSystem">
+      <Enum name="MeshGeometry">
         Cartesian
         Cylindrical
+        Toroidal
       </Enum>
       <Enum name="ArrayConfiguration">
         Geometry
@@ -70,8 +71,8 @@
         CurrentTimeStep
         MultipleTimeSteps
       </Enum>
-      <Field name="coordinateSystem" label="Coordinate system" type="enum" subtype="CoordinateSystem">
-        Cylindrical
+      <Field name="meshGeometry" label="Mesh geometry" type="enum" subtype="MeshGeometry">
+        Toroidal
       </Field>
       <Field name="arrayConfiguration" label="Array configuration" type="enum" subtype="ArrayConfiguration">
         Geometry
@@ -107,7 +108,7 @@
       <Field name="rowOffset" label="Grid: Offset between rows" type="double">
         0.100
       </Field>
-      <Field name="arrayOrigin" label="Array origin" type="doubleArray" length="3">
+      <Field name="arrayOrigin" label="Array origin (R,Phi,Z)" type="doubleArray" length="3">
         0.000000
         0.000000
         0.000000

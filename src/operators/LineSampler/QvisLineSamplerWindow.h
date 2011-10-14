@@ -91,7 +91,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
-    void coordinateSystemChanged(int val);
+    void meshGeometryChanged(int val);
     void arrayConfigurationChanged(int val);
     void boundaryChanged(int val);
     void nArraysProcessText();
@@ -147,6 +147,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
 
     void EnableGeometry(bool flag);
     void EnableList(bool flag);
+    void UpdateMeshGeometry();
 
   private:
     QTabWidget  *propertyTabs;
@@ -168,8 +169,8 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QPushButton *channelListDeleteAllChannels;
     QPushButton *channelListReadChannels;
     QPushButton *wallReadFile;
-    QWidget      *coordinateSystem;
-    QButtonGroup *coordinateSystemButtonGroup;
+    QWidget      *meshGeometry;
+    QButtonGroup *meshGeometryButtonGroup;
     QWidget      *arrayConfiguration;
     QButtonGroup *arrayConfigurationButtonGroup;
     QWidget      *boundary;
@@ -226,8 +227,13 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
 //     QLineEdit *sampleArc;
     QWidget      *channelIntegration;
     QButtonGroup *channelIntegrationButtonGroup;
+    QRadioButton *channelIntegrationNone;
+    QRadioButton *channelIntegrationSummation;
     QWidget      *toroidalIntegration;
     QButtonGroup *toroidalIntegrationButtonGroup;
+    QRadioButton *toroidalIntegrationNone;
+    QRadioButton *toroidalIntegrationTime;
+    QRadioButton *toroidalIntegrationSummation;
     QWidget      *toroidalAngleSampling;
     QButtonGroup *toroidalAngleSamplingButtonGroup;
     QLineEdit *toroidalAngleStart;
@@ -241,7 +247,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLineEdit *nChannelListArrays;
     QLineEdit *channelListToroidalArrayAngle;
     QLineEdit *channelListToroidalAngle;
-    QLabel *coordinateSystemLabel;
+    QLabel *meshGeometryLabel;
     QLabel *arrayConfigurationLabel;
     QLabel *boundaryLabel;
     QLabel *nArraysLabel;

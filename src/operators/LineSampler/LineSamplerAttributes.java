@@ -64,8 +64,9 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     private static int LineSamplerAttributes_numAdditionalAtts = 49;
 
     // Enum values
-    public final static int COORDINATESYSTEM_CARTESIAN = 0;
-    public final static int COORDINATESYSTEM_CYLINDRICAL = 1;
+    public final static int MESHGEOMETRY_CARTESIAN = 0;
+    public final static int MESHGEOMETRY_CYLINDRICAL = 1;
+    public final static int MESHGEOMETRY_TOROIDAL = 2;
 
     public final static int ARRAYCONFIGURATION_GEOMETRY = 0;
     public final static int ARRAYCONFIGURATION_MANUAL = 1;
@@ -121,7 +122,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     {
         super(LineSamplerAttributes_numAdditionalAtts);
 
-        coordinateSystem = COORDINATESYSTEM_CYLINDRICAL;
+        meshGeometry = MESHGEOMETRY_TOROIDAL;
         arrayConfiguration = ARRAYCONFIGURATION_GEOMETRY;
         boundary = BOUNDARY_DATA;
         nArrays = 1;
@@ -185,7 +186,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     {
         super(LineSamplerAttributes_numAdditionalAtts + nMoreFields);
 
-        coordinateSystem = COORDINATESYSTEM_CYLINDRICAL;
+        meshGeometry = MESHGEOMETRY_TOROIDAL;
         arrayConfiguration = ARRAYCONFIGURATION_GEOMETRY;
         boundary = BOUNDARY_DATA;
         nArrays = 1;
@@ -251,7 +252,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
 
         int i;
 
-        coordinateSystem = obj.coordinateSystem;
+        meshGeometry = obj.meshGeometry;
         arrayConfiguration = obj.arrayConfiguration;
         boundary = obj.boundary;
         nArrays = obj.nArrays;
@@ -358,7 +359,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             wallList_equal = wallList1.equals(wallList2);
         }
         // Create the return value
-        return ((coordinateSystem == obj.coordinateSystem) &&
+        return ((meshGeometry == obj.meshGeometry) &&
                 (arrayConfiguration == obj.arrayConfiguration) &&
                 (boundary == obj.boundary) &&
                 (nArrays == obj.nArrays) &&
@@ -413,9 +414,9 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
-    public void SetCoordinateSystem(int coordinateSystem_)
+    public void SetMeshGeometry(int meshGeometry_)
     {
-        coordinateSystem = coordinateSystem_;
+        meshGeometry = meshGeometry_;
         Select(0);
     }
 
@@ -718,7 +719,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     }
 
     // Property getting methods
-    public int      GetCoordinateSystem() { return coordinateSystem; }
+    public int      GetMeshGeometry() { return meshGeometry; }
     public int      GetArrayConfiguration() { return arrayConfiguration; }
     public int      GetBoundary() { return boundary; }
     public int      GetNArrays() { return nArrays; }
@@ -772,7 +773,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteInt(coordinateSystem);
+            buf.WriteInt(meshGeometry);
         if(WriteSelect(1, buf))
             buf.WriteInt(arrayConfiguration);
         if(WriteSelect(2, buf))
@@ -876,7 +877,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         switch(index)
         {
         case 0:
-            SetCoordinateSystem(buf.ReadInt());
+            SetMeshGeometry(buf.ReadInt());
             break;
         case 1:
             SetArrayConfiguration(buf.ReadInt());
@@ -1028,11 +1029,13 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
-        str = str + indent + "coordinateSystem = ";
-        if(coordinateSystem == COORDINATESYSTEM_CARTESIAN)
-            str = str + "COORDINATESYSTEM_CARTESIAN";
-        if(coordinateSystem == COORDINATESYSTEM_CYLINDRICAL)
-            str = str + "COORDINATESYSTEM_CYLINDRICAL";
+        str = str + indent + "meshGeometry = ";
+        if(meshGeometry == MESHGEOMETRY_CARTESIAN)
+            str = str + "MESHGEOMETRY_CARTESIAN";
+        if(meshGeometry == MESHGEOMETRY_CYLINDRICAL)
+            str = str + "MESHGEOMETRY_CYLINDRICAL";
+        if(meshGeometry == MESHGEOMETRY_TOROIDAL)
+            str = str + "MESHGEOMETRY_TOROIDAL";
         str = str + "\n";
         str = str + indent + "arrayConfiguration = ";
         if(arrayConfiguration == ARRAYCONFIGURATION_GEOMETRY)
@@ -1171,7 +1174,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
 
 
     // Attributes
-    private int      coordinateSystem;
+    private int      meshGeometry;
     private int      arrayConfiguration;
     private int      boundary;
     private int      nArrays;

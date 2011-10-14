@@ -60,10 +60,11 @@
 class LineSamplerAttributes : public AttributeSubject
 {
 public:
-    enum CoordinateSystem
+    enum MeshGeometry
     {
         Cartesian,
-        Cylindrical
+        Cylindrical,
+        Toroidal
     };
     enum ArrayConfiguration
     {
@@ -173,7 +174,7 @@ public:
     void SelectWallList();
 
     // Property setting methods
-    void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
+    void SetMeshGeometry(MeshGeometry meshGeometry_);
     void SetArrayConfiguration(ArrayConfiguration arrayConfiguration_);
     void SetBoundary(Boundary boundary_);
     void SetNArrays(int nArrays_);
@@ -224,7 +225,7 @@ public:
     void SetChannelListToroidalAngle(double channelListToroidalAngle_);
 
     // Property getting methods
-    CoordinateSystem   GetCoordinateSystem() const;
+    MeshGeometry       GetMeshGeometry() const;
     ArrayConfiguration GetArrayConfiguration() const;
     Boundary           GetBoundary() const;
     int                GetNArrays() const;
@@ -282,10 +283,10 @@ public:
     virtual void SetFromNode(DataNode *node);
 
     // Enum conversion functions
-    static std::string CoordinateSystem_ToString(CoordinateSystem);
-    static bool CoordinateSystem_FromString(const std::string &, CoordinateSystem &);
+    static std::string MeshGeometry_ToString(MeshGeometry);
+    static bool MeshGeometry_FromString(const std::string &, MeshGeometry &);
 protected:
-    static std::string CoordinateSystem_ToString(int);
+    static std::string MeshGeometry_ToString(int);
 public:
     static std::string ArrayConfiguration_ToString(ArrayConfiguration);
     static bool ArrayConfiguration_FromString(const std::string &, ArrayConfiguration &);
@@ -367,7 +368,7 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_coordinateSystem = 0,
+        ID_meshGeometry = 0,
         ID_arrayConfiguration,
         ID_boundary,
         ID_nArrays,
@@ -420,7 +421,7 @@ public:
     };
 
 private:
-    int          coordinateSystem;
+    int          meshGeometry;
     int          arrayConfiguration;
     int          boundary;
     int          nArrays;

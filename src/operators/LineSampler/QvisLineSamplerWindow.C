@@ -141,24 +141,28 @@ QvisLineSamplerWindow::CreateWindowContents()
     
     QGridLayout *mainLayout = new QGridLayout(mainTab);
 
-    coordinateSystemLabel = new QLabel(tr("Coordinate system"), central);
-    mainLayout->addWidget(coordinateSystemLabel,0,0);
-    coordinateSystem = new QWidget(central);
-    coordinateSystemButtonGroup= new QButtonGroup(coordinateSystem);
-    QHBoxLayout *coordinateSystemLayout = new QHBoxLayout(coordinateSystem);
-    coordinateSystemLayout->setMargin(0);
-    coordinateSystemLayout->setSpacing(10);
-    QRadioButton *coordinateSystemCartesian =
-      new QRadioButton(tr("Cartesian"), coordinateSystem);
-    coordinateSystemButtonGroup->addButton(coordinateSystemCartesian,0);
-    coordinateSystemLayout->addWidget(coordinateSystemCartesian);
-    QRadioButton *coordinateSystemCylindrical =
-      new QRadioButton(tr("Cylindrical"), coordinateSystem);
-    coordinateSystemButtonGroup->addButton(coordinateSystemCylindrical,1);
-    coordinateSystemLayout->addWidget(coordinateSystemCylindrical);
-    connect(coordinateSystemButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(coordinateSystemChanged(int)));
-    mainLayout->addWidget(coordinateSystem, 0,1);
+    meshGeometryLabel = new QLabel(tr("Mesh geometry"), central);
+    mainLayout->addWidget(meshGeometryLabel,0,0);
+    meshGeometry = new QWidget(central);
+    meshGeometryButtonGroup= new QButtonGroup(meshGeometry);
+    QHBoxLayout *meshGeometryLayout = new QHBoxLayout(meshGeometry);
+    meshGeometryLayout->setMargin(0);
+    meshGeometryLayout->setSpacing(10);
+    QRadioButton *meshGeometryCartesian =
+      new QRadioButton(tr("Cartesian"), meshGeometry);
+    meshGeometryButtonGroup->addButton(meshGeometryCartesian,0);
+    meshGeometryLayout->addWidget(meshGeometryCartesian);
+    QRadioButton *meshGeometryCylindrical =
+      new QRadioButton(tr("Cylindrical"), meshGeometry);
+    meshGeometryButtonGroup->addButton(meshGeometryCylindrical,1);
+    meshGeometryLayout->addWidget(meshGeometryCylindrical);
+    QRadioButton *meshGeometryToroidal =
+      new QRadioButton(tr("Toroidal"), meshGeometry);
+    meshGeometryButtonGroup->addButton(meshGeometryToroidal,2);
+    meshGeometryLayout->addWidget(meshGeometryToroidal);
+    connect(meshGeometryButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(meshGeometryChanged(int)));
+    mainLayout->addWidget(meshGeometry, 0,1,1,2);
 
 
     arrayConfigurationLabel = new QLabel(tr("Array configuration"), central);
@@ -197,13 +201,15 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(boundaryChanged(int)));
     mainLayout->addWidget(boundary, 2,1);
 
-    wallReadFile = new QPushButton(tr("Read wall configuration file"), central);
+    wallReadFile =
+      new QPushButton(tr("Read wall configuration file"), central);
     connect(wallReadFile,
             SIGNAL(clicked()), this, SLOT(readWall()));
 
     mainLayout->addWidget(wallReadFile, 2, 2);
 
-    wallFileCoordinateLabel = new QLabel(tr(" R, Z"), central);
+    wallFileCoordinateLabel =
+      new QLabel(tr("Coordinate layout R, Z"), central);
     mainLayout->addWidget(wallFileCoordinateLabel, 3, 2);
     wallList = new QListWidget(central);
     wallList->setSelectionMode(QAbstractItemView::NoSelection);
@@ -397,7 +403,7 @@ QvisLineSamplerWindow::CreateWindowContents()
 
 
 
-    arrayOriginLabel = new QLabel(tr("Array origin"), central);
+    arrayOriginLabel = new QLabel(tr("Array origin (R,Z)"), central);
     mainLayout->addWidget(arrayOriginLabel,9,0);
     arrayOrigin = new QLineEdit(central);
     arrayOrigin->setMaximumWidth(2*width);
@@ -648,15 +654,15 @@ QvisLineSamplerWindow::CreateWindowContents()
     channelIntegration = new QWidget(central);
     channelIntegrationButtonGroup= new QButtonGroup(channelIntegration);
 
-    QRadioButton *singleChannelIntegration =
+    channelIntegrationNone =
       new QRadioButton(tr("None"), channelIntegration);
-    channelIntegrationButtonGroup->addButton(singleChannelIntegration,0);
-    integrationLayout->addWidget(singleChannelIntegration,0,1);
+    channelIntegrationButtonGroup->addButton(channelIntegrationNone,0);
+    integrationLayout->addWidget(channelIntegrationNone,0,1);
 
-    QRadioButton *summationChannelIntegration =
+    channelIntegrationSummation =
       new QRadioButton(tr("Integrate along the channel"), channelIntegration);
-    channelIntegrationButtonGroup->addButton(summationChannelIntegration,1);
-    integrationLayout->addWidget(summationChannelIntegration,0,2);
+    channelIntegrationButtonGroup->addButton(channelIntegrationSummation,1);
+    integrationLayout->addWidget(channelIntegrationSummation,0,2);
 
     connect(channelIntegrationButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(channelIntegrationChanged(int)));
@@ -666,19 +672,19 @@ QvisLineSamplerWindow::CreateWindowContents()
     toroidalIntegration = new QWidget(central);
     toroidalIntegrationButtonGroup= new QButtonGroup(toroidalIntegration);
 
-    QRadioButton *singleToroidalIntegration =
+    toroidalIntegrationNone =
       new QRadioButton(tr("None"), toroidalIntegration);
-    toroidalIntegrationButtonGroup->addButton(singleToroidalIntegration,0);
-    integrationLayout->addWidget(singleToroidalIntegration,1,1);
+    toroidalIntegrationButtonGroup->addButton(toroidalIntegrationNone,0);
+    integrationLayout->addWidget(toroidalIntegrationNone,1,1);
 
-    QRadioButton *sampleToroidalTime =
+    toroidalIntegrationTime =
       new QRadioButton(tr("Sample toroidally as time"), toroidalIntegration);
-    toroidalIntegrationButtonGroup->addButton(sampleToroidalTime,1);
-    integrationLayout->addWidget(sampleToroidalTime,1,2);
+    toroidalIntegrationButtonGroup->addButton(toroidalIntegrationTime,1);
+    integrationLayout->addWidget(toroidalIntegrationTime,1,2);
 
-//     QRadioButton *summationToroidalIntegration = new QRadioButton(tr("Integrate toroidally"), toroidalIntegration);
-//     toroidalIntegrationButtonGroup->addButton(summationToroidalIntegration,1);
-//     integrationLayout->addWidget(summationToroidalIntegration,1,2);
+//     toroidalIntegrationSummation = new QRadioButton(tr("Integrate toroidally"), toroidalIntegration);
+//     toroidalIntegrationButtonGroup->addButton(toroidalIntegrationSummation,1);
+//     integrationLayout->addWidget(toroidalIntegrationSummation,1,2);
 
     connect(toroidalIntegrationButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(toroidalIntegrationChanged(int)));
@@ -965,11 +971,13 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case LineSamplerAttributes::ID_coordinateSystem:
-            coordinateSystemButtonGroup->blockSignals(true);
-            if(coordinateSystemButtonGroup->button((int)atts->GetCoordinateSystem()) != 0)
-                coordinateSystemButtonGroup->button((int)atts->GetCoordinateSystem())->setChecked(true);
-            coordinateSystemButtonGroup->blockSignals(false);
+          case LineSamplerAttributes::ID_meshGeometry:
+            meshGeometryButtonGroup->blockSignals(true);
+            if(meshGeometryButtonGroup->button((int)atts->GetMeshGeometry()) != 0)
+                meshGeometryButtonGroup->button((int)atts->GetMeshGeometry())->setChecked(true);
+            meshGeometryButtonGroup->blockSignals(false);
+
+            UpdateMeshGeometry();
             break;
           case LineSamplerAttributes::ID_arrayConfiguration:
             arrayConfigurationButtonGroup->blockSignals(true);
@@ -1752,12 +1760,11 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
 
 
 void
-QvisLineSamplerWindow::coordinateSystemChanged(int val)
+QvisLineSamplerWindow::meshGeometryChanged(int val)
 {
-    if(val != atts->GetCoordinateSystem())
+    if(val != atts->GetMeshGeometry())
     {
-        atts->SetCoordinateSystem(LineSamplerAttributes::CoordinateSystem(val));
-        SetUpdate(false);
+        atts->SetMeshGeometry(LineSamplerAttributes::MeshGeometry(val));
         Apply();
     }
 }
@@ -2489,4 +2496,52 @@ QvisLineSamplerWindow::EnableList(bool flag)
     channelListDeleteAllChannels->setEnabled( flag );
     channelListToroidalAngleLabel->setEnabled( flag );
     channelListToroidalAngle->setEnabled( flag );
+}
+
+
+void
+QvisLineSamplerWindow::UpdateMeshGeometry()
+{
+  if( atts->GetMeshGeometry() == LineSamplerAttributes::Cartesian )
+  { 
+    wallFileCoordinateLabel->setText(tr("Coordinate layout X, Z"));
+
+    toroidalArrayAngleLabel->setText(tr("Y distance between arrays"));
+    arrayOriginLabel->setText(tr("Array origin (X,Y,Z)"));
+    arrayAxisArrayAxisR->setText(tr("X"));
+    poloialAngleLabel->setText(tr("Y axis rotation"));
+    poloialRTiltLabel->setText(tr("Y plane X-tilt"));
+    poloialZTiltLabel->setText(tr("Y plane Z-tilt"));
+    toroidalAngleLabel->setText(tr("Y axis offset"));
+
+    channelListToroidalArrayAngleLabel->setText(tr("Y distance between arrays"));
+    confFileCoordinateLabel->setText(tr(" X, Y, Z, and Y Rotation"));
+    channelListToroidalAngleLabel->setText(tr("Y axis offset"));
+
+    toroidalIntegrationLabel->setText(tr("Y axis"));
+    toroidalIntegrationTime->setText(tr("Sample Y axis as time"));
+    toroidalGroup->setTitle(tr("Y axis sampling"));
+    toroidalAngleSampleLabel->setText(tr("Y sample distance"));
+  }
+  else
+  {
+    wallFileCoordinateLabel->setText(tr("Coordinate layout R, Z"));
+
+    toroidalArrayAngleLabel->setText(tr("Toroidal angle between arrays"));
+    arrayOriginLabel->setText(tr("Array origin (R,Phi,Z)"));
+    arrayAxisArrayAxisR->setText(tr("R"));
+    poloialAngleLabel->setText(tr("Poloidal angle"));
+    poloialRTiltLabel->setText(tr("Poloidal plane R-tilt"));
+    poloialZTiltLabel->setText(tr("Poloidal plane Z-tilt"));
+    toroidalAngleLabel->setText(tr("Toroidal angle"));
+
+    channelListToroidalArrayAngleLabel->setText(tr("Toroidal angle between arrays"));
+    confFileCoordinateLabel->setText(tr(" R, Z, Phi, and Poloidal Angle"));
+    channelListToroidalAngleLabel->setText(tr("Toroidal offset angle"));
+
+    toroidalIntegrationLabel->setText(tr("Toroidal"));
+    toroidalIntegrationTime->setText(tr("Sample toroidally as time"));
+    toroidalGroup->setTitle(tr("Toroidal angle sampling"));
+    toroidalAngleSampleLabel->setText(tr("Toroidal sample angle"));
+  }
 }

@@ -40,36 +40,37 @@
 #include <DataNode.h>
 
 //
-// Enum conversion methods for LineSamplerAttributes::CoordinateSystem
+// Enum conversion methods for LineSamplerAttributes::MeshGeometry
 //
 
-static const char *CoordinateSystem_strings[] = {
-"Cartesian", "Cylindrical"};
+static const char *MeshGeometry_strings[] = {
+"Cartesian", "Cylindrical", "Toroidal"
+};
 
 std::string
-LineSamplerAttributes::CoordinateSystem_ToString(LineSamplerAttributes::CoordinateSystem t)
+LineSamplerAttributes::MeshGeometry_ToString(LineSamplerAttributes::MeshGeometry t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return CoordinateSystem_strings[index];
+    if(index < 0 || index >= 3) index = 0;
+    return MeshGeometry_strings[index];
 }
 
 std::string
-LineSamplerAttributes::CoordinateSystem_ToString(int t)
+LineSamplerAttributes::MeshGeometry_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return CoordinateSystem_strings[index];
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return MeshGeometry_strings[index];
 }
 
 bool
-LineSamplerAttributes::CoordinateSystem_FromString(const std::string &s, LineSamplerAttributes::CoordinateSystem &val)
+LineSamplerAttributes::MeshGeometry_FromString(const std::string &s, LineSamplerAttributes::MeshGeometry &val)
 {
     val = LineSamplerAttributes::Cartesian;
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
-        if(s == CoordinateSystem_strings[i])
+        if(s == MeshGeometry_strings[i])
         {
-            val = (CoordinateSystem)i;
+            val = (MeshGeometry)i;
             return true;
         }
     }
@@ -617,7 +618,7 @@ LineSamplerAttributes::TimeSampling_FromString(const std::string &s, LineSampler
 
 void LineSamplerAttributes::Init()
 {
-    coordinateSystem = Cylindrical;
+    meshGeometry = Toroidal;
     arrayConfiguration = Geometry;
     boundary = Data;
     nArrays = 1;
@@ -693,7 +694,7 @@ void LineSamplerAttributes::Init()
 
 void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
 {
-    coordinateSystem = obj.coordinateSystem;
+    meshGeometry = obj.meshGeometry;
     arrayConfiguration = obj.arrayConfiguration;
     boundary = obj.boundary;
     nArrays = obj.nArrays;
@@ -907,7 +908,7 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
         arrayOrigin_equal = (arrayOrigin[i] == obj.arrayOrigin[i]);
 
     // Create the return value
-    return ((coordinateSystem == obj.coordinateSystem) &&
+    return ((meshGeometry == obj.meshGeometry) &&
             (arrayConfiguration == obj.arrayConfiguration) &&
             (boundary == obj.boundary) &&
             (nArrays == obj.nArrays) &&
@@ -1099,7 +1100,7 @@ LineSamplerAttributes::NewInstance(bool copy) const
 void
 LineSamplerAttributes::SelectAll()
 {
-    Select(ID_coordinateSystem,              (void *)&coordinateSystem);
+    Select(ID_meshGeometry,                  (void *)&meshGeometry);
     Select(ID_arrayConfiguration,            (void *)&arrayConfiguration);
     Select(ID_boundary,                      (void *)&boundary);
     Select(ID_nArrays,                       (void *)&nArrays);
@@ -1180,10 +1181,10 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     // Create a node for LineSamplerAttributes.
     DataNode *node = new DataNode("LineSamplerAttributes");
 
-    if(completeSave || !FieldsEqual(ID_coordinateSystem, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_meshGeometry, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("coordinateSystem", CoordinateSystem_ToString(coordinateSystem)));
+        node->AddNode(new DataNode("meshGeometry", MeshGeometry_ToString(meshGeometry)));
     }
 
     if(completeSave || !FieldsEqual(ID_arrayConfiguration, &defaultObject))
@@ -1510,20 +1511,20 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
-    if((node = searchNode->GetNode("coordinateSystem")) != 0)
+    if((node = searchNode->GetNode("meshGeometry")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
-                SetCoordinateSystem(CoordinateSystem(ival));
+            if(ival >= 0 && ival < 3)
+                SetMeshGeometry(MeshGeometry(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            CoordinateSystem value;
-            if(CoordinateSystem_FromString(node->AsString(), value))
-                SetCoordinateSystem(value);
+            MeshGeometry value;
+            if(MeshGeometry_FromString(node->AsString(), value))
+                SetMeshGeometry(value);
         }
     }
     if((node = searchNode->GetNode("arrayConfiguration")) != 0)
@@ -1825,10 +1826,10 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-LineSamplerAttributes::SetCoordinateSystem(LineSamplerAttributes::CoordinateSystem coordinateSystem_)
+LineSamplerAttributes::SetMeshGeometry(LineSamplerAttributes::MeshGeometry meshGeometry_)
 {
-    coordinateSystem = coordinateSystem_;
-    Select(ID_coordinateSystem, (void *)&coordinateSystem);
+    meshGeometry = meshGeometry_;
+    Select(ID_meshGeometry, (void *)&meshGeometry);
 }
 
 void
@@ -2173,10 +2174,10 @@ LineSamplerAttributes::SetChannelListToroidalAngle(double channelListToroidalAng
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
-LineSamplerAttributes::CoordinateSystem
-LineSamplerAttributes::GetCoordinateSystem() const
+LineSamplerAttributes::MeshGeometry
+LineSamplerAttributes::GetMeshGeometry() const
 {
-    return CoordinateSystem(coordinateSystem);
+    return MeshGeometry(meshGeometry);
 }
 
 LineSamplerAttributes::ArrayConfiguration
@@ -2531,7 +2532,7 @@ LineSamplerAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_coordinateSystem:              return "coordinateSystem";
+    case ID_meshGeometry:                  return "meshGeometry";
     case ID_arrayConfiguration:            return "arrayConfiguration";
     case ID_boundary:                      return "boundary";
     case ID_nArrays:                       return "nArrays";
@@ -2604,7 +2605,7 @@ LineSamplerAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_coordinateSystem:              return FieldType_enum;
+    case ID_meshGeometry:                  return FieldType_enum;
     case ID_arrayConfiguration:            return FieldType_enum;
     case ID_boundary:                      return FieldType_enum;
     case ID_nArrays:                       return FieldType_int;
@@ -2677,7 +2678,7 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_coordinateSystem:              return "enum";
+    case ID_meshGeometry:                  return "enum";
     case ID_arrayConfiguration:            return "enum";
     case ID_boundary:                      return "enum";
     case ID_nArrays:                       return "int";
@@ -2752,9 +2753,9 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
-    case ID_coordinateSystem:
+    case ID_meshGeometry:
         {  // new scope
-        retval = (coordinateSystem == obj.coordinateSystem);
+        retval = (meshGeometry == obj.meshGeometry);
         }
         break;
     case ID_arrayConfiguration:

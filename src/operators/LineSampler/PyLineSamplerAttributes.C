@@ -76,15 +76,19 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     std::string str; 
     char tmpStr[1000]; 
 
-    const char *coordinateSystem_names = "Cartesian, Cylindrical";
-    switch (atts->GetCoordinateSystem())
+    const char *meshGeometry_names = "Cartesian, Cylindrical, Toroidal";
+    switch (atts->GetMeshGeometry())
     {
       case LineSamplerAttributes::Cartesian:
-          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCartesian  # %s\n", prefix, prefix, coordinateSystem_names);
+          SNPRINTF(tmpStr, 1000, "%smeshGeometry = %sCartesian  # %s\n", prefix, prefix, meshGeometry_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Cylindrical:
-          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCylindrical  # %s\n", prefix, prefix, coordinateSystem_names);
+          SNPRINTF(tmpStr, 1000, "%smeshGeometry = %sCylindrical  # %s\n", prefix, prefix, meshGeometry_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::Toroidal:
+          SNPRINTF(tmpStr, 1000, "%smeshGeometry = %sToroidal  # %s\n", prefix, prefix, meshGeometry_names);
           str += tmpStr;
           break;
       default:
@@ -452,7 +456,7 @@ LineSamplerAttributes_Notify(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetMeshGeometry(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
@@ -460,15 +464,15 @@ LineSamplerAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the coordinateSystem in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetCoordinateSystem(LineSamplerAttributes::CoordinateSystem(ival));
+    // Set the meshGeometry in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetMeshGeometry(LineSamplerAttributes::MeshGeometry(ival));
     else
     {
-        fprintf(stderr, "An invalid coordinateSystem value was given. "
-                        "Valid values are in the range of [0,1]. "
+        fprintf(stderr, "An invalid meshGeometry value was given. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "Cartesian, Cylindrical.");
+                        "Cartesian, Cylindrical, Toroidal.");
         return NULL;
     }
 
@@ -477,10 +481,10 @@ LineSamplerAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetMeshGeometry(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetCoordinateSystem()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMeshGeometry()));
     return retval;
 }
 
@@ -1874,8 +1878,8 @@ LineSamplerAttributes_GetChannelListToroidalAngle(PyObject *self, PyObject *args
 
 PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"Notify", LineSamplerAttributes_Notify, METH_VARARGS},
-    {"SetCoordinateSystem", LineSamplerAttributes_SetCoordinateSystem, METH_VARARGS},
-    {"GetCoordinateSystem", LineSamplerAttributes_GetCoordinateSystem, METH_VARARGS},
+    {"SetMeshGeometry", LineSamplerAttributes_SetMeshGeometry, METH_VARARGS},
+    {"GetMeshGeometry", LineSamplerAttributes_GetMeshGeometry, METH_VARARGS},
     {"SetArrayConfiguration", LineSamplerAttributes_SetArrayConfiguration, METH_VARARGS},
     {"GetArrayConfiguration", LineSamplerAttributes_GetArrayConfiguration, METH_VARARGS},
     {"SetBoundary", LineSamplerAttributes_SetBoundary, METH_VARARGS},
@@ -2000,12 +2004,14 @@ LineSamplerAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyLineSamplerAttributes_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "coordinateSystem") == 0)
-        return LineSamplerAttributes_GetCoordinateSystem(self, NULL);
+    if(strcmp(name, "meshGeometry") == 0)
+        return LineSamplerAttributes_GetMeshGeometry(self, NULL);
     if(strcmp(name, "Cartesian") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Cartesian));
     if(strcmp(name, "Cylindrical") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Cylindrical));
+    if(strcmp(name, "Toroidal") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Toroidal));
 
     if(strcmp(name, "arrayConfiguration") == 0)
         return LineSamplerAttributes_GetArrayConfiguration(self, NULL);
@@ -2201,8 +2207,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "coordinateSystem") == 0)
-        obj = LineSamplerAttributes_SetCoordinateSystem(self, tuple);
+    if(strcmp(name, "meshGeometry") == 0)
+        obj = LineSamplerAttributes_SetMeshGeometry(self, tuple);
     else if(strcmp(name, "arrayConfiguration") == 0)
         obj = LineSamplerAttributes_SetArrayConfiguration(self, tuple);
     else if(strcmp(name, "boundary") == 0)
