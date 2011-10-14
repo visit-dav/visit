@@ -38,19 +38,11 @@
 #   Brad Whitlock, Wed Aug 24 13:11:30 PDT 2011
 #   Add vtkTexturedPointsPainter and remove some obsolete files.
 #
+#   Brad Whitlock, Wed Oct 12 22:42:12 PDT 2011
+#   I moved some mappers to a different library since they may contain Qt. I
+#   also cleaned up obsolete stuff in this file.
+#
 #****************************************************************************/
-
-IF(NOT WIN32)
-  SET(AVTPLOTTER_MESA_SOURCES
-    vtk/vtkOSMesaRenderWindow.C 
-  )
-
-  SET_SOURCE_FILES_PROPERTIES(
-    ${AVTPLOTTER_MESA_SOURCES}
-    PROPERTIES
-    COMPILE_FLAGS "-I${MESA_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
-  )
-ENDIF(NOT WIN32)
 
 SET(AVTPLOTTER_OPENGL_SOURCES
 avtGLEWInitializer.C 
@@ -64,19 +56,16 @@ vtk/vtkTexturedPointsPainter.C
 SET_SOURCE_FILES_PROPERTIES(
     ${AVTPLOTTER_OPENGL_SOURCES}
     PROPERTIES
-#    COMPILE_FLAGS "-I${OPENGL_INCLUDE_DIR}{GLEW_INCLUDE_DIR}"
     COMPILE_FLAGS "-I${GLEW_INCLUDE_DIR}"
 )
 
-SET(RENDERING_SOURCES
+SET(AVTPLOTTER_VTK_SOURCES
 vtk/InitVTKRendering.C 
 vtk/vtkBackgroundActor.C 
-vtk/vtkDashedXorGridMapper2D.C 
 vtk/vtkLineLegend.C 
 vtk/vtkMultiFontVectorText.C 
 vtk/vtkParallelImageSpaceRedistributor.C 
 vtk/vtkRectilinearGridMapper.C 
-vtk/vtkRubberBandMapper2D.C 
 vtk/vtkStructuredGridMapper.C 
 vtk/vtkTexturedBackgroundActor.C 
 vtk/vtkTimeSliderActor.C 
@@ -90,14 +79,6 @@ vtk/vtkVisItScalarBarActor.C
 vtk/vtkVisItScalarBarWithOpacityActor.C 
 vtk/vtkVisItTextActor.C
 )
-
-IF(X11_FOUND)
-    SET_SOURCE_FILES_PROPERTIES(
-        vtk/vtkDashedXorGridMapper2D.C  vtk/vtkRubberBandMapper2D.C 
-        PROPERTIES
-        COMPILE_FLAGS "-DHAVE_XLIB"
-    )
-ENDIF(X11_FOUND)
 
 SET(AVTPLOTTER_SOURCES
 avtActor.C
@@ -136,8 +117,7 @@ avtVariablePointGlyphMapper.C
 avtVectorGlyphMapper.C
 avtVolumeVariableLegend.C
 RenderOrder.C
-${RENDERING_SOURCES}
-${AVTPLOTTER_MESA_SOURCES}
+${AVTPLOTTER_VTK_SOURCES}
 ${AVTPLOTTER_OPENGL_SOURCES}
 )
 
@@ -164,32 +144,17 @@ ${MESA_INCLUDE_DIR}
 ${GLEW_INCLUDE_DIR}
 )
 
-IF(QT_MAC_USE_COCOA)
-    INCLUDE_DIRECTORIES(${QT_INCLUDES})
-ENDIF(QT_MAC_USE_COCOA)
-
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} )
 
-IF(QT_MAC_USE_COCOA)
-    LINK_DIRECTORIES(${QT_LIBRARY_DIR})
-ENDIF(QT_MAC_USE_COCOA)
-
-
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtplotter_ser ${AVTPLOTTER_SOURCES})
-TARGET_LINK_LIBRARIES(avtplotter_ser visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk lightweight_visit_vtk vtkHybrid ${GLEW_LIB} ${MESA_LIB}) #${OPENGL_gl_LIBRARY} ${MESA_LIB})
-IF(QT_MAC_USE_COCOA)
-    TARGET_LINK_LIBRARIES(avtplotter_ser ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
-ENDIF(QT_MAC_USE_COCOA)
+TARGET_LINK_LIBRARIES(avtplotter_ser visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk lightweight_visit_vtk vtkHybrid ${GLEW_LIB} ${MESA_LIB})
 VISIT_INSTALL_TARGETS(avtplotter_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtplotter_par ${AVTPLOTTER_SOURCES})
-    TARGET_LINK_LIBRARIES(avtplotter_par visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk lightweight_visit_vtk vtkHybrid ${GLEW_LIB} ${MESA_LIB}) #${OPENGL_gl_LIBRARY} ${MESA_LIB})
-    IF(QT_MAC_USE_COCOA)
-        TARGET_LINK_LIBRARIES(avtplotter_par ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
-    ENDIF(QT_MAC_USE_COCOA)
+    TARGET_LINK_LIBRARIES(avtplotter_par visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk lightweight_visit_vtk vtkHybrid ${GLEW_LIB} ${MESA_LIB})
     VISIT_INSTALL_TARGETS(avtplotter_par)
 ENDIF(VISIT_PARALLEL)

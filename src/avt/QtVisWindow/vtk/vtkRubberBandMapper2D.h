@@ -49,21 +49,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __vtkRubberBandMapper2D_h
 #define __vtkRubberBandMapper2D_h
-#include <plotter_exports.h>
+#include <qtviswindow_exports.h>
 
 #include "vtkPolyDataMapper2D.h"
 
-#ifdef VTK_USE_COCOA
-class QLabel;
-#else
-struct vtkRubberBandMapper2DOverlay;
-#endif
+class QWidget;
+struct vtkRubberBandMapper2DPrivate;
 
-class PLOTTER_API vtkRubberBandMapper2D : public vtkPolyDataMapper2D
+class QTVISWINDOW_API vtkRubberBandMapper2D : public vtkPolyDataMapper2D
 {
 public:
   vtkTypeMacro(vtkRubberBandMapper2D,vtkPolyDataMapper2D);
   static vtkRubberBandMapper2D *New();
+
+  // Description:
+  // Set the widget over which the drawing will happen.
+  void SetWidget(QWidget *widget);
 
   // Description:
   // Actually draw the poly data.
@@ -77,11 +78,11 @@ protected:
   vtkRubberBandMapper2D();
   ~vtkRubberBandMapper2D();
 
-#ifdef VTK_USE_COCOA
-  QLabel *overlay;
-#else
-  vtkRubberBandMapper2DOverlay *overlay;
-#endif
+  void RenderOverlay_Win32(vtkViewport* viewport, vtkActor2D* actor);
+  void RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* actor);
+  void RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor);
+
+  vtkRubberBandMapper2DPrivate *d;
 
 private:
   vtkRubberBandMapper2D(const vtkRubberBandMapper2D&);

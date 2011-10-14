@@ -434,6 +434,9 @@ class VisitInteractor;
 //    Gunther H. Weber, Mon Jul 18 16:20:47 PDT 2011
 //    Qdded ActivateWindow().
 //
+//    Brad Whitlock, Fri Oct 14 16:29:05 PDT 2011
+//    I added methods to create mappers.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -773,6 +776,9 @@ protected:
     vtkRenderer         *GetCanvas(void);
     vtkRenderer         *GetBackground(void);
     vtkRenderer         *GetForeground(void);
+
+    vtkPolyDataMapper2D *CreateRubberbandMapper();
+    vtkPolyDataMapper2D *CreateXorGridMapper();
 
     void                 StartBoundingBox(void);
     void                 EndBoundingBox(void);

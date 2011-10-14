@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -41,10 +41,21 @@
 SET(AVTQTVISWINDOW_SOURCES
 VisWinRenderingWithWindow.C
 QtVisWindow.C
+vtk/vtkDashedXorGridMapper2D.C
+vtk/vtkRubberBandMapper2D.C
 )
+
+IF(NOT APPLE AND X11_FOUND)
+    SET_SOURCE_FILES_PROPERTIES(
+        vtk/vtkDashedXorGridMapper2D.C  vtk/vtkRubberBandMapper2D.C 
+        PROPERTIES
+        COMPILE_FLAGS "-DHAVE_XLIB"
+    )
+ENDIF(NOT APPLE AND X11_FOUND)
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
+${CMAKE_CURRENT_SOURCE_DIR}/vtk
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL

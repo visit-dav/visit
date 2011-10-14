@@ -48,11 +48,26 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper2D.h>
 #include <vtkProperty2D.h>
-#include <vtkDashedXorGridMapper2D.h>
 #include <VisWindow.h>
 #include <VisWindowInteractorProxy.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
+
+#include <vtkFieldData.h>
+#include <vtkIntArray.h>
+
+static void
+Zoom2D_SetLineProperties(vtkPolyData *guideLines, 
+    int drawn, int spaced, bool hbias)
+{
+    vtkDataArray *props = guideLines->GetFieldData()->GetArray("LineProperties");
+    if(props != NULL)
+    {
+        props->SetTuple1(0, drawn);
+        props->SetTuple1(1, spaced);
+        props->SetTuple1(2, hbias?1.:0.);
+    }
+}
 
 // ****************************************************************************
 //  Method: Zoom2D constructor
@@ -68,11 +83,22 @@
 //    Added different initialization for Apple so all lines can be drawn
 //    at once.
 //
+//    Brad Whitlock, Fri Oct 14 16:26:20 PDT 2011
+//    Create mapper via proxy.
+//
 // ****************************************************************************
 
 Zoom2D::Zoom2D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
 {
     guideLines       = vtkPolyData::New();
+
+    // Stash line properties into field data so we can pass them to our mapper.
+    vtkIntArray *LineProperties = vtkIntArray::New();
+    LineProperties->SetNumberOfTuples(3);
+    LineProperties->SetName("LineProperties");
+    guideLines->GetFieldData()->AddArray(LineProperties);
+    LineProperties->Delete();
+    Zoom2D_SetLineProperties(guideLines, 2, 3, false);
 
 #if defined(__APPLE__)
     vtkPoints *pts = vtkPoints::New();
@@ -100,9 +126,9 @@ Zoom2D::Zoom2D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
     guideLines->SetLines(lines);
     lines->Delete();
 #endif
-    guideLinesMapper = vtkDashedXorGridMapper2D::New();
+    guideLinesMapper = proxy.CreateXorGridMapper();
     guideLinesMapper->SetInput(guideLines);
-    guideLinesMapper->SetDots(2, 3);
+//    guideLinesMapper->SetDots(2, 3);
     
     guideLinesActor  = vtkActor2D::New();
     guideLinesActor->SetMapper(guideLinesMapper);
@@ -546,7 +572,9 @@ Zoom2D::UpdateGuideLines(int aX, int aY, int lX, int lY, int nX, int nY)
             refresh[3] = refresh[7] = true;
             
             // Partially refresh shareY[h]
-            guideLinesMapper->SetHorizontalBias(true);
+//            guideLinesMapper->SetHorizontalBias(true);
+            Zoom2D_SetLineProperties(guideLines, 2, 3, true);
+
             int fromX, toX;
             GetGuideSegment(aX, lX, nX, fromX, toX);
         
@@ -565,7 +593,8 @@ Zoom2D::UpdateGuideLines(int aX, int aY, int lX, int lY, int nX, int nY)
             refresh[2] = refresh[4] = true;
             
             // Partially refresh shareX[v]
-            guideLinesMapper->SetHorizontalBias(false);
+//            guideLinesMapper->SetHorizontalBias(false);
+            Zoom2D_SetLineProperties(guideLines, 2, 3, false);
             int fromY, toY;
             GetGuideSegment(aY, lY, nY, fromY, toY);
             DrawGuideLine(aX, fromY, aX, toY);

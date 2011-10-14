@@ -92,6 +92,9 @@ class     vtkQtRenderWindow;
 //    Gunther H. Weber, Mon Jul 18 16:14:56 PDT 2011
 //    Added ActivateWindow method
 //
+//    Brad Whitlock, Fri Oct 14 16:31:08 PDT 2011
+//    Add mapper creation methods.
+//
 // ****************************************************************************
 
 class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
@@ -126,6 +129,9 @@ class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
     virtual void                       SetLargeIcons(bool);
     virtual void                       SetCursorForMode(INTERACTION_MODE);
     virtual void                       SetFullScreenMode(bool);
+
+    virtual vtkPolyDataMapper2D *CreateRubberbandMapper();
+    virtual vtkPolyDataMapper2D *CreateXorGridMapper();
 
   protected:
     vtkQtRenderWindow                 *renWin;

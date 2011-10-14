@@ -6920,6 +6920,44 @@ VisWindow::DoAllPlotsAxesHaveSameUnits()
 }
 
 // ****************************************************************************
+// Method: VisWindow::CreateRubberbandMapper
+//
+// Purpose: 
+//   Create a rubber band mapper.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 14 16:29:20 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkPolyDataMapper2D *
+VisWindow::CreateRubberbandMapper()
+{
+    return rendering->CreateRubberbandMapper();
+}
+
+// ****************************************************************************
+// Method: VisWindow::CreateXorGridMapper
+//
+// Purpose: 
+//   Create a dashed lines mapper.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 14 16:29:20 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkPolyDataMapper2D *
+VisWindow::CreateXorGridMapper()
+{
+    return rendering->CreateXorGridMapper();
+}
+
+// ****************************************************************************
 // Method: FontAttributes_To_VisWinTextAttributes
 //
 // Purpose: 

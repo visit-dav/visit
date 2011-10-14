@@ -51,6 +51,7 @@
 
 
 class vtkInteractorStyle;
+class vtkPolyDataMapper2D;
 class vtkRenderer;
 class vtkRenderWindow;
 class vtkRenderWindowInteractor;
@@ -210,6 +211,9 @@ class VisWindowColleagueProxy;
 //    Gunther H. Weber, Mon Jul 18 16:18:04 PDT 2011
 //    Add ActivateWindow().
 //
+//    Brad Whitlock, Fri Oct 14 16:30:34 PDT 2011
+//    Add mapper creation methods.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -344,6 +348,9 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     virtual void            *CreateToolbar(const char *) { return 0; };
     virtual void             SetLargeIcons(bool) { };
     virtual void             SetCursorForMode(INTERACTION_MODE) { };
+
+    virtual vtkPolyDataMapper2D *CreateRubberbandMapper() { return 0; }
+    virtual vtkPolyDataMapper2D *CreateXorGridMapper() { return 0; }
 
   protected:
     vtkRenderer                  *canvas;

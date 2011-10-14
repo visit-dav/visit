@@ -1178,3 +1178,15 @@ VisWindowProtectionProxy::ProxiedGetToolUpdateMode() const
 {
     return viswin->GetToolUpdateMode();
 }
+
+vtkPolyDataMapper2D *
+VisWindowProtectionProxy::ProxiedCreateRubberbandMapper()
+{
+     return viswin->CreateRubberbandMapper();
+}
+
+vtkPolyDataMapper2D *
+VisWindowProtectionProxy::ProxiedCreateXorGridMapper()
+{
+     return viswin->CreateXorGridMapper();
+}

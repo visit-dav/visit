@@ -129,6 +129,11 @@ class VISWINDOW_API VisWindowInteractorProxy : public VisWindowProtectionProxy
 
     void                GetForegroundColor(double *fg)
                                   { ProxiedGetForegroundColor(fg); };
+
+    vtkPolyDataMapper2D *CreateRubberbandMapper()
+                                  { return ProxiedCreateRubberbandMapper(); }
+    vtkPolyDataMapper2D *CreateXorGridMapper()
+                                  { return ProxiedCreateXorGridMapper(); }
 };
 
 

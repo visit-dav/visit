@@ -46,7 +46,6 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper2D.h>
 #include <vtkProperty2D.h>
-#include <vtkRubberBandMapper2D.h>
 #include <vtkLineSource.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
@@ -68,6 +67,9 @@
 //  Modifications:
 //    Kathleen Bonnell, Thu Feb  5 10:20:38 PST 2004
 //    Initialize doAlign.
+//
+//    Brad Whitlock, Fri Oct 14 16:25:57 PDT 2011
+//    Create mapper via proxy.
 //
 // ****************************************************************************
 
@@ -91,13 +93,12 @@ Lineout2D::Lineout2D(VisWindowInteractorProxy &vw) : VisitInteractor(vw)
     rubberBand->SetLines(lines);
     lines->Delete();
  
-    rubberBandMapper = vtkRubberBandMapper2D::New();
+    rubberBandMapper = proxy.CreateRubberbandMapper();
     rubberBandMapper->SetInput(rubberBand);
  
     rubberBandActor  = vtkActor2D::New();
     rubberBandActor->SetMapper(rubberBandMapper);
     rubberBandActor->GetProperty()->SetColor(0., 0., 0.);
- 
 }
 
  
@@ -207,6 +208,10 @@ Lineout2D::SetCanvasViewport(void)
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
 //
+// Modifications:
+//   Brad Whitlock, Fri Oct 14 16:25:13 PDT 2011
+//   Set the actor's color.
+//
 // ****************************************************************************
  
 void
@@ -214,6 +219,11 @@ Lineout2D::StartRubberBand(int x, int y)
 {
     rubberBandMode = true;
  
+    // Set the actor's color.
+    double fg[3];
+    proxy.GetForegroundColor(fg);
+    rubberBandActor->GetProperty()->SetColor(fg[0], fg[1], fg[2]);
+
     //
     // Add the rubber band actors to the background.  We do this since the
     // background is in the same display coordinates that the rubber band will

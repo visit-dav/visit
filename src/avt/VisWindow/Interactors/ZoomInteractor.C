@@ -46,7 +46,6 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper2D.h>
 #include <vtkProperty2D.h>
-#include <vtkRubberBandMapper2D.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
 
@@ -80,6 +79,9 @@
 //    Added APPLE-specific code where we create polydata that can contain
 //    4 points instead of 2. This lets us draw the lines at the same time
 //    into an overlay window.
+//
+//    Brad Whitlock, Fri Oct 14 16:27:15 PDT 2011
+//    Create mapper via proxy.
 //
 // ****************************************************************************
 
@@ -121,7 +123,7 @@ ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw)
     lines->Delete();
 #endif
 
-    rubberBandMapper = vtkRubberBandMapper2D::New();
+    rubberBandMapper = proxy.CreateRubberbandMapper();
     rubberBandMapper->SetInput(rubberBand);
 
     rubberBandActor  = vtkActor2D::New();

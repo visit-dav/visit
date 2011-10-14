@@ -52,23 +52,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __vtkDashedXorGridMapper2D_h
 #define __vtkDashedXorGridMapper2D_h
-#include <plotter_exports.h>
+#include <qtviswindow_exports.h>
 
 #include "vtkPolyDataMapper2D.h"
 
-#ifdef VTK_USE_COCOA
-class QLabel;
-#else
-struct vtkRubberBandMapper2DOverlay;
-#endif
+class QWidget;
+struct vtkDashedXorGridMapper2DPrivate;
 
-struct vtkDashedXorGridMapper2DOverlay;
-
-class PLOTTER_API vtkDashedXorGridMapper2D : public vtkPolyDataMapper2D
+class QTVISWINDOW_API vtkDashedXorGridMapper2D : public vtkPolyDataMapper2D
 {
 public:
   vtkTypeMacro(vtkDashedXorGridMapper2D,vtkPolyDataMapper2D);
   static vtkDashedXorGridMapper2D *New();
+
+  // Description:
+  // Set the widget over which the drawing will happen.
+  void SetWidget(QWidget *widget);
 
   // Description:
   // Actually draw the poly data.
@@ -89,14 +88,14 @@ public:
   { horizontalBias = hb;    }
   
 protected:
+  void RenderOverlay_Win32(vtkViewport* viewport, vtkActor2D* actor);
+  void RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* actor);
+  void RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor);
+
   int pixelDrawn, pixelSpaced;
   bool horizontalBias;
 
-#ifdef VTK_USE_COCOA
-  QLabel *overlay;
-#else
-  vtkDashedXorGridMapper2DOverlay *overlay;
-#endif
+  vtkDashedXorGridMapper2DPrivate *d;
 
   vtkDashedXorGridMapper2D();
   ~vtkDashedXorGridMapper2D();
