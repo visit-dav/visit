@@ -528,7 +528,8 @@ if [[ "$OPSYS" == "Darwin" ]]; then
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
-   export FC_COMPILER=${FC_COMPILER:-$(which gfortran | grep '^/')}
+   # Disable Fortran on Darwin since it causes HDF5, H5Part, Silo, ADIOS builds to explode.
+   export FC_COMPILER="" #${FC_COMPILER:-$(which gfortran | grep '^/')}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CFLAGS=${CFLAGS:-"-fno-common -fexceptions"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -4028,17 +4029,8 @@ function build_vtk
         #
         # first change the libraries name and identification by executing the
         # following bourne shell script
-        for i in libvtkCommon libvtkCommonPythonD libvtkDICOMParser \
-                 libvtkFiltering libvtkFilteringPythonD \
-                 libvtkGenericFiltering libvtkGenericFilteringPythonD \
-                 libvtkGraphics libvtkGraphicsPythonD libvtkHybrid \
-                 libvtkHybridPythonD libvtkIO libvtkIOPythonD libvtkImaging \
-                 libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
-                 libvtkRenderingPythonD libvtkVolumeRendering \
-                 libvtkVolumeRenderingPythonD libvtkexpat libvtkfreetype \
-                 libvtkftgl libvtkjpeg libvtkpng libvtksys libvtktiff \
-                 libvtkzlib libvtkverdict libvtkNetCDF libvtkNetCDF_cxx \
-                 libvtksqlite
+        VTK_LIB_NAMES="libMapReduceMPI libmpistubs libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkIO libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkPythonCore libvtkRendering libvtkRenderingPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkWidgets libvtkWidgetsPythonD libvtkalglib libvtkexpat libvtkfreetype libvtkftgl libvtkjpeg libvtklibxml2 libvtkpng libvtkproj4 libvtksqlite libvtksys libvtktiff libvtkverdict libvtkzlib"
+        for i in $VTK_LIB_NAMES
         do
            install_name_tool -id \
              $INSTALLNAMEPATH/$i.$SO_EXT \
@@ -4047,31 +4039,9 @@ function build_vtk
 
         #
         # Next change the dependent libraries names and paths
-        for i in libvtkCommon libvtkCommonPythonD libvtkDICOMParser \
-                 libvtkFiltering libvtkFilteringPythonD \
-                 libvtkGenericFiltering libvtkGenericFilteringPythonD \
-                 libvtkGraphics libvtkGraphicsPythonD libvtkHybrid \
-                 libvtkHybridPythonD libvtkIO libvtkIOPythonD \
-                 libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode \
-                 libvtkRendering libvtkRenderingPythonD \
-                 libvtkVolumeRendering libvtkVolumeRenderingPythonD \
-                 libvtkexpat libvtkfreetype libvtkftgl libvtkjpeg \
-                 libvtkpng libvtksys libvtktiff libvtkzlib \
-                 libvtkverdict libvtkNetCDF libvtkNetCDF_cxx \
-                 libvtksqlite
+        for i in $VTK_LIB_NAMES
         do
-          for j in libvtkCommon libvtkCommonPythonD libvtkDICOMParser \
-                   libvtkFiltering libvtkFilteringPythonD \
-                   libvtkGenericFiltering libvtkGenericFilteringPythonD \
-                   libvtkGraphics libvtkGraphicsPythonD libvtkHybrid \
-                   libvtkHybridPythonD libvtkIO libvtkIOPythonD \
-                   libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode \
-                   libvtkRendering libvtkRenderingPythonD \
-                   libvtkVolumeRendering libvtkVolumeRenderingPythonD \
-                   libvtkexpat libvtkfreetype libvtkftgl libvtkjpeg \
-                   libvtkpng libvtksys libvtktiff libvtkzlib \
-                   libvtkverdict libvtkNetCDF libvtkNetCDF_cxx \
-                   libvtksqlite
+          for j in $VTK_LIB_NAMES
           do
              install_name_tool -change \
                 $j.5.8.$SO_EXT \
@@ -4108,16 +4078,7 @@ function build_vtk
                  libvtkVolumeRenderingPython.so
         do
 
-          for j in libvtkCommon libvtkCommonPythonD \
-                   libvtkDICOMParser libvtkFiltering libvtkFilteringPythonD \
-                   libvtkGenericFiltering libvtkGenericFilteringPythonD \
-                   libvtkGraphics libvtkGraphicsPythonD libvtkHybrid \
-                   libvtkHybridPythonD libvtkIO libvtkIOPythonD libvtkImaging \
-                   libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
-                   libvtkRenderingPythonD libvtkVolumeRendering \
-                   libvtkVolumeRenderingPythonD libvtkexpat libvtkfreetype \
-                   libvtkftgl libvtkjpeg libvtkpng libvtksys libvtktiff \
-                   libvtkzlib
+          for j in $VTK_LIB_NAMES
           do
              install_name_tool -change \
                 $j.5.6.$SO_EXT \
@@ -8513,7 +8474,7 @@ function build_ADIOS
     else
         ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
             CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-            --without-mpi \
+            --without-mpi --disable-fortran \
             --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
             --prefix="$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH"
     fi
