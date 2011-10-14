@@ -133,6 +133,7 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
 
     bool validTimeAxis;
     double lastTimeAxisValue;
-};
 
+    std::string varName;
+};
 #endif
