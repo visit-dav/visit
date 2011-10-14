@@ -42,6 +42,9 @@
 #   Kathleen Bonnell, Tue Dec 21 14:45:51 MST 2010
 #   Update gdal version to 1.7 on Windows.
 #
+#   Brad Whitlock, Fri Oct 14 10:56:28 PDT 2011
+#   GDAL changed again on Mac.
+#
 #****************************************************************************/
 
 # Use the GDAL_DIR hint from the config-site .cmake file 
@@ -62,8 +65,6 @@ IF (WIN32)
       CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
       )
   ENDIF(EXISTS ${GDAL_LIBRARY_DIR}/gdal17.dll)
-ELSEIF(APPLE)
-  SET_UP_THIRD_PARTY(GDAL lib include gdal.1)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(GDAL lib include gdal)
 ENDIF (WIN32)
