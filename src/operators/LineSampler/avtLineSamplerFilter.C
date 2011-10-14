@@ -494,8 +494,25 @@ avtLineSamplerFilter::Execute()
         
           newCellIndex++;
 
+          if( atts.GetViewGeometry() == LineSamplerAttributes::Points )
+          {
+            vtkIdType* pointList = new vtkIdType[1];
+            pointList[0] = newPointIndex;
+
+            uGrid->InsertNextCell(VTK_VERTEX, 1, pointList);
+
+            for( unsigned int j=0; j<allCellData->GetNumberOfArrays(); j++)
+            {
+              allCellData->GetArray(j)->
+                InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
+            }
+          
+            newCellIndex++;
+            delete[] pointList;
+          }
+
           // Add a new line segment
-          if( tPoints )
+          else if( tPoints )
           {
             //define the points of the lines
             vtkIdType* pointList = new vtkIdType[2];
@@ -926,12 +943,12 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
           // Poloidal plane x axis tilting.
           if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
-              rTilt )
+              rTilt != 0.0)
             transform->RotateX( rTilt );
           
           // Poloidal plane z axis tilting.
           if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
-              zTilt )
+              zTilt != 0.0 )
             transform->RotateZ( zTilt );
 
           // Toroidal rotation.
@@ -975,7 +992,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             checkWall(  startPoint, stopPoint );
 
             if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
-                (rTilt || zTilt) )
+                (rTilt != 0.0 || zTilt != 0.0) )
             {
               std::string msg;
               msg += "Clipping against the wall requires that there be no " +
@@ -989,7 +1006,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
           // Poloidal plane R Tilting.
           if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
-              rTilt )
+              rTilt != 0.0 )
           {
               transform->Identity();
               transform->Translate( -r, -0, -z );
@@ -1002,7 +1019,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
           // Poloidal plane Z Tilting.
           if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
-              zTilt ) 
+              zTilt != 0.0 ) 
           {
               transform->Identity();
               transform->Translate( -r, -0, -z );
@@ -1900,28 +1917,28 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
                                    avtVector &startPoint,
                                    avtVector &stopPoint )
 {
+  avtVector axis = stopPoint - startPoint;
+  axis.normalize();
+
   double bounds[6];
   in_ds->GetBounds(bounds);
 
   // For cylindircal the extent is at R = 0, Y = 0.
   if( atts.GetMeshGeometry() == LineSamplerAttributes::Toroidal )
   {
-    if( startPoint.x >= 0 && startPoint.y >= 0 )
-      bounds[0] = bounds[2] = 0;
-    else if( startPoint.x >= 0 && startPoint.y < 0 )
-      bounds[0] = bounds[3] = 0;
-    else if( startPoint.x < 0 && startPoint.y >= 0 )
-      bounds[1] = bounds[2] = 0;
-    else if( startPoint.x < 0 && startPoint.y < 0 )
-      bounds[1] = bounds[3] = 0;
+    if( startPoint.x > 0 && axis.x < 0 )
+      bounds[0] = 0;
+    else if( startPoint.y > 0 && axis.y < 0 )
+      bounds[2] = 0;
+    else if( startPoint.x < 0 && axis.x > 0 )
+      bounds[0] = 0;
+    else if( startPoint.y < 0 && axis.y > 0 )
+      bounds[2] = 0;
   }
 
-  avtVector axis = stopPoint - startPoint;
-  axis.normalize();
+//   std::cerr << __LINE__ << "  axis " << axis << std::endl;
 
-//  std::cerr << __LINE__ << "  axis " << axis << std::endl;
-
-//  std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
+//   std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
 
   // Check against the R axis first.
   if( axis != avtVector( 1, 0, 0 ) && axis != avtVector( -1, 0, 0 ) )
@@ -1973,6 +1990,7 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
         // Max Y plane
         else if( axis.y >= 0 )
           stopPoint.y = bounds[3];
+
 //      std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
       }
     }
@@ -2009,6 +2027,7 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
         // Max Z plane
         else if( axis.z >= 0 )
           stopPoint.z = bounds[5];
+
 //      std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
       }
     }
@@ -2018,6 +2037,8 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
   else
   {
     stopPoint = startPoint;
+
+//     std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
 
     // For cylindircal the extent is at R = 0.
     if( atts.GetMeshGeometry() == LineSamplerAttributes::Toroidal &&
@@ -2030,6 +2051,8 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
     // Max R plane
     else if( axis.x >= 0 )
       stopPoint.x = bounds[1];
+
+//     std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
   }
 }
 

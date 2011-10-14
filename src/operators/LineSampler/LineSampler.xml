@@ -148,7 +148,7 @@
         0.000000
       </Field>
       <Field name="arrayPlotOffset" label="1D plot array offset" type="double">
-        1.000000
+        0.000000
       </Field>
       <Field name="displayTime" label="View time" type="enum" subtype="DisplayTime">
         Step

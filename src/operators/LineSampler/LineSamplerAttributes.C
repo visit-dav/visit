@@ -644,7 +644,7 @@ void LineSamplerAttributes::Init()
     viewDimension = Three;
     heightPlotScale = 1;
     channelPlotOffset = 0;
-    arrayPlotOffset = 1;
+    arrayPlotOffset = 0;
     displayTime = Step;
     channelGeometry = Line;
     radius = 0.1;
