@@ -149,7 +149,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         viewDimension = VIEWDIMENSION_THREE;
         heightPlotScale = 1;
         channelPlotOffset = 0;
-        arrayPlotOffset = 1;
+        arrayPlotOffset = 0;
         displayTime = DISPLAYTIME_STEP;
         channelGeometry = CHANNELGEOMETRY_LINE;
         radius = 0.1;
@@ -213,7 +213,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         viewDimension = VIEWDIMENSION_THREE;
         heightPlotScale = 1;
         channelPlotOffset = 0;
-        arrayPlotOffset = 1;
+        arrayPlotOffset = 0;
         displayTime = DISPLAYTIME_STEP;
         channelGeometry = CHANNELGEOMETRY_LINE;
         radius = 0.1;

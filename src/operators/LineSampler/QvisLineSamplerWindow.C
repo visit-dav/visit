@@ -839,7 +839,7 @@ QvisLineSamplerWindow::CreateWindowContents()
 
     // Create the oneDPlot group box.
     oneDPlotGroup = new QGroupBox(viewTab);
-    oneDPlotGroup->setTitle(tr("1D Plot viewing parameters"));
+    oneDPlotGroup->setTitle(tr("1D plot viewing parameters"));
     mainLayout->addWidget(oneDPlotGroup, 1, 0, 4, 4);
 
     QGridLayout *oneDPlotLayout = new QGridLayout(oneDPlotGroup);
@@ -847,7 +847,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     oneDPlotLayout->setSpacing(10);
 
 
-    heightPlotScaleLabel = new QLabel(tr("1D Plot Height scale"), central);
+    heightPlotScaleLabel = new QLabel(tr("1D plot height scale"), central);
     oneDPlotLayout->addWidget(heightPlotScaleLabel,0,0);
     heightPlotScale = new QLineEdit(central);
     heightPlotScale->setMaximumWidth(width);
@@ -855,7 +855,7 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(heightPlotScaleProcessText()));
     oneDPlotLayout->addWidget(heightPlotScale, 0,1);
 
-    channelPlotOffsetLabel = new QLabel(tr("1D Plot Channel offset"), central);
+    channelPlotOffsetLabel = new QLabel(tr("1D plot channel offset"), central);
     oneDPlotLayout->addWidget(channelPlotOffsetLabel,1,0);
     channelPlotOffset = new QLineEdit(central);
     channelPlotOffset->setMaximumWidth(width);
@@ -863,7 +863,7 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(channelPlotOffsetProcessText()));
     oneDPlotLayout->addWidget(channelPlotOffset,1,1);
 
-    arrayPlotOffsetLabel = new QLabel(tr("1D Plot Array offset"), central);
+    arrayPlotOffsetLabel = new QLabel(tr("1D plot array offset"), central);
     oneDPlotLayout->addWidget(arrayPlotOffsetLabel,2,0);
     arrayPlotOffset = new QLineEdit(central);
     arrayPlotOffset->setMaximumWidth(width);
