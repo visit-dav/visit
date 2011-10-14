@@ -13,93 +13,9 @@
 #include <QDesktopWidget>
 #include <vtkUnsignedCharArray.h>
 
-
-//#ifdef __linux__
-//# include <GL/glxew.h>
-//#endif
-
 #ifdef __linux__
 # include <GL/glx.h>
 #endif
-
-//
-// Subclass vtkGenericOpenGLRenderWindow so that certain VTK method calls act 
-// on the main window that contains the render window.
-//
-class VTKQT_API vtkQtRenderWindowProxy : public vtkGenericOpenGLRenderWindow
-{
-public:
-    vtkTypeMacro(vtkQtRenderWindowProxy,vtkGenericOpenGLRenderWindow);
-
-    static vtkQtRenderWindowProxy *New()
-    {
-        return new vtkQtRenderWindowProxy;
-    }
-
-    virtual void HideCursor()
-    {
-        qApp->setOverrideCursor(Qt::BlankCursor);
-    }
-
-    virtual void ShowCursor()
-    {
-        qApp->restoreOverrideCursor();
-    }
-
-    virtual int IsDirect()
-    {
-#if defined(Q_GLX) || (defined(Q_WS_X11) && defined(QT_MODULE_OPENGL))
-        MakeCurrent();
-        GLXContext ctx = glXGetCurrentContext();
-        return glXIsDirect(QX11Info::display(), ctx);
-#elif defined(Q_WS_WIN)
-        // If we are running on Windows, we are almost certainly on someone's
-        // local machine, so declare direct.
-        return 1;
-#elif defined(Q_WS_MACX)
-        // If we are running on Mac, we are almost certainly on someone's
-        // local machine, so declare direct.
-        return 1;
-#else
-        // Its not a Mac and its not Windows and it didn't like the test at the
-        // top.  Declare it as "not direct", so that we will still use display
-        // lists.
-        return 0;
-#endif
-    }
-
-    virtual void * GetGenericDisplayId()
-    {
-#if defined(Q_WS_WIN)
-        return (void *)qt_win_display_dc();
-#elif defined(Q_WS_X11)
-        return (void *)QX11Info::display();
-#elif defined(Q_WS_MACX)
-        // Return the information about the GL widget so we can create a
-        // transparent window over it.
-        typedef struct { int x,y,w,h; } OverlayInfo;
-        OverlayInfo *info = new OverlayInfo;
-        QPoint tl(gl->mapToGlobal(QPoint(0,0)));
-        info->x = tl.x();
-        info->y = tl.y();
-        info->w = gl->width();
-        info->h = gl->height();
-        return (void *)info;
-#endif
-    }
-
-    virtual void *GetGenericDrawable() { return (void*)gl->winId(); }
-    virtual void *GetGenericWindowId() { return (void*)gl->winId(); }
-
-    void SetWidget(QVTKWidget2 *w) {gl = w;}
-
-private:
-    vtkQtRenderWindowProxy()
-    {
-    }
-    QVTKWidget2              *gl;
-};
-
 
 //
 // Private data storage.
@@ -118,22 +34,15 @@ public:
         showEventCallback = NULL;
         showEventCallbackData = NULL;
 
-        // Create a render window.
-        proxy = vtkQtRenderWindowProxy::New();
-
         // Create the VTK widget and force our custom render window into it.
         gl = new QVTKWidget2(w);
-        gl->SetRenderWindow(proxy);
-        proxy->SetWidget(gl);
     }
 
     virtual ~vtkQtRenderWindowPrivate()
     {
-        proxy->Delete();
     }
 
-    QVTKWidget2              *gl;
-    vtkQtRenderWindowProxy   *proxy;
+    QVTKWidget2    *gl;
 
     void          (*resizeEventCallback)(void *);
     void           *resizeEventData;
@@ -191,6 +100,11 @@ vtkQtRenderWindow::GetInteractor()
     return d->gl->GetInteractor();
 }
 
+QWidget *
+vtkQtRenderWindow::GetGLWidget()
+{
+    return d->gl;
+}
 
 //
 // Added by LLNL

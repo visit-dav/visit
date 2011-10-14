@@ -49,7 +49,7 @@
 
 class vtkActor2D;
 class vtkPolyData;
-class vtkDashedXorGridMapper2D;
+class vtkPolyDataMapper2D;
 class VisWindowInteractorProxy;
 
 
@@ -99,7 +99,7 @@ class VISWINDOW_API Zoom2D : public ZoomInteractor
     int                 lastGuideY;
 
     vtkPolyData                 *guideLines;
-    vtkDashedXorGridMapper2D    *guideLinesMapper;
+    vtkPolyDataMapper2D         *guideLinesMapper;
     vtkActor2D                  *guideLinesActor;
     
     virtual void        StartRubberBand(int, int);

@@ -26,8 +26,9 @@ public:
     // Get the Qt/vtk interactor that was either created by default or set by the user
     vtkRenderWindowInteractor* GetInteractor();
 
-    // qt functions
-//    virtual QPoint mapFromGlobal(const QPoint &pos) const;
+    // Description:
+    // Get the GL part of the window as a QWidget.
+    QWidget *GetGLWidget();
 
     // Added by LLNL
     // Description:

@@ -43,6 +43,8 @@
 #include <VisWinRenderingWithWindow.h>
 
 #include <vtkQtRenderWindow.h>
+#include <vtkRubberBandMapper2D.h>
+#include <vtkDashedXorGridMapper2D.h>
 
 #ifdef Q_WS_X11
 // We only need WindowMetrics here if we're on X11.
@@ -731,7 +733,6 @@ VisWinRenderingWithWindow::SetCursorForMode(INTERACTION_MODE m)
     }
 }
 
-
 // ****************************************************************************
 //  Method:  VisWinRenderingWithWindow::SetFullScreenMode
 //
@@ -750,4 +751,42 @@ void
 VisWinRenderingWithWindow::SetFullScreenMode(bool fs)
 {
     fullScreenMode = fs;
+}
+
+// ****************************************************************************
+//  Method:  VisWinRenderingWithWindow::CreateRubberbandMapper
+//
+//  Purpose:
+//    Create a mapper to use for rubber band rendering.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Fri Oct 14 14:53:31 PDT 2011
+//
+// ****************************************************************************
+
+vtkPolyDataMapper2D *
+VisWinRenderingWithWindow::CreateRubberbandMapper()
+{
+    vtkRubberBandMapper2D *mapper = vtkRubberBandMapper2D::New();
+    mapper->SetWidget(renWin->GetGLWidget());
+    return mapper;
+}
+
+// ****************************************************************************
+//  Method:  VisWinRenderingWithWindow::CreateXorGridMapper
+//
+//  Purpose:
+//    Create a mapper to use for rubber band guideline rendering.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Fri Oct 14 14:53:31 PDT 2011
+//
+// ****************************************************************************
+
+vtkPolyDataMapper2D *
+VisWinRenderingWithWindow::CreateXorGridMapper()
+{
+    vtkDashedXorGridMapper2D *mapper = vtkDashedXorGridMapper2D::New();
+    mapper->SetWidget(renWin->GetGLWidget());
+    return mapper;
 }

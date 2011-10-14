@@ -51,6 +51,7 @@
 
 
 class     vtkRenderer;
+class     vtkPolyDataMapper2D;
 
 class     VisWindow;
 class     VisitInteractor;
@@ -166,6 +167,9 @@ class     VisitInteractor;
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Brad Whitlock, Fri Oct 14 16:28:24 PDT 2011
+//    Create mappers vis proxy.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -199,6 +203,9 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedGetWindowSize(int &width, int &height) const;
     void                ProxiedHasPlots(bool);
     bool                ProxiedHasPlots();
+
+    vtkPolyDataMapper2D *ProxiedCreateRubberbandMapper();
+    vtkPolyDataMapper2D *ProxiedCreateXorGridMapper();
 
     bool                ProxiedUpdatesEnabled();
     void                ProxiedDisableUpdates();

@@ -42,9 +42,6 @@
 #include <vtkToolkits.h>
 #include <vtkVisItRectilinearGrid.h>
 #include <vtkVisItStructuredGrid.h>
-#if defined(__APPLE__)
-#include <vtkOSMesaRenderWindow.h>
-#endif
 
 #include <vtkObjectFactory.h>
 #include <vtkVersion.h>
@@ -77,11 +74,6 @@ class vtkVisItGraphicsFactory : public vtkObjectFactory
 VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
-
-#if defined(__APPLE__)
-VTK_CREATE_CREATE_FUNCTION(vtkOSMesaRenderWindow);
-#endif
-
 
 const char*
 vtkVisItGraphicsFactory::GetVTKSourceVersion()
