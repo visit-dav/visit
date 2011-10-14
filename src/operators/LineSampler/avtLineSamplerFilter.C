@@ -75,7 +75,7 @@
 // ****************************************************************************
 
 avtLineSamplerFilter::avtLineSamplerFilter() :
-  composite_ds(0), varName(""), cachedAngle(0), validTimeAxis(true), lastTimeAxisValue(-1.0e12)
+  composite_ds(0), cachedAngle(0), validTimeAxis(true), lastTimeAxisValue(-1.0e12)
 {
 }
 
@@ -183,8 +183,6 @@ avtLineSamplerFilter::ExamineContract(avtContract_p in_contract)
 void
 avtLineSamplerFilter::InitializeTimeLoop(void)
 {
-    varName = GetInput()->GetInfo().GetAttributes().GetVariableName();
-
     // If doing the current time step set the bounds to be the
     // currentTime.
 
@@ -1281,9 +1279,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               uGrid->SetPoints(points);
               uGrid->Allocate(1);
               uGrid->InsertNextCell(VTK_VERTEX, 1, &vertex);
-              scalars->SetName(varName.c_str());
+              scalars->SetName(pipelineVariable);
               uGrid->GetPointData()->SetScalars(scalars);
-              uGrid->GetPointData()->SetActiveScalars(varName.c_str());
+              uGrid->GetPointData()->SetActiveScalars(pipelineVariable);
 
               points->Delete();
               scalars->Delete();
@@ -1516,7 +1514,7 @@ avtLineSamplerFilter::createPoint( avtVector startPoint,
 
   if( allocateScalars && scalars )
   {
-    scalars->SetName(varName.c_str());
+    scalars->SetName(pipelineVariable);
     uGrid->GetPointData()->SetScalars(scalars);
   }
 
@@ -1615,7 +1613,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
 
     if( allocateScalars && scalars )
     {
-      scalars->SetName(varName.c_str());
+      scalars->SetName(pipelineVariable);
       uGrid->GetPointData()->SetScalars(scalars);
     }
 
@@ -1659,7 +1657,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
     polydata->SetLines(cells);
     if( allocateScalars && scalars )
     {
-      scalars->SetName(varName.c_str());
+      scalars->SetName(pipelineVariable);
       polydata->GetPointData()->SetScalars(scalars);
     }
 
@@ -1815,7 +1813,7 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
 
   if( allocateScalars && scalars )
   {
-    scalars->SetName(varName.c_str());
+    scalars->SetName(pipelineVariable);
     grid->GetPointData()->SetScalars(scalars);
   }
     
@@ -2203,16 +2201,16 @@ avtLineSamplerFilter::CreateFinalOutput(void)
     // Set the new data range.
     double range[2] = { FLT_MAX, -FLT_MAX };
 
-    composite_ds->GetPointData()->GetScalars()->SetName(varName.c_str());
-    GetDataRange(composite_ds, range, varName.c_str(), false);
+    composite_ds->GetPointData()->GetScalars()->SetName(pipelineVariable);
+    GetDataRange(composite_ds, range, pipelineVariable, false);
 
     // If integrating reset the original data extents.
     if( atts.GetChannelIntegration() ==
         LineSamplerAttributes::IntegrateAlongChannel ||
         atts.GetChannelGeometry() == LineSamplerAttributes::Cylinder )
-      outAtts.GetThisProcsOriginalDataExtents(varName.c_str())->Set(range);
+      outAtts.GetThisProcsOriginalDataExtents(pipelineVariable)->Set(range);
 
-    outAtts.GetThisProcsActualDataExtents(varName.c_str())->Set(range);
+    outAtts.GetThisProcsActualDataExtents(pipelineVariable)->Set(range);
 
     if( atts.GetViewDimension() == LineSamplerAttributes::One )
     {
@@ -2221,10 +2219,10 @@ avtLineSamplerFilter::CreateFinalOutput(void)
       
       if( atts.GetChannelIntegration() ==
           LineSamplerAttributes::NoChannelIntegration )
-        outAtts.SetYLabel(varName);
+        outAtts.SetYLabel(pipelineVariable);
       else if( atts.GetChannelIntegration() ==
                LineSamplerAttributes::IntegrateAlongChannel )
-        outAtts.SetYLabel(std::string( "Integrated_") + varName);
+        outAtts.SetYLabel(std::string( "Integrated ") + pipelineVariable);
 
       outAtts.SetYUnits( inAtts.GetVariableUnits() );
 
