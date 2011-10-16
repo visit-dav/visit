@@ -4171,6 +4171,9 @@ avtSAMRAIFileFormat::ReadExpressions(hid_t &h5_file)
 //     Mark C. Miller, Thu Sep 13 11:33:09 PDT 2007
 //     Skip this work if we're on the mdserver
 //
+//     Hank Childs, Mon Oct 10 11:17:27 PDT 2011
+//     Add support for refinement levels for AMR ghost exchange.
+//
 // ****************************************************************************
 void 
 avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
@@ -4254,6 +4257,20 @@ avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
             sdb = new avtRectilinearDomainBoundaries(canComputeNeighborsFromExtents);
 
         sdb->SetNumDomains(num_patches);
+        
+        vector<int> refinement_ratios(num_levels-1, 1);
+        bool foundBadRefinement = false;
+        for (int i = 0 ; i < num_levels - 1 ; i++)
+        {
+            refinement_ratios[i] = ratios_coarser_levels[3*(i+1) + 0];
+            if (refinement_ratios[i] != ratios_coarser_levels[3*(i+1) + 1] ||
+                refinement_ratios[i] != ratios_coarser_levels[3*(i+1) + 2])
+            {
+                foundBadRefinement = true;
+            }
+        }
+        if (! foundBadRefinement)
+            sdb->SetRefinementRatios(refinement_ratios);
         for (int i = 0 ; i < num_patches ; i++)
         {
             int e[6];
@@ -4262,7 +4279,8 @@ avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
             e[2] = patch_extents[i].lower[1];
             e[3] = patch_extents[i].upper[1]+1;
             e[4] = patch_extents[i].lower[2];
-            e[5] = patch_extents[i].upper[2]+1;
+            e[5] = patch_extents[i].upper[2]+((num_dim_problem >= 3) ? 1 : 0);
+
             sdb->SetIndicesForAMRPatch(i, patch_map[i].level_number, e);
         }
         sdb->CalculateBoundaries();

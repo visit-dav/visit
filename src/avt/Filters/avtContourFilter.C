@@ -603,6 +603,9 @@ avtContourFilter::PreExecute(void)
 //    Hank Childs, Sun Nov 28 09:12:51 PST 2010
 //    Cache the scalar tree for later usage.
 //
+//    Hank Childs, Mon Oct 10 11:17:27 PDT 2011
+//    Add a connectivity dependence when it comes to caching.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -689,7 +692,8 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     if (useScalarTree)
     {
          int ts = timeslice_index;
-         tree = (vtkVisItScalarTree *) FetchArbitraryVTKObject(DATA_DEPENDENCE, 
+         tree = (vtkVisItScalarTree *) FetchArbitraryVTKObject(
+                                           DATA_DEPENDENCE | CONNECTIVITY_DEPENDENCE,
                                            contourVar, domain, ts, "SCALAR_TREE");
          if (tree == NULL)
          {
@@ -698,8 +702,8 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
              int id0 = visitTimer->StartTimer();
              tree->BuildTree();
              visitTimer->StopTimer(id0, "Building scalar tree");
-             StoreArbitraryVTKObject(DATA_DEPENDENCE, contourVar, domain, ts,
-                                     "SCALAR_TREE", tree);
+             StoreArbitraryVTKObject(DATA_DEPENDENCE | CONNECTIVITY_DEPENDENCE,
+                     contourVar, domain, ts, "SCALAR_TREE", tree);
          }
          else
              tree->Register(NULL); // to account for later dereference

@@ -83,21 +83,24 @@ class avtAMRStitchCellFilter :  public virtual avtSIMODataTreeIterator,
     virtual bool          Equivalent(const AttributeGroup*);
 
   protected:
-    AMRStitchCellAttributes   atts;
+    AMRStitchCellAttributes
+                          atts;
 
     virtual void          PreExecute(void);
     virtual avtContract_p ModifyContract(avtContract_p);
     virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
-    vtkDataSet           *CreateStitchCells(vtkRectilinearGrid*, int, int,
-                              int[3], int[3], const std::vector<int>&, const vtkIdType*);
+    virtual void          UpdateDataObjectInfo(void);
+    vtkDataSet           *CreateStitchCells(vtkRectilinearGrid*, int, int, int[3],
+                              int[3], int[3], int[3], const std::vector<int>&,
+                              const vtkIdType*, int [6]);
     vtkDataSet           *CreateDualGrid(vtkRectilinearGrid*, int, int, int[3],
                               const vtkIdType*);
     vtkDataArray         *ContractDual(vtkDataArray *coords);
 
   private:
-    int                  topologicalDimension;
-    double               domainOrigin[3];
-    double               domainBoundingBox[6];
+    int                   topologicalDimension;
+    double                domainOrigin[3];
+    int                   logicalDomainBoundingBox[6];
 };
 
 #endif
