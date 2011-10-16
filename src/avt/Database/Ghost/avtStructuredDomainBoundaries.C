@@ -60,6 +60,7 @@
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 #include <TimingsManager.h>
 #include <VisItException.h>
 
@@ -229,6 +230,10 @@ BoundaryHelperFunctions<T>::InitializeBoundaryData()
 //    way, use the "match", which is already pre-computed by the client for
 //    this purpose.
 //
+//    Hank Childs, Tue Jan  4 13:35:56 PST 2011
+//    Add support for asymmetric relationships (which occur at coarse/fine
+//    AMR boundaries).
+//
 // ****************************************************************************
 template <class T>
 void
@@ -242,12 +247,19 @@ BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
     for (size_t n = 0; n < bi->neighbors.size(); n++)
     {
         Neighbor *n1 = &bi->neighbors[n];
-        if (isPointData)
-            bnddata[d1][n] = new T[n1->npts * ncomp];
-        else
-            bnddata[d1][n] = new T[n1->ncells * ncomp];
-
         int d2 = n1->domain;
+        if (n1->neighbor_rel == DONOR_NEIGHBOR)
+        {
+            // d2 is a donor to d1.  Don't send it our data.
+            continue;
+        }
+        T *t = NULL;
+        if (isPointData)
+            t = new T[n1->npts * ncomp];
+        else
+            t = new T[n1->ncells * ncomp];
+        bnddata[d1][n] = t;
+
         int mi = n1->match;
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
                 
@@ -1025,6 +1037,10 @@ avtStructuredDomainBoundaries::SetExistence(int      d1,
 //    way, use the "match", which is already pre-computed by the client for
 //    this purpose.
 //
+//    Hank Childs, Tue Jan  4 13:35:56 PST 2011
+//    Add support for asymmetric relationships (which occur at coarse/fine
+//    AMR boundaries).
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1039,6 +1055,12 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
     {
         Neighbor *n1 = &bi->neighbors[n];
         int d2 = n1->domain;
+        if (n1->neighbor_rel == RECIPIENT_NEIGHBOR)
+        {
+            // d2 is a recipient from d1.  Hence we don't need to copy
+            // anything, since we are setting up ghost data for d1.
+            continue;
+        }
 
         int mi = n1->match;
         T *data = bnddata[d2][mi];
@@ -1477,22 +1499,31 @@ avtStructuredDomainBoundaries::SetExtents(int domain, int e[6])
 //    mi         the current domain's index in the neighbor's neighbor list
 //    o          the three orientation values
 //    e          the extents of the matching boundary in the current domain
+//    rr         an enumerated type that describes the refinement ratio.
+//    ref_ratio  the ratio in mesh resolution between neighboring domains.
+//    nr         an enumerated type that describes the neighbor relationship.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 21, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jan  4 12:33:17 PST 2011
+//    Add additional arguments for creating ghost data for AMR patches.
+//
 // ****************************************************************************
 void
-avtStructuredDomainBoundaries::AddNeighbor(int domain,
-                                           int d, int mi,
-                                           int o[3], int e[6])
+avtStructuredDomainBoundaries::AddNeighbor(int domain, int d, int mi, int o[3], 
+                                           int e[6], RefinementRelationship rr, 
+                                           int ref_ratio,
+                                           NeighborRelationship nr)
 {
     if (domain >= wholeBoundary.size())
         EXCEPTION1(VisItException,
                    "avtStructuredDomainBoundaries: "
                    "targetted domain more than number of domains");
 
-    wholeBoundary[domain].AddNeighbor(d, mi, o, e);
+    wholeBoundary[domain].AddNeighbor(d, mi, o, e, rr, ref_ratio, nr);
 }
 
 // ****************************************************************************
@@ -2468,11 +2499,16 @@ avtStructuredDomainBoundaries::ResetCachedMembers(void)
 //    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
 //    Rename ghost data arrays.
 //
+//    Hank Childs, Thu Sep 29 15:20:29 PDT 2011
+//    Add support for communicating pre-existing ghost zone data.
+//
 // ****************************************************************************
 
 void
 avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
-                                              vtkDataSet *inMesh, Boundary *bi)
+                                              vtkDataSet *inMesh, Boundary *bi,
+                                              bool haveCommunicatedGhosts, 
+                                              int domain, unsigned char ***ghosts)
 {
     vtkUnsignedCharArray *oldGhosts = (vtkUnsignedCharArray *)
                         inMesh->GetCellData()->GetArray("avtGhostZones");
@@ -2480,13 +2516,35 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
     // Create the ghost zone array
     vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
     ghostCells->SetName("avtGhostZones");
-    ghostCells->Allocate(bi->newncells);
+    ghostCells->SetNumberOfTuples(bi->newncells);
+
+    if (haveCommunicatedGhosts)
+    {
+        if (oldGhosts == NULL)
+            EXCEPTION0(ImproperUseException);  // we should never get to this point
+        bhf_uchar->CopyOldValues(domain, 
+                                 (unsigned char *) oldGhosts->GetVoidPointer(0),
+                                 (unsigned char *) ghostCells->GetVoidPointer(0),
+                                 false, 1);
+        bhf_uchar->SetNewBoundaryData(domain, ghosts, 
+                                 (unsigned char *) ghostCells->GetVoidPointer(0),
+                                 false, 1);
+    }
+
+    int cnt = 0;
     for (int k = bi->newzextents[4]; k <= bi->newzextents[5]; k++)
         for (int j = bi->newzextents[2]; j <= bi->newzextents[3]; j++)
             for (int i = bi->newzextents[0]; i <= bi->newzextents[1]; i++)
             {
                 unsigned char gv = 0;
-                if (oldGhosts != NULL)
+                if (haveCommunicatedGhosts)
+                {
+                    // we already got the ghost value from the input data set
+                    // and sent it through a ghost data communication phase.
+                    // Use that value.
+                    gv = ghostCells->GetValue(bi->NewCellIndex(i,j,k));
+                }
+                else if (oldGhosts != NULL)
                 {
                     int index = bi->OldCellIndex(i, j, k);
                     if (index >= 0)
@@ -2495,7 +2553,7 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
                 if (bi->IsGhostZone(i,j,k))
                     avtGhostData::AddGhostZoneType(gv,
                                           DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-                ghostCells->InsertNextValue(gv);
+                ghostCells->SetValue(cnt++, gv);
             }
 
     outMesh->GetCellData()->AddArray(ghostCells);
@@ -2662,16 +2720,45 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //    used uninitialized memory (and thus be rendered outside the clipping
 //    planes).
 //
+//    Hank Childs, Thu Sep 29 10:23:04 PDT 2011
+//    Exchange ghost data when present.
+//
+//    Hank Childs, Thu Sep 29 15:20:29 PDT 2011
+//    Add support for communicating pre-existing ghost zone data.
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
 avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
                                              vector<vtkDataSet*> meshes)
 {
+    size_t d;
+
     if (domain2proc.size() == 0)
     {
         domain2proc = CreateDomainToProcessorMap(domainNum);
         CreateCurrentDomainBoundaryInformation(domain2proc);
+    }
+
+    bool doGhost = true;
+    for (d = 0 ; d < meshes.size() ; d++)
+    {
+        if (meshes[d]->GetCellData()->GetArray("avtGhostZones") == NULL)
+            doGhost = false;
+    }
+    int haveGhost = (doGhost ? 1 : 0);
+    haveGhost = UnifyMinimumValue(haveGhost);
+    doGhost = (haveGhost == 1);
+    unsigned char ***ghosts = NULL;
+    if (doGhost)
+    {
+        ghosts = bhf_uchar->InitializeBoundaryData();
+        for (d = 0 ; d < meshes.size() ; d++)
+        {
+            unsigned char *g = (unsigned char*)meshes[d]->GetCellData()->GetArray("avtGhostZones")->GetVoidPointer(0);
+            bhf_uchar->FillBoundaryData(domainNum[d], g, ghosts, false, 1);
+        }
+        bhf_uchar->CommunicateBoundaryData(domain2proc, ghosts, false, 1);
     }
 
     vector<vtkDataSet*> out(meshes.size(), NULL);
@@ -2679,7 +2766,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
     //
     // Create the matching arrays for the given meshes
     //
-    for (size_t d = 0; d < meshes.size(); d++)
+    for (d = 0; d < meshes.size(); d++)
     {
         if (meshes[d]->GetDataObjectType() != VTK_RECTILINEAR_GRID)
         {
@@ -2794,7 +2881,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
             }
         }
 
-        CreateGhostZones(outm, mesh, bi);
+        CreateGhostZones(outm, mesh, bi, doGhost, domainNum[d], ghosts);
 
         out[d] = outm;
     }
@@ -3010,7 +3097,6 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
                    "avtStructuredDomainBoundaries: "
                    "targetted domain more than number of domains");
 
-
     levels[domain] = level;
     maxAMRLevel = (maxAMRLevel > level+1 ? maxAMRLevel : level+1);
     extents[6*domain+0] = e[0];
@@ -3063,6 +3149,20 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //    greatly speeds up the execution time of AMR hierarchies with lots
 //    of levels.
 //
+//    Hank Childs, Tue Jan  4 13:35:56 PST 2011
+//    Add support for the types of ghost data needed to create crack-free 
+//    isosurfaces with the AMR stitch operator.  They are:
+//      (1) values from the coarse patch when a fine patch is embedded in a
+//          coarse patch.
+//      (2) values from the coarse patch when a coarse patch abuts a fine
+//          patch.
+//
+//    Jeremy Meredith, Wed Mar 23 16:43:25 EDT 2011
+//    Added corner neighbor information at coarse-fine boundaries.
+//
+//    Hank Childs, Wed Aug 31 08:45:01 PDT 2011
+//    Add support for T-intersections.
+//
 // ****************************************************************************
 
 void
@@ -3072,6 +3172,8 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
         return;
 
     int t0 = visitTimer->StartTimer();
+    int totalNumDomains = wholeBoundary.size();
+    vector<int> numNeighbors(totalNumDomains, 0);
 
     int i, j, l;
 
@@ -3083,95 +3185,261 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                    "computation of neighbors from index extents");
     }
 
-    for (l = 0 ; l < maxAMRLevel ; l++)
+    // 
+    // The logic for setting up boundaries across AMR levels and within an
+    // AMR level are similar.  So the code is combined into a single loop.
+    // Also, the normal rectilinear case is the same as "within an AMR level".
+    //   Iteration 0: across AMR levels
+    //   Iteration 1: within AMR levels
+    //
+    for (int iteration = 0 ; iteration < 2 ; iteration++)
     {
-        vector<int> doms_at_this_level;
-        int ndoms;
-        bool renumberForEachAMRLevel = false;
-        if (maxAMRLevel == 1)
+        bool wellFormedAMR = ref_ratios.size() > 0 && ref_ratios.size() == maxAMRLevel-1;
+        if (iteration == 0 && !wellFormedAMR)
+            continue;
+
+        int maxLevel = (iteration == 0 ? maxAMRLevel-1 : maxAMRLevel);
+        for (l = 0 ; l < maxLevel ; l++)
         {
-            renumberForEachAMRLevel = false;
-            ndoms = levels.size();
-        }
-        else
-        {
-            renumberForEachAMRLevel = true;
+            int refrat = 1;
+            if (iteration == 0)
+                refrat = ref_ratios[l];
+            vector<int> doms;
             int totalNDoms = levels.size();
             for (i = 0 ; i < totalNDoms ; i++)
             {
-                if (levels[i] == l)
-                    doms_at_this_level.push_back(i);
+                if (iteration == 0)
+                {
+                    if (levels[i] == l || levels[i] == l+1)
+                    {
+                        doms.push_back(i);
+                    }
+                }
+                else
+                {
+                    if (levels[i] == l)
+                    {
+                        doms.push_back(i);
+                    }
+                }
             }
-            ndoms = doms_at_this_level.size();
-        }
-
-        avtIntervalTree itree(ndoms, 3);
-        double extf[6];
-        for (i = 0 ; i < ndoms ; i++)
-        {
-            for (j = 0 ; j < 6 ; j++)
+            int ndoms = doms.size();
+    
+            avtIntervalTree itree(ndoms, 3);
+            double extf[6];
+            for (i = 0 ; i < ndoms ; i++)
             {
-                int dom = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
-                extf[j] = (double) extents[6*dom+j];
+
+                for (j = 0 ; j < 6 ; j++)
+                {
+                    int dom = doms[i];
+                    if (levels[dom] == l)
+                        extf[j] = (double) (refrat*extents[6*dom+j]);
+                    else
+                        extf[j] = (double) extents[6*dom+j];
+                }
+                itree.AddElement(i, extf);
             }
-            itree.AddElement(i, extf);
-        }
-        itree.Calculate(true);
-
-        vector<int> neighbors(ndoms, 0);
-        for (i = 0 ; i < ndoms ; i++)
-        {
-            double min_vec[3], max_vec[3];
-            int dom = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
-            min_vec[0] = (double) extents[6*dom+0];
-            min_vec[1] = (double) extents[6*dom+2];
-            min_vec[2] = (double) extents[6*dom+4];
-            max_vec[0] = (double) extents[6*dom+1];
-            max_vec[1] = (double) extents[6*dom+3];
-            max_vec[2] = (double) extents[6*dom+5];
-            vector<int> list;
-            itree.GetElementsListFromRange(min_vec, max_vec, list);
-
-            // To get the "match" entry correct, we have to sort the list.  This
-            // will ensure that we can predict what a domain's match number will be
-            // for its neighbor.
-
-            sort(list.begin(), list.end());
-
-            for (size_t j = 0 ; j < list.size() ; j++)
+            itree.Calculate(true);
+    
+            for (i = 0 ; i < ndoms ; i++)
             {
-                if (i == list[j])
-                    continue; // Not interested in self-intersection.
-
-                int orientation[3] = { 1, 2, 3 }; // this doesn't really
-                                                  // apply for rectilinear.
-                int d1 = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
-                int d2 = (renumberForEachAMRLevel ? doms_at_this_level[list[j]]
-                                                  : list[j]);
-                if (levels[d1] != levels[d2])
+                int d1 = doms[i];
+                if (levels[d1] != l) // next refinement level.  We'll get this later
                     continue;
-                int e[6];
-                e[0] = (extents[6*d1+0] > extents[6*d2+0] ? extents[6*d1+0]
-                                                          : extents[6*d2+0]);
-                e[0] -= extents[6*d1+0] - 1;
-                e[1] = (extents[6*d1+1] < extents[6*d2+1] ? extents[6*d1+1]
-                                                          : extents[6*d2+1]);
-                e[1] -= extents[6*d1+0] - 1;
-                e[2] = (extents[6*d1+2] > extents[6*d2+2] ? extents[6*d1+2]
-                                                          : extents[6*d2+2]);
-                e[2] -= extents[6*d1+2] - 1;
-                e[3] = (extents[6*d1+3] < extents[6*d2+3] ? extents[6*d1+3]
-                                                          : extents[6*d2+3]);
-                e[3] -= extents[6*d1+2] - 1;
-                e[4] = (extents[6*d1+4] > extents[6*d2+4] ? extents[6*d1+4]
-                                                          : extents[6*d2+4]);
-                e[4] -= extents[6*d1+4] - 1;
-                e[5] = (extents[6*d1+5] < extents[6*d2+5] ? extents[6*d1+5]
-                                                          : extents[6*d2+5]);
-                e[5] -= extents[6*d1+4] - 1;
-                int index = neighbors[list[j]];
-                neighbors[list[j]]++;
-                AddNeighbor(d1, d2, index, orientation, e);
+
+                double min_vec[3], max_vec[3];
+                int dom = doms[i];
+                min_vec[0] = (double) refrat*extents[6*dom+0];
+                min_vec[1] = (double) refrat*extents[6*dom+2];
+                min_vec[2] = (double) refrat*extents[6*dom+4];
+                max_vec[0] = (double) refrat*extents[6*dom+1];
+                max_vec[1] = (double) refrat*extents[6*dom+3];
+                max_vec[2] = (double) refrat*extents[6*dom+5];
+
+                bool dataIs2D = (extents[6*dom+4]==0 && extents[6*dom+5]==0);
+
+                vector<int> list;
+                itree.GetElementsListFromRange(min_vec, max_vec, list);
+    
+                // To get the "match" entry correct, we have to sort the list.  This
+                // will ensure that we can predict what a domain's match number will be
+                // for its neighbor.
+    
+                sort(list.begin(), list.end());
+    
+                for (size_t j = 0 ; j < list.size() ; j++)
+                {
+                    if (i == list[j])
+                        continue; // Not interested in self-intersection.
+    
+                    int orientation[3] = { 1, 2, 3 }; // this doesn't really
+                                                      // apply for rectilinear.
+                    int d2 = doms[list[j]];
+                    if (iteration == 0)
+                    {
+                        if (levels[d2] != (l+1)) // at same refinement level
+                                                 // and we want one finer
+                            continue;
+                    }
+                    else
+                    {
+                        if (levels[d2] != (l)) // at different refinement level
+                                               // and we want the same
+                            continue;
+                    }
+
+                    // Determine area of extents overlap and then normalize to d2.
+                    int e[6];
+                    e[0] = (refrat*extents[6*d1+0] > extents[6*d2+0] ? refrat*extents[6*d1+0]
+                                                              : extents[6*d2+0]);
+                    e[0] -= extents[6*d2+0] - 1;
+                    e[1] = (refrat*extents[6*d1+1] < extents[6*d2+1] ? refrat*extents[6*d1+1]
+                                                              : extents[6*d2+1]);
+                    e[1] -= extents[6*d2+0] - 1;
+                    e[2] = (refrat*extents[6*d1+2] > extents[6*d2+2] ? refrat*extents[6*d1+2]
+                                                              : extents[6*d2+2]);
+                    e[2] -= extents[6*d2+2] - 1;
+                    e[3] = (refrat*extents[6*d1+3] < extents[6*d2+3] ? refrat*extents[6*d1+3]
+                                                              : extents[6*d2+3]);
+                    e[3] -= extents[6*d2+2] - 1;
+                    e[4] = (refrat*extents[6*d1+4] > extents[6*d2+4] ? refrat*extents[6*d1+4]
+                                                              : extents[6*d2+4]);
+                    e[4] -= extents[6*d2+4] - 1;
+                    e[5] = (refrat*extents[6*d1+5] < extents[6*d2+5] ? refrat*extents[6*d1+5]
+                                                              : extents[6*d2+5]);
+                    e[5] -= extents[6*d2+4] - 1;
+
+                    bool minFace[3];
+                    bool maxFace[3];
+                    bool tJuncMinFace[3] = { false, false, false };
+                    bool tJuncMaxFace[3] = { false, false, false };
+                    int  idxBeg[3];
+                    int  idxEnd[3];
+
+                    // We are asking the question: "does d1 form a minI face for d2?" for
+                    // mins and maxes in I, J, & K.
+                    //
+                    // And: tJunMaxFace[0] = true -->
+                    //  d2 d2
+                    //  d1 d1 d1 d1
+                    // (d1 extends past d2 in the I direction ... and also overlaps in the I direction)
+
+                    for (int axis=0; axis<3; axis++)
+                    {
+                        minFace[axis]  = (refrat*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+0]);
+                        if (minFace[axis])
+                            if (refrat*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+0])
+                                tJuncMinFace[axis] = true;
+                        maxFace[axis]  = (refrat*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+1]);
+                        if (maxFace[axis])
+                            if (refrat*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+1])
+                                tJuncMaxFace[axis] = true;
+                        idxBeg[axis]   = (refrat*extents[6*d1+2*axis+0] > extents[6*d2+2*axis+0] ? refrat*extents[6*d1+2*axis+0]
+                                                                                                 : extents[6*d2+2*axis+0]);
+                        idxEnd[axis]   = (refrat*extents[6*d1+2*axis+1] < extents[6*d2+2*axis+1] ? refrat*extents[6*d1+2*axis+1]
+                                                                                                 : extents[6*d2+2*axis+1]);
+                    }
+
+                    // Loop over all possible 8 (2D) or 26 (3D)
+                    // boundaries, and add them if they apply here.
+                    for (int kOff=-1; kOff<=1; ++kOff)
+                    {
+                        // for 2D data, skip all but kOff==0
+                        if (dataIs2D && kOff!=0)
+                            continue;
+
+                        for (int jOff=-1; jOff<=1; ++jOff)
+                        {
+                            for (int iOff=-1; iOff<=1; ++iOff)
+                            {
+                                // iOff=jOff=kOff=0 is the current domain; skip it.
+                                if (iOff==0 && jOff==0 && kOff==0)
+                                    continue;
+
+                                int axisOffset[3] = {iOff, jOff, kOff};
+
+                                // if the current boundary doesn't apply, skip it
+                                if ((axisOffset[0]==-1 && !minFace[0]) ||
+                                    (axisOffset[0]==+1 && !maxFace[0]) || 
+                                    (axisOffset[1]==-1 && !minFace[1]) ||
+                                    (axisOffset[1]==+1 && !maxFace[1]) || 
+                                    (axisOffset[2]==-1 && !minFace[2]) ||
+                                    (axisOffset[2]==+1 && !maxFace[2]))
+                                {
+                                    continue;
+                                }
+
+                                int bnd1[6];
+                                int bnd2[6];
+                                string dgbtxt = "";
+                                bool usedTJunc = false;
+                                for (int axis = 0; axis < 3; axis++)
+                                {
+                                    int extAxMin = 2*axis + 0;
+                                    int extAxMax = 2*axis + 1;
+                                    int extD1Start = 6*d1;
+                                    int extD2Start = 6*d2;
+                                    if (axisOffset[axis]==-1 && minFace[axis])
+                                    {
+                                        dgbtxt += string("min") + string(1,'I'+axis);
+                                        bnd1[extAxMin] = 1;
+                                        bnd1[extAxMax] = 1;
+
+                                        bnd2[extAxMin] = extents[extD2Start+extAxMin] - refrat*extents[extD1Start+extAxMin];
+                                        bnd2[extAxMin] /= refrat;
+                                        bnd2[extAxMin] += 1;
+                                        if (tJuncMinFace[axis])
+                                           bnd2[extAxMin] -= 1;  // crazy indexing; only happens at min, not max
+                                        usedTJunc = true;
+                                        bnd2[extAxMax] = bnd2[extAxMin];
+                                    }
+                                    else if (axisOffset[axis]==+1 && maxFace[axis])
+                                    {
+                                        dgbtxt += string("max") + string(1,'I'+axis);
+                                        bnd1[extAxMin] = extents[extD2Start+extAxMax] - extents[extD2Start+extAxMin]+1;
+                                        bnd1[extAxMax] = bnd1[extAxMin];
+
+                                        bnd2[extAxMin] = extents[extD2Start+extAxMax] - refrat*extents[extD1Start+extAxMin];
+                                        bnd2[extAxMin] /= refrat;
+                                        bnd2[extAxMin] += 1;
+                                        bnd2[extAxMax] = bnd2[extAxMin];
+                                        if (tJuncMaxFace[axis])
+                                            usedTJunc = true;
+                                    }
+                                    else
+                                    {
+                                        bnd1[extAxMin] = idxBeg[axis] - extents[extD2Start+extAxMin] + 1;
+                                        bnd1[extAxMax] = idxEnd[axis] - extents[extD2Start+extAxMin] + 1;
+
+                                        bnd2[extAxMin] = idxBeg[axis] - refrat*extents[extD1Start+extAxMin];
+                                        bnd2[extAxMin] /= refrat;
+                                        bnd2[extAxMin] += 1;
+                                        bnd2[extAxMax] = bnd2[extAxMin] + (bnd1[extAxMax]-bnd1[extAxMin]);
+                                    }
+                                }
+
+                                int index = numNeighbors[d1];
+                                numNeighbors[d1]++;
+                                if (iteration == 0)
+                                    AddNeighbor(d2, d1, index, orientation, bnd1, MORE_COARSE, refrat, DONOR_NEIGHBOR);
+                                else if (usedTJunc)
+                                    AddNeighbor(d2, d1, index, orientation, bnd1, SAME_REFINEMENT_LEVEL, 1, DONOR_NEIGHBOR);
+                                else
+                                    AddNeighbor(d2, d1, index, orientation, bnd1);
+
+                                index = numNeighbors[d2];
+                                numNeighbors[d2]++;
+                                if (iteration == 0)
+                                    AddNeighbor(d1, d2, index, orientation, bnd2, MORE_FINE, refrat, RECIPIENT_NEIGHBOR);
+                                else if (usedTJunc)
+                                    AddNeighbor(d1, d2, index, orientation, bnd2, SAME_REFINEMENT_LEVEL, 1, RECIPIENT_NEIGHBOR);
+                                else
+                                    AddNeighbor(d1, d2, index, orientation, bnd2);
+                            }
+                        }
+                    }
+                }
             }
         }
     }

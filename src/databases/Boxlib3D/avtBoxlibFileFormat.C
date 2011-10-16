@@ -1665,6 +1665,9 @@ avtBoxlibFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Fri May  9 11:07:14 PDT 2008
 //    Speed up calculation of domain nesting.
 //
+//    Hank Childs, Wed Jan  5 10:51:33 PST 2011
+//    Add setting of refinement ratios.
+//
 // ****************************************************************************
 
 void
@@ -1744,6 +1747,7 @@ avtBoxlibFileFormat::CalculateDomainNesting(void)
     level = 0;
     avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries(true);
     rdb->SetNumDomains(totalPatches);
+    rdb->SetRefinementRatios(refinement_ratio);
     for (int patch = 0 ; patch < totalPatches ; patch++)
     {
         int my_level, local_patch;

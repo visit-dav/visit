@@ -1230,6 +1230,9 @@ avtChomboFileFormat::InitializeReader(void)
 //    Tom Fogal, Thu Aug  5 16:45:30 MDT 2010
 //    Fix incorrect destructor function.
 //
+//    Gunther H. Weber, Mon Jan 10 10:42:45 PST 2011
+//    Add setting of refinement ratios.
+//
 // ****************************************************************************
 
 void
@@ -1302,6 +1305,10 @@ avtChomboFileFormat::CalculateDomainNesting(void)
         avtRectilinearDomainBoundaries *rdb 
                                     = new avtRectilinearDomainBoundaries(true);
         rdb->SetNumDomains(totalPatches);
+        std::vector<int> real_rr(refinement_ratio.size()-1);
+        for (int lvl=0; lvl<real_rr.size(); lvl++)
+            real_rr[lvl] = refinement_ratio[lvl];
+        rdb->SetRefinementRatios(real_rr);
         for (int patch = 0 ; patch < totalPatches ; patch++)
         {
             int my_level, local_patch;
@@ -1992,6 +1999,9 @@ avtChomboFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 //    Added ability to connect particle mesh based on polymer_id and
 //    particle_nid
 //
+//    Gunther H. Weber, Fri Mar 25 13:20:48 PDT 2011
+//    Only add avtRealDims if file contains ghosts.
+//
 // ****************************************************************************
 
 // Comaprator class used to sort an array with integers so that the permutation
@@ -2118,7 +2128,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         rg->GetFieldData()->AddArray(arr);
         arr->Delete();
 
-        if (allowedToUseGhosts)
+        if (allowedToUseGhosts && (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0))
         {
             //
             // Store real dims so that pick reports correct indices
@@ -2143,67 +2153,40 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             rg->GetFieldData()->AddArray(arr);
             arr->Delete();
 
-
             //
             // Calculate the problem domian in the current level
             //
             //
             // Generate ghost zone information
             //
-            if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
+            unsigned char realVal = 0, ghostInternal = 0, ghostExternal = 0;
+            avtGhostData::AddGhostZoneType(ghostInternal, 
+                    DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+            avtGhostData::AddGhostZoneType(ghostExternal, 
+                    ZONE_EXTERIOR_TO_PROBLEM);
+
+            vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+            ghostCells->SetName("avtGhostZones");
+
+            ghostCells->Allocate(rg->GetNumberOfCells());
+
+            if (dimension == 3)
             {
-                unsigned char realVal = 0, ghostInternal = 0, ghostExternal = 0;
-                avtGhostData::AddGhostZoneType(ghostInternal, 
-                        DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-                avtGhostData::AddGhostZoneType(ghostExternal, 
-                        ZONE_EXTERIOR_TO_PROBLEM);
-
-                vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-                ghostCells->SetName("avtGhostZones");
-
-                ghostCells->Allocate(rg->GetNumberOfCells());
-
-                if (dimension == 3)
-                {
-                    for (int k=lowK[patch] - numGhostK; k<hiK[patch] + numGhostK; ++k)
-                        for (int j=lowJ[patch] - numGhostJ; j<hiJ[patch] + numGhostJ; ++j)
-                            for (int i=lowI[patch] - numGhostI; i<hiI[patch] + numGhostI; ++i)
-                            {
-                                if (i>=lowI[patch] && i<hiI[patch] &&
-                                        j>=lowJ[patch] && j<hiJ[patch] && 
-                                        k>=lowK[patch] && k<hiK[patch])  
-                                {
-                                    ghostCells->InsertNextValue(realVal);
-                                }
-                                else
-                                {
-                                    if (i>=lowProbI[level] && i<=hiProbI[level] &&
-                                            j>=lowProbJ[level] && j<=hiProbJ[level] &&
-                                            k>=lowProbK[level] && k<=hiProbK[level])
-                                    {
-                                        ghostCells->InsertNextValue(ghostInternal);
-                                    }
-                                    else
-                                    {
-                                        ghostCells->InsertNextValue(ghostExternal);
-                                    }
-                                }
-                            }
-                }
-                else
-                {
+                for (int k=lowK[patch] - numGhostK; k<hiK[patch] + numGhostK; ++k)
                     for (int j=lowJ[patch] - numGhostJ; j<hiJ[patch] + numGhostJ; ++j)
                         for (int i=lowI[patch] - numGhostI; i<hiI[patch] + numGhostI; ++i)
                         {
                             if (i>=lowI[patch] && i<hiI[patch] &&
-                                    j>=lowJ[patch] && j<hiJ[patch])
+                                    j>=lowJ[patch] && j<hiJ[patch] && 
+                                    k>=lowK[patch] && k<hiK[patch])  
                             {
                                 ghostCells->InsertNextValue(realVal);
                             }
                             else
                             {
                                 if (i>=lowProbI[level] && i<=hiProbI[level] &&
-                                        j>=lowProbJ[level] && j<=hiProbJ[level])
+                                        j>=lowProbJ[level] && j<=hiProbJ[level] &&
+                                        k>=lowProbK[level] && k<=hiProbK[level])
                                 {
                                     ghostCells->InsertNextValue(ghostInternal);
                                 }
@@ -2213,12 +2196,35 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
                                 }
                             }
                         }
-                }
-
-                rg->GetCellData()->AddArray(ghostCells);
-                rg->SetUpdateGhostLevel(0);
-                ghostCells->Delete();
             }
+            else
+            {
+                for (int j=lowJ[patch] - numGhostJ; j<hiJ[patch] + numGhostJ; ++j)
+                    for (int i=lowI[patch] - numGhostI; i<hiI[patch] + numGhostI; ++i)
+                    {
+                        if (i>=lowI[patch] && i<hiI[patch] &&
+                                j>=lowJ[patch] && j<hiJ[patch])
+                        {
+                            ghostCells->InsertNextValue(realVal);
+                        }
+                        else
+                        {
+                            if (i>=lowProbI[level] && i<=hiProbI[level] &&
+                                    j>=lowProbJ[level] && j<=hiProbJ[level])
+                            {
+                                ghostCells->InsertNextValue(ghostInternal);
+                            }
+                            else
+                            {
+                                ghostCells->InsertNextValue(ghostExternal);
+                            }
+                        }
+                    }
+            }
+
+            rg->GetCellData()->AddArray(ghostCells);
+            rg->SetUpdateGhostLevel(0);
+            ghostCells->Delete();
         }
 
         return rg;
