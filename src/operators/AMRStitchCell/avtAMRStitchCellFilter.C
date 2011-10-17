@@ -47,7 +47,10 @@
 #include "AMRStitchCellTesselations3D.h"
 
 #include <cassert>
+#include <limits>
 #include <list>
+#include <string>
+#include <vector>
 
 #include <DebugStream.h>
 
@@ -70,10 +73,6 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
-#include <cassert>
-
-#include <string>
-#include <vector>
 
 // ****************************************************************************
 //  Method: avtAMRStitchCellFilter constructor
