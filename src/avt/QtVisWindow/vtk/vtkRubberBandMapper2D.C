@@ -80,9 +80,23 @@ struct vtkRubberBandMapper2DPrivate
         overlay = 0;
     }
 
+    vtkRubberBandMapper2DPrivate(const vtkRubberBandMapper2DPrivate &obj)
+    {
+        widget = obj.widget;
+        bestRenderer = obj.bestRenderer;
+        overlay = 0;
+    }
+
     ~vtkRubberBandMapper2DPrivate()
     { 
         ReleaseGraphicsResources();
+    }
+
+    void operator = (const vtkRubberBandMapper2DPrivate &obj)
+    {
+        widget = obj.widget;
+        bestRenderer = obj.bestRenderer;
+        overlay = 0;
     }
 
     void ReleaseGraphicsResources()

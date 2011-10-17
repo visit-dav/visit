@@ -83,9 +83,23 @@ struct vtkDashedXorGridMapper2DPrivate
         overlay = 0;
     }
 
+    vtkDashedXorGridMapper2DPrivate(const vtkDashedXorGridMapper2DPrivate &obj)
+    {
+        widget = obj.widget;
+        bestRenderer = obj.bestRenderer;
+        overlay = 0;
+    }
+
     ~vtkDashedXorGridMapper2DPrivate()
     { 
         ReleaseGraphicsResources();
+    }
+
+    void operator = (const vtkDashedXorGridMapper2DPrivate &obj)
+    {
+        widget = obj.widget;
+        bestRenderer = obj.bestRenderer;
+        overlay = 0;
     }
 
     void ReleaseGraphicsResources()

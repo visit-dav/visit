@@ -92,7 +92,7 @@
             if (cellScalars) 
                 rgba = c->GetPointer(4*cellNum);
             else
-                rgba = c->GetPointer(4*pts[j]);
+                rgba = c->GetPointer(4*pts[0]);
 
             SET_FOREGROUND(rgba);
         }
