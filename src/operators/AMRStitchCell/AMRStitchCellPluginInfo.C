@@ -133,7 +133,7 @@ AMRStitchCellGeneralPluginInfo::GetID() const
 bool
 AMRStitchCellGeneralPluginInfo::EnabledByDefault() const
 {
-    return true;
+    return false;
 }
 
 // ****************************************************************************
