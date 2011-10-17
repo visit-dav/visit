@@ -754,10 +754,11 @@ void vtkVisItCellLocator::FindClosestPoint(double x[3], double closestPoint[3],
   int closestSubCell = -1;
   int leafStart;
   int level;
-  int ijk[3];
+  int ijk[3]={0,0,0};
   double minDist2, refinedRadius2, distance2ToBucket;
   double distance2ToCellBounds, cellBounds[6];
-  double pcoords[3], point[3], cachedPoint[3], weightsArray[6];
+  double pcoords[3]={0.,0.,0.}, point[3]={0.,0.,0.},
+         cachedPoint[3]={0.,0.,0.}, weightsArray[6]={0.,0.,0.,0.,0.,0.};
   double *weights = weightsArray;
   int nWeights = 6, nPoints, cellIsGhost;
   vtkIdList *cellIds;

@@ -1254,17 +1254,22 @@ avtGradientExpression::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds,
         if( val != NULL)
         {
             vtkDataSet *new_ds = (vtkDataSet*) in_ds->NewInstance();
-            new_ds->CopyStructure(in_ds);
-            char *name = val->GetName();
-            new_ds->GetCellData()->AddArray(val);
             vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
-            cd2pd->SetInput(new_ds);
-            cd2pd->Update();
-            val = cd2pd->GetOutput()->GetPointData()->GetArray(name);
-            val->Register(NULL);
-            own_values_array =true;
-            new_ds->Delete();
-            cd2pd->Delete();
+            if (new_ds != NULL && cd2pd != NULL)
+            {
+                new_ds->CopyStructure(in_ds);
+                char *name = val->GetName();
+                new_ds->GetCellData()->AddArray(val);
+                cd2pd->SetInput(new_ds);
+                cd2pd->Update();
+                val = cd2pd->GetOutput()->GetPointData()->GetArray(name);
+                val->Register(NULL);
+                own_values_array = true;
+            }
+            if (new_ds != NULL)
+                new_ds->Delete();
+            if (cd2pd != NULL)  
+                cd2pd->Delete();
         }
 
         if( val == NULL || val->GetNumberOfComponents() != 1 )

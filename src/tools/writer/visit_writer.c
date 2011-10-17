@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -980,19 +980,31 @@ void write_regular_mesh(const char *filename, int ub, int *dims,
     float *y = (float *) malloc(sizeof(float)*dims[1]);
     float *z = (float *) malloc(sizeof(float)*dims[2]);
 
-    for (i = 0 ; i < dims[0] ; i++)
-        x[i] = (float) i;
-    for (i = 0 ; i < dims[1] ; i++)
-        y[i] = (float) i;
-    for (i = 0 ; i < dims[2] ; i++)
-        z[i] = (float) i;
+    if (x != NULL)
+    {
+        for (i = 0 ; i < dims[0] ; i++)
+            x[i] = (float) i;
+    }
+    if(y != NULL)
+    {
+        for (i = 0 ; i < dims[1] ; i++)
+            y[i] = (float) i;
+    }
+    if(z != NULL)
+    {
+        for (i = 0 ; i < dims[2] ; i++)
+            z[i] = (float) i;
+    }
 
     write_rectilinear_mesh(filename, ub, dims, x, y, z, nvars, vardim,
                            centering, varnames, vars);
 
-    free(x);
-    free(y);
-    free(z);
+    if(x != NULL)
+        free(x);
+    if(y != NULL)
+        free(y);
+    if(z != NULL)
+        free(z);
 }
 
 

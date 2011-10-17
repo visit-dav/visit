@@ -2906,7 +2906,8 @@ avtPLOT3DFileFormat::GetMesh(int dom, const char *name)
     reader->SetVectorFunctionNumber(-1);
     reader->GetOutput()->Update();
     vtkDataSet *rv = (vtkDataSet *) reader->GetOutput()->NewInstance();
-    rv->ShallowCopy(reader->GetOutput());
+    if(rv != NULL)
+        rv->ShallowCopy(reader->GetOutput());
 
     return rv;
 }

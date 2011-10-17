@@ -137,7 +137,7 @@ avtCornerAngle::GetCornerAngle(vtkCell *cell)
         int ID = cell->GetPointId(i);
         double ptV[3];
         cell->GetPoints()->GetPoint(i, ptV);
-        double A[3][3];
+        double A[4][3];
 
         // Identify the edges adjacent to this vertex.
         int numEdges = 0;

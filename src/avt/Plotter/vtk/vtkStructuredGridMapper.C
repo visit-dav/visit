@@ -102,8 +102,11 @@ double *vtkStructuredGridMapper::GetBounds()
   if (this->GetNumberOfInputConnections(0))
     {
     this->Update();
-    this->GetInput()->GetBounds(this->Bounds);
-    return this->Bounds;
+    if(this->GetInput() != NULL)
+      {
+      this->GetInput()->GetBounds(this->Bounds);
+      return this->Bounds;
+      }
     }
 
   return bounds;

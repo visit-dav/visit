@@ -163,7 +163,7 @@ class PLOTTER_API avtExternallyRenderedImagesActor
 
     // used to send essential information to ERIA so that it will have that
     // information when it receives a render request
-    void                 PrepareForRender(const vtkCamera *const cam);
+    void                 PrepareForRender(vtkCamera *cam);
 
     // used to temporarily control visibility of ERIA while its in a window
     bool                 SetVisibility(const bool mode);
