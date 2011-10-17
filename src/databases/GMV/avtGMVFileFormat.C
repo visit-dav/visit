@@ -1152,7 +1152,7 @@ avtGMVFileFormat::ReadData()
                     meshdata.material = NULL;
                     meshdata.materialCentering = CELL;
 
-                    avtMeshType mt;
+                    avtMeshType mt = AVT_UNKNOWN_MESH;
                     int topological_dimension = 3;
                     if(gmv_data.datatype == UNSTRUCT)
                     {
@@ -1222,7 +1222,7 @@ avtGMVFileFormat::ReadData()
 #ifndef MDSERVER  
                     vtkDataArray *mats = gmvCreateVariable("material");
                     // Expand out the data if we needed to split cells or add nodes.
-                    if(pos->second.polyhedralSplit != NULL)
+                    if(mats != NULL && pos->second.polyhedralSplit != NULL)
                     {
                         vtkDataArray *expanded = pos->second.polyhedralSplit->
                             ExpandDataArray(mats, gmv_data.datatype == CELL, false);

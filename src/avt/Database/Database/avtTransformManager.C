@@ -1456,22 +1456,28 @@ avtTransformManager::AddVertexCellsToPointsOnlyDataset(avtDatabaseMetaData *md,
     if (doType == VTK_POLY_DATA)
     {
         vtkPolyData *pd = vtkPolyData::SafeDownCast(ds);
-        pd->Allocate(ds->GetNumberOfPoints());
-        for (i = 0; i < ds->GetNumberOfPoints(); i++)
+        if(pd != NULL)
         {
-            onevertex[0] = i;
-            pd->InsertNextCell(VTK_VERTEX, 1, onevertex);
+            pd->Allocate(ds->GetNumberOfPoints());
+            for (i = 0; i < ds->GetNumberOfPoints(); i++)
+            {
+                onevertex[0] = i;
+                pd->InsertNextCell(VTK_VERTEX, 1, onevertex);
+            }
         }
 
     }
     else // must be VTK_UNSTRUCTURED_GRID
     {
         vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::SafeDownCast(ds);
-        ugrid->Allocate(ds->GetNumberOfPoints());
-        for (i = 0; i < ds->GetNumberOfPoints(); i++)
+        if(ugrid != NULL)
         {
-            onevertex[0] = i;
-            ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
+            ugrid->Allocate(ds->GetNumberOfPoints());
+            for (i = 0; i < ds->GetNumberOfPoints(); i++)
+            {
+                onevertex[0] = i;
+                ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
+            }
         }
     }
 

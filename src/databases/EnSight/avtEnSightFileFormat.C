@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtEnSightFileFormat.C                          //
+//                            avtEnSightFileFormat.C                         //
 // ************************************************************************* //
 
 #include <avtEnSightFileFormat.h>
@@ -579,7 +579,8 @@ avtEnSightFileFormat::GetMesh(int ts, int dom, const char *name)
         doneUpdate = true;
     }
     vtkDataSet *rv = (vtkDataSet *)reader->GetOutput()->GetBlock(dom)->NewInstance();
-    rv->CopyStructure((vtkDataSet *)reader->GetOutput()->GetBlock(dom));
+    if(rv != NULL)
+        rv->CopyStructure((vtkDataSet *)reader->GetOutput()->GetBlock(dom));
 
     return rv;
 }

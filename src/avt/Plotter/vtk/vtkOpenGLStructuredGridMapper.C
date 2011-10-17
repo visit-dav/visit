@@ -372,6 +372,13 @@ void vtkOpenGLStructuredGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
 {
    vtkStructuredGrid *input = this->GetInput();
+
+   if (input == NULL)
+   {
+       vtkErrorMacro("The input to the Structured grid mapper was NULL");
+       return 0;
+   }
+
    int dims[3];
    input->GetDimensions(dims);
    bool flatI = (dims[0] <= 1);
@@ -380,7 +387,7 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    if (!flatI && !flatJ && !flatK)
    {
        vtkErrorMacro("One of the dimensions must be flat!!\n"
-                     "Rectilinear grid mapper unable to render");
+                     "Structured grid mapper unable to render");
        return 0;
    }
 

@@ -84,11 +84,11 @@ using std::map;
 class vtkVisItERIACamera : vtkCamera
 {
   public:
-    int GetLeftEye() const { return LeftEye; };
+    virtual int GetLeftEye() { return LeftEye; };
 };
-static bool GetCameraLeftEye(const vtkCamera *const vtkCam)
+static bool GetCameraLeftEye(vtkCamera *vtkCam)
 {
-    const vtkVisItERIACamera *const eriaCam = (vtkVisItERIACamera*) vtkCam;
+    vtkVisItERIACamera *eriaCam = (vtkVisItERIACamera*)vtkCam;
     return eriaCam->GetLeftEye() == 1;
 }
 
@@ -291,7 +291,7 @@ avtExternallyRenderedImagesActor::DoExternalRender(avtDataObject_p &dob,
 // ****************************************************************************
  
 void
-avtExternallyRenderedImagesActor::PrepareForRender(const vtkCamera *const cam)
+avtExternallyRenderedImagesActor::PrepareForRender(vtkCamera *cam)
 {
    // return early if we're not supposed to be making external render requests
    if (!makeExternalRenderRequests)

@@ -1000,7 +1000,7 @@ CumulativeQuery::SelectAndHistogram(const SelectionProperties &props,
 
     // We need to bin the index array into some number of bins and select
     // the cells in the selected bins into our new narrowed selection.
-    int *binPoints, numBins;
+    int *binPoints = NULL, numBins = 0;
 
     // For IDs the bins are based on the number of cells
     if(props.GetHistogramType() == SelectionProperties::HistogramID)

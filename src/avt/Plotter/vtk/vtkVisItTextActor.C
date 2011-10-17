@@ -106,7 +106,8 @@ vtkVisItTextActor::ComputeScaledFont(vtkViewport *viewport)
   // Override the behavior for viewport scaling mode.
   if (this->TextScaleMode == TEXT_SCALE_MODE_VIEWPORT)
     {
-    if (this->ScaledTextProperty->GetMTime() < this->TextProperty->GetMTime())
+    if (this->TextProperty != NULL &&
+        this->ScaledTextProperty->GetMTime() < this->TextProperty->GetMTime())
       {
         this->ScaledTextProperty->ShallowCopy(this->TextProperty);
       }

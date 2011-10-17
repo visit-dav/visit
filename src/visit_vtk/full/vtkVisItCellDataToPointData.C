@@ -148,6 +148,11 @@ void vtkVisItCellDataToPointData::Execute()
        vars_out[i] = (float *) outPD->GetArray(inPD->GetArray(i)->GetName())
                                                            ->GetVoidPointer(0);
     }
+    for (i = nvals ; i < maxArrays ; i++)
+    {
+        vars_in[i] = NULL;
+        vars_out[i] = NULL;
+    }
 
     for (k = 0 ; k < dims[2] ; k++)
     {
