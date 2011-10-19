@@ -56,15 +56,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(_WIN32)
 #  include <windows.h>
-#else
-#  include <QLabel>
-#  include <QPixmap>
-#  include <QPainter>
-#  include <QLine>
-#  if defined(HAVE_XLIB)
-#    include <QX11Info>
-#    include <X11/Intrinsic.h>
-#  endif
+#endif
+#include <QLabel>
+#include <QPixmap>
+#include <QPainter>
+#include <QLine>
+#if defined(HAVE_XLIB)
+#  include <QX11Info>
+#  include <X11/Intrinsic.h>
 #endif
 
 struct vtkRubberBandMapper2DPrivate
