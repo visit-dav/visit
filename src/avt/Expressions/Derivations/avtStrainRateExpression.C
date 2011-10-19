@@ -98,6 +98,11 @@ avtStrainRateExpression::~avtStrainRateExpression()
 //  Programmer: Thomas R. Treadway
 //  Creation:   Wed Nov 15 12:57:36 PST 2006
 //
+//  Modifications:
+//    Eric Brugger, Thu Sep  8 14:55:01 PDT 2011
+//    I made corrections to the calculation of the strain rate provided by
+//    Bob Corey.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -205,12 +210,12 @@ avtStrainRateExpression::DeriveVariable(vtkDataSet *in_ds)
                 - F[2]*F[4]*F[6] - F[1]*F[3]*F[8]
                 - F[0]*F[5]*F[7];
             detF = fabs( detF );
-            strain[0] = -0.5*(F[0]*F[0] + F[3]*F[3] + F[6]*F[6] - 1.0);
-            strain[1] = -0.5*(F[1]*F[1] + F[4]*F[4] + F[7]*F[7] - 1.0);
-            strain[2] = -0.5*(F[2]*F[2] + F[5]*F[5] + F[8]*F[8] - 1.0);
-            strain[3] = -0.5*(F[0]*F[1] + F[3]*F[4] + F[6]*F[7] );
-            strain[4] = -0.5*(F[1]*F[2] + F[4]*F[5] + F[7]*F[8] );
-            strain[5] = -0.5*(F[0]*F[2] + F[3]*F[5] + F[6]*F[8] );
+            strain[0] = F[0];
+            strain[1] = F[4];
+            strain[2] = F[8];
+            strain[3] = 0.5 * (F[1] + F[3]);
+            strain[4] = 0.5 * (F[5] + F[7]);
+            strain[5] = 0.5 * (F[2] + F[6]);
             // End of differences
             //
             // reorder Tensor
