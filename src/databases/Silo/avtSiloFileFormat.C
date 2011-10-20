@@ -9161,6 +9161,13 @@ MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
 //    Mark C. Miller, Tue Apr 13 18:00:45 PDT 2010
 //    When handling 2D arbitrary polygons, if its 3 or 4 nodes, call it a
 //    triangle or quad instead of leaving it as a polygon.
+//
+//    Cyrus Harrison, Thu Oct 20 13:00:53 PDT 2011
+//    For 2D arbitrary polygons: When we short cut the cell type to be
+//    a triangle or quad, make sure we reset the effective zone type to
+//    VTK_POLYGON when we encounter a cell that is *not* a triangle or
+//    quad.
+//
 // ****************************************************************************
 
 void
@@ -9324,6 +9331,8 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                             effective_vtk_zonetype = VTK_TRIANGLE;
                         else if (shapesize == 4)
                             effective_vtk_zonetype = VTK_QUAD;
+                        else
+                            effective_vtk_zonetype = VTK_POLYGON;
                     }
                     else
                     {
@@ -9334,9 +9343,11 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                         nodelist += ss+1;
                         /* correct stored cell type if its really a tri or quad */
                         if (ss == 3)
-                            effective_vtk_zonetype = VTK_TRIANGLE;
+                           effective_vtk_zonetype = VTK_TRIANGLE;
                         else if (ss == 4)
                             effective_vtk_zonetype = VTK_QUAD;
+                        else
+                            effective_vtk_zonetype = VTK_POLYGON;
                         effective_shapesize = ss;
                     }
                 }
