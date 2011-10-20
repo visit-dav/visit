@@ -1773,7 +1773,7 @@ if ( ($parallel) and $exe_name eq "engine" and ($host =~ /jaguarpf/ or $host =~ 
 #
 # ----
 $IsRunningOnNautilus_UTK = 0;
-if ( $host =~ /^nautilus/ )
+if ( $host =~ /^nautilus/ or $host =~ /^arronax/ or $host =~ /^conseil/ )
 {
     chomp($domain = `hostname -d`);
     if ( $domain eq "nics.utk.edu" )
@@ -1781,6 +1781,40 @@ if ( $host =~ /^nautilus/ )
         $IsRunningOnNautilus_UTK = 1;
     }
 }
+
+# ----
+# HACK for kraken.nics.utk.edu
+#
+# ----
+$IsRunningOnKraken_UTK = 0;
+if ( ($parallel) and $exe_name eq "engine" and $host =~ /krakenpf/)
+{
+    chomp($domain = `hostname -d`);
+    if ( $domain eq "nics.utk.edu" )
+    {
+        $IsRunningOnKraken_UTK = 1;
+        $remotehost = $host;
+        if ($host =~ /krakenpf/)
+        {
+            $remotehost =~ s/krakenpf/login/;
+            #$remotehost = `getent hosts $remotehost | awk '{printf \$1}'`
+        }
+
+    # The /sw filesystem is not accessible from the compute nodes.
+    # NICS requires that only required support files be present on /lustre.
+    # Here, we instruct the engine to use support files on /lustre.
+    $visitsupportdir = "/lustre/scratch/proj/sw/visit/support/$ver/linux-x86_64";
+        push @visitargs, "--mesa-lib", "$visitsupportdir/lib/libOSMesa.so";
+        push @visitargs, "-plugindir", "$visitsupportdir/plugins";
+
+    for (my $count = 0; $count < scalar(@visitargs); $count++) {
+        if($visitargs[$count] eq "-dir") {
+        $visitargs[$i+1] = $visitsupportdir;
+        }
+    }
+    }
+}
+
 
 # ----
 # HACK for franklin @ NERSC
@@ -2540,6 +2574,10 @@ if ($IsRunningOnJaguar_ORNL)
     $visitprivateplugins = "/lustre/widow1/scratch/$ENV{USER}/.visit/$ENV{VISITPLUGINVERSION}/$archdir/plugins";
     $visitprivateplugins_old = "/lustre/widow1/scratch/$ENV{USER}/.visit/$archdir/plugins";
 }
+elsif ($IsRunningOnKraken_UTK)
+{
+    $visitprivateplugins = "/lustre/scratch/$ENV{USER}/.visit/$archdir/plugins";
+}
 else
 {
     $visitprivateplugins = "$ENV{HOME}/.visit/$ENV{VISITPLUGINVERSION}/$archdir/plugins";
@@ -2668,6 +2706,10 @@ elsif ($pre_command ne "")
 {
     @visitcmd = ($pre_command, "$visitbindir/$exe_name", @visitargs);
     @post_args = ($post_command);
+}
+elsif ($exe_name eq "engine_par" and $IsRunningOnKraken_UTK)
+{
+    @visitcmd = ("$visitsupportdir/bin/$exe_name", @visitargs);
 }
 else
 {
@@ -3063,6 +3105,11 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 # Need a location visible from compute nodes
                 $cdcmd     = "cd /lustre/widow1/scratch/$ENV{USER}\n";
             }
+            elsif ($IsRunningOnKraken_UTK)
+            {
+                # Need a location visible from compute nodes
+                $cdcmd     = "cd /lustre/scratch/$ENV{USER}\n";
+            }
             else
             {
                 $cdcmd     = "cd $cwd\n";
@@ -3119,6 +3166,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 {
                     push @mpicmd, "$visitbindir/env LD_LIBRARY_PATH=$visitlibdir:$visitarchdir/system_libs";
                 }
+                elsif ( $IsRunningOnKraken_UTK )
+                {
+                    push @mpicmd, "$visitsupportdir/bin/env LD_LIBRARY_PATH=$visitsupportdir/lib:$visitsupportdir/system_libs";
+                }
                 push @mpicmd, "@visitcmd\n";
             }
             elsif ($sublauncher eq "ibrun")
@@ -3142,6 +3193,12 @@ if ($procs_set or ($parallel and $parlaunch_set))
                       "implementation; you might have to hack " .
                       "internallauncher to load the module you need.\n";
                 print TFILE 'eval $(modulecmd sh swap PE-pgi PE-gnu)',"\n";
+            }
+            if ($IsRunningOnKraken_UTK)
+            {
+                print TFILE 'eval $(modulecmd sh unload PrgEnv-pgi)',"\n";
+                print TFILE 'eval $(modulecmd sh load PrgEnv-gnu)',"\n";
+
             }
             if ($IsRunningOnJaguar_ORNL)
             {
@@ -3300,13 +3357,21 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 push @parcmd, "-l", "mppwidth=$procs";
                 push @parcmd, "-l", "mppnppn=$nodes" if $nodes_set;
             }
-            elsif ($IsRunningOnJaguar_ORNL || $IsRunningOnNautilus_UTK)
+            elsif ($IsRunningOnJaguar_ORNL || $IsRunningOnKraken_UTK)
             {
                 $qsubNumNodeStr = "size";
                 $asubPPNStr = "";
                 $qsubSeparator = "";
                 $nodes = $procs;
                 push @parcmd, "-l size=$procs";
+            }
+            elsif ($IsRunningOnNautilus_UTK)
+            {
+                $qsubNumNodeStr = "ncpus";
+                $asubPPNStr = "";
+                $qsubSeparator = "";
+                $nodes = $procs;
+                push @parcmd, "-l ncpus=$procs";
             }
             else
             {
