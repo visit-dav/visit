@@ -1177,6 +1177,9 @@ PickVarInfo::PrintSelf(ostream &os)
 //   Cyrus Harrison, Mon Sep 17 08:57:13 PDT 2007
 //   Added support for user settable floating point format string 
 //
+//   Kathleen Biagas, Wed Oct 19 20:53:18 MST 2011
+//   Modify how Tensors/Arrays are printed for consistency and a cleaner look.
+// 
 // ****************************************************************************
 void
 PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
@@ -1330,10 +1333,11 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     SNPRINTF(buff, 256, "    %s ", names[i].c_str());
                     os += buff;
                 }
+                os += "= ";
                 if (variableType == "vector")
                 {
                     int stride = values.size() / names.size();
-                    format = "= (" + floatFormat;
+                    format = "(" + floatFormat;
                     SNPRINTF(buff, 256, format.c_str(), values[i*stride]);
                     os += buff;
                     for (j = 1; j < stride-1; j++) 
@@ -1350,12 +1354,12 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 {
                     if (!treatAsASCII)
                     {
-                        format = "= " + floatFormat + "\n";
+                        format = floatFormat + "\n";
                         SNPRINTF(buff, 256, format.c_str(), values[i]);
                     }
                     else 
                     {
-                        SNPRINTF(buff, 256, "= %c\n", (char) values[i]);
+                        SNPRINTF(buff, 256, "%c\n", (char) values[i]);
                     }
                     os += buff;
                 }
@@ -1363,6 +1367,8 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 {
                     os += "\n";
                     int buf_len = strlen(buff);
+                    if (buf_len == 0)
+                        buf_len = 4;
                     int ncomps = (values.size()-names.size()) / names.size();
                     PrintTensor(os, values, i, ncomps, buf_len);
                 }
@@ -1370,20 +1376,24 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 {
                     os += "\n";
                     int buf_len = strlen(buff);
+                    if (buf_len == 0)
+                        buf_len = 4;
                     int ncomps = (values.size()-names.size()) / names.size();
                     PrintSymmetricTensor(os, values, i, ncomps, buf_len);
                 }
                 else if (variableType == "array")
                 {
-                    os += "\n";
-                    int buf_len = strlen(buff);
                     int ncomps = (values.size()-names.size()) / names.size();
+                    int buf_len = strlen(buff);
+                    if (buf_len == 0)
+                        buf_len = 4;
+                    if (ncomps > 5)
+                        os += "\n";
                     PrintArray(os, values, i, ncomps, buf_len);
                 }
                 else if (variableType == "label")
                 {
                     int labelSize = values.size() / names.size();
-                    os += "= ";
                     for (j = labelSize*i; j < labelSize * (i+1); j++) 
                     {
                         char c[2] = {(char)values[j], 0};
@@ -1443,6 +1453,9 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
 //
 //   Cyrus Harrison, Mon Sep 17 08:57:13 PDT 2007
 //   Added support for user settable floating point format string 
+//
+//   Kathleen Biagas, Wed Oct 19 20:54:54 MST 2011
+//   Use "format" string, not "floatFormat" when printing Major Eigenvalue. 
 //
 // ****************************************************************************
 
@@ -1504,7 +1517,7 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
             os += " ";
 
         format = "Major Eigenvalue: " + floatFormat + "\n";
-        sprintf(line, floatFormat.c_str(), values[offset+9]);
+        sprintf(line, format.c_str(), values[offset+9]);
         os += line;
     }
 }
@@ -1626,6 +1639,9 @@ PickVarInfo::HasInfo()
 //   Cyrus Harrison, Mon Sep 17 08:57:13 PDT 2007
 //   Added support for user settable floating point format string 
 //
+//   Kathleen Biagas, Wed Oct 19 20:55:47 MST 2011
+//   Reformat for a cleaner output.
+//
 // ****************************************************************************
 
 void
@@ -1635,17 +1651,21 @@ PickVarInfo::PrintArray(std::string &os,
     int j;
     std::string format="";
     int offset = tuple*(ncomps+1);
-    char line[2048];
-    for (j = 0 ; j < buff_len ; j++)
-        os += " ";
-    sprintf(line, "(");
+    char line[256];
+    line[0] = '\0';
+    if (ncomps > 5)
+    {
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+    }
+    os += "(";
     format = floatFormat + ", ";
     for (j = 0 ; j < ncomps ; j++)
     {
         if (j == ncomps-1)
             format = floatFormat + ")\n";
-        sprintf(line+strlen(line), format.c_str(), values[offset+j]);
+        SNPRINTF(line, 256, format.c_str(), values[offset+j]);
+        os += line;
     }
-    os += line;
 }
 
