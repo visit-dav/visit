@@ -358,6 +358,13 @@ avtTecplotFileFormat::GetNextToken()
 //    Jeremy Meredith, Wed Jul 27 13:55:55 EDT 2011
 //    Add support for 'nvals*value' repetition format for values.
 //
+//    Jeremy Meredith, Thu Oct 20 13:23:42 EDT 2011
+//    Removed unused allScalars.
+//    Support VARSHARELIST.
+//    Minor performance improvements: it turns out the majority of the
+//    time in this routine appears to be down in GetNextToken, not
+//    any inefficiencies here, or even in the strtof call.
+//
 // ****************************************************************************
 vtkPoints*
 avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
@@ -372,20 +379,33 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
         pts[i] = 0;
     }
 
-    vector<vtkFloatArray*> allScalars;
     vector<float*> allptr;
 
     for (int v=0; v<numTotalVars; v++)
     {
-        int numVals = (variableCellCentered[v] ? numElements : numNodes);
+        if (variableShareMap[v] >= 0)
+        {
+            // just copy and add a reference to the array
+            int dest = variableShareMap[v];
+            vtkFloatArray *scalars = vars[variableNames[v]][dest];
+            scalars->Register(NULL);
+            vars[variableNames[v]].push_back(scalars);
 
-        vtkFloatArray *scalars = vtkFloatArray::New();
-        scalars->SetNumberOfTuples(numVals);
-        float *ptr = (float *) scalars->GetVoidPointer(0);
-        vars[variableNames[v]].push_back(scalars);
+            // still need the raw pointer so our indexing below is valid
+            float *ptr = (float *) scalars->GetVoidPointer(0);
+            allptr.push_back(ptr);
+        }
+        else
+        {
+            int numVals = (variableCellCentered[v] ? numElements : numNodes);
 
-        allScalars.push_back(scalars);
-        allptr.push_back(ptr);
+            vtkFloatArray *scalars = vtkFloatArray::New();
+            scalars->SetNumberOfTuples(numVals);
+            float *ptr = (float *) scalars->GetVoidPointer(0);
+            vars[variableNames[v]].push_back(scalars);
+
+            allptr.push_back(ptr);
+        }
     }
 
     int repeatCounter  = 0;
@@ -398,46 +418,46 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
             if (variableCellCentered[v] && doneWithCellCentered)
                 continue;
 
-            if (repeatCounter == 0)
+            if (variableShareMap[v] >= 0)
             {
-                string tok = GetNextToken();
-                if (tok.length()>0 && tok[0]=='#')
+                // note: we assume repeat counter doesn't affect shared vars
+                continue;
+            }
+            else
+            {
+                if (repeatCounter == 0)
                 {
-                    while (!next_char_eol)
+                    string tok = GetNextToken();
+                    int toklen = tok.length();
+                    if (toklen>0 && tok[0]=='#')
+                    {
+                        while (!next_char_eol)
+                            tok = GetNextToken();
                         tok = GetNextToken();
-                    tok = GetNextToken();
+                    }
+
+                    char *endptr;
+                    const char *cptr;
+                    repeatCounter   = 1;
+                    currentValue    = strtof((cptr=tok.c_str()), &endptr);
+                    int   numparsed = endptr-cptr;
+                    if (numparsed < toklen && tok[numparsed] == '*')
+                    {
+                        currentValue  = atof(tok.substr(numparsed+1).c_str());
+                        repeatCounter = atoi(tok.substr(0,numparsed).c_str());
+                    }
                 }
-
-                char *endptr;
-                const char *cptr;
-                repeatCounter   = 1;
-                currentValue    = strtof((cptr=tok.c_str()), &endptr);
-                int   numparsed = endptr-cptr;
-                int   toklen    = tok.length();
-                if (numparsed < toklen && tok[numparsed] == '*')
-                {
-                    currentValue  = atof(tok.substr(numparsed+1).c_str());
-                    repeatCounter = atoi(tok.substr(0,numparsed).c_str());
-                }
+                allptr[v][i] = currentValue;
+                --repeatCounter;
             }
-
-            if (v==Xindex)
-            {
-                pts[3*i + 0] = currentValue;
-            }
-            else if (v==Yindex)
-            {
-                pts[3*i + 1] = currentValue;
-            }
-            else if (v==Zindex)
-            {
-                pts[3*i + 2] = currentValue;
-            }
-
-            allptr[v][i] = currentValue;
-
-            --repeatCounter;
         }
+    }
+
+    for (i=0; i<numNodes; i++)
+    {
+        pts[3*i + 0] = allptr[Xindex][i];
+        pts[3*i + 1] = allptr[Yindex][i];
+        pts[3*i + 2] = allptr[Zindex][i];
     }
 
     return points;
@@ -475,6 +495,9 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
 //    Jeremy Meredith, Wed Jul 27 13:55:55 EDT 2011
 //    Add support for 'nvals*value' repetition format for values.
 //
+//    Jeremy Meredith, Fri Oct 21 10:16:33 EDT 2011
+//    Support VARSHARELIST.
+//
 // ****************************************************************************
 vtkPoints*
 avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
@@ -493,40 +516,54 @@ avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
     for (int v = 0; v < numTotalVars; v++)
     {
         int numVals = (variableCellCentered[v] ? numElements : numNodes);
+        float *ptr = NULL;
 
-        vtkFloatArray *scalars = vtkFloatArray::New();
-        scalars->SetNumberOfTuples(numVals);
-        float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<numVals; i++)
+        // check if we're sharing with other variables first
+        if (variableShareMap[v] >= 0)
         {
-            if (repeatCounter == 0)
-            {
-                string tok = GetNextToken();
-                if (tok.length()>0 && tok[0]=='#')
-                {
-                    while (!next_char_eol)
-                        tok = GetNextToken();
-                    tok = GetNextToken();
-                }
-
-                char *endptr;
-                const char *cptr;
-                repeatCounter   = 1;
-                currentValue    = strtof((cptr=tok.c_str()), &endptr);
-                int   numparsed = endptr-cptr;
-                int   toklen    = tok.length();
-                if (numparsed < toklen && tok[numparsed] == '*')
-                {
-                    currentValue  = atof(tok.substr(numparsed+1).c_str());
-                    repeatCounter = atoi(tok.substr(0,numparsed).c_str());
-                }
-            }
-
-            ptr[i] = currentValue;
-
-            --repeatCounter;
+            int dest = variableShareMap[v];
+            vtkFloatArray *scalars = vars[variableNames[v]][dest];
+            scalars->Register(NULL);
+            ptr = (float *) scalars->GetVoidPointer(0);
+            vars[variableNames[v]].push_back(scalars);
         }
-        vars[variableNames[v]].push_back(scalars);
+        else
+        {
+            // nope, okay; read it
+            vtkFloatArray *scalars = vtkFloatArray::New();
+            scalars->SetNumberOfTuples(numVals);
+            ptr = (float *) scalars->GetVoidPointer(0);
+            for (int i=0; i<numVals; i++)
+            {
+                if (repeatCounter == 0)
+                {
+                    string tok = GetNextToken();
+                    int   toklen = tok.length();
+                    if (toklen>0 && tok[0]=='#')
+                    {
+                        while (!next_char_eol)
+                            tok = GetNextToken();
+                        tok = GetNextToken();
+                    }
+
+                    char *endptr;
+                    const char *cptr;
+                    repeatCounter   = 1;
+                    currentValue    = strtof((cptr=tok.c_str()), &endptr);
+                    int   numparsed = endptr-cptr;
+                    if (numparsed < toklen && tok[numparsed] == '*')
+                    {
+                        currentValue  = atof(tok.substr(numparsed+1).c_str());
+                        repeatCounter = atoi(tok.substr(0,numparsed).c_str());
+                    }
+                }
+
+                ptr[i] = currentValue;
+
+                --repeatCounter;
+            }
+            vars[variableNames[v]].push_back(scalars);
+        }
 
         if (v==Xindex)
         {
@@ -988,6 +1025,11 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    of variables (and we assume their names, too, though don't yet check)
 //    doesn't vary between passes.
 //
+//    Jeremy Meredith, Fri Oct 21 10:17:30 EDT 2011
+//    Add support for VARSHARELIST.
+//    Skip STRANDID for now -- read it, but continue treating each zone
+//    as its own domain.
+//
 // ****************************************************************************
 
 void
@@ -995,7 +1037,7 @@ avtTecplotFileFormat::ReadFile()
 {
     file.open(filename.c_str());
     string tok = GetNextToken();
-    int zoneIndex = 0;
+    int currentZoneIndex = 0;
     bool got_next_token_already = false;
     bool first_token = true;
 
@@ -1159,6 +1201,9 @@ avtTecplotFileFormat::ReadFile()
             // Default the centering to nodal
             variableCellCentered.clear();
             variableCellCentered.resize(numTotalVars, 0);
+            // Default to no shared vars
+            variableShareMap.clear();
+            variableShareMap.resize(numTotalVars, -1);
 
             // If we didn't find an exact match for coordinate axis vars, guess
             if (Xindex < 0) Xindex = guessedXindex;
@@ -1185,7 +1230,8 @@ avtTecplotFileFormat::ReadFile()
         {
             // Parse a zone!
             char untitledZoneTitle[40];
-            sprintf(untitledZoneTitle, "zone%05d", zoneIndex);
+            sprintf(untitledZoneTitle, "zone%05d", currentZoneIndex);
+            currentZoneIndex++;
 
             string zoneTitle = untitledZoneTitle;
             string elemType = "";
@@ -1210,7 +1256,9 @@ avtTecplotFileFormat::ReadFile()
                      tok != "SOLUTIONTIME"  &&
                      tok != "VARLOCATION"  &&
                      tok != "DT" &&
-                     tok != "D"))
+                     tok != "D" &&
+                     tok != "STRANDID" &&
+                     tok != "VARSHARELIST"))
             {
                 if (tok == "T")
                 {
@@ -1315,6 +1363,7 @@ avtTecplotFileFormat::ReadFile()
                             c = GetNextToken(); // that's the centering keyword
                             if (c == "CELLCENTERED")
                             {
+                                // remember given indices are 1-origin
                                 for (int i=0; i<varindices.size(); i++)
                                     variableCellCentered[varindices[i]-1] = 1;
                             }
@@ -1351,6 +1400,83 @@ avtTecplotFileFormat::ReadFile()
                                "currently unsupported.  Please contact a "
                                "VisIt developer if you need support for this "
                                "parameter.");
+                }
+                else if (tok == "STRANDID")
+                {
+                    // not supporting STRANDID for now; assume domains
+                    GetNextToken(); // skip the equals sign
+                    GetNextToken(); // skip the value
+                }
+                else if (tok == "VARSHARELIST")
+                {
+                    variableShareMap.clear();
+                    variableShareMap.resize(numTotalVars, -1);
+
+                    GetNextToken(); // skip the equals sign
+                    GetNextToken(); // skip the open paren
+
+                    string c;
+                    c = GetNextToken();
+                    // if (c == "[")
+                    {
+                        // Unlike VARLOCATION, this only has a complex version.
+                        // Note that no "=" means implicitly use previous-zone.
+                        // e.g. VARSHARELIST=([2-3,5]=1,[4])
+                        while (c != ")")
+                        {
+                            // c == "["
+                            vector<int> varindices;
+                            c = GetNextToken();
+                            while (c != "]")
+                            {
+                                string::size_type pos = c.find("-");
+                                if (pos != string::npos)
+                                {
+                                    // Okay, we got something like "4-6".
+                                    // Note, this scans as a single token
+                                    // because we haven't gone all-out on
+                                    // a scanner rewrite.  So just separate
+                                    // it into a "4 through 6" here.
+                                    // ALSO NOTE: THIS WILL NOT WORK
+                                    // WITH ANY WHITESPACE IN HERE.
+                                    // The examples don't have any, but
+                                    // the tecplot manual doesn't actually
+                                    // specify what's really allowed, so
+                                    // given past history, someone may
+                                    // eventually do something like that....
+                                    string first = c.substr(0,pos);
+                                    string last  = c.substr(pos+1);
+                                    int beg = atoi(first.c_str());
+                                    int end = atoi(last.c_str());
+                                    for (int ind=beg; ind<=end; ind++)
+                                        varindices.push_back(ind);
+                                }
+                                else
+                                {
+                                    varindices.push_back(atoi(c.c_str()));
+                                }
+                                c = GetNextToken();
+                            }
+                            c = GetNextToken(); 
+                            int dest = currentZoneIndex-1;
+                            if (c == "=")
+                            {
+                                c = GetNextToken();
+                                dest = atoi(c.c_str());
+                                // next....
+                                c = GetNextToken();
+                            }
+                            for (int vi=0; vi<varindices.size(); vi++)
+                            {
+                                // remember given indices are 1-origin
+                                variableShareMap[varindices[vi]-1] = dest-1;
+                            }
+                        }
+                    }
+                    //else
+                    //{
+                    //    unlike VARLOCATION, there is no simple version
+                    //}
                 }
                 tok = GetNextToken();
             }
