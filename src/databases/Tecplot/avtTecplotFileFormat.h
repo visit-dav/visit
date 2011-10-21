@@ -76,6 +76,10 @@ class vtkUnstructuredGrid;
 //
 //    Mark C. Miller, Tue Jan 12 17:35:54 PST 2010
 //    Added solTime data member and GetTime() method.
+//
+//    Jeremy Meredith, Fri Oct 21 10:18:56 EDT 2011
+//    Support VARSHARELIST.
+//
 // ****************************************************************************
 
 class avtTecplotFileFormat : public avtSTMDFileFormat
@@ -116,6 +120,7 @@ class avtTecplotFileFormat : public avtSTMDFileFormat
     bool token_was_string;
     std::string filename;
     ExpressionList expressions;
+    int  currentZoneIndex;
 
     int Xindex;
     int Yindex;
@@ -128,6 +133,7 @@ class avtTecplotFileFormat : public avtSTMDFileFormat
     int                       numTotalVars;
     std::vector<std::string>  variableNames;
     std::vector<int>          variableCellCentered;
+    std::vector<int>          variableShareMap;
     std::vector<std::string>  curveNames;
     std::map<std::string,int> curveIndices;
     std::vector<int>          curveDomains;
