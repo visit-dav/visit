@@ -12,7 +12,9 @@
 #define EXPRESSIONBINDINGEXCEPTION_H    
     
 #include "ExpressionException.h"    
-    
+
+namespace VCell {
+
 class ExpressionBindingException : public ExpressionException    
 {    
 public:    
@@ -20,5 +22,6 @@ public:
     ~ExpressionBindingException(void);    
     std::string identify();    
 };    
-    
+
+}    
 #endif    

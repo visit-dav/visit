@@ -49,7 +49,7 @@ double ASTInvertTermNode::evaluate(int evalType, double* values) {
         // form error message for user's consumption.    
         //    
         string errorMsg = getFunctionDomainError("divide by zero", 0, "divisor", jjtGetChild(0));    
-        throw DivideByZeroException(errorMsg);    
+        throw VCell::DivideByZeroException(errorMsg);    
     } else {    
         return (1.0 / childValue);    
     }    

@@ -63,17 +63,17 @@ void ASTAndNode::getStackElements(std::vector<StackElement>& elements) {
     
 double ASTAndNode::evaluate(int evalType, double* values) {    
     double sum = 1;    
-    ExpressionException* savedException = NULL;    
+    VCell::ExpressionException* savedException = NULL;    
     for (int i = 0; i < jjtGetNumChildren(); i++) {    
         try {    
             if (jjtGetChild(i)->evaluate(evalType, values) == 0) {    
                 return 0;    
             }    
-        } catch(ExpressionException& ex){    
+        } catch(VCell::ExpressionException& ex){    
             if (evalType == EVALUATE_VECTOR) {    
                 throw ex;    
             }    
-            savedException = new ExpressionException(ex.getMessage());    
+            savedException = new VCell::ExpressionException(ex.getMessage());    
         }    
     }    
     

@@ -10,10 +10,10 @@
     
 #include "ParserException.h"    
     
-ParserException::ParserException(std::string msg) : ExpressionException("ParserException", msg)    
+VCell::ParserException::ParserException(std::string msg) : VCell::ExpressionException("ParserException", msg)    
 {    
 }    
     
-ParserException::~ParserException(void)    
+VCell::ParserException::~ParserException(void)    
 {    
 }    

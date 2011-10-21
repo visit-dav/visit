@@ -46,7 +46,7 @@ StackMachine::~StackMachine() {
 //-----------------------------------------------------------------    
     
 void StackMachine::showInstructions(){    
-    char* opCodes[52] = { "unknown", "BZ", "LT", "GT", "LE", "GE", "EQ", "NE",     
+    const char* opCodes[52] = { "unknown", "BZ", "LT", "GT", "LE", "GE", "EQ", "NE",     
                             "AND", "OR", "NOT", "ADD", "SUB", "MULT",     
                             "DIV", "FLOAT", "IDENTIFIER", "EXP", "SQRT", "ABS", "POW",     
                             "LOG", "SIN", "COS", "TAN", "ASIN", "ACOS", "ATAN",     

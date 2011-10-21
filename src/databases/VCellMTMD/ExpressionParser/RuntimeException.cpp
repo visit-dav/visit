@@ -10,11 +10,11 @@
     
 #include "RuntimeException.h"    
     
-RuntimeException::RuntimeException(std::string msg) : Exception("RuntimeException", msg)    
+VCell::RuntimeException::RuntimeException(std::string msg) : VCell::Exception("RuntimeException", msg)    
 {    
         
 }    
     
-RuntimeException::~RuntimeException(void)    
+VCell::RuntimeException::~RuntimeException(void)    
 {    
 }    

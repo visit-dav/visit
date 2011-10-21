@@ -12,11 +12,15 @@
 #define DIVIDEBYZEROEXCEPTION_CPP    
     
 #include "ExpressionException.h"    
-    
+
+namespace VCell {
+
 class DivideByZeroException : public ExpressionException    
 {    
 public:    
     DivideByZeroException(std::string msg);    
     ~DivideByZeroException(void);    
-};    
+};
+
+}    
 #endif    

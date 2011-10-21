@@ -80,7 +80,11 @@ static bool initialized = false;
 //    Kathleen Bonnell, Tue Feb 16 13:37:52 MST 2010
 //    Don't use mesa on windows.
 //
+//    Brad Whitlock, Fri Oct 21 13:08:02 PDT 2011
+//    Make it work with static linking.
+//
 // ****************************************************************************
+
 bool initialize(bool force)
 {
     if(initialized && !force) // Bail early if we've already been here.
@@ -88,7 +92,8 @@ bool initialize(bool force)
         return true;
     }
 
-    std::string gl_lib;
+    typedef std::vector<std::string> stringvec;
+    stringvec gl_errors;
     enum GL_Name_Convention convention;
     enum GL_Library_Type libtype;
 #ifndef WIN32
@@ -97,6 +102,36 @@ bool initialize(bool force)
     const bool use_mesa = false;
 #endif
 
+#ifdef VISIT_STATIC
+    // VisIt is being built statically so we pass a NULL gl_lib to GLEW so
+    // it will cause dlopen to open the program instead of an external library.
+    // This lets it pick up the GL and MGL functions we've linked.
+    const char *gl_lib = NULL;
+    if(use_mesa)
+    {
+        convention = GLEW_NAME_MANGLED;
+        libtype = GLEW_LIB_TYPE_OSMESA;
+    }
+    else
+    {
+        convention = GLEW_NAME_STANDARD;
+        libtype = GLEW_LIB_TYPE_NATIVE;
+    }
+    GLenum err = glewInitLibrary(gl_lib, libtype, convention);
+    if(GLEW_OK == err)
+    {
+        initialized = true;
+    }
+    else
+    {
+        std::ostringstream errmsg;
+        errmsg << "GLEW init with library 'NULL' "
+               << "failed: " << glewGetErrorString(err);
+        debug4 << errmsg.str() << std::endl;
+        gl_errors.push_back(errmsg.str());
+    }
+#else
+    std::string gl_lib;
     if(use_mesa)
     {
         gl_lib = RuntimeSetting::lookups("mesa-lib");
@@ -110,9 +145,7 @@ bool initialize(bool force)
         libtype = GLEW_LIB_TYPE_NATIVE;
     }
 
-    typedef std::vector<std::string> stringvec;
     stringvec gl_libs = StringHelpers::split(gl_lib, ';');
-    stringvec gl_errors;
     for(stringvec::const_iterator lib = gl_libs.begin(); lib != gl_libs.end();
         ++lib)
     {
@@ -132,6 +165,7 @@ bool initialize(bool force)
             gl_errors.push_back(errmsg.str());
         }
     }
+#endif
 
     if(!initialized)
     {

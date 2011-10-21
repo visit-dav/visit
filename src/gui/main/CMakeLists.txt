@@ -35,6 +35,9 @@
 # DAMAGE.
 #
 # Modifications:
+#   Brad Whitlock, Thu Oct 20 16:23:59 PDT 2011
+#   Update static linking for a newer Qt which has an additional framework
+#   dependency on Mac.
 #
 #****************************************************************************/
 
@@ -75,6 +78,12 @@ ELSE(NOT APPLE)
         MACOSX_PACKAGE_LOCATION Resources
     )
 
+    IF(VISIT_STATIC)
+        # Satisfy references in libQtNetwork.
+        SET(APPLE_QT_DEPENDENCIES "-framework SystemConfiguration")
+        MAC_NIB_INSTALL(gui)
+    ENDIF(VISIT_STATIC)
+
     ADD_EXECUTABLE(gui_exe MACOSX_BUNDLE main.C ${GUI_STATIC_SOURCES} ${VISIT_SOURCE_DIR}/common/icons/${GUI_ICON_FILE})
     SET(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_INFO_STRING          "Graphical client for VisIt")
@@ -93,6 +102,7 @@ ${gui_exe_IOperator}
 ${gui_exe_GOperator}
 ${gui_exe_IPlot}
 ${gui_exe_GPlot}
+${APPLE_QT_DEPENDENCIES}
 )
 
 # If we're building statically then the gui can't be linked until the plugin

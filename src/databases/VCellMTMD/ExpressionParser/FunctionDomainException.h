@@ -12,11 +12,15 @@
 #define FUNCTIONDOMAINEXCEPTION_H    
     
 #include "ExpressionException.h"    
-    
+
+namespace VCell {
+
 class FunctionDomainException : public ExpressionException    
 {    
 public:    
     FunctionDomainException(std::string msg);    
     ~FunctionDomainException(void);    
-};    
+};
+
+}    
 #endif    

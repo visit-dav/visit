@@ -12,11 +12,15 @@
 #define FUNCTIONRANGEEXCEPTION_H    
     
 #include "ExpressionException.h"    
-    
+
+namespace VCell {
+
 class FunctionRangeException : public ExpressionException    
 {    
 public:    
     FunctionRangeException(std::string msg);    
     ~FunctionRangeException(void);    
-};    
+};
+
+}    
 #endif    

@@ -10,14 +10,14 @@
     
 #include "ExpressionBindingException.h"    
     
-ExpressionBindingException::ExpressionBindingException(std::string msg) : ExpressionException("ExpressionBindingException", msg)    
+VCell::ExpressionBindingException::ExpressionBindingException(std::string msg) : VCell::ExpressionException("ExpressionBindingException", msg)    
 {    
 }    
     
-ExpressionBindingException::~ExpressionBindingException(void)    
+VCell::ExpressionBindingException::~ExpressionBindingException(void)    
 {    
 }    
     
-std::string ExpressionBindingException::identify(){    
+std::string VCell::ExpressionBindingException::identify(){    
     return "ExpressionBindingException";    
 }    

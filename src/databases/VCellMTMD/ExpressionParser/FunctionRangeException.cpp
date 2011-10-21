@@ -10,11 +10,11 @@
     
 #include "FunctionRangeException.h"    
     
-FunctionRangeException::FunctionRangeException(std::string msg) : ExpressionException("FunctionRangeException", msg)    
+VCell::FunctionRangeException::FunctionRangeException(std::string msg) : VCell::ExpressionException("FunctionRangeException", msg)    
 {    
         
 }    
     
-FunctionRangeException::~FunctionRangeException(void)    
+VCell::FunctionRangeException::~FunctionRangeException(void)    
 {    
 }    

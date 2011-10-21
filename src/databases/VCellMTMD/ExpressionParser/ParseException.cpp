@@ -14,9 +14,9 @@
 #include "ParseException.h"    
 using std::string;
     
-string ParseException::eol = string("\n");    
+string VCell::ParseException::eol = string("\n");    
     
-ParseException::ParseException() : Exception("ParseException", "")    
+VCell::ParseException::ParseException() : VCell::Exception("ParseException", "")    
 {        
     specialConstructor = false;    
     currentToken = NULL;    
@@ -26,7 +26,7 @@ ParseException::ParseException() : Exception("ParseException", "")
     tokenImage = 0;    
 }    
     
-ParseException::ParseException(string msg) : Exception("ParseException", msg)    
+VCell::ParseException::ParseException(string msg) : VCell::Exception("ParseException", msg)    
 {        
     specialConstructor = false;    
     currentToken = NULL;    
@@ -36,11 +36,11 @@ ParseException::ParseException(string msg) : Exception("ParseException", msg)
     tokenImage = 0;    
 }    
     
-ParseException::~ParseException(void)    
+VCell::ParseException::~ParseException(void)    
 {    
 }    
     
-ParseException::ParseException(Token* currentTokenVal, int** expectedTokenSequencesVal, int numETSVal, int* etsLengthArrayVal, const string* tokenImageVal) : Exception("ParseException: ", "")    
+VCell::ParseException::ParseException(Token* currentTokenVal, int** expectedTokenSequencesVal, int numETSVal, int* etsLengthArrayVal, const string* tokenImageVal) : Exception("ParseException: ", "")    
 {    
     specialConstructor = true;    
     currentToken = currentTokenVal;    
@@ -50,7 +50,7 @@ ParseException::ParseException(Token* currentTokenVal, int** expectedTokenSequen
     tokenImage = tokenImageVal;    
 }    
     
-string ParseException::getExactMessage(void)    
+string VCell::ParseException::getExactMessage(void)    
 {    
     if (!specialConstructor) {    
         return Exception::getExactMessage();    

@@ -13,7 +13,9 @@
     
 #include "Exception.h"    
 #include "Token.h"    
-    
+
+namespace VCell {
+
 class ParseException : public VCell::Exception    
 {    
 public:    
@@ -31,5 +33,7 @@ public:
 protected:    
     bool specialConstructor;      
     static std::string eol;        
-};    
+};  
+
+}  
 #endif    

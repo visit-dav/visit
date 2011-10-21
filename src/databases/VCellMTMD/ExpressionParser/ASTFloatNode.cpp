@@ -18,7 +18,7 @@
 ASTFloatNode::ASTFloatNode(double doubleValue) : SimpleNode(JJTFLOATNODE) {    
     // is not a number    
     if (doubleValue != doubleValue){    
-        throw RuntimeException("cannot set float node to NaN");    
+        throw VCell::RuntimeException("cannot set float node to NaN");    
     }    
     value = doubleValue;    
 }    

@@ -10,11 +10,11 @@
     
 #include "FunctionDomainException.h"    
     
-FunctionDomainException::FunctionDomainException(std::string msg) : ExpressionException("FunctionDomainException", msg)    
+VCell::FunctionDomainException::FunctionDomainException(std::string msg) : VCell::ExpressionException("FunctionDomainException", msg)    
 {    
         
 }    
     
-FunctionDomainException::~FunctionDomainException(void)    
+VCell::FunctionDomainException::~FunctionDomainException(void)    
 {    
 }    

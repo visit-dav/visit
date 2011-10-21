@@ -47,6 +47,9 @@
 #   Cyrus Harrison, Fri Apr 29 15:33:38 PDT 2011
 #   Added mrgtree2dot utility.
 #
+#   Brad Whitlock, Thu Oct 20 12:38:14 PDT 2011
+#   Do not build writer when we're doing a static build.
+#
 #****************************************************************************/
 
 MACRO(VISIT_TOOLS_ADD_FOLDER type)
@@ -80,9 +83,9 @@ ELSE(VISIT_DBIO_ONLY)
     IF(WIN32)
        ADD_SUBDIRECTORY(qtssh)
     ENDIF(WIN32)
-    IF(VISIT_PYTHON_SCRIPTING)
+    IF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
         ADD_SUBDIRECTORY(writer)
-    ENDIF(VISIT_PYTHON_SCRIPTING)
+    ENDIF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
     ADD_SUBDIRECTORY(xml)
     ADD_SUBDIRECTORY(xmledit)
 
