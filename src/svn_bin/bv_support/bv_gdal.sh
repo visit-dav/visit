@@ -150,9 +150,9 @@ function build_gdal
     info "Invoking command to configure GDAL"
     if [[ "$OPSYS" == "Darwin" ]]; then
        if [[ "$DO_STATIC_BUILD" == "no" ]]; then
-           EXTRA_FLAGS="F77=\"\"--enable-shared --disable-static"
+           EXTRA_FLAGS="F77=\"\" --enable-shared --disable-static"
        else
-           EXTRA_FLAGS="F77=\"\"--enable-static --disable-shared"
+           EXTRA_FLAGS="F77=\"\" --enable-static --without-ld-shared"
        fi
     else
        EXTRA_FLAGS="--enable-static --disable-shared"
@@ -180,7 +180,7 @@ function build_gdal
        --with-libz=internal --with-netcdf=no \
        --with-pg=no --with-curl=no \
        --without-jasper --without-python \
-       --without-libtool
+       --without-libtool --without-sqlite3 --without-expat
     if [[ $? != 0 ]] ; then
        warn "GDAL configure failed.  Giving up"
        return 1

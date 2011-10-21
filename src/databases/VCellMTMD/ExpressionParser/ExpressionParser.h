@@ -63,7 +63,7 @@ private:
     void ArgumentList(void);    
     void Float(void);    
     void Name(void);        
-    ParseException& generateParseException(void);    
+    VCell::ParseException& generateParseException(void);    
     
     int jj_ntk;    
     Token* jj_scanpos, *jj_lastpos;    

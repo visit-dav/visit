@@ -41,6 +41,9 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Brad Whitlock, Thu Oct 20 15:42:10 PDT 2011
+#   Fix static build.
+#
 #****************************************************************************/
 
 SET(SOURCES1
@@ -57,7 +60,8 @@ main.C
 
 # If the viewer is static then we need some static symbol lookup functions
 IF(VISIT_STATIC)
-    SET(STATIC_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../viewer/main/ViewerStaticSymbolLocator.C)
+    SET(STATIC_SOURCES1 ${CMAKE_CURRENT_SOURCE_DIR}/../../viewer/main/ViewerStaticSymbolLocator.C)
+    SET(STATIC_SOURCES2 ${CMAKE_CURRENT_SOURCE_DIR}/../../viewer/main/ViewerStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
 
 # The subset of the sources that have Q_OBJECT in their header.
@@ -134,6 +138,8 @@ ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
 )
 IF(VISIT_STATIC)
+    MAC_NIB_INSTALL(embedded)
+    MAC_NIB_INSTALL(multiwindow)
     SET(VIEWER_QT_LIBS 
         ${VIEWER_QT_LIBS}
         ${QT_QTGUI_LIB_DEPENDENCIES}

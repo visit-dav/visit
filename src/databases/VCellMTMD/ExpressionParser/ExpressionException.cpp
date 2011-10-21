@@ -10,14 +10,14 @@
     
 #include "ExpressionException.h"    
     
-ExpressionException::~ExpressionException(void)    
+VCell::ExpressionException::~ExpressionException(void)    
 {    
 }    
     
-ExpressionException::ExpressionException(std::string msg) : Exception("ExpressionException", msg)    
+VCell::ExpressionException::ExpressionException(std::string msg) : VCell::Exception("ExpressionException", msg)    
 {        
 }    
     
-ExpressionException::ExpressionException(std::string title, std::string msg) : Exception(title, msg)    
+VCell::ExpressionException::ExpressionException(std::string title, std::string msg) : VCell::Exception(title, msg)    
 {        
 }    

@@ -12,11 +12,15 @@
 #define IOEXCEPTION_H    
     
 #include "Exception.h"    
-    
+
+namespace VCell {
+
 class IOException : public VCell::Exception    
 {    
 public:    
     IOException(std::string msg);    
     ~IOException(void);    
 };    
+
+}
 #endif    

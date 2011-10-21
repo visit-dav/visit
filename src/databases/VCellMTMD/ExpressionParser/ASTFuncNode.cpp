@@ -131,7 +131,7 @@ void ASTFuncNode::setFunctionFromParserToken(string parserToken)
             return;    
         }    
     }    
-    throw RuntimeException("unsupported function '" + parserToken + "'");    
+    throw VCell::RuntimeException("unsupported function '" + parserToken + "'");    
 }    
     
 string ASTFuncNode::infixString(int lang, NameScope* nameScope)    
@@ -142,7 +142,7 @@ string ASTFuncNode::infixString(int lang, NameScope* nameScope)
         case POW :    
         {    
             if (jjtGetNumChildren() != 2) {    
-                throw ExpressionException("Function pow() expects 2 arguments");    
+                throw VCell::ExpressionException("Function pow() expects 2 arguments");    
             }    
             if (lang == LANGUAGE_MATLAB) {    
                 buffer += "(";    
@@ -192,7 +192,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case EXP :    
             {    
                 if (jjtGetNumChildren() != 1)    
-                    throw RuntimeException("exp() expects 1 argument");                    
+                    throw VCell::RuntimeException("exp() expects 1 argument");                    
                 double argument = child0->evaluate(evalType, values);    
                 result = exp(argument);    
                 break;    
@@ -200,26 +200,26 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case POW :    
             {    
                 if (jjtGetNumChildren() != 2)    
-                    throw RuntimeException("pow() expects 2 arguments");    
+                    throw VCell::RuntimeException("pow() expects 2 arguments");    
                 Node* exponentChild = jjtGetChild(1);    
                 Node* mantissaChild = child0;    
                 double exponent = 0.0;    
                 double mantissa = 0.0;    
-                ExpressionException* exponentException = 0;    
-                ExpressionException* mantissaException = 0;    
+                VCell::ExpressionException* exponentException = 0;    
+                VCell::ExpressionException* mantissaException = 0;    
                 try {    
                     exponent = exponentChild->evaluate(evalType, values);    
-                } catch (ExpressionException& e) {    
+                } catch (VCell::ExpressionException& e) {    
                     if (evalType == EVALUATE_VECTOR)     
                         throw e;    
-                    exponentException = new ExpressionException(e.getMessage());    
+                    exponentException = new VCell::ExpressionException(e.getMessage());    
                 }    
                 try {    
                     mantissa = mantissaChild->evaluate(evalType, values);    
-                } catch (ExpressionException& e) {    
+                } catch (VCell::ExpressionException& e) {    
                     if (evalType == EVALUATE_VECTOR)     
                         throw e;    
-                    mantissaException = new ExpressionException(e.getMessage());    
+                    mantissaException = new VCell::ExpressionException(e.getMessage());    
                 }    
     
                 if (exponentException == NULL && mantissaException == NULL) {    
@@ -227,20 +227,20 @@ double ASTFuncNode::evaluate(int evalType, double* values)
                         char problem[100];    
                         sprintf(problem, "pow(u,v) and u=%lf<0 and v=%lf not an integer", mantissa, exponent);    
                         string errorMsg = getFunctionDomainError(problem, values, "u", mantissaChild, "v",  exponentChild);    
-                        throw FunctionDomainException(errorMsg);    
+                        throw VCell::FunctionDomainException(errorMsg);    
                     }    
                     if (mantissa == 0.0 && exponent < 0) {    
                         char problem[100];    
                         sprintf(problem, "pow(u,v) and u=0 and v=%lf<0 divide by zero", exponent);    
                         string errorMsg = getFunctionDomainError(problem, values, "u", mantissaChild, "v", exponentChild);    
-                        throw FunctionDomainException(errorMsg);    
+                        throw VCell::FunctionDomainException(errorMsg);    
                     }    
                     result = pow(mantissa, exponent);    
                     if (MathUtil::double_infinity == -result || MathUtil::double_infinity == result || result != result) {    
                         char problem[1000];    
-                        sprintf(problem, "u^v evaluated to %lf, u=%lf, v=%lf", result, mantissa);    
+                        sprintf(problem, "u^v evaluated to %lf, u=%lf, v=%lf", result, mantissa, exponent);    
                         string errorMsg = getFunctionDomainError(problem, values, "u", mantissaChild, "v", exponentChild);    
-                        throw FunctionDomainException(errorMsg);    
+                        throw VCell::FunctionDomainException(errorMsg);    
                     }    
                 } else if (exponentException == 0 && exponent == 0.0) {    
                         result = 1.0;    
@@ -258,13 +258,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case LOG :    
             {    
                 if (jjtGetNumChildren() != 1)    
-                    throw RuntimeException("log() expects 1 argument");                    
+                    throw VCell::RuntimeException("log() expects 1 argument");                    
                 double argument = child0->evaluate(evalType, values);    
                 if (argument <= 0.0) {    
                     char problem[1000];                        
                     sprintf(problem, "log(u) and u=%lf <= 0.0 is undefined", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = log(argument);    
                 break;    
@@ -272,7 +272,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ABS :    
             {    
                 if (jjtGetNumChildren() != 1)    
-                    throw RuntimeException("abs() expects 1 argument");    
+                    throw VCell::RuntimeException("abs() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = fabs(argument);    
                 break;    
@@ -280,13 +280,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case SQRT :    
             {    
                 if (jjtGetNumChildren() != 1)    
-                    throw RuntimeException("sqrt() expects 1 argument");                    
+                    throw VCell::RuntimeException("sqrt() expects 1 argument");                    
                 double argument = child0->evaluate(evalType, values);    
                 if (argument < 0) {    
                     char problem[1000];    
                     sprintf(problem, "sqrt(u) where u=%lf<0 is undefined", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = sqrt(argument);    
                 break;    
@@ -294,7 +294,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case SIN :    
             {    
                 if (jjtGetNumChildren() != 1)    
-                    throw RuntimeException("sin() expects 1 argument");    
+                    throw VCell::RuntimeException("sin() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = sin(argument);    
                 break;    
@@ -302,7 +302,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case COS :    
             {    
                 if (jjtGetNumChildren() != 1)    
-                    throw RuntimeException("cos() expects 1 argument");    
+                    throw VCell::RuntimeException("cos() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = cos(argument);    
                 break;    
@@ -310,7 +310,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case TAN :    
             {    
                 if (jjtGetNumChildren() != 1)    
-                    throw RuntimeException("tan() expects 1 argument");    
+                    throw VCell::RuntimeException("tan() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = tan(argument);    
                 break;    
@@ -318,13 +318,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ASIN :    
             {    
                 if (jjtGetNumChildren() != 1)    
-                    throw RuntimeException("asin() expects 1 argument");                    
+                    throw VCell::RuntimeException("asin() expects 1 argument");                    
                 double argument = child0->evaluate(evalType, values);    
                 if (fabs(argument) > 1.0) {    
                     char problem[1000];    
                     sprintf(problem, "asin(u) and u=%lf and |u|>1.0 undefined", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = asin(argument);    
                 break;    
@@ -332,13 +332,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ACOS :    
             {    
                 if (jjtGetNumChildren() != 1)    
-                    throw RuntimeException("acos() expects 1 argument");                    
+                    throw VCell::RuntimeException("acos() expects 1 argument");                    
                 double argument = child0->evaluate(evalType, values);    
                 if (fabs(argument) > 1.0) {    
                     char problem[1000];    
                     sprintf(problem, "acos(u) and u=%lf and |u|>1.0 undefined", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = acos(argument);    
                 break;    
@@ -346,7 +346,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ATAN :    
             {    
                 if (jjtGetNumChildren() != 1)    
-                    throw RuntimeException("atan() expects 1 argument");    
+                    throw VCell::RuntimeException("atan() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = atan(argument);    
                 break;    
@@ -354,7 +354,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ATAN2 :    
             {    
                 if (jjtGetNumChildren() != 2)    
-                    throw RuntimeException("atan2() expects 2 arguments");    
+                    throw VCell::RuntimeException("atan2() expects 2 arguments");    
                 double argument0 = child0->evaluate(evalType, values);    
                 double argument1 = jjtGetChild(1)->evaluate(evalType, values);    
                 result = atan2(argument0, argument1);    
@@ -363,7 +363,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case MAX :    
             {    
                 if (jjtGetNumChildren() != 2)    
-                    throw RuntimeException("max() expects 2 arguments");    
+                    throw VCell::RuntimeException("max() expects 2 arguments");    
                 double argument0 = child0->evaluate(evalType, values);    
                 double argument1 = jjtGetChild(1)->evaluate(evalType, values);    
                 result = max<double>(argument0, argument1);    
@@ -372,7 +372,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case MIN :    
             {    
                 if (jjtGetNumChildren() != 2)    
-                    throw RuntimeException("min() expects 2 arguments");    
+                    throw VCell::RuntimeException("min() expects 2 arguments");    
                 double argument0 = child0->evaluate(evalType, values);    
                 double argument1 = jjtGetChild(1)->evaluate(evalType, values);    
                 result = min<double>(argument0, argument1);    
@@ -381,7 +381,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case CEIL :    
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("ceil() expects 1 argument");        
+                    throw VCell::RuntimeException("ceil() expects 1 argument");        
                 double argument = child0->evaluate(evalType, values);    
                 result = ceil(argument);    
                 break;    
@@ -389,7 +389,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case FLOOR :    
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("floor() expects 1 argument");    
+                    throw VCell::RuntimeException("floor() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = floor(argument);    
                 break;    
@@ -397,14 +397,14 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case CSC:     
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("csc() expects 1 argument");    
+                    throw VCell::RuntimeException("csc() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = sin(argument);    
                 if (result == 0) {    
                     char problem[1000];    
                     sprintf(problem, "csc(u)=1/sin(u) and sin(u)=0 and u=%lf", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = 1/result;    
                 break;    
@@ -412,14 +412,14 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case COT:     
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("cot() expects 1 argument");    
+                    throw VCell::RuntimeException("cot() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = tan(argument);    
                 if (result == 0) {    
                     char problem[1000];    
                     sprintf(problem, "cot(u)=1/tan(u) and tan(u)=0 and u=%lf", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = 1/result;    
                 break;    
@@ -427,14 +427,14 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case SEC:     
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("sec() expects 1 argument");    
+                    throw VCell::RuntimeException("sec() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = cos(argument);    
                 if (result == 0) {    
                     char problem[1000];    
                     sprintf(problem, "sec(u)=1/cos(u) and cos(u)=0 and u=%lf", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = 1/result;    
                 break;    
@@ -442,13 +442,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ACSC:     
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("acsc() expects 1 argument");    
+                    throw VCell::RuntimeException("acsc() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 if (fabs(argument) < 1.0){    
                     char problem[1000];    
                     sprintf(problem, "acsc(u) and -1<u=%lf<1 undefined", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = MathUtil::acsc(argument);    
                 break;    
@@ -456,11 +456,11 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ACOT:     
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("acot() expects 1 argument");    
+                    throw VCell::RuntimeException("acot() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 if (argument == 0) {    
                     string errorMsg = getFunctionDomainError("acot(u)=atan(1/u) and u=0", values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = MathUtil::acot(argument);    
                 break;    
@@ -468,13 +468,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ASEC:     
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("asec() expects 1 argument");    
+                    throw VCell::RuntimeException("asec() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 if (fabs(argument) < 1.0){    
                     char problem[1000];    
                     sprintf(problem, "asec(u) and -1<u=%lf<1 undefined", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = MathUtil::asec(argument);    
                 break;    
@@ -482,7 +482,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case SINH:     
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("sinh() expects 1 argument");    
+                    throw VCell::RuntimeException("sinh() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = sinh(argument);    
                 break;    
@@ -490,7 +490,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case COSH:     
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("cosh() expects 1 argument");    
+                    throw VCell::RuntimeException("cosh() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = cosh(argument);    
                 break;    
@@ -498,7 +498,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case TANH:     
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("tanh() expects 1 argument");    
+                    throw VCell::RuntimeException("tanh() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = tanh(argument);    
                 break;    
@@ -506,13 +506,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case CSCH:     
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("csch() expects 1 argument");    
+                    throw VCell::RuntimeException("csch() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 if (argument == 0.0){    
                     char problem[1000];    
                     sprintf(problem, "csch(u) and |u| = 0, u=%lf", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = MathUtil::csch(argument);    
                 break;    
@@ -520,13 +520,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case COTH:     
             {    
                 if (jjtGetNumChildren() != 1)     
-                    throw RuntimeException("coth() expects 1 argument");    
+                    throw VCell::RuntimeException("coth() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 if (argument == 0.0){    
                     char problem[1000];    
                     sprintf(problem, "coth(u) and |u| = 0, u=%lf", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = MathUtil::coth(argument);    
                 break;    
@@ -534,7 +534,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case SECH:     
             {    
                 if (jjtGetNumChildren()!= 1)     
-                    throw RuntimeException("sech() expects 1 argument");    
+                    throw VCell::RuntimeException("sech() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 result = MathUtil::sech(argument);    
                 break;    
@@ -542,7 +542,7 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ASINH:     
             {    
                 if (jjtGetNumChildren() != 1 ){     
-                    throw RuntimeException("asinh() expects 1 argument");    
+                    throw VCell::RuntimeException("asinh() expects 1 argument");    
                 }    
                 double argument = child0->evaluate(evalType, values);    
                 result = MathUtil::asinh(argument);    
@@ -551,13 +551,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ACOSH:     
             {    
                 if (jjtGetNumChildren()!=1)     
-                    throw RuntimeException("acosh() expects 1 argument");    
+                    throw VCell::RuntimeException("acosh() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 if (argument < 1.0){    
                     char problem[1000];    
                     sprintf(problem, "acosh(u) and u=%lf<1.0", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = MathUtil::acosh(argument);    
                 break;    
@@ -565,13 +565,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ATANH:     
             {    
                 if (jjtGetNumChildren()!=1)     
-                    throw RuntimeException("atanh() expects 1 argument");    
+                    throw VCell::RuntimeException("atanh() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 if (fabs(argument) >= 1.0){    
                     char problem[1000];    
                     sprintf(problem, "atanh(u) and |u| >= 1.0, u=%lf", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = MathUtil::atanh(argument);    
                 break;    
@@ -579,11 +579,11 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ACSCH:     
             {    
                 if (jjtGetNumChildren()!=1)     
-                    throw RuntimeException("acsch() expects 1 argument");    
+                    throw VCell::RuntimeException("acsch() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 if (argument == 0.0){    
                     string errorMsg = getFunctionDomainError("acsch(u) and u=0", values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }                    
                 result = MathUtil::acsch(argument);    
                 break;    
@@ -591,13 +591,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ACOTH:     
             {    
                 if (jjtGetNumChildren()!= 1)     
-                    throw RuntimeException("acoth() expects 1 argument");    
+                    throw VCell::RuntimeException("acoth() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 if (fabs(argument) <= 1.0){    
                     char problem[1000];    
                     sprintf(problem, "acoth(u) and |u| <= 1.0, u=%lf", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = MathUtil::acoth(argument);    
                 break;    
@@ -605,13 +605,13 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case ASECH:     
             {    
                 if (jjtGetNumChildren()!=1)     
-                    throw RuntimeException("asech() expects 1 argument");                    
+                    throw VCell::RuntimeException("asech() expects 1 argument");                    
                 double argument = child0->evaluate(evalType, values);    
                 if (argument <= 0.0 || argument > 1.0){    
                     char problem[1000];    
                     sprintf(problem, "asech(u) and u <= 0.0 or u > 1.0, u=%lf", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = MathUtil::asech(argument);    
                 break;    
@@ -619,27 +619,27 @@ double ASTFuncNode::evaluate(int evalType, double* values)
         case FACTORIAL:     
             {    
                 if (jjtGetNumChildren()!= 1)     
-                    throw RuntimeException("factorial() expects 1 argument");    
+                    throw VCell::RuntimeException("factorial() expects 1 argument");    
                 double argument = child0->evaluate(evalType, values);    
                 if (argument < 0.0 || (argument-(int)argument) != 0){    
                     char problem[1000];    
                     sprintf(problem, "factorial(u) and u=%lf < 0.0, or u is not an integer", argument);    
                     string errorMsg = getFunctionDomainError(problem, values, "u", child0);    
-                    throw FunctionDomainException(errorMsg);    
+                    throw VCell::FunctionDomainException(errorMsg);    
                 }    
                 result = MathUtil::factorial(argument);    
                 break;    
             }    
         default :    
             {    
-                throw RuntimeException("undefined function");    
+                throw VCell::RuntimeException("undefined function");    
             }    
     }    
     //result is NAN    
     if (MathUtil::double_infinity == -result || MathUtil::double_infinity == result || result != result) {    
         char problem[1000];    
         sprintf(problem, "%s evaluated to infinity or NaN", infixString(LANGUAGE_DEFAULT,0).c_str(), functionNamesVCML[funcType].c_str());    
-        throw FunctionRangeException(problem);    
+        throw VCell::FunctionRangeException(problem);    
     }    
     return result;    
 }    

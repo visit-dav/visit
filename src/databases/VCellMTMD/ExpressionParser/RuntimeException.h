@@ -12,11 +12,15 @@
 #define RUNTIMEEXCEPTION_H    
     
 #include "Exception.h"    
-    
+
+namespace VCell {
+
 class RuntimeException : public VCell::Exception    
 {    
 public:    
     RuntimeException(std::string msg);    
     ~RuntimeException(void);    
 };    
+
+}
 #endif    

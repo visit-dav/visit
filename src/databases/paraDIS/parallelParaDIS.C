@@ -88,7 +88,7 @@ using namespace std;
 //  Stolen from S3D reader. 
 //
 // ****************************************************************************
-string
+static string
 parse_dirname(char *wholePath)
 {
 #ifndef WIN32

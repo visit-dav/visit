@@ -105,7 +105,9 @@ function build_hdf5
     cf_darwin=""
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-        if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+        if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+            cf_darwin="--disable-shared --enable-static"
+        else
             cf_darwin="--enable-shared --disable-static"
         fi
     else

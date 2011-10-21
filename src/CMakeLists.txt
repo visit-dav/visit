@@ -1343,21 +1343,6 @@ SET(VISIT_COMMON_INCLUDES
     ${VISIT_SOURCE_DIR}/common/utility
     )
 
-
-# Override the OPENGL_glu_LIBRARY returned by CMake on the Mac because the
-# AGL framework does NOT contain gluTess functions. We want to instead use
-# Mesa's GLU functions.
-IF(APPLE AND NOT VISIT_DBIO_ONLY)
-    SET(OPENGL_glu_LIBRARY ${MESA_LIBRARY_DIR}/libMesaGLU.dylib CACHE INTERNAL "AGL lib for OSX")   
-ENDIF(APPLE AND NOT VISIT_DBIO_ONLY)
-
-# We use libGLU for its tessellation abilities but it requires libGL sometimes.
-IF(UNIX AND NOT APPLE)
-    SET(TESSELLATION_LIBRARY ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY})
-ELSE(UNIX AND NOT APPLE)
-    SET(TESSELLATION_LIBRARY ${OPENGL_glu_LIBRARY})
-ENDIF(UNIX AND NOT APPLE)
-
 # Windows-specific settings
 IF (WIN32)
   ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
@@ -1411,6 +1396,16 @@ IF (WIN32)
   REPLACE_FLAG("/machine:I386" "" CMAKE_SHARED_LINKER_FLAGS
                "Flags used by the linker during creation of dll's.")
 ENDIF (WIN32)
+
+# Mac-specific function
+FUNCTION(MAC_NIB_INSTALL exename)
+    IF(VISIT_STATIC AND APPLE)
+        FOREACH(x classes.nib info.nib keyedobjects.nib)
+            FILE(COPY ${VISIT_SOURCE_DIR}/include/qt_menu.nib/${x}
+                 DESTINATION ${VISIT_EXECUTABLE_DIR}/${exename}.app/Contents/Resources/qt_menu.nib/)
+        ENDFOREACH(x)
+    ENDIF(VISIT_STATIC AND APPLE) 
+ENDFUNCTION(MAC_NIB_INSTALL)
 
 #-----------------------------------------------------------------------------
 # Read the SVN revision
@@ -1467,6 +1462,20 @@ ELSE(VISIT_STATIC)
         ENDIF(APPLE)
     ENDIF(WIN32)
 ENDIF(VISIT_STATIC)
+
+# Override the OPENGL_glu_LIBRARY returned by CMake on the Mac because the
+# AGL framework does NOT contain gluTess functions. We want to instead use
+# Mesa's GLU functions.
+IF(APPLE AND NOT VISIT_DBIO_ONLY)
+    SET(OPENGL_glu_LIBRARY ${MESA_LIBRARY_DIR}/libMesaGLU${VISIT_PLUGIN_EXTENSION} CACHE INTERNAL "AGL lib for OSX")   
+ENDIF(APPLE AND NOT VISIT_DBIO_ONLY)
+
+# We use libGLU for its tessellation abilities but it requires libGL sometimes.
+IF(UNIX AND NOT APPLE)
+    SET(TESSELLATION_LIBRARY ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY})
+ELSE(UNIX AND NOT APPLE)
+    SET(TESSELLATION_LIBRARY ${OPENGL_glu_LIBRARY})
+ENDIF(UNIX AND NOT APPLE)
 
 # Check for type sizes, endian
 SET(SIZEOF_BOOLEAN              ${CMAKE_SIZEOF_BOOLEAN})

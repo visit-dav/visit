@@ -61,7 +61,7 @@ void ASTRelationalNode::setOperationFromToken(string op)
     }else if (op == "!="){    
         operation = NE;    
     }else{            
-        throw RuntimeException("unknown relational operator token = '" + op + "'");    
+        throw VCell::RuntimeException("unknown relational operator token = '" + op + "'");    
     }    
     opString = op;    
 }    
@@ -72,7 +72,7 @@ string ASTRelationalNode::infixString(int lang, NameScope* nameScope)
     string buffer;    
     if(lang == LANGUAGE_VISIT){    
       if(jjtGetNumChildren() != 2){    
-          throw ParseException("ASTRelationalNode for VISIT expecting 2 children");    
+          throw VCell::ParseException("ASTRelationalNode for VISIT expecting 2 children");    
       }    
       switch (operation){    
             case GT:{    
@@ -100,7 +100,7 @@ string ASTRelationalNode::infixString(int lang, NameScope* nameScope)
                 break;    
             }    
             default:{    
-                throw ParseException("ASTRelationalNode VISIT unknown relational operator");    
+                throw VCell::ParseException("ASTRelationalNode VISIT unknown relational operator");    
             }    
         }    
         buffer.append(jjtGetChild(0)->infixString(lang,nameScope)+","+jjtGetChild(1)->infixString(lang,nameScope)+")");    
@@ -128,7 +128,7 @@ void ASTRelationalNode::getStackElements(vector<StackElement>& elements) {
 double ASTRelationalNode::evaluate(int evalType, double* values)    
 {    
     if (jjtGetNumChildren() != 2) {    
-        throw ExpressionException("Expected two children");    
+        throw VCell::ExpressionException("Expected two children");    
     }    
     double first = jjtGetChild(0)->evaluate(evalType, values);    
     double second = jjtGetChild(1)->evaluate(evalType, values);    
@@ -177,7 +177,7 @@ double ASTRelationalNode::evaluate(int evalType, double* values)
                     return 0.0;    
             }    
     }    
-    throw ExpressionException("unsupported relational operation");    
+    throw VCell::ExpressionException("unsupported relational operation");    
 }    
     
 Node* ASTRelationalNode::copyTree() {    

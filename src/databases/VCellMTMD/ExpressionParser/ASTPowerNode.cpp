@@ -36,7 +36,7 @@ string ASTPowerNode::infixString(int lang, NameScope* nameScope)
     if (jjtGetNumChildren() != 2) {    
         char ch[20];    
         sprintf(ch, "%d\0", jjtGetNumChildren());    
-        throw RuntimeException("There are" + string(ch) + " arguments for the power operator, expecting 2");    
+        throw VCell::RuntimeException("There are" + string(ch) + " arguments for the power operator, expecting 2");    
     }    
     
     string buffer;    
@@ -67,13 +67,13 @@ double ASTPowerNode::evaluate(int evalType, double* values) {
     if (jjtGetNumChildren() != 2) {    
         char chrs[1000];    
         sprintf(chrs, "ASTPowerNode: wrong number of arguments for '^' (%d), expected 2\0", jjtGetNumChildren());    
-        throw ExpressionException(chrs);    
+        throw VCell::ExpressionException(chrs);    
     }    
     //    
     // see if there are any constant 0.0's, if there are simplify to 0.0    
     //    
-    ExpressionException* exponentException = NULL;    
-    ExpressionException* baseException = NULL;    
+    VCell::ExpressionException* exponentException = NULL;    
+    VCell::ExpressionException* baseException = NULL;    
     Node* exponentChild = jjtGetChild(1);    
     Node* baseChild = jjtGetChild(0);    
     
@@ -81,17 +81,17 @@ double ASTPowerNode::evaluate(int evalType, double* values) {
     double baseValue = 0.0;    
     try {    
         exponentValue = exponentChild->evaluate(evalType, values);    
-    } catch (ExpressionException& e) {    
+    } catch (VCell::ExpressionException& e) {    
         if (evalType == EVALUATE_VECTOR)    
             throw e;    
-        exponentException = new ExpressionException(e.getMessage());    
+        exponentException = new VCell::ExpressionException(e.getMessage());    
     }        
     try {    
         baseValue = baseChild->evaluate(evalType, values);    
-    } catch (ExpressionException& e) {    
+    } catch (VCell::ExpressionException& e) {    
         if (evalType == EVALUATE_VECTOR)    
             throw e;    
-        baseException = new ExpressionException(e.getMessage());    
+        baseException = new VCell::ExpressionException(e.getMessage());    
     }    
     
     if (exponentException == NULL && baseException == NULL) {    
@@ -100,19 +100,19 @@ double ASTPowerNode::evaluate(int evalType, double* values) {
             char problem[1000];    
             sprintf(problem, "u^v and u=0 and v=%lf<0", exponentValue);    
             string errorMsg = getFunctionDomainError(problem, values, "u", baseChild, "v", exponentChild);    
-            throw DivideByZeroException(errorMsg);    
+            throw VCell::DivideByZeroException(errorMsg);    
         } else if (baseValue < 0.0 && exponentValue != MathUtil::round(exponentValue)) {    
             char problem[1000];    
             sprintf(problem, "u^v and u=%lf<0 and v=%lf not an integer: undefined", baseValue, exponentValue);    
             string errorMsg = getFunctionDomainError(problem, values, "u", baseChild, "v", exponentChild);    
-            throw FunctionDomainException(errorMsg);    
+            throw VCell::FunctionDomainException(errorMsg);    
         } else {    
             double result = pow(baseValue, exponentValue);    
             if (MathUtil::double_infinity == -result || MathUtil::double_infinity == result || result != result) {    
                 char problem[1000];    
                 sprintf(problem, "u^v evaluated to %lf, u=%lf, v=%lf", result, baseValue);    
                 string errorMsg = getFunctionDomainError(problem, values, "u", baseChild, "v", exponentChild);    
-                throw FunctionDomainException(errorMsg);    
+                throw VCell::FunctionDomainException(errorMsg);    
             }    
             return result;    
         }    

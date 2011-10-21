@@ -12,12 +12,15 @@
 #define PARSEREXCEPTION_H    
     
 #include "ExpressionException.h"    
-    
+
+namespace VCell {
+
 class ParserException : public ExpressionException    
 {    
 public:    
     ParserException(std::string msg);    
     ~ParserException(void);    
 };    
-    
+
+}    
 #endif    

@@ -10,10 +10,10 @@
     
 #include "IOException.h"    
     
-IOException::IOException(std::string msg) : Exception("IOException: " + msg)    
+VCell::IOException::IOException(std::string msg) : VCell::Exception("IOException: " + msg)    
 {        
 }    
     
-IOException::~IOException(void)    
+VCell::IOException::~IOException(void)    
 {    
 }    

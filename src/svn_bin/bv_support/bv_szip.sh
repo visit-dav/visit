@@ -92,14 +92,18 @@ function build_szip
     info "Configuring SZIP . . ."
     cd ${SZIP_BUILD_DIR} || error "Can't cd to szip build dir."
     info "Invoking command to configure SZIP"
+    cf_szip=""
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        cf_szip="--disable-shared --enable-static"
+    fi
 
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" LIBS=\"-lm\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        --prefix=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\""
+        --prefix=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" ${cf_szip}"
 
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" LIBS="-lm" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+        --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" ${cf_szip}
 
     if [[ $? != 0 ]] ; then
        warn "SZIP configure failed.  Giving up"

@@ -12,7 +12,8 @@
 #define EXPRESSIONEXCEPTION_H    
     
 #include "Exception.h"    
-    
+namespace VCell { 
+
 class ExpressionException : public VCell::Exception    
 {    
 public:    
@@ -20,5 +21,7 @@ public:
     ExpressionException(std::string msg);    
     ExpressionException(std::string title, std::string msg);    
 };    
-    
+
+}
+
 #endif    

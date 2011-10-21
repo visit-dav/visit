@@ -86,7 +86,7 @@ using     std::vector;
 //
 //
 // ****************************************************************************
-string
+static string
 parse_dirname(char *wholePath)
 {
 #ifndef WIN32
