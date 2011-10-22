@@ -10,6 +10,9 @@
 #
 #   Mark C. Miller, Wed Jun 22 17:20:09 PDT 2011
 #   Check -DPARALLEL code too
+#  
+#   Kathleen Biagas, Fri Oct 21 18:03:33 PDT 2011
+#   Skip windowsbuild directory.
 #
 ##############################################################################
 REPOS="$1"
@@ -43,7 +46,8 @@ while read fline; do
         */src/cqscore/*|\
         */src/third_party_builtin/*|\
         */src/bin/internallauncher|\
-        */src/svn_bin/*)
+        */src/svn_bin/*|\
+        */windowsbuild/*)
             # Skip these files and directories
             continue
             ;;
