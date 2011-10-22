@@ -30,7 +30,7 @@
 #   
 #   Mark C. Miller, Sat Oct 22 13:24:08 PDT 2011
 #   Adjusted chmod calls to set 's' bit and set 'x' instead of 'X'
-*
+#
 #   Mark C. Miller, Sat Oct 22 13:24:08 PDT 2011
 #   Adjusted chmod calls to set 's' bit only for group
 ##############################################################################
