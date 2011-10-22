@@ -14,6 +14,8 @@
 #   Kathleen Biagas, Fri Oct 21 18:03:33 PDT 2011
 #   Skip windowsbuild directory.
 #
+#   Comment to force comment and test automagic installation
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
