@@ -67,8 +67,6 @@
 #
 #   Eric Brugger, Tue Apr  5 11:36:22 PDT 2011
 #   Add releases to the skip list.
-#
-#   Comment to force an update
 ##############################################################################
 REPOS="$1"
 TXN="$2"
