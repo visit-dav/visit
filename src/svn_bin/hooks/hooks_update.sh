@@ -28,6 +28,8 @@
 #   Made it so installation warning is issued only once in presence of
 #   changes to multiple hooks.
 #   
+#   Mark C. Miller, Sat Oct 22 13:24:08 PDT 2011
+#   Adjusted chmod calls to set 's' bit and set 'x' instead of 'X'
 ##############################################################################
 
 REPOS="$1"
