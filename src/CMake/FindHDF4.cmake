@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Wed Oct 19 09:58:16 MST 2011
+#   Add xdrdll.  Remove 64-bit specific include.
 #
 #****************************************************************************/
 
@@ -43,15 +45,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(HDF4 lib/${VISIT_MSVC_VERSION} include hd421m hm421m)
-  # also need platform specific includes
-  IF (HDF4_FOUND) 
-    IF (CMAKE_CL_64)
-      SET(HDF4_INCLUDE_DIR "${HDF4_INCLUDE_DIR}/x64;${HDF4_INCLUDE_DIR}" CACHE PATH "HDF4 include directory" FORCE)
-    ELSE (CMAKE_CL_64)
-      SET(HDF4_INCLUDE_DIR "${HDF4_INCLUDE_DIR}/WIN32;${HDF4_INCLUDE_DIR}" CACHE PATH "HDF4 include directory" FORCE)
-    ENDIF (CMAKE_CL_64)
-  ENDIF (HDF4_FOUND)
+  SET_UP_THIRD_PARTY(HDF4 lib include hdfdll mfhdfdll xdrdll)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(HDF4 lib include mfhdf df)
 ENDIF (WIN32)

@@ -38,6 +38,9 @@
 #   Kathleen Bonnell, Tue Apr 20 19:11:27 MST 2010
 #   Change lib name on windows from cgnslib to cgnsdll.
 #
+#   Kathleen Biagas, Wed Oct 19 09:58:16 MST 2011
+#   Remove ${VISIT_MSVC_VERSION} from lib location.
+#
 #****************************************************************************/
 
 # Use the CGNS_DIR hint from the config-site .cmake file 
@@ -45,7 +48,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(CGNS lib/${VISIT_MSVC_VERSION} include cgnsdll)
+  SET_UP_THIRD_PARTY(CGNS lib include cgnsdll)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(CGNS lib include cgns)
 ENDIF (WIN32)
