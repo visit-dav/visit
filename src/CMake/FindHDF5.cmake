@@ -38,6 +38,9 @@
 #   Kathleen Bonnell, Mon Dec 27, 17:52:39 MST 2010
 #   Added high-level hdf5 lib to search on Windows. (hdf5_hldll).
 #
+#   Kathleen Biagas, Wed Oct 19 09:58:16 MST 2011
+#   Remove ${VISIT_MSVC_VERSION} from lib location.
+#
 #****************************************************************************/
 
 # Use the HDF5_DIR hint from the config-site .cmake file 
@@ -45,7 +48,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(HDF5 "lib/${VISIT_MSVC_VERSION};lib" include hdf5dll hdf5_hldll)
+ SET_UP_THIRD_PARTY(HDF5 lib include hdf5dll hdf5_hldll)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(HDF5 lib include hdf5)
 ENDIF (WIN32)

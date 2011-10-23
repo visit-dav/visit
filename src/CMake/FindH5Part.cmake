@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Wed Oct 19 09:58:16 MST 2011
+#   Remove ${VISIT_MSVC_VERSION} from lib location.
 #
 #****************************************************************************/
 
@@ -43,7 +45,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(H5PART lib/${VISIT_MSVC_VERSION} include h5partdll)
+  SET_UP_THIRD_PARTY(H5PART lib include h5partdll)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(H5PART lib include H5Part)
 ENDIF (WIN32)
