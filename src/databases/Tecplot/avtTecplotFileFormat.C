@@ -365,6 +365,9 @@ avtTecplotFileFormat::GetNextToken()
 //    time in this routine appears to be down in GetNextToken, not
 //    any inefficiencies here, or even in the strtof call.
 //
+//    Jeremy Meredith, Mon Oct 24 12:06:45 EDT 2011
+//    Add check for valid coord fields before assigned vals to them.
+//
 // ****************************************************************************
 vtkPoints*
 avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
@@ -455,9 +458,12 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
 
     for (i=0; i<numNodes; i++)
     {
-        pts[3*i + 0] = allptr[Xindex][i];
-        pts[3*i + 1] = allptr[Yindex][i];
-        pts[3*i + 2] = allptr[Zindex][i];
+        if (Xindex>=0)
+            pts[3*i + 0] = allptr[Xindex][i];
+        if (Yindex>=0)
+            pts[3*i + 1] = allptr[Yindex][i];
+        if (Zindex>=0)
+            pts[3*i + 2] = allptr[Zindex][i];
     }
 
     return points;
