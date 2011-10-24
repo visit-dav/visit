@@ -73,6 +73,14 @@ function bv_icet_ensure
         fi
     fi
 }
+
+function bv_icet_dry_run
+{
+  if [[ "$DO_ICET" == "yes" ]] ; then
+    echo "Dry run option not set for icet."
+  fi
+}
+
 # *************************************************************************** #
 #                           Function 8.13, build_icet                         #
 # *************************************************************************** #

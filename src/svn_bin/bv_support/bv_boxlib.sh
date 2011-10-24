@@ -74,6 +74,13 @@ function bv_boxlib_ensure
         fi
     fi
 }
+
+function bv_boxlib_dry_run
+{
+  if [[ "$DO_BOXLIB" == "yes" ]] ; then
+    echo "Dry run option not set for boxlib."
+  fi
+}
 # *************************************************************************** #
 #                         Function 8.8, build_boxlib                          #
 # *************************************************************************** #

@@ -83,6 +83,13 @@ function bv_silo_ensure
     fi
 }
 
+function bv_silo_dry_run
+{
+  if [[ "$DO_SILO" == "yes" ]] ; then
+    echo "Dry run option not set for silo."
+  fi
+}
+
 # *************************************************************************** #
 #                            Function 8, build_silo
 #

@@ -78,6 +78,13 @@ function bv_mesa_ensure
     fi
 }
 
+function bv_mesa_dry_run
+{
+  if [[ "$DO_MESA" == "yes" ]] ; then
+    echo "Dry run option not set for mesa."
+  fi
+}
+
 function apply_mesa_75_patch_1
 {
    patch -p0 <<\EOF

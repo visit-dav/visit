@@ -106,9 +106,8 @@ function bv_${output}_ensure_built_or_ready
     fi
 }
 
-
 #print what the module will do for building
-function bv_${output}_print_build_command
+function bv_${output}_dry_run
 {
    #print the build command..
    echo \"${output} has no build commands set\"

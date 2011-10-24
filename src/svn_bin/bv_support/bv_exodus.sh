@@ -77,6 +77,14 @@ function bv_exodus_ensure
         fi
     fi
 }
+
+function bv_exodus_dry_run
+{
+  if [[ "$DO_EXODUS" == "yes" ]] ; then
+    echo "Dry run option not set for exodus."
+  fi
+}
+
 # *************************************************************************** #
 #                         Function 8.7, build_exodus                          #
 #                                                                             #

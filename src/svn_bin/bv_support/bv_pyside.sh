@@ -71,6 +71,13 @@ function bv_pyside_ensure
     fi
 }
 
+function bv_pyside_dry_run
+{
+  if [[ "$DO_PYSIDE" == "yes" ]] ; then
+    echo "Dry run option not set for pyside."
+  fi
+}
+
 # *************************************************************************** #
 #                          Function 4.2, build_pyside                          #
 # *************************************************************************** #

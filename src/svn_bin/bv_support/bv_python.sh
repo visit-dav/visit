@@ -50,8 +50,6 @@ function bv_python_print_usage
 printf "%-15s %s [%s]\n" "--python" "Build Python" "built by default unless --no-thirdparty flag is used"
 }
 
-
-
 function bv_python_host_profile
 {
 echo "##" >> $HOSTCONF
@@ -77,6 +75,13 @@ function bv_python_ensure
             fi
         fi
     fi
+}
+
+function bv_python_dry_run
+{
+  if [[ "$DO_PYTHON" == "yes" ]] ; then
+    echo "Dry run option not set for python."
+  fi
 }
 
 function apply_python_osx104_patch

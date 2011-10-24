@@ -76,6 +76,13 @@ function bv_fastbit_ensure
     fi
 }
 
+function bv_fastbit_dry_run
+{
+  if [[ "$DO_FASTBIT" == "yes" ]] ; then
+    echo "Dry run option not set for fastbit."
+  fi
+}
+
 # *************************************************************************** #
 #                         Function 8.14, build_fastbit                        #
 # *************************************************************************** #

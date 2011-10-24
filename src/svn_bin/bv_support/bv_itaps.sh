@@ -141,6 +141,14 @@ function bv_itaps_ensure
     fi
 }
 
+
+function bv_itaps_dry_run
+{
+  if [[ "$DO_ITAPS" == "yes" ]] ; then
+    echo "Dry run option not set for itaps."
+  fi
+}
+
 # *************************************************************************** #
 #                          Function 8.15, build_itaps_moab                    #
 # *************************************************************************** #

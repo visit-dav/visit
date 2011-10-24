@@ -76,6 +76,15 @@ function bv_xdmf_ensure
         fi
     fi
 }
+
+function bv_xdmf_dry_run
+{
+  if [[ "$DO_XDMF" == "yes" ]] ; then
+    echo "Dry run option not set for xdmf."
+  fi
+}
+
+
 # *************************************************************************** #
 #                         Function 8.19, build_xdmf                           #
 # *************************************************************************** #

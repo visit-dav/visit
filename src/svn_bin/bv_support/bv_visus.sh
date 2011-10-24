@@ -74,6 +74,13 @@ function bv_visus_ensure
     fi
 }
 
+function bv_visus_dry_run
+{
+  if [[ "$DO_VISUS" == "yes" ]] ; then
+    echo "Dry run option not set for visus."
+  fi
+}
+
 function bv_visus_build
 {
     echo "visus does not build"

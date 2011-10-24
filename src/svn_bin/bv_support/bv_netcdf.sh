@@ -81,6 +81,13 @@ function bv_netcdf_ensure
     fi
 }
 
+function bv_netcdf_dry_run
+{
+  if [[ "$DO_NETCDF" == "yes" ]] ; then
+    echo "Dry run option not set for netcdf."
+  fi
+}
+
 # *************************************************************************** #
 #                         Function 8.4, build_netcdf                          #
 #                                                                             #

@@ -73,6 +73,13 @@ function bv_advio_ensure
         fi
     fi
 }
+
+function bv_advio_dry_run
+{
+  if [[ "$DO_ADVIO" == "yes" ]] ; then
+    echo "Dry run option not set for advio."
+  fi
+}
 # *************************************************************************** #
 #                         Function 8.18, build_advio                          #
 # *************************************************************************** #

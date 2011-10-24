@@ -1278,8 +1278,8 @@ printvariables () {
   printf "%s%s\n" "LOG_FILE=" "${LOG_FILE}"
   printf "%s%s\n" "WGET_OPTS=" "${WGET_OPTS}"
   printf "%s%s\n" "SVNREVISION=" "${SVNREVISION}"
-  printf "%s%s\n" "VISIT_FILE=" "${VISIT_FILE}"
-
+  
+  bv_visit_print
   for (( i=0; i<${#reqlibs[*]}; ++i ))
   do
       initialize="bv_${reqlibs[$i]}_print"
@@ -1299,7 +1299,8 @@ usage () {
   printf "\n\n"
   printf "BOOLEAN FLAGS\n"
   printf "\tThese are used to enable or disable specific functionality.  They do not take option values.\n\n"
-  printf "%-15s %s [%s]\n" "--write-unified-file"  "Write single unified build_visit file" "output-filename"
+  printf "%-15s %s [%s]\n" "--dry-run"  "Dry run of the presented options" "false"
+  printf "%-15s %s [%s]\n" "--build-with-version"  "install using build_visit of a different version of VisIt (experimental)" "$VISIT_VERSION"
   printf "%-15s %s [%s]\n" "--all-io"  "Build all available I/O libraries" "$DO_ALLIO"
   printf "%-15s %s [%s]\n" "--console" "Do not use dialog ('graphical') interface" "!$GRAPHICAL"
   printf "%-15s %s [%s]\n" "--dbio-only" "Disables EVERYTHING but I/O." "$DO_DBIO_ONLY"
@@ -1310,7 +1311,6 @@ usage () {
   printf "%-15s %s [%s]\n" "-h" "Display this help message." "false"
   printf "%-15s %s [%s]\n" "--help" "Display this help message." "false"
   printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
-  printf "%-15s %s [%s]\n" "--no-visit" "Do not build VisIt, build 3rd party libraries only" "$DO_VISIT"
   printf "%-15s %s [%s]\n" "--no-thirdparty" "Do not build required 3rd party libraries" "$ON_THIRD_PARTY"
   printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$ON_HOSTCONF"
   printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
@@ -1320,6 +1320,8 @@ usage () {
   printf "%-15s %s [%s]\n" "--static" "Build using static linking" "$DO_STATIC_BUILD"
   printf "%-15s %s [%s]\n" "--stdout" "Write build log to stdout" "$LOG_FILE"
   
+  bv_visit_print_usage
+
   for (( i=0; i<${#reqlibs[*]}; ++i ))
   do
       initialize="bv_${reqlibs[$i]}_print_usage"
@@ -1335,6 +1337,8 @@ usage () {
   printf "%s\n" ""
   printf "OPTIONS\n"
   printf "These values all take a special value.  If given, they require an associated value to be provided as well.\n\n"
+  printf "%-15s \n\t%s [%s]\n" "--installation-build-dir"  "Specify the directory visit will use for building" "output-filename"
+  printf "%-15s \n\t%s [%s]\n" "--write-unified-file"  "Write single unified build_visit file" "output-filename"
   printf "%-12s %s [%s]\n" "--absolute" \
     "Change the behavior of the install name path for
              the Darwin dynamic libraries. Enabling this flag
