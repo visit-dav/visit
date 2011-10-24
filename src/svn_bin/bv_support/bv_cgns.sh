@@ -78,6 +78,14 @@ function bv_cgns_ensure
         fi
     fi
 }
+
+function bv_cgns_dry_run
+{
+  if [[ "$DO_CGNS" == "yes" ]] ; then
+    echo "Dry run option not set for cgns."
+  fi
+}
+
 # *************************************************************************** #
 #                         Function 8.5, build_cgns                            #
 # *************************************************************************** #

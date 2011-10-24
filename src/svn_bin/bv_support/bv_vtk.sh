@@ -61,6 +61,13 @@ function bv_vtk_ensure
     fi
 }
 
+function bv_vtk_dry_run
+{
+  if [[ "$DO_VTK" == "yes" ]] ; then
+    echo "Dry run option not set for vtk"
+  fi
+}
+
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #

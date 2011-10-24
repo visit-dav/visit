@@ -78,6 +78,13 @@ function bv_tcmalloc_ensure
         fi
     fi
 }
+
+function bv_tcmalloc_dry_run
+{
+  if [[ "$DO_TCMALLOC" == "yes" ]] ; then
+    echo "Dry run option not set for tcmalloc."
+  fi
+}
 # *************************************************************************** #
 #                         Function 8.12, build_tcmalloc                       #
 # *************************************************************************** #

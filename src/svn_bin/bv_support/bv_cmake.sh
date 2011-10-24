@@ -56,6 +56,14 @@ function bv_cmake_ensure
         fi
     fi
 }
+
+function bv_cmake_dry_run
+{
+  if [[ "$DO_CMAKE" == "yes" ]] ; then
+    echo "Dry run option not set for cmake."
+  fi
+}
+
 # *************************************************************************** #
 #                          Function 5, build_cmake                            #
 # *************************************************************************** #

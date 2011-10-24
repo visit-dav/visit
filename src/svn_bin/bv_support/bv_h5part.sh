@@ -82,6 +82,14 @@ function bv_h5part_ensure
         fi
     fi
 }
+
+function bv_h5part_dry_run
+{
+  if [[ "$DO_H5PART" == "yes" ]] ; then
+    echo "Dry run option not set for h5part."
+  fi
+}
+
 # ***************************************************************************
 #                         Function 8.10, build_h5part
 #

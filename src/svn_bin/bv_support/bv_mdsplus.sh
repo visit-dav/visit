@@ -76,6 +76,13 @@ function bv_mdsplus_ensure
     fi
 }
 
+function bv_mdsplus_dry_run
+{
+  if [[ "$DO_MDSPLUS" == "yes" ]] ; then
+    echo "Dry run option not set for mdsplus."
+  fi
+}
+
 # ***************************************************************************
 #                         Function 8.20, build_mdsplus
 #

@@ -72,6 +72,13 @@ function bv_cfitsio_ensure
         fi
     fi
 }
+
+function bv_cfitsio_dry_run
+{
+  if [[ "$DO_CFITSIO" == "yes" ]] ; then
+    echo "Dry run option not set for cfitsio."
+  fi
+}
 # *************************************************************************** #
 #                         Function 8.9, build_cfitsio                         #
 # *************************************************************************** #

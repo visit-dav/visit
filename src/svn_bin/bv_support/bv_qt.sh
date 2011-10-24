@@ -62,6 +62,13 @@ function bv_qt_ensure
     fi
 }
 
+function bv_qt_dry_run
+{
+  if [[ "$DO_QT" == "yes" ]] ; then
+    echo "Dry run option not set for qt."
+  fi
+}
+
 # *************************************************************************** #
 #                          Function 4, build_qt                               #
 # *************************************************************************** #

@@ -72,6 +72,13 @@ function bv_ccmio_ensure
         fi
     fi
 }
+
+function bv_ccmio_dry_run
+{
+  if [[ "$DO_CCMIO" == "yes" ]] ; then
+    echo "Dry run option not set for ccmio."
+  fi
+}
 # *************************************************************************** #
 #                         Function 8.11, build_ccmio                          #
 # *************************************************************************** #

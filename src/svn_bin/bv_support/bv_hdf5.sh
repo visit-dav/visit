@@ -83,6 +83,14 @@ function bv_hdf5_ensure
         fi
     fi
 }
+
+function bv_hdf5_dry_run
+{
+  if [[ "$DO_HDF5" == "yes" ]] ; then
+    echo "Dry run option not set for hdf5."
+  fi
+}
+
 # *************************************************************************** #
 #                          Function 8.1, build_hdf5                           #
 # *************************************************************************** #

@@ -62,6 +62,13 @@ function bv_mxml_ensure
     fi
 }
 
+function bv_mxml_dry_run
+{
+  if [[ "$DO_MXML" == "yes" ]] ; then
+    echo "Dry run option not set for mxml."
+  fi
+}
+
 # ***************************************************************************
 #                         Function 8.21, build_mxml
 # Required by ADIOS.

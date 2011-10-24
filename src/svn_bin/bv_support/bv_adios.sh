@@ -79,6 +79,13 @@ function bv_adios_ensure
     fi
 }
 
+function bv_adios_dry_run
+{
+  if [[ "$DO_ADIOS" == "yes" ]] ; then
+    echo "Dry run option not set for adios."
+  fi
+}
+
 # ***************************************************************************
 #                         Function 8.22, build_ADIOS
 #
