@@ -27,10 +27,14 @@ public:
 
   virtual void getMeshDataDims(std::vector<int>& dims);
   virtual void getNumMeshDims(std::vector<int>& dims);
+  virtual std::string getMaskName();
 
 private:
   VsStructuredMesh(VsH5Dataset* data);
   virtual bool initialize();
+ 
+  /** name of the mask array (optional) */
+  VsH5Attribute* maskAtt;
 };
 
 #endif /* VSSTRUCTUREDMESH_H_ */
