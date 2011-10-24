@@ -2099,6 +2099,10 @@ operator << (ostream &os, const TecplotDataRecord &obj)
 // Creation:   Mon Jun 16 16:32:28 PDT 2008
 //
 // Modifications:
+//   Jeremy Meredith, Mon Oct 24 13:21:32 EDT 2011
+//   Don't take shared variables into account when calculating offsets.
+//   Just set their offsets and data sizes to a sentinel, -1, and when
+//   reading them, we'll use the shared variable's version instead.
 //   
 // ****************************************************************************
 
@@ -2115,6 +2119,14 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
         long offset = 0;
         for(size_t i = 0; i < variables.size(); ++i)
         {
+            if (variables[i].zoneShareNumber >= 0)
+            {
+                // it's a shared variable; pretend it's simply not in the file
+                variables[i].dataOffset = -1;
+                variables[i].dataSize   = -1;
+                continue;
+            }
+
             variables[i].dataOffset = offset;
 
             if(variables[i].dataType == TecplotFloat)
@@ -2135,11 +2147,19 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
 
         for(size_t i = 0; i < variables.size(); ++i)
         {
-            variables[i].dataOffset += dataOffset;
-            variables[i].dataSize = recordSize;
-            debug4 << mName << "Offset to variable " << i
+            if (variables[i].zoneShareNumber >= 0)
+            {
+                debug4 << mName << "Offset to variable " << i
+                   << ": (shared; irrelevant; not explicitly in file" << endl;
+            }
+            else
+            {
+                variables[i].dataOffset += dataOffset;
+                variables[i].dataSize = recordSize;
+                debug4 << mName << "Offset to variable " << i
                    << " data = " << std::hex << variables[i].dataOffset
                    << ". size = " << std::dec << variables[i].dataSize << endl;
+            }
         }
 
         connectivityOffset = dataOffset + recordSize * zone.GetNumNodes();
@@ -2150,6 +2170,17 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
         long offset = 0;
         for(size_t i = 0; i < variables.size(); ++i)
         {
+            if (variables[i].zoneShareNumber >= 0)
+            {
+                // it's a shared variable; pretend it's simply not in the file
+                variables[i].dataOffset = -1;
+                variables[i].dataSize   = -1;
+                // print an equivalent debug message here, skip the stuff below
+                debug4 << mName << "Offset to variable " << i
+                   << ": (shared; irrelevant; not explicitly in file" << endl;
+                continue;
+            }
+
             variables[i].dataOffset = dataOffset + offset;
 
             if(variables[i].dataType == TecplotFloat)
@@ -2702,6 +2733,9 @@ TecplotFile::ReadData(long dataOffset, long dataSize, TecplotDataType dataType,
 // Creation:   Thu Jun 12 11:44:35 PDT 2008
 //
 // Modifications:
+//   Jeremy Meredith, Mon Oct 24 13:24:07 EDT 2011
+//   For a shared variable, use the file information for the zone/var
+//   it is supposed to be copied from.
 //   
 // ****************************************************************************
 
@@ -2720,6 +2754,23 @@ TecplotFile::ReadVariable(int zoneId, const std::string &varName, void *ptr)
         {
             retval = true;
             memset(ptr, 0, var.dataSize);
+        }
+        else if (var.zoneShareNumber >= 0)
+        {
+            // Go ahead and read it from the file again; it's not quite
+            // as efficient, but the binary format is pretty fast anyway.
+            const TecplotVariable *shareVar =
+                &(zoneData[var.zoneShareNumber].variables[varId]);
+            // This can redirect more than once; repeat until it stops.
+            while (shareVar->zoneShareNumber >= 0)
+                shareVar = &(zoneData[shareVar->zoneShareNumber].variables[varId]);
+            // Okay, use the shared variable's file offsets, etc.
+            retval = ReadData(shareVar->dataOffset,
+                              shareVar->dataSize,
+                              shareVar->dataType,
+                              zones[zoneId].dataPacking,
+                              zones[zoneId].GetNumNodes(),
+                              ptr);
         }
         else
         {
