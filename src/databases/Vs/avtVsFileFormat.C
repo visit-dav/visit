@@ -30,6 +30,7 @@
 // VTK includes
 #include <vtkPointData.h>
 #include <vtkVisItUtility.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
@@ -79,6 +80,7 @@
 #include "VsLog.h"
 #include "VsRegistry.h"
 #include "VsH5Reader.h"
+#include "VsSchema.h"
 
 #define __CLASS__ "avtVsFileFormat::"
 
@@ -1291,11 +1293,165 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     sgrid->SetDimensions(&(gdims[0]));
     sgrid->SetPoints(vpoints);
 
+    std::string maskName = structuredMesh->getMaskName();
+    if (maskName != "") {
+      // To access the data
+      VsH5Dataset* mask = registry->getDataset(maskName);
+      // To access the attributes
+      VsVariable* maskVar = registry->getVariable(maskName);
+      if (!mask || !maskVar) {
+        VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" 
+                          << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Cannot access mask dataset "
+                          << maskName << std::endl; 
+      } 
+      else {
+        hid_t maskType = mask->getType();
+        bool maskIsFortranOrder = maskVar->isFortranOrder();
+        std::string maskCentering = maskVar->getCentering();
+
+        // Masking array, we use the same technique used elsewhere to 
+        // turn off ghost nodes
+        vtkUnsignedCharArray *maskedNodes = vtkUnsignedCharArray::New();
+        // Must have the name "avtGhostNodes"
+        maskedNodes->SetName("avtGhostNodes");
+        maskedNodes->SetNumberOfTuples(numPoints);
+        for (size_t k = 0; k < numPoints; ++k) {
+          // Zero means no masking, node is visible
+          maskedNodes->SetValue(k, 0);
+        }
+        unsigned char* mp = maskedNodes->GetPointer(0);
+
+        if (isDoubleType(maskType)) {
+          VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                            << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "Mask is of type double." << std::endl;
+          double* maskArray = new double[numPoints];
+          herr_t err = reader->getDataSet(mask, maskArray);
+          if (err < 0) {
+            VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                              << __FUNCTION__ << "  " << __LINE__ << "  "
+                              << "Cannot read mask dataset "
+                              << maskName << std::endl;
+          }
+          else {
+            if (maskIsFortranOrder) {
+              for (size_t k = 0; k < numPoints; ++k) {
+                if (maskArray[k] != 0) {
+                  avtGhostData::AddGhostNodeType(mp[k],
+                                                 NODE_NOT_APPLICABLE_TO_PROBLEM);
+                }
+              }
+            }
+            else {
+              // maskArray follows C index order, but                                                                                                                                                                        
+              // mp follows Fortran index order!                                                                                                                                                                             
+              for (size_t k = 0; k < numPoints; ++k) {
+                size_t i0 = k % gdims[0];
+                size_t i1 = (k / gdims[0]) % gdims[1];
+                size_t i2 = (k / gdims[0] / gdims[1]) % gdims[2];
+                size_t kC = i2 + gdims[2]*(i1 + gdims[1]*i0);
+                if (maskArray[kC] != 0) {
+                  avtGhostData::AddGhostNodeType(mp[k],
+                                                 NODE_NOT_APPLICABLE_TO_PROBLEM);
+                }
+              }
+            }
+            delete [] maskArray;
+          }
+        }
+        else if (isFloatType(maskType)) {
+          VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                            << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "Mask is of type float." << std::endl;
+          float* maskArray = new float[numPoints];
+          herr_t err = reader->getDataSet(mask, maskArray);
+          if (err < 0) {
+            VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                              << __FUNCTION__ << "  " << __LINE__ << "  "
+                              << "Cannot read mask dataset "
+                              << maskName << std::endl;
+          }
+          else {
+            if (maskIsFortranOrder) {
+              for (size_t k = 0; k < numPoints; ++k) {
+                if (maskArray[k] != 0) {
+                  avtGhostData::AddGhostNodeType(mp[k],
+                                                 NODE_NOT_APPLICABLE_TO_PROBLEM);
+                }
+              }
+            }
+            else {
+              // maskArray follows C index order, but                                                                                                                                                                        
+              // mp follows Fortran index order!                                                                                                                                                                             
+              for (size_t k = 0; k < numPoints; ++k) {
+                size_t i0 = k % gdims[0];
+                size_t i1 = (k / gdims[0]) % gdims[1];
+                size_t i2 = (k / gdims[0] / gdims[1]) % gdims[2];
+                size_t kC = i2 + gdims[2]*(i1 + gdims[1]*i0);
+                if (maskArray[kC] != 0) {
+                  avtGhostData::AddGhostNodeType(mp[k],
+                                                 NODE_NOT_APPLICABLE_TO_PROBLEM);
+                }
+              }
+            }
+            delete [] maskArray;
+          }
+        }
+        else if (isIntegerType(maskType)) {
+          VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                            << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "Mask is of type int." << std::endl;
+          int* maskArray = new int[numPoints];
+          herr_t err = reader->getDataSet(mask, maskArray);
+          if (err < 0) {
+            VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                              << __FUNCTION__ << "  " << __LINE__ << "  "
+                              << "Cannot read mask dataset "
+                              << maskName << std::endl;
+          }
+          else {
+            if (maskIsFortranOrder) {
+              for (size_t k = 0; k < numPoints; ++k) {
+                if (maskArray[k] != 0) {
+                  avtGhostData::AddGhostNodeType(mp[k],
+                                                 NODE_NOT_APPLICABLE_TO_PROBLEM);
+                }
+              }
+            }
+            else {
+              // maskArray follows C index order, but                                                                                                                                                                        
+              // mp follows Fortran index order!                                                                                                                                                                             
+              for (size_t k = 0; k < numPoints; ++k) {
+                size_t i0 = k % gdims[0];
+                size_t i1 = (k / gdims[0]) % gdims[1];
+                size_t i2 = (k / gdims[0] / gdims[1]) % gdims[2];
+                size_t kC = i2 + gdims[2]*(i1 + gdims[1]*i0);
+                if (maskArray[kC] != 0) {
+                  avtGhostData::AddGhostNodeType(mp[k],
+                                                 NODE_NOT_APPLICABLE_TO_PROBLEM);
+                }
+              }
+            }
+            delete [] maskArray;
+          }
+        }
+        else {
+          VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                            << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "Mask is of unsupported type." << std::endl;
+        }
+        sgrid->GetPointData()->AddArray(maskedNodes);
+        maskedNodes->Delete();
+      }
+    }
+
     // Cleanup local data
     vpoints->Delete();
 
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Returning data." << std::endl;
+
     return sgrid;
 }
 
