@@ -1041,6 +1041,48 @@ static void PlanePNToQuadric(const double *const plane, double *quadric)
                   plane[1]*plane[4] -
                   plane[2]*plane[5];
 }
+static void QuadraticGToQuadric(const double *const q, double *quadric)
+{
+    quadric[0] = q[0]; // x^2 term
+    quadric[1] = q[1]; // y^2 term
+    quadric[3] = q[2]; // xy term 
+    quadric[6] = q[3]; // x term 
+    quadric[7] = q[4]; // y term
+    quadric[9] = q[5]; // constant term
+}
+static void CirclePRToQuadric(const double *const circle, double *quadric)
+{
+    quadric[0] = 1.0; // x^2 term
+    quadric[1] = 1.0; // y^2 term
+    quadric[6] = -2.0 * circle[0]; // x term 
+    quadric[7] = -2.0 * circle[1]; // y term 
+    quadric[9] = circle[0]*circle[0] + // constant term
+                 circle[1]*circle[1] -
+                 circle[2]*circle[2];
+}
+static void LineXToQuadric(const double *const line, double *quadric)
+{
+    quadric[6] = 1.0;
+    quadric[9] = -line[0]; 
+}
+static void LineYToQuadric(const double *const line, double *quadric)
+{
+    quadric[7] = 1.0;
+    quadric[9] = -line[0]; 
+}
+static void LineGToQuadric(const double *const line, double *quadric)
+{
+    quadric[6] = line[0]; 
+    quadric[7] = line[1]; 
+    quadric[9] = line[2]; 
+}
+static void LinePNToQuadric(const double *const line, double *quadric)
+{
+    quadric[6] = line[2];
+    quadric[7] = line[3];
+    quadric[9] = -line[0]*line[2] -
+                  line[1]*line[3];
+}
 static void PlanePPPToQuadric(const double *const plane, double *quadric)
 {
     // The three points are 'a', 'b' and 'c', the middle point being the
@@ -1217,6 +1259,11 @@ static void QuadricToQuadric(const double *const inquad, double *quadric)
 //   It's not needed for all algorithms and hurts performance, so
 //   this will make it easier to disable later if/when it becoms possible.
 //
+//   Jeremy Meredith, Mon Oct 24 16:03:54 EDT 2011
+//   Added some of the 2D primitives.  Not all of them, but we're
+//   missing a number of the 3D primitives as well, so I only tried to
+//   get a few of the most common ones.
+//
 void
 vtkCSGGrid::AddBoundaries(int nbounds,
     const int *const typeflags, int lcoeffs, const double *const coeffs)
@@ -1269,6 +1316,22 @@ vtkCSGGrid::AddBoundaries(int nbounds,
                 ConePPAToQuadric(&coeffs[coeffidx], &gridBoundaries[quadidx]); coeffidx+=7; break;
             case DBCSG_QUADRIC_G:
                 QuadricToQuadric(&coeffs[coeffidx], &gridBoundaries[quadidx]); coeffidx+=NUM_QCOEFFS; break;
+
+            // some 2d stuff
+                // missing: ELLIPSE_PRR, LINE_RR
+                //  (at least of ones with equations in the silo manual)
+            case DBCSG_QUADRATIC_G:
+                QuadraticGToQuadric(&coeffs[coeffidx], &gridBoundaries[quadidx]); coeffidx+=6; break;
+            case DBCSG_LINE_X:
+                LineXToQuadric(&coeffs[coeffidx], &gridBoundaries[quadidx]); coeffidx+=1; break;
+            case DBCSG_LINE_Y:
+                LineYToQuadric(&coeffs[coeffidx], &gridBoundaries[quadidx]); coeffidx+=1; break;
+            case DBCSG_LINE_PN:
+                LinePNToQuadric(&coeffs[coeffidx], &gridBoundaries[quadidx]); coeffidx+=4; break;
+            case DBCSG_LINE_G:
+                LineGToQuadric(&coeffs[coeffidx], &gridBoundaries[quadidx]); coeffidx+=3; break;
+            case DBCSG_CIRCLE_PR:
+                CirclePRToQuadric(&coeffs[coeffidx], &gridBoundaries[quadidx]); coeffidx+=3; break;
         }
         quadidx += NUM_QCOEFFS;
     }
@@ -2057,6 +2120,9 @@ vtkCSGGrid::DiscretizeSurfaces(
 //    more accurate edges and better performance since it goes through
 //    our improved clipping algorithm.
 //
+//    Jeremy Meredith, Mon Oct 24 16:07:11 EDT 2011
+//    Added support for 2D case.
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid *
@@ -2081,6 +2147,10 @@ vtkCSGGrid::DiscretizeSpace(
     int nX = (int) ((maxX - minX) / tol);
     int nY = (int) ((maxY - minY) / tol);
     int nZ = (int) ((maxZ - minZ) / tol);
+    
+    // in 2D, we would get 0 nodes in Z; we need at least 1 for a valid mesh
+    if (nZ < 1)
+        nZ = 1;
 
     int startZone = specificZone;
     int endZone = startZone + 1;
@@ -2099,8 +2169,17 @@ vtkCSGGrid::DiscretizeSpace(
             coords[0]->SetComponent(j, 0, minX + (maxX-minX)*float(j)/float(nX-1));
         for (int j = 0 ; j < nY ; j++)
             coords[1]->SetComponent(j, 0, minY + (maxY-minY)*float(j)/float(nY-1));
-        for (int j = 0 ; j < nZ ; j++)
-            coords[2]->SetComponent(j, 0, minZ + (maxZ-minZ)*float(j)/float(nZ-1));
+        if (nZ > 1)
+        {
+            // 3D case
+            for (int j = 0 ; j < nZ ; j++)
+                coords[2]->SetComponent(j, 0, minZ + (maxZ-minZ)*float(j)/float(nZ-1));
+        }
+        else
+        {
+            // 2D case
+            coords[2]->SetComponent(0, 0, minZ);
+        }
         int dims[3] = {nX,nY,nZ};
         rgrid->SetDimensions(dims);
         rgrid->SetXCoordinates(coords[0]);
@@ -2199,6 +2278,10 @@ vtkCSGGrid::EvaluateRegionBits(int reg, FixedLengthBitField<16> &bits)
 // Programmer:  Jeremy Meredith
 // Creation:    February 26, 2010
 //
+// Modifications:
+//    Jeremy Meredith, Mon Oct 24 16:07:11 EDT 2011
+//    Added support for 2D case.
+//
 // ****************************************************************************
 bool
 vtkCSGGrid::DiscretizeSpaceMultiPass(double tol,
@@ -2232,6 +2315,10 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(double tol,
     int nY = (int) ((maxY - minY) / tol);
     int nZ = (int) ((maxZ - minZ) / tol);
 
+    // in 2D, we would get 0 nodes in Z; we need at least 1 for a valid mesh
+    if (nZ < 1)
+        nZ = 1;
+
     // set up a rectilinear grid
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
     vtkFloatArray   *coords[3] = {vtkFloatArray::New(),
@@ -2244,8 +2331,17 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(double tol,
         coords[0]->SetComponent(i, 0, minX + (maxX-minX)*float(i)/float(nX-1));
     for (int i = 0 ; i < nY ; i++)
         coords[1]->SetComponent(i, 0, minY + (maxY-minY)*float(i)/float(nY-1));
-    for (int i = 0 ; i < nZ ; i++)
-        coords[2]->SetComponent(i, 0, minZ + (maxZ-minZ)*float(i)/float(nZ-1));
+    if (nZ > 1)
+    {
+        // 3D case
+        for (int i = 0 ; i < nZ ; i++)
+            coords[2]->SetComponent(i, 0, minZ + (maxZ-minZ)*float(i)/float(nZ-1));
+    }
+    else
+    {
+        // 2D case
+        coords[2]->SetComponent(0, 0, minZ);
+    }
     int dims[3] = {nX,nY,nZ};
     rgrid->SetDimensions(dims);
     rgrid->SetXCoordinates(coords[0]);
