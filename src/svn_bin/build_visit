@@ -52,7 +52,28 @@ INITIAL_PWD=$PWD
 
 #First step download the support directory from svn repository..
 bv_PATH=`dirname $0`
+
 bv_PREFIX=$bv_PATH/bv_support/
+
+#check same directory as build_visit
+if [ ! -d $bv_PREFIX ]; then 
+    #check current directory
+    bv_PREFIX=$PWD/bv_support/
+    if [ ! -d $bv_PREFIX ]; then 
+        echo "bv_support does not exist, fetching..."
+        tmp=`which svn`
+        if [ $? != 0 ]; then 
+        echo "svn support not available, no ability to fetch support files"
+        exit 2
+        fi
+        #checkout the support directory
+        #svn co svn+ssh://$SVN_NERSC_NAME@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src/svn_bin/bv_support bv_support
+        svn co http://portal.nersc.gov/svn/visit/trunk/src/svn_bin/bv_support bv_support
+        if [ $? != 0 ]; then
+        echo "download of support files failed. Please contact visit-users mailing list for help. Quitting"
+        fi
+    fi
+fi
 
 #import initialize and run functions..
 . $bv_PREFIX/bv_main.sh

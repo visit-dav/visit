@@ -100,18 +100,18 @@ function apply_netcdf_patch_for_exodusii
     local retval=0
     pushd $NETCDF_BUILD_DIR 1>/dev/null 2>&1
     patch -p0 << \EOF
-*** libsrc/netcdf.h Wed Oct 27 11:50:22 2010
---- libsrc/netcdf.h.ex  Wed Oct 27 11:50:31 2010
+*** libsrc/netcdf.h	Wed Oct 27 11:50:22 2010
+--- libsrc/netcdf.h.ex	Wed Oct 27 11:50:31 2010
 ***************
 *** 141,151 ****
    * applications and utilities.  However, nothing is statically allocated to
    * these sizes internally.
    */
-! #define NC_MAX_DIMS   1024     /* max dimensions per file */
-! #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   8192     /* max variables per file */
-! #define NC_MAX_NAME   256  /* max length of a name */
-! #define NC_MAX_VAR_DIMS   NC_MAX_DIMS /* max per variable dimensions */
+! #define NC_MAX_DIMS	1024	 /* max dimensions per file */
+! #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	8192	 /* max variables per file */
+! #define NC_MAX_NAME	256	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	NC_MAX_DIMS /* max per variable dimensions */
   
   /*
    * The netcdf version 3 functions all return integer error status.
@@ -119,10 +119,10 @@ function apply_netcdf_patch_for_exodusii
    * applications and utilities.  However, nothing is statically allocated to
    * these sizes internally.
    */
-! #define NC_MAX_DIMS   65536    /* max dimensions per file */
-! #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   524288   /* max variables per file */
-! #define NC_MAX_NAME   256  /* max length of a name */
+! #define NC_MAX_DIMS	65536	 /* max dimensions per file */
+! #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	524288	 /* max variables per file */
+! #define NC_MAX_NAME	256	 /* max length of a name */
 ! #define NC_MAX_VAR_DIMS 8      /* max per variable dimensions */
 ! 
   
@@ -131,18 +131,18 @@ function apply_netcdf_patch_for_exodusii
 EOF
     retval1=$?
     patch -p0 << \EOF
-*** libsrc4/netcdf.h    2010-04-12 11:48:02.000000000 -0700
---- libsrc4/netcdf.h.ex 2011-01-03 15:51:46.000000000 -0800
+*** libsrc4/netcdf.h	2010-04-12 11:48:02.000000000 -0700
+--- libsrc4/netcdf.h.ex	2011-01-03 15:51:46.000000000 -0800
 ***************
 *** 199,209 ****
    * applications and utilities.  However, nothing is statically allocated to
    * these sizes internally.
    */
-! #define NC_MAX_DIMS   1024     /* max dimensions per file */
-  #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   8192     /* max variables per file */
-  #define NC_MAX_NAME   256  /* max length of a name */
-! #define NC_MAX_VAR_DIMS   NC_MAX_DIMS /* max per variable dimensions */
+! #define NC_MAX_DIMS	1024	 /* max dimensions per file */
+  #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	8192	 /* max variables per file */
+  #define NC_MAX_NAME	256	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	NC_MAX_DIMS /* max per variable dimensions */
   
   /* In HDF5 files you can set the endianness of variables with
    * nc_def_var_endian(). These defines are used there. */   
@@ -150,29 +150,29 @@ EOF
    * applications and utilities.  However, nothing is statically allocated to
    * these sizes internally.
    */
-! #define NC_MAX_DIMS   65536    /* max dimensions per file */
-  #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   524288   /* max variables per file */
-  #define NC_MAX_NAME   256  /* max length of a name */
-! #define NC_MAX_VAR_DIMS   8        /* max per variable dimensions */
+! #define NC_MAX_DIMS	65536	 /* max dimensions per file */
+  #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	524288	 /* max variables per file */
+  #define NC_MAX_NAME	256	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	8        /* max per variable dimensions */
   
   /* In HDF5 files you can set the endianness of variables with
    * nc_def_var_endian(). These defines are used there. */   
 EOF
     retval2=$?
     patch -p0 << \EOF
-*** libsrc4/netcdf_base.h   2010-01-21 08:00:18.000000000 -0800
---- libsrc4/netcdf_base.h.ex    2011-01-03 16:03:36.000000000 -0800
+*** libsrc4/netcdf_base.h	2010-01-21 08:00:18.000000000 -0800
+--- libsrc4/netcdf_base.h.ex	2011-01-03 16:03:36.000000000 -0800
 ***************
 *** 192,202 ****
    * applications and utilities.  However, nothing is statically allocated to
    * these sizes internally.
    */
-! #define NC_MAX_DIMS   1024     /* max dimensions per file */
-  #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   8192     /* max variables per file */
-  #define NC_MAX_NAME   256  /* max length of a name */
-! #define NC_MAX_VAR_DIMS   NC_MAX_DIMS /* max per variable dimensions */
+! #define NC_MAX_DIMS	1024	 /* max dimensions per file */
+  #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	8192	 /* max variables per file */
+  #define NC_MAX_NAME	256	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	NC_MAX_DIMS /* max per variable dimensions */
   
   /* In HDF5 files you can set the endianness of variables with
    * nc_def_var_endian(). These defines are used there. */   
@@ -180,11 +180,11 @@ EOF
    * applications and utilities.  However, nothing is statically allocated to
    * these sizes internally.
    */
-! #define NC_MAX_DIMS   65536    /* max dimensions per file */
-  #define NC_MAX_ATTRS  8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS   524288   /* max variables per file */
-  #define NC_MAX_NAME   256  /* max length of a name */
-! #define NC_MAX_VAR_DIMS   8        /* max per variable dimensions */
+! #define NC_MAX_DIMS	65536	 /* max dimensions per file */
+  #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	524288	 /* max variables per file */
+  #define NC_MAX_NAME	256	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	8        /* max per variable dimensions */
   
   /* In HDF5 files you can set the endianness of variables with
    * nc_def_var_endian(). These defines are used there. */   

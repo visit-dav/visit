@@ -176,44 +176,44 @@ diff -c a/progs/Makefile Mesa-7.5/progs/Makefile
   
   
   subdirs:
-!   @for dir in $(SUBDIRS) ; do \
-!       if [ -d $$dir ] ; then \
-!           (cd $$dir && $(MAKE)) || exit 1 ; \
-!       fi \
-!   done
+! 	@for dir in $(SUBDIRS) ; do \
+! 		if [ -d $$dir ] ; then \
+! 			(cd $$dir && $(MAKE)) || exit 1 ; \
+! 		fi \
+! 	done
   
   # Dummy install target
   install:
   
   clean:
-!   -@for dir in $(SUBDIRS) tests ; do \
-!       if [ -d $$dir ] ; then \
-!           (cd $$dir && $(MAKE) clean) ; \
-!       fi \
-!   done
+! 	-@for dir in $(SUBDIRS) tests ; do \
+! 		if [ -d $$dir ] ; then \
+! 			(cd $$dir && $(MAKE) clean) ; \
+! 		fi \
+! 	done
 --- 15,36 ----
   
   
   subdirs:
-!   @if test -n "$(SUBDIRS)" ; then \
-!       for dir in $(SUBDIRS) ; do \
-!           if [ -d $$dir ] ; then \
-!               (cd $$dir && $(MAKE)) || exit 1 ; \
-!           fi \
-!       done \
-!   fi
+! 	@if test -n "$(SUBDIRS)" ; then \
+! 		for dir in $(SUBDIRS) ; do \
+! 			if [ -d $$dir ] ; then \
+! 				(cd $$dir && $(MAKE)) || exit 1 ; \
+! 			fi \
+! 		done \
+! 	fi
   
   # Dummy install target
   install:
   
   clean:
-!   -@if test -n "$(SUBDIRS)" ; then \
-!       for dir in $(SUBDIRS) tests ; do \
-!           if [ -d $$dir ] ; then \
-!               (cd $$dir && $(MAKE) clean) ; \
-!           fi \
-!       done \
-!   fi
+! 	-@if test -n "$(SUBDIRS)" ; then \
+! 		for dir in $(SUBDIRS) tests ; do \
+! 			if [ -d $$dir ] ; then \
+! 				(cd $$dir && $(MAKE) clean) ; \
+! 			fi \
+! 		done \
+! 	fi
 EOF
 
     if [[ $? != 0 ]] ; then
@@ -235,23 +235,23 @@ diff -c a/src/mesa/main/compiler.h Mesa-7.5/src/mesa/main/compiler.h
 *** 233,239 ****
   #elif defined(__APPLE__)
   #include <CoreFoundation/CFByteOrder.h>
-  #define CPU_TO_LE32( x )  CFSwapInt32HostToLittle( x )
+  #define CPU_TO_LE32( x )	CFSwapInt32HostToLittle( x )
 ! #else /*__linux__ __APPLE__*/
   #include <sys/endian.h>
-  #define CPU_TO_LE32( x )  bswap32( x )
+  #define CPU_TO_LE32( x )	bswap32( x )
   #endif /*__linux__*/
 --- 233,244 ----
   #elif defined(__APPLE__)
   #include <CoreFoundation/CFByteOrder.h>
-  #define CPU_TO_LE32( x )  CFSwapInt32HostToLittle( x )
+  #define CPU_TO_LE32( x )	CFSwapInt32HostToLittle( x )
 ! #elif defined(_AIX)
-! #define CPU_TO_LE32( x )  x = ((x & 0x000000ff) << 24) | \
-!                   ((x & 0x0000ff00) <<  8) | \
-!                   ((x & 0x00ff0000) >>  8) | \
-!                   ((x & 0xff000000) >> 24);
+! #define CPU_TO_LE32( x )	x = ((x & 0x000000ff) << 24) | \
+! 				    ((x & 0x0000ff00) <<  8) | \
+! 				    ((x & 0x00ff0000) >>  8) | \
+! 				    ((x & 0xff000000) >> 24);
 ! #else /*__linux__*/
   #include <sys/endian.h>
-  #define CPU_TO_LE32( x )  bswap32( x )
+  #define CPU_TO_LE32( x )	bswap32( x )
   #endif /*__linux__*/
 EOF
 
@@ -352,7 +352,7 @@ index a156823..8434491 100644
 +   unsigned char c;
 +
 +   __asm__ __volatile__("lock; decl %0; sete %1":"+m"(*v), "=qm"(c)
-+           ::"memory");
++			::"memory");
 +
 +   return c != 0;
 +}
