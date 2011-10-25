@@ -100,7 +100,7 @@ if test -n "$hookCommonFile"; then
     log "Installing updated hook_common file"
     svnlook cat -r $REV $REPOS $hookCommonFile > $REPOS/hooks/hook_common.sh
     chgrp $VISIT_GROUP_NAME $REPOS/hooks/hook_common.sh
-    chmod u+rwx,g+rwxs,o+rx $REPOS/hooks/hook_common.sh
+    chmod u+rwx,g+rwx,o+rx $REPOS/hooks/hook_common.sh
 fi
 
 #
@@ -122,6 +122,7 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     #
     # Install the file (or at least try to)
     #
+    rm $REPOS/hooks/$bf
     svnlook cat -r $REV $REPOS $f > $REPOS/hooks/$bf
 
     #
@@ -133,7 +134,7 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     if test -s $REPOS/hooks/$bf; then
         log "Installing hook script $bf to $REPOS/hooks/$bf"
         chgrp $VISIT_GROUP_NAME $REPOS/hooks/$bf 1>/dev/null 2>&1
-        chmod u+rwx,g+rwxs,o+rx $REPOS/hooks/$bf 1>/dev/null 2>&1
+        chmod u+rwx,g+rwx,o+rx $REPOS/hooks/$bf 1>/dev/null 2>&1
     else
         log "UN-installing hook script $bf from $REPOS/hooks/$bf"
         rm -f $REPOS/hooks/$bf 1>/dev/null 2>&1
