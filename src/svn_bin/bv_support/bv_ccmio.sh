@@ -105,23 +105,23 @@ diff -c a/config/config.system libccmio-2.6.1/config/config.system
 *************** case ${SYSTEM} in
 *** 85,93 ****
       ppc64-unknown-linux-gnu)
-    echo ppc64-unknown-linux-gnu ;;
+  	echo ppc64-unknown-linux-gnu ;;
   
 !     i386-apple-darwin8.11.1)
-    echo i386-apple-darwin8 ;;
+  	echo i386-apple-darwin8 ;;
   
       *)
           echo unknown
           echo System type ${SYSTEM} not supported! 1>&2 ;;
 --- 85,96 ----
       ppc64-unknown-linux-gnu)
-    echo ppc64-unknown-linux-gnu ;;
+  	echo ppc64-unknown-linux-gnu ;;
   
 !     i386-apple-darwin8* | i386-apple-darwin9* | i386-apple-darwin10*)
-    echo i386-apple-darwin8 ;;
+  	echo i386-apple-darwin8 ;;
   
 +     powerpc-apple-darwin7* | powerpc-apple-darwin8* | powerpc-apple-darwin9* )
-+   echo powerpc-apple-darwin7 ;;
++ 	echo powerpc-apple-darwin7 ;;
 + 
       *)
           echo unknown
@@ -138,17 +138,17 @@ EOF
 function apply_ccmio_261_linux_ppc_patch
 {
   patch -p1 << \EOF
---- visit-build-old/libccmio-2.6.1/config/linux64_2.6-pwr4-glibc_2.3.3/qmake.conf   2009-03-19 21:31:31.207392275 -0400
-+++ visit-build/libccmio-2.6.1/config/linux64_2.6-pwr4-glibc_2.3.3/qmake.conf   2009-03-19 21:31:54.522915173 -0400
+--- visit-build-old/libccmio-2.6.1/config/linux64_2.6-pwr4-glibc_2.3.3/qmake.conf	2009-03-19 21:31:31.207392275 -0400
++++ visit-build/libccmio-2.6.1/config/linux64_2.6-pwr4-glibc_2.3.3/qmake.conf	2009-03-19 21:31:54.522915173 -0400
 @@ -72,7 +72,7 @@
- QMAKE_UIC      = $(QTDIR)/bin/uic
+ QMAKE_UIC		= $(QTDIR)/bin/uic
  
- QMAKE_AR       = ar cq
--QMAKE_RANLIB       = ranlib -X64
-+QMAKE_RANLIB       = ranlib
+ QMAKE_AR		= ar cq
+-QMAKE_RANLIB		= ranlib -X64
++QMAKE_RANLIB		= ranlib
  
- QMAKE_TAR      = tar -cf
- QMAKE_GZIP     = gzip -9f
+ QMAKE_TAR		= tar -cf
+ QMAKE_GZIP		= gzip -9f
 EOF
    if [[ $? != 0 ]] ; then
         warn "Unable to apply linux ppc patch to CCMIO 2.6.1."
@@ -166,69 +166,69 @@ diff -c a/config/aix64_5.1-pwr4/qmake.conf libccmio-2.6.1/config/aix64_5.1-pwr4/
 --- libccmio-2.6.1/config/aix64_5.1-pwr4/qmake.conf
 ***************
 *** 15,21 ****
-  QMAKE_LEXFLAGS        = 
-  QMAKE_YACC        = yacc
-  QMAKE_YACCFLAGS       = -d
-! QMAKE_CFLAGS      = -q64 -ma -qrndsngl -qnomaf -qstrict -DLARGE_FILES
+  QMAKE_LEXFLAGS		= 
+  QMAKE_YACC		= yacc
+  QMAKE_YACCFLAGS		= -d
+! QMAKE_CFLAGS		= -q64 -ma -qrndsngl -qnomaf -qstrict -DLARGE_FILES
   # -qwarn64 turns on too many bogus warnings and shadows real warnings
-  #QMAKE_CFLAGS_WARN_ON = -qwarn64
+  #QMAKE_CFLAGS_WARN_ON	= -qwarn64
   QMAKE_CFLAGS_WARN_ON    =
 --- 15,21 ----
-  QMAKE_LEXFLAGS        = 
-  QMAKE_YACC        = yacc
-  QMAKE_YACCFLAGS       = -d
-! QMAKE_CFLAGS      = -ma -qrndsngl -qnomaf -qstrict -DLARGE_FILES
+  QMAKE_LEXFLAGS		= 
+  QMAKE_YACC		= yacc
+  QMAKE_YACCFLAGS		= -d
+! QMAKE_CFLAGS		= -ma -qrndsngl -qnomaf -qstrict -DLARGE_FILES
   # -qwarn64 turns on too many bogus warnings and shadows real warnings
-  #QMAKE_CFLAGS_WARN_ON = -qwarn64
+  #QMAKE_CFLAGS_WARN_ON	= -qwarn64
   QMAKE_CFLAGS_WARN_ON    =
 ***************
 *** 49,61 ****
-  QMAKE_LINK        = xlC
-  QMAKE_LINK_THREAD = xlC_r
-  QMAKE_LINK_SHLIB  = ld
-! QMAKE_LINK_SHLIB_CMD  = makeC++SharedLib -p 0 -X64 \
-                -o $(TARGETD) \
-                $(LFLAGS) $(OBJECTS) $(OBJMOC) $(LIBS); \
-              $(AR) lib$(QMAKE_TARGET).a $(TARGETD); \
-              $(RANLIB) lib$(QMAKE_TARGET).a; \
-              mv lib$(QMAKE_TARGET).a $(DESTDIR)
-! QMAKE_LFLAGS      = -q64 -qnotempinc
-  QMAKE_LFLAGS_RELEASE  =
-  QMAKE_LFLAGS_DEBUG    =
-  QMAKE_LFLAGS_SHLIB    =
+  QMAKE_LINK		= xlC
+  QMAKE_LINK_THREAD	= xlC_r
+  QMAKE_LINK_SHLIB	= ld
+! QMAKE_LINK_SHLIB_CMD	= makeC++SharedLib -p 0 -X64 \
+  			    -o $(TARGETD) \
+  			    $(LFLAGS) $(OBJECTS) $(OBJMOC) $(LIBS); \
+  			  $(AR) lib$(QMAKE_TARGET).a $(TARGETD); \
+  			  $(RANLIB) lib$(QMAKE_TARGET).a; \
+  			  mv lib$(QMAKE_TARGET).a $(DESTDIR)
+! QMAKE_LFLAGS		= -q64 -qnotempinc
+  QMAKE_LFLAGS_RELEASE	=
+  QMAKE_LFLAGS_DEBUG	=
+  QMAKE_LFLAGS_SHLIB	=
 --- 49,61 ----
-  QMAKE_LINK        = xlC
-  QMAKE_LINK_THREAD = xlC_r
-  QMAKE_LINK_SHLIB  = ld
-! QMAKE_LINK_SHLIB_CMD  = makeC++SharedLib -p 0 \
-                -o $(TARGETD) \
-                $(LFLAGS) $(OBJECTS) $(OBJMOC) $(LIBS); \
-              $(AR) lib$(QMAKE_TARGET).a $(TARGETD); \
-              $(RANLIB) lib$(QMAKE_TARGET).a; \
-              mv lib$(QMAKE_TARGET).a $(DESTDIR)
-! QMAKE_LFLAGS      = -qnotempinc
-  QMAKE_LFLAGS_RELEASE  =
-  QMAKE_LFLAGS_DEBUG    =
-  QMAKE_LFLAGS_SHLIB    =
+  QMAKE_LINK		= xlC
+  QMAKE_LINK_THREAD	= xlC_r
+  QMAKE_LINK_SHLIB	= ld
+! QMAKE_LINK_SHLIB_CMD	= makeC++SharedLib -p 0 \
+  			    -o $(TARGETD) \
+  			    $(LFLAGS) $(OBJECTS) $(OBJMOC) $(LIBS); \
+  			  $(AR) lib$(QMAKE_TARGET).a $(TARGETD); \
+  			  $(RANLIB) lib$(QMAKE_TARGET).a; \
+  			  mv lib$(QMAKE_TARGET).a $(DESTDIR)
+! QMAKE_LFLAGS		= -qnotempinc
+  QMAKE_LFLAGS_RELEASE	=
+  QMAKE_LFLAGS_DEBUG	=
+  QMAKE_LFLAGS_SHLIB	=
 ***************
 *** 77,84 ****
-  QMAKE_MOC     = $(QTDIR)/bin/moc
-  QMAKE_UIC     = $(QTDIR)/bin/uic
+  QMAKE_MOC		= $(QTDIR)/bin/moc
+  QMAKE_UIC		= $(QTDIR)/bin/uic
   
-! QMAKE_AR      = ar -X64 cq
-! QMAKE_RANLIB      = ranlib -X64
+! QMAKE_AR		= ar -X64 cq
+! QMAKE_RANLIB		= ranlib -X64
   
-  QMAKE_TAR     = tar -cf
-  QMAKE_GZIP        = gzip -9f
+  QMAKE_TAR		= tar -cf
+  QMAKE_GZIP		= gzip -9f
 --- 77,84 ----
-  QMAKE_MOC     = $(QTDIR)/bin/moc
-  QMAKE_UIC     = $(QTDIR)/bin/uic
+  QMAKE_MOC		= $(QTDIR)/bin/moc
+  QMAKE_UIC		= $(QTDIR)/bin/uic
   
-! QMAKE_AR      = ar cq
-! QMAKE_RANLIB      = ranlib
+! QMAKE_AR		= ar cq
+! QMAKE_RANLIB		= ranlib
   
-  QMAKE_TAR     = tar -cf
-  QMAKE_GZIP        = gzip -9f
+  QMAKE_TAR		= tar -cf
+  QMAKE_GZIP		= gzip -9f
 EOF
    if [[ $? != 0 ]] ; then
         warn "Unable to apply aix patch to CCMIO 2.6.1."
@@ -311,7 +311,7 @@ function build_ccmio
            if [[ "$MACH" == "Power Macintosh" ]] ; then
                mkdir ${CCMIO_BUILD_DIR}/config/powerpc-apple-darwin7
                cp ${QT_BUILD_DIR}/bin/qmake \
-               ${CCMIO_BUILD_DIR}/config/powerpc-apple-darwin7
+	           ${CCMIO_BUILD_DIR}/config/powerpc-apple-darwin7
                cp ${CCMIO_BUILD_DIR}/config/i386-apple-darwin8/qmake.conf \
                    ${CCMIO_BUILD_DIR}/config/powerpc-apple-darwin7
                cp ${QT_BUILD_DIR}/mkspecs/${QT_PLATFORM}/qplatformdefs.h \
@@ -389,6 +389,7 @@ function build_ccmio
     info "Done with CCMIO"
     return 0
 }
+
 
 function bv_ccmio_build
 {

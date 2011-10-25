@@ -97,12 +97,11 @@ function bv_hdf4_dry_run
 # *************************************************************************** #
 #                          Function 8.3, build_hdf4                           #
 # *************************************************************************** #
-
 function apply_hdf4_421_darwin_patch
 {
    patch -p0 << \EOF
-*** HDF4.2r1.orig/configure Tue Feb  8 10:29:27 2005
---- HDF4.2r1/configure  Thu Apr 26 13:30:56 2007
+*** HDF4.2r1.orig/configure	Tue Feb  8 10:29:27 2005
+--- HDF4.2r1/configure	Thu Apr 26 13:30:56 2007
 *************** done
 *** 5656,5711 ****
   
@@ -480,14 +479,14 @@ function apply_hdf4_421_darwin_patch
 !     {
 !       long i = longval ();
 !       if (i != ((long) (sizeof (int*))))
-!   exit (1);
+! 	exit (1);
 !       fprintf (f, "%ld\n", i);
 !     }
 !   else
 !     {
 !       unsigned long i = ulongval ();
 !       if (i != ((long) (sizeof (int*))))
-!   exit (1);
+! 	exit (1);
 !       fprintf (f, "%lu\n", i);
 !     }
 !   exit (ferror (f) || fclose (f) != 0);
@@ -791,14 +790,14 @@ function apply_hdf4_421_darwin_patch
 ! #    {
 ! #      long i = longval ();
 ! #      if (i != ((long) (sizeof (int*))))
-! # exit (1);
+! #	exit (1);
 ! #      fprintf (f, "%ld\n", i);
 ! #    }
 ! #  else
 ! #    {
 ! #      unsigned long i = ulongval ();
 ! #      if (i != ((long) (sizeof (int*))))
-! # exit (1);
+! #	exit (1);
 ! #      fprintf (f, "%lu\n", i);
 ! #    }
 ! #  exit (ferror (f) || fclose (f) != 0);
@@ -843,8 +842,8 @@ function apply_hdf4_421_darwin_patch
   echo "$as_me:$LINENO: result: $ac_cv_sizeof_intp" >&5
   echo "${ECHO_T}$ac_cv_sizeof_intp" >&6
   cat >>confdefs.h <<_ACEOF
-*** HDF4.2r1.orig/hdf/src/hdfi.h    Mon Jan 24 19:36:44 2005
---- HDF4.2r1/hdf/src/hdfi.h Thu Apr 26 13:39:53 2007
+*** HDF4.2r1.orig/hdf/src/hdfi.h	Mon Jan 24 19:36:44 2005
+--- HDF4.2r1/hdf/src/hdfi.h	Thu Apr 26 13:39:53 2007
 ***************
 *** 10,16 ****
    *                                                                          *
@@ -947,8 +946,8 @@ EOF
 function apply_hdf4_421_ppc_patch
 {
     patch -p0 << \EOF
---- HDF4.2r1/hdf/src/hdfi.h.bak 2004-06-11 21:28:20.763821223 +0200
-+++ HDF4.2r1/hdf/src/hdfi.h 2004-06-11 21:43:34.853673152 +0200
+--- HDF4.2r1/hdf/src/hdfi.h.bak	2004-06-11 21:28:20.763821223 +0200
++++ HDF4.2r1/hdf/src/hdfi.h	2004-06-11 21:43:34.853673152 +0200
 @@ -1318,6 +1318,55 @@
  
  #endif /* IA-64 */
@@ -1012,14 +1011,14 @@ EOF
 function apply_hdf4_421_ppc_patch_endianness
 {
   patch -p0 << \EOF
---- HDF4.2r1/hdf/fmpool/config/fmplinux.h.orig  2009-03-17 21:10:59.240084436 -0700
-+++ HDF4.2r1/hdf/fmpool/config/fmplinux.h   2009-03-17 21:11:24.868152481 -0700
+--- HDF4.2r1/hdf/fmpool/config/fmplinux.h.orig	2009-03-17 21:10:59.240084436 -0700
++++ HDF4.2r1/hdf/fmpool/config/fmplinux.h	2009-03-17 21:11:24.868152481 -0700
 @@ -36,7 +36,7 @@
  #define HAVE_STAT
  #define HAVE_MIN_MAX
  #define HAVE_CDEFS_H
--#define    BYTE_ORDER  LITTLE_ENDIAN   
-+#define    BYTE_ORDER  BIG_ENDIAN  
+-#define	BYTE_ORDER  LITTLE_ENDIAN	
++#define	BYTE_ORDER  BIG_ENDIAN	
  
  #endif /* _FMPCONF_H */
 EOF
@@ -1334,7 +1333,7 @@ function build_hdf4
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
-        --disable-dependency-tracking"
+        --disable-dependency-tracking --disable-fortran"
         if [[ $? != 0 ]] ; then
            warn "HDF4 configure failed.  Giving up"\
                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
@@ -1352,7 +1351,7 @@ function build_hdf4
         $FOTRANARGS \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH\" \
-        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\""
+        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" --disable-fortran"
         if [[ $? != 0 ]] ; then
            warn "HDF4 configure failed.  Giving up.\n"\
                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
