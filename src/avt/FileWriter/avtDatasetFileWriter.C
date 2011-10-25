@@ -1213,6 +1213,11 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
 //    Write atomicproperties and colortables .inc files to same directory
 //    as the pov files.
 //
+//    Jeremy Meredith, Tue Oct 25 13:19:24 EDT 2011
+//    Removed the sprintfs for color table control point positions.  A user
+//    reported that other locales will insert commas instead of periods,
+//    causing problems for POV-Ray attempts to parse them.
+//
 // ****************************************************************************
 
 void
@@ -1282,14 +1287,10 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
         for (int j=0; j<ct.GetNumControlPoints(); j++)
         {
             const ColorControlPoint &pt = ct.GetControlPoints(j);
-            sprintf(num, "%0.3f", pt.GetPosition());
-            ctfile << "  [" << num << " color rgb<";
-            sprintf(num, "%0.4f", float(pt.GetColors()[0])/255.);
-            ctfile << num << " ";
-            sprintf(num, "%0.4f", float(pt.GetColors()[1])/255.);
-            ctfile << num << " ";
-            sprintf(num, "%0.4f", float(pt.GetColors()[2])/255.);
-            ctfile << num << ">]" << endl;
+            ctfile << "  [" << pt.GetPosition() << " color rgb<";
+            ctfile << float(pt.GetColors()[0])/255. << " ";
+            ctfile << float(pt.GetColors()[1])/255. << " ";
+            ctfile << float(pt.GetColors()[2])/255. << ">]" << endl;
         }
         ctfile << "};" << endl;
         ctfile << endl;
