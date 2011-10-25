@@ -22,6 +22,9 @@ Definition:
 //    Brad Whitlock, Fri Jun  6 15:34:53 PDT 2008
 //    Check for Tecplot binary and instantiate the right reader class.
 //
+//    Jeremy Meredith, Tue Oct 25 12:38:28 EDT 2011
+//    Added read options.
+//
 // ****************************************************************************
 #include <avtTecplotBinaryFileFormat.h>
 
@@ -35,9 +38,9 @@ TecplotCommonPluginInfo::SetupDatabase(const char *const *list,
     for (int i = 0 ; i < nList ; i++)
     {
         if(isBinary)
-            ffl[i] = new avtTecplotBinaryFileFormat(list[i]);
+            ffl[i] = new avtTecplotBinaryFileFormat(list[i], readOptions);
         else
-            ffl[i] = new avtTecplotFileFormat(list[i]);
+            ffl[i] = new avtTecplotFileFormat(list[i], readOptions);
     }
     avtSTMDFileFormatInterface *inter 
            = new avtSTMDFileFormatInterface(ffl, nList);

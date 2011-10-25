@@ -179,12 +179,46 @@ FilterTecplotNamesForVisIt(const std::string &input)
 //  Programmer: Brad Whitlock
 //  Creation:   Fri Jun 6 15:32:40 PST 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Oct 25 12:37:42 EDT 2011
+//    Allow user manual override of coordinate axis variables (via options).
+//
 // ****************************************************************************
 
-avtTecplotBinaryFileFormat::avtTecplotBinaryFileFormat(const char *filename)
+avtTecplotBinaryFileFormat::avtTecplotBinaryFileFormat(const char *filename,
+                                                 DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1), zoneNameToZoneList(), scalarToZone()
 {
     tec = 0;
+
+    // options
+    userSpecifiedAxisVars = false;
+    userSpecifiedX = -1;
+    userSpecifiedY = -1;
+    userSpecifiedZ = -1;
+    if (readOpts &&
+        readOpts->FindIndex("Method to determine coordinate axes")>=0)
+    {
+        int index = readOpts->GetEnum("Method to determine coordinate axes");
+        if (index==0) userSpecifiedAxisVars = false;
+        if (index==1) userSpecifiedAxisVars = true;
+    }
+
+    if (readOpts &&
+        readOpts->FindIndex("X axis variable index (or -1 for none)")>=0)
+    {
+        userSpecifiedX = readOpts->GetInt("X axis variable index (or -1 for none)");
+    }
+    if (readOpts &&
+        readOpts->FindIndex("Y axis variable index (or -1 for none)")>=0)
+    {
+        userSpecifiedY = readOpts->GetInt("Y axis variable index (or -1 for none)");
+    }
+    if (readOpts &&
+        readOpts->FindIndex("Z axis variable index (or -1 for none)")>=0)
+    {
+        userSpecifiedZ = readOpts->GetInt("Z axis variable index (or -1 for none)");
+    }
 }
 
 
@@ -515,6 +549,8 @@ avtTecplotBinaryFileFormat::GetMesh(int domain, const char *meshname)
 // Creation:   Fri Jun 13 14:05:41 PDT 2008
 //
 // Modifications:
+//    Jeremy Meredith, Tue Oct 25 12:37:42 EDT 2011
+//    Allow user manual override of coordinate axis variables (via options).
 //   
 // ****************************************************************************
 
@@ -527,14 +563,32 @@ avtTecplotBinaryFileFormat::GetPoints(int zoneId, int ndims)
     // Read the ndims, nnodes, ncells, origin from file.
     int nnodes = File()->zones[zoneId].GetNumNodes();
 
+    // Get coordinate axis names.
+    std::string coordnameX = File()->CoordinateVariable(0);
+    std::string coordnameY = File()->CoordinateVariable(1);
+    std::string coordnameZ = File()->CoordinateVariable(2);
+    if (userSpecifiedAxisVars)
+    {
+        int nvars = File()->titleAndVars.varNames.size();
+        coordnameX = "";
+        coordnameY = "";
+        coordnameZ = "";
+        if (userSpecifiedX >= 0 && userSpecifiedX < nvars)
+            coordnameX = File()->titleAndVars.varNames[userSpecifiedX];
+        if (userSpecifiedY >= 0 && userSpecifiedY < nvars)
+            coordnameY = File()->titleAndVars.varNames[userSpecifiedY];
+        if (userSpecifiedZ >= 0 && userSpecifiedZ < nvars)
+            coordnameZ = File()->titleAndVars.varNames[userSpecifiedZ];
+    }
+
     // Read the X coordinates from the file.
     float *xarray = new float[nnodes];
-    if(!File()->ReadVariableAsFloat(zoneId, File()->CoordinateVariable(0), xarray))
+    if(!File()->ReadVariableAsFloat(zoneId, coordnameX, xarray))
         memset(xarray, 0, nnodes * sizeof(float));
 
     // Read the Y coordinates from the file.
     float *yarray = new float[nnodes];
-    if(!File()->ReadVariableAsFloat(zoneId, File()->CoordinateVariable(1), yarray))
+    if(!File()->ReadVariableAsFloat(zoneId, coordnameY, yarray))
         memset(yarray, 0, nnodes * sizeof(float));
 
     // Read the Z coordinates from the file.
@@ -542,7 +596,7 @@ avtTecplotBinaryFileFormat::GetPoints(int zoneId, int ndims)
     if(ndims > 2)
     {
         zarray = new float[nnodes];
-        if(!File()->ReadVariableAsFloat(zoneId, File()->CoordinateVariable(2), zarray))
+        if(!File()->ReadVariableAsFloat(zoneId, coordnameZ, zarray))
              memset(zarray, 0, nnodes * sizeof(float));
     }
 

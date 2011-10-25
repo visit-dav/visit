@@ -15,6 +15,7 @@ TecplotPluginInfo.C
 SET(LIBM_SOURCES
 TecplotMDServerPluginInfo.C
 ${COMMON_SOURCES}
+avtTecplotOptions.C
 avtTecplotFileFormat.C
 avtTecplotBinaryFileFormat.C
 TecplotFile.C
@@ -23,6 +24,7 @@ TecplotFile.C
 SET(LIBE_SOURCES
 TecplotEnginePluginInfo.C
 ${COMMON_SOURCES}
+avtTecplotOptions.C
 avtTecplotFileFormat.C
 avtTecplotBinaryFileFormat.C
 avtTecplotWriter.C
@@ -83,3 +85,4 @@ ENDIF(VISIT_PARALLEL)
 VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
 VISIT_PLUGIN_TARGET_FOLDER(databases ${INSTALLTARGETS})
+

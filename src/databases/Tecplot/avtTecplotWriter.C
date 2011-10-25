@@ -71,9 +71,10 @@ using     std::vector;
 #define FLOAT_COLUMN_WIDTH 14
 #define INT_COLUMN_WIDTH   11
 
-avtTecplotWriter::avtTecplotWriter()
+avtTecplotWriter::avtTecplotWriter(DBOptionsAttributes *)
 {
     variablesWritten = false;
+    // no options used
 }
 
 avtTecplotWriter::~avtTecplotWriter()
