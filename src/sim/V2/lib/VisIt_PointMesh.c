@@ -44,45 +44,40 @@ int
 VisIt_PointMesh_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(PointMesh_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_PointMesh_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(PointMesh_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_PointMesh_setCoordsXY(visit_handle obj, visit_handle x, visit_handle y)
 {
     VISIT_DYNAMIC_EXECUTE(PointMesh_setCoordsXY,
-                    int (*)(visit_handle,visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle,visit_handle), 
-                    (*cb)(obj,x,y));
+                    int, (visit_handle,visit_handle,visit_handle), 
+                    (obj,x,y));
 }
 
 int
 VisIt_PointMesh_setCoordsXYZ(visit_handle obj, visit_handle x, visit_handle y, visit_handle z)
 {
     VISIT_DYNAMIC_EXECUTE(PointMesh_setCoordsXYZ,
-                    int (*)(visit_handle,visit_handle,visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle,visit_handle,visit_handle), 
-                    (*cb)(obj,x,y,z));
+                    int, (visit_handle,visit_handle,visit_handle,visit_handle), 
+                    (obj,x,y,z));
 }
 
 int
 VisIt_PointMesh_setCoords(visit_handle obj, visit_handle c)
 {
     VISIT_DYNAMIC_EXECUTE(PointMesh_setCoords,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(obj,c));
+                    int, (visit_handle,visit_handle), 
+                    (obj,c));
 }
 
 int
@@ -90,9 +85,8 @@ VisIt_PointMesh_getCoords(visit_handle obj, int *ndims, int *coordMode,
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
 {
     VISIT_DYNAMIC_EXECUTE(PointMesh_getCoords,
-                    int (*)(visit_handle,int*,int*,visit_handle*,visit_handle*,visit_handle*,visit_handle*), 
-                    int (*cb)(visit_handle,int*,int*,visit_handle*,visit_handle*,visit_handle*,visit_handle*), 
-                    (*cb)(obj,ndims,coordMode,x,y,z,c));
+                    int, (visit_handle,int*,int*,visit_handle*,visit_handle*,visit_handle*,visit_handle*), 
+                    (obj,ndims,coordMode,x,y,z,c));
 }
 
 /************************** Fortran callable routines *************************/

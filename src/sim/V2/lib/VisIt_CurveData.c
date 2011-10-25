@@ -44,27 +44,24 @@ int
 VisIt_CurveData_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(CurveData_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_CurveData_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(CurveData_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_CurveData_setCoordsXY(visit_handle obj, visit_handle x, visit_handle y)
 {
     VISIT_DYNAMIC_EXECUTE(CurveData_setCoordsXY,
-                    int (*)(visit_handle,visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle,visit_handle), 
-                    (*cb)(obj,x,y));
+                    int, (visit_handle,visit_handle,visit_handle), 
+                    (obj,x,y));
 }
 
 /************************** Fortran callable routines *************************/

@@ -44,45 +44,40 @@ int
 VisIt_NameList_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(NameList_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_NameList_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(NameList_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_NameList_addName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(NameList_addName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_NameList_getNumName(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(NameList_getNumName,
-        int (*)(visit_handle, int *),
-        int (*cb)(visit_handle, int *),
-        (*cb)(h, val));
+        int, (visit_handle, int *),
+        (h, val));
 }
 
 int
 VisIt_NameList_getName(visit_handle h, int i, char **val)
 {
-    VISIT_DYNAMIC_EXECUTE(NameList_addName,
-        int (*)(visit_handle, int, char **),
-        int (*cb)(visit_handle, int, char **),
-        (*cb)(h, i, val));
+    VISIT_DYNAMIC_EXECUTE(NameList_getName,
+        int, (visit_handle, int, char **),
+        (h, i, val));
 }
 
 

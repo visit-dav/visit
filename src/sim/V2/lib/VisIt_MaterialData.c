@@ -44,45 +44,40 @@ int
 VisIt_MaterialData_alloc(visit_handle *h)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialData_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(h))
+                    int, (visit_handle*),
+                    (h))
 }
 
 int
 VisIt_MaterialData_free(visit_handle h)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialData_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(h));
+                    int, (visit_handle), 
+                    (h));
 }
 
 int
 VisIt_MaterialData_appendCells(visit_handle h, int ncells)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialData_appendCells,
-                    int (*)(visit_handle,int), 
-                    int (*cb)(visit_handle,int), 
-                    (*cb)(h,ncells));
+                    int, (visit_handle,int), 
+                    (h,ncells));
 }
 
 int
 VisIt_MaterialData_addMaterial(visit_handle h, const char *matName, int *matno)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialData_addMaterial,
-                    int (*)(visit_handle,const char*,int *), 
-                    int (*cb)(visit_handle,const char*, int *), 
-                    (*cb)(h,matName,matno));
+                    int, (visit_handle,const char*,int *), 
+                    (h,matName,matno));
 }
 
 int
 VisIt_MaterialData_addCleanCell(visit_handle h, int cell, int matno)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialData_addCleanCell,
-                    int (*)(visit_handle,int,int), 
-                    int (*cb)(visit_handle,int,int), 
-                    (*cb)(h,cell,matno));
+                    int, (visit_handle,int,int), 
+                    (h,cell,matno));
 }
 
 int
@@ -90,18 +85,16 @@ VisIt_MaterialData_addMixedCell(visit_handle h, int cell,
    const int *matnos, const float *mixvf, int nmats)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialData_addMixedCell,
-                    int (*)(visit_handle,int,const int*,const float*,int), 
-                    int (*cb)(visit_handle,int,const int*,const float*,int), 
-                    (*cb)(h,cell,matnos,mixvf,nmats));
+                    int, (visit_handle,int,const int*,const float*,int), 
+                    (h,cell,matnos,mixvf,nmats));
 }
 
 int
 VisIt_MaterialData_setMaterials(visit_handle h, visit_handle matlist)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialData_setMaterials,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(h,matlist));
+                    int, (visit_handle,visit_handle), 
+                    (h,matlist));
 }
 
 int
@@ -110,9 +103,8 @@ VisIt_MaterialData_setMixedMaterials(visit_handle h,
     visit_handle mix_next, visit_handle mix_vf)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialData_setMixedMaterials,
-                    int (*)(visit_handle,visit_handle,visit_handle,visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle,visit_handle,visit_handle,visit_handle), 
-                    (*cb)(h,mix_mat,mix_zone,mix_next,mix_vf));
+                    int, (visit_handle,visit_handle,visit_handle,visit_handle,visit_handle), 
+                    (h,mix_mat,mix_zone,mix_next,mix_vf));
 }
 
 /************************** Fortran callable routines *************************/

@@ -44,27 +44,24 @@ int
 VisIt_DomainList_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(DomainList_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_DomainList_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(DomainList_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_DomainList_setDomains(visit_handle obj, int alldoms, visit_handle mydoms)
 {
     VISIT_DYNAMIC_EXECUTE(DomainList_setDomains,
-                    int (*)(visit_handle,int,visit_handle), 
-                    int (*cb)(visit_handle,int,visit_handle), 
-                    (*cb)(obj,alldoms,mydoms));
+                    int, (visit_handle,int,visit_handle), 
+                    (obj,alldoms,mydoms));
 }
 
 /************************** Fortran callable routines *************************/

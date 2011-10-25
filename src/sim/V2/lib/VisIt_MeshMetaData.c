@@ -44,432 +44,384 @@ int
 VisIt_MeshMetaData_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_MeshMetaData_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_MeshMetaData_setName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setMeshType(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setMeshType,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getMeshType(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getMeshType,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setTopologicalDimension(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setTopologicalDimension,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getTopologicalDimension(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getTopologicalDimension,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setSpatialDimension(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setSpatialDimension,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getSpatialDimension(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getSpatialDimension,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setNumDomains(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setNumDomains,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getNumDomains(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getNumDomains,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setDomainTitle(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setDomainTitle,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getDomainTitle(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getDomainTitle,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setDomainPieceName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setDomainPieceName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getDomainPieceName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getDomainPieceName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_addDomainName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_addDomainName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getNumDomainName(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getNumDomainName,
-        int (*)(visit_handle, int *),
-        int (*cb)(visit_handle, int *),
-        (*cb)(h, val));
+        int, (visit_handle, int *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getDomainName(visit_handle h, int i, char **val)
 {
-    VISIT_DYNAMIC_EXECUTE(MeshMetaData_addDomainName,
-        int (*)(visit_handle, int, char **),
-        int (*cb)(visit_handle, int, char **),
-        (*cb)(h, i, val));
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_getDomainName,
+        int, (visit_handle, int, char **),
+        (h, i, val));
 }
 
 int
 VisIt_MeshMetaData_setNumGroups(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setNumGroups,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getNumGroups(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getNumGroups,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setGroupTitle(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setGroupTitle,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getGroupTitle(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getGroupTitle,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setGroupPieceName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setGroupPieceName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getGroupPieceName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getGroupPieceName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_addGroupId(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_addGroupId,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getNumGroupId(visit_handle h, int *n)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getNumGroupId,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, n));
+        int, (visit_handle, int*),
+        (h, n));
 }
 
 int
 VisIt_MeshMetaData_getGroupId(visit_handle h, int i, int *val)
 {
-    VISIT_DYNAMIC_EXECUTE(MeshMetaData_getNumGroupId,
-        int (*)(visit_handle, int,int*),
-        int (*cb)(visit_handle, int,int*),
-        (*cb)(h, i, val));
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_getGroupId,
+        int, (visit_handle, int,int*),
+        (h, i, val));
 }
 
 int
 VisIt_MeshMetaData_setXUnits(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setXUnits,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getXUnits(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getXUnits,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setYUnits(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setYUnits,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getYUnits(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getYUnits,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setZUnits(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setZUnits,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getZUnits(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getZUnits,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setXLabel(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setXLabel,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getXLabel(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getXLabel,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setYLabel(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setYLabel,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getYLabel(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getYLabel,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setZLabel(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setZLabel,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getZLabel(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getZLabel,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setCellOrigin(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setCellOrigin,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getCellOrigin(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getCellOrigin,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setNodeOrigin(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setNodeOrigin,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getNodeOrigin(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getNodeOrigin,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setHasSpatialExtents(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setHasSpatialExtents,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getHasSpatialExtents(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getHasSpatialExtents,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_setSpatialExtents(visit_handle h, double val[6])
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setSpatialExtents,
-        int (*)(visit_handle, double[6]),
-        int (*cb)(visit_handle, double[6]),
-        (*cb)(h, val));
+        int, (visit_handle, double[6]),
+        (h, val));
 }
 
 int
 VisIt_MeshMetaData_getSpatialExtents(visit_handle h, double val[6])
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_getSpatialExtents,
-        int (*)(visit_handle, double[6]),
-        int (*cb)(visit_handle, double[6]),
-        (*cb)(h, val));
+        int, (visit_handle, double[6]),
+        (h, val));
 }
 
 

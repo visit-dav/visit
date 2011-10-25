@@ -44,108 +44,96 @@ int
 VisIt_CurveMetaData_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_CurveMetaData_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_CurveMetaData_setName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_setName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_CurveMetaData_getName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_getName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_CurveMetaData_setXUnits(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_setXUnits,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_CurveMetaData_getXUnits(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_getXUnits,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_CurveMetaData_setYUnits(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_setYUnits,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_CurveMetaData_getYUnits(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_getYUnits,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_CurveMetaData_setXLabel(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_setXLabel,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_CurveMetaData_getXLabel(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_getXLabel,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_CurveMetaData_setYLabel(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_setYLabel,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_CurveMetaData_getYLabel(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(CurveMetaData_getYLabel,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 

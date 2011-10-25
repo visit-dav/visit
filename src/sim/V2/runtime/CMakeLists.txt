@@ -65,6 +65,11 @@ simv2_VariableData.C
 simv2_VariableMetaData.C
 )
 
+# If VisIt is static then we need some static symbol lookup functions
+IF(VISIT_STATIC)
+    SET(LIBSIM_STATIC_SOURCES SimStaticSymbolLocator.C)
+ENDIF(VISIT_STATIC)
+
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
@@ -116,7 +121,7 @@ ${VTK_LIBRARY_DIRS}
 ${ICET_LIBRARY_DIR}
 )
 
-ADD_LIBRARY(simV2runtime_ser ${LIBSIM_RUNTIME_SOURCES})
+ADD_LIBRARY(simV2runtime_ser ${LIBSIM_RUNTIME_SOURCES} ${LIBSIM_STATIC_SOURCES})
 TARGET_LINK_LIBRARIES(simV2runtime_ser
     engine_ser
 )
@@ -127,7 +132,7 @@ ENDIF(NOT APPLE)
 VISIT_INSTALL_TARGETS(simV2runtime_ser)
 
 IF(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(simV2runtime_par ${LIBSIM_RUNTIME_SOURCES})
+    ADD_PARALLEL_LIBRARY(simV2runtime_par ${LIBSIM_RUNTIME_SOURCES} ${LIBSIM_STATIC_SOURCES})
     TARGET_LINK_LIBRARIES(simV2runtime_par
         engine_par
     )

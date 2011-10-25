@@ -77,6 +77,9 @@ pad(const QString &s, int len)
 //  Creation:    Thu Mar  4 14:18:29 PST 2010
 //
 //  Modifications:
+//    Brad Whitlock, Tue Oct 25 09:36:22 PDT 2011
+//    I changed the format of the VISIT_DYNAMIC_EXECUTE macro and fixed up
+//    some function mismatches.
 //
 // ****************************************************************************
 
@@ -116,9 +119,8 @@ class AttsGeneratorField : public virtual Field
           << "(visit_handle h, " << CArgument() << " val)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_set" << Name << "," << endl;
-        h << "        int (*)(visit_handle, " << CArgument() << ")," << endl;
-        h << "        int (*cb)(visit_handle, " << CArgument() << ")," << endl;
-        h << "        (*cb)(h, val));" << endl;
+        h << "        int, (visit_handle, " << CArgument() << ")," << endl;
+        h << "        (h, val));" << endl;
         h << "}" << endl;
         h << endl;
 
@@ -126,9 +128,8 @@ class AttsGeneratorField : public virtual Field
           << "(visit_handle h, " << CArgument() << " *val)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << Name << "," << endl;
-        h << "        int (*)(visit_handle, " << CArgument() << "*)," << endl;
-        h << "        int (*cb)(visit_handle, " << CArgument() << "*)," << endl;
-        h << "        (*cb)(h, val));" << endl;
+        h << "        int, (visit_handle, " << CArgument() << "*)," << endl;
+        h << "        (h, val));" << endl;
         h << "}" << endl;
         h << endl;
     }
@@ -322,27 +323,24 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
           << "(visit_handle h, int val)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_add" << sing() << "," << endl;
-        h << "        int (*)(visit_handle, int)," << endl;
-        h << "        int (*cb)(visit_handle, int)," << endl;
-        h << "        (*cb)(h, val));" << endl;
+        h << "        int, (visit_handle, int)," << endl;
+        h << "        (h, val));" << endl;
         h << "}" << endl;
         h << endl;
         h << "int\nVisIt_" << classname << "_getNum" << sing()
           << "(visit_handle h, int *n)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_getNum" << sing() << "," << endl;
-        h << "        int (*)(visit_handle, int*)," << endl;
-        h << "        int (*cb)(visit_handle, int*)," << endl;
-        h << "        (*cb)(h, n));" << endl;
+        h << "        int, (visit_handle, int*)," << endl;
+        h << "        (h, n));" << endl;
         h << "}" << endl;
         h << endl;
         h << "int\nVisIt_" << classname << "_get" << sing()
           << "(visit_handle h, int i, int *val)" << endl;
         h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_getNum" << sing() << "," << endl;
-        h << "        int (*)(visit_handle, int,int*)," << endl;
-        h << "        int (*cb)(visit_handle, int,int*)," << endl;
-        h << "        (*cb)(h, i, val));" << endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << sing() << "," << endl;
+        h << "        int, (visit_handle, int, int*)," << endl;
+        h << "        (h, i, val));" << endl;
         h << "}" << endl;
         h << endl;
     }
@@ -613,9 +611,8 @@ class AttsGeneratorString : public virtual String , public virtual AttsGenerator
           << "(visit_handle h, const char *val)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_set" << Name << "," << endl;
-        h << "        int (*)(visit_handle, const char *)," << endl;
-        h << "        int (*cb)(visit_handle, const char *)," << endl;
-        h << "        (*cb)(h, val));" << endl;
+        h << "        int, (visit_handle, const char *)," << endl;
+        h << "        (h, val));" << endl;
         h << "}" << endl;
         h << endl;
 
@@ -623,9 +620,8 @@ class AttsGeneratorString : public virtual String , public virtual AttsGenerator
           << "(visit_handle h, char **val)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << Name << "," << endl;
-        h << "        int (*)(visit_handle, char **)," << endl;
-        h << "        int (*cb)(visit_handle, char **)," << endl;
-        h << "        (*cb)(h, val));" << endl;
+        h << "        int, (visit_handle, char **)," << endl;
+        h << "        (h, val));" << endl;
         h << "}" << endl;
         h << endl;
     }
@@ -755,9 +751,8 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
           << "(visit_handle h, const char *val)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_add" << sing() << "," << endl;
-        h << "        int (*)(visit_handle, const char *)," << endl;
-        h << "        int (*cb)(visit_handle, const char *)," << endl;
-        h << "        (*cb)(h, val));" << endl;
+        h << "        int, (visit_handle, const char *)," << endl;
+        h << "        (h, val));" << endl;
         h << "}" << endl;
         h << endl;
 
@@ -765,19 +760,17 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
           << "(visit_handle h, int *val)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_getNum" << sing() << "," << endl;
-        h << "        int (*)(visit_handle, int *)," << endl;
-        h << "        int (*cb)(visit_handle, int *)," << endl;
-        h << "        (*cb)(h, val));" << endl;
+        h << "        int, (visit_handle, int *)," << endl;
+        h << "        (h, val));" << endl;
         h << "}" << endl;
         h << endl;
 
         h << "int\nVisIt_" << classname << "_get" << sing()
           << "(visit_handle h, int i, char **val)" << endl;
         h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_add" << sing() << "," << endl;
-        h << "        int (*)(visit_handle, int, char **)," << endl;
-        h << "        int (*cb)(visit_handle, int, char **)," << endl;
-        h << "        (*cb)(h, i, val));" << endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << sing() << "," << endl;
+        h << "        int, (visit_handle, int, char **)," << endl;
+        h << "        (h, i, val));" << endl;
         h << "}" << endl;
         h << endl;
     }
@@ -1041,9 +1034,8 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
           << "(visit_handle h, visit_handle val)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_add" << sing() << "," << endl;
-        h << "        int (*)(visit_handle, visit_handle)," << endl;
-        h << "        int (*cb)(visit_handle, visit_handle)," << endl;
-        h << "        (*cb)(h, val));" << endl;
+        h << "        int, (visit_handle, visit_handle)," << endl;
+        h << "        (h, val));" << endl;
         h << "}" << endl;
         h << endl;
 
@@ -1051,19 +1043,17 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
           << "(visit_handle h, int *val)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_getNum" << sing() << "," << endl;
-        h << "        int (*)(visit_handle, int *)," << endl;
-        h << "        int (*cb)(visit_handle, int *)," << endl;
-        h << "        (*cb)(h, val));" << endl;
+        h << "        int, (visit_handle, int *)," << endl;
+        h << "        (h, val));" << endl;
         h << "}" << endl;
         h << endl;
 
         h << "int\nVisIt_" << classname << "_get" << sing()
           << "(visit_handle h, int i, visit_handle *val)" << endl;
         h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_add" << sing() << "," << endl;
-        h << "        int (*)(visit_handle, int, visit_handle *)," << endl;
-        h << "        int (*cb)(visit_handle, int, visit_handle *)," << endl;
-        h << "        (*cb)(h, i, val));" << endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << sing() << "," << endl;
+        h << "        int, (visit_handle, int, visit_handle *)," << endl;
+        h << "        (h, i, val));" << endl;
         h << "}" << endl;
         h << endl;
     }
@@ -1564,18 +1554,16 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << "VisIt_" << name << "_alloc(visit_handle *obj)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << name << "_alloc," << endl;
-        h << "                    int (*)(visit_handle*)," << endl;
-        h << "                    int (*cb)(visit_handle*)," << endl;
-        h << "                    (*cb)(obj))" << endl;
+        h << "                    int, (visit_handle*)," << endl;
+        h << "                    (obj))" << endl;
         h << "}" << endl;
         h << endl;
         h << "int" << endl;
         h << "VisIt_" << name << "_free(visit_handle obj)" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << name << "_free," << endl;
-        h << "                    int (*)(visit_handle), " << endl;
-        h << "                    int (*cb)(visit_handle), " << endl;
-        h << "                    (*cb)(obj));" << endl;
+        h << "                    int, (visit_handle), " << endl;
+        h << "                    (obj));" << endl;
         h << "}" << endl;
         h << endl;
 

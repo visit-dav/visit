@@ -44,54 +44,48 @@ int
 VisIt_DomainBoundaries_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(DomainBoundaries_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_DomainBoundaries_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(DomainBoundaries_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_DomainBoundaries_set_type(visit_handle obj, int type)
 {
     VISIT_DYNAMIC_EXECUTE(DomainBoundaries_set_type,
-                    int (*)(visit_handle,int), 
-                    int (*cb)(visit_handle,int), 
-                    (*cb)(obj, type));
+                    int, (visit_handle,int), 
+                    (obj, type));
 }
 
 int
 VisIt_DomainBoundaries_set_numDomains(visit_handle obj, int numDomains)
 {
     VISIT_DYNAMIC_EXECUTE(DomainBoundaries_set_numDomains,
-                    int (*)(visit_handle,int), 
-                    int (*cb)(visit_handle,int), 
-                    (*cb)(obj, numDomains));
+                    int, (visit_handle,int), 
+                    (obj, numDomains));
 }
 
 int
 VisIt_DomainBoundaries_set_amrIndices(visit_handle obj, int patch, int level, const int extents[6])
 {
     VISIT_DYNAMIC_EXECUTE(DomainBoundaries_set_amrIndices,
-                    int (*)(visit_handle,int,int,const int[6]), 
-                    int (*cb)(visit_handle,int,int,const int[6]), 
-                    (*cb)(obj, patch, level, extents));
+                    int, (visit_handle,int,int,const int[6]), 
+                    (obj, patch, level, extents));
 }
 
 int
 VisIt_DomainBoundaries_set_rectIndices(visit_handle obj, int dom, const int extents[6])
 {
     VISIT_DYNAMIC_EXECUTE(DomainBoundaries_set_rectIndices,
-                    int (*)(visit_handle,int,const int[6]), 
-                    int (*cb)(visit_handle,int,const int[6]), 
-                    (*cb)(obj, dom, extents));
+                    int, (visit_handle,int,const int[6]), 
+                    (obj, dom, extents));
 }
 
 /************************** Fortran callable routines *************************/

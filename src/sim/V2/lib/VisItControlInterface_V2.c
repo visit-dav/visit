@@ -51,7 +51,9 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 #else
+#ifndef VISIT_STATIC
 #include <dlfcn.h>
+#endif
 #include <netdb.h>
 #include <unistd.h>
 #include <netinet/in.h>
@@ -131,11 +133,11 @@ typedef struct
     void  (*debug_logs)(int,const char *);
 } control_callback_t;
 
-#define STRUCT_MEMBER(F,T)  void (*set_##F)(T, void*);
+#define STRUCT_MEMBER(F, FR, FA)  void (*set_##F)(FR (*) FA, void*);
 
 typedef struct
 {
-    DECLARE_DATA_CALLBACKS(STRUCT_MEMBER, NO_ARGS)
+    DECLARE_DATA_CALLBACKS(STRUCT_MEMBER)
 } data_callback_t;
 
 typedef struct
@@ -157,15 +159,17 @@ static visit_callback_t *callbacks = NULL;
 #ifdef _WIN32
 #define VISIT_SOCKET         SOCKET
 #define VISIT_INVALID_SOCKET INVALID_SOCKET
-
+#ifndef VISIT_STATIC
 static HMODULE     dl_handle;
+#endif
 static SOCKET      listenSocket = VISIT_INVALID_SOCKET;
 static SOCKET      engineSocket = VISIT_INVALID_SOCKET;
 #else
 #define VISIT_SOCKET         int
 #define VISIT_INVALID_SOCKET -1
-
+#ifndef VISIT_STATIC
 static void       *dl_handle = NULL;
+#endif
 static int         listenSocket = VISIT_INVALID_SOCKET;
 static int         engineSocket = VISIT_INVALID_SOCKET;
 #endif
@@ -1370,8 +1374,11 @@ static void RemoveSimFile(void)
 *   Brad Whitlock, Thu Nov 25 23:26:23 PST 2010
 *   Ported to Windows.
 *
+*   Brad Whitlock, Mon Oct 24 09:45:42 PDT 2011
+*   Wrap it with VISIT_STATIC since we don't use them in that case.
+*
 *******************************************************************************/
-
+#ifndef VISIT_STATIC
 void *
 visit_get_runtime_function(const char *name)
 {
@@ -1390,6 +1397,7 @@ visit_get_runtime_function(const char *name)
     LIBSIM_API_LEAVE1(visit_get_runtime_function, "func=%p", (void*)f);
     return f;
 }
+#endif
 
 /*******************************************************************************
 *
@@ -1400,9 +1408,11 @@ visit_get_runtime_function(const char *name)
 * Author: Brad Whitlock
 *
 * Modifications:
+*   Brad Whitlock, Mon Oct 24 09:44:38 PDT 2011
+*   Wrap it all with VISIT_STATIC since we don't use them in that case.
 *
 *******************************************************************************/
-
+#ifndef VISIT_STATIC
 #ifdef _WIN32
 static int LoadVisItLibrary_Windows(void)
 {
@@ -1518,6 +1528,7 @@ static int LoadVisItLibrary_UNIX(void)
     return (dl_handle != NULL) ? VISIT_OKAY : VISIT_ERROR;
 }
 #endif
+#endif
 
 /*******************************************************************************
 *
@@ -1528,11 +1539,14 @@ static int LoadVisItLibrary_UNIX(void)
 * Author: Brad Whitlock
 *
 * Modifications:
+*   Brad Whitlock, Mon Oct 24 09:47:15 PDT 2011
+*   Do nothing if we're building statically.
 *
 *******************************************************************************/
 
 static void CloseVisItLibrary(void)
 {
+#ifndef VISIT_STATIC
 #ifdef _WIN32
     if(dl_handle != NULL)
     {
@@ -1542,6 +1556,7 @@ static void CloseVisItLibrary(void)
 #else
     /* Call dlclose(dl_handle) ???*/
     dl_handle = NULL;
+#endif
 #endif
 }
 
@@ -1571,10 +1586,39 @@ static void CloseVisItLibrary(void)
 *   I moved the code to load libraries into helper functions to separate out
 *   some Windows-only logic.
 *
+*   Brad Whitlock, Mon Oct 24 09:43:36 PDT 2011
+*   Add case for static builds where we just access the function that we want
+*   instead of opening it dynamically.
+*
 *******************************************************************************/
 
 static int LoadVisItLibrary(void)
 {
+#ifdef VISIT_STATIC
+/* Static */
+#define CONTROL_DLSYM(N, FR, FA) \
+    extern FR simv2_##N FA; \
+    callbacks->control.N = simv2_##N;
+
+#define DATA_DLSYM(N, FR, FA) \
+    extern void simv2_set_##N(FR (*) FA, void *); \
+    callbacks->data.set_##N = simv2_set_##N;
+
+    LIBSIM_API_ENTER(LoadVisItLibrary);
+#else
+/* Dynamic */
+#define SAFE_DLSYM(D, NAME, SIMV2NAME, FR, FA) \
+    callbacks->D.NAME = (FR (*) FA)visit_get_runtime_function(#SIMV2NAME); \
+    if (!callbacks->D.NAME) \
+    { \
+        CloseVisItLibrary();\
+        LIBSIM_API_LEAVE2(LoadVisItLibrary, "%s: return %d", lastError, FALSE); \
+        return FALSE; \
+    }
+
+#define CONTROL_DLSYM(N, FR, FA) SAFE_DLSYM(control, N, simv2_##N, FR, FA)
+#define DATA_DLSYM(N, FR, FA)    SAFE_DLSYM(data,    set_##N, simv2_set_##N, void, (FR (*) FA, void*))
+
     int status = VISIT_ERROR;
     LIBSIM_API_ENTER(LoadVisItLibrary);
 
@@ -1584,53 +1628,35 @@ static int LoadVisItLibrary(void)
 #else
     status = LoadVisItLibrary_UNIX();
 #endif
+
     if (status == VISIT_ERROR)
     {
         LIBSIM_API_LEAVE2(LoadVisItLibrary, "%s: return %d", lastError, FALSE);
         return FALSE;
     }
+#endif /* VISIT_STATIC */
 
     callbacks = (visit_callback_t *)malloc(sizeof(visit_callback_t));
     memset(callbacks, 0, sizeof(visit_callback_t));
 
-#define SAFE_DLSYM(D,F,T,N,DECORATE) \
-    callbacks->D.F = (DECORATE(T))visit_get_runtime_function(N); \
-    if (!callbacks->D.F) \
-    { \
-        CloseVisItLibrary();\
-        LIBSIM_API_LEAVE2(LoadVisItLibrary, "%s: return %d", lastError, FALSE); \
-        return FALSE; \
-    }
-#define NO_DECORATE(A) A
-#define SET_DECORATE(A) void (*)(A,void*)
-#define QUOTED(A) #A
-#define CONTROL_DLSYM(F,T) SAFE_DLSYM(control,F,T,QUOTED(simv2_##F),NO_DECORATE)
-#define DATA_DLSYM(F,T)    SAFE_DLSYM(data,set_##F,T,QUOTED(simv2_set_##F),SET_DECORATE)
+    CONTROL_DLSYM(get_engine,                 void *, (void));
+    CONTROL_DLSYM(get_descriptor,             int,    (void *));
+    CONTROL_DLSYM(process_input,              int,    (void *));
+    CONTROL_DLSYM(initialize,                 int,    (void *, int, char **));
+    CONTROL_DLSYM(connect_viewer,             int,    (void *, int, char **));
+    CONTROL_DLSYM(time_step_changed,          void,   (void *));
+    CONTROL_DLSYM(execute_command,            void,   (void *,const char*));
+    CONTROL_DLSYM(disconnect,                 void,   ());
+    CONTROL_DLSYM(set_slave_process_callback, void,   (void (*)()));
+    CONTROL_DLSYM(set_command_callback,       void,   (void*,void (*)(const char*,const char*,void*),void*));
+    CONTROL_DLSYM(save_window,                int,    (void*,const char *,int,int,int));
+    CONTROL_DLSYM(debug_logs,                 void,   (int,const char *));
 
-   /* Get the control functions fom the library. */
-   CONTROL_DLSYM(get_engine,                 void *(*)(void));
-   CONTROL_DLSYM(get_descriptor,             int (*)(void *));
-   CONTROL_DLSYM(process_input,              int (*)(void *));
-   CONTROL_DLSYM(initialize,                 int (*)(void *, int, char **));
-   CONTROL_DLSYM(connect_viewer,             int (*)(void *, int, char **));
-   CONTROL_DLSYM(time_step_changed,          void (*)(void *));
-   CONTROL_DLSYM(execute_command,            void (*)(void *,const char*));
-   CONTROL_DLSYM(disconnect,                 void (*)());
-   CONTROL_DLSYM(set_slave_process_callback, void (*)(void (*)()));
-   CONTROL_DLSYM(set_command_callback,       void (*)(void*,void (*)(const char*,const char*,void*),void*));
-   CONTROL_DLSYM(save_window,                int (*)(void*,const char *,int,int,int));
-   CONTROL_DLSYM(debug_logs,                 void (*)(int,const char *));
+    /* Get the data functions from the library. */
+    DECLARE_DATA_CALLBACKS(DATA_DLSYM)
 
-   /* Get the data functions from the library. */
-   DECLARE_DATA_CALLBACKS(DATA_DLSYM, NO_ARGS)
-
-#ifdef VISIT_QUERIES_VIA_LIBSIM
-   /* Load the VisIt query functions.*/
-   LoadVisItQueries();
-#endif
-
-   LIBSIM_API_LEAVE1(LoadVisItLibrary, "return %d", TRUE);
-   return TRUE;
+    LIBSIM_API_LEAVE1(LoadVisItLibrary, "return %d", TRUE);
+    return TRUE;
 }
 
 /*******************************************************************************
@@ -3133,8 +3159,8 @@ void VisItCloseTraceFile(void)
 *
 ******************************************************************************/
 
-#define VISIT_SET_CALLBACK_BODY(F, T) \
-int VisItSet##F(T, void *cbdata) \
+#define VISIT_SET_CALLBACK_BODY(F, FR, FA) \
+int VisItSet##F(FR (*cb) FA, void *cbdata) \
 { \
     int retval = VISIT_ERROR; \
     LIBSIM_API_ENTER(VisIt##F);\
@@ -3150,7 +3176,7 @@ int VisItSet##F(T, void *cbdata) \
     return retval;\
 }
 
-DECLARE_DATA_CALLBACKS(VISIT_SET_CALLBACK_BODY, CB_ARGS)
+DECLARE_DATA_CALLBACKS(VISIT_SET_CALLBACK_BODY)
 
 /******************************************************************************
 *

@@ -44,36 +44,32 @@ int
 VisIt_CommandMetaData_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(CommandMetaData_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_CommandMetaData_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(CommandMetaData_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_CommandMetaData_setName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(CommandMetaData_setName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_CommandMetaData_getName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(CommandMetaData_getName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 

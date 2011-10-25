@@ -44,72 +44,64 @@ int
 VisIt_ExpressionMetaData_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(ExpressionMetaData_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_ExpressionMetaData_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(ExpressionMetaData_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_ExpressionMetaData_setName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(ExpressionMetaData_setName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_ExpressionMetaData_getName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(ExpressionMetaData_getName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_ExpressionMetaData_setDefinition(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(ExpressionMetaData_setDefinition,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_ExpressionMetaData_getDefinition(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(ExpressionMetaData_getDefinition,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_ExpressionMetaData_setType(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(ExpressionMetaData_setType,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_ExpressionMetaData_getType(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(ExpressionMetaData_getType,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 

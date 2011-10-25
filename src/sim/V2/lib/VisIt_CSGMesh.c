@@ -44,18 +44,16 @@ int
 VisIt_CSGMesh_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_CSGMesh_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
@@ -63,45 +61,40 @@ VisIt_CSGMesh_setRegions(visit_handle obj, visit_handle boolops, visit_handle le
     visit_handle rightids)
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_setRegions,
-                    int (*)(visit_handle,visit_handle,visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle,visit_handle,visit_handle), 
-                    (*cb)(obj,boolops,leftids,rightids));
+                    int, (visit_handle,visit_handle,visit_handle,visit_handle), 
+                    (obj,boolops,leftids,rightids));
 }
 
 int
 VisIt_CSGMesh_setZonelist(visit_handle obj, visit_handle zl)
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_setZonelist,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(obj,zl));
+                    int, (visit_handle,visit_handle), 
+                    (obj,zl));
 }
 
 int
 VisIt_CSGMesh_setBoundaryTypes(visit_handle obj, visit_handle boundaryTypes)
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_setBoundaryTypes,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(obj,boundaryTypes));
+                    int, (visit_handle,visit_handle), 
+                    (obj,boundaryTypes));
 }
 
 int
 VisIt_CSGMesh_setBoundaryCoeffs(visit_handle obj, visit_handle boundaryCoeffs)
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_setBoundaryCoeffs,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(obj,boundaryCoeffs));
+                    int, (visit_handle,visit_handle), 
+                    (obj,boundaryCoeffs));
 }
 
 int
 VisIt_CSGMesh_setExtents(visit_handle obj, double min[3], double max[3])
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_setExtents,
-                    int (*)(visit_handle,double[3], double[3]), 
-                    int (*cb)(visit_handle,double[3], double[3]), 
-                    (*cb)(obj,min,max));
+                    int, (visit_handle,double[3], double[3]), 
+                    (obj,min,max));
 }
 
 int
@@ -109,45 +102,40 @@ VisIt_CSGMesh_getRegions(visit_handle obj, visit_handle *boolops, visit_handle *
     visit_handle *rightids)
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_getRegions,
-                    int (*)(visit_handle,visit_handle*,visit_handle*,visit_handle*), 
-                    int (*cb)(visit_handle,visit_handle*,visit_handle*,visit_handle*), 
-                    (*cb)(obj,boolops,leftids,rightids));
+                    int, (visit_handle,visit_handle*,visit_handle*,visit_handle*), 
+                    (obj,boolops,leftids,rightids));
 }
 
 int
 VisIt_CSGMesh_getZonelist(visit_handle obj, visit_handle *zl)
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_getZonelist,
-                    int (*)(visit_handle,visit_handle*), 
-                    int (*cb)(visit_handle,visit_handle*), 
-                    (*cb)(obj,zl));
+                    int, (visit_handle,visit_handle*), 
+                    (obj,zl));
 }
 
 int
 VisIt_CSGMesh_getBoundaryTypes(visit_handle obj, visit_handle *boundaryTypes)
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_getBoundaryTypes,
-                    int (*)(visit_handle,visit_handle*), 
-                    int (*cb)(visit_handle,visit_handle*), 
-                    (*cb)(obj,boundaryTypes));
+                    int, (visit_handle,visit_handle*), 
+                    (obj,boundaryTypes));
 }
 
 int
 VisIt_CSGMesh_getBoundaryCoeffs(visit_handle obj, visit_handle *boundaryCoeffs)
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_getBoundaryCoeffs,
-                    int (*)(visit_handle,visit_handle*), 
-                    int (*cb)(visit_handle,visit_handle*), 
-                    (*cb)(obj,boundaryCoeffs));
+                    int, (visit_handle,visit_handle*), 
+                    (obj,boundaryCoeffs));
 }
 
 int
 VisIt_CSGMesh_getExtents(visit_handle obj, double min[3], double max[3])
 {
     VISIT_DYNAMIC_EXECUTE(CSGMesh_getExtents,
-                    int (*)(visit_handle,double[3], double[3]), 
-                    int (*cb)(visit_handle,double[3], double[3]), 
-                    (*cb)(obj,min,max));
+                    int, (visit_handle,double[3], double[3]), 
+                    (obj,min,max));
 }
 
 /************************** Fortran callable routines *************************/

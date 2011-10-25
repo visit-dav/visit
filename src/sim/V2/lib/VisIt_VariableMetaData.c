@@ -44,126 +44,112 @@ int
 VisIt_VariableMetaData_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_VariableMetaData_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_VariableMetaData_setName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_setName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_VariableMetaData_getName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_getName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_VariableMetaData_setMeshName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_setMeshName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_VariableMetaData_getMeshName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_getMeshName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_VariableMetaData_setUnits(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_setUnits,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_VariableMetaData_getUnits(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_getUnits,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_VariableMetaData_setCentering(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_setCentering,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_VariableMetaData_getCentering(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_getCentering,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 int
 VisIt_VariableMetaData_setType(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_setType,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_VariableMetaData_getType(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_getType,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 int
 VisIt_VariableMetaData_setTreatAsASCII(visit_handle h, int val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_setTreatAsASCII,
-        int (*)(visit_handle, int),
-        int (*cb)(visit_handle, int),
-        (*cb)(h, val));
+        int, (visit_handle, int),
+        (h, val));
 }
 
 int
 VisIt_VariableMetaData_getTreatAsASCII(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_getTreatAsASCII,
-        int (*)(visit_handle, int*),
-        int (*cb)(visit_handle, int*),
-        (*cb)(h, val));
+        int, (visit_handle, int*),
+        (h, val));
 }
 
 
