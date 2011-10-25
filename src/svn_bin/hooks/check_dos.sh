@@ -126,6 +126,9 @@ while read fline; do
         *svn_bin/build_visit)
             continue
             ;;
+        *svn_bin/bv_support/*)
+            continue
+            ;;
         *png)
             continue
             ;;
