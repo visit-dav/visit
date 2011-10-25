@@ -42,6 +42,7 @@
 #   Brad Whitlock, Tue Jul 26 10:28:47 PDT 2011
 #   Add releases to skip list.
 #
+#   A comment.
 ##############################################################################
 REPOS="$1"
 TXN="$2"
