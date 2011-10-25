@@ -140,8 +140,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt was ported to an enhanced version of VTK 5.8.0.</li>
   <li>There is now an "aprun" option for launching parallel jobs.</li>
   <li>Queries can now have custom widgets added to the QueryWindow, allowing more useful controls of options.</li>
-  <li></li>
-  <li></li>
+  <li>VisIt's static build has been fixed.</li>
+  <li>Simulations that link to libsim can now also link in the rest of VisIt's libraries statically when VisIt has been built statically <i>(pass -DVISIT_STATIC:BOOL=ON to cmake)</i>. This means that the usual loading of the simulation runtime library is not done and all symbols are resolved at link time. This change makes it possible to deploy libsim-instrumented simulations on platforms that lack shared libraries.</li>
   <li></li>
   <li></li>
 </ul>

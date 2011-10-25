@@ -44,108 +44,96 @@ int
 VisIt_SimulationMetaData_alloc(visit_handle *h)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(h))
+                    int, (visit_handle*),
+                    (h))
 }
 
 int
 VisIt_SimulationMetaData_free(visit_handle h)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(h));
+                    int, (visit_handle), 
+                    (h));
 }
 
 int
 VisIt_SimulationMetaData_setMode(visit_handle h, int mode)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_setMode,
-                    int (*)(visit_handle,int), 
-                    int (*cb)(visit_handle,int), 
-                    (*cb)(h,mode));
+                    int, (visit_handle,int), 
+                    (h,mode));
 }
 
 int
 VisIt_SimulationMetaData_setCycleTime(visit_handle h, int cycle, double time)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_setCycleTime,
-                    int (*)(visit_handle,int,double), 
-                    int (*cb)(visit_handle,int,double), 
-                    (*cb)(h,cycle,time));
+                    int, (visit_handle,int,double), 
+                    (h,cycle,time));
 }
 
 int
 VisIt_SimulationMetaData_addMesh(visit_handle h, visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_addMesh,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(h,obj));
+                    int, (visit_handle,visit_handle), 
+                    (h,obj));
 }
 
 int
 VisIt_SimulationMetaData_addVariable(visit_handle h, visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_addVariable,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(h,obj));
+                    int, (visit_handle,visit_handle), 
+                    (h,obj));
 }
 
 int
 VisIt_SimulationMetaData_addMaterial(visit_handle h, visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_addMaterial,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(h,obj));
+                    int, (visit_handle,visit_handle), 
+                    (h,obj));
 }
 
 int
 VisIt_SimulationMetaData_addCurve(visit_handle h, visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_addCurve,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(h,obj));
+                    int, (visit_handle,visit_handle), 
+                    (h,obj));
 }
 
 int
 VisIt_SimulationMetaData_addExpression(visit_handle h, visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_addExpression,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(h,obj));
+                    int, (visit_handle,visit_handle), 
+                    (h,obj));
 }
 
 int
 VisIt_SimulationMetaData_addSpecies(visit_handle h, visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_addSpecies,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(h,obj));
+                    int, (visit_handle,visit_handle), 
+                    (h,obj));
 }
 
 int
 VisIt_SimulationMetaData_addGenericCommand(visit_handle h, visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_addGenericCommand,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(h,obj));
+                    int, (visit_handle,visit_handle), 
+                    (h,obj));
 }
 
 int
 VisIt_SimulationMetaData_addCustomCommand(visit_handle h, visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(SimulationMetaData_addCustomCommand,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(h,obj));
+                    int, (visit_handle,visit_handle), 
+                    (h,obj));
 }
 
 

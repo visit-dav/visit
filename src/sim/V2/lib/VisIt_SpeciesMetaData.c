@@ -44,99 +44,88 @@ int
 VisIt_SpeciesMetaData_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_SpeciesMetaData_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_SpeciesMetaData_setName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_setName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_SpeciesMetaData_getName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_getName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_SpeciesMetaData_setMeshName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_setMeshName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_SpeciesMetaData_getMeshName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_getMeshName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_SpeciesMetaData_setMaterialName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_setMaterialName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_SpeciesMetaData_getMaterialName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_getMaterialName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_SpeciesMetaData_addSpeciesName(visit_handle h, visit_handle val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_addSpeciesName,
-        int (*)(visit_handle, visit_handle),
-        int (*cb)(visit_handle, visit_handle),
-        (*cb)(h, val));
+        int, (visit_handle, visit_handle),
+        (h, val));
 }
 
 int
 VisIt_SpeciesMetaData_getNumSpeciesName(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_getNumSpeciesName,
-        int (*)(visit_handle, int *),
-        int (*cb)(visit_handle, int *),
-        (*cb)(h, val));
+        int, (visit_handle, int *),
+        (h, val));
 }
 
 int
 VisIt_SpeciesMetaData_getSpeciesName(visit_handle h, int i, visit_handle *val)
 {
-    VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_addSpeciesName,
-        int (*)(visit_handle, int, visit_handle *),
-        int (*cb)(visit_handle, int, visit_handle *),
-        (*cb)(h, i, val));
+    VISIT_DYNAMIC_EXECUTE(SpeciesMetaData_getSpeciesName,
+        int, (visit_handle, int, visit_handle *),
+        (h, i, val));
 }
 
 

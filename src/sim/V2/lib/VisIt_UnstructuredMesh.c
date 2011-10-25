@@ -44,72 +44,64 @@ int
 VisIt_UnstructuredMesh_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_UnstructuredMesh_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_UnstructuredMesh_setCoordsXY(visit_handle obj, visit_handle x, visit_handle y)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_setCoordsXY,
-                    int (*)(visit_handle,visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle,visit_handle), 
-                    (*cb)(obj,x,y));
+                    int, (visit_handle,visit_handle,visit_handle), 
+                    (obj,x,y));
 }
 
 int
 VisIt_UnstructuredMesh_setCoordsXYZ(visit_handle obj, visit_handle x, visit_handle y, visit_handle z)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_setCoordsXYZ,
-                    int (*)(visit_handle,visit_handle,visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle,visit_handle,visit_handle), 
-                    (*cb)(obj,x,y,z));
+                    int, (visit_handle,visit_handle,visit_handle,visit_handle), 
+                    (obj,x,y,z));
 }
 
 int
 VisIt_UnstructuredMesh_setCoords(visit_handle obj, visit_handle c)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_setCoords,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(obj,c));
+                    int, (visit_handle,visit_handle), 
+                    (obj,c));
 }
 
 int
 VisIt_UnstructuredMesh_setConnectivity(visit_handle obj, int ncells, visit_handle c)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_setConnectivity,
-                    int (*)(visit_handle,int,visit_handle), 
-                    int (*cb)(visit_handle,int,visit_handle), 
-                    (*cb)(obj,ncells,c));
+                    int, (visit_handle,int,visit_handle), 
+                    (obj,ncells,c));
 }
 
 int
 VisIt_UnstructuredMesh_setRealIndices(visit_handle obj, int min, int max)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_setRealIndices,
-                    int (*)(visit_handle,int,int), 
-                    int (*cb)(visit_handle,int,int), 
-                    (*cb)(obj,min,max));
+                    int, (visit_handle,int,int), 
+                    (obj,min,max));
 }
 
 int
 VisIt_UnstructuredMesh_setGhostCells(visit_handle obj, visit_handle gz)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_setGhostCells,
-                    int (*)(visit_handle,visit_handle), 
-                    int (*cb)(visit_handle,visit_handle), 
-                    (*cb)(obj,gz));
+                    int, (visit_handle,visit_handle), 
+                    (obj,gz));
 }
 
 int
@@ -118,9 +110,8 @@ VisIt_UnstructuredMesh_getCoords(visit_handle obj,
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *coords)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getCoords,
-                    int (*)(visit_handle,int*,int*,visit_handle*,visit_handle*,visit_handle*,visit_handle*), 
-                    int (*cb)(visit_handle,int*,int*,visit_handle*,visit_handle*,visit_handle*,visit_handle*), 
-                    (*cb)(obj,ndims,coordMode,x,y,z,coords));
+                    int, (visit_handle,int*,int*,visit_handle*,visit_handle*,visit_handle*,visit_handle*), 
+                    (obj,ndims,coordMode,x,y,z,coords));
 }
 
 int
@@ -128,27 +119,24 @@ VisIt_UnstructuredMesh_getConnectivity(visit_handle obj, int *ncells,
     visit_handle *conn)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getConnectivity,
-                    int (*)(visit_handle,int*,visit_handle*), 
-                    int (*cb)(visit_handle,int*,visit_handle*), 
-                    (*cb)(obj,ncells, conn));
+                    int, (visit_handle,int*,visit_handle*), 
+                    (obj,ncells, conn));
 }
 
 int
 VisIt_UnstructuredMesh_getRealIndices(visit_handle obj, int *min, int *max)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getRealIndices,
-                    int (*)(visit_handle,int*,int*), 
-                    int (*cb)(visit_handle,int*,int*), 
-                    (*cb)(obj,min,max));
+                    int, (visit_handle,int*,int*), 
+                    (obj,min,max));
 }
 
 int
 VisIt_UnstructuredMesh_getGhostCells(visit_handle obj, visit_handle *gz)
 {
     VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getGhostCells,
-                    int (*)(visit_handle,visit_handle*), 
-                    int (*cb)(visit_handle,visit_handle*), 
-                    (*cb)(obj,gz));
+                    int, (visit_handle,visit_handle*), 
+                    (obj,gz));
 }
 
 /************************** Fortran callable routines *************************/

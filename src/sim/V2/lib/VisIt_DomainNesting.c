@@ -44,36 +44,32 @@ int
 VisIt_DomainNesting_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(DomainNesting_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_DomainNesting_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(DomainNesting_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_DomainNesting_set_dimensions(visit_handle obj, int nPatches, int nLevels, int nDimensions)
 {
     VISIT_DYNAMIC_EXECUTE(DomainNesting_set_dimensions,
-                    int (*)(visit_handle,int,int,int),
-                    int (*cb)(visit_handle,int,int,int),
-                    (*cb)(obj, nPatches, nLevels, nDimensions))
+                    int, (visit_handle,int,int,int),
+                    (obj, nPatches, nLevels, nDimensions))
 }
 
 int
 VisIt_DomainNesting_set_levelRefinement(visit_handle obj, int level, int ratios[3])
 {
     VISIT_DYNAMIC_EXECUTE(DomainNesting_set_levelRefinement,
-                    int (*)(visit_handle,int,int[3]), 
-                    int (*cb)(visit_handle,int,int[3]), 
-                    (*cb)(obj, level, ratios));
+                    int, (visit_handle,int,int[3]), 
+                    (obj, level, ratios));
 }
 
 int
@@ -81,9 +77,8 @@ VisIt_DomainNesting_set_nestingForPatch(visit_handle obj, int patch, int level,
     const int *childPatches, int nChildPatches, int extents[6])
 {
     VISIT_DYNAMIC_EXECUTE(DomainNesting_set_nestingForPatch,
-                    int (*)(visit_handle,int,int,const int*,int,int[6]), 
-                    int (*cb)(visit_handle,int,int,const int*,int,int[6]), 
-                    (*cb)(obj, patch, level, childPatches, nChildPatches, extents));
+                    int, (visit_handle,int,int,const int*,int,int[6]), 
+                    (obj, patch, level, childPatches, nChildPatches, extents));
 }
 
 /************************** Fortran callable routines *************************/

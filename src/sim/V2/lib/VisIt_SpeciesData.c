@@ -44,54 +44,48 @@ int
 VisIt_SpeciesData_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesData_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_SpeciesData_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesData_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_SpeciesData_addSpeciesName(visit_handle h, visit_handle val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesData_addSpeciesName,
-        int (*)(visit_handle, visit_handle),
-        int (*cb)(visit_handle, visit_handle),
-        (*cb)(h, val));
+        int, (visit_handle, visit_handle),
+        (h, val));
 }
 
 int
 VisIt_SpeciesData_setSpecies(visit_handle h, visit_handle val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesData_setSpecies,
-        int (*)(visit_handle, visit_handle),
-        int (*cb)(visit_handle, visit_handle),
-        (*cb)(h, val));
+        int, (visit_handle, visit_handle),
+        (h, val));
 }
 
 int
 VisIt_SpeciesData_setSpeciesMF(visit_handle h, visit_handle val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesData_setSpeciesMF,
-        int (*)(visit_handle, visit_handle),
-        int (*cb)(visit_handle, visit_handle),
-        (*cb)(h, val));
+        int, (visit_handle, visit_handle),
+        (h, val));
 }
 
 int
 VisIt_SpeciesData_setMixedSpecies(visit_handle h, visit_handle val)
 {
     VISIT_DYNAMIC_EXECUTE(SpeciesData_setMixedSpecies,
-        int (*)(visit_handle, visit_handle),
-        int (*cb)(visit_handle, visit_handle),
-        (*cb)(h, val));
+        int, (visit_handle, visit_handle),
+        (h, val));
 }
 
 

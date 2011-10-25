@@ -44,81 +44,72 @@ int
 VisIt_MaterialMetaData_alloc(visit_handle *obj)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialMetaData_alloc,
-                    int (*)(visit_handle*),
-                    int (*cb)(visit_handle*),
-                    (*cb)(obj))
+                    int, (visit_handle*),
+                    (obj))
 }
 
 int
 VisIt_MaterialMetaData_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialMetaData_free,
-                    int (*)(visit_handle), 
-                    int (*cb)(visit_handle), 
-                    (*cb)(obj));
+                    int, (visit_handle), 
+                    (obj));
 }
 
 int
 VisIt_MaterialMetaData_setName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialMetaData_setName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MaterialMetaData_getName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialMetaData_getName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MaterialMetaData_setMeshName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialMetaData_setMeshName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MaterialMetaData_getMeshName(visit_handle h, char **val)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialMetaData_getMeshName,
-        int (*)(visit_handle, char **),
-        int (*cb)(visit_handle, char **),
-        (*cb)(h, val));
+        int, (visit_handle, char **),
+        (h, val));
 }
 
 int
 VisIt_MaterialMetaData_addMaterialName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialMetaData_addMaterialName,
-        int (*)(visit_handle, const char *),
-        int (*cb)(visit_handle, const char *),
-        (*cb)(h, val));
+        int, (visit_handle, const char *),
+        (h, val));
 }
 
 int
 VisIt_MaterialMetaData_getNumMaterialName(visit_handle h, int *val)
 {
     VISIT_DYNAMIC_EXECUTE(MaterialMetaData_getNumMaterialName,
-        int (*)(visit_handle, int *),
-        int (*cb)(visit_handle, int *),
-        (*cb)(h, val));
+        int, (visit_handle, int *),
+        (h, val));
 }
 
 int
 VisIt_MaterialMetaData_getMaterialName(visit_handle h, int i, char **val)
 {
-    VISIT_DYNAMIC_EXECUTE(MaterialMetaData_addMaterialName,
-        int (*)(visit_handle, int, char **),
-        int (*cb)(visit_handle, int, char **),
-        (*cb)(h, i, val));
+    VISIT_DYNAMIC_EXECUTE(MaterialMetaData_getMaterialName,
+        int, (visit_handle, int, char **),
+        (h, i, val));
 }
 
 
