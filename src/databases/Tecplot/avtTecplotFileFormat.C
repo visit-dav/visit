@@ -1036,6 +1036,9 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    Skip STRANDID for now -- read it, but continue treating each zone
 //    as its own domain.
 //
+//    Jeremy Meredith, Tue Oct 25 12:37:42 EDT 2011
+//    Allow user manual override of coordinate axis variables (via options).
+//
 // ****************************************************************************
 
 void
@@ -1215,6 +1218,25 @@ avtTecplotFileFormat::ReadFile()
             if (Xindex < 0) Xindex = guessedXindex;
             if (Yindex < 0) Yindex = guessedYindex;
             if (Zindex < 0) Zindex = guessedZindex;
+
+            // If the user specified, override any coordinate axis guessing
+            if (userSpecifiedAxisVars)
+            {
+                if (userSpecifiedX >= numTotalVars)
+                    Xindex = -1;
+                else
+                    Xindex = userSpecifiedX;
+
+                if (userSpecifiedY >= numTotalVars)
+                    Yindex = -1;
+                else
+                    Yindex = userSpecifiedY;
+
+                if (userSpecifiedZ >= numTotalVars)
+                    Zindex = -1;
+                else
+                    Zindex = userSpecifiedZ;
+            }
 
             // Based on how many spatial coords we got, guess the spatial dim
             if (Xindex >= 0)
@@ -1652,9 +1674,14 @@ avtTecplotFileFormat::ReadFile()
 //
 //    Mark C. Miller, Tue Jan 12 17:36:41 PST 2010
 //    Initialize solTime.
+//
+//    Jeremy Meredith, Tue Oct 25 12:37:42 EDT 2011
+//    Allow user manual override of coordinate axis variables (via options).
+//
 // ****************************************************************************
 
-avtTecplotFileFormat::avtTecplotFileFormat(const char *fname)
+avtTecplotFileFormat::avtTecplotFileFormat(const char *fname,
+                                           DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&fname, 1), expressions()
 {
     file_read = false;
@@ -1671,6 +1698,34 @@ avtTecplotFileFormat::avtTecplotFileFormat(const char *fname)
     spatialDimension = 1;
     numTotalVars = 0;
     solTime = avtFileFormat::INVALID_TIME;
+
+    userSpecifiedAxisVars = false;
+    userSpecifiedX = -1;
+    userSpecifiedY = -1;
+    userSpecifiedZ = -1;
+    if (readOpts &&
+        readOpts->FindIndex("Method to determine coordinate axes")>=0)
+    {
+        int index = readOpts->GetEnum("Method to determine coordinate axes");
+        if (index==0) userSpecifiedAxisVars = false;
+        if (index==1) userSpecifiedAxisVars = true;
+    }
+
+    if (readOpts &&
+        readOpts->FindIndex("X axis variable index (or -1 for none)")>=0)
+    {
+        userSpecifiedX = readOpts->GetInt("X axis variable index (or -1 for none)");
+    }
+    if (readOpts &&
+        readOpts->FindIndex("Y axis variable index (or -1 for none)")>=0)
+    {
+        userSpecifiedY = readOpts->GetInt("Y axis variable index (or -1 for none)");
+    }
+    if (readOpts &&
+        readOpts->FindIndex("Z axis variable index (or -1 for none)")>=0)
+    {
+        userSpecifiedZ = readOpts->GetInt("Z axis variable index (or -1 for none)");
+    }
 }
 
 

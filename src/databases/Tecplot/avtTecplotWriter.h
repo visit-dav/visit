@@ -44,6 +44,7 @@
 #define AVT_TECPLOT_WRITER_H
 
 #include <avtDatabaseWriter.h>
+#include <DBOptionsAttributes.h>
 
 #include <string>
 #include <vector>
@@ -80,7 +81,7 @@ class vtkUnstructuredGrid;
 class avtTecplotWriter : public virtual avtDatabaseWriter
 {
   public:
-                   avtTecplotWriter();
+                   avtTecplotWriter(DBOptionsAttributes *);
     virtual       ~avtTecplotWriter();
 
   protected:
