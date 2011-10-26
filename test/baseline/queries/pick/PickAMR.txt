@@ -1,6 +1,6 @@
 Testing boxlib 2D, pseudocolor
 
-A:  Header  timestep 0
+A:  Header
 Mesh level 2 patch level2,patch2 
 Point (R,Z): <0.0282891, 0.12232>
 Node:  654
@@ -12,7 +12,7 @@ density:  <zonal>
     (599) = 4.15408
 
 
-B:  Header  timestep 0
+B:  Header
 Mesh level 2 patch level2,patch2 
 Point (R,Z): <0.028445, 0.122458>
 Zone:  639
@@ -20,7 +20,7 @@ Incident Nodes:  654  655  695  696
 density:  <zonal> = 3.69759
 
 
-C:  Header  timestep 0
+C:  Header
 Mesh level 2 patch level2,patch2 
 Point (R,Z): <0.0282891, 0.121922>
 Node:  613
@@ -32,7 +32,7 @@ density:  <zonal>
     (559) = 4.1593
 
 
-D:  Header  timestep 0
+D:  Header
 Mesh level 2 patch level2,patch2 
 Point (R,Z): <0.0280996, 0.122113>
 Zone:  598
@@ -40,7 +40,7 @@ Incident Nodes:  612  613  653  654
 density:  <zonal> = 4.17764
 
 
-E:  Header  timestep 0
+E:  Header
 Mesh level 2 patch level2,patch2 
 Point (R,Z): <0.0251016, 0.11993>
 Node:  400
@@ -52,7 +52,7 @@ density:  <zonal>
     (351) = 5.0991
 
 
-F:  Header  timestep 0
+F:  Header
 Mesh level 2 patch level2,patch2 
 Point (R,Z): <0.0249287, 0.119789>
 Zone:  350
@@ -60,7 +60,7 @@ Incident Nodes:  358  359  399  400
 density:  <zonal> = 5.20894
 
 
-G:  Header  timestep 0
+G:  Header
 Mesh level 1 patch level1,patch7 
 Point (R,Z): <0.0270937, 0.122719>
 Node:  2840
@@ -70,7 +70,7 @@ density:  <zonal>
     (2794) = 3.55828
 
 
-H:  Header  timestep 0
+H:  Header
 Mesh level 1 patch level1,patch7 
 Point (R,Z): <0.0272833, 0.123024>
 Zone:  2794
@@ -78,7 +78,7 @@ Incident Nodes:  2840  2841  2901  2902
 density:  <zonal> = 3.55828
 
 
-I:  Header  timestep 0
+I:  Header
 Mesh level 1 patch level1,patch7 
 Point (R,Z): <0.0286875, 0.118734>
 Node:  2537
@@ -88,7 +88,7 @@ density:  <zonal>
     (2436) = 4.28138
 
 
-J:  Header  timestep 0
+J:  Header
 Mesh level 1 patch level1,patch7 
 Point (R,Z): <0.0289473, 0.119098>
 Zone:  2496
@@ -98,7 +98,7 @@ density:  <zonal> = 4.62702
 
 Testing boxlib 2D, contour
 
-K:  Header  timestep 0
+K:  Header
 Mesh level 1 patch level1,patch5 
 Point (R,Z): <0.0202973, 0.124521>
 Zone:  25
@@ -106,7 +106,7 @@ Incident Nodes:  25  26  70  71
 density:  <zonal> = 2.84481
 
 
-L:  Header  timestep 0
+L:  Header
 Mesh level 1 patch level1,patch5 
 Point (R,Z): <0.0199219, 0.124312>
 Node:  25
@@ -116,7 +116,7 @@ density:  <zonal>
     (25) = 2.84481
 
 
-M:  Header  timestep 0
+M:  Header
 Mesh level 1 patch level1,patch5 
 Point (R,Z): <0.0227024, 0.124842>
 Zone:  28
@@ -124,7 +124,7 @@ Incident Nodes:  28  29  73  74
 density:  <zonal> = 2.68966
 
 
-N:  Header  timestep 0
+N:  Header
 Mesh level 1 patch level1,patch5 
 Point (R,Z): <0.0223125, 0.125109>
 Node:  73
@@ -136,7 +136,7 @@ density:  <zonal>
     (28) = 2.68966
 
 
-O:  Header  timestep 0
+O:  Header
 Mesh level 2 patch level2,patch28 
 Point (R,Z): <0.0310403, 0.113927>
 Zone:  793
@@ -144,7 +144,7 @@ Incident Nodes:  842  843  859  860
 density:  <zonal> = 0.19119
 
 
-P:  Header  timestep 0
+P:  Header
 Mesh level 2 patch level2,patch28 
 Point (R,Z): <0.0310781, 0.113953>
 Node:  860
@@ -156,7 +156,7 @@ density:  <zonal>
     (794) = 0.189642
 
 
-Q:  Header  timestep 0
+Q:  Header
 Mesh level 0 patch level0,patch0 
 Point (R,Z): <0.0353697, 0.133991>
 Zone:  5398
@@ -164,7 +164,7 @@ Incident Nodes:  5482  5483  5547  5548
 density:  <zonal> = 0.179877
 
 
-R:  Header  timestep 0
+R:  Header
 Mesh level 0 patch level0,patch0 
 Point (R,Z): <0.0350625, 0.133875>
 Node:  5482
@@ -176,7 +176,7 @@ density:  <zonal>
 
 Testing boxlib 2D, Boundary
 
-S:  Header  timestep 0
+S:  Header
 Mesh level 2 patch level2,patch33 
 Point (R,Z): <0.0182644, 0.105451>
 Zone:  713
@@ -184,7 +184,7 @@ Incident Nodes:  757  758  774  775
 materials:  mat1 
 
 
-T:  Header  timestep 0
+T:  Header
 Mesh level 2 patch level2,patch33 
 Point (R,Z): <0.0183281, 0.105586>
 Node:  775
@@ -196,7 +196,7 @@ materials:
     (714)  mat1 
 
 
-U:  Header  timestep 0
+U:  Header
 Mesh level 2 patch level2,patch28 
 Point (R,Z): <0.0288625, 0.0950003>
 Zone:  36
@@ -204,7 +204,7 @@ Incident Nodes:  38  39  55  56
 materials:  mat4 
 
 
-V:  Header  timestep 0
+V:  Header
 Mesh level 2 patch level2,patch28 
 Point (R,Z): <0.0286875, 0.0948281>
 Node:  38
@@ -216,7 +216,7 @@ materials:
     (20)  mat4 
 
 
-W:  Header  timestep 0
+W:  Header
 Mesh level 2 patch level2,patch33 
 Point (R,Z): <0.0147844, 0.114794>
 Zone:  1089
@@ -226,7 +226,7 @@ materials:
     mat4 = 0.0705727
 
 
-X:  Header  timestep 0
+X:  Header
 Mesh level 2 patch level2,patch33 
 Point (R,Z): <0.0147422, 0.11475>
 Node:  1157

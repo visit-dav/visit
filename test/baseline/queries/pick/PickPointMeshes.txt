@@ -1,5 +1,5 @@
 
-A:  noise.silo  timestep 0
+A:  noise.silo
 PointMesh 
 Point: <-4.75198, 8.34088, 9.56872>
 Node:  62
@@ -7,7 +7,7 @@ Incident Zones:  62
 PointVar:  <nodal> = 2.66047
 
 
-B:  noise.silo  timestep 0
+B:  noise.silo
 PointMesh 
 Point: <8.56503, 5.32013, -4.20841>
 Node:  83
@@ -15,7 +15,7 @@ Incident Zones:  83
 PointVar:  <nodal> = 5.9183
 
 
-C:  noise.silo  timestep 0
+C:  noise.silo
 PointMesh 
 Point: <-1.43786, -9.24374, 1.96653>
 Node:  84
@@ -23,43 +23,43 @@ Incident Zones:  84
 PointVar:  <nodal> = 1.07798
 
 
-D:  noise.silo  timestep 0
+D:  noise.silo
 PointMesh 
 Point: <-4.75198, 8.34088, 9.56872>
 Node:  62
 Incident Zones:  62  
 
-E:  noise.silo  timestep 0
+E:  noise.silo
 PointMesh 
 Point: <8.56503, 5.32013, -4.20841>
 Node:  83
 Incident Zones:  83  
 
-F:  noise.silo  timestep 0
+F:  noise.silo
 PointMesh 
 Point: <-1.43786, -9.24374, 1.96653>
 Node:  84
 Incident Zones:  84  
 
-G:  noise.silo  timestep 0
+G:  noise.silo
 PointMesh 
 Point: <-4.75198, 8.34088, 9.56872>
 Node:  62
 Incident Zones:  62  
 
-H:  noise.silo  timestep 0
+H:  noise.silo
 PointMesh 
 Point: <8.56503, 5.32013, -4.20841>
 Node:  83
 Incident Zones:  83  
 
-I:  noise.silo  timestep 0
+I:  noise.silo
 PointMesh 
 Point: <-1.43786, -9.24374, 1.96653>
 Node:  84
 Incident Zones:  84  
 
-J:  multi_point2d.silo  timestep 0
+J:  multi_point2d.silo
 mesh1 domain 5 
 Point: <-1.61803, 1.17557>
 Node:  0
@@ -73,7 +73,7 @@ u:  <nodal> = -1
 v:  <nodal> = 0
 
 
-K:  multi_point2d.silo  timestep 0
+K:  multi_point2d.silo
 mesh1 domain 4 
 Point: <-1.52824, 2.10345>
 Node:  51
@@ -87,7 +87,7 @@ u:  <nodal> = -0.620354
 v:  <nodal> = 0.784322
 
 
-L:  multi_point2d.silo  timestep 0
+L:  multi_point2d.silo
 mesh1 domain 3 
 Point: <-0.49379, 2.3231>
 Node:  35
@@ -101,7 +101,7 @@ u:  <nodal> = -0.383952
 v:  <nodal> = 0.923353
 
 
-M:  multi_point2d.silo  timestep 0
+M:  multi_point2d.silo
 mesh1 domain 5 
 Point: <-1.61803, 1.17557>
 Node:  0
@@ -115,7 +115,7 @@ u:  <nodal> = -1
 v:  <nodal> = 0
 
 
-N:  multi_point2d.silo  timestep 0
+N:  multi_point2d.silo
 mesh1 domain 4 
 Point: <-1.52824, 2.10345>
 Node:  51
@@ -129,7 +129,7 @@ u:  <nodal> = -0.620354
 v:  <nodal> = 0.784322
 
 
-O:  multi_point2d.silo  timestep 0
+O:  multi_point2d.silo
 mesh1 domain 3 
 Point: <-0.49379, 2.3231>
 Node:  35
@@ -143,19 +143,19 @@ u:  <nodal> = -0.383952
 v:  <nodal> = 0.923353
 
 
-P:  noise.silo  timestep 0
+P:  noise.silo
 PointMesh 
 Point: <-4.75198, 8.34088, 9.56872>
 Node:  62
 Incident Zones:  62  
 
-Q:  noise.silo  timestep 0
+Q:  noise.silo
 PointMesh 
 Point: <8.56503, 5.32013, -4.20841>
 Node:  83
 Incident Zones:  83  
 
-R:  noise.silo  timestep 0
+R:  noise.silo
 PointMesh 
 Point: <-1.43786, -9.24374, 1.96653>
 Node:  84

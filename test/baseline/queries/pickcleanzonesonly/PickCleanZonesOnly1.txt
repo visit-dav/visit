@@ -1,5 +1,5 @@
 
-A:  ucd3d.silo  timestep 0
+A:  ucd3d.silo
 ucdmesh3d 
 Point: <-3.5, 0.01, 10.1>
 Zone:  1097

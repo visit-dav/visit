@@ -1,5 +1,5 @@
 
-A:  curv3d.silo  timestep 0
+A:  curv3d.silo
 curvmesh3d 
 Point: <0.115986, 4.29042, 29.9>
 Zone:  35715
@@ -15,7 +15,7 @@ u:  <nodal>
     (39106) = -1
 
 
-B:  curv3d.silo  timestep 0
+B:  curv3d.silo
 curvmesh3d 
 Point: <0.040697, 2.25007, 29.9>
 Zone:  34905
@@ -34,7 +34,7 @@ u:  <nodal>
 *** Closed engine on localhost.
 ***
 
-C:  curv3d.silo  timestep 0
+C:  curv3d.silo
 curvmesh3d 
 Point: <0.15, 3.25007, 26.9>
 Zone:  31695
@@ -50,7 +50,7 @@ u:  <nodal>
     (34859) = -5.21606e-12
 
 
-D:  curv3d.silo  timestep 0
+D:  curv3d.silo
 curvmesh3d 
 Point: <0.19, 3.75, 26.9>
 Zone:  31905

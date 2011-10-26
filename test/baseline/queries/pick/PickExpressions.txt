@@ -1,5 +1,5 @@
 
-A:  rect3d.silo  timestep 0
+A:  rect3d.silo
 quadmesh3d 
 Point: <0.50488, 0.607367, 1>
 Zone:  35535
@@ -7,7 +7,7 @@ Incident Nodes:  37618  37619  37649  37650  38889  38890  38920  38921
 m1:  <zonal> = 0.331
 
 
-B:  rect3d.silo  timestep 0
+B:  rect3d.silo
 quadmesh3d 
 Point: <0.0998122, 0.93435, 1>
 Zone:  35912
@@ -15,7 +15,7 @@ Incident Nodes:  38008  38009  38039  38040  39279  39280  39310  39311
 m1:  <zonal> = 1
 
 
-C:  rect3d.silo  timestep 0
+C:  rect3d.silo
 quadmesh3d 
 Point: <0.924589, 0.187658, 1>
 Zone:  35037
@@ -23,7 +23,7 @@ Incident Nodes:  37103  37104  37134  37135  38374  38375  38405  38406
 m1:  <zonal> = 0.854
 
 
-D:  rect3d.silo  timestep 0
+D:  rect3d.silo
 quadmesh3d 
 Point: <0.5, 0.6, 1>
 Node:  38889
@@ -35,7 +35,7 @@ m1:  <zonal>
     (35535) = 0.331
 
 
-E:  rect3d.silo  timestep 0
+E:  rect3d.silo
 quadmesh3d 
 Point: <0.1, 0.925, 1>
 Node:  39280
@@ -47,7 +47,7 @@ m1:  <zonal>
     (35913) = 1
 
 
-F:  rect3d.silo  timestep 0
+F:  rect3d.silo
 quadmesh3d 
 Point: <0.933333, 0.2, 1>
 Node:  38406
@@ -59,7 +59,7 @@ m1:  <zonal>
     (35068) = 0.992
 
 
-G:  rect3d.silo  timestep 0
+G:  rect3d.silo
 quadmesh3d 
 Point: <0.50488, 0.607367, 1>
 Zone:  35535
@@ -67,7 +67,7 @@ Incident Nodes:  37618  37619  37649  37650  38889  38890  38920  38921
 mir1:  <zonal> = 0
 
 
-H:  rect3d.silo  timestep 0
+H:  rect3d.silo
 quadmesh3d 
 Point: <0.0998122, 0.93435, 1>
 Zone:  35912
@@ -75,7 +75,7 @@ Incident Nodes:  38008  38009  38039  38040  39279  39280  39310  39311
 mir1:  <zonal> = 1
 
 
-I:  rect3d.silo  timestep 0
+I:  rect3d.silo
 quadmesh3d 
 Point: <0.924589, 0.187658, 1>
 Zone:  35037
@@ -83,7 +83,7 @@ Incident Nodes:  37103  37104  37134  37135  38374  38375  38405  38406
 mir1:  <zonal> = 0.705521
 
 
-J:  rect3d.silo  timestep 0
+J:  rect3d.silo
 quadmesh3d 
 Point: <0.5, 0.6, 1>
 Node:  38889
@@ -95,7 +95,7 @@ mir1:  <zonal>
     (35535) = 0
 
 
-K:  rect3d.silo  timestep 0
+K:  rect3d.silo
 quadmesh3d 
 Point: <0.1, 0.925, 1>
 Node:  39280
@@ -107,7 +107,7 @@ mir1:  <zonal>
     (35913) = 1
 
 
-L:  rect3d.silo  timestep 0
+L:  rect3d.silo
 quadmesh3d 
 Point: <0.933333, 0.2, 1>
 Node:  38406
@@ -119,7 +119,7 @@ mir1:  <zonal>
     (35068) = 0.974092
 
 
-M:  globe.silo  timestep 0
+M:  globe.silo
 mesh1 
 Point: <-2.20275, -4.30538, 8.59023>
 Zone:  493
@@ -127,7 +127,7 @@ Incident Nodes:  760  761  752  751  814  815  806  805
 t:  <zonal> = 493
 
 
-N:  globe.silo  timestep 0
+N:  globe.silo
 mesh1 
 Point: <-2.20275, -4.30538, 8.59023>
 Zone:  493
