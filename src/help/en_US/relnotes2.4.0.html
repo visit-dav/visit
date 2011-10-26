@@ -47,6 +47,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Libsim was enhanced to support setting cell and node origin in mesh metadata.</li>
   <li>Libsim was enhanced to support setting spatial extents in mesh metadata.</li>
   <li>Cumulative query selections were enhanced so they can cache intermediate results obtained from executing filters over time. This accelerates operations that modify the histogram such as changing the summation rule, display type, and bin properties. Modifying the selection variable list or ranges do not benefit from caching.</li>
+  <li>The constructive solid geometry meshing now supports two-dimensional grids and common 2D primitives like lines and circles.</li>
   <li></li>
   <li></li>
 </ul>
@@ -61,6 +62,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The PDB reader was improved to handle the case where the ireg array was not time-varying but the file was time-varying.</li>
   <li>The Image reader enhanced so it can return vector data for image volumes.</li>
   <li>The CGNS reader was fixed so it can successfully read data from files that have been grouped using automatic file grouping.</li>
+  <li>VisIt can now read XSF (XCrySDen Structure) files containing periodic structures (molecule, polymer, slab, and crystal with lattice vectors) and general grids.</li>
+  <li>The Tecplot reader now supports shared variables, in both its ASCII and binary flavors.  It also allows use of the strand ID, though it still assumes zones are equivalent to domains.</li>
+  <li>Tecplot also now supports database options which allow the user to override automatic guessing of coordinate variables.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -117,6 +121,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Named selections based directly on a database instead of a plot were not recreated when restoring a session.</li>
   <li>Cumulative query selections based on a database instead of a plot failed to be created when a compute engine did not already exist. Furthermore, if the selection used expressions that had not been previously used in plots, the selection would not be calculated.</li>
   <li>The VisIt GUI would fail to connect to a remote computer if the remote username was changed in the <i>Change username</i> window while connecting to the remote computer. The viewer would connect to the remote computer but it would also send the gui a message that caused it to stop waiting for a connection from the metadata server.</li>
+  <li>The POV-Ray exporter no longer uses the locale when generating color tables; this could insert commas instead of decimal places and cause errors when parsing the file in POV-Ray.</li>
   <li></li>
   <li></li>
   <li></li>
