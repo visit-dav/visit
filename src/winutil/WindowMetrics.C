@@ -155,6 +155,44 @@ WindowMetrics::WindowMetrics()
 }
 
 // ****************************************************************************
+//  Method:  WindowMetrics::CalculateScreen
+//
+//  Purpose:
+//    Calculates the screen size to avoid toolbars/panels.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 20, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Jul 23 11:26:33 PDT 2001
+//    Made logic for toolbars a little better.  It handles a few more
+//    configurations.
+//
+//    Jeremy Meredith, Tue Sep 25 15:28:38 PDT 2001
+//    Made a standalone function.
+//
+//    Brad Whitlock, Tue Oct 25 16:51:36 PDT 2011
+//    Use Qt to get the information since it does a better job with platform-
+//    specific issues like the Mac dock and multiple screens.
+//
+// ****************************************************************************
+void
+WindowMetrics::CalculateScreen(QWidget *win,
+                               int &screenX, int &screenY,
+                               int &screenW, int &screenH)
+{
+    QRect rect;
+    if(win != NULL)
+        rect = qApp->desktop()->availableGeometry(win);
+    else
+        rect = qApp->desktop()->availableGeometry();
+    screenX = rect.x();
+    screenY = rect.y();
+    screenW = rect.width();
+    screenH = rect.height();
+}
+
+// ****************************************************************************
 // Method: WindowMetics::MeasureScreen
 //
 // Purpose: 
@@ -336,33 +374,6 @@ WindowMetrics::CalculateTopLeft(QWidget *w, int &X, int &Y)
     Y = w->y();
 }
 
-// ****************************************************************************
-//  Method:  WindowMetrics::CalculateScreen
-//
-//  Purpose:
-//    Calculates the screen size to avoid toolbars/panels.
-//
-//  Programmer:  Brad Whitlock
-//  Creation:    Thu Apr 18 11:54:57 PDT 2002
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-WindowMetrics::CalculateScreen(QWidget *win,
-                               int &screenX, int &screenY,
-                               int &screenW, int &screenH)
-{
-    RECT r;
-    SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
-
-    screenX = r.left;
-    screenY = r.top;
-    screenW = r.right - r.left;
-    screenH = r.bottom - r.top;
-}
-
 #elif defined(Q_WS_MACX)
 #include <QDesktopWidget>
 
@@ -431,33 +442,6 @@ WindowMetrics::CalculateTopLeft(QWidget *w, int &X, int &Y)
 {
     X = w->x();
     Y = w->y();
-}
-
-// ****************************************************************************
-//  Method:  WindowMetrics::CalculateScreen
-//
-//  Purpose:
-//    Calculates the screen size to avoid toolbars/panels.
-//
-//  Programmer:  Brad Whitlock
-//  Creation:    Thu Apr 18 11:54:57 PDT 2002
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-WindowMetrics::CalculateScreen(QWidget *win,
-                               int &screenX, int &screenY,
-                               int &screenW, int &screenH)
-{
-#if 1
-    //cerr << "WindowMetrics::CalculateScreen: Mac version not implemented!" << endl;
-    screenX = qApp->desktop()->x();
-    screenY = qApp->desktop()->y();
-    screenW = qApp->desktop()->width();
-    screenH = qApp->desktop()->height() - 25;
-#endif
 }
 
 #elif defined(Q_WS_X11)
@@ -711,109 +695,6 @@ WindowMetrics::CalculateTopLeft(QWidget *wid, int &X, int &Y)
     XGetWindowAttributes(dpy, window, &atts);
     X = atts.x;
     Y = atts.y;
-}
-
-// ****************************************************************************
-//  Method:  WindowMetrics::CalculateScreen
-//
-//  Purpose:
-//    Calculates the screen size to avoid toolbars/panels.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    July 20, 2001
-//
-//  Modifications:
-//    Jeremy Meredith, Mon Jul 23 11:26:33 PDT 2001
-//    Made logic for toolbars a little better.  It handles a few more
-//    configurations.
-//
-//    Jeremy Meredith, Tue Sep 25 15:28:38 PDT 2001
-//    Made a standalone function.
-//
-// ****************************************************************************
-void
-WindowMetrics::CalculateScreen(QWidget *win,
-                               int &screenX, int &screenY,
-                               int &screenW, int &screenH)
-{
-    // desktop width, height
-    int dW = qApp->desktop()->width();
-    int dH = qApp->desktop()->height();
-
-    // defaults
-    int screenL = 0;
-    int screenT = 0;
-    int screenR = dW;
-    int screenB = dH;
-
-    // find the root window
-    unsigned int nchildren;
-    Window root, parent_window, *children=NULL;
-    XQueryTree(QX11Info::display(), win->winId(),
-               &root, &parent_window, &children, &nchildren );
-    if(nchildren > 0)
-        XFree((char *)children);
-
-    // find the children of the root window
-    XQueryTree(QX11Info::display(), root,
-               &root, &parent_window, &children, &nchildren );
-    for (int i=0; i<nchildren; i++)
-    {
-        XWindowAttributes atts;
-        XGetWindowAttributes(QX11Info::display(), children[i], &atts );
-
-        // Make sure the window is visible
-        if (atts.map_state != IsViewable)
-            continue;
-
-        int x = atts.x;
-        int y = atts.y;
-        int w = atts.width;
-        int h = atts.height;
-
-        // A toolbar must be (using horizontal as an example):
-        // 1) at least 3/4 the screen width, but more than 1/8 wider than it
-        // 2) at least 8 pixels tall, but no more than 1/8 the screen height
-        // 3) attached (+/- tolerance) to the left or right side of the screen
-
-#define WMIN(a,b) (((a) < (b)) ? (a) : (b))
-#define WMAX(a,b) (((a) > (b)) ? (a) : (b))
-
-        // horizontal toolbar
-        if (w >= dW*3/4  &&  w <= dW*9/8   &&
-            h >= 8       &&  h <= dH*1/8   &&
-            ((x   >= -10    &&  x   <= 10)  ||
-             (x+w >= dW-10  &&  x+w <= dW+10)))
-        {
-            if (y+h < dH/4)
-                screenT = WMAX(screenT, y+h);
-            else if (y > dH*3/4)
-                screenB = WMIN(screenB, y);
-        }
-
-        // vertical toolbar
-        if (h >= dH*3/4  &&  h <= dH*9/8   &&
-            w >= 8       &&  w <= dW*1/8   &&
-            ((y   >= -10    &&  y   <= 10)  ||
-             (y+h >= dH-10  &&  y+h <= dH+10)))
-        {
-            if (x+w < dW/4)
-                screenL = WMAX(screenL, x+w);
-            else if (x > dW*3/4)
-                screenR = WMIN(screenR, x);
-        }
-    }
-    if(nchildren > 0)
-        XFree((char *)children);
-
-#undef WMIN
-#undef WMAX
-
-    // set the new screen values
-    screenX = screenL;
-    screenY = screenT;
-    screenW = screenR - screenL;
-    screenH = screenB - screenT;
 }
 
 // ****************************************************************************
