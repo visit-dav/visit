@@ -35,7 +35,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Host Profiles window was enhanced so it is possible to set the maximum number of nodes and processors for a given computer. If these limits are set then the viewer's profile chooser dialog prevents the user from choosing more nodes or processors than are allowed.</li>
   <li>The Compute Engine window was enhanced so it can show the number of processors using GPUs for rendering. The window now also shows the domain assignment used by the load balancer. In addition, these statistics are now read back from the engine that was actually launched so differences in number of processors requested vs used are apparent. This means that simulations can now accurately display their number of processors.</li>
   <li>VisIt is better able to detect the desktop geometry so it should not initially create the main window so it is too tall for the screen. When possible, care is also taken to avoid windows such as the MacOS X dock.</li>
-  <li></li>
+  <li>Windows distributions now contain OpenMPI based parallel components and will be installed if the installer detects multiple CPUs. If OpenMPI is not already available on the machine, installation of parallel components will require admin privileges.</li>
   <li></li>
   <li></li>
 </ul>
@@ -48,8 +48,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Libsim was enhanced to support setting spatial extents in mesh metadata.</li>
   <li>Cumulative query selections were enhanced so they can cache intermediate results obtained from executing filters over time. This accelerates operations that modify the histogram such as changing the summation rule, display type, and bin properties. Modifying the selection variable list or ranges do not benefit from caching.</li>
   <li>The constructive solid geometry meshing now supports two-dimensional grids and common 2D primitives like lines and circles.</li>
-  <li></li>
-  <li></li>
+  <li>The 'time' portion of the legend can now be turned off.</li>
+  <li>Queries over time no longer display time information in their legends.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -111,8 +111,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>You no longer have to specify all the accepted arguments for a query if the default values will suffice.</li>
   <li>Picking via the Query Window has been consolidated into one method <i>Pick</i> with more options for what type of pick should be performed. The CLI options for Pick currently remain the same.</li>
   <li>Options for controlling start/end times and stride for queries-over-time can now be specified in the Query window, and as keyword args in the CLI. eg <i>QueryOverTime("Min", start_time=50, end_time=250, stride=5).</i>Defaults if not specified remain <i>start_time=0, end_time=numTimeStates, stride=1)</i>.</li>
-  <li></li>
-  <li></li>
+  <li>Pick no longer returns timestep information for single-timestate data.</li>
+  <li>Pick output for Tensors and Arrays has been cleaned up.</li>
   <li></li>
 </ul>
 
@@ -123,7 +123,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Cumulative query selections based on a database instead of a plot failed to be created when a compute engine did not already exist. Furthermore, if the selection used expressions that had not been previously used in plots, the selection would not be calculated.</li>
   <li>The VisIt GUI would fail to connect to a remote computer if the remote username was changed in the <i>Change username</i> window while connecting to the remote computer. The viewer would connect to the remote computer but it would also send the gui a message that caused it to stop waiting for a connection from the metadata server.</li>
   <li>The POV-Ray exporter no longer uses the locale when generating color tables; this could insert commas instead of decimal places and cause errors when parsing the file in POV-Ray.</li>
-  <li></li>
+  <li>Saved lineout results from a multi-domain dataset create single curve instead of one curve per domain.</li>
   <li></li>
   <li></li>
 </ul>

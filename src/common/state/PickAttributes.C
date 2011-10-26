@@ -3354,6 +3354,9 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   Minor format change: ensure newline prints after domain (or lack thereof).
 //   Change 'preserved' to 'preserve'.
 //
+//   Kathleen Biagas, Wed Oct 26 13:31:50 PDT 2011
+//   Only print timeStep information if requested and not -1.
+//
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -3374,7 +3377,8 @@ PickAttributes::PrintSelf(ostream &os)
     else 
         os << "\n";
     os << fileName.c_str() << " ";
-    os << "timestep " << timeStep << " ";
+    if (showTimeStep && timeStep != -1)
+        os << "timestep " << timeStep << " ";
     if (meshInfo.empty())
     {
         if (domain != -1)
@@ -3615,6 +3619,9 @@ PickAttributes::PrintSelf(ostream &os)
 //   Cyrus Harrison, Mon Sep 17 10:13:18 PDT 2007
 //   Add support for user settable floating point format string
 //
+//   Kathleen Biagas, Wed Oct 26 13:31:50 PDT 2011
+//   Only print timeStep information if requested and not -1.
+//
 // ****************************************************************************
 void
 PickAttributes::CreateOutputString(std::string &os, bool withLetter)
@@ -3663,7 +3670,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         domStr = buff;
     }
     
-    if (showTimeStep)
+    if (showTimeStep && timeStep != -1)
     {
         SNPRINTF(buff, 512, "  timestep %d", timeStep);
         os += buff;
@@ -4068,6 +4075,9 @@ PickAttributes::PrepareForNewPick()
 //   Cyrus Harrison, Mon Sep 17 10:41:25 PDT 200
 //   Added support for user settable floating point format string
 //
+//   Kathleen Biagas, Wed Oct 26 13:31:50 PDT 2011
+//   Only print timeStep information if requested and not -1.
+//
 // ****************************************************************************
 
 void
@@ -4092,7 +4102,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         os += buff;
     }
     os += fileName;
-    if (showTimeStep)
+    if (showTimeStep && timeStep != -1)
     {
         SNPRINTF(buff, 512, "  timestep %d", timeStep);
         os += buff;
