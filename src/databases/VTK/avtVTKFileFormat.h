@@ -44,7 +44,10 @@
 #define AVT_VTK_FILE_FORMAT_H
 
 #include <avtSTSDFileFormat.h>
+#include <map>
+#include <string>
 
+class vtkRectilinearGrid;
 class vtkStructuredPoints;
 
 class DBOptionsAttributes;
@@ -88,6 +91,9 @@ class DBOptionsAttributes;
 //    Kathleen Bonnell, Wed Jul  9 18:13:50 PDT 2008
 //    Added GetCycle method.
 //
+//    Brad Whitlock, Wed Oct 26 11:01:00 PDT 2011
+//    I added vtkCurves.
+//
 // ****************************************************************************
 
 class avtVTKFileFormat : public avtSTSDFileFormat
@@ -126,8 +132,11 @@ class avtVTKFileFormat : public avtSTSDFileFormat
 
     std::string           extension;
 
+    std::map<std::string, vtkRectilinearGrid *> vtkCurves;
+
     void                  ReadInDataset(void);
     vtkDataSet           *ConvertStructuredPointsToRGrid(vtkStructuredPoints *);
+    void                  CreateCurves(vtkRectilinearGrid *rgrid);
 };
 
 

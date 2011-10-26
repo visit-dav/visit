@@ -382,6 +382,9 @@ void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 //    Brad Whitlock, Tue Aug  9 14:15:25 PDT 2011
 //    I changed how we do 1D texturing so it is compatible with the new VTK.
 //
+//    Brad Whitlock, Wed Oct 26 12:29:40 PDT 2011
+//    Add support for 1D rectilinear (Nx, 1, 1 case) grids as lines.
+//
 // ****************************************************************************
 
 int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
@@ -400,6 +403,7 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    bool flatI = (dims[0] <= 1);
    bool flatJ = (dims[1] <= 1);
    bool flatK = (dims[2] <= 1);
+
    if (!flatI && !flatJ && !flatK)
    {
        vtkErrorMacro("One of the dimensions must be flat!!\n"
@@ -535,6 +539,33 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    if(this->ColorCoordinates != NULL)
        texCoords = (const float *)this->ColorCoordinates->GetVoidPointer(0);
 
+   if(!flatI && flatJ && flatK)
+   {
+       // Draw a curve
+       glBegin(GL_LINE_STRIP);
+       if(colors == NULL && texCoords == NULL)
+       {
+           for(int i = 0; i < dims[0]; ++i)
+               glVertex3f(X[i], 0.f, 0.f);
+       }
+       else
+       {
+           for(int i = 0; i < dims[0]; ++i)
+           {
+               if(nodeData)
+               {
+                   if(texCoords != NULL)
+                        glTexCoord1f(texCoords[i]);
+                   else if(colors != NULL)
+                        glColor4ubv(colors + 4*i);
+               }
+               glVertex3f(X[i], 0.f, 0.f);
+           }
+       }
+       glEnd();
+   }
+   else
+   {
    glBegin(GL_QUADS);
    for (int j = 0 ; j < slowDim-1 ; j++)
        for (int i = 0 ; i < fastDim-1 ; i++)
@@ -632,6 +663,7 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
            }
        }
    glEnd();
+   }
 
    if (transform)
        glPopMatrix();
