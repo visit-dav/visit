@@ -217,15 +217,15 @@ bv_visit_initialize
 #
 #initialize required libraries..
 
-for (( i=0; i<${#reqlibs[*]}; ++i ))
+for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
 do
-    initializeFunc="bv_${reqlibs[$i]}_initialize"
+    initializeFunc="bv_${reqlibs[$bv_i]}_initialize"
     $initializeFunc
 done
 
-for (( i=0; i<${#optlibs[*]}; ++i ))
+for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
 do
-    initializeFunc="bv_${optlibs[$i]}_initialize"
+    initializeFunc="bv_${optlibs[$bv_i]}_initialize"
     $initializeFunc
 done
 
@@ -324,15 +324,15 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   ON_USE_VISIT_FILE="on"
 fi
 
-for (( i=0; i<${#reqlibs[*]}; ++i ))
+for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
 do
-    initializeFunc="bv_${reqlibs[$i]}_info"
+    initializeFunc="bv_${reqlibs[$bv_i]}_info"
     $initializeFunc
 done
 
-for (( i=0; i<${#optlibs[*]}; ++i ))
+for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
 do
-    initializeFunc="bv_${optlibs[$i]}_info"
+    initializeFunc="bv_${optlibs[$bv_i]}_info"
     $initializeFunc
 done
 
@@ -815,9 +815,9 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     case $retval in
       0)
         #disable all..
-        for (( i=0; i < ${#iolibs[*]}; ++i ))
+        for (( bv_i=0; bv_i < ${#iolibs[*]}; ++bv_i ))
         do
-          initializeFunc="bv_${iolibs[$i]}_disable"
+          initializeFunc="bv_${iolibs[$bv_i]}_disable"
           $initializeFunc
         done
         
@@ -848,9 +848,9 @@ fi
 #TODO: Update Optional2
 if [[ "$DO_OPTIONAL2" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     add_checklist_vars=""
-    for (( i=0; i < ${#advancedlibs[*]}; ++i ))
+    for (( bv_i=0; bv_i < ${#advancedlibs[*]}; ++bv_i ))
     do
-        initializeFunc="bv_${advancedlibs[$i]}_graphical"
+        initializeFunc="bv_${advancedlibs[$bv_i]}_graphical"
         output_str="$($initializeFunc)"
         add_checklist_vars=${add_checklist_vars}" "${output_str}
     done
@@ -903,15 +903,15 @@ fi
 ## At this point we are after the command line and the visual selection
 #dry run, don't execute anything just run the enabled stuff..
 if [[ $VISIT_DRY_RUN -eq 1 ]]; then
-    for (( i=0; i<${#reqlibs[*]}; ++i ))
+    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
     do
-        initializeFunc="bv_${reqlibs[$i]}_dry_run"
+        initializeFunc="bv_${reqlibs[$bv_i]}_dry_run"
         $initializeFunc
     done
 
-    for (( i=0; i<${#optlibs[*]}; ++i ))
+    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
     do
-        initializeFunc="bv_${optlibs[$i]}_dry_run"
+        initializeFunc="bv_${optlibs[$bv_i]}_dry_run"
         $initializeFunc
     done
 
@@ -1019,16 +1019,16 @@ export VISITDIR=${VISITDIR:-$(pwd)}
 
 
 if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
-    for (( i=0; i<${#thirdpartylibs[*]}; ++i ))
+    for (( bv_i=0; bv_i<${#thirdpartylibs[*]}; ++bv_i ))
     do
-        initializeFunc="bv_${thirdpartylibs[$i]}_enable"
+        initializeFunc="bv_${thirdpartylibs[$bv_i]}_enable"
         $initializeFunc
     done
     if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
         #disable all non dbio libraries
-        for (( i=0; i<${#nodbiolibs[*]}; ++i ))
+        for (( bv_i=0; bv_i<${#nodbiolibs[*]}; ++bv_i ))
         do
-            initializeFunc="bv_${nodbiolibs[$i]}_disable"
+            initializeFunc="bv_${nodbiolibs[$bv_i]}_disable"
             $initializeFunc
         done
     fi
@@ -1112,18 +1112,18 @@ fi
 #
 
 echo "building required libraries"
-for (( i=0; i<${#reqlibs[*]}; ++i ))
+for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
 do
     cd "$START_DIR"
-    initializeFunc="bv_${reqlibs[$i]}_build"
+    initializeFunc="bv_${reqlibs[$bv_i]}_build"
     $initializeFunc
 done
 
 echo "building optional libraries"
-for (( i=0; i<${#optlibs[*]}; ++i ))
+for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
 do
     cd "$START_DIR"
-    initializeFunc="bv_${optlibs[$i]}_build"
+    initializeFunc="bv_${optlibs[$bv_i]}_build"
     $initializeFunc
 done
 
