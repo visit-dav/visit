@@ -1,5 +1,5 @@
 
-B:  emptydomains.silo  timestep 0
+B:  emptydomains.silo
 mesh domain 2 
 Point: <4, 0, 2>
 Node:  100

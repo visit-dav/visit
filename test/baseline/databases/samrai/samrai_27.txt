@@ -1,5 +1,5 @@
 
-A:  summary.samrai  timestep 0
+A:  summary.samrai
 amr_mesh level 1 patch level1,patch0 
 Point: <-0.285932, 0.075>
 Zone:  247

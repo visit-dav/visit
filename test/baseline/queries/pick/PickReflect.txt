@@ -1,5 +1,5 @@
 
-A:  curv2d.silo  timestep 0
+A:  curv2d.silo
 curvmesh2d 
 Point (Z,R): (in transformed space)
         <-1.04561, 2.58935>
@@ -12,7 +12,7 @@ u:  <nodal>
     (359) = -0.320426
 
 
-B:  curv2d.silo  timestep 0
+B:  curv2d.silo
 curvmesh2d 
 Point (Z,R): (in transformed space)
         <-1.04561, -2.38843>

@@ -1,5 +1,5 @@
 
-A:  multi_ucd3d.silo  timestep 0
+A:  multi_ucd3d.silo
 mesh1 domain 4 
 Point: <1.64551, 1.80685, 0.666667>
 Zone:  15
@@ -54,7 +54,7 @@ v:  <nodal>
     (184) = 0
 
 
-B:  multi_ucd3d.silo  timestep 0
+B:  multi_ucd3d.silo
 mesh1 domain 4 
 Point: <1.70473, 1.74947, 0.666667>
 Zone:  15
@@ -109,7 +109,7 @@ v:  <nodal>
     (184) = 0
 
 
-C:  multi_ucd3d.silo  timestep 0
+C:  multi_ucd3d.silo
 mesh1 domain 4 
 Point: <1.66178, 1.7977, 0.333333>
 Zone:  15

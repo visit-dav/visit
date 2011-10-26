@@ -1,12 +1,12 @@
 Pick on Index-selected 2D Mesh Plot
 
-A:  rect2d.silo  timestep 0
+A:  rect2d.silo
 quadmesh2d 
 Point: <0.0415832, 0.0424471>
 Zone:  31
 Incident Nodes:  32  33  63  64  
 
-B:  rect2d.silo  timestep 0
+B:  rect2d.silo
 quadmesh2d 
 Point: <0.0333333, 0.0333333>
 Node:  32
@@ -14,7 +14,7 @@ Incident Zones:  30  0  31  1
 
 Same Picks on Index-selected 2D Pseudocolor Plot
 
-C:  rect2d.silo  timestep 0
+C:  rect2d.silo
 quadmesh2d 
 Point: <0.0415832, 0.0424471>
 Zone:  31
@@ -26,7 +26,7 @@ u:  <nodal>
     (64) = -0.707107
 
 
-D:  rect2d.silo  timestep 0
+D:  rect2d.silo
 quadmesh2d 
 Point: <0.0333333, 0.0333333>
 Node:  32
@@ -36,13 +36,13 @@ u:  <nodal> = -0.707107
 
 Changed stride of IndexSelect, 2D Mesh Plot picks
 
-E:  rect2d.silo  timestep 0
+E:  rect2d.silo
 quadmesh2d 
 Point: <0.0415832, 0.0424471>
 Zone:  31
 Incident Nodes:  32  33  63  64  
 
-F:  rect2d.silo  timestep 0
+F:  rect2d.silo
 quadmesh2d 
 Point: <0.0333333, 0.0333333>
 Node:  32
@@ -50,7 +50,7 @@ Incident Zones:  30  0  31  1
 
 Same picks 2D Pseudocolor Plot 
 
-G:  rect2d.silo  timestep 0
+G:  rect2d.silo
 quadmesh2d 
 Point: <0.0415832, 0.0424471>
 Zone:  31
@@ -62,7 +62,7 @@ u:  <nodal>
     (64) = -0.707107
 
 
-H:  rect2d.silo  timestep 0
+H:  rect2d.silo
 quadmesh2d 
 Point: <0.0333333, 0.0333333>
 Node:  32
@@ -72,13 +72,13 @@ u:  <nodal> = -0.707107
 
 Index selected 3D Mesh Plot
 
-I:  rect3d.silo  timestep 0
+I:  rect3d.silo
 quadmesh3d 
 Point: <0, 0.164242, 0.412301>
 Zone:  14580
 Incident Nodes:  15438  15439  15469  15470  16709  16710  16740  16741  
 
-J:  rect3d.silo  timestep 0
+J:  rect3d.silo
 quadmesh3d 
 Point: <0, 0.2, 0.4>
 Node:  15500
@@ -86,7 +86,7 @@ Incident Zones:  14640  14610  13410  13440
 
 Same picks on 3D Pseudocolor Plot
 
-K:  rect3d.silo  timestep 0
+K:  rect3d.silo
 quadmesh3d 
 Point: <0, 0.164242, 0.412301>
 Zone:  14580
@@ -94,7 +94,7 @@ Incident Nodes:  15438  15439  15469  15470  16709  16710  16740  16741
 d:  <zonal> = 0.595367
 
 
-L:  rect3d.silo  timestep 0
+L:  rect3d.silo
 quadmesh3d 
 Point: <0, 0.2, 0.4>
 Node:  15500
@@ -108,13 +108,13 @@ d:  <zonal>
 
 Sliced, Index-selected 3D Mesh Plot
 
-M:  rect3d.silo  timestep 0
+M:  rect3d.silo
 quadmesh3d 
 Point: <0.378395, 0.378989, 0.5>
 Zone:  17261
 Incident Nodes:  18270  18271  18301  18302  19541  19542  19572  19573  
 
-N:  rect3d.silo  timestep 0
+N:  rect3d.silo
 quadmesh3d 
 Point: <0.4, 0.4, 0.5>
 Node:  19573
@@ -122,7 +122,7 @@ Incident Zones:  18491  18461  17261  17291  18492  18462  17262  17292
 
 Same pickes on Sliced, Index-selected 3D Pseudocolor Plot
 
-O:  rect3d.silo  timestep 0
+O:  rect3d.silo
 quadmesh3d 
 Point: <0.378395, 0.378989, 0.5>
 Zone:  17261
@@ -130,7 +130,7 @@ Incident Nodes:  18270  18271  18301  18302  19541  19542  19572  19573
 d:  <zonal> = 0.162927
 
 
-P:  rect3d.silo  timestep 0
+P:  rect3d.silo
 quadmesh3d 
 Point: <0.4, 0.4, 0.5>
 Node:  19573
@@ -149,7 +149,7 @@ d:  <zonal>
 Same picks on Sliced, Index-selected 3D FilledBoundary Plot
 Stride changes back to 1 due to MIR, so should match Mesh results below
 
-Q:  rect3d.silo  timestep 0
+Q:  rect3d.silo
 quadmesh3d 
 Point: <0.378395, 0.378989, 0.5>
 Zone:  17261
@@ -157,7 +157,7 @@ Incident Nodes:  18270  18271  18301  18302  19541  19542  19572  19573
 mat1:  7 
 
 
-R:  rect3d.silo  timestep 0
+R:  rect3d.silo
 quadmesh3d 
 Point: <0.366667, 0.375, 0.5>
 Node:  19541
@@ -187,13 +187,13 @@ mat1:
 
 Same picks on Sliced, 3D Mesh Plot
 
-S:  rect3d.silo  timestep 0
+S:  rect3d.silo
 quadmesh3d 
 Point: <0.378395, 0.378989, 0.5>
 Zone:  17261
 Incident Nodes:  18270  18271  18301  18302  19541  19542  19572  19573  
 
-T:  rect3d.silo  timestep 0
+T:  rect3d.silo
 quadmesh3d 
 Point: <0.366667, 0.375, 0.5>
 Node:  19541

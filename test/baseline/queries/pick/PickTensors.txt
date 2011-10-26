@@ -1,5 +1,5 @@
 
-A:  noise.silo  timestep 0
+A:  noise.silo
 Mesh 
 Point: <-10, -6.05292, -1.94876>
 Zone:  46060
@@ -47,7 +47,7 @@ grad_tensor:  <nodal>
             Major Eigenvalue: 0.229807
 
 
-B:  noise.silo  timestep 0
+B:  noise.silo
 Mesh 
 Point: <-10, -5.91837, -1.83673>
 Node:  50500
@@ -59,7 +59,7 @@ grad_tensor:  <nodal> =
     Major Eigenvalue: 0.131379
 
 
-C:  noise.silo  timestep 0
+C:  noise.silo
 Mesh 
 Point: <5.91837, -7.14286, -2.2449>
 Node:  47889
@@ -71,7 +71,7 @@ grad_tensor:  <nodal> =
     Major Eigenvalue: 1.12606
 
 
-D:  noise.silo  timestep 0
+D:  noise.silo
 Mesh 
 Point: <8.77551, -4.28571, 2.2449>
 Node:  75746

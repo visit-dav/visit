@@ -1,5 +1,5 @@
 
-B:  rect2d.silo  timestep 0
+B:  rect2d.silo
 quadmesh2d 
 Point: <0.5, 1>
 Zone:  884

@@ -1,5 +1,5 @@
 
-A:  specmix_quad.silo  timestep 0
+A:  specmix_quad.silo
 Mesh 
 Point: <0.04, 0.408889>
 Zone:  233
@@ -19,7 +19,7 @@ Species:  <zonal>
 
 
 
-B:  specmix_quad.silo  timestep 0
+B:  specmix_quad.silo
 Mesh 
 Point: <1.0069, 0.5875>
 Node:  266
@@ -67,7 +67,7 @@ Species:  <zonal>
 
 
 
-C:  specmix_quad.silo  timestep 0
+C:  specmix_quad.silo
 Mesh 
 Point: <0.351111, 0.431111>
 Zone:  233
@@ -87,7 +87,7 @@ Species:  <zonal>
 
 
 
-D:  specmix_quad.silo  timestep 0
+D:  specmix_quad.silo
 Mesh 
 Point: <1.0069, 0.5875>
 Node:  266
@@ -135,7 +135,7 @@ Species:  <zonal>
 
 
 
-E:  specmix_quad.silo  timestep 0
+E:  specmix_quad.silo
 Mesh 
 Point: <0.626667, 0.222222>
 Zone:  233
@@ -155,7 +155,7 @@ Species:  <zonal>
 
 
 
-F:  specmix_quad.silo  timestep 0
+F:  specmix_quad.silo
 Mesh 
 Point: <0.08, 0.133333>
 Zone:  232
@@ -171,7 +171,7 @@ Species:  <zonal>
 
 
 
-G:  specmix_quad.silo  timestep 0
+G:  specmix_quad.silo
 Mesh 
 Point: <0.871111, 0.551111>
 Zone:  233
@@ -191,7 +191,7 @@ Species:  <zonal>
 
 
 
-H:  specmix_quad.silo  timestep 0
+H:  specmix_quad.silo
 Mesh 
 Point: <0.0346176, 0.903125>
 Zone:  233
@@ -211,7 +211,7 @@ Species:  <zonal>
 
 
 
-I:  specmix_quad.silo  timestep 0
+I:  specmix_quad.silo
 Mesh 
 Point: <1.0069, 0.5875>
 Node:  266
@@ -259,7 +259,7 @@ Species:  <zonal>
 
 
 
-J:  specmix_quad.silo  timestep 0
+J:  specmix_quad.silo
 Mesh 
 Point: <1.0069, 0.5875>
 Node:  266
@@ -307,7 +307,7 @@ Species:  <zonal>
 
 
 
-K:  specmix_quad.silo  timestep 0
+K:  specmix_quad.silo
 Mesh 
 Point: <0.84, 0.297778>
 Zone:  233
@@ -327,7 +327,7 @@ Species:  <zonal>
 
 
 
-L:  specmix_quad.silo  timestep 0
+L:  specmix_quad.silo
 Mesh 
 Point: <1.0069, 0.5875>
 Node:  266
@@ -375,7 +375,7 @@ Species:  <zonal>
 
 
 
-M:  specmix_quad.silo  timestep 0
+M:  specmix_quad.silo
 Mesh 
 Point: <0.582222, 0.404444>
 Zone:  233
@@ -395,7 +395,7 @@ Species:  <zonal>
 
 
 
-N:  specmix_quad.silo  timestep 0
+N:  specmix_quad.silo
 Mesh 
 Point: <1.0069, 0.5875>
 Node:  266
@@ -449,7 +449,7 @@ Species:  <zonal>
 
 
 
-O:  specmix_quad.silo  timestep 0
+O:  specmix_quad.silo
 Mesh 
 Point: <0.346667, 0.324444>
 Zone:  233
@@ -471,7 +471,7 @@ Species:  <zonal>
 
 
 
-P:  specmix_quad.silo  timestep 0
+P:  specmix_quad.silo
 Mesh 
 Point: <1.0069, 0.5875>
 Node:  266
@@ -525,7 +525,7 @@ Species:  <zonal>
 
 
 
-Q:  specmix_quad.silo  timestep 0
+Q:  specmix_quad.silo
 Mesh 
 Point: <0.151111, 0.471111>
 Zone:  233
@@ -547,7 +547,7 @@ Species:  <zonal>
 
 
 
-R:  specmix_quad.silo  timestep 0
+R:  specmix_quad.silo
 Mesh 
 Point: <1.0069, 0.5875>
 Node:  266
@@ -601,7 +601,7 @@ Species:  <zonal>
 
 
 
-S:  specmix_quad.silo  timestep 0
+S:  specmix_quad.silo
 Mesh 
 Point: <1.0069, 0.5875>
 Node:  266
@@ -655,7 +655,7 @@ Species:  <zonal>
 
 
 
-T:  specmix_quad.silo  timestep 0
+T:  specmix_quad.silo
 Mesh 
 Point: <0.346667, 0.324444>
 Zone:  233
@@ -677,7 +677,7 @@ Species:  <zonal>
 
 
 
-U:  specmix_quad.silo  timestep 0
+U:  specmix_quad.silo
 Mesh 
 Point: <1.0069, 0.5875>
 Node:  266
@@ -731,7 +731,7 @@ Species:  <zonal>
 
 
 
-V:  specmix_quad.silo  timestep 0
+V:  specmix_quad.silo
 Mesh 
 Point: <0.151111, 0.471111>
 Zone:  233
@@ -753,7 +753,7 @@ Species:  <zonal>
 
 
 
-W:  specmix_quad.silo  timestep 0
+W:  specmix_quad.silo
 Mesh 
 Point: <1.0069, 0.5875>
 Node:  266

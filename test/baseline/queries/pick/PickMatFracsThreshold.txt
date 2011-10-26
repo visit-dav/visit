@@ -1,5 +1,5 @@
 
-A:  rect3d.silo  timestep 0
+A:  rect3d.silo
 quadmesh3d 
 Point: <0.50121, 0.526618, 0.6>
 Zone:  21045 domain <15, 21, 17>
@@ -28,7 +28,7 @@ vel:  <nodal>
     (23576) = (0.285241,0.428291,0.85744) mag = 1
 
 
-B:  rect3d.silo  timestep 0
+B:  rect3d.silo
 quadmesh3d 
 Point: <0.573804, 0.542347, 0.533333>
 Zone:  18647 domain <17, 21, 15>
@@ -57,7 +57,7 @@ vel:  <nodal>
     (21036) = (0.85744,0.428291,0.285241) mag = 1
 
 
-C:  rect3d.silo  timestep 0
+C:  rect3d.silo
 quadmesh3d 
 Point: <0.412887, 0.50363, 0.566667>
 Zone:  19812 domain <12, 20, 16>
@@ -86,7 +86,7 @@ vel:  <nodal>
     (22271) = (-0.68469,0.255349,0.682639) mag = 1
 
 
-D:  rect3d.silo  timestep 0
+D:  rect3d.silo
 quadmesh3d 
 Point: <0.5, 0.468543, 0.6>
 Zone:  20954 domain <14, 18, 17>
@@ -115,7 +115,7 @@ vel:  <nodal>
     (23482) = (-0.000970826,-0.243677,0.969856) mag = 1
 
 
-E:  rect3d.silo  timestep 0
+E:  rect3d.silo
 quadmesh3d 
 Point: <0.516667, 0.5375, 0.583333>
 Zone:  21045 domain <15, 21, 17>
@@ -144,7 +144,7 @@ vel:  <nodal>
     (23576) = (0.285241,0.428291,0.85744) mag = 1
 
 
-F:  rect3d.silo  timestep 0
+F:  rect3d.silo
 quadmesh3d 
 Point: <0.583333, 0.5375, 0.516667>
 Zone:  18647 domain <17, 21, 15>
@@ -173,7 +173,7 @@ vel:  <nodal>
     (21036) = (0.85744,0.428291,0.285241) mag = 1
 
 
-G:  rect3d.silo  timestep 0
+G:  rect3d.silo
 quadmesh3d 
 Point: <0.416667, 0.5125, 0.55>
 Zone:  19812 domain <12, 20, 16>
@@ -202,7 +202,7 @@ vel:  <nodal>
     (22271) = (-0.68469,0.255349,0.682639) mag = 1
 
 
-H:  rect3d.silo  timestep 0
+H:  rect3d.silo
 quadmesh3d 
 Point: <0.483333, 0.4625, 0.583333>
 Zone:  20954 domain <14, 18, 17>
@@ -231,7 +231,7 @@ vel:  <nodal>
     (23482) = (-0.000970826,-0.243677,0.969856) mag = 1
 
 
-I:  rect3d.silo  timestep 0
+I:  rect3d.silo
 quadmesh3d 
 Point: <0.412887, 0.50363, 1>
 Zone:  35412
@@ -247,7 +247,7 @@ vel:  <nodal>
     (38794) = (-0.132223,0.0493114,0.989993) mag = 1
 
 
-J:  rect3d.silo  timestep 0
+J:  rect3d.silo
 quadmesh3d 
 Point: <0.5, 0.468543, 1>
 Zone:  35354
@@ -263,7 +263,7 @@ vel:  <nodal>
     (38734) = (-0.000199788,-0.0501469,0.998742) mag = 1
 
 
-K:  rect3d.silo  timestep 0
+K:  rect3d.silo
 quadmesh3d 
 Point: <0.416667, 0.5125, 0.983333>
 Zone:  35412
@@ -279,7 +279,7 @@ vel:  <nodal>
     (38794) = (-0.132223,0.0493114,0.989993) mag = 1
 
 
-L:  rect3d.silo  timestep 0
+L:  rect3d.silo
 quadmesh3d 
 Point: <0.483333, 0.4625, 0.983333>
 Zone:  35354

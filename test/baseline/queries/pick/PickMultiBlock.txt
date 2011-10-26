@@ -1,5 +1,5 @@
 
-A:  multi_ucd3d.silo  timestep 0
+A:  multi_ucd3d.silo
 mesh1 domain 34 
 Point: <-2.39903, 0.335016, 20>
 Zone:  15
@@ -35,7 +35,7 @@ p:  <nodal>
     (1708) = 0.416649
 
 
-B:  multi_ucd3d.silo  timestep 0
+B:  multi_ucd3d.silo
 mesh1 domain 36 
 Point: <-4.44699, 0.393529, 20>
 Zone:  15
@@ -71,7 +71,7 @@ p:  <nodal>
     (1709) = 0.227268
 
 
-C:  multi_ucd3d.silo  timestep 0
+C:  multi_ucd3d.silo
 mesh1 domain 25 
 Point: <2.45754, 0.393529, 20>
 Zone:  75
@@ -107,7 +107,7 @@ p:  <nodal>
     (1624) = 0.416649
 
 
-D:  multi_ucd3d.silo  timestep 0
+D:  multi_ucd3d.silo
 mesh1 domain 27 
 Point: <4.68104, 0.393529, 20>
 Zone:  83
@@ -143,7 +143,7 @@ p:  <nodal>
     (1615) = 0.217387
 
 
-E:  multi_ucd3d.silo  timestep 0
+E:  multi_ucd3d.silo
 mesh1 domain 28 
 Point: <0.292565, 2.38297, 20>
 Zone:  15
@@ -179,7 +179,7 @@ p:  <nodal>
     (1840) = 0.416649
 
 
-F:  multi_ucd3d.silo  timestep 0
+F:  multi_ucd3d.silo
 mesh1 domain 30 
 Point: <0.175539, 4.54795, 20>
 Zone:  4
@@ -215,7 +215,7 @@ p:  <nodal>
     (1854) = 0.222217
 
 
-G:  multi_ucd3d.silo  timestep 0
+G:  multi_ucd3d.silo
 mesh1 domain 35 
 Point: <-2.57457, 2.44148, 20>
 Zone:  94
@@ -251,7 +251,7 @@ p:  <nodal>
     (1748) = 0.285706
 
 
-H:  multi_ucd3d.silo  timestep 0
+H:  multi_ucd3d.silo
 mesh1 domain 26 
 Point: <2.6916, 2.14892, 20>
 Zone:  15
@@ -287,7 +287,7 @@ p:  <nodal>
     (1838) = 0.294109
 
 
-I:  multi_ucd3d.silo  timestep 0
+I:  multi_ucd3d.silo
 mesh1 domain 32 
 Point: <-1.8139, 2.90959, 20>
 Zone:  25
@@ -323,7 +323,7 @@ p:  <nodal>
     (1981) = 0.294109
 
 
-J:  multi_ucd3d.silo  timestep 0
+J:  multi_ucd3d.silo
 mesh1 domain 29 
 Point: <1.75539, 3.08513, 20>
 Zone:  64
@@ -359,7 +359,7 @@ p:  <nodal>
     (1930) = 0.285706
 
 
-K:  multi_ucd3d.silo  timestep 0
+K:  multi_ucd3d.silo
 mesh1 domain 35 
 Point: <-3.10119, 1.32974, 20>
 Zone:  56
@@ -395,7 +395,7 @@ p:  <nodal>
     (1798) = 0.303021
 
 
-L:  multi_ucd3d.silo  timestep 0
+L:  multi_ucd3d.silo
 mesh1 domain 26 
 Point: <3.6278, 1.27122, 20>
 Zone:  51
@@ -431,7 +431,7 @@ p:  <nodal>
     (1790) = 0.263151
 
 
-M:  multi_ucd3d.silo  timestep 0
+M:  multi_ucd3d.silo
 mesh1 domain 34 
 Point: <-2.43114, 0.287742, 19.6667>
 Zone:  15
@@ -467,7 +467,7 @@ p:  <nodal>
     (1708) = 0.416649
 
 
-N:  multi_ucd3d.silo  timestep 0
+N:  multi_ucd3d.silo
 mesh1 domain 36 
 Point: <-4.41575, 0.522634, 19.6667>
 Zone:  15
@@ -503,7 +503,7 @@ p:  <nodal>
     (1709) = 0.227268
 
 
-O:  multi_ucd3d.silo  timestep 0
+O:  multi_ucd3d.silo
 mesh1 domain 25 
 Point: <2.40107, 0.477603, 19.6667>
 Zone:  75
@@ -539,7 +539,7 @@ p:  <nodal>
     (1624) = 0.416649
 
 
-P:  multi_ucd3d.silo  timestep 0
+P:  multi_ucd3d.silo
 mesh1 domain 27 
 Point: <4.61421, 0.546127, 19.6667>
 Zone:  83
@@ -575,7 +575,7 @@ p:  <nodal>
     (1615) = 0.217387
 
 
-Q:  multi_ucd3d.silo  timestep 0
+Q:  multi_ucd3d.silo
 mesh1 domain 28 
 Point: <0.287744, 2.43114, 19.6667>
 Zone:  15
@@ -611,7 +611,7 @@ p:  <nodal>
     (1840) = 0.416649
 
 
-R:  multi_ucd3d.silo  timestep 0
+R:  multi_ucd3d.silo
 mesh1 domain 30 
 Point: <0.178493, 4.54298, 19.6667>
 Zone:  4
@@ -647,7 +647,7 @@ p:  <nodal>
     (1854) = 0.222217
 
 
-S:  multi_ucd3d.silo  timestep 0
+S:  multi_ucd3d.silo
 mesh1 domain 35 
 Point: <-2.60484, 2.40788, 19.6667>
 Zone:  94
@@ -683,7 +683,7 @@ p:  <nodal>
     (1748) = 0.285706
 
 
-T:  multi_ucd3d.silo  timestep 0
+T:  multi_ucd3d.silo
 mesh1 domain 26 
 Point: <2.70725, 2.13423, 19.6667>
 Zone:  15
@@ -719,7 +719,7 @@ p:  <nodal>
     (1838) = 0.294109
 
 
-U:  multi_ucd3d.silo  timestep 0
+U:  multi_ucd3d.silo
 mesh1 domain 32 
 Point: <-1.91524, 2.86636, 19.6667>
 Zone:  25
@@ -755,7 +755,7 @@ p:  <nodal>
     (1981) = 0.294109
 
 
-V:  multi_ucd3d.silo  timestep 0
+V:  multi_ucd3d.silo
 mesh1 domain 29 
 Point: <1.73327, 3.09497, 19.6667>
 Zone:  64
@@ -791,7 +791,7 @@ p:  <nodal>
     (1930) = 0.285706
 
 
-W:  multi_ucd3d.silo  timestep 0
+W:  multi_ucd3d.silo
 mesh1 domain 35 
 Point: <-3.03993, 1.40143, 19.6667>
 Zone:  56
@@ -827,7 +827,7 @@ p:  <nodal>
     (1798) = 0.303021
 
 
-X:  multi_ucd3d.silo  timestep 0
+X:  multi_ucd3d.silo
 mesh1 domain 26 
 Point: <3.60925, 1.33152, 19.6667>
 Zone:  51
@@ -863,7 +863,7 @@ p:  <nodal>
     (1790) = 0.263151
 
 
-Y:  multi_rect3d.silo  timestep 0
+Y:  multi_rect3d.silo
 mesh1 domain 25 
 Point: <0.0656499, 0.0656499, 1>
 Zone:  921
@@ -883,7 +883,7 @@ d:  <zonal> = 0.79216
 p:  <zonal> = 1.26221
 
 
-Z:  multi_rect3d.silo  timestep 0
+Z:  multi_rect3d.silo
 mesh1 domain 31 
 Point: <0.0656499, 0.685453, 1>
 Zone:  971
@@ -903,7 +903,7 @@ d:  <zonal> = 0.686489
 p:  <zonal> = 1.45648
 
 
-a:  multi_rect3d.silo  timestep 0
+a:  multi_rect3d.silo
 mesh1 domain 34 
 Point: <0.153496, 0.905068, 1>
 Zone:  964
@@ -923,7 +923,7 @@ d:  <zonal> = 0.725443
 p:  <zonal> = 1.37828
 
 
-b:  multi_rect3d.silo  timestep 0
+b:  multi_rect3d.silo
 mesh1 domain 25 
 Point: <0.158376, 0.0802909, 1>
 Zone:  934
@@ -943,7 +943,7 @@ d:  <zonal> = 0.725443
 p:  <zonal> = 1.37828
 
 
-c:  multi_rect3d.silo  timestep 0
+c:  multi_rect3d.silo
 mesh1 domain 28 
 Point: <0.251103, 0.35359, 1>
 Zone:  947
@@ -963,7 +963,7 @@ d:  <zonal> = 0.561264
 p:  <zonal> = 1.78138
 
 
-d:  multi_rect3d.silo  timestep 0
+d:  multi_rect3d.silo
 mesh1 domain 34 
 Point: <0.329188, 0.919709, 1>
 Zone:  969
@@ -983,7 +983,7 @@ d:  <zonal> = 0.661346
 p:  <zonal> = 1.51184
 
 
-e:  multi_rect3d.silo  timestep 0
+e:  multi_rect3d.silo
 mesh1 domain 32 
 Point: <0.519521, 0.714735, 1>
 Zone:  985
@@ -1003,7 +1003,7 @@ d:  <zonal> = 0.528247
 p:  <zonal> = 1.89269
 
 
-f:  multi_rect3d.silo  timestep 0
+f:  multi_rect3d.silo
 mesh1 domain 29 
 Point: <0.524402, 0.5, 1>
 Zone:  995
@@ -1023,7 +1023,7 @@ d:  <zonal> = 0.483782
 p:  <zonal> = 2.06662
 
 
-g:  multi_rect3d.silo  timestep 0
+g:  multi_rect3d.silo
 mesh1 domain 26 
 Point: <0.617128, 0.119334, 1>
 Zone:  948
@@ -1043,7 +1043,7 @@ d:  <zonal> = 0.63038
 p:  <zonal> = 1.58609
 
 
-h:  multi_rect3d.silo  timestep 0
+h:  multi_rect3d.silo
 mesh1 domain 30 
 Point: <0.704974, 0.329188, 1>
 Zone:  931
@@ -1063,7 +1063,7 @@ d:  <zonal> = 0.554041
 p:  <zonal> = 1.80459
 
 
-i:  multi_rect3d.silo  timestep 0
+i:  multi_rect3d.silo
 mesh1 domain 36 
 Point: <0.885547, 0.914829, 1>
 Zone:  966
@@ -1083,7 +1083,7 @@ d:  <zonal> = 0.7421
 p:  <zonal> = 1.34735
 
 
-j:  multi_rect3d.silo  timestep 0
+j:  multi_rect3d.silo
 mesh1 domain 27 
 Point: <0.919709, 0.0558892, 1>
 Zone:  927
@@ -1103,7 +1103,7 @@ d:  <zonal> = 0.773711
 p:  <zonal> = 1.29231
 
 
-k:  multi_rect3d.silo  timestep 0
+k:  multi_rect3d.silo
 mesh1 domain 33 
 Point: <0.968513, 0.534162, 1>
 Zone:  919
@@ -1123,7 +1123,7 @@ d:  <zonal> = 0.684564
 p:  <zonal> = 1.46057
 
 
-l:  multi_rect3d.silo  timestep 0
+l:  multi_rect3d.silo
 mesh1 domain 25 
 Point: <0.05, 0.0625, 0.983333>
 Zone:  921
@@ -1143,7 +1143,7 @@ d:  <zonal> = 0.79216
 p:  <zonal> = 1.26221
 
 
-m:  multi_rect3d.silo  timestep 0
+m:  multi_rect3d.silo
 mesh1 domain 31 
 Point: <0.05, 0.6875, 0.983333>
 Zone:  971
@@ -1163,7 +1163,7 @@ d:  <zonal> = 0.686489
 p:  <zonal> = 1.45648
 
 
-n:  multi_rect3d.silo  timestep 0
+n:  multi_rect3d.silo
 mesh1 domain 34 
 Point: <0.15, 0.9125, 0.983333>
 Zone:  964
@@ -1183,7 +1183,7 @@ d:  <zonal> = 0.725443
 p:  <zonal> = 1.37828
 
 
-o:  multi_rect3d.silo  timestep 0
+o:  multi_rect3d.silo
 mesh1 domain 25 
 Point: <0.15, 0.0875, 0.983333>
 Zone:  934
@@ -1203,7 +1203,7 @@ d:  <zonal> = 0.725443
 p:  <zonal> = 1.37828
 
 
-p:  multi_rect3d.silo  timestep 0
+p:  multi_rect3d.silo
 mesh1 domain 28 
 Point: <0.25, 0.3625, 0.983333>
 Zone:  947
@@ -1223,7 +1223,7 @@ d:  <zonal> = 0.561264
 p:  <zonal> = 1.78138
 
 
-q:  multi_rect3d.silo  timestep 0
+q:  multi_rect3d.silo
 mesh1 domain 34 
 Point: <0.316667, 0.9125, 0.983333>
 Zone:  969
@@ -1243,7 +1243,7 @@ d:  <zonal> = 0.661346
 p:  <zonal> = 1.51184
 
 
-r:  multi_rect3d.silo  timestep 0
+r:  multi_rect3d.silo
 mesh1 domain 32 
 Point: <0.516667, 0.7125, 0.983333>
 Zone:  985
@@ -1263,7 +1263,7 @@ d:  <zonal> = 0.528247
 p:  <zonal> = 1.89269
 
 
-s:  multi_rect3d.silo  timestep 0
+s:  multi_rect3d.silo
 mesh1 domain 29 
 Point: <0.516667, 0.4875, 0.983333>
 Zone:  995
@@ -1283,7 +1283,7 @@ d:  <zonal> = 0.483782
 p:  <zonal> = 2.06662
 
 
-t:  multi_rect3d.silo  timestep 0
+t:  multi_rect3d.silo
 mesh1 domain 26 
 Point: <0.616667, 0.1125, 0.983333>
 Zone:  948
@@ -1303,7 +1303,7 @@ d:  <zonal> = 0.63038
 p:  <zonal> = 1.58609
 
 
-u:  multi_rect3d.silo  timestep 0
+u:  multi_rect3d.silo
 mesh1 domain 30 
 Point: <0.716667, 0.3375, 0.983333>
 Zone:  931
@@ -1323,7 +1323,7 @@ d:  <zonal> = 0.554041
 p:  <zonal> = 1.80459
 
 
-v:  multi_rect3d.silo  timestep 0
+v:  multi_rect3d.silo
 mesh1 domain 36 
 Point: <0.883333, 0.9125, 0.983333>
 Zone:  966
@@ -1343,7 +1343,7 @@ d:  <zonal> = 0.7421
 p:  <zonal> = 1.34735
 
 
-w:  multi_rect3d.silo  timestep 0
+w:  multi_rect3d.silo
 mesh1 domain 27 
 Point: <0.916667, 0.0625, 0.983333>
 Zone:  927
@@ -1363,7 +1363,7 @@ d:  <zonal> = 0.773711
 p:  <zonal> = 1.29231
 
 
-x:  multi_rect3d.silo  timestep 0
+x:  multi_rect3d.silo
 mesh1 domain 33 
 Point: <0.983333, 0.5375, 0.983333>
 Zone:  919
@@ -1383,7 +1383,7 @@ d:  <zonal> = 0.684564
 p:  <zonal> = 1.46057
 
 
-y:  bigsil.silo  timestep 0
+y:  bigsil.silo
 mesh block 0 domain 3 
 Point: <1, 0.0802909, 0.0119661>
 Zone:  13
@@ -1399,7 +1399,7 @@ dist:  <nodal>
     (86) = 0.757053
 
 
-z:  bigsil.silo  timestep 0
+z:  bigsil.silo
 mesh block 1 domain 15 
 Point: <1, 0.426795, 0.50488>
 Zone:  160
@@ -1415,7 +1415,7 @@ dist:  <nodal>
     (278) = 0.458604
 
 
-AA:  bigsil.silo  timestep 0
+AA:  bigsil.silo
 mesh block 0 domain 3 
 Point: <1, 0.119334, 0.124214>
 Zone:  118
@@ -1431,7 +1431,7 @@ dist:  <nodal>
     (222) = 0.678049
 
 
-BB:  bigsil.silo  timestep 0
+BB:  bigsil.silo
 mesh block 2 domain 21 
 Point: <1, 0.0851712, 0.914829>
 Zone:  258
@@ -1447,7 +1447,7 @@ dist:  <nodal>
     (406) = 0.757053
 
 
-CC:  bigsil.silo  timestep 0
+CC:  bigsil.silo
 mesh block 2 domain 27 
 Point: <1, 0.880666, 0.905068>
 Zone:  279
@@ -1463,7 +1463,7 @@ dist:  <nodal>
     (430) = 0.757053
 
 
-DD:  bigsil.silo  timestep 0
+DD:  bigsil.silo
 mesh block 0 domain 3 
 Point: <0.976191, 0.0714286, 0.0238095>
 Zone:  13
@@ -1479,7 +1479,7 @@ dist:  <nodal>
     (86) = 0.757053
 
 
-EE:  bigsil.silo  timestep 0
+EE:  bigsil.silo
 mesh block 1 domain 15 
 Point: <0.738095, 0.357143, 0.357143>
 Zone:  1
@@ -1495,7 +1495,7 @@ dist:  <nodal>
     (73) = 0.272512
 
 
-FF:  bigsil.silo  timestep 0
+FF:  bigsil.silo
 mesh block 0 domain 3 
 Point: <0.976191, 0.119048, 0.119048>
 Zone:  118
@@ -1511,7 +1511,7 @@ dist:  <nodal>
     (222) = 0.678049
 
 
-GG:  bigsil.silo  timestep 0
+GG:  bigsil.silo
 mesh block 2 domain 21 
 Point: <0.976191, 0.0714286, 0.928571>
 Zone:  258
@@ -1527,7 +1527,7 @@ dist:  <nodal>
     (406) = 0.757053
 
 
-HH:  bigsil.silo  timestep 0
+HH:  bigsil.silo
 mesh block 2 domain 27 
 Point: <0.976191, 0.880952, 0.928571>
 Zone:  279
@@ -1543,7 +1543,7 @@ dist:  <nodal>
     (430) = 0.757053
 
 
-II:  bigsil.silo  timestep 0
+II:  bigsil.silo
 mesh block 2 domain 27 
 Point: <1, 0.880666, 0.905068>
 Zone:  279
@@ -1551,7 +1551,7 @@ Incident Nodes:  358  359  367  366  422  423  431  430
 The following variables are invalid, and Pick ignored them:
   aspect
 
-JJ:  bigsil.silo  timestep 0
+JJ:  bigsil.silo
 mesh block 2 domain 27 
 Point: <1, 0.880666, 0.905068>
 Zone:  279
