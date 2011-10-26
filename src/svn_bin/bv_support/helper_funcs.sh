@@ -1222,15 +1222,15 @@ function build_hostconf
 #icet
 #itaps
 
-    for (( i=0; i<${#reqlibs[*]}; ++i ))
+    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
     do
-        initialize="bv_${reqlibs[$i]}_host_profile"
+        initialize="bv_${reqlibs[$bv_i]}_host_profile"
         $initialize
     done
 
-    for (( i=0; i<${#optlibs[*]}; ++i ))
+    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
     do
-        initialize="bv_${optlibs[$i]}_host_profile"
+        initialize="bv_${optlibs[$bv_i]}_host_profile"
         $initialize
     done
     echo >> $HOSTCONF
@@ -1280,15 +1280,15 @@ printvariables () {
   printf "%s%s\n" "SVNREVISION=" "${SVNREVISION}"
   
   bv_visit_print
-  for (( i=0; i<${#reqlibs[*]}; ++i ))
+  for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
   do
-      initialize="bv_${reqlibs[$i]}_print"
+      initialize="bv_${reqlibs[$bv_i]}_print"
       $initialize
   done
 
-  for (( i=0; i<${#optlibs[*]}; ++i ))
+  for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
   do
-      initialize="bv_${optlibs[$i]}_print"
+      initialize="bv_${optlibs[$bv_i]}_print"
       $initialize
   done
 }
@@ -1322,15 +1322,15 @@ usage () {
   
   bv_visit_print_usage
 
-  for (( i=0; i<${#reqlibs[*]}; ++i ))
+  for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
   do
-      initialize="bv_${reqlibs[$i]}_print_usage"
+      initialize="bv_${reqlibs[$bv_i]}_print_usage"
       $initialize
   done
 
-  for (( i=0; i<${#optlibs[*]}; ++i ))
+  for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
   do
-      initialize="bv_${optlibs[$i]}_print_usage"
+      initialize="bv_${optlibs[$bv_i]}_print_usage"
       $initialize
   done
 
