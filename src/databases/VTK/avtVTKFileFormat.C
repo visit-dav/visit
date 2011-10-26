@@ -67,6 +67,8 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 
+#include <vtkVisItUtility.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -165,6 +167,9 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
 //    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
 //    Freed matvarname
 //
+//    Brad Whitlock, Wed Oct 26 11:03:14 PDT 2011
+//    Delete curves in vtkCurves.
+//
 // ****************************************************************************
 
 avtVTKFileFormat::~avtVTKFileFormat()
@@ -178,6 +183,11 @@ avtVTKFileFormat::~avtVTKFileFormat()
     {
         free(matvarname);
         matvarname = NULL;
+    }
+    for(std::map<std::string, vtkRectilinearGrid *>::iterator pos = vtkCurves.begin();
+        pos != vtkCurves.end(); ++pos)
+    {
+        pos->second->Delete();
     }
 }
 
@@ -221,6 +231,9 @@ avtVTKFileFormat::~avtVTKFileFormat()
 //
 //    Kathleen Bonnell, Wed Jul  9 18:13:20 PDT 2008
 //    Retrieve CYCLE from FieldData if available.
+//
+//    Brad Whitlock, Wed Oct 26 11:04:50 PDT 2011
+//    Create curves for 1D rectilinear grids.
 //
 // ****************************************************************************
 
@@ -373,7 +386,96 @@ avtVTKFileFormat::ReadInDataset(void)
         //
         dataset = ConvertStructuredPointsToRGrid((vtkStructuredPoints*)dataset);
     }
+
+    if(dataset->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(dataset);
+        int dims[3];
+        rgrid->GetDimensions(dims);
+        if(dims[0] > 0 && dims[1] <= 1 && dims[2] <= 1)
+        {
+            // Make some curves from this dataset.
+            CreateCurves(rgrid);
+        }
+    }
+
     readInDataset = true;
+}
+
+// ****************************************************************************
+// Method: avtVTKFileFormat::CreateCurves
+//
+// Purpose: 
+//   Create curve datasets based on the input rectilinear grid.
+//
+// Arguments:
+//   rgrid : The rectilinear grid from which to create curves.
+//
+// Returns:    
+//
+// Note:       vtkCurves gets the new datasets.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 26 11:01:44 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVTKFileFormat::CreateCurves(vtkRectilinearGrid *rgrid)
+{
+    vtkDataArray *xc = rgrid->GetXCoordinates();
+    int nPts = xc->GetNumberOfTuples();
+
+    for(int i = 0; i < rgrid->GetPointData()->GetNumberOfArrays(); ++i)
+    {
+        vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
+        if(arr->GetNumberOfComponents() == 1)
+        {
+            vtkRectilinearGrid *curve = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
+            vtkDataArray *curve_xc = curve->GetXCoordinates();
+            vtkFloatArray *curve_yc = vtkFloatArray::New();
+            curve_yc->SetName(arr->GetName());
+            curve_yc->SetNumberOfTuples(nPts);
+            for(vtkIdType j = 0; j < nPts; ++j)
+            {
+                curve_xc->SetTuple1(j, xc->GetTuple1(j));
+                curve_yc->SetTuple1(j, arr->GetTuple1(j));
+            }
+            curve->GetPointData()->SetScalars(curve_yc);
+            curve_yc->Delete();
+
+            vtkCurves[std::string("curve_") + std::string(arr->GetName())] = curve;
+        }
+    }
+
+    for(int i = 0; i < rgrid->GetCellData()->GetNumberOfArrays(); ++i)
+    {
+        vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
+        if(arr->GetNumberOfComponents() == 1)
+        {
+            vtkRectilinearGrid *curve = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
+            vtkDataArray *curve_xc = curve->GetXCoordinates();
+            for(vtkIdType j = 0; j < nPts; ++j)
+                curve_xc->SetTuple1(j, xc->GetTuple1(j));
+
+            int nCells = nPts-1;
+            int idx = 0;
+            vtkFloatArray *curve_yc = vtkFloatArray::New();
+            curve_yc->SetName(arr->GetName());
+            curve_yc->SetNumberOfTuples(nPts);
+            curve_yc->SetTuple1(idx++, arr->GetTuple1(0));
+            for(vtkIdType j = 0; j < nCells-1; ++j)
+                curve_yc->SetTuple1(idx++, (arr->GetTuple1(j) + arr->GetTuple1(j+1)) / 2.);
+            curve_yc->SetTuple1(idx++, arr->GetTuple1(nCells-1));
+
+            curve->GetPointData()->SetScalars(curve_yc);
+            curve_yc->Delete();
+
+            vtkCurves[std::string("curve_") + std::string(arr->GetName())] = curve;
+        }
+    }
 }
 
 // ****************************************************************************
@@ -498,9 +600,11 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
 //  Creation:   February 23, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Tue Mar 26 13:33:43 PST 2002
 //    Add a reference so that reference counting tricks work.
+//
+//    Brad Whitlock, Wed Oct 26 11:08:31 PDT 2011
+//    Return curves.
 //
 // ****************************************************************************
 
@@ -509,14 +613,22 @@ avtVTKFileFormat::GetMesh(const char *mesh)
 {
     debug5 << "Getting mesh from VTK file " << filename << endl;
 
-    if (strcmp(mesh, MESHNAME) != 0)
-    {
-        EXCEPTION1(InvalidVariableException, mesh);
-    }
-
     if (!readInDataset)
     {
         ReadInDataset();
+    }
+
+    // If the requested mesh is a curve, return it.
+    std::map<std::string, vtkRectilinearGrid *>::iterator pos = vtkCurves.find(mesh);
+    if(pos != vtkCurves.end())
+    {
+        pos->second->Register(NULL);
+        return pos->second;
+    }
+
+    if (strcmp(mesh, MESHNAME) != 0)
+    {
+        EXCEPTION1(InvalidVariableException, mesh);
     }
 
     //
@@ -772,6 +884,9 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Hank Childs, Wed Sep 14 16:29:19 PDT 2011
 //    Improve handling of ghost data.
 //
+//    Brad Whitlock, Wed Oct 26 11:12:17 PDT 2011
+//    Add metadata for curves.
+//
 // ****************************************************************************
 
 void
@@ -836,6 +951,11 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 debug5 << "The VTK file format contains all points -- "
                        << "declaring this a point mesh." << endl;
                 topo = 0;
+            }
+            else if(myType == VTK_LINE)
+            {
+                debug5 << "The mesh contains all lines, set topo=1" << endl;
+                topo = 1;
             }
         }
 
@@ -929,6 +1049,16 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->containsGhostZones = AVT_NO_GHOSTS;
 
     md->Add(mesh); 
+
+    std::map<std::string, vtkRectilinearGrid *>::iterator pos;
+    for(pos = vtkCurves.begin(); pos != vtkCurves.end(); ++pos)
+    {
+        avtCurveMetaData *curve = new avtCurveMetaData;
+        curve->name = pos->first;
+        curve->hasSpatialExtents = false;
+        curve->hasDataExtents = false;
+        md->Add(curve);
+    }
 
     int nvars = 0;
 
