@@ -237,6 +237,9 @@ avtPickQuery::PreExecute(void)
 //    Use rectilinearGridTransform matrix to transform cell/pick points to
 //    correct location if necessary.
 //
+//    Kathleen Biagas, Wed Oct 26 13:37:59 PDT 2011
+//    Invalidate the timeStep if DB is not time-varying.
+//
 // ****************************************************************************
 
 void
@@ -288,6 +291,10 @@ avtPickQuery::PostExecute(void)
         pickAtts.SetCellPoint(cpt);
         pickAtts.SetPickPoint(ppt);
     }
+    // Invalidate the timeStep if DB is not time-varying.
+    if (GetInput()->GetInfo().GetAttributes().GetNumStates() == 1)
+        pickAtts.SetTimeStep(-1);
+ 
 }
 
 
