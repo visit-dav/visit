@@ -68,7 +68,7 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
                                     avtCellLocator* locator,
                                     double fact) : 
   avtIVPVTKField( dataset, locator ),
-  elements(0), neighbors(0),
+  elements(0), trigtable(0), neighbors(0),
   f0(0), psi0(0), fnr(0), fni(0), psinr(0), psini(0),
   I0(0), f(0), psi(0), I(0),
   eqsubtract(0), linflag(0), tmode(0), bzero(0), rzero(0), F0(0), factor(fact),
@@ -453,6 +453,9 @@ void avtIVPM3DC1Field::findElementNeighbors()
   {
     for (el=0; el<tElements; el++) {
       ptr = elements + element_size*el;
+      trigtable[2*el]     = cos(ptr[3]);
+      trigtable[2*el + 1] = sin(ptr[3]);
+
       co = trigtable[2*el];
       sn = trigtable[2*el + 1];
 
