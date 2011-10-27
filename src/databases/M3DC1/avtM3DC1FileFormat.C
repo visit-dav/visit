@@ -967,7 +967,9 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
 
       if ( refinement == 0 )
         maxs[0] = nelms-1;
-      else
+      else if( element_dimension == 2 )
+        maxs[0] = nelms*pow((double) refinement+1.0, 2.0)-1;
+      else if( element_dimension == 3 )
         maxs[0] = nelms*pow((double) refinement+1.0, 3.0)-1;
 
       strides[0] = 1;
@@ -1299,7 +1301,7 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
     else
       return 0;
   }
-    
+
   // First get the elements for this variable so that the variable can
   // be interpolated onto the linear mesh.
   float* elements;
@@ -1462,6 +1464,7 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   vtkPts->Delete();
   vtkVar->Delete();
   delete [] xieta; 
+
   return var;
 }
 
