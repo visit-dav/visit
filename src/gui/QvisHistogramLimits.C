@@ -49,6 +49,11 @@
 
 #include <QvisHistogram.h>
 
+#include <float.h>
+#define MIN_VALUE -FLT_MAX
+#define MAX_VALUE  FLT_MAX
+#define EPSILON (100 * FLT_MIN)
+
 // ****************************************************************************
 // Method: QvisHistogramLimits::QvisHistogramLimits
 //
@@ -170,6 +175,38 @@ QvisHistogramLimits::getTotalRange(bool &valid, float &r0, float &r1) const
 }
 
 // ****************************************************************************
+// Method: QvisHistogramLimits::GetRangeText
+//
+// Purpose: 
+//   Get the range text.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 26 17:08:25 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHistogramLimits::GetRangeText(float r0, float r1, QString &r0Text, QString &r1Text) const
+{
+    if(r0 <= (MIN_VALUE + EPSILON))
+        r0Text = tr("min").toLower();
+    else
+        r0Text = QString().setNum(r0);
+    if(r1 >= (MAX_VALUE - EPSILON))
+        r1Text = tr("max").toLower();
+    else 
+        r1Text = QString().setNum(r1);
+}
+
+// ****************************************************************************
 // Method: QvisHistogramLimits::setTotalRange
 //
 // Purpose: 
@@ -183,14 +220,18 @@ QvisHistogramLimits::getTotalRange(bool &valid, float &r0, float &r1) const
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 26 16:43:01 PDT 2011
+//   Handle min and max.
+//
 // ****************************************************************************
 
 void
 QvisHistogramLimits::setTotalRange(float r0, float r1)
 {
-    totalRange[0]->setText(QString().setNum(r0));
-    totalRange[1]->setText(QString().setNum(r1));
+    QString r0Text, r1Text;
+    GetRangeText(r0, r1, r0Text, r1Text);
+    totalRange[0]->setText(r0Text);
+    totalRange[1]->setText(r1Text);
 
     histogram->setTotalRange(r0, r1);
 }
@@ -230,12 +271,20 @@ QvisHistogramLimits::invalidateTotalRange()
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 26 15:31:32 PDT 2011
+//   Force the min and max to get locked in before we ask for them.
+//
 // ****************************************************************************
 
 void
-QvisHistogramLimits::getSelectedRange(float &r0, float &r1) const
+QvisHistogramLimits::getSelectedRange(float &r0, float &r1) 
 {
+    // Make sure the values are up to date with the text fields.
+    blockSignals(true);
+    minChanged();
+    maxChanged();
+    blockSignals(false);
+
     histogram->getSelectedRange(r0, r1);
 }
 
@@ -253,14 +302,19 @@ QvisHistogramLimits::getSelectedRange(float &r0, float &r1) const
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 26 16:48:13 PDT 2011
+//   Handle min/max.
+//
 // ****************************************************************************
 
 void
 QvisHistogramLimits::setSelectedRange(float r0, float r1)
 {
-    selectedRange[0]->setText(QString().setNum(r0));
-    selectedRange[1]->setText(QString().setNum(r1));
+    QString r0Text, r1Text;
+    GetRangeText(r0, r1, r0Text, r1Text);
+
+    selectedRange[0]->setText(r0Text);
+    selectedRange[1]->setText(r1Text);
 
     histogram->setSelectedRange(r0, r1);
 }
@@ -431,7 +485,9 @@ QvisHistogramLimits::mousePressEvent(QMouseEvent *e)
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 26 16:56:47 PDT 2011
+//   Use GetRangeText.
+//
 // ****************************************************************************
 
 void
@@ -440,8 +496,10 @@ QvisHistogramLimits::updateSelectedText()
     float r0, r1;
     histogram->getSelectedRange(r0, r1);
 
-    selectedRange[0]->setText(QString().setNum(r0));
-    selectedRange[1]->setText(QString().setNum(r1));
+    QString r0Text, r1Text;
+    GetRangeText(r0, r1, r0Text, r1Text);
+    selectedRange[0]->setText(r0Text);
+    selectedRange[1]->setText(r1Text);
 }
 
 // ****************************************************************************
@@ -455,7 +513,9 @@ QvisHistogramLimits::updateSelectedText()
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 26 16:51:29 PDT 2011
+//   Handle min/max.
+//
 // ****************************************************************************
 
 void
@@ -463,7 +523,18 @@ QvisHistogramLimits::minChanged()
 {
     // Convert the text to a float and store the value into the histogram.
     bool okay = false;
-    float value = selectedRange[0]->text().toFloat(&okay);
+    QString minText, maxText;
+    GetRangeText(MIN_VALUE, MAX_VALUE, minText, maxText);
+    QString txt(selectedRange[0]->text().toLower());
+    float value;
+    if(txt == minText)
+    {
+        value = MIN_VALUE;
+        okay = true;
+    }
+    else
+        value = txt.toFloat(&okay);
+
     if(okay)
     {
         float r0, r1;
@@ -491,7 +562,9 @@ QvisHistogramLimits::minChanged()
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 26 16:52:10 PDT 2011
+//   Handle min/max.
+//
 // ****************************************************************************
 
 void
@@ -499,7 +572,18 @@ QvisHistogramLimits::maxChanged()
 {
     // Convert the text to a float and store the value into the histogram.
     bool okay = false;
-    float value = selectedRange[1]->text().toFloat(&okay);
+    QString minText, maxText;
+    GetRangeText(MIN_VALUE, MAX_VALUE, minText, maxText);
+    QString txt(selectedRange[1]->text().toLower());
+    float value;
+    if(txt == maxText)
+    {
+        value = MAX_VALUE;
+        okay = true;
+    }
+    else
+        value = txt.toFloat(&okay);
+
     if(okay)
     {
         float r0, r1;
@@ -531,14 +615,18 @@ QvisHistogramLimits::maxChanged()
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 26 16:52:55 PDT 2011
+//   Handle min/max.
+//
 // ****************************************************************************
 
 void
 QvisHistogramLimits::rangeChanged(float r0, float r1)
 {
-    selectedRange[0]->setText(QString().setNum(r0));
-    selectedRange[1]->setText(QString().setNum(r1));
+    QString r0Text, r1Text;
+    GetRangeText(r0, r1, r0Text, r1Text);
+    selectedRange[0]->setText(r0Text);
+    selectedRange[1]->setText(r1Text);
 
     emit selectedRangeChanged(r0, r1);
     emit selectedRangeChanged(getVariable(), r0, r1);

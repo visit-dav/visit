@@ -38,6 +38,11 @@
 
 #include <SelectionProperties.h>
 #include <DataNode.h>
+#include <float.h>
+
+const double SelectionProperties::MIN = -FLT_MAX;
+
+const double SelectionProperties::MAX = FLT_MAX;
 
 //
 // Enum conversion methods for SelectionProperties::SelectionType

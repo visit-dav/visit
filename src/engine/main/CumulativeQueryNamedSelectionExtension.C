@@ -212,17 +212,11 @@ protected:
         for(std::map<std::string,Histogram*>::iterator it = histograms.begin();
             it != histograms.end(); ++it)
         {
-            double minmax[2] = {0.,1.};
-#if 0
-            avtExtents *ext = dob->GetInfo().GetAttributes().
-                GetThisProcsOriginalDataExtents(it->first.c_str());
-            if(ext != 0)
-                ext->CopyTo(minmax);
-            else
-#endif
             // If we have not created a histogram yet for this variable then do it now.
             if(it->second == 0)
             {
+                double minmax[2] = {0.,1.};
+
                 // Get the extents
                 avtDatasetExaminer::GetDataExtents(ds, minmax, it->first.c_str());
                 debug5 << mName << "Calculated data extents for " << it->first
@@ -240,9 +234,10 @@ protected:
                 debug5 << mName << "Calculated histogram for " << it->first << endl;
                 for(int i = 0; i < 256; ++i)
                     debug5 << "\thist[" << i << "] = " << hist[i] << endl;
+            
+                it->second->minimum = minmax[0];
+                it->second->maximum = minmax[1];
             }
-            it->second->minimum = minmax[0];
-            it->second->maximum = minmax[1];
         }
 
         // Sum the cells and send to all procs.
@@ -1768,7 +1763,7 @@ CumulativeQueryNamedSelectionExtension::AddFilters(avtDataObject_p dob,
 SelectionSummary
 CumulativeQueryNamedSelectionExtension::BuildSummary()
 {
-    const char *mName = "CumulativeQueryNamedSelectionExtension::FreeUpResources: ";
+    const char *mName = "CumulativeQueryNamedSelectionExtension::BuildSummary: ";
 
     // Stash hist's histograms into this class so we can return them from the engine.
     SelectionSummary s;
@@ -1783,7 +1778,6 @@ CumulativeQueryNamedSelectionExtension::BuildSummary()
             vs.SetMinimum(h->minimum);    
             vs.SetMaximum(h->maximum);    
             vs.SetHistogram(h->frequency);    
-
             s.AddVariables(vs);
         }
         else
@@ -1798,7 +1792,6 @@ CumulativeQueryNamedSelectionExtension::BuildSummary()
             vs.SetMinimum(0.);
             vs.SetMaximum(1.);    
             vs.SetHistogram(frequency);    
-
             s.AddVariables(vs);
         }
     }
@@ -1807,7 +1800,7 @@ CumulativeQueryNamedSelectionExtension::BuildSummary()
     // of time steps that were processed because the time loop filter causes our
     // local histogram filter that counts the number of original cells to sum the
     // total number of cells for all time steps. This gives us the per time step avg.
-debug5 << "CQnamedSelectionExtension: total cells = " << hist->GetTotalCellCount() << endl;
+    debug5 << mName << "total cells = " << hist->GetTotalCellCount() << endl;
     s.SetTotalCellCount((int)hist->GetTotalCellCount());
 
     // Get the histogram computed by the CQ filter.

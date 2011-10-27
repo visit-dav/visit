@@ -685,7 +685,9 @@ QvisSelectionsWindow::UpdateWindow(bool doAll)
 // Creation:   Wed Dec 29 10:30:14 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 26 15:33:08 PDT 2011
+//   Make sure we read back the variable min/max values.
+//
 // ****************************************************************************
 
 void
@@ -728,6 +730,24 @@ QvisSelectionsWindow::GetCurrentValues(int which_widget)
 
         if(err)
             ResettingError(tr("time stride"), IntToQString(selectionProps.GetTimeStateStride()));
+    }
+
+    if(which_widget == SelectionProperties::ID_variableMins ||
+       which_widget == SelectionProperties::ID_variableMaxs || doAll)
+    {
+        for(int i = 0; i < cqLimits->getNumVariables(); ++i)
+        {
+            float r0, r1;
+            cqLimits->getVariable(i)->getSelectedRange(r0, r1);
+
+            if(i < selectionProps.GetVariableMins().size())
+            {
+                selectionProps.GetVariableMins()[i] = r0;
+                selectionProps.GetVariableMaxs()[i] = r1;
+                selectionProps.SelectVariableMins();
+                selectionProps.SelectVariableMaxs();
+            }
+        }
     }
 }
 
@@ -1646,8 +1666,8 @@ void
 QvisSelectionsWindow::addVariable(const QString &var)
 {
     selectionProps.GetVariables().push_back(var.toStdString());
-    selectionProps.GetVariableMins().push_back(0.);
-    selectionProps.GetVariableMaxs().push_back(1.);
+    selectionProps.GetVariableMins().push_back(SelectionProperties::MIN);
+    selectionProps.GetVariableMaxs().push_back(SelectionProperties::MAX);
 
     // Update the window using the new selectionProps.
     UpdateSelectionProperties();

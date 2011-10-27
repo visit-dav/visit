@@ -436,7 +436,9 @@ QvisHistogram::mouseReleaseEvent(QMouseEvent *e)
 // Creation:   Wed Dec 29 13:57:36 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Oct 27 12:23:51 PDT 2011
+//   Clamp values so we don't get bad pixel values.
+//
 // ****************************************************************************
 
 int
@@ -444,9 +446,23 @@ QvisHistogram::value2Pixel(float selectedVal) const
 {
     float t;
     if(totalRangeValid)
+    {
+        if(selectedVal < totalRange[0])
+            selectedVal = totalRange[0];
+        else if(selectedVal > totalRange[1])
+            selectedVal = totalRange[1];
+
         t = (selectedVal - totalRange[0]) / (totalRange[1] - totalRange[0]);
+    }
     else
+    {
+        if(selectedVal < selectedRange[0])
+            selectedVal = selectedRange[0];
+        else if(selectedVal > selectedRange[1])
+            selectedVal = selectedRange[1];
+
         t = (selectedVal - selectedRange[0]) / (selectedRange[1] - selectedRange[0]);
+    }
     return (contentsRect().width() * t) + contentsRect().x();
 }
 
@@ -541,14 +557,6 @@ QvisHistogram::setTotalRange(float r0, float r1)
     totalRangeValid = true;
     totalRange[0] = (r0 < r1) ? r0 : r1;
     totalRange[1] = (r0 < r1) ? r1 : r0;
-
-#if 0
-    // Don't do this
-    if(selectedRange[0] < totalRange[0])
-        selectedRange[0] = totalRange[0];
-    if(selectedRange[1] > totalRange[1])
-        selectedRange[1] = totalRange[1];
-#endif
  
     imageDirty();
     update();

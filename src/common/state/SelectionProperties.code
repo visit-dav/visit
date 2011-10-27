@@ -1,3 +1,11 @@
+Constant: MIN
+Declaration: static const double MIN;
+Definition: const double SelectionProperties::MIN = -FLT_MAX;
+
+Constant: MAX
+Declaration: static const double MAX;
+Definition: const double SelectionProperties::MAX = FLT_MAX;
+
 Function: GetOriginatingPlot
 Declaration: const std::string &GetOriginatingPlot() const;
 Definition:
@@ -17,3 +25,4 @@ SelectionProperties::SetOriginatingPlot(const std::string &p)
 {
     SetSource(p);
 }
+

@@ -50,21 +50,28 @@
       CombineOr
     </Field>
     <Field name="histogramType" label="Type of histogram being shown" type="enum" subtype="HistogramType">
-       HistogramTime
-    </Field>   
+      HistogramTime
+    </Field>
     <Field name="histogramNumBins" label="Number of bins for histogram display" type="int">
-       10
+      10
     </Field>
     <Field name="histogramStartBin" label="Starting bin for histogram selection" type="int">
-       0
+      0
     </Field>
     <Field name="histogramEndBin" label="Ending bin for histogram selection" type="int">
-       9
+      9
     </Field>
     <Field name="histogramVariable" label="Histogram variable" type="string">
     </Field>
     <Function name="GetOriginatingPlot" user="true" member="true">
-    </Function>   
+    </Function>
     <Function name="SetOriginatingPlot" user="true" member="true">
-    </Function>   
+    </Function>
+    <Constant name="MIN" member="true">
+    </Constant>
+    <Constant name="MAX" member="true">
+    </Constant>
+    <Include file="source" quoted="false">
+      float.h
+    </Include>
   </Attribute>

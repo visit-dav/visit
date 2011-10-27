@@ -84,6 +84,8 @@ public:
         UseGlobalZoneIDForID,
         UseVariableForID
     };
+    static const double MIN;
+    static const double MAX;
 
     // These constructors are for objects of this class
     SelectionProperties();
