@@ -66,7 +66,7 @@
 
 avtM3DC1Field::avtM3DC1Field( float *elementsPtr,
                               int nelements, int dim, int planes ) 
-  : elements( elementsPtr), neighbors(0),
+  : elements( elementsPtr), trigtable(0), neighbors(0),
     f0(0), psi0(0), fnr(0), fni(0), psinr(0), psini(0),
     I0(0), f(0), psi(0), I(0),
     eqsubtract(0), linflag(0), tmode(0), bzero(0), rzero(0), F0(0),
