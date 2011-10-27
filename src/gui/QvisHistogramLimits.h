@@ -58,7 +58,9 @@ class QvisHistogram;
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Oct 27 14:10:23 PDT 2011
+//   Added GetRangeText.
+//
 // ****************************************************************************
 
 class GUI_API QvisHistogramLimits : public QGroupBox
@@ -74,7 +76,7 @@ public:
     void setTotalRange(float r0, float r1);
     void invalidateTotalRange();
 
-    void getSelectedRange(float &r0, float &r1) const;
+    void getSelectedRange(float &r0, float &r1);
     void setSelectedRange(float r0, float r1);
 
     void setVariable(const QString &);
@@ -91,6 +93,7 @@ signals:
 protected:
     virtual void paintEvent(QPaintEvent *);
     virtual void mousePressEvent(QMouseEvent *);
+    void GetRangeText(float r0, float r1, QString &r0Text, QString &r1Text) const;
 
 private slots:
     void minChanged();

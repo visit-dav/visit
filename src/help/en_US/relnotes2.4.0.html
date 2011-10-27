@@ -47,6 +47,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Libsim was enhanced to support setting cell and node origin in mesh metadata.</li>
   <li>Libsim was enhanced to support setting spatial extents in mesh metadata.</li>
   <li>Cumulative query selections were enhanced so they can cache intermediate results obtained from executing filters over time. This accelerates operations that modify the histogram such as changing the summation rule, display type, and bin properties. Modifying the selection variable list or ranges do not benefit from caching.</li>
+  <li>Cumulative query selection variable range controls now can use the <i>min</i> and <i>max</i> convention in addition to entering real numbers. This lets a variable's entire range get selected by default instead of forcing default values of 0 and 1 for the range.</li>
   <li>The constructive solid geometry meshing now supports two-dimensional grids and common 2D primitives like lines and circles.</li>
   <li>The 'time' portion of the legend can now be turned off.</li>
   <li>Queries over time no longer display time information in their legends.</li>
@@ -123,6 +124,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Cumulative query selections based on a database instead of a plot failed to be created when a compute engine did not already exist. Furthermore, if the selection used expressions that had not been previously used in plots, the selection would not be calculated.</li>
   <li>The VisIt GUI would fail to connect to a remote computer if the remote username was changed in the <i>Change username</i> window while connecting to the remote computer. The viewer would connect to the remote computer but it would also send the gui a message that caused it to stop waiting for a connection from the metadata server.</li>
   <li>The POV-Ray exporter no longer uses the locale when generating color tables; this could insert commas instead of decimal places and cause errors when parsing the file in POV-Ray.</li>
+  <li>Minimum and Maximum variable range settings for Cumulative Queries could be lost in the Selections window when clicking on the <i>Update Selection</i> button.</li>
+  <li>The histogram display for Cumulative Query variable ranges was not showing valid variable extents.</li>
+  <li>Attempting to use invalid expressions in Cumulative Queries caused an error message about the selection being deleted.</li>
   <li>Saved lineout results from a multi-domain dataset create single curve instead of one curve per domain.</li>
   <li></li>
   <li></li>
@@ -132,7 +136,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Config_changes"></a>
 <p><b><font size="4">Changes to configuration files in version 2.4</font></b></p>
 <ul>
-  <li></li>
+  <li>VisIt's installation script, visit-install, now provides options to install for LLNL's CZ and RZ domains in addition to the entire open network configuration which installs both CZ and RZ host profiles.</li>
   <li></li>
   <li></li>
   <li></li>

@@ -3775,6 +3775,9 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 //    Brad Whitlock, Tue Sep  6 15:56:53 PDT 2011
 //    Pass a default named selection extension to the NSM.
 //
+//    Brad Whitlock, Thu Oct 27 14:34:45 PDT 2011
+//    I improved the exception handling.
+//
 // ****************************************************************************
 
 SelectionSummary
@@ -3907,6 +3910,9 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
                 }
                 CATCH(VisItException)
                 {
+                    if(f != NULL)
+                        delete f;
+                    RETHROW;
                 }
                 ENDTRY
             }
@@ -3921,6 +3927,8 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
     {
         debug1 << mName << "Could not find a valid data set from which to create"
                            " a named selection." << endl;
+        if(f != NULL)
+            delete f;
         EXCEPTION0(NoInputException);
     }
 
@@ -3937,6 +3945,8 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
             debug1 << mName << "The cumulative query is malformed. It must have the same "
                       "number of elements for each of the variables, mins, maxs lists."
                    << endl;
+            if(f != NULL)
+                delete f;
             EXCEPTION0(ImproperUseException);
         }
 
@@ -3989,6 +3999,8 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
 //  Creation:    January 30, 2009
 //
 //  Modifications:
+//    Brad Whitlock, Thu Oct 27 14:23:12 PDT 2011
+//    Make it not an error when we can't remove a selection that does not exist.
 //
 // ****************************************************************************
 
@@ -3996,7 +4008,7 @@ void
 NetworkManager::DeleteNamedSelection(const std::string &selName)
 {
     avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
-    nsm->DeleteNamedSelection(selName, true);
+    nsm->DeleteNamedSelection(selName, false);
 }
 
 

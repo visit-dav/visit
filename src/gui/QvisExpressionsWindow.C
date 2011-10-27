@@ -1059,7 +1059,11 @@ QvisExpressionsWindow::apply()
 //    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Brad Whitlock, Thu Oct 27 14:42:53 PDT 2011
+//    Make the name active so we can change it.
+//
 // ****************************************************************************
+
 void
 QvisExpressionsWindow::addExpression()
 {
@@ -1090,6 +1094,8 @@ QvisExpressionsWindow::addExpression()
             exprListBox->item(i)->setSelected(true);
             exprListBox->setCurrentRow(i);
             UpdateWindowSingleItem();
+            nameEdit->setFocus();
+            nameEdit->selectAll();
             break;
         }
     }

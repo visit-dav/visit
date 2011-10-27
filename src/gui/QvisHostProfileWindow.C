@@ -221,6 +221,14 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     mLayout->setMargin(5);
     mLayout->setSpacing(HOST_PROFILE_SPACING);
 
+    hostNickname = new QLineEdit(machineGroup);
+    connect(hostNickname, SIGNAL(textChanged(const QString &)),
+            this, SLOT(hostNicknameChanged(const QString &)));
+    hostNicknameLabel = new QLabel(tr("Host nickname"), machineGroup);
+    mLayout->addWidget(hostNicknameLabel, mRow, 0);
+    mLayout->addWidget(hostNickname, mRow, 1);
+    mRow++;
+
     hostName = new QLineEdit(machineGroup);
     connect(hostName, SIGNAL(textChanged(const QString &)),
             this, SLOT(hostNameChanged(const QString &)));
@@ -235,14 +243,6 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     hostAliasesLabel = new QLabel(tr("Host name aliases"), machineGroup);
     mLayout->addWidget(hostAliasesLabel, mRow, 0);
     mLayout->addWidget(hostAliases, mRow, 1);
-    mRow++;
-
-    hostNickname = new QLineEdit(machineGroup);
-    connect(hostNickname, SIGNAL(textChanged(const QString &)),
-            this, SLOT(hostNicknameChanged(const QString &)));
-    hostNicknameLabel = new QLabel(tr("Host nickname"), machineGroup);
-    mLayout->addWidget(hostNicknameLabel, mRow, 0);
-    mLayout->addWidget(hostNickname, mRow, 1);
     mRow++;
 
     QFrame *sep1 = new QFrame(machineGroup);
@@ -3606,6 +3606,9 @@ QvisHostProfileWindow::currentLaunchChanged()
 //   Jeremy Meredith, Fri Feb 19 13:16:35 EST 2010
 //   Fix the way we set the host nickname.
 //
+//   Brad Whitlock, Thu Oct 27 14:54:10 PDT 2011
+//   Set focus on the first thing you'd edit.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::addMachineProfile()
@@ -3617,6 +3620,9 @@ QvisHostProfileWindow::addMachineProfile()
                                               profiles->GetNumMachines()-1];
     currentMachine->SetHostNickname(currentMachine->GetHost());
     Apply();
+
+    hostNickname->selectAll();
+    hostNickname->setFocus();
 }
 
 // ****************************************************************************
@@ -3700,6 +3706,9 @@ QvisHostProfileWindow::copyMachineProfile()
 //   Jeremy Meredith, Fri Feb 19 13:20:48 EST 2010
 //   Set the newly added launch profile as the active one.
 //
+//   Brad Whitlock, Thu Oct 27 14:54:28 PDT 2011
+//   Set focus on the first thing you'd edit.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::addLaunchProfile()
@@ -3708,10 +3717,10 @@ QvisHostProfileWindow::addLaunchProfile()
         return;
 
     LaunchProfile lp;
-    QString profileName(tr("New profile"));
+    QString name(tr("New profile"));
     QString num; num.sprintf(" #%d", profileCounter++);
-    profileName += num;
-    lp.SetProfileName(profileName.toStdString());
+    name += num;
+    lp.SetProfileName(name.toStdString());
 
     currentMachine->AddLaunchProfiles(lp);
     if (currentMachine->GetActiveProfile() <  0 ||
@@ -3723,6 +3732,9 @@ QvisHostProfileWindow::addLaunchProfile()
     currentLaunch = (LaunchProfile*)currentMachine->GetLaunchProfiles()[
                                      currentMachine->GetNumLaunchProfiles()-1];
     Apply();
+
+    profileName->selectAll();
+    profileName->setFocus();
 }
 
 // ****************************************************************************
