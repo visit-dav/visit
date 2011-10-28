@@ -4357,3 +4357,164 @@ PickAttributes::SetRayPoint2(const doubleVector &_v)
     rayPoint2[2] = _v[2];
 }
 
+
+// ****************************************************************************
+// Method: PickAttributes::CreateXMLString
+//
+// Purpose: 
+//   Creates an xml output string containing all the information gathered
+//   from a pick. 
+//
+// Programmer:  Kathleen Biagas
+// Creation:    September 22, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickAttributes::CreateXMLString(std::string &os, bool withLetter)
+{
+    if (!os.empty())
+        os.clear();
+
+    if (error)
+        return;
+
+    if (!fulfilled)
+        return;
+
+    MapNode m;
+
+    if (pickType == Zone || pickType == DomainZone)
+    {
+        m["zone_id"] = elementNumber;
+    }
+    else if (pickType == Node || pickType == DomainNode)
+    {
+        m["node_id"] = elementNumber;
+    }
+
+    doubleVector p;
+    if (pickType == CurveNode)
+    {
+        p.push_back(nodePoint[0]);
+        p.push_back(nodePoint[1]);
+        m["point"] = p;
+    }
+    else if (pickType == CurveZone)
+    {
+        p.push_back(nodePoint[0]);
+        p.push_back(nodePoint[1]);
+        m["point1"] = p;
+        p[0] = cellPoint[0];
+        p[1] = cellPoint[0];
+        m["point2"] = p;
+    }
+    else if (cellPoint[0] != FLT_MAX)
+    {
+        p.push_back(cellPoint[0]);
+        p.push_back(cellPoint[1]);
+        if (dimension == 3)
+        {
+            p.push_back(cellPoint[2]);
+        }
+        //if (!needTransformMessage)
+        {
+            m["point"] = p;
+        }
+#if 0
+        else 
+        {
+            m["transformed_point"] = p;
+        }
+#endif
+    }
+
+    char buff[512];
+   
+    std::string fileName; 
+    size_t pos = databaseName.find_last_of('/');
+    if (pos >= databaseName.size())
+        fileName = databaseName;
+    else
+        fileName = databaseName.substr(pos+1) ;
+
+    m["filename"] = fileName;
+
+    if (withLetter)
+    {
+        m["pick_letter"] = pickLetter;
+    }
+
+    if (domain != -1)
+    {
+        m["domain_id"] = domain;
+    }
+    
+    if (showTimeStep && timeStep != -1)
+    {
+        m["timestep"] = timeStep;
+    }
+
+    if (displayIncidentElements)
+    {
+        bool showId = false;
+        bool showGlobal = globalIncidentElements.size() == incidentElements.size();
+        std::string elName;
+        std::string ghostName;
+        if (pickType == Zone || pickType == DomainZone)
+        {
+            if (!showGlobal)
+                elName = "incident_nodes";
+            else 
+                elName = "global_incident_nodes"; 
+            ghostName = "ghost_incident_nodes";
+            showId = showNodeId;
+        }
+        else if (pickType == Node || pickType == DomainNode)
+        {
+            if (!showGlobal)
+                elName = "incident_zones";
+            else 
+                elName = "global_incident_zones"; 
+            ghostName = "ghost_incident_zones";
+            showId = showZoneId;
+        }
+        if (showId)
+        {
+            m[elName] = incidentElements;
+#if 0
+            intVector els, ghostEls;
+            for (size_t i = 0; i < incidentElements.size(); ++i)
+            {
+                if (ghosts.size() > 0 && ghosts[i])
+                    ghostEls.push_back(incidentElements[i]);
+                else if (showGlobal)
+                    els.push_back(globalIncidentElements[i]);
+                else 
+                    els.push_back(incidentElements[i]);
+            }
+            m[elName] = els;
+            if (!ghostEls.empty())
+                m[ghostName] = ghostEls;
+#endif
+        }
+    }
+
+    for (size_t i = 0; i < varInfo.size(); ++i)
+    {
+        std::string pt = PickType_ToString(pickType);
+        PickVarInfo* info = (PickVarInfo*)varInfo[i];
+        info->CreateOutputMapNode(pt, m);
+    }
+    if (invalidVars.size() > 0)
+    {
+        for (size_t i = 0; i < invalidVars.size(); ++i)
+        {
+            m[invalidVars[i]] = std::string("invalid");
+        }
+    }
+    os = m.ToXML();
+}
+

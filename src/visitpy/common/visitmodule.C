@@ -8442,6 +8442,35 @@ visit_GetPickOutput(PyObject *self, PyObject *args)
     return PyString_FromString(pickOut.c_str());
 }
 
+
+// ****************************************************************************
+// Function: visit_GetPickOutputObject
+//
+// Purpose:
+//   Returns a python dictonary created from an xml pick result.
+//   Assumes the xml pick result is a serialized MapNode.
+//
+//
+// Programmer: Kathleen Biagas 
+// Creation:   September 22, 2011
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetPickOutputObject(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
+    PickAttributes *pa = GetViewerState()->GetPickAttributes();
+    std::string pickOut;
+    pa->CreateXMLString(pickOut);
+    XMLNode xml_node(pickOut);
+    MapNode node(xml_node);
+    return PyMapNode_Wrap(node);
+}
+
+
 // ****************************************************************************
 // Function: visit_GetQueryOutputString
 //
@@ -15771,6 +15800,9 @@ AddMethod(const char *methodName,
 //   Brad Whitlock, Mon Jun 13 15:54:38 PDT 2011
 //   I added doc strings for a bunch of functions that did not have them.
 //
+//   Kathleen Biagas, Wed Oct 26 09:28:41 PDT 2011
+//   Add GetPickOutputObject.
+//
 // ****************************************************************************
 
 static void
@@ -15927,6 +15959,8 @@ AddDefaultMethods()
     AddMethod("GetPickAttributes", visit_GetPickAttributes,
                                                   visit_GetPickAttributes_doc);
     AddMethod("GetPickOutput", visit_GetPickOutput, visit_GetPickOutput_doc);
+    AddMethod("GetPickOutputObject", visit_GetPickOutputObject, 
+              visit_GetPickOutput_doc);
     AddMethod("GetPipelineCachingMode", visit_GetPipelineCachingMode,
                                              visit_GetPipelineCachingMode_doc);
     AddMethod("GetProcessAttributes", visit_GetProcessAttributes, NULL);

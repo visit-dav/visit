@@ -1669,3 +1669,228 @@ PickVarInfo::PrintArray(std::string &os,
     }
 }
 
+
+// ****************************************************************************
+// Method: PickVarInfo::CreateOutputMapNode
+//
+// Purpose: 
+//   Creates a MapNode object containing all the information gathered 
+//   from a pick.
+//
+// Programmer: Kathleen Biagas
+// Creation:   October 24, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
+{
+    bool centeringsMatch = false;
+    switch (centering)
+    {
+        case Nodal:  if (type == "Node" || type == "DomainNode")
+                         centeringsMatch = true;
+                     break;
+        case Zonal:  if (type == "Zone" || type == "DomainZone") 
+                         centeringsMatch = true;
+                     break;
+        case None: break;
+    }
+    if (!(names.empty() && mixNames.empty()))
+    {  
+        if (variableType == "material")
+        {
+            int mixOffset = 0;
+            if (numMatsPerZone.size() == 1 && numMatsPerZone[0] == 1)
+            {
+                std::string subname;
+                if (names.size() > 0)
+                    subname = names[0] + " ";
+                subname += mixNames[mixOffset]; 
+                if (mixValues[mixOffset] < 1.)
+                {
+                    MapNode n;
+                    n[subname] = mixValues[mixOffset];
+                    m[variableName] = n;
+                }
+                else
+                {
+                    m[variableName] = subname;
+                }
+            }
+            else
+            {
+                MapNode n;
+                MapNode o;
+                for (size_t i = 0; i < numMatsPerZone.size(); ++i)
+                {
+                    int nMats = numMatsPerZone[i];
+                    std::string base;
+                    if (names.size() > 0)
+                        base = names[i].substr(1, names[i].size()-2);
+                    for (int j = 0; j < nMats; ++j)                    
+                    { 
+                        if (mixValues[j+mixOffset] < 1.)
+                        {
+                           
+                           // n[base + mixNames[j+mixOffset]] = mixValues[j+mixOffset]; 
+                           if (!base.empty())
+                               o[mixNames[j+mixOffset]] = mixValues[j+mixOffset]; 
+                           else 
+                               n[mixNames[j+mixOffset]] = mixValues[j+mixOffset]; 
+                        }
+                        else
+                        {
+                           if (!base.empty())
+                               n[base] = mixNames[j+mixOffset];
+#if 0
+                           else 
+                               n[mixNames[j+mixOffset]] = std::string("type2b");
+#endif
+                        }
+                    } 
+                    if (!base.empty() && o.GetNumEntries() > 0)
+                        n[base] = o;
+                    mixOffset += nMats; 
+                }
+                m[variableName] = n;
+            }
+        }
+        else if (variableType == "species")
+        {
+            int matOffset = 0;
+            int mixOffset = 0;
+            MapNode n;
+            MapNode o;
+            MapNode p;
+            for (size_t i = 0; i < numMatsPerZone.size(); ++i)
+            {
+                std::string base;
+                if (names.size() > 1)
+                {
+                    base = names[i].substr(1, names[i].size() -2);
+                }
+                int nMats = numMatsPerZone[i];
+                for (int j = 0; j < numMatsPerZone[i]; ++j)
+                {
+                    int nSpecs = numSpecsPerMat[j+matOffset];
+                    for (int k = 0; k < nSpecs; k++)
+                    {
+                        p[mixNames[k+mixOffset]] =  mixValues[k+mixOffset];
+                    }
+                    o[matNames[j+matOffset]] = p;
+                    mixOffset += nSpecs; 
+                }
+                if (!base.empty() && o.GetNumEntries() > 0)
+                    n[base] = o;
+                matOffset += nMats; 
+            }
+            if (n.GetNumEntries() > 0)
+                m[variableName] = n;
+            else
+                m[variableName] = o;
+        }
+        else
+        {
+            MapNode n;
+            int mixOffset = 0; 
+            for (size_t i = 0; i < names.size(); ++i)
+            {
+                std::string stripName = names[i].substr(1, names[i].size() -2);
+                if (variableType == "scalar")
+                {
+                    if (centeringsMatch)
+                    {
+                        if (!treatAsASCII)
+                            m[variableName] = values[i];
+                        else 
+                            m[variableName] = (char) values[i];
+                    }
+                    else 
+                    {
+                        if (!treatAsASCII)
+                            n[stripName] = values[i];
+                        else 
+                            n[stripName] = (char) values[i];
+                    }
+                }
+                else if (variableType == "vector")
+                {
+                    doubleVector v;
+                    size_t stride = values.size() / names.size();
+                    for (size_t j = 0; j < stride -1; j++)
+                        v.push_back(values[i*stride+j]);
+                    if (centeringsMatch)
+                        m[variableName] = v;
+                    else
+                        n[stripName] = v;
+                }
+                else if (variableType == "tensor")
+                {
+                    size_t ncomps = (values.size()-names.size())/names.size();
+                    size_t offset = i*(ncomps+1);
+                    doubleVector v;
+                    for (size_t j = 0; j < ncomps; j++)
+                    {
+                        v.push_back(values[offset+ncomps*j]);
+                        v.push_back(values[offset+ncomps*j+1]);
+                    }
+                    v.push_back(values[offset+ncomps*ncomps]);
+                    if (centeringsMatch)
+                        m[variableName] = v;
+                    else
+                        n[stripName] = v;
+                }
+                else if (variableType == "symm_tensor")
+                {
+                    if (centeringsMatch)
+                        m[variableName] = std::string("some symm_tensor info here");
+                    else
+                        n[stripName] = std::string("some symm_tensor info here");
+                }
+                else if (variableType == "array")
+                {
+                    size_t ncomps = (values.size()-names.size())/names.size();
+                    size_t offset = i*(ncomps+1);
+                    doubleVector v;
+                    for (size_t j = 0; j < ncomps; j++)
+                        v.push_back(values[offset+j]);
+                    if (centeringsMatch)
+                        m[variableName] = v;
+                    else
+                        n[stripName] = v;
+                }
+                else if (variableType == "label")
+                {
+                    size_t labelSize = values.size() / names.size();
+                    std::string l;
+                    for (size_t j = labelSize*i; j < labelSize *(i+1); ++j)
+                        l += (char)values[j]; 
+                    if (centeringsMatch)
+                        m[variableName] = l;
+                    else
+                        n[stripName] = l;
+                }
+            }
+            if (!centeringsMatch && n.GetNumEntries() != 0)
+                m[variableName] = n;
+                
+#if 0
+            if (mixVar)
+            {
+                int nMats = numMatsPerZone[i];
+                std::string matname;
+                for (int j = 0; j < nMats; ++j)
+                {
+                    matname = "material " + mixNames[j+mixOffset];
+                    m[matname] = mixValues[j+mixOffset];
+                }
+                mixOffset += nMats;
+            }
+#endif
+        }
+    }
+}
+

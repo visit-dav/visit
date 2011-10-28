@@ -169,6 +169,7 @@ public:
     void PrintSymmetricTensor(std::string &, const std::vector<double> &, int, int, int);
     bool HasInfo(void);
     void PrintArray(std::string &, const std::vector<double> &, int, int, int);
+    void CreateOutputMapNode(const std::string &, MapNode &);
 
     // IDs that can be used to identify fields in case statements
     enum {

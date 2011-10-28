@@ -353,6 +353,7 @@ public:
     void CreateConciseOutputString(std::string &os, bool withLetter = true);
     void SetRayPoint1(const doubleVector &);
     void SetRayPoint2(const doubleVector &);
+    void CreateXMLString(std::string &os, bool withLetter = true);
 
     // IDs that can be used to identify fields in case statements
     enum {

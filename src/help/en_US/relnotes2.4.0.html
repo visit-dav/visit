@@ -114,7 +114,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Options for controlling start/end times and stride for queries-over-time can now be specified in the Query window, and as keyword args in the CLI. eg <i>QueryOverTime("Min", start_time=50, end_time=250, stride=5).</i>Defaults if not specified remain <i>start_time=0, end_time=numTimeStates, stride=1)</i>.</li>
   <li>Pick no longer returns timestep information for single-timestate data.</li>
   <li>Pick output for Tensors and Arrays has been cleaned up.</li>
-  <li></li>
+  <li>There is a new method in the CLI for retrieving pick output. <i>GetPickOutputObject()</i> will return pick results as a python dictionary.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
