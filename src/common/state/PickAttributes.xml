@@ -225,6 +225,8 @@
     </Function>
     <Function name="SetRayPoint2" user="true" member="true">
     </Function>
+    <Function name="CreateXMLString" user="true" member="true">
+    </Function>
     <Include file="source" quoted="false">
       stdio.h
     </Include>

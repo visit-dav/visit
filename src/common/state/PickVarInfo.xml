@@ -49,6 +49,8 @@
     </Function>
     <Function name="PrintArray" user="true" member="true">
     </Function>
+    <Function name="CreateOutputMapNode" user="true" member="true">
+    </Function>
     <Include file="source" quoted="false">
       stdio.h
     </Include>
