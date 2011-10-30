@@ -2502,6 +2502,9 @@ avtStructuredDomainBoundaries::ResetCachedMembers(void)
 //    Hank Childs, Thu Sep 29 15:20:29 PDT 2011
 //    Add support for communicating pre-existing ghost zone data.
 //
+//    Hank Childs, Sun Oct 30 10:13:23 PDT 2011
+//    Fix bug with uninitialized data.
+//
 // ****************************************************************************
 
 void
@@ -2517,6 +2520,8 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
     vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
     ghostCells->SetName("avtGhostZones");
     ghostCells->SetNumberOfTuples(bi->newncells);
+    for (int i = 0 ; i < bi->newncells ; i++)
+        ghostCells->SetValue(i, 0);
 
     if (haveCommunicatedGhosts)
     {
