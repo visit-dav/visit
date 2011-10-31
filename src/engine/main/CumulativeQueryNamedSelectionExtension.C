@@ -971,35 +971,20 @@ CumulativeQuery::SelectAndHistogram(const SelectionProperties &props,
     for(int i = 0; i < totalCells; ++i)
         index[i] = i;
 
-    //
-    // Sort the index based on different histogram criteria
-    //
-    if(props.GetHistogramType() == SelectionProperties::HistogramMatches)
-    {
-        // Sort the index based on frequency
-        debug5 << mName << "Sorting index based on frequency" << endl;
-        std::sort(index, index + totalCells, cq_sort_by_value<int>(allFrequencies));
-    }
-    else if(props.GetHistogramType() == SelectionProperties::HistogramID)
-    {
-        // Sort the index based on cellid
-        debug5 << mName << "Sorting index based on cellid" << endl;
-        std::sort(index, index + totalCells, cq_sort_by_value<int>(allCellIds));
-    }
-    else if(props.GetHistogramType() == SelectionProperties::HistogramVariable)
-    {
-        // Sort the index based on variable
-        debug5 << mName << "Sorting index based on variable" << endl;
-        std::sort(index, index + totalCells, cq_sort_by_value<double>(allVariables));
-    }
-
     // We need to bin the index array into some number of bins and select
     // the cells in the selected bins into our new narrowed selection.
     int *binPoints = NULL, numBins = 0;
 
-    // For IDs the bins are based on the number of cells
+    // ID Histogram
     if(props.GetHistogramType() == SelectionProperties::HistogramID)
     {
+        // Sort the index based on cell id
+        debug5 << mName << "Sorting index based on cellid" << endl;
+        std::sort(index, index + totalCells,
+                  cq_sort_by_value<int>(allCellIds));
+
+        // For IDs the number of bins is based on the user defined
+        // number of bins.
         numBins = props.GetHistogramNumBins();
         binPoints = new int[numBins + 1];
 
@@ -1010,48 +995,67 @@ CumulativeQuery::SelectAndHistogram(const SelectionProperties &props,
         }
     }
 
-    else if(props.GetHistogramType() == SelectionProperties::HistogramMatches ||
-            props.GetHistogramType() == SelectionProperties::HistogramVariable)
+    // Variable Histogram
+    else if(props.GetHistogramType() == SelectionProperties::HistogramVariable)
     {
+        // Sort the index based on variable
+        debug5 << mName << "Sorting index based on variable" << endl;
+        std::sort(index, index + totalCells,
+                  cq_sort_by_value<double>(allVariables));
 
-        double min, max;
+        // For variables the number of bins is based on user defined
+        // the number of bins.
+        double min = allVariables[index[0]];
+        double max = allVariables[index[totalCells-1]];
 
-        if(props.GetHistogramType() == SelectionProperties::HistogramMatches)
-        {
-            min = allFrequencies[index[0]];
-            max = allFrequencies[index[totalCells-1]];
-
-            numBins = max-min+1;
-            binPoints = new int[numBins + 1];
-        }
-        else if( props.GetHistogramType() == SelectionProperties::HistogramVariable)
-        {
-            numBins = props.GetHistogramNumBins();
-            binPoints = new int[numBins + 1];
-
-            min = allVariables[index[0]];
-            max = allVariables[index[totalCells-1]];
-        }
-
+        numBins = props.GetHistogramNumBins();
+        binPoints = new int[numBins + 1];
+        
         // The starting binPoints will always be the first cell.
         binPoints[0] = 0;
 
-        int j = 0;
-        for(int i = 1; i < numBins; ++i)
+        for(int i=1, j=0; i<numBins; ++i)
         {
             // Get the threshold for this bin. The threshold is based on
             // the frequency of matches.
             float t = min + float(i) * (max-min) / float(numBins);
-            if(props.GetHistogramType() == SelectionProperties::HistogramMatches)
-            {
-                while( allFrequencies[index[j]] < t )
-                    ++j;
-            }
-            else if(props.GetHistogramType() == SelectionProperties::HistogramVariable)
-            {
-                while( allVariables[index[j]] < t )
-                    ++j;
-            }
+
+            while( allVariables[index[j]] < t )
+              ++j;
+
+            binPoints[i] = j;
+        }
+
+        // The ending binPoints will always be the totalCells.
+        binPoints[numBins] = totalCells;
+    }
+
+    // Matches Histogram
+    else //if(props.GetHistogramType() == SelectionProperties::HistogramMatches)
+    {
+        // Sort the index based on frequency
+        debug5 << mName << "Sorting index based on frequency" << endl;
+        std::sort(index, index + totalCells,
+                  cq_sort_by_value<int>(allFrequencies));
+
+        // For matches the number of bins is based on the number of matches
+        double min = allFrequencies[index[0]];
+        double max = allFrequencies[index[totalCells-1]];
+
+        numBins = max-min+1;
+        binPoints = new int[numBins + 1];
+
+        // The starting binPoints will always be the first cell.
+        binPoints[0] = 0;
+
+        for(int i=1, j=0; i<numBins; ++i)
+        {
+            // Get the threshold for this bin. The threshold is based on
+            // the frequency of matches.
+            float t = min + float(i) * (max-min) / float(numBins);
+
+            while( allFrequencies[index[j]] < t )
+              ++j;
 
             binPoints[i] = j;
         }
