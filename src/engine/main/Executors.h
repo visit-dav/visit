@@ -215,6 +215,9 @@ RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
 //    Brad Whitlock, Mon Aug 22 10:22:18 PDT 2011
 //    Pass the selection name to StartNetwork.
 //
+//    Eric Brugger, Mon Oct 31 09:51:17 PDT 2011
+//    Added the window id to StartNetwork.
+//
 // ****************************************************************************
 
 template<>
@@ -238,7 +241,8 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
                              rpc->GetMeshManagementAttributes(),
                              rpc->GetTreatAllDBsAsTimeVarying(),
                              rpc->GetIgnoreExtents(),
-                             rpc->GetSelectionName());
+                             rpc->GetSelectionName(),
+                             rpc->GetWindowID());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)

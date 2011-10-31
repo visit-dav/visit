@@ -83,6 +83,10 @@ class View2DAttributes;
 //    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
 //    Added xScale, yScale, havePerformedLogX, havePerformedLogY.
 //
+//    Eric, Brugger, Thu Oct 27 09:27:30 PDT 2011
+//    Added windowValid to support adding a multi resolution display
+//    capability for AMR data.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtView2D
@@ -90,6 +94,8 @@ struct AVTVIEW_API avtView2D
     double   viewport[4];
     double   window[4];
     bool     fullFrame;
+
+    bool     windowValid;
 
     int      fullFrameActivationMode;
     float    fullFrameAutoThreshold;

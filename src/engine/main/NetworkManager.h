@@ -427,6 +427,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Biagas, Fri Jul 15 11:10:35 PDT 2011
 //    Add GetQueryParameters.
 //
+//    Eric Brugger, Mon Oct 31 09:52:28 PDT 2011
+//    Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API NetworkManager
@@ -470,7 +473,8 @@ class ENGINE_MAIN_API NetworkManager
                                const MaterialAttributes &,
                                const MeshManagementAttributes &,
                                bool, bool,
-                               const std::string &selName);
+                               const std::string &selName,
+                               int windowID);
     void          DefineDB(const std::string &, const std::string &,
                            const stringVector &, int, const std::string &);
     void          AddFilter(const std::string&,

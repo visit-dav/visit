@@ -74,6 +74,10 @@
 //    Hank Childs, Sat Mar 13 18:07:25 PST 2010
 //    Add "auto" setting to bounding box mode.
 //
+//    Eric Brugger, Thu Oct 27 13:38:58 PDT 2011
+//    Added the ability to enable/disable interaction mode changes to
+//    support adding a multi resolution dispaly capability for AMR data.
+//
 // ****************************************************************************
 
 VisWinInteractions::VisWinInteractions(VisWindowColleagueProxy &c,
@@ -87,6 +91,7 @@ VisWinInteractions::VisWinInteractions(VisWindowColleagueProxy &c,
     hotPointInteractor = new VisitHotPointInteractor(i);
     mediator.SetInteractor(hotPointInteractor);
     toolUpdateMode = UPDATE_ONRELEASE;
+    enableInteractionModeChanges = true;
 }
 
 
@@ -616,14 +621,21 @@ VisWinInteractions::GetSpinModeSuspended() const
 //    Brad Whitlock, Mon Oct 1 09:25:34 PDT 2001
 //    I moved all of the behavior into the hot point interactor.
 //
+//    Eric Brugger, Thu Oct 27 13:38:58 PDT 2011
+//    Added the ability to enable/disable interaction mode changes to
+//    support adding a multi resolution dispaly capability for AMR data.
+//
 // ****************************************************************************
 
 void
 VisWinInteractions::NoPlots(void)
 {
-    if(hotPointInteractor != NULL)
+    if (enableInteractionModeChanges)
     {
-        hotPointInteractor->SetNullInteractor();
+        if(hotPointInteractor != NULL)
+        {
+            hotPointInteractor->SetNullInteractor();
+        }
     }
 }
 
@@ -649,21 +661,28 @@ VisWinInteractions::NoPlots(void)
 //    Eric Brugger, Tue Dec  9 14:22:33 PST 2008
 //    Added the AxisParallel window mode.
 //
+//    Eric Brugger, Thu Oct 27 13:38:58 PDT 2011
+//    Added the ability to enable/disable interaction mode changes to
+//    support adding a multi resolution dispaly capability for AMR data.
+//
 // ****************************************************************************
 
 void
 VisWinInteractions::HasPlots(void)
 {
-    if (!((mediator.GetMode() == WINMODE_3D
-           || mediator.GetMode() == WINMODE_AXISARRAY
-           || mediator.GetMode() == WINMODE_AXISPARALLEL) &&
-          mode == LINEOUT))
+    if (enableInteractionModeChanges)
     {
-        SetInteractionMode(mode);
-    }
-    else 
-    {
-        SetInteractionMode(NAVIGATE);
+        if (!((mediator.GetMode() == WINMODE_3D
+               || mediator.GetMode() == WINMODE_AXISARRAY
+               || mediator.GetMode() == WINMODE_AXISPARALLEL) &&
+              mode == LINEOUT))
+        {
+            SetInteractionMode(mode);
+        }
+        else 
+        {
+            SetInteractionMode(NAVIGATE);
+        }
     }
 }
 
@@ -704,3 +723,37 @@ VisWinInteractions::GetToolUpdateMode() const
 }
 
 
+// ****************************************************************************
+//  Method: VisWinInteractions::SetEnableInteractionModeChanges
+//
+//  Purpose:
+//      Sets the enable interaction mode changes flag.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Oct 27 13:38:58 PDT 2011
+//
+// ****************************************************************************
+
+void
+VisWinInteractions::SetEnableInteractionModeChanges(bool val)
+{
+    enableInteractionModeChanges = val;
+}
+
+
+// ****************************************************************************
+//  Method: VisWinInteractions::GetEnableInteractionModeChanges
+//
+//  Purpose:
+//      Gets the enable interaction mode changes flag.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Oct 27 13:38:58 PDT 2011
+//
+// ****************************************************************************
+
+bool
+VisWinInteractions::GetEnableInteractionModeChanges() const
+{
+    return enableInteractionModeChanges;
+}

@@ -75,6 +75,9 @@
 //    Brad Whitlock, Mon Aug 22 09:50:39 PDT 2011
 //    Added selectionName.
 //
+//    Eric Brugger, Mon Oct 31 09:31:29 PDT 2011
+//    Added window id.
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API ReadRPC : public BlockingRPC
@@ -95,7 +98,8 @@ public:
                     const MeshManagementAttributes &,
                     bool  treatAllDBsAsTimeVarying,
                     bool  ignoreExtents,
-                    const std::string &selName);
+                    const std::string &selName,
+                    int   windowID);
 
     // Property selection methods
     virtual void SelectAll();
@@ -111,6 +115,7 @@ public:
     void SetTreatAllDBsAsTimeVarying(bool);
     void SetIgnoreExtents(bool);
     void SetSelectionName(const std::string &selName);
+    void SetWindowID(int);
 
     // Property getting methods
     std::string GetVar()  const;
@@ -123,6 +128,7 @@ public:
     bool  GetTreatAllDBsAsTimeVarying() const;
     bool  GetIgnoreExtents() const;
     std::string GetSelectionName() const;
+    int GetWindowID() const;
 
 private:
     std::string file;
@@ -135,6 +141,7 @@ private:
     bool treatAllDBsAsTimeVarying;
     bool ignoreExtents;
     std::string selectionName;
+    int windowID;
 };
 
 #endif

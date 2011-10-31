@@ -82,6 +82,13 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     else
         SNPRINTF(tmpStr, 1000, "%santialiasing = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetMultiresolutionMode())
+        SNPRINTF(tmpStr, 1000, "%smultiresolutionMode = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%smultiresolutionMode = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smultiresolutionCellSize = %g\n", prefix, atts->GetMultiresolutionCellSize());
+    str += tmpStr;
     const char *geometryRepresentation_names = "Surfaces, Wireframe, Points";
     switch (atts->GetGeometryRepresentation())
     {
@@ -313,6 +320,54 @@ RenderingAttributes_GetAntialiasing(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAntialiasing()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetMultiresolutionMode(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the multiresolutionMode in the object.
+    obj->data->SetMultiresolutionMode(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetMultiresolutionMode(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetMultiresolutionMode()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetMultiresolutionCellSize(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    float fval;
+    if(!PyArg_ParseTuple(args, "f", &fval))
+        return NULL;
+
+    // Set the multiresolutionCellSize in the object.
+    obj->data->SetMultiresolutionCellSize(fval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetMultiresolutionCellSize(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMultiresolutionCellSize()));
     return retval;
 }
 
@@ -993,6 +1048,10 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"Notify", RenderingAttributes_Notify, METH_VARARGS},
     {"SetAntialiasing", RenderingAttributes_SetAntialiasing, METH_VARARGS},
     {"GetAntialiasing", RenderingAttributes_GetAntialiasing, METH_VARARGS},
+    {"SetMultiresolutionMode", RenderingAttributes_SetMultiresolutionMode, METH_VARARGS},
+    {"GetMultiresolutionMode", RenderingAttributes_GetMultiresolutionMode, METH_VARARGS},
+    {"SetMultiresolutionCellSize", RenderingAttributes_SetMultiresolutionCellSize, METH_VARARGS},
+    {"GetMultiresolutionCellSize", RenderingAttributes_GetMultiresolutionCellSize, METH_VARARGS},
     {"SetGeometryRepresentation", RenderingAttributes_SetGeometryRepresentation, METH_VARARGS},
     {"GetGeometryRepresentation", RenderingAttributes_GetGeometryRepresentation, METH_VARARGS},
     {"SetDisplayListMode", RenderingAttributes_SetDisplayListMode, METH_VARARGS},
@@ -1065,6 +1124,10 @@ PyRenderingAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "antialiasing") == 0)
         return RenderingAttributes_GetAntialiasing(self, NULL);
+    if(strcmp(name, "multiresolutionMode") == 0)
+        return RenderingAttributes_GetMultiresolutionMode(self, NULL);
+    if(strcmp(name, "multiresolutionCellSize") == 0)
+        return RenderingAttributes_GetMultiresolutionCellSize(self, NULL);
     if(strcmp(name, "geometryRepresentation") == 0)
         return RenderingAttributes_GetGeometryRepresentation(self, NULL);
     if(strcmp(name, "Surfaces") == 0)
@@ -1167,6 +1230,10 @@ PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "antialiasing") == 0)
         obj = RenderingAttributes_SetAntialiasing(self, tuple);
+    else if(strcmp(name, "multiresolutionMode") == 0)
+        obj = RenderingAttributes_SetMultiresolutionMode(self, tuple);
+    else if(strcmp(name, "multiresolutionCellSize") == 0)
+        obj = RenderingAttributes_SetMultiresolutionCellSize(self, tuple);
     else if(strcmp(name, "geometryRepresentation") == 0)
         obj = RenderingAttributes_SetGeometryRepresentation(self, tuple);
     else if(strcmp(name, "displayListMode") == 0)

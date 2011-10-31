@@ -478,6 +478,7 @@ EngineProxy::SendKeepAlive()
 //      treatAllDBsAsTimeVarying
 //      ignoreExtents
 //      selName   the selection to apply to the data.
+//      windowID  the window id.
 //
 //  Returns:    
 //
@@ -523,6 +524,9 @@ EngineProxy::SendKeepAlive()
 //    Brad Whitlock, Mon Aug 22 10:10:04 PDT 2011
 //    I added a selName argument.
 //
+//    Eric Brugger, Mon Oct 31 10:37:19 PDT 2011
+//    I added a window id argument.
+//
 // ****************************************************************************
 
 void
@@ -534,7 +538,8 @@ EngineProxy::ReadDataObject(const std::string &format, const std::string &file,
                             const MeshManagementAttributes &meshopts,
                             bool treatAllDBsAsTimeVarying,
                             bool ignoreExtents,
-                            const std::string &selName)
+                            const std::string &selName,
+                            int windowID)
 {
     // Make sure the engine knows about our current expression list.
     if (exprList != expressions)
@@ -545,7 +550,7 @@ EngineProxy::ReadDataObject(const std::string &format, const std::string &file,
 
     CompactSILRestrictionAttributes *atts = silr->MakeCompactAttributes();
     readRPC(format, file, var, time, *atts, matopts, meshopts,
-        treatAllDBsAsTimeVarying, ignoreExtents, selName);
+        treatAllDBsAsTimeVarying, ignoreExtents, selName, windowID);
     if (readRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(readRPC.GetExceptionType(),

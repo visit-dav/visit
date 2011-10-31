@@ -137,7 +137,6 @@ avtExtents::Destruct(void *p)
 //  Creation:   February 25, 2004
 //
 //  Modifications:
-//
 //    Tom Fogal, Tue Jun 23 20:14:38 MDT 2009
 //    Marked as const.
 //
@@ -172,7 +171,6 @@ avtExtents::Print(ostream &out) const
 //  Creation:   September 4, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Tue Dec 18 11:38:40 PST 2007
 //    Remove const return type of assignment operator to ensure that compiler
 //    doesn't define a second assignment operator with a non-const return
@@ -218,7 +216,6 @@ avtExtents::operator=(const avtExtents &exts)
 //  Creation:   September 4, 2001
 //
 //  Modifications:
-//
 //    Tom Fogal, Tue Jun 23 20:14:38 MDT 2009
 //    Marked as const.
 //
@@ -244,14 +241,16 @@ avtExtents::HasExtents(void) const
 //  Creation:   September 4, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Oct  1 14:10:37 PDT 2001
 //    Fix bug where wrong pointer was compared against.
+//
+//    Eric Brugger, Thu Oct 27 10:00:36 PDT 2011
+//    Add const to the method.
 //
 // ****************************************************************************
 
 void
-avtExtents::CopyTo(double *exts)
+avtExtents::CopyTo(double *exts) const
 {
     if (exts == NULL)
     {
@@ -523,7 +522,6 @@ avtExtents::Read(char *buffer)
 //  Creation:    September 24, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Wed Jun 19 21:07:30 PDT 2002
 //    Make sure we don't write past array bounds.
 //
@@ -616,5 +614,3 @@ avtExtents::Clear(void)
         extents = NULL;
     }
 }
-
-

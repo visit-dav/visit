@@ -423,7 +423,7 @@ class VisitInteractor;
 //    Add compact domains options.
 //
 //    Brad Whitlock, Thu Aug 26 15:36:31 PDT 2010
-//    I added  a force option to SetAnnotationAtts.
+//    I added a force option to SetAnnotationAtts.
 //
 //    Hank Childs, Fri Aug 27 15:27:25 PDT 2010
 //    Add explicit data members for 3D axis scaling.
@@ -436,6 +436,12 @@ class VisitInteractor;
 //
 //    Brad Whitlock, Fri Oct 14 16:29:05 PDT 2011
 //    I added methods to create mappers.
+//
+//    Eric Brugger, Thu Oct 27 13:44:42 PDT 2011
+//    I added EnableInteractionModeChanges, DisableInteractionModeChanges,
+//    SetViewChangedCB, SetMultiresolutionMode, GetMultiresolutionMode,
+//    SetMultiresolutionCellSize and GetMultiresolutionCellSize to support
+//    adding a multi resolution display capability for AMR data.
 //
 // ****************************************************************************
 
@@ -480,6 +486,8 @@ public:
     void                 EnableUpdates(void);
     void                 DisableUpdates(void);
     bool                 UpdatesEnabled() const;
+    void                 EnableInteractionModeChanges(void);
+    void                 DisableInteractionModeChanges(void);
 
     bool                 GetHotPoint(int, int, HotPoint &) const;
     void                 SetHighlightEnabled(bool);
@@ -562,6 +570,7 @@ public:
     void                 SetShowCallback(VisCallback *cb, void *data);
     void                 SetPickCB(VisCallback *cb, void *data);
     void                 SetLineoutCB(VisCallback *cb, void *data);
+    void                 SetViewChangedCB(VisCallback *cb, void *data);
 
     void                 SetAnnotationAtts(const AnnotationAttributes *, bool force=false);
     const AnnotationAttributes *GetAnnotationAtts() const;
@@ -625,6 +634,10 @@ public:
     void                 SetRenderInfoCallback(VisCallback *cb, void *data);
     void                 SetAntialiasing(bool enabled);
     bool                 GetAntialiasing() const;
+    void                 SetMultiresolutionMode(bool enabled);
+    bool                 GetMultiresolutionMode() const;
+    void                 SetMultiresolutionCellSize(double size);
+    double               GetMultiresolutionCellSize() const;
     void                 GetRenderTimes(double times[6]) const;
     void                 SetStereoRendering(bool enabled, int type);
     bool                 GetStereo() const;
@@ -719,6 +732,9 @@ protected:
                                        viewportBottom, viewportTop;
     int                                frameAndState[7];
 
+    bool                               multiresolutionMode;
+    double                             multiresolutionCellSize;
+
     WINDOW_MODE                        mode;
     bool                               updatesEnabled;
     bool                               hasPlots;
@@ -741,6 +757,9 @@ protected:
 
     VisCallback                       *performLineoutCallback;
     LINE_OUT_INFO                     *loInfo;
+
+    VisCallback                       *performViewChangedCallback;
+    void                              *performViewChangedCallbackData;
 
     vtkCallbackCommand                *startRenderCallback;
 

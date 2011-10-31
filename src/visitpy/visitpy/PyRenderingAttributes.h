@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define RENDERINGATTRIBUTES_NMETH 46
+#define RENDERINGATTRIBUTES_NMETH 50
 void VISITPY_API           PyRenderingAttributes_StartUp(RenderingAttributes *subj, void *data);
 void VISITPY_API           PyRenderingAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyRenderingAttributes_GetMethodTable(int *nMethods);

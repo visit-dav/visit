@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class View2DAttributes extends AttributeSubject
 {
-    private static int View2DAttributes_numAdditionalAtts = 6;
+    private static int View2DAttributes_numAdditionalAtts = 7;
 
     // Enum values
     public final static int TRISTATEMODE_ON = 0;
@@ -85,6 +85,7 @@ public class View2DAttributes extends AttributeSubject
         fullFrameAutoThreshold = 100;
         xScale = 0;
         yScale = 0;
+        windowValid = false;
     }
 
     public View2DAttributes(int nMoreFields)
@@ -105,6 +106,7 @@ public class View2DAttributes extends AttributeSubject
         fullFrameAutoThreshold = 100;
         xScale = 0;
         yScale = 0;
+        windowValid = false;
     }
 
     public View2DAttributes(View2DAttributes obj)
@@ -125,6 +127,7 @@ public class View2DAttributes extends AttributeSubject
         fullFrameAutoThreshold = obj.fullFrameAutoThreshold;
         xScale = obj.xScale;
         yScale = obj.yScale;
+        windowValid = obj.windowValid;
 
         SelectAll();
     }
@@ -159,7 +162,8 @@ public class View2DAttributes extends AttributeSubject
                 (fullFrameActivationMode == obj.fullFrameActivationMode) &&
                 (fullFrameAutoThreshold == obj.fullFrameAutoThreshold) &&
                 (xScale == obj.xScale) &&
-                (yScale == obj.yScale));
+                (yScale == obj.yScale) &&
+                (windowValid == obj.windowValid));
     }
 
     // Property setting methods
@@ -223,6 +227,12 @@ public class View2DAttributes extends AttributeSubject
         Select(5);
     }
 
+    public void SetWindowValid(boolean windowValid_)
+    {
+        windowValid = windowValid_;
+        Select(6);
+    }
+
     // Property getting methods
     public double[] GetWindowCoords() { return windowCoords; }
     public double[] GetViewportCoords() { return viewportCoords; }
@@ -230,6 +240,7 @@ public class View2DAttributes extends AttributeSubject
     public double   GetFullFrameAutoThreshold() { return fullFrameAutoThreshold; }
     public int      GetXScale() { return xScale; }
     public int      GetYScale() { return yScale; }
+    public boolean  GetWindowValid() { return windowValid; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -246,6 +257,8 @@ public class View2DAttributes extends AttributeSubject
             buf.WriteInt(xScale);
         if(WriteSelect(5, buf))
             buf.WriteInt(yScale);
+        if(WriteSelect(6, buf))
+            buf.WriteBool(windowValid);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -270,6 +283,9 @@ public class View2DAttributes extends AttributeSubject
         case 5:
             SetYScale(buf.ReadInt());
             break;
+        case 6:
+            SetWindowValid(buf.ReadBool());
+            break;
         }
     }
 
@@ -289,6 +305,7 @@ public class View2DAttributes extends AttributeSubject
         str = str + doubleToString("fullFrameAutoThreshold", fullFrameAutoThreshold, indent) + "\n";
         str = str + intToString("xScale", xScale, indent);
         str = str + intToString("yScale", yScale, indent);
+        str = str + boolToString("windowValid", windowValid, indent) + "\n";
         return str;
     }
 
@@ -300,5 +317,6 @@ public class View2DAttributes extends AttributeSubject
     private double   fullFrameAutoThreshold;
     private int      xScale;
     private int      yScale;
+    private boolean  windowValid;
 }
 

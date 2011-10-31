@@ -69,9 +69,12 @@ using std::string;
 //    Brad Whitlock, Mon Aug 22 09:51:16 PDT 2011
 //    Added selectionName.
 //
+//    Eric Brugger, Mon Oct 31 09:33:34 PDT 2011
+//    Added window id.
+//
 // ****************************************************************************
 
-ReadRPC::ReadRPC() : BlockingRPC("ssiaasabbs")
+ReadRPC::ReadRPC() : BlockingRPC("ssiaasabbsi")
 {
 }
 
@@ -109,6 +112,7 @@ ReadRPC::~ReadRPC()
 //    treatAllDBsAsTimeVarying : Flag to clear metadata for databases.
 //    ignoreExtents            : Flag to ignore extents.
 //    selName                  : The selection name to use.
+//    windowID                 : The window id.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   September 7, 2000
@@ -135,6 +139,9 @@ ReadRPC::~ReadRPC()
 //    Brad Whitlock, Mon Aug 22 10:01:40 PDT 2011
 //    Added selection name.
 //
+//    Eric Brugger, Mon Oct 31 09:33:34 PDT 2011
+//    Added window id.
+//
 // ****************************************************************************
 
 void
@@ -143,7 +150,8 @@ ReadRPC::operator()(const std::string &ft, const std::string &f, const std::stri
                     const MaterialAttributes &m,
                     const MeshManagementAttributes &mm,
                     bool treatAllDBsAsTimeVarying,
-                    bool ignoreExtents, const std::string &selName)
+                    bool ignoreExtents, const std::string &selName,
+                    int windowID)
 {
     debug3 << "Executing read RPC" 
            << "\n\t file format='" << ft.c_str() << "'"
@@ -153,6 +161,7 @@ ReadRPC::operator()(const std::string &ft, const std::string &f, const std::stri
            << "\n\t treatAllDBsAsTimeVarying ='" << treatAllDBsAsTimeVarying << "'"
            << "\n\t ignoreExtents ='" << ignoreExtents << "'"
            << "\n\t selName='" << selName << "'"
+           << "\n\t windowID='" << windowID << "'"
            << endl;
 
     SetFormat(ft);
@@ -165,6 +174,7 @@ ReadRPC::operator()(const std::string &ft, const std::string &f, const std::stri
     SetTreatAllDBsAsTimeVarying(treatAllDBsAsTimeVarying);
     SetIgnoreExtents(ignoreExtents);
     SetSelectionName(selName);
+    SetWindowID(windowID);
 
     Execute();
 }
@@ -196,6 +206,9 @@ ReadRPC::operator()(const std::string &ft, const std::string &f, const std::stri
 //    Brad Whitlock, Mon Aug 22 10:03:20 PDT 2011
 //    I added selectionName.
 //
+//    Eric Brugger, Mon Oct 31 09:33:34 PDT 2011
+//    Added window id.
+//
 // ****************************************************************************
 
 void
@@ -211,6 +224,7 @@ ReadRPC::SelectAll()
     Select(7, (void*)&treatAllDBsAsTimeVarying);
     Select(8, (void*)&ignoreExtents);
     Select(9, (void*)&selectionName);
+    Select(10, (void*)&windowID);
 }
 
 
@@ -401,6 +415,27 @@ ReadRPC::SetSelectionName(const std::string &selName)
 }
 
 // ****************************************************************************
+// Method: ReadRPC::SetWindowID
+//
+// Purpose: 
+//   Set the window id.
+//
+// Arguments:
+//   id      : The window id.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Oct 31 09:33:34 PDT 2011
+//
+// ****************************************************************************
+
+void
+ReadRPC::SetWindowID(int id)
+{
+    windowID = id;
+    Select(10, (void*)&windowID);
+}
+
+// ****************************************************************************
 //  Method: ReadRPC::GetFile
 //
 //  Purpose: 
@@ -568,4 +603,23 @@ std::string
 ReadRPC::GetSelectionName() const
 {
     return selectionName;
+}
+
+// ****************************************************************************
+// Method: ReadRPC::GetWindowID
+//
+// Purpose: 
+//   Return the window id.
+//
+// Returns:    The window id.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Oct 31 09:33:34 PDT 2011
+//
+// ****************************************************************************
+
+int
+ReadRPC::GetWindowID() const
+{
+    return windowID;
 }

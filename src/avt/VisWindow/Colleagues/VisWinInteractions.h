@@ -96,6 +96,10 @@ class VisitHotPointInteractor;
 //     Hank Childs, Sat Mar 13 18:07:25 PST 2010
 //     Add "auto" setting to bounding box mode.
 //
+//     Eric Brugger, Thu Oct 27 13:37:23 PDT 2011
+//     Added the ability to enable/disable interaction mode changes to
+//     support adding a multi resolution dispaly capability for AMR data.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinInteractions : public VisWinColleague
@@ -115,6 +119,8 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
     bool                     GetSpinModeSuspended() const;
     void                     SetToolUpdateMode(TOOLUPDATE_MODE);
     TOOLUPDATE_MODE          GetToolUpdateMode() const;
+    void                     SetEnableInteractionModeChanges(bool);
+    bool                     GetEnableInteractionModeChanges() const;
 
     virtual void             Start2DMode();
     virtual void             Stop2DMode();
@@ -136,6 +142,7 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
     int                      bboxMode;
     bool                     spinMode;
     bool                     spinModeSuspended;
+    bool                     enableInteractionModeChanges;
     VisitHotPointInteractor *hotPointInteractor;
 };
 

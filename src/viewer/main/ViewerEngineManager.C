@@ -1823,7 +1823,8 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
                                    *GetMeshManagementClientAtts(),
                                    treatAllDBsAsTimeVarying,
                                    ignoreExtents,
-                                   plot->GetNamedSelection());
+                                   plot->GetNamedSelection(),
+                                   plot->GetWindowId());
         }
 
         //

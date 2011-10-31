@@ -248,6 +248,12 @@ VisWindow::VisWindow(bool callInit)
 //    Brad Whitlock, Tue Dec 7 16:01:12 PST 2010
 //    Delegate tool colleague creation into virtual method.
 //
+//    Eric Brugger, Thu Oct 27 14:21:27 PDT 2011
+//    I added the ability to enable/disable interaction mode changes, a
+//    view changed callback, the ability to set/get the multi resolution
+//    mode, and the ability to set/get the multi resolution cell size to
+//    support adding a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -281,6 +287,8 @@ VisWindow::Initialize(VisWinRendering *ren)
     backgroundNX = 1;
     backgroundNY = 1;
     SetViewport(0., 0., 1., 1.);
+    multiresolutionMode = false;
+    multiresolutionCellSize = 0.002;
     EnableUpdates();
     NoPlots();
     doAxisScaling = false;
@@ -358,6 +366,9 @@ VisWindow::Initialize(VisWinRendering *ren)
 
     performLineoutCallback= 0;
     loInfo = 0;
+
+    performViewChangedCallback= 0;
+    performViewChangedCallbackData = 0;
 
     pickForIntersectionOnly = false;
 }
@@ -1392,6 +1403,44 @@ VisWindow::DisableUpdates(void)
     {
         (*it)->DisableUpdates();
     }
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::EnableInteractionModeChanges
+//
+//  Purpose:
+//      Tells the interactions colleague that it should enable interaction
+//      mode changes.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Oct 27 14:21:27 PDT 2011
+//
+// ****************************************************************************
+
+void
+VisWindow::EnableInteractionModeChanges(void)
+{
+    interactions->SetEnableInteractionModeChanges(true);
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::DisableInteractionModeChanges
+//
+//  Purpose:
+//      Tells the interactions colleague that it should disable interaction
+//      mode changes.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Oct 27 14:21:27 PDT 2011
+//
+// ****************************************************************************
+
+void
+VisWindow::DisableInteractionModeChanges(void)
+{
+    interactions->SetEnableInteractionModeChanges(false);
 }
 
 // ****************************************************************************
@@ -2597,6 +2646,12 @@ VisWindow::ResetView(void)
 //    Added call to Render after call to FullFrameOff, to ensure that
 //    the changes shows up immediately on the screen.
 //
+//    Eric Brugger, Thu Oct 27 14:21:27 PDT 2011
+//    I added the ability to enable/disable interaction mode changes, a
+//    view changed callback, the ability to set/get the multi resolution
+//    mode, and the ability to set/get the multi resolution cell size to
+//    support adding a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -2630,6 +2685,11 @@ VisWindow::SetView2D(const avtView2D &v)
     {
         FullFrameOff();
         Render();
+    }
+
+    if (performViewChangedCallback != 0)
+    {
+        (*performViewChangedCallback)(performViewChangedCallbackData);
     }
 }
 
@@ -2688,6 +2748,12 @@ VisWindow::GetView2D(void) const
 //    If the new view is the same as the old view, do nothing.  This is
 //    especially helpful when locking views.
 //
+//    Eric Brugger, Thu Oct 27 14:21:27 PDT 2011
+//    I added the ability to enable/disable interaction mode changes, a
+//    view changed callback, the ability to set/get the multi resolution
+//    mode, and the ability to set/get the multi resolution cell size to
+//    support adding a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -2703,6 +2769,9 @@ VisWindow::SetView3D(const avtView3D &v)
     view3D = v;
 
     UpdateView();
+
+    if (performViewChangedCallback != 0)
+        (*performViewChangedCallback)(performViewChangedCallbackData);
 }
 
 
@@ -2751,6 +2820,12 @@ VisWindow::GetView3D(void) const
 //    If the new view is the same as the old view, do nothing.  This is
 //    especially helpful when locking views.
 //
+//    Eric Brugger, Thu Oct 27 14:21:27 PDT 2011
+//    I added the ability to enable/disable interaction mode changes, a
+//    view changed callback, the ability to set/get the multi resolution
+//    mode, and the ability to set/get the multi resolution cell size to
+//    support adding a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -2766,6 +2841,9 @@ VisWindow::SetViewCurve(const avtViewCurve &v)
     viewCurve = v;
 
     UpdateView();
+
+    if (performViewChangedCallback != 0)
+        (*performViewChangedCallback)(performViewChangedCallbackData);
 }
 
 
@@ -2813,6 +2891,13 @@ VisWindow::GetViewCurve(void) const
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2008
 //
+//  Modifications:
+//    Eric Brugger, Thu Oct 27 14:21:27 PDT 2011
+//    I added the ability to enable/disable interaction mode changes, a
+//    view changed callback, the ability to set/get the multi resolution
+//    mode, and the ability to set/get the multi resolution cell size to
+//    support adding a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 void
 VisWindow::SetViewAxisArray(const avtViewAxisArray &v)
@@ -2827,6 +2912,9 @@ VisWindow::SetViewAxisArray(const avtViewAxisArray &v)
     viewAxisArray = v;
 
     UpdateView();
+
+    if (performViewChangedCallback != 0)
+        (*performViewChangedCallback)(performViewChangedCallbackData);
 }
 
 
@@ -5230,6 +5318,28 @@ VisWindow::SetLineoutCB(VisCallback *cb, void *data)
 
 
 // ****************************************************************************
+// Method: VisWindow::SetViewChangedCB
+//
+// Purpose: 
+//   Sets the callback to use when the view changed. 
+//
+// Arguments:
+//   cb        The callback method.
+//   data      The callback data. 
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Oct 27 14:21:27 PDT 2011
+//
+// ****************************************************************************
+
+void
+VisWindow::SetViewChangedCB(VisCallback *cb, void *data)
+{
+    performViewChangedCallback = cb;
+    performViewChangedCallbackData = data;
+}
+
+// ****************************************************************************
 //  Method: VisWindow::QueryIsValid
 //
 //  Purpose:
@@ -5595,6 +5705,92 @@ bool
 VisWindow::GetAntialiasing() const
 {
     return rendering->GetAntialiasing();
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetMultiresolutionMode
+//
+// Purpose: 
+//   Sets the window's multiresolution mode.
+//
+// Arguments:
+//   enabled : Whether or not multiresolution mode is enabled.
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Oct 27 14:21:27 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetMultiresolutionMode(bool enabled)
+{
+    multiresolutionMode = enabled;
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetMultiresolutionMode
+//
+// Purpose: 
+//   Returns the window's multiresolution mode.
+//
+// Returns:    The window's multiresolution mode.
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Oct 27 14:21:27 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VisWindow::GetMultiresolutionMode() const
+{
+    return multiresolutionMode;
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetMultiresolutionCellSize
+//
+// Purpose: 
+//   Sets the window's multiresolution cell size.
+//
+// Arguments:
+//   size   : The new multiresolution cell size.
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Oct 27 14:21:27 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetMultiresolutionCellSize(double size)
+{
+    multiresolutionCellSize = size;
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetMultiresolutionCellSize
+//
+// Purpose: 
+//   Returns the window's multiresolution cell size.
+//
+// Returns:    The window's multiresolution cell size.
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Oct 27 14:21:27 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+double
+VisWindow::GetMultiresolutionCellSize() const
+{
+    return multiresolutionCellSize;
 }
 
 // ****************************************************************************

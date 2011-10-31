@@ -89,6 +89,8 @@
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 #include <avtToolInterface.h>
+#include <avtView2D.h>
+#include <avtView3D.h>
 #include <ExprNode.h>
 
 #include <DebugStream.h>
@@ -1431,6 +1433,32 @@ ViewerPlotList::UpdateFrameForPlots(const intVector &somePlots)
         UpdateWindow(somePlots, true);
 
     return updateTheWindow;
+}
+
+// ****************************************************************************
+// Method: ViewerPlotList::RegenerateFrame
+//
+// Purpose: 
+//   Regenerate the frame, creating all the plots from scratch.
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Oct 28 09:54:23 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::RegenerateFrame()
+{
+    ClearActors();
+
+    intVector allPlots;
+    for(int i = 0; i < nPlots; ++i)
+        allPlots.push_back(i);
+    UpdatePlots(allPlots, false);
+
+    UpdateWindow(allPlots, true);
 }
 
 // ****************************************************************************
@@ -9760,4 +9788,88 @@ ViewerPlotList::PermitsLogViewScaling(WINDOW_MODE wm)
         rv &= plots[i].plot->PermitsLogViewScaling(wm);
     }
     return rv;
+}
+
+// ****************************************************************************
+// Method: ViewerPlotList::ShouldRefineData
+//
+// Purpose: 
+//   Returns whether or not if we should refine the data for the current plots.
+//
+// Returns:
+//   Whether we should refine the data for the current plots.
+//
+// Arguments:
+//   smallestCellSize  The smallest cell size that should be visible.
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Oct 28 09:54:23 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlotList::ShouldRefineData(double smallestCellSize) const
+{
+    if (nPlots == 0)
+    {
+        return false;
+    }
+
+    int nDims;
+    double ext[6];
+    double cellSize;
+    for (int i = 0; i < nPlots; ++i)
+    {
+        ViewerPlot *plot = plots[i].plot;
+
+        avtDataObjectReader_p &reader = plot->GetReader();
+
+        const avtDataAttributes &atts = reader->GetInfo().GetAttributes();
+
+        avtExtents *extents = atts.GetMultiresExtents();
+        nDims = atts.GetSpatialDimension();
+        extents->CopyTo(ext);
+        cellSize = atts.GetMultiresCellSize();
+    }
+
+    double fustrum[6];
+    if (window->GetWindowMode() == WINMODE_2D)
+    {
+        const avtView2D &view2D = window->GetView2D();
+        fustrum[0] = view2D.window[0];
+        fustrum[1] = view2D.window[1];
+        fustrum[2] = view2D.window[2];
+        fustrum[3] = view2D.window[3];
+    }
+    else if (window->GetWindowMode() == WINMODE_3D)
+    {
+        const avtView3D &view3D = window->GetView3D();
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+
+    bool refineData = false;
+    double frustumDx = 0.;
+    for (int i = 0; i < nDims; i++)
+    {
+        frustumDx += ((fustrum[i*2+1]-fustrum[i*2])*
+                      (fustrum[i*2+1]-fustrum[i*2]));
+        if (fustrum[i*2] < ext[i*2] ||
+            fustrum[i*2+1] > ext[i*2+1])
+        {
+            refineData = true;
+        }
+    }
+    frustumDx = sqrt(frustumDx);
+    double ratio = cellSize / frustumDx;
+    
+    if (ratio > smallestCellSize)
+        refineData = true;
+
+    return refineData;
 }

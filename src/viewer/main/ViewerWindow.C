@@ -271,6 +271,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Brad Whitlock, Thu Aug 26 15:39:57 PDT 2010
 //    I added a force option to SetAnnotationAttributes.
 //
+//    Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
+//    Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
@@ -409,6 +412,14 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
     depthCueingAuto = true;
     startCuePoint[0] = -10;  startCuePoint[0] = 0;  startCuePoint[0] = 0;
     endCuePoint[0]   =  10;  endCuePoint[0]   = 0;  endCuePoint[0]   = 0;
+
+    //
+    // Multiresolution control information.
+    //
+    // At end so that plot list can be initialized.
+    processingViewChanged = false;
+    if (visWindow->GetMultiresolutionMode())
+        visWindow->SetViewChangedCB(ViewChangedCallback, (void*)this);
 }
 
 // ****************************************************************************
@@ -2278,8 +2289,11 @@ ViewerWindow::InvertBackgroundColor()
 //   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //   Added automatic depth cueing mode.
 //
-//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
-//    Add compact domain options.
+//   Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//   Add compact domain options.
+//
+//   Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
+//   Add a multi resolution display capability for AMR data.
 //
 // ****************************************************************************
 
@@ -2290,6 +2304,8 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     // Copy the rendering attributes.
     //
     SetAntialiasing(source->GetAntialiasing());
+    SetMultiresolutionMode(source->GetMultiresolutionMode());
+    SetMultiresolutionCellSize(source->GetMultiresolutionCellSize());
     SetStereoRendering(source->GetStereo(), source->GetStereoType());
     SetDisplayListMode(source->GetDisplayListMode());
     SetSurfaceRepresentation(source->GetSurfaceRepresentation());
@@ -2399,6 +2415,40 @@ void
 ViewerWindow::DisableUpdates()
 {
     visWindow->DisableUpdates();
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::EnableInteractionModeChanges
+//
+//  Purpose:
+//    Tells the vis window that it should enable interaction mode changes.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Oct 27 15:47:36 PDT 2011
+//
+// ****************************************************************************
+
+void
+ViewerWindow::EnableInteractionModeChanges()
+{
+    visWindow->EnableInteractionModeChanges();
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::DisableInteractionModeChanges
+//
+//  Purpose:
+//    Tells the vis window that it should disable interaction mode changes.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Oct 27 15:47:36 PDT 2011
+//
+// ****************************************************************************
+
+void
+ViewerWindow::DisableInteractionModeChanges()
+{
+    visWindow->DisableInteractionModeChanges();
 }
 
 // ****************************************************************************
@@ -4159,11 +4209,16 @@ ViewerWindow::RecenterViewCurve(const double *limits)
 //    Kathleen Bonnell, Tue Mar  3 15:04:57 PST 2009
 //    CanDoLogViewScaling changed to PermitsLogViewScaling.
 //
+//    Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
+//    Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::RecenterView2d(const double *limits)
 {
+    avtView2D view2D=visWindow->GetView2D();
+
     //
     // If the plot limits are invalid then there are no plots so mark the
     // bounding box as invalid so that the view is set from scratch the
@@ -4172,8 +4227,18 @@ ViewerWindow::RecenterView2d(const double *limits)
     if (limits[0] == DBL_MAX && limits[1] == -DBL_MAX)
     {
         centeringValid2d = false;
+        view2D.windowValid = false;
+        visWindow->SetView2D(view2D);
         return;
     }
+
+    //
+    // Mark the view as valid.
+    //
+    boundingBoxValid2d = true;
+    centeringValid2d = true;
+    viewSetIn2d = true;
+    view2D.windowValid = true;
 
     //
     // Set the new window.
@@ -4188,8 +4253,6 @@ ViewerWindow::RecenterView2d(const double *limits)
     //
     // Update the view.
     //
-    avtView2D view2D=visWindow->GetView2D();
-
     for (i = 0; i < 4; i++)
     {
         view2D.window[i] = limits[i];
@@ -4641,6 +4704,9 @@ ViewerWindow::ResetViewCurve()
 //    Kathleen Bonnell, Tue Mar  3 15:04:57 PST 2009
 //    CanDoLogViewScaling changed to PermitsLogViewScaling.
 //
+//    Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
+//    Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -4663,6 +4729,8 @@ ViewerWindow::ResetView2d()
         boundingBoxValid2d = false;
         centeringValid2d = false;
         viewSetIn2d = false;
+        view2D.windowValid = false;
+        visWindow->SetView2D(view2D);
         return;
     }
 
@@ -4672,6 +4740,7 @@ ViewerWindow::ResetView2d()
     boundingBoxValid2d = true;
     centeringValid2d = true;
     viewSetIn2d = true;
+    view2D.windowValid = true;
 
     //
     // Set the window.
@@ -6298,6 +6367,9 @@ ViewerWindow::SetLargeIcons(bool val)
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
 //
+//    Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
+//    Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -6375,6 +6447,9 @@ ViewerWindow::GetWindowAttributes() const
         (RenderingAttributes::TriStateMode) GetDisplayListMode());
 
     renderAtts.SetAntialiasing(GetAntialiasing());
+
+    renderAtts.SetMultiresolutionMode(GetMultiresolutionMode());
+    renderAtts.SetMultiresolutionCellSize(GetMultiresolutionCellSize());
 
     renderAtts.SetGeometryRepresentation(
        (RenderingAttributes::GeometryRepresentation) GetSurfaceRepresentation());
@@ -7121,6 +7196,91 @@ ViewerWindow::GetAntialiasing() const
     return visWindow->GetAntialiasing();
 }
 
+// ****************************************************************************
+// Method: ViewerWindow::SetMultiresolutionMode
+//
+// Purpose: 
+//   Sets the window's multiresolution mode.
+//
+// Arguments:
+//   enabled : Whether or not multiresolution mode is enabled.
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Oct 27 15:47:36 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SetMultiresolutionMode(bool enabled)
+{
+    visWindow->SetMultiresolutionMode(enabled);
+    if (enabled)
+        visWindow->SetViewChangedCB(ViewChangedCallback, (void*)this);
+    else
+        visWindow->SetViewChangedCB(NULL, NULL);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetMultiresolutionMode
+//
+// Purpose: 
+//   Returns the window's multiresolution mode.
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Oct 27 15:47:36 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindow::GetMultiresolutionMode() const
+{
+    return visWindow->GetMultiresolutionMode();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetMultiresolutionCellSize
+//
+// Purpose: 
+//   Sets the window's multiresolution cell size.
+//
+// Arguments:
+//   size    : The multiresolution cell size.
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Oct 27 15:47:36 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SetMultiresolutionCellSize(double size)
+{
+    visWindow->SetMultiresolutionCellSize(size);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetMultiresolutionCellSize
+//
+// Purpose: 
+//   Returns the window's multiresolution cell size.
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Oct 27 15:47:36 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+double
+ViewerWindow::GetMultiresolutionCellSize() const
+{
+    return visWindow->GetMultiresolutionCellSize();
+}
 
 // ****************************************************************************
 // Method: ViewerWindow::GetRenderTimes
@@ -8157,6 +8317,9 @@ ViewerWindow::GetCompactDomainsAutoThreshold() const
 //   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //   Added automatic depth cueing mode.
 //
+//   Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
+//   Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -8242,6 +8405,8 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("stereoRendering", GetStereo()));
         windowNode->AddNode(new DataNode("stereoType", GetStereoType()));
         windowNode->AddNode(new DataNode("antialiasing", GetAntialiasing()));
+        windowNode->AddNode(new DataNode("multiresolutionMode", GetMultiresolutionMode()));
+        windowNode->AddNode(new DataNode("multiresolutionCellSize", GetMultiresolutionCellSize()));
         windowNode->AddNode(new DataNode("specularFlag", GetSpecularFlag()));
         windowNode->AddNode(new DataNode("specularCoeff", GetSpecularCoeff()));
         windowNode->AddNode(new DataNode("specularPower", GetSpecularPower()));
@@ -8444,6 +8609,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Thu Aug 26 15:40:31 PDT 2010
 //   I added a force option to SetAnnotationAttributes.
 //
+//   Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
+//   Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 bool
@@ -8587,6 +8755,10 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         SetStereoRendering(node->AsBool(), stereoType);
     if((node = windowNode->GetNode("antialiasing")) != 0)
         SetAntialiasing(node->AsBool());
+    if((node = windowNode->GetNode("multiresolutionMode")) != 0)
+        SetMultiresolutionMode(node->AsBool());
+    if((node = windowNode->GetNode("multiresolutionCellSize")) != 0)
+        SetMultiresolutionCellSize(node->AsDouble());
 
     //
     // The specular parameters are all set as a group.
@@ -9802,6 +9974,42 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
     win->ExternalRenderAuto(dob, leftEye);
 }
 
+// ****************************************************************************
+// Method: ViewerWindow::ViewChangedCallback
+//
+// Purpose: 
+//   Called when view is changed when in multi resolution mode.
+//
+// Arguments:
+//   data    : The ViewerWindow that had its view changed.
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Oct 27 15:47:36 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::ViewChangedCallback(void *data)
+{
+    unsigned char* argsBuf = (unsigned char*) data;
+    ViewerWindow *win;
+
+    win = (ViewerWindow *)data;
+
+    if (win->GetProcessingViewChanged())
+        return;
+
+    win->SetProcessingViewChanged(true);
+    win->DisableInteractionModeChanges();
+    if (win->GetPlotList()->ShouldRefineData(win->GetMultiresolutionCellSize()))
+    {
+        win->GetPlotList()->RegenerateFrame();
+    }
+    win->EnableInteractionModeChanges();
+    win->SetProcessingViewChanged(false);
+}
 
 // ****************************************************************************
 //  Method: ViewerWindow::Lineout

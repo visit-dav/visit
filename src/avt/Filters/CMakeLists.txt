@@ -54,6 +54,9 @@
 #   Brad Whitlock, Fri Dec 10 16:21:23 PST 2010
 #   I moved avtThresholdFilter to here from the Threshold plugin.
 #
+#   Eric Brugger, Tue Oct 25 13:55:27 PDT 2011
+#   Add avtMultiresFilter.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -79,6 +82,7 @@ avtLineToPolylineFilter.C
 avtMassVoxelExtractor.C
 avtMasterSlaveICAlgorithm.C
 avtMeshLogFilter.C
+avtMultiresFilter.C
 avtNamedSelectionFilter.C
 avtParDomICAlgorithm.C
 avtParICAlgorithm.C
@@ -117,6 +121,7 @@ ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
 ${VISIT_SOURCE_DIR}/avt/Database/Database
+${VISIT_SOURCE_DIR}/avt/Database/Ghost
 ${VISIT_SOURCE_DIR}/avt/IVP
 ${VISIT_SOURCE_DIR}/avt/Math
 ${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
@@ -124,8 +129,12 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
+${VISIT_SOURCE_DIR}/avt/Plotter
 ${VISIT_SOURCE_DIR}/avt/View
+${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
+${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
+${VISIT_SOURCE_DIR}/engine/main
 ${VTK_INCLUDE_DIRS}
 )
 

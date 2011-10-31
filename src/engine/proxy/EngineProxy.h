@@ -328,6 +328,9 @@ class ParentProcess;
 //    Brad Whitlock, Wed Sep  7 14:29:35 PDT 2011
 //    Added UpdateNamedSelection.
 //
+//    Eric Brugger, Mon Oct 31 10:33:28 PDT 2011
+//    Added a window id to ReadDataObject.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -380,7 +383,8 @@ public:
                                             const MeshManagementAttributes &,
                                             bool treatAllDbsAsTimeVarying,
                                             bool ignoreExtents,
-                                            const std::string &selName);
+                                            const std::string &selName,
+                                            int windowID);
     void                     ApplyOperator(const std::string&, 
                                            const AttributeSubject*);
     void                     ApplyNamedFunction(const std::string &name,

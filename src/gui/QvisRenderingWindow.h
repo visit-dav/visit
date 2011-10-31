@@ -40,6 +40,7 @@
 #define QVIS_RENDERING_WINDOW_H
 #include <QvisPostableWindowSimpleObserver.h>
 #include <gui_exports.h>
+#include <GUIBase.h>
 
 // Forward declarations
 class QButtonGroup;
@@ -115,6 +116,9 @@ class QLineEdit;
 //   Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //   Add compact domain options.
 //
+//   Eric Brugger, Tue Oct 25 12:29:09 PDT 2011
+//   Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -142,6 +146,9 @@ protected:
     void UpdateWindowSensitivity();
 private slots:
     void antialiasingToggled(bool);
+    void multiresolutionModeToggled(bool);
+    void processMultiresolutionSmallestCellText();
+    void processMultiresolutionSmallestCellText(const QString &);
     void objectRepresentationChanged(int);
     void displayListModeChanged(int);
     void stereoToggled(bool);
@@ -172,6 +179,9 @@ private:
 
     // Basic controls
     QCheckBox         *antialiasingToggle;
+    QCheckBox         *multiresolutionModeToggle;
+    QLabel            *multiresolutionSmallestCellLabel;
+    QLineEdit         *multiresolutionSmallestCellLineEdit;
     QButtonGroup      *objectRepresentation;
     QButtonGroup      *dlMode;
     QCheckBox         *stereoToggle;

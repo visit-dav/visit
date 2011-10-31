@@ -105,6 +105,7 @@ public:
     void SetFullFrameAutoThreshold(double fullFrameAutoThreshold_);
     void SetXScale(int xScale_);
     void SetYScale(int yScale_);
+    void SetWindowValid(bool windowValid_);
 
     // Property getting methods
     const double *GetWindowCoords() const;
@@ -115,6 +116,7 @@ public:
     double       GetFullFrameAutoThreshold() const;
     int          GetXScale() const;
     int          GetYScale() const;
+    bool         GetWindowValid() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -146,6 +148,7 @@ public:
         ID_fullFrameAutoThreshold,
         ID_xScale,
         ID_yScale,
+        ID_windowValid,
         ID__LAST
     };
 
@@ -156,11 +159,12 @@ private:
     double fullFrameAutoThreshold;
     int    xScale;
     int    yScale;
+    bool   windowValid;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEW2DATTRIBUTES_TMFS "DDidii"
+#define VIEW2DATTRIBUTES_TMFS "DDidiib"
 
 #endif

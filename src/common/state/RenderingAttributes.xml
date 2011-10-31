@@ -19,6 +19,12 @@
     <Field name="antialiasing" label="antialiasing" type="bool">
       false
     </Field>
+    <Field name="multiresolutionMode" label="multiresolutionMode" type="bool">
+      false
+    </Field>
+    <Field name="multiresolutionCellSize" label="multiresolutionCellSize" type="float">
+      0.002
+    </Field>
     <Field name="geometryRepresentation" label="geometryRepresentation" type="enum" subtype="GeometryRepresentation">
       Surfaces
     </Field>
