@@ -111,6 +111,7 @@
 #include <avtPlot.h>
 #include <avtQueryOverTimeFilter.h>
 #include <avtQueryFactory.h>
+#include <avtMultiresFilter.h>
 #include <CompactSILRestrictionAttributes.h>
 #include <VisWindow.h>
 #include <VisWinRendering.h> // for SetStereoEnabled
@@ -871,6 +872,9 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 //    avtExecuteThenTimeLoopFilter creates its own pipeline from the original
 //    source so we need the selection name there to apply it.
 //
+//    Eric Brugger, Mon Oct 31 09:54:07 PDT 2011
+//    Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -883,7 +887,8 @@ NetworkManager::StartNetwork(const std::string &format,
                              const MeshManagementAttributes &meshopts,
                              bool treatAllDBsAsTimeVarying,
                              bool ignoreExtents,
-                             const std::string &selName)
+                             const std::string &selName,
+                             int windowID)
 {
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
@@ -929,6 +934,44 @@ NetworkManager::StartNetwork(const std::string &format,
     workingNetnodeList.push_back(filt);
 
     workingNet->AddNode(filt);
+
+    // If we are in multiresolution mode then add a MultiresFilter
+    // right after the expression filter.
+    VisWindow *visWin = viswinMap[windowID].viswin;
+    if (visWin->GetMultiresolutionMode())
+    {
+        double frustum[6];
+        const avtView2D view2D = visWin->GetView2D();
+        if (!view2D.windowValid)
+        {
+            frustum[0] = DBL_MAX;
+            frustum[1] = -DBL_MAX;
+            frustum[2] = DBL_MAX;
+            frustum[3] = -DBL_MAX;
+        }
+        else
+        {
+            frustum[0] = view2D.window[0];
+            frustum[1] = view2D.window[1];
+            frustum[2] = view2D.window[2];
+            frustum[3] = view2D.window[3];
+        }
+        double cellSize = visWin->GetMultiresolutionCellSize();
+
+        avtMultiresFilter *f2 = new avtMultiresFilter(frustum, cellSize);
+        NetnodeFilter *filt2 = new NetnodeFilter(f2, "MultiresFilter");
+
+        std::vector<Netnode*> &filt2Inputs = filt2->GetInputNodes();
+        Netnode *n = workingNetnodeList.back();
+        workingNetnodeList.pop_back();
+        filt2Inputs.push_back(n);
+
+        // Push the MultiresFilter onto the working list.
+        workingNetnodeList.push_back(filt2);
+
+        workingNet->AddNode(filt2);
+    }
+
     // Push the variable name onto the name stack.
     nameStack.push_back(var);
     debug4 << "NetworkManager::AddDB: Adding " << var.c_str()
@@ -2699,6 +2742,9 @@ NetworkManager::SaveWindow(const std::string &filename, int imageWidth, int imag
 //    Tom Fogal, Fri Jul 18 19:10:06 EDT 2008
 //    Use enum definitions instead of int.
 //
+//    Eric Brugger, Fri Oct 28 10:45:26 PDT 2011
+//    Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
@@ -2844,6 +2890,10 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 
     if (viswin->GetAntialiasing() != atts.GetRenderAtts().GetAntialiasing())
        viswin->SetAntialiasing(atts.GetRenderAtts().GetAntialiasing());
+    if (viswin->GetMultiresolutionMode() != atts.GetRenderAtts().GetMultiresolutionMode())
+       viswin->SetMultiresolutionMode(atts.GetRenderAtts().GetMultiresolutionMode());
+    if (viswin->GetMultiresolutionCellSize() != atts.GetRenderAtts().GetMultiresolutionCellSize())
+       viswin->SetMultiresolutionCellSize(atts.GetRenderAtts().GetMultiresolutionCellSize());
     if (viswin->GetSurfaceRepresentation() != atts.GetRenderAtts().GetGeometryRepresentation())
        viswin->SetSurfaceRepresentation(atts.GetRenderAtts().GetGeometryRepresentation());
     viswin->SetDisplayListMode(0);  // never

@@ -29,6 +29,9 @@
     <Field name="yScale" label="yScale" type="scalemode">
       0
     </Field>
+    <Field name="windowValid" label="windowValid" type="bool">
+      false
+    </Field>
     <Function name="GetUseFullFrame" user="true" member="true">
     </Function>
     <Function name="SetUseFullFrame" user="true" member="true">

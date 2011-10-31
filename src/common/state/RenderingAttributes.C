@@ -180,6 +180,8 @@ RenderingAttributes::TriStateMode_FromString(const std::string &s, RenderingAttr
 void RenderingAttributes::Init()
 {
     antialiasing = false;
+    multiresolutionMode = false;
+    multiresolutionCellSize = 0.002;
     geometryRepresentation = Surfaces;
     displayListMode = Auto;
     stereoRendering = false;
@@ -226,6 +228,8 @@ void RenderingAttributes::Init()
 void RenderingAttributes::Copy(const RenderingAttributes &obj)
 {
     antialiasing = obj.antialiasing;
+    multiresolutionMode = obj.multiresolutionMode;
+    multiresolutionCellSize = obj.multiresolutionCellSize;
     geometryRepresentation = obj.geometryRepresentation;
     displayListMode = obj.displayListMode;
     stereoRendering = obj.stereoRendering;
@@ -423,6 +427,8 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
 
     // Create the return value
     return ((antialiasing == obj.antialiasing) &&
+            (multiresolutionMode == obj.multiresolutionMode) &&
+            (multiresolutionCellSize == obj.multiresolutionCellSize) &&
             (geometryRepresentation == obj.geometryRepresentation) &&
             (displayListMode == obj.displayListMode) &&
             (stereoRendering == obj.stereoRendering) &&
@@ -588,6 +594,8 @@ void
 RenderingAttributes::SelectAll()
 {
     Select(ID_antialiasing,                 (void *)&antialiasing);
+    Select(ID_multiresolutionMode,          (void *)&multiresolutionMode);
+    Select(ID_multiresolutionCellSize,      (void *)&multiresolutionCellSize);
     Select(ID_geometryRepresentation,       (void *)&geometryRepresentation);
     Select(ID_displayListMode,              (void *)&displayListMode);
     Select(ID_stereoRendering,              (void *)&stereoRendering);
@@ -645,6 +653,18 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("antialiasing", antialiasing));
+    }
+
+    if(completeSave || !FieldsEqual(ID_multiresolutionMode, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("multiresolutionMode", multiresolutionMode));
+    }
+
+    if(completeSave || !FieldsEqual(ID_multiresolutionCellSize, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("multiresolutionCellSize", multiresolutionCellSize));
     }
 
     if(completeSave || !FieldsEqual(ID_geometryRepresentation, &defaultObject))
@@ -813,6 +833,10 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("antialiasing")) != 0)
         SetAntialiasing(node->AsBool());
+    if((node = searchNode->GetNode("multiresolutionMode")) != 0)
+        SetMultiresolutionMode(node->AsBool());
+    if((node = searchNode->GetNode("multiresolutionCellSize")) != 0)
+        SetMultiresolutionCellSize(node->AsFloat());
     if((node = searchNode->GetNode("geometryRepresentation")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -950,6 +974,20 @@ RenderingAttributes::SetAntialiasing(bool antialiasing_)
 {
     antialiasing = antialiasing_;
     Select(ID_antialiasing, (void *)&antialiasing);
+}
+
+void
+RenderingAttributes::SetMultiresolutionMode(bool multiresolutionMode_)
+{
+    multiresolutionMode = multiresolutionMode_;
+    Select(ID_multiresolutionMode, (void *)&multiresolutionMode);
+}
+
+void
+RenderingAttributes::SetMultiresolutionCellSize(float multiresolutionCellSize_)
+{
+    multiresolutionCellSize = multiresolutionCellSize_;
+    Select(ID_multiresolutionCellSize, (void *)&multiresolutionCellSize);
 }
 
 void
@@ -1111,6 +1149,18 @@ bool
 RenderingAttributes::GetAntialiasing() const
 {
     return antialiasing;
+}
+
+bool
+RenderingAttributes::GetMultiresolutionMode() const
+{
+    return multiresolutionMode;
+}
+
+float
+RenderingAttributes::GetMultiresolutionCellSize() const
+{
+    return multiresolutionCellSize;
 }
 
 RenderingAttributes::GeometryRepresentation
@@ -1304,6 +1354,8 @@ RenderingAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return "antialiasing";
+    case ID_multiresolutionMode:          return "multiresolutionMode";
+    case ID_multiresolutionCellSize:      return "multiresolutionCellSize";
     case ID_geometryRepresentation:       return "geometryRepresentation";
     case ID_displayListMode:              return "displayListMode";
     case ID_stereoRendering:              return "stereoRendering";
@@ -1350,6 +1402,8 @@ RenderingAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return FieldType_bool;
+    case ID_multiresolutionMode:          return FieldType_bool;
+    case ID_multiresolutionCellSize:      return FieldType_float;
     case ID_geometryRepresentation:       return FieldType_enum;
     case ID_displayListMode:              return FieldType_enum;
     case ID_stereoRendering:              return FieldType_bool;
@@ -1396,6 +1450,8 @@ RenderingAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return "bool";
+    case ID_multiresolutionMode:          return "bool";
+    case ID_multiresolutionCellSize:      return "float";
     case ID_geometryRepresentation:       return "enum";
     case ID_displayListMode:              return "enum";
     case ID_stereoRendering:              return "bool";
@@ -1446,6 +1502,16 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_antialiasing:
         {  // new scope
         retval = (antialiasing == obj.antialiasing);
+        }
+        break;
+    case ID_multiresolutionMode:
+        {  // new scope
+        retval = (multiresolutionMode == obj.multiresolutionMode);
+        }
+        break;
+    case ID_multiresolutionCellSize:
+        {  // new scope
+        retval = (multiresolutionCellSize == obj.multiresolutionCellSize);
         }
         break;
     case ID_geometryRepresentation:

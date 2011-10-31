@@ -472,6 +472,9 @@ class ViewerToolbar;
 //    Gunther H. Weber, Mon Jul 18 16:23:06 PDT 2011
 //    Added ActivateWindow.
 //
+//    Eric Brugger, Thu Oct 27 15:46:06 PDT 2011
+//    Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -558,6 +561,8 @@ public:
     void ClearPlots();
     void EnableUpdates();
     void DisableUpdates();
+    void EnableInteractionModeChanges();
+    void DisableInteractionModeChanges();
 
     void SendRedrawMessage();
     void SendUpdateMessage();
@@ -672,6 +677,10 @@ public:
     // Rendering options.
     void SetAntialiasing(bool enabled);
     bool GetAntialiasing() const;
+    void SetMultiresolutionMode(bool enabled);
+    bool GetMultiresolutionMode() const;
+    void SetMultiresolutionCellSize(double size);
+    double GetMultiresolutionCellSize() const;
     void GetRenderTimes(double times[6]) const;
     void SetStereoRendering(bool enabled, int type);
     bool GetStereo() const;
@@ -727,6 +736,9 @@ public:
     void SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE);
     void GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE);
     
+    bool GetProcessingViewChanged() {return processingViewChanged;}
+    void SetProcessingViewChanged(bool flag) {processingViewChanged = flag;}
+
 private:
     void RecenterViewCurve(const double *limits);
     void RecenterView2d(const double *limits);
@@ -762,6 +774,7 @@ private:
     static void HideMenuCallback(void *);
     static void CloseCallback(void *);
     static void ExternalRenderCallback(void *, avtDataObject_p&);
+    static void ViewChangedCallback(void *);
 
     static void PerformPickCallback(void *);
     static void PerformLineoutCallback(void *);
@@ -849,6 +862,8 @@ private:
     bool            depthCueingAuto;
     double          startCuePoint[3];
     double          endCuePoint[3];
+
+    bool            processingViewChanged;
 };
 
 #endif

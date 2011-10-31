@@ -3357,6 +3357,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
 //
+//    Eric Brugger, Fri Oct 28 10:07:28 PDT 2011
+//    Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -3370,6 +3373,14 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
 
         if (windows[index]->GetAntialiasing() != renderAtts->GetAntialiasing())
             windows[index]->SetAntialiasing(renderAtts->GetAntialiasing());
+
+        if (windows[index]->GetMultiresolutionMode() != renderAtts->GetMultiresolutionMode())
+            windows[index]->SetMultiresolutionMode(renderAtts->GetMultiresolutionMode());
+
+        if (windows[index]->GetMultiresolutionCellSize() !=
+            renderAtts->GetMultiresolutionCellSize())
+            windows[index]->SetMultiresolutionCellSize(
+            renderAtts->GetMultiresolutionCellSize());
 
         if (windows[index]->GetSurfaceRepresentation() !=
             (int) renderAtts->GetGeometryRepresentation())
@@ -5024,6 +5035,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //   Added automatic depth cueing mode.
 //
+//   Eric Brugger, Fri Oct 28 10:07:28 PDT 2011
+//   Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -5039,6 +5053,8 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         // attributes and notify the client.
         //
         renderAtts->SetAntialiasing(win->GetAntialiasing());
+        renderAtts->SetMultiresolutionMode(win->GetMultiresolutionMode());
+        renderAtts->SetMultiresolutionCellSize(win->GetMultiresolutionCellSize());
         renderAtts->SetGeometryRepresentation(
             (RenderingAttributes::GeometryRepresentation)win->GetSurfaceRepresentation());
         renderAtts->SetDisplayListMode(
@@ -8200,6 +8216,9 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //    Added automatic depth cueing mode.
 //
+//    Eric Brugger, Fri Oct 28 10:07:28 PDT 2011
+//    Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -8223,6 +8242,8 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
         w->SetToolLock(false);
     }
     w->SetAntialiasing(renderAtts->GetAntialiasing());
+    w->SetMultiresolutionMode(renderAtts->GetMultiresolutionMode());
+    w->SetMultiresolutionCellSize(renderAtts->GetMultiresolutionCellSize());
     int rep = (int)renderAtts->GetGeometryRepresentation();
     w->SetSurfaceRepresentation(rep);
     w->SetDisplayListMode(renderAtts->GetDisplayListMode());

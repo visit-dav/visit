@@ -319,6 +319,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    I added maxPlotNumber, which is used to tell the ViewerPlot what
 //    number to use to start numbering plots from.
 //
+//    Eric Brugger, Fri Oct 28 09:52:40 PDT 2011
+//    Add a multi resolution display capability for AMR data.
+//
 // ****************************************************************************
 
 
@@ -359,6 +362,7 @@ public:
     void SetTimeSliderState(int state);
     void UpdateFrame(bool updatePlotStates = true);
     bool UpdateFrameForPlots(const intVector &);
+    void RegenerateFrame();
 
     void SetAnimationAttributes(const AnimationAttributes &);
     const AnimationAttributes &GetAnimationAttributes() const;
@@ -499,6 +503,8 @@ public:
     void SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE);
     void GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE);
     bool PermitsLogViewScaling(WINDOW_MODE);
+
+    bool ShouldRefineData(double smallestCellSize) const;
 
   protected:
     bool        AskForCorrelationPermission(const stringVector &dbs) const;

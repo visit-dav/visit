@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define VIEW2DATTRIBUTES_NMETH 16
 void VISITPY_API           PyView2DAttributes_StartUp(View2DAttributes *subj, void *data);
 void VISITPY_API           PyView2DAttributes_CloseDown();
-VISITPY_API PyMethodDef *   PyView2DAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyView2DAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyView2DAttributes_Check(PyObject *obj);
 VISITPY_API View2DAttributes *  PyView2DAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyView2DAttributes_New();
-VISITPY_API PyObject *      PyView2DAttributes_Wrap(const View2DAttributes *attr);
+VISITPY_API PyObject *     PyView2DAttributes_New();
+VISITPY_API PyObject *     PyView2DAttributes_Wrap(const View2DAttributes *attr);
 void VISITPY_API           PyView2DAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyView2DAttributes_SetDefaults(const View2DAttributes *atts);
 std::string VISITPY_API    PyView2DAttributes_GetLogString();
 std::string VISITPY_API    PyView2DAttributes_ToString(const View2DAttributes *, const char *);
+VISITPY_API PyObject *     PyView2DAttributes_getattr(PyObject *self, char *name);
+int VISITPY_API            PyView2DAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyView2DAttributes_methods[VIEW2DATTRIBUTES_NMETH];
 
 #endif
 

@@ -118,6 +118,8 @@ public:
 
     // Property setting methods
     void SetAntialiasing(bool antialiasing_);
+    void SetMultiresolutionMode(bool multiresolutionMode_);
+    void SetMultiresolutionCellSize(float multiresolutionCellSize_);
     void SetGeometryRepresentation(GeometryRepresentation geometryRepresentation_);
     void SetDisplayListMode(TriStateMode displayListMode_);
     void SetStereoRendering(bool stereoRendering_);
@@ -142,6 +144,8 @@ public:
 
     // Property getting methods
     bool                 GetAntialiasing() const;
+    bool                 GetMultiresolutionMode() const;
+    float                GetMultiresolutionCellSize() const;
     GeometryRepresentation GetGeometryRepresentation() const;
     TriStateMode         GetDisplayListMode() const;
     bool                 GetStereoRendering() const;
@@ -201,6 +205,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_antialiasing = 0,
+        ID_multiresolutionMode,
+        ID_multiresolutionCellSize,
         ID_geometryRepresentation,
         ID_displayListMode,
         ID_stereoRendering,
@@ -227,6 +233,8 @@ public:
 
 private:
     bool           antialiasing;
+    bool           multiresolutionMode;
+    float          multiresolutionCellSize;
     int            geometryRepresentation;
     int            displayListMode;
     bool           stereoRendering;
@@ -253,6 +261,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "biibibiibffabdbbDDibii"
+#define RENDERINGATTRIBUTES_TMFS "bbfiibibiibffabdbbDDibii"
 
 #endif

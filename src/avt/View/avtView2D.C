@@ -80,6 +80,10 @@ avtView2D::avtView2D()
 //    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
 //    Added xScale and yScale, havePerformedLogX/Y for LOG scaling.
 //
+//    Eric, Brugger, Thu Oct 27 09:30:07 PDT 2011
+//    Added windowValid to support adding a multi resolution display
+//    capability for AMR data.
+//
 // ****************************************************************************
 
 avtView2D &
@@ -96,6 +100,8 @@ avtView2D::operator=(const avtView2D &vi)
 
     fullFrame    = vi.fullFrame;
     
+    windowValid  = vi.windowValid;
+
     fullFrameActivationMode = vi.fullFrameActivationMode;
     fullFrameAutoThreshold = vi.fullFrameAutoThreshold;
 
@@ -119,12 +125,15 @@ avtView2D::operator=(const avtView2D &vi)
 //  Creation:   August 17, 2001
 //
 //  Modifications:
-//
 //    Mark C. Miller, Tue Mar 14 10:04:56 PST 2006
 //    Renamed from operator==
 //
 //    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
 //    Added xScale and yScale, for LOG scaling.
+//
+//    Eric, Brugger, Thu Oct 27 09:30:07 PDT 2011
+//    Added windowValid to support adding a multi resolution display
+//    capability for AMR data.
 //
 // ****************************************************************************
 
@@ -143,6 +152,10 @@ avtView2D::EqualViews(const avtView2D &vi)
         return false;
     }
     if (fullFrame != vi.fullFrame)
+    {
+        return false;
+    }
+    if (windowValid != vi.windowValid)
     {
         return false;
     }
@@ -168,7 +181,6 @@ avtView2D::EqualViews(const avtView2D &vi)
 //  Creation:   Tue Mar 14 10:04:56 PST 2006 
 //
 //  Modifications:
-//
 //    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
 //    Added stuff to support auto full frame
 //
@@ -216,6 +228,10 @@ avtView2D::operator==(const avtView2D &vi)
 //    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
 //    Added xScale and yScale, havePerformedLogX/Y for LOG scaling.
 //
+//    Eric, Brugger, Thu Oct 27 09:30:07 PDT 2011
+//    Added windowValid to support adding a multi resolution display
+//    capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -230,6 +246,8 @@ avtView2D::SetToDefault()
     window[2]   = 0.;
     window[3]   = 1.;
     fullFrame   = false;
+
+    windowValid = false;
 
     View2DAttributes defaultView2DAtts;
 
@@ -506,6 +524,10 @@ avtView2D::GetScaleFactor(int *size)
 //    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
 //    Added xScale and yScale, for LOG scaling.
 //
+//    Eric, Brugger, Thu Oct 27 09:30:07 PDT 2011
+//    Added windowValid to support adding a multi resolution display
+//    capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -522,6 +544,8 @@ avtView2D::SetFromView2DAttributes(const View2DAttributes *view2DAtts)
 
     xScale = (ScaleMode)view2DAtts->GetXScale();
     yScale = (ScaleMode)view2DAtts->GetYScale();
+
+    windowValid = view2DAtts->GetWindowValid();
 }
 
 // ****************************************************************************
@@ -549,6 +573,10 @@ avtView2D::SetFromView2DAttributes(const View2DAttributes *view2DAtts)
 //    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
 //    Added xScale and yScale, for LOG scaling.
 //
+//    Eric, Brugger, Thu Oct 27 09:30:07 PDT 2011
+//    Added windowValid to support adding a multi resolution display
+//    capability for AMR data.
+//
 // ****************************************************************************
 
 void
@@ -563,6 +591,8 @@ avtView2D::SetToView2DAttributes(View2DAttributes *view2DAtts) const
 
     view2DAtts->SetXScale(xScale);
     view2DAtts->SetYScale(yScale);
+
+    view2DAtts->SetWindowValid(windowValid);
 }
 
 // ****************************************************************************
@@ -626,4 +656,3 @@ avtView2D::CheckAndCorrectWindow()
         window[3] += width / 2.;
     }
 }
-

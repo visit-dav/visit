@@ -108,6 +108,7 @@ void View2DAttributes::Init()
     fullFrameAutoThreshold = 100;
     xScale = 0;
     yScale = 0;
+    windowValid = false;
 
     View2DAttributes::SelectAll();
 }
@@ -140,6 +141,7 @@ void View2DAttributes::Copy(const View2DAttributes &obj)
     fullFrameAutoThreshold = obj.fullFrameAutoThreshold;
     xScale = obj.xScale;
     yScale = obj.yScale;
+    windowValid = obj.windowValid;
 
     View2DAttributes::SelectAll();
 }
@@ -312,7 +314,8 @@ View2DAttributes::operator == (const View2DAttributes &obj) const
             (fullFrameActivationMode == obj.fullFrameActivationMode) &&
             (fullFrameAutoThreshold == obj.fullFrameAutoThreshold) &&
             (xScale == obj.xScale) &&
-            (yScale == obj.yScale));
+            (yScale == obj.yScale) &&
+            (windowValid == obj.windowValid));
 }
 
 // ****************************************************************************
@@ -462,6 +465,7 @@ View2DAttributes::SelectAll()
     Select(ID_fullFrameAutoThreshold,  (void *)&fullFrameAutoThreshold);
     Select(ID_xScale,                  (void *)&xScale);
     Select(ID_yScale,                  (void *)&yScale);
+    Select(ID_windowValid,             (void *)&windowValid);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -530,6 +534,12 @@ View2DAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("yScale", yScale));
     }
 
+    if(completeSave || !FieldsEqual(ID_windowValid, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("windowValid", windowValid));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -592,6 +602,8 @@ View2DAttributes::SetFromNode(DataNode *parentNode)
         SetXScale(node->AsInt());
     if((node = searchNode->GetNode("yScale")) != 0)
         SetYScale(node->AsInt());
+    if((node = searchNode->GetNode("windowValid")) != 0)
+        SetWindowValid(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -646,6 +658,13 @@ View2DAttributes::SetYScale(int yScale_)
     Select(ID_yScale, (void *)&yScale);
 }
 
+void
+View2DAttributes::SetWindowValid(bool windowValid_)
+{
+    windowValid = windowValid_;
+    Select(ID_windowValid, (void *)&windowValid);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -698,6 +717,12 @@ View2DAttributes::GetYScale() const
     return yScale;
 }
 
+bool
+View2DAttributes::GetWindowValid() const
+{
+    return windowValid;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -744,6 +769,7 @@ View2DAttributes::GetFieldName(int index) const
     case ID_fullFrameAutoThreshold:  return "fullFrameAutoThreshold";
     case ID_xScale:                  return "xScale";
     case ID_yScale:                  return "yScale";
+    case ID_windowValid:             return "windowValid";
     default:  return "invalid index";
     }
 }
@@ -774,6 +800,7 @@ View2DAttributes::GetFieldType(int index) const
     case ID_fullFrameAutoThreshold:  return FieldType_double;
     case ID_xScale:                  return FieldType_scalemode;
     case ID_yScale:                  return FieldType_scalemode;
+    case ID_windowValid:             return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -804,6 +831,7 @@ View2DAttributes::GetFieldTypeName(int index) const
     case ID_fullFrameAutoThreshold:  return "double";
     case ID_xScale:                  return "scalemode";
     case ID_yScale:                  return "scalemode";
+    case ID_windowValid:             return "bool";
     default:  return "invalid index";
     }
 }
@@ -868,6 +896,11 @@ View2DAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_yScale:
         {  // new scope
         retval = (yScale == obj.yScale);
+        }
+        break;
+    case ID_windowValid:
+        {  // new scope
+        retval = (windowValid == obj.windowValid);
         }
         break;
     default: retval = false;

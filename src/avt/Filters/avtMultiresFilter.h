@@ -37,89 +37,51 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                 avtExtents.h                              //
+//                            avtMultiresFilter.h                            //
 // ************************************************************************* //
 
-#ifndef AVT_EXTENTS_H
-#define AVT_EXTENTS_H
+#ifndef AVT_MULTIRES_FILTER_H
+#define AVT_MULTIRES_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
-#include <visitstream.h>
+#include <avtDatasetToDatasetFilter.h>
 
-class   avtDataObjectString;
-class   avtDataObjectWriter;
-class   vtkMatrix4x4;
-
+class vtkDataSet;
 
 // ****************************************************************************
-//  Class: avtExtents
+//  Class: avtMultiresFilter
 //
 //  Purpose:
-//      Manages a set of extents.
+//    Modify the input to only serve up a subset of the chunks based on the
+//    view frustum and the smallest cell size.
 //
-//      The extents are an array of 'dimension' doubles of min/max pairs.
-//      Even numbered indices are for min values while odd numbered indices
-//      are for max values.
-//
-//  Programmer: Hank Childs
-//  Creation:   September 4, 2001
+//  Programmer: Eric Brugger
+//  Creation:   Tue Oct 25 14:04:58 PDT 2011
 //
 //  Modifications:
 //
-//    Jeremy Meredith, Mon Sep 24 14:18:03 PDT 2001
-//    Added Transform function.
-//
-//    Hank Childs, Wed Feb 25 09:00:17 PST 2004
-//    Added Print method.
-//
-//    Hank Childs, Tue Dec 18 11:38:40 PST 2007
-//    Remove const return type of assignment operator to ensure that compiler
-//    doesn't define a second assignment operator with a non-const return
-//    type that does a bitwise copy.
-//
-//    Tom Fogal, Tue Jun 23 20:14:16 MDT 2009
-//    I made some methods const.
-//
-//    Hank Childs, Sun Nov 28 17:00:06 PST 2010
-//    Add a destruct method for void_ref_ptrs.
-//
-//    Eric Brugger, Thu Oct 27 09:58:47 PDT 2011
-//    Add const to the CopyTo method.
-//
 // ****************************************************************************
 
-class PIPELINE_API avtExtents
+class AVTFILTERS_API avtMultiresFilter : public avtDatasetToDatasetFilter
 {
   public:
-                          avtExtents(int);
-                          avtExtents(const avtExtents &);
-    virtual              ~avtExtents();
+                           avtMultiresFilter(double *, double);
+    virtual               ~avtMultiresFilter();
 
-    void                  Print(ostream &) const;
-    static void           Destruct(void *);
-
-    bool                  HasExtents(void) const;
-    int                   GetDimension(void)  { return dimension; };
-
-    void                  CopyTo(double *) const;
-    void                  Set(const double *);
-    void                  Clear(void);
-
-    avtExtents           &operator=(const avtExtents &);
-
-    void                  Merge(const avtExtents &);
-    void                  Merge(const double *);
-
-    void                  Write(avtDataObjectString &,
-                                const avtDataObjectWriter *) const;
-    int                   Read(char *);
-
-    void                  Transform(vtkMatrix4x4 *);
+    virtual const char    *GetType(void)  {return "avtMultiresFilter";};
+    virtual const char    *GetDescription(void) {return "Multires";};
 
   protected:
-    int                   dimension;
-    double               *extents;
+    int                    nDims;
+    double                 frustum[6];
+    double                 smallestCellSize;
+    double                 cellSize;
+
+    virtual void           Execute(void);
+
+    virtual avtContract_p  ModifyContract(avtContract_p contract);
 };
+
 
 #endif
