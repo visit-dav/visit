@@ -1177,8 +1177,13 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
               type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS)) )
         {
             double color_value;
-            
-            if( dataValue == DATA_FieldlineOrder )
+
+            if( !analysis )
+            {
+              dataValue == DATA_FieldlineOrder;
+              color_value = poincare_ic->id;
+            }
+            else if( dataValue == DATA_FieldlineOrder )
                 color_value = poincare_ic->id;
             else if( dataValue == DATA_ToroidalWindings )
                 color_value = toroidalWinding;
