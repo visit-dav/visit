@@ -19,5 +19,8 @@
         0.000000
         0.000000
       </Field>
+      <Field name="project2D" label="Project to XY plane" type="bool">
+        true
+      </Field>
     </Attribute>
   </Plugin>

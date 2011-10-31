@@ -90,12 +90,14 @@ class QvisToroidalPoloidalProjectionWindow : public QvisOperatorWindow
 //     void rProcessText();
     void centroidSourceChanged(int val);
     void centroidProcessText();
+    void project2DChanged(bool val);
   private:
 //     QLineEdit *R0;
 //     QLineEdit *r;
     QWidget      *centroidSource;
     QButtonGroup *centroidSourceButtonGroup;
     QLineEdit *centroid;
+    QCheckBox *project2D;
 //     QLabel *R0Label;
 //     QLabel *rLabel;
     QLabel *centroidSourceLabel;
@@ -103,4 +105,7 @@ class QvisToroidalPoloidalProjectionWindow : public QvisOperatorWindow
 
     ToroidalPoloidalProjection *atts;
 };
+
+
+
 #endif

@@ -98,6 +98,7 @@ public:
     void SetR(double r_);
     void SetCentroidSource(CentroidSource centroidSource_);
     void SetCentroid(const double *centroid_);
+    void SetProject2D(bool project2D_);
 
     // Property getting methods
     double       GetR0() const;
@@ -105,6 +106,7 @@ public:
     CentroidSource GetCentroidSource() const;
     const double *GetCentroid() const;
           double *GetCentroid();
+    bool         GetProject2D() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -130,6 +132,7 @@ public:
         ID_r,
         ID_centroidSource,
         ID_centroid,
+        ID_project2D,
         ID__LAST
     };
 
@@ -138,11 +141,12 @@ private:
     double r;
     int    centroidSource;
     double centroid[3];
+    bool   project2D;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define TOROIDALPOLOIDALPROJECTION_TMFS "ddiD"
+#define TOROIDALPOLOIDALPROJECTION_TMFS "ddiDb"
 
 #endif

@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TOROIDALPOLOIDALPROJECTION_NMETH 10
+#define TOROIDALPOLOIDALPROJECTION_NMETH 12
 void           PyToroidalPoloidalProjection_StartUp(ToroidalPoloidalProjection *subj, void *data);
 void           PyToroidalPoloidalProjection_CloseDown();
 PyMethodDef *  PyToroidalPoloidalProjection_GetMethodTable(int *nMethods);
