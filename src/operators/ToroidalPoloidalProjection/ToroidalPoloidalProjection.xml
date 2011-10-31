@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Plugin name="ToroidalPoloidalProjection" type="operator" label="ToroidalPoloidalProjection" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Transforms">
+    <Attribute name="ToroidalPoloidalProjection" purpose="Projects Exterior of Torus from 3D to ToroidalPoloidal mapping in 2D" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Field name="R0" label="R0: toroidal radius" type="double">
+        1.500000
+      </Field>
+      <Field name="r" label="r: poloidal radius" type="double">
+        0.200000
+      </Field>
+    </Attribute>
+  </Plugin>
