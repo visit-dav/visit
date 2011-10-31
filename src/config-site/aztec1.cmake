@@ -24,15 +24,20 @@ VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH}/)
 
 ##
-## Specify the Qt4 binary dir. 
+## Specify the Qt4 binary dir.
 ## (qmake is used to locate & setup Qt4 dependencies)
 ##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.6.1/${VISITARCH}/bin)
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
 
 ##
 ## Specify the location of the python.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
+
+##
+## Specify the location of the pyside.
+##
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH})
 
 ##
 ## Ice-T
