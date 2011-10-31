@@ -58,7 +58,8 @@
 //
 // ****************************************************************************
 
-avtToroidalPoloidalProjectionFilter::avtToroidalPoloidalProjectionFilter()
+avtToroidalPoloidalProjectionFilter::avtToroidalPoloidalProjectionFilter() :
+  rMax(0)
 {
 }
 
@@ -257,7 +258,9 @@ avtToroidalPoloidalProjectionFilter::ExecuteData(vtkDataSet *in_ds,
 
     R0 = centroid.x;
 
-    double poloidal_angle_theta = 0.0,toroidal_angle_phi = 0.0;
+    rMax = 0;
+
+    double poloidal_angle_theta = 0.0, toroidal_angle_phi = 0.0;
     //test mapping of theta
 
 //    double test_r = 1;
@@ -291,16 +294,15 @@ avtToroidalPoloidalProjectionFilter::ExecuteData(vtkDataSet *in_ds,
         //on xy plane
         double u = R0 - sqrt(x*x + y*y);
 
+        //r = sqrt(u*u + (z-centroid.z)*(z-centroid.z));
         //compute hyp(r) = sqrt(length of adjacent(u)**2 + length of opposite(z)**2)
-        r = sqrt(u*u + (z-centroid.z)*(z-centroid.z));
-
         //atan2 supports range of -PI to PI ..
         //theta = inverse tangent of opposite over adjacent
         //u is negated here because Linda Sugiyama requested the
         //mapping goes counter clockwise and outside of the torus
         //should be 0, inside is PI/-PI top is PI/2 and bottom is
         //-PI/2 and this mapping has that effect
-        poloidal_angle_theta = atan2(z,-u);
+        poloidal_angle_theta = atan2((z-centroid.z),-u);
 
         //phi is computed from and atan2 supports range of -PI to PI ..
         //x = (R0 +rcos(theta))sin(phi), y = (R0+rcos(theta)cos(phi))
@@ -314,7 +316,18 @@ avtToroidalPoloidalProjectionFilter::ExecuteData(vtkDataSet *in_ds,
         //map to 2D x = toroidal, y = poloidal, z is projected to 0
         out_pt[0] = toroidal_angle_phi; //x axis goes in the direction of torus
         out_pt[1] = poloidal_angle_theta;//y axis goes in the direction of the poloid
-        out_pt[2] = 0.; //out_pt[2] = r;
+
+        if( atts.GetProject2D() == true )
+          out_pt[2] = 0.;
+        else //if( atts.GetProject2D() == false )
+        {
+          r = sqrt(u*u + (z-centroid.z)*(z-centroid.z));
+
+          out_pt[2] = r;
+
+          if( rMax < r )
+            rMax = r;
+        }
 
         outPts->SetPoint(i, out_pt);
     }
@@ -339,10 +352,9 @@ avtToroidalPoloidalProjectionFilter::ExecuteData(vtkDataSet *in_ds,
     for (int z = 0 ; z < ncells ; z++)
     {
          ds->GetCell(z)->GetBounds(b);
-         //check bounds in x and y direction
-         //if either x or y direction have large bounds
-         //then we presume that they are wrapping around and therefore
-         //can be used as ghost cells
+         //check bounds in x and y direction, if either x or y
+         //direction have large bounds then presume that they are
+         //wrapping around and therefore can be used as ghost cells
          if (b[0] < -1 && b[1] > 1)
              gz->SetValue(z, 1);
          else if (b[2] < -1 && b[3] > 1)
@@ -350,6 +362,10 @@ avtToroidalPoloidalProjectionFilter::ExecuteData(vtkDataSet *in_ds,
          else
              gz->SetValue(z,0); //setting any other values to 0
     }
+
+    // Update to get teh correct rMax value.
+    if( atts.GetProject2D() == false )
+      UpdateDataObjectInfo();
     
     ManageMemory(ds);
     ds->Delete();
@@ -366,8 +382,11 @@ avtToroidalPoloidalProjectionFilter::UpdateDataObjectInfo(void)
 
     outAtts.SetContainsGhostZones(AVT_CREATED_GHOSTS);
 
-    if (inAtts.GetSpatialDimension() == 3)
-        outAtts.SetSpatialDimension(2);
+    if( atts.GetProject2D() == true )
+      outAtts.SetSpatialDimension(2);
+
+    else //if( atts.GetProject2D() == false )
+      outAtts.SetSpatialDimension(3);
 
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 
@@ -375,9 +394,12 @@ avtToroidalPoloidalProjectionFilter::UpdateDataObjectInfo(void)
     outAtts.GetDesiredSpatialExtents()->Clear();
     outAtts.GetActualSpatialExtents()->Clear();
 
-    double bounds[6] = { -M_PI, M_PI, -M_PI, M_PI, 0, 0 };
+    double bounds[6] = { -M_PI, M_PI, -M_PI, M_PI, 0, rMax };
     outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
 
     outAtts.SetXLabel("Toroidal");
     outAtts.SetYLabel("Poloidal");
+
+    if( atts.GetProject2D() == false )
+      outAtts.SetZLabel("R");
 }

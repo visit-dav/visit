@@ -93,6 +93,7 @@ class avtToroidalPoloidalProjectionFilter : public avtPluginDataTreeIterator
   protected:
     virtual avtVector    GetCentroid(vtkPoints* inPts);
 
+    double rMax;
     ToroidalPoloidalProjection   atts;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);

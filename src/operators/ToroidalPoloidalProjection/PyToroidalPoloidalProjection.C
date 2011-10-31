@@ -111,6 +111,11 @@ PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *atts, co
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    if(atts->GetProject2D())
+        SNPRINTF(tmpStr, 1000, "%sproject2D = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sproject2D = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -258,6 +263,30 @@ ToroidalPoloidalProjection_GetCentroid(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ToroidalPoloidalProjection_SetProject2D(PyObject *self, PyObject *args)
+{
+    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the project2D in the object.
+    obj->data->SetProject2D(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ToroidalPoloidalProjection_GetProject2D(PyObject *self, PyObject *args)
+{
+    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetProject2D()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyToroidalPoloidalProjection_methods[TOROIDALPOLOIDALPROJECTION_NMETH] = {
@@ -270,6 +299,8 @@ PyMethodDef PyToroidalPoloidalProjection_methods[TOROIDALPOLOIDALPROJECTION_NMET
     {"GetCentroidSource", ToroidalPoloidalProjection_GetCentroidSource, METH_VARARGS},
     {"SetCentroid", ToroidalPoloidalProjection_SetCentroid, METH_VARARGS},
     {"GetCentroid", ToroidalPoloidalProjection_GetCentroid, METH_VARARGS},
+    {"SetProject2D", ToroidalPoloidalProjection_SetProject2D, METH_VARARGS},
+    {"GetProject2D", ToroidalPoloidalProjection_GetProject2D, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -311,6 +342,8 @@ PyToroidalPoloidalProjection_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "centroid") == 0)
         return ToroidalPoloidalProjection_GetCentroid(self, NULL);
+    if(strcmp(name, "project2D") == 0)
+        return ToroidalPoloidalProjection_GetProject2D(self, NULL);
 
     return Py_FindMethod(PyToroidalPoloidalProjection_methods, self, name);
 }
@@ -333,6 +366,8 @@ PyToroidalPoloidalProjection_setattr(PyObject *self, char *name, PyObject *args)
         obj = ToroidalPoloidalProjection_SetCentroidSource(self, tuple);
     else if(strcmp(name, "centroid") == 0)
         obj = ToroidalPoloidalProjection_SetCentroid(self, tuple);
+    else if(strcmp(name, "project2D") == 0)
+        obj = ToroidalPoloidalProjection_SetProject2D(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

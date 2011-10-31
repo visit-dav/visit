@@ -165,6 +165,11 @@ QvisToroidalPoloidalProjectionWindow::CreateWindowContents()
             this, SLOT(centroidProcessText()));
     mainLayout->addWidget(centroid, 3,1);
 
+    project2D = new QCheckBox(tr("Project to XY plane"), central);
+    connect(project2D, SIGNAL(toggled(bool)),
+            this, SLOT(project2DChanged(bool)));
+    mainLayout->addWidget(project2D, 4,0);
+
 }
 
 
@@ -226,6 +231,11 @@ QvisToroidalPoloidalProjectionWindow::UpdateWindow(bool doAll)
           case ToroidalPoloidalProjection::ID_centroid:
             centroid->setText(DoublesToQString(atts->GetCentroid(), 3));
             break;
+          case ToroidalPoloidalProjection::ID_project2D:
+            project2D->blockSignals(true);
+            project2D->setChecked(atts->GetProject2D());
+            project2D->blockSignals(false);
+            break;
         }
     }
 }
@@ -265,7 +275,7 @@ QvisToroidalPoloidalProjectionWindow::GetCurrentValues(int which_widget)
 //         }
 //     }
 
-//     // Do r
+    // Do r
 //     if(which_widget == ToroidalPoloidalProjection::ID_r || doAll)
 //     {
 //         double val;
@@ -332,6 +342,15 @@ void
 QvisToroidalPoloidalProjectionWindow::centroidProcessText()
 {
     GetCurrentValues(ToroidalPoloidalProjection::ID_centroid);
+    Apply();
+}
+
+
+void
+QvisToroidalPoloidalProjectionWindow::project2DChanged(bool val)
+{
+    atts->SetProject2D(val);
+    SetUpdate(false);
     Apply();
 }
 
