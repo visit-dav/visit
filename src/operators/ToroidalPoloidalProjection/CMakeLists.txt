@@ -49,6 +49,7 @@ ${VISIT_INCLUDE_DIR}/avt/Expressions/ImageProcessing
 ${VISIT_INCLUDE_DIR}/avt/Expressions/Management
 ${VISIT_INCLUDE_DIR}/avt/Expressions/Math
 ${VISIT_INCLUDE_DIR}/avt/Expressions/MeshQuality
+${VISIT_INCLUDE_DIR}/avt/Expressions/TimeIterators
 ${VISIT_INCLUDE_DIR}/avt/FileWriter
 ${VISIT_INCLUDE_DIR}/avt/Filters
 ${VISIT_INCLUDE_DIR}/avt/IVP

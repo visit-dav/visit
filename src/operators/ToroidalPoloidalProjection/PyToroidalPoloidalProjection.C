@@ -80,6 +80,37 @@ PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *atts, co
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sr = %g\n", prefix, atts->GetR());
     str += tmpStr;
+    const char *centroidSource_names = "Manual, Auto";
+    switch (atts->GetCentroidSource())
+    {
+      case ToroidalPoloidalProjection::Manual:
+          SNPRINTF(tmpStr, 1000, "%scentroidSource = %sManual  # %s\n", prefix, prefix, centroidSource_names);
+          str += tmpStr;
+          break;
+      case ToroidalPoloidalProjection::Auto:
+          SNPRINTF(tmpStr, 1000, "%scentroidSource = %sAuto  # %s\n", prefix, prefix, centroidSource_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    {   const double *centroid = atts->GetCentroid();
+        SNPRINTF(tmpStr, 1000, "%scentroid = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", centroid[i]);
+            str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -140,6 +171,93 @@ ToroidalPoloidalProjection_GetR(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ToroidalPoloidalProjection_SetCentroidSource(PyObject *self, PyObject *args)
+{
+    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the centroidSource in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetCentroidSource(ToroidalPoloidalProjection::CentroidSource(ival));
+    else
+    {
+        fprintf(stderr, "An invalid centroidSource value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Manual, Auto.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ToroidalPoloidalProjection_GetCentroidSource(PyObject *self, PyObject *args)
+{
+    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCentroidSource()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ToroidalPoloidalProjection_SetCentroid(PyObject *self, PyObject *args)
+{
+    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+
+    double *dvals = obj->data->GetCentroid();
+    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 3)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the centroid in the object as modified.
+    obj->data->SelectCentroid();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ToroidalPoloidalProjection_GetCentroid(PyObject *self, PyObject *args)
+{
+    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    // Allocate a tuple the with enough entries to hold the centroid.
+    PyObject *retval = PyTuple_New(3);
+    const double *centroid = obj->data->GetCentroid();
+    for(int i = 0; i < 3; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(centroid[i]));
+    return retval;
+}
+
 
 
 PyMethodDef PyToroidalPoloidalProjection_methods[TOROIDALPOLOIDALPROJECTION_NMETH] = {
@@ -148,6 +266,10 @@ PyMethodDef PyToroidalPoloidalProjection_methods[TOROIDALPOLOIDALPROJECTION_NMET
     {"GetR0", ToroidalPoloidalProjection_GetR0, METH_VARARGS},
     {"SetR", ToroidalPoloidalProjection_SetR, METH_VARARGS},
     {"GetR", ToroidalPoloidalProjection_GetR, METH_VARARGS},
+    {"SetCentroidSource", ToroidalPoloidalProjection_SetCentroidSource, METH_VARARGS},
+    {"GetCentroidSource", ToroidalPoloidalProjection_GetCentroidSource, METH_VARARGS},
+    {"SetCentroid", ToroidalPoloidalProjection_SetCentroid, METH_VARARGS},
+    {"GetCentroid", ToroidalPoloidalProjection_GetCentroid, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -180,6 +302,15 @@ PyToroidalPoloidalProjection_getattr(PyObject *self, char *name)
         return ToroidalPoloidalProjection_GetR0(self, NULL);
     if(strcmp(name, "r") == 0)
         return ToroidalPoloidalProjection_GetR(self, NULL);
+    if(strcmp(name, "centroidSource") == 0)
+        return ToroidalPoloidalProjection_GetCentroidSource(self, NULL);
+    if(strcmp(name, "Manual") == 0)
+        return PyInt_FromLong(long(ToroidalPoloidalProjection::Manual));
+    if(strcmp(name, "Auto") == 0)
+        return PyInt_FromLong(long(ToroidalPoloidalProjection::Auto));
+
+    if(strcmp(name, "centroid") == 0)
+        return ToroidalPoloidalProjection_GetCentroid(self, NULL);
 
     return Py_FindMethod(PyToroidalPoloidalProjection_methods, self, name);
 }
@@ -198,6 +329,10 @@ PyToroidalPoloidalProjection_setattr(PyObject *self, char *name, PyObject *args)
         obj = ToroidalPoloidalProjection_SetR0(self, tuple);
     else if(strcmp(name, "r") == 0)
         obj = ToroidalPoloidalProjection_SetR(self, tuple);
+    else if(strcmp(name, "centroidSource") == 0)
+        obj = ToroidalPoloidalProjection_SetCentroidSource(self, tuple);
+    else if(strcmp(name, "centroid") == 0)
+        obj = ToroidalPoloidalProjection_SetCentroid(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

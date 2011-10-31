@@ -91,11 +91,11 @@ class avtToroidalPoloidalProjectionFilter : public avtPluginDataTreeIterator
     virtual bool         Equivalent(const AttributeGroup*);
 
   protected:
+    virtual avtVector    GetCentroid(vtkPoints* inPts);
+
     ToroidalPoloidalProjection   atts;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
     void UpdateDataObjectInfo(void);
 };
-
-
 #endif

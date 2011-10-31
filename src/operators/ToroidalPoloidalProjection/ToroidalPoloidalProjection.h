@@ -38,6 +38,7 @@
 
 #ifndef TOROIDALPOLOIDALPROJECTION_H
 #define TOROIDALPOLOIDALPROJECTION_H
+#include <string>
 #include <AttributeSubject.h>
 
 
@@ -59,6 +60,12 @@
 class ToroidalPoloidalProjection : public AttributeSubject
 {
 public:
+    enum CentroidSource
+    {
+        Manual,
+        Auto
+    };
+
     // These constructors are for objects of this class
     ToroidalPoloidalProjection();
     ToroidalPoloidalProjection(const ToroidalPoloidalProjection &obj);
@@ -84,19 +91,31 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectCentroid();
 
     // Property setting methods
     void SetR0(double R0_);
     void SetR(double r_);
+    void SetCentroidSource(CentroidSource centroidSource_);
+    void SetCentroid(const double *centroid_);
 
     // Property getting methods
-    double GetR0() const;
-    double GetR() const;
+    double       GetR0() const;
+    double       GetR() const;
+    CentroidSource GetCentroidSource() const;
+    const double *GetCentroid() const;
+          double *GetCentroid();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
+    // Enum conversion functions
+    static std::string CentroidSource_ToString(CentroidSource);
+    static bool CentroidSource_FromString(const std::string &, CentroidSource &);
+protected:
+    static std::string CentroidSource_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -109,17 +128,21 @@ public:
     enum {
         ID_R0 = 0,
         ID_r,
+        ID_centroidSource,
+        ID_centroid,
         ID__LAST
     };
 
 private:
     double R0;
     double r;
+    int    centroidSource;
+    double centroid[3];
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define TOROIDALPOLOIDALPROJECTION_TMFS "dd"
+#define TOROIDALPOLOIDALPROJECTION_TMFS "ddiD"
 
 #endif

@@ -86,17 +86,21 @@ class QvisToroidalPoloidalProjectionWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
-    void R0ProcessText();
-    void rProcessText();
+//     void R0ProcessText();
+//     void rProcessText();
+    void centroidSourceChanged(int val);
+    void centroidProcessText();
   private:
-    QLineEdit *R0;
-    QLineEdit *r;
-    QLabel *R0Label;
-    QLabel *rLabel;
+//     QLineEdit *R0;
+//     QLineEdit *r;
+    QWidget      *centroidSource;
+    QButtonGroup *centroidSourceButtonGroup;
+    QLineEdit *centroid;
+//     QLabel *R0Label;
+//     QLabel *rLabel;
+    QLabel *centroidSourceLabel;
+    QLabel *centroidLabel;
 
     ToroidalPoloidalProjection *atts;
 };
-
-
-
 #endif

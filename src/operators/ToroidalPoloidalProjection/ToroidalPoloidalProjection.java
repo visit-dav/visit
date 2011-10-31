@@ -59,7 +59,12 @@ import llnl.visit.Plugin;
 
 public class ToroidalPoloidalProjection extends AttributeSubject implements Plugin
 {
-    private static int ToroidalPoloidalProjection_numAdditionalAtts = 2;
+    private static int ToroidalPoloidalProjection_numAdditionalAtts = 4;
+
+    // Enum values
+    public final static int CENTROIDSOURCE_MANUAL = 0;
+    public final static int CENTROIDSOURCE_AUTO = 1;
+
 
     public ToroidalPoloidalProjection()
     {
@@ -67,6 +72,11 @@ public class ToroidalPoloidalProjection extends AttributeSubject implements Plug
 
         R0 = 1.5;
         r = 0.2;
+        centroidSource = CENTROIDSOURCE_MANUAL;
+        centroid = new double[3];
+        centroid[0] = 0;
+        centroid[1] = 0;
+        centroid[2] = 0;
     }
 
     public ToroidalPoloidalProjection(int nMoreFields)
@@ -75,14 +85,27 @@ public class ToroidalPoloidalProjection extends AttributeSubject implements Plug
 
         R0 = 1.5;
         r = 0.2;
+        centroidSource = CENTROIDSOURCE_MANUAL;
+        centroid = new double[3];
+        centroid[0] = 0;
+        centroid[1] = 0;
+        centroid[2] = 0;
     }
 
     public ToroidalPoloidalProjection(ToroidalPoloidalProjection obj)
     {
         super(ToroidalPoloidalProjection_numAdditionalAtts);
 
+        int i;
+
         R0 = obj.R0;
         r = obj.r;
+        centroidSource = obj.centroidSource;
+        centroid = new double[3];
+        centroid[0] = obj.centroid[0];
+        centroid[1] = obj.centroid[1];
+        centroid[2] = obj.centroid[2];
+
 
         SelectAll();
     }
@@ -99,9 +122,18 @@ public class ToroidalPoloidalProjection extends AttributeSubject implements Plug
 
     public boolean equals(ToroidalPoloidalProjection obj)
     {
+        int i;
+
+        // Compare the centroid arrays.
+        boolean centroid_equal = true;
+        for(i = 0; i < 3 && centroid_equal; ++i)
+            centroid_equal = (centroid[i] == obj.centroid[i]);
+
         // Create the return value
         return ((R0 == obj.R0) &&
-                (r == obj.r));
+                (r == obj.r) &&
+                (centroidSource == obj.centroidSource) &&
+                centroid_equal);
     }
 
     public String GetName() { return "ToroidalPoloidalProjection"; }
@@ -120,9 +152,33 @@ public class ToroidalPoloidalProjection extends AttributeSubject implements Plug
         Select(1);
     }
 
+    public void SetCentroidSource(int centroidSource_)
+    {
+        centroidSource = centroidSource_;
+        Select(2);
+    }
+
+    public void SetCentroid(double[] centroid_)
+    {
+        centroid[0] = centroid_[0];
+        centroid[1] = centroid_[1];
+        centroid[2] = centroid_[2];
+        Select(3);
+    }
+
+    public void SetCentroid(double e0, double e1, double e2)
+    {
+        centroid[0] = e0;
+        centroid[1] = e1;
+        centroid[2] = e2;
+        Select(3);
+    }
+
     // Property getting methods
-    public double GetR0() { return R0; }
-    public double GetR() { return r; }
+    public double   GetR0() { return R0; }
+    public double   GetR() { return r; }
+    public int      GetCentroidSource() { return centroidSource; }
+    public double[] GetCentroid() { return centroid; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -131,6 +187,10 @@ public class ToroidalPoloidalProjection extends AttributeSubject implements Plug
             buf.WriteDouble(R0);
         if(WriteSelect(1, buf))
             buf.WriteDouble(r);
+        if(WriteSelect(2, buf))
+            buf.WriteInt(centroidSource);
+        if(WriteSelect(3, buf))
+            buf.WriteDoubleArray(centroid);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -143,6 +203,12 @@ public class ToroidalPoloidalProjection extends AttributeSubject implements Plug
         case 1:
             SetR(buf.ReadDouble());
             break;
+        case 2:
+            SetCentroidSource(buf.ReadInt());
+            break;
+        case 3:
+            SetCentroid(buf.ReadDoubleArray());
+            break;
         }
     }
 
@@ -151,12 +217,21 @@ public class ToroidalPoloidalProjection extends AttributeSubject implements Plug
         String str = new String();
         str = str + doubleToString("R0", R0, indent) + "\n";
         str = str + doubleToString("r", r, indent) + "\n";
+        str = str + indent + "centroidSource = ";
+        if(centroidSource == CENTROIDSOURCE_MANUAL)
+            str = str + "CENTROIDSOURCE_MANUAL";
+        if(centroidSource == CENTROIDSOURCE_AUTO)
+            str = str + "CENTROIDSOURCE_AUTO";
+        str = str + "\n";
+        str = str + doubleArrayToString("centroid", centroid, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private double R0;
-    private double r;
+    private double   R0;
+    private double   r;
+    private int      centroidSource;
+    private double[] centroid;
 }
 

@@ -127,19 +127,43 @@ QvisToroidalPoloidalProjectionWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    R0Label = new QLabel(tr("R0: toroidal radius"), central);
-    mainLayout->addWidget(R0Label,0,0);
-    R0 = new QLineEdit(central);
-    connect(R0, SIGNAL(returnPressed()),
-            this, SLOT(R0ProcessText()));
-    mainLayout->addWidget(R0, 0,1);
+//     R0Label = new QLabel(tr("R0: toroidal radius"), central);
+//     mainLayout->addWidget(R0Label,0,0);
+//     R0 = new QLineEdit(central);
+//     connect(R0, SIGNAL(returnPressed()),
+//             this, SLOT(R0ProcessText()));
+//     mainLayout->addWidget(R0, 0,1);
 
-    rLabel = new QLabel(tr("r: poloidal radius"), central);
-    mainLayout->addWidget(rLabel,1,0);
-    r = new QLineEdit(central);
-    connect(r, SIGNAL(returnPressed()),
-            this, SLOT(rProcessText()));
-    mainLayout->addWidget(r, 1,1);
+//     rLabel = new QLabel(tr("r: poloidal radius"), central);
+//     mainLayout->addWidget(rLabel,1,0);
+//     r = new QLineEdit(central);
+//     connect(r, SIGNAL(returnPressed()),
+//             this, SLOT(rProcessText()));
+//     mainLayout->addWidget(r, 1,1);
+
+    centroidSourceLabel = new QLabel(tr("Centroid Source"), central);
+    mainLayout->addWidget(centroidSourceLabel,2,0);
+    centroidSource = new QWidget(central);
+    centroidSourceButtonGroup= new QButtonGroup(centroidSource);
+    QHBoxLayout *centroidSourceLayout = new QHBoxLayout(centroidSource);
+    centroidSourceLayout->setMargin(0);
+    centroidSourceLayout->setSpacing(10);
+    QRadioButton *centroidSourceCentroidSourceManual = new QRadioButton(tr("Manual"), centroidSource);
+    centroidSourceButtonGroup->addButton(centroidSourceCentroidSourceManual,0);
+    centroidSourceLayout->addWidget(centroidSourceCentroidSourceManual);
+    QRadioButton *centroidSourceCentroidSourceAuto = new QRadioButton(tr("Auto"), centroidSource);
+    centroidSourceButtonGroup->addButton(centroidSourceCentroidSourceAuto,1);
+    centroidSourceLayout->addWidget(centroidSourceCentroidSourceAuto);
+    connect(centroidSourceButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(centroidSourceChanged(int)));
+    mainLayout->addWidget(centroidSource, 2,1);
+
+    centroidLabel = new QLabel(tr("Centroid (R,phi,Z)"), central);
+    mainLayout->addWidget(centroidLabel,3,0);
+    centroid = new QLineEdit(central);
+    connect(centroid, SIGNAL(returnPressed()),
+            this, SLOT(centroidProcessText()));
+    mainLayout->addWidget(centroid, 3,1);
 
 }
 
@@ -175,11 +199,32 @@ QvisToroidalPoloidalProjectionWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case ToroidalPoloidalProjection::ID_R0:
-            R0->setText(DoubleToQString(atts->GetR0()));
+//           case ToroidalPoloidalProjection::ID_R0:
+//             R0->setText(DoubleToQString(atts->GetR0()));
+//             break;
+//           case ToroidalPoloidalProjection::ID_r:
+//             r->setText(DoubleToQString(atts->GetR()));
+//             break;
+          case ToroidalPoloidalProjection::ID_centroidSource:
+            if (atts->GetCentroidSource() == ToroidalPoloidalProjection::Manual)
+            {
+                centroid->setEnabled(true);
+                if(centroidLabel)
+                    centroidLabel->setEnabled(true);
+            }
+            else
+            {
+                centroid->setEnabled(false);
+                if(centroidLabel)
+                    centroidLabel->setEnabled(false);
+            }
+            centroidSourceButtonGroup->blockSignals(true);
+            if(centroidSourceButtonGroup->button((int)atts->GetCentroidSource()) != 0)
+                centroidSourceButtonGroup->button((int)atts->GetCentroidSource())->setChecked(true);
+            centroidSourceButtonGroup->blockSignals(false);
             break;
-          case ToroidalPoloidalProjection::ID_r:
-            r->setText(DoubleToQString(atts->GetR()));
+          case ToroidalPoloidalProjection::ID_centroid:
+            centroid->setText(DoublesToQString(atts->GetCentroid(), 3));
             break;
         }
     }
@@ -207,30 +252,44 @@ QvisToroidalPoloidalProjectionWindow::GetCurrentValues(int which_widget)
     bool doAll = (which_widget == -1);
 
     // Do R0
-    if(which_widget == ToroidalPoloidalProjection::ID_R0 || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(R0, val))
-            atts->SetR0(val);
-        else
-        {
-            ResettingError(tr("R0: toroidal radius"),
-                DoubleToQString(atts->GetR0()));
-            atts->SetR0(atts->GetR0());
-        }
-    }
+//     if(which_widget == ToroidalPoloidalProjection::ID_R0 || doAll)
+//     {
+//         double val;
+//         if(LineEditGetDouble(R0, val))
+//             atts->SetR0(val);
+//         else
+//         {
+//             ResettingError(tr("R0: toroidal radius"),
+//                 DoubleToQString(atts->GetR0()));
+//             atts->SetR0(atts->GetR0());
+//         }
+//     }
 
-    // Do r
-    if(which_widget == ToroidalPoloidalProjection::ID_r || doAll)
+//     // Do r
+//     if(which_widget == ToroidalPoloidalProjection::ID_r || doAll)
+//     {
+//         double val;
+//         if(LineEditGetDouble(r, val))
+//             atts->SetR(val);
+//         else
+//         {
+//             ResettingError(tr("r: poloidal radius"),
+//                 DoubleToQString(atts->GetR()));
+//             atts->SetR(atts->GetR());
+//         }
+//     }
+
+    // Do centroid
+    if(which_widget == ToroidalPoloidalProjection::ID_centroid || doAll)
     {
-        double val;
-        if(LineEditGetDouble(r, val))
-            atts->SetR(val);
+        double val[3];
+        if(LineEditGetDoubles(centroid, val, 3))
+            atts->SetCentroid(val);
         else
         {
-            ResettingError(tr("r: poloidal radius"),
-                DoubleToQString(atts->GetR()));
-            atts->SetR(atts->GetR());
+            ResettingError(tr("Centroid (R,phi,Z)"),
+                DoublesToQString(atts->GetCentroid(),3));
+            atts->SetCentroid(atts->GetCentroid());
         }
     }
 
@@ -242,18 +301,37 @@ QvisToroidalPoloidalProjectionWindow::GetCurrentValues(int which_widget)
 //
 
 
+// void
+// QvisToroidalPoloidalProjectionWindow::R0ProcessText()
+// {
+//     GetCurrentValues(ToroidalPoloidalProjection::ID_R0);
+//     Apply();
+// }
+
+
+// void
+// QvisToroidalPoloidalProjectionWindow::rProcessText()
+// {
+//     GetCurrentValues(ToroidalPoloidalProjection::ID_r);
+//     Apply();
+// }
+
+
 void
-QvisToroidalPoloidalProjectionWindow::R0ProcessText()
+QvisToroidalPoloidalProjectionWindow::centroidSourceChanged(int val)
 {
-    GetCurrentValues(ToroidalPoloidalProjection::ID_R0);
-    Apply();
+    if(val != atts->GetCentroidSource())
+    {
+        atts->SetCentroidSource(ToroidalPoloidalProjection::CentroidSource(val));
+        Apply();
+    }
 }
 
 
 void
-QvisToroidalPoloidalProjectionWindow::rProcessText()
+QvisToroidalPoloidalProjectionWindow::centroidProcessText()
 {
-    GetCurrentValues(ToroidalPoloidalProjection::ID_r);
+    GetCurrentValues(ToroidalPoloidalProjection::ID_centroid);
     Apply();
 }
 
