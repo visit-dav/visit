@@ -67,6 +67,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Tecplot reader now supports shared variables, in both its ASCII and binary flavors.  It also allows use of the strand ID, though it still assumes zones are equivalent to domains.</li>
   <li>Tecplot also now supports database options which allow the user to override automatic guessing of coordinate variables.</li>
   <li>VisIt's VTK reader now serves up 1D rectilinear grids as curve variables as well as scalar variables, making them plottable using the Curve plot.</li>
+  <li>The Silo database reader now properly supports UCD meshes with a mix triangles, quads and arbitrary polygons.</li>
+  <li>The Image database reader no longer shifts cell centered grid coordinates by -0.5.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -115,6 +117,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Pick no longer returns timestep information for single-timestate data.</li>
   <li>Pick output for Tensors and Arrays has been cleaned up.</li>
   <li>There is a new method in the CLI for retrieving pick output. <i>GetPickOutputObject()</i> will return pick results as a python dictionary.</li>
+  <li>The Query() method in the CLI now uses case intensive string matching to look up and execute queries.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -128,7 +131,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The histogram display for Cumulative Query variable ranges was not showing valid variable extents.</li>
   <li>Attempting to use invalid expressions in Cumulative Queries caused an error message about the selection being deleted.</li>
   <li>Saved lineout results from a multi-domain dataset create single curve instead of one curve per domain.</li>
-  <li></li>
+  <li>AMR nesting info is now being created in cases where the engine has more MPI Tasks than active domains.</li>
+  <li>CMFE Expression generation via the Data-Level Comparisons Wizard was improved.</li>
   <li></li>
 </ul>
 
