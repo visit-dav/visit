@@ -188,7 +188,7 @@ void
 QvisVectorPlotWindow::CreateWindowContents()
 {
     QTabWidget *propertyTabs = new QTabWidget(central);
-    topLayout->addWidget(propertyTabs);
+    topLayout->addWidget(propertyTabs, 0 ,0);
 
     // ----------------------------------------------------------------------
     // First tab
