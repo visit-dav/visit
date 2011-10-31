@@ -19,6 +19,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li><a href="#General_Features">Features for all users</a></li>
   <li><a href="#Advanced_Features">Features for advanced users</a></li>
+  <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Operator_changes">Changes to operators</a></li>
@@ -53,6 +54,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Queries over time no longer display time information in their legends.</li>
 </ul>
 
+<a name="GUI_Changes"></a>
+<p><b><font size="4">Changes in GUI behavior for version 2.4</font></b></p>
+<ul>
+  <li>The shadowing and depth cueing options (available in the Rendering window) are no longer greyed out by default.  These options are only available with VisIt's scalable rendering mode (software rendering).  Previously, users had to enable software rendering to activate these buttons.  Now, users can directly activate these buttons, which cause VisIt to go into software rendering automatically.</li>
+</ul>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.4</font></b></p>
 <ul>
@@ -67,6 +73,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Tecplot reader now supports shared variables, in both its ASCII and binary flavors.  It also allows use of the strand ID, though it still assumes zones are equivalent to domains.</li>
   <li>Tecplot also now supports database options which allow the user to override automatic guessing of coordinate variables.</li>
   <li>VisIt's VTK reader now serves up 1D rectilinear grids as curve variables as well as scalar variables, making them plottable using the Curve plot.</li>
+  <li>A bug was fixed with the SAMRAI reader with setting up ghost data.</li>
+  <li>XDMF files now report time correct in all cases, including when being used for pathlines.</li>
+  <li>The Nek5000 reader now supports meshes with moving coordinates over time.</li>
   <li>The Silo database reader now properly supports UCD meshes with a mix triangles, quads and arbitrary polygons.</li>
   <li>The Image database reader no longer shifts cell centered grid coordinates by -0.5.</li>
 </ul>
@@ -82,13 +91,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Multiple memory leaks with the <i>Streamline</i> plot were remoted.
       The <i>Streamline</i> plot is now believed to be leak free.</li>
   <li>A memory leak was fixed with the <i>Mesh</i> plot.</li>
+  <li>The limit on the number of slices for the volume plot's 3D texturing mode was increased to 1000 slices.  Previously, the GUI allowed for up to 1000 slices, but the implementation was limited to 500 slices.  This meant that changing the number of slices to numbers greater than 500 had no effect.</li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 2.4</font></b></p>
 <ul>
   <li>An Extrude operator was added. The Extrude operator lets you extrude points, lines, and 2D cells along a vector to create lines, surfaces, and volumes.</li>
-  <li></li>
+  <li>The DataBinning operator now support spatial coordinates for the binning.</li>
   <li></li>
   <li></li>
   <li></li>
@@ -131,9 +141,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The histogram display for Cumulative Query variable ranges was not showing valid variable extents.</li>
   <li>Attempting to use invalid expressions in Cumulative Queries caused an error message about the selection being deleted.</li>
   <li>Saved lineout results from a multi-domain dataset create single curve instead of one curve per domain.</li>
+  <li>The axis annotations are now always accurate.  A user uncovered behavior where the annotation could be misleading when users set the annotation ranges explicitly.</li>
   <li>AMR nesting info is now being created in cases where the engine has more MPI Tasks than active domains.</li>
   <li>CMFE Expression generation via the Data-Level Comparisons Wizard was improved.</li>
-  <li></li>
 </ul>
 
   
