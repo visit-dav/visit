@@ -39,6 +39,43 @@
 #include <ToroidalPoloidalProjection.h>
 #include <DataNode.h>
 
+//
+// Enum conversion methods for ToroidalPoloidalProjection::CentroidSource
+//
+
+static const char *CentroidSource_strings[] = {
+"Manual", "Auto"};
+
+std::string
+ToroidalPoloidalProjection::CentroidSource_ToString(ToroidalPoloidalProjection::CentroidSource t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return CentroidSource_strings[index];
+}
+
+std::string
+ToroidalPoloidalProjection::CentroidSource_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return CentroidSource_strings[index];
+}
+
+bool
+ToroidalPoloidalProjection::CentroidSource_FromString(const std::string &s, ToroidalPoloidalProjection::CentroidSource &val)
+{
+    val = ToroidalPoloidalProjection::Manual;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == CentroidSource_strings[i])
+        {
+            val = (CentroidSource)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: ToroidalPoloidalProjection::ToroidalPoloidalProjection
 //
@@ -58,6 +95,10 @@ void ToroidalPoloidalProjection::Init()
 {
     R0 = 1.5;
     r = 0.2;
+    centroidSource = Manual;
+    centroid[0] = 0;
+    centroid[1] = 0;
+    centroid[2] = 0;
 
     ToroidalPoloidalProjection::SelectAll();
 }
@@ -81,6 +122,11 @@ void ToroidalPoloidalProjection::Copy(const ToroidalPoloidalProjection &obj)
 {
     R0 = obj.R0;
     r = obj.r;
+    centroidSource = obj.centroidSource;
+    centroid[0] = obj.centroid[0];
+    centroid[1] = obj.centroid[1];
+    centroid[2] = obj.centroid[2];
+
 
     ToroidalPoloidalProjection::SelectAll();
 }
@@ -237,9 +283,16 @@ ToroidalPoloidalProjection::operator = (const ToroidalPoloidalProjection &obj)
 bool
 ToroidalPoloidalProjection::operator == (const ToroidalPoloidalProjection &obj) const
 {
+    // Compare the centroid arrays.
+    bool centroid_equal = true;
+    for(int i = 0; i < 3 && centroid_equal; ++i)
+        centroid_equal = (centroid[i] == obj.centroid[i]);
+
     // Create the return value
     return ((R0 == obj.R0) &&
-            (r == obj.r));
+            (r == obj.r) &&
+            (centroidSource == obj.centroidSource) &&
+            centroid_equal);
 }
 
 // ****************************************************************************
@@ -383,8 +436,10 @@ ToroidalPoloidalProjection::NewInstance(bool copy) const
 void
 ToroidalPoloidalProjection::SelectAll()
 {
-    Select(ID_R0, (void *)&R0);
-    Select(ID_r,  (void *)&r);
+    Select(ID_R0,             (void *)&R0);
+    Select(ID_r,              (void *)&r);
+    Select(ID_centroidSource, (void *)&centroidSource);
+    Select(ID_centroid,       (void *)centroid, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -429,6 +484,18 @@ ToroidalPoloidalProjection::CreateNode(DataNode *parentNode, bool completeSave, 
         node->AddNode(new DataNode("r", r));
     }
 
+    if(completeSave || !FieldsEqual(ID_centroidSource, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("centroidSource", CentroidSource_ToString(centroidSource)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_centroid, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("centroid", centroid, 3));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -469,6 +536,24 @@ ToroidalPoloidalProjection::SetFromNode(DataNode *parentNode)
         SetR0(node->AsDouble());
     if((node = searchNode->GetNode("r")) != 0)
         SetR(node->AsDouble());
+    if((node = searchNode->GetNode("centroidSource")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetCentroidSource(CentroidSource(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            CentroidSource value;
+            if(CentroidSource_FromString(node->AsString(), value))
+                SetCentroidSource(value);
+        }
+    }
+    if((node = searchNode->GetNode("centroid")) != 0)
+        SetCentroid(node->AsDoubleArray());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -489,6 +574,22 @@ ToroidalPoloidalProjection::SetR(double r_)
     Select(ID_r, (void *)&r);
 }
 
+void
+ToroidalPoloidalProjection::SetCentroidSource(ToroidalPoloidalProjection::CentroidSource centroidSource_)
+{
+    centroidSource = centroidSource_;
+    Select(ID_centroidSource, (void *)&centroidSource);
+}
+
+void
+ToroidalPoloidalProjection::SetCentroid(const double *centroid_)
+{
+    centroid[0] = centroid_[0];
+    centroid[1] = centroid_[1];
+    centroid[2] = centroid_[2];
+    Select(ID_centroid, (void *)centroid, 3);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -503,6 +604,34 @@ double
 ToroidalPoloidalProjection::GetR() const
 {
     return r;
+}
+
+ToroidalPoloidalProjection::CentroidSource
+ToroidalPoloidalProjection::GetCentroidSource() const
+{
+    return CentroidSource(centroidSource);
+}
+
+const double *
+ToroidalPoloidalProjection::GetCentroid() const
+{
+    return centroid;
+}
+
+double *
+ToroidalPoloidalProjection::GetCentroid()
+{
+    return centroid;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+ToroidalPoloidalProjection::SelectCentroid()
+{
+    Select(ID_centroid, (void *)centroid, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -529,8 +658,10 @@ ToroidalPoloidalProjection::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_R0: return "R0";
-    case ID_r:  return "r";
+    case ID_R0:             return "R0";
+    case ID_r:              return "r";
+    case ID_centroidSource: return "centroidSource";
+    case ID_centroid:       return "centroid";
     default:  return "invalid index";
     }
 }
@@ -555,8 +686,10 @@ ToroidalPoloidalProjection::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_R0: return FieldType_double;
-    case ID_r:  return FieldType_double;
+    case ID_R0:             return FieldType_double;
+    case ID_r:              return FieldType_double;
+    case ID_centroidSource: return FieldType_enum;
+    case ID_centroid:       return FieldType_doubleArray;
     default:  return FieldType_unknown;
     }
 }
@@ -581,8 +714,10 @@ ToroidalPoloidalProjection::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_R0: return "double";
-    case ID_r:  return "double";
+    case ID_R0:             return "double";
+    case ID_r:              return "double";
+    case ID_centroidSource: return "enum";
+    case ID_centroid:       return "doubleArray";
     default:  return "invalid index";
     }
 }
@@ -617,6 +752,21 @@ ToroidalPoloidalProjection::FieldsEqual(int index_, const AttributeGroup *rhs) c
     case ID_r:
         {  // new scope
         retval = (r == obj.r);
+        }
+        break;
+    case ID_centroidSource:
+        {  // new scope
+        retval = (centroidSource == obj.centroidSource);
+        }
+        break;
+    case ID_centroid:
+        {  // new scope
+        // Compare the centroid arrays.
+        bool centroid_equal = true;
+        for(int i = 0; i < 3 && centroid_equal; ++i)
+            centroid_equal = (centroid[i] == obj.centroid[i]);
+
+        retval = centroid_equal;
         }
         break;
     default: retval = false;
