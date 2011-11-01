@@ -36,54 +36,29 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//                              QtVisWindow.h                                //
-// ************************************************************************* //
+#ifndef VIEWER_SUBJECT_PROXY_EXPORTS_H
+#define VIEWER_SUBJECT_PROXY_EXPORTS_H
 
-#ifndef QT_VIS_WINDOW_H
-#define QT_VIS_WINDOW_H
-#include <qtviswindow_exports.h>
-
-#include <VisWindow.h>
-
-class vtkQtRenderWindow;
-
-// ****************************************************************************
-//  Class: QtVisWindow
-//
-//  Purpose:
-//      A vis window that uses Qt to do its windowing.
-//
-//  Programmer: Hank Childs
-//  Creation:   March 4, 2004
-//
-//  Modifications:
-//    Brad Whitlock, Wed Mar 24 12:23:47 PDT 2004
-//    I made it build on Windows.
-//
-//    Jeremy Meredith, Tue Jul 17 16:35:37 EDT 2007
-//    Added fullscreen support.
-//
-//    Brad Whitlock, Mon Aug 18 16:23:28 PDT 2008
-//    Added a window creation callback.
-//
-// ****************************************************************************
-
-class QTVISWINDOW_API QtVisWindow : public VisWindow
-{
-  public:
-    QtVisWindow(bool fullScreenMode = false);
-
-    static void SetWindowCreationCallback(vtkQtRenderWindow *(*wcc)(void*), void *wccdata);
-    static void SetOwnerShipOfAllWindows(bool owner);
-  protected:
-    virtual void CreateToolColleague();
-
-    static vtkQtRenderWindow* (*windowCreationCallback)(void *);
-    static void                *windowCreationData;
-    static bool               ownsAllWindows;
-};
-
+#if defined(_WIN32)
+#if defined(VIEWER_SUBJECT_PROXY_EXPORTS)||defined(viewer_subject_proxy_EXPORTS)
+#define VIEWER_SUBJECT_PROXY_API __declspec(dllexport)
+#else
+#define VIEWER_SUBJECT_PROXY_API __declspec(dllimport)
+#endif
+#if defined(_MSC_VER)
+// Turn off warning about lack of DLL interface
+#pragma warning(disable:4251)
+// Turn off warning non-dll class is base for dll-interface class.
+#pragma warning(disable:4275)
+// Turn off warning about identifier truncation
+#pragma warning(disable:4786)
+#endif
+#else
+# if __GNUC__ >= 4 && (defined(VIEWER_SUBJECT_PROXY_EXPORTS) || defined(viewer_subject_proxy_EXPORTS))
+#   define VIEWER_SUBJECT_PROXY_API __attribute__ ((visibility("default")))
+# else
+#   define VIEWER_SUBJECT_PROXY_API __attribute__ ((visibility("default"))) /* hidden by default */
+# endif
 #endif
 
-
+#endif
