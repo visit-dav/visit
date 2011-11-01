@@ -130,7 +130,9 @@ function build_mxml
 
 function bv_mxml_build
 {
-    echo "mxml not build directly"
+    if [[ "$DO_MXML" == "yes" ]] ; then
+        echo "MXML build currently handled by ADIOS.."
+    fi
 }
 
 function bv_mxml_graphical

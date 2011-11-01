@@ -8,6 +8,10 @@ function bv_xdmf_enable
 {
 DO_XDMF="yes"
 ON_XDMF="on"
+
+#xdmf is dependent on HDF5
+DO_HDF5="yes"
+ON_HDF5="on"
 }
 
 function bv_xdmf_disable
