@@ -433,7 +433,7 @@ main(int argc, char *argv[])
                 pyside ? "True" : "False");
         PyRun_SimpleString((const char*)buffer);
 
-        sprintf(buffer,"def IsPySideGuiEnabled():\n  return %s\n",
+        sprintf(buffer,"def IsPySideViewerEnabled():\n  return %s\n",
                 pyside_gui ? "True" : "False");
         PyRun_SimpleString((const char*)buffer);
 
