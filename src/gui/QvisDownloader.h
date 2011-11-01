@@ -39,19 +39,12 @@
 #ifndef QVIS_DOWNLOADER_H
 #define QVIS_DOWNLOADER_H
 #include <QObject>
-#ifdef QT_NO_OPENSSL
-// For platforms that don't have QSslError. I need to do this so I can have
-// the sslErrors slot defined.
-class QSslError { int a; };
-#else
-#include <QSslError>
-#endif
-#include <QByteArray>
+#include <QNetworkAccessManager>
+#include <QUrl>
 
 class QByteArray;
 class QFile;
-class QHttp;
-class QHttpResponseHeader;
+class QNetworkReply;
 
 // ****************************************************************************
 // Class: QvisDownloader
@@ -59,15 +52,13 @@ class QHttpResponseHeader;
 // Purpose:
 //   Downloads files from the VisIt web site.
 //
-// Notes:      This class is hard coded to download from wci.llnl.gov but
-//             it would be trivial to let it download from other sites
-//             if we later need that functionality.
-//
 // Programmer: Brad Whitlock
 // Creation:   Thu Oct  2 10:26:40 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Nov  1 13:03:43 PDT 2011
+//   I rewrote it in terms of QNetworkAccessManager.
+//
 // ****************************************************************************
 
 class QvisDownloader : public QObject
@@ -77,24 +68,17 @@ public:
     QvisDownloader(QObject *parent);
     virtual ~QvisDownloader();
 
-    bool get(const QString &remoteFile, QByteArray *bytes);
-    bool get(const QString &remoteFile, const QString &localFile);
+    bool get(const QUrl &url, QByteArray *bytes);
+    bool get(const QUrl &url, const QString &localFile);
 
 signals:
     void done(bool error);
-    void downloadProgress(int,int);
+    void downloadProgress(qint64, qint64);
 private slots:
-#ifdef DEBUG_VISIT_DOWNLOADER
-    // Keep for debugging.
-    void requestStarted(int);
-    void requestFinished(int,bool);
-    void stateChanged(int);
-#endif
-    void readyRead(const QHttpResponseHeader &);
-    void httpdone(bool);
-    void sslErrors(const QList<QSslError> &);
+    void finished(QNetworkReply *reply);
 private:
-    QHttp      *http;
+    QNetworkAccessManager *manager;
+    
     QByteArray *bytes;
     QFile      *file;
 };

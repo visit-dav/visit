@@ -39,11 +39,7 @@
 
 #include <QByteArray>
 #include <QFile>
-#include <QHttp>
-#include <QPushButton>
-#include <QLayout>
-
-#define VISIT_DOWNLOAD_URL "wci.llnl.gov"
+#include <QNetworkReply>
 
 // ****************************************************************************
 // Method: QvisDownloader::QvisDownloader
@@ -58,31 +54,19 @@
 // Creation:   Thu Oct  2 10:28:55 PDT 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Nov  1 13:02:42 PDT 2011
+//   Rewrite.
 //   
 // ****************************************************************************
 
 QvisDownloader::QvisDownloader(QObject *parent) : QObject(parent)
 {
-    file = 0;
-    bytes = 0;
+    file = NULL;
+    bytes = NULL;
 
-    http = new QHttp(this);
-#ifdef DEBUG_VISIT_DOWNLOADER
-    connect(http, SIGNAL(requestStarted(int)),
-            this, SLOT(requestStarted(int)));
-    connect(http, SIGNAL(requestFinished(int,bool)),
-            this, SLOT(requestFinished(int,bool)));
-    connect(http, SIGNAL(stateChanged(int)),
-            this, SLOT(stateChanged(int)));
-#endif
-    connect(http, SIGNAL(dataReadProgress(int,int)),
-            this, SIGNAL(downloadProgress(int,int)));
-    connect(http, SIGNAL(readyRead(const QHttpResponseHeader &)),
-            this, SLOT(readyRead(const QHttpResponseHeader &)));
-    connect(http, SIGNAL(done(bool)),
-            this, SLOT(httpdone(bool)));
-    connect(http, SIGNAL(sslErrors(const QList<QSslError> &)),
-            this, SLOT(sslErrors(const QList<QSslError> &)));
+    manager = new QNetworkAccessManager(this);
+    connect(manager, SIGNAL(finished(QNetworkReply *)),
+            this, SLOT(finished(QNetworkReply *)));
 }
 
 // ****************************************************************************
@@ -121,17 +105,22 @@ QvisDownloader::~QvisDownloader()
 // Creation:   Thu Oct  2 10:35:28 PDT 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Nov  1 13:02:42 PDT 2011
+//   Rewrite.
 //   
 // ****************************************************************************
 
 bool
-QvisDownloader::get(const QString &remoteFile, QByteArray *b)
+QvisDownloader::get(const QUrl &url, QByteArray *b)
 {
-    file = 0;
-    bytes = b;
+    QNetworkRequest request(url);
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+            this, SIGNAL(downloadProgress(qint64,qint64)));
 
-    http->setHost(VISIT_DOWNLOAD_URL, QHttp::ConnectionModeHttps);
-    http->get(remoteFile);
+    bytes = b;
+    file = NULL;
+
     return true;
 }
 
@@ -153,24 +142,29 @@ QvisDownloader::get(const QString &remoteFile, QByteArray *b)
 // Creation:   Thu Oct  2 10:35:28 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Nov  1 13:02:42 PDT 2011
+//   Rewrite.
+//
 // ****************************************************************************
 
 
 bool
-QvisDownloader::get(const QString &remoteFile, const QString &localFile)
+QvisDownloader::get(const QUrl &url, const QString &localFile)
 {
-    bytes = 0;
+    bytes = NULL;
     file = new QFile(localFile);
     if (!file->open(QIODevice::WriteOnly))
     {
         delete file;
-        file = 0;
+        file = NULL;
         return false;
     }
 
-    http->setHost(VISIT_DOWNLOAD_URL, QHttp::ConnectionModeHttps);
-    http->get(remoteFile, file);
+    QNetworkRequest request(url);
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+            this, SIGNAL(downloadProgress(qint64,qint64)));
+
     return true;
 }
 
@@ -179,165 +173,47 @@ QvisDownloader::get(const QString &remoteFile, const QString &localFile)
 //
 
 // ****************************************************************************
-// Method: QvisDownloader::readyRead
+// Method: QvisDownloader::finished
 //
 // Purpose: 
-//   This Qt slot function is called when there is new data to be read from
-//   the http object. We use this occasion to save off the bytes if we're
-//   storing them in a byte array.
+//   This method gets called when our network request is finished.
 //
 // Arguments:
+//   reply : The network reply.
 //
 // Returns:    
 //
 // Note:       
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Oct  2 10:40:37 PDT 2008
+// Creation:   Tue Nov  1 13:02:57 PDT 2011
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-QvisDownloader::readyRead(const QHttpResponseHeader &responseHeader)
+QvisDownloader::finished(QNetworkReply *reply)
 {
-#ifdef DEBUG_VISIT_DOWNLOADER
-    qDebug("readyRead()");
-#endif
-    switch (responseHeader.statusCode())
+    disconnect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+               this, SIGNAL(downloadProgress(qint64,qint64)));
+
+    if(!reply->error())
     {
-    case 200:                   // Ok
-    case 301:                   // Moved Permanently
-    case 302:                   // Found
-    case 303:                   // See Other
-    case 307:                   // Temporary Redirect
-        // these are not error conditions
-        if(bytes != 0)
-            bytes->append(http->readAll());
-        break;
-    default:
-#ifdef DEBUG_VISIT_DOWNLOADER
-        qDebug("Read aborted: %s", responseHeader.reasonPhrase().toStdString().c_str());
-#endif
-        http->abort();
-        if(bytes != 0)
-            bytes->clear();
-    }
-}
+        if(bytes != NULL)
+        {
+             *bytes = reply->readAll();
+             bytes = NULL;
+        }
+        if(file != NULL)
+        {
+            file->write(reply->readAll());
+            file->close();
+        }
 
-// ****************************************************************************
-// Method: QvisDownloader::httpdone
-//
-// Purpose: 
-//   This Qt slot function is called when the http object is done processing
-//   the get request.
-//
-// Arguments:
-//   error : True if an error occurred during download.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Oct  2 10:41:46 PDT 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisDownloader::httpdone(bool error)
-{
-#ifdef DEBUG_VISIT_DOWNLOADER
-    qDebug("done(%s)", error?"true":"false");
-#endif
-
-    if(file != 0)
-    {
-        file->close();
-        file = 0;
-    }
-    bytes = 0;
-
-    emit done(error);
-}
-
-// ****************************************************************************
-// Method: QvisDownloader::sslErrors
-//
-// Purpose: 
-//   This Qt slot function is called when there are SSL concerns during a
-//   download. We just tell the http object to ignore those errors and
-//   keep going.
-//
-// Arguments:
-//   errors : The SSL errors that have occurred.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Oct  2 10:42:50 PDT 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisDownloader::sslErrors(const QList<QSslError> &errors)
-{
-#ifndef QT_NO_OPENSSL
-#ifdef DEBUG_VISIT_DOWNLOADER
-    qDebug("sslErrors()");
-    QString errorString;
-    foreach (const QSslError &error, errors)
-    {
-         if (!errorString.isEmpty())
-             errorString += ", ";
-         errorString += error.errorString();
+        bytes = NULL;
+        file = NULL;
     }
 
-    qDebug("SSL Errors: %s", errorString.toStdString().c_str());
-#endif
-    http->ignoreSslErrors();
-#endif
+    emit done(reply->error());
 }
-
-#ifdef DEBUG_VISIT_DOWNLOADER
-// Keep for debugging.
-void
-QvisDownloader::requestStarted(int val)
-{
-    qDebug("requestStarted(%d)", val);
-}
-
-void
-QvisDownloader::requestFinished(int id, bool error)
-{
-    qDebug("requestFinished(%d, %s)", id, error?"true":"false");
-}
-
-void
-QvisDownloader::stateChanged(int state)
-{
-    switch(state)
-    {
-    case QHttp::Unconnected:
-        qDebug("stateChanged(Unconnected)");
-        break;
-    case QHttp::HostLookup:
-        qDebug("stateChanged(HostLookup)");
-        break;
-    case QHttp::Connecting:
-        qDebug("stateChanged(Connecting)");
-        break;
-    case QHttp::Sending:
-        qDebug("stateChanged(Sending)");
-        break;
-    case QHttp::Reading:
-        qDebug("stateChanged(Reading)");
-        break;
-    case QHttp::Connected:
-        qDebug("stateChanged(Connected)");
-        break;
-    case QHttp::Closing:
-        qDebug("stateChanged(Closing)");
-        break;
-    }
-}
-#endif

@@ -89,16 +89,15 @@ signals:
     void installationComplete(const QString &);
 private slots:
     void initiateStage();
-    void doneSubmittingRunInfo(bool);
-    void determineNewVersion(bool error);
+    void determineReleaseHTML(bool);
+    void determineLatestDownload(bool error);
     void downloadDone(bool error);
     void getRequiredFiles();
-    void reportDownloadProgress(int done, int total);
+    void reportDownloadProgress(qint64 done, qint64 total);
     void readInstallerStdout();
     void readInstallerStderr();
     void emitInstallationComplete(int);
 private:
-    QString runInformationString() const;
     void    nextStage();
     QString localTempDirectory() const;
     QString getInstallationDir() const;
@@ -113,6 +112,7 @@ private:
     QString         configName;
     QString         bankName;
     QString         latestVersion;
+    QString         releaseHTML;
     QStringList     files;
     QStringList     downloads;
     QByteArray      bytes;
