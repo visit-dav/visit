@@ -83,6 +83,8 @@ function bv_visus_dry_run
 
 function bv_visus_build
 {
-    echo "visus does not build"
+  if [[ "$DO_VISUS" == "yes" ]] ; then
+    echo "Build support not available for visus.."
+  fi
 }
 
