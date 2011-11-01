@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<typesystem package="pyside_pysideviewer">
+    <load-typesystem name="typesystem_core.xml" generate="no"/>
+    <load-typesystem name="typesystem_gui.xml" generate="no"/>
+    <load-typesystem name="typesystem_opengl.xml" generate="no"/>
+
+    <primitive-type name="std::string"/>
+
+<!--
+    <rejection class="vtkQtRenderWindow" function-name="SetResizeCallback"/>
+    <rejection class="vtkQtRenderWindow" function-name="SetCloseCallback"/>
+    <rejection class="vtkQtRenderWindow" function-name="SetHideCallback"/>
+    <rejection class="vtkQtRenderWindow" function-name="SetShowCallback"/>
+    <rejection class="vtkQtRenderWindow" function-name="SetPosition"/>
+    <rejection class="vtkQtRenderWindow" function-name="SetSize"/>
+    <rejection class="vtkQtRenderWindow" function-name="GetRGBAPixelData"/>
+    <rejection class="vtkQtRenderWindow" function-name="GetZbufferData"/>
+    <object-type name="vtkQtRenderWindow"/>
+    <object-type name="ViewerSubjectProxy"/> 
+-->
+    <object-type name="PySideViewer">
+    <modify-function signature="PySideViewer()" access="private" />
+    <modify-function signature="PySideViewer(int&amp;,char**)" access="private" />
+    <add-function signature="PySideViewer(PySequence)">
+    <inject-code>
+      int QApplicationArgCount;
+      char** QApplicationArgValues;
+      Shiboken::sequenceToArgcArgv(%1, &amp;QApplicationArgCount, &amp;QApplicationArgValues, "PySideApp");
+      cptr = new PySideViewer(QApplicationArgCount,QApplicationArgValues);
+    </inject-code>
+    </add-function>
+    
+    </object-type>
+</typesystem>
+

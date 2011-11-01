@@ -16925,7 +16925,7 @@ InitializeModule()
     //
     // Create the viewer proxy and add some default arguments.
     //
-    viewer = new ViewerProxy;
+    viewer = ViewerProxy::CreateViewerProxy(); //PySide modification, new ViewerProxy;
 
     //
     // Ensure that the viewer will be run in a mode that does not check for

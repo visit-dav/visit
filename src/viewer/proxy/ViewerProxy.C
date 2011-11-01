@@ -68,6 +68,39 @@
 #include <cstring>
 
 // ****************************************************************************
+// Method: CreateViewerProxy 
+//
+// Programmer: Hari Krishnan
+// Creation:   October 18, 2011
+//
+// Purpose:
+//        New method to construct ViewerProxy objects. Allows other libraries
+//        to override construction of the ViewerProxy method..
+//        if no other library has overriden the globalProxy variable
+//        then it simply constructs a new ViewerProxy class..
+//        Warning: Overriding more than one proxy will need care..
+// Modifications:
+// ****
+ViewerProxy* ViewerProxy::CreateViewerProxy(ViewerProxy* proxy)
+{
+    
+    static ViewerProxy* globalProxy = NULL;
+
+    //if user has sent in a global proxy override the current one..
+    if(proxy)
+       globalProxy = proxy;
+
+    //if globalProxy has been assigned return that otherwise
+    //create a new ViewerProxy class..
+    if(globalProxy)
+       return globalProxy;
+
+    //construct default ViewerProxy
+    return new ViewerProxy();
+}
+
+
+// ****************************************************************************
 // Method: ViewerProxy constructor
 //
 // Programmer: Eric Brugger

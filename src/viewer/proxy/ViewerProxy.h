@@ -75,6 +75,9 @@ class Xfer;
 //    Brad Whitlock, Tue Jun 24 11:21:40 PDT 2008
 //    Added plugin managers since they are no longer singletons.
 //
+//    Hari Krishnan, Tue Oct 18 11:25:40 PDT 2011
+//    Virtualized several functions and added static class to create
+//    ViewerProxy.
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -83,30 +86,30 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     ViewerProxy();
     virtual ~ViewerProxy();
 
-    Connection *GetReadConnection() const;
-    Connection *GetWriteConnection() const;
-    const std::string &GetLocalHostName() const;
-    const std::string &GetLocalUserName() const;
-    void ProcessInput();
+    virtual Connection *GetReadConnection() const;
+    virtual Connection *GetWriteConnection() const;
+    virtual const std::string &GetLocalHostName() const;
+    virtual const std::string &GetLocalUserName() const;
+    virtual void ProcessInput();
 
-    void AddArgument(const std::string &arg);
-    void Create(int *argc = 0, char ***argv = 0);
-    void Create(const char *, int *argc = 0, char ***argv = 0);
-    void Close();
-    void Detach();
+    virtual void AddArgument(const std::string &arg);
+    virtual void Create(int *argc = 0, char ***argv = 0);
+    virtual void Create(const char *, int *argc = 0, char ***argv = 0);
+    virtual void Close();
+    virtual void Detach();
 
-    void InitializePlugins(PluginManager::PluginCategory t, const char *pluginDir=0);
-    void LoadPlugins();
-    PlotPluginManager     *GetPlotPluginManager() const;
-    OperatorPluginManager *GetOperatorPluginManager() const;
+    virtual void InitializePlugins(PluginManager::PluginCategory t, const char *pluginDir=0);
+    virtual void LoadPlugins();
+    virtual PlotPluginManager     *GetPlotPluginManager() const;
+    virtual OperatorPluginManager *GetOperatorPluginManager() const;
 
     // Get the proxy's ViewerState object which contains the state objects
     // used in the viewer/client communication interface.
-    ViewerState   *GetViewerState() const;
+    virtual ViewerState   *GetViewerState() const;
 
     // Get the proxy's ViewerMethods object which contains the methods that
     // are converted into ViewerRPC calls in the viewer.
-    ViewerMethods *GetViewerMethods() const;
+    virtual ViewerMethods *GetViewerMethods() const;
 
     // Methods for dealing with plot SIL restrictions.
     avtSILRestriction_p GetPlotSILRestriction() 
@@ -124,6 +127,11 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
 
     // Don't use this method unless absolutely necessary.
     void SetXferUpdate(bool val);
+    
+    //Static function to create ViewerProxy
+    //this allows other libraries to override creation of ViewerProxy
+    //namely PySide which is dynamically loaded from a separate module
+    static ViewerProxy* CreateViewerProxy(ViewerProxy* = NULL);
 
   protected:
     virtual void Update(Subject *subj);
