@@ -39,3 +39,4 @@
 #*****************************************************************************
 
 add_subdirectory(visithook)
+add_subdirectory(pysideviewer)

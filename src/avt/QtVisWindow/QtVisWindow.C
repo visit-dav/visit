@@ -48,6 +48,7 @@
 
 vtkQtRenderWindow* (*QtVisWindow::windowCreationCallback)(void *) = 0;
 void                *QtVisWindow::windowCreationData = 0;
+bool                QtVisWindow::ownsAllWindows = false;
 
 // ****************************************************************************
 //  Method: QtVisWindow constructor
@@ -68,7 +69,7 @@ QtVisWindow::QtVisWindow(bool fullScreenMode) : VisWindow(false)
     if(windowCreationCallback != 0)
     {
         renWin = windowCreationCallback(windowCreationData);
-        owns = false;
+        owns = ownsAllWindows; //false;
     }
     else
         renWin = vtkQtRenderWindow::New();
@@ -105,6 +106,33 @@ QtVisWindow::SetWindowCreationCallback(vtkQtRenderWindow *(*wcc)(void*), void *w
     windowCreationCallback = wcc;
     windowCreationData = wccdata;
 }
+
+// ****************************************************************************
+// Method: QtVisWindow::SetOwnerShipOfWindows
+//
+// Purpose:
+//   Sets the owner of the windows.
+//
+// Arguments:
+//   isowner     : True: VisIt owns the windows, False: User owns the windows.
+//
+// Returns:    None.
+//
+// Note:
+//
+// Programmer: Hari Krishnan
+// Creation:   Mon Oct 25 16:24:18 PDT 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QtVisWindow::SetOwnerShipOfAllWindows(bool isowner)
+{
+    ownsAllWindows = isowner;
+}
+
 
 // ****************************************************************************
 // Method: QtVisWindow::CreateToolColleague
