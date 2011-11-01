@@ -615,6 +615,9 @@ GetIsDevelopmentVersion()
 //   On Windows, if VISISTHOME not defined in registry, check environment
 //   before getting the module path.
 //
+//   Brad Whitlock, Mon Oct 31 15:26:04 PDT 2011
+//   Strip off Mac bundle path.
+//
 // ****************************************************************************
 
 std::string
@@ -678,6 +681,16 @@ GetVisItInstallationDirectory(const char *version)
                 installDir = home.substr(0, lastSlash);
             else
                 installDir = idir;
+
+#ifdef __APPLE__
+            // If we're using a Mac bundle, strip off some more stuff for the
+            // installation directory since we would not want to install into 
+            // another bundle.
+            std::string bundlePath("VisIt.app/Contents/Resources");
+            int bp = home.rfind(bundlePath);
+            if(bp != -1)
+                installDir = home.substr(0, bp);
+#endif
         }
     }
     return installDir;
@@ -808,7 +821,10 @@ GetVisItLauncher()
 //
 //   Tom Fogal, Sun Apr 19 12:48:38 MST 2009
 //   Use `Environment' to simplify and fix a compilation error.
-//   
+//
+//   Brad Whitlock, Mon Oct 31 15:05:20 PDT 2011
+//   darwin-x86_64 enhancements.
+//
 // ****************************************************************************
 
 bool
@@ -829,8 +845,10 @@ ReadInstallationInfo(std::string &distName, std::string &configName, std::string
     "linux-ia64",
 
     "darwin-i386",
-    "darwin-ppc",
+    "darwin-x86_64",
 
+    // Deprecated
+    "darwin-ppc",
     "sun4-sunos5-sparc",
 
     "ibm-aix-pwr",
@@ -838,7 +856,6 @@ ReadInstallationInfo(std::string &distName, std::string &configName, std::string
 
     "sgi-irix6-mips2",
 
-    // Deprecated
     "dec-osf1-alpha",
     };
 
@@ -857,8 +874,10 @@ ReadInstallationInfo(std::string &distName, std::string &configName, std::string
     "linux-altix",
 
     "darwin-i386",
-    "darwin-ppc",
+    "darwin-x86_64",
 
+    // Deprecated
+    "darwin-ppc",
     "sunos5",
 
     "aix",
@@ -866,7 +885,6 @@ ReadInstallationInfo(std::string &distName, std::string &configName, std::string
 
     "irix6",
 
-    // Deprecated
     "osf1",
     };
 
@@ -947,6 +965,17 @@ ReadInstallationInfo(std::string &distName, std::string &configName, std::string
                 }
             }
         }
+
+#ifdef __APPLE__
+        if(!platformDetermined)
+        {
+            if(sizeof(long) == 8)
+                distName = "darwin-x86_64";
+            else
+                distName = "darwin-i386";
+            platformDetermined = true;
+        }
+#endif
     }
 
     return platformDetermined;

@@ -54,8 +54,8 @@
 #include <DebugStream.h>
 #include <InstallationFunctions.h>
 
-#define STAGE_SUBMIT_RUNINFO        0
-#define STAGE_DETERMINE_VERSION     1
+#define STAGE_DETERMINE_VERSION     0
+#define STAGE_DETERMINE_DOWNLOAD    1
 #define STAGE_GET_FILES             2
 #define STAGE_INSTALL               3
 #define STAGE_CLEAN_UP              4
@@ -63,15 +63,11 @@
 
 #define CURRENT_VERSION VISIT_VERSION
 
-#ifdef QT_NO_OPENSSL
-#define EXECUTABLE_HTML       "/codes/visit/executables.html"
-#define HTTPS_EXECUTABLE_HTML "https://wci.llnl.gov" EXECUTABLE_HTML
-#else
-// We don't have SSL so we can't download from our own website. 
-// Thanks a lot LLNL. Try a mirror site.
-#define EXECUTABLE_HTML       "/visit/executables.html"
-#define HTTPS_EXECUTABLE_HTML "http://www.visitusers.org" EXECUTABLE_HTML
-#endif
+#define NERSC_RELEASE_HTML   "http://portal.nersc.gov/svn/visit/trunk/releases/"
+
+#define LLNL                 "https://wci.llnl.gov/"
+#define LLNL_EXECUTABLE_HTML LLNL "codes/visit/executables.html"
+#define LLNL_CODES           LLNL "codes/visit"
 
 // There seems to be a QProcess bug on Apple so let's try a workaround.
 #ifdef __APPLE__
@@ -105,10 +101,9 @@
 
 QvisVisItUpdate::QvisVisItUpdate(QObject *parent) : QObject(parent), GUIBase(), 
     distName(), configName("none"), bankName("bdivp"),
-    latestVersion(CURRENT_VERSION), 
-    files(), downloads(), bytes()
+    latestVersion(CURRENT_VERSION), files(), downloads(), bytes()
 {
-    stage = STAGE_SUBMIT_RUNINFO;
+    stage = STAGE_DETERMINE_VERSION;
     downloader = 0;
     installProcess = 0;
 }
@@ -134,42 +129,6 @@ QvisVisItUpdate::QvisVisItUpdate(QObject *parent) : QObject(parent), GUIBase(),
 QvisVisItUpdate::~QvisVisItUpdate()
 {
 }
-
-
-// ****************************************************************************
-// Method: QvisVisItUpdate::runInformationString
-//
-// Purpose: 
-//   This class provides the ftp login for the VisIt FTP site.
-//
-// Returns: A bogus filename that contains a little run information.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Feb 15 12:23:38 PDT 2005
-//
-// Modifications:
-//
-// ****************************************************************************
-
-QString
-QvisVisItUpdate::runInformationString() const
-{
-#if defined(_WIN32)
-    const char *platform = "win32";
-#else
-    const char *platform = distName.isEmpty() ? "?" : distName.toStdString().c_str();
-#endif
-
-    // Get the number of startups.
-    ConfigStateEnum code;
-    int nStartups = ConfigStateGetRunCount(code);
-    QString runinfo;
-    runinfo.sprintf("/codes/visit/visit_update_%s_%s_%d", CURRENT_VERSION,
-        platform, nStartups);
-
-    return runinfo;
-}
-
 
 // ****************************************************************************
 // Method: QvisVisItUpdate::localTempDirectory
@@ -243,6 +202,9 @@ QvisVisItUpdate::getInstallationDir() const
 //   Brad Whitlock, Thu Oct  2 14:10:44 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Tue Nov  1 13:09:15 PDT 2011
+//   Support bundles.
+//
 // ****************************************************************************
 
 void
@@ -275,36 +237,47 @@ QvisVisItUpdate::installVisIt()
         // Install VisIt the WIN32 way by running the visit installer.
         QString installer(files.front());
 #else
-        // Install VisIt the UNIX way.
-        QString visit_install(files.front());
-        QFile::setPermissions(visit_install, QFile::ReadOwner | 
-                              QFile::WriteOwner | QFile::ExeOwner);
+        QString installer;
 
-        // Get the VisIt installation directory.
-        QString installDir(getInstallationDir());
+        if(files[1].endsWith(".dmg"))
+        {
+            // Assume we want to do a Mac bundle so just open the volume.
+            installer = "open";
+            installerArgs.append(files[1]);
+        }
+        else
+        {
+            // Install VisIt the UNIX way.
+            QString visit_install(files.front());
+            QFile::setPermissions(visit_install, QFile::ReadOwner | 
+                                  QFile::WriteOwner | QFile::ExeOwner);
 
-        // Create an installation process that will run visit-install.
-        QString installer(visit_install);
+            // Get the VisIt installation directory.
+            QString installDir(getInstallationDir());
 
-        // Add installer arguments.
-        installerArgs.append("-c");
-        installerArgs.append(configName);
-        installerArgs.append("-b");
-        installerArgs.append(bankName);
-        installerArgs.append(latestVersion);
-        installerArgs.append(distName);
-        installerArgs.append(installDir);
-        connect(installProcess, SIGNAL(readyReadStandardOutput()),
-                this, SLOT(readInstallerStdout()));
-        connect(installProcess, SIGNAL(readyReadStandardError()),
-                this, SLOT(readInstallerStderr()));
+            // Create an installation process that will run visit-install.
+            installer = QString(visit_install);
 
-        debug1 << "Going to run: visit-install -c "
-               << configName.toStdString()
-               << " -b " << bankName.toStdString() << " "
-               << latestVersion.toStdString() << " "
-               << distName.toStdString() << " " 
-               << installDir.toStdString() << endl;
+            // Add installer arguments.
+            installerArgs.append("-c");
+            installerArgs.append(configName);
+            installerArgs.append("-b");
+            installerArgs.append(bankName);
+            installerArgs.append(latestVersion);
+            installerArgs.append(distName);
+            installerArgs.append(installDir);
+            connect(installProcess, SIGNAL(readyReadStandardOutput()),
+                    this, SLOT(readInstallerStdout()));
+            connect(installProcess, SIGNAL(readyReadStandardError()),
+                    this, SLOT(readInstallerStderr()));
+
+            debug1 << "Going to run: " << visit_install.toStdString() << " -c "
+                   << configName.toStdString()
+                   << " -b " << bankName.toStdString() << " "
+                   << latestVersion.toStdString() << " "
+                   << distName.toStdString() << " " 
+                   << installDir.toStdString() << endl;
+        }
 #endif
         debug1 << "Connecting finished->emitInstallationComplete" << endl;
         // We want to know when the installer completes.
@@ -432,7 +405,7 @@ QvisVisItUpdate::startUpdate()
         Error(tr("VisIt could not determine the platform that you are running "
                  "on so VisIt cannot automatically update. You should browse "
                  "to %1 and download the latest binary distribution for your "
-                 "platform.").arg(HTTPS_EXECUTABLE_HTML));
+                 "platform.").arg(LLNL_EXECUTABLE_HTML));
         emit updateNotAllowed();
         return;
     }
@@ -464,12 +437,13 @@ QvisVisItUpdate::startUpdate()
     if(downloader == 0)
     {
         downloader = new QvisDownloader(this);
-        connect(downloader, SIGNAL(downloadProgress(int,int)),
-                this, SLOT(reportDownloadProgress(int,int)));
+        connect(downloader, SIGNAL(downloadProgress(qint64,qint64)),
+                this, SLOT(reportDownloadProgress(qint64,qint64)));
     }
 
     // Start the process by determining the versions that are available.
     stage = STAGE_DETERMINE_VERSION;
+    latestVersion = QString(CURRENT_VERSION);
     initiateStage();
 }
 
@@ -490,6 +464,9 @@ QvisVisItUpdate::startUpdate()
 //   Brad Whitlock, Thu Oct  2 09:36:42 PDT 2008
 //   Simplified because we're using http now.
 //
+//   Brad Whitlock, Mon Oct 31 15:53:34 PDT 2011
+//   Separate version determination into 2 steps.
+//
 // ****************************************************************************
 
 void
@@ -499,28 +476,29 @@ QvisVisItUpdate::initiateStage()
 
     switch(stage)
     {
-    case STAGE_SUBMIT_RUNINFO:
-         connect(downloader, SIGNAL(done(bool)),
-                 this, SLOT(doneSubmittingRunInfo(bool)));
-         bytes.clear();
-         debug1 << "Send run information to server: "
-                << runInformationString().toStdString().c_str() << endl;
-         downloader->get(runInformationString(), &bytes);
-         break;
     case STAGE_DETERMINE_VERSION:
-         disconnect(downloader, SIGNAL(done(bool)),
-                    this, SLOT(doneSubmittingRunInfo(bool)));
          connect(downloader, SIGNAL(done(bool)),
-                 this, SLOT(determineNewVersion(bool)));
+                 this, SLOT(determineReleaseHTML(bool)));
          disconnect(downloader, SIGNAL(done(bool)),
                     this, SLOT(downloadDone(bool)));
-         debug1 << "Getting " << EXECUTABLE_HTML << endl;
+         debug1 << "Getting " << NERSC_RELEASE_HTML << endl;
          bytes.clear();
-         downloader->get(EXECUTABLE_HTML, &bytes);
+         downloader->get(QUrl(NERSC_RELEASE_HTML), &bytes);
+         break;
+    case STAGE_DETERMINE_DOWNLOAD:
+         disconnect(downloader, SIGNAL(done(bool)),
+                    this, SLOT(determineReleaseHTML(bool)));
+         connect(downloader, SIGNAL(done(bool)),
+                 this, SLOT(determineLatestDownload(bool)));
+         disconnect(downloader, SIGNAL(done(bool)),
+                    this, SLOT(downloadDone(bool)));
+         debug1 << "Getting " << releaseHTML.toStdString() << endl;
+         bytes.clear();
+         downloader->get(releaseHTML, &bytes);
          break;
     case STAGE_GET_FILES:
          disconnect(downloader, SIGNAL(done(bool)),
-                    this, SLOT(determineNewVersion(bool)));
+                    this, SLOT(determineLatestDownload(bool)));
          connect(downloader, SIGNAL(done(bool)),
                  this, SLOT(downloadDone(bool)));
          getRequiredFiles();
@@ -560,26 +538,86 @@ QvisVisItUpdate::nextStage()
 }
 
 // ****************************************************************************
-// Method: QvisVisItUpdate::doneSubmittingRunInfo
+// Method: QvisVisItUpdate::determineReleaseHTML
 //
 // Purpose: 
-//   Move us onto the next stage after submitting run information.
+//   Try and download the NERSC release page. If we can, we find the latest
+//   version URL in the page and use that as the next page to download. If we
+//   can't get the page then we try downloading the VisIt executables page.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Oct  2 12:07:46 PDT 2008
+// Creation:   Tue Nov  1 10:32:41 PDT 2011
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-QvisVisItUpdate::doneSubmittingRunInfo(bool)
+QvisVisItUpdate::determineReleaseHTML(bool error)
 {
+    if(!error)
+    {
+        // Now that we have the bytes, let's search them for "href=" and filter
+        // find the latest version.
+        int from = 0;
+        int index;
+        QStringList versions;
+        QString latest;
+        int latestValue = -1;
+        while((index = bytes.indexOf("href=\"", from)) != -1)
+        {
+            int start = index + 6;
+            int end = bytes.indexOf("\"", start + 6);
+            QString href(bytes.mid(start, end - start - 1));
+            debug4 << "href=" << href.toStdString() << endl;
+            int major = 0, minor = 0, patch = 0;
+            if(GetVisItVersionFromString(href.toStdString().c_str(), major, minor, patch) == 3)
+            {
+                debug4 << "\tmajor=" << major << ", minor=" << minor << ", patch=" << patch << endl;
+                int value = major * 100 + minor * 10 + patch;
+                if(value > latestValue)
+                {
+                    latest = href;
+                    latestValue = value;
+                }
+            }
+            else
+                debug4 << "ignore " << href.toStdString() << endl;
+            from = end + 1;
+        }
+        bytes.clear();
+
+        // Set the page that where we should be looking for links to downloads.
+        if(!latest.isEmpty())
+        {
+            releaseHTML = QString(NERSC_RELEASE_HTML) + latest + "/";
+            latestVersion = latest;
+        }
+        else
+        {
+            releaseHTML = QString(LLNL_EXECUTABLE_HTML);
+            latestVersion = "";
+        }
+    }
+    else
+    {
+        debug4 << "error" << endl;
+        releaseHTML = QString(LLNL_EXECUTABLE_HTML);
+        latestVersion = "";
+    }
+
+    debug4 << "Determined new release page: " << releaseHTML.toStdString() << endl;
     nextStage();
 }
 
 // ****************************************************************************
-// Method: QvisVisItUpdate::determineNewVersion
+// Method: QvisVisItUpdate::determineLatestDownload
 //
 // Purpose: 
 //   This Qt slot function is called when we're down downloading the
@@ -592,11 +630,13 @@ QvisVisItUpdate::doneSubmittingRunInfo(bool)
 // Creation:   Thu Oct  2 10:46:45 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 31 15:13:29 PDT 2011
+//   Allow .dmg files.
+//
 // ****************************************************************************
 
 void
-QvisVisItUpdate::determineNewVersion(bool error)
+QvisVisItUpdate::determineLatestDownload(bool error)
 {
     QWidget *p = qApp->activeWindow();
 
@@ -612,20 +652,32 @@ QvisVisItUpdate::determineNewVersion(bool error)
             int start = index + 6;
             int end = bytes.indexOf("\"", start + 6);
             QString href(bytes.mid(start, end - start));
-            if((href.right(3) == ".gz" || href.right(4) == ".exe") && !href.contains("jvisit"))
+            bool supportedExtension = (href.right(3) == ".gz" || 
+                                       href.right(4) == ".exe" ||
+                                       href.right(4) == ".dmg");
+            if(supportedExtension && !href.contains("jvisit"))
             {
-                int slash = href.indexOf("/");
-                if(slash != -1)
+                if(!latestVersion.isEmpty())
                 {
-                    QString version = href.left(slash);
-                    if(installations.find(version) == installations.end())
+                    // Reading from NERSC.
+                    installations[latestVersion].append(releaseHTML + href);
+                }
+                else
+                {
+                    // Reading from LLNL page.
+                    int slash = href.indexOf("/");
+                    if(slash != -1)
                     {
-                        QStringList ilist;
-                        ilist.append(QString("/codes/visit/") + href);
-                        installations[version] = ilist;
+                        QString version = href.left(slash);
+                        if(installations.find(version) == installations.end())
+                        {
+                            QStringList ilist;
+                            ilist.append(QString(LLNL_CODES) + href);
+                            installations[version] = ilist;
+                        }
+                        else
+                            installations[version].append(QString(LLNL_CODES) + href);
                     }
-                    else
-                        installations[version].append(QString("/codes/visit/") + href);
                 }
             }
             from = end + 1;
@@ -694,7 +746,11 @@ QvisVisItUpdate::determineNewVersion(bool error)
             int slash = installationFile.lastIndexOf("/");
             if(slash != -1)
             {
-                QString visitinstall(installationFile.left(slash+1) + "visit-install");
+                int major = 0, minor = 0, patch = 0;
+                GetVisItVersionFromString(latestVersion.toStdString().c_str(), major, minor, patch);
+                QString visitinstall(QString("%1visit-install%2_%3_%4").
+                    arg(installationFile.left(slash+1)).
+                    arg(major).arg(minor).arg(patch));
                 downloads += visitinstall;
             }
 #endif
@@ -944,7 +1000,7 @@ QvisVisItUpdate::emitInstallationComplete(int exitCode)
 // ****************************************************************************
 
 void
-QvisVisItUpdate::reportDownloadProgress(int done, int total)
+QvisVisItUpdate::reportDownloadProgress(qint64 done, qint64 total)
 {
     if(done == total)
         ClearStatus();
