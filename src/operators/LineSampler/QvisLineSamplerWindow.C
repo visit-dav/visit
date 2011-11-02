@@ -460,6 +460,11 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(toroidalAngleProcessText()));
     mainLayout->addWidget(toroidalAngle, 14,1);
 
+    flipToroidalAngle = new QCheckBox(tr("Flip toroidal angle"), central);
+    connect(flipToroidalAngle, SIGNAL(toggled(bool)),
+            this, SLOT(flipToroidalAngleChanged(bool)));
+    mainLayout->addWidget(flipToroidalAngle, 14,3);
+
     // ----------------------------------------------------------------------
     // List tab
     // ----------------------------------------------------------------------
@@ -531,6 +536,11 @@ QvisLineSamplerWindow::CreateWindowContents()
     connect(channelListToroidalAngle, SIGNAL(returnPressed()),
             this, SLOT(channelListToroidalAngleProcessText()));
     mainLayout->addWidget(channelListToroidalAngle, 7,1);
+
+    channelListFlipToroidalAngle = new QCheckBox(tr("Flip toroidal angle"), central);
+    connect(channelListFlipToroidalAngle, SIGNAL(toggled(bool)),
+            this, SLOT(channelListFlipToroidalAngleChanged(bool)));
+    mainLayout->addWidget(channelListFlipToroidalAngle, 7,3);
 
     // ----------------------------------------------------------------------
     // Sampling tab
@@ -1073,6 +1083,15 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
           case LineSamplerAttributes::ID_toroidalAngle:
             toroidalAngle->setText(DoubleToQString(atts->GetToroidalAngle()));
             break;
+          case LineSamplerAttributes::ID_flipToroidalAngle:
+            flipToroidalAngle->blockSignals(true);
+            flipToroidalAngle->setChecked(atts->GetFlipToroidalAngle());
+            flipToroidalAngle->blockSignals(false);
+
+            channelListFlipToroidalAngle->blockSignals(true);
+            channelListFlipToroidalAngle->setChecked(atts->GetFlipToroidalAngle());
+            channelListFlipToroidalAngle->blockSignals(false);
+            break;            break;
           case LineSamplerAttributes::ID_viewGeometry:
             viewGeometryButtonGroup->blockSignals(true);
             if(viewGeometryButtonGroup->button((int)atts->GetViewGeometry()) != 0)
@@ -1936,6 +1955,22 @@ QvisLineSamplerWindow::toroidalAngleProcessText()
 
 
 void
+QvisLineSamplerWindow::flipToroidalAngleChanged(bool val)
+{
+    atts->SetFlipToroidalAngle(val);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::channelListFlipToroidalAngleChanged(bool val)
+{
+    atts->SetFlipToroidalAngle(val);
+    Apply();
+}
+
+
+void
 QvisLineSamplerWindow::viewGeometryChanged(int val)
 {
     if(val != atts->GetViewGeometry())
@@ -2479,7 +2514,9 @@ QvisLineSamplerWindow::EnableGeometry(bool flag)
 
     toroidalAngleLabel->setEnabled( flag );
     toroidalAngle->setEnabled( flag );
+    flipToroidalAngle->setEnabled( flag );
 }
+
 
 void
 QvisLineSamplerWindow::EnableList(bool flag)
@@ -2496,6 +2533,7 @@ QvisLineSamplerWindow::EnableList(bool flag)
     channelListDeleteAllChannels->setEnabled( flag );
     channelListToroidalAngleLabel->setEnabled( flag );
     channelListToroidalAngle->setEnabled( flag );
+    channelListFlipToroidalAngle->setEnabled( flag );
 }
 
 
@@ -2513,10 +2551,12 @@ QvisLineSamplerWindow::UpdateMeshGeometry()
     poloialRTiltLabel->setText(tr("Y plane X-tilt"));
     poloialZTiltLabel->setText(tr("Y plane Z-tilt"));
     toroidalAngleLabel->setText(tr("Y axis offset"));
+    flipToroidalAngle->setVisible(false);
 
     channelListToroidalArrayAngleLabel->setText(tr("Y distance between arrays"));
     confFileCoordinateLabel->setText(tr(" X, Y, Z, and Y Rotation"));
     channelListToroidalAngleLabel->setText(tr("Y axis offset"));
+    channelListFlipToroidalAngle->setVisible(false);
 
     toroidalIntegrationLabel->setText(tr("Y axis"));
     toroidalIntegrationTime->setText(tr("Sample Y axis as time"));
@@ -2534,10 +2574,12 @@ QvisLineSamplerWindow::UpdateMeshGeometry()
     poloialRTiltLabel->setText(tr("Poloidal plane R-tilt"));
     poloialZTiltLabel->setText(tr("Poloidal plane Z-tilt"));
     toroidalAngleLabel->setText(tr("Toroidal angle"));
+    flipToroidalAngle->setVisible(true);
 
     channelListToroidalArrayAngleLabel->setText(tr("Toroidal angle between arrays"));
     confFileCoordinateLabel->setText(tr(" R, Z, Phi, and Poloidal Angle"));
     channelListToroidalAngleLabel->setText(tr("Toroidal offset angle"));
+    channelListFlipToroidalAngle->setVisible(true);
 
     toroidalIntegrationLabel->setText(tr("Toroidal"));
     toroidalIntegrationTime->setText(tr("Sample toroidally as time"));

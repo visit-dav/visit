@@ -108,6 +108,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void poloialRTiltProcessText();
     void poloialZTiltProcessText();
     void toroidalAngleProcessText();
+    void flipToroidalAngleChanged(bool val);
     void viewGeometryChanged(int val);
     void displayTimeChanged(int val);
     void viewDimensionChanged(int val);
@@ -144,6 +145,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void nChannelListArraysProcessText();
     void channelListToroidalArrayAngleProcessText();
     void channelListToroidalAngleProcessText();
+    void channelListFlipToroidalAngleChanged(bool val);
 
     void EnableGeometry(bool flag);
     void EnableList(bool flag);
@@ -204,6 +206,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLineEdit *poloialRTilt;
     QLineEdit *poloialZTilt;
     QLineEdit *toroidalAngle;
+    QCheckBox *flipToroidalAngle;
     QWidget      *viewDimension;
     QButtonGroup *viewDimensionButtonGroup;
     QWidget      *viewGeometry;
@@ -247,6 +250,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLineEdit *nChannelListArrays;
     QLineEdit *channelListToroidalArrayAngle;
     QLineEdit *channelListToroidalAngle;
+    QCheckBox *channelListFlipToroidalAngle;
     QLabel *meshGeometryLabel;
     QLabel *arrayConfigurationLabel;
     QLabel *boundaryLabel;
