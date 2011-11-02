@@ -321,12 +321,10 @@ main(int argc, char *argv[])
         else if(strcmp(argv[i], "-pyside") == 0)
         {
             pyside = true;
-            ++i;
         }
         else if(strcmp(argv[i], "-pysideviewer") == 0)
         {
             pyside_gui = true;
-            ++i;
         }
         else
         {
@@ -340,6 +338,21 @@ main(int argc, char *argv[])
             {
                 argv_after_s[argc_after_s++] = argv[i];
             }
+        }
+    }
+
+    //for some reason if the viewer requests the pysideviewer
+    //for now this does not make sense
+    for(int i = 0; i < argc; ++i)
+    {
+        std::string tmp = argv[i];
+        if(pyside_gui && tmp == "-reverse_launch")
+        {
+            std::cerr << "Warning: Cannot enable pysideviewer from remote process,"
+                    << " disabling and reverting functionality to pyside"
+                    << std::endl;
+            pyside_gui = false;
+            pyside = true;
         }
     }
 
