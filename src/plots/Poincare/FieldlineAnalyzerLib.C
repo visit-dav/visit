@@ -2861,6 +2861,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     // of islands.
     if( toroidalWinding == poloidalWinding )
     {
+      toroidalWinding  = 1;
+      poloidalWinding  = 1;
       poloidalWindingP = poloidalWinding;
     }
     else
@@ -2955,7 +2957,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     // will be the number of points in the cross section of each
     // island within an island.
 
-    // Note: for a simple island chain the resonance GCD will 1.
+    // Note: for a simple island chain the resonance GCD will be 1.
     else // Possible solution.
     {
       nnodes = windingGCD / resonanceGCD;

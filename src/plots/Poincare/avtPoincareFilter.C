@@ -1084,8 +1084,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             maxZ = currPt.z;
         }
 
-
-
         // Have the puncture points now draw them ...
         for( unsigned int p=0; p<planes.size(); p++ ) 
         {
@@ -1169,7 +1167,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                 //           << std::endl;
             }
         }
-
 
         if( !showIslands ||
             (showIslands &&
