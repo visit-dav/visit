@@ -194,6 +194,7 @@ public:
     void SetPoloialRTilt(double poloialRTilt_);
     void SetPoloialZTilt(double poloialZTilt_);
     void SetToroidalAngle(double toroidalAngle_);
+    void SetFlipToroidalAngle(bool flipToroidalAngle_);
     void SetViewGeometry(ViewGeometry viewGeometry_);
     void SetViewDimension(ViewDimension viewDimension_);
     void SetHeightPlotScale(double heightPlotScale_);
@@ -246,6 +247,7 @@ public:
     double             GetPoloialRTilt() const;
     double             GetPoloialZTilt() const;
     double             GetToroidalAngle() const;
+    bool               GetFlipToroidalAngle() const;
     ViewGeometry       GetViewGeometry() const;
     ViewDimension      GetViewDimension() const;
     double             GetHeightPlotScale() const;
@@ -388,6 +390,7 @@ public:
         ID_poloialRTilt,
         ID_poloialZTilt,
         ID_toroidalAngle,
+        ID_flipToroidalAngle,
         ID_viewGeometry,
         ID_viewDimension,
         ID_heightPlotScale,
@@ -441,6 +444,7 @@ private:
     double       poloialRTilt;
     double       poloialZTilt;
     double       toroidalAngle;
+    bool         flipToroidalAngle;
     int          viewGeometry;
     int          viewDimension;
     double       heightPlotScale;
@@ -475,6 +479,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LINESAMPLERATTRIBUTES_TMFS "iiiidiiiddidDiddddddiidddiiddiddddiiidddiiiid*d*idd"
+#define LINESAMPLERATTRIBUTES_TMFS "iiiidiiiddidDiddddddbiidddiiddiddddiiidddiiiid*d*idd"
 
 #endif
