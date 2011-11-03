@@ -1182,6 +1182,10 @@ MDServerConnection::ExpandPath(const std::string &path)
 //
 //   Brad Whitlock, Thu Feb 24 23:31:32 PST 2011
 //   Make sure that the path is at least 1 character long
+//
+//   Kathleen Biagas, Wed Nov 2 17:16:43 MST 2011
+//   Don't do anything if path is 'My Computer' as this is a special folder.
+//
 // ****************************************************************************
 
 std::string
@@ -1203,6 +1207,11 @@ MDServerConnection::ExpandPathHelper(const std::string &path,
     else if(path.size() > 1 && path[1] == ':')
     {
         // absolute path. do nothing
+        newPath = path;
+    }
+    else if(path == "My Computer")
+    {
+        // special path. do nothing
         newPath = path;
     }
     else
