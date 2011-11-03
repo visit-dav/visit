@@ -40,7 +40,7 @@
 #define VIEWER_SUBJECT_PROXY_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(VIEWER_SUBJECT_PROXY_EXPORTS)||defined(viewer_subject_proxy_EXPORTS)
+#if defined(VIEWER_SUBJECT_PROXY_EXPORTS)||defined(viewersubjectproxy_EXPORTS)
 #define VIEWER_SUBJECT_PROXY_API __declspec(dllexport)
 #else
 #define VIEWER_SUBJECT_PROXY_API __declspec(dllimport)
@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && (defined(VIEWER_SUBJECT_PROXY_EXPORTS) || defined(viewer_subject_proxy_EXPORTS))
+# if __GNUC__ >= 4 && (defined(VIEWER_SUBJECT_PROXY_EXPORTS) || defined(viewersubjectproxy_EXPORTS))
 #   define VIEWER_SUBJECT_PROXY_API __attribute__ ((visibility("default")))
 # else
 #   define VIEWER_SUBJECT_PROXY_API __attribute__ ((visibility("default"))) /* hidden by default */
