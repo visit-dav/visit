@@ -714,7 +714,12 @@ bool ParallelData:: ParseMetaDataFile(void) {
   } else {
     cwd = string(buf) + "/"; 
   }
-  if (mMetaDataFileName[0] != '/' ) {
+#ifndef WIN32
+  if (mMetaDataFileName[0] != '/' )
+#else
+  if (mMetaDataFileName.size() > 1 && mMetaDataFileName[1] != ':' )
+#endif
+  {
     debug2 << "mMetaDataFileName " << mMetaDataFileName; 
     mMetaDataFileName = cwd + "/" + mMetaDataFileName; 
     debug2 << " changed to " << mMetaDataFileName << endl;  
