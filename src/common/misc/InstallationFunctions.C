@@ -99,6 +99,9 @@ static bool isDevelopmentVersion = false;
 //   Kathleen Bonnell, Thu Apr 22 17:25:54 MST 2010
 //   Username no longer added to config file names on windows.
 //
+//   Kathleen Biagas, Wed Nov 2 09:55:12 MST 2010
+//   Don't assume drive letter is 'C', only test for presence of ':'.
+//
 // ****************************************************************************
 
 char *
@@ -117,7 +120,7 @@ GetDefaultConfigFile(const char *filename, const char *home)
         return retval;
     }
     // If the filename has an absolute path, do not prepend the home directory.
-    if (filename != NULL && (filename[0] == 'C' && filename[1] == ':'))
+    if (filename != NULL && strlen(filename) > 1 && filename[1] == ':')
     {
         retval = new char[strlen(filename)+1];
         strcpy(retval, filename);
