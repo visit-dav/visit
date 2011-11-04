@@ -1151,22 +1151,19 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                                                 (int)atts->GetArrayAxis()==0);
             cartesianZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
                                                 (int)atts->GetArrayAxis()==1);
-            cartesianConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
-                                                 (int)atts->GetArrayAxis()==1);
+            cartesianConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0);
 
             cylindricalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
                                                 (int)atts->GetArrayAxis()==0);
             cylindricalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
                                                 (int)atts->GetArrayAxis()==1);
-            cylindricalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
-                                                   (int)atts->GetArrayAxis()==1);
+            cylindricalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1);
 
             toroidalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
                                              (int)atts->GetArrayAxis()==0);
             toroidalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
                                              (int)atts->GetArrayAxis()==1);
-            toroidalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
-                                                (int)atts->GetArrayAxis()==1);
+            toroidalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 );
             break;
           case LineSamplerAttributes::ID_poloialAngle:
             poloialAngle->setText(DoubleToQString(atts->GetPoloialAngle()));
@@ -2642,22 +2639,19 @@ QvisLineSamplerWindow::UpdateMeshGeometry()
   cartesianZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
                                       (int)atts->GetArrayAxis()==1);
 
-  cartesianConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
-                                       (int)atts->GetArrayAxis()==1);
+  cartesianConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0);
 
   cylindricalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
                                       (int)atts->GetArrayAxis()==0);
   cylindricalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
                                       (int)atts->GetArrayAxis()==1);
-  cylindricalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
-                                         (int)atts->GetArrayAxis()==1);
+  cylindricalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1);
 
   toroidalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
                                    (int)atts->GetArrayAxis()==0);
   toroidalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
                                    (int)atts->GetArrayAxis()==1);
-  toroidalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
-                                      (int)atts->GetArrayAxis()==1);
+  toroidalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2);
 
   if( atts->GetMeshGeometry() == LineSamplerAttributes::Cartesian )
   { 
