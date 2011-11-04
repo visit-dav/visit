@@ -311,11 +311,13 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
 
     QLabel *cartesianXLayoutLabel;
     QLabel *cartesianZLayoutLabel;
+    QLabel *cartesianConfLayoutLabel;
     QLabel *cylindricalRLayoutLabel;
     QLabel *cylindricalZLayoutLabel;
+    QLabel *cylindricalConfLayoutLabel;
     QLabel *toroidalRLayoutLabel;
     QLabel *toroidalZLayoutLabel;
-    QLabel *configurationLayoutLabel;
+    QLabel *toroidalConfLayoutLabel;
 
     LineSamplerAttributes *atts;
 };

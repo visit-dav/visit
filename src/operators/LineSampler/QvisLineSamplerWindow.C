@@ -40,11 +40,13 @@
 
 #include "LineSamplerCartesianXLayout.xpm"
 #include "LineSamplerCartesianZLayout.xpm"
+#include "LineSamplerCartesianConfLayout.xpm"
 #include "LineSamplerCylindricalRLayout.xpm"
 #include "LineSamplerCylindricalZLayout.xpm"
+#include "LineSamplerCylindricalConfLayout.xpm"
 #include "LineSamplerToroidalRLayout.xpm"
 #include "LineSamplerToroidalZLayout.xpm"
-#include "LineSamplerConfigurationLayout.xpm"
+#include "LineSamplerToroidalConfLayout.xpm"
 
 #include <LineSamplerAttributes.h>
 #include <ViewerProxy.h>
@@ -479,39 +481,42 @@ QvisLineSamplerWindow::CreateWindowContents()
     cartesianXLayoutLabel->setPixmap(cartesianXLayoutPixmap);
     cartesianXLayoutLabel->setMask(cartesianXLayoutPixmap.mask());
     mainLayout->addWidget(cartesianXLayoutLabel,9,2,7,2, Qt::AlignRight);
-    cartesianXLayoutLabel->setVisible( true );
+    cartesianXLayoutLabel->setVisible( false );
 
     QPixmap cartesianZLayoutPixmap(LineSamplerCartesianZLayout_xpm);
     cartesianZLayoutLabel = new QLabel(tr(""), central);
     cartesianZLayoutLabel->setPixmap(cartesianZLayoutPixmap);
     cartesianZLayoutLabel->setMask(cartesianZLayoutPixmap.mask());
     mainLayout->addWidget(cartesianZLayoutLabel,9,2,7,2, Qt::AlignRight);
+    cartesianZLayoutLabel->setVisible( false );
 
     QPixmap cylindricalRLayoutPixmap(LineSamplerCylindricalRLayout_xpm);
     cylindricalRLayoutLabel = new QLabel(tr(""), central);
     cylindricalRLayoutLabel->setPixmap(cylindricalRLayoutPixmap);
     cylindricalRLayoutLabel->setMask(cylindricalRLayoutPixmap.mask());
     mainLayout->addWidget(cylindricalRLayoutLabel,9,2,7,2, Qt::AlignRight);
-    cylindricalRLayoutLabel->setVisible( true );
+    cylindricalRLayoutLabel->setVisible( false );
 
     QPixmap cylindricalZLayoutPixmap(LineSamplerCylindricalZLayout_xpm);
     cylindricalZLayoutLabel = new QLabel(tr(""), central);
     cylindricalZLayoutLabel->setPixmap(cylindricalZLayoutPixmap);
     cylindricalZLayoutLabel->setMask(cylindricalZLayoutPixmap.mask());
     mainLayout->addWidget(cylindricalZLayoutLabel,9,2,7,2, Qt::AlignRight);
+    cylindricalZLayoutLabel->setVisible( false );
 
     QPixmap toroidalRLayoutPixmap(LineSamplerToroidalRLayout_xpm);
     toroidalRLayoutLabel = new QLabel(tr(""), central);
     toroidalRLayoutLabel->setPixmap(toroidalRLayoutPixmap);
     toroidalRLayoutLabel->setMask(toroidalRLayoutPixmap.mask());
     mainLayout->addWidget(toroidalRLayoutLabel,9,2,7,2, Qt::AlignRight);
-    toroidalRLayoutLabel->setVisible( true );
+    toroidalRLayoutLabel->setVisible( false );
 
     QPixmap toroidalZLayoutPixmap(LineSamplerToroidalZLayout_xpm);
     toroidalZLayoutLabel = new QLabel(tr(""), central);
     toroidalZLayoutLabel->setPixmap(toroidalZLayoutPixmap);
     toroidalZLayoutLabel->setMask(toroidalZLayoutPixmap.mask());
     mainLayout->addWidget(toroidalZLayoutLabel,9,2,7,2, Qt::AlignRight);
+    toroidalZLayoutLabel->setVisible( true );
 
     // ----------------------------------------------------------------------
     // List tab
@@ -590,12 +595,26 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(channelListFlipToroidalAngleChanged(bool)));
     mainLayout->addWidget(channelListFlipToroidalAngle, 15,0);
 
-    QPixmap configurationLayoutPixmap(LineSamplerConfigurationLayout_xpm);
-    configurationLayoutLabel = new QLabel(tr(""), central);
-    configurationLayoutLabel->setPixmap(configurationLayoutPixmap);
-    configurationLayoutLabel->setMask(configurationLayoutPixmap.mask());
-    mainLayout->addWidget(configurationLayoutLabel,9,2,7,2, Qt::AlignRight);
-    configurationLayoutLabel->setVisible( true );
+    QPixmap cartesianConfLayoutPixmap(LineSamplerCartesianConfLayout_xpm);
+    cartesianConfLayoutLabel = new QLabel(tr(""), central);
+    cartesianConfLayoutLabel->setPixmap(cartesianConfLayoutPixmap);
+    cartesianConfLayoutLabel->setMask(cartesianConfLayoutPixmap.mask());
+    mainLayout->addWidget(cartesianConfLayoutLabel,9,2,7,2, Qt::AlignRight);
+    cartesianConfLayoutLabel->setVisible( false );
+
+    QPixmap cylindricalConfLayoutPixmap(LineSamplerCylindricalConfLayout_xpm);
+    cylindricalConfLayoutLabel = new QLabel(tr(""), central);
+    cylindricalConfLayoutLabel->setPixmap(cylindricalConfLayoutPixmap);
+    cylindricalConfLayoutLabel->setMask(cylindricalConfLayoutPixmap.mask());
+    mainLayout->addWidget(cylindricalConfLayoutLabel,9,2,7,2, Qt::AlignRight);
+    cylindricalConfLayoutLabel->setVisible( false );
+
+    QPixmap toroidalConfLayoutPixmap(LineSamplerToroidalConfLayout_xpm);
+    toroidalConfLayoutLabel = new QLabel(tr(""), central);
+    toroidalConfLayoutLabel->setPixmap(toroidalConfLayoutPixmap);
+    toroidalConfLayoutLabel->setMask(toroidalConfLayoutPixmap.mask());
+    mainLayout->addWidget(toroidalConfLayoutLabel,9,2,7,2, Qt::AlignRight);
+    toroidalConfLayoutLabel->setVisible( true );
 
 
     // ----------------------------------------------------------------------
@@ -1132,16 +1151,22 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                                                 (int)atts->GetArrayAxis()==0);
             cartesianZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
                                                 (int)atts->GetArrayAxis()==1);
+            cartesianConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
+                                                 (int)atts->GetArrayAxis()==1);
 
             cylindricalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
                                                 (int)atts->GetArrayAxis()==0);
             cylindricalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
                                                 (int)atts->GetArrayAxis()==1);
+            cylindricalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
+                                                   (int)atts->GetArrayAxis()==1);
 
             toroidalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
                                              (int)atts->GetArrayAxis()==0);
             toroidalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
                                              (int)atts->GetArrayAxis()==1);
+            toroidalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
+                                                (int)atts->GetArrayAxis()==1);
             break;
           case LineSamplerAttributes::ID_poloialAngle:
             poloialAngle->setText(DoubleToQString(atts->GetPoloialAngle()));
@@ -2617,15 +2642,22 @@ QvisLineSamplerWindow::UpdateMeshGeometry()
   cartesianZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
                                       (int)atts->GetArrayAxis()==1);
 
+  cartesianConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
+                                       (int)atts->GetArrayAxis()==1);
+
   cylindricalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
                                       (int)atts->GetArrayAxis()==0);
   cylindricalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
                                       (int)atts->GetArrayAxis()==1);
+  cylindricalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
+                                         (int)atts->GetArrayAxis()==1);
 
   toroidalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
                                    (int)atts->GetArrayAxis()==0);
   toroidalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
                                    (int)atts->GetArrayAxis()==1);
+  toroidalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
+                                      (int)atts->GetArrayAxis()==1);
 
   if( atts->GetMeshGeometry() == LineSamplerAttributes::Cartesian )
   { 
