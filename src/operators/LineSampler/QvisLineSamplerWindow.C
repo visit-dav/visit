@@ -38,6 +38,14 @@
 
 #include "QvisLineSamplerWindow.h"
 
+#include "LineSamplerCartesianXLayout.xpm"
+#include "LineSamplerCartesianZLayout.xpm"
+#include "LineSamplerCylindricalRLayout.xpm"
+#include "LineSamplerCylindricalZLayout.xpm"
+#include "LineSamplerToroidalRLayout.xpm"
+#include "LineSamplerToroidalZLayout.xpm"
+#include "LineSamplerConfigurationLayout.xpm"
+
 #include <LineSamplerAttributes.h>
 #include <ViewerProxy.h>
 
@@ -53,6 +61,8 @@
 #include <QListWidget>
 #include <QPushButton>
 #include <QFileDialog>
+#include <QBitmap>
+#include <QPixmap>
 
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
@@ -402,11 +412,10 @@ QvisLineSamplerWindow::CreateWindowContents()
 //    mainLayout->addWidget(channelProjection, 2,1,1,2);
 
 
-
     arrayOriginLabel = new QLabel(tr("Array origin (R,Z)"), central);
     mainLayout->addWidget(arrayOriginLabel,9,0);
     arrayOrigin = new QLineEdit(central);
-    arrayOrigin->setMaximumWidth(2*width);
+    arrayOrigin->setMaximumWidth(width);
     connect(arrayOrigin, SIGNAL(returnPressed()),
             this, SLOT(arrayOriginProcessText()));
     mainLayout->addWidget(arrayOrigin, 9,1,1,2);
@@ -463,7 +472,46 @@ QvisLineSamplerWindow::CreateWindowContents()
     flipToroidalAngle = new QCheckBox(tr("Flip toroidal angle"), central);
     connect(flipToroidalAngle, SIGNAL(toggled(bool)),
             this, SLOT(flipToroidalAngleChanged(bool)));
-    mainLayout->addWidget(flipToroidalAngle, 14,3);
+    mainLayout->addWidget(flipToroidalAngle, 15,0);
+
+    QPixmap cartesianXLayoutPixmap(LineSamplerCartesianXLayout_xpm);
+    cartesianXLayoutLabel = new QLabel(tr(""), central);
+    cartesianXLayoutLabel->setPixmap(cartesianXLayoutPixmap);
+    cartesianXLayoutLabel->setMask(cartesianXLayoutPixmap.mask());
+    mainLayout->addWidget(cartesianXLayoutLabel,9,2,7,2, Qt::AlignRight);
+    cartesianXLayoutLabel->setVisible( true );
+
+    QPixmap cartesianZLayoutPixmap(LineSamplerCartesianZLayout_xpm);
+    cartesianZLayoutLabel = new QLabel(tr(""), central);
+    cartesianZLayoutLabel->setPixmap(cartesianZLayoutPixmap);
+    cartesianZLayoutLabel->setMask(cartesianZLayoutPixmap.mask());
+    mainLayout->addWidget(cartesianZLayoutLabel,9,2,7,2, Qt::AlignRight);
+
+    QPixmap cylindricalRLayoutPixmap(LineSamplerCylindricalRLayout_xpm);
+    cylindricalRLayoutLabel = new QLabel(tr(""), central);
+    cylindricalRLayoutLabel->setPixmap(cylindricalRLayoutPixmap);
+    cylindricalRLayoutLabel->setMask(cylindricalRLayoutPixmap.mask());
+    mainLayout->addWidget(cylindricalRLayoutLabel,9,2,7,2, Qt::AlignRight);
+    cylindricalRLayoutLabel->setVisible( true );
+
+    QPixmap cylindricalZLayoutPixmap(LineSamplerCylindricalZLayout_xpm);
+    cylindricalZLayoutLabel = new QLabel(tr(""), central);
+    cylindricalZLayoutLabel->setPixmap(cylindricalZLayoutPixmap);
+    cylindricalZLayoutLabel->setMask(cylindricalZLayoutPixmap.mask());
+    mainLayout->addWidget(cylindricalZLayoutLabel,9,2,7,2, Qt::AlignRight);
+
+    QPixmap toroidalRLayoutPixmap(LineSamplerToroidalRLayout_xpm);
+    toroidalRLayoutLabel = new QLabel(tr(""), central);
+    toroidalRLayoutLabel->setPixmap(toroidalRLayoutPixmap);
+    toroidalRLayoutLabel->setMask(toroidalRLayoutPixmap.mask());
+    mainLayout->addWidget(toroidalRLayoutLabel,9,2,7,2, Qt::AlignRight);
+    toroidalRLayoutLabel->setVisible( true );
+
+    QPixmap toroidalZLayoutPixmap(LineSamplerToroidalZLayout_xpm);
+    toroidalZLayoutLabel = new QLabel(tr(""), central);
+    toroidalZLayoutLabel->setPixmap(toroidalZLayoutPixmap);
+    toroidalZLayoutLabel->setMask(toroidalZLayoutPixmap.mask());
+    mainLayout->addWidget(toroidalZLayoutLabel,9,2,7,2, Qt::AlignRight);
 
     // ----------------------------------------------------------------------
     // List tab
@@ -495,7 +543,7 @@ QvisLineSamplerWindow::CreateWindowContents()
       new QLabel(tr(" R, Z, Phi, and Poloidal Angle"), central);
     mainLayout->addWidget(confFileCoordinateLabel, 1, 0);
     channelList = new QListWidget(central);
-    mainLayout->addWidget(channelList, 2, 0, 5, 2);
+    mainLayout->addWidget(channelList, 2, 0, 10, 2);
 
     connect(channelList, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
             this, SLOT(channelListDoubleClicked(QListWidgetItem*)));
@@ -529,18 +577,26 @@ QvisLineSamplerWindow::CreateWindowContents()
     mainLayout->addWidget(channelListDeleteAllChannels, 5, 2, 1, 2);
 
 
-    channelListToroidalAngleLabel = new QLabel(tr("Toroidal offset angle"), central);
-    mainLayout->addWidget(channelListToroidalAngleLabel,7,0);
+    channelListToroidalAngleLabel = new QLabel(tr("Toroidal angle"), central);
+    mainLayout->addWidget(channelListToroidalAngleLabel,14,0);
     channelListToroidalAngle = new QLineEdit(central);
     channelListToroidalAngle->setMaximumWidth(width);
     connect(channelListToroidalAngle, SIGNAL(returnPressed()),
             this, SLOT(channelListToroidalAngleProcessText()));
-    mainLayout->addWidget(channelListToroidalAngle, 7,1);
+    mainLayout->addWidget(channelListToroidalAngle, 14,1);
 
     channelListFlipToroidalAngle = new QCheckBox(tr("Flip toroidal angle"), central);
     connect(channelListFlipToroidalAngle, SIGNAL(toggled(bool)),
             this, SLOT(channelListFlipToroidalAngleChanged(bool)));
-    mainLayout->addWidget(channelListFlipToroidalAngle, 7,3);
+    mainLayout->addWidget(channelListFlipToroidalAngle, 15,0);
+
+    QPixmap configurationLayoutPixmap(LineSamplerConfigurationLayout_xpm);
+    configurationLayoutLabel = new QLabel(tr(""), central);
+    configurationLayoutLabel->setPixmap(configurationLayoutPixmap);
+    configurationLayoutLabel->setMask(configurationLayoutPixmap.mask());
+    mainLayout->addWidget(configurationLayoutLabel,9,2,7,2, Qt::AlignRight);
+    configurationLayoutLabel->setVisible( true );
+
 
     // ----------------------------------------------------------------------
     // Sampling tab
@@ -1070,6 +1126,22 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             if(arrayAxisButtonGroup->button((int)atts->GetArrayAxis()) != 0)
                 arrayAxisButtonGroup->button((int)atts->GetArrayAxis())->setChecked(true);
             arrayAxisButtonGroup->blockSignals(false);
+
+            
+            cartesianXLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
+                                                (int)atts->GetArrayAxis()==0);
+            cartesianZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
+                                                (int)atts->GetArrayAxis()==1);
+
+            cylindricalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
+                                                (int)atts->GetArrayAxis()==0);
+            cylindricalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
+                                                (int)atts->GetArrayAxis()==1);
+
+            toroidalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
+                                             (int)atts->GetArrayAxis()==0);
+            toroidalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
+                                             (int)atts->GetArrayAxis()==1);
             break;
           case LineSamplerAttributes::ID_poloialAngle:
             poloialAngle->setText(DoubleToQString(atts->GetPoloialAngle()));
@@ -1916,7 +1988,6 @@ QvisLineSamplerWindow::arrayAxisChanged(int val)
     if(val != atts->GetArrayAxis())
     {
         atts->SetArrayAxis(LineSamplerAttributes::ArrayAxis(val));
-        SetUpdate(false);
         Apply();
     }
 }
@@ -2540,6 +2611,22 @@ QvisLineSamplerWindow::EnableList(bool flag)
 void
 QvisLineSamplerWindow::UpdateMeshGeometry()
 {
+
+  cartesianXLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
+                                      (int)atts->GetArrayAxis()==0);
+  cartesianZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
+                                      (int)atts->GetArrayAxis()==1);
+
+  cylindricalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
+                                      (int)atts->GetArrayAxis()==0);
+  cylindricalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
+                                      (int)atts->GetArrayAxis()==1);
+
+  toroidalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
+                                   (int)atts->GetArrayAxis()==0);
+  toroidalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
+                                   (int)atts->GetArrayAxis()==1);
+
   if( atts->GetMeshGeometry() == LineSamplerAttributes::Cartesian )
   { 
     wallFileCoordinateLabel->setText(tr("Coordinate layout X, Z"));
@@ -2578,7 +2665,7 @@ QvisLineSamplerWindow::UpdateMeshGeometry()
 
     channelListToroidalArrayAngleLabel->setText(tr("Toroidal angle between arrays"));
     confFileCoordinateLabel->setText(tr(" R, Z, Phi, and Poloidal Angle"));
-    channelListToroidalAngleLabel->setText(tr("Toroidal offset angle"));
+    channelListToroidalAngleLabel->setText(tr("Toroidal angle"));
     channelListFlipToroidalAngle->setVisible(true);
 
     toroidalIntegrationLabel->setText(tr("Toroidal"));

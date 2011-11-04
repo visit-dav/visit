@@ -309,6 +309,14 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLabel *channelListToroidalArrayAngleLabel;
     QLabel *channelListToroidalAngleLabel;
 
+    QLabel *cartesianXLayoutLabel;
+    QLabel *cartesianZLayoutLabel;
+    QLabel *cylindricalRLayoutLabel;
+    QLabel *cylindricalZLayoutLabel;
+    QLabel *toroidalRLayoutLabel;
+    QLabel *toroidalZLayoutLabel;
+    QLabel *configurationLayoutLabel;
+
     LineSamplerAttributes *atts;
 };
 #endif
