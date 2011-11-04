@@ -55,23 +55,66 @@ bv_PATH=`dirname $0`
 
 bv_PREFIX=$bv_PATH/bv_support/
 
-#check same directory as build_visit
 if [ ! -d $bv_PREFIX ]; then 
     #check current directory
     bv_PREFIX=$PWD/bv_support/
+
     if [ ! -d $bv_PREFIX ]; then 
-        echo "bv_support does not exist, fetching..."
-        tmp=`which svn`
-        if [ $? != 0 ]; then 
-        echo "svn support not available, no ability to fetch support files"
+
+        for choice in `echo "curl wget svn"`
+        do
+            echo "Trying to fetch support files using: $choice"
+
+            #if choice successful then exit, else try next..
+            webaddr="http://portal.nersc.gov/svn/visit/trunk/src/svn_bin/bv_support/"
+            tmp_choice=`which $choice`
+
+            if [ $? != 0 ]; then
+                continue
+            fi
+            if [[ $choice == "curl" ]]; then
+                tmp_curl=`curl -s ${webaddr}/|grep sh|grep li|sed s/.*bv_/bv_/g | sed -e s/\.sh.*/\.sh/g | sed -e s/.*href\=\"//g;`
+
+                if [ $? != 0 ]; then 
+                    continue
+                fi
+
+                mkdir -p bv_support_tmp
+                is_successful=1
+                #fetch each file..
+                for curl_files in `echo $tmp_curl`
+                do 
+                    curl -s ${webaddr}/${curl_files} -o bv_support_tmp/$curl_files 
+                    if [ $? != 0 ]; then
+                        is_successful=0
+                        break
+                    fi
+                done
+
+                #if not successful cleanup and try next option..
+                if [ $is_successful == 0 ]; then 
+                    rm -fR bv_support_tmp
+                else
+                    mv bv_support_tmp bv_support
+                fi
+            elif [[ $choice == "wget" ]]; then
+               wget -r -nH --cut-dirs=5 --no-parent --reject="index.html" -q ${webaddr}
+            else
+               svn co ${webaddr} bv_support
+            fi
+
+            if [ ! -d $bv_PREFIX ]; then
+                echo "$choice failed to retrieve support files"
+            else
+                echo "Success. downloaded support, continuing"
+                break
+            fi
+        done
+    fi
+
+    if [ ! -d $bv_PREFIX ]; then
+        echo "Failed to detect or fetch support files, please contact visit-users mailing list with error. Quitting..."
         exit 2
-        fi
-        #checkout the support directory
-        #svn co svn+ssh://$SVN_NERSC_NAME@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src/svn_bin/bv_support bv_support
-        svn co http://portal.nersc.gov/svn/visit/trunk/src/svn_bin/bv_support bv_support
-        if [ $? != 0 ]; then
-        echo "download of support files failed. Please contact visit-users mailing list for help. Quitting"
-        fi
     fi
 fi
 
