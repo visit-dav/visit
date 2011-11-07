@@ -216,6 +216,11 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%storoidalAngle = %g\n", prefix, atts->GetToroidalAngle());
     str += tmpStr;
+    if(atts->GetFlipToroidalAngle())
+        SNPRINTF(tmpStr, 1000, "%sflipToroidalAngle = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sflipToroidalAngle = 0\n", prefix);
+    str += tmpStr;
     const char *viewGeometry_names = "Points, Lines, Surfaces";
     switch (atts->GetViewGeometry())
     {
@@ -1016,6 +1021,30 @@ LineSamplerAttributes_GetToroidalAngle(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetToroidalAngle());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetFlipToroidalAngle(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the flipToroidalAngle in the object.
+    obj->data->SetFlipToroidalAngle(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetFlipToroidalAngle(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetFlipToroidalAngle()?1L:0L);
     return retval;
 }
 
@@ -1918,6 +1947,8 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetPoloialZTilt", LineSamplerAttributes_GetPoloialZTilt, METH_VARARGS},
     {"SetToroidalAngle", LineSamplerAttributes_SetToroidalAngle, METH_VARARGS},
     {"GetToroidalAngle", LineSamplerAttributes_GetToroidalAngle, METH_VARARGS},
+    {"SetFlipToroidalAngle", LineSamplerAttributes_SetFlipToroidalAngle, METH_VARARGS},
+    {"GetFlipToroidalAngle", LineSamplerAttributes_GetFlipToroidalAngle, METH_VARARGS},
     {"SetViewGeometry", LineSamplerAttributes_SetViewGeometry, METH_VARARGS},
     {"GetViewGeometry", LineSamplerAttributes_GetViewGeometry, METH_VARARGS},
     {"SetViewDimension", LineSamplerAttributes_SetViewDimension, METH_VARARGS},
@@ -2078,6 +2109,8 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return LineSamplerAttributes_GetPoloialZTilt(self, NULL);
     if(strcmp(name, "toroidalAngle") == 0)
         return LineSamplerAttributes_GetToroidalAngle(self, NULL);
+    if(strcmp(name, "flipToroidalAngle") == 0)
+        return LineSamplerAttributes_GetFlipToroidalAngle(self, NULL);
     if(strcmp(name, "viewGeometry") == 0)
         return LineSamplerAttributes_GetViewGeometry(self, NULL);
     if(strcmp(name, "Points") == 0)
@@ -2247,6 +2280,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetPoloialZTilt(self, tuple);
     else if(strcmp(name, "toroidalAngle") == 0)
         obj = LineSamplerAttributes_SetToroidalAngle(self, tuple);
+    else if(strcmp(name, "flipToroidalAngle") == 0)
+        obj = LineSamplerAttributes_SetFlipToroidalAngle(self, tuple);
     else if(strcmp(name, "viewGeometry") == 0)
         obj = LineSamplerAttributes_SetViewGeometry(self, tuple);
     else if(strcmp(name, "viewDimension") == 0)

@@ -640,6 +640,7 @@ void LineSamplerAttributes::Init()
     poloialRTilt = 0;
     poloialZTilt = 0;
     toroidalAngle = 0;
+    flipToroidalAngle = false;
     viewGeometry = Surfaces;
     viewDimension = Three;
     heightPlotScale = 1;
@@ -717,6 +718,7 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
     poloialRTilt = obj.poloialRTilt;
     poloialZTilt = obj.poloialZTilt;
     toroidalAngle = obj.toroidalAngle;
+    flipToroidalAngle = obj.flipToroidalAngle;
     viewGeometry = obj.viewGeometry;
     viewDimension = obj.viewDimension;
     heightPlotScale = obj.heightPlotScale;
@@ -928,6 +930,7 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
             (poloialRTilt == obj.poloialRTilt) &&
             (poloialZTilt == obj.poloialZTilt) &&
             (toroidalAngle == obj.toroidalAngle) &&
+            (flipToroidalAngle == obj.flipToroidalAngle) &&
             (viewGeometry == obj.viewGeometry) &&
             (viewDimension == obj.viewDimension) &&
             (heightPlotScale == obj.heightPlotScale) &&
@@ -1120,6 +1123,7 @@ LineSamplerAttributes::SelectAll()
     Select(ID_poloialRTilt,                  (void *)&poloialRTilt);
     Select(ID_poloialZTilt,                  (void *)&poloialZTilt);
     Select(ID_toroidalAngle,                 (void *)&toroidalAngle);
+    Select(ID_flipToroidalAngle,             (void *)&flipToroidalAngle);
     Select(ID_viewGeometry,                  (void *)&viewGeometry);
     Select(ID_viewDimension,                 (void *)&viewDimension);
     Select(ID_heightPlotScale,               (void *)&heightPlotScale);
@@ -1299,6 +1303,12 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("toroidalAngle", toroidalAngle));
+    }
+
+    if(completeSave || !FieldsEqual(ID_flipToroidalAngle, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("flipToroidalAngle", flipToroidalAngle));
     }
 
     if(completeSave || !FieldsEqual(ID_viewGeometry, &defaultObject))
@@ -1635,6 +1645,8 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         SetPoloialZTilt(node->AsDouble());
     if((node = searchNode->GetNode("toroidalAngle")) != 0)
         SetToroidalAngle(node->AsDouble());
+    if((node = searchNode->GetNode("flipToroidalAngle")) != 0)
+        SetFlipToroidalAngle(node->AsBool());
     if((node = searchNode->GetNode("viewGeometry")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1965,6 +1977,13 @@ LineSamplerAttributes::SetToroidalAngle(double toroidalAngle_)
 {
     toroidalAngle = toroidalAngle_;
     Select(ID_toroidalAngle, (void *)&toroidalAngle);
+}
+
+void
+LineSamplerAttributes::SetFlipToroidalAngle(bool flipToroidalAngle_)
+{
+    flipToroidalAngle = flipToroidalAngle_;
+    Select(ID_flipToroidalAngle, (void *)&flipToroidalAngle);
 }
 
 void
@@ -2300,6 +2319,12 @@ LineSamplerAttributes::GetToroidalAngle() const
     return toroidalAngle;
 }
 
+bool
+LineSamplerAttributes::GetFlipToroidalAngle() const
+{
+    return flipToroidalAngle;
+}
+
 LineSamplerAttributes::ViewGeometry
 LineSamplerAttributes::GetViewGeometry() const
 {
@@ -2552,6 +2577,7 @@ LineSamplerAttributes::GetFieldName(int index) const
     case ID_poloialRTilt:                  return "poloialRTilt";
     case ID_poloialZTilt:                  return "poloialZTilt";
     case ID_toroidalAngle:                 return "toroidalAngle";
+    case ID_flipToroidalAngle:             return "flipToroidalAngle";
     case ID_viewGeometry:                  return "viewGeometry";
     case ID_viewDimension:                 return "viewDimension";
     case ID_heightPlotScale:               return "heightPlotScale";
@@ -2625,6 +2651,7 @@ LineSamplerAttributes::GetFieldType(int index) const
     case ID_poloialRTilt:                  return FieldType_double;
     case ID_poloialZTilt:                  return FieldType_double;
     case ID_toroidalAngle:                 return FieldType_double;
+    case ID_flipToroidalAngle:             return FieldType_bool;
     case ID_viewGeometry:                  return FieldType_enum;
     case ID_viewDimension:                 return FieldType_enum;
     case ID_heightPlotScale:               return FieldType_double;
@@ -2698,6 +2725,7 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
     case ID_poloialRTilt:                  return "double";
     case ID_poloialZTilt:                  return "double";
     case ID_toroidalAngle:                 return "double";
+    case ID_flipToroidalAngle:             return "bool";
     case ID_viewGeometry:                  return "enum";
     case ID_viewDimension:                 return "enum";
     case ID_heightPlotScale:               return "double";
@@ -2856,6 +2884,11 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_toroidalAngle:
         {  // new scope
         retval = (toroidalAngle == obj.toroidalAngle);
+        }
+        break;
+    case ID_flipToroidalAngle:
+        {  // new scope
+        retval = (flipToroidalAngle == obj.flipToroidalAngle);
         }
         break;
     case ID_viewGeometry:

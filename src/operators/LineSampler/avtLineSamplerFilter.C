@@ -913,6 +913,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             toroidalAngle = 2.0 * M_PI * toroidalAngle/360.0;
           }
 
+          if( atts.GetFlipToroidalAngle() )
+            toroidalAngle = -toroidalAngle;
+
           // Initial translation based on the user origin for the
           // central channel.
           avtVector translate( r, 0, z );

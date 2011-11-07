@@ -135,6 +135,9 @@
       <Field name="toroidalAngle" label="Toroidal angle" type="double">
         0.000000
       </Field>
+      <Field name="flipToroidalAngle" label="Flip toroidal angle" type="bool">
+        false
+      </Field>
       <Field name="viewGeometry" label="View geometry" type="enum" subtype="ViewGeometry">
         Surfaces
       </Field>
@@ -224,7 +227,7 @@
       <Field name="channelListToroidalArrayAngle" label="Toroidal angle between arrays" type="double">
         5.000000
       </Field>
-      <Field name="channelListToroidalAngle" label="Toroidal offset angle" type="double">
+      <Field name="channelListToroidalAngle" label="Toroidal angle" type="double">
         0.000000
       </Field>
     </Attribute>

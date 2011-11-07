@@ -61,7 +61,7 @@ import java.util.Vector;
 
 public class LineSamplerAttributes extends AttributeSubject implements Plugin
 {
-    private static int LineSamplerAttributes_numAdditionalAtts = 49;
+    private static int LineSamplerAttributes_numAdditionalAtts = 50;
 
     // Enum values
     public final static int MESHGEOMETRY_CARTESIAN = 0;
@@ -145,6 +145,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         poloialRTilt = 0;
         poloialZTilt = 0;
         toroidalAngle = 0;
+        flipToroidalAngle = false;
         viewGeometry = VIEWGEOMETRY_SURFACES;
         viewDimension = VIEWDIMENSION_THREE;
         heightPlotScale = 1;
@@ -209,6 +210,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         poloialRTilt = 0;
         poloialZTilt = 0;
         toroidalAngle = 0;
+        flipToroidalAngle = false;
         viewGeometry = VIEWGEOMETRY_SURFACES;
         viewDimension = VIEWDIMENSION_THREE;
         heightPlotScale = 1;
@@ -276,6 +278,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         poloialRTilt = obj.poloialRTilt;
         poloialZTilt = obj.poloialZTilt;
         toroidalAngle = obj.toroidalAngle;
+        flipToroidalAngle = obj.flipToroidalAngle;
         viewGeometry = obj.viewGeometry;
         viewDimension = obj.viewDimension;
         heightPlotScale = obj.heightPlotScale;
@@ -379,6 +382,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
                 (poloialRTilt == obj.poloialRTilt) &&
                 (poloialZTilt == obj.poloialZTilt) &&
                 (toroidalAngle == obj.toroidalAngle) &&
+                (flipToroidalAngle == obj.flipToroidalAngle) &&
                 (viewGeometry == obj.viewGeometry) &&
                 (viewDimension == obj.viewDimension) &&
                 (heightPlotScale == obj.heightPlotScale) &&
@@ -544,178 +548,184 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         Select(19);
     }
 
+    public void SetFlipToroidalAngle(boolean flipToroidalAngle_)
+    {
+        flipToroidalAngle = flipToroidalAngle_;
+        Select(20);
+    }
+
     public void SetViewGeometry(int viewGeometry_)
     {
         viewGeometry = viewGeometry_;
-        Select(20);
+        Select(21);
     }
 
     public void SetViewDimension(int viewDimension_)
     {
         viewDimension = viewDimension_;
-        Select(21);
+        Select(22);
     }
 
     public void SetHeightPlotScale(double heightPlotScale_)
     {
         heightPlotScale = heightPlotScale_;
-        Select(22);
+        Select(23);
     }
 
     public void SetChannelPlotOffset(double channelPlotOffset_)
     {
         channelPlotOffset = channelPlotOffset_;
-        Select(23);
+        Select(24);
     }
 
     public void SetArrayPlotOffset(double arrayPlotOffset_)
     {
         arrayPlotOffset = arrayPlotOffset_;
-        Select(24);
+        Select(25);
     }
 
     public void SetDisplayTime(int displayTime_)
     {
         displayTime = displayTime_;
-        Select(25);
+        Select(26);
     }
 
     public void SetChannelGeometry(int channelGeometry_)
     {
         channelGeometry = channelGeometry_;
-        Select(26);
+        Select(27);
     }
 
     public void SetRadius(double radius_)
     {
         radius = radius_;
-        Select(27);
+        Select(28);
     }
 
     public void SetDivergence(double divergence_)
     {
         divergence = divergence_;
-        Select(28);
+        Select(29);
     }
 
     public void SetChannelProfile(int channelProfile_)
     {
         channelProfile = channelProfile_;
-        Select(29);
+        Select(30);
     }
 
     public void SetStandardDeviation(double standardDeviation_)
     {
         standardDeviation = standardDeviation_;
-        Select(30);
+        Select(31);
     }
 
     public void SetSampleDistance(double sampleDistance_)
     {
         sampleDistance = sampleDistance_;
-        Select(31);
+        Select(32);
     }
 
     public void SetSampleVolume(double sampleVolume_)
     {
         sampleVolume = sampleVolume_;
-        Select(32);
+        Select(33);
     }
 
     public void SetSampleArc(double sampleArc_)
     {
         sampleArc = sampleArc_;
-        Select(33);
+        Select(34);
     }
 
     public void SetChannelIntegration(int channelIntegration_)
     {
         channelIntegration = channelIntegration_;
-        Select(34);
+        Select(35);
     }
 
     public void SetToroidalIntegration(int toroidalIntegration_)
     {
         toroidalIntegration = toroidalIntegration_;
-        Select(35);
+        Select(36);
     }
 
     public void SetToroidalAngleSampling(int toroidalAngleSampling_)
     {
         toroidalAngleSampling = toroidalAngleSampling_;
-        Select(36);
+        Select(37);
     }
 
     public void SetToroidalAngleStart(double toroidalAngleStart_)
     {
         toroidalAngleStart = toroidalAngleStart_;
-        Select(37);
+        Select(38);
     }
 
     public void SetToroidalAngleStop(double toroidalAngleStop_)
     {
         toroidalAngleStop = toroidalAngleStop_;
-        Select(38);
+        Select(39);
     }
 
     public void SetToroidalAngleStride(double toroidalAngleStride_)
     {
         toroidalAngleStride = toroidalAngleStride_;
-        Select(39);
+        Select(40);
     }
 
     public void SetTimeSampling(int timeSampling_)
     {
         timeSampling = timeSampling_;
-        Select(40);
+        Select(41);
     }
 
     public void SetTimeStepStart(int timeStepStart_)
     {
         timeStepStart = timeStepStart_;
-        Select(41);
+        Select(42);
     }
 
     public void SetTimeStepStop(int timeStepStop_)
     {
         timeStepStop = timeStepStop_;
-        Select(42);
+        Select(43);
     }
 
     public void SetTimeStepStride(int timeStepStride_)
     {
         timeStepStride = timeStepStride_;
-        Select(43);
+        Select(44);
     }
 
     public void SetChannelList(Vector channelList_)
     {
         channelList = channelList_;
-        Select(44);
+        Select(45);
     }
 
     public void SetWallList(Vector wallList_)
     {
         wallList = wallList_;
-        Select(45);
+        Select(46);
     }
 
     public void SetNChannelListArrays(int nChannelListArrays_)
     {
         nChannelListArrays = nChannelListArrays_;
-        Select(46);
+        Select(47);
     }
 
     public void SetChannelListToroidalArrayAngle(double channelListToroidalArrayAngle_)
     {
         channelListToroidalArrayAngle = channelListToroidalArrayAngle_;
-        Select(47);
+        Select(48);
     }
 
     public void SetChannelListToroidalAngle(double channelListToroidalAngle_)
     {
         channelListToroidalAngle = channelListToroidalAngle_;
-        Select(48);
+        Select(49);
     }
 
     // Property getting methods
@@ -739,6 +749,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public double   GetPoloialRTilt() { return poloialRTilt; }
     public double   GetPoloialZTilt() { return poloialZTilt; }
     public double   GetToroidalAngle() { return toroidalAngle; }
+    public boolean  GetFlipToroidalAngle() { return flipToroidalAngle; }
     public int      GetViewGeometry() { return viewGeometry; }
     public int      GetViewDimension() { return viewDimension; }
     public double   GetHeightPlotScale() { return heightPlotScale; }
@@ -813,62 +824,64 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(19, buf))
             buf.WriteDouble(toroidalAngle);
         if(WriteSelect(20, buf))
-            buf.WriteInt(viewGeometry);
+            buf.WriteBool(flipToroidalAngle);
         if(WriteSelect(21, buf))
-            buf.WriteInt(viewDimension);
+            buf.WriteInt(viewGeometry);
         if(WriteSelect(22, buf))
-            buf.WriteDouble(heightPlotScale);
+            buf.WriteInt(viewDimension);
         if(WriteSelect(23, buf))
-            buf.WriteDouble(channelPlotOffset);
+            buf.WriteDouble(heightPlotScale);
         if(WriteSelect(24, buf))
-            buf.WriteDouble(arrayPlotOffset);
+            buf.WriteDouble(channelPlotOffset);
         if(WriteSelect(25, buf))
-            buf.WriteInt(displayTime);
+            buf.WriteDouble(arrayPlotOffset);
         if(WriteSelect(26, buf))
-            buf.WriteInt(channelGeometry);
+            buf.WriteInt(displayTime);
         if(WriteSelect(27, buf))
-            buf.WriteDouble(radius);
+            buf.WriteInt(channelGeometry);
         if(WriteSelect(28, buf))
-            buf.WriteDouble(divergence);
+            buf.WriteDouble(radius);
         if(WriteSelect(29, buf))
-            buf.WriteInt(channelProfile);
+            buf.WriteDouble(divergence);
         if(WriteSelect(30, buf))
-            buf.WriteDouble(standardDeviation);
+            buf.WriteInt(channelProfile);
         if(WriteSelect(31, buf))
-            buf.WriteDouble(sampleDistance);
+            buf.WriteDouble(standardDeviation);
         if(WriteSelect(32, buf))
-            buf.WriteDouble(sampleVolume);
+            buf.WriteDouble(sampleDistance);
         if(WriteSelect(33, buf))
-            buf.WriteDouble(sampleArc);
+            buf.WriteDouble(sampleVolume);
         if(WriteSelect(34, buf))
-            buf.WriteInt(channelIntegration);
+            buf.WriteDouble(sampleArc);
         if(WriteSelect(35, buf))
-            buf.WriteInt(toroidalIntegration);
+            buf.WriteInt(channelIntegration);
         if(WriteSelect(36, buf))
-            buf.WriteInt(toroidalAngleSampling);
+            buf.WriteInt(toroidalIntegration);
         if(WriteSelect(37, buf))
-            buf.WriteDouble(toroidalAngleStart);
+            buf.WriteInt(toroidalAngleSampling);
         if(WriteSelect(38, buf))
-            buf.WriteDouble(toroidalAngleStop);
+            buf.WriteDouble(toroidalAngleStart);
         if(WriteSelect(39, buf))
-            buf.WriteDouble(toroidalAngleStride);
+            buf.WriteDouble(toroidalAngleStop);
         if(WriteSelect(40, buf))
-            buf.WriteInt(timeSampling);
+            buf.WriteDouble(toroidalAngleStride);
         if(WriteSelect(41, buf))
-            buf.WriteInt(timeStepStart);
+            buf.WriteInt(timeSampling);
         if(WriteSelect(42, buf))
-            buf.WriteInt(timeStepStop);
+            buf.WriteInt(timeStepStart);
         if(WriteSelect(43, buf))
-            buf.WriteInt(timeStepStride);
+            buf.WriteInt(timeStepStop);
         if(WriteSelect(44, buf))
-            buf.WriteDoubleVector(channelList);
+            buf.WriteInt(timeStepStride);
         if(WriteSelect(45, buf))
-            buf.WriteDoubleVector(wallList);
+            buf.WriteDoubleVector(channelList);
         if(WriteSelect(46, buf))
-            buf.WriteInt(nChannelListArrays);
+            buf.WriteDoubleVector(wallList);
         if(WriteSelect(47, buf))
-            buf.WriteDouble(channelListToroidalArrayAngle);
+            buf.WriteInt(nChannelListArrays);
         if(WriteSelect(48, buf))
+            buf.WriteDouble(channelListToroidalArrayAngle);
+        if(WriteSelect(49, buf))
             buf.WriteDouble(channelListToroidalAngle);
     }
 
@@ -937,90 +950,93 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             SetToroidalAngle(buf.ReadDouble());
             break;
         case 20:
-            SetViewGeometry(buf.ReadInt());
+            SetFlipToroidalAngle(buf.ReadBool());
             break;
         case 21:
-            SetViewDimension(buf.ReadInt());
+            SetViewGeometry(buf.ReadInt());
             break;
         case 22:
-            SetHeightPlotScale(buf.ReadDouble());
+            SetViewDimension(buf.ReadInt());
             break;
         case 23:
-            SetChannelPlotOffset(buf.ReadDouble());
+            SetHeightPlotScale(buf.ReadDouble());
             break;
         case 24:
-            SetArrayPlotOffset(buf.ReadDouble());
+            SetChannelPlotOffset(buf.ReadDouble());
             break;
         case 25:
-            SetDisplayTime(buf.ReadInt());
+            SetArrayPlotOffset(buf.ReadDouble());
             break;
         case 26:
-            SetChannelGeometry(buf.ReadInt());
+            SetDisplayTime(buf.ReadInt());
             break;
         case 27:
-            SetRadius(buf.ReadDouble());
+            SetChannelGeometry(buf.ReadInt());
             break;
         case 28:
-            SetDivergence(buf.ReadDouble());
+            SetRadius(buf.ReadDouble());
             break;
         case 29:
-            SetChannelProfile(buf.ReadInt());
+            SetDivergence(buf.ReadDouble());
             break;
         case 30:
-            SetStandardDeviation(buf.ReadDouble());
+            SetChannelProfile(buf.ReadInt());
             break;
         case 31:
-            SetSampleDistance(buf.ReadDouble());
+            SetStandardDeviation(buf.ReadDouble());
             break;
         case 32:
-            SetSampleVolume(buf.ReadDouble());
+            SetSampleDistance(buf.ReadDouble());
             break;
         case 33:
-            SetSampleArc(buf.ReadDouble());
+            SetSampleVolume(buf.ReadDouble());
             break;
         case 34:
-            SetChannelIntegration(buf.ReadInt());
+            SetSampleArc(buf.ReadDouble());
             break;
         case 35:
-            SetToroidalIntegration(buf.ReadInt());
+            SetChannelIntegration(buf.ReadInt());
             break;
         case 36:
-            SetToroidalAngleSampling(buf.ReadInt());
+            SetToroidalIntegration(buf.ReadInt());
             break;
         case 37:
-            SetToroidalAngleStart(buf.ReadDouble());
+            SetToroidalAngleSampling(buf.ReadInt());
             break;
         case 38:
-            SetToroidalAngleStop(buf.ReadDouble());
+            SetToroidalAngleStart(buf.ReadDouble());
             break;
         case 39:
-            SetToroidalAngleStride(buf.ReadDouble());
+            SetToroidalAngleStop(buf.ReadDouble());
             break;
         case 40:
-            SetTimeSampling(buf.ReadInt());
+            SetToroidalAngleStride(buf.ReadDouble());
             break;
         case 41:
-            SetTimeStepStart(buf.ReadInt());
+            SetTimeSampling(buf.ReadInt());
             break;
         case 42:
-            SetTimeStepStop(buf.ReadInt());
+            SetTimeStepStart(buf.ReadInt());
             break;
         case 43:
-            SetTimeStepStride(buf.ReadInt());
+            SetTimeStepStop(buf.ReadInt());
             break;
         case 44:
-            SetChannelList(buf.ReadDoubleVector());
+            SetTimeStepStride(buf.ReadInt());
             break;
         case 45:
-            SetWallList(buf.ReadDoubleVector());
+            SetChannelList(buf.ReadDoubleVector());
             break;
         case 46:
-            SetNChannelListArrays(buf.ReadInt());
+            SetWallList(buf.ReadDoubleVector());
             break;
         case 47:
-            SetChannelListToroidalArrayAngle(buf.ReadDouble());
+            SetNChannelListArrays(buf.ReadInt());
             break;
         case 48:
+            SetChannelListToroidalArrayAngle(buf.ReadDouble());
+            break;
+        case 49:
             SetChannelListToroidalAngle(buf.ReadDouble());
             break;
         }
@@ -1083,6 +1099,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("poloialRTilt", poloialRTilt, indent) + "\n";
         str = str + doubleToString("poloialZTilt", poloialZTilt, indent) + "\n";
         str = str + doubleToString("toroidalAngle", toroidalAngle, indent) + "\n";
+        str = str + boolToString("flipToroidalAngle", flipToroidalAngle, indent) + "\n";
         str = str + indent + "viewGeometry = ";
         if(viewGeometry == VIEWGEOMETRY_POINTS)
             str = str + "VIEWGEOMETRY_POINTS";
@@ -1194,6 +1211,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     private double   poloialRTilt;
     private double   poloialZTilt;
     private double   toroidalAngle;
+    private boolean  flipToroidalAngle;
     private int      viewGeometry;
     private int      viewDimension;
     private double   heightPlotScale;
