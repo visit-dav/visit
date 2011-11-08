@@ -47,8 +47,7 @@
 
 #include <avtDataTreeIterator.h>
 
-class vtkDataSet;
-
+#include <vtkDataSet.h>
 
 // ****************************************************************************
 //  Class: avtNamedSelectionFilter
@@ -64,6 +63,9 @@ class vtkDataSet;
 //
 //    Hank Childs, Mon Feb 23 21:27:00 PST 2009
 //    Added data member selectionId.
+//
+//    Brad Whitlock, Thu Oct 27 16:26:30 PDT 2011
+//    I added SelectedData.
 //
 // ****************************************************************************
 
@@ -86,6 +88,9 @@ class AVTFILTERS_API avtNamedSelectionFilter : public avtDataTreeIterator
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
     virtual avtContract_p ModifyContract(avtContract_p);
+
+    vtkDataSet           *SelectedData(vtkDataSet *in_ds, 
+                                       const std::vector<vtkIdType> &ids);
 };
 
 

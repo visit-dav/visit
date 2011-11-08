@@ -1106,6 +1106,9 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
 //    a fix Hank did on Mon Apr 6 17:13:58 PDT 2009 in 
 //    avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection 
 //
+//    Brad Whitlock, Fri Oct 28 11:00:26 PDT 2011
+//    Change named selection API.
+//
 // ****************************************************************************
 
 avtNamedSelection *
@@ -1139,7 +1142,12 @@ avtThresholdFilter::CreateNamedSelection(avtContract_p c, const std::string &s)
     avtIdentifierSelection *ids = GetMetaData()->GetIdentifiers(drs);
     avtNamedSelection *rv = NULL;
     if (ids != NULL)
-        rv = new avtFloatingPointIdNamedSelection(s, ids->GetIdentifiers());
+    {
+        avtFloatingPointIdNamedSelection *fpns = new avtFloatingPointIdNamedSelection(s);
+        fpns->SetIdentifiers(ids->GetIdentifiers());
+        rv = fpns;
+    }
+
     // Don't delete ids, since it is being cached at the DB level and we don't
     // own this reference.
     // delete ids;

@@ -226,7 +226,9 @@ QvisHistogram::drawOpacities()
 // Creation:   Wed Dec 29 13:55:27 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Nov  7 15:51:00 PST 2011
+//   I added special case text.
+//
 // ****************************************************************************
 
 void
@@ -265,6 +267,58 @@ QvisHistogram::paintEvent(QPaintEvent *e)
                    contentsRect().width(), contentsRect().height(),
                    Qt::AlignCenter | Qt::AlignVCenter,
                    tr("No data"));
+    }
+    else
+    {
+        // Examine the histogram texture and look for the case where there 
+        // are just a few values.
+        float sum = 0.f;
+        for(int i = 0; i < histTextureSize; ++i)
+            sum += histTexture[i];
+        p.setPen(Qt::white);
+        if(sum == 0.f)
+        {
+            p.drawText(contentsRect().x(), contentsRect().y(),
+                       contentsRect().width(), contentsRect().height(),
+                       Qt::AlignCenter | Qt::AlignVCenter,
+                       tr("No data"));
+        }
+        else if(sum == histTexture[0])
+        {
+            QString minstr(tr("minimum"));
+            if(totalRangeValid)
+                minstr = QString().setNum(totalRange[0]);
+            p.drawText(contentsRect().x(), contentsRect().y(),
+                       contentsRect().width(), contentsRect().height(),
+                       Qt::AlignCenter | Qt::AlignVCenter,
+                       tr("All values are %1").arg(minstr));
+        }
+        else if(sum == histTexture[histTextureSize-1])
+        {
+            QString maxstr(tr("maximum"));
+            if(totalRangeValid)
+                maxstr = QString().setNum(totalRange[1]);
+            p.drawText(contentsRect().x(), contentsRect().y(),
+                       contentsRect().width(), contentsRect().height(),
+                       Qt::AlignCenter | Qt::AlignVCenter,
+                       tr("All values are %1").arg(maxstr));
+        }
+        else if(sum == (histTexture[0] + histTexture[histTextureSize-1]))
+        {
+            QString minstr(tr("minimum"));
+            if(totalRangeValid)
+                minstr = QString().setNum(totalRange[0]);
+            QString maxstr(tr("maximum"));
+            if(totalRangeValid)
+                maxstr = QString().setNum(totalRange[1]);
+            p.drawText(contentsRect().x(), contentsRect().y(),
+                       contentsRect().width(), contentsRect().height(),
+                       Qt::AlignCenter | Qt::AlignVCenter,
+                       tr("%1% of values are %2\n%3% of values are %4").
+                       arg(histTexture[0] / sum).arg(minstr).
+                       arg(histTexture[histTextureSize-1] / sum).arg(maxstr)
+                      );
+        }
     }
 
 #if 0

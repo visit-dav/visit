@@ -39,11 +39,11 @@
 #define AVT_NAMED_SELECTION_EXTENSION_H
 
 #include <pipeline_exports.h>
-#include <vector>
 
 #include <avtContract.h>
 #include <avtDataset.h>
 #include <avtDataObject.h>
+#include <avtNamedSelection.h>
 #include <MRUCache.h>
 #include <SelectionProperties.h>
 
@@ -79,6 +79,9 @@ typedef MRUCache<std::string,
 //   Brad Whitlock, Tue Sep  6 14:47:35 PDT 2011
 //   I changed the API.
 //
+//   Brad Whitlock, Thu Oct 27 16:56:42 PDT 2011
+//   I changed the API so we return a named selection from the extension.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelectionExtension
@@ -87,15 +90,14 @@ public:
     avtNamedSelectionExtension();
     virtual ~avtNamedSelectionExtension();
 
-    virtual void GetSelection(avtDataObject_p dob, const SelectionProperties &props,
-                              avtNamedSelectionCache &cache, 
-                              std::vector<int> &doms, std::vector<int> &zones);
+    virtual avtNamedSelection *GetSelection(avtDataObject_p dob, const SelectionProperties &props,
+                                            avtNamedSelectionCache &cache);
 
-protected:
-    avtContract_p GetContract(avtDataObject_p dob, bool &needsUpdate);
+    virtual avtContract_p ModifyContract(avtContract_p c0, const SelectionProperties &props,
+                                         bool &needsUpdate) const;
 
-    void GetSelectionFromDataset(avtDataset_p tree, 
-                                 std::vector<int> &doms, std::vector<int> &zones);
+    static std::string        GetIdVariable(const SelectionProperties &props);
+    static avtNamedSelection *GetSelectionFromDataset(avtDataset_p tree, const SelectionProperties &props);
 };
 
 #endif

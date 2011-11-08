@@ -2180,6 +2180,9 @@ avtParallelCoordinatesFilter::CreateNamedSelection(avtContract_p c,
 //    Hank Childs, Mon Apr  6 17:13:58 PDT 2009
 //    Fix a crash due to deleting a reference we don't own.
 //
+//    Brad Whitlock, Fri Oct 28 15:07:17 PDT 2011
+//    Changed due to constructor arguments.
+//
 // ****************************************************************************
 
 avtNamedSelection *
@@ -2209,7 +2212,13 @@ avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
     avtIdentifierSelection *ids = GetMetaData()->GetIdentifiers(drs);
     avtNamedSelection *rv = NULL;
     if (ids != NULL)
-        rv = new avtFloatingPointIdNamedSelection(selName, ids->GetIdentifiers());
+    {
+        avtFloatingPointIdNamedSelection *fpns = 
+            new avtFloatingPointIdNamedSelection(selName);
+        fpns->SetIdentifiers(ids->GetIdentifiers());
+        rv = fpns;
+    }
+
     // Don't delete ids, since it is being cached at the DB level and we don't
     // own this reference.
     // delete ids;
@@ -2235,6 +2244,9 @@ avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
 //    GetCellPoints assumes the passed vtkIdList has been created, so I added 
 //    initialization of pointIdList, and deleted it when no longer needed.
 // 
+//    Brad Whitlock, Fri Oct 28 11:22:36 PDT 2011
+//    I changed the avtZoneIdNamedSelection API slightly.
+//
 // ****************************************************************************
 
 avtNamedSelection *
@@ -2395,6 +2407,8 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
         numTotal += numPerProc[i];
     if (numTotal > 1000000)
     {
+        delete [] numPerProcIn;
+        delete [] numPerProc;
         EXCEPTION1(VisItException, "You have selected too many zones in your "
                    "named selection.  Disallowing ... no selection created");
     }
@@ -2418,8 +2432,8 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
     // Now construct the actual named selection and add it to our internal
     // data structure for tracking named selections.
     //
-    avtNamedSelection *ns = 
-             new avtZoneIdNamedSelection(selName,numTotal,selForDoms,selForZones);
+    avtZoneIdNamedSelection *ns = new avtZoneIdNamedSelection(selName);
+    ns->SetIdentifiers(numTotal, selForDoms, selForZones);
 
     delete [] numPerProcIn;
     delete [] numPerProc;

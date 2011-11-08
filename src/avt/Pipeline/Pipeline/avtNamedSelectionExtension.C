@@ -38,10 +38,12 @@
 #include <avtNamedSelectionExtension.h>
 
 #include <avtDataset.h>
+#include <avtParallel.h>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkPointData.h>
 
 #include <DebugStream.h>
 
@@ -63,7 +65,7 @@ avtNamedSelectionExtension::~avtNamedSelectionExtension()
 }
 
 // ****************************************************************************
-// Method: avtNamedSelectionExtension::GetContract
+// Method: avtNamedSelectionExtension::ModifyContract
 //
 // Purpose: 
 //   Return the contract that we'll use for pipeline execution.
@@ -72,35 +74,72 @@ avtNamedSelectionExtension::~avtNamedSelectionExtension()
 //
 // Returns:     
 //
-// Note:       We turn on zone numbers in the returned contract. If the prior
-//             contract did not have zone numbers then we'll need to execute
-//             the pipeline.
+// Note:       We add different requests to the input contract and return a
+//             changed copy of it.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Sep  6 15:44:42 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Oct 28 10:00:39 PDT 2011
+//   I added support for different id methods.
+//
 // ****************************************************************************
 
 avtContract_p
-avtNamedSelectionExtension::GetContract(avtDataObject_p dob, bool &needsUpdate)
+avtNamedSelectionExtension::ModifyContract(avtContract_p c0, 
+    const SelectionProperties &props, bool &needsUpdate) const
 {
-    avtContract_p c1 = dob->GetContractFromPreviousExecution();
     avtContract_p contract;
-    if (c1->GetDataRequest()->NeedZoneNumbers() == false)
+    
+    if(props.GetIdVariableType() == SelectionProperties::UseZoneIDForID)
     {
-        // If we don't have zone numbers, then get them, even if we have
-        // to re-execute the whole darn pipeline.
-        contract = new avtContract(c1);
-        contract->GetDataRequest()->TurnZoneNumbersOn();
-        needsUpdate = true;
+        if (c0->GetDataRequest()->NeedZoneNumbers() == false)
+        {
+            // If we don't have zone numbers, then get them, even if we have
+            // to re-execute the whole darn pipeline.
+            contract = new avtContract(c0);
+            contract->GetDataRequest()->TurnZoneNumbersOn();
+            needsUpdate = true;
+        }
+        else
+        {
+            contract = c0;
+            needsUpdate = false;
+        }
     }
-    else
+    else if(props.GetIdVariableType() == SelectionProperties::UseGlobalZoneIDForID)
     {
-        contract = c1;
-        needsUpdate = false;
+        if (c0->GetDataRequest()->NeedGlobalZoneNumbers() == false)
+        {
+            // If we don't have global zone numbers, then get them, even if we have
+            // to re-execute the whole darn pipeline.
+            contract = new avtContract(c0);
+            contract->GetDataRequest()->TurnGlobalZoneNumbersOn();
+            needsUpdate = true;
+        }
+        else
+        {
+            contract = c0;
+            needsUpdate = false;
+        } 
     }
+    else if(props.GetIdVariableType() == SelectionProperties::UseVariableForID)
+    {
+        // Make sure that we request the id variable.
+        if(c0->GetDataRequest()->HasSecondaryVariable(props.GetIdVariable().c_str()))
+        {
+            contract = c0;
+            needsUpdate = false;
+        }
+        else
+        {
+            contract = new avtContract(c0);
+            contract->GetDataRequest()->AddSecondaryVariable(props.GetIdVariable().c_str());
+            needsUpdate = true;
+        }
+    }
+
     return contract;
 }
 
@@ -126,18 +165,20 @@ avtNamedSelectionExtension::GetContract(avtDataObject_p dob, bool &needsUpdate)
 // Creation:   Tue Sep  6 16:02:40 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Oct 28 09:44:54 PDT 2011
+//   I changed the code so it creates an avtNamedSelection object.
+//
 // ****************************************************************************
 
-void
+avtNamedSelection *
 avtNamedSelectionExtension::GetSelection(avtDataObject_p dob, 
-    const SelectionProperties &/*props*/,
-    avtNamedSelectionCache &/*cache*/,
-    std::vector<int> &doms, std::vector<int> &zones)
+    const SelectionProperties &props,
+    avtNamedSelectionCache &/*cache*/)
 {
     const char *mName = "avtNamedSelectionExtension::GetSelection: ";
+    avtContract_p c0 = dob->GetContractFromPreviousExecution();
     bool needsUpdate = false;
-    avtContract_p contract = GetContract(dob, needsUpdate);
+    avtContract_p contract = ModifyContract(c0, props, needsUpdate);
 
     if (needsUpdate)
     {
@@ -146,9 +187,57 @@ avtNamedSelectionExtension::GetSelection(avtDataObject_p dob,
         debug1 << mName << "Done re-executing pipeline to create named selection" << endl;
     }
 
+    // Get this processor's contribution
     avtDataset_p ds;
     CopyTo(ds, dob);
-    GetSelectionFromDataset(ds, doms, zones);
+    avtNamedSelection *ns = GetSelectionFromDataset(ds, props);
+
+    TRY
+    {
+        // Make sure all processors have the same selection.
+        ns->Globalize();
+    }
+    CATCH(VisItException)
+    {
+        delete ns;
+        RETHROW;
+    }
+    ENDTRY
+
+    return ns;
+}
+
+// ****************************************************************************
+// Method: avtNamedSelectionExtension::GetIdVariable
+//
+// Purpose: 
+//   Return the name of the id variable that we'll use for the selection.
+//
+// Arguments:
+//   props : The selection properties.
+//
+// Returns:    The name of the id variable that we'll use when accessing cell data.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 28 13:28:51 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+avtNamedSelectionExtension::GetIdVariable(const SelectionProperties &props)
+{
+    std::string idName;
+    if(props.GetIdVariableType() == SelectionProperties::UseZoneIDForID)
+        idName = "avtOriginalCellNumbers";
+    else if(props.GetIdVariableType() == SelectionProperties::UseGlobalZoneIDForID)
+        idName = "avtGlobalZoneNumbers";
+    else if(props.GetIdVariableType() == SelectionProperties::UseVariableForID)
+        idName = props.GetIdVariable();
+    return idName;
 }
 
 // ****************************************************************************
@@ -174,23 +263,37 @@ avtNamedSelectionExtension::GetSelection(avtDataObject_p dob,
 //   I moved it from the named selection manager and changed it to a 2 pass
 //   scheme to remove successive calls to resize.
 //
+//   Brad Whitlock, Fri Oct 28 10:48:34 PDT 2011
+//   I rewrote it.
+//
 // ****************************************************************************
 
-void
+avtNamedSelection *
 avtNamedSelectionExtension::GetSelectionFromDataset(avtDataset_p ds, 
-    std::vector<int> &doms, std::vector<int> &zones)
+    const SelectionProperties &props)
 {
     const char *mName = "avtNamedSelectionExtension::GetSelectionFromDataTree: ";
+
+    avtNamedSelection *ns = NULL;
+    std::string idName;
+    if(props.GetIdVariableType() == SelectionProperties::UseZoneIDForID)
+        ns = new avtZoneIdNamedSelection(props.GetName());
+    else if(props.GetIdVariableType() == SelectionProperties::UseGlobalZoneIDForID)
+        ns = new avtFloatingPointIdNamedSelection(props.GetName());
+    else if(props.GetIdVariableType() == SelectionProperties::UseVariableForID)
+        ns = new avtFloatingPointIdNamedSelection(props.GetName());
+    ns->SetIdVariable(GetIdVariable(props));
+    
     int nleaves = 0;
     avtDataTree_p tree = ds->GetDataTree();
     vtkDataSet **leaves = tree->GetAllLeaves(nleaves);
-    unsigned int idx = 0, maxSize = 0;
+    unsigned int maxSize = 0;
     for(int pass = 0; pass < 2; ++pass)
     {
         if(pass == 1)
         {
-            doms.resize(maxSize);
-            zones.resize(maxSize);
+            // Allocate enough ids in the named selection to hold all of the data.
+            ns->Allocate(maxSize);
         }
 
         for (int i = 0 ; i < nleaves ; i++)
@@ -198,45 +301,48 @@ avtNamedSelectionExtension::GetSelectionFromDataset(avtDataset_p ds,
             if (leaves[i]->GetNumberOfCells() == 0)
                 continue;
 
-            vtkDataArray *ocn = leaves[i]->GetCellData()->
-                                                GetArray("avtOriginalCellNumbers");
-            if (ocn == NULL)
+            vtkDataArray *arr = leaves[i]->GetCellData()->
+                 GetArray(ns->GetIdVariable().c_str());
+            if(arr == NULL && 
+               leaves[i]->GetNumberOfCells() == leaves[i]->GetNumberOfPoints())
+            {
+                arr = leaves[i]->GetPointData()->GetArray(ns->GetIdVariable().c_str());
+            }
+
+            if (arr == NULL)
             {
                 // Write an error to the logs but don't fail out since we have
                 // a collective communication coming up.
                 debug5 << mName
-                       << "This dataset has no original cell numbers so it cannot "
-                          "contribute to the selection." << endl;
+                       << "This dataset does not have the id variable "
+                       << ns->GetIdVariable() << " so it cannot contribute "
+                          "to the selection." << endl;
             }
             else
             {
-                unsigned int *ptr = (unsigned int *) ocn->GetVoidPointer(0);
-                if (ptr == NULL)
+                if (arr->GetVoidPointer(0) == NULL)
                 {
                     // Write an error to the logs but don't fail out since we have
                     // a collective communication coming up.
                     debug5 << mName
-                           << "This dataset has no original cell numbers so it "
-                              "cannot contribute to the selection." << endl;
+                           << "This dataset does not have the id variable "
+                           << ns->GetIdVariable() << " so it cannot contribute "
+                              "to the selection." << endl;
                 }
                 else
                 {
-                    unsigned int ncells = leaves[i]->GetNumberOfCells();
                     if(pass == 0)
                         maxSize += leaves[i]->GetNumberOfCells();
                     else
                     {
-                        // We have original cell numbers so add them to the selection.
-                        for (int j = 0 ; j < ncells ; j++)
-                        {
-                            doms[idx]  = ptr[2*j];
-                            zones[idx] = ptr[2*j+1];
-                            idx++;
-                        }
+                        // Append the data into the named selection.
+                        ns->Append(arr);
                     }
                 }
             }
         }
     }
     delete [] leaves;
+
+    return ns;
 }

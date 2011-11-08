@@ -39,8 +39,10 @@
 #ifndef QVIS_SELECTIONS_DIALOG_H
 #define QVIS_SELECTIONS_DIALOG_H
 #include <QDialog>
+
 class QLabel;
 class QLineEdit;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisSelectionsDialog
@@ -54,7 +56,9 @@ class QLineEdit;
 // Creation:   Thu Jun  9 14:46:22 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Sat Nov  5 02:14:58 PDT 2011
+//   Let the user pick different id variable types.
+//
 // ****************************************************************************
 
 class QvisSelectionsDialog : public QDialog
@@ -67,6 +71,13 @@ public:
         SOURCE_USE_DB_OR_PLOT
     } SourceSelectionMode;
 
+    typedef enum
+    {
+        UseZoneIDForID,
+        UseGlobalZoneIDForID,
+        UseVariableForID
+    } IDVariableType;
+
     QvisSelectionsDialog(SourceSelectionMode m, QWidget *parent = 0);
     virtual ~QvisSelectionsDialog();
 
@@ -74,19 +85,25 @@ public:
     void setPlotName(const QString &val);
     void setDBName(const QString &val);
 
-    int exec(QString &selName, QString &selSource, bool &plotSource);
+    int exec(QString &selName, QString &selSource, bool &plotSource,
+             IDVariableType &idtype, QString &idvar);
 
 private slots:
     void selectionChoiceChanged(int);
+    void idVariableChanged(const QString &);
+    void idVariableTypeChanged(int);
 private:
-    bool    choosePlot;
-    QString selectionName;
-    QString plot;
-    QString db;
+    bool           choosePlot;
+    QString        selectionName;
+    QString        plot;
+    QString        db;
+    IDVariableType idType;
+    QString        idVariable;
 
-    QLineEdit *selectionNameLineEdit;
-    QLabel    *plotLabel;
-    QLabel    *dbLabel;
+    QLineEdit     *selectionNameLineEdit;
+    QLabel        *plotLabel;
+    QLabel        *dbLabel;
+    QvisVariableButton *idVariableButton;
 };
 
 #endif

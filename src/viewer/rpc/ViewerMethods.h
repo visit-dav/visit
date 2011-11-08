@@ -229,7 +229,9 @@ public:
 
     void ApplyNamedSelection(const std::string &selName);
     void CreateNamedSelection(const std::string &selName);
-    void CreateNamedSelection(const std::string &selName, const SelectionProperties &props);
+    void CreateNamedSelection(const std::string &selName, 
+                              const SelectionProperties &props, 
+                              bool useCurrentPlot = false);
     void DeleteNamedSelection(const std::string &selName);
     void LoadNamedSelection(const std::string &selName,
                             const std::string &hostName,

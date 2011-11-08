@@ -261,6 +261,9 @@ QvisSelectionsWindow::CreateWindowContents()
 //   Brad Whitlock, Fri May 20 15:30:19 PDT 2011
 //   I made it look more like the image from visitusers.org.
 //
+//   Brad Whitlock, Mon Nov  7 14:05:38 PST 2011
+//   I added controls for setting the id variable.
+//
 // ****************************************************************************
 
 QWidget *
@@ -273,15 +276,44 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
     QGridLayout *definitionLayout = new QGridLayout(f2);
     definitionLayout->setMargin(5);
 
+    int row = 0;
     QLabel *plotNameEditLabel = new QLabel(tr("Selection source"), f2);
     plotNameEditLabel->setToolTip(tr("The data source that defines the selection"));
     plotNameLabel = new QLabel(f2);
-    definitionLayout->addWidget(plotNameEditLabel, 0,0);
-    definitionLayout->addWidget(plotNameLabel, 0,1, 1,3);
+    definitionLayout->addWidget(plotNameEditLabel, row,0);
+    definitionLayout->addWidget(plotNameLabel, row,1, 1,3);
+    ++row;
+
+    // Add controls that let the user pick the method for relating cells.
+    QGroupBox *idGroup = new QGroupBox(tr("Relate cells using"), f2);
+    QGridLayout *iLayout = new QGridLayout(idGroup);
+    idVariableType = new QButtonGroup(f2);
+    QRadioButton *b0 = new QRadioButton(tr("Domain and cell numbers"), f2);
+    idVariableType->addButton(b0, 0);
+    iLayout->addWidget(b0, 0, 0);
+    QRadioButton *b1 = new QRadioButton(tr("Global cell numbers"), f2);
+    idVariableType->addButton(b1, 1);
+    iLayout->addWidget(b1, 0, 1);
+    QRadioButton *b2 = new QRadioButton(tr("Variable"), f2);
+    idVariableType->addButton(b2, 2);
+    iLayout->addWidget(b2, 0, 2);
+    b0->setChecked(true);
+    connect(idVariableType, SIGNAL(buttonClicked(int)),
+            this, SLOT(idVariableTypeChanged(int)));
+    idVariableButton = new QvisVariableButton(f2);
+    idVariableButton->setVarTypes(QvisVariableButton::Scalars);
+    idVariableButton->setAddDefault(false);
+    idVariableButton->setEnabled(false);
+    connect(idVariableButton, SIGNAL(activated(const QString &)),
+            this, SLOT(idVariableChanged(const QString &)));
+    iLayout->addWidget(idVariableButton, 0, 3);
+    definitionLayout->addWidget(idGroup, row, 0, 1, 4);
+    ++row;
 
     QFrame *spacer = new QFrame(f2);
     spacer->setFrameStyle(QFrame::HLine | QFrame::Raised);
-    definitionLayout->addWidget(spacer, 1,0, 1,4);
+    definitionLayout->addWidget(spacer, row,0, 1,4);
+    ++row;
 
     cqControls = new QGroupBox(f2);
     cqControls->setTitle(tr("Cumulative Query"));
@@ -291,8 +323,9 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
 
 
     QVBoxLayout *vLayout = new QVBoxLayout(cqControls);
-    definitionLayout->addWidget(cqControls, 2,0,1,4);
-    definitionLayout->setRowStretch(2, 10);
+    definitionLayout->addWidget(cqControls, row,0,1,4);
+    definitionLayout->setRowStretch(row, 10);
+    ++row;
 
     cqTabs = new QTabWidget(cqControls);
     vLayout->addWidget(cqTabs);
@@ -303,13 +336,14 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
     automaticallyApply = new QCheckBox(tr("Automatically apply updated selections"), f2);
     connect(automaticallyApply, SIGNAL(toggled(bool)),
             this, SLOT(automaticallyApplyChanged(bool)));
-    definitionLayout->addWidget(automaticallyApply, 3,0,1,2);
+    definitionLayout->addWidget(automaticallyApply, row,0,1,2);
 
 
     updateSelectionButton = new QPushButton(tr("Update Selection"), f2);
     connect(updateSelectionButton, SIGNAL(pressed()),
             this, SLOT(updateSelection()));
-    definitionLayout->addWidget(updateSelectionButton, 3,3);
+    definitionLayout->addWidget(updateSelectionButton, row,3);
+    ++row;
 
     return f2;
 }
@@ -1046,7 +1080,9 @@ QvisSelectionsWindow::UpdateMinMaxBins(bool updateMin, bool updateMax,
 // Creation:   Wed Dec 29 11:14:20 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Nov  7 14:11:28 PST 2011
+//   I added code to set the id type and variable.
+//
 // ****************************************************************************
 
 void
@@ -1057,6 +1093,14 @@ QvisSelectionsWindow::UpdateSelectionProperties()
     if (!selectionPropsValid)
     {
         plotNameLabel->setText(tr("none"));
+
+        idVariableType->blockSignals(true);
+        idVariableType->button(0)->setChecked(true);
+        idVariableType->blockSignals(false);
+
+        idVariableButton->blockSignals(true);
+        idVariableButton->setVariable(QString());
+        idVariableButton->blockSignals(false);
 
         // Range controls
         cqControls->blockSignals(true);
@@ -1108,6 +1152,22 @@ QvisSelectionsWindow::UpdateSelectionProperties()
             else
                 plotNameLabel->setText(plotDesc);
         }
+
+        int idvar = 0;
+        if(selectionProps.GetIdVariableType() == SelectionProperties::UseZoneIDForID)
+            idvar = 0;
+        else if(selectionProps.GetIdVariableType() == SelectionProperties::UseGlobalZoneIDForID)
+            idvar = 1;
+        else if(selectionProps.GetIdVariableType() == SelectionProperties::UseVariableForID)
+            idvar = 2;
+        idVariableType->blockSignals(true);
+        idVariableType->button(idvar)->setChecked(true);
+        idVariableType->blockSignals(false);
+
+        idVariableButton->blockSignals(true);
+        idVariableButton->setVariable(QString(selectionProps.GetIdVariable().c_str()));
+        idVariableButton->blockSignals(false);
+        idVariableButton->setEnabled(idvar == 2);
 
         cqControls->blockSignals(true);
         cqControls->setChecked(selectionProps.GetSelectionType() == 
@@ -1356,6 +1416,8 @@ QvisSelectionsWindow::UpdateWindowSingleItem()
 // Creation:   Fri Aug  6 15:44:09 PDT 2010
 //
 // Modifications:
+//   Brad Whitlock, Sat Nov  5 02:42:04 PDT 2011
+//   I added support for different id types.
 //
 // ****************************************************************************
 
@@ -1379,6 +1441,8 @@ QvisSelectionsWindow::addSelection()
 
     QString selName, selSource;
     bool plotSource = false;
+    QvisSelectionsDialog::IDVariableType idType = QvisSelectionsDialog::UseZoneIDForID;
+    QString idVariable;
 
     int dlgRet;
     if(pName.isEmpty() && sName.isEmpty())
@@ -1395,7 +1459,7 @@ QvisSelectionsWindow::addSelection()
         dlg.setSelectionName(newName);
         dlg.setPlotName(plotDesc);
         dlg.setDBName(sName);
-        dlgRet = dlg.exec(selName, selSource, plotSource);
+        dlgRet = dlg.exec(selName, selSource, plotSource, idType, idVariable);
 
         if(plotSource)
             selSource = pName;
@@ -1405,31 +1469,38 @@ QvisSelectionsWindow::addSelection()
         QvisSelectionsDialog dlg(QvisSelectionsDialog::SOURCE_USE_DB, this);
         dlg.setSelectionName(newName);
         dlg.setDBName(sName);
-        dlgRet = dlg.exec(selName, selSource, plotSource);
+        dlgRet = dlg.exec(selName, selSource, plotSource, idType, idVariable);
     }
 
     if(dlgRet == QDialog::Accepted && !selName.isEmpty())
     {
+        // Tell the viewer to add the new named selection based on the db
+        SelectionProperties p;
+        p.SetName(selName.toStdString());
+        p.SetSource(selSource.toStdString());
+        if(idType == QvisSelectionsDialog::UseZoneIDForID)
+            p.SetIdVariableType(SelectionProperties::UseZoneIDForID);
+        else if(idType == QvisSelectionsDialog::UseGlobalZoneIDForID)
+            p.SetIdVariableType(SelectionProperties::UseGlobalZoneIDForID);
+        else if(idType == QvisSelectionsDialog::UseVariableForID)
+        {
+            if(idVariable.isEmpty())
+            {
+                Error(tr("The selection was not created because the "
+                         "id variable was not set."));
+                return;
+            }
+            p.SetIdVariableType(SelectionProperties::UseVariableForID);
+            p.SetIdVariable(idVariable.toStdString());
+        }
+        GetViewerMethods()->CreateNamedSelection(p.GetName(), p, plotSource);
+
         // Create a temporary entry in the selectionListBox so the new selection
         // will get selected when its data comes from the viewer.
         selectionListBox->blockSignals(true);
         selectionListBox->addItem(selName);
         selectionListBox->setCurrentRow(selectionListBox->count()-1);
         selectionListBox->blockSignals(false);
-
-        if(plotSource)
-        {
-            // Tell the viewer to add the new named selection based on the plot
-            GetViewerMethods()->CreateNamedSelection(selName.toStdString());
-        }
-        else
-        {
-            // Tell the viewer to add the new named selection based on the db
-            SelectionProperties p;
-            p.SetName(selName.toStdString());
-            p.SetSource(selSource.toStdString());
-            GetViewerMethods()->CreateNamedSelection(p.GetName(), p);
-        }
     }
 }
 
@@ -2027,4 +2098,59 @@ QvisSelectionsWindow::histogramEndChanged(int index)
     Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
     UpdateMinMaxBins(true, false, false);
     UpdateHistogram();
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::idVariableChanged
+//
+// Purpose: 
+//   This slot is called when we change the id variable.
+//
+// Arguments:
+//   var : The new id variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 14:18:45 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::idVariableChanged(const QString &var)
+{
+    selectionProps.SetIdVariable(var.toStdString());
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::idVariableTypeChanged
+//
+// Purpose: 
+//   This slot is called when we change the id variable type.
+//
+// Arguments:
+//   val : The new id variable type.
+//
+// Note:       We say no caching because we probably need to reexecute the pipeline.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 14:20:13 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::idVariableTypeChanged(int val)
+{
+    if(val == 0)
+       selectionProps.SetIdVariableType(SelectionProperties::UseZoneIDForID);
+    else if(val == 1)
+       selectionProps.SetIdVariableType(SelectionProperties::UseGlobalZoneIDForID);
+    else if(val == 2)
+       selectionProps.SetIdVariableType(SelectionProperties::UseVariableForID);
+    idVariableButton->setEnabled(val==2);
+
+    Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
 }

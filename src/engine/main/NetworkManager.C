@@ -435,8 +435,6 @@ NetworkManager::ClearAllNetworks(void)
     viswinMap.clear();
 
     avtNamedSelectionManager::GetInstance()->ClearCache();
-
-    avtNamedSelectionManager::GetInstance()->ClearCache();
 }
 
 // ****************************************************************************

@@ -45,6 +45,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkThreshold.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -101,13 +102,14 @@ avtNamedSelectionFilter::~avtNamedSelectionFilter()
 //    Brad Whitlock, Mon Jun 20 17:06:33 PST 2011
 //    Delete the copied dataset so we don't leak memory.
 //
+//    Brad Whitlock, Thu Oct 27 15:51:06 PDT 2011
+//    Extend to other selection types.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtNamedSelectionFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 {
-    int   i;
-
     //
     // See if the input reader applied the named selection on read.
     //
@@ -115,57 +117,94 @@ avtNamedSelectionFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
         if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selectionId))
             return in_ds;
 
-    vtkDataArray *ocn=in_ds->GetCellData()->GetArray("avtOriginalCellNumbers");
-    if (ocn == NULL)
-    {
-        EXCEPTION0(ImproperUseException);
-    }
-    unsigned int *ptr = (unsigned int *) ocn->GetVoidPointer(0);
-    if (ptr == NULL)
-    {
-        EXCEPTION0(ImproperUseException);
-    }
-
+    vtkDataSet *rv = NULL;
     avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
     avtNamedSelection *ns = nsm->GetNamedSelection(selName);
-    if (ns == NULL || ns->GetType() != avtNamedSelection::ZONE_ID)
+    const SelectionProperties *props = nsm->GetSelectionProperties(selName);
+    if (ns == NULL || props == NULL)
     {
         EXCEPTION0(ImproperUseException);
     }
+    else
+    {
+        std::string idName(ns->GetIdVariable());
+        vtkDataArray *idData = in_ds->GetCellData()->GetArray(idName.c_str());
+        if (idData == NULL)
+        {
+            if(in_ds->GetNumberOfCells() == in_ds->GetNumberOfPoints())
+            {
+                idData = in_ds->GetPointData()->GetArray(idName.c_str());
+            }
 
-    avtZoneIdNamedSelection *zins = (avtZoneIdNamedSelection *) ns;
-    std::vector<int> ids;
-    int ncells = in_ds->GetNumberOfCells();
-    zins->GetMatchingIds(ptr, ncells, ids);
+            if(idData == NULL)
+            {
+                EXCEPTION0(ImproperUseException);
+            }
+        }
 
-    if (ids.size() == 0)
-        return NULL;
+        std::vector<vtkIdType> ids;
+        ns->GetMatchingIds(idData, ids);
 
-    vtkDataSet *ds = in_ds->NewInstance();
-    ds->ShallowCopy(in_ds);
-    vtkFloatArray *arr = vtkFloatArray::New();
-    arr->SetNumberOfTuples(ncells);
-    arr->SetName("_avt_thresh_var");
-    for (i = 0 ; i < ncells ; i++)
-        arr->SetValue(i, 0.);
-    for (i = 0 ; i < ids.size() ; i++)
-        arr->SetValue(ids[i], 1.);
-    ds->GetCellData()->AddArray(arr);
-    arr->Delete();
-    vtkThreshold *thres = vtkThreshold::New();
-    thres->SetInput(ds);
-    thres->ThresholdBetween(0.5, 1.5);
-    thres->SetInputArrayToProcess(0, 0, 0, 
-          vtkDataObject::FIELD_ASSOCIATION_CELLS, "_avt_thresh_var");
-    vtkUnstructuredGrid *rv = thres->GetOutput();
-    rv->Update();
-    ManageMemory(rv);
-    thres->Delete();
-    ds->Delete();
- 
+        rv = SelectedData(in_ds, ids);
+    }
+
     return rv;
 }
 
+// ****************************************************************************
+//  Method: avtNamedSelectionFilter::SelectedData
+//
+//  Purpose:
+//      Isolate the specified cell ids from the input dataset.
+//
+//  Arguments:
+//      in_ds      The input dataset.
+//      ids        The cell ids of the data we care about.
+//
+//  Returns:       The output dataset.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 2, 2009
+//
+//  Modifications:
+//    Brad Whitlock, Mon Jun 20 17:06:33 PST 2011
+//    I moved this code out from another function to make it more general.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtNamedSelectionFilter::SelectedData(vtkDataSet *in_ds, 
+    const std::vector<vtkIdType> &ids)
+{
+    vtkDataSet *rv = NULL;
+
+    if (!ids.empty())
+    {
+        vtkIdType ncells = in_ds->GetNumberOfCells();
+        vtkDataSet *ds = in_ds->NewInstance();
+        ds->ShallowCopy(in_ds);
+        vtkFloatArray *arr = vtkFloatArray::New();
+        arr->SetNumberOfTuples(ncells);
+        arr->SetName("_avt_thresh_var");
+        for (vtkIdType i = 0 ; i < ncells ; i++)
+            arr->SetValue(i, 0.);
+        for (vtkIdType i = 0 ; i < ids.size() ; i++)
+            arr->SetValue(ids[i], 1.);
+        ds->GetCellData()->AddArray(arr);
+        arr->Delete();
+        vtkThreshold *thres = vtkThreshold::New();
+        thres->SetInput(ds);
+        thres->ThresholdBetween(0.5, 1.5);
+        thres->SetInputArrayToProcess(0, 0, 0, 
+              vtkDataObject::FIELD_ASSOCIATION_CELLS, "_avt_thresh_var");
+        rv = thres->GetOutput();
+        rv->Update();
+        ManageMemory(rv);
+        thres->Delete();
+        ds->Delete();
+    }
+    return rv;
+}
 
 // ****************************************************************************
 //  Method: avtNamedSelectionFilter::ModifyContract
@@ -177,14 +216,16 @@ avtNamedSelectionFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 //  Programmer: Hank Childs
 //  Creation:   February 2, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Mon Nov  7 13:36:54 PST 2011
+//    I moved some code into the named selections so they can modify the 
+//    contract as needed.
+//
 // ****************************************************************************
 
 avtContract_p
 avtNamedSelectionFilter::ModifyContract(avtContract_p contract)
 {
-    avtContract_p rv = new avtContract(contract);
-    rv->GetDataRequest()->TurnZoneNumbersOn();
-
     avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
     avtNamedSelection *ns = nsm->GetNamedSelection(selName);
     if (ns == NULL)
@@ -192,13 +233,10 @@ avtNamedSelectionFilter::ModifyContract(avtContract_p contract)
         EXCEPTION1(VisItException, "The named selection was not valid");
     }
 
-    std::vector<int> domains;
-    bool useList = ns->GetDomainList(domains);
-    if (useList)
-    {
-        rv->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
-    }
+    // Let the named selection derived types modify the contract.
+    avtContract_p rv = ns->ModifyContract(contract);
 
+    // Try and apply a data selection based on the named selection.
     avtDataSelection *ds = ns->CreateSelection();
     selectionId = -1;
     if (ds != NULL)

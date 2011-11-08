@@ -40,11 +40,14 @@
 #define AVT_NAMED_SELECTION_H
 
 #include <pipeline_exports.h>
+#include <avtContract.h>
 
 #include <set>
 #include <vector>
 
 #include <visitstream.h>
+
+#include <vtkDataArray.h>
 
 class     avtDataSelection;
 
@@ -83,6 +86,9 @@ class PairCompare {
 //    Hank Childs, Mon Jul 13 17:16:00 PDT 2009
 //    Added method for determining size of selection.
 //
+//    Brad Whitlock, Mon Nov  7 13:27:09 PST 2011
+//    Lots of changes. Add Allocate, Append, Globalize, GetMatchingIds, etc.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelection
@@ -97,22 +103,31 @@ class PIPELINE_API avtNamedSelection
         FLOAT_ID          /* 1 */
     } SELECTION_TYPE;
 
+    const std::string  &GetName(void) { return name; };
+
     virtual void        Read(const std::string &) = 0;
     virtual void        Write(const std::string &) = 0;
-
-    virtual bool        GetDomainList(std::vector<int> &) { return false; };
-    virtual avtDataSelection *CreateSelection(void) { return NULL; };
-
     virtual int         GetSize(void) = 0;
-
     virtual SELECTION_TYPE  GetType(void) = 0;
 
-    const std::string  &GetName(void) { return name; };
-    virtual const std::string CreateConditionString(void) { return ""; };
+    virtual avtContract_p ModifyContract(avtContract_p c0) const = 0;
+    virtual avtDataSelection *CreateSelection(void) { return NULL; };
 
+    void SetIdVariable(const std::string &id);
+    const std::string &GetIdVariable() const;
+
+    virtual std::string CreateConditionString(void) { return ""; };
+
+    virtual void        Allocate(size_t) = 0;
+    virtual void        Append(vtkDataArray *arr) = 0;
+
+    virtual void        Globalize() = 0;
+    virtual void        GetMatchingIds(vtkDataArray *, std::vector<vtkIdType> &) = 0;
+
+    static int          MaximumSelectionSize();
   protected:
     std::string         name;
-
+    std::string         idVar;
   private:
     // These methods are defined to prevent accidental use of bitwise copy
     // implementations.  If you want to re-define them to do something
@@ -126,19 +141,25 @@ class PIPELINE_API avtZoneIdNamedSelection : public avtNamedSelection
 {
   public:
                   avtZoneIdNamedSelection(const std::string &);
-                  avtZoneIdNamedSelection(const std::string &, int,
-                                          const int *, const int *);
     virtual      ~avtZoneIdNamedSelection();
     
     virtual void  Read(const std::string &);
     virtual void  Write(const std::string &);
-    virtual bool  GetDomainList(std::vector<int> &);
     virtual int   GetSize(void) { return zoneId.size(); };
     virtual SELECTION_TYPE  GetType(void) { return ZONE_ID; };
 
-    void          GetMatchingIds(unsigned int *, int, std::vector<int> &);
+    virtual avtContract_p ModifyContract(avtContract_p c0) const;
 
+    virtual void  Allocate(size_t);
+    virtual void  Append(vtkDataArray *arr);
+
+    virtual void  Globalize();
+    virtual void  GetMatchingIds(vtkDataArray *, std::vector<vtkIdType> &);
+
+    void SetIdentifiers(int nvals, const int *doms, const int *zones);
   protected:
+    bool GetDomainList(std::vector<int> &) const;
+
     std::vector<int>  domId;
     std::vector<int>  zoneId;
 
@@ -150,19 +171,24 @@ class PIPELINE_API avtFloatingPointIdNamedSelection : public avtNamedSelection
 {
   public:
                   avtFloatingPointIdNamedSelection(const std::string &);
-                  avtFloatingPointIdNamedSelection(const std::string &,
-                                                   const std::vector<double> &);
     virtual      ~avtFloatingPointIdNamedSelection();
     
     virtual void  Read(const std::string &);
     virtual void  Write(const std::string &);
     virtual int   GetSize(void) { return ids.size(); };
+    virtual SELECTION_TYPE    GetType(void) { return FLOAT_ID; };    
 
+    virtual avtContract_p ModifyContract(avtContract_p c0) const;
     virtual avtDataSelection *CreateSelection(void);
-    virtual const std::string CreateConditionString(void);
+    virtual std::string       CreateConditionString(void);
 
-    virtual SELECTION_TYPE  GetType(void) { return FLOAT_ID; };
+    virtual void  Allocate(size_t);
+    virtual void  Append(vtkDataArray *arr);
 
+    virtual void  Globalize();
+    virtual void  GetMatchingIds(vtkDataArray *, std::vector<vtkIdType> &);
+
+    void SetIdentifiers(const std::vector<double> &);
   protected:
     std::vector<double>  ids;
 };
