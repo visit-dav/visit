@@ -40,10 +40,13 @@
 
 #include <QButtonGroup>
 #include <QDialogButtonBox>
+#include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
 #include <QRadioButton>
+
+#include <QvisVariableButton.h>
 
 // ****************************************************************************
 // Method: QvisSelectionsDialog::QvisSelectionsDialog
@@ -59,7 +62,9 @@
 // Creation:   Thu Jun  9 15:55:11 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Sat Nov  5 02:42:38 PDT 2011
+//   Let the user pick different id types for the selection.
+//
 // ****************************************************************************
 
 QvisSelectionsDialog::QvisSelectionsDialog(
@@ -78,11 +83,12 @@ QvisSelectionsDialog::QvisSelectionsDialog(
     QLabel *selName = new QLabel(tr("Selection name"), central);
     gLayout->addWidget(selName, 0, 0);
 
+    int row = 0;
     selectionNameLineEdit = new QLineEdit(central);
-    gLayout->addWidget(selectionNameLineEdit, 0, 1, 1, 2);
+    gLayout->addWidget(selectionNameLineEdit, row, 1, 1, 2);
+    ++row;
 
     QString dbTxt(tr("Database"));
-    int row;
     if(m == SOURCE_USE_DB_OR_PLOT)
     {
         QButtonGroup *bg = new QButtonGroup(central);
@@ -100,23 +106,50 @@ QvisSelectionsDialog::QvisSelectionsDialog(
         bg->blockSignals(false);
 
         plotLabel = new QLabel(central);
-        gLayout->addWidget(b0, 1, 0);
-        gLayout->addWidget(plotLabel, 1, 1, 1, 2);
+        gLayout->addWidget(b0, row, 0);
+        gLayout->addWidget(plotLabel, row, 1, 1, 2);
+        ++row;
 
         dbLabel = new QLabel(central);
-        gLayout->addWidget(b1, 2, 0);
-        gLayout->addWidget(dbLabel, 2, 1, 1, 2);
-        row = 3;
+        gLayout->addWidget(b1, row, 0);
+        gLayout->addWidget(dbLabel, row, 1, 1, 2);
+        ++row;
     }
     else
     {
         dbLabel = new QLabel(central);
         gLayout->addWidget(new QLabel(dbTxt, central), 1, 0);
-        gLayout->addWidget(dbLabel, 1, 1, 1, 2);
+        gLayout->addWidget(dbLabel, row, 1, 1, 2);
+        ++row;
 
         plotLabel = 0;
-        row = 2;
     }
+
+    // Add controls that let the user pick the method for relating cells.
+    QGroupBox *idGroup = new QGroupBox(tr("Relate cells using"), central);
+    QGridLayout *iLayout = new QGridLayout(idGroup);
+    QButtonGroup *bg2 = new QButtonGroup(central);
+    QRadioButton *b0 = new QRadioButton(tr("Domain and cell numbers"), central);
+    bg2->addButton(b0, 0);
+    iLayout->addWidget(b0, 0, 0);
+    QRadioButton *b1 = new QRadioButton(tr("Global cell numbers"), central);
+    bg2->addButton(b1, 1);
+    iLayout->addWidget(b1, 0, 1);
+    QRadioButton *b2 = new QRadioButton(tr("Variable"), central);
+    bg2->addButton(b2, 2);
+    iLayout->addWidget(b2, 0, 2);
+    b0->setChecked(true);
+    connect(bg2, SIGNAL(buttonClicked(int)),
+            this, SLOT(idVariableTypeChanged(int)));
+    idVariableButton = new QvisVariableButton(central);
+    idVariableButton->setVarTypes(QvisVariableButton::Scalars);
+    idVariableButton->setAddDefault(false);
+    idVariableButton->setEnabled(false);
+    connect(idVariableButton, SIGNAL(activated(const QString &)),
+            this, SLOT(idVariableChanged(const QString &)));
+    iLayout->addWidget(idVariableButton, 0, 3);
+    gLayout->addWidget(idGroup, row, 0, 1, 3);
+    ++row;
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, central);
@@ -181,11 +214,14 @@ QvisSelectionsDialog::setDBName(const QString &val)
 // Creation:   Thu Jun  9 15:56:13 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Sat Nov  5 02:17:31 PDT 2011
+//   Return the idtype and id variable.
+//
 // ****************************************************************************
 
 int
-QvisSelectionsDialog::exec(QString &selName, QString &selSource, bool &plotSource)
+QvisSelectionsDialog::exec(QString &selName, QString &selSource, bool &plotSource,
+    IDVariableType &idtype, QString &idvar)
 {
     selectionNameLineEdit->setText(selectionName);
     dbLabel->setText(db);
@@ -201,9 +237,15 @@ QvisSelectionsDialog::exec(QString &selName, QString &selSource, bool &plotSourc
     selName = selectionNameLineEdit->text();
     selSource = choosePlot ? plot : db;
     plotSource = choosePlot;
+    idtype = idType;
+    idvar = (idType == UseVariableForID) ? idVariable : QString();
 
     return retval;
 }
+
+//
+// Qt slots
+//
 
 // ****************************************************************************
 // Method: QvisSelectionsDialog::selectionChoiceChanged
@@ -228,4 +270,55 @@ QvisSelectionsDialog::selectionChoiceChanged(int index)
 
     plotLabel->setEnabled(index == 0);
     plotLabel->setEnabled(index == 1); 
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsDialog::idVariableChanged
+//
+// Purpose: 
+//   This slot is called when we select a new id variable.
+//
+// Arguments:
+//   var : The new id variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 14:22:41 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsDialog::idVariableChanged(const QString &var)
+{
+    idVariable = var;
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsDialog::idVariableTypeChanged
+//
+// Purpose: 
+//   This slot is called when we select a new id variable type.
+//
+// Arguments:
+//   val : The new id variable type.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 14:23:24 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsDialog::idVariableTypeChanged(int val)
+{
+    if(val == 0)
+       idType = UseZoneIDForID;
+    else if(val == 1)
+       idType = UseGlobalZoneIDForID;
+    else if(val == 2)
+       idType = UseVariableForID;
+
+    idVariableButton->setEnabled(val == 2);
 }

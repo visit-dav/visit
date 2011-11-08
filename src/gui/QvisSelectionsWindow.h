@@ -118,6 +118,9 @@ protected:
     void    NewEnabled(QString &, QString &);
 
 private slots:
+    void    idVariableTypeChanged(int);
+    void    idVariableChanged(const QString &);
+
     void    automaticallyApplyChanged(bool val);
     void    UpdateWindowSingleItem();
     void    addSelection();
@@ -165,6 +168,8 @@ private:
     QTabWidget         *editorTabs;
 
     QLabel             *plotNameLabel;
+    QButtonGroup       *idVariableType;
+    QvisVariableButton *idVariableButton;
 
     QGroupBox               *cqControls;
     QTabWidget              *cqTabs;

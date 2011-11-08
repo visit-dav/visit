@@ -288,9 +288,9 @@ SplashScreen::SplashScreen(bool cyclePictures)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 11;
+    int currentMonth = 3;
     lLayout->addWidget(new QLabel(versionText, this));
-    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2011", this));
+    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2012", this));
 
     copyrightButton = 0;
     contributorButton = 0;

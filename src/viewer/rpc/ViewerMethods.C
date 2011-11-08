@@ -835,7 +835,7 @@ ViewerMethods::CreateNamedSelection(const std::string &selName)
 
 void
 ViewerMethods::CreateNamedSelection(const std::string &selName,
-    const SelectionProperties &props)
+    const SelectionProperties &props, bool useCurrentPlot)
 {
     // Set the selection properties.
     (*state->GetSelectionProperties()) = props;
@@ -846,7 +846,7 @@ ViewerMethods::CreateNamedSelection(const std::string &selName,
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::CreateNamedSelectionRPC);
     state->GetViewerRPC()->SetStringArg1(selName);
-    state->GetViewerRPC()->SetBoolFlag(false);
+    state->GetViewerRPC()->SetBoolFlag(useCurrentPlot);
 
     //
     // Issue the RPC.

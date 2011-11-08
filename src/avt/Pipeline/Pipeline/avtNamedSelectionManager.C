@@ -48,7 +48,6 @@
 #include <avtDataObjectSource.h>
 #include <avtDataset.h>
 #include <avtNamedSelection.h>
-#include <avtParallel.h>
 
 #include <DebugStream.h>
 #include <snprintf.h>
@@ -113,27 +112,6 @@ avtNamedSelectionManager::GetInstance(void)
 }
 
 // ****************************************************************************
-// Method: avtNamedSelectionManager::MaximumSelectionSize
-//
-// Purpose: 
-//   Returns the upper limit on the size of selections we're allowed to create.
-//
-// Returns:    The upper limit on selections we're allowed to create.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jun 16 09:54:19 PDT 2011
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-avtNamedSelectionManager::MaximumSelectionSize()
-{
-    return 50000000;
-}
-
-// ****************************************************************************
 //  Method: avtNamedSelectionManager::CreateNamedSelection
 //
 //  Purpose:
@@ -172,6 +150,9 @@ avtNamedSelectionManager::MaximumSelectionSize()
 //    Brad Whitlock, Tue Sep  6 16:01:52 PDT 2011
 //    I moved most of the code to do the selection into the extension.
 //
+//    Brad Whitlock, Fri Oct 28 09:57:55 PDT 2011
+//    I changed avtNamedSelectionExtension and moved more code into it.
+//
 // ****************************************************************************
 
 void
@@ -190,19 +171,10 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
     // Save the selection properties.
     AddSelectionProperties(selProps);
 
-    avtContract_p c1 = dob->GetContractFromPreviousExecution();
-    avtContract_p contract;
-    if (c1->GetDataRequest()->NeedZoneNumbers() == false)
-    {
-        // If we don't have zone numbers, then get them, even if we have
-        // to re-execute the whole darn pipeline.
-        contract = new avtContract(c1);
-        contract->GetDataRequest()->TurnZoneNumbersOn();
-    }
-    else
-    {
-        contract = c1;
-    }
+    // Augment the contract based on the selection properties.
+    avtContract_p c0 = dob->GetContractFromPreviousExecution();
+    bool needsUpdate = false;
+    avtContract_p contract = ext->ModifyContract(c0, selProps, needsUpdate);
 
     // 
     // Let the input try to create the named selection ... some have special
@@ -229,69 +201,28 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
     }
 
     //
-    // Call into the extension to get the domains and zones that make up the selection.
+    // Call into the extension to get the per-processor named selection.
     //
-    std::vector<int> doms, zones;
     TimedCodeBlock("Creating selection in extension",
-        ext->GetSelection(dob, selProps, cache, doms, zones);
+        ns = ext->GetSelection(dob, selProps, cache);
     );
 
-    // Note the poor use of MPI below, coded for expediency, as I believe all
-    // of the named selections will be small.
-    int *numPerProcIn = new int[PAR_Size()];
-    int *numPerProc   = new int[PAR_Size()];
-    for (i = 0 ; i < PAR_Size() ; i++)
-        numPerProcIn[i] = 0;
-    numPerProcIn[PAR_Rank()] = doms.size();
-    SumIntArrayAcrossAllProcessors(numPerProcIn, numPerProc, PAR_Size());
-    int numTotal = 0;
-    for (i = 0 ; i < PAR_Size() ; i++)
-        numTotal += numPerProc[i];
-    if (numTotal > MaximumSelectionSize())
-    {
-        EXCEPTION1(VisItException, "You have selected too many zones in your "
-                   "named selection.  Disallowing ... no selection created");
-    }
-
-    int myStart = 0;
-    for (i = 0 ; i < PAR_Rank()-1 ; i++)
-        myStart += numPerProc[i];
-    int *selForDomsIn = new int[numTotal];
-    memset(selForDomsIn, 0, sizeof(int) * numTotal);
-    for (i = 0 ; i < doms.size() ; i++)
-        selForDomsIn[myStart+i] = doms[i];
-    int *selForDoms   = new int[numTotal];
-    SumIntArrayAcrossAllProcessors(selForDomsIn, selForDoms, numTotal);
-
-    int *selForZonesIn = new int[numTotal];
-    memset(selForZonesIn, 0, sizeof(int) * numTotal);
-    for (i = 0 ; i < zones.size() ; i++)
-        selForZonesIn[myStart+i] = zones[i];
-    int *selForZones   = new int[numTotal];
-    SumIntArrayAcrossAllProcessors(selForZonesIn, selForZones, numTotal);
-
     //
-    // Now construct the actual named selection and add it to our internal
-    // data structure for tracking named selections.
+    // Save the selection
     //
-    ns = new avtZoneIdNamedSelection(selName,numTotal,selForDoms,selForZones);
     DeleteNamedSelection(selName, false); // Remove sel if it already exists.
-    int curSize = selList.size();
-    selList.resize(curSize+1);
-    selList[curSize] = ns;
-
-    delete [] numPerProcIn;
-    delete [] numPerProc;
-    delete [] selForDomsIn;
-    delete [] selForDoms;
-    delete [] selForZonesIn;
-    delete [] selForZones;
-
-    //
-    // Save out the named selection in case of engine crash / 
-    // save/restore session, etc.
-    //  
-    SaveNamedSelection(selName, true);
+    if(ns != NULL)
+    {
+        int curSize = selList.size();
+        selList.resize(curSize+1);
+        selList[curSize] = ns;
+ 
+        //
+        // Save out the named selection in case of engine crash / 
+        // save/restore session, etc.
+        //  
+        SaveNamedSelection(selName, true);
+    }
 }
 
 

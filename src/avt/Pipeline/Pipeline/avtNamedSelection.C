@@ -42,12 +42,14 @@
 
 #include <avtNamedSelection.h>
 
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 
 using namespace std;
 
 #include <avtIdentifierSelection.h>
+#include <avtParallel.h>
 
 #include <visitstream.h>
 #include <VisItException.h>
@@ -62,11 +64,9 @@ using namespace std;
 //
 // ****************************************************************************
 
-avtNamedSelection::avtNamedSelection(const std::string &n)
+avtNamedSelection::avtNamedSelection(const std::string &n) : name(n), idVar()
 {
-    name = n;
 }
-
 
 // ****************************************************************************
 //  Method: avtNamedSelection destructor
@@ -80,6 +80,77 @@ avtNamedSelection::~avtNamedSelection()
 {
 }
 
+// ****************************************************************************
+// Method: avtNamedSelection::SetIdVariable
+//
+// Purpose: 
+//   Set the id variable that we're using for the named selection.
+//
+// Arguments:
+//   id : The new id variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 13:40:04 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtNamedSelection::SetIdVariable(const std::string &id)
+{
+    idVar = id;
+}
+
+// ****************************************************************************
+// Method: avtNamedSelection::GetIdVariable
+//
+// Purpose: 
+//   Get the id variable used in this named selection.
+//
+// Returns:    The id variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 13:40:30 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string &
+avtNamedSelection::GetIdVariable() const
+{
+    return idVar;
+}
+
+// ****************************************************************************
+// Method: avtNamedSelection::MaximumSelectionSize
+//
+// Purpose: 
+//   Return the largest allowable selection size.
+//
+// Returns:    The largest selection size.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 13:40:56 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+avtNamedSelection::MaximumSelectionSize()
+{
+    return 50000000;
+}
+
+// ****************************************************************************
+// ****************************************************************************
+// ***
+// *** avtZoneIdNamedSelection
+// ***
+// ****************************************************************************
+// ****************************************************************************
 
 // ****************************************************************************
 //  Method: avtZoneIdNamedSelection constructor
@@ -92,30 +163,8 @@ avtNamedSelection::~avtNamedSelection()
 avtZoneIdNamedSelection::avtZoneIdNamedSelection(const std::string &n)
     : avtNamedSelection(n)
 {
+    SetIdVariable("avtOriginalCellNumbers");
 }
-
-
-// ****************************************************************************
-//  Method: avtZoneIdNamedSelection constructor
-//
-//  Programmer: Hank Childs
-//  Creation:   February 3, 2009
-//
-// ****************************************************************************
-
-avtZoneIdNamedSelection::avtZoneIdNamedSelection(const std::string &n, int num,
-                                                 const int *dom, const int *zon)
-    : avtNamedSelection(n)
-{
-    domId.resize(num);
-    zoneId.resize(num);
-    for (int i = 0 ; i < num ; i++)
-    {
-        domId[i]  = dom[i];
-        zoneId[i] = zon[i];
-    }
-}
-
 
 // ****************************************************************************
 //  Method: avtZoneIdNamedSelection destructor
@@ -195,6 +244,42 @@ avtZoneIdNamedSelection::Read(const std::string &fname)
     }
 }
 
+// ****************************************************************************
+// Method: avtZoneIdNamedSelection::ModifyContract
+//
+// Purpose: 
+//   Returns a new version of the contract, including any changes this named
+//   selection requires.
+//
+// Arguments:
+//   contract : The input contract.
+//
+// Returns:    A modified contract.
+//
+// Note:       The output contract turns on the original zone numbers and
+//             tries to do some domain restriction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 13:29:29 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtContract_p
+avtZoneIdNamedSelection::ModifyContract(avtContract_p contract) const
+{
+    avtContract_p rv = new avtContract(contract);
+    rv->GetDataRequest()->TurnZoneNumbersOn();
+
+    std::vector<int> domains;
+    if (GetDomainList(domains))
+    {
+        rv->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
+    }
+
+    return rv;
+}
 
 // ****************************************************************************
 //  Method: avtZoneIdNamedSelection::GetDomainList
@@ -213,7 +298,7 @@ avtZoneIdNamedSelection::Read(const std::string &fname)
 // ****************************************************************************
 
 bool
-avtZoneIdNamedSelection::GetDomainList(std::vector<int> &domains)
+avtZoneIdNamedSelection::GetDomainList(std::vector<int> &domains) const
 {
     int maxDomain = 0;
     for (size_t i = 0 ; i < domId.size() ; i++)
@@ -261,11 +346,14 @@ avtZoneIdNamedSelection::GetDomainList(std::vector<int> &domains)
 //    warnings.  Added PairCompare to iterator specification for compilation
 //    on windows.
 //
+//    Brad Whitlock, Thu Oct 27 16:07:38 PDT 2011
+//    I rewrote it to use vtkDataArray.
+//
 // ****************************************************************************
 
 void
-avtZoneIdNamedSelection::GetMatchingIds(unsigned int *pts, int nvals, 
-                                        std::vector<int> &ids)
+avtZoneIdNamedSelection::GetMatchingIds(vtkDataArray *ocn,
+    std::vector<vtkIdType> &cellids)
 {
     if (lookupSet.size() == 0)
     {
@@ -278,18 +366,178 @@ avtZoneIdNamedSelection::GetMatchingIds(unsigned int *pts, int nvals,
         }
     }
 
-    for (int i = 0 ; i < nvals ; i++)
+    vtkIdType nvals = ocn->GetNumberOfTuples();
+    unsigned int *ptr = (unsigned int *)ocn->GetVoidPointer(0);
+    if(ptr == NULL || ocn->GetNumberOfComponents() != 2)
     {
-        IntPair ip;
-        ip.d = (int) pts[2*i];
-        ip.z = (int) pts[2*i+1];
-        std::set<IntPair, PairCompare>::const_iterator it;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    IntPair ip;
+    std::set<IntPair, PairCompare>::const_iterator it;
+    for (vtkIdType cellid = 0 ; cellid < nvals ; cellid++)
+    {
+        ip.d = (int) *ptr++;
+        ip.z = (int) *ptr++;
         it = lookupSet.find(ip);
         if (it != lookupSet.end())
-            ids.push_back(i);
+            cellids.push_back(cellid);
     }
 }
 
+// ****************************************************************************
+// Method: avtZoneIdNamedSelection::Globalize
+//
+// Purpose: 
+//   Combines the selections from each processor and makes sure they all have 
+//   the same global selection.
+//
+// Programmer: Hank Childs
+// Creation:   Fri Oct 28 09:36:39 PDT 2011
+//
+// Modifications:
+//   Brad Whitlock, Fri Oct 28 09:46:26 PDT 2011
+//   I moved the code from the NSM into this method so derived types can do
+//   their own globalization step.
+//
+// ****************************************************************************
+
+void
+avtZoneIdNamedSelection::Globalize()
+{
+#ifdef PARALLEL
+    // Note the poor use of MPI below, coded for expediency, as I believe all
+    // of the named selections will be small.
+    int *numPerProcIn = new int[PAR_Size()];
+    int *numPerProc   = new int[PAR_Size()];
+    for (int i = 0 ; i < PAR_Size() ; i++)
+        numPerProcIn[i] = 0;
+    numPerProcIn[PAR_Rank()] = domId.size();
+    SumIntArrayAcrossAllProcessors(numPerProcIn, numPerProc, PAR_Size());
+    int numTotal = 0;
+    for (int i = 0 ; i < PAR_Size() ; i++)
+        numTotal += numPerProc[i];
+    if (numTotal > MaximumSelectionSize())
+    {
+        delete [] numPerProcIn;
+        delete [] numPerProc;
+        EXCEPTION1(VisItException, "You have selected too many zones in your "
+                   "named selection.  Disallowing ... no selection created");
+    }
+
+    int myStart = 0;
+    for (int i = 0 ; i < PAR_Rank()-1 ; i++)
+        myStart += numPerProc[i];
+    delete [] numPerProcIn;
+    delete [] numPerProc;
+
+    int *buffer = new int[numTotal];
+    memset(buffer, 0, sizeof(int) * numTotal);
+    for (int i = 0 ; i < domId.size() ; i++)
+        buffer[myStart+i] = domId[i];
+    domId.resize(numTotal);
+    SumIntArrayAcrossAllProcessors(buffer, &domId[0], numTotal);
+
+    memset(buffer, 0, sizeof(int) * numTotal);
+    for (int i = 0 ; i < zoneId.size() ; i++)
+        buffer[myStart+i] = zoneId[i];
+    zoneId.resize(numTotal);
+    SumIntArrayAcrossAllProcessors(buffer, &zoneId[0], numTotal);
+    delete [] buffer;
+#endif
+}
+
+// ****************************************************************************
+// Method: avtZoneIdNamedSelection::Allocate
+//
+// Purpose: 
+//   Make sure that there is enough room in the internal vectors that we're
+//   going to use to store the selection.
+//
+// Arguments:
+//   nvals : The largest selection size we'll need.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 13:42:41 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtZoneIdNamedSelection::Allocate(size_t nvals)
+{
+    domId.clear();
+    domId.reserve(nvals);
+
+    zoneId.clear();
+    zoneId.reserve(nvals);
+}
+
+// ****************************************************************************
+// Method: avtZoneIdNamedSelection::Append
+//
+// Purpose: 
+//   Append the "ids" from the input array into the selection.
+//
+// Arguments:
+//   arr : The array that contains the ids we're adding to the selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 13:43:32 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtZoneIdNamedSelection::Append(vtkDataArray *arr)
+{
+    vtkIdType nvals = arr->GetNumberOfTuples();
+    unsigned int *ptr = (unsigned int *)arr->GetVoidPointer(0);
+
+    // We have original cell numbers so add them to the selection.
+    for (vtkIdType j = 0 ; j < nvals ; j++)
+    {
+        domId.push_back(*ptr++);
+        zoneId.push_back(*ptr++);
+    }
+}
+
+// ****************************************************************************
+// Method: avtZoneIdNamedSelection::SetIdentifiers
+//
+// Purpose: 
+//   Set the selection's ids from external arrays.
+//
+// Arguments:
+//   nvals : The new number of ids.
+//   doms  : The domain ids.
+//   zones : The zone ids.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 13:44:19 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtZoneIdNamedSelection::SetIdentifiers(int nvals, const int *doms, const int *zones)
+{
+    domId.resize(nvals);
+    zoneId.resize(nvals);
+    memcpy(&domId[0], doms, nvals * sizeof(int));
+    memcpy(&zoneId[0], zones, nvals * sizeof(int));
+}
+
+// ****************************************************************************
+// ****************************************************************************
+// ***
+// *** avtFloatingPointIdNamedSelection
+// ***
+// ****************************************************************************
+// ****************************************************************************
 
 // ****************************************************************************
 //  Method: avtFloatingPointIdNamedSelection constructor
@@ -305,24 +553,6 @@ avtFloatingPointIdNamedSelection::avtFloatingPointIdNamedSelection(
 {
 }
 
-
-// ****************************************************************************
-//  Method: avtFloatingPointIdNamedSelection constructor
-//
-//  Programmer: Hank Childs
-//  Creation:   February 23, 2009
-//
-// ****************************************************************************
-
-avtFloatingPointIdNamedSelection::avtFloatingPointIdNamedSelection(
-                                                const std::string &n,
-                                                const std::vector<double> &ids2)
-    : avtNamedSelection(n)
-{
-    ids = ids2;
-}
-
-
 // ****************************************************************************
 //  Method: avtFloatingPointIdNamedSelection destructor
 //
@@ -334,7 +564,6 @@ avtFloatingPointIdNamedSelection::avtFloatingPointIdNamedSelection(
 avtFloatingPointIdNamedSelection::~avtFloatingPointIdNamedSelection()
 {
 }
-
 
 // ****************************************************************************
 //  Method: avtFloatingPointIdNamedSelection::Write
@@ -350,13 +579,20 @@ avtFloatingPointIdNamedSelection::~avtFloatingPointIdNamedSelection()
 //    Gunther H. Weber, Mon Apr  6 20:17:40 PDT 2009
 //    Increased precision for floating point output.
 //
+//    Brad Whitlock, Fri Oct 28 10:17:49 PDT 2011
+//    Write the name of the id variable.
+//
 // ****************************************************************************
 
 void
 avtFloatingPointIdNamedSelection::Write(const std::string &fname)
 {
+    // Sort the ids so they look nice in the output.
+    std::sort(ids.begin(), ids.end());
+
     ofstream ofile(fname.c_str());
     ofile << FLOAT_ID << endl;
+    ofile << GetIdVariable() << endl;
     ofile << ids.size() << endl;
     ofile << std::setprecision(32);
     for (size_t i = 0 ; i < ids.size() ; i++)
@@ -370,6 +606,10 @@ avtFloatingPointIdNamedSelection::Write(const std::string &fname)
 //
 //  Programmer: Hank Childs
 //  Creation:   February 2, 2009
+//
+//  Modifications:
+//    Brad Whitlock, Fri Oct 28 10:17:20 PDT 2011
+//    Read the name of the id variable.
 //
 // ****************************************************************************
 
@@ -389,6 +629,10 @@ avtFloatingPointIdNamedSelection::Read(const std::string &fname)
         EXCEPTION1(VisItException, "Internal error reading named selection");
     }
 
+    std::string id;
+    ifile >> id;
+    SetIdVariable(id);
+
     int nvals;
     ifile >> nvals;
     if (nvals < 0)
@@ -403,6 +647,48 @@ avtFloatingPointIdNamedSelection::Read(const std::string &fname)
     }
 }
 
+// ****************************************************************************
+// Method: avtFloatingPointIdNamedSelection::ModifyContract
+//
+// Purpose: 
+//   Returns a new version of the contract, including any changes this named
+//   selection requires.
+//
+// Arguments:
+//   contract : The input contract.
+//
+// Returns:    A modified contract.
+//
+// Note:       The output contract turns on the original zone numbers and
+//             tries to do some domain restriction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 13:29:29 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtContract_p
+avtFloatingPointIdNamedSelection::ModifyContract(avtContract_p contract) const
+{
+    avtContract_p rv = new avtContract(contract);
+
+    if(idVar == "avtGlobalZoneNumbers")
+    {
+        rv->GetDataRequest()->TurnGlobalZoneNumbersOn();
+    }
+    else
+    {
+        // Make sure that we request the id variable.
+        if(!rv->GetDataRequest()->HasSecondaryVariable(idVar.c_str()))
+        {
+            rv->GetDataRequest()->AddSecondaryVariable(idVar.c_str());
+        }
+    }
+
+    return rv;
+}
 
 // ****************************************************************************
 //  Method: avtFloatingPointIdNamedSelection::CreateSelection
@@ -450,11 +736,11 @@ stringify(double x)
     return o.str();
 }
 
-const std::string
+std::string
 avtFloatingPointIdNamedSelection::CreateConditionString(void)
 {
-    std::string condition = "";
-    if (ids.size()>0)
+    std::string condition;
+    if (!ids.empty())
     {
         // convert all the identifiers into a string...
         std::string id_string = "( id in ( "; // Prabhat- TODO id is hardcoded here..
@@ -468,4 +754,163 @@ avtFloatingPointIdNamedSelection::CreateConditionString(void)
     return condition;
 }
 
+// ****************************************************************************
+// Method: avtFloatingPointIdNamedSelection::GetMatchingIds
+//
+// Purpose: 
+//   Return the cell ids in the var array that match the values stored in the 
+//   selection.
+//
+// Arguments:
+//   var : The input id array.
+//   ids : The output vector of indices that match values from the selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 27 16:22:59 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+void
+avtFloatingPointIdNamedSelection::GetMatchingIds(vtkDataArray *var,
+    std::vector<vtkIdType> &cellids)
+{
+    // Convert ids to a set so lookups will be faster.
+    std::set<double> lookupSet;
+    for (size_t i = 0 ; i < ids.size() ; i++)
+        lookupSet.insert(ids[i]);
+
+    vtkIdType nvals = var->GetNumberOfTuples();
+    std::set<double>::const_iterator it;
+    for (vtkIdType cellid = 0 ; cellid < nvals ; cellid++)
+    {
+        it = lookupSet.find(var->GetTuple1(cellid));
+        if (it != lookupSet.end())
+            cellids.push_back(cellid);
+    }
+}
+
+// ****************************************************************************
+// Method: avtFloatingPointIdNamedSelection::Globalize
+//
+// Purpose: 
+//   Combines the selections from each processor and makes sure they all have 
+//   the same global selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 28 09:36:39 PDT 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtFloatingPointIdNamedSelection::Globalize()
+{
+#ifdef PARALLEL
+    // Note the poor use of MPI below, coded for expediency, as I believe all
+    // of the named selections will be small.
+    int *numPerProcIn = new int[PAR_Size()];
+    int *numPerProc   = new int[PAR_Size()];
+    for (int i = 0 ; i < PAR_Size() ; i++)
+        numPerProcIn[i] = 0;
+    numPerProcIn[PAR_Rank()] = ids.size();
+    SumIntArrayAcrossAllProcessors(numPerProcIn, numPerProc, PAR_Size());
+    int numTotal = 0;
+    for (int i = 0 ; i < PAR_Size() ; i++)
+        numTotal += numPerProc[i];
+    if (numTotal > MaximumSelectionSize())
+    {
+        delete [] numPerProcIn;
+        delete [] numPerProc;
+        EXCEPTION1(VisItException, "You have selected too many zones in your "
+                   "named selection.  Disallowing ... no selection created");
+    }
+
+    int myStart = 0;
+    for (int i = 0 ; i < PAR_Rank()-1 ; i++)
+        myStart += numPerProc[i];
+    delete [] numPerProcIn;
+    delete [] numPerProc;
+
+    double *buffer = new double[numTotal];
+    memset(buffer, 0, sizeof(double) * numTotal);
+    for (int i = 0 ; i < ids.size() ; i++)
+        buffer[myStart+i] = ids[i];
+    ids.resize(numTotal);
+    SumDoubleArrayAcrossAllProcessors(buffer, &ids[0], numTotal);
+    delete [] buffer;
+#endif
+}
+
+// ****************************************************************************
+// Method: avtFloatingPointIdNamedSelection::Allocate
+//
+// Purpose: 
+//   Make sure that the internal ids vector has enough entries.
+//
+// Arguments:
+//   nvals : The new number of ids we'll be adding.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 13:45:27 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtFloatingPointIdNamedSelection::Allocate(size_t nvals)
+{
+    ids.clear();
+    ids.reserve(nvals);
+}
+
+// ****************************************************************************
+// Method: avtFloatingPointIdNamedSelection::Append
+//
+// Purpose: 
+//   Append the "ids" in the data array to the selection.
+//
+// Arguments:
+//   arr : The array that contains the "ids" we're adding to the selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 13:46:01 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtFloatingPointIdNamedSelection::Append(vtkDataArray *arr)
+{
+    vtkIdType nvals = arr->GetNumberOfTuples();
+
+    // We have our ids so add them to the selection.
+    for (vtkIdType j = 0 ; j < nvals ; j++)
+        ids.push_back(arr->GetTuple1(j));
+}
+
+// ****************************************************************************
+// Method: avtFloatingPointIdNamedSelection::SetIdentifiers
+//
+// Purpose: 
+//   Set the selection ids from an external vector.
+//
+// Arguments:
+//   vals : The new selection ids.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov  7 13:46:38 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtFloatingPointIdNamedSelection::SetIdentifiers(const std::vector<double> &vals)
+{
+    ids = vals;
+}
