@@ -78,6 +78,51 @@ function issue_command
     return $?
 }
 
+function apply_vtk_580_patch_1
+{
+   patch -p0 <<\EOF
+diff -c a/IO/CMakeLists.txt visit-vtk-5.8/IO/CMakeLists.txt
+*** a/IO/CMakeLists.txt
+--- visit-vtk-5.8/IO/CMakeLists.txt
+***************
+*** 92,98 ****
+  vtkMoleculeReaderBase.cxx
+  vtkOBJReader.cxx
+  ${_VTK_OGGTHEORA_SOURCES}
+- vtkOpenFOAMReader.cxx
+  vtkOutputStream.cxx
+  vtkPDBReader.cxx
+  vtkPLOT3DReader.cxx
+--- 92,97 ----
+EOF
+   if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 1 to VTK 5.8.0"
+        return 1
+   else
+        return 0
+   fi
+}
+
+function apply_vtk_580_patch
+{
+   apply_vtk_580_patch_1
+   if [[ $? != 0 ]] ; then
+       return 1
+   fi
+}
+
+function apply_vtk_patch
+{
+   if [[ ${VTK_VERSION} == 5.8.0 ]] ; then
+       apply_vtk_580_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
 function build_vtk
 {
     #
@@ -141,6 +186,23 @@ function build_vtk
     if [[ $untarred_vtk == -1 ]] ; then
        warn "Unable to prepare VTK build directory. Giving Up!"
        return 1
+    fi
+
+    #
+    # Apply patches
+    #
+    info "Patching VTK . . ."
+    apply_vtk_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_vtk == 1 ]] ; then
+          warn "Giving up on VTK build because the patch failed."
+          return 1
+       else
+          warn "Patch failed, but continuing.  I believe that this script\n" \
+               "tried to apply a patch to an existing directory which had " \
+               "already been patched ... that is, that the patch is " \
+               "failing harmlessly on a second application."
+       fi
     fi
 
     # Make a build directory for an out-of-source build.. Change the
