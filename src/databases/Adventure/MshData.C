@@ -59,7 +59,9 @@ MshData::~MshData()
 // Creation:   Mon Sep 21 14:59:53 PDT 2009
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Nov  9 15:29:43 PST 2011
+//   Fix VTK porting error.
+//
 // ****************************************************************************
 
 bool
@@ -94,11 +96,12 @@ MshData::Open(const std::string &filename)
             //
             // Read the connectivity
             //
+            int iconn[10];
             vtkIdType conn[10];
             ifile.getline(line, 1024);
             int nNodesPerCell = sscanf(line, "%d %d %d %d %d %d %d %d %d %d", 
-                &conn[0], &conn[1], &conn[2], &conn[3], &conn[4], 
-                &conn[5], &conn[6], &conn[7], &conn[8], &conn[9]);
+                &iconn[0], &iconn[1], &iconn[2], &iconn[3], &iconn[4], 
+                &iconn[5], &iconn[6], &iconn[7], &iconn[8], &iconn[9]);
             if(nNodesPerCell == 4)
                 cellType = 0;
             else if(nNodesPerCell == 10)
@@ -112,25 +115,29 @@ MshData::Open(const std::string &filename)
             debug4 << mName << "cellType = " << cellType << endl;
 
 #ifndef MDSERVER
-            // Can we use sscanf %d into vtkIdType in 64bit?
             vtkIdType *connectivity = new vtkIdType[nNodesPerCell * nCells];
-            memcpy(connectivity, conn, sizeof(vtkIdType)*nNodesPerCell);
+            for(int n = 0; n < nNodesPerCell; ++n)
+                connectivity[n] = (vtkIdType)iconn[n];
             vtkIdType *c = connectivity + nNodesPerCell;
             for(int i = 1; i < nCells; ++i)
             {
                 ifile.getline(line, 1024);
                 if(nNodesPerCell == 4)
-                    sscanf(line, "%d %d %d %d", &c[0], &c[1], &c[2], &c[3]);
+                    sscanf(line, "%d %d %d %d", &iconn[0], &iconn[1], &iconn[2], &iconn[3]);
                 else if(nNodesPerCell == 10)
                 {
                     sscanf(line, "%d %d %d %d %d %d %d %d %d %d", 
-                        &c[0], &c[1], &c[2], &c[3], &c[4], &c[5], &c[6], &c[7], &c[8], &c[9]);
+                        &iconn[0], &iconn[1], &iconn[2], &iconn[3], &iconn[4], &iconn[5], &iconn[6], &iconn[7], &iconn[8], &iconn[9]);
                 }
                 else if(nNodesPerCell == 8)
                 {
                     sscanf(line, "%d %d %d %d %d %d %d %d", 
-                        &c[0], &c[1], &c[2], &c[3], &c[4], &c[5], &c[6], &c[7]);
+                        &iconn[0], &iconn[1], &iconn[2], &iconn[3], &iconn[4], &iconn[5], &iconn[6], &iconn[7]);
                 }
+                else
+                    memset(iconn, 0, 10 * sizeof(int));
+                for(int n = 0; n < nNodesPerCell; ++n)
+                    c[n] = (vtkIdType)iconn[n];
                 c += nNodesPerCell;
             }
 
