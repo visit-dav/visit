@@ -56,7 +56,7 @@
 #define MIN_MASS                 1.
 #define MAX_MASS                 1.5
 
-#define MIN_RESTITUTION          0.3
+#define MIN_RESTITUTION          0.5
 #define MAX_RESTITUTION          0.8
 
 #define DELTA_TIME               0.05
@@ -170,19 +170,21 @@ double distance(const vector3 &A, const vector3 &B)
 // Creation:   Fri Jun 17 15:19:54 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Nov  7 14:39:14 PST 2011
+//   I added a contact variable.
+//
 // ****************************************************************************
 
 class particle
 {
 public:
     particle() : ID(0), goTime(0.), mass(0.), restitution(0.),
-        location(), velocity(), acceleration()
+        location(), velocity(), acceleration(), contact(false)
     {
     }
     particle(const particle &p) : ID(p.ID), goTime(p.goTime), mass(p.mass), 
         restitution(p.restitution), location(p.location),
-        velocity(p.velocity), acceleration(p.acceleration)
+        velocity(p.velocity), acceleration(p.acceleration), contact(p.contact)
     {
     }
 
@@ -194,6 +196,7 @@ public:
     vector3 location;      // m
     vector3 velocity;      // m/s
     vector3 acceleration;  // m/s/s
+    bool    contact;
 };
 
 typedef std::vector<particle> particleVector;
@@ -235,6 +238,7 @@ public:
 
     virtual void CreateDomainDirectory() { }
 
+    virtual void WriteBoundariesFile(const int *, const double *) = 0;
     virtual void WriteMasterFile(const bool *domainsHaveData) = 0;
     virtual bool WriteDomainFile(int dom, const particleVector &P) = 0;
 protected:
@@ -270,7 +274,9 @@ protected:
 // Creation:   Fri Jun 17 15:20:47 PDT 2011
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Nov  7 10:57:20 PST 2011
+//   Add a mesh that shows the domain boundaries.
+//
 // ****************************************************************************
 
 class SiloDataSaver : public ParticleDataSaver
@@ -309,8 +315,10 @@ public:
         DBAddOption(optlist, DBOPT_CYCLE, (void *)&cycle);
         DBAddOption(optlist, DBOPT_DTIME, (void *)&time);
 
-        const char *snames[] = {"pointmesh", "vx", "vy", "vz", "restitution", "mass", "ID"};
-        const bool isMesh[] = {true, false, false, false, false, false, false};
+        const char *snames[] = {"pointmesh", "vx", "vy", "vz", "restitution", "mass", "ID", "dom", "contact"};
+        const int svartypes[] = {DB_POINTMESH, DB_POINTVAR, DB_POINTVAR, DB_POINTVAR, DB_POINTVAR,
+                                               DB_POINTVAR, DB_POINTVAR, DB_POINTVAR, DB_POINTVAR};
+        const bool isMesh[] = {true, false, false, false, false, false, false, false, false};
         for(int i = 0; i < (sizeof(snames)/sizeof(const char*)); ++i)
         {
             std::vector<std::string> names;
@@ -326,7 +334,7 @@ public:
             for(int d = 0; d < nDomains; ++d)
             {
                 varnames[d] = (char*)names[d].c_str();
-                vartypes[d] = isMesh[i] ? DB_POINTMESH : DB_POINTVAR;
+                vartypes[d] = svartypes[i];
             }
 
             if(isMesh[i])
@@ -344,13 +352,110 @@ public:
         DBClose(dbfile);
     }
 
+    virtual void WriteBoundariesFile(const int *divisions, const double *extents)
+    {
+        std::string filename(BoundariesFile());
+        DBfile *dbfile = DBCreate(filename.c_str(), DB_CLOBBER, DB_LOCAL,
+                                  "3D point mesh domain boundaries", DB_HDF5);
+        if(dbfile == NULL)
+        {
+            fprintf(stderr, "Could not create Silo file!\n");
+            return;
+        }
+
+        double deltaX = (extents[1] - extents[0]) / double(divisions[0]);
+        double deltaY = (extents[3] - extents[2]) / double(divisions[1]);
+        double deltaZ = (extents[5] - extents[4]) / double(divisions[2]);
+
+        char domname[30];
+        double z0 = extents[4];
+        int dom = 0;
+        std::vector<std::string> names;
+        int nDomains = divisions[0]*divisions[1]*divisions[2];
+        char **varnames = new char *[nDomains];
+        int *vartypes = new int[nDomains];
+        for(int dz = 0; dz < divisions[2]; ++dz)
+        {
+            double y0 = extents[2];
+            for(int dy = 0; dy < divisions[1]; ++dy)
+            {
+                double x0 = extents[0];
+                for(int dx = 0; dx < divisions[0]; ++dx, ++dom)
+                {
+                    sprintf(domname, "domain%d", dom);
+                    DBMkDir(dbfile, domname);
+                    DBSetDir(dbfile, domname);
+
+                    sprintf(domname, "domain%d/bounds", dom);
+                    names.push_back(domname);
+                    varnames[dom] = (char *)names[dom].c_str();
+                    vartypes[dom] = DB_QUADMESH;
+
+                    double thisExtents[6];
+                    thisExtents[0] = x0 + (dx)   * deltaX;
+                    thisExtents[1] = x0 + (dx+1) * deltaX;
+                    thisExtents[2] = y0 + (dy)   * deltaX;
+                    thisExtents[3] = y0 + (dy+1) * deltaY;
+                    thisExtents[4] = z0 + (dz)   * deltaZ;
+                    thisExtents[5] = z0 + (dz+1) * deltaZ;
+
+                    // Create a simple mesh that shows this domain's boundaries.
+                    const int nvals = 4;
+                    double x[nvals];
+                    double y[nvals];
+                    double z[nvals];
+                    for(size_t i = 0; i < nvals; ++i)
+                    {
+                        double t = double(i) / double(nvals-1);
+                        x[i] = (1.-t)*thisExtents[0] + t*thisExtents[1];
+                        y[i] = (1.-t)*thisExtents[2] + t*thisExtents[3];
+                        z[i] = (1.-t)*thisExtents[4] + t*thisExtents[5];
+                    }
+                    int dims[3] = {nvals, nvals, nvals};
+                    int ndims = 3;
+                    float *coords[3];
+                    coords[0] = (float*)x;
+                    coords[1] = (float*)y;
+                    coords[2] = (float*)z;
+                    DBPutQuadmesh(dbfile, "bounds", NULL, coords, dims, ndims,
+                        DB_DOUBLE, DB_COLLINEAR, NULL);
+
+                    DBSetDir(dbfile, "..");
+                }
+            }
+        }
+        DBPutMultimesh(dbfile, "bounds", nDomains, varnames, vartypes, NULL);
+
+        delete [] varnames;
+        delete [] vartypes;
+
+        DBClose(dbfile);
+    }
+
     virtual bool WriteDomainFile(int dom, const particleVector &P)
     {
         if(P.empty())
             return false;
 
+        std::string filename(DomainFile(dom));
+        DBfile *dbfile = DBCreate(filename.c_str(), DB_CLOBBER, DB_LOCAL,
+                                  "3D point mesh", DB_HDF5);
+        if(dbfile == NULL)
+        {
+            fprintf(stderr, "Could not create Silo file!\n");
+            return false;
+        }
+
+        // Create an option list for saving cycle and time values.
+        DBoptlist *optlist = DBMakeOptlist(2);
+        DBAddOption(optlist, DBOPT_CYCLE, (void *)&cycle);
+        DBAddOption(optlist, DBOPT_DTIME, (void *)&time);
+
         double *m, *x, *y, *z, *vx, *vy, *vz, *r;
-        int *id;
+        int *id, *doms, *contact;
+        int dims[3];
+        int ndims = 3;
+        float *coords[3];
         x = new double[P.size()];
         y = new double[P.size()];
         z = new double[P.size()];
@@ -360,13 +465,12 @@ public:
         m = new double[P.size()];
         r = new double[P.size()];
         id = new int[P.size()];
+        doms = new int[P.size()];
+        contact = new int[P.size()];
 
-        int dims[3];
         dims[0] = (int)P.size();
         dims[1] = (int)P.size();
         dims[2] = (int)P.size();
-        int ndims = 3;
-        float *coords[3];
         coords[0] = (float*)x;
         coords[1] = (float*)y;
         coords[2] = (float*)z;
@@ -384,21 +488,9 @@ public:
             m[i] = P[i].mass;
             r[i] = P[i].restitution;
             id[i] = P[i].ID;
+            doms[i] = dom+1;
+            contact[i] = P[i].contact ? 1 : 0;
         }
-       
-        std::string filename(DomainFile(dom));
-        DBfile *dbfile = DBCreate(filename.c_str(), DB_CLOBBER, DB_LOCAL,
-                                  "3D point mesh", DB_HDF5);
-        if(dbfile == NULL)
-        {
-            fprintf(stderr, "Could not create Silo file!\n");
-            return false;
-        }
-
-        // Create an option list for saving cycle and time values.
-        DBoptlist *optlist = DBMakeOptlist(2);
-        DBAddOption(optlist, DBOPT_CYCLE, (void *)&cycle);
-        DBAddOption(optlist, DBOPT_DTIME, (void *)&time);
 
         // Write a point mesh.
         DBPutPointmesh(dbfile, "pointmesh", ndims, coords, P.size(),
@@ -412,6 +504,8 @@ public:
         DBPutPointvar1(dbfile, "mass", "pointmesh", m, P.size(), DB_DOUBLE, optlist);
         DBPutPointvar1(dbfile, "restitution", "pointmesh", r, P.size(), DB_DOUBLE, optlist);
         DBPutPointvar1(dbfile, "ID", "pointmesh", id, P.size(), DB_INT, optlist);
+        DBPutPointvar1(dbfile, "dom", "pointmesh", doms, P.size(), DB_INT, optlist);
+        DBPutPointvar1(dbfile, "contact", "pointmesh", contact, P.size(), DB_INT, optlist);
 
         delete [] x;
         delete [] y;
@@ -422,6 +516,8 @@ public:
         delete [] m;
         delete [] r;
         delete [] id;
+        delete [] doms;
+        delete [] contact;
 
         DBFreeOptlist(optlist);
         DBClose(dbfile);
@@ -433,6 +529,11 @@ protected:
     std::string MasterFile() const 
     {
         return std::string(fileBase + intToString05(cycle) + ".silo");
+    }
+
+    std::string BoundariesFile() const 
+    {
+        return std::string(fileBase + ".boundaries.silo");
     }
 
     std::string DomainFile(int dom) const
@@ -603,11 +704,13 @@ SimState::Advance()
         {
             particles[i].velocity += particles[i].acceleration * dT;
             particles[i].location += particles[i].velocity * dT;
+            particles[i].contact = false;
 
             if(particles[i].location.z < 0.)
             {
                 // bounce.
                 particles[i].location.z = 0.;
+                particles[i].contact = true;
 
                 particles[i].velocity = vector3(
                     particles[i].velocity.x,
@@ -628,6 +731,7 @@ SimState::Advance()
                         particles[i].velocity.y,
                         particles[i].velocity.z
                         );
+                    particles[i].contact = true;
                 }
                 if(particles[i].location.x > extents[1])
                 {
@@ -637,6 +741,7 @@ SimState::Advance()
                         particles[i].velocity.y,
                         particles[i].velocity.z
                         );
+                    particles[i].contact = true;
                 }
                 if(particles[i].location.y < extents[2])
                 {
@@ -646,6 +751,7 @@ SimState::Advance()
                        -particles[i].velocity.y * particles[i].restitution,
                         particles[i].velocity.z
                         );
+                    particles[i].contact = true;
                 }
                 if(particles[i].location.y > extents[3])
                 {
@@ -655,6 +761,7 @@ SimState::Advance()
                        -particles[i].velocity.y * particles[i].restitution,
                         particles[i].velocity.z
                         );
+                    particles[i].contact = true;
                 }
             }
         }
@@ -856,6 +963,7 @@ main(int argc, char *argv[])
         sim.CreateParticles(100);
 
     SiloDataSaver saver(fileBase);
+    saver.WriteBoundariesFile(sim.divisions, sim.extents);
 
     // Advance through time.
     while(sim.time < sim.maxTime)
@@ -865,7 +973,7 @@ main(int argc, char *argv[])
         sim.Advance();
 
         // If we're emitting then create more particles.
-        if(!sim.createAll)
+        if(!sim.createAll && sim.time < sim.maxTime/2.)
             sim.CreateParticles(100);
     }
     sim.SaveData(saver);
