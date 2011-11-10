@@ -1616,6 +1616,8 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
 //   Cyrus Harrison, Wed Mar 24 10:41:20 PDT 2010
 //   Set haveAmrGroupInfo if we have amr level info.
 //
+//   Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//   Add protections for multi-block objects with zero blocks
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile, 
@@ -1671,7 +1673,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
             {
                 AddCSGMultimesh(dirname, multimesh_names[i], md, mm, dbfile);
             }
-            else
+            else if (mm)
             {
                 avtMeshType mt = AVT_UNKNOWN_MESH;
                 avtMeshCoordType mct = AVT_XY;
@@ -2582,6 +2584,9 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
 //    Mark C. Miller, Wed Nov  3 09:24:48 PDT 2010
 //    Don't call GetRestrictedMaterialIndices on individual blocks if we
 //    already have 'em from the multi-block.
+//
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Add protections for multi-block objects with zero blocks
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
@@ -2658,7 +2663,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
             // the associated material numbers and indi
             //
             vector<int> selectedMats;
-            if (mv->region_pnames)
+            if (mv && mv->region_pnames)
                 valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
                     meshname.c_str(), mv->region_pnames, &selectedMats);
 
@@ -2671,7 +2676,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
             DBfile *correctFile = dbfile;
             string  varUnits;
             int nvals = 1;
-            if (valid_var)
+            if (valid_var && mv)
             {
                 DetermineFileAndDirectory(mv->varnames[meshnum], correctFile, 0, realvar);
 
@@ -2774,7 +2779,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                                                            meshname, centering);
                 smd->validVariable = valid_var;
                 smd->treatAsASCII = treatAsASCII;
-                smd->hideFromGUI = mv->guihide;
+                smd->hideFromGUI = mv?mv->guihide:0;
                 smd->matRestricted = selectedMats;
                 if(varUnits != "")
                 {
@@ -2796,7 +2801,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                 avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                                  meshname, centering, nvals);
                 vmd->validVariable = valid_var;
-                vmd->hideFromGUI = mv->guihide;
+                vmd->hideFromGUI = mv?mv->guihide:0;
                 vmd->matRestricted = selectedMats;
                 if(varUnits != "")
                 {
@@ -3337,6 +3342,8 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
 //    Cyrus Harrison, Tue Nov 24 14:05:28 PST 2009
 //    Added guard to avoid crash from unset material name.
 //
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Add protections for multi-block objects with zero blocks
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
@@ -3364,7 +3371,7 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             RegisterDomainDirs(mm->matnames, mm->nmats, dirname);
 
             char *material  = NULL;
-            if (MultiMatHasAllMatInfo(mm) < 3)
+            if (MultiMatHasAllMatInfo(mm) < 3 && mm->nmats)
             {
                 // Find the first non-empty mesh
                 int meshnum = 0;
@@ -3645,6 +3652,9 @@ avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
 //
 //    Mark C. Miller Tue Mar 30 16:28:48 PDT 2010
 //    Temporarily reset to using DB_ALL error level as DB_TOP is causing hangs.
+//
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Add protections for multi-block objects with zero blocks
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
@@ -3660,13 +3670,12 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
 
         TRY
         {
+            bool valid_var = true;
             ms = GetMultimatspec(dirname, multimatspecies_names[i]);
             if (ms == NULL)
             {
-                char msg[256];
-                SNPRINTF(msg,sizeof(msg),"Unable to read multimat-species object \"%s\"",
-                    multimatspecies_names[i]);
-                EXCEPTION1(SiloException,msg);
+                valid_var = false;
+                ms = DBAllocMultimatspecies(0);
             }
 
             char *name_w_dir = GenerateName(dirname, multimatspecies_names[i], topDir.c_str());
@@ -3675,8 +3684,7 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
 
             // Find the first non-empty mesh
             int meshnum = 0;
-            bool valid_var = true;
-            while (string(ms->specnames[meshnum]) == "EMPTY")
+            while (ms->nspec && string(ms->specnames[meshnum]) == "EMPTY")
             {
                 meshnum++;
                 if (meshnum >= ms->nspec)
@@ -3716,7 +3724,8 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
                                                               ms->nspec, dirname);
 
                     // get the species info
-                    char *species = ms->specnames[meshnum];
+                    char tmpnm = '\n';
+                    char *species = ms?ms->specnames[meshnum]:&tmpnm;
 
                     char   *realvar = NULL;
                     DBfile *correctFile = dbfile;
@@ -10219,7 +10228,9 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 nloff = nloffs[first4NodeFace<0?~first4NodeFace:first4NodeFace];
                 for (j = 0; j < 4; j++)
                 {
-                    nids[j] = phzl->nodelist[nloff+j];
+                    // We need to take 'em in reverse order if face index is negative
+                    int n = first4NodeFace<0?nloff+3-j:nloff+j;
+                    nids[j] = phzl->nodelist[n];
                     nodemap.erase(nids[j]);
                 }
                 // Get last node from only remaining node in nodemap
@@ -10233,11 +10244,19 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 // Get first 3 nodes from first3NodeFace
                 nloff = nloffs[first3NodeFace<0?~first3NodeFace:first3NodeFace]; 
                 for (j = 0; j < 3; j++)
-                    nids[j] = phzl->nodelist[nloffs[nloff]+j];
+                {
+                    // We need to take 'em in reverse order if face index is negative
+                    int n = first3NodeFace<0?nloff+2-j:nloff+j;
+                    nids[j] = phzl->nodelist[n];
+                }
                 // Get next 3 nodes from opposing3NodeFace 
                 nloff = nloffs[opposing3NodeFace<0?~opposing3NodeFace:opposing3NodeFace];
                 for (j = 0; j < 3; j++)
-                    nids[3+j] = phzl->nodelist[nloffs[nloff]+j];
+                {
+                    // We need to take 'em in reverse order if face index is negative
+                    int n = opposing3NodeFace<0?nloff+2-j:nloff+j;
+                    nids[3+j] = phzl->nodelist[n];
+                }
                 ArbInsertWedge(ugrid, nids, ocdata, cellReMap);
             }
             else if (fcnt == 6 && nodemap.size() == 8 && 
@@ -10246,11 +10265,19 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 // Get first 4 nodes from first4NodeFace
                 nloff = nloffs[first4NodeFace<0?~first4NodeFace:first4NodeFace];
                 for (j = 0; j < 4; j++)
-                    nids[j] = phzl->nodelist[nloff+j];
+                {
+                    // We need to take 'em in reverse order if face index is negative
+                    int n = first4NodeFace<0?nloff+3-j:nloff+j;
+                    nids[j] = phzl->nodelist[n];
+                }
                 // Get next 4 nodes from opposing4NodeFace
                 nloff = nloffs[opposing4NodeFace<0?~opposing4NodeFace:opposing4NodeFace];
                 for (j = 0; j < 4; j++)
-                    nids[4+j] = phzl->nodelist[nloff+j];
+                {
+                    // We need to take 'em in reverse order if face index is negative
+                    int n = opposing4NodeFace<0?nloff+3-j:nloff+j;
+                    nids[4+j] = phzl->nodelist[n];
+                }
                 ArbInsertHex(ugrid, nids, ocdata, cellReMap);
             }
             else                        // Arbitrary
@@ -13454,6 +13481,8 @@ avtSiloFileFormat::QueryMultimesh(const char *path, const char *name)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Mark C. Miller, Wed Nov  9 21:33:57 PST 2011
+//    Handle multiblock objects with zero blocks
 // ****************************************************************************
 
 DBmultimesh *
@@ -13478,8 +13507,16 @@ avtSiloFileFormat::GetMultimesh(const char *path, const char *name)
     DBfile *dbfile = GetFile(tocIndex);
     DBmultimesh *mm = DBGetMultimesh(dbfile, combined_name);
 
-    multimesh_name.push_back(combined_name);
-    multimeshes.push_back(mm);
+    if (mm->nblocks > 0)
+    {
+        multimesh_name.push_back(combined_name);
+        multimeshes.push_back(mm);
+    }
+    else
+    {
+        DBFreeMultimesh(mm);
+        mm = 0;
+    }
 
     return mm;
 }
@@ -13552,6 +13589,8 @@ avtSiloFileFormat::QueryMultivar(const char *path, const char *name)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Mark C. Miller, Wed Nov  9 21:33:57 PST 2011
+//    Handle multiblock objects with zero blocks
 // ****************************************************************************
 
 DBmultivar *
@@ -13576,8 +13615,16 @@ avtSiloFileFormat::GetMultivar(const char *path, const char *name)
     DBfile *dbfile = GetFile(tocIndex);
     DBmultivar *mm = DBGetMultivar(dbfile, combined_name);
 
-    multivar_name.push_back(combined_name);
-    multivars.push_back(mm);
+    if (mm->nvars > 0)
+    {
+        multivar_name.push_back(combined_name);
+        multivars.push_back(mm);
+    }
+    else
+    {
+        DBFreeMultivar(mm);
+        mm = 0;
+    }
 
     return mm;
 }
@@ -13649,6 +13696,8 @@ avtSiloFileFormat::QueryMultimat(const char *path, const char *name)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Mark C. Miller, Wed Nov  9 21:33:57 PST 2011
+//    Handle multiblock objects with zero blocks
 // ****************************************************************************
 
 DBmultimat *
@@ -13673,8 +13722,16 @@ avtSiloFileFormat::GetMultimat(const char *path, const char *name)
     DBfile *dbfile = GetFile(tocIndex);
     DBmultimat *mm = DBGetMultimat(dbfile, combined_name);
 
-    multimat_name.push_back(combined_name);
-    multimats.push_back(mm);
+    if (mm->nmats > 0)
+    {
+        multimat_name.push_back(combined_name);
+        multimats.push_back(mm);
+    }
+    else
+    {
+        DBFreeMultimat(mm);
+        mm = 0;
+    }
 
     return mm;
 }
@@ -13746,6 +13803,8 @@ avtSiloFileFormat::QueryMultimatspec(const char *path, const char *name)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Mark C. Miller, Wed Nov  9 21:33:57 PST 2011
+//    Handle multiblock objects with zero blocks
 // ****************************************************************************
 
 DBmultimatspecies *
@@ -13770,8 +13829,16 @@ avtSiloFileFormat::GetMultimatspec(const char *path, const char *name)
     DBfile *dbfile = GetFile(tocIndex);
     DBmultimatspecies *mm = DBGetMultimatspecies(dbfile, combined_name);
 
-    multimatspec_name.push_back(combined_name);
-    multimatspecies.push_back(mm);
+    if (mm->nspec > 0)
+    {
+        multimatspec_name.push_back(combined_name);
+        multimatspecies.push_back(mm);
+    }
+    else
+    {
+        DBFreeMultimatspecies(mm);
+        mm = 0;
+    }
 
     return mm;
 }
