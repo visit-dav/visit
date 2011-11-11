@@ -405,7 +405,10 @@ avtPoincareFilter::ContinueExecute()
              FieldlineProperties::ISLAND_CHAIN ||
 
              poincare_ic->properties.type ==
-             FieldlineProperties::ISLANDS_WITHIN_ISLANDS) &&
+             FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS ||
+
+             poincare_ic->properties.type ==
+             FieldlineProperties::ISLAND_AMBIGUOUS_AXIS) &&
 
             poincare_ic->properties.analysisState ==
             FieldlineProperties::ADD_O_POINTS &&
@@ -768,7 +771,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         unsigned int islandGroups       = properties.islandGroups;
         unsigned int nnodes             = properties.nnodes;
 
-        std::vector< avtVector > &OPoints         = properties.OPoints;
+        std::vector< avtVector > &OPoints = properties.OPoints;
 
         bool completeIslands = true;
 
@@ -788,11 +791,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                     << toroidalWinding << "," << poloidalWinding << " ("
                     << safetyFactor << ")  ";
 
-          if( poloidalWinding != poloidalWindingP )
-            std::cerr << toroidalWinding << "," << poloidalWindingP << " ("
-                      << (float) toroidalWinding / (float) poloidalWindingP << ")  ";
-          
-          
           if( type == FieldlineProperties::RATIONAL )
             std::cerr << "rational surface  ";
           
@@ -803,11 +801,19 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             std::cerr << islands << " island chain with resonances: "
                       << toroidalResonance << "," << poloidalResonance << "  ";
           
-          else if( type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
+          else if( type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS )
             std::cerr << islands << " islands around "
                       << islandGroups << " islandGroups with resonances: "
                       << toroidalResonance << "," << poloidalResonance << "  ";
-          
+
+          else if( type == FieldlineProperties::ISLAND_AMBIGUOUS_AXIS )
+          {
+            std::cerr << islands << " island chain with an ambiguous axis: "
+//                    << toroidalResonance << "," << poloidalResonance << "  ";
+
+                      << toroidalWinding << "," << poloidalWindingP << " ("
+                      << (float) toroidalWinding / (float) poloidalWindingP << ")  ";
+          }
           else if( type == FieldlineProperties::CHAOTIC )
             std::cerr << "chaotic  ";
           
@@ -819,12 +825,28 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                     << std::endl;
           
           if( (type == FieldlineProperties::ISLAND_CHAIN ||
-               type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS) &&
+               type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS ||
+               type == FieldlineProperties::ISLAND_AMBIGUOUS_AXIS) &&
               toroidalWinding != poloidalWinding &&
               islands != toroidalWinding )
             std::cerr << "WARNING - The island count does not match the toroidalWinding count" << std::endl;
         }
         
+        if( toroidalWinding == poloidalWinding )
+        {
+          if( type == FieldlineProperties::ISLAND_AMBIGUOUS_AXIS )
+          {
+            poloidalWinding = poloidalWindingP;
+            islands = 0;
+          }
+          else //if( type != FieldlineProperties::ISLAND_AMBIGUOUS_AXIS )
+          {
+            toroidalWinding = poloidalWinding = 1;
+            windingGroupOffset = 0;
+          }
+        }
+
+          
         // If toroidal winding is zero, skip it.
         if( type == FieldlineProperties::CHAOTIC )
         {
@@ -1137,6 +1159,33 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                 }
               }
             }
+            else if( type == FieldlineProperties::ISLAND_AMBIGUOUS_AXIS )
+            {
+              if( overlaps != 0 )
+              {
+
+                if( showLines )
+                  nnodes = 2;
+
+                bool tmpPoints = showPoints;
+
+                // Loop through each island.
+                for( unsigned int j=0; j<toroidalWinding; j++ )
+                {
+                  // Erase all of the overlapping points.
+                  puncturePts[p][j].erase( puncturePts[p][j].begin()+nnodes,
+                                           puncturePts[p][j].end() );
+
+                  if( showLines )
+                  {
+                    unsigned int n = (j+windingGroupOffset) % toroidalWinding;
+
+                    puncturePts[p][j][1] = puncturePts[p][j][0] +
+                      0.9 * (puncturePts[p][n][0] - puncturePts[p][j][0]);
+                  }
+                }
+              }
+            }
             
             bool VALID = true;
             
@@ -1171,7 +1220,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         if( !showIslands ||
             (showIslands &&
              (type == FieldlineProperties::ISLAND_CHAIN ||
-              type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS)) )
+              type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS)) )
         {
             double color_value;
 
@@ -1199,14 +1248,14 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             }
             else if( dataValue == DATA_SafetyFactorQ_NotP )
             {
-              if( poloidalWinding == poloidalWindingP )
+              if( type != FieldlineProperties::ISLAND_AMBIGUOUS_AXIS )
                 color_value = (double) toroidalWinding / (double) poloidalWinding;
               else
                 continue;
             }
             else if( dataValue == DATA_SafetyFactorP_NotQ )
             {
-              if( poloidalWindingP != poloidalWinding )
+              if( type == FieldlineProperties::ISLAND_AMBIGUOUS_AXIS )
                 color_value = (double) toroidalWinding / (double) poloidalWindingP;
               else
                 continue;
@@ -1244,7 +1293,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                                    windingGroupOffset,
                                    dataValue, color_value );
               }
-              else if( 0 && type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
+              else if( 0 && type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS )
               {
                 drawIrrationalCurve( dt, puncturePts, nnodes, islands,
                                      windingGroupOffset,
@@ -1263,7 +1312,8 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
 
               if( showOPoints &&
                   (type == FieldlineProperties::ISLAND_CHAIN ||
-                   type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS) )
+                   type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS ||
+                   type == FieldlineProperties::ISLAND_AMBIGUOUS_AXIS) )
               {
                 drawPoints( dt, OPoints );
               }
@@ -1886,7 +1936,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
     scalars->Allocate(dims[0]*dims[1]);
     
     float *points_ptr = (float *) points->GetVoidPointer(0);
-    
+
     // Determine if the winding group order matches the point
     // ordering. This is only needed when building surfaces.
     Vector intra = nodes[0][   0][1] - nodes[0][0][0];
@@ -1919,7 +1969,7 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
             {
                 k = j;
             }
-            
+
             unsigned int jj = nplanes * j + p;
             
             if( color == DATA_PlaneOrder )
