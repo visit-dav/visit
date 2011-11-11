@@ -187,7 +187,11 @@ WindowMetrics::CalculateScreen(QWidget *win,
     else
         rect = qApp->desktop()->availableGeometry();
     screenX = rect.x();
+#ifdef Q_WS_MACX
+    screenY = 0;
+#else
     screenY = rect.y();
+#endif
     screenW = rect.width();
     screenH = rect.height();
 }
