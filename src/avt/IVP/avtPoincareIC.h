@@ -111,7 +111,8 @@ enum FieldlineType { UNKNOWN_TYPE  = 0,
                      IRRATIONAL     = 20,
                      FLUX_SURFACE   = 21,
                      ISLAND_CHAIN   = 22,
-                     ISLANDS_WITHIN_ISLANDS = 23,
+                     ISLAND_WITH_SECONDARY_ISLANDS = 23,
+                     ISLAND_AMBIGUOUS_AXIS = 24,
                      
                      CHAOTIC = 30 };
   

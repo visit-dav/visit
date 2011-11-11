@@ -449,13 +449,14 @@ FieldlineLib::convexHull( std::vector< std::pair< Point, unsigned int > > &hullP
     // Stop when the first point is found again.
   } while( min != npts );
 
-//   for( unsigned int i=0; i<m; ++i ) {
-//     if( verboseFlag )
-//       std::cerr << "convexHull " << hullPts[i].second << std::endl;
-//   }
+  for( unsigned int i=0; i<m; ++i ) {
+    if( verboseFlag )
+      std::cerr << "convexHull " << hullPts[i].second << "   "
+                << hullPts[i].first << std::endl;
+  }
 
-//   if( verboseFlag )
-//     std::cerr << std::endl;
+  if( verboseFlag )
+    std::cerr << std::endl;
 }
 
 
@@ -916,7 +917,7 @@ unsigned int FieldlineLib::Blankinship( unsigned int toroidalWinding,
   unsigned int offset = GCD( toroidalWinding, poloidalWinding );
 
   if( toroidalWinding == poloidalWinding )
-    skip = 1;
+    skip = 0;
 
   else if( toroidalWinding > 1 && poloidalWinding != 0 ) {
     //  To find the skip find the mutual primes via the
@@ -2320,6 +2321,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   }
 
 
+  bool helicity = ccw( ptList[1] - ptList[0], ptList[1] - ptList[2] );
+
+  std::cerr << "helicity " << helicity << std::endl;
+
   // Get the safety factor.
 //   for( unsigned int i=0; i<poloidal_puncture_pts.size(); ++i )
 //     std::cerr << i << "  "
@@ -2849,7 +2854,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   // the toroidal resonance
   if( (type == FieldlineProperties::UNKNOWN_TYPE ||
        type == FieldlineProperties::ISLAND_CHAIN ||
-       type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS ) &&
+       type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS ) &&
 
       ( (toroidalResonance > 1 /* && poloidalResonance >= 1 */) || // Always true.
         
@@ -2861,6 +2866,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     // of islands.
     if( toroidalWinding == poloidalWinding )
     {
+//      toroidalWinding  = 1;
+//      poloidalWinding  = 1;
       poloidalWindingP = poloidalWinding;
     }
     else
@@ -2890,7 +2897,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     // smaller islands around an island.
     else
     {
-      type = FieldlineProperties::ISLANDS_WITHIN_ISLANDS;
+      type = FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS;
 
       if( verboseFlag )
         std::cerr << "Secondary resonances = "
@@ -2925,7 +2932,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         unsigned int nodes = poloidal_puncture_pts.size() / islands / 2;
         
         // Add two more puncture points per island within and island.
-        if( type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
+        if( type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS )
           nPuncturesNeeded = (nodes + 2) * islands * 2;
         // Add five more puncture points per island.
         else //if( type == FieldlineProperties::ISLAND_CHAIN )
@@ -2955,7 +2962,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     // will be the number of points in the cross section of each
     // island within an island.
 
-    // Note: for a simple island chain the resonance GCD will 1.
+    // Note: for a simple island chain the resonance GCD will be 1.
     else // Possible solution.
     {
       nnodes = windingGCD / resonanceGCD;
@@ -3101,7 +3108,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       
       unsigned int m = 0; // starting index
       
-      convexHull( hullPts, m, toroidalWinding, 1 );
+      convexHull( hullPts, m, toroidalWinding, helicity );
 
       if( m != toroidalWinding )
       {
@@ -3119,9 +3126,11 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       // Find all the differences and count each one.
       for(unsigned int i=0; i<toroidalWinding; ++i )
       {
-        offset = ( (hullPts[i                    ].second -
-                    hullPts[(i+1)%toroidalWinding].second) +
-                   toroidalWinding ) % toroidalWinding;
+        unsigned int i1 = (i+1) % toroidalWinding;
+
+        // Offset from one puncture point to it's neighbor.
+        offset = (hullPts[i1].second - hullPts[i].second + toroidalWinding) %
+          toroidalWinding;
         
         // Find this offset in the list.
         ic = offsets.find( offset );
@@ -3129,7 +3138,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         // Not found, new offset.
         if( ic == offsets.end() )
           offsets.insert( std::pair<int, int>( offset, 1) );
-        // Found this difference, increment the count.
+        // Found this offset, increment the count.
         else
           (*ic).second++;
       }
@@ -3138,7 +3147,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         if( verboseFlag )
           std::cerr << "Multiple offsets  ";
 
-      // Find the difference that occurs most often.
+      // Find the offset that occurs most often.
       unsigned int nMatches = 0;
       
       ic = offsets.begin();
@@ -3162,10 +3171,16 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         if( verboseFlag )
           std::cerr << std::endl;
 
-      // Secondary angle around the nonaxisymmetric island.
+      // Secondary rotation around the nonaxisymmetric island.
       if( offset != 1 && offset != toroidalWinding-1 )
       {
         poloidalWindingP = Blankinship( toroidalWinding, offset );
+
+        windingGroupOffset = offset;
+
+        nnodes = 1;
+
+        type = FieldlineProperties::ISLAND_AMBIGUOUS_AXIS;
         
         if( verboseFlag )
           std::cerr << "Secondary poloidal rotation  "
@@ -3423,7 +3438,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     double local_safetyFactor =
       (double) toroidalWinding / (double) poloidalWinding;
 
-    windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
+    if( poloidalWinding == poloidalWindingP )
+      windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
 
     nnodes = poloidal_puncture_pts.size() / toroidalWinding;
 
@@ -3632,7 +3648,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
   // only check the toroidalFirstResonance
   if( (type == FieldlineProperties::UNKNOWN_TYPE ||
        type == FieldlineProperties::ISLAND_CHAIN ||
-       type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS ) &&
+       type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS ) &&
 
       toroidalResonance > 1 ) // && poloidalResonance >= 1 ) // Always true.
   {
@@ -3659,7 +3675,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
     // smaller islands around an island.
     else
     {
-      type = FieldlineProperties::ISLANDS_WITHIN_ISLANDS;
+      type = FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS;
 
       if( verboseFlag )
         std::cerr << "Secondary resonances = "
@@ -3690,7 +3706,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
         unsigned int nodes = poloidal_puncture_pts.size() / islands / 2;
         
         // Add two more puncture points per island within and island.
-        if( type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
+        if( type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS )
           nPuncturesNeeded = (nodes + 2) * islands * 2;
         // Add five more puncture points per island.
         else //if( type == FieldlineProperties::ISLAND_CHAIN )
