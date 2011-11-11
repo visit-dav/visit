@@ -281,6 +281,8 @@ QvisSetupHostProfilesAndConfigWindow::installConfigFile(const QString& srcFilena
 // Creation:   Thu Aug 11 17:48:10 PDT 2011
 //
 // Modifications:
+//   Brad Whitlock, Fri Nov 11 09:52:13 PST 2011
+//   Prevent copying of "closed" profiles when we did not ask for them.
 //
 // ****************************************************************************
 
@@ -303,11 +305,16 @@ QvisSetupHostProfilesAndConfigWindow::performSetup()
                     srcHostProfileDirName,
                     QString("host_") + it->shortName + QString("_*.xml"));
             QStringList srcConfigFilenameList = srcHostProfileDir.entryList();
+            bool closed = it->shortName.contains("closed");
             for (int i = 0; i < srcConfigFilenameList.size(); ++ i)
             {
+                const QString &thisProfile = srcConfigFilenameList.at(i);
+                if(!closed && thisProfile.contains("closed"))
+                    continue;
+
                 installConfigFile(
-                        srcHostProfileDirName + "/" + srcConfigFilenameList.at(i),
-                        hostsInstallDirectory + "/" + srcConfigFilenameList.at(i));
+                        srcHostProfileDirName + "/" + thisProfile,
+                        hostsInstallDirectory + "/" + thisProfile);
             }
         }
     }
