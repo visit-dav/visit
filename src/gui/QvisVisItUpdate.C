@@ -179,7 +179,13 @@ QvisVisItUpdate::localTempDirectory() const
 QString
 QvisVisItUpdate::getInstallationDir() const
 {
-    return QString(GetVisItInstallationDirectory(latestVersion.toStdString().c_str()).c_str());
+    QString idir(GetVisItInstallationDirectory(latestVersion.toStdString().c_str()).c_str());
+#ifdef __APPLE__
+    int pos = idir.indexOf("VisIt.app/Contents/Resources");
+    if(pos != -1)
+        idir = idir.left(pos);
+#endif
+    return idir;
 }
 
 // ****************************************************************************
