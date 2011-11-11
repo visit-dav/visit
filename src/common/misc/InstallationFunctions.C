@@ -618,9 +618,6 @@ GetIsDevelopmentVersion()
 //   On Windows, if VISISTHOME not defined in registry, check environment
 //   before getting the module path.
 //
-//   Brad Whitlock, Mon Oct 31 15:26:04 PDT 2011
-//   Strip off Mac bundle path.
-//
 // ****************************************************************************
 
 std::string
@@ -684,16 +681,6 @@ GetVisItInstallationDirectory(const char *version)
                 installDir = home.substr(0, lastSlash);
             else
                 installDir = idir;
-
-#ifdef __APPLE__
-            // If we're using a Mac bundle, strip off some more stuff for the
-            // installation directory since we would not want to install into 
-            // another bundle.
-            std::string bundlePath("VisIt.app/Contents/Resources");
-            int bp = home.rfind(bundlePath);
-            if(bp != -1)
-                installDir = home.substr(0, bp);
-#endif
         }
     }
     return installDir;
