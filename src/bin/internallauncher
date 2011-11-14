@@ -725,6 +725,9 @@ $0 = shift @ARGV;
 #    Hank Childs, Wed Aug  3 22:45:51 UTC 2011
 #    Add support for Eureka's new "login1" hostname.
 #
+#    Tom Fogal, Mon Nov 14 09:16:08 MST 2011
+#    Make "-xterm" help clearer.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1158,7 +1161,7 @@ $fullusage = "$usage
         -gdb-mdserver        Run the mdserver under gdb.
         -gdb-xmledit         Run xmledit under gdb.
         -break <funcname>    Add the specified breakpoint in gdb.
-        -xterm               Run gdb in an xterm window.
+        -xterm               With -gdb-something, run gdb in an xterm window.
         -newconsole          Run any VisIt component in a new console window.
         -totalview <args> <comp>
                              Run totalview with <args> on component <comp>.
