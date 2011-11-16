@@ -43,7 +43,7 @@
 #include <Curve2DPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *Curve2DVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *Curve2DVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

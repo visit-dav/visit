@@ -44,7 +44,7 @@
 #include <TruecolorAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *TruecolorVisItPluginVersion = VISIT_VERSION;
+PLOT_EXPORT const char *TruecolorVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

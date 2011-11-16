@@ -43,7 +43,7 @@
 #include <NETCDFPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *NETCDFVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *NETCDFVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

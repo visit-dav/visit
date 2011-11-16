@@ -43,7 +43,7 @@
 #include <ITAPS_CPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *ITAPS_CVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *ITAPS_CVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

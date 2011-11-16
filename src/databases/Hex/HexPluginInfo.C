@@ -43,7 +43,7 @@
 #include <HexPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *HexVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *HexVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

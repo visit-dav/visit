@@ -43,7 +43,7 @@
 #include <PixiePluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *PixieVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *PixieVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

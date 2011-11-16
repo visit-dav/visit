@@ -43,7 +43,7 @@
 #include <MDSplusPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *MDSplusVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *MDSplusVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

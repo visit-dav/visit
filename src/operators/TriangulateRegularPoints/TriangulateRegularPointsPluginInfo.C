@@ -44,7 +44,7 @@
 #include <TriangulateRegularPointsAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *TriangulateRegularPointsVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *TriangulateRegularPointsVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

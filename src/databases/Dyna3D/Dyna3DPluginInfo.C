@@ -43,7 +43,7 @@
 #include <Dyna3DPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *Dyna3DVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *Dyna3DVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

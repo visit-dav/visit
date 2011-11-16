@@ -43,7 +43,7 @@
 #include <ChomboPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *ChomboVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *ChomboVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

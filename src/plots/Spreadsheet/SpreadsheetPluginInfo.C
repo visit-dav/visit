@@ -44,7 +44,7 @@
 #include <SpreadsheetAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *SpreadsheetVisItPluginVersion = VISIT_VERSION;
+PLOT_EXPORT const char *SpreadsheetVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

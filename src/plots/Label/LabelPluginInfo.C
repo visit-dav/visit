@@ -44,7 +44,7 @@
 #include <LabelAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *LabelVisItPluginVersion = VISIT_VERSION;
+PLOT_EXPORT const char *LabelVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

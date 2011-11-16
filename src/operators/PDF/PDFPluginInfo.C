@@ -44,7 +44,7 @@
 #include <PDFAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *PDFVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *PDFVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

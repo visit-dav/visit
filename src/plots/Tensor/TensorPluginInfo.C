@@ -44,7 +44,7 @@
 #include <TensorAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *TensorVisItPluginVersion = VISIT_VERSION;
+PLOT_EXPORT const char *TensorVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <CGNSPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *CGNSVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *CGNSVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

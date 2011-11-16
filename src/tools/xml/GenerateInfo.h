@@ -743,7 +743,7 @@ class InfoGeneratorPlugin : public Plugin
     void AddVersion(QTextStream &c)
     {
         c << "#include <visit-config.h>" << endl;
-        c << "extern \"C\" " << Export(type.toStdString()) << " const char *"<<name<<"VisItPluginVersion = VISIT_VERSION;" << endl;
+        c << Export(type.toStdString()) << " const char *"<<name<<"VisItPluginVersion = VISIT_VERSION;" << endl;
         c << endl;
     }
     void WriteInfoSource(QTextStream &c)

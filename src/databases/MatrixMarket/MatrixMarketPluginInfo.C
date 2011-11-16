@@ -43,7 +43,7 @@
 #include <MatrixMarketPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *MatrixMarketVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *MatrixMarketVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

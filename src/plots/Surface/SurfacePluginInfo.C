@@ -44,7 +44,7 @@
 #include <SurfaceAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *SurfaceVisItPluginVersion = VISIT_VERSION;
+PLOT_EXPORT const char *SurfaceVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
