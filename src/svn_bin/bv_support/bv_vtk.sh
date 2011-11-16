@@ -359,11 +359,8 @@ function build_vtk
     # If on Darwin, fix install names
     #
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
+        INSTALLNAMEPATH="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
+
         # fix the internal name with in the libraries
         #
         # first change the libraries name and identification by executing the
@@ -392,14 +389,11 @@ function build_vtk
                 $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
         done
 
+        VTK_PYTHON_MOD_LIB_NAMES="vtkCommonPython.so vtkFilteringPython.so vtkGenericFilteringPython.so vtkGraphicsPython.so vtkHybridPython.so vtkIOPython.so vtkImagingPython.so vtkRenderingPython.so vtkVolumeRenderingPython.so"
         #
         # Fix vtk python wrapper module intall names.
         #
-        for i in libvtkCommonPython.so libvtkFilteringPython.so \
-                 libvtkGenericFilteringPython.so libvtkGraphicsPython.so \
-                 libvtkHybridPython.so libvtkIOPython.so \
-                 libvtkImagingPython.so libvtkRenderingPython.so \
-                 libvtkVolumeRenderingPython.so
+        for i in $VTK_PYTHON_MOD_LIB_NAMES
         do
             install_name_tool -id \
              $INSTALLNAMEPATH/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/vtk/$i \
@@ -410,17 +404,20 @@ function build_vtk
         # The vtk python module libs depend on the main vtk libs,
         # resolve these install names.
         #
-        for i in libvtkCommonPython.so libvtkFilteringPython.so \
-                 libvtkGenericFilteringPython.so libvtkGraphicsPython.so \
-                 libvtkHybridPython.so libvtkIOPython.so \
-                 libvtkImagingPython.so libvtkRenderingPython.so \
-                 libvtkVolumeRenderingPython.so
-        do
+        
+        # The vtk python libs have install names that point to an abs path 
+        # below VTK_BUILD_DIR. 
+        # We should be in ${VTK_BUILD_DIR}, we just need its abs path
+        VTK_BUILD_DIR_ABS=`pwd`
+        info "VTK build directory absolute path: $VTK_BUILD_DIR_ABS"
 
+        for i in $VTK_PYTHON_MOD_LIB_NAMES
+        do
+        
           for j in $VTK_LIB_NAMES
           do
              install_name_tool -change \
-                $j.5.6.$SO_EXT \
+                $VTK_BUILD_DIR_ABS/bin/$j.5.8.$SO_EXT \
                 $INSTALLNAMEPATH/$j.$SO_EXT \
                 $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/vtk/$i
           done
