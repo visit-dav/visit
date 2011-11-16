@@ -494,6 +494,9 @@ avtVTKFileFormat::CreateCurves(vtkRectilinearGrid *rgrid)
 //    if PopulateDatabaseMetaData has not been called. This supports materials
 //    in the case we multiple vtk files acting as separate timesteps.
 //
+//    Cyrus Harrison, Wed Nov 16 13:35:54 PST 2011
+//    Use "MaterialIds" field data to help generate avtMaterials result object.
+//
 // ****************************************************************************
 
 void *
@@ -534,9 +537,17 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
         // this data will be bad ...
         if(matnos.size() == 0)
         {
-            int *iptr = matarr->GetPointer(0);
+            vtkIntArray  *iarr = NULL;
+            // check for field data "MaterialIds" that can directly provide us
+            // the proper set of material ids.
+            vtkDataArray *mids_arr = dataset->GetFieldData()->GetArray("MaterialIds");
+            if( mids_arr != NULL)
+                iarr = vtkIntArray::SafeDownCast(mids_arr);
+            else
+                iarr = vtkIntArray::SafeDownCast(matarr);
+            int *iptr = iarr->GetPointer(0);
             std::map<int, bool> valMap;
-            int ntuples = matarr->GetNumberOfTuples();
+            int ntuples = iarr->GetNumberOfTuples();
             for (int j = 0; j < ntuples; j++)
                 valMap[iptr[j]] = true;
             std::map<int, bool>::const_iterator it;
@@ -887,6 +898,9 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Brad Whitlock, Wed Oct 26 11:12:17 PDT 2011
 //    Add metadata for curves.
 //
+//    Cyrus Harrison, Wed Nov 16 13:35:54 PST 2011
+//    Use "MaterialIds" field data to help generate materials metadata.
+//
 // ****************************************************************************
 
 void
@@ -1142,12 +1156,21 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             ((strncmp(name, "internal_var_Subsets", strlen("internal_var_Subsets")) == 0) ||
             ((strncmp(name, "material", strlen("material")) == 0))))
         {
-            vtkIntArray *iarr = vtkIntArray::SafeDownCast(arr);
-            int *iptr = iarr->GetPointer(0);
             std::map<int, bool> valMap;
+            vtkIntArray  *iarr = NULL;
+            // check for field data "MaterialIds" that can directly provide us
+            // the proper set of material ids.
+            vtkDataArray *mids_arr = dataset->GetFieldData()->GetArray("MaterialIds");
+            if( mids_arr != NULL)
+                iarr = vtkIntArray::SafeDownCast(mids_arr);
+            else
+                iarr = vtkIntArray::SafeDownCast(arr);
+
+            int *iptr = iarr->GetPointer(0);
             int ntuples = iarr->GetNumberOfTuples();
             for (int j = 0; j < ntuples; j++)
                 valMap[iptr[j]] = true;
+
             std::map<int, bool>::const_iterator it;
             for (it = valMap.begin(); it != valMap.end(); it++)
             {
