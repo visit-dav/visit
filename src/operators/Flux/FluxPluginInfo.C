@@ -44,7 +44,7 @@
 #include <FluxAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *FluxVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *FluxVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

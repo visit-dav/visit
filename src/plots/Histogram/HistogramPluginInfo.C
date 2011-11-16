@@ -44,7 +44,7 @@
 #include <HistogramAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *HistogramVisItPluginVersion = VISIT_VERSION;
+PLOT_EXPORT const char *HistogramVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

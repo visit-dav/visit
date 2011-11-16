@@ -43,7 +43,7 @@
 #include <ClawPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *ClawVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *ClawVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

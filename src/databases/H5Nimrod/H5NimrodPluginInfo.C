@@ -43,7 +43,7 @@
 #include <H5NimrodPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *H5NimrodVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *H5NimrodVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -44,7 +44,7 @@
 #include <SurfaceNormalAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *SurfaceNormalVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *SurfaceNormalVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

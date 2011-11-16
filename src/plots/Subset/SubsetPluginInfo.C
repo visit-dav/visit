@@ -44,7 +44,7 @@
 #include <SubsetAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *SubsetVisItPluginVersion = VISIT_VERSION;
+PLOT_EXPORT const char *SubsetVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

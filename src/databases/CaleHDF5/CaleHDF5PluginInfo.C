@@ -43,7 +43,7 @@
 #include <CaleHDF5PluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *CaleHDF5VisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *CaleHDF5VisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

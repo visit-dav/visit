@@ -43,7 +43,7 @@
 #include <SimV1WriterPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *SimV1WriterVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *SimV1WriterVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

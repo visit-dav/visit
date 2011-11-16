@@ -44,7 +44,7 @@
 #include <BoxAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *BoxVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *BoxVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

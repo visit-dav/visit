@@ -44,7 +44,7 @@
 #include <BoundaryOpAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *BoundaryOpVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *BoundaryOpVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

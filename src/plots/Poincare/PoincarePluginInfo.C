@@ -44,7 +44,7 @@
 #include <PoincareAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *PoincareVisItPluginVersion = VISIT_VERSION;
+PLOT_EXPORT const char *PoincareVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

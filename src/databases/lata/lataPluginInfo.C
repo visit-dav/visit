@@ -43,7 +43,7 @@
 #include <lataPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *lataVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *lataVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

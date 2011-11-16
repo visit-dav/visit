@@ -43,7 +43,7 @@
 #include <ANALYZEPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *ANALYZEVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *ANALYZEVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

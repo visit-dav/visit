@@ -44,7 +44,7 @@
 #include <SphereSliceAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *SphereSliceVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *SphereSliceVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

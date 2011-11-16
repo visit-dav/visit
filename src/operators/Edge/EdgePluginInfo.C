@@ -44,7 +44,7 @@
 #include <EdgeAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *EdgeVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *EdgeVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

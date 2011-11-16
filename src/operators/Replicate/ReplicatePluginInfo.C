@@ -44,7 +44,7 @@
 #include <ReplicateAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *ReplicateVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *ReplicateVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

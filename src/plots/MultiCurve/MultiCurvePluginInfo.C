@@ -44,7 +44,7 @@
 #include <MultiCurveAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *MultiCurveVisItPluginVersion = VISIT_VERSION;
+PLOT_EXPORT const char *MultiCurveVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

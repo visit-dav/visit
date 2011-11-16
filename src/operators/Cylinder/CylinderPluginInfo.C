@@ -44,7 +44,7 @@
 #include <CylinderAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *CylinderVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *CylinderVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

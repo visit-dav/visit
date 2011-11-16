@@ -44,7 +44,7 @@
 #include <FiveFoldTetSubdivisionAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *FiveFoldTetSubdivisionVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *FiveFoldTetSubdivisionVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

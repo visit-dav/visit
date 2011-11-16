@@ -44,7 +44,7 @@
 #include <ContourAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *ContourVisItPluginVersion = VISIT_VERSION;
+PLOT_EXPORT const char *ContourVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

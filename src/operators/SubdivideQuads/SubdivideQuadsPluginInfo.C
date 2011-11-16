@@ -44,7 +44,7 @@
 #include <SubdivideQuadsAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *SubdivideQuadsVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *SubdivideQuadsVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

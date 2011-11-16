@@ -44,7 +44,7 @@
 #include <ExternalSurfaceAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *ExternalSurfaceVisItPluginVersion = VISIT_VERSION;
+OP_EXPORT const char *ExternalSurfaceVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

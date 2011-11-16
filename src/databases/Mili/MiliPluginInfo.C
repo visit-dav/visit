@@ -43,7 +43,7 @@
 #include <MiliPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *MiliVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *MiliVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

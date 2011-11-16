@@ -43,7 +43,7 @@
 #include <TFTPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *TFTVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *TFTVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

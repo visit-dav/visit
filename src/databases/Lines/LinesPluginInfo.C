@@ -43,7 +43,7 @@
 #include <LinesPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *LinesVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *LinesVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <PlainTextPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *PlainTextVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *PlainTextVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

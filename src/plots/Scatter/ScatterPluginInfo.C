@@ -44,7 +44,7 @@
 #include <ScatterAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *ScatterVisItPluginVersion = VISIT_VERSION;
+PLOT_EXPORT const char *ScatterVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

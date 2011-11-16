@@ -43,7 +43,7 @@
 #include <SpheralPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *SpheralVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *SpheralVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

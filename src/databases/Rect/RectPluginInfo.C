@@ -43,7 +43,7 @@
 #include <RectPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *RectVisItPluginVersion = VISIT_VERSION;
+DBP_EXPORT const char *RectVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
