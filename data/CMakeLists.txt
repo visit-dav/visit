@@ -65,7 +65,7 @@
 #   edit this makefile every time one is added or removed.
 #
 #   Brad Whitlock, Thu Apr 29 11:50:42 PDT 2010
-#   I added xdmf2d.C
+#   I added xdmf2d.C.
 #
 #   Eric Brugger, Thu Jun 17 15:24:51 PDT 2010
 #   I added logic to only create the Silo data files if VisIt is being
@@ -76,6 +76,9 @@
 #
 #   Cyrus Harrison, Wed Feb  9 11:20:26 PST 2011
 #   Fix install of data files from out of source build.
+#
+#   Eric Brugger, Fri Nov 18 14:52:52 PST 2011
+#   I added xdmf_binary.C.
 #
 #****************************************************************************/
 
@@ -181,6 +184,7 @@ SET(BASIC_TARGETS
 bov
 curve_builder
 distribution_curves
+xdmf_binary
 )
 
 #-----------------------------------------------------------------------------
