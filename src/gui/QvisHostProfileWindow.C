@@ -143,6 +143,10 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Jeremy Meredith, Fri Feb 19 13:16:18 EST 2010
 //   Changed order of two main tabs.
 //
+//   Hank Childs, Thu Nov 17 18:49:08 PST 2011
+//   Rename New/Copy/Delete to New Host/Copy Host/Delete Host.
+//   This removes ambiguity with profile controls.
+//
 // ****************************************************************************
 
 void
@@ -159,15 +163,15 @@ QvisHostProfileWindow::CreateWindowContents()
     connect(hostList, SIGNAL(itemSelectionChanged()),
             this, SLOT(currentHostChanged()));
 
-    addHost = new QPushButton(tr("New"), central);
+    addHost = new QPushButton(tr("New Host"), central);
     mainLayout->addWidget(addHost, 2,0);
     connect(addHost, SIGNAL(clicked()), this, SLOT(addMachineProfile()));
 
-    delHost = new QPushButton(tr("Delete"), central);
+    delHost = new QPushButton(tr("Delete Host"), central);
     mainLayout->addWidget(delHost, 2,1);
     connect(delHost, SIGNAL(clicked()), this, SLOT(delMachineProfile()));
 
-    copyHost = new QPushButton(tr("Copy"), central);
+    copyHost = new QPushButton(tr("Copy Host"), central);
     mainLayout->addWidget(copyHost, 2,2);
     connect(copyHost, SIGNAL(clicked()), this, SLOT(copyMachineProfile()));
 
@@ -404,6 +408,10 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
 //   Brad Whitlock, Thu Oct  6 12:00:57 PDT 2011
 //   I combined a couple tabs into the parallel tab.
 //
+//   Hank Childs, Thu Nov 17 18:49:08 PST 2011
+//   Rename New/Copy/Delete to New Profile/Copy Profile/Delete Profile.
+//   This removes ambiguity with host controls.
+//
 // ****************************************************************************
 
 QWidget *
@@ -421,13 +429,13 @@ QvisHostProfileWindow::CreateLaunchProfilesGroup()
             this, SLOT(currentLaunchChanged()));
     row++;
 
-    addProfile = new QPushButton(tr("New"), currentGroup);
+    addProfile = new QPushButton(tr("New Profile"), currentGroup);
     layout->addWidget(addProfile, row,0);
     connect(addProfile, SIGNAL(clicked()), this, SLOT(addLaunchProfile()));
-    delProfile = new QPushButton(tr("Delete"), currentGroup);
+    delProfile = new QPushButton(tr("Delete Profile"), currentGroup);
     connect(delProfile, SIGNAL(clicked()), this, SLOT(delLaunchProfile()));
     layout->addWidget(delProfile, row,1);
-    copyProfile = new QPushButton(tr("Copy"), currentGroup);
+    copyProfile = new QPushButton(tr("Copy Profile"), currentGroup);
     connect(copyProfile, SIGNAL(clicked()), this, SLOT(copyLaunchProfile()));
     layout->addWidget(copyProfile, row,2);
     makeDefaultProfile = new QPushButton(tr("Make Default"),
