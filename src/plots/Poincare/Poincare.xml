@@ -4,7 +4,7 @@
     </Files>
     <Files components="E">
       avtPoincareFilter.C
-      StreamlineAnalyzerLib.C
+      FieldlineAnalyzerLib.C
     </Files>
     <Attribute name="PoincareAttributes" purpose="Attributes for the Poincare plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Poincare.code">
       <Enum name="SourceType">

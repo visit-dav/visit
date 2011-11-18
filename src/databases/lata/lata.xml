@@ -1,8 +1,5 @@
 <?xml version="1.0"?>
   <Plugin name="lata" type="database" label="lata import file" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
-    <CXXFLAGS>
-      -O2 -DNDEBUG -Wall 
-    </CXXFLAGS>
     
    <FilePatterns>
       *.lml
