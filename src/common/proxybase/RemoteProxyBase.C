@@ -411,6 +411,10 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    Tom Fogal, Fri May  6 18:34:52 MDT 2011
 //    Adjust for new X launch options.
 //
+//    Hank Childs, Fri Nov 18 07:23:04 PST 2011
+//    Make sure -display gets added whenever we do HW acceleration (not just
+//    when we launch x-servers).
+//
 // ****************************************************************************
 
 void
@@ -578,11 +582,11 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
                 AddArgument("-x-args");
                 AddArgument(launch->GetXArguments());
             }
-            if(!launch->GetXDisplay().empty())
-            {
-                AddArgument("-display");
-                AddArgument(launch->GetXDisplay());
-            }
+        }
+        if(!launch->GetXDisplay().empty())
+        {
+            AddArgument("-display");
+            AddArgument(launch->GetXDisplay());
         }
         AddArgument("-n-gpus-per-node");
         {
