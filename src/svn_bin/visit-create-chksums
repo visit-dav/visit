@@ -53,6 +53,17 @@ fi
 version2=`echo $version | tr "." "_"`
 
 #
+# Create the directory to check out the files into.
+#
+rm -rf checksum_dir
+mkdir checksum_dir
+cd checksum_dir
+echo "Checking out third_party..."
+svn co http://portal.nersc.gov/svn/visit/tags/$version/third_party
+echo "Checking out $version..."
+svn co http://portal.nersc.gov/svn/visit/trunk/releases/$version
+
+#
 # Create an awk script for use with the filesize command
 #
 rm -f format_filesize
@@ -67,14 +78,14 @@ EOF
 rm -f filesize
 cat <<EOF > filesize
 #!/bin/sh
-ls -l \$1 | sed "s/  */ /g" | gawk -f ../visit$version/format_filesize
+ls -l \$1 | sed "s/  */ /g" | gawk -f ../format_filesize
 EOF
 chmod 755 filesize
 
 #
 # Create the md5 checksums, the sha1 checksums, and the file sizes.
 #
-cmds="md5sum sha1sum sha256sum ../visit$version/filesize"
+cmds="md5sum sha1sum sha256sum ../filesize"
 for cmd in $cmds
 do
    case $cmd in
@@ -90,7 +101,7 @@ do
          property=checksums
          output=visit_sha256_checksums
          ;;
-      ../visit$version/filesize)
+      ../filesize)
          property="file sizes"
          output=visit_filesizes
          ;;
@@ -98,81 +109,39 @@ do
 
    rm -f $output
 
-   echo ""                                         >  $output
-   echo "The VisIt executable $property"           >> $output
-   echo ""                                         >> $output
-   $cmd INSTALL_NOTES                              >> $output
-   $cmd VisIt-$version-i386-installer.dmg          >> $output
-   $cmd VisIt-$version-x86_64-installer.dmg        >> $output
-   $cmd visit-install$version2                     >> $output
-   $cmd jvisit$version.tar.gz                      >> $output
-   $cmd visit$version.exe                          >> $output
-   $cmd visit${version}_x64.exe                    >> $output
-   $cmd visit$version2.linux-euclid.tar.gz         >> $output
-   $cmd visit$version2.linux-rhel3.tar.gz          >> $output
-   $cmd visit$version2.linux-rhel4.tar.gz          >> $output
-   $cmd visit$version2.linux-rhel5.tar.gz          >> $output
-   $cmd visit$version2.linux-x86_64-rhel4.tar.gz   >> $output
-   $cmd visit$version2.linux-x86_64-ubuntu8.tar.gz >> $output
-   $cmd visit$version2.linux-x86_64.tar.gz         >> $output
+   cd $version
+   echo ""                                         >  ../$output
+   echo "The VisIt executable $property"           >> ../$output
+   echo ""                                         >> ../$output
+   $cmd INSTALL_NOTES                              >> ../$output
+   $cmd VisIt-$version-i386-installer.dmg          >> ../$output
+   $cmd VisIt-$version-x86_64-installer.dmg        >> ../$output
+   $cmd visit-install$version2                     >> ../$output
+   $cmd jvisit$version.tar.gz                      >> ../$output
+   $cmd visit$version.exe                          >> ../$output
+   $cmd visit${version}_x64.exe                    >> ../$output
+   $cmd visit$version2.linux-euclid.tar.gz         >> ../$output
+   $cmd visit$version2.linux-rhel3.tar.gz          >> ../$output
+   $cmd visit$version2.linux-rhel4.tar.gz          >> ../$output
+   $cmd visit$version2.linux-rhel5.tar.gz          >> ../$output
+   $cmd visit$version2.linux-x86_64-rhel4.tar.gz   >> ../$output
+   $cmd visit$version2.linux-x86_64-ubuntu8.tar.gz >> ../$output
+   $cmd visit$version2.linux-x86_64.tar.gz         >> ../$output
 
-   echo ""                                         >> $output
-   echo "The VisIt source code $property"          >> $output
-   echo ""                                         >> $output
-   $cmd build_visit$version2                       >> $output
-   $cmd $dist.tar.gz                               >> $output
-   $cmd visitdev$version.exe                       >> $output
-   cd ../visit_third_party
-   $cmd AdvIO-1.2.tar.gz                           >> ../visit$version/$output
-   $cmd H5Part-1.4.2.tar.gz                        >> ../visit$version/$output
-   $cmd H5Part-1.6.0.tar.gz                        >> ../visit$version/$output
-   $cmd HDF4.2r1.tar.gz                            >> ../visit$version/$output
-   $cmd ITAPS-FMDB-1.0-15Apr09.tar.gz              >> ../visit$version/$output
-   $cmd ITAPS-FMDB-1.1-03Jun10.tar.gz              >> ../visit$version/$output
-   $cmd ITAPS-FMDB-1.1-30Aug10.tar.gz              >> ../visit$version/$output
-   $cmd ITAPS-GRUMMP-0.5.0-20Apr09.tar.gz          >> ../visit$version/$output
-   $cmd ITAPS-GRUMMP-0.5.0-03Jun10.tar.gz          >> ../visit$version/$output
-   $cmd ITAPS-MOAB-3.99-20Apr09.tar.gz             >> ../visit$version/$output
-   $cmd ITAPS-MOAB-3.99-10Jun10.tar.gz             >> ../visit$version/$output
-   $cmd IceT-0-5-4.tar.gz                          >> ../visit$version/$output
-   $cmd Imaging-1.1.6.tar.gz                       >> ../visit$version/$output
-   $cmd Mesa-5.0-mangled.tar.gz                    >> ../visit$version/$output
-   $cmd MesaLib-6.4.2.tar.gz                       >> ../visit$version/$output
-   $cmd MesaLib-7.5.tar.gz                         >> ../visit$version/$output
-   $cmd MesaLib-7.8.2.tar.gz                       >> ../visit$version/$output
-   $cmd pyparsing-1.5.2.tar.gz                     >> ../visit$version/$output
-   $cmd Python-2.5.tgz                             >> ../visit$version/$output
-   $cmd Python-2.6.4.tgz                           >> ../visit$version/$output
-   $cmd Xdmf-2.1.tar.gz                            >> ../visit$version/$output
-   $cmd boxlib.tar.gz                              >> ../visit$version/$output
-   $cmd cfitsio3006.tar.gz                         >> ../visit$version/$output
-   $cmd cgnslib_2.4-3.tar.gz                       >> ../visit$version/$output
-   $cmd cmake-2.4.5.tar.gz                         >> ../visit$version/$output
-   $cmd cmake-2.8.0.tar.gz                         >> ../visit$version/$output
-   $cmd exodusii-4.46.tar.gz                       >> ../visit$version/$output
-   $cmd fastbit-ibis1.0.9.tar.gz                   >> ../visit$version/$output
-   $cmd gdal-1.3.2.tar.gz                          >> ../visit$version/$output
-   $cmd gdal-1.7.1.tar.gz                          >> ../visit$version/$output
-   $cmd google-perftools-0.97.tar.gz               >> ../visit$version/$output
-   $cmd hdf5-1.8.2.tar.gz                          >> ../visit$version/$output
-   $cmd hdf5-1.8.4.tar.gz                          >> ../visit$version/$output
-   $cmd libccmio-2.6.1.tar.gz                      >> ../visit$version/$output
-   $cmd netcdf-3.6.3.tar.gz                        >> ../visit$version/$output
-   $cmd qt-everywhere-opensource-src-4.6.1.tar.gz  >> ../visit$version/$output
-   $cmd qt-mac-free-3.3.8.tar.gz                   >> ../visit$version/$output
-   $cmd qt-mac-opensource-src-4.4.3.tar.gz         >> ../visit$version/$output
-   $cmd qt-x11-free-3.3.8.tar.gz                   >> ../visit$version/$output
-   $cmd qt-x11-opensource-src-4.4.3.tar.gz         >> ../visit$version/$output
-   $cmd silo-4.7.2.tar.gz                          >> ../visit$version/$output
-   $cmd silo-4.7.tar.gz                            >> ../visit$version/$output
-   $cmd szip-2.1.tar.gz                            >> ../visit$version/$output
-   $cmd vtk-5.0.0c.tar.gz                          >> ../visit$version/$output
-   $cmd vtk-5.0.0d.tar.gz                          >> ../visit$version/$output
-   $cmd vtk-5.0.0e.tar.gz                          >> ../visit$version/$output
-   $cmd vtk-5.0.0f.tar.gz                          >> ../visit$version/$output
-   $cmd vtk-5.0.0g.tar.gz                          >> ../visit$version/$output
-   $cmd zlib-1.2.3.tar.gz                          >> ../visit$version/$output
-   cd ../visit$version
+   echo ""                                         >> ../$output
+   echo "The VisIt source code $property"          >> ../$output
+   echo ""                                         >> ../$output
+   $cmd build_visit$version2                       >> ../$output
+   $cmd $dist.tar.gz                               >> ../$output
+   $cmd visitdev$version.exe                       >> ../$output
+   cd ../third_party
+   files=`ls`
+   for file in $files
+   do
+      $cmd $file >> ../$output
+      shift
+   done
+   cd ..
 
    shift
 done
