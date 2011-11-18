@@ -2,7 +2,6 @@
   <Plugin name="CaleHDF5" type="database" label="Visit Plugin to read Cale HDF5 dumps" version="1.1" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       ${HDF5_INCLUDE_DIR}
-      -Wno-deprecated
     </CXXFLAGS>
     <LDFLAGS>
       ${HDF5_LIBRARY_DIR}

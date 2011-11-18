@@ -35,6 +35,10 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Fri Nov 18 12:00:18 MST 2011
+#   Added plugin name to VISIT_PLUGIN_TARGET_FOLDER args, so that plugins
+#   are grouped by name in VisualStudio for ease of building/debugging
+#   individual plugins.
 #
 #****************************************************************************/
 
@@ -113,7 +117,7 @@ MACRO(VISIT_PLUGIN_TARGET_PREFIX)
     ENDIF(WIN32)
 ENDMACRO(VISIT_PLUGIN_TARGET_PREFIX)
 
-MACRO(VISIT_PLUGIN_TARGET_FOLDER type) 
-    SET_TARGET_PROPERTIES(${ARGN} PROPERTIES FOLDER plugins/${type})
+MACRO(VISIT_PLUGIN_TARGET_FOLDER type pname) 
+    SET_TARGET_PROPERTIES(${ARGN} PROPERTIES FOLDER "plugins/${type}/${pname}")
 ENDMACRO(VISIT_PLUGIN_TARGET_FOLDER)
 
