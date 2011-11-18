@@ -1699,7 +1699,7 @@ create_multi_point3d()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"VelocityZ\" AttributeType=\"Scalar\" Center=\"Node\">\n");
-    fprintf(xmf, "       <DataItem Format=\"HDF\" Dimensions=\"%d\" NumberType=\"Int\">\n", (NX2+1)*(NY2+1)*(NZ2+1));
+    fprintf(xmf, "       <DataItem Format=\"HDF\" Dimensions=\"%d\" NumberType=\"Float\">\n", (NX2+1)*(NY2+1)*(NZ2+1));
     fprintf(xmf, "        mesh.h5:/VelocityZ2\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
