@@ -260,6 +260,10 @@ avtDataBinning::ApplyFunction(vtkDataSet *ds)
 //    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
 //    Set up curve with point data.
 //
+//    Cyrus Harrison, Thu Nov 17 16:13:25 PST 2011
+//    Fixed bug with output for 1D grids. For each curve(grid) point we do
+//    have a correspdong bin value. We don't need to average grid points.
+//
 // ****************************************************************************
 
 void
@@ -292,9 +296,9 @@ avtDataBinning::OutputDataBinning(const std::string &ddfname)
         sprintf(str, "%s.ultra", ddfname.c_str());
         ofstream ofile(str);
         ofile << "# DataBinning " << ddfname << endl;
-        for (int j = 0 ; j < dims[0]-1 ; j++)
+        for (int j = 0 ; j < dims[0] ; j++)
         {
-            ofile << (x->GetTuple1(j) + x->GetTuple1(j+1)) / 2. << " "
+            ofile << x->GetTuple1(j) << " "
                   << s->GetTuple1(j) << endl;
         }
     }
