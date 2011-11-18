@@ -298,6 +298,9 @@ avtMassVoxelExtractor::Extract(vtkRectilinearGrid *rgrid,
 //    Hank Childs, Wed Dec 24 11:22:43 PST 2008
 //    No longer calculate deprecated data member ProportionSpaceToZBufferSpace.
 //
+//    Hank Childs, Fri Nov 18 08:32:45 PST 2011
+//    Fix ray cast of rectilinear with panning.
+//
 // ****************************************************************************
 
 void
@@ -345,6 +348,9 @@ avtMassVoxelExtractor::SetGridsAreInWorldSpace(bool val, const avtViewInfo &v,
     // position of the camera for perspective projection).
     //
     vtkCamera *cam = vtkCamera::New();
+    // We have *= -1.0 throughout the code.  Here is "yet another".
+    view.imagePan[0] *= -1.0;
+    view.imagePan[1] *= -1.0;
     view.SetCameraFromView(cam);
     cam->GetClippingRange(cur_clip_range);
     vtkMatrix4x4 *mat = cam->GetCompositeProjectionTransformMatrix(aspect,
