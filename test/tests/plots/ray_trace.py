@@ -25,6 +25,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Hank Childs, Fri Nov 18 08:51:58 PST 2011
+#    Add regression tests for panning while ray tracing.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -68,6 +72,12 @@ v.centerOfRotation = (0, 0, 0)
 SetView3D(v)
 
 Test("ray_trace_01")
+
+v.imagePan = (0.1, -0.1)
+SetView3D(v)
+Test("ray_trace_01_pan")
+v.imagePan = (0, 0)
+SetView3D(v)
 
 #
 # Now test that it can play with other plots.
@@ -126,6 +136,12 @@ v.viewUp = (-0.022009, 0.812062, -0.583155)
 SetView3D(v)
 
 Test("ray_trace_05")
+
+v.imagePan = (0.1, -0.1)
+SetView3D(v)
+Test("ray_trace_05_pan")
+v.imagePan = (0, 0)
+SetView3D(v)
 
 #
 # Test a multi-block rectilinear problem with ghost zones.  Use an AMR problem,
