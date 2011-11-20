@@ -708,7 +708,7 @@ function check_more_options
                 case $OPTION in
                   Version)
                      $DLG --backtitle "$DLG_BACKTITLE" \
-                        --no-cancel --inputbox \
+                        --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_VERSION" 2> tmp$$
                      VISIT_VERSION="$(cat tmp$$)"
                      VISIT_FILE="visit${VISIT_VERSION}.tar.gz"
@@ -723,7 +723,7 @@ function check_more_options
                      DO_DEBUG="yes";;
                   Group)
                      $DLG --backtitle "$DLG_BACKTITLE" \
-                        --no-cancel --inputbox \
+                        --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$GROUP" 2> tmp$$
                      GROUP="$(cat tmp$$)"
                      DO_GROUP="yes";;
@@ -731,7 +731,7 @@ function check_more_options
                       DO_HOSTCONF="yes";;
                   Path)
                      $DLG --backtitle "$DLG_BACKTITLE" \
-                        --no-cancel --inputbox \
+                        --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$THIRD_PARTY_PATH" 2> tmp$$
                      THIRD_PARTY_PATH="$(cat tmp$$)"
                      DO_PATH="yes";;
@@ -884,7 +884,7 @@ function check_parallel
                 if [[ $? == 1 ]] ; then
                     tryagain=1
                     $DLG --backtitle "$DLG_BACKTITLE" \
-                    --no-cancel --inputbox \
+                    --nocancel --inputbox \
 "Enter CPPFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_CPPFLAGS" 2> tmp$$
                     PAR_CPPFLAGS="$(cat tmp$$)"
                 else
@@ -903,7 +903,7 @@ function check_parallel
                 if [[ $? == 1 ]] ; then
                     tryagain=1
                     $DLG --backtitle "$DLG_BACKTITLE" \
-                    --no-cancel --inputbox \
+                    --nocancel --inputbox \
 "Enter LDFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_LDFLAGS" 2> tmp$$
                     PAR_LDFLAGS="$(cat tmp$$)"
                 else
@@ -992,73 +992,73 @@ function check_variables
                    case $OPTION in
                      OPSYS)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$OPSYS" 2> tmp$$
                         OPSYS="$(cat tmp$$)"
                         ;;
                      ARCH)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$ARCH" 2> tmp$$
                         ARCH="$(cat tmp$$)"
                         ;;
                      C_COMPILER)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$C_COMPILER" 2> tmp$$
                         C_COMPILER="$(cat tmp$$)"
                         ;;
                      CXX_COMPILER)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CXX_COMPILER" 2> tmp$$
                         CXX_COMPILER="$(cat tmp$$)"
                         ;;
                      CFLAGS)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CFLAGS" 2> tmp$$
                         CFLAGS="$(cat tmp$$)"
                         ;;
                      CXXFLAGS)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CXXFLAGS" 2> tmp$$
                         CXXFLAGS="$(cat tmp$$)"
                         ;;
                      C_OPT_FLAGS)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$C_OPT_FLAGS" 2> tmp$$
                         C_OPT_FLAGS="$(cat tmp$$)"
                         ;;
                      CXX_OPT_FLAGS)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CXX_OPT_FLAGS" 2> tmp$$
                         CXX_OPT_FLAGS="$(cat tmp$$)"
                         ;;
                      FC_COMPILER)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$FC_COMPILER" 2> tmp$$
                         FC_COMPILER="$(cat tmp$$)"
                         ;;
                      FCFLAGS)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$FCFLAGS" 2> tmp$$
                         FCFLAGS="$(cat tmp$$)"
                         ;;
                      VISITARCH)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISITARCHTMP" 2> tmp$$
                         VISITARCH="$(cat tmp$$)"
                         ;;
                      REVISION)
                         $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                           --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$SVNREVISION" 2> tmp$$
                         SVNREVISION="$(cat tmp$$)"
                         DO_SVN="yes"
