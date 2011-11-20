@@ -25,10 +25,10 @@ return ""
 
 function bv_hdf4_info
 {
-export HDF4_FILE=${HDF4_FILE:-"hdf-4.2.6.tar.gz"}
-export HDF4_VERSION=${HDF4_VERSION:-"4.2.6"}
+export HDF4_FILE=${HDF4_FILE:-"hdf-4.2.5.tar.gz"}
+export HDF4_VERSION=${HDF4_VERSION:-"4.2.5"}
 export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION:-"4.2"}
-export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"hdf-4.2.6"}
+export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"hdf-4.2.5"}
 export HDF4_URL=${HDF4_URL:-"http://www.hdfgroup.org/ftp/HDF/HDF_Current/src"}
 }
 
@@ -1364,7 +1364,7 @@ function build_hdf4
     #
     info "Building HDF4 . . . (~2 minutes)"
 
-    $MAKE $MAKEOPS
+    env AM_LDFLAGS="-L$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib -lvtkjpeg" $MAKE $MAKEOPS
     if [[ $? != 0 ]] ; then
        warn "HDF4 build failed.  Giving up"
        return 1
