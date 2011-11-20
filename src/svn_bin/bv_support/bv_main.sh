@@ -765,7 +765,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
                  DO_SVN="yes";DO_SVN_ANON="yes";export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
               Tarball)
                  $DLG --backtitle "$DLG_BACKTITLE" \
-                    --no-cancel --inputbox \
+                    --nocancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_FILE" 2> tmp$$
                  VISIT_FILE="$(cat tmp$$)"
                  USE_VISIT_FILE="yes";;
