@@ -605,6 +605,11 @@ function check_visit_source_code
     # Build using (the assumed) existing VisIt svn "src" directory
     elif [[ -d src ]] ; then
            info "Found VisIt SVN src directory found, using it."
+           #resetting any values that have mixup the build between Trunk and RC
+           VISIT_FILE="" #erase any accidental setting of these values
+           USE_VISIT_FILE="no"
+           ON_USE_VISIT_FILE="off"
+           DO_SVN="yes" #if src directory exists it may have come from svn..
 
     # Build using a VisIt source tarball
     else

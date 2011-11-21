@@ -1312,7 +1312,7 @@ function build_hdf4
     fi
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
-        FORTRANARGS=""
+        FORTRANARGS="--disable-fortran"
     else
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
     fi
@@ -1333,7 +1333,7 @@ function build_hdf4
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
-        --disable-dependency-tracking --disable-fortran"
+        --disable-dependency-tracking"
         if [[ $? != 0 ]] ; then
            warn "HDF4 configure failed.  Giving up"\
                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
@@ -1348,10 +1348,10 @@ function build_hdf4
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" LIBS=\"-lm\" \
         CPPFLAGS=\"-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/ \
         -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtkjpeg\" \
-        $FOTRANARGS \
+        $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH\" \
-        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" --disable-fortran"
+        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\""
         if [[ $? != 0 ]] ; then
            warn "HDF4 configure failed.  Giving up.\n"\
                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
@@ -1364,7 +1364,7 @@ function build_hdf4
     #
     info "Building HDF4 . . . (~2 minutes)"
 
-    env AM_LDFLAGS="-L$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib -lvtkjpeg" $MAKE $MAKEOPS
+    $MAKE $MAKEOPS
     if [[ $? != 0 ]] ; then
        warn "HDF4 build failed.  Giving up"
        return 1

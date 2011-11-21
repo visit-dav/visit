@@ -8,6 +8,10 @@ function bv_xdmf_enable
 {
 DO_XDMF="yes"
 ON_XDMF="on"
+
+#xdmf is dependent on HDF5
+DO_HDF5="yes"
+ON_HDF5="on"
 }
 
 function bv_xdmf_disable
@@ -120,12 +124,7 @@ function build_xdmf
     # We need to patch the CMakeLists.txt so it uses our HDF5 by default
     # when we tell it to use the system versions.
     cd $XDMF_BUILD_DIR || error "Can't cd to Xdmf build dir."
-    rm CML.*
-    mv CMakeLists.txt CML.0
-    H5DIR=$(echo "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" | sed "s/\//\\\\\//g")
-    sed "s/  hdf5/  hdf5  $H5DIR\/lib NO_DEFAULT_PATH/g" CML.0 > CML.1
-    sed "s/H5Ipublic.h/H5Ipublic.h $H5DIR\/include NO_DEFAULT_PATH/g" CML.1 > CMakeLists.txt
-
+    rm -f CMakeCache.txt #remove any CMakeCache that may have existed 
     # Configure Xdmf
     info "Executing CMake on Xdmf"
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
@@ -135,18 +134,7 @@ function build_xdmf
         XDMF_SHARED_LIBS="ON"
         LIBEXT="${SO_EXT}"
     fi
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        # Work around build problems on Mac.
-        XDMF_ZLIB_OPTIONS="-DXDMF_SYSTEM_ZLIB:BOOL=OFF"
-        cd Utilities/vtklibxml2
-        rm CML.*
-        mv CMakeLists.txt CML.0
-        sed "s/SET(LIBXML2_LIBS \"\")/SET(LIBXML2_LIBS \"vtkzlib\")/g" CML.0 > CML.1
-        sed "s/SET(WITH_MODULES 1)/SET(WITH_MODULES 0)/g" CML.1 > CMakeLists.txt
-        cd ../..
-    else
-        XDMF_ZLIB_OPTIONS="-DXDMF_SYSTEM_ZLIB:BOOL=ON"
-    fi
+
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
         -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
@@ -158,8 +146,15 @@ function build_xdmf
         -DXDMF_BUILD_MPI:BOOL=OFF \
         -DXDMF_BUILD_VTK:BOOL=OFF \
         -DXDMF_BUILD_UTILS:BOOL=OFF \
-        ${XDMF_ZLIB_OPTIONS}\
         -DXDMF_SYSTEM_HDF5:BOOL=ON \
+        -DHDF5_INCLUDE_PATH:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include" \
+        -DHDF5_LIBRARY:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}" \
+        -DXDMF_SYSTEM_ZLIB:BOOL=ON \
+        -DZLIB_INCLUDE_PATH:PATH="$VISITDIR/vtk/$VTK_VERSION/$VISITARCH/include/vtklibz" \
+        -DZLIB_LIBRARY:PATH="$VISITDIR/vtk/$VTK_VERSION/$VISITARCH/lib/libvtkzlib.${SO_EXT}" \
+        -DXDMF_SYSTEM_LIBXML2:BOOL=ON \
+        -DLIBXML2_INCLUDE_PATH:PATH="$VISITDIR/vtk/$VTK_VERSION/$VISITARCH/include/vtklibxml2" \
+        -DLIBXML2_LIBRARY="$VISITDIR/vtk/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2.${SO_EXT}" \
         .
 
     if [[ $? != 0 ]] ; then
@@ -186,15 +181,11 @@ function build_xdmf
        return 1
     fi
 
-    # Patch up the library names on Darwin
     if [[ "$DO_STATIC_BUILD" != "yes" && "$OPSYS" == "Darwin" ]]; then
         LIBDIR="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}/lib"
-        install_name_tool -change libvtklibxml2.dylib $LIBDIR/libvtklibxml2.dylib \
-                          -change libvtkzlib.dylib $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/libvtkzlib.dylib \
-                          -id $LIBDIR/libXdmf.dylib $LIBDIR/libXdmf.dylib 
-        install_name_tool -change libvtkzlib.dylib $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/libvtkzlib.dylib \
-                          -id $LIBDIR/libvtklibxml2.dylib $LIBDIR/libvtklibxml2.dylib 
+        install_name_tool -id $LIBDIR/libXdmf.dylib $LIBDIR/libXdmf.dylib
     fi
+
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/Xdmf"

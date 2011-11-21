@@ -48,4 +48,4 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(XDMF lib include Xdmf vtklibxml2)
+SET_UP_THIRD_PARTY(XDMF lib include Xdmf)

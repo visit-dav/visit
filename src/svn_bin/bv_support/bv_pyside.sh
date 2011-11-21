@@ -8,6 +8,8 @@ function bv_pyside_enable
 {
 DO_PYSIDE="yes"
 ON_PYSIDE="on"
+DO_QT="yes"
+ON_QT="on"
 }
 
 function bv_pyside_disable
