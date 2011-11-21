@@ -61,7 +61,7 @@ function bv_visit_info
 #print variables used by this module
 function bv_visit_print
 {
-    printf "%s%s\n" "VISIT_FILE=" "${VISIT:_FILE}"
+    printf "%s%s\n" "VISIT_FILE=" "${VISIT_FILE}"
     printf "%s%s\n" "VISIT_VERSION=" "${VISIT_VERSION}"
     #printf "%s%s\n" "VISIT_COMPATIBILITY_VERSION=" "${VISIT_COMPATIBILITY_VERSION}"
     #printf "%s%s\n" "VISIT_BUILD_DIR=" "${VISIT_BUILD_DIR}"
@@ -169,6 +169,22 @@ function build_visit
     fi
     cp $START_DIR/$(hostname).cmake config-site
 
+    #Todo: remove on 2.4.1,  patch FindXdmf.cmake to remove libvtklibxml2
+    # this is being removed since vtk provides this file now..
+    info "patching removal of libvtklibxml2 from xdmf"
+    patch -s -d CMake/ -p0 << \EOF
+Index: FindXdmf.cmake
+===================================================================
+--- FindXdmf.cmake  (revision 16802)
++++ FindXdmf.cmake  (working copy)
+@@ -48,4 +48,4 @@
+ 
+ INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+ 
+-SET_UP_THIRD_PARTY(XDMF lib include Xdmf vtklibxml2)
++SET_UP_THIRD_PARTY(XDMF lib include Xdmf)
+EOF
+ 
     #
     # Call configure
     # 
