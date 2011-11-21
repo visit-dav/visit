@@ -5,6 +5,11 @@
 #
 # Programmer: Mark C. Miller
 # Created:    Mon Jul 11 23:01:54 PDT 2011
+#
+# Modifications:
+#   Kathleen Biagas, Mon Nov 21 15:53:08 PST 2011
+#   Skip everything in windowsbuild directory.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -33,6 +38,9 @@ while read fline; do
             continue
             ;;
         */databases/paraDIS/RC_cpp_lib/*.h|*/databases/paraDIS_tecplot/RC_cpp_lib/*.h)
+            continue
+            ;;
+        */windowsbuild/*)
             continue
             ;;
         trunk/src/*.h|branches/*/src/*.h)
