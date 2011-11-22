@@ -44,7 +44,7 @@
 #include <AMRStitchCellAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *AMRStitchCellVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(AMRStitchCell,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

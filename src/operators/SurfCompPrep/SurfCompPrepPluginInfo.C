@@ -44,7 +44,7 @@
 #include <SurfCompPrepAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *SurfCompPrepVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(SurfCompPrep,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

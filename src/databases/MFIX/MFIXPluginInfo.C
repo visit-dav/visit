@@ -43,7 +43,7 @@
 #include <MFIXPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *MFIXVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(MFIX,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

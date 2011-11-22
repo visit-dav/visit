@@ -43,7 +43,7 @@
 #include <StreamGhostTestPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *StreamGhostTestVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(StreamGhostTest,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <paraDISPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *paraDISVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(paraDIS,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <GMVPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *GMVVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(GMV,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

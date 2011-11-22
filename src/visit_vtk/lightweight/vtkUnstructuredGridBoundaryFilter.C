@@ -1868,8 +1868,8 @@ BHashEntryMemoryManager::BHashEntryMemoryManager()
 
 BHashEntryMemoryManager::~BHashEntryMemoryManager()
 {
-    int size = hashpool.size();
-    for (int i = 0 ; i < size ; i++)
+    size_t size = hashpool.size();
+    for (size_t i = 0 ; i < size ; i++)
     {
         delete [] hashpool[i];
     }
@@ -2073,8 +2073,8 @@ BHashEntryMemoryManager2D::BHashEntryMemoryManager2D()
 
 BHashEntryMemoryManager2D::~BHashEntryMemoryManager2D()
 {
-    int size = hashpool.size();
-    for (int i = 0 ; i < size ; i++)
+    size_t size = hashpool.size();
+    for (size_t i = 0 ; i < size ; i++)
     {
         delete [] hashpool[i];
     }
@@ -2126,8 +2126,8 @@ BQuadMemoryManager::BQuadMemoryManager()
 
 BQuadMemoryManager::~BQuadMemoryManager()
 {
-    int npools = quadpool.size();
-    for (int i = 0 ; i < npools ; i++)
+    size_t npools = quadpool.size();
+    for (size_t i = 0 ; i < npools ; i++)
     {
         BQuad *pool = quadpool[i];
         delete [] pool;
@@ -2187,8 +2187,8 @@ BTriMemoryManager::BTriMemoryManager()
 
 BTriMemoryManager::~BTriMemoryManager()
 {
-    int npools = tripool.size();
-    for (int i = 0 ; i < npools ; i++)
+    size_t npools = tripool.size();
+    for (size_t i = 0 ; i < npools ; i++)
     {
         BTri *pool = tripool[i];
         delete [] pool;
@@ -2248,8 +2248,8 @@ BLineMemoryManager::BLineMemoryManager()
 
 BLineMemoryManager::~BLineMemoryManager()
 {
-    int npools = linepool.size();
-    for (int i = 0 ; i < npools ; i++)
+    size_t npools = linepool.size();
+    for (size_t i = 0 ; i < npools ; i++)
     {
         BLine *pool = linepool[i];
         delete [] pool;
@@ -2454,7 +2454,7 @@ BHashEntry::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 {
     for (int i = 0 ; i < last_good_entry ; i++)
     {
-        bool isQuad = face_type & face_mask[i];
+        bool isQuad = (face_type & face_mask[i]) > 0;
         if (isQuad)
         {
             BQuad *q = faces[i].quad;

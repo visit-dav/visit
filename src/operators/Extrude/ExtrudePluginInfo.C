@@ -44,7 +44,7 @@
 #include <ExtrudeAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ExtrudeVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Extrude,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <ExodusPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *ExodusVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Exodus,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

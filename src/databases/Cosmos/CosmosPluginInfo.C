@@ -43,7 +43,7 @@
 #include <CosmosPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *CosmosVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Cosmos,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

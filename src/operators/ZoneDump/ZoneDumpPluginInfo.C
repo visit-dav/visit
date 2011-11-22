@@ -44,7 +44,7 @@
 #include <ZoneDumpAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ZoneDumpVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ZoneDump,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

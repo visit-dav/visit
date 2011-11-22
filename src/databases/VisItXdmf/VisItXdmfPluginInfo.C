@@ -43,7 +43,7 @@
 #include <VisItXdmfPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *VisItXdmfVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(VisItXdmf,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

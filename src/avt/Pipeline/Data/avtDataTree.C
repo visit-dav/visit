@@ -1041,7 +1041,7 @@ avtDataTree::PruneTree(const vector<int> &list)
     }
     else
     {
-        rv = new avtDataTree(pmap.new_nodes.size(), &(pmap.new_nodes[0]));
+        rv = new avtDataTree(static_cast<int>(pmap.new_nodes.size()), &(pmap.new_nodes[0]));
     }
 
     visitTimer->StopTimer(t0, "Prune tree (vector<int>)");

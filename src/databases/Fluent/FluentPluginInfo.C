@@ -43,7 +43,7 @@
 #include <FluentPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *FluentVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Fluent,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

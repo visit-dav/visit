@@ -43,7 +43,7 @@
 #include <BOWPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *BOWVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(BOW,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

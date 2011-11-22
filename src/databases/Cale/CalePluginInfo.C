@@ -43,7 +43,7 @@
 #include <CalePluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *CaleVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Cale,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

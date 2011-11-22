@@ -44,7 +44,7 @@
 #include <TransformAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *TransformVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Transform,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

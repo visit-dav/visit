@@ -44,9 +44,6 @@
 #include <QApplication>
 #include <avtParallelCoordinatesPlot.h>
 
-#include <string>
-#include <vector>
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

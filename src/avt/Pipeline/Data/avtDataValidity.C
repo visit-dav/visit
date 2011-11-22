@@ -419,10 +419,10 @@ avtDataValidity::Write(avtDataObjectString &str,
     vals[15]= (queryable ? 1 : 0);
     vals[16]= (hasEverOwnedAnyDomain ? 1 : 0);
     vals[17]= (errorOccurred ? 1 : 0);
-    vals[18]= errorString.size();
+    vals[18]= static_cast<int>(errorString.size());
     wrtr->WriteInt(str, vals, numVals);
 
-    str.Append((char *) errorString.c_str(), errorString.size(),
+    str.Append((char *) errorString.c_str(), static_cast<int>(errorString.size()),
                      avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY); 
 }
 

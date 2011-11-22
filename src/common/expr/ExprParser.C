@@ -643,7 +643,7 @@ ExprParser::Parse(const std::string &s)
     CATCH2(ParseException, e)
     {
         char error[1024];
-        int n = (int) sizeof(error) - strlen(e.Message()) - 2;
+        size_t n = sizeof(error) - strlen(e.Message()) - 2;
         SNPRINTF(error, sizeof(error), "%s\n%s",
                  e.Message(), e.GetPos().GetErrorText(text,n).c_str());
 

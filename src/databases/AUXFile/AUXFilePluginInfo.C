@@ -43,7 +43,7 @@
 #include <AUXFilePluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *AUXFileVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(AUXFile,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

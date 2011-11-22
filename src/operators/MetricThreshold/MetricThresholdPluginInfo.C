@@ -44,7 +44,7 @@
 #include <MetricThresholdAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *MetricThresholdVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(MetricThreshold,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

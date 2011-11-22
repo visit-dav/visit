@@ -44,7 +44,7 @@
 #include <PersistentParticlesAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *PersistentParticlesVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(PersistentParticles,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

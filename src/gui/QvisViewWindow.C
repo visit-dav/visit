@@ -1222,9 +1222,9 @@ QvisViewWindow::UpdateEyeAngleSliderFromAtts(void)
         // We want 2.0 degrees to be the middle (40), 0 to be 0.5 degrees,
         // and 80 to be 5 degrees.  So a parabola can fit this curve --
         // y = (ax-b)^2 + c.  (y = degrees)
-        float a = 0.0217;
-        float b = -0.433;
-        float c = 0.3125;
+        float a = 0.0217f;
+        float b = -0.433f;
+        float c = 0.3125f;
         for (int i = 0 ; i < 80 ; i++)
         {
             float tmp = a*i-b;
@@ -2534,16 +2534,16 @@ QvisViewWindow::eyeAngleSliderChanged(int val)
     // We want 2.0 degrees to be the middle (40), 0 to be 0.5 degrees,
     // and 80 to be 5 degrees.  So a parabola can fit this curve --
     // y = (ax-b)^2 + c.  (y = degrees)
-    float a = 0.0217;
-    float b = -0.433;
-    float c = 0.3125;
-    float angle = 0.;
+    float a = 0.0217f;
+    float b = -0.433f;
+    float c = 0.3125f;
+    float angle = 0.f;
     if (val == 80)
-        angle = 5.0;
+        angle = 5.0f;
     else if (val == 40)
-        angle = 2.0;
+        angle = 2.0f;
     else if (val == 0)
-        angle = 0.5;
+        angle = 0.5f;
     else
     {
         angle = (a*val - b)*(a*val - b) + c;

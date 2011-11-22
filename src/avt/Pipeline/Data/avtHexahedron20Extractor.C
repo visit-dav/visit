@@ -289,22 +289,22 @@ avtHexahedron20Extractor::LinearHexExtract(const avtHexahedron20 &hex)
     // For the face centers we take the average of the edge points
     //
     for (i = 0 ; i < 3 ; i++)
-        pts[20][i] = 0.25*(pts[8][i] + pts[17][i] + pts[12][i] + pts[16][i]);
+        pts[20][i] = 0.25f*(pts[8][i] + pts[17][i] + pts[12][i] + pts[16][i]);
 
     for (i = 0 ; i < 3 ; i++)
-        pts[21][i] = 0.25*(pts[9][i] + pts[18][i] + pts[13][i] + pts[17][i]);
+        pts[21][i] = 0.25f*(pts[9][i] + pts[18][i] + pts[13][i] + pts[17][i]);
  
     for (i = 0 ; i < 3 ; i++)
-        pts[22][i] = 0.25*(pts[10][i] + pts[19][i] + pts[14][i] + pts[18][i]);
+        pts[22][i] = 0.25f*(pts[10][i] + pts[19][i] + pts[14][i] + pts[18][i]);
    
     for (i = 0 ; i < 3 ; i++)
-        pts[23][i] = 0.25*(pts[11][i] + pts[16][i] + pts[15][i] + pts[19][i]);
+        pts[23][i] = 0.25f*(pts[11][i] + pts[16][i] + pts[15][i] + pts[19][i]);
  
     for (i = 0 ; i < 3 ; i++)
-        pts[24][i] = 0.25*(pts[8][i] + pts[9][i] + pts[10][i] + pts[11][i]);
+        pts[24][i] = 0.25f*(pts[8][i] + pts[9][i] + pts[10][i] + pts[11][i]);
  
     for (i = 0 ; i < 3 ; i++)
-        pts[25][i] = 0.25*(pts[12][i] + pts[13][i] + pts[14][i] + pts[15][i]);
+        pts[25][i] = 0.25f*(pts[12][i] + pts[13][i] + pts[14][i] + pts[15][i]);
  
   
     // For the volumetric center we take the average of the face points  

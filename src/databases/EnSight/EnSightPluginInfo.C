@@ -43,7 +43,7 @@
 #include <EnSightPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *EnSightVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(EnSight,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -44,7 +44,7 @@
 #include <CreateBondsAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *CreateBondsVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(CreateBonds,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

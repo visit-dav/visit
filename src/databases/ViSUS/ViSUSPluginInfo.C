@@ -43,7 +43,7 @@
 #include <ViSUSPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *ViSUSVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ViSUS,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

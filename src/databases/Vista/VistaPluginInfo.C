@@ -43,7 +43,7 @@
 #include <VistaPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *VistaVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Vista,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

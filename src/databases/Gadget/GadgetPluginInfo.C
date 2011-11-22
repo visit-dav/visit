@@ -43,7 +43,7 @@
 #include <GadgetPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *GadgetVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Gadget,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

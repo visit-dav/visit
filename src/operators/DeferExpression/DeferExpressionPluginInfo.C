@@ -44,7 +44,7 @@
 #include <DeferExpressionAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *DeferExpressionVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(DeferExpression,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

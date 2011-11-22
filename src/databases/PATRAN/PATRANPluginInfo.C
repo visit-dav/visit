@@ -43,7 +43,7 @@
 #include <PATRANPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *PATRANVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(PATRAN,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

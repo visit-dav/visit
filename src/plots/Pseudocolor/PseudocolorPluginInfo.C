@@ -44,7 +44,7 @@
 #include <PseudocolorAttributes.h>
 
 #include <visit-config.h>
-PLOT_EXPORT const char *PseudocolorVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Pseudocolor,PLOT_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

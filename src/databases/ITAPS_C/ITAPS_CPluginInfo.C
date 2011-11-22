@@ -43,6 +43,11 @@
 #include <ITAPS_CPluginInfo.h>
 
 #include <visit-config.h>
+// Don't use VISIT_PLUGIN_VERSION because verious ITAPS names are already
+// defined and that causes problems.
+#ifdef _WIN32
+extern "C"
+#endif
 DBP_EXPORT const char *ITAPS_CVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************

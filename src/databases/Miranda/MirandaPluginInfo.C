@@ -43,7 +43,7 @@
 #include <MirandaPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *MirandaVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Miranda,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

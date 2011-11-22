@@ -43,7 +43,7 @@
 #include <GDALPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *GDALVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(GDAL,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <Boxlib2DPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *Boxlib2DVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Boxlib2D,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

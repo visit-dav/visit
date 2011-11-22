@@ -43,7 +43,7 @@
 #include <KullLitePluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *KullLiteVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(KullLite,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

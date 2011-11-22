@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -43,7 +43,7 @@
 #include <lataPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *lataVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(lata,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

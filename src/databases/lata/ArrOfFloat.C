@@ -123,26 +123,27 @@ VFloatdata::VFloatdata(entier size, ArrOfFloat::Storage storage)
     }
     catch(...) {
       Cerr << "impossible d'allouer " << size << " float " << finl;
-      assert(0);
-      ::exit(-1);
+//      assert(0);
+//      ::exit(-1);
     }
 #else
     data_ = new float[size];
     if(!data_) {
       Cerr << "impossible d'allouer " << size << "float " << finl;
-      assert(0);
-      ::exit(-1);
+//      assert(0);
+//      ::exit(-1);
     }
 #endif
     break;
   }
   default:
-    exit(-1);
+     ;
+//    exit(-1);
   }
   ref_count_ = 1;
   size_ = size;
   
-  assert(data_ != 0);
+//  assert(data_ != 0);
 }
 
 // Description:
@@ -211,16 +212,16 @@ inline const float * VFloatdata::get_data() const
 VFloatdata::VFloatdata(const VFloatdata & v)
 {
   Cerr << "Erreur dans VFloatdata::VFloatdata(const VFloatdata & v)" << finl;
-  assert(0);
-  exit(-1);
+//  assert(0);
+//  exit(-1);
 }
 
 // Description: Operateur= interdit. Genere une erreur !
 VFloatdata & VFloatdata::operator=(const VFloatdata & v)
 {
   Cerr << "Erreur dans VFloatdata::operator=(const VFloatdata & v)" << finl;
-  assert(0);
-  exit(-1);
+//  assert(0);
+//  exit(-1);
   return *this;
 }
 

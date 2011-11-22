@@ -43,7 +43,7 @@
 #include <paraDIS_tecplotPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *paraDIS_tecplotVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(paraDIS_tecplot,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

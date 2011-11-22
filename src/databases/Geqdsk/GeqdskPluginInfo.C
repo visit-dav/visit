@@ -43,7 +43,7 @@
 #include <GeqdskPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *GeqdskVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Geqdsk,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

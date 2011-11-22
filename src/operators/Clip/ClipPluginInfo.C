@@ -44,7 +44,7 @@
 #include <ClipAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ClipVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Clip,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

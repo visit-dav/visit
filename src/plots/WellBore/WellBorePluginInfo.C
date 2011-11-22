@@ -44,7 +44,7 @@
 #include <WellBoreAttributes.h>
 
 #include <visit-config.h>
-PLOT_EXPORT const char *WellBoreVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(WellBore,PLOT_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

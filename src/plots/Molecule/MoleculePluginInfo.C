@@ -44,7 +44,7 @@
 #include <MoleculeAttributes.h>
 
 #include <visit-config.h>
-PLOT_EXPORT const char *MoleculeVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Molecule,PLOT_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -82,7 +82,7 @@ class STATE_API XMLNode
     void     GetAttributeNames(stringVector &) const;
     
     bool     HasChildren()    const { return !children.empty(); }
-    int      GetNumChildren() const { return children.size(); } 
+    int      GetNumChildren() const { return (int)children.size(); } 
     
     XMLNode *AddChild(const std::string  &);
     XMLNode *AddChild(const XMLNode &);

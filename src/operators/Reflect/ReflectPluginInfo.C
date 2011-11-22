@@ -44,7 +44,7 @@
 #include <ReflectAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ReflectVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Reflect,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

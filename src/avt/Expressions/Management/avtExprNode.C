@@ -789,7 +789,7 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
 
     // Take the stack of variable names and feed them to the function in
     // reverse order.
-    int size = inputStack.size();
+    int size = static_cast<int>(inputStack.size());
     for (i = 0; i < size; i++)
     {
         string inputName = inputStack.back();

@@ -43,7 +43,7 @@
 #include <STLPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *STLVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(STL,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

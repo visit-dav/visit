@@ -43,7 +43,7 @@
 #include <WavefrontOBJPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *WavefrontOBJVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(WavefrontOBJ,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

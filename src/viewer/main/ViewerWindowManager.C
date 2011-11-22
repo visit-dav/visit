@@ -7197,8 +7197,8 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
                    newTSNames.size() == newNStates);
                 if(oneTSPerFile)
                 {
-                    int n = (originalTSNames.size() < newTSNames.size()) ? 
-                    originalTSNames.size() : newTSNames.size();
+                    int n = static_cast<int>((originalTSNames.size() < newTSNames.size()) ? 
+                    originalTSNames.size() : newTSNames.size());
                     bool same = true;
                     for(i = 0; i < n && same; ++i)
                         same &= (originalTSNames[i] == newTSNames[i]);

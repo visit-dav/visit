@@ -44,7 +44,7 @@
 #include <MeshAttributes.h>
 
 #include <visit-config.h>
-PLOT_EXPORT const char *MeshVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Mesh,PLOT_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

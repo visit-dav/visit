@@ -43,7 +43,7 @@
 #include <ADIOSPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *ADIOSVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ADIOS,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

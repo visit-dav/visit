@@ -104,7 +104,7 @@ void
 avtlataWriter::OpenFile(const string &stemname, int nb)
 {
   cout<<"\n "<<__FILE__<<"openfile  nb "<<nb<<endl;
-  if (nb!=1) exit(-1);
+  if (nb!=1) return; //exit(-1);
         OpenFile(stemname);
 }
 // ****************************************************************************

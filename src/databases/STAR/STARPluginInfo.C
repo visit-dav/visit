@@ -43,7 +43,7 @@
 #include <STARPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *STARVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(STAR,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

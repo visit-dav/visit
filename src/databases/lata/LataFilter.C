@@ -752,7 +752,7 @@ const Domain & LataFilter::get_geometry(const Domain_Id & id)
             const entier req_block = requested_id.block_;
             if (requested_id.block_ > 0) {
               Cerr << "Error: requesting block " << requested_id.block_ << " with reconnect option" << endl;
-              exit(-1);
+//              exit(-1);
             }
             requested_id.block_ = -1; // load all blocks
             dom.fill_domain_from_lataDB(lataDB(), requested_id, 1 /* faces */, 0);
@@ -879,7 +879,6 @@ const FieldFloat & LataFilter::get_float_field(const Field_Id & id)
 {
   const LataField_base & field = get_field(id);
   const FieldFloat * float_field_ptr = dynamic_cast<const FieldFloat*>(&field);
-  if (! float_field_ptr) { assert(! float_field_ptr);abort();}
   const FieldFloat & fld = *float_field_ptr;
   return fld;
 }

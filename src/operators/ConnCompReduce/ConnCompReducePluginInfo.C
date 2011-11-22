@@ -44,7 +44,7 @@
 #include <ConnCompReduceAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ConnCompReduceVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ConnCompReduce,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

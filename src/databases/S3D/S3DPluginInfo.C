@@ -43,7 +43,7 @@
 #include <S3DPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *S3DVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(S3D,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

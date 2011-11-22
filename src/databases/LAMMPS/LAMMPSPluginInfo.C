@@ -43,7 +43,7 @@
 #include <LAMMPSPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *LAMMPSVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(LAMMPS,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <SAMIPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *SAMIVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(SAMI,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

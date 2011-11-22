@@ -44,7 +44,7 @@
 #include <DeformSphereGlyphAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *DeformSphereGlyphVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(DeformSphereGlyph,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

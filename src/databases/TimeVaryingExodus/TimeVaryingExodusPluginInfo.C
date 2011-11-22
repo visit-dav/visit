@@ -43,7 +43,7 @@
 #include <TimeVaryingExodusPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *TimeVaryingExodusVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(TimeVaryingExodus,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

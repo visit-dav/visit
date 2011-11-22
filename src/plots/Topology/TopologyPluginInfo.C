@@ -44,7 +44,7 @@
 #include <TopologyAttributes.h>
 
 #include <visit-config.h>
-PLOT_EXPORT const char *TopologyVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Topology,PLOT_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

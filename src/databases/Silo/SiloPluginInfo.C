@@ -43,7 +43,7 @@
 #include <SiloPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *SiloVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Silo,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <XYZPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *XYZVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(XYZ,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

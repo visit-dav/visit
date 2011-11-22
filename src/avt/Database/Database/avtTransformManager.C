@@ -510,12 +510,12 @@ template <class iT>
 static iT *
 BuildMappedArray(const iT *const ibuf, int ncomps, const vector<int> &valsToMap)
 {
-    const int nvals = valsToMap.size();
+    size_t nvals = valsToMap.size();
 
     // we use malloc here because we'll assign the data to vtkDataArray using
     // SetVoidArray and, upon deletion, that assumes malloc was used
     iT *rbuf = (iT *) malloc(nvals * ncomps * sizeof(iT));
-    for (int i = 0; i < nvals; i++)
+    for (size_t i = 0; i < nvals; i++)
     {
         for (int j = 0; j < ncomps; j++)
             rbuf[i*ncomps+j] = ibuf[valsToMap[i]*ncomps+j];
@@ -540,7 +540,7 @@ BuildMappedArray(const iT *const ibuf, int ncomps, const vector<int> &valsToMap)
 static vtkDataArray *
 BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
 {
-    const int nvals = valsToMap.size();
+    const int nvals = static_cast<int>(valsToMap.size());
     const int ncomps = da->GetNumberOfComponents();
     const void *buf = da->GetVoidPointer(0);
     vtkDataArray *rv;

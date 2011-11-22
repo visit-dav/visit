@@ -43,7 +43,7 @@
 #include <H5PartPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *H5PartVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(H5Part,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

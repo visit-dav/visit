@@ -44,7 +44,7 @@
 #include <ThresholdAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ThresholdVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Threshold,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

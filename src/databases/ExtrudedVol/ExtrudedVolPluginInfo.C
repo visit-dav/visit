@@ -43,7 +43,7 @@
 #include <ExtrudedVolPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *ExtrudedVolVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ExtrudedVol,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <VASPPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *VASPVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(VASP,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

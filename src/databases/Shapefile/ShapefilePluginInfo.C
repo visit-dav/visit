@@ -43,7 +43,7 @@
 #include <ShapefilePluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *ShapefileVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Shapefile,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

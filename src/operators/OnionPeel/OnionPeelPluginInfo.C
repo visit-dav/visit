@@ -44,7 +44,7 @@
 #include <OnionPeelAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *OnionPeelVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(OnionPeel,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

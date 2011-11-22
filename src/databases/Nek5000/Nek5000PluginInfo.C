@@ -43,7 +43,7 @@
 #include <Nek5000PluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *Nek5000VisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Nek5000,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

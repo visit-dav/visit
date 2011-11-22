@@ -43,7 +43,7 @@
 #include <PFLOTRANPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *PFLOTRANVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(PFLOTRAN,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

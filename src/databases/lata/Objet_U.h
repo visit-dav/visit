@@ -38,7 +38,7 @@ class Process
 {
 public:
   enum Errors { EXIT };
-  static void exit(int i=0) { throw(EXIT); }
+//  static void exit(int i=0) { throw(EXIT); }
 };
 class Objet_U: public Process
 {
@@ -60,5 +60,4 @@ protected:
 #define implemente_instanciable_sans_constructeur_ni_destructeur(x,y,z)
 #define Cerr Journal()
 #define finl endl
-#define space " "
 #endif

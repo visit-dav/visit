@@ -43,7 +43,7 @@
 #include <GTCPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *GTCVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(GTC,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

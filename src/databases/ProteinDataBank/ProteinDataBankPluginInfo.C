@@ -43,7 +43,7 @@
 #include <ProteinDataBankPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *ProteinDataBankVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ProteinDataBank,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

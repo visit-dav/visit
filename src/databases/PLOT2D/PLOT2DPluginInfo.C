@@ -43,7 +43,7 @@
 #include <PLOT2DPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *PLOT2DVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(PLOT2D,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

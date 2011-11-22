@@ -43,7 +43,7 @@
 #include <UNICPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *UNICVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(UNIC,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

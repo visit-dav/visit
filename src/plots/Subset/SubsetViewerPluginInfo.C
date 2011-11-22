@@ -39,22 +39,10 @@
 // ************************************************************************* //
 //  File: SubsetViewerPluginInfo.C
 // ************************************************************************* //
+
 #include <SubsetPluginInfo.h>
 #include <QApplication>
 #include <avtSubsetPlot.h>
-#include <avtColorTables.h>
-#include <avtDatabaseMetaData.h>
-#include <avtTypes.h>
-#include <ViewerPlot.h>
-#include <DebugStream.h>
-#include <InvalidVariableException.h>
-#include <Subset.xpm>
-
-#include <stdio.h>
-
-#include <set>
-#include <string>
-#include <vector>
 
 // ****************************************************************************
 //  Function:  GetViewerInfo
@@ -358,6 +346,7 @@ SubsetViewerPluginInfo::GetMenuName() const
 //
 // ****************************************************************************
 
+#include <Subset.xpm>
 const char **
 SubsetViewerPluginInfo::XPMIconData() const
 {
@@ -416,6 +405,18 @@ SubsetViewerPluginInfo::XPMIconData() const
 //    Add support for groups based on ranges.
 //
 // ****************************************************************************
+#include <stdio.h>
+
+#include <avtColorTables.h>
+#include <avtDatabaseMetaData.h>
+#include <avtTypes.h>
+#include <set>
+
+#include <ViewerPlot.h>
+
+#include <DebugStream.h>
+#include <InvalidVariableException.h>
+
 void
 SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
     ViewerPlot *plot)

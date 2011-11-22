@@ -239,9 +239,6 @@ Definition:
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 
-using std::string;
-using std::set;
-
 void
 SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
     ViewerPlot *plot)
@@ -260,20 +257,20 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
     avtDatabaseMetaData *nonConstmd = const_cast <avtDatabaseMetaData *>(md);
 
-    string vn(plot->GetVariableName());
+    std::string vn(plot->GetVariableName());
 
     const avtMaterialMetaData *mat = NULL;
     const avtScalarMetaData *smd = NULL;
 
-    string meshName = nonConstmd->MeshForVar(vn);
+    std::string meshName = nonConstmd->MeshForVar(vn);
     avtMeshMetaData *mesh = 
         const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
 
 
     stringVector       sv;
     stringVector::const_iterator pos;
-    set<int> groupSet;
-    vector<int> gIDS;
+    std::set<int> groupSet;
+    std::vector<int> gIDS;
     char temp[512];
 
     // 

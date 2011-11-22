@@ -44,7 +44,7 @@
 #include <ResampleAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ResampleVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Resample,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

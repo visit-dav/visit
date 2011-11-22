@@ -7607,7 +7607,7 @@ ViewerSubject::ProcessRendererMessage()
                 int offset = 21; // strlen("updateNamedSelection ");
                 // trim the ';' from the end of the name.
                 char *str = msg + offset;
-                int len = strlen(str);
+                size_t len = strlen(str);
                 str[len-1] = '\0';
                 UpdateNamedSelection(std::string(str), true, false);
             }
@@ -9527,9 +9527,9 @@ ViewerSubject::HandleColorTable()
             // Clear all of the color tables.
             QvisColorTableButton::clearAllColorTables();
 
-            int nNames = colorAtts->GetNames().size();
+            size_t nNames = colorAtts->GetNames().size();
             const stringVector &names = colorAtts->GetNames();
-            for(int i = 0; i < nNames; ++i)
+            for(size_t i = 0; i < nNames; ++i)
             {
                 QvisColorTableButton::addColorTable(names[i].c_str());
             }

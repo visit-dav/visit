@@ -44,7 +44,7 @@
 #include <ToroidalPoloidalProjection.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ToroidalPoloidalProjectionVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ToroidalPoloidalProjection,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

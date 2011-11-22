@@ -43,7 +43,7 @@
 #include <SimV2PluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *SimV2VisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(SimV2,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

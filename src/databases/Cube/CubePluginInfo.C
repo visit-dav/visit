@@ -43,7 +43,7 @@
 #include <CubePluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *CubeVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Cube,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

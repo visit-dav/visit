@@ -44,7 +44,7 @@
 #include <MergeOperatorAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *MergeVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Merge,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

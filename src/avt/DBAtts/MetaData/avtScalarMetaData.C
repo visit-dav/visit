@@ -745,7 +745,7 @@ avtScalarMetaData::AddEnumNameValue(std::string name, double val)
     enumRanges.push_back(val);
     enumRanges.push_back(val);
 
-    return enumNames.size() - 1;
+    return static_cast<int>(enumNames.size()) - 1;
 }
 
 // ****************************************************************************
@@ -915,7 +915,7 @@ avtScalarMetaData::ComboValFromDigits(const std::vector<std::vector<int> > &ptMa
     int row, col;
     *id = 0.0;
     std::list<int>::const_reverse_iterator it;
-    for (col = digits.size()-1, it = digits.rbegin(); col >= 0; col--, it++)
+    for (col = static_cast<int>(digits.size()-1), it = digits.rbegin(); col >= 0; col--, it++)
     {
         for (row = 0; row <= *it; row++)
             *id += ptMap[row][col];

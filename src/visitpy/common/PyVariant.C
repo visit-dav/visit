@@ -54,10 +54,10 @@
 PyObject *
 Wrap_BoolVector(const boolVector &vec)
 {
-    int vsize = vec.size();
+    size_t vsize = vec.size();
     PyObject *tuple = PyTuple_New(vsize);
     
-    for(int i = 0; i < vsize; i++)
+    for(size_t i = 0; i < vsize; i++)
     {
         PyObject *item = PyInt_FromLong((long)vec[i]);
         if(item == NULL)
@@ -81,10 +81,10 @@ Wrap_BoolVector(const boolVector &vec)
 PyObject *
 Wrap_UnsignedCharVector(const unsignedCharVector &vec)
 {
-    int vsize = vec.size();
+    size_t vsize = vec.size();
     PyObject *tuple = PyTuple_New(vsize);
     
-    for(int i = 0; i < vsize; i++)
+    for(size_t i = 0; i < vsize; i++)
     {
         PyObject *item = PyInt_FromLong((long)vec[i]);
         if(item == NULL)
@@ -108,10 +108,10 @@ Wrap_UnsignedCharVector(const unsignedCharVector &vec)
 PyObject *
 Wrap_IntVector(const intVector &vec)
 {
-    int vsize = vec.size();
+    size_t vsize = vec.size();
     PyObject *tuple = PyTuple_New(vsize);
     
-    for(int i = 0; i < vsize; i++)
+    for(size_t i = 0; i < vsize; i++)
     {
         PyObject *item = PyInt_FromLong((long)vec[i]);
         if(item == NULL)
@@ -135,10 +135,10 @@ Wrap_IntVector(const intVector &vec)
 PyObject *
 Wrap_LongVector(const longVector &vec)
 {
-    int vsize = vec.size();
+    size_t vsize = vec.size();
     PyObject *tuple = PyTuple_New(vsize);
     
-    for(int i = 0; i < vsize; i++)
+    for(size_t i = 0; i < vsize; i++)
     {
         PyObject *item = PyInt_FromLong(vec[i]);
         if(item == NULL)
@@ -162,10 +162,10 @@ Wrap_LongVector(const longVector &vec)
 PyObject *
 Wrap_FloatVector(const floatVector &vec)
 {
-    int vsize = vec.size();
+    size_t vsize = vec.size();
     PyObject *tuple = PyTuple_New(vsize);
     
-    for(int i = 0; i < vsize; i++)
+    for(size_t i = 0; i < vsize; i++)
     {
         PyObject *item = PyFloat_FromDouble((double)vec[i]);
         if(item == NULL)
@@ -189,10 +189,10 @@ Wrap_FloatVector(const floatVector &vec)
 PyObject *
 Wrap_DoubleVector(const doubleVector &vec)
 {
-    int vsize = vec.size();
+    size_t vsize = vec.size();
     PyObject *tuple = PyTuple_New(vsize);
     
-    for(int i = 0; i < vsize; i++)
+    for(size_t i = 0; i < vsize; i++)
     {
         PyObject *item = PyFloat_FromDouble(vec[i]);
         if(item == NULL)
@@ -216,10 +216,10 @@ Wrap_DoubleVector(const doubleVector &vec)
 PyObject *
 Wrap_CharVector(const charVector &vec)
 {
-    int vsize = vec.size();
+    size_t vsize = vec.size();
     PyObject *tuple = PyTuple_New(vsize);
     
-    for(int i = 0; i < vsize; i++)
+    for(size_t i = 0; i < vsize; i++)
     {
         PyObject *item = PyString_FromStringAndSize(&vec[i],1);
         if(item == NULL)
@@ -243,10 +243,10 @@ Wrap_CharVector(const charVector &vec)
 PyObject *
 Wrap_StringVector(const stringVector &vec)
 {
-    int vsize = vec.size();
+    size_t vsize = vec.size();
     PyObject *tuple = PyTuple_New(vsize);
     
-    for(int i = 0; i < vsize; i++)
+    for(size_t i = 0; i < vsize; i++)
     {
         PyObject *item = PyString_FromString(vec[i].c_str());
         if(item == NULL)

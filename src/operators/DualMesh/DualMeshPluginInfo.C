@@ -44,7 +44,7 @@
 #include <DualMeshAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *DualMeshVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(DualMesh,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -44,7 +44,7 @@
 #include <VectorAttributes.h>
 
 #include <visit-config.h>
-PLOT_EXPORT const char *VectorVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Vector,PLOT_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <OpenFOAMPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *OpenFOAMVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(OpenFOAM,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -150,8 +150,8 @@ ViewerState::ViewerState(const ViewerState &vs) : objVector()
     // Since the above VIEWER_OBJECT_CREATION macro exists to ensure that 
     // the static objects are copied, and their pointers get put into
     // the local members, we must copy plot and operator attributes here.
-    int nObjects = objVector.size();
-    for(int i = nObjects; i < vs.objVector.size(); ++i)
+    size_t nObjects = objVector.size();
+    for(size_t i = nObjects; i < vs.objVector.size(); ++i)
     {
         ObjectRecord rec;
         rec.object = vs.objVector[i].object->NewInstance(true);

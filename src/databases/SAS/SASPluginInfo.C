@@ -43,7 +43,7 @@
 #include <SASPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *SASVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(SAS,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

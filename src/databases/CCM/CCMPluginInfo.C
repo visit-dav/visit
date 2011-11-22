@@ -43,7 +43,7 @@
 #include <CCMPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *CCMVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(CCM,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
