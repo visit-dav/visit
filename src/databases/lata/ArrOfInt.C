@@ -123,26 +123,27 @@ VIntdata::VIntdata(entier size, ArrOfInt::Storage storage)
     }
     catch(...) {
       Cerr << "impossible d'allouer " << size << " entier " << finl;
-      assert(0);
-      ::exit(-1);
+//      assert(0);
+//      ::exit(-1);
     }
 #else
     data_ = new entier[size];
     if(!data_) {
       Cerr << "impossible d'allouer " << size << "entier " << finl;
-      assert(0);
-      ::exit(-1);
+//      assert(0);
+//      ::exit(-1);
     }
 #endif
     break;
   }
   default:
-    exit(-1);
+    ;
+//    exit(-1);
   }
   ref_count_ = 1;
   size_ = size;
   
-  assert(data_ != 0);
+//  assert(data_ != 0);
 }
 
 // Description:
@@ -211,16 +212,16 @@ inline const entier * VIntdata::get_data() const
 VIntdata::VIntdata(const VIntdata & v)
 {
   Cerr << "Erreur dans VIntdata::VIntdata(const VIntdata & v)" << finl;
-  assert(0);
-  exit(-1);
+//  assert(0);
+//  exit(-1);
 }
 
 // Description: Operateur= interdit. Genere une erreur !
 VIntdata & VIntdata::operator=(const VIntdata & v)
 {
   Cerr << "Erreur dans VIntdata::operator=(const VIntdata & v)" << finl;
-  assert(0);
-  exit(-1);
+//  assert(0);
+//  exit(-1);
   return *this;
 }
 

@@ -557,7 +557,7 @@ void bloc_read_skip(LataDataFile & f, LataDBDataType::MSB msb, LataDBDataType::T
   case LataDBDataType::REAL32: f.read((float*) 0, size); break;
   default:
     Journal() << "Internal error: bloc read skip not code for this type" << endl;
-    exit(-1);
+//    exit(-1);
   }
 }
 
@@ -1773,7 +1773,7 @@ void LataDB::read_data(const LataDBField & fld, IntTab & data, entier debut, ent
 void LataDB::read_data(const LataDBField & fld, DoubleTab & data, entier debut, entier n) const
 {
   Journal() << "LataDB::read_data not coded for double" << endl;
-  exit(-1);
+//  exit(-1);
 }
 
 void LataDB::read_data(const LataDBField & fld, FloatTab & data, entier debut, entier n) const
@@ -1798,7 +1798,7 @@ void LataDB::read_data(const LataDBField & fld, IntTab & data, const ArrOfInt & 
 void LataDB::read_data(const LataDBField & fld, DoubleTab & data, const ArrOfInt & lines_to_read) const
 {
   Journal() << "LataDB::read_data not coded for double" << endl;
-  exit(-1);
+//  exit(-1);
 }
 
 // Description: reads lines_to_read.size_array() * nb_comp values.
@@ -2221,7 +2221,7 @@ FileOffset LataDB::write_data_(entier tstep, const Field_UName & uname, const C_
 FileOffset LataDB::write_data(entier tstep, const Field_UName & uname, const DoubleTab &tab)
 {
   Journal() << " LataDB::write_data not coded for double" << endl;
-  exit(-1);
+//  exit(-1);
   return 0;
 }
 
@@ -2253,7 +2253,7 @@ LataDB::~LataDB()
 #if 0
   if (write_master_file_to_call_) {
     Journal() << "Internal Error !!! write_data() has been called without calling write_master_file() after." << endl;
-    exit(-1); // In c++ it is forbidden to throw exceptions in a destructor.
+//    exit(-1); // In c++ it is forbidden to throw exceptions in a destructor.
   }
 #endif
 }

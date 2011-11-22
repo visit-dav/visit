@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -68,25 +68,25 @@ Colleagues/avtText3DColleague.C
 Colleagues/avtTimeSliderColleague.C
 )
 IF (NOT WIN32)
-SET_SOURCE_FILES_PROPERTIES(
-    Colleagues/VisWinRendering.C
-    PROPERTIES
-    COMPILE_FLAGS "-I ${MESA_INCLUDE_DIR} -I ${OPENGL_INCLUDE_DIR} -I ${GLEW_INCLUDE_DIR}"
-)
+    SET_SOURCE_FILES_PROPERTIES(
+        Colleagues/VisWinRendering.C
+        PROPERTIES
+        COMPILE_FLAGS "-I${MESA_INCLUDE_DIR} -I${OPENGL_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
+    )
 ELSE (NOT WIN32)
-  IF(MESA_FOUND)
-  SET_SOURCE_FILES_PROPERTIES(
-    Colleagues/VisWinRendering.C
-    PROPERTIES
-    COMPILE_FLAGS "-I ${MESA_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
-  )
-  ELSE()
-  SET_SOURCE_FILES_PROPERTIES(
-    Colleagues/VisWinRendering.C
-    PROPERTIES
-    COMPILE_FLAGS "-I ${GLEW_INCLUDE_DIR}"
-  )
-  ENDIF()
+    IF(MESA_FOUND)
+        SET_SOURCE_FILES_PROPERTIES(
+            Colleagues/VisWinRendering.C
+            PROPERTIES
+            COMPILE_FLAGS "-I${MESA_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
+        )
+    ELSE()
+        SET_SOURCE_FILES_PROPERTIES(
+            Colleagues/VisWinRendering.C
+            PROPERTIES
+            COMPILE_FLAGS "-I${GLEW_INCLUDE_DIR}"
+        )
+    ENDIF()
 ENDIF (NOT WIN32)
 
 SET(EXCEPTIONS_SOURCES

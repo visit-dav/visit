@@ -44,7 +44,7 @@
 #include <ParallelCoordinatesAttributes.h>
 
 #include <visit-config.h>
-PLOT_EXPORT const char *ParallelCoordinatesVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ParallelCoordinates,PLOT_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

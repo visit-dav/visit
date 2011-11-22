@@ -141,7 +141,7 @@ Sortie& ArrOfBit::printOn(Sortie& os) const
   for (i = 0; i < taille; i++) {
     os << operator[](i);
     if ((i & 7) == 7)
-      os << space;
+      os << " ";
     if ((i & 31) == 31)
       os << finl;
   }

@@ -43,7 +43,7 @@
 #include <TetradPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *TetradVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Tetrad,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

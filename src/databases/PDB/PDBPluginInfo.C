@@ -43,7 +43,7 @@
 #include <PDBPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *PDBVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(PDB,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

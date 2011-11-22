@@ -44,7 +44,7 @@
 #include <ConnectedComponentsAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ConnectedComponentsVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ConnectedComponents,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <CMATPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *CMATVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(CMAT,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

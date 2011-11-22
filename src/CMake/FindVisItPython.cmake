@@ -112,24 +112,24 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 
 MESSAGE(STATUS "Looking for Python")
 
-FOREACH(_CURRENT_VERSION 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
+FOREACH(_CURRENT_VERSION 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
   STRING(REPLACE "." "" _CURRENT_VERSION_NO_DOTS ${_CURRENT_VERSION})
   IF(WIN32)
     FIND_LIBRARY(PYTHON_DEBUG_LIBRARY
       NAMES python${_CURRENT_VERSION_NO_DOTS}_d python
       PATHS
-      [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]/libs/Debug
-      [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]/libs 
       ${PYTHON_DIR}/lib
-      ${PYTHON_DIR}/libs)
+      ${PYTHON_DIR}/libs
+      [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]/libs/Debug
+      [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]/libs)
   ENDIF(WIN32)
 
   FIND_LIBRARY(PYTHON_LIBRARY
     NAMES python${_CURRENT_VERSION_NO_DOTS} python${_CURRENT_VERSION}
     PATHS
-      [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]/libs
       ${PYTHON_DIR}/lib
       ${PYTHON_DIR}/libs
+      [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]/libs
     NO_DEFAULT_PATH
     NO_CMAKE_ENVIRONMENT_PATH
     NO_CMAKE_PATH
@@ -162,7 +162,7 @@ FOREACH(_CURRENT_VERSION 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
         # not match the version from _CURRENT_VERSION so let's match again
         # against the detected filename.
         GET_FILENAME_COMPONENT(PYLIB ${PYTHON_LIBRARY} NAME)
-        FOREACH(CV 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
+        FOREACH(CV 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
             SET(curPYLIB "libpython${CV}.")
             IF(${PYLIB} MATCHES ${curPYLIB})
                 SET(PYTHON_VERSION ${CV})

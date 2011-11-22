@@ -181,7 +181,7 @@ class DBATTS_API avtSIL
 
     int                               AddSet(avtSILSet_p);
     int                               GetNumRealSets() const
-                                           { return sets.size(); };
+                                           { return static_cast<int>(sets.size()); };
     EntryType                         GetCollectionSource(int index, 
                                                           avtSILArray_p  &outArray, 
                                                           avtSILMatrix_p &outMatrix, int &outIndex);

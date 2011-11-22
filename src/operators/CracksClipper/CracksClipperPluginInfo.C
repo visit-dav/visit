@@ -44,7 +44,7 @@
 #include <CracksClipperAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *CracksClipperVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(CracksClipper,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -44,7 +44,7 @@
 #include <DelaunayAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *DelaunayVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Delaunay,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <RAWPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *RAWVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(RAW,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

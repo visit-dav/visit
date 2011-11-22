@@ -43,7 +43,7 @@
 #include <GULPPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *GULPVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(GULP,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

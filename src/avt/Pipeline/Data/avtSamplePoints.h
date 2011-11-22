@@ -93,7 +93,7 @@ class PIPELINE_API  avtSamplePoints : public avtDataObject
                                                    std::vector<std::string> &);
     int                         GetNumberOfVariables(void);
     int                         GetNumberOfRealVariables(void) 
-                                                   { return varnames.size(); };
+                                                   { return static_cast<int>(varnames.size()); };
     const std::string          &GetVariableName(int);
     int                         GetVariableSize(int);
     virtual int                 GetNumberOfCells(bool polysOnly = false) const

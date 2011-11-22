@@ -43,7 +43,7 @@
 #include <MM5PluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *MM5VisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(MM5,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

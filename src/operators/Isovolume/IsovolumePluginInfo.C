@@ -44,7 +44,7 @@
 #include <IsovolumeAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *IsovolumeVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Isovolume,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

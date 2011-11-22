@@ -44,7 +44,7 @@
 #include <SliceAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *SliceVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Slice,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

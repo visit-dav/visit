@@ -43,7 +43,7 @@
 #include <NASTRANPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *NASTRANVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(NASTRAN,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

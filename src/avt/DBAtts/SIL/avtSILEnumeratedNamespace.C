@@ -133,7 +133,7 @@ avtSILEnumeratedNamespace::ContainsElement(int e) const
     }
     else if (sortedElems)
     {
-        int min = 0, max = elements.size()-1;
+        int min = 0, max = static_cast<int>(elements.size())-1;
         int mid = (max+min)/2;
         while (min <= max)
         {

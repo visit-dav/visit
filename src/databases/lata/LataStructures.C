@@ -447,7 +447,7 @@ void DomainUnstructured::fill_domain_from_lataDB(const LataDB & lataDB,
               if (i2 >= max_i2) {
                 cerr << "Internal error in DomainUnstructured::fill_domain_from_lataDB:\n"
                      << " node " << global_node_index_to_find << " of a virtual face does not belong to a virtual element" << endl;
-                exit(-1);
+//                exit(-1);
               }
             }
             array_tmp_faces_nodes[j] = index_of_first_virtual_node + i2; // index of this node in the local nodes_ array

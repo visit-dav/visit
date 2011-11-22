@@ -43,7 +43,7 @@
 #include <PuReMDPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *PuReMDVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(PuReMD,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

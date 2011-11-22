@@ -44,7 +44,7 @@
 #include <ContextAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ContextVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Context,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

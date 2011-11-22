@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -59,6 +59,12 @@
 #   Don't add VTK's MangledMesa directory to VTK_INCLUDE_DIRS unless VTK
 #   was built with MangledMesa.
 #
+#   Brad Whitlock, Mon Nov 21 10:22:56 PST 2011
+#   Print out some variables that were supposed to have been set by the
+#   FindVTK.cmake routine so we know better what's going on. Also deal with
+#   the case where VTK has been installed normally (with vtk-5.8 subdirs)
+#   and change how Python filters are located on Windows.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -69,10 +75,23 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 # We rely on FindVTK to set it to the right value.
 SET(VTK_USE_MANGLED_MESA OFF CACHE INTERNAL "Set a cache variable that FindVTK can override")
 
-SET(VTK_DIR ${VISIT_VTK_DIR}/lib)
+IF(EXISTS ${VISIT_VTK_DIR}/lib/vtk-5.8)
+    SET(VTK_DIR ${VISIT_VTK_DIR}/lib/vtk-5.8)
+ELSE(EXISTS ${VISIT_VTK_DIR}/lib/vtk-5.8)
+    SET(VTK_DIR ${VISIT_VTK_DIR}/lib)
+ENDIF(EXISTS ${VISIT_VTK_DIR}/lib/vtk-5.8)
 
 MESSAGE(STATUS "Checking for VTK in ${VTK_DIR}")
 INCLUDE(${CMAKE_ROOT}/Modules/FindVTK.cmake)
+
+MESSAGE(STATUS "  VTK_FOUND=${VTK_FOUND}")
+MESSAGE(STATUS "  VTK_USE_FILE=${VTK_USE_FILE}")
+MESSAGE(STATUS "  VTK_MAJOR_VERSION=${VTK_MAJOR_VERSION}")
+MESSAGE(STATUS "  VTK_MINOR_VERSION=${VTK_MINOR_VERSION}")
+MESSAGE(STATUS "  VTK_BUILD_VERSION=${VTK_BUILD_VERSION}")
+MESSAGE(STATUS "  VTK_INCLUDE_DIRS=${VTK_INCLUDE_DIRS}")
+MESSAGE(STATUS "  VTK_LIBRARY_DIRS=${VTK_LIBRARY_DIRS}")
+MESSAGE(STATUS "  VTK_KITS=${VTK_KITS}")
 
 # Set the VisIt mangled mesa off of the VTK mangled mesa variable.
 IF("${VTK_USE_MANGLED_MESA}" STREQUAL "ON")
@@ -169,8 +188,9 @@ ENDFOREACH(X)
 IF (NOT WIN32)
     FILE(GLOB VTK_PY_WRAPPERS_DIR ${VTK_LIBRARY_DIRS}/python*/)
 ELSE (NOT WIN32)
-    FILE(GLOB VTK_PY_WRAPPERS_DIR ${VTK_LIBRARY_DIRS})
+    FILE(GLOB VTK_PY_WRAPPERS_DIR ${VISIT_VTK_DIR}/lib)
 ENDIF (NOT WIN32)
+MESSAGE(STATUS "  VTK_PY_WRAPPERS_DIR=${VTK_PY_WRAPPERS_DIR}")
 
 IF(EXISTS ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
     MESSAGE(STATUS "Found VTK Python Wrappers - ${VTK_PY_WRAPPERS_DIR}")

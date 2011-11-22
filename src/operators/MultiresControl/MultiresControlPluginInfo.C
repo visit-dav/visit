@@ -44,7 +44,7 @@
 #include <MultiresControlAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *MultiresControlVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(MultiresControl,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

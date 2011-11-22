@@ -43,7 +43,7 @@
 #include <VelodynePluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *VelodyneVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Velodyne,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -738,13 +738,13 @@ AddSpeciesMetaData(avtDatabaseMetaData *md, visit_handle h)
                             stringVector onelist;
                             NameListToStringVector(s, onelist);
 
-                            numSpecies.push_back(onelist.size());
+                            numSpecies.push_back(static_cast<int>(onelist.size()));
                             speciesNames.push_back(onelist);
                         }
                     }
 
                     avtSpeciesMetaData *species = new avtSpeciesMetaData(name,
-                        meshName, matName, numSpecies.size(), numSpecies, 
+                        meshName, matName, static_cast<int>(numSpecies.size()), numSpecies, 
                         speciesNames);
 
                     md->Add(species);

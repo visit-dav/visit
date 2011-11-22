@@ -43,7 +43,7 @@
 #include <AdventurePluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *AdventureVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Adventure,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

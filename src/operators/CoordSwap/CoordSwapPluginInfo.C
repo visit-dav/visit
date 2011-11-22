@@ -44,7 +44,7 @@
 #include <CoordSwapAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *CoordSwapVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(CoordSwap,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

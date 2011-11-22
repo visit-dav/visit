@@ -43,7 +43,7 @@
 #include <ANSYSPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *ANSYSVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ANSYS,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

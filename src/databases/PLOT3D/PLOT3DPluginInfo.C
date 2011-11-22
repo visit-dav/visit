@@ -43,7 +43,7 @@
 #include <PLOT3DPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *PLOT3DVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(PLOT3D,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -44,7 +44,7 @@
 #include <ConeAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ConeVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Cone,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

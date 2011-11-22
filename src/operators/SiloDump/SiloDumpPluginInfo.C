@@ -44,7 +44,7 @@
 #include <SiloDumpAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *SiloDumpVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(SiloDump,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

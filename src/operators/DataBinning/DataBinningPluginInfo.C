@@ -44,7 +44,7 @@
 #include <DataBinningAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *DataBinningVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(DataBinning,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

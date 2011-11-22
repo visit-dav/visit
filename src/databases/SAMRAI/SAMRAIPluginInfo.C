@@ -43,7 +43,7 @@
 #include <SAMRAIPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *SAMRAIVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(SAMRAI,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

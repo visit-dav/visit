@@ -215,6 +215,9 @@
 //   Hank Childs, Mon Jan 31 22:17:51 PST 2011
 //   Fix oversight where vectors aren't being generated.
 //
+//   Brad Whitlock, Mon Nov 21 10:20:04 PST 2011
+//   Use a macro to create the plugin version symbol.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -743,7 +746,7 @@ class InfoGeneratorPlugin : public Plugin
     void AddVersion(QTextStream &c)
     {
         c << "#include <visit-config.h>" << endl;
-        c << Export(type.toStdString()) << " const char *"<<name<<"VisItPluginVersion = VISIT_VERSION;" << endl;
+        c << "VISIT_PLUGIN_VERSION("<<name<<","<<Export(type.toStdString()) << ")" << endl;
         c << endl;
     }
     void WriteInfoSource(QTextStream &c)

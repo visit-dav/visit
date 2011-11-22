@@ -44,7 +44,6 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-using namespace std;
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -211,7 +210,7 @@ avtlataFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     case Domain::hexa:      topo_dim = 3; break;
     default:
       cerr << "avtlataFileFormat::PopulateDatabaseMetaData error: unknown element type" << endl;
-      exit(-1);
+//      exit(-1);
     }
 
     int mesh_faces=0;
@@ -380,7 +379,7 @@ avtlataFileFormat::GetMesh(int timestate, int block, const char *meshname)
   const entier index = mesh_username_.rang(meshname);
   if (index < 0) {
     cerr << "internal error in avtlataFileFormat::GetMesh: name " << meshname << " not found" << endl;
-    exit(-1);
+//    exit(-1);
   }
   Domain_Id id(mesh_latafilter_name_[index], timestate, block);
   const Domain & geometry = filter_.get_geometry(id);
@@ -444,7 +443,7 @@ avtlataFileFormat::GetMesh(int timestate, int block, const char *meshname)
     default:
       type_cell=-1;
       cerr<<"avtlataFileFormat::GetMesh unknown elt type "<<endl;
-      exit(-1);
+//      exit(-1);
       break;
     }
     vtkIdType *verts = new vtkIdType[nverts];
@@ -629,7 +628,7 @@ avtlataFileFormat::GetMesh(int timestate, int block, const char *meshname)
     return_value = sgrid;
   } else {
     cerr << "Error in avtlataFileFormat::GetMesh: unknown geometry type" << endl;
-    exit(-1);
+//    exit(-1);
   }
 
   filter_.release_geometry(geometry);
@@ -681,7 +680,7 @@ avtlataFileFormat::GetVar(int timestate, int block, const char *varname)
 
   if (component < 0) {
     cerr << "Error: avtlataFileFormat::GetVar called for vector field" << endl;
-    exit(-1);
+//    exit(-1);
   }
 
   Field_Id id(field_uname, timestate, block);
@@ -713,7 +712,7 @@ avtlataFileFormat::GetVar(int timestate, int block, const char *varname)
     return_value = rv;
   } else {
     cerr << "Error in avtlataFileFormat::GetVar: unknown data type" << endl;
-    exit(-1);
+//    exit(-1);
   }
   filter_.release_field(field);
   }
@@ -763,7 +762,7 @@ avtlataFileFormat::GetVectorVar(int timestate, int block, const char *varname)
 
   if (component >= 0) {
     cerr << "Error: avtlataFileFormat::GetVectorVar called for scalar field" << endl;
-    exit(-1);
+//    exit(-1);
   }
 
   Field_Id id(field_uname, timestate, block);
@@ -801,7 +800,7 @@ avtlataFileFormat::GetVectorVar(int timestate, int block, const char *varname)
     return_value = rv;
   } else {
     cerr << "Error in avtlataFileFormat::GetVectorVar: unknown data type" << endl;
-    exit(-1);
+//    exit(-1);
   }
   filter_.release_field(field);
   }
@@ -817,7 +816,7 @@ void avtlataFileFormat::get_field_info_from_visitname(const char *varname, Field
   const int k = field_username_.rang(varname);
   if (k < 0) {
     cerr << "Error in avtlataFileFormat::get_field_info_from_visitname: field " << varname << " not found" << endl;
-    exit(-1);
+//    exit(-1);
   }
   uname = field_uname_[k];
   component = field_component_[k];

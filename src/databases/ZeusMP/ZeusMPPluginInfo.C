@@ -43,7 +43,7 @@
 #include <ZeusMPPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *ZeusMPVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ZeusMP,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

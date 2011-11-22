@@ -43,7 +43,7 @@
 #include <ZipWrapperPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *ZipWrapperVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(ZipWrapper,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

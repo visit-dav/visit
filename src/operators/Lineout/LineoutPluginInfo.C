@@ -44,7 +44,7 @@
 #include <LineoutAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *LineoutVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Lineout,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

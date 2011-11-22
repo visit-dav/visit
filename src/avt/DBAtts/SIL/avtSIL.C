@@ -307,7 +307,7 @@ avtSIL::AddCollection(avtSILCollection_p c)
     collections.push_back(c);
     order.push_back(COLLECTION);
     collTable.push_back((int)COLLECTION);
-    collTable.push_back(collections.size()-1);
+    collTable.push_back(static_cast<int>(collections.size())-1);
     collTable.push_back(prevNumColl+1);
 
     //
@@ -396,7 +396,7 @@ avtSIL::AddSubset(avtSILSet_p s)
 
     int  prevNumSets = setTable[setTable.size()-1];
     setTable.push_back((int)SUBSET);
-    setTable.push_back(sets.size());
+    setTable.push_back(static_cast<int>(sets.size()));
     setTable.push_back(prevNumSets+1);
 
     return AddSet(s);
@@ -436,7 +436,7 @@ avtSIL::AddWhole(avtSILSet_p w)
 {
     int  prevNumSets = setTable[setTable.size()-1];
     setTable.push_back((int)SUBSET);
-    setTable.push_back(sets.size());
+    setTable.push_back(static_cast<int>(sets.size()));
     setTable.push_back(prevNumSets+1);
 
     int index = AddSet(w);
@@ -517,12 +517,12 @@ avtSIL::AddArray(avtSILArray_p  a)
 
     int  prevNumSets = setTable[setTable.size()-1];
     setTable.push_back((int)ARRAY);
-    setTable.push_back(arrays.size()-1);
+    setTable.push_back(static_cast<int>(arrays.size())-1);
     setTable.push_back(prevNumSets+a->GetNumSets());
 
     int prevNumColl = collTable[collTable.size()-1];
     collTable.push_back((int)ARRAY);
-    collTable.push_back(arrays.size()-1);
+    collTable.push_back(static_cast<int>(arrays.size())-1);
     collTable.push_back(prevNumColl+1);
 }
 
@@ -556,8 +556,6 @@ avtSIL::AddArray(avtSILArray_p  a)
 void
 avtSIL::AddMatrix(avtSILMatrix_p m)
 {
-    int  i;
-
     int coll_count = GetNumCollections();
 
     m->SetSIL(this);
@@ -566,11 +564,11 @@ avtSIL::AddMatrix(avtSILMatrix_p m)
     matrices.push_back(m);
 
     const vector<int> &set1 = m->GetSet1();
-    int rowsize = set1.size();
+    size_t i, rowsize = set1.size();
 
     for (i = 0 ; i < rowsize ; i++)
     {
-        bool isTemp;
+        bool isTemp = false;
         avtSILSet_p pSet = GetSILSet(set1[i], isTemp);
         if (!isTemp)
             pSet->AddMatrixMapOut(coll_count);
@@ -578,7 +576,7 @@ avtSIL::AddMatrix(avtSILMatrix_p m)
     }
 
     const vector<int> &set2 = m->GetSet2();
-    int columnsize = set2.size();
+    size_t columnsize = set2.size();
     for (i = 0 ; i < columnsize ; i++)
     {
         bool isTemp;
@@ -592,12 +590,12 @@ avtSIL::AddMatrix(avtSILMatrix_p m)
 
     int  prevNumSets = setTable[setTable.size()-1];
     setTable.push_back((int)MATRIX);
-    setTable.push_back(matrices.size()-1);
+    setTable.push_back(static_cast<int>(matrices.size())-1);
     setTable.push_back(prevNumSets + m->GetNumSets());
 
     int prevNumColl = collTable[collTable.size()-1];
     collTable.push_back((int)MATRIX);
-    collTable.push_back(matrices.size()-1);
+    collTable.push_back(static_cast<int>(matrices.size())-1);
     collTable.push_back(prevNumColl + m->GetNumCollections());
 }
 
@@ -1231,7 +1229,7 @@ avtSIL::MakeSILAttributes(void) const
     //
     // Add the sets.
     //
-    int nSets = sets.size();
+    size_t nSets = sets.size();
     rv->SetNSets(nSets);
     vector<string> names;
     vector<int>    ids;
@@ -1247,7 +1245,7 @@ avtSIL::MakeSILAttributes(void) const
     //
     // Add the collections.
     //
-    int nCols = collections.size();
+    size_t nCols = collections.size();
     rv->SetNCollections(nCols);
     vector<string> cats;
     vector<int> roles;
@@ -1270,7 +1268,7 @@ avtSIL::MakeSILAttributes(void) const
     //
     // Add the matrices.
     //
-    int nMatrices = matrices.size();
+    size_t nMatrices = matrices.size();
     for (i = 0 ; i < nMatrices ; i++)
     {
         SILMatrixAttributes *atts = matrices[i]->MakeAttributes();
@@ -1281,7 +1279,7 @@ avtSIL::MakeSILAttributes(void) const
     //
     // Add the arrays.
     //
-    int nArrays = arrays.size();
+    size_t nArrays = arrays.size();
     for (i = 0 ; i < nArrays ; i++)
     {
         SILArrayAttributes *atts = arrays[i]->MakeAttributes();
@@ -1369,7 +1367,7 @@ avtSIL::Print(ostream &out,
         }
     }
 
-    int nColls = collections.size();
+    size_t nColls = collections.size();
     useInfo = perCollInfo.size() == nColls;
     for (i = 0 ; i < nColls ; i++)
     {
@@ -1403,7 +1401,7 @@ avtSIL::FindSet(int iSet, EntryType &outType,
                 int &outLocalIndex,
                 int &outLocalSubIndex) const
 {
-    int min = 0, max = (setTable.size()-1)/3 - 1;
+    int min = 0, max = (static_cast<int>(setTable.size())-1)/3 - 1;
     int mid = (min+max)/2;
 
     while (min <= max)
@@ -1452,7 +1450,7 @@ avtSIL::FindColl(int iColl, EntryType &outType,
                  int &outLocalIndex,
                  int &outLocalSubIndex) const
 {
-    int min = 0, max = (collTable.size()-1)/3 - 1;
+    int min = 0, max = (static_cast<int>(collTable.size())-1)/3 - 1;
     int mid = (min+max)/2;
 
     while (min <= max)

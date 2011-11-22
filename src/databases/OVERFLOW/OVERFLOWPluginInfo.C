@@ -43,6 +43,10 @@
 #include <OVERFLOWPluginInfo.h>
 
 #include <visit-config.h>
+// Don't use VISIT_PLUGIN_VERSION because OVERFLOW is too general a word.
+#ifdef _WIN32
+extern "C"
+#endif
 DBP_EXPORT const char *OVERFLOWVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************

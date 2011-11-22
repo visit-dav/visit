@@ -43,7 +43,7 @@
 #include <Vis5DPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *Vis5DVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Vis5D,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

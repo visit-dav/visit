@@ -44,7 +44,7 @@
 #include <FFTAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *FFTVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(FFT,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

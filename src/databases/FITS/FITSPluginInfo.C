@@ -43,7 +43,7 @@
 #include <FITSPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *FITSVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(FITS,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

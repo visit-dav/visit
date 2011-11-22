@@ -44,7 +44,7 @@
 #include <ProjectAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ProjectVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Project,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

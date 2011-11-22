@@ -3194,7 +3194,7 @@ CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
     }
 
     int ntups = arr->GetNumberOfTuples();
-    int nbins = cha->numVals.size();
+    int nbins = static_cast<int>(cha->numVals.size());
     double min = cha->min;
     double max = cha->max;
     VISIT_LONG_LONG *numVals = &(cha->numVals[0]);

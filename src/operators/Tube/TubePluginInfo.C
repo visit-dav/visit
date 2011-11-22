@@ -44,7 +44,7 @@
 #include <TubeAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *TubeVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Tube,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

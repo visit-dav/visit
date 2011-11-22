@@ -43,7 +43,7 @@
 #include <PlasmaStatePluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *PlasmaStateVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(PlasmaState,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

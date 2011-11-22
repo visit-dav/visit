@@ -43,7 +43,7 @@
 #include <SARPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *SARVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(SAR,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

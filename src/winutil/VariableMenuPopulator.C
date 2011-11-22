@@ -1504,7 +1504,7 @@ VariableMenuPopulator::VariableList::GetNextVariable(std::string &var, bool &val
 int
 VariableMenuPopulator::VariableList::Size() const
 {
-    return sorted ? sortedVariables.size() : unsortedVariableNames.size();
+    return static_cast<int>(sorted ? sortedVariables.size() : unsortedVariableNames.size());
 }
 
 // ****************************************************************************
@@ -1676,7 +1676,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
         // Force grouping to occur for variables in top level of path
         string path, newpath;
         int j;
-        int jmax = (pathvar.size() == 1) ? 1 : (pathvar.size() - 1);
+        int jmax = (pathvar.size() == 1) ? 1 : static_cast<int>(pathvar.size() - 1);
         for (j = 0; j < jmax; j++)
         {
             // If the set of strings at path is greater than the curoff then

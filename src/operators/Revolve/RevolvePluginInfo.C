@@ -44,7 +44,7 @@
 #include <RevolveAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *RevolveVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Revolve,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

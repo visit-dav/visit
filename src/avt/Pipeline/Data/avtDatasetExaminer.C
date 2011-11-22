@@ -780,7 +780,7 @@ avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
     
     // Sum the vector element-wise, placing results in numvals.
     SumLongLongArrayAcrossAllProcessors(&input[0], &(numvals[0]),
-                                        numvals.size());
+                                        static_cast<int>(numvals.size()));
     visitTimer->StopTimer(t2, "Parallel processing of histogram");
     
     return somebodyFailed;

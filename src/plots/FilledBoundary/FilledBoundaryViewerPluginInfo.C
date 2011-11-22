@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtFilledBoundaryPlot.h>
 
-#include <set>
-#include <string>
-#include <vector>
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -421,9 +417,6 @@ FilledBoundaryViewerPluginInfo::XPMIconData() const
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
-
-using std::string;
-using std::set;
 
 void
 FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 

@@ -43,7 +43,7 @@
 #include <XSFPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *XSFVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(XSF,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

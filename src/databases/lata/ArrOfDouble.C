@@ -123,26 +123,27 @@ VDoubledata::VDoubledata(entier size, ArrOfDouble::Storage storage)
     }
     catch(...) {
       Cerr << "impossible d'allouer " << size << " double " << finl;
-      assert(0);
-      ::exit(-1);
+//      assert(0);
+//      ::exit(-1);
     }
 #else
     data_ = new double[size];
     if(!data_) {
       Cerr << "impossible d'allouer " << size << "double " << finl;
-      assert(0);
-      ::exit(-1);
+//      assert(0);
+//      ::exit(-1);
     }
 #endif
     break;
   }
   default:
-    exit(-1);
+    ;
+//    exit(-1);
   }
   ref_count_ = 1;
   size_ = size;
   
-  assert(data_ != 0);
+//  assert(data_ != 0);
 }
 
 // Description:
@@ -211,16 +212,16 @@ inline const double * VDoubledata::get_data() const
 VDoubledata::VDoubledata(const VDoubledata & v)
 {
   Cerr << "Erreur dans VDoubledata::VDoubledata(const VDoubledata & v)" << finl;
-  assert(0);
-  exit(-1);
+//  assert(0);
+//  exit(-1);
 }
 
 // Description: Operateur= interdit. Genere une erreur !
 VDoubledata & VDoubledata::operator=(const VDoubledata & v)
 {
   Cerr << "Erreur dans VDoubledata::operator=(const VDoubledata & v)" << finl;
-  assert(0);
-  exit(-1);
+//  assert(0);
+//  exit(-1);
   return *this;
 }
 

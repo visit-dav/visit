@@ -55,7 +55,7 @@ public:
   Nom(int i) { char s[30]; sprintf(s, "%d", i); s_ = s; }
   operator const char *() const { return s_.c_str(); }
   virtual Nom & operator=(const char * nom) { s_ = nom; return *this; }
-  virtual entier longueur() const { return s_.length()+1; /*ATTENTION: +1 pour compatibilite avec Trio_U*/ }
+  virtual entier longueur() const { return static_cast<entier>(s_.length())+1; /*ATTENTION: +1 pour compatibilite avec Trio_U*/ }
   virtual void read(std::istream & is) { is >> s_; }
   virtual void write(std::ostream & os) const { os << s_; }
   virtual int operator==(const char * s) const { return (s_ == s); }

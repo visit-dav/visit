@@ -43,7 +43,7 @@
 #include <VCellMTMDPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *VCellMTMDVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(VCellMTMD,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

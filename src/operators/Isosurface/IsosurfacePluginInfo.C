@@ -44,7 +44,7 @@
 #include <IsosurfaceAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *IsosurfaceVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Isosurface,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

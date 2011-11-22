@@ -43,7 +43,7 @@
 #include <DDCMDPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *DDCMDVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(DDCMD,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

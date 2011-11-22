@@ -457,7 +457,7 @@ double largest_angle_2(const DoubleTab& coords)
   if (((coords.dimension(0)!=4)&&(coords.dimension(0)!=3))||(coords.dimension(1)!=3))
     {
       Cerr<<" cas nn prevu"<<endl; 
-      Process::exit();
+//      Process::exit();
     }
   int nb_face=coords.dimension(0);
   Vecteur3 normals[4];
@@ -480,7 +480,6 @@ double largest_angle_2(const DoubleTab& coords)
               compteur++;
             }
         }
-      if (compteur!=nb_face-2) abort();
       opp.set(coords(n,0)-coords(prem,0),
               coords(n,1)-coords(prem,1),
               coords(n,2)-coords(prem,2));
@@ -773,7 +772,7 @@ void UserFields::new_fields_metadata(LataFilter & filter,
     case Domain::hexa:      topo_dim = 3; break;
     default:
       cerr << "avtlataFileFormat::PopulateDatabaseMetaData error: unknown element type" << endl;
-      exit(-1);
+//      exit(-1);
     }
     if ((data.dimension_>1)&&(topo_dim!=data.dimension_)) {
       Journal(0)<<"Ajout de la normale"<<endl;

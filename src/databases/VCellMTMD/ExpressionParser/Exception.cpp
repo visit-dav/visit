@@ -107,7 +107,7 @@ void VCell::Exception::rethrowException(Exception& ex, string replacementMessage
     
 static void reverse(char* s)    
 {    
-    int i, j;    
+    size_t i, j;    
     char c;    
     
     for (i = 0, j = strlen(s)-1; i<j; i++, j--) {    

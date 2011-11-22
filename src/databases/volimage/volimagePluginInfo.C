@@ -43,7 +43,7 @@
 #include <volimagePluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *volimageVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(volimage,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

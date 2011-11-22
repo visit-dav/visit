@@ -43,7 +43,7 @@
 #include <TFTPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *TFTVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(TFT,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

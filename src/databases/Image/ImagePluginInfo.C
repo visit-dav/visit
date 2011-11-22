@@ -43,7 +43,7 @@
 #include <ImagePluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *ImageVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Image,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

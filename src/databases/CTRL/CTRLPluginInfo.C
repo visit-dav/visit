@@ -43,7 +43,7 @@
 #include <CTRLPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *CTRLVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(CTRL,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -43,7 +43,7 @@
 #include <Point3DPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *Point3DVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Point3D,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

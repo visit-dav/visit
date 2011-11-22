@@ -43,7 +43,7 @@
 #include <TSurfPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *TSurfVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(TSurf,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

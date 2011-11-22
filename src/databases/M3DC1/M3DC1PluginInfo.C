@@ -43,7 +43,7 @@
 #include <M3DC1PluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *M3DC1VisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(M3DC1,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

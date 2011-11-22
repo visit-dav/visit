@@ -77,7 +77,7 @@ public:
 
     void            PushName(std::string s) {name_stack.push_back(s);} 
     std::string     PopName();
-    int             GetNumNames(void) const { return name_stack.size(); };
+    int             GetNumNames(void) const { return static_cast<int>(name_stack.size()); };
 
     void            SetDataObject(avtDataObject_p d) {dataObject = d;}
     avtDataObject_p GetDataObject() {return dataObject;}

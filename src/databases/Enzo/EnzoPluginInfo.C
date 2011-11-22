@@ -43,7 +43,7 @@
 #include <EnzoPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *EnzoVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Enzo,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

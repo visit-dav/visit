@@ -169,7 +169,7 @@ CXX_strdup(char const * const c)
 inline char *
 CXX_strndup(char const * const c, size_t n)
 {
-    int len = (strlen(c) < n) ? strlen(c) : n;
+    size_t len = (strlen(c) < n) ? strlen(c) : n;
     char *p = new char[len+1];
     memcpy(p, c, len);
     p[len] = '\0';

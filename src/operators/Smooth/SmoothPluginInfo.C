@@ -44,7 +44,7 @@
 #include <SmoothOperatorAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *SmoothVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Smooth,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

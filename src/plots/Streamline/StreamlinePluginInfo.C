@@ -44,7 +44,7 @@
 #include <StreamlineAttributes.h>
 
 #include <visit-config.h>
-PLOT_EXPORT const char *StreamlineVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Streamline,PLOT_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

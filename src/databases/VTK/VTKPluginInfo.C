@@ -43,7 +43,7 @@
 #include <VTKPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *VTKVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(VTK,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

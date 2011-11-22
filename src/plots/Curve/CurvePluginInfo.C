@@ -44,7 +44,7 @@
 #include <CurveAttributes.h>
 
 #include <visit-config.h>
-PLOT_EXPORT const char *CurveVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Curve,PLOT_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

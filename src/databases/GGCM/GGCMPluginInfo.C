@@ -43,7 +43,7 @@
 #include <GGCMPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *GGCMVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(GGCM,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

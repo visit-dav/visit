@@ -1269,8 +1269,8 @@ CreateText(int nstr, const char *const str[])
     double char_base_y = 0.;
     for (int k = 0 ; k < nstr ; k++)
     {
-        int nchars = strlen(str[k]);
-        for (int i = 0 ; i < nchars+1 ; i++)
+        size_t nchars = strlen(str[k]);
+        for (size_t i = 0 ; i < nchars+1 ; i++)
         {
             char ch = ' ';
             if (i < nchars)

@@ -44,7 +44,7 @@
 #include <ElevateAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *ElevateVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Elevate,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -1086,7 +1086,7 @@ avtSILRestrictionTraverser::AddMaterialList(int chunk, MaterialList &l,
     {
         materialListForChunk.push_back(-1);
     }
-    materialListForChunk[chunk] = materialList.size();
+    materialListForChunk[chunk] = static_cast<int>(materialList.size());
     materialList.push_back(l);
     shouldMatSelect.push_back(shouldMatSel);
 }

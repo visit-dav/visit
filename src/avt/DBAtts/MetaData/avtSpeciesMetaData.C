@@ -597,7 +597,7 @@ avtSpeciesMetaData::RemoveSpecies(int index)
 int
 avtSpeciesMetaData::GetNumSpecies() const
 {
-    return species.size();
+    return static_cast<int>(species.size());
 }
 
 // ****************************************************************************

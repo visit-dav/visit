@@ -258,8 +258,8 @@ avtSILMatrix::Print(ostream &out) const
 avtSILSet_p
 avtSILMatrix::GetSILSet(int index) const
 {
-    int row    = index / set2.size();
-    int column = index % set2.size();
+    int row    = index / static_cast<int>(set2.size());
+    int column = index % static_cast<int>(set2.size());
 
     avtSILSet_p s1 = sil->GetSILSet(set1[row]);
     avtSILSet_p s2 = sil->GetSILSet(set2[column]);
@@ -269,7 +269,7 @@ avtSILMatrix::GetSILSet(int index) const
     avtSILSet_p rv = new avtSILSet(name, s1->GetIdentifier());
 
     rv->AddMapIn(collectionsStartAt+row);
-    rv->AddMapIn(collectionsStartAt+set1.size()+column);
+    rv->AddMapIn(collectionsStartAt+static_cast<int>(set1.size())+column);
 
     return rv;
 }
@@ -289,7 +289,7 @@ avtSILMatrix::GetSILSet(int index) const
 int
 avtSILMatrix::GetSILSetID(int index) const
 {
-    int row = index / set2.size();
+    size_t row = index / set2.size();
     return sil->GetSILSetID(set1[row]);
 }
 
@@ -324,13 +324,13 @@ avtSILMatrix::GetSILCollection(int index) const
         vector<int> s;
         for (int i = 0 ; i < set2.size() ; i++)
         {
-            s.push_back(setsStartAt + row*set2.size() + i);
+            s.push_back(setsStartAt + row*static_cast<int>(set2.size()) + i);
         }
         ens = new avtSILEnumeratedNamespace(s);
     }
     else
     {
-        int column = index - set1.size();
+        int column = index - static_cast<int>(set1.size());
 
         topset = set2[column];
         name = category1;
@@ -375,8 +375,8 @@ avtSILMatrix::GetSetState(const vector<unsigned char> &useSet, int index) const
     int AllUsedCount = 0;
     int AllUsedOtherProcCount = 0;
 
-    int set1size = set1.size();
-    int set2size = set2.size();
+    int set1size = static_cast<int>(set1.size());
+    int set2size = static_cast<int>(set2.size());
 
     if (index < set1size)
     {
@@ -452,8 +452,8 @@ bool
 avtSILMatrix::GetMaterialList(int index, MaterialList &matlist, 
                               const vector<unsigned char> &useSet) const
 {
-    int set1size = set1.size();
-    int set2size = set2.size();
+    int set1size = static_cast<int>(set1.size());
+    int set2size = static_cast<int>(set2.size());
 
     int usedOne = 0;
     int didntUseOne = 0;
@@ -531,8 +531,8 @@ void
 avtSILMatrix::TurnSet(vector<unsigned char> &useSet, int index, 
                       SetState val, bool forLoadBalance) const
 {
-    int set1size = set1.size();
-    int set2size = set2.size();
+    int set1size = static_cast<int>(set1.size());
+    int set2size = static_cast<int>(set2.size());
 
     if (index < set1size)
     {
@@ -585,7 +585,7 @@ avtSILMatrix::TurnSet(vector<unsigned char> &useSet, int index,
 int
 avtSILMatrix::GetNumSets(void) const
 {
-    return set1.size()*set2.size();
+    return static_cast<int>(set1.size()*set2.size());
 }
 
 
@@ -603,7 +603,7 @@ avtSILMatrix::GetNumSets(void) const
 int
 avtSILMatrix::GetNumCollections(void) const
 {
-    return set1.size()+set2.size();
+    return static_cast<int>(set1.size()+set2.size());
 }
 
 
@@ -641,14 +641,14 @@ avtSILMatrix::SetIsInCollection(int set) const
     if (set2IsSequential)
     {
         if (set2[0] <= set && set < set2[0]+set2.size())
-            return (GetStartCollection() + set1.size() + set - set2[0]);
+            return (GetStartCollection() + static_cast<int>(set1.size()) + set - set2[0]);
     }
     else
     {
         for (ii = 0; ii < set2.size(); ii++)
         {
             if (set2[ii] == set)
-                return (GetStartCollection() + set1.size() + ii);
+                return (GetStartCollection() + static_cast<int>(set1.size()) + ii);
         }
     }
     return -1;

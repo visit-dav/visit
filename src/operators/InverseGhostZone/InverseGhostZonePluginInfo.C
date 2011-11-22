@@ -44,7 +44,7 @@
 #include <InverseGhostZoneAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *InverseGhostZoneVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(InverseGhostZone,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

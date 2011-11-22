@@ -158,7 +158,7 @@ void Octree_Double::build_nodes(const DoubleTab & coords, const entier include_v
       const double x = coords(i, j);
       if (!integer_position(x, j, pos1)) {
         Cerr << "Fatal error in octree : integer position outside octree" << finl;
-        Process::exit();
+//        Process::exit();
       }
       elements_boxes(i, j) = pos1;
     }
@@ -194,7 +194,7 @@ void Octree_Double::build_elements(const DoubleTab & coords, const IntTab & elem
       entier pos1 = 0, pos2 = 0;
       if (!integer_position(xmin, j, pos1) || !integer_position(xmax, j, pos2)) {
         Cerr << "Fatal error in octree : integer position outside octree" << finl;
-        Process::exit();
+//        Process::exit();
       }
       elements_boxes(i, j) = pos1;
       elements_boxes(i, j+dim) = pos2;

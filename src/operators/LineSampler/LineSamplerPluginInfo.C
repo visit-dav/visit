@@ -44,7 +44,7 @@
 #include <LineSamplerAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *LineSamplerVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(LineSampler,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

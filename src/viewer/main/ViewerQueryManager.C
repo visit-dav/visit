@@ -3210,7 +3210,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     int timeCurve = 0;
     if (queryParams.HasEntry("do_time"))
         timeCurve = queryParams.GetEntry("do_time")->AsInt();
-    timeCurve |= pickAtts->GetDoTimeCurve(); 
+    timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0); 
 
     int curvePlotType = 0;
     if (queryParams.HasEntry("curve_plot_type"))

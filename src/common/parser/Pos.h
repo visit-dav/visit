@@ -115,7 +115,7 @@ class PARSER_API Pos
     std::string GetText(const std::string &s) const
     {
         std::string msg = "";
-        int slen = s.length();
+        size_t slen = s.length();
         if (slen < p1 || slen < p2 || p1 < 0)
             return msg;
         msg = s.substr(p1, p2-p1+1);

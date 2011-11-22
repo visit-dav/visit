@@ -44,7 +44,7 @@
 #include <DisplaceAttributes.h>
 
 #include <visit-config.h>
-OP_EXPORT const char *DisplaceVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(Displace,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

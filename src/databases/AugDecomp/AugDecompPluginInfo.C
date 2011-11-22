@@ -43,7 +43,7 @@
 #include <AugDecompPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *AugDecompVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(AugDecomp,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

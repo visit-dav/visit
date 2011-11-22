@@ -40,8 +40,6 @@ __IntOnlyEnd__
 #include <iostream>
 #include <stdlib.h>
 
-using namespace std;
-
 // ******************************************************************
 //
 //             Implementation des methodes de V__Scalar__data
@@ -128,26 +126,27 @@ V__Scalar__data::V__Scalar__data(entier size, ArrOf__Scalar__::Storage storage)
     }
     catch(...) {
       Cerr << "impossible d'allouer " << size << " __scalar__ " << finl;
-      assert(0);
-      ::exit(-1);
+//      assert(0);
+//      ::exit(-1);
     }
 #else
     data_ = new __scalar__[size];
     if(!data_) {
       Cerr << "impossible d'allouer " << size << "__scalar__ " << finl;
-      assert(0);
-      ::exit(-1);
+//      assert(0);
+//      ::exit(-1);
     }
 #endif
     break;
   }
   default:
-    exit(-1);
+    ;
+//    exit(-1);
   }
   ref_count_ = 1;
   size_ = size;
   
-  assert(data_ != 0);
+//  assert(data_ != 0);
 }
 
 // Description:
@@ -216,16 +215,16 @@ inline const __scalar__ * V__Scalar__data::get_data() const
 V__Scalar__data::V__Scalar__data(const V__Scalar__data & v)
 {
   Cerr << "Erreur dans V__Scalar__data::V__Scalar__data(const V__Scalar__data & v)" << finl;
-  assert(0);
-  exit(-1);
+//  assert(0);
+//  exit(-1);
 }
 
 // Description: Operateur= interdit. Genere une erreur !
 V__Scalar__data & V__Scalar__data::operator=(const V__Scalar__data & v)
 {
   Cerr << "Erreur dans V__Scalar__data::operator=(const V__Scalar__data & v)" << finl;
-  assert(0);
-  exit(-1);
+//  assert(0);
+//  exit(-1);
   return *this;
 }
 

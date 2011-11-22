@@ -44,7 +44,7 @@
 #include <FilledBoundaryAttributes.h>
 
 #include <visit-config.h>
-PLOT_EXPORT const char *FilledBoundaryVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(FilledBoundary,PLOT_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

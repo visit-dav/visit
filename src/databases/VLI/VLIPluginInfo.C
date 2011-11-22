@@ -43,7 +43,7 @@
 #include <VLIPluginInfo.h>
 
 #include <visit-config.h>
-DBP_EXPORT const char *VLIVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(VLI,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

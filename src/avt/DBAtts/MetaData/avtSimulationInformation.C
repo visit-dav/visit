@@ -816,7 +816,7 @@ avtSimulationInformation::RemoveGenericCommands(int index)
 int
 avtSimulationInformation::GetNumGenericCommands() const
 {
-    return genericCommands.size();
+    return static_cast<int>(genericCommands.size());
 }
 
 // ****************************************************************************
@@ -967,7 +967,7 @@ avtSimulationInformation::RemoveCustomCommands(int index)
 int
 avtSimulationInformation::GetNumCustomCommands() const
 {
-    return customCommands.size();
+    return static_cast<int>(customCommands.size());
 }
 
 // ****************************************************************************
