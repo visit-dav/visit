@@ -40,6 +40,11 @@
 #   are grouped by name in VisualStudio for ease of building/debugging
 #   individual plugins.
 #
+#   Kathleen Biagas, Tue Nov 22 14:37:17 MST 2011
+#   Remove VISIT_PLUGIN_TARGET_PREFIX in favor of VISIT_PLUGIN_TARGET_RTOD
+#   which sets runtime output directory, which works with all versions of
+#   Visual Studio, while the target prefix version didn't work with 2010.
+#
 #****************************************************************************/
 
 
@@ -111,11 +116,20 @@ MACRO(VISIT_INSTALL_PLOT_PLUGINS)
     VISIT_INSTALL_PLUGINS(plots ${ARGN})
 ENDMACRO(VISIT_INSTALL_PLOT_PLUGINS)
 
-MACRO(VISIT_PLUGIN_TARGET_PREFIX) 
+MACRO(VISIT_PLUGIN_TARGET_RTOD type) 
     IF(WIN32)
-        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES PREFIX "../lib")
+        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES 
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE
+                "${VISIT_EXECUTABLE_DIRECTORY}/${type}"
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG
+                "${VISIT_EXECUTABLE_DIRECTORY}/${type}"
+            RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
+                "${VISIT_EXECUTABLE_DIRECTORY}/${type}"
+            RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL
+                "${VISIT_EXECUTABLE_DIRECTORY}/${type}"
+        )
     ENDIF(WIN32)
-ENDMACRO(VISIT_PLUGIN_TARGET_PREFIX)
+ENDMACRO(VISIT_PLUGIN_TARGET_RTOD)
 
 MACRO(VISIT_PLUGIN_TARGET_FOLDER type pname) 
     SET_TARGET_PROPERTIES(${ARGN} PROPERTIES FOLDER "plugins/${type}/${pname}")

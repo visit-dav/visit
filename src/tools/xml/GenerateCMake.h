@@ -131,6 +131,9 @@
 //    Add plugin name to VISIT_PLUGIN_TARGET_FOLDER args. Eases building/
 //    debugging individual plugins with Visual Studio when grouped by name.
 //
+//    Kathleen Biagas, Tue Nov 22 14:39:51 PST 2011
+//    Remove VISIT_PLUGIN_TARGET_PREFIX in favor of VISIT_PLUGIN_TARGET_RUNTIME.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -536,7 +539,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "ENDIF(VISIT_PARALLEL)" << endl;
         out << endl;
         out << "VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_RTOD(plots ${INSTALLTARGETS})" << endl;
         if (using_dev)
           out << "VISIT_PLUGIN_TARGET_FOLDER(plots " << name  
               << " ${INSTALLTARGETS})" << endl;
@@ -732,7 +735,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "ENDIF(VISIT_PARALLEL)" << endl;
         out << endl;
         out << "VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_RTOD(operators ${INSTALLTARGETS})" << endl;
         if (using_dev)
           out << "VISIT_PLUGIN_TARGET_FOLDER(operators " << name 
               << " ${INSTALLTARGETS})" << endl;
@@ -970,7 +973,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << endl;
         }
         out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_RTOD(databases ${INSTALLTARGETS})" << endl;
         if (using_dev)
           out << "VISIT_PLUGIN_TARGET_FOLDER(databases " << name 
               << " ${INSTALLTARGETS})" << endl;
