@@ -263,6 +263,8 @@ export DO_VERBOSE="no"
 export ON_VERBOSE="off"
 export DO_JAVA="no"
 export ON_JAVA="off"
+export DO_FORTRAN="no"
+export ON_FORTRAN="off"
 export DO_SLIVR="no"
 export ON_SLIVR="off"
 export PREVENT_ICET="no"
@@ -568,6 +570,7 @@ for arg in "${arguments[@]}" ; do
         --download-only) DOWNLOAD_ONLY="yes";;
         --flags-debug) next_arg="flags-debug";;
         --gdal) DO_GDAL="yes"; ON_GDAL="on";;
+        --fortran) DO_FORTRAN="yes"; ON_FORTRAN="on";;
         --group) next_arg="group"; DO_GROUP="yes"; ON_GROUP="on";;
         -h|--help) next_action="help";;
         --java) DO_JAVA="yes"; ON_JAVA="on";;
@@ -672,10 +675,11 @@ if [[ "$OPSYS" == "AIX" ]]; then
     fi
 fi
 
-# Disable fortran support if a fortran compiler was not specified or found.
-if [[ $FC_COMPILER == "" ]]; then
+# Disable fortran support unless --fortran specified and a fortran compiler
+# was specified or found.
+if [[ $DO_FORTRAN == "no" || $FC_COMPILER == "" ]]; then
     export FC_COMPILER="no";
-    warn "FC_COMPILER not set: Fortran support for thirdparty libraries disabled."
+    warn "Fortran support for thirdparty libraries disabled."
 fi
 
 # Show a splashscreen. This routine also determines if we have "dialog"
@@ -735,6 +739,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
            "Parallel"   "specify parallel build flags"    $ON_parallel\
            "Python"     "enable VisIt python module"      $ON_MODULE\
            "Java"       "enable java client library"      $ON_JAVA\
+           "Fortran"    "enable fortran in third party libraries"  $ON_FORTRAN\
            "SLIVR"      "enable SLIVR volume rendering library"  $ON_SLIVR\
            "EnvVars"     "specify build environment var values"   $ON_verify\
            "Advanced"   "display advanced options"        $ON_MORE  2> tmp$$
@@ -751,6 +756,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
         parallel="no"
         DO_MODULE="no"
         DO_JAVA="no"
+        DO_FORTRAN="no"
         DO_SLIVR="no"
         verify="no"
         DO_MORE="no"
@@ -775,6 +781,8 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
                  DO_MODULE="yes";;
               Java)
                  DO_JAVA="yes";;
+              Fortran)
+                 DO_FORTRAN="yes";;
               SLIVR)
                  DO_SLIVR="yes";;
               EnvVars)
