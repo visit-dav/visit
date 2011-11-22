@@ -274,12 +274,6 @@ function bv_write_unified_file
         cat "${bv_PREFIX}/bv_${optlibs[$i]}.sh" >> $OUTPUT_bv_FILE
     done
 
-    for (( i = 0; i < ${#optlibs[*]}; ++i ))
-    do
-        echo "optlibs[$i]=\"${optlibs[$i]}\"" >> $OUTPUT_bv_FILE
-        cat "${bv_PREFIX}/bv_${optlibs[$i]}.sh" >> $OUTPUT_bv_FILE
-    done
-
     #write out all grouped variables..
     for (( i = 0; i < ${#thirdpartylibs[*]}; ++i ))
     do
