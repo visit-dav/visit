@@ -842,6 +842,31 @@ SumDoubleArrayAcrossAllProcessors(double *inArray, double *outArray,int nArray)
 
 
 // ****************************************************************************
+// Function:  SumDoubleArray
+//
+// Purpose:
+//   Sum an array across all procs, and leave result on process 0.
+//
+// Programmer:  Dave Pugmire
+// Creation:    November 23, 2011
+//
+// ****************************************************************************
+
+
+void
+SumDoubleArray(double *inArray, double *outArray, int nArray)
+{
+#ifdef PARALLEL
+    MPI_Reduce(inArray, outArray, nArray, MPI_DOUBLE, MPI_SUM, 0,
+                  VISIT_MPI_COMM);
+#else
+    memcpy(outArray, inArray, nArray*sizeof(double));
+#endif
+}
+
+
+
+// ****************************************************************************
 //  Function: SumFloatArrayAcrossAllProcessors
 //
 //  Purpose:
@@ -872,6 +897,29 @@ SumFloatArrayAcrossAllProcessors(float *inArray, float *outArray, int nArray)
     {
         outArray[i] = inArray[i];
     }
+#endif
+}
+
+// ****************************************************************************
+// Function:  SumFloatArray
+//
+// Purpose:
+//   Sum an array across all procs, and leave result on process 0.
+//
+// Programmer:  Dave Pugmire
+// Creation:    November 23, 2011
+//
+// ****************************************************************************
+
+
+void
+SumFloatArray(float *inArray, float *outArray, int nArray)
+{
+#ifdef PARALLEL
+    MPI_Reduce(inArray, outArray, nArray, MPI_FLOAT, MPI_SUM, 0,
+                  VISIT_MPI_COMM);
+#else
+    memcpy(outArray, inArray, nArray*sizeof(float));
 #endif
 }
 
