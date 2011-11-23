@@ -1725,16 +1725,17 @@ if ( ($parallel) and $exe_name eq "engine" and ($host eq "saguaro1.local" or $ho
 $IsRunningOnRanger_TACC = 0;
 $IsRunningOnSpur_TACC = 0;
 $IsRunningOnLonghorn_TACC = 0;
+$IsRunningOnLonestar_TACC = 0;
 # Hostnames are of the form spur.tacc.utexas.edu, (vis*|login#).ranger.tacc.utexas.edu
-if ( ($parallel) and $exe_name eq "engine" and (($host =~ /spur.tacc/) or ($host =~ /ranger.tacc/) or ($host =~ /longhorn/)))
+if ( ($parallel) and $exe_name eq "engine" and (($host =~ /tacc/) or ($host =~ /longhorn/)))
 {
     $IsRunningOnRanger_TACC = 1;
     $IsRunningOnSpur_TACC = 1 if $part =~ /vis/ ;  # determine machine by queue, since all jobs submit from spur
     $IsRunningOnLonghorn_TACC = 1 if $host =~ /longhorn/ ;  # determine machine by queue, since all jobs submit from spur
+    $IsRunningOnLonestar_TACC = 1 if $host =~ /ls4/ ;  # determine machine by queue, since all jobs submit from spur
     print STDERR "\n\nAttempting to launch parallel engine at TACC\n";
     print STDERR "For more information about TACC resources and configurations, see:\n";
-    print STDERR "\thttp://services.tacc.utexas.edu/index.php/ranger-user-guide\n";
-    print STDERR "\thttp://services.tacc.utexas.edu/index.php/spur-user-guide\n\n";
+    print STDERR "\thttp://www.tacc.utexas.edu/user-services/user-guides\n\n";
 
     # if launching from spur visnode to ranger, prepend 'i' to visnode hostname to get IB interface
     $remotehost = "i".$remotehost if ($remotehost =~ /vis([0-9]|big).ranger/) and ($remotehost !~ /^i/);
@@ -3345,6 +3346,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 if ($IsRunningOnLonghorn_TACC)
                 {
                    $thread_factor=8;
+                }
+                if ($IsRunningOnLonestar_TACC)
+                {
+                   $thread_factor=12;
                 }
                 if ($nodes_set) 
                 { $tacc_way = $ppn; $tacc_procs = $thread_factor*$nodes; }
