@@ -120,13 +120,13 @@ MACRO(VISIT_PLUGIN_TARGET_RTOD type)
     IF(WIN32)
         SET_TARGET_PROPERTIES(${ARGN} PROPERTIES 
             RUNTIME_OUTPUT_DIRECTORY_RELEASE
-                "${VISIT_EXECUTABLE_DIRECTORY}/${type}"
+                "${VISIT_EXECUTABLE_DIR}/${type}"
             RUNTIME_OUTPUT_DIRECTORY_DEBUG
-                "${VISIT_EXECUTABLE_DIRECTORY}/${type}"
+                "${VISIT_EXECUTABLE_DIR}/${type}"
             RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
-                "${VISIT_EXECUTABLE_DIRECTORY}/${type}"
+                "${VISIT_EXECUTABLE_DIR}/${type}"
             RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL
-                "${VISIT_EXECUTABLE_DIRECTORY}/${type}"
+                "${VISIT_EXECUTABLE_DIR}/${type}"
         )
     ENDIF(WIN32)
 ENDMACRO(VISIT_PLUGIN_TARGET_RTOD)
