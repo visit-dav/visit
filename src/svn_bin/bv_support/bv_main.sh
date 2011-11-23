@@ -545,6 +545,11 @@ for arg in "${arguments[@]}" ; do
                echo "disabling ${resolve_arg_no_opt}"
                initializeFunc="bv_${resolve_arg_no_opt}_disable"
                $initializeFunc
+               #if disabling icet, prevent it as well
+               if [[ ${resolve_arg_no_opt} == "icet" ]]; then
+                   echo "preventing icet from starting"
+                   PREVENT_ICET="yes"
+               fi
                continue
            fi
        fi
@@ -577,7 +582,6 @@ for arg in "${arguments[@]}" ; do
         --makeflags) next_arg="makeflags";;
         --no-thirdparty) DO_REQUIRED_THIRD_PARTY="no"; ON_THIRD_PARTY="off";;
         --no-hostconf) DO_HOSTCONF="no"; ON_HOSTCONF="off";;
-        --no-icet) PREVENT_ICET="yes";;
         --parallel) parallel="yes"; DO_ICET="yes"; ON_parallel="ON";;
         --print-vars) next_action="print-vars";;
         --python-module) DO_MODULE="yes"; ON_MODULE="on";;
