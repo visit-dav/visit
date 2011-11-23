@@ -1150,7 +1150,7 @@ IF(VISIT_PARALLEL)
                     LIST(APPEND VPFLAGS "${MPI_COMPILE_FLAGS}")
                 ENDIF(MPI_COMPILE_FLAGS)
                 IF(MPI_INCLUDE_PATH)
-                    LIST(APPEND VPFLAGS "/I \"${MPI_INCLUDE_PATH}\"")
+                    LIST(APPEND VPFLAGS "/I\"${MPI_INCLUDE_PATH}\"")
                 ENDIF(MPI_INCLUDE_PATH)
                 STRING(REPLACE ";" " " VPFLAGS "${VPFLAGS}")
                 SET(VISIT_PARALLEL_CFLAGS "${VPFLAGS}" 
