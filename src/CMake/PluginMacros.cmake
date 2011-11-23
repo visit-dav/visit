@@ -69,7 +69,7 @@ MACRO(VISIT_INSTALL_PLUGINS type)
             # below.  Then during install, ${BUILD_TYPE} will be expanded.
             FOREACH(target ${ARGN})
                 IF(MSVC_IDE)
-                  SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/${type}/lib${target}.dll")
+                  SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/${type}/${target}.dll")
                   INSTALL(FILES ${filename}
                     DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
                     COMPONENT RUNTIME
@@ -79,7 +79,7 @@ MACRO(VISIT_INSTALL_PLUGINS type)
                     CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                   )
                 ELSE()  # For no IDE, installed straight into exe
-                  SET(filename "${VISIT_BINARY_DIR}/exe/lib${target}.dll")
+                  SET(filename "${VISIT_BINARY_DIR}/exe/${target}.dll")
                   INSTALL(FILES ${filename}
                     DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
                     COMPONENT RUNTIME
