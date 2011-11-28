@@ -69,10 +69,7 @@
 #include <avtMFIXOptions.h>
 #include <avtMaterial.h>
 #include <avtVariableCache.h>
-
-#ifdef PARALLEL
 #include <avtParallel.h>
-#endif
 
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
@@ -109,17 +106,22 @@ avtMFIXFileFormat::avtMFIXFileFormat(const char *filename,
     readInformation = false;
     fileBigEndian = true;
     setupCompleteFlag = false;
-    numDomainsPerProc = DEF_N_DOMAINS_PER_PROC;
     GSB_currentFname = NULL;
     GSB_file = NULL;
-    for (int i = 0; rdopts != 0 && i < rdopts->GetNumberOfOptions(); ++i) {
-        if (rdopts->GetName(i) == "Big Endian")
-            fileBigEndian = rdopts->GetBool("Big Endian");
-        else if (rdopts->GetName(i) == N_DOMAINS_PER_PROC)
-            numDomainsPerProc = rdopts->GetInt(N_DOMAINS_PER_PROC);
-    }
 
-    this->numXDomains= this->numYDomains= this->numZDomains= 0; // initialize once array dims are known
+    numXDomains = DEF_N_X_DOMAINS;
+    numYDomains = DEF_N_Y_DOMAINS;
+    numZDomains = DEF_N_Z_DOMAINS;
+    for (int i = 0; rdopts != 0 && i < rdopts->GetNumberOfOptions(); ++i) {
+      if (rdopts->GetName(i) == "Big Endian")
+          fileBigEndian = rdopts->GetBool("Big Endian");
+      if (rdopts->GetName(i) == N_X_DOMAINS)
+          numXDomains = rdopts->GetInt(N_X_DOMAINS);
+      if (rdopts->GetName(i) == N_Y_DOMAINS)
+          numYDomains = rdopts->GetInt(N_Y_DOMAINS);
+      if (rdopts->GetName(i) == N_Z_DOMAINS)
+          numZDomains = rdopts->GetInt(N_Z_DOMAINS);
+    }
 
     // The following is imported from vtkMFIXReader.
 
@@ -291,49 +293,49 @@ avtMFIXFileFormat::GetTimes(doubleVector &t)
 }
 
 
-void
-avtMFIXFileFormat::CalcDomainBreakdown2D(long targetDomains,
-    int cellsX, int cellsY, int* nX, int* nY)
-{
-    long totalCells= cellsX*cellsY;
-    double approxCellsPerDomain= (double)totalCells/targetDomains;
-    double approxCellsPerEdge= sqrt(approxCellsPerDomain);
-    if (approxCellsPerEdge>cellsX) approxCellsPerEdge= (double)cellsX;
-    if (approxCellsPerEdge>cellsY) approxCellsPerEdge= (double)cellsY;
-    if (cellsX>=cellsY) {
-        *nY= (int)rint(cellsY/approxCellsPerEdge);
-        *nX= (int)rint((double)targetDomains/(*nY));
-    }
-    else {
-        *nX= (int)rint(cellsX/approxCellsPerEdge);
-        *nY= (int)rint((double)targetDomains/(*nX));
-    }
-}
+// void
+// avtMFIXFileFormat::CalcDomainBreakdown2D(long targetDomains,
+//     int cellsX, int cellsY, int* nX, int* nY)
+// {
+//     long totalCells= cellsX*cellsY;
+//     double approxCellsPerDomain= (double)totalCells/targetDomains;
+//     double approxCellsPerEdge= sqrt(approxCellsPerDomain);
+//     if (approxCellsPerEdge>cellsX) approxCellsPerEdge= (double)cellsX;
+//     if (approxCellsPerEdge>cellsY) approxCellsPerEdge= (double)cellsY;
+//     if (cellsX>=cellsY) {
+//         *nY= (int)rint(cellsY/approxCellsPerEdge);
+//         *nX= (int)rint((double)targetDomains/(*nY));
+//     }
+//     else {
+//         *nX= (int)rint(cellsX/approxCellsPerEdge);
+//         *nY= (int)rint((double)targetDomains/(*nX));
+//     }
+// }
 
-void
-avtMFIXFileFormat::CalcDomainBreakdown3D(long targetDomains,
-    int cellsX, int cellsY, int cellsZ, int* nX, int* nY, int* nZ)
-{
-    long totalCells= cellsX*cellsY*cellsZ;
-    double approxCellsPerDomain= (double)totalCells/targetDomains;
-    debug5 << "Calculating domain sizes in 3D" << endl;
-    debug5 << "cellsX " << cellsX << " cellsY " << cellsY << " cellsZ " << cellsZ << " totalCells " << totalCells << endl;
-    double approxCellsPerEdge= cbrt(approxCellsPerDomain);
-    debug5 << "approxCellsPerDomain " << approxCellsPerDomain << " approxCellsPerEdge " << approxCellsPerEdge << endl;
-    int zTargetDomains= (int)rint((double)cellsZ/approxCellsPerEdge);
-    debug5 << "zTargetDomains " << zTargetDomains << endl;
-    if (zTargetDomains<1) zTargetDomains= 1;
-    int inPlaneTargetDomains= (int)rint((double)targetDomains/(double)zTargetDomains);
-    debug5 << "inPlaneTargetDomains " << inPlaneTargetDomains << endl;
-    CalcDomainBreakdown2D(inPlaneTargetDomains, cellsX, cellsY, nX, nY);
-    debug5 << "nX " << *nX << " nY " << *nY << endl;
-    *nZ= (int)rint((double)targetDomains/(*nX * *nY));
-    debug5 << "initial nZ " << *nZ << endl;
-    if (*nZ<1) *nZ= 1;
-    if (*nZ>cellsZ) *nZ= cellsZ;
-    debug5 << "nZ " << *nZ << endl;
+// void
+// avtMFIXFileFormat::CalcDomainBreakdown3D(long targetDomains,
+//     int cellsX, int cellsY, int cellsZ, int* nX, int* nY, int* nZ)
+// {
+//     long totalCells= cellsX*cellsY*cellsZ;
+//     double approxCellsPerDomain= (double)totalCells/targetDomains;
+//     debug5 << "Calculating domain sizes in 3D" << endl;
+//     debug5 << "cellsX " << cellsX << " cellsY " << cellsY << " cellsZ " << cellsZ << " totalCells " << totalCells << endl;
+//     double approxCellsPerEdge= cbrt(approxCellsPerDomain);
+//     debug5 << "approxCellsPerDomain " << approxCellsPerDomain << " approxCellsPerEdge " << approxCellsPerEdge << endl;
+//     int zTargetDomains= (int)rint((double)cellsZ/approxCellsPerEdge);
+//     debug5 << "zTargetDomains " << zTargetDomains << endl;
+//     if (zTargetDomains<1) zTargetDomains= 1;
+//     int inPlaneTargetDomains= (int)rint((double)targetDomains/(double)zTargetDomains);
+//     debug5 << "inPlaneTargetDomains " << inPlaneTargetDomains << endl;
+//     CalcDomainBreakdown2D(inPlaneTargetDomains, cellsX, cellsY, nX, nY);
+//     debug5 << "nX " << *nX << " nY " << *nY << endl;
+//     *nZ= (int)rint((double)targetDomains/(*nX * *nY));
+//     debug5 << "initial nZ " << *nZ << endl;
+//     if (*nZ<1) *nZ= 1;
+//     if (*nZ>cellsZ) *nZ= cellsZ;
+//     debug5 << "nZ " << *nZ << endl;
 
-}
+// }
 
 
 // ****************************************************************************
@@ -360,13 +362,8 @@ avtMFIXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     if (!readInformation)
         ReadInformation();
 
-#ifdef PARALLEL
     par_size = PAR_Size();
     par_rank = PAR_Rank();
-#else
-    par_size = 1;
-    par_rank = 0;
-#endif
 
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "Mesh";
@@ -377,18 +374,12 @@ avtMFIXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     if (this->KMaximum2==1) {
         mesh->topologicalDimension = 2;
         mesh->spatialDimension = 2;
-        CalcDomainBreakdown2D(this->numDomainsPerProc * par_size,
-            this->IMaximum2, this->JMaximum2,
-            &(this->numXDomains), &(this->numYDomains));
         this->numZDomains= 1;
         mesh->numBlocks = this->numXDomains * this->numYDomains;
     }
     else {
         mesh->topologicalDimension = 3;
         mesh->spatialDimension = 3;
-        CalcDomainBreakdown3D(this->numDomainsPerProc * par_size,
-            this->IMaximum2, this->JMaximum2, this->KMaximum2,
-            &(this->numXDomains), &(this->numYDomains), &(this->numZDomains));
         mesh->numBlocks =
         this->numXDomains * this->numYDomains * this->numZDomains;
     }
@@ -880,9 +871,9 @@ avtMFIXFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
             double theta = 0.0; // cell center
             for (int j=0; j<widths[1]+2; j++) {
                 for (int i=0; i<widths[0]+2; i++) {
-                    float vx = (xdata[arrayOff]*cos(theta))-(zdata[i]*sin(theta));
+                    float vx = (xdata[arrayOff]*cos(theta))-(zdata[arrayOff]*sin(theta));
                     float vy = ydata[arrayOff];
-                    float vz = (xdata[arrayOff]*sin(theta))+(zdata[i]*cos(theta));
+                    float vz = (xdata[arrayOff]*sin(theta))+(zdata[arrayOff]*cos(theta));
                     *runner++ = vx;
                     *runner++ = vy;
                     *runner++ = vz;
@@ -898,9 +889,9 @@ avtMFIXFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
                 double theta = 0.5*(thetaLow+thetaHigh); // cell center
                 for (int j=0; j<widths[1]+2; j++) {
                     for (int i=0; i<widths[0]+2; i++) {
-                        float vx = (xdata[arrayOff]*cos(theta))-(zdata[i]*sin(theta));
+                        float vx = (xdata[arrayOff]*cos(theta))-(zdata[arrayOff]*sin(theta));
                         float vy = ydata[arrayOff];
-                        float vz = (xdata[arrayOff]*sin(theta))+(zdata[i]*cos(theta));
+                        float vz = (xdata[arrayOff]*sin(theta))+(zdata[arrayOff]*cos(theta));
                         *runner++ = vx;
                         *runner++ = vy;
                         *runner++ = vz;
@@ -1659,30 +1650,30 @@ avtMFIXFileFormat::BuildMesh(int xDomain, int yDomain, int zDomain)
             for (int j =0; j<widths[1]+2; j++) {
                 int i = 0;
                 int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                buf[index] = xLeftGhost;
+                buf[index] |= xLeftGhost;
                 i = widths[0]+1;
                 index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                buf[index] = xRightGhost;
+                buf[index] |= xRightGhost;
             }
 
         for (int k =0; k<widths[2]+2; k++)
             for (int i =0; i<widths[0]+2; i++) {
                 int j = 0;
                 int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                if (buf[index]!=vExternalGhost) buf[index] = yLeftGhost;
+                buf[index] |= yLeftGhost;
                 j = widths[1]+1;
                 index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                if (buf[index]!=vExternalGhost) buf[index] = yRightGhost;
+                buf[index] |= yRightGhost;
             }
 
         for (int j =0; j<widths[1]+2; j++)
             for (int i =0; i<widths[0]+2; i++) {
                 int k = 0;
                 int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                if (buf[index]!=vExternalGhost) buf[index] = zLeftGhost;
+                buf[index] |= zLeftGhost;
                 k = widths[2]+1;
                 index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                if (buf[index]!=vExternalGhost) buf[index] = zRightGhost;
+                buf[index] |= zRightGhost;
             }
         rgrid->GetCellData()->AddArray(ghostCells);
         ghostCells->Delete(); // held alive by ref count
@@ -1735,19 +1726,19 @@ avtMFIXFileFormat::BuildMesh(int xDomain, int yDomain, int zDomain)
         for (int j =0; j<widths[1]+2; j++) {
             int i = 0;
             int index = (j)*(widths[0]+2)+i;
-            buf[index] = xLeftGhost;
+            buf[index] |= xLeftGhost;
             i = widths[0]+1;
             index = (j)*(widths[0]+2)+i;
-            buf[index] = xRightGhost;
+            buf[index] |= xRightGhost;
         }
 
         for (int i =0; i<widths[0]+2; i++) {
             int j = 0;
             int index = (j)*(widths[0]+2)+i;
-            if (buf[index]!=vExternalGhost) buf[index] = yLeftGhost;
+            buf[index] |= yLeftGhost;
             j = widths[1]+1;
             index = (j)*(widths[0]+2)+i;
-            if (buf[index]!=vExternalGhost) buf[index] = yRightGhost;
+            buf[index] |= yRightGhost;
         }
 
         rgrid->GetCellData()->AddArray(ghostCells);
@@ -1784,7 +1775,7 @@ avtMFIXFileFormat::BuildMesh(int xDomain, int yDomain, int zDomain)
             for (int i =0; i<widths[0]+3; i++) {
                 double r = coords[0]->GetValue(i);
                 double y = coords[1]->GetValue(j);
-                double theta = coords[2]->GetValue(0);
+                double theta = 0.0;
                 double x = r*cos(theta);
                 double z = -r*sin(theta);
                 *pts++= (float)x;
@@ -1810,19 +1801,19 @@ avtMFIXFileFormat::BuildMesh(int xDomain, int yDomain, int zDomain)
         for (int j =0; j<widths[1]+2; j++) {
             int i = 0;
             int index = (j)*(widths[0]+2)+i;
-            buf[index] = xLeftGhost;
+            buf[index] |= xLeftGhost;
             i = widths[0]+1;
             index = (j)*(widths[0]+2)+i;
-            buf[index] = xRightGhost;
+            buf[index] |= xRightGhost;
         }
 
         for (int i =0; i<widths[0]+2; i++) {
             int j = 0;
             int index = (j)*(widths[0]+2)+i;
-            if (buf[index]!=vExternalGhost) buf[index] = yLeftGhost;
+            buf[index] |= yLeftGhost;
             j = widths[1]+1;
             index = (j)*(widths[0]+2)+i;
-            if (buf[index]!=vExternalGhost) buf[index] = yRightGhost;
+            buf[index] |= yRightGhost;
         }
 
         sgrid->GetCellData()->AddArray(ghostCells);
@@ -1884,30 +1875,30 @@ avtMFIXFileFormat::BuildMesh(int xDomain, int yDomain, int zDomain)
             for (int j =0; j<widths[1]+2; j++) {
                 int i = 0;
                 int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                buf[index] = xLeftGhost;
+                buf[index] |= xLeftGhost;
                 i = widths[0]+1;
                 index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                buf[index] = xRightGhost;
+                buf[index] |= xRightGhost;
             }
 
         for (int k =0; k<widths[2]+2; k++)
             for (int i =0; i<widths[0]+2; i++) {
                 int j = 0;
                 int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                if (buf[index]!=vExternalGhost) buf[index] = yLeftGhost;
+                buf[index] |= yLeftGhost;
                 j = widths[1]+1;
                 index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                if (buf[index]!=vExternalGhost) buf[index] = yRightGhost;
+                buf[index] |= yRightGhost;
             }
 
         for (int j =0; j<widths[1]+2; j++)
             for (int i =0; i<widths[0]+2; i++) {
                 int k = 0;
                 int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                if (buf[index]!=vExternalGhost) buf[index] = zLeftGhost;
+                buf[index] |= zLeftGhost;
                 k = widths[2]+1;
                 index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
-                if (buf[index]!=vExternalGhost) buf[index] = zRightGhost;
+                buf[index] |= zRightGhost;
             }
         sgrid->GetCellData()->AddArray(ghostCells);
         ghostCells->Delete(); // held alive by ref count

@@ -47,9 +47,14 @@ class DBOptionsAttributes;
 
 #include <string>
 
-#define N_DOMAINS_PER_PROC  "Target number of domains per MPI process"
+#define N_X_DOMAINS "Number of domains in the X or R direction"
+#define DEF_N_X_DOMAINS                 4
 
-#define DEF_N_DOMAINS_PER_PROC          3
+#define N_Y_DOMAINS "Number of domains in the Y direction"
+#define DEF_N_Y_DOMAINS                 8
+
+#define N_Z_DOMAINS "Number of domains in the Z or theta direction"
+#define DEF_N_Z_DOMAINS                 4
 
 // ****************************************************************************
 //  Functions: avtMFIXOptions
