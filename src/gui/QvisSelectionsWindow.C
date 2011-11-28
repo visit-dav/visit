@@ -1444,7 +1444,7 @@ QvisSelectionsWindow::addSelection()
     QvisSelectionsDialog::IDVariableType idType = QvisSelectionsDialog::UseZoneIDForID;
     QString idVariable;
 
-    int dlgRet;
+    int dlgRet = -1;
     if(pName.isEmpty() && sName.isEmpty())
     {
         // do nothing
