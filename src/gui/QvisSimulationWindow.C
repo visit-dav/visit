@@ -1126,6 +1126,9 @@ QvisSimulationWindow::GetEngineListIndex(const QString &key) const
 //   Brad Whitlock, Fri Nov 19 10:48:34 PDT 2010
 //   I made it use activeEngine to get the metadata.
 //
+//   Jean M. Favre, Mon Nov 28 13:04:28 PST 2011
+//   Use current time in some cases.
+//
 // ****************************************************************************
 
 void
@@ -1184,6 +1187,8 @@ QvisSimulationWindow::UpdateInformation()
         // Date
         QString timesecstr = newsim.left(firstDotPos);
         time_t timesec = timesecstr.toInt();
+        if(timesec == 0)
+            timesec = time(NULL);
         QString timestr = ctime(&timesec);
         item = new QTreeWidgetItem(simInfo, 
             QStringList(tr("Date")) +
