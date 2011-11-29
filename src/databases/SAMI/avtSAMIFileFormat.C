@@ -152,6 +152,8 @@ avtSAMIFileFormat::avtSAMIFileFormat(const char *filename)
     yVals = 0;
     zVals = 0;
 
+    dbFile = 0;
+
     nzones = 0; 
     nshells = 0;
     nbeams = 0;
@@ -170,6 +172,57 @@ avtSAMIFileFormat::avtSAMIFileFormat(const char *filename)
     DBSetEnableChecksums(1);
 #endif
 
+}
+
+// ****************************************************************************
+//  Method: InitFile
+//
+//  Purpose: Ensure file is opened and essential metadata queried out of it.
+//
+//  Programmer: Mark C. Miller, Tue Nov 29 11:38:01 PST 2011
+// ****************************************************************************
+
+void
+avtSAMIFileFormat::InitFile()
+{
+    if (dbFile) return;
+
+    if ((dbFile = DBOpen((char *)filename, DB_UNKNOWN, DB_READ)) == 0)
+    {
+        EXCEPTION1(InvalidFilesException, filename);
+    }
+
+    int *meshData = (int *) DBGetVar(dbFile, "mesh_data");
+    int meshDataLen = DBGetVarLength(dbFile, "mesh_data");
+    if (meshData == 0)
+    {
+        char tmpMsg[512];
+        SNPRINTF(tmpMsg, sizeof(tmpMsg), "Unable to read \"mesh_data\" from %s", filename);
+        EXCEPTION1(InvalidFilesException, tmpMsg);
+    }
+
+    nzones = meshData[0];
+    nshells = meshData[1];
+    nbeams = meshData[2];
+    nnodes = meshData[3];
+    nmats  = meshData[4];
+    nslides = meshData[5];
+    iorigin = meshData[6];
+    if (meshDataLen < 8)
+        ndims = 3;
+    else
+        ndims  = meshData[7];
+    free(meshData);
+
+    //
+    // To properly create avtMaterialMetaData, we need to know all materials
+    //
+    int *globalMeshData = (int *) DBGetVar(dbFile, "global_mesh_data");
+    if (globalMeshData)
+    {
+        nmats  = globalMeshData[4];
+        free(globalMeshData);
+    }
 }
 
 
@@ -229,6 +282,9 @@ avtSAMIFileFormat::FreeUpResources(void)
 //    Mark C. Miller, Mon Nov 28 16:49:48 PST 2011
 //    Moved bulk of code to open a database and examine metadata from
 //    constructor to here.
+//
+//    Mark C. Miller, Tue Nov 29 11:39:02 PST 2011
+//    Moved code to open file and examine metadata to InitFile
 // ****************************************************************************
 
 void
@@ -236,42 +292,7 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     int i;
 
-    if ((dbFile = DBOpen((char *)filename, DB_UNKNOWN, DB_READ)) == 0)
-    {
-        EXCEPTION1(InvalidFilesException, filename);
-    }
-
-    int *meshData = (int *) DBGetVar(dbFile, "mesh_data");
-    int meshDataLen = DBGetVarLength(dbFile, "mesh_data");
-    if (meshData == 0)
-    {
-        char tmpMsg[512];
-        SNPRINTF(tmpMsg, sizeof(tmpMsg), "Unable to read \"mesh_data\" from %s", filename);
-        EXCEPTION1(InvalidFilesException, tmpMsg);
-    }
-
-    nzones = meshData[0];
-    nshells = meshData[1];
-    nbeams = meshData[2];
-    nnodes = meshData[3];
-    nmats  = meshData[4];
-    nslides = meshData[5];
-    iorigin = meshData[6];
-    if (meshDataLen < 8)
-        ndims = 3;
-    else
-        ndims  = meshData[7];
-    free(meshData);
-
-    //
-    // To properly create avtMaterialMetaData, we need to know all materials
-    //
-    int *globalMeshData = (int *) DBGetVar(dbFile, "global_mesh_data");
-    if (globalMeshData)
-    {
-        nmats  = globalMeshData[4];
-        free(globalMeshData);
-    }
+    InitFile();
 
     //
     // Hard code the main mesh object into the metadata
@@ -369,11 +390,15 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Thu Sep  6 13:23:20 PDT 2007
 //    Fix indexing problem.
 //
+//    Mark C. Miller, Tue Nov 29 11:39:21 PST 2011
+//    Added call to InitFile
 // ****************************************************************************
 
 vtkDataSet *
 avtSAMIFileFormat::GetMesh(const char *meshname)
 {
+    InitFile();
+
     int i,j;
     int siloType = DBGetVarType(dbFile, "x");
     int vtkType = SiloTypeToVTKType(siloType);
@@ -550,12 +575,18 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
 //  Programmer: Mark C. Miller 
 //  Creation:   Wed Oct 11 13:40:57 PST 2006
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Nov 29 11:39:21 PST 2011
+//    Added call to InitFile
 // ****************************************************************************
 
 void *
 avtSAMIFileFormat::GetAuxiliaryData(const char *var,
     const char *type, void *, DestructorFunction &df)
 {
+    InitFile();
+
     void *rv = NULL;
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
@@ -577,11 +608,16 @@ avtSAMIFileFormat::GetAuxiliaryData(const char *var,
 //  Modifications:
 //    Mark C. Miller, Mon Oct 16 13:20:06 PDT 2006
 //    Made it more tolerant of Silo read error.
+//
+//    Mark C. Miller, Tue Nov 29 11:39:21 PST 2011
+//    Added call to InitFile
 // ****************************************************************************
 
 avtMaterial *
 avtSAMIFileFormat::GetMaterial(const char *varname)
 {
+    InitFile();
+
     int i;
     int *matList = (int *) DBGetVar(dbFile, "brick_material");
 
@@ -625,11 +661,17 @@ avtSAMIFileFormat::GetMaterial(const char *varname)
 //  Programmer: miller -- generated by xml2avt
 //  Creation:   Wed Oct 11 13:40:57 PST 2006
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Nov 29 11:39:21 PST 2011
+//    Added call to InitFile
 // ****************************************************************************
 
 vtkDataArray *
 avtSAMIFileFormat::GetVar(const char *varname)
 {
+    InitFile();
+
     if (strcmp(varname, "global_node_numbers") == 0)
     {
         vtkIntArray *gn = vtkIntArray::New();
