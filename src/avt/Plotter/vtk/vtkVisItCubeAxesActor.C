@@ -871,7 +871,7 @@ vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
       if (XUnits == NULL || XUnits[0] == '\0')
         SNPRINTF(xTitle,64, "%s (x10^%d)", this->XTitle, xPow);
       else
-        SNPRINTF(xTitle,264, "%s (x10^%d %s)", this->XTitle, xPow, XUnits);
+        SNPRINTF(xTitle,64, "%s (x10^%d %s)", this->XTitle, xPow, XUnits);
       }
     else 
       { 

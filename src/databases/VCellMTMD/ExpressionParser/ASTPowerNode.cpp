@@ -110,7 +110,7 @@ double ASTPowerNode::evaluate(int evalType, double* values) {
             double result = pow(baseValue, exponentValue);    
             if (MathUtil::double_infinity == -result || MathUtil::double_infinity == result || result != result) {    
                 char problem[1000];    
-                sprintf(problem, "u^v evaluated to %lf, u=%lf, v=%lf", result, baseValue);    
+                sprintf(problem, "u^v evaluated to %lf, u=%lf, v=%lf", result, baseValue, exponentValue);    
                 string errorMsg = getFunctionDomainError(problem, values, "u", baseChild, "v", exponentChild);    
                 throw VCell::FunctionDomainException(errorMsg);    
             }    
