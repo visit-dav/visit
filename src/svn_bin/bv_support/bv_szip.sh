@@ -145,11 +145,8 @@ function build_szip
         # version information.
         #
         info "Creating dynamic libraries for SZIP . . ."
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/szip/${SZIP_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
+        INSTALLNAMEPATH="$VISITDIR/szip/${SZIP_VERSION}/$VISITARCH/lib"
+
 ## go back to gcc bacause if "external relocation entries" restFP saveFP
 ##      /usr/bin/libtool -o libsz.${SO_EXT} -dynamic src/.libs/libsz.a \
 ##      -lSystem -lz -headerpad_max_install_names \

@@ -125,11 +125,7 @@ function build_cfitsio
         #
         info "Creating dynamic libraries for CFITSIO . . ."
 
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
+        INSTALLNAMEPATH="$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH/lib"
 ## switch back to gcc "external relocation entries" restFP saveFP
 ##      /usr/bin/libtool -o libcfitsio.$SO_EXT -dynamic libcfitsio.a -lSystem \
 ##      -headerpad_max_install_names \

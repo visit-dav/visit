@@ -208,11 +208,8 @@ function build_mili
     mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     cp mili.h mili_enum.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/mili/${MILI_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
+        INSTALLNAMEPATH="$VISITDIR/mili/${MILI_VERSION}/$VISITARCH/lib"
+
         $C_COMPILER -dynamiclib -o libmili.$SO_EXT *.o \
           -Wl,-headerpad_max_install_names \
           -Wl,-install_name,$INSTALLNAMEPATH/libmili.${SO_EXT} \
