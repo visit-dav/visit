@@ -222,11 +222,8 @@ function build_gdal
         info "Fixing install_name of dynamic libraries for GDAL . . ."
 
         cp .libs/libgdal.1.10.0.${SO_EXT} libgdal.${SO_EXT}
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
+        INSTALLNAMEPATH="$VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH/lib"
+
         install_name_tool -id \
            $INSTALLNAMEPATH/libgdal.${SO_EXT} \
            libgdal.${SO_EXT}

@@ -294,10 +294,6 @@ function build_netcdf
     #
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         info "Creating dynamic libraries for NetCDF . . ."
-        if [[ $ABS_PATH == "no" ]]; then
-           install_name_tool -id @executable_path/../lib/libnetcdf.$SO_EXT $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.$SO_EXT
-           install_name_tool -id @executable_path/../lib/libnetcdf_c++.$SO_EXT $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf_c++.$SO_EXT
-        fi
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then

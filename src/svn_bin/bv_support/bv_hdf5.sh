@@ -178,10 +178,6 @@ function build_hdf5
         # version information.
         #
         info "Creating dynamic libraries for HDF5 . . ."
-        if [[ $ABS_PATH == "no" ]]; then
-            install_name_tool -id @executable_path/../lib/libhdf5.$SO_EXT $VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH/lib/libhdf5.$SO_EXT
-            install_name_tool -id @executable_path/../lib/libhdf5_hl.$SO_EXT $VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH/lib/libhdf5_hl.$SO_EXT
-        fi
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then

@@ -236,8 +236,6 @@ export ON_ALLIO="off"
 
 export DO_DEBUG="no"
 export ON_DEBUG="off"
-export ABS_PATH="yes"
-export ON_ABS_PATH="on"
 export DO_REQUIRED_THIRD_PARTY="yes"
 export ON_THIRD_PARTY="on"
 export DO_GROUP="no"
@@ -562,7 +560,6 @@ for arg in "${arguments[@]}" ; do
         --dry-run) VISIT_DRY_RUN=1;;
         --all-io) continue;; #do nothing now..
         --dbio-only) continue;; #do nothing now..
-        --absolute) ABS_PATH="yes"; ON_ABS_PATH="on";;
         --arch) next_arg="arch";;
         --cflag) next_arg="append-cflags";;
         --cflags) next_arg="cflags";;
@@ -585,7 +582,6 @@ for arg in "${arguments[@]}" ; do
         --parallel) parallel="yes"; DO_ICET="yes"; ON_parallel="ON";;
         --print-vars) next_action="print-vars";;
         --python-module) DO_MODULE="yes"; ON_MODULE="on";;
-        --relative) ABS_PATH="no"; ON_ABS_PATH="off";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
         --static) DO_STATIC_BUILD="yes";;
         --stdout) LOG_FILE="/dev/tty";;

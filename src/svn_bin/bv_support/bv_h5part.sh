@@ -185,9 +185,6 @@ $LD_LIBRARY_PATH
         # version information.
         #
         info "Creating dynamic libraries for H5Part . . ."
-        if [[ $ABS_PATH == "no" ]]; then
-            install_name_tool -id @executable_path/../lib/libH5Part.$SO_EXT $VISITDIR/h5part/$H5PART_VERSION/$VISITARCH/lib/libH5Part.$SO_EXT
-        fi
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then

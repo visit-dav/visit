@@ -356,11 +356,8 @@ function build_ccmio
         #
         info "Creating dynamic libraries for CCMIO . . ."
 
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
+        INSTALLNAMEPATH="$VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/lib"
+
         cp lib/release-shared/libadf.dylib .
         cp lib/release-shared/libccmio.dylib .
         install_name_tool -id \

@@ -1385,11 +1385,8 @@ function build_hdf4
         #
         info "Creating dynamic libraries for HDF4 . . ."
         # Relink libdf.
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
+        INSTALLNAMEPATH="$VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH/lib"
+
         ${C_COMPILER} -dynamiclib -o libdf.${SO_EXT} hdf/src/*.o \
            -Wl,-headerpad_max_install_names \
            -Wl,-install_name,$INSTALLNAMEPATH/libdf.${SO_EXT} \

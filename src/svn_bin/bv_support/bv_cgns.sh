@@ -166,11 +166,9 @@ function build_cgns
         else
            USESTUBS=""
         fi
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
+
+        INSTALLNAMEPATH="$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH/lib"
+
         H5LINK=""
         if [[ "$DO_HDF5" == "yes" ]] ; then
             H5LINK="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.dylib"

@@ -137,11 +137,8 @@ function build_exodus
         #
         info "Creating dynamic libraries for Exodus . . ."
 
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
+        INSTALLNAMEPATH="$VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH/lib"
+
         ${C_COMPILER} -dynamiclib -o libexoIIv2c.${SO_EXT} *.o \
            -Wl,-headerpad_max_install_names \
            -Wl,-install_name,$INSTALLNAMEPATH/libexoIIv2c.${SO_EXT} \
