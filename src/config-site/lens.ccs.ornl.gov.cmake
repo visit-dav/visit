@@ -1,16 +1,18 @@
-#/apps/visit/thirdparty/visit/cmake/2.8.3/linux-x86_64_gcc-4.4/bin/cmake
+#/sw/sources/visit/analysis-x64/thirdparty/visit/cmake/2.8.3/linux-x86_64_gcc-4.4/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Tue Nov  1 16:35:07 EDT 2011
-## system: Linux turnip 2.6.32-34-generic #77-Ubuntu SMP Tue Sep 13 19:39:17 UTC 2011 x86_64 GNU/Linux
+## created: Tue Nov 29 16:44:44 EST 2011
+## system: Linux lens-login5 2.6.18-194.32.1.el5.perfctr #1 SMP Wed Apr 27 14:12:03 EDT 2011 x86_64 x86_64 x86_64 GNU/Linux
 ## by: pugmire
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /apps/visit/thirdparty/visit)
+SET(VISITHOME /sw/sources/visit/analysis-x64/thirdparty/visit)
 SET(VISITARCH linux-x86_64_gcc-4.4)
-SET(VISIT_VERBOSE_MAKEFILE TRUE)
+SET(VISIT_VERBOSE_MAKEFILE TRUE) 
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON) 
+VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /sw/analysis-x64/visit) 
 
 ## Compiler flags.
 ##
@@ -19,10 +21,12 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 
-## Parallel Build Setup.
-##
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER mpic++)
+## 
+## Parallel Build Setup. 
+## 
+## (configured w/ mpi compiler wrapper) 
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /sw/analysis-x64/ompi/1.4.2/centos5.5_gnu4.4.4/bin/mpicxx TYPE STRING) 
+
 
 ##############################################################
 ##
@@ -39,7 +43,7 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER mpic++)
 ##
 ## Specify the location of the python.
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /sw/sources/visit/analysis-x64/thirdparty/visit/python/2.6.4/linux-x86_64_gcc-4.4)
 
 ##
 ## Specify the location of the mesa.
@@ -68,6 +72,12 @@ VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 ##
 VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.7/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib z TYPE STRING)
+
+##
+## HDF4
+##
+VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0/${VISITARCH}/lib vtkjpeg TYPE STRING)
 
 ##
 ## NetCDF
@@ -161,8 +171,3 @@ VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/ADIOS/1.3/${VISITARCH})
 ##
 
-##
-## R
-##
-VISIT_OPTION_DEFAULT(VISIT_R ON)
-VISIT_OPTION_DEFAULT(VISIT_R_DIR ${VISITHOME}/R/2.13.2/${VISITARCH}/lib/R)
