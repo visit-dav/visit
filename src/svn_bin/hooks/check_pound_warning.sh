@@ -18,6 +18,10 @@
 #
 #   Mark C. Miller, Mon Feb  7 20:33:45 PST 2011
 #   Permit #warning in branches.
+#
+#   Kathleen Biagas, Tue Nov 29 22:30:09 PST 2011
+#   Skip windowsbuild directory.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -39,6 +43,10 @@ while read fline; do
     fi
 
     case $fname in
+        trunk/windowsbuild/*)
+            # Skip anything in windowsbuild
+            continue
+            ;;
         trunk/*)
             # Do not skip (continue) these
             ;;
