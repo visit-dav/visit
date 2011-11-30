@@ -208,11 +208,8 @@ function build_silo
         #
         # Make dynamic executable
         #
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
+        INSTALLNAMEPATH="$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
+
         # Remove the tmp directory if it is already present
         if [[ -d tmp ]] ; then
             rm -rf tmp

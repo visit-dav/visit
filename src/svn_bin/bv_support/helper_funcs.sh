@@ -678,7 +678,6 @@ function check_more_options
 "Symbol: turn on -g, debugging flag\n"\
 "Group: specify the group name for install\n"\
 "Path: specify the root directory for libraries\n"\
-"Absolute: Change the default install name path for Darwin dynamic libraries "\
 "to use the given Path rather than the default [@executable_path/../lib]\n"\
 "Trace: print a trace of commands and arguments during build\n\n"\
 "Select build and installed options:" 0 0 0 \
@@ -690,7 +689,6 @@ function check_more_options
            "Group"     "specify group name for install"         $ON_GROUP \
            "HostConf"  "create host.conf file"                  $ON_HOSTCONF \
            "Path"      "specify library path [$THIRD_PARTY_PATH]" $ON_PATH \
-           "Absolute"  "change the behavior of install name"    $ON_ABS_PATH \
            "Trace"     "enable SHELL debugging"      $ON_VERBOSE 2> tmp$$
         retval=$?
 
@@ -706,7 +704,6 @@ function check_more_options
             DO_GROUP="no"
             DO_HOSTCONF="no"
             DO_PATH="no"
-            ABS_PATH="no"
             DO_VERBOSE="no"
             for OPTION in $choice
             do
@@ -740,8 +737,6 @@ function check_more_options
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$THIRD_PARTY_PATH" 2> tmp$$
                      THIRD_PARTY_PATH="$(cat tmp$$)"
                      DO_PATH="yes";;
-                  Absolute)
-                     ABS_PATH="yes";;
                   Trace)
                      DO_VERBOSE="yes";;
                 esac
@@ -1344,17 +1339,6 @@ usage () {
   printf "These values all take a special value.  If given, they require an associated value to be provided as well.\n\n"
   printf "%-15s \n\t%s [%s]\n" "--installation-build-dir"  "Specify the directory visit will use for building" "output-filename"
   printf "%-15s \n\t%s [%s]\n" "--write-unified-file"  "Write single unified build_visit file" "output-filename"
-  printf "%-12s %s [%s]\n" "--absolute" \
-    "Change the behavior of the install name path for
-             the Darwin dynamic libraries. Enabling this flag
-             will use the absolute THIRD_PARTY_PATH path for 
-             each library's install name directory instead of
-             the relative path (@executable_relative/../lib).
-             This is the opposite of --relative." "$ON_ABS_PATH"
-  printf "%-12s %s \n" "--relative" \
-    "Use @executable_relative/../lib for the library
-             install name directory on Darwin. This is the
-             opposite of using --absolute."
   printf "%s <%s> %s [%s]\n" "--arch" "architecture" "Set architecture" "$VISITARCHTMP"
   printf "\t  %s\n" "   This variable is used in constructing the 3rd party"
   printf "\t  %s\n" "   library path; usually set to something like"
