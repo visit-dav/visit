@@ -83,6 +83,7 @@ public:
     toroidalWinding = 0;
     poloidalWinding = 0;
 
+    toroidalWindingP = 0;
     poloidalWindingP = 0;
 
     toroidalResonance = 0;
@@ -110,9 +111,12 @@ enum FieldlineType { UNKNOWN_TYPE  = 0,
                      QUASI_PERIODIC = 20,
                      IRRATIONAL     = 20,
                      FLUX_SURFACE   = 21,
-                     ISLAND_CHAIN   = 22,
-                     ISLAND_WITH_SECONDARY_ISLANDS = 23,
-                     ISLAND_AMBIGUOUS_AXIS = 24,
+
+                     ISLAND_PRIMARY_CHAIN = 22,
+                     ISLAND_SECONDARY_CHAIN = 23,
+
+                     ISLAND_PRIMARY_AMBIGUOUS_AXIS = 24,
+                     ISLAND_SECONDARY_AMBIGUOUS_AXIS = 25,
                      
                      CHAOTIC = 30 };
   
@@ -148,9 +152,29 @@ public:
 
   double safetyFactor;
 
+  // Base reduced number of windings
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;
+
+  // Ambiguous axis number of transits
+  unsigned int toroidalWindingP;
   unsigned int poloidalWindingP;
+
+  // Number of transists when an island to get back to the initial puncture.
+  unsigned int toroidalPeriod;
+  unsigned int poloidalPeriod;
+
+  // Resonance periods 
+
+  // When a surface resonances equal 1
+
+  // When a primary island the resonances equal the base number of
+  // windings and the toroidal resonance and the base toroidal winding both
+  // equal the number of islands.
+
+  // When secondary islands the toroial resonance is the total number
+  // of islands and the toroidal resonance divided by the base
+  // toroidal winding equals the number of island on each group.
 
   unsigned int toroidalResonance;
   unsigned int poloidalResonance;
@@ -161,6 +185,8 @@ public:
   unsigned int islands;
   unsigned int islandGroups;
 
+  // If a surface it is overlap found geometrically
+  // If an island (primary or secondary) toroidalPeriod / toroidalResonance
   float nnodes;
 
   unsigned int maxPunctures;

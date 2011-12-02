@@ -449,14 +449,14 @@ FieldlineLib::convexHull( std::vector< std::pair< Point, unsigned int > > &hullP
     // Stop when the first point is found again.
   } while( min != npts );
 
-  for( unsigned int i=0; i<m; ++i ) {
-    if( verboseFlag )
-      std::cerr << "convexHull " << hullPts[i].second << "   "
-                << hullPts[i].first << std::endl;
-  }
+//   for( unsigned int i=0; i<m; ++i ) {
+//     if( verboseFlag )
+//       std::cerr << "convexHull " << hullPts[i].second << "   "
+//                 << hullPts[i].first << std::endl;
+//   }
 
-  if( verboseFlag )
-    std::cerr << std::endl;
+//   if( verboseFlag )
+//     std::cerr << std::endl;
 }
 
 
@@ -898,11 +898,14 @@ FieldlineLib::IntersectCheck( std::vector< Point >& points,
       Point l1_p0 = points[k];
       Point l1_p1 = points[l];
 
-//      std::cerr << nbins << "  "
-//              << i << "  " << j << "  " << k << "  " << l << std::endl;
-
       if( intersect( l0_p0, l0_p1, l1_p0, l1_p1 ) == 1)
+      {
+//      std::cerr << nbins << "  "<< offset << "    "
+//                << skipNext << "  " << skipPrevious << "     "
+//                << i << "  " << j << "  " << k << "  " << l << std::endl;
+
         return false;
+      }
     }
   }
 
@@ -2177,24 +2180,26 @@ GetBaseWindingPairs( std::vector< unsigned int > &poloidalWindingCounts,
         
       if( verboseFlag )
         std::cerr << "**Drawable winding pair "
-             << baseWindingPairs[i].toroidal << ","
-             << baseWindingPairs[i].poloidal << "  ("
-             << local_safetyFactor << " - "
-             << "consistency "
-             << 100.0 * baseWindingPairs[i].stat
-             << "%)" << std::endl;
+                  << baseWindingPairs[i].toroidal << ","
+                  << baseWindingPairs[i].poloidal << "  ("
+                  << local_safetyFactor << " - "
+                  << "consistency " << 100.0 * baseWindingPairs[i].stat
+                  << "%)" << "  "
+                  << windingGroupOffset << "  "
+                  << std::endl;
     }
     else
     {
       // Debug info
       if( verboseFlag )
         std::cerr << "Undrawable winding pair "
-             << baseWindingPairs[i].toroidal << ","
-             << baseWindingPairs[i].poloidal << "  ("
-             << local_safetyFactor << " - "
-             << "consistency " << 100.0 * baseWindingPairs[i].stat
-             << "%)"
-             << std::endl;
+                  << baseWindingPairs[i].toroidal << ","
+                  << baseWindingPairs[i].poloidal << "  ("
+                  << local_safetyFactor << " - "
+                  << "consistency " << 100.0 * baseWindingPairs[i].stat
+                  << "%)" << "  "
+                  << windingGroupOffset << "  "
+                  << std::endl;
     }
   }
 
@@ -2366,8 +2371,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   FieldlineProperties::AnalysisState analysisState =
     FieldlineProperties::UNKNOWN_STATE;
 
-  unsigned int toroidalWinding = 0, poloidalWinding = 0, poloidalWindingP = 0;
+  unsigned int toroidalWinding = 0, poloidalWinding = 0;
+  unsigned int toroidalWindingP = 0, poloidalWindingP = 0;
   unsigned int toroidalResonance = 1, poloidalResonance = 1;
+  unsigned int toroidalPeriod = 0, poloidalPeriod = 0;
 
   unsigned int windingGroupOffset = 0;
   unsigned int nnodes = 0;
@@ -2418,7 +2425,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     fi.safetyFactor = safetyFactor;
     fi.toroidalWinding = overrideToroidalWinding;
     fi.poloidalWinding = overridePoloidalWinding;
+    fi.toroidalWindingP = 0;
     fi.poloidalWindingP = 0;
+    fi.toroidalPeriod = 0;
+    fi.poloidalPeriod = 0;
     fi.toroidalResonance = 1;
     fi.poloidalResonance = 1;
     fi.windingPairs.clear();
@@ -2514,7 +2524,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   std::vector< std::pair < unsigned int, unsigned int > > windingPairs;
 
 
-  // Loop through all the merged winding pairs.
+  // Loop through all the merged winding pairs and check for the cusp
+  // condition. As such the rotational sum will be off by 1 or 2. We
+  // can figure out the correct poloidal winding using the inverse
+  // Blankenship via the toroidal windong the winding group offset.
   for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
   {
     windingPairs.push_back( std::pair< unsigned int,
@@ -2653,6 +2666,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       }
     }
 
+    // Now have valid winding pairs.
     if( verboseFlag && (drawable || i < 10) )
       std::cerr << "Final "
            << (drawable ? "Drawable " : "Rejected ") 
@@ -2730,7 +2744,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       fi.safetyFactor = safetyFactor;
       fi.toroidalWinding = toroidalWinding;
       fi.poloidalWinding = poloidalWinding;
-      fi.poloidalWindingP = poloidalWindingP;
+      fi.toroidalWindingP = 0;
+      fi.poloidalWindingP = 0;
+      fi.toroidalPeriod = 0;
+      fi.poloidalPeriod = 0;
       fi.toroidalResonance = 1;
       fi.poloidalResonance = 1;
       fi.windingPairs = windingPairs;
@@ -2761,28 +2778,38 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     }
   }
 
+  // At this point there is a valid winding pair. It is not known if
+  // it is an island or flux surface.
+
+  toroidalPeriod   = mergedWindingPairs[drawableIndex].toroidal;
+  poloidalPeriod   = mergedWindingPairs[drawableIndex].poloidal;
+
   toroidalWinding  = mergedWindingPairs[drawableIndex].toroidal;
   poloidalWinding  = mergedWindingPairs[drawableIndex].poloidal;
+
+  toroidalWindingP = mergedWindingPairs[drawableIndex].toroidal;
   poloidalWindingP = mergedWindingPairs[drawableIndex].poloidal;
 
   float local_safetyFactor = (float) toroidalWinding / (float) poloidalWinding;
 
-  // The windingGCD only has meaning if when islands are
-  // present. Which in that case it is number of points per island.
+  // The windingGCD only has meaning when islands are present and is
+  // related to the number of points in each island.
+
+  // nnodes = windingGCD / resonanceGCD;
+
   unsigned int windingGCD = GCD( mergedWindingPairs[drawableIndex].toroidal,
                                  mergedWindingPairs[drawableIndex].poloidal );
 
-  if( mergedWindingPairs.size() == 1 )
-  {
-    toroidalResonance = 1;
-    poloidalResonance = 1;
-  }
-  else
+  if( mergedWindingPairs.size() > 1 )
   {
     // The base values are the first order resonances if present.
     toroidalResonance = ResonanceCheck( toroidalStats, 1, 3 );
     poloidalResonance = ResonanceCheck( poloidalStats, 1, 3 );
 
+    // It is possible when near the chaotic regime that the resonance
+    // will be fall out from the toroidal / poloidal stats. As such,
+    // try to get it from the winding pairs which while limited should
+    // be more consistant.
     if( local_safetyFactor !=
         (float) toroidalResonance / (float) poloidalResonance )
     {
@@ -2790,12 +2817,13 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         std::cerr << toroidalResonance << "  "
                   << poloidalResonance << std::endl;
 
+      // Can not remember this case ... and why????????????
       if ( toroidalWinding % toroidalResonance == 0 &&
            poloidalWinding != poloidalResonance )
       {
         // Get GCD from winding pairs ...
         unsigned int freq;
-       std::vector< unsigned int > values;
+        std::vector< unsigned int > values;
 
         values.resize( mergedWindingPairs.size() );
 
@@ -2829,7 +2857,6 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
             std::cerr << "Using resonance from the winding pairs." << std::endl;
         }
       }
-
       else
       {
         toroidalResonance = 1;
@@ -2837,7 +2864,14 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       }
     }
   }
+  else
+  {
+    toroidalResonance = 1;
+    poloidalResonance = 1;
+  }
 
+  // Get the resonance GCD which gives the indication that there are
+  // secondary islands.
   unsigned int resonanceGCD = GCD( toroidalResonance, poloidalResonance );
 
   if( verboseFlag )
@@ -2849,43 +2883,49 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
               << "GCD = " << resonanceGCD << "   "
               << std::endl;
 
-  // Check for islands and islands around islands.  NOTE: Even with
+  // Check for primary islands and secondary islands.  NOTE: Even with
   // islands the poloidal resonance can be one as such only check
   // the toroidal resonance
   if( (type == FieldlineProperties::UNKNOWN_TYPE ||
-       type == FieldlineProperties::ISLAND_CHAIN ||
-       type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS ) &&
+       type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
+       type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ) &&
 
+        // Acceptance case for an island
       ( (toroidalResonance > 1 /* && poloidalResonance >= 1 */) || // Always true.
-        
+
+        // Also acceptance a 1,1 as an island
         (toroidalWinding == poloidalWinding &&
-         toroidalResonance == poloidalResonance &&
-         toroidalResonance == 1) ) )
+         toroidalResonance == poloidalResonance) ) )
   {
     // Set the windings to reflect the resonances which is the number
     // of islands.
     if( toroidalWinding == poloidalWinding )
     {
-//      toroidalWinding  = 1;
-//      poloidalWinding  = 1;
+      toroidalWinding  = 1;
+      poloidalWinding  = 1;
+
+      toroidalWindingP = toroidalWinding;
       poloidalWindingP = poloidalWinding;
     }
     else
     {
       toroidalWinding  = toroidalResonance;
       poloidalWinding  = poloidalResonance;
+
+      toroidalWindingP = toroidalResonance;
       poloidalWindingP = poloidalResonance;
     }
 
-    // The number of islands is always the toroidal resonance.
-    islands = toroidalResonance;
+    // The number of islands is always the toroidal resonance
+    // regardless if a primary or secondary island.
+    islands      = toroidalResonance;
     islandGroups = toroidalResonance / resonanceGCD;
 
     // If the resonance GCD is 1 then only one island per group thus a
-    // simple island chain.
+    // primary island chain.
     if( resonanceGCD == 1 )
     {
-      type = FieldlineProperties::ISLAND_CHAIN;
+      type = FieldlineProperties::ISLAND_PRIMARY_CHAIN;
 
       if( verboseFlag )
         std::cerr << "Primary resonances = "
@@ -2893,11 +2933,12 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
              << islands << " islands "
              << std::endl;
     }
+
     // The resonance GCD (aka second order resonance) is the number of
-    // smaller islands around an island.
-    else
+    // secondary islands around a primary island.
+    else // if( resonanceGCD > 1 )
     {
-      type = FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS;
+      type = FieldlineProperties::ISLAND_SECONDARY_CHAIN;
 
       if( verboseFlag )
         std::cerr << "Secondary resonances = "
@@ -2932,10 +2973,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         unsigned int nodes = poloidal_puncture_pts.size() / islands / 2;
         
         // Add two more puncture points per island within and island.
-        if( type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS )
+        if( type == FieldlineProperties::ISLAND_SECONDARY_CHAIN )
           nPuncturesNeeded = (nodes + 2) * islands * 2;
         // Add five more puncture points per island.
-        else //if( type == FieldlineProperties::ISLAND_CHAIN )
+        else //if( type == FieldlineProperties::ISLAND_PRIMARY_CHAIN )
           nPuncturesNeeded = (nodes + 5) * islands * 2;
 
         if( verboseFlag )
@@ -2973,8 +3014,9 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       // of 1,2, or 3. At least that is our observation. As such, add
       // points to see if the analysis can get out of the local
       // minimum.
-      if( type == FieldlineProperties::ISLAND_CHAIN &&
-          toroidalWinding == poloidalWinding && nnodes <= 5 )
+      if( type == FieldlineProperties::ISLAND_PRIMARY_CHAIN &&
+          toroidalWinding == poloidalWinding &&
+          nnodes <= 5 )
       {
         nnodes = poloidal_puncture_pts.size() / toroidalWinding / 2;
 
@@ -2992,7 +3034,6 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
                     << "asking for " << nPuncturesNeeded << " puncture points"
                     << std::endl;
       }
-
 
       // Try to get at least four points per island.
       else if( nnodes < 4 )
@@ -3091,16 +3132,27 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
 
-
+    // Here is a 1,1 surface/island. Check for the ambiguous axis
+    // case.
     if( analysisState == FieldlineProperties::COMPLETED &&
         toroidalWinding == poloidalWinding &&
-        type == FieldlineProperties::ISLAND_CHAIN )
+        (type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
+         type == FieldlineProperties::ISLAND_SECONDARY_CHAIN) )
     {
-     std::vector< std::pair< Point, unsigned int > > hullPts;
+      // QUESTION - is it possible to have secondary islands within
+      // the 1,1 that have an ambiguous axis. YES
+
+      if(type == FieldlineProperties::ISLAND_PRIMARY_CHAIN)
+        toroidalWindingP = toroidalWinding;
+
+      else if(type == FieldlineProperties::ISLAND_SECONDARY_CHAIN)
+        toroidalWindingP = toroidalResonance;
+
+      std::vector< std::pair< Point, unsigned int > > hullPts;
       
-      hullPts.resize( toroidalWinding+1 );
+      hullPts.resize( toroidalWindingP+1 );
       
-      for(unsigned int i=0; i<toroidalWinding; ++i )
+      for(unsigned int i=0; i<toroidalWindingP; ++i )
       {
         hullPts[i] =
           std::pair< Point, unsigned int >( poloidal_puncture_pts[i], i );
@@ -3108,9 +3160,9 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       
       unsigned int m = 0; // starting index
       
-      convexHull( hullPts, m, toroidalWinding, helicity );
+      convexHull( hullPts, m, toroidalWindingP, helicity );
 
-      if( m != toroidalWinding )
+      if( m != toroidalWindingP )
       {
         if( verboseFlag )
           std::cerr << "The surface does not have a convex hull, "
@@ -3124,13 +3176,13 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       unsigned int offset;
       
       // Find all the differences and count each one.
-      for(unsigned int i=0; i<toroidalWinding; ++i )
+      for(unsigned int i=0; i<toroidalWindingP; ++i )
       {
-        unsigned int i1 = (i+1) % toroidalWinding;
+        unsigned int i1 = (i+1) % toroidalWindingP;
 
         // Offset from one puncture point to it's neighbor.
-        offset = (hullPts[i1].second - hullPts[i].second + toroidalWinding) %
-          toroidalWinding;
+        offset = (hullPts[i1].second - hullPts[i].second + toroidalWindingP) %
+          toroidalWindingP;
         
         // Find this offset in the list.
         ic = offsets.find( offset );
@@ -3172,28 +3224,38 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
           std::cerr << std::endl;
 
       // Secondary rotation around the nonaxisymmetric island.
-      if( offset != 1 && offset != toroidalWinding-1 )
+      if( offset != 1 && offset != toroidalWindingP-1 )
       {
-        poloidalWindingP = Blankinship( toroidalWinding, offset );
+        toroidalWindingP = toroidalWindingP;
+        poloidalWindingP = Blankinship( toroidalWindingP, offset );
 
         windingGroupOffset = offset;
 
-        nnodes = 1;
+//        nnodes = 1;
 
-        type = FieldlineProperties::ISLAND_AMBIGUOUS_AXIS;
+        if(type == FieldlineProperties::ISLAND_PRIMARY_CHAIN)
+          type = FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS;
+        
+        else if(type == FieldlineProperties::ISLAND_SECONDARY_CHAIN)
+          type = FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS;
         
         if( verboseFlag )
           std::cerr << "Secondary poloidal rotation  "
-               << toroidalWinding << "," << poloidalWindingP << " ("
-               << ((float) toroidalWinding / (float) poloidalWindingP) << ")  "
+               << toroidalWindingP << "," << poloidalWindingP << " ("
+               << ((float) toroidalWindingP / (float) poloidalWindingP) << ")  "
                << "with offset " << offset << std::endl;
       }
       else
+      {
+        toroidalWindingP = toroidalWinding;
         poloidalWindingP = poloidalWinding;
+      }
     }
     else
+    {
+      toroidalWindingP = toroidalWinding;
       poloidalWindingP = poloidalWinding;
-
+    }
   }
 
   // Check to see if the fieldline is periodic. I.e. on a rational
@@ -3475,6 +3537,9 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   fi.safetyFactor = safetyFactor;
   fi.toroidalWinding = toroidalWinding;
   fi.poloidalWinding = poloidalWinding;
+  fi.toroidalPeriod = toroidalPeriod;
+  fi.poloidalPeriod = poloidalPeriod;
+  fi.toroidalWindingP = toroidalWindingP;
   fi.poloidalWindingP = poloidalWindingP;
   fi.toroidalResonance = toroidalResonance;
   fi.poloidalResonance = poloidalResonance;
@@ -3647,8 +3712,8 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
   // NOTE: Even with islands the poloidalFirstResonance can be one as such
   // only check the toroidalFirstResonance
   if( (type == FieldlineProperties::UNKNOWN_TYPE ||
-       type == FieldlineProperties::ISLAND_CHAIN ||
-       type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS ) &&
+       type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
+       type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ) &&
 
       toroidalResonance > 1 ) // && poloidalResonance >= 1 ) // Always true.
   {
@@ -3663,7 +3728,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
     // simple island chain.
     if( isPrime( toroidalResonance ) == 0 )
     {
-      type = FieldlineProperties::ISLAND_CHAIN;
+      type = FieldlineProperties::ISLAND_PRIMARY_CHAIN;
 
       if( verboseFlag )
         std::cerr << "Primary resonances = "
@@ -3675,7 +3740,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
     // smaller islands around an island.
     else
     {
-      type = FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS;
+      type = FieldlineProperties::ISLAND_SECONDARY_CHAIN;
 
       if( verboseFlag )
         std::cerr << "Secondary resonances = "
@@ -3705,11 +3770,13 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
         // Get the number of nodes per island.
         unsigned int nodes = poloidal_puncture_pts.size() / islands / 2;
         
-        // Add two more puncture points per island within and island.
-        if( type == FieldlineProperties::ISLAND_WITH_SECONDARY_ISLANDS )
+        // Add two more puncture points per island for a secondary
+        // chain.
+        if( type == FieldlineProperties::ISLAND_SECONDARY_CHAIN )
           nPuncturesNeeded = (nodes + 2) * islands * 2;
-        // Add five more puncture points per island.
-        else //if( type == FieldlineProperties::ISLAND_CHAIN )
+        // Add five more puncture points per island for a primary
+        // chain.
+        else //if( type == FieldlineProperties::ISLAND_PRIMARY_CHAIN )
           nPuncturesNeeded = (nodes + 5) * islands * 2;
 
         if( verboseFlag )
@@ -3770,7 +3837,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
       // of 1,2, or 3. At least that is our observation. As such, add
       // points to see if the analysis can get out of the local
       // minimum.
-      else if( type == FieldlineProperties::ISLAND_CHAIN &&
+      else if( type == FieldlineProperties::ISLAND_PRIMARY_CHAIN &&
                toroidalWinding == 1 && nnodes <= 5 )
       {
         nnodes = poloidal_puncture_pts.size() / toroidalWinding / 2;
