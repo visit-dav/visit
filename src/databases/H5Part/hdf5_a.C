@@ -148,8 +148,8 @@ bool H5A::write_type(BaseFileInterface::DataType type,void* buffer){
                         status = H5Awrite(classID,H5T_NATIVE_DOUBLE,data_d);
                 break;
                 case BaseFileInterface::DataType(2):
-                        int32_t *data_i;
-                        data_i = (int32_t *)buffer;
+                        boost::int32_t *data_i;
+                        data_i = (boost::int32_t *)buffer;
                         status = H5Awrite(classID,H5T_NATIVE_INT32,data_i);
                 break;
                 case BaseFileInterface::DataType(3):
