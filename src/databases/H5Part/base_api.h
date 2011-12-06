@@ -2,7 +2,6 @@
 #define _BASE_INTERFACE_H
 
 #include <boost/cstdint.hpp>
-using boost::int32_t;
 
 #include "hdf5.h"
 #include <stdio.h>
