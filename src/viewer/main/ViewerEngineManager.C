@@ -126,7 +126,7 @@ FileOpenOptions *ViewerEngineManager::defaultFileOpenOptions=0;
 //
 static void GetImageCallback(void *, int, avtDataObject_p &);
 static void UpdatePlotAttsCallback(void*,const string&,int,AttributeSubject*);
-#ifdef _WIN32
+#ifdef VISIT_SUPPORTS_WINDOWS_HPC
 void ViewerSubmitParallelEngineToWindowsHPC(const std::string &remoteHost, 
                                             const stringVector &args, void *data);
 #endif
@@ -626,7 +626,7 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
             else if(ShouldShareBatchJob(ek.HostName()))
             {
                 bool createAsThoughLocal = false;
-#ifdef _WIN32
+#ifdef VISIT_SUPPORTS_WINDOWS_HPC
                 const LaunchProfile *lp = newEngine.profile.GetActiveLaunchProfile();
                 if(lp != NULL)
                 {
