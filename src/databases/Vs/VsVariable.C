@@ -189,7 +189,7 @@ bool VsVariable::initialize() {
   VsH5Attribute* componentNamesAtt = dataset->getAttribute(VsSchema::labelsAtt);
   if (componentNamesAtt) {
     std::string names;
-    centeringAtt->getStringValue(&names);
+    componentNamesAtt->getStringValue(&names);
     
     tokenize(names, ',', this->labelNames);
   }

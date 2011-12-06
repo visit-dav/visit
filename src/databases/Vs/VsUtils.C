@@ -20,8 +20,10 @@ void getDims(hid_t id, bool isDataset, std::vector<int>& dims) {
 */
 std::string makeCanonicalName(std::string name) {
   std::string answer = name;
-  if ((name.length() > 0) && (name[0] == '/')) {
-    answer = name.substr(1, name.length() - 1);
+
+  //remove the leading slash(es) if it(they) exist(s)
+  while ((answer.length() > 0) && (answer[0] == '/')) {
+    answer = answer.substr(1, answer.length() - 1);
   }
 
   return answer;
@@ -33,8 +35,9 @@ std::string makeCanonicalName(std::string path, std::string name) {
   if ((path.length() > 0) && (name.length() > 0) && (name[0] != '/')) {
     answer = path + "/" + name;
   }
-  //remove the leading slash if it exists
-  if ((answer.length() > 0) && (answer[0] == '/')) {
+
+  //remove the leading slash(es) if it(they) exist(s)
+  while ((answer.length() > 0) && (answer[0] == '/')) {
     answer = answer.substr(1, answer.length());
   }
 
