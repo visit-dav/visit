@@ -150,9 +150,6 @@ LauncherProxy::LaunchProcess(const stringVector &origProgramArgs)
 {
     stringVector programArgs(origProgramArgs);
 
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
     if (!GetPortTunnelMap().empty())
     {
         // If we're doing ssh tunneling, map the local host/port to the
@@ -166,7 +163,6 @@ LauncherProxy::LaunchProcess(const stringVector &origProgramArgs)
                        "tunneled ports may need to be increased.");
         }
     }
-#endif
 
     launchRPC(programArgs);
 }
@@ -218,12 +214,9 @@ LauncherProxy::ConnectSimulation(const stringVector &programArgs,
 //    Backing out SSH tunneling on Panther (MacOS X 10.3) 
 //   
 // ****************************************************************************
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
+
 std::map<int,int>
 LauncherProxy::GetPortTunnelMap()
 {
     return component->GetPortTunnelMap();
 }
-#endif

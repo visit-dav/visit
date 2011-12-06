@@ -68,11 +68,6 @@
 #include <Utility.h>
 #include <vectortypes.h>
 
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
-#include <SocketBridge.h>
-#endif
 #include <DebugStream.h>
 #include <IncompatibleVersionException.h>
 #include <CouldNotConnectException.h>
@@ -80,50 +75,10 @@
 #include <RPCExecutor.h>
 #include <snprintf.h>
 
-// Capture child output on UNIX & Mac. VCL is never run on Windows so this
-// should not matter.
-#if !defined(_WIN32) && !defined(PANTHERHACK)
-#define CAPTURE_CHILD_OUTPUT
-#endif
-
 //
 // Static member variables.
 //
 LauncherApplication *LauncherApplication::instance = 0;
-std::map<int, bool> LauncherApplication::childDied;
-
-// ****************************************************************************
-//  Function:  CreateSocketBridge
-//
-//  Purpose:
-//    Initiate the socket bridge.
-//
-//  Arguments:
-//    ports      (really an int[2]):
-//                 ports[0]=new local port
-//                 ports[1]=old local port
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    June  5, 2007
-//
-//  Modifications:
-//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
-//    Backing out SSH tunneling on Panther (MacOS X 10.3)
-//
-// ****************************************************************************
-static void CreateSocketBridge(void *ports)
-{
-    int newlocalport = ((int*)ports)[0];
-    int oldlocalport = ((int*)ports)[1];
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
-    SocketBridge bridge(newlocalport,oldlocalport);
-    bridge.Bridge();
-#endif
-}
-
-
 
 // ****************************************************************************
 // Method: RPCExecutor<QuitRPC>::Execute
@@ -271,7 +226,7 @@ LauncherApplication::Instance()
 // ****************************************************************************
 
 LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
-    keepAliveRPC(), launchRPC(), childOutput()
+    keepAliveRPC(), launchRPC(), childOutput(), launch()
 {
     quitExecutor = 0;
     keepAliveExecutor = 0;
@@ -316,10 +271,8 @@ LauncherApplication::~LauncherApplication()
     delete launchExecutor;
     delete connectSimExecutor;
 
-#ifdef CAPTURE_CHILD_OUTPUT
     for(int i = 0; i < childOutput.size(); ++i)
         delete childOutput[i];
-#endif
 }
 
 // ****************************************************************************
@@ -526,35 +479,6 @@ LauncherApplication::AlarmHandler(int)
 }
 
 // ****************************************************************************
-// Method: LauncherApplication::DeadChildHandler
-//
-// Purpose: 
-//    Signal handler for a SIGCHLD even while waiting for remote connections.
-//    Catch a child that died and mark it's success or failure in the
-//    childDied array.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon May 5 11:18:55 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-LauncherApplication::DeadChildHandler(int)
-{
-#if !defined(_WIN32)
-    int status;
-    int pid;
-    pid = wait(&status);
-
-    childDied[pid] = (status == 0 ? false : true);
-
-    signal(SIGCHLD, DeadChildHandler);
-#endif
-}
-
-// ****************************************************************************
 // Method: LauncherApplication::MainLoop
 //
 // Purpose: 
@@ -581,7 +505,7 @@ LauncherApplication::MainLoop()
         // connections have input to be read.
         ConnectionGroup connGroup;
         connGroup.AddConnection(parent.GetWriteConnection());
-#ifdef CAPTURE_CHILD_OUTPUT
+#ifndef _WIN32
         for(int i = 0; i < childOutput.size(); ++i)
             connGroup.AddConnection(childOutput[i]);
 #endif
@@ -607,11 +531,11 @@ LauncherApplication::MainLoop()
                 }
                 ENDTRY
             }
-#ifdef CAPTURE_CHILD_OUTPUT
+#ifndef _WIN32
             else if(childOutput.size() > 0)
             {
                 char         buf[1000 + 1];
-                ssize_t      nbuf = 0;
+                size_t       nbuf = 0;
                 std::string *outputs = new std::string[childOutput.size()];
                 bool        *valid = new bool[childOutput.size()];
 
@@ -623,6 +547,7 @@ LauncherApplication::MainLoop()
                     {
                         debug1 << "Child " << i << " needs to be read (desc="
                                << childOutput[i]->GetDescriptor() << ")" << endl;
+
                         // Read from the child process's pipe. Note that we use
                         // the read() function because we can't use 
                         // SocketConnection::DirectRead because it calls recv
@@ -722,139 +647,6 @@ LauncherApplication::ProcessInput()
 }
 
 // ****************************************************************************
-//  Method:  LauncherApplication::SetupGatewaySocketBridgeIfNeeded
-//
-//  Purpose:
-//    If SSH tunneling is enabled and we're about to launch a parallel
-//    engine, we need to set up a local port from any incoming host
-//    that gets forwarded through the appropriate SSH tunnel.  We cannot
-//    access SSH tunnels at the login node for a cluster from the
-//    compute nodes, because by default SSH only listens for connections
-//    from localhost.
-//
-//    The launch arguments containing the login node forward ("localhost":port)
-//    are also converted to the new bridge (loginnode:newport);
-//
-//  Arguments:
-//    launchArgs    the launch arguments (these will be modified in-place!)
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    May 24, 2007
-//
-//  Modifications:
-//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
-//    Backing out SSH tunneling on Panther (MacOS X 10.3)
-//
-//    Brad Whitlock, Mon Apr 27 16:31:23 PST 2009
-//    I changed the routine so the check for setting up the bridge is passed
-//    in rather than calculated in here from launch arguments.
-//
-// ****************************************************************************
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
-void
-LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs, 
-    bool doBridge)
-{
-    const char *mName="LauncherApplication::SetupGatewaySocketBridgeIfNeeded: ";
-
-    if (!useSSHTunneling)
-        return;
-
-    debug5 << mName << "SSH Tunneling was enabled\n";
-
-    // Get the port and host.
-    int  oldlocalport       = -1;
-    int  portargument       = -1;
-    int  hostargument       = -1;
-    for (size_t i=0; i<launchArgs.size(); i++)
-    {
-        if (i<launchArgs.size()-1 && launchArgs[i] == "-port")
-        {
-            oldlocalport = atoi(launchArgs[i+1].c_str());
-            portargument = i+1;
-        }
-        else if (i<launchArgs.size()-1 && launchArgs[i] == "-host")
-        {
-            hostargument = i+1;
-        }
-    }
-
-    if (doBridge && portargument != -1 && hostargument != -1)
-    {
-        debug5 << mName << "Parallel Engine launch detected; "
-               << "Setting up gateway port bridge.\n";
-        // find a new local port
-        int lowerRemotePort = 10000;
-        int upperRemotePort = 40000;
-        int remotePortRange = 1+upperRemotePort-lowerRemotePort;
-
-#if defined(_WIN32)
-        srand((unsigned)time(0));
-        int newlocalport = lowerRemotePort+(rand()%remotePortRange);
-#else
-        srand48(long(time(0)));
-        int newlocalport = lowerRemotePort+(lrand48()%remotePortRange);
-#endif
-        debug5 << mName << "Bridging new port INADDR_ANY/" << newlocalport
-               << " to tunneled port localhost/" << oldlocalport << endl;
-
-        // replace the host with my host name
-        char hostname[1024];
-        gethostname(hostname,1024);
-        launchArgs[hostargument] = hostname;
-
-        // replace the launch argument port number
-        char newportstr[10];
-        sprintf(newportstr,"%d",newlocalport);
-        launchArgs[portargument] = newportstr;
-
-        // fork and start the socket bridge
-        int *ports = new int[2];
-        ports[0] = newlocalport;
-        ports[1] = oldlocalport;
-#ifdef _WIN32
-        _beginthread(CreateSocketBridge, 0, (void*)ports);
-#else
-        switch (fork())
-        {
-          case -1:
-            // Could not fork.
-            exit(-1); // HOOKS_IGNORE
-            break;
-          case 0:
-              {
-                  // The child process will start the bridge
-                  // Close stdin and any other file descriptors.
-                  fclose(stdin);
-                  for (int k = 3 ; k < 32 ; ++k)
-                  {
-                      close(k);
-                  }
-                  CreateSocketBridge((void*)ports);
-                  exit(0); // HOOKS_IGNORE
-                  break;
-              }
-          default:
-            // Parent process continues on as normal
-            // Caution: there is a slight race condition here, though
-            // it would require the engine to launch and try to connect
-            // back before the child process got the bridge set up.
-            // The odds of this happening are low, but it should be fixed.
-            break;
-        }
-#endif
-    }
-    else
-    {
-        debug5 << mName << "Not launching parallel engine; "
-               << "skipping gateway port bridge." << endl;
-    }
-}
-#endif
-
-// ****************************************************************************
 // Method: LauncherApplication::LaunchProcess
 //
 // Purpose: 
@@ -881,202 +673,39 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs,
 //   Hank Childs, Weds Nov 11 12:05:51 PST 2009
 //   Add support for tildes (~). 
 //
+//   Brad Whitlock, Mon Nov 28 17:04:52 PST 2011
+//   I moved the guts to LaunchService.
+//
 // ****************************************************************************
 
 void
-LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
+LauncherApplication::LaunchProcess(const stringVector &args)
 {
-    const char *mName = "LauncherApplication::LaunchProcess: ";
-
-    stringVector launchArgs(origLaunchArgs);
-
-    if(launchArgs.size() < 1)
-        return;
-
-    // Set up an extra indirection if we're tunneling and 
-    // launching a parallel engine.  SSH port forwarding
-    // is typically restricted to forwarding from localhost
-    // which doesn't work if we're on a compute node.
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
+    // Set up an extra indirection if we're tunneling and launching a parallel
+    // engine.  SSH port forwarding is typically restricted to forwarding from 
+    // localhost which doesn't work if we're on a compute node.
     bool launching_parallel = false;
     bool launching_engine = false;
-    for (size_t i=0; i<launchArgs.size(); i++)
+    for (size_t i=0; i<args.size(); i++)
     {
-        if (launchArgs[i] == "-np" || launchArgs[i] == "-par")
+        if (args[i] == "-np" || args[i] == "-par")
         {
             launching_parallel = true;
         }
-        else if (launchArgs[i] == "-engine")
+        else if (args[i] == "-engine")
         {
             launching_engine = true;
         }
     }
-    bool doBridge = launching_parallel && launching_engine;
-    SetupGatewaySocketBridgeIfNeeded(launchArgs, doBridge);
-#endif
+    bool doBridge = useSSHTunneling && launching_parallel && launching_engine;
 
-    std::string remoteProgram(launchArgs[0]);
-    debug2 << "LaunchRPC command = " << remoteProgram.c_str() << ", args=(";
+    SocketConnection *conn = NULL;
+    launch.Launch(args, doBridge, &conn);
 
-    // Make a command line array for the exec functions.
-    char **args = new char *[launchArgs.size() + 1];
-    memset(args, 0, (launchArgs.size() + 1) * sizeof(char *));
-    for(size_t i = 0; i < launchArgs.size(); ++i)
-    {
-        args[i] = new char[launchArgs[i].size() + 1];
-        strcpy(args[i], launchArgs[i].c_str());
-        if(i > 0)
-            debug2 << launchArgs[i].c_str() << " ";
-    }
-    debug2 << ")" << endl;
-
-    // We have command line arguments for a command to launch.
-
-    int remoteProgramPid = 0;
-#if defined(_WIN32)
-    // Do it the WIN32 way where we use the _spawnvp system call.
-    remoteProgramPid = _spawnvp(_P_NOWAIT, remoteProgram.c_str(), args);
-#else
-    // Watch for a process who died
-    childDied[remoteProgramPid] = false;
-    signal(SIGCHLD, DeadChildHandler);
-
-#ifdef CAPTURE_CHILD_OUTPUT
-    // Create a pipe.
-    int f_des[2];
-    if(pipe(f_des) == -1)
-        exit(-1); // HOOKS_IGNORE
-#endif
-
-    switch (remoteProgramPid = fork())
-    {
-    case -1:
-        // Could not fork.
-        exit(-1); // HOOKS_IGNORE
-        break;
-    case 0:
-        // Close stdin and any other file descriptors.
-        fclose(stdin);
-#ifdef CAPTURE_CHILD_OUTPUT
-        // Send the process' stdout to our pipe.
-        dup2(f_des[1], fileno(stdout));
-        dup2(f_des[1], fileno(stderr));
-        close(f_des[0]);
-        close(f_des[1]);
-#endif
-        for (int k = 3 ; k < 32 ; ++k)
-        {
-            close(k);
-        }
-        // Execute the process on the local machine.
-        if (remoteProgram.size() > 0 && remoteProgram[0] == '~')
-            remoteProgram = ExpandUserPath(remoteProgram);
-        execvp(remoteProgram.c_str(), args);
-        exit(-1); // HOOKS_IGNORE
-        break;   // OCD
-    default:
-#ifdef CAPTURE_CHILD_OUTPUT
-        close(f_des[1]);
-#endif
-        break;
-    }
-
-    // Stop watching for dead children
-    signal(SIGCHLD, SIG_DFL);
-
-    // If we had a dead child, try and connect back to the client that
-    // wanted to connect to the dead child.
-    if(childDied[remoteProgramPid])
-    {
-        // Create a temp array of pointers to the strings that we
-        // created and pass the temp array to the TerminateConnectionRequest
-        // method because it creates a ParentProcess object that will
-        // rearrange the pointers in the array.
-        char **args2 = new char *[launchArgs.size() + 1];
-        for(size_t i = 0; i < launchArgs.size(); ++i)
-            args2[i] = args[i];
-
-        // Tell the client that we could not connect.
-        TerminateConnectionRequest(launchArgs.size(), args2);
-
-        delete [] args2;
-    }
-#ifdef CAPTURE_CHILD_OUTPUT
-    else
-    {
-        // Add the child's output pipe to the list of descriptors that
-        // we will check. We add the pipe file descriptor as a 
-        // SocketConnection object.
-        childOutput.push_back(new SocketConnection(f_des[0]));
-    }
-#endif
-#endif
-
-    // Free the command line storage.
-    for(size_t i = 0; i < launchArgs.size(); ++i)
-        delete [] args[i];
-    delete [] args;
-}
-
-// ****************************************************************************
-// Method: GetSSHClient
-//
-// Purpose: 
-//   Gets the SSH_CLIENT variable if it exists.
-//
-// Arguments:
-//   sshClient : The return variable.
-//
-// Returns:    True on success; false on failure.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Apr 24 15:21:18 PDT 2009
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-GetSSHClient(std::string &sshClient)
-{
-    bool retval = false;
-    const char *s = NULL;
-    if((s = getenv("SSH_CLIENT")) != NULL)
-    {
-        stringVector sv = SplitValues(s, ' ');
-        if(sv.size() > 0)
-        {
-            retval = true;
-            sshClient = sv[0];
-        }
-    }
-    else if((s = getenv("SSH2_CLIENT")) != NULL)
-    {
-        stringVector sv = SplitValues(s, ' ');
-        if(sv.size() > 0)
-        {
-            retval = true;
-            sshClient = sv[0];
-        }
-    }
-    else if((s = getenv("SSH_CONNECTION")) != NULL)
-    {
-        stringVector sv = SplitValues(s, ' ');
-        if(sv.size() > 0)
-        {
-            retval = true;
-            sshClient = sv[0];
-        }
-    }
-    else
-    {
-        debug1 << "None of the SSH environment variables were set!" << endl;
-    }
-    return retval;
+    // Add the child's output pipe to the list of descriptors that we will check.
+    // We add the pipe file descriptor as a SocketConnection object.
+    if(conn != NULL)
+        childOutput.push_back(conn);
 }
 
 // ****************************************************************************
@@ -1158,7 +787,8 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
     // launching a parallel engine.  SSH port forwarding
     // is typically restricted to forwarding from localhost
     // which doesn't work if we're on a compute node.
-    SetupGatewaySocketBridgeIfNeeded(launchArgs, true);
+    if(useSSHTunneling)
+        launch.SetupGatewaySocketBridgeIfNeeded(launchArgs);
 
     debug1 << mName << "AFTER Socket Bridge: launchArgs={";
     for(size_t i = 0; i < launchArgs.size(); ++i)
@@ -1277,47 +907,4 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
         nleft -= nwritten;
         ptr   += nwritten;
     }
-}
-
-// ****************************************************************************
-// Method: LauncherApplication::TerminateConnectionRequest
-//
-// Purpose: 
-//   Tells the client that we could not launch the desired process. This
-//   lets the client fail gracefully instead of hang.
-//
-// Arguments:
-//   argc : The number of arguments in argv.
-//   argv : The argument array used to connect back to the client.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon May 5 11:46:35 PDT 2003
-//
-// Modifications:
-//   Brad Whitlock, Tue Jul 29 11:39:03 PDT 2003
-//   Changed interface to ParentProcess::Connect.
-//
-//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
-//   Replaced CATCHALL(...) with CATCHALL.
-// ****************************************************************************
-
-void
-LauncherApplication::TerminateConnectionRequest(int argc, char *argv[])
-{
-    // Try and connect back to the process that initiated the request and
-    // send it a non-zero fail code so it will terminate the connection.
-    TRY
-    {
-        debug1 << "Terminating connection request to the client." << endl;
-
-        ParentProcess killer;
-
-        // Connect back to the process and say that we could not connect.
-        killer.Connect(1, 1, &argc, &argv, true, 3);
-    }
-    CATCHALL
-    {
-        // We know that we're going to get here, but no action is required.
-    }
-    ENDTRY
 }

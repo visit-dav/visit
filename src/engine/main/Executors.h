@@ -72,6 +72,7 @@
 #include <ExecuteRPC.h>
 #include <ExportDatabaseRPC.h>
 #include <KeepAliveRPC.h>
+#include <LaunchRPC.h>
 #include <MakePlotRPC.h>
 #include <NamedSelectionRPC.h>
 #include <OpenDatabaseRPC.h>
@@ -1825,5 +1826,33 @@ RPCExecutor<SetEFileOpenOptionsRPC>::Execute(SetEFileOpenOptionsRPC *rpc)
     rpc->SendReply();
 }
 
+// ****************************************************************************
+//  Method: RPCExecutor<LaunchRPC>::Execute
+//
+//  Purpose:  Launch a process.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Nov 28 16:31:49 PST 2011
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<LaunchRPC>::Execute(LaunchRPC *rpc)
+{
+    Engine *engine = Engine::Instance();
+
+    debug2 << "Executing LaunchRPC: " << endl;
+
+    TRY
+    {
+        engine->LaunchProcess(rpc->GetLaunchArgs());
+        rpc->SendReply();
+    }
+    CATCH2(VisItException, e)
+    {
+        rpc->SendError(e.Message(), e.GetExceptionType());
+    }
+    ENDTRY
+}
 
 #endif

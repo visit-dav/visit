@@ -157,11 +157,7 @@ public:
     Connection *GetWriteConnection(int i=0) const;
     int  GetProcessId() const;
     void SetProgressCallback(bool (*)(void *, int), void *);
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
     std::map<int,int> GetPortTunnelMap() { return portTunnelMap; }
-#endif
 
     static void SetAuthenticationCallback(void (*)(const char *, const char *, int));    
     static void DisablePTY();
@@ -214,11 +210,7 @@ private:
     int                      nReadConnections, nWriteConnections;
     bool                   (*progressCallback)(void *, int);
     void                    *progressCallbackData;
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
     std::map<int,int>        portTunnelMap;
-#endif
 
     static void            (*getAuthentication)(const char *, const char *, int);
     static bool              disablePTY;

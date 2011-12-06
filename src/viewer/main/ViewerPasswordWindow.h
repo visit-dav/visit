@@ -88,7 +88,7 @@ class ViewerConnectionProgressDialog;
 class ViewerPasswordWindow : public QDialog
 {
     Q_OBJECT
-  public:
+public:
     ViewerPasswordWindow(QWidget *parent=NULL);
     ~ViewerPasswordWindow();
 
@@ -104,14 +104,9 @@ class ViewerPasswordWindow : public QDialog
 private slots:
     void changeUsername();
 
-#if defined(PANTHERHACK)
-// Broken on Panther
-  private:
-#else
     static std::set<int> GetFailedPortForwards();
-  private:
+private:
     static std::set<int> failedPortForwards;
-#endif
     QLineEdit *passedit;
     QLabel    *label;
     static bool       needToChangeUsername;

@@ -35,71 +35,45 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef LAUNCH_SERVICE_H
+#define LAUNCH_SERVICE_H
+#include <comm_exports.h>
+#include <map>
+#include <vectortypes.h>
 
-#ifndef SOCKET_BRIDGE_H
-#define SOCKET_BRIDGE_H
-
-#if defined(_WIN32)
-#include <winsock2.h>
-#else
-#include <sys/types.h>
-#include <sys/select.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#endif
+class SocketConnection;
 
 // ****************************************************************************
-// Class: SocketBridge
+// Class: LaunchService
 //
 // Purpose:
-//   This class bridges two local ports.
+//   Launches programs.
 //
-// Notes:      
+// Notes:      This class can set up an SSH tunnel for the launched program if
+//             that needs to be done. This code used to be in VCL.
 //
-// Programmer: Jeremy Meredith
-// Creation:   May 23, 2007
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 28 17:09:16 PST 2011
 //
 // Modifications:
-//    Thomas R. Treadway, Mon Jun  4 09:54:17 PDT 2007
-//    Added types.h for fd_set definition.
-//
-//    Cyrus Harrison, Thu Jun  7 11:44:07 PDT 2007
-//    Added <sys/select.h> for AIX fd_set definition 
-//
-//    Gunther H. Weber, Thu Jan 14 11:38:27 PST 2010
-//    Added ability to connect bridge to other host than localhost.
-//
+//   
 // ****************************************************************************
 
-class SocketBridge
+class COMM_API LaunchService
 {
-  public:
-          SocketBridge(int from, int to, const char* toHost="localhost");
-         ~SocketBridge();
+public:
+    LaunchService();
+    ~LaunchService();
 
-    void  Bridge();
+    void Launch(const stringVector &launchArgs, bool doBridge=false, 
+                SocketConnection **conn = NULL);
 
-  protected:
-    int   NumActiveBridges();
-    bool  GetListenActivity();
-    int   GetOriginatingActivity();
-    int   GetTerminatingActivity();
-    void  WaitForActivity();
-    void  StartNewBridge();
-    void  CloseBridge(int index);
-    void  ForwardOrigToTerm(int index);
-    void  ForwardTermToOrig(int index);
-
-  private:
-    int                from_port;
-    int                to_port;
-    const char        *to_host;
-    struct sockaddr_in listen_sock;
-    int                listen_fd;
-    int                originating_fd[1000];
-    int                terminating_fd[1000];
-    int                num_bridges;
-    fd_set             activity;
+    bool SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs);
+private:
+    void TerminateConnectionRequest(int, char **);
+    
+    static void DeadChildHandler(int);
+    static std::map<int, bool>  childDied;
 };
 
 #endif

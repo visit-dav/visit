@@ -37,6 +37,11 @@
 # Modifications:
 #
 #****************************************************************************/
+IF(VISIT_PARALLEL AND WIN32)
+SET(VIEWERLIB_WIN32_SOURCES
+ViewerSubmitParallelEngineToWindowsHPC.cpp
+)
+ENDIF(VISIT_PARALLEL AND WIN32)
 
 SET(VIEWERLIB_SOURCES
 ActionGroupDescription.C
@@ -89,6 +94,7 @@ ViewerWindowManager.C
 ViewerWindowManagerAttributes.C
 VisItViewer.C
 WindowActions.C
+${VIEWERLIB_WIN32_SOURCES}
 )
 
 # If the viewer is static then we need some static symbol lookup functions

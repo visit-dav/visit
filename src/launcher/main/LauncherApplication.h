@@ -46,6 +46,8 @@
 #include <LaunchRPC.h>
 #include <ConnectSimRPC.h>
 #include <RPCExecutor.h>
+#include <LaunchService.h>
+
 #include <map>
 
 // ****************************************************************************
@@ -85,6 +87,9 @@
 //   Brad Whitlock, Mon Apr 27 16:25:34 PST 2009
 //   I changed the code so we can tunnel simulation data connections.
 //
+//   Brad Whitlock, Tue Nov 29 11:23:39 PST 2011
+//   I moved some functionality into LaunchService.
+//
 // ****************************************************************************
 
 class LauncherApplication
@@ -106,17 +111,10 @@ protected:
     bool ProcessInput();
     void TurnOnAlarm();
     void TurnOffAlarm();
-#if defined(PANTHERHACK)
-    void TerminateConnectionRequest(int, char **);
-#else
-    void TerminateConnectionRequest(int, char **);
-    void SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs, bool);
-#endif
+
     static void AlarmHandler(int);
-    static void DeadChildHandler(int);
 private:
     static LauncherApplication *instance;
-    static std::map<int, bool>  childDied;
 
     ParentProcess               parent;
     Xfer                        xfer;
@@ -135,6 +133,7 @@ private:
     bool                        keepGoing;
     int                         timeout;
     std::vector<Connection*>    childOutput;
+    LaunchService               launch;
 };
 
 #endif

@@ -76,6 +76,7 @@
 #include <InstallationFunctions.h>
 #include <InitVTK.h>
 #include <InitVTKRendering.h>
+#include <LaunchService.h>
 #include <LoadBalancer.h>
 #include <LostConnectionException.h>
 #include <Netnodes.h>
@@ -89,6 +90,7 @@
 #include <SocketConnection.h>
 #include <StringHelpers.h>
 #include <StackTimer.h>
+#include <Utility.h>
 #include <VisItDisplay.h>
 #ifndef _WIN32
 # include <XDisplay.h>
@@ -392,6 +394,7 @@ Engine::Engine() : viewerArgs()
     simulationCommandRPC = NULL;
     setEFileOpenOptionsRPC = NULL;
     enginePropertiesRPC = NULL;
+    launchRPC = NULL;
 
 #if defined(PARALLEL) && defined(HAVE_ICET)
     useIceT = true;
@@ -480,6 +483,7 @@ Engine::~Engine()
     delete namedSelectionRPC;
     delete setEFileOpenOptionsRPC;
     delete enginePropertiesRPC;
+    delete launchRPC;
 
     delete viewer;
     delete viewerP;
@@ -1043,6 +1047,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     namedSelectionRPC               = new NamedSelectionRPC;
     setEFileOpenOptionsRPC          = new SetEFileOpenOptionsRPC;
     enginePropertiesRPC             = new EnginePropertiesRPC;
+    launchRPC                       = new LaunchRPC;
 
     xfer->Add(quitRPC);
     xfer->Add(keepAliveRPC);
@@ -1071,6 +1076,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(namedSelectionRPC);
     xfer->Add(setEFileOpenOptionsRPC);
     xfer->Add(enginePropertiesRPC);
+    xfer->Add(launchRPC);
 
     // Create an object to implement the RPCs
     rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
@@ -1103,7 +1109,8 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<NamedSelectionRPC>(namedSelectionRPC));
     rpcExecutors.push_back(new RPCExecutor<SetEFileOpenOptionsRPC>(setEFileOpenOptionsRPC));
     rpcExecutors.push_back(new RPCExecutor<EnginePropertiesRPC>(enginePropertiesRPC));
-
+    rpcExecutors.push_back(new RPCExecutor<LaunchRPC>(launchRPC));
+  
     // Hook up the expression list as an observed object.
     Parser *p = new ExprParser(new avtExprNodeFactory());
     ParsingExprList *l = new ParsingExprList(p);
@@ -4053,4 +4060,34 @@ Engine::SaveWindow(const std::string &filename, int imageWidth, int imageHeight,
     SaveWindowAttributes::FileFormat fmt)
 {
     return netmgr->SaveWindow(filename, imageWidth, imageHeight, fmt);
+}
+
+// ****************************************************************************
+// Method: Engine::LaunchProcess
+//
+// Purpose: 
+//   Launch a process on rank 0.
+//
+// Arguments:
+//   args : The program arguments.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 29 11:37:35 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Engine::LaunchProcess(const stringVector &args)
+{
+    if(!args.empty() && PAR_Rank() == 0)
+    {
+        LaunchService launch;
+        launch.Launch(args);
+    }
 }

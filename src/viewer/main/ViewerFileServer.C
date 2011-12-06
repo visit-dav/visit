@@ -1398,11 +1398,17 @@ ViewerFileServer::StartServer(const std::string &host)
 //    I added the ability to use a gateway machine when connecting to a
 //    remote host.
 //
+//    Brad Whitlock, Tue Nov 29 16:41:35 PST 2011
+//    Launch the mdserver through the engine if they should share the same
+//    batch job.
+//
 // ****************************************************************************
 
 void
 ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
 {
+    const char *mName = "ViewerFileServer::StartServer: ";
+
     // If the server already exists, return.
     if(servers.find(host) != servers.end())
         return;
@@ -1410,6 +1416,7 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
     ViewerConnectionProgressDialog *dialog = 0;
 
     // Create a new MD server on the remote machine.
+    debug4 << mName << "start" << endl;
     MDServerProxy *newServer = new MDServerProxy;
     TRY
     {
@@ -1438,17 +1445,30 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
 
         // Create a connection progress dialog and hook it up to the
         // mdserver proxy.
-        dialog = SetupConnectionProgressWindow(newServer, host);
+        dialog = CreateConnectionProgressDialog(host);
+        SetupConnectionProgressDialog(newServer, dialog);
 
         // Start the mdserver on the specified host.
-        if (!ShouldShareBatchJob(host) && HostIsLocalHost(host))
+        if (HostIsLocalHost(host))
         {
+            debug1 << mName << "Creating on localhost" << endl;
             newServer->Create("localhost", chd, clientHostName,
                               manualSSHPort, sshPort, useTunneling,
                               useGateway, gatewayHost);
         }
+        else if(ShouldShareBatchJob(host))
+        {
+            debug1 << mName << "Sharing connection with engine." << endl;
+
+            // Use VisIt's engine to start the remote mdserver.
+            newServer->Create(host, chd, clientHostName,
+                              manualSSHPort, sshPort, useTunneling,
+                              useGateway, gatewayHost,
+                              OpenWithEngine, (void*)dialog, true);
+        }
         else
         {
+            debug1 << mName << "Creating on host " << host << endl;
             // Use VisIt's launcher to start the remote mdserver.
             newServer->Create(host, chd, clientHostName,
                               manualSSHPort, sshPort, useTunneling,
@@ -1597,9 +1617,10 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
     }
     ENDTRY
 
-
     // Delete the connection dialog
     delete dialog;
+
+    debug4 << mName << "end" << endl;
 }
 
 
@@ -1931,10 +1952,6 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
     {
         // If we're doing ssh tunneling, map the local host/port to the
         // remote one.
-#if defined(PANTHERHACK)
-// Broken on Panther
-            servers[mdServerHost]->proxy->Connect(args);
-#else
         std::map<int,int> portTunnelMap = GetPortTunnelMap(mdServerHost);
         if (!portTunnelMap.empty())
         {
@@ -1955,7 +1972,6 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
             // Not tunneling through SSH; just go ahead and connect
             servers[mdServerHost]->proxy->Connect(args);
         }
-#endif
     }
     // We only want to do this after the mdserver has connected back
     SendFileOpenOptions(mdServerHost);

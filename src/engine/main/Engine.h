@@ -68,6 +68,7 @@ class UseNetworkRPC;
 class ProcInfoRPC;
 class SimulationCommandRPC;
 class SetEFileOpenOptionsRPC;
+class LaunchRPC;
 
 // Other classes
 class avtDatabaseMetaData;
@@ -219,6 +220,9 @@ class Xfer;
 //    Kathleen Biagas, Fri Jul 15 11:08:14 PDT 2011
 //    Added QueryPrametersRPC.
 //
+//    Brad Whitlock, Mon Nov 28 16:27:21 PST 2011
+//    I added LaunchRPC.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API Engine
@@ -278,6 +282,9 @@ class ENGINE_MAIN_API Engine
 
     // Method to get engine properties.
     EngineProperties GetEngineProperties();
+
+    // Method to launch other programs.
+    void LaunchProcess(const stringVector &args);
 
     // Various callbacks
     static bool     EngineAbortCallback(void *);
@@ -381,6 +388,7 @@ class ENGINE_MAIN_API Engine
     NamedSelectionRPC        *namedSelectionRPC;
     SetEFileOpenOptionsRPC   *setEFileOpenOptionsRPC;
     EnginePropertiesRPC      *enginePropertiesRPC;
+    LaunchRPC                *launchRPC;
 
 #ifdef DEBUG_MEMORY_LEAKS
     ParsingExprList          *parsingExprList;

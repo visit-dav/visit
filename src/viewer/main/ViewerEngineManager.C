@@ -47,8 +47,9 @@
 #include <EngineList.h>
 #include <EngineProxy.h>
 #include <HostProfileList.h>
-#include <MachineProfile.h>
+#include <InstallationFunctions.h>
 #include <LostConnectionException.h>
+#include <MachineProfile.h>
 #include <NoEngineException.h>
 #include <IncompatibleVersionException.h>
 #include <IncompatibleSecurityTokenException.h>
@@ -125,7 +126,10 @@ FileOpenOptions *ViewerEngineManager::defaultFileOpenOptions=0;
 //
 static void GetImageCallback(void *, int, avtDataObject_p &);
 static void UpdatePlotAttsCallback(void*,const string&,int,AttributeSubject*);
-
+#ifdef _WIN32
+void ViewerSubmitParallelEngineToWindowsHPC(const std::string &remoteHost, 
+                                            const stringVector &args, void *data);
+#endif
 
 // ****************************************************************************
 //  Method: ViewerEngineManager constructor
@@ -256,7 +260,58 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 }
 
 // ****************************************************************************
-//  Method: ViewerEngineManager::CreateEngine
+// Method: ViewerEngineManager::CreateEngine
+//
+// Purpose: 
+//   Create an engine for the specified host.
+//
+// Arguments:
+//      engineKey      contains the host name for the engine
+//      args           the arguments to pass to the engine
+//      skipChooser    do we not want to ask the user which profile to use
+//      numRestarts    the number of restart attempts to use when engines fail
+//      reverseLaunch  Whether the engine is being reverse launched (engine launched viewer)
+//
+// Returns:    True on success; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 29 16:44:47 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerEngineManager::CreateEngine(const EngineKey &ek,
+    const stringVector &args, bool skipChooser, int numRestarts_, bool reverseLaunch)
+{
+    ViewerConnectionProgressDialog *dialog =
+        CreateConnectionProgressDialog(ek.HostName());
+
+    bool retval = false;
+
+    TRY
+    {
+        retval = CreateEngineEx(ek, args, skipChooser, numRestarts_, 
+                                reverseLaunch, dialog);
+        // Delete the connection dialog
+        delete dialog;
+    }
+    CATCHALL
+    {
+        // Delete the connection dialog
+        delete dialog;
+        RETHROW;
+    }
+    ENDTRY
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::CreateEngineEx
 //
 //  Purpose:
 //      Create an engine for the specified host.
@@ -267,6 +322,7 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //      skipChooser    do we not want to ask the user which profile to use
 //      numRestarts    the number of restart attempts to use when engines fail
 //      reverseLaunch  Whether the engine is being reverse launched (engine launched viewer)
+//      dialog         The connection progress dialog to use.
 //
 //  Programmer: Eric Brugger
 //  Creation:   September 23, 2000
@@ -426,12 +482,27 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    Brad Whitlock, Mon Oct 10 12:30:54 PDT 2011
 //    Replace a keep-alive with a call to get engine properties.
 //
+//    Brad Whitlock, Tue Nov 29 16:43:01 PST 2011
+//    I added a dialog argument and renamed the method. I changed the code so 
+//    we launch the engine directly when the mdserver and the engine have to
+//    share the same batch job.
+//    
 // ****************************************************************************
 
 bool
-ViewerEngineManager::CreateEngine(const EngineKey &ek,
-    const stringVector &args, bool skipChooser, int numRestarts_, bool reverseLaunch)
+ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
+    const stringVector &args, bool skipChooser, int numRestarts_, bool reverseLaunch,
+    ViewerConnectionProgressDialog *dialog)
 {
+    const char *mName = "ViewerEngineManager::CreateEngineEx: ";
+    debug1 << mName << "ek=" << ek.HostName() << ", args={";
+    for(size_t i = 0; i < args.size(); ++i) 
+        debug1 << args[i] << ", ";
+    debug1 << "}, skipChooser=" << (skipChooser?"true":"false")
+           << ", numRestarts_=" << numRestarts_
+           << ", reverseLaunch=" << (reverseLaunch?"true":"false")
+           << ", dialog=" << ((void*)dialog) << endl;
+
     if (numRestarts_ == -1)
     {
         if (numRestarts == -1)
@@ -444,10 +515,16 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     // Check if an engine already exists for the host.
     //
     if (EngineExists(ek))
+    {
+        debug1 << mName << "Engine exists. Return early." << endl;
         return true;
+    }
 
     if (InLaunch())
+    {
+        debug1 << mName << "In launch. Return early." << endl;
         return false;
+    }
 
     // Consider the state to be inLaunch from now on so we can check for
     // recursion into this function as a result of getting into the
@@ -464,6 +541,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     if (!chooser->SelectProfile(clientAtts,ek.HostName(),skipChooser,
         newEngine.profile))
     {
+        debug1 << mName << "Did not select profile. Return early." << endl;
         inLaunch = false;
         return false;
     }
@@ -471,18 +549,16 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     //
     // Create a new engine proxy and add arguments from the profile to it.
     //
+    debug1 << mName << "Creating new engine proxy." << endl;
     newEngine.proxy = new EngineProxy;
     if(!reverseLaunch)
-    {
-        bool addParallelArgs = !newEngine.profile.GetShareOneBatchJob();
-        newEngine.proxy->AddProfileArguments(newEngine.profile,
-                                             addParallelArgs);
-    }
+        newEngine.proxy->AddProfileArguments(newEngine.profile, true);
 
     //
     // Add some arguments to the engine proxy before we try to
     // launch the engine.  Cache them if needed for an automatic launch.
     //
+    debug1 << mName << "Adding arguments." << endl;
     AddArguments(newEngine.proxy, args);
     chooser->AddRestartArgsToCachedProfile(ek.HostName(),  args);
     stringVector eArgs;
@@ -496,8 +572,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     //
     // Set up the connection progress window.
     //
-    ViewerConnectionProgressDialog *dialog =
-                 SetupConnectionProgressWindow(newEngine.proxy, ek.HostName());
+    SetupConnectionProgressDialog(newEngine.proxy, dialog);
 
     //
     // Send a status message.
@@ -507,6 +582,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     //
     // Add the new engine proxy to the engine list.
     //
+    bool rethrowCancel = false;
     TRY
     {
         // Get the client machine name options
@@ -531,33 +607,76 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         //
         TRY
         {
-            if (!ShouldShareBatchJob(ek.HostName()) && 
-                HostIsLocalHost(ek.HostName()))
+            if (HostIsLocalHost(ek.HostName()))
             {
                 if(reverseLaunch)
                 {
-                    debug1 << "Connecting to an existing engine" << endl;
+                    debug1 << mName << "Connecting to an existing engine" << endl;
                     newEngine.proxy->Connect(args);
                 }
                 else
                 {
-                    debug1 << "Launching a local engine" << endl;
+                    debug1 << mName << "Launching a local engine" << endl;
                     newEngine.proxy->Create("localhost", chd, clientHostName,
                                             manualSSHPort, sshPort,
                                             useTunneling,
                                             useGateway, gatewayHost);
                 }
             }
+            else if(ShouldShareBatchJob(ek.HostName()))
+            {
+                bool createAsThoughLocal = false;
+#ifdef _WIN32
+                const LaunchProfile *lp = newEngine.profile.GetActiveLaunchProfile();
+                if(lp != NULL)
+                {
+                    debug1 << mName << "The active launch profile is: " << lp->GetProfileName() << endl;
+                    debug1 << mName << "\tlaunchMethodSet=" << (lp->GetLaunchMethodSet()?"true":"false") << endl;
+                    debug1 << mName << "\tlaunchMethod=" << lp->GetLaunchMethod() << endl;
+                    // If we're launching via WindowsHPC and we're on windows, that
+                    // will end up running the visit.exe launcher locally and we'll
+                    // use that to run Windows HPC job command.
+                    createAsThoughLocal = (lp->GetLaunchMethodSet() && 
+                        lp->GetLaunchMethod() == "WindowsHPC");
+                }
+
+                debug1 << mName << "createAsThoughLocal=" << (createAsThoughLocal?"true":"false") << endl;
+                if(createAsThoughLocal)
+                {
+                     // Launch the engine directly through the job launcher API.
+                     debug1 << mName << "Launching an engine through Windows HPC launcher" << endl;
+                     rethrowCancel = true;
+                     newEngine.proxy->Create(ek.HostName(), chd, clientHostName,
+                                             manualSSHPort, sshPort,
+                                             useTunneling,
+                                             useGateway, gatewayHost,
+                                             ViewerSubmitParallelEngineToWindowsHPC, (void*)&newEngine.profile,
+                                             createAsThoughLocal);
+                }
+                else
+#endif
+                {
+                     debug1 << mName << "Launching an engine directly" << endl;
+
+                     newEngine.proxy->Create(ek.HostName(), chd, clientHostName,
+                                             manualSSHPort, sshPort,
+                                             useTunneling,
+                                             useGateway, gatewayHost,
+                                             NULL, NULL, createAsThoughLocal);
+                }
+            }
             else
             { 
-                debug1 << "Launching an engine with the launcher" << endl;
+                debug1 << mName << "Launching an engine with the launcher" << endl;
 
                 // Use VisIt's launcher to start the remote engine.
                 newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
                                   manualSSHPort, sshPort, useTunneling,
                                   useGateway, gatewayHost,
-                                  OpenWithLauncher, (void *)dialog, true);
+                                  OpenWithLauncher, (void *)cbData, true);
             }
+
+            debug1 << mName << "Send keep alive and engine properties rpc" << endl;
 
             // Do a keep alive immediately to ensure that data is sent
             // over the engine socket. The other 2 sockets share data when
@@ -573,6 +692,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         }
         CATCHALL
         {
+            debug1 << mName << "Caught exception, rethrowing" << endl;
             inLaunch = false;
             RETHROW;
         }
@@ -658,6 +778,11 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
                          "on \"%2\" to be sure the job is no longer present").
                       arg(ek.HostName().c_str()).arg(ek.HostName().c_str());
         Error(msg);
+
+        if(rethrowCancel)
+        {
+            RETHROW;
+        }
     }
     CATCH(LostConnectionException)
     {
@@ -679,8 +804,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     // Clear the status message.
     ClearStatus();
 
-    // Delete the connection dialog
-    delete dialog;
+    debug1 << mName << "end" << endl;
 
     return success;
 }
@@ -824,7 +948,9 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         simData.h = simHost;
         simData.p = simPort;
         simData.k = simSecurityKey;
-        simData.d = SetupConnectionProgressWindow(newEngine.proxy, ek.HostName());
+        simData.d = CreateConnectionProgressDialog(ek.HostName());
+        SetupConnectionProgressDialog(newEngine.proxy, simData.d);
+
         GetSSHTunnelOptions(ek.HostName(), simData.tunnel);
 
         newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
@@ -3844,3 +3970,31 @@ ViewerEngineManager::SendSimulationCommand(const EngineKey &ek,
         EXCEPTION0(NoEngineException);
 }
 
+// ****************************************************************************
+// Method: ViewerEngineManager::LaunchProcess
+//
+// Purpose: 
+//   Launch a process via the compute engine.
+//
+// Arguments:
+//  ek   : The engine key.
+//  args : The program to launch and its arguments.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 29 20:40:21 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerEngineManager::LaunchProcess(const EngineKey &ek, const stringVector &args)
+{
+    ENGINE_PROXY_RPC_BEGIN("LaunchProcess");  
+        engine->LaunchProcess(args);
+    ENGINE_PROXY_RPC_END
+}

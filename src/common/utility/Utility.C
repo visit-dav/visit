@@ -665,9 +665,7 @@ SplitValues(const std::string &buff, char delim)
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
 // ****************************************************************************
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
+
 bool
 ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
                             std::vector<std::string> &args)
@@ -715,4 +713,59 @@ ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
     args.push_back("-sshtunneling");
     return true;
 }
-#endif
+
+// ****************************************************************************
+// Method: GetSSHClient
+//
+// Purpose: 
+//   Gets the SSH_CLIENT variable if it exists.
+//
+// Arguments:
+//   sshClient : The return variable.
+//
+// Returns:    True on success; false on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 24 15:21:18 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GetSSHClient(std::string &sshClient)
+{
+    bool retval = false;
+    const char *s = NULL;
+    if((s = getenv("SSH_CLIENT")) != NULL)
+    {
+        stringVector sv = SplitValues(s, ' ');
+        if(sv.size() > 0)
+        {
+            retval = true;
+            sshClient = sv[0];
+        }
+    }
+    else if((s = getenv("SSH2_CLIENT")) != NULL)
+    {
+        stringVector sv = SplitValues(s, ' ');
+        if(sv.size() > 0)
+        {
+            retval = true;
+            sshClient = sv[0];
+        }
+    }
+    else if((s = getenv("SSH_CONNECTION")) != NULL)
+    {
+        stringVector sv = SplitValues(s, ' ');
+        if(sv.size() > 0)
+        {
+            retval = true;
+            sshClient = sv[0];
+        }
+    }
+
+    return retval;
+}

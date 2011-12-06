@@ -36,9 +36,6 @@
 *
 *****************************************************************************/
 #include <visit-config.h>
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
 #include "SocketBridge.h"
 
 #if defined(_WIN32)
@@ -619,4 +616,4 @@ CloseSocket(int fd)
     close(fd);
 #endif
 }
-#endif
+

@@ -286,6 +286,9 @@ EngineProxy::Connect(const stringVector &args)
 //    Brad Whitlock, Mon Oct 10 12:11:42 PDT 2011
 //    Added enginePropertiesRPC.
 //
+//    Brad Whitlock, Tue Nov 29 22:31:30 PST 2011
+//    Add launchRPC.
+//
 // ****************************************************************************
 
 void
@@ -319,6 +322,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&namedSelectionRPC);
     xfer.Add(&setEFileOpenOptionsRPC);
     xfer.Add(&enginePropertiesRPC);
+    xfer.Add(&launchRPC);
 
     xfer.Add(&exprList);
 
@@ -2065,4 +2069,30 @@ EngineProxy::GetEngineProperties()
         props.SetNumNodes(numNodes);
 
     return props;
+}
+
+// ****************************************************************************
+// Method: EngineProxy::LaunchProcess
+//
+// Purpose: 
+//   Make the engine capable of launching a new process.
+//
+// Arguments:
+//   args : The program arguments.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 28 16:26:06 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EngineProxy::LaunchProcess(const stringVector &args)
+{
+    launchRPC(args);
 }
