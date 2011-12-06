@@ -38,7 +38,7 @@
 
 #ifndef LAUNCH_RPC_H
 #define LAUNCH_RPC_H
-#include <vclrpc_exports.h>
+#include <state_exports.h>
 #include <VisItRPC.h>
 #include <vectortypes.h>
 
@@ -59,7 +59,7 @@
 //
 // ****************************************************************************
 
-class LAUNCHER_RPC_API LaunchRPC : public BlockingRPC
+class STATE_API LaunchRPC : public BlockingRPC
 {
 public:
     LaunchRPC();

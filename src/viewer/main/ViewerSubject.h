@@ -54,7 +54,7 @@
 #include <VisWindowTypes.h>
 #include <avtTypes.h>
 #include <EngineKey.h>
-#include <vector>
+#include <vectortypes.h>
 #include <string>
 #include <map>
 
@@ -534,6 +534,10 @@ public:
                     const std::string &);
 
     void PostponeAction(ViewerActionBase *);
+
+    // Callback function for opening processes via engine.
+    static void OpenWithEngine(const std::string &remoteHost, 
+                               const stringVector &args, void *data);
 public slots:
     void ProcessFromParent();
 private:

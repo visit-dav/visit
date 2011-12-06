@@ -73,16 +73,16 @@
 //
 // ****************************************************************************
 
-ViewerConnectionProgressDialog::ViewerConnectionProgressDialog(const QString &component,
-    const QString &host, bool par, int t) : QWidget(0, Qt::Dialog),
-    componentName(component), hostName(host)
+ViewerConnectionProgressDialog::ViewerConnectionProgressDialog(const QString &host) :
+    QWidget(0, Qt::Dialog),
+    componentName(), hostName(host)
 {
     setWindowModality(Qt::ApplicationModal);
 
-    parallel = par;
+    parallel = true;
     iconFrame = 0;
     cancelled = false;
-    timeout = t;
+    timeout = 6000;
     cancelledShow = false;
     ignoreHide = false;
 
@@ -116,18 +116,7 @@ ViewerConnectionProgressDialog::ViewerConnectionProgressDialog(const QString &co
         dotLayout->addWidget(rb[i]);
     }
 
-    // Create the pixmap for the host that we're connecting to.
-    QPixmap right;
-    if(parallel)
-        right = QPixmap(super_xpm);
-    else
-    {
-        QMatrix m;
-        m.scale(-1., 1.);
-        right = left.transformed(m);
-    }
-    QLabel *rightComputer = new QLabel("", this);
-    rightComputer->setPixmap(right);
+    rightComputer = new QLabel("", this);
     iconLayout->addWidget(rightComputer);
     iconLayout->addSpacing(20);
     iconLayout->addStretch(5);
@@ -143,7 +132,8 @@ ViewerConnectionProgressDialog::ViewerConnectionProgressDialog(const QString &co
     topLayout->addWidget(msgLabel);
 
     // Set the component name.
-    setComponentName(component);
+    setParallel(false);
+    setComponentName("component");
 }
 
 // ****************************************************************************
@@ -192,7 +182,48 @@ ViewerConnectionProgressDialog::setComponentName(const QString &cn)
     // Set the window caption.
     QString str; str = componentName + " launch progress";
     setWindowTitle(str);
+    updateMessage();
+}
 
+// ****************************************************************************
+// Method: ViewerConnectionProgressDialog::setHostName
+//
+// Purpose: 
+//   Set a new host name.
+//
+// Arguments:
+//   host  : The new host name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 29 19:50:35 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerConnectionProgressDialog::setHostName(const QString &host)
+{
+    hostName = host;
+    updateMessage();
+}
+
+// ****************************************************************************
+// Method: ViewerConnectionProgressDialog::updateMessage
+//
+// Purpose: 
+//   Update the message using the component name and host name.  
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 29 19:50:06 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerConnectionProgressDialog::updateMessage()
+{
     // Set the message string.
     QString msg;
     if(parallel)
@@ -202,6 +233,47 @@ ViewerConnectionProgressDialog::setComponentName(const QString &cn)
         msg = tr("VisIt is waiting for a %1 to launch on %2.").
             arg(componentName).arg(hostName);
     msgLabel->setText(msg);
+}
+
+// ****************************************************************************
+// Method: ViewerConnectionProgressDialog::setParallel
+//
+// Purpose: 
+//   Set whether the component is parallel.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 29 16:00:00 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerConnectionProgressDialog::setParallel(bool p)
+{
+    if(parallel != p)
+    {
+        parallel = p;
+
+    // Create the pixmap for the host that we're connecting to.
+    QPixmap right;
+    if(parallel)
+        right = QPixmap(super_xpm);
+    else
+    {
+        QPixmap left(leftdesk_xpm);
+        QMatrix m;
+        m.scale(-1., 1.);
+        right = left.transformed(m);
+    }
+    rightComputer->setPixmap(right);
+    }
 }
 
 // ****************************************************************************

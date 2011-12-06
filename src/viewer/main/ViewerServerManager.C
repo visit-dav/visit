@@ -425,10 +425,6 @@ ViewerServerManager::GetSSHTunnelOptions(const std::string &host,
     // Check for a host profile for the hostName. If one exists, 
     // return the ssh tunneling options.
     //
-#if defined(PANTHERHACK)
-// Broken on Panther
-    tunnelSSH = false;
-#else
     if (sshTunnelingForcedOn)
     {
         tunnelSSH = true;
@@ -446,7 +442,6 @@ ViewerServerManager::GetSSHTunnelOptions(const std::string &host,
             tunnelSSH = false;
         }
     }
-#endif
 }
 
 // ****************************************************************************
@@ -574,7 +569,7 @@ ViewerServerManager::AddArguments(RemoteProxyBase *component,
 }
 
 // ****************************************************************************
-// Method: ViewerServerManager::SetupConnectionProgressWindow
+// Method: ViewerServerManager::CreateConnectionProgressDialog
 //
 // Purpose: 
 //   Creates a connection progress dialog that is hooked up to the component
@@ -603,11 +598,13 @@ ViewerServerManager::AddArguments(RemoteProxyBase *component,
 //   Brad Whitlock, Tue Apr 14 11:31:48 PDT 2009
 //   Use ViewerProperties.
 //
+//   Brad Whitlock, Tue Nov 29 16:11:06 PST 2011
+//   Remove some arguments.
+//
 // ****************************************************************************
 
 ViewerConnectionProgressDialog *
-ViewerServerManager::SetupConnectionProgressWindow(RemoteProxyBase *component, 
-    const std::string &host)
+ViewerServerManager::CreateConnectionProgressDialog(const std::string &host)
 {
     ViewerConnectionProgressDialog *dialog = 0;
 #ifdef HAVE_THREADS
@@ -616,12 +613,51 @@ ViewerServerManager::SetupConnectionProgressWindow(RemoteProxyBase *component,
     //
     if(!GetViewerProperties()->GetNowin())
     {
-        int timeout = (component->Parallel() || !HostIsLocalHost(host)) ? 0 : 4000;
-
         // Create a new connection dialog.
-        dialog = new ViewerConnectionProgressDialog(
-            component->GetComponentName().c_str(),
-            host.c_str(), component->Parallel(), timeout);
+        dialog = new ViewerConnectionProgressDialog(host.c_str());
+    }
+#endif
+
+    return dialog;
+}
+
+// ****************************************************************************
+// Method: ViewerServerManager::SetupConnectionProgressDialog
+//
+// Purpose: 
+//   Hook up the dialog to the component that we're launching. This lets us 
+//   see how things are launched and lets us cancel the launch if we want.
+//
+// Arguments:
+//   component : The component we're hooking up.
+//   dialog    : The dialog that we're initializing.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 29 19:51:10 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerServerManager::SetupConnectionProgressDialog(RemoteProxyBase *component,
+    ViewerConnectionProgressDialog *dialog)
+{
+#ifdef HAVE_THREADS
+    if(dialog != NULL)
+    {
+        // Set some properties on the dialog.
+        dialog->setParallel(component->Parallel());
+        dialog->setComponentName(component->GetComponentName().c_str());
+        int timeout = (component->Parallel() ||
+                       !HostIsLocalHost(dialog->getHostName().toStdString())) ? 0 : 4000;
+        dialog->setTimeout(timeout);    
+
+        // Install a callback with the component
         cbData[0] = (void *)viewerSubject;
         cbData[1] = (void *)dialog;
         component->SetProgressCallback(ViewerSubject::LaunchProgressCB,
@@ -633,8 +669,6 @@ ViewerServerManager::SetupConnectionProgressWindow(RemoteProxyBase *component,
         ViewerPasswordWindow::SetConnectionProgressDialog(dialog);
     }
 #endif
-
-    return dialog;
 }
 
 // ****************************************************************************
@@ -960,6 +994,36 @@ ViewerServerManager::OpenWithLauncher(
 }
 
 // ****************************************************************************
+// Method: ViewerServerManager::OpenWithEngine
+//
+// Purpose: 
+//   This callback function is used when we want to launch components via the
+//   engine instead of the VCL.
+//
+// Arguments:
+//   remoteHost : The name of the computer where we want the component to run.
+//   args       : The command line to run on the remote machine.
+//   data       : Optional callback data.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 29 16:35:53 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerServerManager::OpenWithEngine(const std::string &remoteHost, 
+    const stringVector &args, void *data)
+{
+    ViewerSubject::OpenWithEngine(remoteHost, args, data);
+}
+
+// ****************************************************************************
 //  Method: ViewerServerManager::SimConnectThroughLauncher 
 //
 //  Purpose:
@@ -1105,9 +1169,7 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
 //    Changed the map storage type.
 //
 // ****************************************************************************
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
+
 std::map<int,int>
 ViewerServerManager::GetPortTunnelMap(const std::string &host)
 {
@@ -1116,7 +1178,6 @@ ViewerServerManager::GetPortTunnelMap(const std::string &host)
         ret = launchers[host].launcher->GetPortTunnelMap();
     return ret;
 }
-#endif
 
 //
 // ViewerConnectionPrinter class. It's really a minor class so it's in here.

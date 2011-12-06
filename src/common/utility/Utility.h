@@ -83,12 +83,9 @@ void UTILITY_API AverageYValsForDuplicateX(int n, const float *x,
         const float *y, floatVector &X, floatVector &Y);
 
 
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
-bool        UTILITY_API ConvertArgsToTunneledValues(const std::map<int,int>&,
-                                                    std::vector<std::string>&);
-#endif
+bool UTILITY_API ConvertArgsToTunneledValues(const std::map<int,int>&,
+                                             std::vector<std::string>&);
+bool UTILITY_API GetSSHClient(std::string &sshClient);
 
 inline char *C_strdup(char const * const);
 inline char *CXX_strdup(char const * const);

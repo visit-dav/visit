@@ -129,6 +129,12 @@ public:
 
     static HostProfileList *GetClientAtts();
 protected:
+    static ViewerConnectionProgressDialog *
+        CreateConnectionProgressDialog(const std::string &host);
+    static void
+        SetupConnectionProgressDialog(RemoteProxyBase *component,
+                                      ViewerConnectionProgressDialog *dialog);
+
     static bool ShouldShareBatchJob(const std::string &host);
     static void AddArguments(RemoteProxyBase *component,
                       const stringVector &args);
@@ -144,27 +150,22 @@ protected:
     static void GetUseGatewayOptions(const std::string &host, bool &useGateway,
                                      std::string &gatewayHost);
 
-    static ViewerConnectionProgressDialog *
-        SetupConnectionProgressWindow(RemoteProxyBase *component, 
-                                      const std::string &host);
-
     static void OpenWithLauncher(const std::string &host,
                                  const stringVector &args, 
                                  void *data);
+    static void OpenWithEngine(const std::string &host,
+                               const stringVector &args, 
+                               void *data);
     static void SimConnectThroughLauncher(const std::string &host,
                                           const stringVector &args, 
                                           void *data);
 
     const char *RealHostName(const char *hostName) const;
 
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
     static std::map<int,int> GetPortTunnelMap(const std::string &host);
-#endif
 
     static HostProfileList         *clientAtts;
-
+    static void                    *cbData[2];
 private:
     static void StartLauncher(const std::string &host,
                               const std::string &visitPath,
@@ -176,7 +177,6 @@ private:
     static stringVector             arguments;
     static LauncherMap              launchers;
     static bool                     sshTunnelingForcedOn;
-    static void                    *cbData[2];
 };
 
 

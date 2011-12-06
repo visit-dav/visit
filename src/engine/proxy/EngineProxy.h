@@ -55,6 +55,7 @@
 #include <DefineVirtualDatabaseRPC.h>
 #include <EnginePropertiesRPC.h>
 #include <ExportDatabaseRPC.h>
+#include <LaunchRPC.h>
 #include <MakePlotRPC.h>
 #include <NamedSelectionRPC.h>
 #include <OpenDatabaseRPC.h>
@@ -331,6 +332,9 @@ class ParentProcess;
 //    Eric Brugger, Mon Oct 31 10:33:28 PDT 2011
 //    Added a window id to ReadDataObject.
 //
+//    Brad Whitlock, Mon Nov 28 16:22:35 PST 2011
+//    I added a LaunchProcess method.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -452,6 +456,8 @@ public:
                                                       const std::string &arg);
     EngineProperties         GetEngineProperties();
 
+    void                     LaunchProcess(const stringVector &programArgs);
+
 protected:
     virtual void             SetupComponentRPCs();
     void                     ExtractEngineInformation();
@@ -491,6 +497,7 @@ private:
     NamedSelectionRPC        namedSelectionRPC;
     SetEFileOpenOptionsRPC   setEFileOpenOptionsRPC;
     EnginePropertiesRPC      enginePropertiesRPC;
+    LaunchRPC                launchRPC;
 
     // For indicating status.
     StatusAttributes        *statusAtts;

@@ -315,6 +315,9 @@ class SelectionProperties;
 //    Brad Whitlock, Mon Oct 10 12:26:40 PDT 2011
 //    Store EngineProperties with the engine information.
 //
+//    Brad Whitlock, Tue Nov 29 19:22:56 PST 2011
+//    Add CreateEngineEx.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -337,6 +340,13 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                       bool  skipChooser=false,
                       int   numRestarts=-1,
                       bool  reverseLaunch = false);
+
+    bool CreateEngineEx(const EngineKey &ek,
+                        const std::vector<std::string> &arguments,
+                        bool  skipChooser,
+                        int   numRestarts,
+                        bool  reverseLaunch,
+                        ViewerConnectionProgressDialog *dialog);
 
     bool ConnectSim(const EngineKey &ek,
                     const std::vector<std::string> &arguments,
@@ -446,6 +456,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void SetFromNode(DataNode *, const std::string &);
 
     bool UpdateExpressions(const EngineKey &ek, const ExpressionList &eL);
+
+    bool LaunchProcess(const EngineKey &ek, const stringVector &args);
 
   protected:
     ViewerEngineManager();

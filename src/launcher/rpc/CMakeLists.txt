@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -35,12 +35,13 @@
 # DAMAGE.
 #
 # Modifications:
+#   Brad Whitlock, Mon Nov 28 16:21:26 PST 2011
+#   I moved LaunchRPC to common/state.
 #
 #****************************************************************************/
 
 SET(VCLRPC_SOURCES
 ConnectSimRPC.C
-LaunchRPC.C
 )
 
 INCLUDE_DIRECTORIES(

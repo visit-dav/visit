@@ -6900,18 +6900,20 @@ ViewerSubject::SetWindowArea()
 void
 ViewerSubject::ConnectToMetaDataServer()
 {
+    const char *mName = "ViewerSubject::ConnectToMetaDataServer: ";
     int timeid = visitTimer->StartTimer();
 
     //
     // Write the arguments to the debug logs
     //
-    debug4 << "Telling mdserver on host "
+    debug1 << mName << "start" << endl;
+    debug1 << mName << "Telling mdserver on host "
            << GetViewerState()->GetViewerRPC()->GetProgramHost().c_str()
            << " to connect to another client." << endl;
-    debug4 << "Arguments:" << endl;
+    debug1 << "Arguments:" << endl;
     const stringVector &sv = GetViewerState()->GetViewerRPC()->GetProgramOptions();
     for(int i = 0; i < sv.size(); ++i)
-         debug4 << "\t" << sv[i].c_str() << endl;
+         debug1 << "\t" << sv[i].c_str() << endl;
 
     //
     // Tell the viewer's fileserver to have its mdserver running on 
@@ -6932,6 +6934,7 @@ ViewerSubject::ConnectToMetaDataServer()
     {
         Warning(err.c_str());
     }
+    debug1 << mName << "end" << endl;
 
     //
     // Do heavy initialization if we still need to do it.
@@ -9243,6 +9246,9 @@ ViewerSubject::GetProcessAttributes()
 //   Brad Whitlock, Wed Apr 30 09:27:08 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Tue Nov 29 20:34:06 PST 2011
+//   Adapt to newer ViewerConnectionProgressDialog.
+//
 // ****************************************************************************
 
 void
@@ -9266,9 +9272,10 @@ ViewerSubject::OpenClient()
     {
         if(!GetViewerProperties()->GetNowin())
         {
-            dialog = new ViewerConnectionProgressDialog(clientName.c_str(),
-                "localhost", false, 5);
-
+            dialog = new ViewerConnectionProgressDialog("localhost");
+            dialog->setComponentName(clientName.c_str());
+            dialog->setParallel(false);
+            dialog->setTimeout(5);
             // Register the dialog with the password window so we can set
             // the dialog's timeout to zero if we have to prompt for a
             // password.
@@ -11100,4 +11107,66 @@ ReadHostProfileCallback(void *hpl,
     profileList->SelectMachines();
 }
                              
+// ****************************************************************************
+// Method: ViewerSubject::OpenWithEngine
+//
+// Purpose: 
+//   This is a callback function that lets us launch a program through the
+//   compute engine instead of through VCL.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 29 16:35:08 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+void
+ViewerSubject::OpenWithEngine(const std::string &remoteHost, 
+    const stringVector &args, void *data)
+{
+    const char *mName = "ViewerSubject::OpenWithEngine: ";
+
+    debug1 << mName << "start" << endl;
+    EngineKey ek(remoteHost, "");
+
+    // We use the data argument to pass in a pointer to the connection
+    // progress window.
+    ViewerConnectionProgressDialog *dialog =
+        (ViewerConnectionProgressDialog *)data;
+
+    if(dialog != NULL)
+        dialog->setIgnoreHide(true);
+
+    // Launch an engine if one does not exist so we're able to use the
+    // same dialog as the mdserver.
+    ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
+    if(!eMgr->EngineExists(ek))
+    {
+        debug1 << mName << "Creating engine for " << ek.HostName() << endl;
+
+        stringVector moreArgs;
+        bool skipChooser = false;
+        int numRestarts = 0;
+        bool reverseLaunch = false;
+        eMgr->CreateEngineEx(ek, moreArgs, skipChooser, numRestarts, 
+            reverseLaunch, dialog);
+    }
+
+    debug1 << mName << "Telling engine on host " << ek.HostName() << "to run program:" << endl;
+    for(size_t i = 0; i < args.size(); ++i)
+        debug1 << "\t" << args[i] << endl;
+    debug1 << endl;
+    eMgr->LaunchProcess(ek, args);
+
+    if(dialog != NULL)
+        dialog->setIgnoreHide(false);
+
+    debug1 << mName << "end" << endl;
+}

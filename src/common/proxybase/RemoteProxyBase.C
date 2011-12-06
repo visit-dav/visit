@@ -509,7 +509,7 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
                 AddArgument("-la");
                 AddArgument(launch->GetLaunchArgs());
             }
-
+        }
             if (launch->GetSublaunchArgsSet() &&
                 launch->GetSublaunchArgs().length() > 0)
             {
@@ -542,7 +542,7 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
             {
                 AddArgument("-setupenv");
             }
-        }
+        //}
 #if 0 // disabling dynamic load balancing for now
         if (launch->GetForceStatic())
         {

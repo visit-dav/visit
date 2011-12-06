@@ -66,21 +66,30 @@ class QTimer;
 //   I added methods to set/get the component name. I also added methods
 //   to set/get a flag that determines if the window should be hidden.
 //
+//   Brad Whitlock, Tue Nov 29 16:01:20 PST 2011
+//   I added various methods for getting/setting values and I simplified the
+//   constructor.
+//
 // ****************************************************************************
 
 class ViewerConnectionProgressDialog : public QWidget
 {
     Q_OBJECT
 public:
-    ViewerConnectionProgressDialog(const QString &component,
-        const QString &host, bool par, int t = 6000);
+    ViewerConnectionProgressDialog(const QString &host);
     virtual ~ViewerConnectionProgressDialog();
 
     bool getCancelled() const { return cancelled; };
     void setTimeout(int t) { timeout = t; };
 
+    const QString &getHostName() const { return hostName; };
+    void setHostName(const QString &host);
+
     const QString &getComponentName() const { return componentName; };
     void setComponentName(const QString &cn);
+
+    void setParallel(bool);
+    bool getParallel() const { return parallel; }
 
     bool getIgnoreHide() const   { return ignoreHide; }
     void setIgnoreHide(bool val) { ignoreHide = val; }
@@ -92,10 +101,13 @@ private slots:
     void timedShow();
     void cancel();
 private:
+    void updateMessage();
+
     QTimer       *timer;
     QPushButton  *cancelButton;
     QRadioButton *rb[6];
     QLabel       *msgLabel;
+    QLabel       *rightComputer;
     QString       componentName;
     QString       hostName;
     bool          parallel;
