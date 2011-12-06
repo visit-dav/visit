@@ -38,9 +38,12 @@
 #
 #****************************************************************************/
 IF(VISIT_PARALLEL AND WIN32)
-SET(VIEWERLIB_WIN32_SOURCES
-ViewerSubmitParallelEngineToWindowsHPC.cpp
-)
+    SET(VIEWERLIB_WIN32_SOURCES
+        ViewerSubmitParallelEngineToWindowsHPC.cpp
+    )
+    SET_SOURCE_FILES_PROPERTIES(ViewerEngineManager.C PROPERTIES
+        COMPILE_DEFINITIONS VISIT_SUPPORTS_WINDOWS_HPC
+    )
 ENDIF(VISIT_PARALLEL AND WIN32)
 
 SET(VIEWERLIB_SOURCES
