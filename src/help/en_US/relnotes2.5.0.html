@@ -33,8 +33,17 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 2.5</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
+  <li>The Windows version of VisIt has been enhanced so it can launch parallel compute engines on Windows HPC clusters. In order to launch VisIt's compute engine on a Windows HPC cluster, you must have Microsoft's HPC Client Utilities. You will also need to create a host profile for your cluster. The new host profile must contain the following:
+    <ul>
+       <li>The name of the cluster's head node.</li>
+       <li>The <i>Installation directory</i> where VisIt is located on the remote cluster.</li>
+       <li>The <i>Share batch job with Metadata Server</i> option must be enabled.</li>
+       <li>The <i>Parallel launch method</i> set to <i>WindowsHPC</i>.</li>
+       <li>The default number of processors.</li>
+    </ul>
+    When you submit a job to the Windows HPC scheduler, VisIt will interact with the scheduler directly so there is no need to run ssh to get to the remote computer.
+  </li>
+  <li>VisIt has been enhanced so the metadata server and compute engine can once again share a single batch job. This option is available in the <i>Host Profiles</i> window.</li>
   <li></li>
   <li></li>
   <li></li>
@@ -134,7 +143,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.5</font></b></p>
 <ul>
-  <li></li>
+  <li>Visual Studio 2010 support was added.</li>
   <li></li>
   <li></li>
   <li></li>
