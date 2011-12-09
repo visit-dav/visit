@@ -62,6 +62,7 @@
 #include <vectortypes.h>
 
 #include <algorithm>
+#include <map>
 #include <string>
 
 // Thank you Internet for this bit of conversion code for BSTR/std::string.
@@ -151,34 +152,52 @@ ViewerSubmitParallelEngineToWindowsHPC(const std::string &remoteHost,
     const MachineProfile *profile = (const MachineProfile *)data;
     const LaunchProfile *lp = profile->GetActiveLaunchProfile();
 
+    debug1 << mName << "start" << endl;
+
+    // These are the engine arguments we'll preserve.
+    std::map<std::string,int> argCounts;
+    argCounts["-ui-bcast-thresholds"] = 3;
+    argCounts["-host"] = 2;
+    argCounts["-port"] = 2;
+    argCounts["-key"] = 2;
+    argCounts["-debug"] = 2;
+    argCounts["-idle-timeout"] = 2;
+    argCounts["-exec-timeout"] = 2;
+    argCounts["-dump"] = 2;
+    argCounts["-noloopback"] = 1;
+    argCounts["-timing"] = 1;
+    argCounts["-forcestatic"] = 1;
+    argCounts["-forcedynamic"] = 1;
+    argCounts["-icet"] = 1;
+    argCounts["-no-icet"] = 1;
+    argCounts["-clobber_vlogs"] = 1;
+    argCounts["-lb-block"] = 1;
+    argCounts["-lb-absolute"] = 1;
+    argCounts["-lb-random"] = 1;
+    argCounts["-lb-stream"] = 1;
+    argCounts["-allowdynamic"] = 1;
+
     // Pull out some of the important stuff and ignore the rest since the command line
     // will be a little malformed. We don't need the typical stuff like -v, -dir
     // and so on since we're not launching using a VisIt script.
-    debug1 << mName << "start" << endl;
     debug1 << mName << "remoteHost=" << remoteHost << ", args={";
     stringVector preservedArgs;
     for(size_t i = 1; i < args.size(); ++i)
     {
         std::string argv(args[i]);
         debug1 << argv << ", ";
-        if((argv == "-host" || argv == "-port" || argv == "-key" || 
-            argv == "-debug" || argv == "-idle-timeout") &&
-           ((i+1) < args.size()))
+        std::map<std::string,int>::const_iterator it = argCounts.find(argv);
+        if(it != argCounts.end() && ((i + it->second-1) < args.size()))
         {
-            debug1 << args[i+1] << ", ";
+            for(int j = 0; j < it->second-1; ++j)
+                debug1 << args[i+1+j] << ", ";
             if(std::find(preservedArgs.begin(), preservedArgs.end(), argv) == preservedArgs.end())
             {
                 preservedArgs.push_back(argv);
-                preservedArgs.push_back(args[i+1]);
+                for(int j = 0; j < it->second-1; ++j)
+                    preservedArgs.push_back(args[i+1+j]);
             }
-            ++i;
-        }
-        else if(argv == "-noloopback" || argv.find("-force") != std::string::npos)
-        {
-            if(std::find(preservedArgs.begin(), preservedArgs.end(), argv) == preservedArgs.end())
-            {
-                preservedArgs.push_back(argv);
-            }
+            i += it->second-1;
         }
     }
     debug1 << "}" << endl;

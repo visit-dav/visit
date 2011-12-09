@@ -74,6 +74,8 @@ typedef vector<string> stringVector;
  */
 #define ARG(A) (strcmp((A), argv[i]) == 0)
 
+#define ENDSWITH(A) EndsWith(argv[i], A)
+
 #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
 
 #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
@@ -136,6 +138,18 @@ void   TestForConfigFiles(const string &component);
 void   PrintEnvironment(void);
 string WinGetEnv(const char * name);
 
+static bool EndsWith(const char *s, const char *suffix)
+{
+    bool retval = false;
+    size_t lens = strlen(s);
+    size_t lensuffix = strlen(suffix);
+    if(lens >= lensuffix)
+    {
+        const char *start = s + lens - lensuffix;
+        retval = strcmp(start, suffix) == 0;
+    }
+    return retval;
+}
 
 /******************************************************************************
  *
@@ -242,6 +256,11 @@ string WinGetEnv(const char * name);
  *
  *   Kathleen Bonnell, Thu Sep 29 16:41:28 MST 2011
  *   Pass over 'visit' and '-visit' args.
+ * 
+ *   Brad Whitlock, Thu Dec 8 14:51:PST 2011
+ *   Skip over arguments that end with 'visit', 'visit.exe', 'visit"', 'visit.exe"'
+ *   since we're starting the argv iteration at 0, which means we'll pick up
+ *   the visit.exe program.
  *
  *****************************************************************************/
 
@@ -274,7 +293,8 @@ main(int argc, char *argv[])
         {
            continue; 
         }
-        else if(ARG("visit"))
+        else if(ENDSWITH("visit")   || ENDSWITH("visit.exe") ||
+                ENDSWITH("visit\"") || ENDSWITH("visit.exe\""))
         {
             continue;
         }
@@ -310,14 +330,7 @@ main(int argc, char *argv[])
         }
         else if(ARG("-engine"))
         {
-            if (parallel)
-            {
-                component = "engine_par";
-            }
-            else
-            {
-                component = "engine_ser";
-            }
+            component = "engine";
             addVISITARGS = false;
         }
         else if(ARG("-vcl"))
@@ -379,28 +392,23 @@ main(int argc, char *argv[])
         }
         else if(ARG("-par"))
         {
-            parallel = true;
-            if (component == "engine_ser" ||
-                component == "engine")
+            if(component == "engine")
             {
-                component = "engine_par";
+                parallel = true;
             }
-            else
+            else if(component != "mdserver")
             {
                 engineArgs.push_back("-par");
             }
         }
         else if(ARG("-np"))
         {
-            parallel = true;
-        
-            if (component == "engine_ser" ||
-                component == "engine")
+            if(component == "engine")
             {
+                parallel = true;        
                 nps = string(argv[i+1]);
-                component = "engine_par";
             }
-            else
+            else if(component != "mdserver")
             {
                 engineArgs.push_back("-np");
                 engineArgs.push_back(argv[i+1]);
@@ -451,6 +459,9 @@ main(int argc, char *argv[])
             }
         }
     }
+
+    if(component == "engine")
+        component = parallel ? "engine_par" : "engine_ser";
 
     if (parallel && !noloopback)
     {

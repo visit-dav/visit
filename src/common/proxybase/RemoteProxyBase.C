@@ -647,7 +647,11 @@ RemoteProxyBase::Parallel() const
 //   
 //   Kathleen Bonnell, Fri Nov 19 17:34:04 MST 2010
 //   Revert windows-specific change.
-//   
+//
+//   Brad Whitlock, Thu Dec 8 12:16:34 PST 2011
+//   If we find :/ or :\ in the -dir argument then assume the remote computer
+//   is a Windows computer and we should handle it a little differently.
+//
 // ****************************************************************************
 
 std::string
@@ -662,9 +666,19 @@ RemoteProxyBase::GetVisItString() const
         {
             const std::string &dirArg = argv[i + 1];
             visitString = dirArg;
-            if (dirArg[dirArg.size() - 1] != '/')
-                visitString += "/";
-            visitString += "bin/visit";
+            // If the dirArg contains these characters then assume the remote path is Windows
+            if(visitString.find(":\\") != std::string::npos || visitString.find(":/") != std::string::npos)
+            {
+                if (dirArg[dirArg.size() - 1] != '/' && dirArg[dirArg.size()-1] != '\\')
+                    visitString += "\\";
+                visitString += "visit.exe";
+            }
+            else
+            {
+                if (dirArg[dirArg.size() - 1] != '/')
+                    visitString += "/";
+                visitString += "bin/visit";
+            }
             ++i;
         }
     }

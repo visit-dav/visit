@@ -625,8 +625,8 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
             }
             else if(ShouldShareBatchJob(ek.HostName()))
             {
-                bool createAsThoughLocal = false;
 #ifdef VISIT_SUPPORTS_WINDOWS_HPC
+                bool launchWindowsHPC = false;
                 const LaunchProfile *lp = newEngine.profile.GetActiveLaunchProfile();
                 if(lp != NULL)
                 {
@@ -636,12 +636,12 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
                     // If we're launching via WindowsHPC and we're on windows, that
                     // will end up running the visit.exe launcher locally and we'll
                     // use that to run Windows HPC job command.
-                    createAsThoughLocal = (lp->GetLaunchMethodSet() && 
+                    launchWindowsHPC = (lp->GetLaunchMethodSet() && 
                         lp->GetLaunchMethod() == "WindowsHPC");
                 }
 
-                debug1 << mName << "createAsThoughLocal=" << (createAsThoughLocal?"true":"false") << endl;
-                if(createAsThoughLocal)
+                debug1 << mName << "launchWindowsHPC=" << (launchWindowsHPC?"true":"false") << endl;
+                if(launchWindowsHPC)
                 {
                      // Launch the engine directly through the job launcher API.
                      debug1 << mName << "Launching an engine through Windows HPC launcher" << endl;
@@ -651,7 +651,7 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
                                              useTunneling,
                                              useGateway, gatewayHost,
                                              ViewerSubmitParallelEngineToWindowsHPC, (void*)&newEngine.profile,
-                                             createAsThoughLocal);
+                                             true);
                 }
                 else
 #endif
@@ -662,7 +662,7 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
                                              manualSSHPort, sshPort,
                                              useTunneling,
                                              useGateway, gatewayHost,
-                                             NULL, NULL, createAsThoughLocal);
+                                             NULL, NULL, false);
                 }
             }
             else
@@ -1614,7 +1614,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
             perEnginePlotIds[engines.begin()->first] = NullPlotIds;
         }
 
-        int numEnginesToRender = perEnginePlotIds.size();
+        size_t numEnginesToRender = perEnginePlotIds.size();
         bool sendZBuffer = numEnginesToRender > 1 ? true : false;
 
         //
