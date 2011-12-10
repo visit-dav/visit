@@ -277,32 +277,33 @@ void ElementFetcher::IterateOverFiles(void *output) {
     elementsCompleted = 0; //elements from previous files
   for (fileno = 0; 
        fileno < mFileSet->mFileNames.size() && 
-         elementsCompleted < mEndElement; 
+         elementsCompleted < mEndElement + 1; 
        fileno++) {      
     //  int elemsInFile = mFileSet->mElemsPerFile[fileno]; 
-    long elementsToRead = mFileSet->mElemsPerFile[fileno];
-    if (elementsCompleted + elementsToRead > mStartElement) {
+    long elementsToReadInFile = mFileSet->mElemsPerFile[fileno];
+    if (elementsCompleted + elementsToReadInFile > mStartElement) {
       // at least one element in the file is of interest
       long fileOffset = 0; 
-      if (mStartElement > elementsCompleted) {
+      if (mStartElement >= elementsCompleted) {
         // the mStartElement is somewhere in our file
         fileOffset = mStartElement - elementsCompleted;
         elementsCompleted = mStartElement; // mark offset as being complete
       }
-      elementsToRead -= fileOffset; // reduce by offset
+
+      elementsToReadInFile -= fileOffset;
       
-      if (elementsToRead > mEndElement - elementsCompleted ) {
+      if (elementsCompleted + elementsToReadInFile > mEndElement) {
         // the mEndElement is inside our file; don't read all file elements
-        elementsToRead = mEndElement - elementsCompleted; 
+        elementsToReadInFile = mEndElement - elementsCompleted + 1; 
       } 
       
       if (mFileSet->mFilesAreBinary) {
-        GetElemsFromBinaryFile(mFileSet->mFileNames[fileno], fileOffset, elementsToRead); 
+        GetElemsFromBinaryFile(mFileSet->mFileNames[fileno], fileOffset, elementsToReadInFile); 
       } else {
-        GetElemsFromTextFile(mFileSet->mFileNames[fileno], fileOffset, elementsToRead); 
+        GetElemsFromTextFile(mFileSet->mFileNames[fileno], fileOffset, elementsToReadInFile); 
       }   
     }  
-    elementsCompleted += elementsToRead;        
+    elementsCompleted += elementsToReadInFile;        
   }
   return; 
 }
