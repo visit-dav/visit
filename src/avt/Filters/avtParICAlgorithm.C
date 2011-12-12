@@ -883,7 +883,7 @@ avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &recvICs)
 {
     list<ICCommData> incoming;
     bool val = RecvICs(incoming);
-    if (val);
+    if (val)
     {
         list<ICCommData>::iterator it;
         for (it = incoming.begin(); it != incoming.end(); it++)

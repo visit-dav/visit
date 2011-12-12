@@ -834,7 +834,7 @@ avtPoincarePlot::SetLegendRanges()
     double min, max;
 
     // set and get the range for the legend's color bar labels 
-    bool validRange = validRange = glyphMapper->GetRange(min, max);
+    bool validRange = glyphMapper->GetRange(min, max);
 
     varLegend->SetRange(min, max);
 
