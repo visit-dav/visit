@@ -273,38 +273,39 @@ void ElementFetcher::IterateOverFiles(void *output) {
   
   // ITERATE OVER FILES
   // look at each file in order, and determine if it contains elements we care about.  If it does, then read them and place them into the mesh. 
-  long fileno = 0, outputItemIndex = 0, 
+  long fileno = 0, outputItemIndex = 0,
     elementsCompleted = 0; //elements from previous files
-  for (fileno = 0; 
-       fileno < mFileSet->mFileNames.size() && 
-         elementsCompleted < mEndElement; 
-       fileno++) {      
-    //  int elemsInFile = mFileSet->mElemsPerFile[fileno]; 
-    long elementsToRead = mFileSet->mElemsPerFile[fileno];
-    if (elementsCompleted + elementsToRead > mStartElement) {
+  for (fileno = 0;
+       fileno < mFileSet->mFileNames.size() &&
+         elementsCompleted < mEndElement + 1;
+       fileno++) {
+    //  int elemsInFile = mFileSet->mElemsPerFile[fileno];
+    long elementsToReadInFile = mFileSet->mElemsPerFile[fileno];
+    if (elementsCompleted + elementsToReadInFile > mStartElement) {
       // at least one element in the file is of interest
-      long fileOffset = 0; 
-      if (mStartElement > elementsCompleted) {
+      long fileOffset = 0;
+      if (mStartElement >= elementsCompleted) {
         // the mStartElement is somewhere in our file
         fileOffset = mStartElement - elementsCompleted;
         elementsCompleted = mStartElement; // mark offset as being complete
       }
-      elementsToRead -= fileOffset; // reduce by offset
-      
-      if (elementsToRead > mEndElement - elementsCompleted ) {
+
+      elementsToReadInFile -= fileOffset;
+
+      if (elementsCompleted + elementsToReadInFile > mEndElement) {
         // the mEndElement is inside our file; don't read all file elements
-        elementsToRead = mEndElement - elementsCompleted; 
-      } 
-      
+        elementsToReadInFile = mEndElement - elementsCompleted + 1;
+      }
+
       if (mFileSet->mFilesAreBinary) {
-        GetElemsFromBinaryFile(mFileSet->mFileNames[fileno], fileOffset, elementsToRead); 
+        GetElemsFromBinaryFile(mFileSet->mFileNames[fileno], fileOffset, elementsToReadInFile);
       } else {
-        GetElemsFromTextFile(mFileSet->mFileNames[fileno], fileOffset, elementsToRead); 
-      }   
-    }  
-    elementsCompleted += elementsToRead;        
+        GetElemsFromTextFile(mFileSet->mFileNames[fileno], fileOffset, elementsToReadInFile);
+      }
+    }
+    elementsCompleted += elementsToReadInFile;
   }
-  return; 
+  return;
 }
 
 
