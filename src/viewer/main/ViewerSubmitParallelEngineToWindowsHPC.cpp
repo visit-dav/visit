@@ -307,6 +307,8 @@ ViewerSubmitParallelEngineToWindowsHPC(const std::string &remoteHost,
                         cmdline = std::string("\"") + profile->GetDirectory() + std::string("\\engine_ser.exe\"");
                     for(size_t i = 0; i < preservedArgs.size(); ++i)
                         cmdline += (std::string(" ") + preservedArgs[i]);
+                    for(size_t i = 0; i < lp->GetArguments().size(); ++i)
+                        cmdline += (std::string(" ") + lp->GetArguments()[i]);
                     BSTRObject commandLine(cmdline);
                     task->put_CommandLine(commandLine.bstr);
                     debug1 << "\t\ttask: commandline=" << cmdline << endl;
