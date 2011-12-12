@@ -39,7 +39,10 @@
 #include <vector>
 #include <string>
 
-#ifndef _WIN32
+#ifdef _WIN32
+#define M_PI 3.14159
+#define drand48() (((float) rand())/((float) RAND_MAX)) 
+#else
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
