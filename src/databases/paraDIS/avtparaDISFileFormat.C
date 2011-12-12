@@ -408,6 +408,25 @@ avtparaDISFileFormat::GetMesh(const char *meshname)
   if (!mesh) {
     EXCEPTION1(VisItException, "Could not get mesh requested"); 
   }
+  /* DEBUG CODE 
+  int npts = mesh->GetNumberOfPoints();
+  double pvals[3];
+  double pvmax = -FLT_MAX;
+  double pvmin =  FLT_MAX;
+  for(int i=0;i<npts;i++)
+    {
+      mesh->GetPoint(i,pvals);
+      if(pvals[0]>  pvmax) pvmax= pvals[0];
+      if(pvals[1]>  pvmax) pvmax= pvals[1];
+      if(pvals[2]>  pvmax) pvmax= pvals[2];
+      if(pvals[0]<  pvmin) pvmin= pvals[0];
+      if(pvals[1]<  pvmin) pvmin= pvals[1];
+      if(pvals[2]<  pvmin) pvmin= pvals[2];
+    }
+  cout<<  "For " << mFilename << ", npts = " << npts << ", pv min&  max = "<<  pvmin<<  " "<<  pvmax<<endl;
+  cout<<  "plast = "<<  pvals[0]<<  " "<<  pvals[1]<<  " "<<
+    pvals[2]<<endl;
+  */ 
   return mesh;
 }
 
