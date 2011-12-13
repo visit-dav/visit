@@ -723,6 +723,10 @@ avtFloatingPointIdNamedSelection::CreateSelection(void)
 //  Programmer: Hank Childs
 //  Creation:   April 6, 2009
 //
+// Modifications:
+//   Brad Whitlock, Mon Dec 12 15:03:34 PST 2011
+//   Don't hard code the id variable.
+//
 // ****************************************************************************
 
 static std::string
@@ -743,7 +747,7 @@ avtFloatingPointIdNamedSelection::CreateConditionString(void)
     if (!ids.empty())
     {
         // convert all the identifiers into a string...
-        std::string id_string = "( id in ( "; // Prabhat- TODO id is hardcoded here..
+        std::string id_string(std::string("( ") + idVar + std::string(" in ( "));
 
         for (size_t j=0; j<ids.size()-1; j++)
             id_string = id_string + stringify(ids[j]) + ", ";
