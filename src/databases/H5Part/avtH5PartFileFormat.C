@@ -44,11 +44,13 @@
 #include <avtH5PartFileFormat.h>
 
 // VTK
+#include <vtkCellData.h>
 #include <vtkCellTypes.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
 
 // VisIt
@@ -981,6 +983,8 @@ avtH5PartFileFormat::GetMesh(int timestate, const char *meshname)
 //  Creation:   Tue Feb 9 13:44:50 PST 2010
 //
 //  Modifications:
+//    Brad Whitlock, Mon Dec 12 16:06:13 PST 2011
+//    Construct avtOriginalCellNumbers here if we're doing a data selection.
 //
 // ****************************************************************************
 
@@ -1137,6 +1141,33 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
     dataset->SetPoints(vtkpoints);
     vtkpoints->Delete();
 
+#ifdef HAVE_LIBFASTBIT
+    //
+    // If we're using the Fastbit index and we've processed a data selection successfully then
+    // we have produced a dataset with different connectivity from the original full dataset.
+    // This means that if we're requesting original cell numbers above up in the database then
+    // the values calculated there would be wrong. We need to calculate them here and send them
+    // along so named selections will work properly.
+    //
+    // The problem is that we might not need to do this work.
+    //
+    if (useFastBitIndex && dataSelectionActive && queryResultsValid)
+    {
+        debug5 << "avtH5PartFileFormat::GetParticleMesh: Creating avtOriginalCellNumbers early" << endl;
+        vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
+        origZones->SetName("avtOriginalCellNumbers");
+        origZones->SetNumberOfComponents(2);
+        origZones->SetNumberOfTuples(queryResults.size());
+        unsigned int *iptr = (unsigned int *)origZones->GetVoidPointer(0);
+        for(size_t ii = 0; ii < queryResults.size(); ++ii)
+        {
+            *iptr++ = 0; // domain 0. This format is SD so it's probably okay.
+            *iptr++ = (unsigned int)queryResults[ii];
+        }
+        dataset->GetCellData()->AddArray(origZones);
+        origZones->Delete();
+    }
+#endif
     visitTimer->StopTimer(t1, "H5PartFileFormat::GetParticleMesh()");
 
     return dataset;

@@ -120,8 +120,7 @@ avtNamedSelectionFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     vtkDataSet *rv = NULL;
     avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
     avtNamedSelection *ns = nsm->GetNamedSelection(selName);
-    const SelectionProperties *props = nsm->GetSelectionProperties(selName);
-    if (ns == NULL || props == NULL)
+    if(ns == NULL)
     {
         EXCEPTION0(ImproperUseException);
     }
