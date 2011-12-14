@@ -291,3 +291,5 @@
 /* Force ssh tunneling. */
 #cmakedefine VISIT_FORCE_SSH_TUNNELING
 
+/* Force WinMain entry point on applications. */
+#cmakedefine VISIT_WINDOWS_APPLICATION

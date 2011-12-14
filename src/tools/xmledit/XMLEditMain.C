@@ -36,6 +36,7 @@
 *
 *****************************************************************************/
 
+#include <visit-config.h>
 #include <qapplication.h>
 #include <XMLEdit.h>
 
@@ -55,7 +56,7 @@ QString Endl("\n");
 #endif
 
 // ****************************************************************************
-//  Main Function: main()  
+//  Main Function: XMLEditMain()  
 //
 //  Purpose:
 //    initialize and start the main window
@@ -74,7 +75,7 @@ QString Endl("\n");
 // ****************************************************************************
 
 int
-main( int argc, char **argv )
+XMLEditMain( int argc, char **argv )
 {
     QApplication *a = new QApplication(argc, argv);
     XMLEdit *w;
@@ -94,11 +95,44 @@ main( int argc, char **argv )
     catch (const char *s)
     {
         cerr << "ERROR: " << s << endl;
-        exit(-1);
     }
     catch (const QString &s)
     {
         cerr << "ERROR: " << s.toStdString() << endl;
-        exit(-1);
     }
+    return -1;
 }
+
+// ****************************************************************************
+// Method: main/WinMain
+//
+// Purpose: 
+//   The program entry point function.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 23 13:15:31 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+#if defined(_WIN32) && defined(VISIT_WINDOWS_APPLICATION)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+int WINAPI
+WinMain(HINSTANCE hInstance,     // handle to the current instance
+        HINSTANCE hPrevInstance, // handle to the previous instance    
+        LPSTR lpCmdLine,         // pointer to the command line
+        int nCmdShow             // show state of window
+)
+{
+    return XMLEditMain(__argc, __argv);
+}
+#else
+int
+main(int argc, char **argv)
+{
+    return XMLEditMain(argc, argv);
+}
+#endif

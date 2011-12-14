@@ -152,7 +152,7 @@ avtpipeline_ser
 # engine_ser_exe_EOperator_ser = The list of operator libE libraries needed to link
 # engine_ser_exe_EPlot_ser = The list of plot libE libraries needed to link
 
-ADD_EXECUTABLE(engine_ser_exe main.C ${ENGINE_STATIC_SOURCES} ${VISIT_WIN_ICON_RESOURCE})
+ADD_EXECUTABLE(engine_ser_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_WIN_ICON_RESOURCE})
 SET_TARGET_PROPERTIES(engine_ser_exe PROPERTIES OUTPUT_NAME engine_ser)
 TARGET_LINK_LIBRARIES(engine_ser_exe 
     ${engine_ser_exe_IDatabase}
@@ -239,7 +239,7 @@ IF(VISIT_PARALLEL)
         TARGET_LINK_LIBRARIES(link_mpi_libs ${VISIT_PARALLEL_LIBS})
     ENDIF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
 
-    ADD_PARALLEL_EXECUTABLE(engine_par_exe main.C ${ENGINE_STATIC_SOURCES} ${VISIT_WIN_ICON_RESOURCE})
+    ADD_PARALLEL_EXECUTABLE(engine_par_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_WIN_ICON_RESOURCE})
     SET_TARGET_PROPERTIES(engine_par_exe PROPERTIES OUTPUT_NAME engine_par)
 
     PARALLEL_EXECUTABLE_LINK_LIBRARIES(engine_par_exe
