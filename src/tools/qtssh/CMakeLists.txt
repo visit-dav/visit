@@ -70,7 +70,7 @@ ${QT_QTCORE_INCLUDE_DIR}
 )
 
 LINK_DIRECTORIES(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR})
-ADD_EXECUTABLE(qtssh ${QTSSH_SOURCES})
+ADD_EXECUTABLE(qtssh ${VISIT_APPLICATION_STYLE} ${QTSSH_SOURCES})
 ADD_DEPENDENCIES(qtssh remotecommand visitcommon viewer) 
 
 # TARGET_LINK_LIBRARIES is the normal command we would use, but cmake pulls in 

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -257,25 +257,29 @@ GetVisItDirectory(char *visitdir, int maxlen)
     {
         char *visitpath = 0;
         char visitversion[10];
-        int major, minor, patch;
+        int major, minor, patch, beta;
         int haveVISITHOME = 0;
 
         /* Iterate through a few probable versions and keep the most up to date one */
         for(major = 2; major <= 4; ++major)
             for(minor = (major==2?2:0); minor <= 12; ++minor)
                 for(patch = 0; patch < 5; ++patch)
-                {
-                    char curversion[10], *path = NULL;
-                    SNPRINTF(curversion, 10, "%d.%d.%d", major, minor, patch);
-                    if(ReadKey(curversion, "VISITHOME", &path))
+                    for(beta = 0; beta < 2; ++beta)
                     {
-                        strcpy(visitversion, curversion);
-                        if(visitpath != NULL)
-                            free(visitpath);
-                        visitpath = path;
-                        haveVISITHOME = 1;
+                        char curversion[10], *path = NULL;
+                        if(beta == 0)
+                            SNPRINTF(curversion, 10, "%d.%d.%d", major, minor, patch);
+                        else
+                            SNPRINTF(curversion, 10, "%d.%d.%db", major, minor, patch);
+                        if(ReadKey(curversion, "VISITHOME", &path))
+                        {
+                            strcpy(visitversion, curversion);
+                            if(visitpath != NULL)
+                                free(visitpath);
+                            visitpath = path;
+                            haveVISITHOME = 1;
+                        }
                     }
-                }
         if(haveVISITHOME)
         {
             SNPRINTF(visitdir, maxlen, "%s", visitpath);
