@@ -60,7 +60,8 @@ using std::vector;
 
 const double   VisWinLegends::leftColumnPosition  = 0.05;
 const double   VisWinLegends::rightColumnPosition = 0.80;
-const double   VisWinLegends::dbInfoHeight        = 0.07;
+const double   /*VisWinLegends::*/dbInfoVOffset   = 0.065;
+const double   VisWinLegends::dbInfoHeight        = (0.055 * 0.45);
 
 // ****************************************************************************
 //  Method: VisWinLegends constructor
@@ -110,7 +111,7 @@ VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p),
 {
     dbInfoActor  = vtkVisItTextActor::New();
     dbInfoActor->SetTextScaleModeToViewport();
-    dbInfoActor->SetHeight(dbInfoHeight);
+//    dbInfoActor->SetHeight(dbInfoHeight);
     dbInfoActor->GetTextProperty()->SetJustificationToLeft();
     dbInfoActor->GetTextProperty()->SetLineOffset(0);
     dbInfoActor->GetTextProperty()->SetLineSpacing(1);
@@ -361,6 +362,11 @@ VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
 //    Brad Whitlock, Mon Sep 19 16:08:43 PDT 2011
 //    I removed some code to set the width.
 //
+//    Brad Whitlock, Tue Dec 13 15:41:05 PST 2011
+//    I changed how the height is set since the text actor is a different type
+//    now. This has the effect of making the text a little smaller than before
+//    yet letting it be scalable.
+//
 // ****************************************************************************
 
 void
@@ -433,12 +439,11 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
                         ->GetSmartDirectory(atts.GetFullDBName());
         }
         bool hasTime = CreateDatabaseInfo(info,dbname,atts);
-
         dbInfoActor->SetInput(info);
-        dbInfoActor->SetHeight(dbInfoHeight+0.04);        
+        dbInfoActor->SetTextHeight(dbInfoHeight * dbInfoTextAttributes.scale);    
         
         double x = leftColumnPosition;
-        double y = 0.98 - dbInfoHeight;
+        double y = 0.98 - dbInfoVOffset;
         vtkCoordinate *c = dbInfoActor->GetPositionCoordinate();
         c->SetCoordinateSystemToNormalizedViewport();
         c->SetValue(x, y);
