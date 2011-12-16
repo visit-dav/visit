@@ -358,6 +358,7 @@ const char *expr_misc[] = {
     "ij_gradient",
     "ijk_gradient",
     "Laplacian",
+    "map",
     "mean_curvature",
     "nodal_constant",
     "point_constant",
@@ -1758,6 +1759,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "value_at_maximum")
     {
         res += QString("(<var-to-find-maximum-of>, <var-for-output> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if (func_name == "map")
+    {
+        res += QString("(var, [input1, input2, ...], [output1, output2, ...])");
         doParens = false;
     }
 
