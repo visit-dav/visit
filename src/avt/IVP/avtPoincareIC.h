@@ -65,6 +65,8 @@
 #ifndef POINCARE_FIELDLINE_PROPERTIES_H
 #define POINCARE_FIELDLINE_PROPERTIES_H
 
+class avtPoincareIC;
+
 class FieldlineProperties {
 
 public:
@@ -73,6 +75,7 @@ public:
   {
     type = FieldlineProperties::UNKNOWN_TYPE;
     analysisState = FieldlineProperties::UNKNOWN_STATE;
+    analysisMethod = FieldlineProperties::DEFAULT_METHOD;
 
     source = FieldlineProperties::UNKNOWN_TYPE;
     
@@ -120,11 +123,14 @@ enum FieldlineType { UNKNOWN_TYPE  = 0,
                      
                      CHAOTIC = 30 };
   
+enum AnalysisMethod { DEFAULT_METHOD,
+                      RATIONAL_SEARCH,
+                      RATIONAL_MINIMIZE,
+                      RATIONAL_BRACKET }; //Remove a curve from continueExecute logic
+
 enum AnalysisState { UNKNOWN_STATE = 0,
 
                      ADDING_POINTS = 10,
-                     RATIONAL_TEMPLATE_SEED = 11,
-                     RATIONAL_SURFACE_SEED = 12,
 
                      O_POINT_SEED = 22,
                      X_POINT_SEED = 23,
@@ -136,9 +142,26 @@ enum AnalysisState { UNKNOWN_STATE = 0,
 
                      ADD          = 50,
                      ADD_O_POINTS = 51,
-                     ADD_X_POINTS = 52,
+                     ADD_X_POINTS = 52 };
 
-                     ADD_RATIONAL_SEED_POINT = 55 };
+////// Code for rational surface search
+enum SearchingState { ORIGINAL_RATIONAL = 100,
+                      SEARCHING_SEED,
+                      WAITING_SEED,
+                      FINISHED_SEED,
+                      MINIMIZING_A      = 105,  // Used to bracket the minimum
+                      MINIMIZING_B,
+                      MINIMIZING_C,
+                      MINIMIZING_X0     = 110, // Used for Golden search routine
+                      MINIMIZING_X1,
+                      MINIMIZING_X2,
+                      MINIMIZING_X3,
+                      BRACKETING_A      = 120, //Used to bracket the minimum
+                      BRACKETING_B,
+                      BRACKETING_C };
+
+
+////// Code for rational surface search
 
 public:
 
@@ -146,7 +169,13 @@ public:
 
   FieldlineType source;
 
+  ////// Code for rational surface search
+  AnalysisMethod analysisMethod;
+
   AnalysisState analysisState;
+
+  ////// Code for rational surface search
+  SearchingState searchState;
 
   unsigned int iteration;
 
@@ -195,8 +224,13 @@ public:
   std::vector< avtVector > OPoints;
   bool seedOPoints;
 
-  std::vector< int > parentIds;
-  std::vector< int > childIds;
+  ////// Code for rational surface search
+  // The rational points bounding the location of the minimization action
+  avtVector rationalPt1;
+  avtVector rationalPt2;
+
+  std::vector< avtPoincareIC *> *children;
+  ////// Code for rational surface search
 };
 #endif
 
@@ -239,6 +273,21 @@ public:
 
     // The fieldline properties as returned from the analysis library.
     FieldlineProperties properties;
-};
 
+
+    ////// Code for rational surface search
+    avtPoincareIC *source_ic;
+
+    // If this curve is minimizing, keep track of 'a' and 'c' (this is 'b')
+    float a_bound_dist;
+    avtPoincareIC *a_IC;
+    avtPoincareIC *b_IC;
+    float c_bound_dist;
+    avtPoincareIC *c_IC;
+    // Golden Search catches X0. X1, X2 and X3 must all have had integration done
+    avtPoincareIC *GS_x1;
+    avtPoincareIC *GS_x2;
+    avtPoincareIC *GS_x3;
+    ////// Code for rational surface search
+};
 #endif 

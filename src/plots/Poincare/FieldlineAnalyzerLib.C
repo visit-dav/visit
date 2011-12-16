@@ -1948,10 +1948,10 @@ FieldlineLib::getPunctures( std::vector< Point > &ptList,
 
 void
 FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
-                                     std::vector< Point > &poloidal_puncture_pts,
-                                     std::vector< Point > &ridgeline_points,
-                                     std::vector< double > &rotationalSums,
-                                     std::vector< unsigned int > &poloidalWindingCounts,
+                                      std::vector< Point > &poloidal_puncture_pts,
+                                      std::vector< Point > &ridgeline_points,
+                                      std::vector< double > &rotationalSums,
+                                      std::vector< unsigned int > &poloidalWindingCounts,
                                       float &delta )
 {
   poloidal_puncture_pts.clear();
@@ -2290,6 +2290,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   std::vector< double > rotationalSums;
   std::vector< unsigned int > poloidalWindingCounts;
 
+  // Save the distance between fieldline points to use for finding
+  // periodic fieldlines (i.e. rational surfaces and re-connection).
   float delta = 0.0;
 
   getFieldlineBaseValues( ptList,
@@ -3301,7 +3303,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     // then toroidalWinding-windingGroupOffset is the previous group.
     int offsetDir = (Dot( v0, v1 ) > 0.0 ? 1 : -1);
       
-   std::vector< unsigned int > nodes(toroidalWinding);
+    std::vector< unsigned int > nodes(toroidalWinding);
 
     nnodes = 0;
 
