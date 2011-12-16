@@ -467,7 +467,9 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
 // Creation:   Tue Mar  9 11:34:15 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 15 14:51:15 PST 2011
+//   Reenable array variables. Also add support for hideFromGUI attribute.
+//
 // ****************************************************************************
 
 void
@@ -498,6 +500,11 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                 else
                     centering = AVT_ZONECENT;
 
+                int iHideFromGUI = 0;
+                bool hideFromGUI = false;
+                if(simv2_VariableMetaData_getHideFromGUI(h, &iHideFromGUI) ==  VISIT_OKAY)
+                    hideFromGUI = iHideFromGUI > 0;
+
                 // Create the appropriate metadata based on the variable type.
                 if(type == VISIT_VARTYPE_SCALAR)
                 {
@@ -513,7 +520,8 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     scalar->hasDataExtents = false;
                     scalar->units = units;
                     scalar->hasUnits = hasUnits;
-        
+                    scalar->hideFromGUI = hideFromGUI;
+
                     md->Add(scalar);
                 }
                 else if(type == VISIT_VARTYPE_VECTOR)
@@ -525,6 +533,7 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     vector->centering = centering;
                     vector->units = units;
                     vector->hasUnits = hasUnits;
+                    vector->hideFromGUI = hideFromGUI;
 
                     md->Add(vector);
                 }
@@ -537,6 +546,7 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     tensor->centering = centering;
                     tensor->units = units;
                     tensor->hasUnits = hasUnits;
+                    tensor->hideFromGUI = hideFromGUI;
 
                     md->Add(tensor);
                 }
@@ -549,6 +559,7 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     tensor->centering = centering;
                     tensor->units = units;
                     tensor->hasUnits = hasUnits;
+                    tensor->hideFromGUI = hideFromGUI;
 
                     md->Add(tensor);
                 }
@@ -559,29 +570,20 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     label->originalName = name;
                     label->meshName = meshName;
                     label->centering = centering;
+                    label->hideFromGUI = hideFromGUI;
 
                     md->Add(label);
                 }
-#if 0
                 else if(type == VISIT_VARTYPE_ARRAY)
                 {
+                    int nComponents = 1;
+                    simv2_VariableMetaData_getNumComponents(h, &nComponents);
+
                     avtArrayMetaData *arr = new avtArrayMetaData;
                     arr->name = name;
                     arr->originalName = name;
                     arr->meshName = meshName;
-                    switch (centering)
-                    {
-                      case VISIT_VARCENTERING_NODE:
-                        arr->centering = AVT_NODECENT;
-                        break;
-                      case VISIT_VARCENTERING_ZONE:
-                        arr->centering = AVT_ZONECENT;
-                        break;
-                      default:
-                        simv2_SimulationMetaData_free(vsmd);
-                        EXCEPTION1(ImproperUseException,
-                                   "Invalid centering type in VisIt_VariableMetaData.");
-                    }
+                    arr->centering = centering;
                     arr->nVars = nComponents;
                     for(int c = 0; c < nComponents; ++c)
                     { 
@@ -591,10 +593,10 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     }
                     arr->units = units;
                     arr->hasUnits = hasUnits;
+                    arr->hideFromGUI = hideFromGUI;
 
                     md->Add(arr);
                 }
-#endif
             }
             free(meshName);
         }
