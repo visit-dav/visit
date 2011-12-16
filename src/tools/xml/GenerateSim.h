@@ -469,7 +469,7 @@ class AttsGeneratorBool : public virtual Bool , public virtual AttsGeneratorFiel
     virtual void WriteSimV2Ctor(QTextStream &h)
     {
         if(valueSet)
-            h << "    " << name << " = " << val << ";" << endl;
+            h << "    " << name << " = " << (val ? "true":"false") << ";" << endl;
         else
             h << "    " << name << " = false;" << endl;
     }
@@ -1534,7 +1534,7 @@ class AttsGeneratorAttribute : public GeneratorBase
             fields[i]->WriteVisItFunctionPrototype(h, name);
         h << endl;
         h << "#ifdef __cplusplus" << endl;
-        h << "};" << endl;
+        h << "}" << endl;
         h << "#endif" << endl;
         h << endl;
         h << "#endif" << endl;
@@ -1702,21 +1702,21 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << "static VisIt_"<<name<<" *" << endl;
         h << "GetObject(visit_handle h, const char *fname)" << endl;
         h << "{" << endl;
-        h << "    char tmp[100];" << endl;
+        h << "    char tmp[150];" << endl;
         h << "    VisIt_"<<name<<" *obj = (VisIt_"<<name<<" *)VisItGetPointer(h);" << endl;
         h << "    if(obj != NULL)" << endl;
         h << "    {" << endl;
-        h << "        if(obj->type != VISIT_"<<name.toUpper()<<")" << endl;
+        h << "        if(obj->objectType() != VISIT_"<<name.toUpper()<<")" << endl;
         h << "        {" << endl;
-        h << "            SNPRINTF(tmp, 100, \"%s: The provided handle does not point to \"" << endl;
-        h << "                \"a "<<name<<" object.\", fname);" << endl;
+        h << "            SNPRINTF(tmp, 150, \"%s: The provided handle does not point to \"" << endl;
+        h << "                \"a "<<name<<" object. (type=%d)\", fname, obj->type);" << endl;
         h << "            VisItError(tmp);" << endl;
         h << "            obj = NULL;" << endl;
         h << "        }" << endl;
         h << "    }" << endl;
         h << "    else" << endl;
         h << "    {" << endl;
-        h << "        SNPRINTF(tmp, 100, \"%s: An invalid handle was provided.\", fname);" << endl;
+        h << "        SNPRINTF(tmp, 150, \"%s: An invalid handle was provided.\", fname);" << endl;
         h << "        VisItError(tmp);" << endl;
         h << "    }" << endl;
         h << endl;
