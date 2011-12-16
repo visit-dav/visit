@@ -504,6 +504,10 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
 //
 //    David Camp, Wed Jul 13 12:53:52 PDT 2011
 //    Fixed a memory leak, not deleting tmp_ptr
+//
+//    Hank Childs, Fri Dec 16 15:10:28 PST 2011
+//    Fix problem with communication across refinement levels.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -541,6 +545,8 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
+            if (n1->neighbor_rel == DONOR_NEIGHBOR)
+                continue;
             int size = ncomp * (isPointData ? n1->npts : n1->ncells);
 
             if (domain2proc[d1] != domain2proc[d2])
@@ -584,6 +590,8 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
+            if (n1->neighbor_rel == DONOR_NEIGHBOR)
+                continue;
             int size = ncomp * (isPointData ? n1->npts : n1->ncells);
 
             if (domain2proc[d1] != domain2proc[d2])
@@ -612,6 +620,8 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
+            if (n1->neighbor_rel == DONOR_NEIGHBOR)
+                continue;
             int size = ncomp * (isPointData ? n1->npts : n1->ncells);
 
             if (domain2proc[d1] != domain2proc[d2])
@@ -3173,6 +3183,7 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 void
 avtStructuredDomainBoundaries::CalculateBoundaries(void)
 {
+#if 1
    if (haveCalculatedBoundaries)
         return;
 
@@ -3293,7 +3304,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
     visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::Calculate");
     haveCalculatedBoundaries = true;
 
-#if 0
+#else
     if (haveCalculatedBoundaries)
         return;
 
