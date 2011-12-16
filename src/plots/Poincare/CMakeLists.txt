@@ -34,6 +34,7 @@ PoincareEnginePluginInfo.C
 avtPoincarePlot.C
 avtPoincareFilter.C
 FieldlineAnalyzerLib.C
+RationalSurfaceLib.C
 ${COMMON_SOURCES}
 )
 

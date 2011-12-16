@@ -197,6 +197,10 @@ class avtPoincareFilter : public avtStreamlineFilter
     void CreatePoincareOutput(avtDataTree *dt,
                               std::vector<avtIntegralCurve *> &ic);
 
+    bool ClassifyRationals(std::vector<avtIntegralCurve *> &ic);
+    void CreateRationalOutput(avtDataTree *dt,
+                              std::vector<avtIntegralCurve *> &ic); /////////RATAIONAL
+
     void CreateIntegralCurveOutput(std::vector<avtIntegralCurve*,
                                    std::allocator<avtIntegralCurve*> >&) {};
 
