@@ -16,11 +16,9 @@
     </FilePatterns>
     <Files components="M">
       avtBoxlibFileFormat.C
-      avtBoxlib3DFileFormat.C
     </Files>
     <Files components="E">
       avtBoxlibFileFormat.C
-      avtBoxlib3DFileFormat.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

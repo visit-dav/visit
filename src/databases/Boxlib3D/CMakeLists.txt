@@ -16,14 +16,12 @@ SET(LIBM_SOURCES
 Boxlib3DMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtBoxlibFileFormat.C
-avtBoxlib3DFileFormat.C
 )
 
 SET(LIBE_SOURCES
 Boxlib3DEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtBoxlibFileFormat.C
-avtBoxlib3DFileFormat.C
 )
 
 INCLUDE_DIRECTORIES(

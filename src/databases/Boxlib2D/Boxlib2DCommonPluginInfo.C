@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 #include <Boxlib2DPluginInfo.h>
-#include <avtBoxlib2DFileFormat.h>
+#include <avtBoxlibFileFormat.h>
 #include <avtSTMDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 
