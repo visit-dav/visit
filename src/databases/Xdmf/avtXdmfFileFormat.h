@@ -134,11 +134,11 @@ class avtXdmfFileFormat: public avtMTMDFileFormat
         XdmfGrid * GetGrid(int);
         int GetMeshDataType(XdmfGrid *);
         int GetNumberOfComponents(XdmfGrid *, XdmfAttribute *);
-        int GetNumberOfCellComponents(XdmfGrid *, XdmfAttribute *);
-        int GetNumberOfNodeComponents(XdmfGrid *, XdmfAttribute *);
-        int GetNumberOfPoints(XdmfGrid *);
+        long GetNumberOfCellComponents(XdmfGrid *, XdmfAttribute *);
+        long GetNumberOfNodeComponents(XdmfGrid *, XdmfAttribute *);
+        long GetNumberOfPoints(XdmfGrid *);
         int GetNumberOfSymmetricalTensorComponents(int);
-        int GetNumberOfValues(XdmfElement *);
+        long GetNumberOfValues(XdmfElement *);
         int GetSpatialDimensions(XdmfInt32);
         int GetTopologicalDimensions(XdmfInt32);
         int GetVTKCellType(XdmfInt32);

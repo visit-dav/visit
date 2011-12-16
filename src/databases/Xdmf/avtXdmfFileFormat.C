@@ -725,10 +725,10 @@ int avtXdmfFileFormat::GetNTimesteps(void)
 //
 // ****************************************************************************
 
-int avtXdmfFileFormat::GetNumberOfCellComponents(XdmfGrid* grid, XdmfAttribute* attribute)
+long avtXdmfFileFormat::GetNumberOfCellComponents(XdmfGrid* grid, XdmfAttribute* attribute)
 {
-    int numValues = this->GetNumberOfValues(attribute);
-    int numCells = 0;
+    long numValues = this->GetNumberOfValues(attribute);
+    long numCells = 0;
 
     const char * numCellsString = grid->GetTopology()->GetDOM()->GetAttribute(grid->GetTopology()->GetElement(),
             "NumberOfElements");
@@ -747,7 +747,7 @@ int avtXdmfFileFormat::GetNumberOfCellComponents(XdmfGrid* grid, XdmfAttribute* 
         std::vector<std::string> tokens(it, end);
         std::vector<std::string>::const_iterator iter = tokens.begin();
         for (; iter != tokens.end(); ++iter) {
-            int val = atoi((*iter).c_str());
+            long val = atoi((*iter).c_str());
             if (grid->GetTopology()->GetClass() == XDMF_STRUCTURED) {
                 if (val - 1 > 0) {
                     numCells *= (val - 1);
@@ -816,10 +816,10 @@ int avtXdmfFileFormat::GetNumberOfComponents(XdmfGrid* grid, XdmfAttribute* attr
 //
 // ****************************************************************************
 
-int avtXdmfFileFormat::GetNumberOfNodeComponents(XdmfGrid * grid, XdmfAttribute * attribute)
+long avtXdmfFileFormat::GetNumberOfNodeComponents(XdmfGrid * grid, XdmfAttribute * attribute)
 {
-    int numValues = this->GetNumberOfValues(attribute);
-    int numPoints = this->GetNumberOfPoints(grid);
+    long numValues = this->GetNumberOfValues(attribute);
+    long numPoints = this->GetNumberOfPoints(grid);
 
     if(numPoints == 0 || numValues % numPoints != 0)
     {
@@ -842,7 +842,7 @@ int avtXdmfFileFormat::GetNumberOfNodeComponents(XdmfGrid * grid, XdmfAttribute 
 //
 // ****************************************************************************
 
-int avtXdmfFileFormat::GetNumberOfPoints(XdmfGrid * grid)
+long avtXdmfFileFormat::GetNumberOfPoints(XdmfGrid * grid)
 {
     XdmfDOM * dom = grid->GetGeometry()->GetDOM();
     XdmfXmlNode element = grid->GetGeometry()->GetElement();
@@ -857,7 +857,7 @@ int avtXdmfFileFormat::GetNumberOfPoints(XdmfGrid * grid)
         return 0;
     }
 
-    int numPoints = 1;
+    long numPoints = 1;
 
     if (grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_VXVY ||
         grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_VXVYVZ) {
@@ -893,7 +893,7 @@ int avtXdmfFileFormat::GetNumberOfPoints(XdmfGrid * grid)
         std::vector<std::string> tokens(it, end);
         std::vector<std::string>::const_iterator iter = tokens.begin();
         for (; iter != tokens.end(); ++iter) {
-            int val = atoi((*iter).c_str());
+            long val = atoi((*iter).c_str());
             if (val > 0) {
                 numPoints *= val;
             }
@@ -964,9 +964,9 @@ int avtXdmfFileFormat::GetNumberOfSymmetricalTensorComponents(int numComponents)
 //
 // ****************************************************************************
 
-int avtXdmfFileFormat::GetNumberOfValues(XdmfElement * element)
+long avtXdmfFileFormat::GetNumberOfValues(XdmfElement * element)
 {
-    int numVals = 0;
+    long numVals = 0;
 
     XdmfDOM * dom = element->GetDOM();
     XdmfXmlNode xmlElement = element->GetElement();
@@ -978,7 +978,7 @@ int avtXdmfFileFormat::GetNumberOfValues(XdmfElement * element)
                                               xmlElement);
 
     for (int i = 0; i < numDataItems; ++i) {
-        int currNumVals = 1;
+        long currNumVals = 1;
         XdmfDataItem xmfDataItem;
         xmfDataItem.SetDOM(element->GetDOM());
         xmfDataItem.SetElement(dom->FindDataElement(i, xmlElement));
