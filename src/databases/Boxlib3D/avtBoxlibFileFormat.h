@@ -48,7 +48,16 @@
 #include <vector>
 #include <string>
 
-class VisMF;
+
+#if BL_SPACEDIM==3
+#define AVTBOXLIBFILEFORMAT avtBoxlib3DFileFormat
+class VisMF3D;
+typedef VisMF3D VisMF;
+#else
+#define AVTBOXLIBFILEFORMAT avtBoxlib2DFileFormat
+class VisMF2D;
+typedef VisMF2D VisMF;
+#endif
 
 // ****************************************************************************
 //  Class: avtBoxlibFileFormat
@@ -85,17 +94,28 @@ class VisMF;
 //    David Camp, Tue Feb  1 09:47:31 PST 2011
 //    Added the GetTime() function for the pathline code.
 //
+//    Gunther H. Weber, Thu Dec 15 19:08:35 PST 2011
+//    Added initialization for BoxLib (including static memeber
+//    boxLibInitialized) since the new version of BoxLib no longer works if
+//    not initialized.
+//    Use a single class for 2D and 3D and map this to 2D and 3D file formats.
+//    This change avoids duplicate symbols in the 2D and 3D version of the
+//    plugin which can confuse MacOS. On MacOS use "#defines" to ensure that
+//    all classes in BoxLib that depend on dimension have different names for
+//    2D and 3D, thus avoiding symbol clashes when linking. These were
+//    required to make the BoxLib file reader work on MacOS.
+//
 // ****************************************************************************
 
-class avtBoxlibFileFormat : public avtSTMDFileFormat
+class AVTBOXLIBFILEFORMAT : public avtSTMDFileFormat
 {
   public:
-                          avtBoxlibFileFormat(const char *);
-    virtual              ~avtBoxlibFileFormat();
-    
+                          AVTBOXLIBFILEFORMAT(const char *);
+    virtual              ~AVTBOXLIBFILEFORMAT();
+
     virtual bool          HasInvariantSIL(void) const { return false; };
     virtual bool          HasInvariantMetaData(void) const { return false; };
-    
+
     virtual int           GetCycle(void) { return cycle; };
     virtual int           GetCycleFromFilename(const char *f) const;
 
@@ -110,9 +130,15 @@ class avtBoxlibFileFormat : public avtSTMDFileFormat
     virtual void         *GetAuxiliaryData(const char *var, int,
                                            const char *type, void *args,
                                            DestructorFunction &);
-    
+
     virtual void          FreeUpResources(void);
     virtual void          ActivateTimestep(void);
+
+#if BL_SPACEDIM==3
+    virtual const char   *GetType(void) { return "Boxlib3D File Format"; };
+#else
+    virtual const char   *GetType(void) { return "Boxlib2D File Format"; };
+#endif
 
   protected:
     // This relative location of the multifab files.  It contains entries for
@@ -154,7 +180,7 @@ class avtBoxlibFileFormat : public avtSTMDFileFormat
     std::string                             timestepPath;
     bool                                    initializedReader;
     bool                                    vf_names_for_materials;
-    
+
     // Scalar vars listed in header.
     int                                     nVars;
     std::vector<std::string>                varNames;
@@ -179,9 +205,10 @@ class avtBoxlibFileFormat : public avtSTMDFileFormat
     // Problem range
     double                                  probLo[BL_SPACEDIM];
     double                                  probHi[BL_SPACEDIM];
-    
+
     int                                     nMaterials;
 
+    static bool                             boxLibInitialized;
     static const int                        dimension = BL_SPACEDIM;
 
     void                                   *GetMaterial(const char *, int,

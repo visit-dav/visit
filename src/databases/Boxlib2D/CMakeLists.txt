@@ -16,14 +16,12 @@ SET(LIBM_SOURCES
 Boxlib2DMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtBoxlibFileFormat.C
-avtBoxlib2DFileFormat.C
 )
 
 SET(LIBE_SOURCES
 Boxlib2DEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtBoxlibFileFormat.C
-avtBoxlib2DFileFormat.C
 )
 
 INCLUDE_DIRECTORIES(

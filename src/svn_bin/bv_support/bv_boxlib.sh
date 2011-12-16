@@ -23,10 +23,11 @@ return ""
 
 function bv_boxlib_info
 {
-export BOXLIB_VERSION=${BOXLIB_VERSION:-"2011.04.28"}
-export BOXLIB_FILE=${BOXLIB_FILE:-"BoxLib-${BOXLIB_VERSION}.tar.gz"}
-export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"2011.04.28"}
-export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"BoxLib-${BOXLIB_VERSION}/BoxLib"}
+export BOXLIB_VERSION=${BOXLIB_VERSION:-"2011.12.14"}
+export BOXLIB_FILE=${BOXLIB_FILE:-"BoxLib.121411.tar.gz"}
+export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"2011.12.14"}
+export BOXLIB_URL=${BOXLIB_URL:-"https://ccse.lbl.gov/pub/BoxLib/"}
+export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"BoxLib/Src/C_BaseLib"}
 }
 
 function bv_boxlib_print
@@ -66,7 +67,7 @@ function bv_boxlib_host_profile
 function bv_boxlib_ensure
 {
     if [[ "$DO_BOXLIB" == "yes" ]] ; then
-        ensure_built_or_ready "boxlib" $BOXLIB_VERSION  $BOXLIB_BUILD_DIR  $BOXLIB_FILE
+        ensure_built_or_ready "boxlib" $BOXLIB_VERSION $BOXLIB_BUILD_DIR $BOXLIB_FILE $BOXLIB_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_BOXLIB="no"
@@ -113,6 +114,16 @@ function build_boxlib
         $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
            CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
            DEBUG="FALSE" DIM=2 COMP="xlC" USE_MPI="FALSE" \
+           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+    elif [[ "$OPSYS" == "Darwin" ]]; then
+        $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+           CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+           DEBUG="FALSE" DIM=3 USE_MPI="FALSE" BL_MANGLE_SYMBOLS_WITH_DIM="TRUE" \
+           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+
+        $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+           CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+           DEBUG="FALSE" DIM=2 USE_MPI="FALSE" BL_MANGLE_SYMBOLS_WITH_DIM="TRUE" \
            BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
     else
         $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
