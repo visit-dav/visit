@@ -55,6 +55,8 @@ struct VisIt_VariableMetaData : public VisIt_ObjectBase
     int         centering;
     int         type;
     bool        treatAsASCII;
+    bool        hideFromGUI;
+    int         numComponents;
 };
 
 VisIt_VariableMetaData::VisIt_VariableMetaData() : VisIt_ObjectBase(VISIT_VARIABLEMETADATA)
@@ -64,7 +66,9 @@ VisIt_VariableMetaData::VisIt_VariableMetaData() : VisIt_ObjectBase(VISIT_VARIAB
     units = "";
     centering = VISIT_VARCENTERING_ZONE;
     type = VISIT_VARTYPE_SCALAR;
-    treatAsASCII = 0;
+    treatAsASCII = false;
+    hideFromGUI = false;
+    numComponents = 1;
 }
 
 VisIt_VariableMetaData::~VisIt_VariableMetaData()
@@ -357,6 +361,72 @@ simv2_VariableMetaData_getTreatAsASCII(visit_handle h, int *val)
 }
 
 int
+simv2_VariableMetaData_setHideFromGUI(visit_handle h, int val)
+{
+    int retval = VISIT_ERROR;
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_setHideFromGUI");
+    if(obj != NULL)
+    {
+        obj->hideFromGUI = (val > 0);
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_VariableMetaData_getHideFromGUI(visit_handle h, int *val)
+{
+    int retval = VISIT_ERROR;
+    if(val == NULL)
+    {
+        VisItError("simv2_VariableMetaData_getHideFromGUI: Invalid address.");
+        return VISIT_ERROR;
+    }
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_getHideFromGUI");
+    if(obj != NULL)
+    {
+        *val = obj->hideFromGUI ? 1 : 0;
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = 0;
+    return retval;
+}
+
+int
+simv2_VariableMetaData_setNumComponents(visit_handle h, int val)
+{
+    int retval = VISIT_ERROR;
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_setNumComponents");
+    if(obj != NULL)
+    {
+        obj->numComponents = val;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_VariableMetaData_getNumComponents(visit_handle h, int *val)
+{
+    int retval = VISIT_ERROR;
+    if(val == NULL)
+    {
+        VisItError("simv2_VariableMetaData_getNumComponents: Invalid address.");
+        return VISIT_ERROR;
+    }
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_getNumComponents");
+    if(obj != NULL)
+    {
+        *val = obj->numComponents;
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = 0;
+    return retval;
+}
+
+int
 simv2_VariableMetaData_check(visit_handle h)
 {
     VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_check");
@@ -373,6 +443,35 @@ simv2_VariableMetaData_check(visit_handle h)
             VisItError("VariableMetaData needs a mesh name");
             return VISIT_ERROR;
         }
+        // Check/override the number of components.
+        switch(obj->type)
+        {
+        case VISIT_VARTYPE_SCALAR:
+        case VISIT_VARTYPE_MATERIAL:
+        case VISIT_VARTYPE_MATSPECIES:
+        case VISIT_VARTYPE_MESH:
+        case VISIT_VARTYPE_CURVE:
+            obj->numComponents = 1;
+            break;
+        case VISIT_VARTYPE_VECTOR:
+            obj->numComponents = 3;
+            break;
+        case VISIT_VARTYPE_TENSOR:
+            obj->numComponents = 9;
+            break;
+        case VISIT_VARTYPE_SYMMETRIC_TENSOR:
+            obj->numComponents = 6;
+            break;
+        case VISIT_VARTYPE_LABEL:
+        case VISIT_VARTYPE_ARRAY:
+            if(obj->numComponents < 1)
+            {
+                VisItError("VariableMetaData needs numComponents >= 1 for labels and arrays.");
+                return VISIT_ERROR;
+            }
+            break;
+        }
+
         retval = VISIT_OKAY;
     }
     return retval;

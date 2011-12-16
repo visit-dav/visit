@@ -31,6 +31,12 @@
     <Field name="treatAsASCII" label="Treat as ASCII" type="bool">
       false
     </Field>
+    <Field name="hideFromGUI" label="Hide from GUI" type="bool">
+      false
+    </Field>
+    <Field name="numComponents" label="Number of components" type="int">
+      1
+    </Field>
     <Function name="simv2_VariableMetaData_check" user="true" member="true">
     </Function>
   </Attribute>

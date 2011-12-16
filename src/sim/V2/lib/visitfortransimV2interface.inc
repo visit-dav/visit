@@ -29,6 +29,10 @@
 !   Brad Whitlock, Thu Aug 11 12:03:43 PDT 2011
 !   Added functions to set/get ghost zones on meshes.
 !
+!   Brad Whitlock, Thu Dec 15 15:09:25 PST 2011
+!   I added hidefromgui and numcomponents attributes for variable 
+!   metadata.
+!
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 !... Commonly useful declarations
@@ -945,6 +949,21 @@
       external visitmdvargettreatasascii
       integer  visitmdvargettreatasascii
 
+! visitmdvarsethidefromgui(visit_handle h, int val)
+      external visitmdvarsethidefromgui
+      integer  visitmdvarsethidefromgui
+
+! visitmdvargethidefromgui(visit_handle h, int val)
+      external visitmdvargethidefromgui
+      integer  visitmdvargethidefromgui
+
+! visitmdvarsetnumcomponents(visit_handle h, int val)
+      external visitmdvarsetnumcomponents
+      integer  visitmdvarsetnumcomponents
+
+! visitmdvargetnumcomponents(visit_handle h, int val)
+      external visitmdvargetnumcomponents
+      integer  visitmdvargetnumcomponents
 
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! Data functions

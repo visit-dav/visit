@@ -60,6 +60,10 @@ SIMV2_API int simv2_VariableMetaData_setType(visit_handle h, int);
 SIMV2_API int simv2_VariableMetaData_getType(visit_handle h, int*);
 SIMV2_API int simv2_VariableMetaData_setTreatAsASCII(visit_handle h, int);
 SIMV2_API int simv2_VariableMetaData_getTreatAsASCII(visit_handle h, int*);
+SIMV2_API int simv2_VariableMetaData_setHideFromGUI(visit_handle h, int);
+SIMV2_API int simv2_VariableMetaData_getHideFromGUI(visit_handle h, int*);
+SIMV2_API int simv2_VariableMetaData_setNumComponents(visit_handle h, int);
+SIMV2_API int simv2_VariableMetaData_getNumComponents(visit_handle h, int*);
 
 #ifdef __cplusplus
 };

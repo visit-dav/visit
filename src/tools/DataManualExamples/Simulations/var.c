@@ -400,6 +400,41 @@ SimGetMetaData(void *cbdata)
             VisIt_SimulationMetaData_addVariable(md, vmd);
         }
 
+        /* Add a zonal array variable on mesh2d. */
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "zonal_array");
+            VisIt_VariableMetaData_setMeshName(vmd, "mesh2d");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_ARRAY);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_ZONE);
+            VisIt_VariableMetaData_setNumComponents(vmd, 4);
+
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+
+        /* Add a nodal array variable on mesh3d. */
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "nodal_array");
+            VisIt_VariableMetaData_setMeshName(vmd, "mesh3d");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_ARRAY);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
+            VisIt_VariableMetaData_setNumComponents(vmd, 4);
+
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+
+        /* Add a "hidden" variable. */
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "hidden");
+            VisIt_VariableMetaData_setMeshName(vmd, "mesh3d");
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
+            VisIt_VariableMetaData_setHideFromGUI(vmd, 1);
+
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+
         /* Add some custom commands. */
         for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
         {
@@ -424,6 +459,10 @@ float zonal[] = {1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.};
 float zonal_vector[][2] = {
    { 1., 2.},{ 3., 4.},{ 5., 6.},{ 7., 8.},{ 9.,10.},{11.,12.},
    {13.,14.},{15.,16.},{17.,18.},{19.,20.},{21.,22.},{23.,24.}
+};
+float zonal_array[][4] = {
+   { 1., 2.,0.,0.},{ 3., 4.,0.,0.},{ 5., 6.,0.,0.},{ 7., 8.,0.,0.},{ 9.,10.,0.,0.},{11.,12.,0.,0.},
+   {13.,14.,0.,0.},{15.,16.,0.,0.},{17.,18.,0.,0.},{19.,20.,0.,0.},{21.,22.,0.,0.},{23.,24.,0.,0.}
 };
 const char *zonal_labels = "zone1\0\0zone2\0\0zone3\0\0zone4\0\0zone5\0\0zone6\0\0zone7\0\0zone8\0\0zone9\0\0zone10\0zone11\0zone12";
 
@@ -454,6 +493,15 @@ double nodal_vector[2][3][4][3] = {
    { {{36.,37.,38.},{39.,40.,41.},{42.,43.,44.},{45.,46.,47.}},
      {{48.,49.,50.},{51.,52.,53.},{54.,55.,56.},{57.,58.,59.}},
      {{60.,61.,62.},{63.,64.,65.},{66.,67.,68.},{69.,70.,71}} }
+};
+double nodal_array[2][3][4][4] = {
+   { {{ 0., 1., 2.,0.},{ 3., 4., 5.,0.},{ 6., 7., 8.,0.},{ 9.,10.,11.,0.}},
+     {{12.,13.,14.,0.},{15.,16.,17.,0.},{18.,19.,20.,0.},{21.,22.,23.,0.}},
+     {{24.,25.,26.,0.},{27.,28.,29.,0.},{30.,31.,32.,0.},{33.,34.,35.,0.}} },
+
+   { {{36.,37.,38.,0.},{39.,40.,41.,0.},{42.,43.,44.,0.},{45.,46.,47.,0.}},
+     {{48.,49.,50.,0.},{51.,52.,53.,0.},{54.,55.,56.,0.},{57.,58.,59.,0.}},
+     {{60.,61.,62.,0.},{63.,64.,65.,0.},{66.,67.,68.,0.},{69.,70.,71.,0.}} }
 };
 
 /******************************************************************************
@@ -512,6 +560,8 @@ SimGetMesh(int domain, const char *name, void *cbdata)
  * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Modifications:
+ *   Brad Whitlock, Thu Dec 15 15:58:39 PST 2011
+ *   I added array variables and a hidden scalar.
  *
  *****************************************************************************/
 
@@ -529,7 +579,8 @@ SimGetVariable(int domain, const char *name, void *cbdata)
             VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, nComponents,
                 nTuples, zonal);
         }
-        else if(strcmp(name, "nodal_scalar") == 0)
+        else if(strcmp(name, "nodal_scalar") == 0 ||
+                strcmp(name, "hidden") == 0)
         {
             nTuples = cmesh_dims[0] * cmesh_dims[1] *
                 cmesh_dims[2];
@@ -557,6 +608,21 @@ SimGetVariable(int domain, const char *name, void *cbdata)
             nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
             VisIt_VariableData_setDataC(h, VISIT_OWNER_SIM, nComponents,
                 nTuples, (char *)zonal_labels);
+        }
+        else if(strcmp(name, "zonal_array") == 0)
+        {
+            nComponents = 4;
+            nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
+            VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, nComponents,
+                nTuples, (float *)zonal_array);
+        }
+        else if(strcmp(name, "nodal_array") == 0)
+        {
+            nComponents = 4;
+            nTuples = cmesh_dims[0] * cmesh_dims[1] *
+                cmesh_dims[2];
+            VisIt_VariableData_setDataD(h, VISIT_OWNER_SIM, nComponents,
+                nTuples, (double *)nodal_array);
         }
         else
         {

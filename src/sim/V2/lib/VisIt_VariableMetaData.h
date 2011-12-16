@@ -57,6 +57,10 @@ int VisIt_VariableMetaData_setType(visit_handle h, int);
 int VisIt_VariableMetaData_getType(visit_handle h, int*);
 int VisIt_VariableMetaData_setTreatAsASCII(visit_handle h, int);
 int VisIt_VariableMetaData_getTreatAsASCII(visit_handle h, int*);
+int VisIt_VariableMetaData_setHideFromGUI(visit_handle h, int);
+int VisIt_VariableMetaData_getHideFromGUI(visit_handle h, int*);
+int VisIt_VariableMetaData_setNumComponents(visit_handle h, int);
+int VisIt_VariableMetaData_getNumComponents(visit_handle h, int*);
 
 #ifdef __cplusplus
 }

@@ -152,6 +152,38 @@ VisIt_VariableMetaData_getTreatAsASCII(visit_handle h, int *val)
         (h, val));
 }
 
+int
+VisIt_VariableMetaData_setHideFromGUI(visit_handle h, int val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_setHideFromGUI,
+        int, (visit_handle, int),
+        (h, val));
+}
+
+int
+VisIt_VariableMetaData_getHideFromGUI(visit_handle h, int *val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getHideFromGUI,
+        int, (visit_handle, int*),
+        (h, val));
+}
+
+int
+VisIt_VariableMetaData_setNumComponents(visit_handle h, int val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_setNumComponents,
+        int, (visit_handle, int),
+        (h, val));
+}
+
+int
+VisIt_VariableMetaData_getNumComponents(visit_handle h, int *val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getNumComponents,
+        int, (visit_handle, int*),
+        (h, val));
+}
+
 
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
@@ -169,6 +201,10 @@ VisIt_VariableMetaData_getTreatAsASCII(visit_handle h, int *val)
 #define F_VISITMDVARGETTYPE               F77_ID(visitmdvargettype_,visitmdvargettype, VISITMDVARGETTYPE)
 #define F_VISITMDVARSETTREATASASCII       F77_ID(visitmdvarsettreatasascii_,visitmdvarsettreatasascii, VISITMDVARSETTREATASASCII)
 #define F_VISITMDVARGETTREATASASCII       F77_ID(visitmdvargettreatasascii_,visitmdvargettreatasascii, VISITMDVARGETTREATASASCII)
+#define F_VISITMDVARSETHIDEFROMGUI        F77_ID(visitmdvarsethidefromgui_,visitmdvarsethidefromgui, VISITMDVARSETHIDEFROMGUI)
+#define F_VISITMDVARGETHIDEFROMGUI        F77_ID(visitmdvargethidefromgui_,visitmdvargethidefromgui, VISITMDVARGETHIDEFROMGUI)
+#define F_VISITMDVARSETNUMCOMPONENTS      F77_ID(visitmdvarsetnumcomponents_,visitmdvarsetnumcomponents, VISITMDVARSETNUMCOMPONENTS)
+#define F_VISITMDVARGETNUMCOMPONENTS      F77_ID(visitmdvargetnumcomponents_,visitmdvargetnumcomponents, VISITMDVARGETNUMCOMPONENTS)
 
 int
 F_VISITMDVARALLOC(visit_handle *h)
@@ -288,5 +324,29 @@ int
 F_VISITMDVARGETTREATASASCII(visit_handle *h, int *val)
 {
     return VisIt_VariableMetaData_getTreatAsASCII(*h, val);
+}
+
+int
+F_VISITMDVARSETHIDEFROMGUI(visit_handle *h, int *val)
+{
+    return VisIt_VariableMetaData_setHideFromGUI(*h, *val);
+}
+
+int
+F_VISITMDVARGETHIDEFROMGUI(visit_handle *h, int *val)
+{
+    return VisIt_VariableMetaData_getHideFromGUI(*h, val);
+}
+
+int
+F_VISITMDVARSETNUMCOMPONENTS(visit_handle *h, int *val)
+{
+    return VisIt_VariableMetaData_setNumComponents(*h, *val);
+}
+
+int
+F_VISITMDVARGETNUMCOMPONENTS(visit_handle *h, int *val)
+{
+    return VisIt_VariableMetaData_getNumComponents(*h, val);
 }
 
