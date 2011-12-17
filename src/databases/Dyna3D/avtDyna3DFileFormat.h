@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2011, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -48,7 +48,7 @@
 #include <string>
 #include <vector>
 
-class vtkFloatArray;
+#include <Dyna3DFile.h>
 
 // ****************************************************************************
 //  Class: avtDyna3DFileFormat
@@ -66,6 +66,10 @@ class vtkFloatArray;
 //    Brad Whitlock, Wed Mar 11 16:18:45 PDT 2009
 //    I changed how materials are read.
 //
+//    Brad Whitlock, Fri Dec 16 11:18:36 PST 2011
+//    Use the Dyna3DFile class to make it easier to sync up with changes in
+//    DGEM/SDM.
+//
 // ****************************************************************************
 
 class avtDyna3DFileFormat : public avtSTSDFileFormat
@@ -81,17 +85,6 @@ public:
     virtual void      *GetAuxiliaryData(const char *var, const char *type,
                                         void *args, DestructorFunction &);
     
-    //
-    // These are used to declare what the current time and cycle are for the
-    // file.  These should only be defined if the file format knows what the
-    // time and/or cycle is.
-    //
-    // virtual bool      ReturnsValidCycle() const { return true; };
-    // virtual int       GetCycle(void);
-    // virtual bool      ReturnsValidTime() const { return true; };
-    // virtual double    GetTime(void);
-    //
-
     virtual const char    *GetType(void)   { return "Dyna3D input data"; };
     virtual void           FreeUpResources(void); 
 
@@ -102,62 +95,8 @@ public:
     virtual vtkDataArray  *GetVectorVar(const char *);
 
 protected:
-    typedef struct
-    {
-        int   nMaterials;
-        int   nPoints;
-        int   nSolidHexes;
-        int   nBeamElements;
-        int   nShellElements4;
-        int   nShellElements8;
-        int   nInterfaceSegments;
-        float interfaceInterval;
-        float shellTimestep;
-    } Card2_t;
- 
-    typedef struct
-    {
-        Card2_t card2;
-    } ControlCards_t;
-
-    struct MaterialCard_t
-    {
-        MaterialCard_t();
-
-        int         materialNumber;
-        std::string materialName;
-        double      density;
-        double      strength;
-    };
-
-    typedef std::vector<MaterialCard_t> MaterialCardVector;
-
-    void SkipComments(ifstream &ifile, const char *sectionName,
-                      bool &, bool &);
-    bool SkipToSection(ifstream &ifile, const char *section);
-    void GetLine(ifstream &ifile);
-
-    bool ReadControlCards(ifstream &ifile);
-    bool ReadControlCard2(ifstream &);
-    void ReadControlCard3(ifstream &);
-    void ReadControlCard4(ifstream &);
-    void ReadControlCard5(ifstream &);
-    void ReadControlCard6(ifstream &);
-    void ReadControlCard7(ifstream &);
-    void ReadControlCard8(ifstream &);
-    void ReadControlCard9(ifstream &);
-    void ReadMaterialCards(ifstream &);
-    void ReadOneMaterialCard(ifstream &, MaterialCard_t &);
-
-    bool ReadFile(const char *, int nLines);
-
     // DATA MEMBERS
-    vtkDataSet            *meshDS;
-    ControlCards_t         cards;
-    MaterialCardVector     materialCards;
-    int                   *matNumbers;
-    char                  *line;
-    vtkFloatArray         *velocity;
+    Dyna3DFile file;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 };
