@@ -650,6 +650,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
         //       1.6.3.  Since we're going for portability, just open the
         //       darn root group and use that instead.
         hid_t rootId = H5Gopen(fileId, "/");
+        hid_t rootId_tmp;
 
         // Make a pass over the contents of the root directory
         // looking for a group corresponding to our grid name, and
@@ -666,7 +667,9 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
                 if (sscanf(name, "Grid%d", &gridindex) == 1 &&
                     gridindex == smallest_grid)
                 {
+                    rootId_tmp = rootId;
                     rootId = H5Gopen(rootId, name);
+                    H5Gclose(rootId_tmp);
                     break;
                 }
             }
@@ -1441,6 +1444,8 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         // looking for a group corresponding to our grid name, and
         // open it if necessary.
         hid_t rootId = H5Gopen(fileId, "/");
+        hid_t rootId_tmp;
+
         hsize_t n_objs;
         H5Gget_num_objs(rootId, &n_objs);
         for (int var = 0 ; var < n_objs ; var++)
@@ -1453,7 +1458,9 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
                 if (sscanf(name, "Grid%d", &gridindex) == 1 &&
                     gridindex == domain+1)
                 {
+                    rootId_tmp = rootId;
                     rootId = H5Gopen(rootId, name);
+                    H5Gclose(rootId_tmp);
                     break;
                 }
             }
@@ -1529,6 +1536,7 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         H5Dclose(var_id_y);
         if (dimension == 3)
             H5Dclose(var_id_z);
+        H5Sclose(spaceId);
 
         vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
         ugrid->SetPoints(points);
@@ -1872,6 +1880,8 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
         // looking for a group corresponding to our grid name, and
         // open it if necessary.
         hid_t rootId = H5Gopen(fileId, "/");
+        hid_t rootId_tmp;
+
         hsize_t n_objs;
         H5Gget_num_objs(rootId, &n_objs);
         for (int var = 0 ; var < n_objs ; var++)
@@ -1884,7 +1894,9 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
                 if (sscanf(name, "Grid%d", &gridindex) == 1 &&
                     gridindex == domain+1)
                 {
+                    rootId_tmp = rootId;
                     rootId = H5Gopen(rootId, name);
+                    H5Gclose(rootId_tmp);
                     break;
                 }
             }
@@ -1982,6 +1994,7 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
 
         // Done with the variable; don't leak it
         H5Dclose(varId);
+        H5Sclose(spaceId);
 
         // For now, always close the file
         H5Gclose(rootId);
