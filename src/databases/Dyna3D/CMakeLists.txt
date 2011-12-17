@@ -16,12 +16,16 @@ SET(LIBM_SOURCES
 Dyna3DMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtDyna3DFileFormat.C
+Dyna3DFile.cpp
+MaterialProperties.cpp
 )
 
 SET(LIBE_SOURCES
 Dyna3DEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtDyna3DFileFormat.C
+Dyna3DFile.cpp
+MaterialProperties.cpp
 )
 
 INCLUDE_DIRECTORIES(
@@ -49,6 +53,7 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS} 
 )
 
+ADD_DEFINITIONS("-DVISIT_DYNA")
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} )
 
