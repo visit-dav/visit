@@ -1,8 +1,21 @@
 <?xml version="1.0"?>
-  <Plugin name="Dyna3D" type="database" label="Dyna3D input data" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+  <Plugin name="Dyna3D" type="database" label="Dyna3D input data" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <CXXFLAGS>
+      -DVISIT_DYNA
+    </CXXFLAGS>
     <FilePatterns>
       *.dyn
     </FilePatterns>
-    <Attribute name="" purpose="" persistent="false">
+    <Files components="M">
+      avtDyna3DFileFormat.C
+      Dyna3DFile.cpp
+      MaterialProperties.cpp
+    </Files>
+    <Files components="E">
+      avtDyna3DFileFormat.C
+      Dyna3DFile.cpp
+      MaterialProperties.cpp
+    </Files>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>
