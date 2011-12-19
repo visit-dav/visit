@@ -735,3 +735,30 @@ ZoomInteractor::DrawRubberBandLine(int x1, int y1, int x2, int y2)
     rubberBandMapper->RenderOverlay(ren, rubberBandActor);
 }
 
+// ****************************************************************************
+//  Method: ZoomInteractor::SufficientDistanceMoved
+//
+//  Purpose:
+//      Determines if the current zoom coordinates are sufficiently far apart
+//      to justify performing the zoom, or if it should be cancelled instead
+//
+//  Programmer: Marc Durant
+//  Creation:   December 19, 2011
+//
+// ****************************************************************************
+
+bool
+ZoomInteractor::SufficientDistanceMoved() {
+
+    float distX = (lastX - anchorX) * (lastX - anchorX);
+    if (distX <= 16) {
+        return false;
+    }
+
+    float distY = (lastY - anchorY) * (lastY - anchorY);
+    if (distY <= 16) {
+        return false;
+    }
+
+    return true;
+}

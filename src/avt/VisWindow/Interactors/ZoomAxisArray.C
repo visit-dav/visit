@@ -186,15 +186,18 @@ ZoomAxisArray::EndMiddleButtonAction()
 //
 //  Modifications:
 //
+//    Marc Durant, Mon Dec 19 14:40:00 MST 2011
+//    Cancelling zoom action if mouse movement was too small.
+//
 // ****************************************************************************
 
 void
 ZoomAxisArray::ZoomCamera(void)
 {
-    if (anchorX == lastX && anchorY == lastY)
+    if (!SufficientDistanceMoved())
     {
         //
-        // This is a point, not a rectangle.
+        // This is a point, line, or very, very small rectangle
         //
         return;
     }
