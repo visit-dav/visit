@@ -61,6 +61,20 @@ float pythDist(avtVector p1, avtVector p2)
 
 /**     
  *
+ *      getAngle
+ *      Get the angle between three points, let c be the center.
+ *
+ */
+float getAngle(avtVector a, avtVector b, avtVector c)
+{
+  return acos( (pythDist(c,a)*pythDist(c,a) + 
+                pythDist(c,b)*pythDist(c,b) -
+                pythDist(b,a)*pythDist(b,a)) / 
+               (2.0f * pythDist(c,a) * pythDist(c,b)) );
+}
+        
+/**     
+ *
  *      getPunctureAngles
  *      Get the angle each puncture point forms with its immediate neighbors
  *
@@ -71,7 +85,7 @@ std::vector<float> getPunctureAngles(std::vector<avtVector> puncturePts,
   std::vector<float> punctureAngles;
   avtVector p0,p1,p2;
 
-  for (int i = 0; i < puncturePts.size(); i++)
+  for( int i=0; i<puncturePts.size(); ++i )
   {
     p0 = puncturePts[i]; //vertex we want the angle of
     p1 = puncturePts[(i+skip) % puncturePts.size()];
@@ -90,24 +104,6 @@ std::vector<float> getPunctureAngles(std::vector<avtVector> puncturePts,
 }
 
 
-// Here, let c be the center
-float getAngle(avtVector a, avtVector b, avtVector c)
-{
-  return acos( (pythDist(c,a)*pythDist(c,a) + 
-                pythDist(c,b)*pythDist(c,b) -
-                pythDist(b,a)*pythDist(b,a)) / 
-               (2.0f * pythDist(c,a) * pythDist(c,b)) );
-}
-        
-int getMaximumAngleIndex(std::vector<float> angles)
-{
-  float max = 0;
-  for ( int i = 0; i < angles.size(); i++)
-    if (angles[i] > max)
-      max = i;
-  return max;
-}
-
 /**
  *
  * return a vector of seed points for the given rational
@@ -121,9 +117,33 @@ std::vector<avtVector> getSeeds(avtPoincareIC *poincare_ic)
   fieldlib.getPunctures(poincare_ic->points,xzplane,puncturePoints);
   int skip = fieldlib.Blankinship(poincare_ic->properties.toroidalWinding, poincare_ic->properties.poloidalWinding, 1);
   
-  //Calculate angle size for each puncture point
-  std::vector<float> puncturePtAngles = getPunctureAngles(puncturePoints, skip);
-  int max = getMaximumAngleIndex(puncturePtAngles);
+  // Calculate angle size for each puncture point
+{
+  std::vector<float> puncturePtAngles;
+  avtVector p0,p1,p2;
+
+  double angleMax = 0;
+  int max = 0;
+
+  for( int i=0; i<puncturePts.size(); ++i )
+  {
+    p0 = puncturePts[i]; //vertex we want the angle of
+    p1 = puncturePts[(i+skip) % puncturePts.size()];
+
+    if (i - skip < 0)
+      p2 = puncturePts[puncturePts.size() + i - skip];
+    else
+      p2 = puncturePts[(i-skip) % puncturePts.size()];
+    
+    float angle = getAngle( p2, p1, p0 );
+
+    if (maxAngle < angle)
+    {
+      maxAngle = angle;
+
+      max = i;
+    }
+  }
 
   // Get Circle Equation
   avtVector pt1 = puncturePoints[(puncturePoints.size() + max + skip) % puncturePoints.size()];
