@@ -129,6 +129,7 @@ class VISWINDOW_API ZoomInteractor : public VisitInteractor
     virtual void           ZoomCamera(void)=0;
     virtual void           ZoomCamera(const int x, const int y)=0;
 
+    virtual bool           SufficientDistanceMoved();
 };
 
 
