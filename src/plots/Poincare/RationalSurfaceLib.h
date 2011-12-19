@@ -53,7 +53,6 @@ const bool RATIONAL_DEBUG = 1;
 
 const double golden_R = 0.61803399, golden_C = 1 - golden_R;
 
-
 /**     
  *
  *      pythDist
@@ -89,16 +88,16 @@ float getAngle(avtVector a, avtVector b, avtVector c);
 int getMaximumAngleIndex(std::vector<float> angles);
 
 /**
- *
- *  Return a vector of seed points for the given rational
+ *      getSeeds
+ *      Return a vector of seed points for the given rational
  *
  **/
 std::vector<avtVector> getSeeds(avtPoincareIC *poincare_ic);
 
 /**
- *
- *  Takes in a curve, returns index of puncture point contained between
- *  pt1 and pt2
+ *      findMinimizationIndex
+ *      Takes in a curve, returns index of puncture point contained between
+ *      pt1 and pt2
  *
  **/
 int findMinimizationIndex(std::vector<avtVector> puncturePts,
