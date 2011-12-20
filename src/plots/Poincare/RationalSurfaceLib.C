@@ -111,18 +111,17 @@ std::vector<float> getPunctureAngles(std::vector<avtVector> puncturePts,
  **/
 std::vector<avtVector> getSeeds(avtPoincareIC *poincare_ic)
 {
-  std::vector<avtVector> puncturePoints;
+  std::vector<avtVector> puncturePts;
   avtVector xzplane(0,1,0);
   FieldlineLib fieldlib;
-  fieldlib.getPunctures(poincare_ic->points,xzplane,puncturePoints);
+  fieldlib.getPunctures(poincare_ic->points,xzplane,puncturePts);
   int skip = fieldlib.Blankinship(poincare_ic->properties.toroidalWinding, poincare_ic->properties.poloidalWinding, 1);
   
-  // Calculate angle size for each puncture point
-{
+  // Calculate angle size for each puncture points
   std::vector<float> puncturePtAngles;
   avtVector p0,p1,p2;
 
-  double angleMax = 0;
+  double maxAngle = 0;
   int max = 0;
 
   for( int i=0; i<puncturePts.size(); ++i )
@@ -146,9 +145,9 @@ std::vector<avtVector> getSeeds(avtPoincareIC *poincare_ic)
   }
 
   // Get Circle Equation
-  avtVector pt1 = puncturePoints[(puncturePoints.size() + max + skip) % puncturePoints.size()];
-  avtVector pt2 = puncturePoints[max]; // this is the puncture point at the center of the max angle
-  avtVector pt3 = puncturePoints[(puncturePoints.size() + max - skip) % puncturePoints.size()];
+  avtVector pt1 = puncturePts[(puncturePts.size() + max + skip) % puncturePts.size()];
+  avtVector pt2 = puncturePts[max]; // this is the puncture point at the center of the max angle
+  avtVector pt3 = puncturePts[(puncturePts.size() + max - skip) % puncturePts.size()];
   // slopes
   float ma = (pt2[2] - pt1[2]) / (pt2[0] - pt1[0]);
   float mb = (pt3[2] - pt2[2]) / (pt3[0] - pt2[0]);
