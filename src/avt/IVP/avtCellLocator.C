@@ -648,7 +648,7 @@ bool avtCellLocator::TestPrism( vtkIdType cellid, const double pos[3],
 
 // --------------------------------------------------------------------------
 
-inline static double inv3( const double A[3][3], 
+inline static double inv3( const double A[4][3], 
                            const double b[3],
                            double r[3] )
 {
