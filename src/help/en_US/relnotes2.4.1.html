@@ -24,6 +24,7 @@ list of changes in release 2.4.</p>
 <li>Simulations that use an absolute path to their .sim2 file now show the current time in the Simulations window.</li>
 <li>The database annotation in the legend was made a little smaller and it now responds to font scaling that can be set in the Annotations window.</li>
 <li>The Xdmf reader was fixed so it can read larger grids.</li>
+<li>A bug was fixed with caching the reads of image files when using IndexSelect.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.4.1</font></b></p>
@@ -31,6 +32,7 @@ list of changes in release 2.4.</p>
 <li>Libsim was enhanced so variable metadata objects can be hidden from the gui so variables cannot be plotted directly.</li>
 <li>VisIt and Libsim were enhanced to support array variables.</li>
 <li>The Dyna3D reader was enhanced so it can read a new style of control information.</li>
+<li>Caching behavior was improved for the class of file format readers which incorporate optimizations, such as reading only a portion of the data, directly into the read process.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous

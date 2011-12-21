@@ -61,6 +61,11 @@
 //  Programmer: Hank Childs
 //  Creation:   March 22, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 20 14:43:08 PST 2011
+//    Add method DescriptionString.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtPointSelection : public avtDataSelection 
@@ -73,6 +78,7 @@ class PIPELINE_API avtPointSelection : public avtDataSelection
 
     virtual const char *    GetType() const
                                 { return "Point Selection"; }; 
+    virtual std::string     DescriptionString(void);
 
     void                    SetPoint(const double *pt_) 
                                                   { pt[0] = pt_[0];

@@ -42,6 +42,8 @@
 
 #include <avtPointSelection.h>
 
+#include <snprintf.h>
+
 
 // ****************************************************************************
 //  Method: avtPointSelection constructor
@@ -103,6 +105,29 @@ avtPointSelection::Destruct(void *i)
 {
     avtPointSelection *pt = (avtPointSelection *) i;
     delete pt;
+}
+
+
+// ****************************************************************************
+//  Method: avtPointSelection::DescriptionString
+//
+//  Purpose:
+//      Creates a string (used as a key for caching) that describes this
+//      selection.
+//
+//  Programmmer: Hank Childs
+//  Creation:    December 20, 2011
+//
+// ****************************************************************************
+
+std::string
+avtPointSelection::DescriptionString(void)
+{
+    char str[1024];
+    SNPRINTF(str, sizeof(str), "avtPointSelection:%f_%f_%f",
+                                pt[0], pt[1], pt[2]);
+    std::string s2 = str;
+    return s2;
 }
 
 

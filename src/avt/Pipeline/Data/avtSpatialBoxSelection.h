@@ -61,6 +61,11 @@
 //  Programmer: Mark C. Miller 
 //  Creation:   September 26, 2004 
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 20 14:43:08 PST 2011
+//    Add method DescriptionString.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSpatialBoxSelection : public avtDataSelection 
@@ -78,6 +83,7 @@ class PIPELINE_API avtSpatialBoxSelection : public avtDataSelection
 
     virtual const char *    GetType() const
                                 { return "Spatial Box Data Selection"; }; 
+    virtual std::string     DescriptionString(void);
 
     void                    SetInclusionMode(InclusionMode incMode)
                                 { inclusionMode = incMode; };

@@ -121,6 +121,12 @@
 //  Programmer: Mark C. Miller 
 //  Creation:   September 22, 2004 
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 20 15:55:05 PST 2011
+//    Added virtual method "DescriptionString", so that data selections can
+//    add to the key used for caching.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSelection 
@@ -132,6 +138,7 @@ class PIPELINE_API avtDataSelection
     virtual const char *    GetType() const = 0;
     virtual bool            operator==(const avtDataSelection &) const
                                 { EXCEPTION0(ImproperUseException); };
+    virtual std::string     DescriptionString(void) = 0;
 
   private:
 };

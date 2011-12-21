@@ -248,6 +248,8 @@ class DATABASE_API avtFileFormatInterface
     bool                    HasInvariantSIL(void);
 
     bool                    CanCacheVariable(const char *);
+    virtual std::string     CreateCacheNameIncludingSelections(std::string,
+                                                               int, int) = 0;
 
     bool                    CanDoStreaming(void);
     void                    DoingStreaming(bool);

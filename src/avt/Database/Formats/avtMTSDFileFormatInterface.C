@@ -348,6 +348,34 @@ avtMTSDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
 
 
 // ****************************************************************************
+//  Method: avtMTSDFileFormatInterface::CreateCacheNameIncludingSelections
+//
+//  Purpose:
+//      Creates a name that can be used for caching, including any of the
+//      selections that may be applied.
+//
+//  Arguments:
+//      var     The variable.
+//      ts      The time step.
+//      dom     The domain.
+//
+//  Returns:    A mangled version of the name.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 20, 2011
+//
+// ****************************************************************************
+
+std::string
+avtMTSDFileFormatInterface::CreateCacheNameIncludingSelections(std::string var, 
+                                                               int ts, int dom)
+{
+    int tsGroup = GetTimestepGroupForTimestep(ts);
+    return chunks[tsGroup][dom]->CreateCacheNameIncludingSelections(var);
+}
+
+
+// ****************************************************************************
 //  Method: avtMTSDFileFormatInterface::GetFilename
 //
 //  Purpose:

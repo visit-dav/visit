@@ -42,6 +42,8 @@
 
 #include <limits.h>
 
+#include <snprintf.h>
+
 #include <avtDataRangeSelection.h>
 
 // ****************************************************************************
@@ -101,4 +103,28 @@ avtDataRangeSelection::operator==(const avtDataRangeSelection &s) const
 {
     return ( (min == s.min) && (max == s.max) && (var == s.var) ); 
 }
+
+
+// ****************************************************************************
+//  Method: avtDataRangeSelection::DescriptionString
+//
+//  Purpose:
+//      Creates a string (used as a key for caching) that describes this
+//      selection.
+//
+//  Programmmer: Hank Childs
+//  Creation:    December 20, 2011
+//
+// ****************************************************************************
+
+std::string
+avtDataRangeSelection::DescriptionString(void)
+{
+    char str[1024];
+    SNPRINTF(str, sizeof(str), "avtDataRangeSelection:%s_%f_%f",
+                                var.c_str(), min, max);
+    std::string s2 = str;
+    return s2;
+}
+
 

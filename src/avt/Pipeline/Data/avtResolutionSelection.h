@@ -49,6 +49,11 @@
 //  Programmer: Andrew Foulks <rafoulks@cs.unh.edu>
 //  Creation:   Winter 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 20 14:43:08 PST 2011
+//    Add method DescriptionString.
+//
 // ****************************************************************************
 class avtResolutionSelection : public avtDataSelection {
 public:
@@ -56,6 +61,10 @@ public:
     virtual              ~avtResolutionSelection() {}
     // base class api
     virtual const char*  GetType() const { return "avtResolutionSelection"; }
+    virtual std::string     DescriptionString(void)
+                               { char str[1024];  
+                                 sprintf(str, "avtResolutionSelection:%d", mResolution);
+                                 return std::string(str); };
 
     // added functionality
     virtual void         setResolution(int r) { mResolution = r; }

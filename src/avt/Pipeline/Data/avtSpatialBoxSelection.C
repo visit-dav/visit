@@ -42,6 +42,8 @@
 
 #include <float.h>
 
+#include <snprintf.h>
+
 #include <avtSpatialBoxSelection.h>
 
 // ****************************************************************************
@@ -218,3 +220,29 @@ avtSpatialBoxSelection::Compose(const avtSpatialBoxSelection &sel,
             composeSel.maxs[i] = sel.maxs[i];
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtSpatialBoxSelection::DescriptionString
+//
+//  Purpose:
+//      Creates a string (used as a key for caching) that describes this
+//      selection.
+//
+//  Programmmer: Hank Childs
+//  Creation:    December 20, 2011
+//
+// ****************************************************************************
+
+std::string
+avtSpatialBoxSelection::DescriptionString(void)
+{
+    char str[1024];
+    SNPRINTF(str, sizeof(str), "avtSpatialBoxSelection:%d_%f_%f_%f_%f_%f_%f",
+                                inclusionMode, mins[0], mins[1], mins[2],
+                                maxs[0], maxs[1], maxs[2]);
+    std::string s2 = str;
+    return s2;
+}
+
+

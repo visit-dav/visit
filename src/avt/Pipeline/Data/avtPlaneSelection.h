@@ -58,6 +58,11 @@
 //  Programmer: Hank Childs
 //  Creation:   January 5, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 20 14:43:08 PST 2011
+//    Add method DescriptionString.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtPlaneSelection : public avtDataSelection 
@@ -68,6 +73,7 @@ class PIPELINE_API avtPlaneSelection : public avtDataSelection
 
     virtual const char *    GetType() const
                                 { return "Plane Selection"; }; 
+    virtual std::string     DescriptionString(void);
 
     void                    SetNormal(const double *_normal);
     void                    SetOrigin(const double *_origin);

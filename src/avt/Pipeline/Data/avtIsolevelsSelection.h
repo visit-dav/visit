@@ -63,6 +63,11 @@
 //  Programmer: Hank Childs
 //  Creation:   January 5, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 20 14:43:08 PST 2011
+//    Add method DescriptionString.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtIsolevelsSelection : public avtDataSelection 
@@ -74,6 +79,7 @@ class PIPELINE_API avtIsolevelsSelection : public avtDataSelection
     virtual                ~avtIsolevelsSelection();
 
     virtual const char *    GetType() const { return "Isolevels Selection"; }; 
+    virtual std::string     DescriptionString(void);
 
     void                    SetVariable(const std::string _var)
                                 { var = _var; };

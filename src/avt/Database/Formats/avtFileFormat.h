@@ -127,6 +127,10 @@ class     avtVariableCache;
 //    Hank Childs, Wed Dec 22 14:55:05 PST 2010
 //    Add a data member to indicate whether or not we are doing streaming.
 //
+//    Hank Childs, Tue Dec 20 13:18:43 CST 2011
+//    Add method for mangling names used for caching when selections are
+//    present.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -159,6 +163,8 @@ class DATABASE_API avtFileFormat
     virtual void          TurnMaterialSelectionOn(const char *);
 
     virtual bool          CanCacheVariable(const char *) { return true; };
+    virtual std::string   CreateCacheNameIncludingSelections(std::string s)
+                                  { return s; };
 
     void                  DoingStreaming(bool v) { doingStreaming = v; };
     bool                  CanDoStreaming(void) { return canDoStreaming; };

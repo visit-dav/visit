@@ -130,6 +130,9 @@ class DatabasePluginManager;
 //    Added common database info to the constructor so the constructor can
 //    call the plugin manager.
 //
+//    Hank Childs, Tue Dec 20 15:55:05 PST 2011
+//    Add method CreateCacheNameIncludingSelections.
+//
 // ****************************************************************************
 
 class avtZipWrapperFileFormatInterface : public avtFileFormatInterface 
@@ -146,6 +149,7 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
     virtual void           *GetAuxiliaryData(const char *, int, int, 
                                              const char *, void *, 
                                              DestructorFunction &);
+    virtual std::string     CreateCacheNameIncludingSelections(std::string, int, int);
 
     virtual const char     *GetFilename(int);
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,

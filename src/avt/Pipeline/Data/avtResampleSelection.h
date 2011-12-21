@@ -68,6 +68,11 @@
 //  Programmer: Mark C. Miller 
 //  Creation:   August 16, 2005 
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 20 14:43:08 PST 2011
+//    Add method DescriptionString.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtResampleSelection : public avtDataSelection 
@@ -78,6 +83,7 @@ class PIPELINE_API avtResampleSelection : public avtDataSelection
 
     virtual const char *    GetType() const
                                 { return "Resample Data Selection"; }; 
+    virtual std::string     DescriptionString(void);
 
     void                    SetNDims(int _ndims)
                                 { ndims = _ndims; };

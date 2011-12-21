@@ -79,6 +79,9 @@ class avtIOInformation;
 //    Jeremy Meredith, Thu Jan 28 15:49:05 EST 2010
 //    MTMD files can now be grouped into longer sequences.
 //
+//    Hank Childs, Tue Dec 20 14:15:33 CST 2011
+//    Add method CreateCacheNameIncludingSelections.
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
@@ -94,6 +97,9 @@ class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
     virtual void           *GetAuxiliaryData(const char *var, int, int,
                                              const char *type, void *args,
                                              DestructorFunction &);
+    virtual std::string     CreateCacheNameIncludingSelections(std::string,
+                                                               int, int);
+
 
     virtual const char     *GetFilename(int);
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,
