@@ -336,6 +336,10 @@ VariableMenuPopulator::ClearGroupingInfo()
 //    I changed the code to recover the better caching behavior we had prior
 //    to operator expressions.
 //
+//    Mark C. Miller, Wed Dec 21 10:40:35 PST 2011
+//    Subset menu was being populated with entries that were defined
+//    on meshes whose hideFromGUI flag  was true. I added logic to
+//    prevent that.
 // ****************************************************************************
 
 bool
@@ -508,7 +512,22 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
         int tsIndex = topSets[i];
         avtSILSet_p pTopset = sil->GetSILSet(tsIndex);
         const intVector &maps = pTopset->GetMapsOut();
-        string setName("(" + sil->GetSILSet(tsIndex)->GetName() + ")");
+        string meshName = sil->GetSILSet(tsIndex)->GetName();
+
+        bool underlyingMeshIsHiddenFromGUI = false;
+        for (int j = 0; j < md->GetNumMeshes(); ++j)
+        {
+            const avtMeshMetaData &mmd = md->GetMeshes(j);
+            if (mmd.name == meshName && mmd.hideFromGUI)
+            {
+                underlyingMeshIsHiddenFromGUI = true;
+                break;
+            }
+        }
+        if (underlyingMeshIsHiddenFromGUI) continue;
+
+        
+        string setName("(" + meshName + ")");
         for(int j = 0; j < maps.size(); ++j)
         {
             int     idx = maps[j];
