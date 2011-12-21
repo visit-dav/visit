@@ -76,6 +76,9 @@ class DBOptionsAttributes;
 //    Deleted a bunch of commented-out code that was hold-over from the
 //    plugin generation processes.
 //
+//    Hank Childs, Tue Dec 20 16:11:39 PST 2011
+//    Add support for new caching infrastructure with data selections.
+//
 // ****************************************************************************
 
 class avtImageFileFormat : public avtSTSDFileFormat
@@ -92,7 +95,7 @@ class avtImageFileFormat : public avtSTSDFileFormat
     virtual vtkDataArray  *GetVar(const char *);
     virtual vtkDataArray  *GetVectorVar(const char *);
 
-    virtual bool           CanCacheVariable(const char *);
+    virtual std::string    CreateCacheNameIncludingSelections(std::string);
 
     virtual void           RegisterDataSelections(
                                const std::vector<avtDataSelection_p> &selList,

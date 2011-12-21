@@ -90,6 +90,10 @@ class avtIOInformation;
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added method SetCycleTimeInDatabaseMetaData
+//
+//    Hank Childs, Tue Dec 20 14:15:33 CST 2011
+//    Add method CreateCacheNameIncludingSelections.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSTSDFileFormatInterface : public avtFileFormatInterface
@@ -104,6 +108,8 @@ class DATABASE_API avtSTSDFileFormatInterface : public avtFileFormatInterface
     virtual void           *GetAuxiliaryData(const char *var, int, int,
                                              const char *type, void *args, 
                                              DestructorFunction &);
+    virtual std::string     CreateCacheNameIncludingSelections(std::string,
+                                                               int, int);
 
     virtual const char     *GetFilename(int);
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,

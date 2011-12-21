@@ -72,9 +72,14 @@
 //  Programmer: Mark C. Miller 
 //  Creation:   September 22, 2004 
 //
+//  Modifications:
+//
 //    Hank Childs, Tue Dec 18 10:04:43 PST 2007
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
+//
+//    Hank Childs, Tue Dec 20 14:43:08 PST 2011
+//    Add method DescriptionString.
 //
 // ****************************************************************************
 
@@ -86,6 +91,7 @@ class PIPELINE_API avtLogicalSelection : public avtDataSelection
 
     virtual const char *    GetType() const
                                 { return "Logical Data Selection"; }; 
+    virtual std::string     DescriptionString(void);
 
     void                    SetNDims(int _ndims)
                                 { ndims = _ndims; };

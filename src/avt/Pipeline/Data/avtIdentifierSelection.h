@@ -66,6 +66,9 @@
 //    Hank Childs, Thu Mar  6 09:05:59 PST 2008
 //    Add Destruct method.
 //
+//    Hank Childs, Tue Dec 20 14:43:08 PST 2011
+//    Add method DescriptionString.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtIdentifierSelection : public avtDataSelection 
@@ -78,6 +81,7 @@ class PIPELINE_API avtIdentifierSelection : public avtDataSelection
 
     virtual const char *    GetType() const
                                 { return "Identifier Data Selection"; }; 
+    virtual std::string     DescriptionString(void);
 
     void                    SetIdentifiers(const std::vector<double> &a)
                                 { ids = a; };

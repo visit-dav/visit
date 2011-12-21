@@ -42,6 +42,8 @@
 
 #include <avtIdentifierSelection.h>
 
+#include <snprintf.h>
+
 
 // ****************************************************************************
 //  Method: avtIdentifierSelection constructor
@@ -100,6 +102,30 @@ avtIdentifierSelection::Destruct(void *i)
 {
     avtIdentifierSelection *ids = (avtIdentifierSelection *) i;
     delete ids;
+}
+
+
+// ****************************************************************************
+//  Method: avtIdentifierRangeSelection::DescriptionString
+//
+//  Purpose:
+//      Creates a string (used as a key for caching) that describes this
+//      selection.
+//
+//  Programmmer: Hank Childs
+//  Creation:    December 20, 2011
+//
+// ****************************************************************************
+
+std::string
+avtIdentifierSelection::DescriptionString(void)
+{
+    // This one is going to take some thought about how to build the
+    // string in a way that doesn't get too long.  Apologies to the next
+    // developer, but it isn't the problem I'm trying to solve right now.
+    // The short cut is just to have file formats that do these selections
+    // to just declare they can't do caching.
+    EXCEPTION1(VisItException, "Exception due to unimplemented code: avtIdentifiedRangeSelection");
 }
 
 

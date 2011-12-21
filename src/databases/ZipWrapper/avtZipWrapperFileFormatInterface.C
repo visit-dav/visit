@@ -1046,6 +1046,30 @@ avtZipWrapperFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int 
 }
 
 // ****************************************************************************
+//  Method: avtZipWrapperFileFormatInterface::CreateCacheNAmeIncludingSelections 
+//
+//  Purpose: Forward call to real file format interface 
+//
+//  Programmer: Hank Childs
+//  Creation:   December 20, 2011
+//
+// ****************************************************************************
+
+std::string
+avtZipWrapperFileFormatInterface::CreateCacheNameIncludingSelections(std::string v, int ts, int dom)
+{
+    if      (dbType == DB_TYPE_MTMD)
+        return GetRealInterface(0,0)->CreateCacheNameIncludingSelections(v, ts, dom);
+    else if (dbType == DB_TYPE_STMD)
+        return GetRealInterface(ts,0)->CreateCacheNameIncludingSelections(v, 0, dom);
+    else if (dbType == DB_TYPE_MTSD)
+        return GetRealInterface(0,dom)->CreateCacheNameIncludingSelections(v, ts, 0);
+    else if (dbType == DB_TYPE_STSD)
+        return GetRealInterface(ts,dom)->CreateCacheNameIncludingSelections(v, 0, 0);
+    return v;
+}
+
+// ****************************************************************************
 //  Method: GetVar 
 //
 //  Purpose: Forward call to real file format interface 

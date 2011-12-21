@@ -403,28 +403,41 @@ avtImageFileFormat::ReadImageVolumeHeader(void)
 
 
 // ***************************************************************************
-//  Method: CanCacheVariable 
+//  Method: avtImageFileFormat::CreateCacheNameIncludingSelections 
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   November 9, 2004 
+//  Purpose:
+//      The image reader will return different data sets based on data
+//      selections.  This method gives a description of what is returned
+//      so that the resulting data can be reliably cached.
 //
-//  Modifications:
-//
-//    Hank Childs, Fri Mar 18 11:41:04 PST 2005
-//    Disallow caching of image volumes.
-//
-//    Hank Childs, Tue Jun  7 09:04:29 PDT 2005
-//    Re-allow caching of image volumes, because we aren't doing any smart
-//    data selections.
+//  Programmer: Hank Childs
+//  Creation:   December 20, 2011
 //
 // **************************************************************************
 
-bool
-avtImageFileFormat::CanCacheVariable(const char*)
+std::string
+avtImageFileFormat::CreateCacheNameIncludingSelections(std::string s)
 {
-    // if we've read the whole image, we can cache its variables
-    return haveReadWholeImage;
+    int xmin, xmax, ymin, ymax;
+    bool haveSelections = ProcessDataSelections(&xmin, &xmax, &ymin, &ymax);
+    if (!haveSelections)
+        return s;
+
+    char str[1024];
+    strcpy(str, s.c_str());
+    int amt = strlen(str);
+    for (size_t i = 0 ; i < selList.size() ; i++)
+    {
+        if ((*selsApplied)[i])
+        {
+            std::string s = selList[i]->DescriptionString();
+            SNPRINTF(str+amt, 1024-amt, "_%s", s.c_str());
+            amt += strlen(str);
+        }
+    }
+    return std::string(str);
 }
+
 
 // ***************************************************************************
 //  Method: RegisterDataSelections 
@@ -444,7 +457,7 @@ avtImageFileFormat::RegisterDataSelections(
 }
 
 // ***************************************************************************
-//  Method: ProcessSelections 
+//  Method: ProcessDataSelections 
 //
 //  Purpose: Walk through all the data selections, decide which we can
 //  service here and compose all that we can service into a single, logical
@@ -460,6 +473,9 @@ avtImageFileFormat::RegisterDataSelections(
 //
 //    Hank Childs, Thu Mar 17 15:33:44 PST 2005
 //    Don't process data selections for Stimulate images.
+//
+//    Hank Childs, Tue Dec 20 16:52:07 PST 2011
+//    Fix bug with logical selection check of 2D images.
 //
 // **************************************************************************
 
@@ -493,7 +509,9 @@ avtImageFileFormat::ProcessDataSelections(int *xmin, int *xmax,
 
             // currently handles only stride 1 
             bool stridesOk = true;
-            for (int j = 0; j < 3; j++)
+            int numDims = 0;
+            sel->GetNDims(numDims);
+            for (int j = 0; j < numDims; j++)
             {
                 if (strides[j] != 1)
                 {
