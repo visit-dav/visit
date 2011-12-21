@@ -2190,6 +2190,10 @@ avtGenericDatabase::GetSpeciesVariable(const char *specname, int ts,
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Moved code dealing with precision transformation to transform manager
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2206,7 +2210,9 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
     vtkDataArray *var = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        var = (vtkDataArray *) cache.GetVTKObject(varname,
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
                              avtVariableCache::SCALARS_NAME,
                              ts, domain, material);
     }
@@ -2238,8 +2244,12 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
             //
             if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, avtVariableCache::SCALARS_NAME, ts, domain,
-                                     material, var);
+                std::string cache_varname =
+                        Interface->CreateCacheNameIncludingSelections(varname, 
+                                                                   ts, domain);
+                cache.CacheVTKObject(cache_varname.c_str(), 
+                                     avtVariableCache::SCALARS_NAME, 
+                                     ts, domain, material, var);
             }
             else
             {
@@ -2304,6 +2314,10 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Moved code dealing with precision transformation to transform manager
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2320,7 +2334,9 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
     vtkDataArray *var = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        var = (vtkDataArray *) cache.GetVTKObject(varname,
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
                                  avtVariableCache::VECTORS_NAME,
                                  ts, domain, material);
     }
@@ -2349,7 +2365,11 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
         {
             if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, avtVariableCache::VECTORS_NAME, 
+                std::string cache_varname =
+                       Interface->CreateCacheNameIncludingSelections(varname, 
+                                                                    ts,domain);
+                cache.CacheVTKObject(cache_varname.c_str(), 
+                                     avtVariableCache::VECTORS_NAME, 
                                      ts, domain, material, var);
             }
             else
@@ -2405,6 +2425,10 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Moved code dealing with precision transformation to transform manager
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2421,7 +2445,9 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
     vtkDataArray *var = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        var = (vtkDataArray *) cache.GetVTKObject(varname,
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
                              avtVariableCache::TENSORS_NAME,
                              ts, domain, material);
     }
@@ -2451,7 +2477,10 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
         {
             if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME,
+                std::string cache_varname =
+                       Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+                cache.CacheVTKObject(cache_varname.c_str(), 
+                                     avtVariableCache::TENSORS_NAME,
                                      ts, domain, material, var);
             }
             else
@@ -2507,6 +2536,10 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Moved code dealing with precision transformation to transform manager
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2523,7 +2556,9 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
     vtkDataArray *var = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        var = (vtkDataArray *) cache.GetVTKObject(varname,
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
                              avtVariableCache::SYMMETRIC_TENSORS_NAME,
                              ts, domain, material);
     }
@@ -2557,7 +2592,10 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
             //
             if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, avtVariableCache::SYMMETRIC_TENSORS_NAME,
+                std::string cache_varname =
+                       Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+                cache.CacheVTKObject(cache_varname.c_str(), 
+                                     avtVariableCache::SYMMETRIC_TENSORS_NAME,
                                      ts, domain, material, var);
             }
             else
@@ -2603,6 +2641,10 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Moved code dealing with precision transformation to transform manager
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2619,7 +2661,9 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
     vtkDataArray *var = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        var = (vtkDataArray *) cache.GetVTKObject(varname,
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
                              avtVariableCache::ARRAYS_NAME,
                              ts, domain, material);
     }
@@ -2649,7 +2693,10 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
         {
             if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, avtVariableCache::ARRAYS_NAME,
+                std::string cache_varname =
+                       Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+                cache.CacheVTKObject(cache_varname.c_str(), 
+                                     avtVariableCache::ARRAYS_NAME,
                                      ts, domain, material, var);
             }
             else
@@ -2692,6 +2739,9 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
 //
 // Modifications:
 //   
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2708,7 +2758,9 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
     vtkDataArray *var = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        var = (vtkDataArray *) cache.GetVTKObject(varname,
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
                          avtVariableCache::LABELS_NAME, ts, domain, material);
     }
 
@@ -2736,7 +2788,10 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
         {
             if (Interface->CanCacheVariable(real_varname))
             {
-                cache.CacheVTKObject(varname, avtVariableCache::LABELS_NAME,
+                std::string cache_varname =
+                       Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+                cache.CacheVTKObject(cache_varname.c_str(), 
+                                     avtVariableCache::LABELS_NAME,
                                      ts, domain, material, var);
             }
             else
@@ -2863,6 +2918,9 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //    Tom Fogal, Tue Sep 27 14:53:50 MDT 2011
 //    Ensure static VTK memory gets cleaned up.
 //
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2879,7 +2937,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
     vtkDataSet *mesh = NULL;
     if (!Interface->HasVarsDefinedOnSubMeshes())
     {
-        mesh = (vtkDataSet *) cache.GetVTKObject(meshname,
+        std::string cache_meshname =
+               Interface->CreateCacheNameIncludingSelections(meshname, ts, domain);
+        mesh = (vtkDataSet *) cache.GetVTKObject(cache_meshname.c_str(),
                          avtVariableCache::DATASET_NAME,
                          ts, domain, material);
     }
@@ -2952,7 +3012,10 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 
         if (Interface->CanCacheVariable(real_meshname))
         {
-            cache.CacheVTKObject(meshname, avtVariableCache::DATASET_NAME, ts,
+            std::string cache_meshname =
+                   Interface->CreateCacheNameIncludingSelections(meshname, ts, domain);
+            cache.CacheVTKObject(cache_meshname.c_str(), 
+                                 avtVariableCache::DATASET_NAME, ts,
                                  domain, material, mesh);
         }
         else

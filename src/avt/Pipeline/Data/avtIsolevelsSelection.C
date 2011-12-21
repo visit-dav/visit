@@ -42,6 +42,8 @@
 
 #include <limits.h>
 
+#include <snprintf.h>
+
 #include <avtIsolevelsSelection.h>
 
 // ****************************************************************************
@@ -84,6 +86,34 @@ avtIsolevelsSelection::avtIsolevelsSelection(const std::string _var,
 
 avtIsolevelsSelection::~avtIsolevelsSelection()
 { 
+}
+
+
+// ****************************************************************************
+//  Method: avtIsolevelsSelection::DescriptionString
+//
+//  Purpose:
+//      Creates a string (used as a key for caching) that describes this
+//      selection.
+//
+//  Programmmer: Hank Childs
+//  Creation:    December 20, 2011
+//
+// ****************************************************************************
+
+std::string
+avtIsolevelsSelection::DescriptionString(void)
+{
+    char str[1024];
+    SNPRINTF(str, 1024, "avtIsolevelsSelection:%s", var.c_str());
+    int amt = strlen(str);
+    for (size_t i = 0 ; i < isolevels.size() ; i++)
+    {
+        SNPRINTF(str+amt, 1024-amt, "_%f", isolevels[i]);
+        amt += strlen(str);
+    }
+    std::string s2 = str;
+    return s2;
 }
 
 

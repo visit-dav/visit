@@ -87,6 +87,10 @@ class avtIOInformation;
 //    MTSD files can now be grouped not just into a faux MD format by having
 //    more than one block, but also into a longer sequence of MT files,
 //    each chunk with one or more timesteps.
+//
+//    Hank Childs, Tue Dec 20 14:15:33 CST 2011
+//    Add method CreateCacheNameIncludingSelections.
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTSDFileFormatInterface : public avtFileFormatInterface
@@ -102,6 +106,8 @@ class DATABASE_API avtMTSDFileFormatInterface : public avtFileFormatInterface
     virtual void           *GetAuxiliaryData(const char *var, int, int,
                                              const char *type, void *args,
                                              DestructorFunction &);
+    virtual std::string     CreateCacheNameIncludingSelections(std::string,
+                                                               int, int);
 
     virtual const char     *GetFilename(int);
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,
