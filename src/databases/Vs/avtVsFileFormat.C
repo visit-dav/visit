@@ -101,7 +101,7 @@ int avtVsFileFormat::instanceCounter = 0;
 avtVsFileFormat::avtVsFileFormat(const char* filename,
                                  DBOptionsAttributes *readOpts) :
   avtSTMDFileFormat(&filename, 1), dataFileName(filename),
-  processDataSelections(false), haveReadWholeData(true)
+  processDataSelections(true)
 {
     instanceCounter++;
   
@@ -212,25 +212,41 @@ avtVsFileFormat::~avtVsFileFormat()
 }
 
 
-// ****************************************************************************
-//  Method: avtVsFileFormat::CanCacheVariable
+// ***************************************************************************
+//  Method: avtVsFileFormat::CreateCacheNameIncludingSelections 
 //
 //  Purpose:
-//      To truly exercise the VS file format, we can't have VisIt caching
-//      chunks of mesh and variables above the plugin.
-//      
-//  Programmer: Mark C. Miller 
-//  Creation:   September 20, 2004 
+//      The reader will return different data sets based on data
+//      selections.  This method gives a description of what is returned
+//      so that the resulting data can be reliably cached.
 //
-// ****************************************************************************
+//  Programmer: Hank Childs
+//  Creation:   December 20, 2011
+//
+// **************************************************************************
 
-bool
-avtVsFileFormat::CanCacheVariable(const char *var)
+std::string
+avtVsFileFormat::CreateCacheNameIncludingSelections(std::string s)
 {
-    // If processing the selections turn caching off.
-    return !processDataSelections;
+    int mins[3], maxs[3], strides[3];
+    bool haveDataSelections = ProcessDataSelections(mins, maxs, strides);
+    if (!haveDataSelections)
+        return s;
 
-//    return haveReadWholeData;
+    char str[1024];
+    strcpy(str, s.c_str());
+    int amt = strlen(str);
+    for (size_t i = 0 ; i < selList.size() ; i++)
+    {
+        if ((*selsApplied)[i])
+        {
+            std::string s = selList[i]->DescriptionString();
+            SNPRINTF(str+amt, 1024-amt, "_%s", s.c_str());
+            amt += strlen(str);
+        }
+    }
+
+    return std::string(str);
 }
 
 
@@ -396,11 +412,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
         << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
         << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
         << std::endl;
-
-      haveReadWholeData = false;
     }
-    else
-      haveReadWholeData = true;
 
     // The MD system works by filtering the requests directed to it
     // into the name of the appropriate subordinate mesh.  For
@@ -2500,11 +2512,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
         << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
         << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
         << std::endl;
-
-      haveReadWholeData = false;
     }
-    else
-      haveReadWholeData = true;
 
     // Is this variable a component?  If so, swap the component name
     // with the "real" variable name and remember that it is a
@@ -2664,9 +2672,10 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       if (varDims.size() - (int) isAComponent != numTopologicalDims )
       {
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "WARNING: We don't think that var and mesh have the same topological dimension." <<std::endl;
-        //                          << "Returning NULL." << std::endl;
-        //return NULL;
+                          << "WARNING: We don't think that var and mesh have the same topological dimension."
+                          << numTopologicalDims << "  " << varDims.size() << "  " << isAComponent << std::endl;
+//                          << "Returning NULL." << std::endl;
+//      return NULL;
       }
 
       // For unstructured data, the variable can be subselected only when

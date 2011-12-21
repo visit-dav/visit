@@ -68,7 +68,7 @@ GetVsReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
 
-    rv->SetBool("Process Data Selections in the Reader", false);
+    rv->SetBool("Process Data Selections in the Reader", true);
 
     return rv;
 }
