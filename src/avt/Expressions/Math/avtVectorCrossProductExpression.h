@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtVectorCrossProductExpression.h                     //
+//                       avtVectorCrossProductExpression.h                   //
 // ************************************************************************* //
 
 #ifndef AVT_VCROSSPRODUCT_FILTER_H
@@ -63,6 +63,9 @@ class     vtkDataArray;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Wed Dec 21 14:51:43 CST 2011
+//    Make cross product of 2D vectors be scalars.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtVectorCrossProductExpression : public avtBinaryMathExpression
@@ -75,6 +78,10 @@ class EXPRESSION_API avtVectorCrossProductExpression : public avtBinaryMathExpre
     virtual const char       *GetDescription(void)
                                      { return "Calculating vector cross product"; };
     virtual int               NumVariableArguments() { return 2; }
+    virtual int               GetNumberOfComponentsInOutput(int ncompsIn1,
+                                                            int ncompsIn2)
+                                      { return GetVariableDimension(); };
+    virtual int               GetVariableDimension(void);
 
   protected:
     virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *in2,
