@@ -23,6 +23,7 @@
 #include <hdf5.h>
 #include <visit-hdf5.h>
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -72,7 +73,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
     return "Vs";
   };
 
-  virtual bool CanCacheVariable(const char *var);
+  virtual std::string CreateCacheNameIncludingSelections(std::string s);
 
   /**
    * Get the data selections
@@ -179,7 +180,6 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   std::vector<bool>              *selsApplied;
 
   bool processDataSelections;
-  bool haveReadWholeData;
 
   /**
    * Maintain a list of curve names so we can classify expressions better
