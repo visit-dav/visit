@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtVectorCrossProductExpression.C                    //
+//                      avtVectorCrossProductExpression.C                    //
 // ************************************************************************* //
 
 #include <avtVectorCrossProductExpression.h>
@@ -105,13 +105,18 @@ avtVectorCrossProductExpression::~avtVectorCrossProductExpression()
 //
 //  Modifications:
 //
+//    Hank Childs, Wed Dec 21 14:51:43 CST 2011
+//    Add support for 2D vectors creating scalars.
+//
 // ****************************************************************************
+
 void
 avtVectorCrossProductExpression::DoOperation(vtkDataArray *in1,
                                 vtkDataArray *in2, vtkDataArray *out,
                                 int ncomponents, int ntuples)
 {
-    if (ncomponents != 3)
+    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    if ((ndims == 3 && ncomponents != 3) || (ndims < 3 && ncomponents != 1))
     {
         EXCEPTION2(ExpressionException, outputVariableName,
                    "you cannot take the cross product of data which are not 3-component vectors.");
@@ -126,8 +131,36 @@ avtVectorCrossProductExpression::DoOperation(vtkDataArray *in1,
         float b2 = in2->GetComponent(i, 1);
         float b3 = in2->GetComponent(i, 2);
 
-        out->SetComponent(i, 0, a2*b3 - a3*b2);
-        out->SetComponent(i, 1, a3*b1 - a1*b3);
-        out->SetComponent(i, 2, a1*b2 - a2*b1);
+        if (ndims == 3)
+        {
+            out->SetComponent(i, 0, a2*b3 - a3*b2);
+            out->SetComponent(i, 1, a3*b1 - a1*b3);
+            out->SetComponent(i, 2, a1*b2 - a2*b1);
+        }
+        else
+        {
+            out->SetComponent(i, 0, a1*b2 - a2*b1);
+        }
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtVectorCrossProductExpression::GetVariableDimension
+//
+//  Purpose:
+//      Declares the variable dimension: 3 for 3D, 1 for 2D.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2011
+//
+// ****************************************************************************
+
+int
+avtVectorCrossProductExpression::GetVariableDimension(void)
+{
+    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    return (ndims == 3 ? 3 : 1);
+}
+
+
