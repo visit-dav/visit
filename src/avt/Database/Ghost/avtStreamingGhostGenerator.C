@@ -36,6 +36,8 @@
 *
 *****************************************************************************/
 
+#include <cstddef>
+
 #include <avtStreamingGhostGenerator.h>
 
 
