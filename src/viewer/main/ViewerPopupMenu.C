@@ -176,6 +176,29 @@ ViewerPopupMenu::SetEnabled(bool val)
 }
 
 // ****************************************************************************
+// Method: ViewerPopupMenu::IsEnabled
+//
+// Purpose: 
+//   Gets the enabled state of the viewer popup menu.
+//
+// Arguments:
+//
+// Programmer: Marc Durant
+// Creation:   Tue Dec 27 13:54:00 MDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPopupMenu::IsEnabled()
+{
+  if (popup)
+      return popup->isEnabled();
+  return false;
+}
+
+// ****************************************************************************
 // Method: ViewerPopupMenu::AddAction
 //
 // Purpose: 
