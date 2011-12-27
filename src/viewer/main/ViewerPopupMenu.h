@@ -65,6 +65,9 @@ class ViewerWindow;
 //
 //   Brad Whitlock, Tue May 27 14:10:57 PDT 2008
 //   Qt 4.
+//  
+//   Marc Durant, Tue Dec 27 13:53:00 MDT 2011
+//   Added IsEnabled accessor
 //
 // ****************************************************************************
 
@@ -90,6 +93,7 @@ public:
     void ShowMenu();
     void HideMenu();
     void SetEnabled(bool val);
+    bool IsEnabled();
 
     void AddAction(ViewerActionBase *action);
     void AddAction(const std::string &menuName, ViewerActionBase *action);
