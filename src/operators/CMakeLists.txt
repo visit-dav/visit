@@ -92,6 +92,7 @@ Isovolume
 Lineout
 LineSampler
 Merge
+ModelFit
 MultiresControl
 OnionPeel
 PDF

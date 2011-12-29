@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+  <Plugin name="ModelFit" type="operator" label="ModelFit" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis">
+    <Attribute name="ModelFitAtts" purpose="This file contains attributes for the ModelFit operator." persistent="false" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="Spaces">
+        VARIABLE
+        NORMAL
+        LOG
+        PROBABILITY
+      </Enum>
+      <Enum name="Stats">
+        AVERAGE
+        MIN
+        MAX
+        NONE
+      </Enum>
+      <Enum name="Distances">
+        EUCLIDEAN
+        MANHATTAN
+        MAXIMUM
+      </Enum>
+      <Field name="Vars" label="Vars" type="stringVector">
+      </Field>
+      <Field name="numVars" label="numVars" type="intVector">
+      </Field>
+      <Field name="Tuples" label="Tuples" type="doubleVector">
+      </Field>
+      <Field name="StatTuples" label="StatTuples" type="ucharVector">
+      </Field>
+      <Field name="numTups" label="numTups" type="intVector">
+      </Field>
+      <Field name="thold" label="thold" type="doubleVector">
+      </Field>
+      <Field name="selectionType" label="selectionType" type="intVector">
+      </Field>
+      <Field name="distanceType" label="distanceType" type="intVector">
+      </Field>
+      <Field name="inputSpace" label="inputSpace" type="intVector">
+      </Field>
+      <Field name="modelNames" label="modelNames" type="stringVector">
+      </Field>
+      <Field name="modelNums" label="modelNums" type="intVector">
+      </Field>
+    </Attribute>
+  </Plugin>
