@@ -1323,6 +1323,12 @@ avtParICAlgorithm::RestoreIntegralCurveToOriginatingProcessor()
 // Programmer:  Dave Pugmire
 // Creation:    August 29, 2011
 //
+// Modifications:
+//
+//   Hank Childs, Tue Dec  6 19:04:16 PST 2011
+//   Add fix from David Pugmire when MaxID is different on different
+//   processors.
+//
 // ****************************************************************************
 
 void
@@ -1345,6 +1351,11 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
     allICs.insert(allICs.end(), terminatedICs.begin(), terminatedICs.end());
     allICs.insert(allICs.end(), communicatedICs.begin(), communicatedICs.end());
     allICs.sort(avtStateRecorderIntegralCurve::IdSeqCompare);
+
+    int myMaxID = -1;
+    if (!allICs.empty())
+        myMaxID = (allICs.back())->id+1;
+    numSeedPoints = UnifyMaximumValue(myMaxID);
 
     terminatedICs.clear();
     communicatedICs.clear();
