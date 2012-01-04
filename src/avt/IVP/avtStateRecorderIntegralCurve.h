@@ -75,8 +75,11 @@
 //    Hank Childs, Sun Dec  5 10:18:13 PST 2010
 //    Add an avtIVPField as an argument to CheckForTermination.
 //
-//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
-//   Add scalar2
+//    Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//    Add scalar2
+//
+//    Hank Childs, Tue Dec  6 19:01:30 PST 2011
+//    Add methods LessThan and PrepareForFinalCommunication.
 //
 // ****************************************************************************
 
@@ -136,6 +139,9 @@ public:
                              const avtIntegralCurve *slB);
     static bool IdRevSeqCompare(const avtIntegralCurve *slA,
                                 const avtIntegralCurve *slB);
+    virtual bool LessThan(const avtIntegralCurve *ic) const;
+    virtual void PrepareForFinalCommunication(void)
+                     { serializeFlags = avtIntegralCurve::SERIALIZE_STEPS; };
 
     typedef std::vector<float>::const_iterator iterator;
 

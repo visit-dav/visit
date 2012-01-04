@@ -469,6 +469,24 @@ avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtIntegra
 }
 
 // ****************************************************************************
+//  Method: avtStateRecorderIntegralCurve::LessThan
+//
+//  Purpose:
+//      Performs a LessThan operation, used when doing parallel communication
+//      and needing to sort curves.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 6, 2011
+//
+// ****************************************************************************
+
+bool
+avtStateRecorderIntegralCurve::LessThan(const avtIntegralCurve *ic) const
+{
+    return IdSeqCompare(this, ic);
+}
+
+// ****************************************************************************
 //  Method: avtStateRecorderIntegralCurve::IdSeqCompare
 //
 //  Purpose:
