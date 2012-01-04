@@ -1040,9 +1040,10 @@ avtModelFitFilter::spaceConvert(double value, int varFinder,  int selectType)
 
     if(selectType == 2)  //log
     {
+        const double log2inv = 1.0 / log(2.0);
         if(value)
-            return log2(value);
-        return log2(VS[varFinder]->non_zero_min);
+            return log(value) * log2inv;
+        return log(VS[varFinder]->non_zero_min) * log2inv;
     }
     
     //probablity
