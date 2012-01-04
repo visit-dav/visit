@@ -188,6 +188,10 @@ class IVP_API DomainType
 //   Dave Pugmire, Fri Feb 18 14:52:18 EST 2011
 //   Replaced minH with minHFactor for use when integrating upto a domain boundary.
 //
+//   Hank Childs, Tue Dec  6 16:23:47 PST 2011
+//   Add virtual methods LessThan (for sorting) and 
+//   PrepareForFinalCommunication.
+//
 // ****************************************************************************
 
 class IVP_API avtIntegralCurve
@@ -244,6 +248,10 @@ class IVP_API avtIntegralCurve
     void     SetPostStepCallback(avtIntegralCurveCallback func) {postStepCallbackFunction = func; }
 
     virtual avtIntegralCurve* MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v) = 0;
+    virtual void      PrepareForFinalCommunication(void) {;};
+
+    // This is used for sorting, particularly for parallel communication
+    virtual bool LessThan(const avtIntegralCurve *ic) const;
 
   protected:
     avtIntegralCurveCallback postStepCallbackFunction;

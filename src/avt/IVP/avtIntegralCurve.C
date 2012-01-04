@@ -587,3 +587,27 @@ avtIntegralCurve::DomainCompare(const avtIntegralCurve *icA,
     return icA->domain < icB->domain;
 }
 
+
+// ****************************************************************************
+//  Method: avtIntegralCurve::LessThan
+//
+//  Purpose:
+//      Used for sorting integral curves when doing parallel communication.
+//      This method is used in conjunction with the STL sort of a vector.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 6, 2011
+//
+// ****************************************************************************
+
+bool
+avtIntegralCurve::LessThan(const avtIntegralCurve *ic) const
+{
+    if (id < ic->id)
+        return true;
+    if (ic->id < id)
+        return false;
+    return false;  // equal
+}
+
+

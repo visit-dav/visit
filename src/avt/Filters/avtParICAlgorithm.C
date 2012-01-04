@@ -45,8 +45,6 @@
 #include <vtkDataSetReader.h>
 #include <vtkCharArray.h>
 
-#include <avtStateRecorderIntegralCurve.h>
-
 #include <TimingsManager.h>
 #include <VisItException.h>
 
@@ -101,6 +99,28 @@ avtParICAlgorithm::avtParICAlgorithm(avtPICSFilter *icFilter)
 
 avtParICAlgorithm::~avtParICAlgorithm()
 {
+}
+
+
+// ****************************************************************************
+//  Function: IntegralCurveSort
+//
+//  Purpose:
+//      Sorts integral curves.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 6, 2011
+//
+// ****************************************************************************
+
+bool
+IntegralCurveSort(const avtIntegralCurve *ic1, const avtIntegralCurve *ic2)
+{
+    if (ic1 == NULL)
+        return true;
+    if (ic2 == NULL)
+        return false;
+    return ic1->LessThan(ic2);
 }
 
 
@@ -1109,6 +1129,9 @@ CountIDs(list<avtIntegralCurve *> &l, int id)
 //   Dave Pugmire, Fri Jan 14 11:07:41 EST 2011
 //   Renamed RestoreIntegralCurveSequence to RestoreIntegralCurveSequenceAssembleOnCurrentProcessor
 //
+//   Hank Childs, Tue Dec  6 19:04:16 PST 2011
+//   Remove dependence on avtStateRecorderIntegralCurve.
+//
 // ****************************************************************************
 
 void
@@ -1138,8 +1161,8 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
     long *idBuffer = new long[2*N], *myIDs = new long[2*N];
 
     //Sort the terminated/communicated ICs by id.
-    terminatedICs.sort(avtStateRecorderIntegralCurve::IdSeqCompare);
-    communicatedICs.sort(avtStateRecorderIntegralCurve::IdSeqCompare);
+    terminatedICs.sort(IntegralCurveSort);
+    communicatedICs.sort(IntegralCurveSort);
 
     vector<vector<avtIntegralCurve *> >sendICs(N);
     vector<int> owners(N);
@@ -1180,7 +1203,6 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
                 int idx = (*t)->id % N;
                 myIDs[idx] = rank;
                 myIDs[idx+N] += 1;
-                //debug5<<"I own id= "<<(*t)->id<<" "<<(((avtStateRecorderIntegralCurve *)*t))->sequenceCnt<<" idx= "<<idx<<endl;
             }
 
             t++;
@@ -1193,7 +1215,6 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
             {
                 int idx = (*c)->id % N;
                 myIDs[idx+N] += 1;
-                //debug5<<"I have "<<(*c)->id<<" "<<(((avtStateRecorderIntegralCurve *)*c))->sequenceCnt<<" idx= "<<idx<<endl;
             }
             c++;
         }
@@ -1221,7 +1242,7 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
                     terminatedICs.push_back(s);
                 else
                 {
-                    ((avtStateRecorderIntegralCurve *)s)->serializeFlags = avtIntegralCurve::SERIALIZE_STEPS; //Write IC steps.
+                    s->PrepareForFinalCommunication();
                     sendICs[idx].push_back(s);
                     owners[idx] = owner;
                 }
@@ -1250,7 +1271,7 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
             RecvICs(terminatedICs);
             
             //See if we have all the sequences we need.
-            terminatedICs.sort(avtStateRecorderIntegralCurve::IdSeqCompare);
+            terminatedICs.sort(IntegralCurveSort);
             bool needMore = false;
             for (int i = 0; i < N && !needMore; i++)
                 if (idBuffer[i] == rank)
@@ -1329,6 +1350,9 @@ avtParICAlgorithm::RestoreIntegralCurveToOriginatingProcessor()
 //   Add fix from David Pugmire when MaxID is different on different
 //   processors.
 //
+//   Hank Childs, Tue Dec  6 19:04:16 PST 2011
+//   Remove dependence on avtStateRecorderIntegralCurve.
+//
 // ****************************************************************************
 
 void
@@ -1350,13 +1374,16 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
     std::list<avtIntegralCurve *> allICs;
     allICs.insert(allICs.end(), terminatedICs.begin(), terminatedICs.end());
     allICs.insert(allICs.end(), communicatedICs.begin(), communicatedICs.end());
-    allICs.sort(avtStateRecorderIntegralCurve::IdSeqCompare);
+    allICs.sort(IntegralCurveSort);
 
     int myMaxID = -1;
     if (!allICs.empty())
         myMaxID = (allICs.back())->id+1;
     numSeedPoints = UnifyMaximumValue(myMaxID);
 
+    if (numSeedPoints < 0)
+        numSeedPoints = 0;
+       
     terminatedICs.clear();
     communicatedICs.clear();
 
@@ -1415,7 +1442,6 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
             {
                 int idx = ic->id % N;
                 myIDs[idx] ++;
-                //debug1<<"I have id= "<<(*it)->id<<" : "<<(((avtStateRecorderIntegralCurve *)*it))->sequenceCnt<<" idx= "<<idx<<" originatingRank= "<<(*it)->originatingRank<<endl;
                 if (!uniformlyDistrubute && ic->originatingRank != rank)
                     mySendList[ic->originatingRank] ++;
             }
@@ -1469,7 +1495,7 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
             }
             else
             {
-                ((avtStateRecorderIntegralCurve *)s)->serializeFlags = avtIntegralCurve::SERIALIZE_STEPS;
+                s->PrepareForFinalCommunication();
 
                 map<int, vector<avtIntegralCurve *> >::iterator it;
                 it = sendICs.find(owner);
@@ -1526,8 +1552,6 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
             list<ICCommData>::iterator it;
             for (it = ICs.begin(); it != ICs.end(); it++)            
             {
-                int seq = ((avtStateRecorderIntegralCurve *)(*it).ic)->sequenceCnt;
-                //debug1<<"Recvd id= "<<(*it).ic->id<<" : "<<seq<<endl;
                 terminatedICs.push_back((*it).ic);
                 numICsToBeRecvd--;
             }
@@ -1574,13 +1598,16 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
 //   David Camp, Mon Aug 15 13:43:24 PDT 2011
 //   Changed the code to allow the avtIntegralCurve to merge the IC sequence.
 //
+//   Hank Childs, Tue Dec  6 19:04:16 PST 2011
+//   Remove dependence on avtStateRecorderIntegralCurve.
+//
 // ****************************************************************************
 
 void
 avtParICAlgorithm::MergeTerminatedICSequences()
 {
     // Sort them by id and sequence so we can process them one at a time.
-    terminatedICs.sort(avtStateRecorderIntegralCurve::IdSeqCompare);
+    terminatedICs.sort(IntegralCurveSort);
 
     // Split them up into sequences.
     vector<vector<avtIntegralCurve *> > seqs;

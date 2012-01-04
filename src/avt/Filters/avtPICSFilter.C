@@ -2456,6 +2456,9 @@ avtPICSFilter::AddSeedPoints(std::vector<avtVector> &pts,
 //   Dave Pugmire, Thu Sep  1 07:44:48 EDT 2011
 //   Keep track of fwd/bwd pair IDs, as they might need to be unified later.
 //
+//   Hank Childs, Tue Dec  6 19:01:30 PST 2011
+//   Have the particle ID always match the index in the seed list.
+//
 // ****************************************************************************
 
 void
@@ -2506,10 +2509,13 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         vector<int> seedPtIds;
 
         // Need a single ID for the IC even if there are many domains.
-        int currentID = GetNextCurveID();
-        int nextID = -1;
+        int currentID = i;
+        int nextID = -1; 
         if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
-            nextID = GetNextCurveID();
+        {
+            currentID = 2*i; 
+            nextID = 2*i+1; 
+        }
         
         for (int j = 0; j < dl.size(); j++)
         {
@@ -2571,6 +2577,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         
         ids.push_back(seedPtIds);
     }
+    MaxID = pts.size();
     
     // Sort them on domain.
     std::sort(curves.begin(), curves.end(), avtIntegralCurve::DomainCompare);
