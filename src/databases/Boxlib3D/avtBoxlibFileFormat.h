@@ -48,15 +48,27 @@
 #include <vector>
 #include <string>
 
-
+// Map AVTBOXLIBFILEFORMAT to avtBoxlib2DFileFormat or avtBoxlib3DFileFormat
+// based on BL_SPACEDIM
 #if BL_SPACEDIM==3
 #define AVTBOXLIBFILEFORMAT avtBoxlib3DFileFormat
+#else
+#define AVTBOXLIBFILEFORMAT avtBoxlib2DFileFormat
+#endif
+
+#ifdef __APPLE__
+// For MacOS, the BoxLib VisMF class is mapped to VisMF2D or VisMF3D based on
+// BL_SPACEDIM. Use typedef to select the appropriate version as VisMF.
+#if BL_SPACEDIM==3
 class VisMF3D;
 typedef VisMF3D VisMF;
 #else
-#define AVTBOXLIBFILEFORMAT avtBoxlib2DFileFormat
 class VisMF2D;
 typedef VisMF2D VisMF;
+#endif
+#else
+// Forward decleration of VisMF for non-MacOS BoxLib builds.
+class VisMF;
 #endif
 
 // ****************************************************************************
