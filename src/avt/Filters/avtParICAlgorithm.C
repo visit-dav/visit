@@ -1357,6 +1357,9 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
         myMaxID = (allICs.back())->id+1;
     numSeedPoints = UnifyMaximumValue(myMaxID);
 
+    if (numSeedPoints < 0)
+        numSeedPoints = 0;
+
     terminatedICs.clear();
     communicatedICs.clear();
 
