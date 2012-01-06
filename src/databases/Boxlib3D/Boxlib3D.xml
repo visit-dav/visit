@@ -16,9 +16,11 @@
     </FilePatterns>
     <Files components="M">
       avtBoxlibFileFormat.C
+      BoxLibHelper.C
     </Files>
     <Files components="E">
       avtBoxlibFileFormat.C
+      BoxLibHelper.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
