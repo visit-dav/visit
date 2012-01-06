@@ -73,6 +73,7 @@
 #define BL_USE_SPACEDIM_SYMBOLS
 
 #include <avtBoxlibFileFormat.h>
+#include "BoxLibHelper.h"
 
 #include <vector>
 #include <string>
@@ -252,10 +253,7 @@ AVTBOXLIBFILEFORMAT::AVTBOXLIBFILEFORMAT(const char *fname)
     // to happen once.
     if (!boxLibInitialized)
     {
-        int dummyArgC = 1;
-        char *dummyArgV[] = { "visit" };
-        char **argv = dummyArgV; // Avoid implicit type conversion
-        BoxLib::Initialize(dummyArgC, argv);
+        BoxLibHelper::InitializeBoxLib();
         // FIXME: Currently, this creates a memory leak. We also need to call
         // BoxLib::Finalize() to free memory after the last Boxlib database
         // object has been destroyed and before VisIt quits. However, there is
