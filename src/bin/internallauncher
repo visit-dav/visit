@@ -3366,8 +3366,26 @@ if ($procs_set or ($parallel and $parlaunch_set))
             elsif ($IsRunningOnFranklinNERSC || $IsRunningOnHopperNERSC)
             {
                 push @parcmd, "-d", "$cwd" if $wd_set;
-                push @parcmd, "-l", "mppwidth=$procs";
-                push @parcmd, "-l", "mppnppn=$nodes" if $nodes_set;
+                if ($nodes_set) {
+                    if ($IsRunningOnFranklinNERSC) {
+                        $nprocpernode=4;
+                    } else {
+                        $nprocpernode=24;
+                    }
+                    $nwidth=$nprocpernode*$nodes;
+                    # If the number of nodes is set, we need to modify mppwidth to ensure
+                    # allocation of the proper number of nodes. The number of nodes allocated
+                    # is mppwidth divided by the number of cores per node (compare
+                    # http://www.nersc.gov/users/computational-systems/hopper/running-jobs/batch-jobs/).
+                    push @parcmd, "-l", "mppwidth=$nwidth";
+                }
+                else 
+                {
+                    # Number of nodes is not specified. We use all cores on each node and do not
+                    # need to modify mppdith to ensure the allocation of the appropriate number of
+                    # nodes.
+                    push @parcmd, "-l", "mppwidth=$procs";
+                }
             }
             elsif ($IsRunningOnJaguar_ORNL || $IsRunningOnKraken_UTK)
             {
