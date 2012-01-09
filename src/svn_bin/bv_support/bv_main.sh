@@ -366,7 +366,7 @@ BUILD_VISIT_WITH_VERSION="trunk"
 
 function starts_with_quote
 {
-    if test "${1:0:1}" = "\""; then
+    if test "${1:0:1}" = "\""; then #"
         return 0
     fi
     if test "${1:0:1}" = "'" ; then
@@ -388,7 +388,7 @@ function starts_with_quote
 
 function ends_with_quote
 {
-    if test "${1: -1:1}" = "\""; then
+    if test "${1: -1:1}" = "\""; then #"
         return 0
     fi
     if test "${1: -1:1}" = "'"; then
@@ -434,33 +434,35 @@ declare -a arguments
 quoting="" # temp buffer for concatenating quoted args
 state=0    # 0 is the default state, for grabbing std arguments.
            # 1 is for when we've seen a quote, and are currently "cramming"
-for arg in $@ ; do
-    case $state in
-        0)
-            if $(starts_with_quote "$arg") ; then
-                state=1
-                quoting="${arg}"
-            else
-                state=0
-                tval="${arg}"
-                arguments[${#arguments[@]}]=$tval
-            fi
-            ;;
-        1)
-            if $(starts_with_quote "$arg") ; then
-                state=0
-                arguments="${quoting}"
-            elif $(ends_with_quote "$arg") ; then
-                quoting="${quoting} ${arg}"
-                tval="${quoting}"
-                arguments[${#arguments[@]}]=$tval
-                state=0
-            else
-                quoting="${quoting} ${arg}"
-            fi
-            ;;
-        *) error "invalid state.";;
-    esac
+for arg in "$@" ; do
+    arguments[${#arguments[@]}]="$arg"
+
+    #case $state in
+    #    0)
+    #        if $(starts_with_quote "$arg") ; then
+    #            state=1
+    #            quoting="${arg}"
+    #        else
+    #            state=0
+    #            tval="${arg}"
+    #            arguments[${#arguments[@]}]="$tval"
+    #        fi
+    #        ;;
+    #    1)
+    #        if $(starts_with_quote "$arg") ; then
+    #            state=0
+    #            arguments="${quoting}"
+    #        elif $(ends_with_quote "$arg") ; then
+    #            quoting="${quoting} ${arg}"
+    #            tval="${quoting}"
+    #            arguments[${#arguments[@]}]="$tval"
+    #            state=0
+    #        else
+    #            quoting="${quoting} ${arg}"
+    #        fi
+    #        ;;
+    #    *) error "invalid state.";;
+    #esac
 done
 
 # Will be set if the next argument is an argument to an argument (I swear that
@@ -500,14 +502,15 @@ for arg in "${arguments[@]}" ; do
     if test -n "$next_arg" ; then
         # Yep.  Which option was it?
         case $next_arg in
+            extra_commandline_arg) $EXTRA_COMMANDLINE_ARG_CALL "$arg";;
             installation-build-dir) VISIT_INSTALLATION_BUILD_DIR="$arg";;
             write-unified-file) WRITE_UNIFIED_FILE="$arg";;
             build-with-version) BUILD_VISIT_WITH_VERSION="$arg";;
             append-cflags) C_OPT_FLAGS="${C_OPT_FLAGS} ${arg}";;
             append-cxxflags) CXX_OPT_FLAGS="${CXX_OPT_FLAGS} ${arg}";;
             arch) VISITARCH="${arg}";;
-            cflags) C_OPT_FLAGS=$(strip_quotes "${arg}");;
-            cxxflags) CXX_OPT_FLAGS=$(strip_quotes "${arg}");;
+            cflags) C_OPT_FLAGS="${arg}";;
+            cxxflags) CXX_OPT_FLAGS="${arg}";;
             cc) C_COMPILER="${arg}";;
             cxx) CXX_COMPILER="${arg}";;
             flags-debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"
@@ -552,6 +555,38 @@ for arg in "${arguments[@]}" ; do
            fi
        fi
     fi
+
+    #checking to see if additional command line arguments were requested
+    if [[ ${#arg} -gt 2 ]] ; then #possibly has --
+
+        resolve_arg=${arg:2} #remove --
+        local match=0
+        for (( bv_i=0; bv_i<${#extra_commandline_args[*]}; bv_i += 5 ))
+        do
+            local module_name=${extra_commandline_args[$bv_i]} 
+            local command=${extra_commandline_args[$bv_i+1]} 
+            local args=${extra_commandline_args[$bv_i+2]} 
+            local comment=${extra_commandline_args[$bv_i+3]} 
+            local fp=${extra_commandline_args[$bv_i+4]} 
+            if [[ "$command" == "$resolve_arg" ]]; then
+                if [ $args -eq 0 ] ; then 
+                  #call function immediately
+                  $fp
+                else 
+                  #call function with next argument
+                  next_arg="extra_commandline_arg"
+                  EXTRA_COMMANDLINE_ARG_CALL="$fp"
+                fi 
+                match="1"
+                break;
+            fi
+        done
+        #found a match in the modules..
+        if [[ $match == "1" ]]; then
+           continue
+        fi
+    fi
+
              
     case $arg in
         --installation-build-dir) next_arg="installation-build-dir";;
@@ -1054,16 +1089,18 @@ cd "$START_DIR"
 # Later we will build Qt.  We are going to bypass their licensing agreement,
 # so echo it here.
 #
+if [[ "$USE_SYSTEM_QT" != "yes" ]]; then
 
-check_if_installed "qt" $QT_VERSION
-if [[ $? == 0 ]] ; then
-   DO_QT="no"
-fi
+    check_if_installed "qt" $QT_VERSION
+    if [[ $? == 0 ]] ; then
+    DO_QT="no"
+    fi
 
-if [[ "$DO_QT" == "yes" && "$DOWNLOAD_ONLY" == "no" ]] ; then
-    qt_license_prompt
-    if [[ $? != 0 ]] ;then
-        error "Qt4 Open Source Edition License Declined. Bailing out."
+    if [[ "$DO_QT" == "yes" && "$DOWNLOAD_ONLY" == "no" ]] ; then
+        qt_license_prompt
+        if [[ $? != 0 ]] ;then
+            error "Qt4 Open Source Edition License Declined. Bailing out."
+        fi
     fi
 fi
 

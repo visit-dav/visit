@@ -200,6 +200,10 @@ do
     declare -F "bv_${optlibs[$i]}_dry_run" &>/dev/null || errorFunc "${optlibs[$i]} dry_run not found"
 done
 
+###################### Grouping libraries
+# The arrays listed below help group VisIt's set of libraries.
+# For example: --all-io uses the iolibs array to determine which modules to enable
+
 #for thirdparty option..
 thirdpartylibs[0]="mesa"
 thirdpartylibs[1]="qt"
@@ -303,7 +307,7 @@ function bv_write_unified_file
 
     #write command to run and execute VisIt
     echo "initialize_build_visit" >> $OUTPUT_bv_FILE
-    echo "run_build_visit \$@" >> $OUTPUT_bv_FILE
+    echo "run_build_visit \"\$@\"" >> $OUTPUT_bv_FILE
     chmod 755 $OUTPUT_bv_FILE
     cd $OLDPWD
 }
@@ -312,5 +316,5 @@ function bv_write_unified_file
 initialize_build_visit
 
 #run all build visit 
-run_build_visit $@
+run_build_visit "$@"
 

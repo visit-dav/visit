@@ -80,6 +80,46 @@ function error
 }
 
 # *************************************************************************** #
+# Function: add_extra_commandline_args                                        #
+#                                                                             #
+# Purpose: Allows modules to add extra arguments to VisIt                     #
+#                                                                             #
+# Programmer: Hari Krishnan,                                                  #
+# Date: Thu Dec 15 14:38:36 PST 2011                                          #
+#                                                                             #
+# *************************************************************************** #
+#global argument list for extra args..
+declare -a extra_commandline_args
+export EXTRA_COMMANDLINE_ARG_CALL=""
+
+function add_extra_commandline_args 
+{
+
+  if [[ $# != 4 ]]; then
+   echo "extra command line usage requires 4 parameters"
+   return
+  fi
+
+  local enable_func="bv_$1_$2"
+  #replace all occurrences of "-" with "_"
+  #local enable_func="bv_$1_${2//-/_}"
+
+  #check if function exists..
+  #maybe this should be moved to build_visit rather than here..
+  #in case some bash consoles don't have declare -F capabilities?
+  declare -F "$enable_func" &>/dev/null || errorFunc "function pointer $enable_func not found"
+
+  #add parameters..
+  for f in "$@"; do
+    extra_commandline_args[${#extra_commandline_args[*]}]="$f"
+  done
+
+  #add function pointer..
+  extra_commandline_args[${#extra_commandline_args[*]}]="$enable_func"
+}
+
+
+# *************************************************************************** #
 # Function: info_box                                                          #
 #                                                                             #
 # Purpose: Show an information box with a message.                            #

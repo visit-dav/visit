@@ -2,6 +2,9 @@ function bv_qt_initialize
 {
     export DO_QT="no"
     export ON_QT="off"
+    export USE_SYSTEM_QT="no"
+    add_extra_commandline_args "qt" "system-qt" 0 "Use qt found on system"
+    add_extra_commandline_args "qt" "alt-qt-dir" 1 "Use qt found in alternative directory"
 }
 
 function bv_qt_enable
@@ -16,6 +19,39 @@ DO_QT="no"
 ON_QT="off"
 }
 
+function bv_qt_system-qt
+{
+   info "Using System Qt"
+
+   TEST=`which qmake`
+   [ $? != 0 ] && error "System Qt not found"
+
+   bv_qt_enable
+
+   USE_SYSTEM_QT="yes"
+
+   QT_VERSION=`qmake -query QT_VERSION`
+   QT_BUILD_DIR=`qmake -query QT_INSTALL_PREFIX`
+   QT_BIN_DIR=`qmake -query QT_INSTALL_BINS`
+   QT_FILE=""
+}
+
+function bv_qt_alt-qt-dir
+{
+    info "Using qt from alternative directory $1"
+
+    [ ! -e "$1/bin/qmake" ] && error "qmake was not found in directory: $1/bin"
+    
+   
+    bv_qt_enable
+    USE_SYSTEM_QT="yes"
+
+    QT_VERSION=`$1/bin/qmake -query QT_VERSION`
+    QT_BUILD_DIR=`$1/bin/qmake -query QT_INSTALL_PREFIX`
+    QT_BIN_DIR=`$1/bin/qmake -query QT_INSTALL_BINS`
+    QT_FILE=""
+}
+
 function bv_qt_depends_on
 {
 return ""
@@ -26,6 +62,7 @@ function bv_qt_info
 export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.7.4.tar.gz"}
 export QT_VERSION=${QT_VERSION:-"4.7.4"}
 export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
+export QT_BIN_DIR=${QT_BUILD_DIR}/bin
 }
 
 function bv_qt_print
@@ -34,11 +71,14 @@ function bv_qt_print
   printf "%s%s\n" "QT_VERSION=" "${QT_VERSION}"
   printf "%s%s\n" "QT_PLATFORM=" "${QT_PLATFORM}"
   printf "%s%s\n" "QT_BUILD_DIR=" "${QT_BUILD_DIR}"
+  printf "%s%s\n" "QT_BIN_DIR=" "${QT_BIN_DIR}"
 }
 
 function bv_qt_print_usage
 {
 printf "%-15s %s [%s]\n" "--qt" "Build Qt" "built by default unless --no-thirdparty flag is used"
+printf "%-15s %s [%s]\n" "--system-qt" "Use System Qt" "Used by default unless --no-thirdparty flag is used"
+printf "%-15s %s [%s]\n" "--alt-qt-dir" "Use Qt from alternative directory" "Used by default unless --no-thirdparty flag is used"
 }
 
 function bv_qt_host_profile
@@ -47,14 +87,18 @@ echo "##" >> $HOSTCONF
 echo "## Specify the Qt4 binary dir. " >> $HOSTCONF
 echo "## (qmake is used to locate & setup Qt4 dependencies)" >> $HOSTCONF
 echo "##" >> $HOSTCONF
-echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH}/bin)" >> $HOSTCONF
+if [[ $USE_SYSTEM_QT == "yes" ]]; then
+    echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
+else
+    echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH}/bin)" >> $HOSTCONF
+fi
 echo >> $HOSTCONF
     
 }
 
 function bv_qt_ensure
 {
-    if [[ "$DO_QT" == "yes" ]] ; then
+    if [[ "$DO_QT" == "yes"  && "$USE_SYSTEM_QT" == "no" ]] ; then
         ensure_built_or_ready "qt"     $QT_VERSION    $QT_BUILD_DIR    $QT_FILE
         if [[ $? != 0 ]] ; then
             return 1
@@ -441,7 +485,7 @@ function bv_qt_build
 # Build Qt
 #
 cd "$START_DIR"
-if [[ "$DO_QT" == "yes" ]] ; then
+if [[ "$DO_QT" == "yes"  && "$USE_SYSTEM_QT" == "no" ]] ; then
         check_if_installed "qt" $QT_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping Qt4 build.  Qt4 is already installed."
