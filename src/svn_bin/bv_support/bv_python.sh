@@ -1,7 +1,10 @@
 function bv_python_initialize
 {
-export DO_PYTHON="yes"
-export ON_PYTHON="on"
+export DO_PYTHON="no"
+export ON_PYTHON="off"
+export USE_SYSTEM_PYTHON="no"
+export VISIT_PYTHON_DIR="" 
+add_extra_commandline_args "python" "system-python" 0 "Using system python"
 }
 
 function bv_python_enable
@@ -16,6 +19,19 @@ DO_PYTHON="no"
 ON_PYTHON="off"
 }
 
+function bv_python_system-python
+{
+  info "Using system python"
+  bv_python_enable
+  USE_SYSTEM_PYTHON="yes"
+  PYTHON_BUILD_DIR=`python-config --prefix`
+  PYTHON_VER=`python --version 2>&1`
+  PYTHON_VERSION=${PYTHON_VER#"Python "}
+  PYTHON_COMPATIBILITY_VERSION=${PYTHON_VERSION%.*}
+  PYTHON_FILE=""
+  VISIT_PYTHON_DIR=`python-config --prefix`
+}
+
 function bv_python_depends_on
 {
 return ""
@@ -24,8 +40,8 @@ return ""
 function bv_python_info
 {
 export PYTHON_FILE_SUFFIX="tgz"
-export PYTHON_VERSION="2.6.4"
-export PYTHON_COMPATIBILITY_VERSION=2.6
+export PYTHON_VERSION=${PYTHON_VERSION:-"2.6.4"}
+export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"2.6"}
 export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
 export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
 
@@ -48,6 +64,7 @@ function bv_python_print
 function bv_python_print_usage
 {
 printf "%-15s %s [%s]\n" "--python" "Build Python" "built by default unless --no-thirdparty flag is used"
+printf "%-15s %s [%s]\n" "--system-python" "Use System Python" "Used unless --no-thirdparty flag is used"
 }
 
 function bv_python_host_profile
@@ -55,18 +72,52 @@ function bv_python_host_profile
 echo "##" >> $HOSTCONF
 echo "## Specify the location of the python." >> $HOSTCONF
 echo "##" >> $HOSTCONF
-if [[ "$VISIT_PYTHON_DIR" != "" ]]; then
-    echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
+
+if [[ "$USE_SYSTEM_PYTHON" == "yes" ]]; then
+    local PYTHON_INCLUDE_PATH=`python-config --includes`
+
+    #remove -I from first include
+    PYTHON_INCLUDE_PATH=${PYTHON_INCLUDE_PATH:2}
+    #remove any extra includes
+    PYTHON_INCLUDE_PATH=${PYTHON_INCLUDE_PATH%%-I*}
+
+    local PYTHON_LIBRARY_DIR=${VISIT_PYTHON_DIR}/lib
+    local PYTHON_LIBRARY=`python-config --libs`
+
+    #remove all other libraries except for python..
+    PYTHON_LIBRARY=${PYTHON_LIBRARY##-l*-l}
+
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.a"
+    else
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.dylib"
+        else
+            PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.so"
+        fi
+    fi
+
+    #echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
+    #incase the PYTHON_DIR does not find the include and library set it manually...
+    echo "VISIT_OPTION_DEFAULT(PYTHON_INCLUDE_PATH $PYTHON_INCLUDE_PATH)" >> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY ${PYTHON_LIBRARY_DIR}/${PYTHON_LIBRARY})" >> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY_DIR $PYTHON_LIBRARY_DIR)" >> $HOSTCONF
 else
-    echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR \${VISITHOME}/python/$PYTHON_VERSION/\${VISITARCH})" >> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
 fi
 echo >> $HOSTCONF
 }
 
 function bv_python_ensure
 {
-    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-        if [[ "$VISIT_PYTHON_DIR" == "" ]]; then
+    if [[ "$USE_SYSTEM_PYTHON" == "no" ]]; then
+    
+        #assign any default values that other libraries should be aware of
+        #when they build..
+        #this is for when python is being built and system python was not selected..
+        export VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-"$VISITDIR/python/${PYTHON_VERSION}/${VISITARCH}"}
+
+        if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
             if [[ "$DO_PYTHON" == "yes" || "$DO_VTK" == "yes" ]] ; then
                 ensure_built_or_ready "python" $PYTHON_VERSION $PYTHON_BUILD_DIR $PYTHON_FILE
                 if [[ $? != 0 ]] ; then
@@ -376,7 +427,7 @@ function bv_python_build
 # Build Python
 #
 cd "$START_DIR"
-if [[ "$DO_PYTHON" == "yes" ]] ; then
+if [[ "$DO_PYTHON" == "yes" && "$USE_SYSTEM_PYTHON" == "no" ]] ; then
     check_if_installed "python" $PYTHON_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping Python build.  Python is already installed."

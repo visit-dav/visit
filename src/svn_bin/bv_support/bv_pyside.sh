@@ -100,7 +100,7 @@ function build_pyside_component
     QMAKEEXE=${QTDIR}/bin/qmake
     QMAKEINCDIR=${QTDIR}/include
     CMAKE_PROG=${VISITDIR}/cmake/${CMAKE_VERSION}/$VISITARCH/bin/cmake
-    PYTHON_DIR=${VISITDIR}/python/${PYTHON_VERSION}/$VISITARCH/
+    PYTHON_DIR=${VISIT_PYTHON_DIR} #${VISITDIR}/python/${PYTHON_VERSION}/$VISITARCH/
 
     PYTHON_BINARY=${PYTHON_DIR}/bin/python
     PYTHON_LIBRARY_DIR=${PYTHON_DIR}/lib
