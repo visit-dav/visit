@@ -143,7 +143,6 @@ function build_vtk
     #
     # We need python to build the vtk python bindings.
     #
-    VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-"$VISITDIR/python/${PYTHON_VERSION}/${VISITARCH}"}
     PYTHON_INSTALL="${VISIT_PYTHON_DIR}/bin"
     if [[ -e ${PYTHON_INSTALL}/python ]] ; then
        info "VTK: Python found"
@@ -329,7 +328,7 @@ function build_vtk
         pyinc="${VISIT_PYTHON_DIR}/include/python${pycompat}"
         vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
         pylib="${VISIT_PYTHON_DIR}/lib/libpython${pycompat}"
-        for ext in a so dylib ; do
+        for ext in so a dylib ; do
           if test -f ${pylib}.${ext} ; then pylib="${pylib}.${ext}" ; fi
         done
         vopts="${vopts} -DPYTHON_LIBRARY:FILEPATH=${pylib}"

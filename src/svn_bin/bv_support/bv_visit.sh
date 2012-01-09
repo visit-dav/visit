@@ -42,7 +42,7 @@ function bv_visit_info
 
     export VISIT_VERSION=${VISIT_VERSION:-"2.4.0"}
     #set this value to blank to get trunk?
-    export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
+    export VISIT_FILE="" #${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
     
     #export VISIT_COMPATIBILITY_VERSION=${VISIT_COMPATIBILITY_VERSION:-"2.4.0"}
     #export VISIT_BUILD_DIR=${VISIT_BUILD_DIR:-"visit"}
