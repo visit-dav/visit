@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#  Cyrus Harrison, Tue Jan 10 14:51:38 PST 2012
+#  Add link of ${CMAKE_THREAD_LIBS} to the viewer.
 #
 #****************************************************************************/
 
@@ -206,6 +208,7 @@ avtwriter_ser
 avtqtviswindow
 winutil
 ${VIEWER_QT_LIBS}
+${CMAKE_THREAD_LIBS}
 )
 
 #*************************** The viewer executable ***************************
