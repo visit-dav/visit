@@ -2343,7 +2343,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
 
             if( !analysis )
             {
-              dataValue == DATA_FieldlineOrder;
+              dataValue = DATA_FieldlineOrder;
               color_value = poincare_ic->id;
             }
             else if( dataValue == DATA_FieldlineOrder )
