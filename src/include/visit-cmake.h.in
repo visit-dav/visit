@@ -56,6 +56,9 @@
 /* Define if you have the FastBit library. */
 #cmakedefine HAVE_LIBFASTBIT 
 
+/* Define if you have the R library. */
+#cmakedefine HAVE_LIB_R
+
 /*******************************************************************************
  * Header file checks
  ******************************************************************************/

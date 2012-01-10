@@ -281,6 +281,8 @@ export DO_STATIC_BUILD="no"
 export USE_VISIBILITY_HIDDEN="no"
 DOWNLOAD_ONLY="no"
 
+export VTK_INSTALL_DIR="vtk"
+
 if [[ "$CXX_COMPILER" == "g++" ]] ; then
     VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-1)
     if [[ ${VERSION} -ge 4 ]] ; then
@@ -845,6 +847,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     for (( i=0; i < ${#iolibs[*]}; ++i ))
     do
         initializeFunc="bv_${iolibs[$i]}_graphical"
+
         output_str="$($initializeFunc)"
         add_checklist_vars=${add_checklist_vars}" "${output_str}
     done

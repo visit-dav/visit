@@ -262,6 +262,9 @@
 #    Gunther H. Weber, Wed Oct  5 19:14:27 PDT 2011
 #    Change NERSC_HOST to VISIT_HOSTNAME to make it more general
 #
+#    Dave Pugmire, Tue Jan 10 15:30:02 EST 2012
+#    Added support for R.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -555,6 +558,7 @@ VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
+VISIT_3RDPARTY_VAR(R_DIR         "Path containing the R library's include and lib")
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
 VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
 VISIT_3RDPARTY_VAR(VISUS_DIR     "Path containing the ViSUS library's include and lib")
@@ -802,6 +806,11 @@ ENDIF(NOT VISIT_DBIO_ONLY)
 IF(NOT WIN32 AND NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
 ENDIF(NOT WIN32 AND NOT VISIT_DBIO_ONLY)
+
+IF(VISIT_R_DIR)
+    # Configure R support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindR.cmake)
+ENDIF(VISIT_R_DIR)
 
 # Configure VTK support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
