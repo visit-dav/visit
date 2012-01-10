@@ -240,6 +240,12 @@ MARK_AS_ADVANCED(VTK_PYTHON_WRAPPERS_FOUND)
 #            #FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
 #            DIRE
 
+# If vtk was build with R, we need to add the R link dirs to VTK_LIBRARY_DIRS
+# This is necessary b/c VTK doesn't do a good job exposing R support in VTKConfig.cmake.
+IF(R_FOUND)
+    SET(VTK_LIBRARY_DIRS ${VTK_LIBRARY_DIRS} ${R_LIBRARY_DIR})
+ENDIF(R_FOUND)
+
 IF(NOT ${VTK_FOUND})
     MESSAGE(FATAL_ERROR "VTK is required to build VisIt.")
 ENDIF(NOT ${VTK_FOUND})

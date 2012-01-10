@@ -156,49 +156,33 @@ done
 
 
 #import functions that support optional visit dependencies
-optlibs[0]="szip"
-optlibs[1]="hdf5"
-optlibs[2]="mili"
-optlibs[3]="icet"
-optlibs[4]="hdf4"
-optlibs[5]="netcdf"
-optlibs[6]="cgns"
-optlibs[7]="gdal"
-optlibs[8]="exodus"
-optlibs[9]="tcmalloc"
-optlibs[10]="boxlib"
-optlibs[11]="cfitsio"
-optlibs[12]="mdsplus"
-optlibs[13]="h5part"
-optlibs[14]="fastbit"
-optlibs[15]="ccmio"
-optlibs[16]="silo"
-optlibs[17]="itaps"
-optlibs[18]="advio"
-optlibs[19]="xdmf"
-optlibs[20]="mxml"
-optlibs[21]="adios"
-optlibs[22]="visus"
-optlibs[23]="pyside"
+bsd_optlibs[0]="szip"
+bsd_optlibs[1]="hdf5"
+bsd_optlibs[2]="mili"
+bsd_optlibs[3]="icet"
+bsd_optlibs[4]="hdf4"
+bsd_optlibs[5]="netcdf"
+bsd_optlibs[6]="cgns"
+bsd_optlibs[7]="gdal"
+bsd_optlibs[8]="exodus"
+bsd_optlibs[9]="tcmalloc"
+bsd_optlibs[10]="boxlib"
+bsd_optlibs[11]="cfitsio"
+bsd_optlibs[12]="mdsplus"
+bsd_optlibs[13]="h5part"
+bsd_optlibs[14]="fastbit"
+bsd_optlibs[15]="ccmio"
+bsd_optlibs[16]="silo"
+bsd_optlibs[17]="itaps"
+bsd_optlibs[18]="advio"
+bsd_optlibs[19]="xdmf"
+bsd_optlibs[20]="mxml"
+bsd_optlibs[21]="adios"
+bsd_optlibs[22]="visus"
+bsd_optlibs[23]="pyside"
 
-#import functions that that install required visit libraries
-for (( i = 0; i < ${#optlibs[*]}; ++i ))
-do
-    . "${bv_PREFIX}/bv_${optlibs[$i]}.sh"
-    
-    declare -F "bv_${optlibs[$i]}_enable" &>/dev/null || errorFunc "${optlibs[$i]} enable not found"
-    declare -F "bv_${optlibs[$i]}_disable" &>/dev/null || errorFunc "${optlibs[$i]} disable not found"
-    declare -F "bv_${optlibs[$i]}_initialize" &>/dev/null || errorFunc "${optlibs[$i]} info not found"
-    declare -F "bv_${optlibs[$i]}_info" &>/dev/null || errorFunc "${optlibs[$i]} info not found" 
-    declare -F "bv_${optlibs[$i]}_ensure" &>/dev/null || errorFunc "${optlibs[$i]} ensure not found"
-    declare -F "bv_${optlibs[$i]}_build" &>/dev/null || errorFunc "${optlibs[$i]} build not found"  
-    declare -F "bv_${optlibs[$i]}_depends_on" &>/dev/null || errorFunc "${optlibs[$i]} depends_on not found"  
-    declare -F "bv_${optlibs[$i]}_print" &>/dev/null || errorFunc "${optlibs[$i]} print not found" 
-    declare -F "bv_${optlibs[$i]}_print_usage" &>/dev/null || errorFunc "${optlibs[$i]} print_usage not found" 
-    declare -F "bv_${optlibs[$i]}_host_profile" &>/dev/null || errorFunc "${optlibs[$i]} host_profile not found" 
-    declare -F "bv_${optlibs[$i]}_graphical" &>/dev/null || errorFunc "${optlibs[$i]} graphical not found" 
-    declare -F "bv_${optlibs[$i]}_dry_run" &>/dev/null || errorFunc "${optlibs[$i]} dry_run not found"
-done
+gpl_optlibs[0]="netcdf"
+gpl_optlibs[1]="R"
 
 ###################### Grouping libraries
 # The arrays listed below help group VisIt's set of libraries.
@@ -217,25 +201,27 @@ nodbiolibs[1]="qt"
 nodbiolibs[2]="python"
 
 #all the io libraries
-iolibs[0]="advio"
-iolibs[1]="boxlib"
-iolibs[2]="cgns"
-iolibs[3]="cfitsio"
-iolibs[4]="ccmio"
-iolibs[5]="exodus"
-iolibs[6]="fastbit"
-iolibs[7]="gdal"
-iolibs[8]="hdf4"
-iolibs[9]="hdf5"
-iolibs[10]="itaps"
-iolibs[11]="netcdf"
-iolibs[12]="h5part"
-iolibs[13]="szip"
-iolibs[14]="silo"
-iolibs[15]="xdmf"
-iolibs[16]="adios"
-iolibs[17]="mxml"
+bsd_iolibs[0]="advio"
+bsd_iolibs[1]="boxlib"
+bsd_iolibs[2]="cgns"
+bsd_iolibs[3]="cfitsio"
+bsd_iolibs[4]="ccmio"
+bsd_iolibs[5]="exodus"
+bsd_iolibs[6]="fastbit"
+bsd_iolibs[7]="gdal"
+bsd_iolibs[8]="hdf4"
+bsd_iolibs[9]="hdf5"
+bsd_iolibs[10]="itaps"
+bsd_iolibs[11]="netcdf"
+bsd_iolibs[12]="h5part"
+bsd_iolibs[13]="szip"
+bsd_iolibs[14]="silo"
+bsd_iolibs[15]="xdmf"
+bsd_iolibs[16]="adios"
+bsd_iolibs[17]="mxml"
 
+gpl_iolibs[0]="netcdf"
+gpl_iolibs[1]="R"
 
 #
 # Releasibility of these libs is not yet understood
@@ -245,6 +231,43 @@ advancedlibs[1]="visus"
 advancedlibs[2]="mdsplus"
 advancedlibs[3]="tcmalloc"
 advancedlibs[4]="icet"
+
+
+optlibs=(${bsd_optlibs[*]})
+iolibs=(${bsd_iolibs[*]})
+for arg in $@ ; do
+    case $arg in "--gpl" )
+        optlibs=(${gpl_optlibs[*]})
+        iolibs=(${gpl_iolibs[*]})
+        ;;
+    esac
+done
+
+echo "optlibs= ${optlibs[*]}"
+echo "iolibs= ${iolibs[*]}"
+
+#import functions that that install required visit libraries
+for (( i = 0; i < ${#optlibs[*]}; ++i ))
+do
+    echo "${bv_PREFIX}/bv_${optlibs[$i]}.sh"
+
+    . "${bv_PREFIX}/bv_${optlibs[$i]}.sh"
+  
+    declare -F "bv_${optlibs[$i]}_enable" &>/dev/null || errorFunc "${optlibs[$i]} enable not found"
+    declare -F "bv_${optlibs[$i]}_disable" &>/dev/null || errorFunc "${optlibs[$i]} disable not found"
+    declare -F "bv_${optlibs[$i]}_initialize" &>/dev/null || errorFunc "${optlibs[$i]} info not found"
+    declare -F "bv_${optlibs[$i]}_info" &>/dev/null || errorFunc "${optlibs[$i]} info not found" 
+    declare -F "bv_${optlibs[$i]}_ensure" &>/dev/null || errorFunc "${optlibs[$i]} ensure not found"
+    declare -F "bv_${optlibs[$i]}_build" &>/dev/null || errorFunc "${optlibs[$i]} build not found"  
+    declare -F "bv_${optlibs[$i]}_depends_on" &>/dev/null || errorFunc "${optlibs[$i]} depends_on not found"  
+    declare -F "bv_${optlibs[$i]}_print" &>/dev/null || errorFunc "${optlibs[$i]} print not found" 
+    declare -F "bv_${optlibs[$i]}_print_usage" &>/dev/null || errorFunc "${optlibs[$i]} print_usage not found" 
+    declare -F "bv_${optlibs[$i]}_host_profile" &>/dev/null || errorFunc "${optlibs[$i]} host_profile not found" 
+    declare -F "bv_${optlibs[$i]}_graphical" &>/dev/null || errorFunc "${optlibs[$i]} graphical not found" 
+    declare -F "bv_${optlibs[$i]}_dry_run" &>/dev/null || errorFunc "${optlibs[$i]} dry_run not found"
+done
+
+
 
 function bv_write_unified_file
 {

@@ -46,7 +46,7 @@ function bv_vtk_host_profile
 echo \
 "## Specify the location of the vtk." >> $HOSTCONF
 echo "##" >> $HOSTCONF
-echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/vtk/$VTK_VERSION/\${VISITARCH})" >> $HOSTCONF
+echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH})" >> $HOSTCONF
 echo >> $HOSTCONF
     
 }
@@ -245,7 +245,7 @@ function build_vtk
       vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
 
-    vtk_inst_path="${VISITDIR}/vtk/${VTK_VERSION}/${VISITARCH}"
+    vtk_inst_path="${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}"
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${vtk_inst_path}"
     vopts="${vopts} -DVTK_INSTALL_INCLUDE_DIR:PATH=/include/"
     vopts="${vopts} -DVTK_INSTALL_LIB_DIR:PATH=/lib/"
@@ -255,7 +255,18 @@ function build_vtk
     vopts="${vopts} -DVTK_USE_EXODUS:BOOL=OFF"
     vopts="${vopts} -DVTK_USE_TK:BOOL=OFF"
     vopts="${vopts} -DVTK_USE_64BIT_IDS:BOOL=ON"
-    vopts="${vopts} -DVTK_USE_INFOVIS:BOOL=OFF"
+    if test "$DO_R" = "yes" ; then
+        vopts="${vopts} -DVTK_USE_INFOVIS:BOOL=ON"
+        vopts="${vopts} -DVTK_USE_GNU_R:BOOL=ON"
+        vopts="${vopts} -DR_COMMAND:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/bin/R"
+        vopts="${vopts} -DVTK_R_HOME:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R"
+        vopts="${vopts} -DR_INCLUDE_DIR:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R/include"
+        vopts="${vopts} -DR_LIBRARY_BASE:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R/lib/libR.${SO_EXT}"
+        vopts="${vopts} -DR_LIBRARY_LAPACK:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R/lib/libRlapack.${SO_EXT}"
+        vopts="${vopts} -DR_LIBRARY_BLAS:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R/lib/libRblas.${SO_EXT}"
+    else
+        vopts="${vopts} -DVTK_USE_INFOVIS:BOOL=OFF"
+    fi
     vopts="${vopts} -DVTK_USE_METAIO:BOOL=OFF"
     vopts="${vopts} -DVTK_USE_PARALLEL:BOOL=OFF"
     vopts="${vopts} -DVTK_LEGACY_REMOVE:BOOL=ON"
@@ -358,7 +369,7 @@ function build_vtk
     # If on Darwin, fix install names
     #
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
-        INSTALLNAMEPATH="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
+        INSTALLNAMEPATH="$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib"
 
         # fix the internal name with in the libraries
         #
@@ -369,7 +380,7 @@ function build_vtk
         do
            install_name_tool -id \
              $INSTALLNAMEPATH/$i.$SO_EXT \
-             $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
+             $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
         done
 
         #
@@ -381,11 +392,11 @@ function build_vtk
              install_name_tool -change \
                 $j.5.8.$SO_EXT \
                 $INSTALLNAMEPATH/$j.$SO_EXT \
-                $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
+                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
           done
           install_name_tool -change \
                 libvtkNetCDF_cxx.dylib $INSTALLNAMEPATH/libvtkNetCDF_cxx.dylib \
-                $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
+                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
         done
 
         VTK_PYTHON_MOD_LIB_NAMES="vtkCommonPython.so vtkFilteringPython.so vtkGenericFilteringPython.so vtkGraphicsPython.so vtkHybridPython.so vtkIOPython.so vtkImagingPython.so vtkRenderingPython.so vtkVolumeRenderingPython.so"
@@ -395,8 +406,8 @@ function build_vtk
         for i in $VTK_PYTHON_MOD_LIB_NAMES
         do
             install_name_tool -id \
-             $INSTALLNAMEPATH/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/vtk/$i \
-             $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/vtk/$i
+             $INSTALLNAMEPATH/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/${VTK_INSTALL_DIR}/$i \
+             $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/${VTK_INSTALL_DIR}/$i
         done
 
         #
@@ -418,7 +429,7 @@ function build_vtk
              install_name_tool -change \
                 $VTK_BUILD_DIR_ABS/bin/$j.5.8.$SO_EXT \
                 $INSTALLNAMEPATH/$j.$SO_EXT \
-                $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/vtk/$i
+                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/${VTK_INSTALL_DIR}/$i
           done
         done
     fi
@@ -439,7 +450,7 @@ function bv_vtk_build
 #
 cd "$START_DIR"
 if [[ "$DO_VTK" == "yes" ]] ; then
-    check_if_installed "vtk" $VTK_VERSION
+    check_if_installed $VTK_INSTALL_DIR $VTK_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping VTK build.  VTK is already installed."
     else
