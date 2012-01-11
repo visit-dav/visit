@@ -53,6 +53,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Kathleen Biagas, Wed Jan 11 13:57:00 PST 2012
+#    Added test for Index Select of point meshes with Box operator applied.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -574,5 +577,27 @@ SetOperatorOptions(isa)
 Test("ops_indexselect38")
 
 DeleteAllPlots()
+
+OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+AddPlot("Pseudocolor", "PointVar")
+AddOperator("IndexSelect")
+# make sure we are using default atts
+isa = IndexSelectAttributes()
+SetOperatorOptions(isa)
+box = BoxAttributes()
+box.minx = -5
+box.maxx = 5
+box.miny = -5
+box.maxy = 5
+box.minz = -5
+box.maxz = 5
+AddOperator("Box")
+SetOperatorOptions(box)
+DrawPlots()
+
+Test("ops_indexselect39")
+
+DeleteAllPlots()
+
 
 Exit()
