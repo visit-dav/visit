@@ -100,6 +100,9 @@
 //    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
 //    Added amrLevel, amrMesh.
 //
+//    Kathleen Biagas, Wed Jan 11 13:58:31 PST 2012
+//    Turn on SingleCellPerVertex for vtkMaskPoints.
+//
 // ****************************************************************************
 
 avtIndexSelectFilter::avtIndexSelectFilter()
@@ -109,6 +112,7 @@ avtIndexSelectFilter::avtIndexSelectFilter()
     pointsFilter = vtkMaskPoints::New();
     pointsFilter->GenerateVerticesOn();
     pointsFilter->RandomModeOff();
+    pointsFilter->SingleVertexPerCellOn();
     haveIssuedWarning = false;
     selID             = -1;
     amrLevel          = -1;
@@ -404,6 +408,9 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    to vtkVertex cells, as filters down the pipeline may not be able to
 //    handle vtkPolyVertexCells.
 //
+//    Kathleen Biagas, Wed Jan 11 13:59:21 PST 2012
+//    Remove hack that converts vtkPolyVertex cells to vtkVertex cells.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -520,31 +527,6 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
             pointsFilter->SetInput(ds);
             pointsFilter->Update();
             rv = pointsFilter->GetOutput();
-            // HACK to convert vtkPolyVertex cells into vtkVertex cells
-            // as other filters in the pipeline may not be able to handle
-            // vtkPolyVertex.
-            // Can be removed when VTK version upgraded to something >=5.2
-            // as newer vtkMaskPoints provides a flag SingleCellPerVertex
-            // that allows creation of vtkVertex instead of vtkPolyVertex.
-            vtkPolyData *pd = (vtkPolyData*)rv;
-       
-            vtkCellArray *multiVerts = pd->GetVerts();
-            vtkCellArray *singleVerts = vtkCellArray::New();
-            singleVerts->Allocate(pd->GetNumberOfPoints()*2);
-            for (vtkIdType i = 0; i < multiVerts->GetNumberOfCells(); ++i)
-            {
-                vtkIdType mv_npts;
-                vtkIdType *mv_pts;
-                multiVerts->GetCell(i, mv_npts, mv_pts);
-                for (vtkIdType j = 0; j < mv_npts; ++j)
-                {
-                    singleVerts->InsertNextCell(1); 
-                    singleVerts->InsertCellPoint(mv_pts[j]); 
-                }
-            }
-            singleVerts->Squeeze();
-            pd->SetVerts(singleVerts);
-            singleVerts->Delete();
         }
         else
         {
