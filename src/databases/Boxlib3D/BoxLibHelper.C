@@ -1,4 +1,4 @@
-#include "BoxLibHelper.H"
+#include "BoxLibHelper.h"
 #include <BoxLib.H>
 
 // We need to call BoxLib::Initialize without BL_USE_MPI being set to 1 (as done
