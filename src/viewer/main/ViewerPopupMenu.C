@@ -115,6 +115,9 @@ ViewerPopupMenu::~ViewerPopupMenu()
 //   I made the menu show manually when it is disabled because otherwise it
 //   does not show up.
 //
+//   Marc Durant, Thu Jan 12 13:50:00 MST 2012
+//   When the menu is disabled, do not force it to appear.
+//
 // ****************************************************************************
 
 void
@@ -124,11 +127,6 @@ ViewerPopupMenu::ShowMenu()
     {
         if(popup->isEnabled())
             popup->popup(QCursor::pos());
-        else
-        {
-            popup->move(QCursor::pos());
-            popup->show();
-        }
     }
 }
 
