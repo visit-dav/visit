@@ -12593,6 +12593,49 @@ visit_GetGlobalLineoutAttributes(PyObject *self, PyObject *args)
     return retval;
 }
 
+// ****************************************************************************
+// Function: ParseTimePickOptins
+//
+// Purpose:
+//   Places time query options into their own MapNode entry in the PickParams,
+//   so that VQM knows how to parse them.
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   January 12, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ParseTimePickOptions(MapNode &pickParams)
+{
+    if (pickParams.HasEntry("do_time") && 
+        pickParams.GetEntry("do_time")->AsInt() == 1 &&
+        !pickParams.HasEntry("time_options"))
+    {
+        MapNode timeOptions;
+        if (pickParams.HasEntry("stride"))
+        {
+            timeOptions["stride"] = pickParams.GetEntry("stride")->AsInt();
+            pickParams.RemoveEntry("stride");
+        }
+        if (pickParams.HasEntry("start_time"))
+        {
+            timeOptions["start_time"] = pickParams.GetEntry("start_time")->AsInt();
+            pickParams.RemoveEntry("start_time");
+        }
+        if (pickParams.HasEntry("end_time"))
+        {
+            timeOptions["end_time"] = pickParams.GetEntry("end_time")->AsInt();
+            pickParams.RemoveEntry("end_time");
+        }
+        if (timeOptions.GetNumEntries() > 0)
+            pickParams["time_options"] = timeOptions;
+    }
+}
 
 // ****************************************************************************
 // Function: visit_PickByZone_deprecated
@@ -12672,6 +12715,10 @@ visit_PickByZone_deprecated(PyObject *self, PyObject *args)
 // Programmer: Kathleen Biagas
 // Creation:   September 7, 2011
 //
+// Modifications
+//   Kathleen Biagas, Thu Jan 12 09:51:02 PST 2012
+//   Added call to ParseTimePickOptions.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12716,6 +12763,7 @@ visit_PickByZone(PyObject *self, PyObject *args, PyObject *kwargs)
     } 
     pickParams["query_name"] = std::string("Pick");
     pickParams["pick_type"] = std::string("DomainZone");
+    ParseTimePickOptions(pickParams);
     MUTEX_LOCK();
         GetViewerMethods()->Query(pickParams);
     MUTEX_UNLOCK();
@@ -12792,6 +12840,10 @@ visit_PickByGlobalZone_deprecated(PyObject *self, PyObject *args)
 // Programmer: Kathleen Biagas
 // Creation:   September 7, 2011
 //
+// Modifications
+//   Kathleen Biagas, Thu Jan 12 09:51:02 PST 2012
+//   Added call to ParseTimePickOptions.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12837,6 +12889,7 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args, PyObject *kwargs)
     pickParams["query_name"] = std::string("Pick");
     pickParams["pick_type"] = std::string("DomainZone");
     pickParams["use_global_id"] = 1;
+    ParseTimePickOptions(pickParams);
     MUTEX_LOCK();
         GetViewerMethods()->Query(pickParams);
     MUTEX_UNLOCK();
@@ -12924,6 +12977,10 @@ visit_PickByNode_deprecated(PyObject *self, PyObject *args)
 // Programmer: Kathleen Biagas
 // Creation:   September 7, 2011
 //
+// Modifications
+//   Kathleen Biagas, Thu Jan 12 09:51:02 PST 2012
+//   Added call to ParseTimePickOptions.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12968,6 +13025,8 @@ visit_PickByNode(PyObject *self, PyObject *args, PyObject *kwargs)
     } 
     pickParams["query_name"] = std::string("Pick");
     pickParams["pick_type"] = std::string("DomainNode");
+
+    ParseTimePickOptions(pickParams);
     MUTEX_LOCK();
         GetViewerMethods()->Query(pickParams);
     MUTEX_UNLOCK();
@@ -13046,6 +13105,10 @@ visit_PickByGlobalNode_deprecated(PyObject *self, PyObject *args)
 // Programmer: Kathleen Biagas
 // Creation:   September 7, 2011
 //
+// Modifications
+//   Kathleen Biagas, Thu Jan 12 09:51:02 PST 2012
+//   Added call to ParseTimePickOptions.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -13091,6 +13154,7 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args, PyObject *kwargs)
     pickParams["query_name"] = std::string("Pick");
     pickParams["pick_type"] = std::string("DomainNode");
     pickParams["use_global_id"] = 1;
+    ParseTimePickOptions(pickParams);
     MUTEX_LOCK();
         GetViewerMethods()->Query(pickParams);
     MUTEX_UNLOCK();
