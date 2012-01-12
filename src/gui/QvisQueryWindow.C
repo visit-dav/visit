@@ -1359,6 +1359,9 @@ QvisQueryWindow::Apply(bool ignore)
 //   Kathleen Bonnell, Tue Mar  1 11:08:16 PST 2011
 //   For TimePicks, send along curvePlotType.
 //
+//   Kathleen Biagas, Thu Jan 12 09:55:40 PST 2012
+//   For Pick, put time options in a MapNode.
+//
 // ****************************************************************************
 
 void
@@ -1528,7 +1531,18 @@ QvisQueryWindow::ExecuteStandardQuery()
 
         if(!timeQueryOptions->isCheckable() || timeQueryOptions->isChecked())
         {
-            noErrors = timeQueryOptions->GetTimeQueryOptions(queryParams);
+            if (winT != QueryList::Pick)
+            {
+                noErrors = timeQueryOptions->GetTimeQueryOptions(queryParams);
+            }
+            else
+            {
+                // Pick needs its time options all together in one MapNode.
+                MapNode timeOptions;
+                noErrors = timeQueryOptions->GetTimeQueryOptions(timeOptions);
+                if (noErrors)
+                    queryParams["time_options"] = timeOptions;
+            }
             if (noErrors)
                 queryParams["do_time"] = 1;
         }

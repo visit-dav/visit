@@ -707,3 +707,25 @@ MapNode::Merge(const MapNode &obj)
         }
     }
 }
+
+// ****************************************************************************
+// Method: MapNode::Remove
+//
+// Purpose: 
+//   This method removes the entry for the given key.
+//
+// Arguments:
+//   key  : The entry to remove.
+//
+// Programmer: Kathleen Biagas
+// Creation:   January 12, 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MapNode::RemoveEntry(const std::string &key)
+{
+    entries.erase(key);
+}
