@@ -198,7 +198,7 @@ avtVarMetaData::Print(ostream &out, int indent) const
 
       case AVT_UNKNOWN_CENT:
       default:
-        out << "unknowing centering.";
+        out << "unknown centering.";
         break;
     }
     out << endl;
