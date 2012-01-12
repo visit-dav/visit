@@ -88,11 +88,31 @@ ModelFitCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 }
 
 
+// ****************************************************************************
+// Method:  ModelFitCommonPluginInfo::GetCreatedExpressions
+//
+// Purpose:
+//   Get the expressions this operator can generate.
+//
+// Arguments:
+//   md         the metadata to create our expressions around
+//
+// Programmer:  Rob Sisneros
+// Creation:    omitted
+//
+//  Modifications:
+//   Jeremy Meredith, Thu Jan 12 13:28:49 EST 2012
+//   Some files, like curves, don't have expressions.  Don't assume
+//   we have any meshes in our file.
+//   
+// ****************************************************************************
 ExpressionList *
 ModelFitCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
 {
     int i;
     int numMeshes = md->GetNumMeshes();
+    if (numMeshes == 0)
+        return NULL;
 
     Expression *e = new Expression();
 
