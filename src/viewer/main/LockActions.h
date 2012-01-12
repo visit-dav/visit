@@ -42,6 +42,30 @@
 #include <ViewerToggleAction.h>
 
 // ****************************************************************************
+// Class: ToggleAllowPopupAction
+//
+// Purpose:
+//   Handles the toggle allow popup action.
+//
+// Notes:
+//
+// Programmer: Marc Durant
+// Creation:   Tue Jan 10 09:18:00 MST 2012
+//
+// ****************************************************************************
+
+class VIEWER_API ToggleAllowPopupAction : public ViewerToggleAction
+{
+ public:
+  ToggleAllowPopupAction(ViewerWindow *win);
+  virtual ~ToggleAllowPopupAction(){}
+
+  virtual void Execute();
+  virtual bool Enabled() const;
+  virtual bool Checked() const;
+};
+
+// ****************************************************************************
 // Class: ToggleLockViewAction
 //
 // Purpose:

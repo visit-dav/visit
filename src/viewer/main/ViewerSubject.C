@@ -7010,6 +7010,29 @@ ViewerSubject::ToggleLockTools(int windowIndex)
      ViewerWindowManager::Instance()->ToggleLockTools(windowIndex);
 }
 
+
+// ****************************************************************************
+// Method: ViewerSubject::ToggleAllowPopup
+//
+// Purpose:
+//   Enable/disable the popup menu for the specified window
+//
+// Arguments:
+//   windowIndex : The index of the window for which to toggle the popup menu
+//
+// Programmer: Marc Durant
+// Creation:   Thu Jan 12 12:02:00 MST 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerSubject::ToggleAllowPopup(int windowIndex)
+{
+  ViewerWindowManager::Instance()->ToggleAllowPopup(windowIndex);
+}
+
 // ****************************************************************************
 //  Method: ViewerSubject::ToggleMaintainViewMode
 //
@@ -8017,6 +8040,9 @@ ViewerSubject::HandleViewerRPC()
 //    Kathleen Bonnell, Fri Jun 17 16:33:17 PDT 2011
 //    Add Query, which replaces Database, Line and PointQuery.
 //
+//    Marc Durant, Thu Jan 12 12:35:00 MST 2012
+//    Added ToggleAllowPopup
+//
 // ****************************************************************************
 
 void
@@ -8235,6 +8261,9 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::ResetMaterialAttributesRPC:
         ResetMaterialAttributes();
+        break;
+    case ViewerRPC::ToggleAllowPopupRPC:
+        ToggleAllowPopup();
         break;
     case ViewerRPC::ToggleLockToolsRPC:
         ToggleLockTools();

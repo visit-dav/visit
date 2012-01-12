@@ -82,6 +82,7 @@
 #include <ViewerOperator.h>
 #include <ViewerPlotList.h>
 #include <ViewerPlot.h>
+#include <ViewerPopupMenu.h>
 #include <ViewerProperties.h>
 #include <ViewerQueryManager.h>
 #include <ViewerSubject.h>
@@ -3823,6 +3824,36 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
     }
 
     return correlation;
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::ToggleAllowPopup
+//
+// Purpose:
+//   This method toggles the popup menu mode for the specified window.
+//
+// Arguments:
+//    windowIndex : This is a zero-origin integer that specifies the index
+//                  of the window we want to change. If the value is -1, use
+//                  use the active window.
+//
+// Programmer: Marc Durant
+// Creation:   Tue Jan 10 09:18:00 MST 2012
+// ****************************************************************************
+void
+ViewerWindowManager::ToggleAllowPopup(int windowIndex)
+{
+    if(windowIndex < -1 || windowIndex >= maxWindows)
+        return;
+
+    int index = (windowIndex == -1) ? activeWindow : windowIndex;
+    if(windows[index] != 0)
+    {
+        ViewerPopupMenu* menu = windows[index]->GetPopupMenu();
+        bool popupAllowed = menu->IsEnabled();
+        menu->SetEnabled(!popupAllowed);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
+    }
 }
 
 // ****************************************************************************

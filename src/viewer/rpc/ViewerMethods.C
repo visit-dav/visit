@@ -4192,6 +4192,26 @@ ViewerMethods::SetViewExtentsType(int t)
 }
 
 // ****************************************************************************
+// Method: ViewerMethods::ToggleAllowPopup
+//
+// Purpose:
+//   Tells the viewer to toggle the right-click popup menu.
+//
+// Programmer: Marc Durant
+// Creation:   January 10, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerMethods::ToggleAllowPopup()
+{
+  state->GetViewerRPC()->SetRPCType(ViewerRPC::ToggleAllowPopupRPC);
+  state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerMethods::ToggleMaintainViewMode
 //
 // Purpose: 

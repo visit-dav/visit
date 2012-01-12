@@ -428,6 +428,9 @@ typedef struct {
 //    Brad Whitlock, Fri Jul 23 11:23:25 PDT 2010
 //    I added selection support.
 //
+//    Marc Durant, Tue Jan 10 09:18:00 MST 2012
+//    Added ToggleAllowPopup.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -517,6 +520,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     void ToggleCameraViewMode(int windowIndex = -1);
     void ToggleFullFrameMode(int windowIndex = -1);
 
+    void ToggleAllowPopup(int windowIndex = -1);
     void ToggleLockTime(int windowIndex = -1);
     void ToggleLockTools(int windowIndex = -1);
     void ToggleLockViewMode(int windowIndex = -1);

@@ -494,6 +494,9 @@ class avtDefaultPlotMetaData;
 //    Kathleen Biagas, Fri Jul 15 11:34:11 PDT 2011
 //    Added GetQueryParameters.
 //
+//    Marc Durant, Thu Jan 12 12:36:00 MST 2012
+//    Added ToggleAllowPopup.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -741,6 +744,7 @@ private slots:
     void ToggleMaintainViewMode(int windowIndex = -1);
     void ToggleCameraViewMode(int windowIndex = -1);
     void ToggleLockTools(int windowIndex = -1);
+    void ToggleAllowPopup(int windowIndex = -1);
 
     void CopyViewToWindow(int from, int to);
     void CopyLightingToWindow(int from, int to);
