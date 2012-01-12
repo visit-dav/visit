@@ -38,6 +38,7 @@
 
 #include <LockActions.h>
 #include <ViewerPlotList.h>
+#include <ViewerPopupMenu.h>
 #include <ViewerProperties.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
@@ -49,6 +50,45 @@
 #include <viewlockoff.xpm>
 #include <toollockon.xpm>
 #include <toollockoff.xpm>
+
+// ****************************************************************************
+// Method: ToggleLockViewAction::ToggleAllowPopupAction
+//
+// Purpose:
+//   Constructor for the ToggleAllowPopupAction class.
+//
+// Arguments:
+//   win : The viewer window that owns this action.
+//
+// Programmer: Marc Durant
+// Creation:   Tue Jan 10 09:18:00 MST 2012
+//
+// ****************************************************************************
+ToggleAllowPopupAction::ToggleAllowPopupAction(ViewerWindow *win) :
+  ViewerToggleAction(win)
+{
+  SetAllText(tr("Allow Popup"));
+  if (!GetViewerProperties()->GetNowin())
+    SetIcons(QPixmap(toollockon_xpm), QPixmap(toollockoff_xpm));
+}
+
+void
+ToggleAllowPopupAction::Execute()
+{
+  windowMgr->ToggleAllowPopup(windowId);
+}
+
+bool
+ToggleAllowPopupAction::Checked() const
+{
+  return window->GetPopupMenu()->IsEnabled();
+}
+
+bool
+ToggleAllowPopupAction::Enabled() const
+{
+  return false;
+}
 
 // ****************************************************************************
 // Method: ToggleLockViewAction::ToggleLockViewAction

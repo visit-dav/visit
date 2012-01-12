@@ -142,6 +142,7 @@ public:
         PrintWindowRPC,
         ResetViewRPC,
         RecenterViewRPC,
+        ToggleAllowPopupRPC,
         ToggleMaintainViewModeRPC,
         ToggleBoundingBoxModeRPC,
         ToggleCameraViewModeRPC,

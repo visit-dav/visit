@@ -163,6 +163,9 @@ class ViewerState;
 //   Kathleen Biagas, Fri Jul 15 11:35:27 PDT 2011
 //   Add GetQueryParameters.
 //
+//   Marc Durant, Thu Jan 12 12:35:00 MST 2012
+//   Added ToggleAllowPopup.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -314,6 +317,7 @@ public:
     void ToggleMaintainViewMode();
     void UndoView();
     void RedoView();
+    void ToggleAllowPopup();
     void ToggleLockViewMode();
     void ToggleLockTime();
     void ToggleLockTools();
