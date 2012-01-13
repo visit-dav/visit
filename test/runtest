@@ -303,6 +303,9 @@
 #
 #    Mark C. Miller, Mon Nov  1 12:15:04 PDT 2010
 #    Pass '-exec-timeout' and '-idle-timeout' instead of just '-timeout'
+#
+#    Cyrus Harrison, Fri Jan 13 13:31:07 PST 2012
+#    Added hooks for beta report generation.
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -754,6 +757,9 @@ touch log summary
 touch html/index.html
 now=`date`
 
+visit_test_reports.py index open "$modes" "$now" "$purify"
+
+
 echo "<html><head><title>VisIt Regression Results ( $modes ) - $now</title></head>" >> html/index.html
 echo "<body bgcolor=\"#a0a0f0\">"                                    >> html/index.html
 echo "<H1>Results of VisIt Regression Test ( $modes ) - $now</H1>"   >> html/index.html
@@ -1042,6 +1048,8 @@ while test $testIndex -lt $testCount; do
             rm -f $coreFileNames
         fi
     fi
+
+    visit_test_reports.py index add "$category" "$base" "$name" "$error" "$runtime" "$limitSeconds"
 
     #
     # Do something with the error result:
@@ -1335,6 +1343,8 @@ fi
 #
 echo "</table>"   >> html/index.html
 echo "</html>"    >> html/index.html
+
+visit_test_reports.py index close
 
 #
 #  copy the files to the visit public html directory
