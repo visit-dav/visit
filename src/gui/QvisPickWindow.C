@@ -1582,13 +1582,18 @@ QvisPickWindow::zoneBlockLogToggled(bool val)
 // Creation:   April 1, 2004 
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Fri Jan 13 14:40:28 PST 2012
+//   Make do time-curve with next pick and create spreadsheet with next pick
+//   mutually exclusive.
+//
 // ****************************************************************************
 
 void
 QvisPickWindow::timeCurveToggled(bool val)
 {
     pickAtts->SetDoTimeCurve(val);
+    if (val)
+        pickAtts->SetCreateSpreadsheet(false);
     Apply();
 }
 
@@ -1607,6 +1612,9 @@ QvisPickWindow::timeCurveToggled(bool val)
 // Creation:   August 30, 2007
 //
 // Modifications:
+//   Kathleen Biagas, Fri Jan 13 14:40:28 PST 2012
+//   Make do time-curve with next pick and create spreadsheet with next pick
+//   mutually exclusive.
 //   
 // ****************************************************************************
 
@@ -1614,6 +1622,8 @@ void
 QvisPickWindow::spreadsheetToggled(bool val)
 {
     pickAtts->SetCreateSpreadsheet(val);
+    if (val)
+        pickAtts->SetDoTimeCurve(false);
     Apply();
 }
 
@@ -1980,7 +1990,9 @@ QvisPickWindow::clearPicks()
 // Creation:   Fri Aug 15 10:52:49 PDT 2008
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Fri Jan 13 14:41:44 PST 2012
+//   Turn off CreateSpreadsheet.  Display the pick letter if not doing Time.
+//
 // ****************************************************************************
 
 void 
@@ -1991,10 +2003,11 @@ QvisPickWindow::redoPickClicked()
     displayPickLetterSave = pickAtts->GetDisplayPickLetter();
     reusePickLetterSave = pickAtts->GetReusePickLetter();
 
-    // Do not display a new pick letter, do not advance pick letter, create
-    // a spreadsheet
-    pickAtts->SetDisplayPickLetter(false);
+    // Do not display a new pick letter, do not advance pick letter, 
+    // do not create a spreadsheet
+    pickAtts->SetDisplayPickLetter(!pickAtts->GetDoTimeCurve());
     pickAtts->SetReusePickLetter(true);
+    pickAtts->SetCreateSpreadsheet(false);
     pickAtts->Notify();
     GetViewerMethods()->SetPickAttributes();
 
@@ -2061,19 +2074,53 @@ QvisPickWindow::redoPickWithSpreadsheetClicked()
 //    ViewerMethods only has a Query method now, so fill out a MapNode
 //    with Pick parameters to pass to it.
 //
+//    Kathleen Biagas, Fri Jan 13 14:44:07 PST 2012
+//    Set up MapNode with correct params and correct param names.
+//
 // ****************************************************************************
 
 void
 QvisPickWindow::redoPick()
 {
     MapNode params;
-    params["Coord"] = pickAtts->GetPickPoint();
+    params["query_name"] = string("Pick");
+    params["query_type"] = (QueryList::QueryType)QueryList::PointQuery;
     params["vars"]  = pickAtts->GetVariables();
-    params["QueryType"] = (QueryList::QueryType)QueryList::PointQuery;
-    if (pickAtts->GetPickType() == PickAttributes::Zone)
-        params["QueryName"] = string("ZonePick");
-    else if (pickAtts->GetPickType() == PickAttributes::Node)
-        params["QueryName"] = string("NodePick");
+
+    if (pickAtts->GetDoTimeCurve() && pickAtts->GetTimePreserveCoord())
+    {
+        double *pp = pickAtts->GetPickPoint();
+        doubleVector ppv;
+        ppv.push_back(pp[0]);
+        ppv.push_back(pp[1]);
+        ppv.push_back(pp[2]);
+        params["coord"] = ppv;
+        if (pickAtts->GetPickType() == PickAttributes::Zone)
+            params["pick_type"] = string("Zone");
+        else if (pickAtts->GetPickType() == PickAttributes::Node)
+            params["pick_type"] = string("Node");
+        else if (pickAtts->GetPickType() == PickAttributes::DomainZone)
+            params["pick_type"] = string("Zone");
+        else if (pickAtts->GetPickType() == PickAttributes::DomainNode)
+            params["pick_type"] = string("Node");
+    }
+    else
+    {
+        // use the easier route, element and domain
+        params["element"] = pickAtts->GetElementNumber();
+        if (pickAtts->GetDomain() == -1)
+            params["domain"] = 0;
+        else
+            params["domain"] = pickAtts->GetDomain();
+        if (pickAtts->GetPickType() == PickAttributes::Zone)
+            params["pick_type"] = string("DomainZone");
+        else if (pickAtts->GetPickType() == PickAttributes::Node)
+            params["pick_type"] = string("DomainNode");
+        else if (pickAtts->GetPickType() == PickAttributes::DomainZone)
+            params["pick_type"] = string("DomainZone");
+        else if (pickAtts->GetPickType() == PickAttributes::DomainNode)
+            params["pick_type"] = string("DomainNode");
+    }
 
     GetViewerMethods()->Query(params);
 

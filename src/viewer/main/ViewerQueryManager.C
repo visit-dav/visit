@@ -3292,7 +3292,9 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         {
             bool preserveCoord = true; // is this really the default we want?
             if (queryParams.HasEntry("preserve_coord"))
-               preserveCoord = queryParams.GetEntry("preserve_coord")->AsBool();
+               preserveCoord = (bool)queryParams.GetEntry("preserve_coord")->AsInt();
+            else 
+               preserveCoord = pickAtts->GetTimePreserveCoord();
 
             bool tpc = pickAtts->GetTimePreserveCoord();
             bool tc  = pickAtts->GetDoTimeCurve();
@@ -3326,7 +3328,9 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
 
         bool preserveCoord = false; // is this really the default we want?
         if (queryParams.HasEntry("preserve_coord"))
-            preserveCoord = queryParams.GetEntry("preserve_coord")->AsBool();
+          preserveCoord = (bool)queryParams.GetEntry("preserve_coord")->AsInt();
+        else 
+          preserveCoord = pickAtts->GetTimePreserveCoord();
 
         if (timeCurve && preserveCoord)
         {
@@ -5477,12 +5481,21 @@ ViewerQueryManager::CloneQuery(ViewerQuery *toBeCloned, int newTS, int oldTS)
 //
 //  Modifications:
 //
+//    Kathleen Biagas, Fri Jan 13 14:37:40 PST 2012
+//    Test for presense of query_name.
+//
 // ****************************************************************************
 
 
 void         
 ViewerQueryManager::Query(const MapNode &queryParams)
 {
+    if (!queryParams.HasEntry("query_name"))
+    {
+        debug3 << "VQM::Query, no query_name specified" << endl;
+        return;
+    }
+
     string qName = queryParams.GetEntry("query_name")->AsString();
 
     ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
