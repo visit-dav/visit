@@ -1,0 +1,49 @@
+$$index_header
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>VisIt Regression Results ( $run_mode ) - $timestamp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/styles.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/styles.css" type="text/css" media="print" />
+    <script type="text/javascript" src="js/jquery-latest.js"></script>
+    <script type="text/javascript" src="js/jquery.tablesorter.js"></script>
+    <script type="text/javascript" id="js">$(document).ready(function() {
+     // call the tablesorter plugin
+     $("table").tablesorter({
+         // sort on the first column and third column, order asc
+         sortList: []
+   });
+}); </script>
+
+</head>
+
+<H2>Results of VisIt Regression Test ( $run_mode ) -  $timestamp</H2>
+
+<table border=0 class=tablesorter>
+<thead>
+<tr>
+    <th>Category </th>
+    <th>Test File </th>
+    <th>Status </th>
+    <th>Runtime (sec) </th>
+</tr>
+</thead>
+<tbody>
+$$
+
+$$index_entry
+<tr >
+    <td>$category</td>
+    <td><a href="$details.html">$name</a></td>
+    <td class="$result_color">$result_text</td>
+    <td>$run_time</td>
+</tr>
+$$
+
+$$index_footer
+</tbody>
+</table>
+</html>
+$$

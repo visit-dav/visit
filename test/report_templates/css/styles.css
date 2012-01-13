@@ -1,0 +1,83 @@
+/* ============================== */
+/* ! CSS for Test Suite Reports   */
+/* ============================== */
+
+body {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-family: "Helvetica Neue",Helvetica,Arial,san-serif;
+    background: #ddd;
+}
+
+table
+{
+border-collapse:collapse;
+}
+
+table,th, td
+{
+border: 2px solid black;
+margin: 2px 2px 2px 2px;
+}
+
+th
+{
+color: #eee;
+background: #222;
+}
+
+td
+{
+color: #222;
+background: #eee;
+}
+
+
+.p {
+    color: #000;
+    line-height: 20px;
+    text-align: center;
+    margin: 10px 0 0 0;
+}
+
+.h2 {
+    color: #fff;
+    background: #000;
+    text-align: center;
+}
+
+.good {
+    background: #00ff00;
+}
+
+.bad {
+    background: #ff8f00;
+}
+
+.unknown {
+    background: #ffffff;
+}
+
+.killed {
+    background: #880000;
+}
+
+.skipped {
+    background: #0000ff;
+}
+
+.good_with_skips {
+    background: #00ffff;
+}
+
+.na {
+    background: #008000;
+}
+
+.failed {
+    background: #ff0000;
+}
+
+
+
+
