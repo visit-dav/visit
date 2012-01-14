@@ -100,7 +100,7 @@ class IndexFile(object):
         elif rcode  == 121:
             mapping["result_color"] = "na"
             mapping["result_text"]  = "Not Applicable"
-        elif rcode  == 0:
+        elif rcode  == 1:
             mapping["result_color"] = "failed"
             mapping["result_text"]  = "Failed: exit == 0  unknown"
         f = self.__file()
