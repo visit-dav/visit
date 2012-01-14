@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -1036,56 +1036,6 @@ RemoteProcess::MultiThreadedAcceptSocket()
 }
 
 // ****************************************************************************
-// Method: RemoteProcess::Launch
-//
-// Purpose: 
-//   Launches the remote process.
-//
-// Arguments:
-//   rHost               : The host where the program will be launched.
-//   createAsThoughLocal : Whether to create the program as local.
-//   commandLine         : 
-//
-// Returns:    
-//
-// Note:       I moved this out from the Open method.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Apr  9 10:25:24 PDT 2009
-//
-// Modifications:
-//   Eric Brugger, Mon May  2 16:39:09 PDT 2011
-//   I added the ability to use a gateway machine when connecting to a
-//   remote host.
-//   
-//   Eric Brugger, Mon Sep 26 16:45:11 PDT 2011
-//   I modified the remote launching to pass the remote user name to the
-//   ssh command to the gateway machine instead of to the ssh command to
-//   the remote machine.
-//   
-// ****************************************************************************
-
-void
-RemoteProcess::Launch(const std::string &rHost, bool createAsThoughLocal,
-                      bool useGateway, const std::string &gatewayHost,
-                      const std::string &remoteUserName, 
-                      const stringVector &commandLine)
-{
-    const char *mName = "RemoteProcess::Launch: ";
-
-    if (HostIsLocal(rHost) || createAsThoughLocal)
-    {
-        debug5 << mName << "Calling LaunchLocal" << endl;
-        LaunchLocal(commandLine);
-    }
-    else
-    {
-        debug5 << mName << "Calling LaunchRemote" << endl;
-        LaunchRemote(useGateway, gatewayHost, remoteUserName, commandLine);
-    }
-}
-
-// ****************************************************************************
 // Method: RemoteProcess::Open
 //
 // Purpose: 
@@ -1163,7 +1113,12 @@ RemoteProcess::Launch(const std::string &rHost, bool createAsThoughLocal,
 //    I modified the remote launching to pass the remote user name to the
 //    ssh command to the gateway machine instead of to the ssh command to
 //    the remote machine.
-//   
+//
+//    Brad Whitlock, Fri Jan 13 15:10:20 PST 2012
+//    I separated command line generation into the SSH portion and the VisIt 
+//    portion to make it simpler and I moved the decision about local vs. remote
+//    launches to here.
+//
 // ****************************************************************************
 
 bool
@@ -1208,24 +1163,33 @@ RemoteProcess::Open(const std::string &rHost,
 
     // Add all of the relevant command line arguments to a vector of strings.
     stringVector commandLine;
-    CreateCommandLine(commandLine, rHost,
-                      chd, clientHostName, manualSSHPort, sshPort,
-                      useTunneling, useGateway, numRead, numWrite,
-                      createAsThoughLocal);
-    debug5 << mName << "Creating the command line to use: (";
-    for(size_t i = 0; i < commandLine.size(); ++i)
+    if(!HostIsLocal(rHost) && !createAsThoughLocal)
     {
-        debug5 << commandLine[i].c_str();
-        if(i < commandLine.size()-1)
-            debug5 << ", ";
-    } 
+        CreateSSHCommandLine(commandLine, rHost, useGateway, gatewayHost,
+                             manualSSHPort, sshPort, useTunneling);
+    }
+    CreateCommandLine(commandLine, rHost,
+                      chd, clientHostName, 
+                      useTunneling, numRead, numWrite);
+
+    debug5 << mName << "The command line to use: (" << endl;
+    for(size_t i = 0; i < commandLine.size(); ++i)
+        debug5 << "\t" << commandLine[i] << endl;
     debug5 << ")" << endl;
 
     //
     // Launch the remote process.
     //
-    Launch(rHost, createAsThoughLocal, useGateway, gatewayHost,
-           remoteUserName, commandLine);
+    if (HostIsLocal(rHost) || createAsThoughLocal)
+    {
+        debug5 << mName << "Calling LaunchLocal" << endl;
+        LaunchLocal(commandLine);
+    }
+    else
+    {
+        debug5 << mName << "Calling LaunchRemote" << endl;
+        LaunchRemote(commandLine);
+    }
 
     childDied[GetProcessId()] = false;
 
@@ -1741,6 +1705,209 @@ RemoteProcess::SecureShellArgs() const
 }
 
 // ****************************************************************************
+// Method: RemoteProcess::CreatePortNumbers
+//
+// Purpose: 
+//   Create arrays of port numbers that we'll use if we do ssh tunneling.
+//
+// Arguments:
+//   local   : The return array of local port numbers.
+//   remote  : The return array of remote port numbers.
+//   gateway : The return array of gateway port numbers.
+//   nPorts  : The number of ports we need to create per machine.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 13 15:02:27 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+RemoteProcess::CreatePortNumbers(int *local, int *remote, int *gateway, int nPorts) const
+{
+    int firstLocalPort             = INITIAL_PORT_NUMBER;
+    int lowerRemotePort            = 10000;
+    int upperRemotePort            = 40000;
+    int remotePortRange            = 1+upperRemotePort-lowerRemotePort;
+    std::set<int> remotePortSet, gatewayPortSet;
+    for (int i = 0; i < nPorts ; i++)
+    {
+        int localPort = firstLocalPort + i;
+
+        int remotePort;
+        do
+        {
+#if defined(_WIN32)
+            remotePort = lowerRemotePort+(rand()%remotePortRange);
+#else
+            remotePort = lowerRemotePort+(lrand48()%remotePortRange);
+#endif
+        }
+        while (remotePortSet.count(remotePort) != 0);
+        remotePortSet.insert(remotePort);
+
+        int gatewayPort;
+        do
+        {
+#if defined(_WIN32)
+            gatewayPort = lowerRemotePort+(rand()%remotePortRange);
+#else
+            gatewayPort = lowerRemotePort+(lrand48()%remotePortRange);
+#endif
+        }
+        while (gatewayPortSet.count(gatewayPort) != 0);
+        gatewayPortSet.insert(gatewayPort);
+
+        local[i] = localPort;
+    }
+
+    // Fill in the output values after so they are sorted.
+    std::set<int>::const_iterator rit = remotePortSet.begin();
+    std::set<int>::const_iterator git = gatewayPortSet.begin();
+    for(int i = 0; i < nPorts; ++i, ++rit, ++git)
+    {
+        remote[i] = *rit;
+        gateway[i] = *git;
+    }
+}
+
+// ****************************************************************************
+// Method: RemoteProcess::CreateSSHCommandLine
+//
+// Purpose: 
+//   Create the SSH portion of the command line, taking into account any
+//   gateway stuff and port forwarding we might be doing.
+//
+// Arguments:
+//   args        : The arguments vector to which we're appending.
+//   rHost       : The remote host where we want to run the program.
+//   useGateway  : Whether we need to use a gateway machine to access rHost.
+//   gatewayHost : The name of the gateway machine if one is needed.
+//   manualSSHPort : Whether we need to use a custom ssh port.
+//   sshPort       : The custom ssh port.
+//   useTunneling  : Whether we will tunnel data connections through ssh.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 13 14:59:08 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+RemoteProcess::CreateSSHCommandLine(stringVector &args, const std::string &rHost,
+    bool useGateway, const std::string &gatewayHost, bool manualSSHPort, int sshPort, 
+    bool useTunneling)
+{
+#if defined(_WIN32)
+    // If the path to secure shell contains spaces, enclose the program
+    // name in quotes. This is mostly so the ssh program runs correctly
+    //  on Windows when VisIt is installed into a path containing spaces.
+    std::string ssh(SecureShell());
+    if(ssh.find(" ") != std::string::npos)
+    {
+        std::string q("\"");
+        args.push_back(q + ssh + q);
+    }
+    else
+        args.push_back(SecureShell());
+#else
+    args.push_back(SecureShell());
+#endif
+
+    // Set any optional ssh arguments into the command line.
+    const char *sshArgs = SecureShellArgs();
+    if(sshArgs)
+        args.push_back(sshArgs);
+
+    if (manualSSHPort)
+    {
+        char portStr[256];
+        SNPRINTF(portStr, 256, "%d", sshPort);
+        args.push_back("-p");
+        args.push_back(portStr);
+    }
+
+    // Set the username.
+    if(remoteUserName != std::string("notset"))
+    {
+        args.push_back("-l");
+        args.push_back(remoteUserName);
+    }
+
+    // If we're tunneling, add the arguments to SSH to 
+    // forward a bunch of remote ports to our local ports.
+    if (useTunneling)
+    {
+        int localPort[10], remotePort[10], gatewayPort[10];
+#if defined(_WIN32)
+        int numLocalPorts              = 10;
+#else
+        int numLocalPorts              = 7;
+#endif
+        CreatePortNumbers(localPort, remotePort, gatewayPort, numLocalPorts);
+        // Remember local to remote port mapping.
+        portTunnelMap.clear();
+        for(int i = 0; i < numLocalPorts; ++i)
+            portTunnelMap[localPort[i]] = remotePort[i];
+
+        char forwardSpec[256];
+        if(useGateway)
+        {
+            for(int i = 0; i < numLocalPorts; ++i)
+            {
+                sprintf(forwardSpec, "%d:localhost:%d", gatewayPort[i], localPort[i]);
+                debug5 << "RemoteProcess::CreateCommandLine -- "
+                       << "forwarding gateway to local("<< forwardSpec << ")" << endl;
+                args.push_back("-R");
+                args.push_back(forwardSpec);
+            }
+
+            args.push_back(gatewayHost);
+            args.push_back("ssh");
+
+            for(int i = 0; i < numLocalPorts; ++i)
+            {
+                sprintf(forwardSpec, "%d:localhost:%d", remotePort[i], gatewayPort[i]);
+                debug5 << "RemoteProcess::CreateCommandLine -- "
+                       << "forwarding remote to gateway("<< forwardSpec << ")" << endl;
+                args.push_back("-R");
+                args.push_back(forwardSpec);
+            }
+        }
+        else
+        {
+            for(int i = 0; i < numLocalPorts; ++i)
+            {
+                sprintf(forwardSpec, "%d:%s:%d",
+                        remotePort[i], "127.0.0.1", localPort[i]);
+                debug5 << "RemoteProcess::CreateCommandLine -- "
+                       << "forwarding ("<< forwardSpec << ")" << endl;
+                args.push_back("-R");
+                args.push_back(forwardSpec);
+            }
+        }
+    }
+    else if(useGateway)
+    {
+        args.push_back(gatewayHost);
+        args.push_back("ssh");
+    }
+    
+    // Set the name of the host to run on.
+    args.push_back(remoteHost.c_str());
+}
+
+// ****************************************************************************
 // Method: RemoteProcess::CreateCommandLine
 //
 // Purpose: 
@@ -1817,115 +1984,19 @@ RemoteProcess::SecureShellArgs() const
 //    ssh command to the gateway machine instead of to the ssh command to
 //    the remote machine.
 //
+//    Brad Whitlock, Fri Jan 13 14:57:34 PST 2012
+//    I moved a bunch of code to CreateSSHCommandLine to simplify this method.
+//    This method now only creates the VisIt command that we'll run.
+//
 // ****************************************************************************
 
 void
 RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
                                  MachineProfile::ClientHostDetermination chd,
                                  const std::string &clientHostName,
-                                 bool manualSSHPort,
-                                 int sshPort,
-                                 bool useTunneling, bool useGateway,
-                                 int numRead, int numWrite, bool local)
+                                 bool useTunneling, 
+                                 int numRead, int numWrite)
 {
-    //
-    // If the host is not local, then add some ssh arguments to the
-    // front of the command line argument list.
-    //
-    if(!HostIsLocal(rHost) && !local)
-    {
-#if defined(_WIN32)
-        // If the path to secure shell contains spaces, enclose the program
-        // name in quotes. This is mostly so the ssh program runs correctly
-        //  on Windows when VisIt is installed into a path containing spaces.
-        std::string ssh(SecureShell());
-        if(ssh.find(" ") != std::string::npos)
-        {
-            std::string q("\"");
-            args.push_back(q + ssh + q);
-        }
-        else
-            args.push_back(SecureShell());
-#else
-        args.push_back(SecureShell());
-#endif
-
-        // Set any optional ssh arguments into the command line.
-        const char *sshArgs = SecureShellArgs();
-        if(sshArgs)
-            args.push_back(sshArgs);
-
-        if (manualSSHPort)
-        {
-            char portStr[256];
-            SNPRINTF(portStr, 256, "%d", sshPort);
-            args.push_back("-p");
-            args.push_back(portStr);
-        }
-
-        // Set the username.
-        if(useGateway == false && remoteUserName != std::string("notset"))
-        {
-             args.push_back("-l");
-             args.push_back(remoteUserName);
-        }
-
-        // If we're tunneling, add the arguments to SSH to 
-        // forward a bunch of remote ports to our local ports.
-        if (useTunneling)
-        {
-            int numRemotePortsPerLocalPort = 1;
-#if defined(_WIN32)
-            int numLocalPorts              = 10;
-#else
-            int numLocalPorts              = 7;
-#endif
-            int firstLocalPort             = INITIAL_PORT_NUMBER;
-            int lowerRemotePort            = 10000;
-            int upperRemotePort            = 40000;
-            int remotePortRange            = 1+upperRemotePort-lowerRemotePort;
-            portTunnelMap.clear();
-            std::set<int> remotePortSet;
-            for (int i = 0; i < numLocalPorts ; i++)
-            {
-                int localPort = firstLocalPort + i;
-                for (int j = 0; j < numRemotePortsPerLocalPort; j++)
-                {
-                    int remotePort;
-                    do
-                    {
-#if defined(_WIN32)
-                        remotePort = lowerRemotePort+(rand()%remotePortRange);
-#else
-                        remotePort = lowerRemotePort+(lrand48()%remotePortRange);
-#endif
-                    }
-                    while (remotePortSet.count(remotePort) != 0);
-
-                    remotePortSet.insert(remotePort);
-
-                    // NOTE: using a (non-multi) map only works
-                    // when there is one remote port for each local port.
-                    // If we change the implementation so that we try to
-                    // map more than one remote port to each local port,
-                    // we much change this!
-                    portTunnelMap[localPort] = remotePort;
-
-                    char forwardSpec[256];
-                    sprintf(forwardSpec, "%d:%s:%d",
-                            remotePort, "127.0.0.1", localPort);
-                    debug5 << "RemoteProcess::CreateCommandLine -- "
-                           << "forwarding ("<< forwardSpec << ")" << endl;
-                    args.push_back("-R");
-                    args.push_back(forwardSpec);
-                }
-            }
-        }
-    
-        // Set the name of the host to run on.
-        args.push_back(remoteHost.c_str());
-    }
-
     //
     // Add the name of the remote program to run 
     //
@@ -1958,7 +2029,6 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     for(size_t i = 0; i < argList.size(); ++i)
         args.push_back(argList[i]);
 
-
     //
     // If it's not going to be a local launch, set an argument
     // disabling automatic usage of the loopback network device.
@@ -1967,7 +2037,6 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     {
         args.push_back("-noloopback");
     }
-
 
     //
     // Add the local hostname and the ports we'll be talking on.
@@ -2097,37 +2166,38 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
 //    I modified the remote launching to pass the remote user name to the
 //    ssh command to the gateway machine instead of to the ssh command to
 //    the remote machine.
-//   
+//
+//    Brad Whitlock, Fri Jan 13 15:04:08 PST 2012
+//    I moved all of the decisions about the command line we'll execute higher
+//    up in the call stack to make this method simpler.
+//
 // ****************************************************************************
 
 void
-RemoteProcess::LaunchRemote(bool useGateway, const std::string &gatewayHost,
-                            const std::string &remoteUserName,
-                            const stringVector &args)
+RemoteProcess::LaunchRemote(const stringVector &args)
 {
     const char *mName = "RemoteProcess::LaunchRemote: ";
 
     // 
     // Create the parameters for the exec
     //
-    int argc;
-    char **argv;
-    if (useGateway == false)
-    {
-        argc = 0;
-        argv = CreateSplitCommandLine(args, argc);
-    }
-    else
-    {
-        argc = 0;
-        argv = CreateSSHCommandLine(gatewayHost, remoteUserName, args, argc);
-    }
+    int argc = 0;
+    char **argv = CreateSplitCommandLine(args, argc);
 
     //
     // Start the program on the remote host.
     // 
 #if defined(_WIN32)
-    debug5 << mName << "Starting child process using _spawnvp" << endl;
+    debug5 << mName << "Starting child process using _spawnvp.\n\tprogram=" << SecureShell() << endl;
+    debug5 << " args={";
+    for(int i = 0; i < argc; ++i)
+    {
+        if(argv[i] != NULL)
+        {
+            debug5 << "\t" << argv[i] << endl;
+        }
+    }
+    debug5 << "}" << endl;
     // Start the program using the WIN32 _spawnvp function.
     remoteProgramPid = _spawnvp(_P_NOWAIT, SecureShell(), argv);
 #else
@@ -2204,6 +2274,32 @@ RemoteProcess::LaunchRemote(bool useGateway, const std::string &gatewayHost,
 
     // Clean up memory
     DestroySplitCommandLine(argv, argc);
+}
+
+// ****************************************************************************
+// Method: RemoteProcess::Launch
+//
+// Purpose: 
+//   Launch the program. This method is now somewhat deprecated.
+//
+// Arguments:
+//   args : The command line arguments.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 13 15:05:44 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+RemoteProcess::Launch(const stringVector &args)
+{
+    LaunchLocal(args);
 }
 
 // ****************************************************************************
@@ -2338,96 +2434,13 @@ RemoteProcess::LaunchLocal(const stringVector &args)
 char **
 RemoteProcess::CreateSplitCommandLine(const stringVector &args, int &argc) const
 {
-    argc = args.size();
+    argc = (int)args.size();
     char **retval = new char*[argc + 1];
     for(int i = 0; i < argc; ++i)
         retval[i] = StrDup(args[i]);
     retval[argc] = NULL;
 
     return retval;
-}
-
-// ****************************************************************************
-// Method: RemoteProcess::CreateSSHCommandLine
-//
-// Purpose: 
-//   Creates a char ** arrray that can be passed to exec an ssh command with
-//   a string vector.
-//
-// Arguments:
-//   remoteUserName : The user name on the remote host.
-//   host           : The host to ssh to.
-//   args           : The input string vector.
-//   argc           : The number of strings in the return array.
-//
-// Returns:    An array of char strings.
-//
-// Programmer: Eric Brugger
-// Creation:   May 2, 2011
-//
-// Modifications:
-//   Eric Brugger, Mon Sep 26 16:45:11 PDT 2011
-//   I modified the remote launching to pass the remote user name to the
-//   ssh command to the gateway machine instead of to the ssh command to
-//   the remote machine.
-//  
-//   Kathleen Biagas, Tues Sep 27 17:55:21 MST 2011
-//   Change order of created args on Windows, which needs qtssh (the first
-//   arg passed in args) to connect to the gateway machine, and ssh for 
-//   connection from gateway to remote.
-// 
-// ****************************************************************************
-
-char **
-RemoteProcess::CreateSSHCommandLine(const std::string &host,
-                                    const std::string &remoteUserName,
-                                    const stringVector &args, int &argc) const
-{
-    int nstrings = args.size();
-    int lstrings = 1;
-    for (int i = 0; i < nstrings; ++i)
-        lstrings += args[i].size() + 1;
-
-    char **argv = new char*[10];
-    argc = 0;
-#ifdef WIN32
-    // the first arg is qtssh (with full path), which is what Windows needs
-    // in order to connect to the gateway machine.
-    argv[argc++] = StrDup(args[0]);
-#else
-    argv[argc++] = StrDup("ssh");
-#endif
-    if(remoteUserName != std::string("notset"))
-    {
-         argv[argc++] = StrDup("-l");
-         argv[argc++] = StrDup(remoteUserName);
-    }
-    argv[argc++] = StrDup(host.c_str());
-    argv[argc++] = new char[lstrings];
-    char *tmpstr = argv[argc-1];
-    int start = 0;
-#ifdef WIN32
-    // gateway machine needs ssh 
-    SNPRINTF(tmpstr, 4, "ssh "); 
-    tmpstr += 4;
-    // we've already used the first of the args, so skip it.
-    start = 1;
-#endif
-    for (int i = start; i < nstrings; ++i)
-    {
-        std::string const tmpstr2 = args[i];
-        for (size_t j = 0; j < tmpstr2.size(); ++j)
-        {
-            *tmpstr = tmpstr2[j];
-            tmpstr++;
-        }
-        *tmpstr = ' ';
-        tmpstr++;
-    }
-    *tmpstr = '\0';
-    argv[argc++] = NULL;
-
-    return argv;
 }
 
 // ****************************************************************************
@@ -2480,9 +2493,9 @@ RemoteProcess::StrDup(const std::string &str) const
     if(str.size() == 0)
         return NULL;
 
-    int len = str.size();
+    size_t len = str.size();
     char *newStr = new char[len + 1];
-    for(int i = 0; i < len; ++i)
+    for(size_t i = 0; i < len; ++i)
         newStr[i] = str[i];
     newStr[len] = '\0';
 
