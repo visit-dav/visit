@@ -616,9 +616,6 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
 //   Brad Whitlock, Fri Aug  6 16:54:29 PDT 2010
 //   Added Selections to windowNames.
 //
-//   Kathleen Biagas, Fri Jan 13 14:52:51 PST 2012
-//   Removed pickWin, added varsButton.
-//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -647,7 +644,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     outputWin = 0;
     pluginWin = 0;
     appearanceWin = 0;
-    varsButton = 0;
+    pickWin = 0;
     preferencesWin = 0;
     colorTableWin = 0;
 
@@ -1041,8 +1038,6 @@ QvisGUIApplication::~QvisGUIApplication()
     delete syncObserver;
     delete systemSettings;
     delete localSettings;
-    if (varsButton)
-        delete varsButton;
 }
 
 // ****************************************************************************
@@ -1381,9 +1376,6 @@ QvisGUIApplication::Synchronize(int tag)
 //   Emit FireInit signal instead of using QTimer::singleShot to
 //   work around a Qt/Glib init problem in linux.
 //
-//   Kathleen Biagas, Fri Jan 13 14:54:23 PST 2012
-//   Removed pickWin. Use pointer to initialized PICK window instead.
-//
 // ****************************************************************************
 
 void
@@ -1444,15 +1436,11 @@ QvisGUIApplication::HandleSynchronize(int val)
     }
     else if(val == REDO_PICK_TAG)
     {
-        QTimer::singleShot(10, 
-            (QvisPickWindow*)GetInitializedWindowPointer(WINDOW_PICK), 
-            SLOT(redoPick()));
+        QTimer::singleShot(10, pickWin, SLOT(redoPick()));
     }
     else if(val == RESTORE_PICK_ATTS_TAG)
     {
-        QTimer::singleShot(10, 
-            (QvisPickWindow*)GetInitializedWindowPointer(WINDOW_PICK), 
-            SLOT(restorePickAttributesAfterRepick()));
+        QTimer::singleShot(10, pickWin, SLOT(restorePickAttributesAfterRepick()));
     }
 }
 
@@ -3126,11 +3114,6 @@ QvisGUIApplication::CreateMainWindow()
 //   Renamed signal/slot connection to make Mac configuration window a general
 //   configuration setup window.
 //
-//   Kathleen Biagas, Fri Jan 13 14:51:20 PST 2012
-//   Removed pickWin, added varsButton (so plugin managers that call static
-//   methods on QvisVariableButton will not cause crash).  Connect to
-//   showPickWindow slot.
-//
 // ****************************************************************************
 
 void
@@ -3163,7 +3146,13 @@ QvisGUIApplication::SetupWindows()
      connect(appearanceWin, SIGNAL(changeAppearance(bool)),
              this, SLOT(CustomizeAppearance(bool)));
 
-     varsButton = new QvisVariableButton(true, false, true, -1, NULL);
+     pickWin = (QvisPickWindow *)GetWindowPointer(WINDOW_PICK);
+     connect(mainWin, SIGNAL(activatePickWindow()),
+             pickWin, SLOT(show()));
+     connect(pickWin, SIGNAL(initiateRedoPick()),
+             this, SLOT(redoPick()));
+     connect(pickWin, SIGNAL(initiateRestorePickAttributesAfterRepick()),
+             this, SLOT(restorePickAttributesAfterRepick()));
 
      preferencesWin = (QvisPreferencesWindow *)GetWindowPointer(WINDOW_PREFERENCES);
      connect(mainWin, SIGNAL(activatePreferencesWindow()),
@@ -3230,8 +3219,6 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showHelpWindow()));
      connect(mainWin, SIGNAL(activateReleaseNotesWindow()),
              this, SLOT(displayReleaseNotes()));
-     connect(mainWin, SIGNAL(activatePickWindow()),
-             this, SLOT(showPickWindow()));
      connect(mainWin, SIGNAL(activateQueryWindow()),
              this, SLOT(showQueryWindow()));
      connect(mainWin, SIGNAL(activateRenderingWindow()),
@@ -3330,9 +3317,6 @@ QvisGUIApplication::SetupWindows()
 //
 //   Kathleen Biagas, Fri Aug 26 17:08:00 PDT 2011
 //   Connect PickWindow to PlotList.
-//
-//   Kathleen Biagas, Fri Jan 13 14:56:14 PST 2012
-//   Delay creation of Entire pick window.
 //
 // ****************************************************************************
 
@@ -3475,9 +3459,7 @@ QvisGUIApplication::WindowFactory(int i)
             GetViewerState()->GetPickAttributes(),
             windowNames[i], tr("Pick"), mainWin->GetNotepad());
           pwin->ConnectPlotList(GetViewerState()->GetPlotList());
-          connect(pwin, SIGNAL(initiateRedoPick()), this, SLOT(redoPick()));
-          connect(pwin, SIGNAL(initiateRestorePickAttributesAfterRepick()),
-             this, SLOT(restorePickAttributesAfterRepick()));
+          pwin->CreateEntireWindow();
           win = pwin;
         }
         break;
@@ -8670,7 +8652,6 @@ void QvisGUIApplication::displayReleaseNotes()       { ((QvisHelpWindow *)GetIni
 void QvisGUIApplication::displayReleaseNotesIfAvailable()
                                                      { ((QvisHelpWindow *)GetInitializedWindowPointer(WINDOW_HELP))->displayReleaseNotesIfAvailable(); }
 void QvisGUIApplication::showQueryWindow()           { GetInitializedWindowPointer(WINDOW_QUERY)->show(); }
-void QvisGUIApplication::showPickWindow()            { GetInitializedWindowPointer(WINDOW_PICK)->show(); }
 void QvisGUIApplication::showRenderingWindow()       { GetInitializedWindowPointer(WINDOW_RENDERING)->show(); }
 void QvisGUIApplication::showCorrelationListWindow() { GetInitializedWindowPointer(WINDOW_CORRELATION)->show(); }
 void QvisGUIApplication::showQueryOverTimeWindow()   { GetInitializedWindowPointer(WINDOW_TIMEQUERY)->show(); }

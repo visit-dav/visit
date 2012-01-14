@@ -68,11 +68,11 @@ class QvisMacroWindow;
 class QvisMessageWindow;
 class QvisMovieProgressDialog;
 class QvisOutputWindow;
+class QvisPickWindow;
 class QvisPluginWindow;
 class QvisPreferencesWindow;
 class QvisSaveMovieWizard;
 class QvisSessionFileDatabaseLoader;
-class QvisVariableButton;
 class QvisVisItUpdate;
 class SplashScreen;
 
@@ -343,12 +343,6 @@ class SplashScreen;
 //    Brad Whitlock, Fri Aug  6 16:55:58 PDT 2010
 //    Added Selections window.
 //
-//    Kathleen Biagas, Fri Jan 13 14:46:41 PST 2012
-//    Removed pickWin, so Pick window can be created on first show instead
-//    of GUI initialization.  Addes showPickWindow slot method. Added 
-//    varsButton so it is initialized before plugin managers attempt to use 
-//    its static methods.
-//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -501,7 +495,6 @@ private slots:
     void displayCopyright();
     void displayReleaseNotes();
     void displayReleaseNotesIfAvailable();
-    void showPickWindow();
     void showQueryWindow();
     void showRenderingWindow();
     void showCorrelationListWindow();
@@ -557,7 +550,7 @@ private:
     QvisOutputWindow             *outputWin;
     QvisPluginWindow             *pluginWin;
     QvisAppearanceWindow         *appearanceWin;
-    QvisVariableButton           *varsButton;
+    QvisPickWindow               *pickWin;
     QvisPreferencesWindow        *preferencesWin;
     QvisColorTableWindow         *colorTableWin;
     QvisSaveMovieWizard          *saveMovieWizard;
