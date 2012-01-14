@@ -263,8 +263,7 @@ protected:
             debug5 << ")" << endl;
         }
 
-        RemoteProcess::Launch(rHost, createAsThoughLocal, false, "", "notset",
-                              viewerArgs);
+        RemoteProcess::Launch(viewerArgs);
     }
 };
 

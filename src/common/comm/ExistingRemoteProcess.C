@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #include <ExistingRemoteProcess.h>
+#include <DebugStream.h>
 
 // ****************************************************************************
 // Method: ExistingRemoteProcess::ExistingRemoteProcess
@@ -129,6 +130,9 @@ ExistingRemoteProcess::~ExistingRemoteProcess()
 //   ssh command to the gateway machine instead of to the ssh command to
 //   the remote machine.
 //
+//   Brad Whitlock, Fri Jan 13 15:13:12 PST 2012
+//   I updated the signature for CreateCommandLine.
+//
 // ****************************************************************************
 
 bool
@@ -148,9 +152,12 @@ ExistingRemoteProcess::Open(const std::string &rHost,
     // Add all of the relevant command line arguments to a vector of strings.
     stringVector commandLine;
     CreateCommandLine(commandLine, rHost,
-                      chd, clientHostName, manualSSHPort, sshPort,
-                      useTunneling, useGateway, numRead, numWrite,
-                      createAsThoughLocal);
+                      chd, clientHostName, useTunneling, numRead, numWrite);
+
+    debug5 << "ExistingRemoteProcess::Open: commandLine = {" << endl;
+    for(size_t i = 0; i < commandLine.size(); ++i)
+        debug5 << "\t" << commandLine[i] << endl;
+    debug5 << "}" << endl;
 
     //
     // Call a user-defined callback function to launch the process.

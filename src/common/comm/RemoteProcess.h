@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -131,6 +131,11 @@ class Connection;
 //    ssh command to the gateway machine instead of to the ssh command to
 //    the remote machine.
 //
+//    Brad Whitlock, Fri Jan 13 14:55:55 PST 2012
+//    I modifed the launching routines to handle SSH separately from the 
+//    regular command line so we can better support gateway machines with
+//    SSH tunneling.
+//
 // ****************************************************************************
 
 class COMM_API RemoteProcess
@@ -157,11 +162,7 @@ public:
     Connection *GetWriteConnection(int i=0) const;
     int  GetProcessId() const;
     void SetProgressCallback(bool (*)(void *, int), void *);
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
     std::map<int,int> GetPortTunnelMap() { return portTunnelMap; }
-#endif
 
     static void SetAuthenticationCallback(void (*)(const char *, const char *, int));    
     static void DisablePTY();
@@ -173,16 +174,18 @@ protected:
     const char *SecureShellArgs() const;
     bool CallProgressCallback(int stage);
     bool HostIsLocal(const std::string &rHost) const;
+    void CreatePortNumbers(int *local, int *remote, int *gateway, int nPorts) const;
+    void CreateSSHCommandLine(stringVector &args, const std::string &rHost,
+                              bool useGateway, const std::string &gatewayHost,
+                              bool manualSSHPort, int sshPort, bool useTunneling);
     void CreateCommandLine(stringVector &args, const std::string &rHost,
                            MachineProfile::ClientHostDetermination chd,
                            const std::string &clientHostName,
-                           bool manualSSHPort,
-                           int sshPort, bool useTunneling, bool useGateway,
-                           int numRead, int numWrite, bool local);
-    virtual void Launch(const std::string &rHost, bool createAsThoughLocal,
-                        bool useGateway, const std::string &gatewayHost,
-                        const std::string &remoteUserName,
-                        const stringVector &commandLine);
+                           bool useTunneling, 
+                           int numRead, int numWrite);
+    virtual void Launch(const stringVector &);
+    void LaunchLocal(const stringVector &);
+    void LaunchRemote(const stringVector &);
 protected:
     int                      listenPortNum;
     std::string              localHost, localUserName;
@@ -194,14 +197,7 @@ private:
     int  MultiThreadedAcceptSocket();
     void CloseListenSocket();
     void ExchangeTypeRepresentations();
-    void LaunchRemote(bool useGateway, const std::string &gatewayHost,
-                      const std::string &remoteUserName,
-                      const stringVector &args);
-    void LaunchLocal(const stringVector &args);
     char **CreateSplitCommandLine(const stringVector &args, int &argc) const;
-    char **CreateSSHCommandLine(const std::string &host,
-                                const std::string &remoteUserName,
-                                const stringVector &args, int &argc) const;
     void DestroySplitCommandLine(char **args, int argc) const;
     char *StrDup(const std::string &) const;
 private:
@@ -214,11 +210,7 @@ private:
     int                      nReadConnections, nWriteConnections;
     bool                   (*progressCallback)(void *, int);
     void                    *progressCallbackData;
-#if defined(PANTHERHACK)
-// Broken on Panther
-#else
     std::map<int,int>        portTunnelMap;
-#endif
 
     static void            (*getAuthentication)(const char *, const char *, int);
     static bool              disablePTY;
