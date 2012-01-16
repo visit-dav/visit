@@ -77,7 +77,7 @@ void VsRegistry::remove(VsH5Group* group) {
   allGroupsShort.erase(group->getShortName());
 }
 
-VsH5Group* VsRegistry::getGroup(std::string name) {
+VsH5Group* VsRegistry::getGroup(const std::string& name) {
   std::string fullName = makeCanonicalName(name);
 
   std::map<std::string, VsH5Group*>::iterator it = allGroups.find(fullName);
@@ -239,7 +239,7 @@ void VsRegistry::remove(VsH5Dataset* dataset) {
   allDatasetsShort.erase(dataset->getShortName());
 }
 
-VsH5Dataset* VsRegistry::getDataset(std::string name) {
+VsH5Dataset* VsRegistry::getDataset(const std::string& name) {
   std::string fullName = makeCanonicalName(name);
 
   std::map<std::string, VsH5Dataset*>::iterator it = allDatasets.find(fullName);
@@ -383,7 +383,7 @@ void VsRegistry::remove(VsMesh* mesh) {
   allMeshesShort.erase(mesh->getShortName());
 }
 
-VsMesh* VsRegistry::getMesh(std::string name) {
+VsMesh* VsRegistry::getMesh(const std::string& name) {
   std::string fullName = makeCanonicalName(name);
 
   std::map<std::string, VsMesh*>::iterator it = allMeshes.find(fullName);
@@ -434,7 +434,7 @@ void VsRegistry::getAllMeshNames(std::vector<std::string>& names)  {
 
 /************* MD MESHES **************/
 
-VsMDMesh* VsRegistry::getMDMesh(std::string name) {
+VsMDMesh* VsRegistry::getMDMesh(const std::string& name) {
   // Make name fully qualified
   std::string fullName = makeCanonicalName(name);
   
@@ -587,7 +587,7 @@ void VsRegistry::remove(VsVariable* variable) {
   allVariablesShort.erase(variable->getShortName());
 }
 
-VsVariable* VsRegistry::getVariable(std::string name) {
+VsVariable* VsRegistry::getVariable(const std::string& name) {
   std::string fullName = makeCanonicalName(name);
 
   std::map<std::string, VsVariable*>::iterator it = allVariables.find(fullName);
@@ -639,7 +639,7 @@ void VsRegistry::getAllVariableNames(std::vector<std::string>& names)  {
 
 /*********** MD VARIABLES ***************/
 
-VsMDVariable* VsRegistry::getMDVariable(std::string name) {
+VsMDVariable* VsRegistry::getMDVariable(const std::string& name) {
   // Make name fully qualified
   std::string fullName = makeCanonicalName(name);
   
@@ -786,7 +786,7 @@ void VsRegistry::remove(VsVariableWithMesh* variable) {
   allVariablesWithMeshShort.erase(variable->getShortName());
 }
 
-VsVariableWithMesh* VsRegistry::getVariableWithMesh(std::string name) {
+VsVariableWithMesh* VsRegistry::getVariableWithMesh(const std::string& name) {
   std::string fullName = makeCanonicalName(name);
 
   std::map<std::string, VsVariableWithMesh*>::iterator it = allVariablesWithMesh.find(fullName);
@@ -836,7 +836,8 @@ void VsRegistry::getAllVariableWithMeshNames(std::vector<std::string>& names)  {
 }
 
 /******************* EXPRESSIONS ************************/
-void VsRegistry::addExpression(std::string name, std::string value) {
+void VsRegistry::addExpression(const std::string& name, 
+                               const std::string& value) {
   //check for duplicates
   std::map<std::string, std::string>::const_iterator it;
   it = allExpressions.find(name);
@@ -923,7 +924,9 @@ void VsRegistry::createComponents() {
   VsLog::debugLog() <<"VsRegistry::createComponents() - Returning." <<std::endl;
 }
   
-void VsRegistry::registerComponent(std::string varName, int componentNumber, std::string userSuppliedName) {
+void VsRegistry::registerComponent(const std::string& varName, 
+                                   int componentNumber, 
+                                   const std::string& userSuppliedName) {
   
   //If the user supplied a name, try to use it
   if (!userSuppliedName.empty()) {
@@ -937,7 +940,9 @@ void VsRegistry::registerComponent(std::string varName, int componentNumber, std
   }
 }
 
-bool VsRegistry::registerComponentInfo(std::string componentName, std::string varName, int componentNumber) {
+bool VsRegistry::registerComponentInfo(const std::string& componentName, 
+                                       const std::string& varName, 
+                                       int componentNumber) {
   //yes, I should use a std::hash_map for this
   
   //first, look for a match and report failure if the name is already registered
@@ -972,7 +977,8 @@ bool VsRegistry::registerComponentInfo(std::string componentName, std::string va
   return true;
 }
 
-void VsRegistry::getComponentInfo(std::string componentName, NamePair* namePair) {
+void VsRegistry::getComponentInfo(const std::string& componentName, 
+                                  NamePair* namePair) {
   //yes, I should use a std::hash_map for this
   
   //look for a match and return the value if the name is registered
@@ -990,7 +996,8 @@ void VsRegistry::getComponentInfo(std::string componentName, NamePair* namePair)
   namePair->second = -1;
 }
 
-std::string VsRegistry::getComponentName(std::string varName, int componentNumber) {
+std::string VsRegistry::getComponentName(const std::string& varName, 
+                                         int componentNumber) {
   for (unsigned int i = 0; i < componentNames.size(); i++) {
     std::pair<std::string, NamePair > foundPair = componentNames[i];
     NamePair tempNamePair = foundPair.second;
@@ -1004,7 +1011,8 @@ std::string VsRegistry::getComponentName(std::string varName, int componentNumbe
   return "";
 }
 
-void VsRegistry::getComponentInfo(std::string varName, int componentNumber, NamePair* namePair) {
+void VsRegistry::getComponentInfo(const std::string& varName, 
+                                  int componentNumber, NamePair* namePair) {
   //yes, I should use a std::hash_map for this
   
   NamePair tempNamePair;
@@ -1026,7 +1034,8 @@ void VsRegistry::getComponentInfo(std::string varName, int componentNumber, Name
   namePair->second = -1;
 }
 
-std::string VsRegistry::getOldComponentName(std::string varName, int componentIndex) {
+std::string VsRegistry::getOldComponentName(const std::string& varName, 
+                                            int componentIndex) {
   //generates an old-style name for the component
   //of the form "varName_index"
   

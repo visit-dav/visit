@@ -40,7 +40,7 @@ public:
   //DATASETS
   void add(VsH5Dataset* obj);
   void remove(VsH5Dataset* obj);
-  VsH5Dataset* getDataset(std::string name);
+  VsH5Dataset* getDataset(const std::string& name);
   void deleteAllDatasets();
   void writeAllDatasets();
   int numDatasets();
@@ -49,7 +49,7 @@ public:
   //GROUPS
   void add(VsH5Group* obj);
   void remove(VsH5Group* obj);
-  VsH5Group* getGroup(std::string name);
+  VsH5Group* getGroup(const std::string& name);
   void deleteAllGroups();
   void writeAllGroups();
   int numGroups();
@@ -60,7 +60,7 @@ public:
   //MESHES
   void add(VsMesh* mesh);
   void remove(VsMesh* mesh);
-  VsMesh* getMesh(std::string name);
+  VsMesh* getMesh(const std::string& name);
   void getAllMeshNames(std::vector<std::string>& names);
   void deleteAllMeshes();
   void writeAllMeshes();  
@@ -71,25 +71,25 @@ public:
   void remove(VsMDMesh* var);
   void buildMDMeshes();
   void writeAllMDMeshes();
-  VsMDMesh* getMDMesh(std::string name);
+  VsMDMesh* getMDMesh(const std::string& name);
   VsMDMesh* getMDParentForMesh(const std::string& name);
   VsMesh* findSubordinateMDMesh(const std::string& name);
   void getAllMDMeshNames(std::vector<std::string>& names);
   int numMDMeshes();
   
   //VARIABLES
-  void add(VsVariable* mesh);
-  void remove(VsVariable* mesh);
-  VsVariable* getVariable(std::string name);
+  void add(VsVariable* variable);
+  void remove(VsVariable* variable);
+  VsVariable* getVariable(const std::string& name);
   void getAllVariableNames(std::vector<std::string>& names);
   void deleteAllVariables();
   void writeAllVariables();  
   int numVariables();
 
   //VARIABLES WITH MESH
-  void add(VsVariableWithMesh* mesh);
-  void remove(VsVariableWithMesh* mesh);
-  VsVariableWithMesh* getVariableWithMesh(std::string name);
+  void add(VsVariableWithMesh* variable);
+  void remove(VsVariableWithMesh* variable);
+  VsVariableWithMesh* getVariableWithMesh(const std::string& name);
   void getAllVariableWithMeshNames(std::vector<std::string>& names);
   void deleteAllVariablesWithMesh();
   void writeAllVariablesWithMesh();  
@@ -100,24 +100,30 @@ public:
   void remove(VsMDVariable* var);
   void buildMDVars();
   void writeAllMDVariables();
-  VsMDVariable* getMDVariable(std::string name);
+  VsMDVariable* getMDVariable(const std::string& name);
   void getAllMDVariableNames(std::vector<std::string>& names);
   int numMDVariables();
   VsVariable* findSubordinateMDVar(const std::string& name);
   
   //VsVars
   void buildExpressions(VsH5Group* group);
-  void addExpression(std::string name, std::string value);
+  void addExpression(const std::string& name, const std::string& value);
   void writeAllExpressions();
   std::map<std::string, std::string>* getAllExpressions();
   int numExpressions();
 
   //Variable components
-  void getComponentInfo(std::string componentName, NamePair* namePair);
-  void getComponentInfo(std::string varName, int componentNumber, NamePair* namePair);
-  std::string getComponentName(std::string varName, int componentNumber);
-  std::string getOldComponentName(std::string varName, int componentIndex);
-  void registerComponent(std::string varName, int componentNumber, std::string userSuppliedName);
+  void getComponentInfo(const std::string& componentName, 
+                        NamePair* namePair);
+  void getComponentInfo(const std::string& varName, 
+                        int componentNumber, NamePair* namePair);
+  std::string getComponentName(const std::string& varName, 
+                               int componentNumber);
+  std::string getOldComponentName(const std::string& varName, 
+                                  int componentIndex);
+  void registerComponent(const std::string& varName, 
+                         int componentNumber, 
+                         const std::string& userSuppliedName);
   void createComponents();
 
   //Time
@@ -163,7 +169,10 @@ private:
   // first element of pair is the user-specified name
   // second element of pair is "true" component name
   std::vector< std::pair<std::string, NamePair > > componentNames;
-  bool registerComponentInfo(std::string componentName, std::string varName, int componentNumber);
+
+  bool registerComponentInfo(const std::string& componentName, 
+                             const std::string& varName, 
+                             int componentNumber);
 
 };
 

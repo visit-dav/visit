@@ -18,16 +18,20 @@
 #ifndef VS_FILE_FORMAT_H
 #define VS_FILE_FORMAT_H
 
+#include <vtkUnsignedCharArray.h>
+#include <vtkPoints.h>
+#include <VsH5Dataset.h>
 //#include <VsH5Reader.h>
 #include <avtSTMDFileFormat.h>
 #include <hdf5.h>
 #include <visit-hdf5.h>
 
-#include <map>
 #include <string>
 #include <vector>
 
 // Forward references to minimize compilation
+class vtkPoints;
+class vtkUnsignedCharArray;
 class vtkDataSet;
 class vtkDataArray;
 class avtDatabaseMetaData;
@@ -187,6 +191,11 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   std::vector<std::string> curveNames;
 
   /**
+   * A list of virtual meshes, attached to staggered fields
+   */
+  std::vector<std::string> nodeOffsetMeshes;
+
+  /**
    * Set the axis labels for a mesh.
    *
    * @param mmd a pointer to the object that needs the axis labels.
@@ -198,7 +207,8 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    */
   vtkDataSet* getUniformMesh(VsUniformMesh*, bool, int*, int*, int*);
   vtkDataSet* getRectilinearMesh(VsRectilinearMesh*, bool, int*, int*, int*);
-  vtkDataSet* getStructuredMesh(VsStructuredMesh*, bool, int*, int*, int*);
+  vtkDataSet* getStructuredMesh(VsStructuredMesh*, bool, int*, int*, int*,
+                                const std::vector<double>&);
   vtkDataSet* getUnstructuredMesh(VsUnstructuredMesh*, bool, int*, int*, int*);
   vtkDataSet* getPointMesh(VsVariableWithMesh*, bool, int*, int*, int*);
   vtkDataSet* getCurve(int domain, const std::string& name);
@@ -229,6 +239,25 @@ class avtVsFileFormat: public avtSTMDFileFormat {
                           int *maxs,
                           int *strides,
                           bool isNodal = true );
+  
+  template <typename TYPE>
+  void fillInMaskNodeArray(const std::vector<int>& gdims,
+                           VsH5Dataset *mask, bool maskIsFortranOrder,
+                           vtkUnsignedCharArray *maskedNodes);
+
+  void fillInMeshNameAndNodeOffset(const std::string& mangledName,
+                                   std::string& meshName, 
+                                   std::vector<double>& nodeOffset) const;
+
+  void buildNodeOffsetMeshList();
+
+  template <typename TYPE>
+    void setStructuredMeshCoords(const std::vector<int>& gdims,
+                                 const TYPE* dataPtr,
+                                 const std::vector<double>& nodeOffset,
+                                 bool isFortranOrder,
+                                 vtkPoints* vpoints);
+
 
 #else
   avtVsFileFormat(const char* dfnm) : avtSTMDFileFormat(&dfnm, 1) {;};

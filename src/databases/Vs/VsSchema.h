@@ -25,6 +25,7 @@ struct VsSchema {
   static std::string kindAtt;
   static std::string meshAtt;
   static std::string maskAtt;
+  static std::string nodeOffsetAtt;
   static std::string centeringAtt; // This is deprecated
   static std::string cellOffsetAtt; // Instead of offsetAtt
   static std::string indexOrderAtt; //component major/minor, index C/Fortran; compMinorC is default

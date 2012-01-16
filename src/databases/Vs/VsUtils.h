@@ -34,9 +34,48 @@ std::string makeCanonicalName(std::string path, std::string name);
 // If the two object names are identical, returns the first
 //std::string getClosestName(std::string name1, std::string name2, std::string target);
 
+/**
+ * Check data type
+ * @param dataType HDF5 data type
+ * @return true if type is double
+ */
 bool isDoubleType(hid_t dataType);
+
+/**
+ * Check data type
+ * @param dataType HDF5 data type
+ * @return true if type is float
+ */
 bool isFloatType(hid_t dataType);
-bool isIntegerType(hid_t dataType);
+
+/**
+ * Check data type
+ * @param dataType HDF5 data type
+ * @return true if type is int
+ */
+bool isIntType(hid_t dataType);
+
+/**
+ * Check data type
+ * @param dataType HDF5 data type
+ * @return true if type is short
+ */
+bool isShortType(hid_t dataType);
+
+/**
+ * Check data type
+ * @param dataType HDF5 data type
+ * @return true if type is char
+ */
+bool isCharType(hid_t dataType);
+
+/**
+ * Check data type
+ * @param dataType HDF5 data type
+ * @return true if type is unsigned char
+ */
+bool isUnsignedCharType(hid_t dataType);
+
 void printType(hid_t dataType);
 
 // Break a string into pieces

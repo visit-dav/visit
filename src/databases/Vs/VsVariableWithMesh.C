@@ -106,11 +106,11 @@ std::string VsVariableWithMesh::getFullName() {
 }
 
 // Find attribute by name, or return NULL if not found
-VsH5Attribute* VsVariableWithMesh::getAttribute(const std::string name) {
+VsH5Attribute* VsVariableWithMesh::getAttribute(const std::string& name) {
   return dataset->getAttribute(name);
 }
 
-std::string VsVariableWithMesh::getStringAttribute(const std::string name) {
+std::string VsVariableWithMesh::getStringAttribute(const std::string& name) {
 
   std::string result("");
 

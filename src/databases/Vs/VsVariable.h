@@ -54,9 +54,9 @@ public:
   std::string getFullName();
 
   /** Find attribute by name, or return NULL if not found */
-  VsH5Attribute* getAttribute(const std::string name);
+  VsH5Attribute* getAttribute(const std::string& name);
 
-  std::string getStringAttribute(const std::string name);
+  std::string getStringAttribute(const std::string& name);
 
   /** Supply debugging output. */
   virtual void write();
@@ -76,6 +76,26 @@ public:
 
   void createComponents();
   size_t getNumComps();
+
+  /**
+   * Get the node offset 
+   * @return offset array
+   */
+  std::vector<double> getNodeOffset() const;
+
+  /**
+   * Inquire if field has node offsets
+   * @return true of field has node offsets
+   */
+  bool hasNodeOffset() const;
+
+  /**
+   * Get the mesh name mangled with the node offsets
+   * @return meshName if there are no node offset, or 
+   *         meshName_withNodeOffset_<offset0>_<offset1>_<offset2>
+   *         if there are offsets
+   */
+  std::string getNodeOffsetMeshName() const;
 
 protected:
   VsVariable(VsH5Dataset* data);
@@ -105,6 +125,15 @@ protected:
   
   /** Fully qualified path to this object */
   std::string path;
+
+  /** lower node offset array (optional) */
+  VsH5Attribute* nodeOffsetAtt;
+
+  /** node offsets with respect to base node */
+  std::vector<double> nodeOffset;
+
+  /** The name with the node offset mangled */
+  std::string nodeOffsetMeshName;
 
 };
 
