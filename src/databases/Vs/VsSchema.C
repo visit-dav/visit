@@ -20,6 +20,7 @@ std::string VsSchema::typeAtt ="vsType";
 std::string VsSchema::kindAtt = "vsKind";
 std::string VsSchema::meshAtt = "vsMesh";
 std::string VsSchema::maskAtt = "vsMask";
+std::string VsSchema::nodeOffsetAtt = "vsNodeOffset";
 
 std::string VsSchema::centeringAtt ="vsCentering";
 std::string VsSchema::indexOrderAtt = "vsIndexOrder";

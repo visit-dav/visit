@@ -19,6 +19,8 @@
 #include <vector>
 #include <string>
 
+#define __CLASS__ "VsVariable::"
+
 VsVariable::VsVariable(VsH5Dataset* data):
   VsRegistryObject(data->registry) {
   indexOrder = VsSchema::compMinorCKey; //default
@@ -30,6 +32,13 @@ VsVariable::VsVariable(VsH5Dataset* data):
 
   dataset = data;
   registry->add(this);
+
+  this->nodeOffsetAtt = NULL;
+  this->nodeOffsetMeshName = "";
+  this->nodeOffset.resize(3);
+  for (size_t i = 0; i < 3; ++i) {
+    this->nodeOffset[i] = 0;
+  }
 }
 
 VsVariable::~VsVariable() {
@@ -99,11 +108,11 @@ std::string VsVariable::getFullName() {
 }
 
 // Find attribute by name, or return NULL if not found
-VsH5Attribute* VsVariable::getAttribute(const std::string name) {
+VsH5Attribute* VsVariable::getAttribute(const std::string& name) {
   return dataset->getAttribute(name);
 }
 
-std::string VsVariable::getStringAttribute(const std::string name) {
+std::string VsVariable::getStringAttribute(const std::string& name) {
   VsH5Attribute* foundAtt = getAttribute(name);
   if (foundAtt == NULL)
     return "";
@@ -117,6 +126,12 @@ void VsVariable::write() {
   VsLog::debugLog() << "    indexOrder = " << indexOrder << std::endl;
   VsLog::debugLog() << "    centering = " << centering << std::endl;
   VsLog::debugLog() << "    meshName = " << meshName << std::endl;
+  VsLog::debugLog() << "    nodeOffsetMeshName = " << nodeOffsetMeshName << std::endl;
+  VsLog::debugLog() << "    nodeOffset = ";
+  for (size_t i = 0; i < nodeOffset.size(); ++i) {
+    VsLog::debugLog() << nodeOffset[i] << " ";
+  }
+  VsLog::debugLog() << std::endl;
 }
 
 // Get user-specified component names
@@ -155,7 +170,9 @@ bool VsVariable::initialize() {
   std::string meshName;
   meshNameAtt->getStringValue(&meshName);
   this->meshName = makeCanonicalName(dataset->getPath(), meshName);
-  
+  // if no offsets
+  this->nodeOffsetMeshName = this->meshName;
+
   //Does mesh exist?
   this->meshMeta = registry->getMesh(this->meshName);
   if (!this->meshMeta) {
@@ -184,13 +201,61 @@ bool VsVariable::initialize() {
     centeringAtt->getStringValue(&(this->centering));
   }
 
+  this->nodeOffsetAtt = dataset->getAttribute(VsSchema::nodeOffsetAtt);
+  if (this->nodeOffsetAtt) {
+    std::vector<float> nodeOffsetFloat(3, 0);
+    std::vector<int> nodeOffsetInt(3, 0);
+    herr_t err = this->nodeOffsetAtt->getDoubleVectorValue(&this->nodeOffset);
+    if (err < 0) {
+      herr_t err2 = this->nodeOffsetAtt->getFloatVectorValue(&nodeOffsetFloat);
+      if (err2 < 0) {
+        herr_t err3 = this->nodeOffsetAtt->getIntVectorValue(&nodeOffsetInt);
+        if (err3 < 0) {
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Cannot get vector nodeOffset." << std::endl;
+        }
+        else {
+          // nodeOffset is of type int vector
+          // cast into double vectot
+          for (size_t i = 0; i < nodeOffsetInt.size(); ++i) {
+            this->nodeOffset[i] = nodeOffsetInt[i];
+          }
+        }
+      }
+      else {
+        // nodeOffset is of type float vector
+        // cast into double vector
+        for (size_t i = 0; i < nodeOffsetFloat.size(); ++i) {
+          this->nodeOffset[i] = nodeOffsetFloat[i];
+        }
+      }
+    }
+
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "vector nodeOffset is " 
+                      << nodeOffset[0] << " " 
+                      << nodeOffset[1] << " " 
+                      << nodeOffset[2] << std::endl;
+
+    if (this->hasNodeOffset()) {
+      // create a new mesh whose name contains the offsets 
+      std::ostringstream oss;
+      for (size_t i = 0; i < this->nodeOffset.size(); ++i) {
+        oss << "_" << this->nodeOffset[i];
+      }
+      this->nodeOffsetMeshName += "$_withNodeOffset" + oss.str();
+    }
+
+    VsLog::debugLog() << "VsVariable::initialize() node offset mesh is " 
+                      << this->nodeOffsetMeshName << std::endl;
+  }
+
   //Get user-specified labels for components
   //labels is a comma-delimited list of strings
   VsH5Attribute* componentNamesAtt = dataset->getAttribute(VsSchema::labelsAtt);
   if (componentNamesAtt) {
     std::string names;
     componentNamesAtt->getStringValue(&names);
-    
     tokenize(names, ',', this->labelNames);
   }
   
@@ -312,4 +377,28 @@ void VsVariable::createComponents() {
       registry->registerComponent(getFullName(), i, getLabel(i));
     }
   }
+}
+
+std::vector<double> VsVariable::getNodeOffset() const
+{
+  return this->nodeOffset;
+}
+
+bool VsVariable::hasNodeOffset() const
+{
+  double sum = 0;
+  for (size_t i = 0; i < this->nodeOffset.size(); ++i) {
+    sum += std::abs(this->nodeOffset[i]);
+  }
+  if (sum == 0) {
+    return false;
+  }
+  else {
+    return true;
+  }
+}
+
+std::string VsVariable::getNodeOffsetMeshName() const
+{
+  return this->nodeOffsetMeshName;
 }

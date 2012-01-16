@@ -27,6 +27,11 @@ public:
 
   virtual void getMeshDataDims(std::vector<int>& dims);
   virtual void getNumMeshDims(std::vector<int>& dims);
+
+  /**
+   * Get the mask variable name
+   * @return name or empty string if no mask
+   */
   virtual std::string getMaskName();
 
 private:
