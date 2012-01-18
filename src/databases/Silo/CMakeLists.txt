@@ -26,6 +26,7 @@ ${COMMON_SOURCES}
 avtSiloFileFormat.C
 avtSiloMBObjectCache.C
 avtSiloOptions.C
+avtSiloWriter.C
 )
 
 INCLUDE_DIRECTORIES(
