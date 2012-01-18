@@ -54,6 +54,8 @@
 #include <string>
 #include <vector>
 
+#include <avtSiloMBObjectCache.h>
+
 class     vtkUnstructuredGrid;
 
 class     avtFacelist;
@@ -187,7 +189,7 @@ typedef struct _GroupInfo
 //    Mark C. Miller, Wed Feb  6 12:27:09 PST 2008
 //    Added topDir data member for case where entire time series is in 
 //    a single silo file.
-//    
+//
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Added 'using' statements (above) and removed all 'std::' where
 //    appropriate. Added GetNodelistVars, AddNodelistEnumerations
@@ -257,6 +259,11 @@ typedef struct _GroupInfo
 //
 //    Mark C. Miller, Sun Aug 29 23:19:50 PDT 2010
 //    Added method to expand (material) subsetted ucd variables.
+//
+//    Cyrus Harrison,
+//    Limited support for Silo nameschemes, use new multi block cache data
+//    structures.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -319,14 +326,10 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     std::vector<int>                     blocksForMesh;
     std::map<std::string,std::vector<int> >   blocksForMultivar;
 
-    std::vector<DBmultimesh *>           multimeshes;
-    std::vector<std::string>             multimesh_name;
-    std::vector<DBmultivar *>            multivars;
-    std::vector<std::string>             multivar_name;
-    std::vector<DBmultimat *>            multimats;
-    std::vector<std::string>             multimat_name;
-    std::vector<DBmultimatspecies *>     multimatspecies;
-    std::vector<std::string>             multimatspec_name;
+    avtSiloMBObjectCache multimeshCache;
+    avtSiloMBObjectCache multivarCache;
+    avtSiloMBObjectCache multimatCache;
+    avtSiloMBObjectCache multispecCache;
 
     std::map<std::string, std::string>   multivarToMultimeshMap;
 
@@ -375,11 +378,13 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  BroadcastGlobalInfo(avtDatabaseMetaData*);
     void                  StoreMultimeshInfo(const char *const dirname,
                                              const char *const name_w_dir,
-                                             int meshnum, const DBmultimesh *const mm);
+                                             int meshnum,
+                                             avtSiloMultiMeshCacheEntry *obj);
     void                  AddCSGMultimesh(const char *const dirname,
                                           const char *const multimesh_name,
                                           avtDatabaseMetaData *md,
-                                          const DBmultimesh *const mm, DBfile *dbfile);
+                                          avtSiloMultiMeshCacheEntry *mm_ent,
+                                          DBfile *dbfile);
 
     vtkDataArray         *GetNodelistsVar(int);
     vtkDataArray         *GetAnnotIntNodelistsVar(int, std::string);
@@ -437,9 +442,9 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     void                  GetMultivarToMultimeshMap(DBfile *);
 
-    avtFacelist          *CalcExternalFacelist(DBfile *, char *);
-    avtMaterial          *CalcMaterial(DBfile *, char *, const char *, int dom);
-    avtSpecies           *CalcSpecies(DBfile *, char *);
+    avtFacelist          *CalcExternalFacelist(DBfile *, const char *);
+    avtMaterial          *CalcMaterial(DBfile *, const char *, const char *, int dom);
+    avtSpecies           *CalcSpecies(DBfile *, const char *);
     vtkDataArray         *GetGlobalNodeIds(int, const char *);
     vtkDataArray         *GetGlobalZoneIds(int, const char *);
 
@@ -448,24 +453,33 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     void                  GetQuadGhostZones(DBquadmesh *, vtkDataSet *);
     void                  VerifyQuadmesh(DBquadmesh *, const char *);
-    void                  DetermineFileAndDirectory(char *, DBfile *&, const char *, char *&,
-                              bool *alloc=0);
-    void                  DetermineFilenameAndDirectory(char *, const char *,
-                              char *, char *&, bool *alloc=0);
+
+    void                  DetermineFileAndDirectory(const char *input,
+                                                    const char *mesh_dirname,
+                                                    DBfile *&dbfile_out,
+                                                    std::string &location_out);
+
+    void                  DetermineFilenameAndDirectory(const char *input,
+                                                        const char *mesh_dirname,
+                                                        std::string &filename_out,
+                                                        std::string &location_out);
+
     void                  GetRelativeVarName(const char *,const char *,char *);
     char                 *AllocAndDetermineMeshnameForUcdmesh(int, const char *);
 
-    std::string           DetermineMultiMeshForSubVariable(DBfile*,const char*,
-                                                      char**,int, const char*);
-    int                   GetMeshtype(DBfile *, char *);
-    void                  GetMeshname(DBfile *, char *, char *);
+    std::string           DetermineMultiMeshForSubVariable(DBfile *dbfile,
+                                                           const char *name,
+                                                           avtSiloMBObjectCacheEntry *obj,
+                                                           const char *curdir);
+    int                   GetMeshtype(DBfile *, const char *);
+    void                  GetMeshname(DBfile *, const char *, char *);
     void                 *GetComponent(DBfile *, char *, const char *);
 
     void                  GetTimeVaryingInformation(DBfile *,
                               avtDatabaseMetaData *md = NULL);
     void                  GetVectorDefvars(const char *);
-    void                  RegisterDomainDirs(const char * const *, int,
-                                             const char*);
+    void                  RegisterDomainDirs(avtSiloMBObjectCacheEntry *obj,
+                                             const char *dirname);
     bool                  ShouldGoToDir(const char *);
     void                  ReadGlobalInformation(DBfile *);
 
@@ -473,24 +487,23 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                               std::string meshname);
 
     void                  GetMeshHelper(int *domain, const char *m, DBmultimesh **mm, int *type,
-                              DBfile **_domain_file, char **_directory_mesh,
-                              bool *_allocated_directory_mesh);
+                              DBfile **_domain_file, std::string &directory_mesh_out);
     void                  AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
-                              std::string meshname, DBmultimesh *mm);
+                              std::string meshname, avtSiloMultiMeshCacheEntry *obj);
 
-    DBmultimesh          *GetMultimesh(const char *path, const char *name);
-    DBmultimesh          *QueryMultimesh(const char *path, const char *name);
-    void                  RemoveMultimesh(DBmultimesh *mm);
-    DBmultivar           *GetMultivar(const char *path, const char *name);
-    DBmultivar           *QueryMultivar(const char *path, const char *name);
-    void                  RemoveMultivar(DBmultivar *mv);
-    DBmultimat           *GetMultimat(const char *path, const char *name);
-    DBmultimat           *QueryMultimat(const char *path, const char *name);
-    void                  RemoveMultimat(DBmultimat *mm);
-    DBmultimatspecies    *GetMultimatspec(const char *path, const char *name);
-    DBmultimatspecies    *QueryMultimatspec(const char *path, const char *name);
-    void                  RemoveMultimatspec(DBmultimatspecies *ms);
-    void                  CheckForTimeVaryingMetadata(DBfile *toc);
+    avtSiloMultiMeshCacheEntry *GetMultiMesh(const char *path, const char *name);
+    avtSiloMultiMeshCacheEntry *QueryMultiMesh(const char *path, const char *name);
+
+    avtSiloMultiVarCacheEntry  *GetMultiVar(const char *path, const char *name);
+    avtSiloMultiVarCacheEntry  *QueryMultiVar(const char *path, const char *name);
+
+    avtSiloMultiMatCacheEntry  *GetMultiMat(const char *path, const char *name);
+    avtSiloMultiMatCacheEntry  *QueryMultiMat(const char *path, const char *name);
+
+    avtSiloMultiSpecCacheEntry *GetMultiSpec(const char *path, const char *name);
+    avtSiloMultiSpecCacheEntry *QueryMultiSpec(const char *path, const char *name);
+
+    void                        CheckForTimeVaryingMetadata(DBfile *toc);
 };
 
 
