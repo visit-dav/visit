@@ -3783,6 +3783,7 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
         avtSiloMultiSpecCacheEntry *ms_ent;
         TRY
         {
+            bool valid_var = true;
             ms_ent = GetMultiSpec(dirname, multimatspecies_names[i]);
 
             if(ms_ent != NULL )
@@ -3800,7 +3801,6 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
 
             // Find the first non-empty mesh
             int meshnum = 0;
-            bool valid_var = true;
             string mb_specname = ms_ent->GenerateName(meshnum);
             while ( mb_specname  == "EMPTY")
             {
