@@ -361,12 +361,36 @@ avtSTSDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
 //  Programmer: Hank Childs
 //  Creation:   December 20, 2011
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jan 18 12:34:45 PST 2012
+//    Fixed issue with databases that provide their own parallelism.
+//
 // ****************************************************************************
 
 std::string
 avtSTSDFileFormatInterface::CreateCacheNameIncludingSelections(std::string var, 
                                                                int ts, int dom)
 {
+    //
+    // dom == -1 is used to indicate something that is valid over all domains.
+    // Since there is only a single domain, all domains can be just the one
+    // domain.
+    //
+    if (dom == -1)
+    {
+        dom = 0;
+    }
+
+    if (dom < 0 || dom >= nBlocks)
+    {
+        if (dom == PAR_Rank())
+            // Format is doing its own domain decomposition.
+            dom = 0;
+        else
+            EXCEPTION2(BadIndexException, dom, nBlocks);
+    }
+
     return timesteps[ts][dom]->CreateCacheNameIncludingSelections(var);
 }
 
