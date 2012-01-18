@@ -16,6 +16,7 @@ SET(LIBM_SOURCES
 SiloMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtSiloFileFormat.C
+avtSiloMBObjectCache.C
 avtSiloOptions.C
 )
 
@@ -23,7 +24,7 @@ SET(LIBE_SOURCES
 SiloEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtSiloFileFormat.C
-avtSiloWriter.C
+avtSiloMBObjectCache.C
 avtSiloOptions.C
 )
 
