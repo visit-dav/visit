@@ -87,6 +87,11 @@ function error
 # Programmer: Hari Krishnan,                                                  #
 # Date: Thu Dec 15 14:38:36 PST 2011                                          #
 #                                                                             #
+# Modifications:                                                              #
+#   Eric Brugger, Wed Jan 18 08:17:48 PST 2012                                #
+#   I re-enabled the code that replaces dashes with underscores in the        #
+#   name of the enable function.                                              #
+#                                                                             #
 # *************************************************************************** #
 #global argument list for extra args..
 declare -a extra_commandline_args
@@ -100,9 +105,8 @@ function add_extra_commandline_args
    return
   fi
 
-  local enable_func="bv_$1_$2"
   #replace all occurrences of "-" with "_"
-  #local enable_func="bv_$1_${2//-/_}"
+  local enable_func="bv_$1_${2//-/_}"
 
   #check if function exists..
   #maybe this should be moved to build_visit rather than here..

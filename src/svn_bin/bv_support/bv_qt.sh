@@ -19,7 +19,7 @@ DO_QT="no"
 ON_QT="off"
 }
 
-function bv_qt_system-qt
+function bv_qt_system_qt
 {
    info "Using System Qt"
 
@@ -36,7 +36,7 @@ function bv_qt_system-qt
    QT_FILE=""
 }
 
-function bv_qt_alt-qt-dir
+function bv_qt_alt_qt_dir
 {
     info "Using qt from alternative directory $1"
 
