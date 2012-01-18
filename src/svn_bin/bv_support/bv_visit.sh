@@ -41,8 +41,6 @@ function bv_visit_info
     ############################################################################
 
     export VISIT_VERSION=${VISIT_VERSION:-"2.4.0"}
-    #set this value to blank to get trunk?
-    export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
     
     #export VISIT_COMPATIBILITY_VERSION=${VISIT_COMPATIBILITY_VERSION:-"2.4.0"}
     #export VISIT_BUILD_DIR=${VISIT_BUILD_DIR:-"visit"}
@@ -94,12 +92,46 @@ function bv_visit_host_profile
 #prepare the module and check whether it is built or is ready to be built.
 function bv_visit_ensure_built_or_ready
 {
-    if [[ "VISIT" == "yes" ]] ; then
-        ensure_built_or_ready "VISIT" $VISIT_VERSION $VISIT_BUILD_DIR $VISIT_FILE
-        if [[ $? != 0 ]] ; then
-            ANY_ERRORS="yes"
-            DO_VISIT="no"
-            error "Unable to build VISIT.  ${VISIT_FILE} not found."
+    # Check-out the latest svn sources, before building VisIt
+    if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
+        if [[ -d src ]] ; then
+           info "Found existing VisIt SVN src directory, using that . . ."
+        else
+           # Print a dialog screen
+           info "SVN check-out of VisIt ($SVN_ROOT_PATH/$SVN_SOURCE_PATH) . . ."
+           if [[ "$DO_REVISION" == "yes" && "$SVNREVISION" != "" ]] ; then
+               svn co --quiet --non-interactive --revision "$SVNREVISION" \
+                  $SVN_ROOT_PATH/$SVN_SOURCE_PATH
+           else
+               svn co --quiet --non-interactive $SVN_ROOT_PATH/$SVN_SOURCE_PATH
+           fi
+           if [[ $? != 0 ]] ; then
+               warn "Unable to build VisIt. SVN download failed."
+               return 1
+           fi
+        fi
+
+    # Build using (the assumed) existing VisIt svn "src" directory
+    elif [[ -d src ]] ; then
+           info "Found VisIt SVN src directory found, using it."
+           #resetting any values that have mixup the build between Trunk and RC
+           VISIT_FILE="" #erase any accidental setting of these values
+           USE_VISIT_FILE="no"
+           ON_USE_VISIT_FILE="off"
+           DO_SVN="yes" #if src directory exists it may have come from svn..
+
+    # Build using a VisIt source tarball
+    else
+        if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
+            info \
+"Got VisIt source code. Lets look for 3rd party libraries."
+        else
+            download_file $VISIT_FILE
+            if [[ $? != 0 ]] ; then
+               warn \
+"Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
+               return 1
+            fi
         fi
     fi
 }

@@ -619,59 +619,6 @@ function check_required_3rdparty
 
 
 # *************************************************************************** #
-#                   Function 1.0, check_visit_source_code                     #
-# --------------------------------------------------------------------------- #
-# This function will check to make sure that the VisIt source code            #
-# actually exists.                                                            #
-# *************************************************************************** #
-
-function check_visit_source_code
-{
-    # Check-out the latest svn sources, before building VisIt
-    if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        if [[ -d src ]] ; then
-           info "Found existing VisIt SVN src directory, using that . . ."
-        else
-           # Print a dialog screen
-           info "SVN check-out of VisIt ($SVN_ROOT_PATH/$SVN_SOURCE_PATH) . . ."
-           if [[ "$DO_REVISION" == "yes" && "$SVNREVISION" != "" ]] ; then
-               svn co --quiet --non-interactive --revision "$SVNREVISION" \
-                  $SVN_ROOT_PATH/$SVN_SOURCE_PATH
-           else
-               svn co --quiet --non-interactive $SVN_ROOT_PATH/$SVN_SOURCE_PATH
-           fi
-           if [[ $? != 0 ]] ; then
-               warn "Unable to build VisIt.  SVN download failed."
-               return 1
-           fi
-        fi
-
-    # Build using (the assumed) existing VisIt svn "src" directory
-    elif [[ -d src ]] ; then
-           info "Found VisIt SVN src directory found, using it."
-           #resetting any values that have mixup the build between Trunk and RC
-           VISIT_FILE="" #erase any accidental setting of these values
-           USE_VISIT_FILE="no"
-           ON_USE_VISIT_FILE="off"
-           DO_SVN="yes" #if src directory exists it may have come from svn..
-
-    # Build using a VisIt source tarball
-    else
-        if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
-            info \
-"Got VisIt source code. Lets look for 3rd party libraries."
-        else
-            download_file $VISIT_FILE
-            if [[ $? != 0 ]] ; then
-               warn \
-"Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
-               return 1
-            fi
-        fi
-    fi
-}
-
-# *************************************************************************** #
 #                         Function 1.0, check_files                           #
 # --------------------------------------------------------------------------- #
 # This function will check to make sure that all of the necessary files       #
@@ -686,7 +633,7 @@ function check_files
     fi
 
     if [[ "$DO_VISIT" == "yes" ]] ;  then
-       check_visit_source_code
+       bv_visit_ensure_built_or_ready
        if [[ $? != 0 ]]; then
            return 1
        fi

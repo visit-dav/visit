@@ -323,6 +323,8 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
+export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
+
 
 for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
 do
