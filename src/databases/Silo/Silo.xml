@@ -22,6 +22,7 @@
       avtSiloFileFormat.C
       avtSiloMBObjectCache.C
       avtSiloOptions.C
+      avtSiloWriter.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

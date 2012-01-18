@@ -11683,6 +11683,9 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Cyrus Harrison, Wed Jan 18 08:40:38 PST 2012
+//    Fix string compare to examine the proper substring.
+//
 // ****************************************************************************
 
 void
@@ -11716,7 +11719,8 @@ avtSiloFileFormat::DetermineFilenameAndDirectory(const char *input,
         }
         else
         {
-            if ( mesh_dir_std != input_std )
+            // check if input_std doesn't start with mesh_dir_std
+            if ( input_std.compare(0, mesh_dir_std.length(), mesh_dir_std) != 0)
             {
                 location_out = mesh_dir_std + string("/") +  input_std;
             }
