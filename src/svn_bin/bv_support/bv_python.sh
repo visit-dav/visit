@@ -19,7 +19,7 @@ DO_PYTHON="no"
 ON_PYTHON="off"
 }
 
-function bv_python_system-python
+function bv_python_system_python
 {
   info "Using system python"
   bv_python_enable
