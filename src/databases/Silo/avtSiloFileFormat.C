@@ -1617,12 +1617,15 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
 //    Mark C. Miller, Mon Nov  9 10:41:48 PST 2009
 //    Added 'dontForceSingle' to call to HandleMrgtree
 //
-//   Cyrus Harrison, Wed Mar 24 10:41:20 PDT 2010
-//   Set haveAmrGroupInfo if we have amr level info.
+//    Cyrus Harrison, Wed Mar 24 10:41:20 PDT 2010
+//    Set haveAmrGroupInfo if we have amr level info.
 //
-//   Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
-//   Limited support for Silo nameschemes, use new multi block cache data
-//   structures.
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Add protections for multi-block objects with zero blocks
+//
+//    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
+//    Limited support for Silo nameschemes, use new multi block cache data
+//    structures.
 //
 // ****************************************************************************
 void
@@ -1685,7 +1688,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
             {
                 AddCSGMultimesh(dirname, multimesh_names[i], md, mm_ent, dbfile);
             }
-            else
+            else if (mm)
             {
                 avtMeshType mt = AVT_UNKNOWN_MESH;
                 avtMeshCoordType mct = AVT_XY;
@@ -2626,6 +2629,9 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
 //    Don't call GetRestrictedMaterialIndices on individual blocks if we
 //    already have 'em from the multi-block.
 //
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Add protections for multi-block objects with zero blocks
+//
 //    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
@@ -2713,7 +2719,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
             // the associated material numbers and indi
             //
             vector<int> selectedMats;
-            if (mv->region_pnames)
+            if (mv && mv->region_pnames)
                 valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
                     meshname.c_str(), mv->region_pnames, &selectedMats);
 
@@ -2726,7 +2732,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
             DBfile *correctFile = dbfile;
             string  varUnits;
             int nvals = 1;
-            if (valid_var)
+            if (valid_var && mv)
             {
                 DetermineFileAndDirectory(mb_varname.c_str(),"",
                                           correctFile, realvar);
@@ -2830,7 +2836,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                                                            meshname, centering);
                 smd->validVariable = valid_var;
                 smd->treatAsASCII = treatAsASCII;
-                smd->hideFromGUI = mv->guihide;
+                smd->hideFromGUI = mv ? mv->guihide : 0;
                 smd->matRestricted = selectedMats;
                 if(varUnits != "")
                 {
@@ -2852,7 +2858,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                 avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                                  meshname, centering, nvals);
                 vmd->validVariable = valid_var;
-                vmd->hideFromGUI = mv->guihide;
+                vmd->hideFromGUI = mv ? mv->guihide: 0;
                 vmd->matRestricted = selectedMats;
                 if(varUnits != "")
                 {
@@ -3417,6 +3423,9 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
 //    Cyrus Harrison, Tue Nov 24 14:05:28 PST 2009
 //    Added guard to avoid crash from unset material name.
 //
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Add protections for multi-block objects with zero blocks
+//
 //    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
@@ -3457,7 +3466,7 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             }
 
 
-            if (MultiMatHasAllMatInfo(mm) < 3)
+            if (MultiMatHasAllMatInfo(mm) < 3 && mm->nmats )
             {
                 // Find the first non-empty mesh
                 int meshnum = 0;
@@ -3752,6 +3761,9 @@ avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
 //    Mark C. Miller Tue Mar 30 16:28:48 PDT 2010
 //    Temporarily reset to using DB_ALL error level as DB_TOP is causing hangs.
 //
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Add protections for multi-block objects with zero blocks
+//
 //    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
@@ -3778,10 +3790,8 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
 
             if (ms == NULL)
             {
-                char msg[256];
-                SNPRINTF(msg,sizeof(msg),"Unable to read multimat-species object \"%s\"",
-                    multimatspecies_names[i]);
-                EXCEPTION1(SiloException,msg);
+                valid_var = false;
+                ms = DBAllocMultimatspecies(0);
             }
 
             char *name_w_dir = GenerateName(dirname, multimatspecies_names[i], topDir.c_str());
@@ -10180,6 +10190,10 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
 //    Mark C. Miller, Mon Mar 29 17:28:33 PDT 2010
 //    Fixed cut-n-paste error where arbMeshCellReMap entry was NOT erased
 //    at the end of this routine if no new points were inserted.
+//
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Support proper face order for negative index case.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
@@ -10346,7 +10360,9 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 nloff = nloffs[first4NodeFace<0?~first4NodeFace:first4NodeFace];
                 for (j = 0; j < 4; j++)
                 {
-                    nids[j] = phzl->nodelist[nloff+j];
+                    // We need to take 'em in reverse order if face index is negative
+                    int n = first4NodeFace<0?nloff+3-j:nloff+j;
+                    nids[j] = phzl->nodelist[n];
                     nodemap.erase(nids[j]);
                 }
                 // Get last node from only remaining node in nodemap
@@ -10360,11 +10376,19 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 // Get first 3 nodes from first3NodeFace
                 nloff = nloffs[first3NodeFace<0?~first3NodeFace:first3NodeFace]; 
                 for (j = 0; j < 3; j++)
-                    nids[j] = phzl->nodelist[nloffs[nloff]+j];
+                {
+                    // We need to take 'em in reverse order if face index is negative
+                    int n = first3NodeFace<0?nloff+2-j:nloff+j;
+                    nids[j] = phzl->nodelist[n];
+                }
                 // Get next 3 nodes from opposing3NodeFace 
                 nloff = nloffs[opposing3NodeFace<0?~opposing3NodeFace:opposing3NodeFace];
                 for (j = 0; j < 3; j++)
-                    nids[3+j] = phzl->nodelist[nloffs[nloff]+j];
+                {
+                    // We need to take 'em in reverse order if face index is negative
+                    int n = opposing3NodeFace<0?nloff+2-j:nloff+j;
+                    nids[3+j] = phzl->nodelist[n];
+                }
                 ArbInsertWedge(ugrid, nids, ocdata, cellReMap);
             }
             else if (fcnt == 6 && nodemap.size() == 8 && 
@@ -10373,11 +10397,19 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 // Get first 4 nodes from first4NodeFace
                 nloff = nloffs[first4NodeFace<0?~first4NodeFace:first4NodeFace];
                 for (j = 0; j < 4; j++)
-                    nids[j] = phzl->nodelist[nloff+j];
+                {
+                    // We need to take 'em in reverse order if face index is negative
+                    int n = first4NodeFace<0?nloff+3-j:nloff+j;
+                    nids[j] = phzl->nodelist[n];
+                }
                 // Get next 4 nodes from opposing4NodeFace
                 nloff = nloffs[opposing4NodeFace<0?~opposing4NodeFace:opposing4NodeFace];
                 for (j = 0; j < 4; j++)
-                    nids[4+j] = phzl->nodelist[nloff+j];
+                {
+                    // We need to take 'em in reverse order if face index is negative
+                    int n = opposing4NodeFace<0?nloff+3-j:nloff+j;
+                    nids[4+j] = phzl->nodelist[n];
+                }
                 ArbInsertHex(ugrid, nids, ocdata, cellReMap);
             }
             else                        // Arbitrary
@@ -13693,6 +13725,9 @@ avtSiloFileFormat::QueryMultiMesh(const char *path, const char *name)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Add protections for multi-block objects with zero blocks
+//
 //    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
@@ -13719,8 +13754,15 @@ avtSiloFileFormat::GetMultiMesh(const char *path, const char *name)
     DBmultimesh *mm = DBGetMultimesh(dbfile, full_path.c_str());
     if(mm != NULL)
     {
-        cache_ent = new avtSiloMultiMeshCacheEntry(dbfile,mm);
-        multimeshCache.AddEntry(full_path,cache_ent);
+        if(mm->nblocks > 0)
+        {
+            cache_ent = new avtSiloMultiMeshCacheEntry(dbfile,mm);
+            multimeshCache.AddEntry(full_path,cache_ent);
+        }
+        else
+        {
+            DBFreeMultimesh(mm);
+        }
     }
     return cache_ent;
 }
@@ -13770,6 +13812,9 @@ avtSiloFileFormat::QueryMultiVar(const char *path, const char *name)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Add protections for multi-block objects with zero blocks
+//
 //    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
@@ -13796,8 +13841,17 @@ avtSiloFileFormat::GetMultiVar(const char *path, const char *name)
     DBmultivar *mv = DBGetMultivar(dbfile, full_path.c_str());
     if(mv != NULL)
     {
-        cache_ent = new avtSiloMultiVarCacheEntry(dbfile,mv);
-        multivarCache.AddEntry(full_path,cache_ent);
+        if(mv->nvars > 0)
+        {
+            cache_ent = new avtSiloMultiVarCacheEntry(dbfile,mv);
+            multivarCache.AddEntry(full_path,cache_ent);
+        }
+        else
+        {
+            DBFreeMultivar(mv);
+        }
+
+        
     }
     return cache_ent;
 }
@@ -13848,10 +13902,12 @@ avtSiloFileFormat::QueryMultiMat(const char *path, const char *name)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Add protections for multi-block objects with zero blocks
+//
 //    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
-
 //
 // ****************************************************************************
 
@@ -13875,8 +13931,15 @@ avtSiloFileFormat::GetMultiMat(const char *path, const char *name)
     DBmultimat *mm = DBGetMultimat(dbfile, full_path.c_str());
     if(mm != NULL)
     {
-        cache_ent = new avtSiloMultiMatCacheEntry(dbfile,mm);
-        multimatCache.AddEntry(full_path,cache_ent);
+        if(mm->nmats > 0)
+        {
+            cache_ent = new avtSiloMultiMatCacheEntry(dbfile,mm);
+            multimatCache.AddEntry(full_path,cache_ent);
+        }
+        else
+        {
+            DBFreeMultimat(mm);
+        }
     }
     return cache_ent;
 }
@@ -13897,7 +13960,6 @@ avtSiloFileFormat::GetMultiMat(const char *path, const char *name)
 //    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
-
 //
 // ****************************************************************************
 
@@ -13927,6 +13989,13 @@ avtSiloFileFormat::QueryMultiSpec(const char *path, const char *name)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Mark C. Miller, Wed Nov  9 21:30:45 PST 2011
+//    Add protections for multi-block objects with zero blocks
+//
+//    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
+//    Limited support for Silo nameschemes, use new multi block cache data
+//    structures.
+//
 // ****************************************************************************
 
 avtSiloMultiSpecCacheEntry *
@@ -13949,8 +14018,15 @@ avtSiloFileFormat::GetMultiSpec(const char *path, const char *name)
     DBmultimatspecies *ms = DBGetMultimatspecies(dbfile, full_path.c_str());
     if(ms != NULL)
     {
-        cache_ent = new avtSiloMultiSpecCacheEntry(dbfile,ms);
-        multispecCache.AddEntry(full_path,cache_ent);
+        if(ms->nspec > 0)
+        {
+            cache_ent = new avtSiloMultiSpecCacheEntry(dbfile,ms);
+            multispecCache.AddEntry(full_path,cache_ent);
+        }
+        else
+        {
+            DBFreeMultimatspecies(ms);
+        }
     }
     return cache_ent;
 }
