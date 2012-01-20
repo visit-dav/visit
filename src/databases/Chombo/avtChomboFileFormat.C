@@ -1289,7 +1289,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 
         for (int d=0; d < dimension; ++d)
             cs[d] = dx[level]*aspectRatio[d];
-        dn-SetLevelCellSizes(cs);
+        dn->SetLevelCellSizes(level, cs);
     }
 
     //
