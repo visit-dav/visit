@@ -114,6 +114,10 @@ class vtkDataArray;
 //    access level refinement ratios. In constructor pass arguments directly
 //    instead of creating object to be copied.
 //
+//    Gunther H. Weber, Fri Jan 20 11:16:03 PST 2012
+//    Pass arrays to SetLevelRefinementRatios() and SetLevelCellSizes() by
+//    const reference instead of copy.
+//
 // ****************************************************************************
 
 typedef struct {
@@ -141,13 +145,13 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
         void          SetNumDimensions(int numDims)
                           { numDimensions = numDims; };
 
-        void          SetLevelRefinementRatios(int level, std::vector<int> ratios)
+        void          SetLevelRefinementRatios(int level, const std::vector<int>& ratios)
                           { levelRatios[level] = ratios; };
         const std::vector<int>&
                       GetLevelRefinementRatios(int level)
                           { return levelRatios[level]; }
 
-        void          SetLevelCellSizes(int level, std::vector<double> sizes)
+        void          SetLevelCellSizes(int level, const std::vector<double>& sizes)
                           { levelCellSizes[level] = sizes; };
         const std::vector<double>&
                       GetLevelCellSizes(int level)
