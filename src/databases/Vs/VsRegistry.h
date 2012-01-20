@@ -94,7 +94,15 @@ public:
   void deleteAllVariablesWithMesh();
   void writeAllVariablesWithMesh();  
   int numVariablesWithMesh();
-  
+
+  // TRANSFORMED MESH NAMES
+  bool registerTransformedMeshName(std::string transformedMeshName, std::string origMeshName);
+  std::string getOriginalMeshName(std::string transformedMeshName);
+
+  // TRANSFORMED VAR NAMES
+  bool registerTransformedVarName(std::string transformedVarName, std::string origVarName);
+  std::string getOriginalVarName(std::string transformedVarName);
+
   //MD VARIABLES
   void add(VsMDVariable* var);
   void remove(VsMDVariable* var);
@@ -159,6 +167,9 @@ private:
 
   std::map<std::string, std::string> allExpressions;
   
+  std::map<std::string, std::string> transformedMeshNames;
+  std::map<std::string, std::string> transformedVarNames;
+
   //tracks whether time data has been read for this database
   // a value of -1 indicates no time data is available
   //Named timeValue because "time" is a typedef

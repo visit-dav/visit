@@ -73,6 +73,9 @@ struct VsSchema {
     static std::string axis2DefaultName;
 
     static std::string transformKey;
+    static std::string transformedMeshKey;
+
+    static std::string zrphiTransformKey;
   };
 
   struct Unstructured {

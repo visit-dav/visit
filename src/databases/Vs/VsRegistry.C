@@ -835,6 +835,70 @@ void VsRegistry::getAllVariableWithMeshNames(std::vector<std::string>& names)  {
     names.push_back(it->first);
 }
 
+/********************* TRANSFORMED MESH NAMES ************************/
+bool VsRegistry::registerTransformedMeshName(std::string transformedName, std::string origName) {
+  //first, look for a match and report failure if the name is already registered
+  std::string oName = getOriginalMeshName(transformedName);
+  if (!oName.empty()) {
+    if (origName != oName) {
+      VsLog::debugLog() << "ERROR VsRegistry::registerTransformedMeshName() - " 
+                        << transformedName << " is already registered to " 
+                        << oName << std::endl;
+      return false;
+    } else {
+      VsLog::debugLog() << "VsRegistry::registerTransformedMeshName() - recieved duplicate registration for " 
+                        << origName << std::endl;
+      VsLog::debugLog() << "VsRegistry::registerTransformedMeshName() - but all info matches, so it should be ok"
+                        << std::endl;
+      return true;
+    }
+  }
+
+  // Ok, register the new name mapping
+  transformedMeshNames[transformedName] = origName;
+  VsLog::debugLog() << "VsRegistry::registerTransformedMeshName(" 
+                    << transformedName << ", " << transformedMeshNames[transformedName]  
+                    << ") - registration succeeded." << std::endl;
+  return true;
+}
+
+std::string VsRegistry::getOriginalMeshName(std::string transformedMeshName) {
+  // return the value if the name is registered
+  return transformedMeshNames[transformedMeshName];
+}
+
+/******************* TRANSFORMED VARS *******************/
+bool VsRegistry::registerTransformedVarName(std::string transformedName, std::string origName) {
+  //first, look for a match and report failure if the name is already registered
+  std::string oName = getOriginalVarName(transformedName);
+  if (!oName.empty()) {
+    if (origName != oName) {
+      VsLog::debugLog() << "ERROR VsRegistry::registerTransformedVarName() - "
+                        << transformedName << " is already registered to "
+                        << oName << std::endl;
+      return false;
+    } else {
+      VsLog::debugLog() << "VsRegistry::registerTransformedVarName() - received duplicate registration for "
+                        << origName << std::endl;
+      VsLog::debugLog() << "VsRegistry::registerTransformedVarName() - but all info matches, so it should be ok"
+                        << std::endl;
+      return true;
+    }
+  }
+
+  // Ok, register the new name mapping
+  transformedVarNames[transformedName] = origName;
+  VsLog::debugLog() << "VsRegistry::registerTransformedVarName("
+                    << transformedName << ", " << transformedVarNames[transformedName]
+                    << ") - registration succeeded." << std::endl;
+  return true;
+}
+
+std::string VsRegistry::getOriginalVarName(std::string transformedVarName) {
+  // return the value if the name is registered
+  return transformedVarNames[transformedVarName];
+}
+
 /******************* EXPRESSIONS ************************/
 void VsRegistry::addExpression(const std::string& name, 
                                const std::string& value) {

@@ -54,6 +54,8 @@ std::string VsSchema::Rectilinear::axis1DefaultName = "axis1";
 std::string VsSchema::Rectilinear::axis2Key = "vsAxis2";
 std::string VsSchema::Rectilinear::axis2DefaultName = "axis2";
 std::string VsSchema::Rectilinear::transformKey = "vsTransform";
+std::string VsSchema::Rectilinear::transformedMeshKey = "vsTransformedMesh";
+std::string VsSchema::Rectilinear::zrphiTransformKey = "cylindricalZRPhi";
 
 std::string VsSchema::Uniform::key = "uniform";
 std::string VsSchema::Uniform::key_deprecated = "uniformCartesian";
