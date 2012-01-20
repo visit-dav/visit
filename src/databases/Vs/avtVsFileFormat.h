@@ -206,7 +206,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    * Create various meshes.
    */
   vtkDataSet* getUniformMesh(VsUniformMesh*, bool, int*, int*, int*);
-  vtkDataSet* getRectilinearMesh(VsRectilinearMesh*, bool, int*, int*, int*);
+  vtkDataSet* getRectilinearMesh(VsRectilinearMesh*, bool, int*, int*, int*, bool);
   vtkDataSet* getStructuredMesh(VsStructuredMesh*, bool, int*, int*, int*,
                                 const std::vector<double>&);
   vtkDataSet* getUnstructuredMesh(VsUnstructuredMesh*, bool, int*, int*, int*);

@@ -148,7 +148,7 @@ bool VsRectilinearMesh::initialize() {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Mesh has num spatial dims = "
                     << numSpatialDims << std::endl;
-  
+
   return initializeRoot();
 }
 
@@ -214,6 +214,54 @@ VsH5Dataset* VsRectilinearMesh::getAxisDataset(int axisNumber) {
 
 std::string VsRectilinearMesh::getKind() {
   return VsSchema::Rectilinear::key;
+}
+
+bool VsRectilinearMesh::hasTransform() {
+  return (!getTransformName().empty());
+}
+
+std::string VsRectilinearMesh::getTransformName() {
+  //Look for the vsTransform attribute
+  //and either retrieve the value or leave the name empty
+  std::string transformName;
+  VsH5Attribute* transformNameAtt = getAttribute(VsSchema::Rectilinear::transformKey);
+  if (transformNameAtt) {
+    transformNameAtt->getStringValue(&transformName);
+  }
+  
+  //Make sure this is a recognized value
+  //All other methods use the return value of this method as a go/no-go test
+  //So this is the best place to catch bad values
+  if (transformName != VsSchema::Rectilinear::zrphiTransformKey) {
+    VsLog::errorLog() <<"VsRectilinearMesh::getTransformName() - Unrecognized value for key "
+                      << VsSchema::Rectilinear::transformKey << " - " <<transformName <<std::endl;
+    transformName = "";
+  }
+
+  return transformName;  
+}
+
+std::string VsRectilinearMesh::getTransformedMeshName() {
+  //Look for the vsTransformName key
+  std::string transformedMeshName;
+  VsH5Attribute* transformedMeshNameAtt = getAttribute(VsSchema::Rectilinear::transformedMeshKey);
+  if (transformedMeshNameAtt) {
+    transformedMeshNameAtt->getStringValue(&transformedMeshName);
+    if (!transformedMeshName.empty()) {
+      //We want to make the tranformed mesh appear at the same file level
+      //as the original mesh.
+      //So, when we calculate the canonical name, use the PATH, not the FULL NAME
+      transformedMeshName = makeCanonicalName(getPath(), transformedMeshName);
+    }
+  }
+  
+  // if we didn't find a user supplied name, create a name
+  if (transformedMeshName.empty()) {
+    transformedMeshName = getFullName() + "_transform";
+    transformedMeshName = makeCanonicalName(transformedMeshName);
+  }
+
+  return transformedMeshName;
 }
 
 

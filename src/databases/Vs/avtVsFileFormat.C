@@ -411,6 +411,18 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
                       << " nodeOffset = " << nodeOffset[0] << " " 
                       << nodeOffset[1] << " " << nodeOffset[2] << std::endl;
 
+    // Roopa: Check if this mesh name is a transformed mesh name. If
+    // so, use the original mesh name to get data associated
+    bool transform = false;
+    std::string origMeshName = registry->getOriginalMeshName(meshName);
+    if (!origMeshName.empty()) {
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Original mesh for this transformed mesh " << meshName << " is "
+                        << origMeshName << std::endl;
+      transform = true;
+      meshName = origMeshName;
+    }
+
     bool haveDataSelections;
     int mins[3], maxs[3], strides[3];
 
@@ -485,7 +497,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
                           << "Trying to load & return rectilinear mesh."
                           << std::endl;
         return getRectilinearMesh(static_cast<VsRectilinearMesh*>(meta),
-                                  haveDataSelections, mins, maxs, strides);
+                                  haveDataSelections, mins, maxs, strides, transform);
       }
       
       // Structured Mesh
@@ -777,7 +789,8 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
 vtkDataSet*
 avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
                                     bool haveDataSelections,
-                                    int* mins, int* maxs, int* strides)
+                                    int* mins, int* maxs, int* strides,
+        bool transform)
 {
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
@@ -990,25 +1003,86 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       coords[i]->SetComponent(0, 0, 0);    
     }
 
-    // Create vtkRectilinearGrid
-    VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Creating rectilinear grid." << std::endl;
-    vtkRectilinearGrid* rgrid = vtkRectilinearGrid::New();
-    rgrid->SetDimensions(&(gdims[0]));
+    // Create a Rectilinear mesh and send it if there is no
+    // transformation requested
+    if (!transform) {
+      // Create vtkRectilinearGrid
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Creating rectilinear grid." << std::endl;
+      vtkRectilinearGrid* rgrid = vtkRectilinearGrid::New();
+      rgrid->SetDimensions(&(gdims[0]));
   
-    // Set grid data
-    rgrid->SetXCoordinates(coords[0]);
-    rgrid->SetYCoordinates(coords[1]);
-    rgrid->SetZCoordinates(coords[2]);
+      // Set grid data
+      rgrid->SetXCoordinates(coords[0]);
+      rgrid->SetYCoordinates(coords[1]);
+      rgrid->SetZCoordinates(coords[2]);
 
+      // Cleanup local data
+      for (size_t i = 0; i < vsdim; ++i) {
+        coords[i]->Delete();
+      }
+
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Returning data." << std::endl;
+      return rgrid;
+    } else {
+      // Roopa: Transformation to cylindrical co-ords if transform is
+      // true. Calculate the points and return a Structured mesh instead
+      // of a Rectilinear mesh
+      //
+      float temp, tempk, tempj, tempi;
+      vtkPoints* vpoints = vtkPoints::New();
+      if (isDouble) {
+       vpoints->SetDataTypeToDouble();
+      }
+      else if (isFloat) {
+       vpoints->SetDataTypeToFloat();
+      }
+      vpoints->SetNumberOfPoints((maxs[0] + 1) * (maxs[1] + 1) * (maxs[2] + 1));
+
+      int ind = 0;
+      if (isDouble) {
+        for (int j = mins[2]; j <= maxs[2]; j++) {
+         for (int i = mins[1]; i <= maxs[1]; i++) {
+           for (int k = mins[0]; k <= maxs[0]; k++) {
+             tempi = static_cast<vtkDoubleArray*>(coords[1])->GetValue(i) 
+                  * cos(static_cast<vtkDoubleArray*>(coords[2])->GetValue(j));
+             tempj = static_cast<vtkDoubleArray*>(coords[1])->GetValue(i) 
+                  * sin(static_cast<vtkDoubleArray*>(coords[2])->GetValue(j));
+              tempk = static_cast<vtkDoubleArray*>(coords[0])->GetValue(k);
+              vpoints->SetPoint(ind, tempi, tempj, tempk);
+              ind++;
+            }
+          }
+        }
+      } else if (isFloat) {
+        for (int j = mins[2]; j <= maxs[2]; j++) {
+         for (int i = mins[1]; i <= maxs[1]; i++) {
+           for (int k = mins[0]; k <= maxs[0]; k++) {
+             tempi = static_cast<vtkFloatArray*>(coords[1])->GetValue(i) 
+              * cos(static_cast<vtkFloatArray*>(coords[2])->GetValue(j));
+             tempj = static_cast<vtkFloatArray*>(coords[1])->GetValue(i) 
+              * sin(static_cast<vtkFloatArray*>(coords[2])->GetValue(j));
+             tempk = static_cast<vtkFloatArray*>(coords[0])->GetValue(k); 
+              vpoints->SetPoint(ind, tempi, tempj, tempk);
+             ind++;
+            }
+          }
+        }
+      }
+
+    // Create a Structured grid
+    vtkStructuredGrid* sgrid = vtkStructuredGrid::New();
+    sgrid->SetDimensions(&(gdims[0]));
+    sgrid->SetPoints(vpoints);
+    
     // Cleanup local data
-    for (size_t i = 0; i < vsdim; ++i) {
-      coords[i]->Delete();
-    }
-
+    vpoints->Delete();
+    
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Returning data." << std::endl;
-    return rgrid;
+                      << "Returning transformed data." << std::endl;
+    return sgrid;
+  }
 }
 
   
@@ -2428,6 +2502,18 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     // searching for a component.
     std::string name = requestedName;
 
+    // Check if this var name is a transformed var name. If
+    // so, use the original var name to get data associated
+    bool transform = false;
+    std::string origVarName = registry->getOriginalVarName(name);
+    if (!origVarName.empty()) {
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Original var for the transformed var " << name << " is "
+                        << origVarName << std::endl;
+      transform = true;
+      name = origVarName;
+    }
+  
     bool haveDataSelections;
     int mins[3], maxs[3], strides[3];
 
@@ -2838,7 +2924,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
         }
         else if (isInteger) {
           int tmp = intDataPtr[indx];
-          intDataPtr[indx = intDataPtr[k];
+          intDataPtr[indx] = intDataPtr[k];
           intDataPtr[k] = tmp;
         } else {
           VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -3141,6 +3227,21 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
                         << "Var lives on mesh " << meshName 
                         << ", virtual node offset mesh name is:" 
                         << nodeOffsetMeshName << ".\n";
+
+      // If this variable lives on a mesh with a transform, we register
+      // against BOTH meshes (with different names, of course)
+      bool hasTransform = false;
+      std::string transformMeshName = "";
+      VsRectilinearMesh* rectMesh = static_cast<VsRectilinearMesh*> (meshMeta);
+      if (rectMesh && rectMesh->hasTransform()) {
+        hasTransform = true;
+        transformMeshName = rectMesh->getTransformedMeshName();
+        VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                          << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Variable lives on a mesh with a transform: "
+                          <<transformMeshName
+                          << std::endl;
+      }
       
       // Centering of the variable
       // Default is node centered data
@@ -3236,6 +3337,16 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
                                     centering);
             smd->hasUnits = false;
             md->Add(smd);
+            
+            if (hasTransform) {
+              std::string transformVarName = componentName + "_transform";
+              registry->registerTransformedVarName(transformVarName, componentName);
+              avtScalarMetaData* smd_transformed =
+                           new avtScalarMetaData(transformVarName.c_str(), transformMeshName.c_str(), centering);
+              smd_transformed->hasUnits = false;
+              md->Add(smd_transformed);
+            }
+            
           } else {
             VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                               << "Unable to find match for variable "
@@ -3255,6 +3366,16 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
                                 centering);
         smd->hasUnits = false;
         md->Add(smd);
+
+        if (hasTransform) {
+          std::string transformVarName = *it + "_transform";
+          registry->registerTransformedVarName(transformVarName, *it);
+          avtScalarMetaData* smd_transformed =
+          new avtScalarMetaData(transformVarName.c_str(), transformMeshName.c_str(), centering);
+          smd_transformed->hasUnits = false;
+          md->Add(smd_transformed);
+        }
+        
       }
       else {
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -3384,17 +3505,55 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                           << "Adding rectilinear mesh" << *it << ".  " 
                           << "spatialDims = " << spatialDims << "." << std::endl;
 
+        VsRectilinearMesh* rectMesh = static_cast<VsRectilinearMesh*>(meta);
         meshType = AVT_RECTILINEAR_MESH;
 
         // Add in the logical bounds of the mesh.
-        static_cast<VsRectilinearMesh*>(meta)->getNumMeshDims(dims);
+        rectMesh->getNumMeshDims(dims);
         for( int i=0; i<dims.size(); ++i )
         {
           bounds[i] = dims[i]; // Logical bounds are node centric.
           numCells *= (dims[i]-1);
         }
-      }
 
+        // Roopa: Check if there is a transformation specified for this
+        // mesh. If so, register the transformed mesh here. The
+        // original mesh will also be registered later by default
+        if (rectMesh->hasTransform()) {
+          VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                            << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "Registering transform for rectilinear mesh" << *it << "." <<std::endl;
+          std::string transformedMeshName = rectMesh->getTransformedMeshName();
+          VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                            << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "Adding rectilinear mesh" << *it << ".  "
+                            << "transformedMeshName = " << transformedMeshName
+                            << "." << std::endl;
+          registry->registerTransformedMeshName(transformedMeshName, rectMesh->getFullName());
+
+          int topologicalDims = meta->getNumTopologicalDims();
+          // Add a note for this interesting case.  It is legal, but since it's a new feature
+          // we want to keep an eye on it
+          if (topologicalDims > spatialDims) {
+            VsLog::errorLog() <<__CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                              <<"ERROR - num topological dims (" << topologicalDims
+                              <<") > num spatial dims (" << spatialDims <<")" <<std::endl;
+            topologicalDims = spatialDims;
+          } else if (spatialDims != topologicalDims) {
+            VsLog::debugLog() <<__CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                              <<"Interesting - num topological dims (" << topologicalDims
+                              <<") != num spatial dims (" << spatialDims <<")" <<std::endl;
+          }
+
+          avtMeshMetaData* vmd =
+            new avtMeshMetaData(transformedMeshName, 1, 1, 1, 0,
+                                spatialDims, topologicalDims, meshType);
+          vmd->SetBounds( bounds );
+          // vmd->SetNumberCells( numCells );                                                                                                                      
+          setAxisLabels(vmd);
+          md->Add(vmd);
+        }
+      }
       // Structured Mesh
       else if (meta->isStructuredMesh()) {
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
