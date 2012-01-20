@@ -46,6 +46,7 @@
 #include "AMRStitchCellTesselations2D.h"
 #include "AMRStitchCellTesselations3D.h"
 
+#include <algorithm>
 #include <cassert>
 #include <limits>
 #include <list>
@@ -65,6 +66,7 @@
 #include <vtkCellType.h>
 #include <vtkFieldData.h>
 #include <vtkFloatArray.h>
+#include <vtkIdList.h>
 #include <vtkIntArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPoints.h>
@@ -73,6 +75,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <vtkDataSetWriter.h>
 
 // ****************************************************************************
 //  Method: avtAMRStitchCellFilter constructor
@@ -201,10 +204,19 @@ avtAMRStitchCellFilter::PreExecute(void)
     // Get dimension of data set
     avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
     topologicalDimension = inAtts.GetTopologicalDimension();
+    spatialDimension = inAtts.GetSpatialDimension();
 
+    // Check dimension
     if (topologicalDimension < 2 || topologicalDimension > 3)
         EXCEPTION1(ImproperUseException,
                 "Need 2D or 3D data set to generate dual mesh and stitch cells.");
+    if (spatialDimension < 2 || spatialDimension > 3)
+        EXCEPTION1(ImproperUseException,
+                "Need 2D or 3D data set to generate dual mesh and stitch cells.");
+    if (spatialDimension != topologicalDimension)
+        EXCEPTION1(ImproperUseException,
+                "Topological and spatial dimension must be identical to generate "
+                "dual mesh and stitch cells.");
 
     // Obtian data set origin via spatial extents
     avtIntervalTree *iTree = GetMetaData()->GetSpatialExtents();
@@ -215,43 +227,83 @@ avtAMRStitchCellFilter::PreExecute(void)
     iTree->GetExtents(domainBoundingBox);
 
     // Set domainOrigin
-    for (int i=0; i<topologicalDimension; ++i)
+    for (int i=0; i<spatialDimension; ++i)
         domainOrigin[i] = domainBoundingBox[2*i];
-    for (int i=topologicalDimension; i<3; ++i)
+    for (int i=spatialDimension; i<3; ++i)
         domainOrigin[i] = 0.0;
 
-
-    // Get logical extents
-    avtStructuredDomainNesting *sdn =
+    // We need structured domain nesting to figure out extents of boxes/patches,
+    // levels and refinement ratio wrt. to the parent level
+    domainNesting =
         dynamic_cast<avtStructuredDomainNesting*>(GetMetaData()->GetDomainNesting());
+    if (!domainNesting)
+        EXCEPTION1(ImproperUseException,
+                "Need structured domain nesting information to generate dual "
+                "mesh and stitch cells.");
 
-    logicalDomainBoundingBox[0] = std::numeric_limits<int>::max();
-    logicalDomainBoundingBox[1] = std::numeric_limits<int>::max();
-    logicalDomainBoundingBox[2] = std::numeric_limits<int>::max();
-    logicalDomainBoundingBox[3] = std::numeric_limits<int>::min();
-    logicalDomainBoundingBox[4] = std::numeric_limits<int>::min();
-    logicalDomainBoundingBox[5] = std::numeric_limits<int>::min();
+    // Get logical extents of root level
+    size_t nLevels = domainNesting->GetNumberOfLevels();
+    logicalDomainBoundingBox.resize(nLevels);
+    logicalDomainBoundingBox[0].resize(6);
+    logicalDomainBoundingBox[0][0] = std::numeric_limits<int>::max();
+    logicalDomainBoundingBox[0][1] = std::numeric_limits<int>::max();
+    logicalDomainBoundingBox[0][2] = std::numeric_limits<int>::max();
+    logicalDomainBoundingBox[0][3] = std::numeric_limits<int>::min();
+    logicalDomainBoundingBox[0][4] = std::numeric_limits<int>::min();
+    logicalDomainBoundingBox[0][5] = std::numeric_limits<int>::min();
  
     std::vector<int> le;
-    for (size_t dom = 0; dom < sdn->GetNumberOfDomains(); ++dom)
+    for (size_t dom = 0; dom < domainNesting->GetNumberOfDomains(); ++dom)
     {
-        if (sdn->GetDomainLevel(dom) == 0)
+        if (domainNesting->GetDomainLevel(dom) == 0)
         {
-            le = sdn->GetDomainLogicalExtents(dom);
-            logicalDomainBoundingBox[0] = std::min(logicalDomainBoundingBox[0], le[0]);
-            logicalDomainBoundingBox[1] = std::min(logicalDomainBoundingBox[1], le[1]);
-            logicalDomainBoundingBox[2] = std::min(logicalDomainBoundingBox[2], le[2]);
-            logicalDomainBoundingBox[3] = std::max(logicalDomainBoundingBox[3], le[3]);
-            logicalDomainBoundingBox[4] = std::max(logicalDomainBoundingBox[4], le[4]);
-            logicalDomainBoundingBox[5] = std::max(logicalDomainBoundingBox[5], le[5]);
+            le = domainNesting->GetDomainLogicalExtents(dom);
+            logicalDomainBoundingBox[0][0] = std::min(logicalDomainBoundingBox[0][0], le[0]);
+            logicalDomainBoundingBox[0][1] = std::min(logicalDomainBoundingBox[0][1], le[1]);
+            logicalDomainBoundingBox[0][2] = std::min(logicalDomainBoundingBox[0][2], le[2]);
+            logicalDomainBoundingBox[0][3] = std::max(logicalDomainBoundingBox[0][3], le[3]);
+            logicalDomainBoundingBox[0][4] = std::max(logicalDomainBoundingBox[0][4], le[4]);
+            logicalDomainBoundingBox[0][5] = std::max(logicalDomainBoundingBox[0][5], le[5]);
         }
     }
 
-    debug5 << "avtAMRStitchCellFilter::PreExecute(): logicalDomainBoundingBox[6] = { ";
-    debug5 << logicalDomainBoundingBox[0] << ", " << logicalDomainBoundingBox[1] << ", ";
-    debug5 << logicalDomainBoundingBox[2] << ", " << logicalDomainBoundingBox[3] << ", ";
-    debug5 << logicalDomainBoundingBox[4] << ", " << logicalDomainBoundingBox[5] << " }";
+    debug5 << "avtAMRStitchCellFilter::PreExecute(): logicalDomainBoundingBox[0][6] = { ";
+    debug5 << logicalDomainBoundingBox[0][0] << ", " << logicalDomainBoundingBox[0][1] << ", ";
+    debug5 << logicalDomainBoundingBox[0][2] << ", " << logicalDomainBoundingBox[0][3] << ", ";
+    debug5 << logicalDomainBoundingBox[0][4] << ", " << logicalDomainBoundingBox[0][5] << " }";
     debug5 << std::endl;
+
+    // Compute logical bounding box in index space of each level
+    for (size_t l=1; l<nLevels; ++l)
+    {
+        const std::vector<int>& refRatio = domainNesting->GetLevelRefinementRatios(l);
+        logicalDomainBoundingBox[l].resize(6);
+        logicalDomainBoundingBox[l][0] = refRatio[0] * logicalDomainBoundingBox[l-1][0];
+        logicalDomainBoundingBox[l][1] = refRatio[1] * logicalDomainBoundingBox[l-1][1];
+        logicalDomainBoundingBox[l][2] = refRatio[2] * logicalDomainBoundingBox[l-1][2];
+        logicalDomainBoundingBox[l][3] = refRatio[0] * (logicalDomainBoundingBox[l-1][3] + 1) - 1;
+        logicalDomainBoundingBox[l][4] = refRatio[1] * (logicalDomainBoundingBox[l-1][4] + 1) - 1;
+        logicalDomainBoundingBox[l][5] = refRatio[2] * (logicalDomainBoundingBox[l-1][5] + 1) - 1;
+
+        debug5 << "avtAMRStitchCellFilter::PreExecute(): logicalDomainBoundingBox[" << l << "][6] = { ";
+        debug5 << logicalDomainBoundingBox[l][0] << ", " << logicalDomainBoundingBox[l][1] << ", ";
+        debug5 << logicalDomainBoundingBox[l][2] << ", " << logicalDomainBoundingBox[l][3] << ", ";
+        debug5 << logicalDomainBoundingBox[l][4] << ", " << logicalDomainBoundingBox[l][5];
+        debug5 << " } " << std::endl;
+    }
+
+    // Get cell sizes for levels
+    cellSize.resize(nLevels);
+    for (size_t l=0; l<nLevels; ++l)
+    {
+        cellSize[l] = domainNesting->GetLevelCellSizes(l);
+        if (cellSize[l].size() != spatialDimension)
+        {
+            EXCEPTION1(ImproperUseException,
+                    "Database plugin did not properly set level cell sizes using "
+                    "SetLevelCellSizes() method.");
+        }
+    }
 }
 
 // ****************************************************************************
@@ -273,11 +325,30 @@ avtAMRStitchCellFilter::PreExecute(void)
 // ****************************************************************************
 
 avtDataTree_p 
-avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::string str)
+avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
+        std::string str)
 {
     // Diagnostic output
     debug5 << "avtAMRStitchCellFilter::ExecuteDataTree(): Processing domain ";
-    debug5 << domain << "(" << str << ")" << std::endl;
+    debug5 << domain << " (" << str << ")" << std::endl;
+
+    // Obtain level
+    const int level = domainNesting->GetDomainLevel(domain);
+    debug5 << "avtAMRStitchCellFilter::ExecuteDataTree(): Patch is in level ";
+    debug5 << level << std::endl;
+
+    // Debugging via attributes: Support restricting stitch cell generation to one
+    // level or a set of patches/domains.
+    if ((atts.GetOnlyProcessLevel() && level != atts.GetLevel()) ||
+        (atts.GetOnlyProcessListedDomains() &&
+         std::find(atts.GetDomains().begin(), atts.GetDomains().end(), domain) ==
+             atts.GetDomains().end()))
+    {
+        // Return an empty data set for levels or patches that are disabled for
+        // debugging.
+        vtkDataSet *ods[2] = { 0, 0 };
+        return new avtDataTree(2, ods, domain, str);
+    }
 
     // Ensure that we are working on rectilinear grid
     vtkRectilinearGrid *rgrid = dynamic_cast<vtkRectilinearGrid*>(in_ds);
@@ -296,8 +367,8 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
     debug5 << "avtAMRStitchCellFilter::ExecuteDataTree(): Grid is regular and has ";
     debug5 << "extents " << dims[0] << " " << dims[1] << " " << dims[2] << std::endl;
 
-    // Get base_index (measured in number of cells of current level (i.e.,
-    // same level as patch) form origin)
+    // Get base_index (measured in number of cells of current level, i.e.,
+    // same level as patch, form origin)
     vtkIntArray *baseIdxArray =
         (vtkIntArray*) rgrid->GetFieldData()->GetArray("base_index");
     if (!baseIdxArray)
@@ -312,28 +383,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
     debug5 << "avtAMRStitchCellFilter::ExecuteDataTree(): base_index is ";
     debug5 << baseIdx[0] << ", " << baseIdx[1] << ", " << baseIdx[2] << std::endl;
 
-    // We need structured domain nesting to figure out extents of neighboring
-    // boxes/patches, our level and our refinement ratio wrt. to the parent level
-    avtStructuredDomainNesting *sdn =
-        dynamic_cast<avtStructuredDomainNesting*>(GetMetaData()->GetDomainNesting());
-    if (!sdn)
-        EXCEPTION1(ImproperUseException,
-                "Need structured domain nesting information to compute dual "
-                "mesh and stitch cells.");
-
     // Consistency check: layer of ghost cells needs to have a width of one
-
-    // ... Compute logical bounding box in index space of the level of this patch
-    // FIXME: It may be more efficient to compute this information once for each level
-    // in PreExecute()
-    std::vector<int> refinementRatioWrtRoot = sdn->GetRatiosForLevel(0, domain);
-    int levelLogicalDomainBoundingBox[6];
-    levelLogicalDomainBoundingBox[0] = refinementRatioWrtRoot[0] * logicalDomainBoundingBox[0];
-    levelLogicalDomainBoundingBox[1] = refinementRatioWrtRoot[1] * logicalDomainBoundingBox[1];
-    levelLogicalDomainBoundingBox[2] = refinementRatioWrtRoot[2] * logicalDomainBoundingBox[2];
-    levelLogicalDomainBoundingBox[3] = refinementRatioWrtRoot[0] * (logicalDomainBoundingBox[3] + 1) - 1;
-    levelLogicalDomainBoundingBox[4] = refinementRatioWrtRoot[1] * (logicalDomainBoundingBox[4] + 1) - 1;
-    levelLogicalDomainBoundingBox[5] = refinementRatioWrtRoot[2] * (logicalDomainBoundingBox[5] + 1) - 1;
 
     // ... Get real dims information
     vtkIntArray *realDimsArray =
@@ -348,17 +398,10 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
     debug5 << "avtAMRStitchCellFilter::ExecuteDataTree(): Real dims are ";
     debug5 << realIMin << " " << realIMax << " " << realJMin << " " << realJMax << std::endl;
 
-
-    debug5 << "avtAMRStitchCellFilter::ExecuteDataTree(): levelLogicalDomainBoundingBox[6] = { ";
-    debug5 << levelLogicalDomainBoundingBox[0] << ", " << levelLogicalDomainBoundingBox[1] << ", ";
-    debug5 << levelLogicalDomainBoundingBox[2] << ", " << levelLogicalDomainBoundingBox[3] << ", ";
-    debug5 << levelLogicalDomainBoundingBox[4] << ", " << levelLogicalDomainBoundingBox[5];
-    debug5 << " } " << std::endl;
-
-    if (realIMin > 1 || (baseIdx[0] != levelLogicalDomainBoundingBox[0] && realIMin != 1) ||
-        (dims[0] - realIMax) > 1 || ((baseIdx[0] + dims[0] - 1 - realIMin) != levelLogicalDomainBoundingBox[3] && (dims[0] - realIMax) != 1) ||
-        realJMin > 1 || (baseIdx[1] != levelLogicalDomainBoundingBox[1] && realJMin != 1) ||
-        (dims[1] - realJMax) > 1 || ((baseIdx[1] + dims[1] - 1 - realJMin) != levelLogicalDomainBoundingBox[4] && (dims[1] - realJMax) != 1))
+    if (realIMin > 1 || (baseIdx[0] != logicalDomainBoundingBox[level][0] && realIMin != 1) ||
+        (dims[0] - realIMax) > 1 || ((baseIdx[0] + dims[0] - 1 - realIMin) != logicalDomainBoundingBox[level][3] && (dims[0] - realIMax) != 1) ||
+        realJMin > 1 || (baseIdx[1] != logicalDomainBoundingBox[level][1] && realJMin != 1) ||
+        (dims[1] - realJMax) > 1 || ((baseIdx[1] + dims[1] - 1 - realJMin) != logicalDomainBoundingBox[level][4] && (dims[1] - realJMax) != 1))
     {
         EXCEPTION1(ImproperUseException,
                 "Need exactly one layer of ghost cells (except at domain boundary) to create stitch cells.");
@@ -379,8 +422,8 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
         int realKMin = realDimsArray->GetValue(4);
         int realKMax = realDimsArray->GetValue(5);
 
-        if (realKMin > 1 || (baseIdx[2] != levelLogicalDomainBoundingBox[2] && realKMin != 1) ||
-            (dims[2] - realKMax) > 1 || ((baseIdx[2] + dims[2] - 1 - realKMin) != levelLogicalDomainBoundingBox[5] && (dims[2] - realKMax) != 1)) 
+        if (realKMin > 1 || (baseIdx[2] != logicalDomainBoundingBox[level][2] && realKMin != 1) ||
+            (dims[2] - realKMax) > 1 || ((baseIdx[2] + dims[2] - 1 - realKMin) != logicalDomainBoundingBox[level][5] && (dims[2] - realKMax) != 1)) 
         {
             EXCEPTION1(ImproperUseException,
                     "Need exactly one layer of ghost cells (except at domain boundary) to create stitch cells.");
@@ -435,7 +478,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
             std::cout << (it->type & Boundary::IMAX ? "(IMAX)" : "");
             std::cout << (it->type & Boundary::JMIN ? "(JMIN)" : "");
             std::cout <<( it->type & Boundary::JMAX ? "(JMAX)" : "");
-            le = sdn->GetDomainLogicalExtents(it->domain);
+            le = domainNesting->GetDomainLogicalExtents(it->domain);
             std::cout << " le = { " << le[0] << ", " << le[1] << ", " << le[2] << ", "
                 << le[3] << ", " << le[4] << ", " << le[5] << " } " << std::endl; 
 #endif
@@ -443,22 +486,22 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
             switch(it->type)
             {
                 case Boundary::IMIN:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int j=std::max(0, le[1]-baseIdx[1]+ghostOffset[1]); j<std::min(dims[1], le[4]-baseIdx[1]+ghostOffset[1]+1); ++j)
                         refinedInSameLevelDomain[j*dims[0]] = it->domain;
                     break;
                 case Boundary::IMAX:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int j=std::max(0, le[1]-baseIdx[1]+ghostOffset[1]); j<std::min(dims[1], le[4]-baseIdx[1]+ghostOffset[1]+1); ++j)
                         refinedInSameLevelDomain[j*dims[0]+dims[0]-1] = it->domain;
                     break;
                 case Boundary::JMIN:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int i=std::max(0, le[0]-baseIdx[0]+ghostOffset[0]); i<std::min(dims[0], le[3]-baseIdx[0]+ghostOffset[0]+1); ++i)
                         refinedInSameLevelDomain[i] = it->domain;
                     break;
                 case Boundary::JMAX:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int i=std::max(0, le[0]-baseIdx[0]+ghostOffset[0]); i<std::min(dims[0], le[3]-baseIdx[0]+ghostOffset[0]+1); ++i)
                         refinedInSameLevelDomain[(dims[1]-1)*dims[0]+i] = it->domain;
                     break;
@@ -505,10 +548,22 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                 debug5 << "Skipping neighbor " << it->domain << " with different refinement level." << std::endl;
                 continue;
             }
+#if 0
+            std::cout << "Neighbor " << it->domain << " in same refinement level is of type ";
+            std::cout << (it->type & Boundary::IMIN ? "(IMIN)" : "");
+            std::cout << (it->type & Boundary::IMAX ? "(IMAX)" : "");
+            std::cout << (it->type & Boundary::JMIN ? "(JMIN)" : "");
+            std::cout << (it->type & Boundary::JMAX ? "(JMAX)" : "");
+            std::cout << (it->type & Boundary::KMIN ? "(KMIN)" : "");
+            std::cout << (it->type & Boundary::KMAX ? "(KMAX)" : "");
+            le = domainNesting->GetDomainLogicalExtents(it->domain);
+            std::cout << " le = { " << le[0] << ", " << le[1] << ", " << le[2] << ", "
+                << le[3] << ", " << le[4] << ", " << le[5] << " } " << std::endl; 
+#endif
             switch(it->type)
             {
                 case Boundary::IMIN:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int j=std::max(0, le[1]-baseIdx[1]+ghostOffset[1]);
                          j<std::min(dims[1], le[4]-baseIdx[1]+ghostOffset[1]+1); ++j)
                         for(int k=std::max(0, le[2]-baseIdx[2]+ghostOffset[2]);
@@ -518,7 +573,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                         }
                     break;
                 case Boundary::IMAX:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int j=std::max(0, le[1]-baseIdx[1]+ghostOffset[1]);
                          j<std::min(dims[1], le[4]-baseIdx[1]+ghostOffset[1]+1); ++j)
                         for (int k=std::max(0, le[2]-baseIdx[2]+ghostOffset[2]);
@@ -528,7 +583,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                         }
                     break;
                 case Boundary::JMIN:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int i=std::max(0, le[0]-baseIdx[0]+ghostOffset[0]);
                          i<std::min(dims[0], le[3]-baseIdx[0]+ghostOffset[0]+1); ++i)
                         for (int k=std::max(0, le[2]-baseIdx[2]+ghostOffset[2]);
@@ -538,7 +593,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                         }
                     break;
                 case Boundary::JMAX:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int i=std::max(0, le[0]-baseIdx[0]+ghostOffset[0]);
                          i<std::min(dims[0], le[3]-baseIdx[0]+ghostOffset[0]+1); ++i)
                         for (int k=std::max(0, le[2]-baseIdx[2]+ghostOffset[2]);
@@ -548,7 +603,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                         }
                     break;
                 case Boundary::KMIN:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int i=std::max(0, le[0]-baseIdx[0]+ghostOffset[0]);
                          i<std::min(dims[0], le[3]-baseIdx[0]+ghostOffset[0]+1); ++i)
                         for (int j=std::max(0, le[1]-baseIdx[1]+ghostOffset[1]);
@@ -556,8 +611,9 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                         {
                             refinedInSameLevelDomain[LOC(i, j, 0)] = it->domain;
                         }
+                    break;
                 case Boundary::KMAX:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int i=std::max(0, le[0]-baseIdx[0]+ghostOffset[0]);
                          i<std::min(dims[0], le[3]-baseIdx[0]+ghostOffset[0]+1); ++i)
                         for (int j=std::max(0, le[1]-baseIdx[1]+ghostOffset[1]);
@@ -565,8 +621,9 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                         {
                             refinedInSameLevelDomain[LOC(i, j, dims[2]-1)] = it->domain;
                         }
+                    break;
                 case Boundary::IMIN | Boundary::JMIN:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for(int k=std::max(0, le[2]-baseIdx[2]+ghostOffset[2]);
                         k<std::min(dims[2], le[5]-baseIdx[2]+ghostOffset[2]+1); ++k)
                     {
@@ -574,7 +631,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     }
                     break;
                 case Boundary::IMIN | Boundary::JMAX:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for(int k=std::max(0, le[2]-baseIdx[2]+ghostOffset[2]);
                         k<std::min(dims[2], le[5]-baseIdx[2]+ghostOffset[2]+1); ++k)
                     {
@@ -582,7 +639,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     }
                     break;
                 case Boundary::IMAX | Boundary::JMIN:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for(int k=std::max(0, le[2]-baseIdx[2]+ghostOffset[2]);
                         k<std::min(dims[2], le[5]-baseIdx[2]+ghostOffset[2]+1); ++k)
                     {
@@ -590,7 +647,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     }
                     break;
                 case Boundary::IMAX | Boundary::JMAX:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for(int k=std::max(0, le[2]-baseIdx[2]+ghostOffset[2]);
                         k<std::min(dims[2], le[5]-baseIdx[2]+ghostOffset[2]+1); ++k)
                     {
@@ -598,7 +655,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     }
                     break;
                 case Boundary::IMIN | Boundary::KMIN:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int j=std::max(0, le[1]-baseIdx[1]+ghostOffset[1]);
                          j<std::min(dims[1], le[4]-baseIdx[1]+ghostOffset[1]+1); ++j)
                     {
@@ -606,7 +663,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     }
                     break;
                 case Boundary::IMIN | Boundary::KMAX:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int j=std::max(0, le[1]-baseIdx[1]+ghostOffset[1]);
                          j<std::min(dims[1], le[4]-baseIdx[1]+ghostOffset[1]+1); ++j)
                     {
@@ -614,7 +671,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     }
                     break;
                 case Boundary::IMAX | Boundary::KMIN:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int j=std::max(0, le[1]-baseIdx[1]+ghostOffset[1]);
                          j<std::min(dims[1], le[4]-baseIdx[1]+ghostOffset[1]+1); ++j)
                     {
@@ -622,7 +679,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     }
                     break;
                 case Boundary::IMAX | Boundary::KMAX:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int j=std::max(0, le[1]-baseIdx[1]+ghostOffset[1]);
                          j<std::min(dims[1], le[4]-baseIdx[1]+ghostOffset[1]+1); ++j)
                     {
@@ -630,7 +687,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     }
                     break;
                 case Boundary::JMIN | Boundary::KMIN:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int i=std::max(0, le[0]-baseIdx[0]+ghostOffset[0]);
                          i<std::min(dims[0], le[3]-baseIdx[0]+ghostOffset[0]+1); ++i)
                     {
@@ -638,7 +695,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     }
                     break;
                 case Boundary::JMIN | Boundary::KMAX:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int i=std::max(0, le[0]-baseIdx[0]+ghostOffset[0]);
                          i<std::min(dims[0], le[3]-baseIdx[0]+ghostOffset[0]+1); ++i)
                     {
@@ -646,7 +703,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     }
                     break;
                 case Boundary::JMAX | Boundary::KMIN:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int i=std::max(0, le[0]-baseIdx[0]+ghostOffset[0]);
                          i<std::min(dims[0], le[3]-baseIdx[0]+ghostOffset[0]+1); ++i)
                     {
@@ -654,7 +711,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     }
                     break;
                 case Boundary::JMAX | Boundary::KMAX:
-                    le = sdn->GetDomainLogicalExtents(it->domain);
+                    le = domainNesting->GetDomainLogicalExtents(it->domain);
                     for (int i=std::max(0, le[0]-baseIdx[0]+ghostOffset[0]);
                          i<std::min(dims[0], le[3]-baseIdx[0]+ghostOffset[0]+1); ++i)
                     {
@@ -687,22 +744,77 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     break;
                 default:
                     EXCEPTION1(ImproperUseException, "Encountered invalid boundary.");
-#undef LOC
             }
         }
+
+#if 0 
+        // Debug output:
+        std::cout << "IDs of neighboring domains on KMIN:" << std::endl;
+        for (int i=0; i<dims[0]; ++i)
+        {
+            for (int j=0; j<dims[1]; ++j)
+            {
+                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(i, j, 0)] << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "IDs of neighboring domains on KMAX:" << std::endl;
+        for (int i=0; i<dims[0]; ++i)
+        {
+            for (int j=0; j<dims[1]; ++j)
+            {
+                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(i, j, dims[2]-1)] << " ";
+            }
+            std::cout << std::endl;
+        }
+
+        std::cout << "IDs of neighboring domains on JMIN:" << std::endl;
+        for (int i=0; i<dims[0]; ++i)
+        {
+            for (int k=0; k<dims[2]; ++k)
+            {
+                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(i, 0, k)] << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "IDs of neighboring domains on JMAX:" << std::endl;
+        for (int i=0; i<dims[0]; ++i)
+        {
+            for (int k=0; k<dims[2]; ++k)
+            {
+                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(i, dims[1]-1, k)] << " ";
+            }
+            std::cout << std::endl;
+        }
+
+        std::cout << "IDs of neighboring domains on IMIN:" << std::endl;
+        for (int j=0; j<dims[1]; ++j)
+        {
+            for (int k=0; k<dims[2]; ++k)
+            {
+                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(0, j, k)] << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "IDs of neighboring domains on IMAX:" << std::endl;
+        for (int j=0; j<dims[1]; ++j)
+        {
+            for (int k=0; k<dims[2]; ++k)
+            {
+                std::cout << std::setw(3) << refinedInSameLevelDomain[LOC(dims[0]-1, j, k)] << " ";
+            }
+            std::cout << std::endl;
+        }
+#endif
+#undef LOC
     }
 
     // Output data sets: Dual grid and stitch cells
     vtkDataSet *out_ds[2];
 
-    // Obtain level
-    int level = sdn->GetDomainLevel(domain);
-    debug5 << "avtAMRStitchCellFilter::ExecuteDataTree(): Patch is in level ";
-    debug5 << level << std::endl;
-
     if (atts.GetCreateCellsOfType() == AMRStitchCellAttributes::DualGridAndStitchCells ||
         atts.GetCreateCellsOfType() == AMRStitchCellAttributes::DualGrid)
-        out_ds[0] = CreateDualGrid(rgrid, domain, level, dims, refinedInSameLevelDomain);
+        out_ds[0] = CreateDualGrid(rgrid, domain, level, dims, baseIdx, ghostOffset, refinedInSameLevelDomain);
     else
         out_ds[0] = 0;
 
@@ -713,7 +825,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
         // We are not in the root level and thus need to generate stich cells.
         // Obtain refinement ratio wrt. to parent level needed to translate indices
         // between levels.
-        std::vector<int> refinementRatio = sdn->GetRatiosForLevel(level-1, domain);
+        std::vector<int> refinementRatio = domainNesting->GetRatiosForLevel(level-1, domain);
         debug5 << "avtAMRStitchCellFilter::ExecuteDataTree(): Refinement ratio ";
         debug5 << " wrt. parent level is " << refinementRatio[0] << " ";
         debug5 << refinementRatio[1] << " " << refinementRatio[2] << std::endl;
@@ -726,8 +838,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
                     "fine box/patch must start at coarse cell boundaries.");
 
         out_ds[1] = CreateStitchCells(rgrid, domain, level, dims, realDim, baseIdx,
-               ghostOffset, refinementRatio, refinedInSameLevelDomain,
-               levelLogicalDomainBoundingBox);
+               ghostOffset, refinementRatio, refinedInSameLevelDomain);
     }
     else
     {
@@ -753,7 +864,7 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::stri
 }
 
 // ****************************************************************************
-//  Method: avtAMRStitchCellFilter::CreateStitchCells
+//  Method: avtAMRStitchCellFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicates that zone information has changed.
@@ -767,6 +878,7 @@ void
 avtAMRStitchCellFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    GetOutput()->GetInfo().GetValidity().InvalidateDataMetaData();
 }
  
 // ****************************************************************************
@@ -790,49 +902,8 @@ vtkDataSet *
 avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
         int domain, int level, int dims[3], int realDim[3], int baseIdx[3],
         int ghostOffset[3], const std::vector<int> &refinementRatio,
-        const vtkIdType* refinedInSameLevelDomain,
-        int levelLogicalDomainBoundingBox[6])
+        const vtkIdType* refinedInSameLevelDomain)
 {
-    // Compute cell size for current level
-    // NOTE: This step assumes constant spacing within a patch
-    // FIXME: Curvilinear grid? Varying cell spacing?
-    double cellSize[3];
-    if (rgrid->GetXCoordinates()->GetNumberOfTuples() > 0)
-        cellSize[0] = rgrid->GetXCoordinates()->GetTuple1(1) -
-            rgrid->GetXCoordinates()->GetTuple1(0);
-    else
-        EXCEPTION1(ImproperUseException,
-                "Data set must have at least two X coordinates.");
-
-    if (rgrid->GetYCoordinates()->GetNumberOfTuples() > 0)
-        cellSize[1] = rgrid->GetYCoordinates()->GetTuple1(1) -
-            rgrid->GetYCoordinates()->GetTuple1(0);
-    else
-        EXCEPTION1(ImproperUseException,
-                "Data set must have at least two Y coordinates.");
-
-    if (topologicalDimension == 3)
-    {
-        if (rgrid->GetZCoordinates()->GetNumberOfTuples() > 0)
-            cellSize[2] = rgrid->GetZCoordinates()->GetTuple1(1) -
-                rgrid->GetZCoordinates()->GetTuple1(0);
-        else
-            EXCEPTION1(ImproperUseException,
-                    "Data set must have at least two Z coordinates.");
-    }
-    else
-        cellSize[2] = 0.0;
-
-    debug5 << "avtAMRStitchCellFilter::CreateStitchCells2D(): Cell size is ";
-    debug5 << cellSize[0] << " " << cellSize[1]  << " " << cellSize[2] << std::endl;
-
-    // Parent cell size is current cell size multiploed by refinement ratio
-    double parentCellSize[3];
-    for (int d = 0; d < topologicalDimension; ++d)
-        parentCellSize[d] = refinementRatio[d] * cellSize[d];
-    for (int d = topologicalDimension; d < 3; ++ d)
-        parentCellSize[d] = 0.0;
-
     // Create unstructured grid for stitch cells
     vtkPoints *stitchCellPts = vtkPoints::New();
     vtkUnstructuredGrid *stitchCellGrid = vtkUnstructuredGrid::New();
@@ -847,6 +918,37 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
     // We store a list of IDs for data attributes we need to copy from
     // the original mesh to the stitch mesh.
     std::list<vtkIdType> originalDataIds;
+    std::list<vtkIdList*> interpolatedDataIds;
+
+    // The following array maps cases to their base case. It is only used for
+    // debugging, i.e., annotating stitch cells with the base case they were
+    // generated from.
+    int baseCaseForCase[256] = {
+        0, 1, 1, 2, 1, 3, 2, 4, 1, 2, 3, 4, 2, 4, 4, 5, 1, 2, 3, 4, 6, 7, 7, 8, 3, 4,
+        9, 10, 7, 11, 12, 13, 1, 3, 2, 4, 3, 9, 4, 10, 6, 7, 7, 11, 7, 12, 8, 13, 2,
+        4, 4, 5, 7, 12, 11, 13, 7, 8, 12, 13, 14, 15, 15, 16, 1, 6, 3, 7, 2, 7, 4,
+        11, 3, 7, 9, 12, 4, 8, 10, 13, 3, 7, 9, 12, 7, 14, 12, 15, 9, 12, 17, 18, 12,
+        15, 18, 19, 2, 7, 4, 8, 4, 12, 5, 13, 7, 14, 12, 15, 11, 15, 13, 16, 4, 11,
+        10, 13, 8, 15, 13, 16, 12, 15, 18, 19, 15, 20, 19, 21, 1, 3, 6, 7, 3, 9, 7,
+        12, 2, 4, 7, 8, 4, 10, 11, 13, 2, 4, 7, 11, 7, 12, 14, 15, 4, 5, 12, 13, 8,
+        13, 15, 16, 3, 9, 7, 12, 9, 17, 12, 18, 7, 12, 14, 15, 12, 18, 15, 19, 4, 10,
+        8, 13, 12, 18, 15, 19, 11, 13, 15, 16, 15, 19, 20, 21, 2, 7, 7, 14, 4, 12, 8,
+        15, 4, 11, 12, 15, 5, 13, 13, 16, 4, 8, 12, 15, 11, 15, 15, 20, 10, 13, 18,
+        19, 13, 16, 19, 21, 4, 12, 11, 15, 10, 18, 13, 19, 8, 15, 15, 20, 13, 19, 16,
+        21, 5, 13, 13, 16, 13, 19, 16, 21, 13, 16, 19, 21, 16, 21, 21, 22
+    };
+
+    // This array stores the case number for each stitch cell. This array clobbers
+    // the scalar data when the debugging option "Add Case Number" is set in
+    // AMRStitchCellFilter attributes. Note that we add this information only for
+    // the 3D case.
+    vtkFloatArray *caseArray = 0;
+    if (atts.GetAddCaseNo())
+    {
+        caseArray = vtkFloatArray::New();
+        caseArray->SetName("CaseNo");
+    }
+
 
     vtkIdType *pointIds = new vtkIdType[dims[0]*dims[1]*dims[2]]; // FIXME: More memory efficient storage
     for (int i=0; i < dims[0]*dims[1]*dims[2]; ++i)
@@ -856,8 +958,8 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
     }
 
     // Needed to check whether coarse vertex is out of bounds
-    int maxGlobalI = levelLogicalDomainBoundingBox[3];
-    int maxGlobalJ = levelLogicalDomainBoundingBox[4];
+    int maxGlobalI = logicalDomainBoundingBox[level][3];
+    int maxGlobalJ = logicalDomainBoundingBox[level][4];
 
     if (topologicalDimension == 2)
     {
@@ -868,11 +970,13 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
         // Create stitch cells
         for (int j=-1; j<realDim[1]; ++j)
         {
-            if (baseIdx[1]+j<0 || baseIdx[1]+j+1 > maxGlobalJ) continue; // Skip cells connecting to outside the domain
+            if (baseIdx[1]+j<0 || baseIdx[1]+j+1 > maxGlobalJ)
+                continue; // Skip cells connecting to outside the domain
 
             for (int i=-1; i<realDim[0]; i+=((j==-1 || j==realDim[1]-1) ? 1 : realDim[0]))
             {
-                if (baseIdx[0]+i<0 || baseIdx[0]+i+1 > maxGlobalI) continue; // Skip cells connecting to outside the domain
+                if (baseIdx[0]+i<0 || baseIdx[0]+i+1 > maxGlobalI)
+                    continue; // Skip cells connecting to outside the domain
 
                 // Indices of the four vertices defining a potential stitch cell
                 int vIdx[4][2] = {
@@ -936,8 +1040,9 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                         int globalI = baseIdx[0] + vIdx[vtxNo][0];
                         int globalJ = baseIdx[1] + vIdx[vtxNo][1];
 
-                        assert(globalI>=0 && globalI <= maxGlobalI &&
-                               globalJ>=0 && globalJ <= maxGlobalJ);
+                        if(globalI<0 || globalI > maxGlobalI ||
+                           globalJ<0 || globalJ > maxGlobalJ)
+                            EXCEPTION1(VisItException, "Failed assert (internal error).");
                         /*
                         if (globalI < 0 || globalI > maxGlobalI ||
                                 globalJ < 0 || globalJ > maxGlobalJ)
@@ -965,10 +1070,12 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                             {
                                 // Fine cell
                                 pointIds[LOC(vI, vJ)] = stitchCellPts->InsertNextPoint(
-                                        domainOrigin[0] + (baseIdx[0] + vI  + 0.5) * cellSize[0],
-                                        domainOrigin[1] + (baseIdx[1] + vJ  + 0.5) * cellSize[1],
+                                        domainOrigin[0] + (baseIdx[0] + vI  + 0.5) * cellSize[level][0],
+                                        domainOrigin[1] + (baseIdx[1] + vJ  + 0.5) * cellSize[level][1],
                                         0
                                         );
+                                // FIXME: For mapped grids (not supported) topological and spatial dimension
+                                // could differ. If implemented, we need to check spatial dimension here.
                                 originalDataIds.push_back(vtkIdType(LOC(vI,vJ)));
                             }
                             else
@@ -978,10 +1085,12 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                 int pJ = (baseIdx[1] + vJ) / refinementRatio[1];
 
                                 pointIds[LOC(vI, vJ)] = stitchCellPts->InsertNextPoint(
-                                        domainOrigin[0] + (pI + 0.5) * parentCellSize[0],
-                                        domainOrigin[1] + (pJ + 0.5) * parentCellSize[1],
+                                        domainOrigin[0] + (pI + 0.5) * cellSize[level-1][0],
+                                        domainOrigin[1] + (pJ + 0.5) * cellSize[level-1][1],
                                         0
                                         );
+                                // FIXME: For mapped grids (not supported) topological and spatial dimension
+                                // could differ. If implemented, we need to check spatial dimension here.
                                 originalDataIds.push_back(vtkIdType(LOC(vI, vJ)));
 
                                 if ((vI == -1) || (vI == realDim[0]))
@@ -1058,6 +1167,7 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
             }
         }
 #if 0
+        // Debug output
         std::cout << "IDs of computed vertices:" << std::endl;
         for (int i=0; i<dims[0]*dims[1]; ++i)
         {
@@ -1070,7 +1180,7 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
     else
     {
         // Create 3D stitch cells
-        int maxGlobalK = levelLogicalDomainBoundingBox[5];
+        int maxGlobalK = logicalDomainBoundingBox[level][5];
 #ifdef LOC
 #undef LOC
 #endif
@@ -1233,9 +1343,9 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                     {
                                         // Fine cell
                                         pointIds[LOC(vI, vJ, vK)] = stitchCellPts->InsertNextPoint(
-                                                domainOrigin[0] + (baseIdx[0] + vI  + 0.5) * cellSize[0],
-                                                domainOrigin[1] + (baseIdx[1] + vJ  + 0.5) * cellSize[1],
-                                                domainOrigin[2] + (baseIdx[2] + vK  + 0.5) * cellSize[1]
+                                                domainOrigin[0] + (baseIdx[0] + vI  + 0.5) * cellSize[level][0],
+                                                domainOrigin[1] + (baseIdx[1] + vJ  + 0.5) * cellSize[level][1],
+                                                domainOrigin[2] + (baseIdx[2] + vK  + 0.5) * cellSize[level][2]
                                                 );
                                         originalDataIds.push_back(vtkIdType(LOC(vI, vJ, vK)));
                                     }
@@ -1247,9 +1357,9 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                         int pK = (baseIdx[2] + vK) / refinementRatio[2];
 
                                         pointIds[LOC(vI,vJ,vK)] = stitchCellPts->InsertNextPoint(
-                                                domainOrigin[0] + (pI + 0.5) * parentCellSize[0],
-                                                domainOrigin[1] + (pJ + 0.5) * parentCellSize[1],
-                                                domainOrigin[2] + (pK + 0.5) * parentCellSize[2]
+                                                domainOrigin[0] + (pI + 0.5) * cellSize[level-1][0],
+                                                domainOrigin[1] + (pJ + 0.5) * cellSize[level-1][1],
+                                                domainOrigin[2] + (pK + 0.5) * cellSize[level-1][2]
                                                 );
                                         originalDataIds.push_back(vtkIdType(LOC(vI, vJ, vK)));
 
@@ -1344,11 +1454,23 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                             std::cout << std::endl;
 #endif
                             if (numVtcs == 4)
+                            {
                                 ugrid->InsertNextCell(VTK_TETRA, 4, &vPtId[0]);
+                                if (atts.GetAddCaseNo())
+                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
+                            }
                             else if (numVtcs == 5)
+                            {
                                 ugrid->InsertNextCell(VTK_PYRAMID, 5, &vPtId[0]);
+                                if (atts.GetAddCaseNo())
+                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
+                            }
                             else if (numVtcs == 6)
+                            {
                                 ugrid->InsertNextCell(VTK_WEDGE, 6, &vPtId[0]);
+                                if (atts.GetAddCaseNo())
+                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
+                            }
                             else if (numVtcs == 7)
                             {
                                 double centroid[3] = { 0, 0, 0 };
@@ -1362,9 +1484,13 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                 for (int dim=0; dim<3; ++dim)
                                     centroid[dim]/=7.;
                                 vtkIdType centroidId = stitchCellPts->InsertNextPoint(centroid);
-                                // FIXME: Interpolate value and add to attributes
-                                originalDataIds.push_back(vtkIdType(LOC(vPtId[0], vPtId[1], vPtId[2])));
-                                std::cerr << "avtAMRStitchCellFilter: Internal error: Copied value where I should have interpolated. Need to implement interpolation for centroid!" << std::endl;
+                                originalDataIds.push_back(-1);
+                                interpolatedDataIds.push_back(vtkIdList::New());
+                                interpolatedDataIds.back()->SetNumberOfIds(7);
+                                for (vtkIdType cPtNo=0; cPtNo<7; ++cPtNo)
+                                {
+                                    interpolatedDataIds.back()->SetId(cPtNo, vPtId[cPtNo]);
+                                }
 
                                 vtkIdType c0[5] = { vPtId[0], vPtId[1], vPtId[2], vPtId[3], centroidId };
                                 vtkIdType c1[5] = { vPtId[0], vPtId[4], vPtId[5], vPtId[1], centroidId };
@@ -1380,9 +1506,26 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                 ugrid->InsertNextCell(VTK_TETRA, 4, c4);
                                 ugrid->InsertNextCell(VTK_TETRA, 4, c5);
                                 ugrid->InsertNextCell(VTK_TETRA, 4, c6);
+
+                                if (atts.GetAddCaseNo())
+                                {
+                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
+                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
+                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
+                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
+                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
+                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
+                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
+                                }
                             }
                             else if (numVtcs == 8)
+                            {
                                 ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, &vPtId[0]);
+                                if (atts.GetAddCaseNo())
+                                {
+                                    caseArray->InsertNextValue(baseCaseForCase[caseNo]);
+                                }
+                            }
                             else
                                 EXCEPTION1(VisItException, "Invalid cell type (internal error).");
                         }
@@ -1392,19 +1535,49 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
         }
     }
 
-    // Copy attributes
-    ugrid->GetPointData()->CopyAllocate(rgrid->GetCellData(), originalDataIds.size());
-    int idx = 0;
-    for (std::list<vtkIdType>::const_iterator it = originalDataIds.begin();
-         it != originalDataIds.end(); ++it)
+    if ((topologicalDimension == 3) && atts.GetAddCaseNo())
     {
-        ugrid->GetPointData()->CopyData(rgrid->GetCellData(), *it, idx);
-        ++idx;
+        // For debug purposes.
+        ugrid->GetCellData()->SetScalars(caseArray);
+        ugrid->GetCellData()->SetActiveScalars("CaseNo");
+        caseArray->Delete();
+    }
+    else
+    {
+        // Copy attributes
+        ugrid->GetPointData()->InterpolateAllocate(rgrid->GetCellData(), originalDataIds.size());
+        int idx = 0;
+        std::list<vtkIdList*>::const_iterator iVLIt = interpolatedDataIds.begin();
+        vtkIdList *oneIdList = vtkIdList::New();
+        oneIdList->SetNumberOfIds(1);
+        double oneWeight[1] = { 1.0 };
+        double sevenWeights[7] = { 1./7., 1./7., 1./7., 1./7., 1./7., 1./7., 1./7. };
+
+        // FIXME: Possibly use combination of Copy and Interpolate point to improve performance.
+        // However, VTK does not seem to support mixing these calls.
+        for (std::list<vtkIdType>::const_iterator it = originalDataIds.begin();
+                it != originalDataIds.end(); ++it)
+        {
+            if (*it != -1)
+            {
+                oneIdList->SetId(0, *it);
+                ugrid->GetPointData()->InterpolatePoint(rgrid->GetCellData(), idx, oneIdList, oneWeight);
+            }
+            else
+            {
+                ugrid->GetPointData()->InterpolatePoint(rgrid->GetCellData(), idx, *iVLIt, sevenWeights);
+                (*iVLIt)->Delete();
+                ++iVLIt;
+            }
+            ++idx;
+        }
+
+        // Clean-up
+        oneIdList->Delete(); // FIXME: Move to regular clean-up after debugging is done
     }
 
     // Clean-up
     delete[] pointIds;
-
     return ugrid;
 }
 
@@ -1427,7 +1600,8 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
 
 vtkDataSet *
 avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
-        int level, int dims[3], const vtkIdType* refinedInSameLevelDomain)
+        int level, int dims[3], int baseIdx[3], int ghostOffset[3],
+        const vtkIdType* refinedInSameLevelDomain)
 {
 
     // Create reuslt mesh
@@ -1435,6 +1609,37 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
     // VTK expects number of samples not cells. The number of cells stored in our
     // dims[] corresponds to the number of samples of the dual grid.
     result->SetDimensions(dims);
+
+    vtkFloatArray *xCoords = vtkFloatArray::New();
+    for (int i = 0; i<dims[0]; ++i)
+        xCoords->InsertNextTuple1(
+                domainOrigin[0] + (i + baseIdx[0] - ghostOffset[0] +  0.5) * cellSize[level][0]
+                );
+    result->SetXCoordinates(xCoords);
+    xCoords->Delete();
+
+    vtkFloatArray *yCoords = vtkFloatArray::New();
+    for (int j = 0; j<dims[1]; ++j)
+        yCoords->InsertNextTuple1(
+                domainOrigin[1] + (j + baseIdx[1] - ghostOffset[1] +  0.5) * cellSize[level][1]
+                );
+    result->SetYCoordinates(yCoords);
+    yCoords->Delete();
+
+    if (topologicalDimension == 3)
+    {
+        vtkFloatArray *zCoords = vtkFloatArray::New();
+        for (int k = 0; k<dims[2]; ++k)
+            zCoords->InsertNextTuple1(
+                    domainOrigin[2] + (k + baseIdx[2] - ghostOffset[2] +  0.5) * cellSize[level][2]
+                    );
+        result->SetZCoordinates(zCoords);
+        zCoords->Delete();
+    }
+
+#if 0
+    // This is the original dual mesh coordinate calculation code. It leads to
+    // numerical accuracy issues.
     vtkDataArray *res_x_coords = ContractDual(rgrid->GetXCoordinates());
     result->SetXCoordinates(res_x_coords);
     res_x_coords->Delete();
@@ -1447,6 +1652,7 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
         result->SetZCoordinates(res_z_coords);
         res_z_coords->Delete();
     }
+#endif
 
     // Shallow copy the field data
     result->GetFieldData()->ShallowCopy(rgrid->GetFieldData());
@@ -1601,6 +1807,8 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
     return result;
 }
 
+#if 0
+
 // ****************************************************************************
 //  Method: avtAMRStitchCellFilter::ContractDual
 //
@@ -1631,3 +1839,5 @@ avtAMRStitchCellFilter::ContractDual(vtkDataArray *coords)
     }
     return res_coords;
 }
+
+#endif

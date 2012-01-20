@@ -3178,12 +3178,16 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //    Hank Childs, Wed Aug 31 08:45:01 PDT 2011
 //    Add support for T-intersections.
 //
+//    Gunther H. Weber, Thu Jan 19 14:35:59 PST 2012
+//    Select new support for T-intersections by defining 
+//    CREATE_GHOSTS_FOR_T_INTERSECTIONS
+//
 // ****************************************************************************
 
 void
 avtStructuredDomainBoundaries::CalculateBoundaries(void)
 {
-#if 1
+#ifndef CREATE_GHOSTS_FOR_T_INTERSECTIONS
    if (haveCalculatedBoundaries)
         return;
 

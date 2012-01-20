@@ -75,6 +75,16 @@ class vtkDataArray;
 //  resolution mesh (level 0) was refined, everywhere, to the resolution
 //  of the given domain's level.
 //
+//  Addendum (Gunther H. Weber):
+//  For the AMRStitchCell operator to work correctly, use SetLevelCellSizes()
+//  to provide the grid spacing in this level. Usually, cell sizes for level
+//  L should be the cell sizes for level L-1 divided by the refinement ratio
+//  for level L. However, some formats (e.g., BoxLib) specify this information
+//  for each level, and to avoid numerical inaccuracies, the cell size in the 
+//  reader (when constructing a mesh) should be the same as the cell size used
+//  by stitch cell generations (otherwise, levels and stitch cells do not match
+//  up).
+//
 //  Programmer:  Mark C. Miller 
 //  Creation:    October 13, 2003
 //
@@ -98,6 +108,12 @@ class vtkDataArray;
 //    Tom Fogal, Fri Aug  6 16:15:11 MDT 2010
 //    Add method to get the total number of domains we know about.
 //
+//    Gunther H. Weber, Wed Jan 18 17:51:27 PST 2012
+//    Added information about cell sizes in levels and methods to set and
+//    access them. Added method to get number of levels. Added method to
+//    access level refinement ratios. In constructor pass arguments directly
+//    instead of creating object to be copied.
+//
 // ****************************************************************************
 
 typedef struct {
@@ -111,10 +127,9 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
 {
     public:
                       avtStructuredDomainNesting(int nDoms, int nLevels)
-                         : avtDomainNesting(),
-                         numDimensions(3),
-                         domainNesting(std::vector<avtNestedDomainInfo_t>(nDoms)),
-                         levelRatios(std::vector< std::vector<int> >(nLevels)) {} ;
+                         : avtDomainNesting(), numDimensions(3),
+                         domainNesting(nDoms), levelRatios(nLevels),
+                         levelCellSizes(nLevels) {} ;
         virtual      ~avtStructuredDomainNesting() {} ;
 
         static void   Destruct(void*);
@@ -124,10 +139,19 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
                                  std::vector<vtkDataSet*> meshes); 
 
         void          SetNumDimensions(int numDims)
-                          {numDimensions = numDims; };
+                          { numDimensions = numDims; };
 
         void          SetLevelRefinementRatios(int level, std::vector<int> ratios)
                           { levelRatios[level] = ratios; };
+        const std::vector<int>&
+                      GetLevelRefinementRatios(int level)
+                          { return levelRatios[level]; }
+
+        void          SetLevelCellSizes(int level, std::vector<double> sizes)
+                          { levelCellSizes[level] = sizes; };
+        const std::vector<double>&
+                      GetLevelCellSizes(int level)
+                          { return levelCellSizes[level]; }
 
         void          SetNestingForDomain(int dom, int level,
                                           std::vector<int> childDomains,
@@ -155,6 +179,8 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
         std::vector<int>   GetDomainLogicalExtents(int domain);
         int           GetNumberOfChildren(int domain);
         size_t        GetNumberOfDomains() const;
+        size_t        GetNumberOfLevels() const
+                          { return levelRatios.size(); }
 
     protected:
 
@@ -167,5 +193,6 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
         std::vector<avtNestedDomainInfo_t> domainNesting; 
 
         std::vector< std::vector<int> > levelRatios; 
+        std::vector< std::vector<double> > levelCellSizes;
 };
 #endif

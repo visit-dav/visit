@@ -1233,6 +1233,9 @@ avtChomboFileFormat::InitializeReader(void)
 //    Gunther H. Weber, Mon Jan 10 10:42:45 PST 2011
 //    Add setting of refinement ratios.
 //
+//    Gunther H. Weber, Wed Jan 18 18:09:21 PST 2012
+//    Add setting of cell sizes.
+//
 // ****************************************************************************
 
 void
@@ -1269,6 +1272,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     // Calculate what the refinement ratio is from one level to the next.
     //
     std::vector<int> rr(dimension);
+    std::vector<double> cs(dimension);
     for (level = 0 ; level < num_levels ; level++)
     {
         if (level == 0)
@@ -1282,6 +1286,10 @@ avtChomboFileFormat::CalculateDomainNesting(void)
                 rr[j] = refinement_ratio[level-1];
         }
         dn->SetLevelRefinementRatios(level, rr);
+
+        for (int d=0; d < dimension; ++d)
+            cs[d] = dx[level]*aspectRatio[d];
+        dn-SetLevelCellSizes(cs);
     }
 
     //
