@@ -1,0 +1,8 @@
+
+A:  earth.nc
+mesh1350x675 
+Point: <671, 617>
+Node:  833621
+Incident Zones:  833003  831654  833004  831655  
+population:  <nodal> = 0
+
