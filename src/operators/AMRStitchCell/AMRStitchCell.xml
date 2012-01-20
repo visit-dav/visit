@@ -16,5 +16,15 @@
       </Enum>
       <Field name="CreateCellsOfType" label="Create cells of type" type="enum" subtype="CreateType">
       </Field>
+      <Field name="AddCaseNo" label="Add case number" type="bool">
+      </Field>
+      <Field name="OnlyProcessListedDomains" label="Only process listed domains" type="bool">
+      </Field>
+      <Field name="Domains" label="Domains" type="intVector">
+      </Field>
+      <Field name="OnlyProcessLevel" label="Only process level" type="bool">
+      </Field>
+      <Field name="Level" label="Level" type="int">
+      </Field>
     </Attribute>
   </Plugin>

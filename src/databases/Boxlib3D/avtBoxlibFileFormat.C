@@ -1744,6 +1744,9 @@ AVTBOXLIBFILEFORMAT::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Wed Jan  5 10:51:33 PST 2011
 //    Add setting of refinement ratios.
 //
+//    Gunther H. Weber, Wed Jan 18 18:05:38 PST 2012
+//    Add setting of cell sizes.
+//
 // ****************************************************************************
 
 void
@@ -1776,6 +1779,7 @@ AVTBOXLIBFILEFORMAT::CalculateDomainNesting(void)
     // Calculate what the refinement ratio is from one level to the next.
     //
     vector<int> rr(BL_SPACEDIM);
+    vector<double> cs(BL_SPACEDIM);
     for (level = 0 ; level < nLevels ; level++)
     {
         if (level == 0)
@@ -1795,6 +1799,13 @@ AVTBOXLIBFILEFORMAT::CalculateDomainNesting(void)
 #endif
         }
         dn->SetLevelRefinementRatios(level, rr);
+
+        cs[0] = deltaX[level];
+        cs[1] = deltaY[level];
+#if BL_SPACEDIM==3
+        cs[2] = deltaZ[level];
+#endif
+        dn->SetLevelCellSizes(level, cs);
     }
 
     //

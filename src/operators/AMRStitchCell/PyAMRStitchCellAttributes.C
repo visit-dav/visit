@@ -95,6 +95,39 @@ PyAMRStitchCellAttributes_ToString(const AMRStitchCellAttributes *atts, const ch
           break;
     }
 
+    if(atts->GetAddCaseNo())
+        SNPRINTF(tmpStr, 1000, "%sAddCaseNo = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sAddCaseNo = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetOnlyProcessListedDomains())
+        SNPRINTF(tmpStr, 1000, "%sOnlyProcessListedDomains = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sOnlyProcessListedDomains = 0\n", prefix);
+    str += tmpStr;
+    {   const intVector &Domains = atts->GetDomains();
+        SNPRINTF(tmpStr, 1000, "%sDomains = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < Domains.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", Domains[i]);
+            str += tmpStr;
+            if(i < Domains.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    if(atts->GetOnlyProcessLevel())
+        SNPRINTF(tmpStr, 1000, "%sOnlyProcessLevel = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sOnlyProcessLevel = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sLevel = %d\n", prefix, atts->GetLevel());
+    str += tmpStr;
     return str;
 }
 
@@ -140,12 +173,181 @@ AMRStitchCellAttributes_GetCreateCellsOfType(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+AMRStitchCellAttributes_SetAddCaseNo(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the AddCaseNo in the object.
+    obj->data->SetAddCaseNo(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+AMRStitchCellAttributes_GetAddCaseNo(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetAddCaseNo()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+AMRStitchCellAttributes_SetOnlyProcessListedDomains(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the OnlyProcessListedDomains in the object.
+    obj->data->SetOnlyProcessListedDomains(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+AMRStitchCellAttributes_GetOnlyProcessListedDomains(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOnlyProcessListedDomains()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+AMRStitchCellAttributes_SetDomains(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+
+    intVector  &vec = obj->data->GetDomains();
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the Domains in the object as modified.
+    obj->data->SelectDomains();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+AMRStitchCellAttributes_GetDomains(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the Domains.
+    const intVector &Domains = obj->data->GetDomains();
+    PyObject *retval = PyTuple_New(Domains.size());
+    for(size_t i = 0; i < Domains.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(Domains[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+AMRStitchCellAttributes_SetOnlyProcessLevel(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the OnlyProcessLevel in the object.
+    obj->data->SetOnlyProcessLevel(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+AMRStitchCellAttributes_GetOnlyProcessLevel(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOnlyProcessLevel()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+AMRStitchCellAttributes_SetLevel(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the Level in the object.
+    obj->data->SetLevel((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+AMRStitchCellAttributes_GetLevel(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetLevel()));
+    return retval;
+}
+
 
 
 PyMethodDef PyAMRStitchCellAttributes_methods[AMRSTITCHCELLATTRIBUTES_NMETH] = {
     {"Notify", AMRStitchCellAttributes_Notify, METH_VARARGS},
     {"SetCreateCellsOfType", AMRStitchCellAttributes_SetCreateCellsOfType, METH_VARARGS},
     {"GetCreateCellsOfType", AMRStitchCellAttributes_GetCreateCellsOfType, METH_VARARGS},
+    {"SetAddCaseNo", AMRStitchCellAttributes_SetAddCaseNo, METH_VARARGS},
+    {"GetAddCaseNo", AMRStitchCellAttributes_GetAddCaseNo, METH_VARARGS},
+    {"SetOnlyProcessListedDomains", AMRStitchCellAttributes_SetOnlyProcessListedDomains, METH_VARARGS},
+    {"GetOnlyProcessListedDomains", AMRStitchCellAttributes_GetOnlyProcessListedDomains, METH_VARARGS},
+    {"SetDomains", AMRStitchCellAttributes_SetDomains, METH_VARARGS},
+    {"GetDomains", AMRStitchCellAttributes_GetDomains, METH_VARARGS},
+    {"SetOnlyProcessLevel", AMRStitchCellAttributes_SetOnlyProcessLevel, METH_VARARGS},
+    {"GetOnlyProcessLevel", AMRStitchCellAttributes_GetOnlyProcessLevel, METH_VARARGS},
+    {"SetLevel", AMRStitchCellAttributes_SetLevel, METH_VARARGS},
+    {"GetLevel", AMRStitchCellAttributes_GetLevel, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -183,6 +385,16 @@ PyAMRStitchCellAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "StitchCells") == 0)
         return PyInt_FromLong(long(AMRStitchCellAttributes::StitchCells));
 
+    if(strcmp(name, "AddCaseNo") == 0)
+        return AMRStitchCellAttributes_GetAddCaseNo(self, NULL);
+    if(strcmp(name, "OnlyProcessListedDomains") == 0)
+        return AMRStitchCellAttributes_GetOnlyProcessListedDomains(self, NULL);
+    if(strcmp(name, "Domains") == 0)
+        return AMRStitchCellAttributes_GetDomains(self, NULL);
+    if(strcmp(name, "OnlyProcessLevel") == 0)
+        return AMRStitchCellAttributes_GetOnlyProcessLevel(self, NULL);
+    if(strcmp(name, "Level") == 0)
+        return AMRStitchCellAttributes_GetLevel(self, NULL);
 
     return Py_FindMethod(PyAMRStitchCellAttributes_methods, self, name);
 }
@@ -199,6 +411,16 @@ PyAMRStitchCellAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "CreateCellsOfType") == 0)
         obj = AMRStitchCellAttributes_SetCreateCellsOfType(self, tuple);
+    else if(strcmp(name, "AddCaseNo") == 0)
+        obj = AMRStitchCellAttributes_SetAddCaseNo(self, tuple);
+    else if(strcmp(name, "OnlyProcessListedDomains") == 0)
+        obj = AMRStitchCellAttributes_SetOnlyProcessListedDomains(self, tuple);
+    else if(strcmp(name, "Domains") == 0)
+        obj = AMRStitchCellAttributes_SetDomains(self, tuple);
+    else if(strcmp(name, "OnlyProcessLevel") == 0)
+        obj = AMRStitchCellAttributes_SetOnlyProcessLevel(self, tuple);
+    else if(strcmp(name, "Level") == 0)
+        obj = AMRStitchCellAttributes_SetLevel(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

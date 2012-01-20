@@ -116,6 +116,11 @@ void AMRStitchCellAttributes::Init()
 void AMRStitchCellAttributes::Copy(const AMRStitchCellAttributes &obj)
 {
     CreateCellsOfType = obj.CreateCellsOfType;
+    AddCaseNo = obj.AddCaseNo;
+    OnlyProcessListedDomains = obj.OnlyProcessListedDomains;
+    Domains = obj.Domains;
+    OnlyProcessLevel = obj.OnlyProcessLevel;
+    Level = obj.Level;
 
     AMRStitchCellAttributes::SelectAll();
 }
@@ -273,7 +278,12 @@ bool
 AMRStitchCellAttributes::operator == (const AMRStitchCellAttributes &obj) const
 {
     // Create the return value
-    return ((CreateCellsOfType == obj.CreateCellsOfType));
+    return ((CreateCellsOfType == obj.CreateCellsOfType) &&
+            (AddCaseNo == obj.AddCaseNo) &&
+            (OnlyProcessListedDomains == obj.OnlyProcessListedDomains) &&
+            (Domains == obj.Domains) &&
+            (OnlyProcessLevel == obj.OnlyProcessLevel) &&
+            (Level == obj.Level));
 }
 
 // ****************************************************************************
@@ -417,7 +427,12 @@ AMRStitchCellAttributes::NewInstance(bool copy) const
 void
 AMRStitchCellAttributes::SelectAll()
 {
-    Select(ID_CreateCellsOfType, (void *)&CreateCellsOfType);
+    Select(ID_CreateCellsOfType,        (void *)&CreateCellsOfType);
+    Select(ID_AddCaseNo,                (void *)&AddCaseNo);
+    Select(ID_OnlyProcessListedDomains, (void *)&OnlyProcessListedDomains);
+    Select(ID_Domains,                  (void *)&Domains);
+    Select(ID_OnlyProcessLevel,         (void *)&OnlyProcessLevel);
+    Select(ID_Level,                    (void *)&Level);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -454,6 +469,36 @@ AMRStitchCellAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
     {
         addToParent = true;
         node->AddNode(new DataNode("CreateCellsOfType", CreateType_ToString(CreateCellsOfType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_AddCaseNo, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("AddCaseNo", AddCaseNo));
+    }
+
+    if(completeSave || !FieldsEqual(ID_OnlyProcessListedDomains, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("OnlyProcessListedDomains", OnlyProcessListedDomains));
+    }
+
+    if(completeSave || !FieldsEqual(ID_Domains, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("Domains", Domains));
+    }
+
+    if(completeSave || !FieldsEqual(ID_OnlyProcessLevel, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("OnlyProcessLevel", OnlyProcessLevel));
+    }
+
+    if(completeSave || !FieldsEqual(ID_Level, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("Level", Level));
     }
 
 
@@ -508,6 +553,16 @@ AMRStitchCellAttributes::SetFromNode(DataNode *parentNode)
                 SetCreateCellsOfType(value);
         }
     }
+    if((node = searchNode->GetNode("AddCaseNo")) != 0)
+        SetAddCaseNo(node->AsBool());
+    if((node = searchNode->GetNode("OnlyProcessListedDomains")) != 0)
+        SetOnlyProcessListedDomains(node->AsBool());
+    if((node = searchNode->GetNode("Domains")) != 0)
+        SetDomains(node->AsIntVector());
+    if((node = searchNode->GetNode("OnlyProcessLevel")) != 0)
+        SetOnlyProcessLevel(node->AsBool());
+    if((node = searchNode->GetNode("Level")) != 0)
+        SetLevel(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -521,6 +576,41 @@ AMRStitchCellAttributes::SetCreateCellsOfType(AMRStitchCellAttributes::CreateTyp
     Select(ID_CreateCellsOfType, (void *)&CreateCellsOfType);
 }
 
+void
+AMRStitchCellAttributes::SetAddCaseNo(bool AddCaseNo_)
+{
+    AddCaseNo = AddCaseNo_;
+    Select(ID_AddCaseNo, (void *)&AddCaseNo);
+}
+
+void
+AMRStitchCellAttributes::SetOnlyProcessListedDomains(bool OnlyProcessListedDomains_)
+{
+    OnlyProcessListedDomains = OnlyProcessListedDomains_;
+    Select(ID_OnlyProcessListedDomains, (void *)&OnlyProcessListedDomains);
+}
+
+void
+AMRStitchCellAttributes::SetDomains(const intVector &Domains_)
+{
+    Domains = Domains_;
+    Select(ID_Domains, (void *)&Domains);
+}
+
+void
+AMRStitchCellAttributes::SetOnlyProcessLevel(bool OnlyProcessLevel_)
+{
+    OnlyProcessLevel = OnlyProcessLevel_;
+    Select(ID_OnlyProcessLevel, (void *)&OnlyProcessLevel);
+}
+
+void
+AMRStitchCellAttributes::SetLevel(int Level_)
+{
+    Level = Level_;
+    Select(ID_Level, (void *)&Level);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -529,6 +619,52 @@ AMRStitchCellAttributes::CreateType
 AMRStitchCellAttributes::GetCreateCellsOfType() const
 {
     return CreateType(CreateCellsOfType);
+}
+
+bool
+AMRStitchCellAttributes::GetAddCaseNo() const
+{
+    return AddCaseNo;
+}
+
+bool
+AMRStitchCellAttributes::GetOnlyProcessListedDomains() const
+{
+    return OnlyProcessListedDomains;
+}
+
+const intVector &
+AMRStitchCellAttributes::GetDomains() const
+{
+    return Domains;
+}
+
+intVector &
+AMRStitchCellAttributes::GetDomains()
+{
+    return Domains;
+}
+
+bool
+AMRStitchCellAttributes::GetOnlyProcessLevel() const
+{
+    return OnlyProcessLevel;
+}
+
+int
+AMRStitchCellAttributes::GetLevel() const
+{
+    return Level;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+AMRStitchCellAttributes::SelectDomains()
+{
+    Select(ID_Domains, (void *)&Domains);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -555,7 +691,12 @@ AMRStitchCellAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_CreateCellsOfType: return "CreateCellsOfType";
+    case ID_CreateCellsOfType:        return "CreateCellsOfType";
+    case ID_AddCaseNo:                return "AddCaseNo";
+    case ID_OnlyProcessListedDomains: return "OnlyProcessListedDomains";
+    case ID_Domains:                  return "Domains";
+    case ID_OnlyProcessLevel:         return "OnlyProcessLevel";
+    case ID_Level:                    return "Level";
     default:  return "invalid index";
     }
 }
@@ -580,7 +721,12 @@ AMRStitchCellAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_CreateCellsOfType: return FieldType_enum;
+    case ID_CreateCellsOfType:        return FieldType_enum;
+    case ID_AddCaseNo:                return FieldType_bool;
+    case ID_OnlyProcessListedDomains: return FieldType_bool;
+    case ID_Domains:                  return FieldType_intVector;
+    case ID_OnlyProcessLevel:         return FieldType_bool;
+    case ID_Level:                    return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -605,7 +751,12 @@ AMRStitchCellAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_CreateCellsOfType: return "enum";
+    case ID_CreateCellsOfType:        return "enum";
+    case ID_AddCaseNo:                return "bool";
+    case ID_OnlyProcessListedDomains: return "bool";
+    case ID_Domains:                  return "intVector";
+    case ID_OnlyProcessLevel:         return "bool";
+    case ID_Level:                    return "int";
     default:  return "invalid index";
     }
 }
@@ -635,6 +786,31 @@ AMRStitchCellAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
     case ID_CreateCellsOfType:
         {  // new scope
         retval = (CreateCellsOfType == obj.CreateCellsOfType);
+        }
+        break;
+    case ID_AddCaseNo:
+        {  // new scope
+        retval = (AddCaseNo == obj.AddCaseNo);
+        }
+        break;
+    case ID_OnlyProcessListedDomains:
+        {  // new scope
+        retval = (OnlyProcessListedDomains == obj.OnlyProcessListedDomains);
+        }
+        break;
+    case ID_Domains:
+        {  // new scope
+        retval = (Domains == obj.Domains);
+        }
+        break;
+    case ID_OnlyProcessLevel:
+        {  // new scope
+        retval = (OnlyProcessLevel == obj.OnlyProcessLevel);
+        }
+        break;
+    case ID_Level:
+        {  // new scope
+        retval = (Level == obj.Level);
         }
         break;
     default: retval = false;

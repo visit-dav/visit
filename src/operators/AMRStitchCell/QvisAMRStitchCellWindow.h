@@ -87,10 +87,22 @@ class QvisAMRStitchCellWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void CreateCellsOfTypeChanged(int val);
+    void AddCaseNoChanged(bool val);
+    void OnlyProcessListedDomainsChanged(bool val);
+    void DomainsProcessText();
+    void OnlyProcessLevelChanged(bool val);
+    void LevelProcessText();
   private:
     QWidget      *CreateCellsOfType;
     QButtonGroup *CreateCellsOfTypeButtonGroup;
+    QCheckBox *AddCaseNo;
+    QCheckBox *OnlyProcessListedDomains;
+    QLineEdit *Domains;
+    QCheckBox *OnlyProcessLevel;
+    QLineEdit *Level;
     QLabel *CreateCellsOfTypeLabel;
+    QLabel *DomainsLabel;
+    QLabel *LevelLabel;
 
     AMRStitchCellAttributes *atts;
 };
