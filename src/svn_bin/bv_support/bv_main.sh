@@ -21,6 +21,15 @@ unset CDPATH
 ### export TAR=/usr/local/bin/tar # Up and Purple
 export TAR=tar
 
+# Determine if gfortran is present. This overly complex coding is to prevent
+# the "which" command from echoing failure to the user.
+which gfortran >& /dev/null
+if [[ $? == 0 ]]; then
+    export GFORTRAN=`which gfortran | grep '^/'`
+else
+    export GFORTRAN=""
+fi
+
 export OPSYS=${OPSYS:-$(uname -s)}
 export PROC=${PROC:-$(uname -p)}
 export REL=${REL:-$(uname -r)}
@@ -45,7 +54,7 @@ if [[ "$OPSYS" == "Darwin" ]]; then
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
    # Disable Fortran on Darwin since it causes HDF5, H5Part, Silo, ADIOS builds to explode.
-   export FC_COMPILER="" #${FC_COMPILER:-$(which gfortran | grep '^/')}
+   export FC_COMPILER=""
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CFLAGS=${CFLAGS:-"-fno-common -fexceptions"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -110,7 +119,7 @@ elif [[ "$OPSYS" == "Linux" ]]; then
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
-   export FC_COMPILER=${FC_COMPILER:-$(which gfortran | grep '^/')}
+   export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
    export MESA_TARGET=${MESA_TARGET:-"linux"}
@@ -134,7 +143,7 @@ elif [[ "$OPSYS" == "IRIX64" ]]; then
    export ARCH="irix64" # You can change this to say RHEL, SuSE, Fedora, etc.
    export SO_EXT="so"
    export C_COMPILER=${C_COMPILER:-"gcc"}
-   export FC_COMPILER=${FC_COMPILER:-$(which gfortran | grep '^/')}
+   export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -144,7 +153,7 @@ elif [[ "$OPSYS" == "SunOS" ]]; then
    export ARCH=${ARCH:-"sunos5"}
    export SO_EXT="so"
    export C_COMPILER=${C_COMPILER:-"gcc"}
-   export FC_COMPILER=${FC_COMPILER:-$(which gfortran | grep '^/')}
+   export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
@@ -179,7 +188,7 @@ else
       QT_PLATFORM="linux-g++-64"
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
-   export FC_COMPILER=${FC_COMPILER:-$(which gfortran | grep '^/')}
+   export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
