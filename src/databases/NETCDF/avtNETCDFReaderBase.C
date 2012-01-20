@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -45,8 +45,11 @@
 #include <DebugStream.h>
 #include <NETCDFFileObject.h>
 
+#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
+
 // ****************************************************************************
-//  Method: avtCCSM constructor
+//  Method: avtNETCDFReaderBase constructor
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Wed Jul 11 11:28:20 PDT 2007
@@ -405,4 +408,195 @@ avtNETCDFReaderBase::ReadArray(const char *varname)
     }
 
     return arr;
+}
+
+// ****************************************************************************
+// Method: avtNETCDFReaderBase::HandleMissingData
+//
+// Purpose: 
+//   Look for attributes that will inform the metadata for this variable of
+//   the missing data values and style.
+//
+// Arguments:
+//   varname : The name of the variable whose attributes we'll check.
+//   smd     : The scalar metadata whose missing data we're setting.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan  4 15:43:55 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtNETCDFReaderBase::HandleMissingData(const std::string &varname, avtScalarMetaData *smd)
+{
+    const char *fill_value[] = {"valid_range", "valid_min", "valid_max",
+        "missing_value", "fill_value", "_FillValue", "_Fill_Value_"};
+    const int operation[] = {4, 2, 3, 1, 1, 1, 1};
+    for(int i = 0; i < 7; ++i)
+    {
+        double *missingData = NULL;
+        int nMissingData = 0;
+        TypeEnum t = NO_TYPE;
+        if(fileObject->ReadAttributeAsDouble(varname.c_str(), fill_value[i],
+            &t, &missingData, &nMissingData))
+        {
+            debug4 << "HandleMissingData for " << varname
+                   << " attribute=" << fill_value[i] << " {";
+            for(int j = 0; j < nMissingData; ++j)
+                debug4 << " " << missingData[j];
+            debug4 << "}" << endl;
+
+            // If we have a missing_value with the following types then let's see
+            // if we need to scale the data. If we scale the data then we'll scale
+            // our missing data value too. NETCDF recommends checking the missing
+            // value before the data are scaled but we don't do our missing data
+            // checks until later in the generic db, which means we'll need to
+            // scale the missing value too if it is to match the scaled data values.
+            if(operation[i] == 1 && 
+               (t == CHARARRAY_TYPE || t == UCHARARRAY_TYPE || t == SHORTARRAY_TYPE))
+            {
+                double scale = 1., offset = 0.;
+                if(ReadScaleAndOffset(varname, &t, &scale, &offset))
+                {
+                    debug4 << "Scaling missing data values" << endl;
+                    for(vtkIdType j = 0; j < nMissingData; ++j)
+                        missingData[j] = missingData[j] * scale + offset;
+                }
+            }
+
+            double arr[2];
+            arr[0] = missingData[0];
+            arr[1] = (nMissingData == 1) ? missingData[0] : missingData[1];
+            smd->SetMissingData(arr);
+            if(operation[i] == 1)
+                smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+            else if(operation[i] == 2)
+                smd->SetMissingDataType(avtScalarMetaData::MissingData_Valid_Min);
+            else if(operation[i] == 3)
+                smd->SetMissingDataType(avtScalarMetaData::MissingData_Valid_Max);
+            else
+                smd->SetMissingDataType(avtScalarMetaData::MissingData_Valid_Range);
+
+            delete [] missingData;
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+// Method: avtNETCDFReaderBase::ReadScaleAndOffset
+//
+// Purpose: 
+//   Read the scale and the offset (if there are any) for the variable.
+//
+// Arguments:
+//   var : The variable name.
+//   t   : The type of the attributes.
+//   scale : The return scale.
+//   offset : The return offset.
+//
+// Returns:    True on success and false on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan  6 16:50:10 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtNETCDFReaderBase::ReadScaleAndOffset(const std::string &var,
+    TypeEnum *t, double *scale, double *offset)
+{
+    bool retval = false;   
+ 
+    *t = NO_TYPE;
+    *scale = 1.;
+    *offset = 0.;
+
+    // Let's see if there is a "scale_factor" attribute.
+    double *scale_factor = NULL;
+    int nscale_factor = 0;
+    if(fileObject->ReadAttributeAsDouble(var.c_str(), "scale_factor", 
+       t, &scale_factor, &nscale_factor))
+    {
+        *scale = scale_factor[0];
+        delete [] scale_factor;
+
+        // See if there is an offset to add.
+        double *offset_array = NULL;
+        int noffset_array = 0;
+        TypeEnum t2 = NO_TYPE;
+        if(fileObject->ReadAttributeAsDouble(var.c_str(), "add_offset", 
+            &t2, &offset_array, &noffset_array))
+        {
+            *offset = offset_array[0];
+            delete [] offset_array;
+        }
+
+        retval = true;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: avtNETCDFReaderBase::ApplyScalingAndOffset
+//
+// Purpose: 
+//   Look for scale_factor and add_offset attributes on the data and apply them.
+//   They are typically used to turn shorts into float or double.
+//
+// Arguments:
+//   realvar : The variable.
+//   arr     : The input data array to convert.
+//
+// Returns:    A new data array (or input with incremented refcount) that has
+//             the data converted (if the attributes are found).
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan  6 11:34:44 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataArray *
+avtNETCDFReaderBase::ApplyScaleAndOffset(const std::string &realvar,
+    vtkDataArray *arr)
+{
+    vtkDataArray *retval = NULL;
+
+    TypeEnum t = NO_TYPE;
+    double scale = 1.;
+    double offset = 0.;
+    if(ReadScaleAndOffset(realvar, &t, &scale, &offset))
+    {
+        // Convert the data to its final form.
+        debug5 << "Multiply " << realvar << " data by " << scale
+               << " and add offset " << offset << endl;
+        vtkDoubleArray *newarr = vtkDoubleArray::New();
+        newarr->SetNumberOfTuples(arr->GetNumberOfTuples());
+        for(vtkIdType id = 0; id < arr->GetNumberOfTuples(); ++id)
+            newarr->SetTuple1(id, arr->GetTuple1(id) * scale + offset);
+        retval = newarr;      
+    }
+    else
+    {
+        arr->Register(NULL);
+        retval = arr;
+    }
+
+    return retval;
 }

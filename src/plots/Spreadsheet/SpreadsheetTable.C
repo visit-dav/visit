@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -85,6 +85,9 @@ bool operator < (const QSize &a, const QSize &b)
 //   Brad Whitlock, Wed Dec  1 16:27:02 PST 2010
 //   Add rgrid.
 //
+//   Brad Whitlock, Thu Jan  5 13:50:07 PST 2012
+//   I added missingData support.
+//
 // ****************************************************************************
 
 class DataArrayModel : public QAbstractItemModel
@@ -95,7 +98,8 @@ public:
 
     void setCurveData(vtkRectilinearGrid *rgrid);
 
-    void setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
+    void setDataArray(vtkDataArray *arr, 
+                      vtkDataArray *ghosts, vtkDataArray *missingData,
                       int d[3], SpreadsheetTable::DisplayMode dm, int sliceindex,
                       int base_index[3]);
     void clearDataArray();
@@ -123,6 +127,7 @@ private:
     vtkRectilinearGrid           *rgrid;
     vtkDataArray                 *dataArray;
     vtkDataArray                 *ghostArray;
+    vtkDataArray                 *missingDataArray;
     int                           dims[3];
     int                           base_index[3];
     SpreadsheetTable::DisplayMode displayMode;
@@ -147,6 +152,9 @@ private:
 //   Brad Whitlock, Wed Dec  1 16:26:54 PST 2010
 //   Add rgrid.
 //
+//   Brad Whitlock, Thu Jan  5 13:53:14 PST 2012
+//   Add missingData.
+//
 // ****************************************************************************
 
 DataArrayModel::DataArrayModel(QObject *parent) : QAbstractItemModel(parent),
@@ -157,6 +165,7 @@ DataArrayModel::DataArrayModel(QObject *parent) : QAbstractItemModel(parent),
     rgrid = 0;
     dataArray = 0;
     ghostArray = 0;
+    missingDataArray = 0;
     dims[0] = dims[1] = dims[2] = 0;
     base_index[0] = base_index[1] = base_index[2] = 0;
     displayMode = SpreadsheetTable::SliceZ;
@@ -180,7 +189,9 @@ DataArrayModel::DataArrayModel(QObject *parent) : QAbstractItemModel(parent),
 // Creation:   Wed Dec  1 16:25:54 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jan  5 13:53:31 PST 2012
+//   Add missingDataArray.
+//
 // ****************************************************************************
 
 void
@@ -189,6 +200,7 @@ DataArrayModel::setCurveData(vtkRectilinearGrid *grid)
     rgrid = grid;
     dataArray = 0;
     ghostArray = 0;
+    missingDataArray = 0;
 
     int tmpdims[3];
     rgrid->GetDimensions(tmpdims);
@@ -219,6 +231,7 @@ DataArrayModel::setCurveData(vtkRectilinearGrid *grid)
 // Arguments:
 //   arr : The data array to use for values.
 //   ghosts : The data array to use for ghosting values.
+//   missingData : An optional array to use for missing data values.
 //   d      : The i,j,k dimensions of the dataset.
 //   dm     : The display mode (which way the data is sliced in the spreadsheet).
 //   sliceindex : The index of the slice in the prescribed dimension
@@ -239,16 +252,21 @@ DataArrayModel::setCurveData(vtkRectilinearGrid *grid)
 //   Brad Whitlock, Mon May 11 11:45:40 PDT 2009
 //   I fixed a base_index problem.
 //
+//   Brad Whitlock, Thu Jan  5 13:51:25 PST 2012
+//   I added missing data support.
+//
 // ****************************************************************************
 
 void
-DataArrayModel::setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
+DataArrayModel::setDataArray(vtkDataArray *arr, 
+    vtkDataArray *ghosts, vtkDataArray *missingData,
     int d[3], SpreadsheetTable::DisplayMode dm, int sliceindex, int baseIndex[3])
 {
     // The data arrays.
     rgrid = 0;
     dataArray = arr;
     ghostArray = ghosts;
+    missingDataArray = missingData;
 
     // The size of the data arrays.
     dims[0] = d[0];
@@ -311,6 +329,9 @@ DataArrayModel::setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
 //   Brad Whitlock, Wed Dec  1 16:26:41 PST 2010
 //   Add rgrid.
 //
+//   Brad Whitlock, Thu Jan  5 13:52:00 PST 2012
+//   Add missingDataArray.
+//
 // ****************************************************************************
 
 void
@@ -322,6 +343,7 @@ DataArrayModel::clearDataArray()
     rgrid = 0;
     dataArray = 0;
     ghostArray = 0;
+    missingDataArray = 0;
     reset();
 }
 
@@ -474,6 +496,9 @@ DataArrayModel::rowCount(const QModelIndex &) const
 //   Brad Whitlock, Wed Dec  1 16:39:13 PST 2010
 //   I added support for showing curve data.
 //
+//   Brad Whitlock, Thu Jan  5 14:08:02 PST 2012
+//   I added support for missing data.
+//
 // ****************************************************************************
 
 QVariant
@@ -513,8 +538,6 @@ DataArrayModel::data(const QModelIndex &index, int role) const
             QString s; s.sprintf(formatString.toStdString().c_str(), value);
             return QVariant(s);
         }
-        else
-            return QVariant();
     }
     else if(role == GetDataRole)
     {
@@ -542,13 +565,11 @@ DataArrayModel::data(const QModelIndex &index, int role) const
 
             return QVariant(value);
         }
-        else
-            return QVariant();
     }
     else if(role == Qt::BackgroundRole)
     {
-        // This role returns the background brush: gray for ghost, default otherwise.
-        bool ghost = false;
+        // This role returns the background brush: gray for ghost, 
+        // pinkish gray for missing data, default otherwise.
         if(ghostArray != 0)
         {
             vtkIdType id = index.internalId();
@@ -556,11 +577,19 @@ DataArrayModel::data(const QModelIndex &index, int role) const
             // By convention, the ghost zones array contains unsigned char.
             const unsigned char *ghosts = (const unsigned char *)ghostArray->
                 GetVoidPointer(0);
-            if(id < ghostArray->GetNumberOfTuples())
-                ghost = ghosts[id] > 0;
+            if(id < ghostArray->GetNumberOfTuples() && ghosts[id] > 0)
+                return QVariant(QBrush(QColor(200,200,200)));
         }
+        else if(missingDataArray != 0)
+        {
+            vtkIdType id = index.internalId();
 
-        return ghost ? QVariant(QBrush(QColor(200,200,200))) : QVariant();
+            // By convention, the missing data array contains unsigned char.
+            const unsigned char *missingData = 
+                (const unsigned char *)missingDataArray->GetVoidPointer(0);
+            if(id < missingDataArray->GetNumberOfTuples() && missingData[id] > 0)
+                return QVariant(QBrush(QColor(255,200,200)));
+        }
     }
 
     return QVariant();
@@ -1007,6 +1036,7 @@ SpreadsheetTable::setCurveData(vtkRectilinearGrid *rgrid)
 // Arguments:
 //   arr : The data array to use for values.
 //   ghosts : The data array to use for ghosting values.
+//   missingData : The data array to use for missing data.
 //   d      : The i,j,k dimensions of the dataset.
 //   dm     : The display mode (which way the data is sliced in the spreadsheet).
 //   sliceindex : The index of the slice in the prescribed dimension
@@ -1026,10 +1056,11 @@ SpreadsheetTable::setCurveData(vtkRectilinearGrid *rgrid)
 // ****************************************************************************
 
 void
-SpreadsheetTable::setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
+SpreadsheetTable::setDataArray(vtkDataArray *arr, 
+    vtkDataArray *ghosts, vtkDataArray *missingData,
     int d[3], DisplayMode dm, int sliceindex, int base_index[3])
 {
-    MODEL->setDataArray(arr, ghosts, d, dm, sliceindex, base_index);
+    MODEL->setDataArray(arr, ghosts, missingData, d, dm, sliceindex, base_index);
     updateColumnWidths();
 }
 

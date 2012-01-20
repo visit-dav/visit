@@ -213,6 +213,49 @@ PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%senumNChooseRMaxR = %d\n", prefix, atts->GetEnumNChooseRMaxR());
     str += tmpStr;
+    const char *missingDataType_names = "MissingData_None, MissingData_Value, MissingData_Valid_Min, MissingData_Valid_Max, MissingData_Valid_Range";
+    switch (atts->GetMissingDataType())
+    {
+      case avtScalarMetaData::MissingData_None:
+          SNPRINTF(tmpStr, 1000, "%smissingDataType = %sMissingData_None  # %s\n", prefix, prefix, missingDataType_names);
+          str += tmpStr;
+          break;
+      case avtScalarMetaData::MissingData_Value:
+          SNPRINTF(tmpStr, 1000, "%smissingDataType = %sMissingData_Value  # %s\n", prefix, prefix, missingDataType_names);
+          str += tmpStr;
+          break;
+      case avtScalarMetaData::MissingData_Valid_Min:
+          SNPRINTF(tmpStr, 1000, "%smissingDataType = %sMissingData_Valid_Min  # %s\n", prefix, prefix, missingDataType_names);
+          str += tmpStr;
+          break;
+      case avtScalarMetaData::MissingData_Valid_Max:
+          SNPRINTF(tmpStr, 1000, "%smissingDataType = %sMissingData_Valid_Max  # %s\n", prefix, prefix, missingDataType_names);
+          str += tmpStr;
+          break;
+      case avtScalarMetaData::MissingData_Valid_Range:
+          SNPRINTF(tmpStr, 1000, "%smissingDataType = %sMissingData_Valid_Range  # %s\n", prefix, prefix, missingDataType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    {   const double *missingData = atts->GetMissingData();
+        SNPRINTF(tmpStr, 1000, "%smissingData = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 2; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", missingData[i]);
+            str += tmpStr;
+            if(i < 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -647,6 +690,94 @@ avtScalarMetaData_GetEnumNChooseRMaxR(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+avtScalarMetaData_SetMissingDataType(PyObject *self, PyObject *args)
+{
+    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the missingDataType in the object.
+    if(ival >= 0 && ival < 5)
+        obj->data->SetMissingDataType(avtScalarMetaData::MissingData(ival));
+    else
+    {
+        fprintf(stderr, "An invalid missingDataType value was given. "
+                        "Valid values are in the range of [0,4]. "
+                        "You can also use the following names: "
+                        "MissingData_None, MissingData_Value, MissingData_Valid_Min, MissingData_Valid_Max, MissingData_Valid_Range"
+                        ".");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtScalarMetaData_GetMissingDataType(PyObject *self, PyObject *args)
+{
+    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMissingDataType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+avtScalarMetaData_SetMissingData(PyObject *self, PyObject *args)
+{
+    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+
+    double *dvals = obj->data->GetMissingData();
+    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 2)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the missingData in the object as modified.
+    obj->data->SelectMissingData();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtScalarMetaData_GetMissingData(PyObject *self, PyObject *args)
+{
+    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    // Allocate a tuple the with enough entries to hold the missingData.
+    PyObject *retval = PyTuple_New(2);
+    const double *missingData = obj->data->GetMissingData();
+    for(int i = 0; i < 2; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(missingData[i]));
+    return retval;
+}
+
 
 
 PyMethodDef PyavtScalarMetaData_methods[AVTSCALARMETADATA_NMETH] = {
@@ -671,6 +802,10 @@ PyMethodDef PyavtScalarMetaData_methods[AVTSCALARMETADATA_NMETH] = {
     {"GetEnumNChooseRN", avtScalarMetaData_GetEnumNChooseRN, METH_VARARGS},
     {"SetEnumNChooseRMaxR", avtScalarMetaData_SetEnumNChooseRMaxR, METH_VARARGS},
     {"GetEnumNChooseRMaxR", avtScalarMetaData_GetEnumNChooseRMaxR, METH_VARARGS},
+    {"SetMissingDataType", avtScalarMetaData_SetMissingDataType, METH_VARARGS},
+    {"GetMissingDataType", avtScalarMetaData_GetMissingDataType, METH_VARARGS},
+    {"SetMissingData", avtScalarMetaData_SetMissingData, METH_VARARGS},
+    {"GetMissingData", avtScalarMetaData_GetMissingData, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -757,6 +892,21 @@ PyavtScalarMetaData_getattr(PyObject *self, char *name)
         return avtScalarMetaData_GetEnumNChooseRN(self, NULL);
     if(strcmp(name, "enumNChooseRMaxR") == 0)
         return avtScalarMetaData_GetEnumNChooseRMaxR(self, NULL);
+    if(strcmp(name, "missingDataType") == 0)
+        return avtScalarMetaData_GetMissingDataType(self, NULL);
+    if(strcmp(name, "MissingData_None") == 0)
+        return PyInt_FromLong(long(avtScalarMetaData::MissingData_None));
+    if(strcmp(name, "MissingData_Value") == 0)
+        return PyInt_FromLong(long(avtScalarMetaData::MissingData_Value));
+    if(strcmp(name, "MissingData_Valid_Min") == 0)
+        return PyInt_FromLong(long(avtScalarMetaData::MissingData_Valid_Min));
+    if(strcmp(name, "MissingData_Valid_Max") == 0)
+        return PyInt_FromLong(long(avtScalarMetaData::MissingData_Valid_Max));
+    if(strcmp(name, "MissingData_Valid_Range") == 0)
+        return PyInt_FromLong(long(avtScalarMetaData::MissingData_Valid_Range));
+
+    if(strcmp(name, "missingData") == 0)
+        return avtScalarMetaData_GetMissingData(self, NULL);
 
     if(strcmp(name, "__methods__") != 0)
     {
@@ -802,6 +952,10 @@ PyavtScalarMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtScalarMetaData_SetEnumNChooseRN(self, tuple);
     else if(strcmp(name, "enumNChooseRMaxR") == 0)
         obj = avtScalarMetaData_SetEnumNChooseRMaxR(self, tuple);
+    else if(strcmp(name, "missingDataType") == 0)
+        obj = avtScalarMetaData_SetMissingDataType(self, tuple);
+    else if(strcmp(name, "missingData") == 0)
+        obj = avtScalarMetaData_SetMissingData(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

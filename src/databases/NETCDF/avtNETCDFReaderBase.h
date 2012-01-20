@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -41,7 +41,9 @@
 #include <string>
 #include <vectortypes.h>
 
-class NETCDFFileObject;
+#include <NETCDFFileObject.h>
+
+class avtScalarMetaData;
 class avtDatabaseMetaData;
 class vtkDataSet;
 class vtkDataArray;
@@ -69,7 +71,10 @@ class vtkDataArray;
 // Modifications:
 //   Eric Brugger, Mon Nov 16 07:59:52 PST 2009
 //   I added ReadTimeAttribute and ReadCycleAttribute.
-//   
+//
+//   Brad Whitlock, Thu Jan  5 16:52:54 PST 2012
+//   Add HandleMissingData.
+//
 // ****************************************************************************
 
 class avtNETCDFReaderBase
@@ -90,6 +95,11 @@ protected:
     float *ReadTimeAttribute();
     int    ReadCycleAttribute();
     float *ReadArray(const char *varname);
+    bool   HandleMissingData(const std::string &varname, avtScalarMetaData *smd);
+    bool   ReadScaleAndOffset(const std::string &var,
+                              TypeEnum *t, double *scale, double *offset);
+    vtkDataArray *ApplyScaleAndOffset(const std::string &realvar,
+                                      vtkDataArray *arr);
 
     typedef std::map<std::string, intVector>   StringIntVectorMap;
     typedef std::map<std::string, std::string> StringStringMap;

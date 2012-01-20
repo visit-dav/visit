@@ -78,6 +78,14 @@ public:
         ByBitMask,
         ByNChooseR
     };
+    enum MissingData
+    {
+        MissingData_None,
+        MissingData_Value,
+        MissingData_Valid_Min,
+        MissingData_Valid_Max,
+        MissingData_Valid_Range
+    };
 
     // These constructors are for objects of this class
     avtScalarMetaData();
@@ -104,18 +112,24 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectMissingData();
 
     // Property setting methods
     void SetEnumerationType(EnumTypes enumerationType_);
     void SetEnumPartialCellMode(PartialCellModes enumPartialCellMode_);
     void SetEnumNChooseRN(int enumNChooseRN_);
     void SetEnumNChooseRMaxR(int enumNChooseRMaxR_);
+    void SetMissingDataType(MissingData missingDataType_);
+    void SetMissingData(const double *missingData_);
 
     // Property getting methods
     EnumTypes          GetEnumerationType() const;
     PartialCellModes   GetEnumPartialCellMode() const;
     int                GetEnumNChooseRN() const;
     int                GetEnumNChooseRMaxR() const;
+    MissingData        GetMissingDataType() const;
+    const double       *GetMissingData() const;
+          double       *GetMissingData();
 
     // Enum conversion functions
     static std::string PartialCellModes_ToString(PartialCellModes);
@@ -127,6 +141,11 @@ public:
     static bool EnumTypes_FromString(const std::string &, EnumTypes &);
 protected:
     static std::string EnumTypes_ToString(int);
+public:
+    static std::string MissingData_ToString(MissingData);
+    static bool MissingData_FromString(const std::string &, MissingData &);
+protected:
+    static std::string MissingData_ToString(int);
 public:
     // User-defined methods
     avtScalarMetaData(std::string, std::string, avtCentering);
@@ -157,6 +176,8 @@ public:
         ID_enumGraphEdges,
         ID_enumNChooseRN,
         ID_enumNChooseRMaxR,
+        ID_missingDataType,
+        ID_missingData,
         ID__LAST
     };
 
@@ -172,11 +193,13 @@ private:
     int          enumPartialCellMode;
     int          enumNChooseRN;
     int          enumNChooseRMaxR;
+    int          missingDataType;
+    double       missingData[2];
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTSCALARMETADATA_TMFS AVTVARMETADATA_TMFS "bis*d*DDii*ii"
+#define AVTSCALARMETADATA_TMFS AVTVARMETADATA_TMFS "bis*d*DDii*iiiD"
 
 #endif

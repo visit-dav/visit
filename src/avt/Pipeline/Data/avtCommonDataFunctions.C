@@ -416,6 +416,11 @@ CGetNumberOfZones(avtDataRepresentation &data, void *sum, bool &)
 //    Hank Childs, Sat Dec  4 17:35:02 PST 2010
 //    Check for the case where we can't do the conversion.
 //
+//    Brad Whitlock, Thu Jan 19 14:08:36 PST 2012
+//    Added warnings for a case I ran into where quadratic elements were not
+//    being converted to polydata properly. Maybe this routine should use the
+//    facelist filter.
+//
 // ****************************************************************************
 
 void
@@ -440,14 +445,23 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
         for (vtkIdType i = 0 ; i < ncells ; i++)
         {
             int celltype = ugrid->GetCellType(i);
-            if (celltype == VTK_HEXAHEDRON || celltype == VTK_VOXEL || 
-                celltype == VTK_WEDGE || celltype == VTK_TETRA ||
-                celltype == VTK_PYRAMID)
+            if (celltype == VTK_HEXAHEDRON ||
+                celltype == VTK_VOXEL || 
+                celltype == VTK_WEDGE || 
+                celltype == VTK_TETRA ||
+                celltype == VTK_PYRAMID ||
+                celltype == VTK_QUADRATIC_TETRA ||
+                celltype == VTK_QUADRATIC_HEXAHEDRON ||
+                celltype == VTK_QUADRATIC_WEDGE ||
+                celltype == VTK_QUADRATIC_PYRAMID ||
+                celltype == VTK_QUADRATIC_LINEAR_QUAD ||
+                celltype == VTK_QUADRATIC_LINEAR_WEDGE
+               )
             {
                 static bool issuedWarning = false;
                 if (!issuedWarning)
                 {
-                    avtCallback::IssueWarning("The data sets has "
+                    avtCallback::IssueWarning("The data set has "
                           "a topologically three dimensional cell even "
                           "thought it supposedly is topologically 2D."
                           "  This occurs most often when there is an error in "
@@ -456,6 +470,25 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
                           "resolve this issue.  (This warning will only be "
                           "issued once per session.)");
                     issuedWarning = true;
+                }
+                continue;
+            }
+            if(celltype == VTK_QUADRATIC_EDGE || 
+               celltype == VTK_QUADRATIC_TRIANGLE ||
+               celltype == VTK_QUADRATIC_QUAD
+              )
+            {
+                static bool issuedWarning2 = false;
+                if (!issuedWarning2)
+                {
+                    avtCallback::IssueWarning("The data set has "
+                          "a quadratic element in it and this code to "
+                          "convert 2D elements to polydata is only capable "
+                          "of 1:1 cell to cell translation, whereas quadratic "
+                          "cells produce a 1:N translation. Please contact a "
+                          "VisIt developer to resolve this issue. "
+                          "(This warning will only be issued once per session.)");
+                    issuedWarning2 = true;
                 }
                 continue;
             }

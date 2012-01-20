@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -81,6 +81,8 @@ public:
                        int **dims, void **value);
     bool ReadAttribute(const char *varname, const char *attname,
                        TypeEnum *type, int *ndims, int **dims, void **value);
+    bool ReadAttributeAsDouble(const char *varname, const char *attname,
+                               TypeEnum *origType, double **values, int *nvalues);
     // Convenience functions
     bool ReadStringAttribute(const char *varname, const char *attname,
                              std::string &attval);

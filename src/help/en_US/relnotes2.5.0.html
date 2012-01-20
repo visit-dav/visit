@@ -41,11 +41,35 @@ enhancements and bug-fixes that were added to this release.</p>
        <li>The <i>Parallel launch method</i> set to <i>WindowsHPC</i>.</li>
        <li>The default number of processors.</li>
     </ul>
-    When you submit a job to the Windows HPC scheduler, VisIt will interact with the scheduler directly so there is no need to run ssh to get to the remote computer.
+    When you submit a job to the Windows HPC scheduler, VisIt will interact with the scheduler directly so there is no need to run ssh to get to the remote computer. The cluster's compute nodes must be able to connect back to your client computer over the network.
   </li>
   <li>VisIt has been enhanced so the metadata server and compute engine can once again share a single batch job. This option is available in the <i>Host Profiles</i> window.</li>
   <li>The Windows version of VisIt no longer opens console windows.</li>
-  <li></li>
+  <li><p>VisIt has been enhanced so each variable on a mesh can have an associated <i>"missing data"</i> value. Missing data are used to exclude cells or nodes with the missing data values from the visualization. Expressions that combine variables with missing data restrict their outputs to only the cells or nodes that are valid for all of the expression's input variables.</p><p>Missing data are specified in the scalar metadata by a database reader plugin and can be described using 4 rules:
+  <center><table border="1" cellpadding="10">
+  <tr>
+    <td><b>Missing data rule</b></td>
+    <td><b>Description</b></td>
+  </tr>
+  <tr>
+    <td>Missing value</td>
+    <td>All values matching the provided missing value are excluded.</td>
+  </tr>
+  <tr>
+    <td>Valid min</td>
+    <td>All values below the provided valid minimum value are excluded.</td>
+  </tr>
+  <tr>
+    <td>Valid max</td>
+    <td>All values above the provided valid maximum value are excluded.</td>
+  </tr>
+  <tr>
+    <td>Valid range</td>
+    <td>All values outside of the provided valid range are excluded.</td>
+  </tr>
+  </table></center>
+  </p>
+ </li>
   <li></li>
 </ul>
 
@@ -74,15 +98,15 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Joel Welling contributed an MFIXCDF reader.</li>
   <li>Joel Welling contributed changes to the MFIX reader that change how it performs domain decomposition.</li>
-  <li></li>
-  <li></li>
+  <li>VisIt's NETCDF reader now supports conventions for missing data. The <i>missing_value, _FillValue, valid_min, valid_max, valid_range</i> attributes are supported.</li>
+  <li>VisIt's NETCDF reader now supports the <i>scale_factor</i> and <i>add_offset</i> attributes, using them to transform packed char and short data into double-precision.</li>
   <li></li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.5</font></b></p>
 <ul>
-  <li></li>
+  <li>VisIt's Spreadsheet plot now supports missing data, marking them in the spreadsheet with a reddish gray background color.</li>
   <li></li>
   <li></li>
   <li></li>

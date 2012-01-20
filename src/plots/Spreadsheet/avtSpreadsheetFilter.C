@@ -122,6 +122,9 @@ avtSpreadsheetFilter::SetAtts(const SpreadsheetAttributes &a)
 //   Hank Childs, Mon Dec 14 16:04:01 PST 2009
 //   Use new interface for SILs.
 //
+//   Brad Whitlock, Wed Jan  4 17:08:35 PST 2012
+//   Identify missing data instead of remove it.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -214,6 +217,9 @@ avtSpreadsheetFilter::ModifyContract(avtContract_p spec)
 
     rv->SetCalculateMeshExtents(true);
     rv->SetCalculateVariableExtents(rv->GetDataRequest()->GetVariable(), true);
+
+    // Indicate that we want to only identify missing data instead of removing it.
+    rv->GetDataRequest()->IdentifyMissingData();
 
     return rv;
 }

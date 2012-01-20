@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -82,6 +82,7 @@ avtLineToPolylineFilter.C
 avtMassVoxelExtractor.C
 avtMasterSlaveICAlgorithm.C
 avtMeshLogFilter.C
+avtMissingDataFilter.C
 avtMultiresFilter.C
 avtNamedSelectionFilter.C
 avtParDomICAlgorithm.C

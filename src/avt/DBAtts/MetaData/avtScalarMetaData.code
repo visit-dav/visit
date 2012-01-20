@@ -126,6 +126,9 @@ Definition:
 //    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
 //    Added enumerated scalars.
 //
+//    Brad Whitlock, Wed Jan  4 14:58:08 PST 2012
+//    Added missing data values.
+//
 // ****************************************************************************
 inline void
 Indent(ostream &out, int indent)
@@ -156,6 +159,29 @@ avtScalarMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "This variable does not contain enumerated values." << endl;
+    }
+
+    switch(missingDataType)
+    {
+    case MissingData_Value:
+        Indent(out, indent);
+        out << "Missing value: " << missingData[0] << endl;
+        break;
+    case MissingData_Valid_Min:
+        Indent(out, indent);
+        out << "Missing value less than: " << missingData[0] << endl;
+        break;
+    case MissingData_Valid_Max:
+        Indent(out, indent);
+        out << "Missing value greater than: " << missingData[0] << endl;
+        break;
+    case MissingData_Valid_Range:
+        Indent(out, indent);
+        out << "Missing value outside range: ["
+            << missingData[0] << ", " << missingData[1] << "]" << endl;
+        break;
+    default:
+        break;
     }
 }
 

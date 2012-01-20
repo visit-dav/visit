@@ -186,6 +186,9 @@ using     std::map;
 //    Brad Whitlock, Thu Sep  1 10:56:43 PDT 2011
 //    Added selectionName.
 //
+//    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
+//    Add missingDataBehavior.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -242,6 +245,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     strcpy(variable, var);
 
     selectionName = std::string();
+    missingDataBehavior = MISSING_DATA_REMOVE;
 
     //
     // Assume the 'orig' variable is the input variable.  If this is not true,
@@ -356,6 +360,9 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
 //    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
 //    Added support for "velocityMustBeContinuous".
 //
+//    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
+//    Add missingDataBehavior.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
@@ -407,6 +414,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
     strcpy(variable, var);
 
     selectionName = std::string();
+    missingDataBehavior = MISSING_DATA_REMOVE;
 
     //
     // Assume the 'db' variable is the input variable.  If this is not true,
@@ -665,6 +673,9 @@ avtDataRequest::avtDataRequest(avtDataRequest_p spec)
 //    Brad Whitlock, Thu Sep  1 10:58:43 PDT 2011
 //    Added selectionName.
 //
+//    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
+//    Add missingDataBehavior.
+//
 // ****************************************************************************
 
 avtDataRequest &
@@ -735,6 +746,7 @@ avtDataRequest::operator=(const avtDataRequest &spec)
     needPostGhostMaterialInfo       = spec.needPostGhostMaterialInfo;
     secondaryVariables              = spec.secondaryVariables;
     selectionName                   = spec.selectionName;
+    missingDataBehavior             = spec.missingDataBehavior;
 
     selList = spec.selList;
 
@@ -853,6 +865,9 @@ avtDataRequest::operator=(const avtDataRequest &spec)
 //
 //    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
 //    Added support for "velocityMustBeContinuous".
+//
+//    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
+//    Add missingDataBehavior.
 //
 // ****************************************************************************
 
@@ -1072,6 +1087,9 @@ avtDataRequest::operator==(const avtDataRequest &ds)
  
     //if (selectionName != ds.selectionName)
     //    return false;
+
+    if (missingDataBehavior != ds.missingDataBehavior)
+        return false;
 
     return true;
 }
@@ -1840,6 +1858,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Brad Whitlock, Thu Sep  1 11:01:51 PDT 2011
 //    Added selectionName.
 //
+//    Brad Whitlock, Wed Jan  4 16:55:23 PST 2012
+//    Added missing data behavior.
+//
 // ****************************************************************************
 
 static const char *
@@ -1944,6 +1965,13 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("transformVectorsDuringProject", YesOrNo(transformVectorsDuringProject));
     webpage->AddTableEntry2("needPostGhostMaterialInfo", YesOrNo(needPostGhostMaterialInfo));
     webpage->AddTableEntry2("selectionName", selectionName.c_str());
+    if(missingDataBehavior == MISSING_DATA_IGNORE)
+        webpage->AddTableEntry2("missingDataBehavior", "MISSING_DATA_IGNORE");
+    else if(missingDataBehavior == MISSING_DATA_REMOVE)
+        webpage->AddTableEntry2("missingDataBehavior", "MISSING_DATA_REMOVE");
+    else
+        webpage->AddTableEntry2("missingDataBehavior", "MISSING_DATA_IDENTIFY");
+
     webpage->EndTable();
 }
 

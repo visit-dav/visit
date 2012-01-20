@@ -46,7 +46,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTSCALARMETADATA_NMETH (AVTVARMETADATA_NMETH+22)
+#define AVTSCALARMETADATA_NMETH (AVTVARMETADATA_NMETH+26)
 void VISITPY_API           PyavtScalarMetaData_StartUp(avtScalarMetaData *subj, void *data);
 void VISITPY_API           PyavtScalarMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtScalarMetaData_GetMethodTable(int *nMethods);
