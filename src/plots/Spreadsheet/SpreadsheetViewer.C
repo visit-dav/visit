@@ -1053,6 +1053,9 @@ SpreadsheetViewer::GetBaseIndexFromMetaData(int *base_index) const
 //   Brad Whitlock, Mon Dec  6 14:29:41 PST 2010
 //   Handle curve data specially.
 //
+//   Brad Whitlock, Thu Jan  5 14:15:19 PST 2012
+//   Add missing data support.
+//
 // ****************************************************************************
 
 void
@@ -1065,10 +1068,15 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
     // Get the variable and the variable dims from the dataset.
     vtkDataArray *arr = input->GetPointData()->GetScalars();
     vtkDataArray *ghostArray = 0;
-    unsigned char *ghostZones = 0;
+    vtkDataArray *missingDataArray = 0;
     if(arr != 0)
     {
         debug5 << mName << "node centered scalars" << endl;
+
+        // Try to get a pointer to the missing data array.
+        missingDataArray = input->GetPointData()->GetArray("avtMissingData");
+        if(missingDataArray != 0 && missingDataArray->GetDataType() != VTK_UNSIGNED_CHAR)
+            missingDataArray = 0;
     }
     else if((arr = input->GetCellData()->GetScalars()) != 0)
     {
@@ -1081,8 +1089,13 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
 
         // Try to get a pointer to the ghost zones array.
         ghostArray = input->GetCellData()->GetArray("avtGhostZones");
-        if(ghostArray != 0 && ghostArray->GetDataType() == VTK_UNSIGNED_CHAR)
-            ghostZones = (unsigned char *)ghostArray->GetVoidPointer(0);
+        if(ghostArray != 0 && ghostArray->GetDataType() != VTK_UNSIGNED_CHAR)
+            ghostArray = 0;
+
+        // Try to get a pointer to the missing data array.
+        missingDataArray = input->GetCellData()->GetArray("avtMissingData");
+        if(missingDataArray != 0 && missingDataArray->GetDataType() != VTK_UNSIGNED_CHAR)
+            missingDataArray = 0;
     }
 
     // Try and populate base_index
@@ -1173,7 +1186,7 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
                 tables[t]->setCurveData((vtkRectilinearGrid *)input);
             else
             {
-                tables[t]->setDataArray(arr, ghostArray, dims, 
+                tables[t]->setDataArray(arr, ghostArray, missingDataArray, dims, 
                     dMode, offset + t, base_index);
             }
             tables[t]->setFormatString(plotAtts->GetFormatString().c_str());
@@ -1203,7 +1216,10 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
 //   Brad Whitlock, Fri May  8 09:09:29 PDT 2009
 //   Set the mesh's base index differently if there is no base_index  
 //   field data array. We use the mesh's cell and node origins.
-//   
+//
+//   Brad Whitlock, Thu Jan  5 14:09:44 PST 2012
+//   Added missing data support.
+//
 // ****************************************************************************
 
 void
@@ -1232,6 +1248,8 @@ SpreadsheetViewer::displayUnstructuredGrid()
     {
         debug5 << mName << "node centered scalars" << endl;
 
+        vtkDataArray *missingDataArray = input->GetPointData()->GetArray("avtMissingData");
+
         // We only need one tab for unstructured data.
         setNumberOfTabs(1, base_index[0], false);
 
@@ -1239,7 +1257,7 @@ SpreadsheetViewer::displayUnstructuredGrid()
         // appropriately.
         int dims[] = {1,1,1};
         dims[1] = arr->GetNumberOfTuples();
-        tables[0]->setDataArray(arr, 0, dims, 
+        tables[0]->setDataArray(arr, 0, missingDataArray, dims, 
                 SpreadsheetTable::UCDNode, 0, base_index);
         tables[0]->setFormatString(plotAtts->GetFormatString().c_str());
         tables[0]->setRenderInColor(plotAtts->GetUseColorTable());
@@ -1249,6 +1267,7 @@ SpreadsheetViewer::displayUnstructuredGrid()
         debug5 << mName << "cell centered scalars" << endl;
 
         vtkDataArray *ghostArray = input->GetCellData()->GetArray("avtGhostZones");
+        vtkDataArray *missingDataArray = input->GetCellData()->GetArray("avtMissingData");
 
         // Make sure that we have the right number of tabs.
         setNumberOfTabs(1, base_index[0], false);
@@ -1257,7 +1276,7 @@ SpreadsheetViewer::displayUnstructuredGrid()
         // appropriately.
         int dims[] = {1,1,1};
         dims[1] = arr->GetNumberOfTuples();
-        tables[0]->setDataArray(arr, ghostArray, dims, 
+        tables[0]->setDataArray(arr, ghostArray, missingDataArray, dims, 
                 SpreadsheetTable::UCDCell, 0, base_index);
         tables[0]->setFormatString(plotAtts->GetFormatString().c_str());
         tables[0]->setRenderInColor(plotAtts->GetUseColorTable());
@@ -1323,6 +1342,9 @@ SpreadsheetViewer::displayUnstructuredGrid()
 //   Brad Whitlock, Thu Aug 28 14:09:58 PDT 2008
 //   Fixed a bug with Y slicing.
 //
+//   Brad Whitlock, Thu Jan  5 14:13:06 PST 2012
+//   Add missing data support.
+//
 // ****************************************************************************
 
 void
@@ -1337,9 +1359,16 @@ SpreadsheetViewer::calculateMinMaxCells(int meshDims[3],
     vtkDataArray *arr = input->GetPointData()->GetScalars();
     vtkDataArray *ghostArray = 0;
     unsigned char *ghostZones = 0;
+    vtkDataArray *missingDataArray = 0;
+    unsigned char *missingData = 0;
     if(arr != 0)
     {
         debug5 << mName << "node centered scalars" << endl;
+
+        // Try to get a pointer to the missing data array.
+        missingDataArray = input->GetPointData()->GetArray("avtMissingData");
+        if(missingDataArray != 0 && missingDataArray->GetDataType() == VTK_UNSIGNED_CHAR)
+            missingData = (unsigned char *)missingDataArray->GetVoidPointer(0);
     }
     else if((arr = input->GetCellData()->GetScalars()) != 0)
     {
@@ -1354,6 +1383,11 @@ SpreadsheetViewer::calculateMinMaxCells(int meshDims[3],
         ghostArray = input->GetCellData()->GetArray("avtGhostZones");
         if(ghostArray != 0 && ghostArray->GetDataType() == VTK_UNSIGNED_CHAR)
             ghostZones = (unsigned char *)ghostArray->GetVoidPointer(0);
+
+        // Try to get a pointer to the missing data array.
+        missingDataArray = input->GetCellData()->GetArray("avtMissingData");
+        if(missingDataArray != 0 && missingDataArray->GetDataType() == VTK_UNSIGNED_CHAR)
+            missingData = (unsigned char *)missingDataArray->GetVoidPointer(0);
     }
 
     if(arr != 0 && structured)
@@ -1372,6 +1406,10 @@ SpreadsheetViewer::calculateMinMaxCells(int meshDims[3],
                         // If the data has ghost zones then skip ghosts so they
                         // don't mess up min/max calculations.
                         if(ghostZones != 0 && ghostZones[index] != 0)
+                            continue;
+
+                        // If there is missing data, don't let it affect the min/max.
+                        if(missingData != 0 && missingData[index] != 0)
                             continue;
 
                         double *val = arr->GetTuple(index);
@@ -1398,6 +1436,10 @@ SpreadsheetViewer::calculateMinMaxCells(int meshDims[3],
                         if(ghostZones != 0 && ghostZones[index] != 0)
                             continue;
 
+                        // If there is missing data, don't let it affect the min/max.
+                        if(missingData != 0 && missingData[index] != 0)
+                            continue;
+
                         double *val = arr->GetTuple(index);
                         EVAL_MINMAX(j, row, col /*k*/)
                     }
@@ -1421,6 +1463,10 @@ SpreadsheetViewer::calculateMinMaxCells(int meshDims[3],
                         if(ghostZones != 0 && ghostZones[index] != 0)
                             continue;
 
+                        // If there is missing data, don't let it affect the min/max.
+                        if(missingData != 0 && missingData[index] != 0)
+                            continue;
+
                         double *val = arr->GetTuple(index);
                         EVAL_MINMAX(k, row/*j*/, i)
                     }
@@ -1439,6 +1485,10 @@ SpreadsheetViewer::calculateMinMaxCells(int meshDims[3],
             // If the data has ghost zones then skip ghosts so they
             // don't mess up min/max calculations.
             if(ghostZones != 0 && ghostZones[index] != 0)
+                continue;
+
+            // If there is missing data, don't let it affect the min/max.
+            if(missingData != 0 && missingData[index] != 0)
                 continue;
 
             double *val = arr->GetTuple(index);

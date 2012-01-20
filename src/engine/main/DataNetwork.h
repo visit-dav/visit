@@ -115,6 +115,9 @@
 //    Brad Whitlock, Mon Aug 22 10:36:08 PDT 2011
 //    I added a selectionName field.
 //
+//    Brad Whitlock, Tue Jan 10 14:38:24 PST 2012
+//    Set/get the expression node.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API DataNetwork
@@ -130,6 +133,7 @@ public:
     virtual void SetPlot(avtPlot *_plot) { plot = _plot; };
     void SetTerminalNode(Netnode* t) {terminalNode = t;};
     void AddNode(Netnode *n) { nodeList.push_back(n); };
+    
     void AddFilterNodeAfterExpressionEvaluator(NetnodeFilter *f);
     void SetContract(avtContract_p s) {contract = s;};
     avtDataObject_p GetOutput(void) { return terminalNode->GetOutput(); };
@@ -148,6 +152,9 @@ public:
     int GetNetID(void) const { return nid; };
     int GetWinID(void) const { return wid; };
     Netnode* GetTerminalNode(void) { return terminalNode; };
+    void SetExpressionNode(Netnode *f);
+    Netnode *GetExpressionNode() const;
+
     virtual avtPlot_p GetPlot(void) { return plot; };
     avtActor_p GetActor(avtDataObject_p dob, bool force = false);
     bool ActorIsNull(void) { return (*plotActor == NULL); };
@@ -164,6 +171,7 @@ protected:
     int                         nid;
     int                         wid;
     Netnode                    *terminalNode;
+    Netnode                    *expressionNode;
     std::vector<Netnode*>       nodeList;
     avtDataRequest_p            dataRequest;
     avtDataObjectWriter_p       writer;

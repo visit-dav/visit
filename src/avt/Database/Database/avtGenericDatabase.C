@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -66,6 +66,7 @@
 #include <vtkPolyDataRelevantPointsFilter.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkThreshold.h>
 #include <vtkTrivialProducer.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
@@ -492,6 +493,10 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Hank Childs, Wed Dec 22 15:14:33 PST 2010
 //    Tell the file formats whether or not we are streaming.
 //
+//    Brad Whitlock, Wed Jan  4 14:49:39 PST 2012
+//    Add missing data selection so we can optionally remove cells that are
+//    missing data.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -613,6 +618,19 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
                 visitTimer->StopTimer(t3, "Enumeration selection");
             }
         }
+#if 0
+        //
+        // Do missing data selection if any of the variables we've been
+        // told to read have missing data values.
+        //
+        stringVector varsMissingData(MissingDataVariables(spec, md));
+        if(!varsMissingData.empty())
+        {
+            int t4 = visitTimer->StartTimer();
+            MissingDataSelect(datasetCollection, spec, md);
+            visitTimer->StopTimer(t4, "Missing data selection");
+        }
+#endif
     }
     CATCH2(VisItException, e)
     {
@@ -4307,6 +4325,475 @@ avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
     }
 }
 
+// ****************************************************************************
+// Method: avtMissingDataFilter::MissingDataVariables
+//
+// Purpose: 
+//   Create a vector of variable names from the read specification that are
+//   scalars that have missing data values.
+//
+// Arguments:
+//   spec : The read specfication containing the variables we want to read.
+//   md   : The metadata.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan  4 16:14:31 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+stringVector
+avtGenericDatabase::MissingDataVariables(avtDataRequest_p spec, 
+    const avtDatabaseMetaData *md) const
+{
+    const char *mName = "avtGenericDatabase::MissingDataVariables: ";
+    stringVector vars;
+
+    // Test the main variable for missing data.
+    std::string var = spec->GetVariable();
+    debug5 << mName << "testing vars (" << var;
+    const avtScalarMetaData *scalar = md->GetScalar(var);
+    if(scalar != NULL && 
+       scalar->GetMissingDataType() != avtScalarMetaData::MissingData_None)
+    {
+        vars.push_back(var);
+    }
+
+    // Test the secondary variables for missing data.
+    std::vector<CharStrRef> varlist;
+    varlist = spec->GetSecondaryVariablesWithoutDuplicates();
+    for(size_t i = 0; i < varlist.size(); ++i)
+    {
+        var = std::string(*varlist[i]);
+        debug5 << " " << var;
+        const avtScalarMetaData *scalar = md->GetScalar(var.c_str());
+        if(scalar != NULL && 
+           scalar->GetMissingDataType() != avtScalarMetaData::MissingData_None)
+        {
+            vars.push_back(var);
+        }
+    }
+    debug5 << ")" << endl;
+
+    debug5 << mName << "missing data (";
+    for(size_t i = 0; i < vars.size(); ++i)
+        debug5 << ((i>0)?" ":"") << vars[i];
+    debug5 << ")" << endl;
+
+    return vars;
+}
+
+// ****************************************************************************
+// Method: avtGenericDatabase::MissingDataBuildMask
+//
+// Purpose: 
+//   Create a cell-centered vtkDataArray called avtMissingData that has 1's
+//   for any cell where values in the input scalar arrays contain no-data values.
+//   All other cells with valid data will contain 0.
+//
+// Arguments:
+//   in_ds : The input dataset.
+//   spec  : The read specification.
+//   md    : The metadata.
+//   missing : Whether the output array is missing any data.
+//   centering : The centering of the output missing data array.
+//
+// Returns:    An avtMissingData array or NULL if none of the variables is
+//             missing any data. We also return NULL if none of the values
+//             will result in cells that are missing data.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan  4 16:17:22 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::MissingDataBuildMask(vtkDataSet *in_ds,
+    avtDataRequest_p spec, const avtDatabaseMetaData *md, 
+    bool &missing, avtCentering &centering) const
+{
+    const char *mName = "avtGenericDatabase::MissingDataBuildMask: ";
+    vtkUnsignedCharArray *missingData = NULL;
+    debug5 << mName << "start" << endl;
+
+    missing = false;
+    stringVector varsMissingData(MissingDataVariables(spec, md));
+
+    if(!varsMissingData.empty())
+    {
+        // Check for mixed variable centering in the variables we're reading. If we
+        // find mixed centering then we create zone centered data. If we find that all
+        // values are nodal then we allow a nodal missing data array to be created.
+        missingData = vtkUnsignedCharArray::New();
+        missingData->SetName("avtMissingData");
+        avtCentering c1 = AVT_ZONECENT;
+        if(in_ds->GetPointData()->GetArray(varsMissingData[0].c_str()) != NULL)
+            c1 = AVT_NODECENT;
+        bool mixed = false;
+        for(size_t i = 1; i < varsMissingData.size(); ++i)
+        {
+            avtCentering thisC = AVT_ZONECENT;
+            if(in_ds->GetPointData()->GetArray(varsMissingData[i].c_str()) != NULL)
+                thisC = AVT_NODECENT;
+            if(thisC != c1)
+            {
+                mixed = true;
+                break;
+            }
+        }
+        if(mixed || c1 == AVT_ZONECENT)
+        {
+            debug5 << "\tCreating cell-centered avtMissingData array." << endl;
+            centering = AVT_ZONECENT;
+            missingData->SetNumberOfTuples(in_ds->GetNumberOfCells());
+            memset(missingData->GetVoidPointer(0), 0, 
+               sizeof(unsigned char) * in_ds->GetNumberOfCells());
+        }
+        else
+        {
+            // We had all node centered values.
+            debug5 << "\tCreating node-centered avtMissingData array." << endl;
+            centering = AVT_NODECENT;
+            missingData->SetNumberOfTuples(in_ds->GetNumberOfPoints());
+            memset(missingData->GetVoidPointer(0), 0, 
+               sizeof(unsigned char) * in_ds->GetNumberOfPoints());
+        }
+        unsigned char *mdptr = (unsigned char *)missingData->GetVoidPointer(0);
+
+        // Go through each variable and populate the avtMissingData array.
+        for(size_t i = 0; i < varsMissingData.size(); ++i)
+        {
+            const avtScalarMetaData *scalar = md->GetScalar(varsMissingData[i]);
+            if(scalar != NULL)
+            {
+                // Try checking the current variable against the cell data.
+                vtkDataArray *arr = in_ds->GetCellData()->GetArray(varsMissingData[i].c_str());
+                if(arr != 0)
+                {
+                    debug5 << "\tApplying rule for cell data \"" << varsMissingData[i]
+                           << "\" to avtMissingData" << endl;
+                    vtkIdType nCells = in_ds->GetNumberOfCells();
+
+                    switch(scalar->GetMissingDataType())
+                    {
+                    case avtScalarMetaData::MissingData_Value:
+                        { // new scope
+                        double missingValue = scalar->GetMissingData()[0];
+                        for(vtkIdType cellid = 0; cellid < nCells; ++cellid)
+                        {
+                            if(arr->GetTuple1(cellid) == missingValue)
+                            {
+                                mdptr[cellid] = 1;
+                                missing = true;
+                            }
+                        }
+                        }
+                        break;
+                    case avtScalarMetaData::MissingData_Valid_Min:
+                        { // new scope
+                        double minValue = scalar->GetMissingData()[0];
+                        for(vtkIdType cellid = 0; cellid < nCells; ++cellid)
+                        {
+                            if(arr->GetTuple1(cellid) < minValue)
+                            {
+                                mdptr[cellid] = 1;
+                                missing = true;
+                            }
+                        }
+                        }
+                        break;
+                    case avtScalarMetaData::MissingData_Valid_Max:
+                        { // new scope
+                        double maxValue = scalar->GetMissingData()[0];
+                        for(vtkIdType cellid = 0; cellid < nCells; ++cellid)
+                        {
+                            if(arr->GetTuple1(cellid) > maxValue)
+                            {
+                                mdptr[cellid] = 1;
+                                missing = true;
+                            }
+                        }
+                        }
+                        break;
+                    case avtScalarMetaData::MissingData_Valid_Range:
+                        { // new scope
+                        double minValue = scalar->GetMissingData()[0];
+                        double maxValue = scalar->GetMissingData()[1];
+                        for(vtkIdType cellid = 0; cellid < nCells; ++cellid)
+                        {
+                            double val = arr->GetTuple1(cellid);
+                            if(val < minValue || val > maxValue)
+                            {
+                                mdptr[cellid] = 1;
+                                missing = true;
+                            }
+                        }
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
+                // Try checking the current variable against the point data.
+                arr = in_ds->GetPointData()->GetArray(varsMissingData[i].c_str());
+                if(arr != 0)
+                {
+                    debug5 << "\tApplying rule for point data \"" << varsMissingData[i]
+                           << "\" to avtMissingData. Storing values as "
+                           << (centering==AVT_ZONECENT?"cells":"points") << endl;
+
+                    vtkIdType nPoints = in_ds->GetNumberOfPoints();
+                    vtkIdList *idList = vtkIdList::New();
+                    switch(scalar->GetMissingDataType())
+                    {
+                    case avtScalarMetaData::MissingData_Value:
+                        { // new scope
+                        double missingValue = scalar->GetMissingData()[0];
+                        if(centering == AVT_NODECENT)
+                        {
+                            for(vtkIdType ptid = 0; ptid < nPoints; ++ptid)
+                                if(arr->GetTuple1(ptid) == missingValue)
+                                {
+                                    missing = true;
+                                    mdptr[ptid] = 1;
+                                }
+                        }
+                        else
+                        {
+                            for(vtkIdType ptid = 0; ptid < nPoints; ++ptid)
+                                if(arr->GetTuple1(ptid) == missingValue)
+                                {
+                                    missing = true;
+                                    in_ds->GetPointCells(ptid, idList);
+                                    for(vtkIdType i = 0; i < idList->GetNumberOfIds(); ++i)
+                                        mdptr[idList->GetId(i)] = 1;
+                                }
+                        }
+                        }
+                        break;
+                    case avtScalarMetaData::MissingData_Valid_Min:
+                        { // new scope
+                        double minValue = scalar->GetMissingData()[0];
+                        if(centering == AVT_NODECENT)
+                        {
+                            for(vtkIdType ptid = 0; ptid < nPoints; ++ptid)
+                                if(arr->GetTuple1(ptid) < minValue)
+                                {
+                                    missing = true;
+                                    mdptr[ptid] = 1;
+                                }
+                        }
+                        else
+                        {
+                            for(vtkIdType ptid = 0; ptid < nPoints; ++ptid)
+                                if(arr->GetTuple1(ptid) < minValue)
+                                {
+                                    missing = true;
+                                    in_ds->GetPointCells(ptid, idList);
+                                    for(vtkIdType i = 0; i < idList->GetNumberOfIds(); ++i)
+                                        mdptr[idList->GetId(i)] = 1;
+                                }
+                        }
+                        }
+                        break;
+                    case avtScalarMetaData::MissingData_Valid_Max:
+                        { // new scope
+                        double maxValue = scalar->GetMissingData()[0];
+                        if(centering == AVT_NODECENT)
+                        {
+                            for(vtkIdType ptid = 0; ptid < nPoints; ++ptid)
+                                if(arr->GetTuple1(ptid) > maxValue)
+                                {
+                                    missing = true;
+                                    mdptr[ptid] = 1;
+                                }
+                        }
+                        else
+                        {
+                            for(vtkIdType ptid = 0; ptid < nPoints; ++ptid)
+                                if(arr->GetTuple1(ptid) > maxValue)
+                                {
+                                    missing = true;
+                                    in_ds->GetPointCells(ptid, idList);
+                                    for(vtkIdType i = 0; i < idList->GetNumberOfIds(); ++i)
+                                        mdptr[idList->GetId(i)] = 1;
+                                }
+                        }
+                        }
+                        break;
+                    case avtScalarMetaData::MissingData_Valid_Range:
+                        { // new scope
+                        double minValue = scalar->GetMissingData()[0];
+                        double maxValue = scalar->GetMissingData()[1];
+                        if(centering == AVT_NODECENT)
+                        {
+                            for(vtkIdType ptid = 0; ptid < nPoints; ++ptid)
+                            {
+                                double val = arr->GetTuple1(ptid);
+                                if(val < minValue || val > maxValue)
+                                {
+                                    missing = true;
+                                    mdptr[ptid] = 1;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for(vtkIdType ptid = 0; ptid < nPoints; ++ptid)
+                            {
+                                double val = arr->GetTuple1(ptid);
+                                if(val < minValue || val > maxValue)
+                                {
+                                    missing = true;
+                                    in_ds->GetPointCells(ptid, idList);
+                                    for(vtkIdType i = 0; i < idList->GetNumberOfIds(); ++i)
+                                        mdptr[idList->GetId(i)] = 1;
+                                }
+                            }
+                        }
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+                    idList->Delete();
+                }
+            }
+            else
+            {
+                debug5 << "\tCould not get metadata for " << varsMissingData[i] << endl;
+            }
+        }
+    }
+    debug5 << mName << "end. missing=" << (missing?"true":"false") << endl;
+
+    return missingData;
+}
+
+// ****************************************************************************
+// Method: avtGenericDatabase::MissingDataSelect
+//
+// Purpose: 
+//   Examine the read specification and if we're removing or identifying missing
+//   data then we either remove cells or add an avtMissingData array to the
+//   dataset.
+//
+// Arguments:
+//   dsc  : The dataset collection.
+//   spec : The read specification.
+//   md   : The metadata.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan  4 16:59:39 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtGenericDatabase::MissingDataSelect(avtDatasetCollection &dsc, 
+    avtDataRequest_p spec, const avtDatabaseMetaData *md)
+{
+    if(spec->MissingDataBehavior() == avtDataRequest::MISSING_DATA_IGNORE)
+    {
+        debug5 << "Ignoring missing data" << endl;
+        return;
+    }
+
+    int nDomains = dsc.GetNDomains();
+    for (int i = 0 ; i < nDomains ; i++)
+    {
+        int m = 0; // Using 0 assumes that the file format does not do matsel. 
+        vtkDataSet *ds = dsc.GetDataset(i, m);
+        if (!ds)
+            continue;
+
+        // Get the avtMissingData array.
+        bool missing = false;
+        avtCentering centering = AVT_ZONECENT;
+        vtkDataArray *missingData = MissingDataBuildMask(ds, spec, md, 
+                                        missing, centering);
+
+        if(missingData != NULL)
+        {
+            // Add the missingData to the cell data of a new dataset.
+            vtkDataSet *newds = ds->NewInstance();
+            newds->ShallowCopy(ds);
+            newds->GetCellData()->RemoveArray(missingData->GetName());
+            newds->GetPointData()->RemoveArray(missingData->GetName());
+            if(centering == AVT_ZONECENT)
+                newds->GetCellData()->AddArray(missingData);
+            else
+                newds->GetPointData()->AddArray(missingData);
+            missingData->Delete();
+
+            // Check the contract to see if we're removing missing data or merely 
+            // passing the array on down the pipeline. Note that we only remove
+            // the cells if avtMissingData array contained some missing cells.
+            bool removeMissingData = 
+                spec->MissingDataBehavior() == avtDataRequest::MISSING_DATA_REMOVE;
+            if(removeMissingData)
+            {
+                if(missing)
+                {
+                    debug5 << "Removing missing data" << endl;
+                    // Do threshold and keep all cells with value == 0.
+                    vtkThreshold *thres = vtkThreshold::New();
+                    thres->SetInput(newds);
+                    thres->ThresholdBetween(-0.5, 0.5);
+                    if(centering == AVT_ZONECENT)
+                    {
+                        thres->SetInputArrayToProcess(0, 0, 0, 
+                            vtkDataObject::FIELD_ASSOCIATION_CELLS, missingData->GetName());
+                    }
+                    else
+                    {
+                        thres->SetInputArrayToProcess(0, 0, 0, 
+                            vtkDataObject::FIELD_ASSOCIATION_POINTS, missingData->GetName());
+                    }
+                    thres->Update();
+                    vtkDataSet *out_ds = thres->GetOutput();
+                    out_ds->Register(NULL);
+                    thres->Delete();
+                    newds->Delete();
+
+                    // Remove the missing data array from the out_ds.
+                    out_ds->GetCellData()->RemoveArray(missingData->GetName());
+
+                    // We've created a new dataset.
+                    dsc.SetDataset(i, m, out_ds);
+                }
+                else
+                {
+                    debug5 << "Skipping no-op missing data removal" << endl;
+                    // We were supposed to remove but the mask has no missing values.
+                    // Delete the new dataset (and the array).
+                    newds->Delete();
+                }
+            }
+            else
+            {
+                debug5 << "Identifying missing data" << endl;
+                // Save the shallow copy dataset with the avtMissingData array.
+                dsc.SetDataset(i, m, newds);
+            }
+        }
+    }
+}
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::SpeciesSelect

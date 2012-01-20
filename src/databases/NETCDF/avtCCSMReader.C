@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -362,6 +362,7 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                     smd->hasUnits = fileObject->ReadStringAttribute(
                         varname, "units", smd->units);
                     smd->validVariable = nSpatialDims <= 3;
+                    HandleMissingData(varname, smd);
                     md->Add(smd);
                 }
 
@@ -378,11 +379,12 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                 varToDimensions[globalVar] = meshDims;
                 if(md != 0)
                 {
-                   avtScalarMetaData *smd = new avtScalarMetaData(globalVar,
+                    avtScalarMetaData *smd = new avtScalarMetaData(globalVar,
                         globalMesh, AVT_ZONECENT);
                     smd->hasUnits = fileObject->ReadStringAttribute(
                         varname, "units", smd->units);
                     smd->validVariable = nSpatialDims <= 3;
+                    HandleMissingData(varname, smd); // yes, we want varname
                     md->Add(smd);
                 }
             }
@@ -846,6 +848,9 @@ avtCCSMReader::GetMesh(int timestate, const char *var)
 //    Brad Whitlock, Thu Oct 29 11:00:44 PDT 2009
 //    I made it use varToDimensions to get the variable size.
 //
+//    Brad Whitlock, Fri Jan  6 13:40:53 PST 2012
+//    I added support for scaling and offsets.
+//
 // ****************************************************************************
 
 #define READVAR(VTKTYPE) \
@@ -943,9 +948,21 @@ avtCCSMReader::GetVar(int timestate, const char *var)
            << dimCounts[3] << "}\n";
 
     if(t == CHARARRAY_TYPE || t == UCHARARRAY_TYPE)
+    {
         READVAR(vtkUnsignedCharArray)
+
+        vtkDataArray *scaled = ApplyScaleAndOffset(realvar, retval);
+        retval->Delete();
+        retval = scaled;
+    }
     else if(t == SHORTARRAY_TYPE)
+    {
         READVAR(vtkShortArray)
+
+        vtkDataArray *scaled = ApplyScaleAndOffset(realvar, retval);
+        retval->Delete();
+        retval = scaled;
+    }
     else if(t == INTEGERARRAY_TYPE)
         READVAR(vtkIntArray)
     else if(t == LONGARRAY_TYPE)
@@ -961,4 +978,3 @@ avtCCSMReader::GetVar(int timestate, const char *var)
 
     return retval;
 }
-

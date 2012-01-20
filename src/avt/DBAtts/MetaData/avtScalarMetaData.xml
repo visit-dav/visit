@@ -12,6 +12,13 @@
       ByBitMask
       ByNChooseR
     </Enum>
+    <Enum name="MissingData">
+      MissingData_None
+      MissingData_Value
+      MissingData_Valid_Min
+      MissingData_Valid_Max
+      MissingData_Valid_Range
+    </Enum>
     <Field name="treatAsASCII" label="Treat value as ASCII when displayed" type="bool" access="public">
       false
     </Field>
@@ -40,6 +47,13 @@
     </Field>
     <Field name="enumNChooseRMaxR" label="MaxR value for NChooseR mode" type="int">
       0
+    </Field>
+    <Field name="missingDataType" label="Missing data type" type="enum" subtype="MissingData">
+      MissingData_None
+    </Field>
+    <Field name="missingData" label="Values for missing data" type="doubleArray" length="2">
+      0.000000
+      0.000000
     </Field>
     <Function name="avtScalarMetaData2" user="true" member="true">
     </Function>

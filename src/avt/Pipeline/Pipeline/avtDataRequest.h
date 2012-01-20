@@ -211,6 +211,9 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Brad Whitlock, Thu Sep  1 10:56:29 PDT 2011
 //    Add selectionName.
 //
+//    Brad Whitlock, Wed Jan  4 16:42:43 PST 2012
+//    Added flag for how to handle missing data.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRequest
@@ -462,6 +465,22 @@ class PIPELINE_API avtDataRequest
     const std::string           &GetSelectionName() const
                                      { return selectionName; }
 
+    typedef enum {
+        MISSING_DATA_IGNORE,   // Ignore any missing data
+        MISSING_DATA_REMOVE,   // Remove all missing data
+        MISSING_DATA_IDENTIFY  // Identify missing data by adding avtMissingData
+                               // array to the datasets so we can show which
+                               // cells contain missing data.
+    } MissingDataBehavior_t;
+    void                         IgnoreMissingData()
+                                     { missingDataBehavior = MISSING_DATA_IGNORE;}
+    void                         RemoveMissingData()
+                                     { missingDataBehavior = MISSING_DATA_REMOVE;}
+    void                         IdentifyMissingData()
+                                     { missingDataBehavior = MISSING_DATA_IDENTIFY;}
+    MissingDataBehavior_t        MissingDataBehavior() const
+                                     { return missingDataBehavior; }
+
     void                         DebugDump(avtWebpage *);
 
   protected:
@@ -516,6 +535,7 @@ class PIPELINE_API avtDataRequest
     bool                         transformVectorsDuringProject;
     bool                         needPostGhostMaterialInfo;
     std::string                  selectionName;
+    MissingDataBehavior_t        missingDataBehavior;
 
     //
     // If we are processing in parallel, this information may have been lost.

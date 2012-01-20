@@ -343,6 +343,9 @@ class     vtkUnstructuredGrid;
 //    Make cache available externally so filters from the pipeline can cache
 //    their data structures.
 //
+//    Brad Whitlock, Wed Jan  4 17:05:03 PST 2012
+//    I added some methods that deal with missing data.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -568,6 +571,16 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                 avtSourceFromDatabase*,
                                                 int level);
     void                       UpdateInternalState(int);
+
+    stringVector               MissingDataVariables(avtDataRequest_p spec, 
+                                   const avtDatabaseMetaData *md) const;
+    vtkDataArray              *MissingDataBuildMask(vtkDataSet *in_ds,
+                                   avtDataRequest_p spec, 
+                                   const avtDatabaseMetaData *md, 
+                                   bool &missing, avtCentering &cent) const;
+    void                       MissingDataSelect(avtDatasetCollection &dsc, 
+                                   avtDataRequest_p spec, 
+                                   const avtDatabaseMetaData *md);
 
     virtual bool               QueryScalars(const std::string &, const int, 
                                             const int , const int ,

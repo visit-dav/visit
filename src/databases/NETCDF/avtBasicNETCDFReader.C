@@ -235,6 +235,9 @@ avtBasicNETCDFReader::CreateGlobalAttributesString(int nGlobalAtts, std::string 
 //    Kathleen Bonnell, Wed Sep 8 20:31:55 MST 2010 
 //    Check value of maxDimNotOne before using it as an index, to prevent SEGV.
 //
+//    Brad Whitlock, Wed Jan  4 15:47:43 PST 2012
+//    Handle missing data conventions.
+//
 // ****************************************************************************
 
 void
@@ -503,6 +506,7 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
                         smd->hasUnits = fileObject->ReadStringAttribute(
                             varname, "units", smd->units);
                         smd->validVariable = nSpatialDims <= 3;
+                        HandleMissingData(varname, smd);
                         md->Add(smd);
                     }
                 } 
@@ -941,6 +945,9 @@ avtBasicNETCDFReader::GetMesh(int timeState, const char *var)
 //   Kathleen Bonnell, Wed Sep 8 20:34:11 MST 2010 
 //   Compare minfo to varToDimensionSizes.end, not meshNameToDimensionsSizes.
 //
+//   Brad Whitlock, Fri Jan  6 13:35:00 PST 2012
+//   Apply scaling and offset attributes to transform data.
+//
 // ****************************************************************************
 
 #define READVAR(VTKTYPE) \
@@ -1009,9 +1016,21 @@ avtBasicNETCDFReader::GetVar(int timeState, const char *var)
         debug4 << "}\n";
 
         if(t == CHARARRAY_TYPE || t == UCHARARRAY_TYPE)
+        {
             READVAR(vtkUnsignedCharArray)
+
+            vtkDataArray *scaled = ApplyScaleAndOffset(var, retval);
+            retval->Delete();
+            retval = scaled;
+        }
         else if(t == SHORTARRAY_TYPE)
+        {
             READVAR(vtkShortArray)
+
+            vtkDataArray *scaled = ApplyScaleAndOffset(var, retval);
+            retval->Delete();
+            retval = scaled;
+        }
         else if(t == INTEGERARRAY_TYPE)
             READVAR(vtkIntArray)
         else if(t == LONGARRAY_TYPE)

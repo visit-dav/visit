@@ -74,12 +74,17 @@ using std::deque;
 //    Brad Whitlock, Mon Aug 22 10:37:05 PDT 2011
 //    Initialize selectionName.
 //
+//    Brad Whitlock, Tue Jan 10 14:42:42 PST 2012
+//    Initialize expressionNode.
+//
 // ****************************************************************************
 
 DataNetwork::DataNetwork(void)
 {
     nid = -1;
     wid = -1;
+    terminalNode = NULL; 
+    expressionNode = NULL;
     contract = NULL;
     dataRequest = NULL;
     writer = NULL;
@@ -131,6 +136,41 @@ DataNetwork::~DataNetwork(void)
 }
 
 // ****************************************************************************
+// Method: DataNetwork::SetExpressionNode
+//
+// Purpose: 
+//   Set the expression node.
+//
+// Arguments:
+//   f : The expression node.
+//
+// Returns:    
+//
+// Note:       Various parts of the network manager are interested in the
+//             output of the expression filter so let's make it convenient
+//             to find so we don't have to make assumptions about where it
+//             exists in the network.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 10 14:36:18 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+DataNetwork::SetExpressionNode(Netnode *f)
+{
+    expressionNode = f;
+}
+
+Netnode *
+DataNetwork::GetExpressionNode() const
+{
+    return expressionNode;
+}
+
+// ****************************************************************************
 //  Method:  DataNetwork::AddFilterNodeAfterExpressionEvaluator()
 //
 //  Purpose: Add a filter at the beginning of the pipeline (after expression
@@ -139,11 +179,23 @@ DataNetwork::~DataNetwork(void)
 //  Programmer:  Gunther H. Weber
 //  Creation:    Apr 12, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jan 10 14:29:49 PST 2012
+//    Look for the expression filter. Don't assume it is first.
+//
 // ****************************************************************************
+
 void DataNetwork::AddFilterNodeAfterExpressionEvaluator(NetnodeFilter *f)
 {
+    // Locate the expression filter.
+    bool notFoundExpression = true;
     std::vector<Netnode*>::iterator it = nodeList.begin();
-    ++it;
+    for( ; it != nodeList.end() && notFoundExpression; ++it)
+    {
+        if(*it == expressionNode)
+            notFoundExpression = false;
+    }
+
     if (it != nodeList.end())
     {
         // There is another Netnode ...

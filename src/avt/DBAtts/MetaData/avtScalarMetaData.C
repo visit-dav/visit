@@ -116,6 +116,44 @@ avtScalarMetaData::EnumTypes_FromString(const std::string &s, avtScalarMetaData:
     return false;
 }
 
+//
+// Enum conversion methods for avtScalarMetaData::MissingData
+//
+
+static const char *MissingData_strings[] = {
+"MissingData_None", "MissingData_Value", "MissingData_Valid_Min", 
+"MissingData_Valid_Max", "MissingData_Valid_Range"};
+
+std::string
+avtScalarMetaData::MissingData_ToString(avtScalarMetaData::MissingData t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 5) index = 0;
+    return MissingData_strings[index];
+}
+
+std::string
+avtScalarMetaData::MissingData_ToString(int t)
+{
+    int index = (t < 0 || t >= 5) ? 0 : t;
+    return MissingData_strings[index];
+}
+
+bool
+avtScalarMetaData::MissingData_FromString(const std::string &s, avtScalarMetaData::MissingData &val)
+{
+    val = avtScalarMetaData::MissingData_None;
+    for(int i = 0; i < 5; ++i)
+    {
+        if(s == MissingData_strings[i])
+        {
+            val = (MissingData)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: avtScalarMetaData::avtScalarMetaData
 //
@@ -142,6 +180,9 @@ void avtScalarMetaData::Init()
     enumPartialCellMode = Exclude;
     enumNChooseRN = 0;
     enumNChooseRMaxR = 0;
+    missingDataType = MissingData_None;
+    missingData[0] = 0;
+    missingData[1] = 0;
 
     avtScalarMetaData::SelectAll();
 }
@@ -177,6 +218,10 @@ void avtScalarMetaData::Copy(const avtScalarMetaData &obj)
     enumGraphEdges = obj.enumGraphEdges;
     enumNChooseRN = obj.enumNChooseRN;
     enumNChooseRMaxR = obj.enumNChooseRMaxR;
+    missingDataType = obj.missingDataType;
+    missingData[0] = obj.missingData[0];
+    missingData[1] = obj.missingData[1];
+
 
     avtScalarMetaData::SelectAll();
 }
@@ -346,6 +391,11 @@ avtScalarMetaData::operator == (const avtScalarMetaData &obj) const
     for(int i = 0; i < 2 && enumAlwaysInclude_equal; ++i)
         enumAlwaysInclude_equal = (enumAlwaysInclude[i] == obj.enumAlwaysInclude[i]);
 
+    // Compare the missingData arrays.
+    bool missingData_equal = true;
+    for(int i = 0; i < 2 && missingData_equal; ++i)
+        missingData_equal = (missingData[i] == obj.missingData[i]);
+
     // Create the return value
     return ((treatAsASCII == obj.treatAsASCII) &&
             (enumerationType == obj.enumerationType) &&
@@ -357,6 +407,8 @@ avtScalarMetaData::operator == (const avtScalarMetaData &obj) const
             (enumGraphEdges == obj.enumGraphEdges) &&
             (enumNChooseRN == obj.enumNChooseRN) &&
             (enumNChooseRMaxR == obj.enumNChooseRMaxR) &&
+            (missingDataType == obj.missingDataType) &&
+            missingData_equal &&
             avtVarMetaData::operator==(obj));
 }
 
@@ -513,6 +565,8 @@ avtScalarMetaData::SelectAll()
     Select(ID_enumGraphEdges,      (void *)&enumGraphEdges);
     Select(ID_enumNChooseRN,       (void *)&enumNChooseRN);
     Select(ID_enumNChooseRMaxR,    (void *)&enumNChooseRMaxR);
+    Select(ID_missingDataType,     (void *)&missingDataType);
+    Select(ID_missingData,         (void *)missingData, 2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -547,6 +601,21 @@ avtScalarMetaData::SetEnumNChooseRMaxR(int enumNChooseRMaxR_)
     Select(ID_enumNChooseRMaxR, (void *)&enumNChooseRMaxR);
 }
 
+void
+avtScalarMetaData::SetMissingDataType(avtScalarMetaData::MissingData missingDataType_)
+{
+    missingDataType = missingDataType_;
+    Select(ID_missingDataType, (void *)&missingDataType);
+}
+
+void
+avtScalarMetaData::SetMissingData(const double *missingData_)
+{
+    missingData[0] = missingData_[0];
+    missingData[1] = missingData_[1];
+    Select(ID_missingData, (void *)missingData, 2);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -573,6 +642,34 @@ int
 avtScalarMetaData::GetEnumNChooseRMaxR() const
 {
     return enumNChooseRMaxR;
+}
+
+avtScalarMetaData::MissingData
+avtScalarMetaData::GetMissingDataType() const
+{
+    return MissingData(missingDataType);
+}
+
+const double *
+avtScalarMetaData::GetMissingData() const
+{
+    return missingData;
+}
+
+double *
+avtScalarMetaData::GetMissingData()
+{
+    return missingData;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+avtScalarMetaData::SelectMissingData()
+{
+    Select(ID_missingData, (void *)missingData, 2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -690,6 +787,9 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 //    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
 //    Added enumerated scalars.
 //
+//    Brad Whitlock, Wed Jan  4 14:58:08 PST 2012
+//    Added missing data values.
+//
 // ****************************************************************************
 inline void
 Indent(ostream &out, int indent)
@@ -721,6 +821,29 @@ avtScalarMetaData::Print(ostream &out, int indent) const
         Indent(out, indent);
         out << "This variable does not contain enumerated values." << endl;
     }
+
+    switch(missingDataType)
+    {
+    case MissingData_Value:
+        Indent(out, indent);
+        out << "Missing value: " << missingData[0] << endl;
+        break;
+    case MissingData_Valid_Min:
+        Indent(out, indent);
+        out << "Missing value less than: " << missingData[0] << endl;
+        break;
+    case MissingData_Valid_Max:
+        Indent(out, indent);
+        out << "Missing value greater than: " << missingData[0] << endl;
+        break;
+    case MissingData_Valid_Range:
+        Indent(out, indent);
+        out << "Missing value outside range: ["
+            << missingData[0] << ", " << missingData[1] << "]" << endl;
+        break;
+    default:
+        break;
+    }
 }
 
 void
@@ -745,7 +868,7 @@ avtScalarMetaData::AddEnumNameValue(std::string name, double val)
     enumRanges.push_back(val);
     enumRanges.push_back(val);
 
-    return static_cast<int>(enumNames.size()) - 1;
+    return enumNames.size() - 1;
 }
 
 // ****************************************************************************
@@ -915,7 +1038,7 @@ avtScalarMetaData::ComboValFromDigits(const std::vector<std::vector<int> > &ptMa
     int row, col;
     *id = 0.0;
     std::list<int>::const_reverse_iterator it;
-    for (col = static_cast<int>(digits.size()-1), it = digits.rbegin(); col >= 0; col--, it++)
+    for (col = digits.size()-1, it = digits.rbegin(); col >= 0; col--, it++)
     {
         for (row = 0; row <= *it; row++)
             *id += ptMap[row][col];

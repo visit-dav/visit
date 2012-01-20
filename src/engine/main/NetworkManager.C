@@ -79,6 +79,7 @@
 #include <avtNullData.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectQuery.h>
+#include <avtMissingDataFilter.h>
 #include <avtMultipleInputQuery.h>
 #include <avtAreaBetweenCurvesQuery.h>
 #include <avtFileWriter.h>
@@ -137,6 +138,23 @@
 #include <map>
 #include <string>
 #include <vector>
+
+// Programmer: Brad Whitlock, Wed Jan 18 11:38:42 PST 2012
+//
+// Let's handle missing data as a 2 stage process for now. The first stage
+// comes before EEF and identifies elements with missing data, adding an
+// avtMissingData array to the pipeline, if called for. The second stage,
+// which comes later, removes the elements that have missing data if needed.
+// This 2 stage approach is needed to make sure that pick works since it
+// ensures that the mesh connectivity for the data cached by EEF will not 
+// change based on the list of variables that are requested.
+//
+// If you do not define the TWO_STAGE_MISSING_DATA_FILTERING macro then
+// missing data is handled in a single pass. It doesn't work with pick
+// because it would seem that the cached dataset in EEF gets a different
+// contract than the pick pipeline and thus a different mesh connectivity,
+// which can result in walking off the end of arrays.
+#define TWO_STAGE_MISSING_DATA_FILTERING
 
 //
 // Static functions.
@@ -873,6 +891,9 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 //    Eric Brugger, Mon Oct 31 09:54:07 PDT 2011
 //    Add a multi resolution display capability for AMR data.
 //
+//    Brad Whitlock, Wed Jan 18 11:30:34 PST 2012
+//    I added missing data support.
+//
 // ****************************************************************************
 
 void
@@ -908,30 +929,59 @@ NetworkManager::StartNetwork(const std::string &format,
     workingNet->SetVariable(leaf);
     netDB->SetDBInfo(filename, leaf, time);
     Netnode *input = netDB;
+    NetnodeFilter *filt  = NULL;
+
+    // Add missing data filter to handle missing data that come up the pipe.
+    // It must precede the expressions filter so we have all of the variables
+    // needed to produce the missing data mask.
+    avtMissingDataFilter *mdf = new avtMissingDataFilter();
+    mdf->SetMetaData(netDB->GetDB()->GetMetaData(time));
+#ifdef TWO_STAGE_MISSING_DATA_FILTERING
+    mdf->SetGenerateMode(true);
+    mdf->SetRemoveMode(false);
+    filt = new NetnodeFilter(mdf, "MissingDataIdentification");
+#else
+    filt = new NetnodeFilter(mdf, "MissingData");
+#endif
+    filt->GetInputNodes().push_back(input);
+    workingNet->AddNode(filt);
+    input = filt;
 
     // Add ExpressionEvaluatorFilter to handle expressions that come up the pipe.
     avtExpressionEvaluatorFilter *f = new avtExpressionEvaluatorFilter();
-    NetnodeFilter *filt = new NetnodeFilter(f, "ExpressionEvaluator");
+    filt = new NetnodeFilter(f, "ExpressionEvaluator");
     filt->GetInputNodes().push_back(input);
-    f->GetOutput()->SetTransientStatus(false);
-
+    f->GetOutput()->SetTransientStatus(false); // So the output can be queried.
+    workingNet->SetExpressionNode(filt);
+    workingNet->AddNode(filt);
     input = filt;
+
+#ifdef TWO_STAGE_MISSING_DATA_FILTERING
+    // Add missing data filter after expressions and selections to actually
+    // remove any elements that were tagged as missing data. We have to split
+    // the processing of missing data so the dataset cached by the EEF will
+    // contain all cells so pick doesn't barf later.
+    avtMissingDataFilter *mdf2 = new avtMissingDataFilter();
+    mdf2->SetMetaData(netDB->GetDB()->GetMetaData(time));
+    mdf2->SetGenerateMode(false);
+    mdf2->SetRemoveMode(true);
+    filt = new NetnodeFilter(mdf2, "MissingDataRemoval");
+    filt->GetInputNodes().push_back(input);
+    workingNet->AddNode(filt);
+    input = filt;
+#endif
+
+    // Selections
     if(!selName.empty())
     {
-        // Add the EEF to the network.
-        workingNet->AddNode(filt);
-
         avtNamedSelectionFilter *f = new avtNamedSelectionFilter();
         f->SetSelectionName(selName);
         filt = new NetnodeFilter(f, "NamedSelection");
         filt->GetInputNodes().push_back(input);
         workingNet->SetSelectionName(selName);
+        workingNet->AddNode(filt);
+        input = filt;
     }
-
-    // Push the last filter onto the working list.
-    workingNetnodeList.push_back(filt);
-
-    workingNet->AddNode(filt);
 
     // If we are in multiresolution mode then add a MultiresFilter
     // right after the expression filter.
@@ -957,18 +1007,14 @@ NetworkManager::StartNetwork(const std::string &format,
         double cellSize = visWin->GetMultiresolutionCellSize();
 
         avtMultiresFilter *f2 = new avtMultiresFilter(frustum, cellSize);
-        NetnodeFilter *filt2 = new NetnodeFilter(f2, "MultiresFilter");
-
-        std::vector<Netnode*> &filt2Inputs = filt2->GetInputNodes();
-        Netnode *n = workingNetnodeList.back();
-        workingNetnodeList.pop_back();
-        filt2Inputs.push_back(n);
-
-        // Push the MultiresFilter onto the working list.
-        workingNetnodeList.push_back(filt2);
-
-        workingNet->AddNode(filt2);
+        filt = new NetnodeFilter(f2, "MultiresFilter");
+        filt->GetInputNodes().push_back(input);
+        workingNet->AddNode(filt);
+        input = filt;
     }
+
+    // Push the last filter onto the working list.
+    workingNetnodeList.push_back(filt);
 
     // Push the variable name onto the name stack.
     nameStack.push_back(var);
@@ -3332,6 +3378,11 @@ NetworkManager::StopQueryMode(void)
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
+//    Brad Whitlock, Tue Jan 10 14:41:54 PST 2012
+//    Use the expression node without assuming where it exists in the working
+//    net node list.
+//
 // ****************************************************************************
  
 void
@@ -3544,7 +3595,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     delete silAtts;
                 }
                 pQ->SetNeedTransform(queryInputVal.GetPointsWereTransformed());
-                pQ->SetInput(networkCache[id]->GetNodeList()[0]->GetOutput());
+                pQ->SetInput(networkCache[id]->GetExpressionNode()->GetOutput());
 
                 pQ->SetPickAtts(pa);
                 pQ->SetSkippedLocate(skipLocate);
@@ -4501,6 +4552,10 @@ NetworkManager::CloneNetwork(const int id)
 //    Change the DataRequest variable if the var being queried is different
 //    than what is in the cloned pipeline. 
 //
+//    Brad Whitlock, Tue Jan 10 14:40:49 PST 2012
+//    Use the expression node without assuming where it exists in the working
+//    net node list.
+//
 // ****************************************************************************
 
 void
@@ -4525,7 +4580,7 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     }
     else if (qA->GetQueryAtts().GetDataType() == QueryAttributes::OriginalData)
     {
-        input = workingNet->GetNodeList()[0]->GetOutput();
+        input = workingNet->GetExpressionNode()->GetOutput();
     }
     else 
     {

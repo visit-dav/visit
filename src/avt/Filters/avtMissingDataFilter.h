@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -35,70 +35,67 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef AVT_MISSING_DATA_FILTER_H
+#define AVT_MISSING_DATA_FILTER_H
+#include <filters_exports.h>
+#include <avtDataTreeIterator.h>
 
-#include <ClonedDataNetwork.h>
-
-#include <avtPlot.h>
-#include <DebugStream.h>
-
+#include <avtDatabaseMetaData.h>
 
 // ****************************************************************************
-//  Constructor:  ClonedDataNetwork::ClonedDataNetwork
+// Class: avtMissingDataFilter
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    March 18, 2004 
+// Purpose:
+//   This filter generates/removes missing data from its inputs.
 //
-//  Modifications:
-//    Kathleen Bonnell, Tue Mar 15 17:41:26 PST 2005
-//    Initialize clone.
+// Notes:      
 //
-//    Brad Whitlock, Thu Jan 19 15:19:16 PST 2012
-//    Initialize expressionNode.
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 10 09:36:35 PST 2012
 //
+// Modifications:
+//   
 // ****************************************************************************
-ClonedDataNetwork::ClonedDataNetwork(DataNetwork *base) : DataNetwork()
+
+class AVTFILTERS_API avtMissingDataFilter : public avtDataTreeIterator
 {
-    SetNetDB(base->GetNetDB());
-    plot = base->GetPlot();
-    plottype = base->GetPlottype();
-    SetContract(base->GetContract());
-    SetDataSpec(base->GetDataSpec());
-    nodeList = base->GetNodeList();
-    expressionNode = base->GetExpressionNode();
-    clone = true;
-}
+public:
+    avtMissingDataFilter();
+    virtual ~avtMissingDataFilter();
 
-// ****************************************************************************
-//  Constructor:  ClonedDataNetwork::ClonedDataNetwork
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    March 18, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-ClonedDataNetwork::~ClonedDataNetwork(void)
-{
-    ReleaseData();
-}
+    virtual const char                 *GetType(void);
+    virtual const char                 *GetDescription(void);
 
-// ****************************************************************************
-//  Method:  ClonedDataNetwork::ReleaseData
-//
-//  Purpose:
-//    Releases unused data.
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    March 18, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-void
-ClonedDataNetwork::ReleaseData(void)
-{
-    if (*cPlot != NULL)
-    {
-        cPlot->ReleaseData();
-    }
-}
+    void SetMetaData(const avtDatabaseMetaData *md);
+
+    void SetGenerateMode(bool);
+    void SetRemoveMode(bool);
+
+protected:
+    virtual void          PreExecute(void);
+    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual void          PostExecute(void);
+
+    virtual avtContract_p ModifyContract(avtContract_p);
+    virtual bool          FilterUnderstandsTransformedRectMesh();
+
+    stringVector          MissingDataVariables(avtDataRequest_p spec, 
+                              const avtDatabaseMetaData *md) const;
+    avtCentering          MissingDataCentering(const stringVector &vars) const;
+    vtkDataArray         *MissingDataBuildMask(vtkDataSet *in_ds,
+                              avtDataRequest_p spec, 
+                              const avtDatabaseMetaData *md, 
+                              bool &missing, avtCentering &cent) const;
+    bool                  TagMissingData(vtkDataSet *in_ds, 
+                              vtkDataArray *missingData, 
+                              const stringVector &varsMissingData, 
+                              avtCentering centering) const;
+
+    bool                removedData;
+    bool                generateMode;
+    bool                removeMode;
+    avtContract_p       contract;
+    avtDatabaseMetaData metadata;
+};
+
+#endif

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -74,6 +74,9 @@ class vtkRectilinearGrid;
 //   Brad Whitlock, Wed Dec  1 16:40:44 PST 2010
 //   I added setCurveData.
 //
+//   Brad Whitlock, Thu Jan  5 13:47:15 PST 2012
+//   I added missing data support.
+//
 // ****************************************************************************
 
 class SpreadsheetTable : public QTableView
@@ -91,7 +94,8 @@ public:
 
     void setCurveData(vtkRectilinearGrid *rgrid);
 
-    void setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
+    void setDataArray(vtkDataArray *arr, 
+                      vtkDataArray *ghosts, vtkDataArray *missingData,
                       int d[3], DisplayMode dm, int sliceindex,
                       int base_index[3]);
     void clearDataArray();
