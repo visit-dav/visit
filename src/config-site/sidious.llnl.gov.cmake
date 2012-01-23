@@ -41,11 +41,13 @@ VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden")
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden")
 
 ##
-## Parallel Build Setup.
+## Add parallel arguments.
 ##
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
-## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/gapps/visit/thirdparty_shared/mpich/1.2.7p1/linux-x86_64_gcc-4.1/bin/mpicxx)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I${VISITHOME}/mpich/1.2.7p1/linux-x86_64_gcc-4.1/include" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS "-I${VISITHOME}/mpich/1.2.7p1/linux-x86_64_gcc-4.1/include" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L${VISITHOME}/mpich/1.2.7p1/linux-x86_64_gcc-4.1/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich TYPE STRING)
 
 ##############################################################
 ##

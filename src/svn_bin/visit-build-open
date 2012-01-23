@@ -74,6 +74,9 @@
 #   Eric Brugger, Tue Sep  6 13:58:32 PDT 2011
 #   I added rzzeus.
 #
+#   Eric Brugger, Mon Jan 23 11:59:40 PST 2012
+#   I added sidious.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -89,6 +92,9 @@ case $user in
       emailName=bonnell2@llnl.gov
       ;; 
    brugger)
+      emailName=brugger1@llnl.gov
+      ;;
+   brugger1)
       emailName=brugger1@llnl.gov
       ;;
    childs)
@@ -116,6 +122,7 @@ esac
 #
 hoth=true
 kickit=true
+sidious=true
 aztec=true
 rzzeus=true
 alastor=false
@@ -138,6 +145,7 @@ do
       -none)
          hoth=false
          kickit=false
+         sidious=false
          aztec=false
          rzzeus=false
          alastor=false
@@ -162,6 +170,14 @@ do
          ;;
       +kickit)
          kickit=true
+         shift
+         ;;
+      -sidious)
+         sidious=false
+         shift
+         ;;
+      +sidious)
+         sidious=true
          shift
          ;;
       -aztec)
@@ -244,6 +260,7 @@ then
    echo "Valid machine names:"
    echo "    hoth (B-Div, Linux),"
    echo "    kickit (B-Div, Linux),"
+   echo "    sidious(B-Div, Linux),"
    echo "    aztec (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
    echo "    alastor (LC, Linux, x86_64),"
@@ -363,6 +380,56 @@ then
       scp kickit kickit:kickit_buildit
       scp $dist.tar.gz kickit:kickit_$dist.tar.gz
       ssh kickit "chmod 750 kickit_buildit;./kickit_buildit" &
+   fi
+fi
+
+#
+# Build on sidious.
+#
+rm -f sidious
+cat <<EOF > sidious
+#!/bin/sh
+if test ! -e /tmp/$user ; then
+   mkdir /tmp/$user
+fi
+if test ! -e /tmp/$user/sidious ; then
+   mkdir /tmp/$user/sidious
+fi
+rm -rf /tmp/$user/sidious/visitbuild
+mkdir /tmp/$user/sidious/visitbuild
+mv sidious_$dist.tar.gz /tmp/$user/sidious/visitbuild/$dist.tar.gz
+cd /tmp/$user/sidious/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/usr/gapps/visit/thirdparty_shared/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make -j 4 >> ../../buildlog 2>&1
+make -j 4 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on sidious"      > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $sidious = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on sidious"
+      scp sidious sidious:sidious_buildit
+      scp $dist.tar.gz sidious:sidious_$dist.tar.gz
+      ssh sidious "chmod 750 sidious_buildit;./sidious_buildit" &
    fi
 fi
 
@@ -803,5 +870,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit aztec rzzeus alastor xchem euclid ellipse glory redsky
+   rm -f hoth kickit sidious aztec rzzeus alastor xchem euclid ellipse glory redsky
 fi

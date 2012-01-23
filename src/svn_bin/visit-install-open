@@ -35,6 +35,9 @@
 #   Brad Whitlock, Wed Oct 12 10:01:07 PDT 2011
 #   Install as llnl_open_cz or llnl_open_rz depending on machine.
 #
+#   Eric Brugger, Mon Jan 23 13:52:00 PST 2012
+#   I added sidious.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -50,6 +53,9 @@ case $user in
       emailName=bonnell2@llnl.gov
       ;;
    brugger)
+      emailName=brugger1@llnl.gov
+      ;;
+   brugger1)
       emailName=brugger1@llnl.gov
       ;;
    childs)
@@ -71,6 +77,7 @@ esac
 #
 hoth=true
 kickit=true
+sidious=true
 aztec=true
 rzzeus=true
 xchem=false
@@ -92,6 +99,7 @@ do
       -none)
          hoth=false
          kickit=false
+         sidious=false
          aztec=false
          rzzeus=false
          xchem=false
@@ -115,6 +123,14 @@ do
          ;;
       +kickit)
          kickit=true
+         shift
+         ;;
+      -sidious)
+         sidious=false
+         shift
+         ;;
+      +sidious)
+         sidious=true
          shift
          ;;
       -aztec)
@@ -269,6 +285,41 @@ then
       scp visit-install kickit:
       scp kickit kickit:kickit_install
       ssh kickit "chmod 750 kickit_install;./kickit_install"
+   fi
+fi
+
+#
+# Install on sidious.
+#
+rm -f sidious
+cat <<EOF > sidious
+#!/bin/sh
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-sidious /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on sidious"         > resultlog 2>&1
+echo "       -----------------------------"        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin      >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $sidious = true ]
+then
+   if [ $test = no ]
+   then
+      scp sidious:/tmp/$user/sidious/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-sidious.tar.gz
+      scp visit$ver2.linux-sidious.tar.gz sidious:visit$ver2.linux-sidious.tar.gz
+      scp visit-install sidious:
+      scp sidious sidious:sidious_install
+      ssh sidious "chmod 750 sidious_install;./sidious_install"
    fi
 fi
 
@@ -523,5 +574,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit aztec rzzeus xchem euclid ellipse glory redsky
+   rm -f hoth kickit sidious aztec rzzeus xchem euclid ellipse glory redsky
 fi
