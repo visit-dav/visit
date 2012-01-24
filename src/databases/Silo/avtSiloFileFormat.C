@@ -12476,6 +12476,9 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Cyrus Harrison, Tue Jan 24 11:56:17 PST 2012
+//    Fetch and catch multispec object if not already seen.
+//
 // ****************************************************************************
 
 avtSpecies *
@@ -12499,13 +12502,13 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
     // already cached the multispecies.  See if we have a multispecies in the
     // cache already -- this could potentially save us a DBInqVarType call.
     //
-    DBmultimatspecies *mm = NULL;
+    DBmultimatspecies *ms = NULL;
     avtSiloMultiSpecCacheEntry *ms_ent = QueryMultiSpec("", s);
     if(ms_ent != NULL)
-        mm = ms_ent->DataObject();
+        ms = ms_ent->DataObject();
 
     int type;
-    if (mm != NULL)
+    if (ms != NULL)
         type = DB_MULTIMATSPECIES;
     else
         type = DBInqVarType(dbfile, s);
@@ -12518,14 +12521,13 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
         return NULL;
     }
 
-    DBmultimatspecies  *ms = NULL;
     string specname = "";
 
     if (type == DB_MULTIMATSPECIES)
     {
-        if (ms == NULL)
+        if (ms_ent == NULL)
         {
-            ms_ent = QueryMultiSpec("", s);
+            ms_ent = GetMultiSpec("", s);
             if(ms_ent != NULL)
                 ms = ms_ent->DataObject();
         }
@@ -12536,7 +12538,7 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
             EXCEPTION2(BadDomainException, dom, ms->nspec);
         }
 
-        specname = ms_ent ->GenerateName(dom);
+        specname = ms_ent->GenerateName(dom);
         if (specname ==  "EMPTY")
             return NULL;
     }
