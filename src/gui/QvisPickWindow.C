@@ -123,6 +123,9 @@ using std::vector;
 //   Kathleen Biagas, Fri Aug 26 11:11:26 PDT 2011
 //   Added activeOptionsTab, plotList.
 //
+//   Kathleen Biagas, Wed Jan 25 16:00:17 MST 2012
+//   Added timeOptsTabIndex.
+//
 // ****************************************************************************
 
 QvisPickWindow::QvisPickWindow(PickAttributes *subj, const QString &caption, 
@@ -138,6 +141,7 @@ QvisPickWindow::QvisPickWindow(PickAttributes *subj, const QString &caption,
     defaultNumTabs = 8;
     saveCount = 0;
     activeOptionsTab = 0;
+    timeOptsTabIndex = 0;
     plotList = 0;
 }
 
@@ -360,6 +364,8 @@ QvisPickWindow::CreateWindowContents()
 // Creation:   August 23, 2011
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jan 25 16:01:18 MST 2012
+//   Removed 'Options' from tab title so more tabs can be visible.
 //
 // ****************************************************************************
 
@@ -367,7 +373,7 @@ void
 QvisPickWindow::CreateDisplayOptionsTab()
 {
     pageDisplay = new QWidget(central);
-    optionsTabWidget->addTab(pageDisplay, tr("Output Display Options"));
+    optionsTabWidget->addTab(pageDisplay, tr("Output Display"));
 
     QGridLayout *dLayout = new QGridLayout(pageDisplay);
 
@@ -462,6 +468,8 @@ QvisPickWindow::CreateDisplayOptionsTab()
 // Creation:   August 23, 2011
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jan 25 16:01:18 MST 2012
+//   Removed 'Options' from tab title so more tabs can be visible.
 //
 // ****************************************************************************
 
@@ -469,9 +477,8 @@ void
 QvisPickWindow::CreateTimeOptionsTab()
 {
     pageTime = new QWidget(central);
-    optionsTabWidget->addTab(pageTime, tr("Time Pick Options"));
+    timeOptsTabIndex = optionsTabWidget->addTab(pageTime, tr("Time Pick"));
 
-    //QGridLayout *tLayout = new QGridLayout(pageTime);
     QVBoxLayout *tLayout = new QVBoxLayout(pageTime);
 
     timeOpts = new QvisTimeQueryOptionsWidget(tr("Do Time Curve with next pick"), pageTime);
@@ -485,7 +492,6 @@ QvisPickWindow::CreateTimeOptionsTab()
     preserveCoord->setCurrentIndex(0);
     connect(preserveCoord, SIGNAL(activated(int)),
             this, SLOT(preserveCoordActivated(int)));
-    //tLayout->addWidget(preserveCoord, 1, 0, 1, 2);
     tLayout->addWidget(preserveCoord);
 
     timeCurveType= new QComboBox(pageTime);
@@ -494,13 +500,11 @@ QvisPickWindow::CreateTimeOptionsTab()
     timeCurveType->setCurrentIndex(0);
     connect(timeCurveType, SIGNAL(activated(int)),
             this, SLOT(timeCurveTypeActivated(int)));
-    //tLayout->addWidget(timeCurveType, 2, 0, 1, 2);
     tLayout->addWidget(timeCurveType);
 
-    QPushButton *redoPickButton = new QPushButton(tr("Repeat Pick"), pageTime);
+    redoPickButton = new QPushButton(tr("Repeat Pick"), pageTime);
     connect(redoPickButton, SIGNAL(clicked()),
             this, SLOT(redoPickClicked()));
-    //tLayout->addWidget(redoPickButton, 3, 0, 1, 1);
     tLayout->addWidget(redoPickButton);
 }
 
@@ -514,6 +518,8 @@ QvisPickWindow::CreateTimeOptionsTab()
 // Creation:   August 23, 2011
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jan 25 16:01:18 MST 2012
+//   Removed 'Options' from tab title so more tabs can be visible.
 //
 // ****************************************************************************
 
@@ -521,23 +527,20 @@ void
 QvisPickWindow::CreateSpreadsheetOptionsTab()
 {
     pageSpreadsheet = new QWidget(central);
-    optionsTabWidget->addTab(pageSpreadsheet, tr("Spreadsheet Options"));
+    optionsTabWidget->addTab(pageSpreadsheet, tr("Spreadsheet"));
 
-    //QGridLayout *sLayout = new QGridLayout(pageSpreadsheet);
     QVBoxLayout *sLayout = new QVBoxLayout(pageSpreadsheet);
 
     spreadsheetCheckBox = new QCheckBox(tr("Create spreadsheet with next pick"),
                                         pageSpreadsheet);
     connect(spreadsheetCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(spreadsheetToggled(bool)));
-    //sLayout->addWidget(spreadsheetCheckBox, 0, 0, 1, 2);
     sLayout->addWidget(spreadsheetCheckBox);
 
     QPushButton *redoPickWithSpreadsheetButton =
         new QPushButton(tr("Display in Spreadsheet"), pageSpreadsheet);
     connect(redoPickWithSpreadsheetButton, SIGNAL(clicked()),
             this, SLOT(redoPickWithSpreadsheetClicked()));
-    //sLayout->addWidget(redoPickWithSpreadsheetButton, 1, 0, 1, 1);
     sLayout->addWidget(redoPickWithSpreadsheetButton);
 }
 
@@ -632,6 +635,9 @@ QvisPickWindow::UpdateWindow(bool doAll)
 //
 //   Kathleen Biagas, Fri Aug 26 11:13:18 PDT 2011
 //   timeCurve options handle by timeQueryOptionsWidget.
+//
+//   Kathleen Biagas, Wed Jan 25 16:03:59 MST 2012
+//   Set enabled state of redoPickButton when 'doTimeCurve' is selected.
 //
 // ****************************************************************************
 
@@ -757,6 +763,7 @@ QvisPickWindow::UpdateAll(bool doAll)
         timeOpts->setChecked(pickAtts->GetDoTimeCurve());
         preserveCoord->setEnabled(pickAtts->GetDoTimeCurve());
         timeCurveType->setEnabled(pickAtts->GetDoTimeCurve());
+        redoPickButton->setEnabled(pickAtts->GetDoTimeCurve());
         timeOpts->blockSignals(false);
     }
 
@@ -843,6 +850,8 @@ QvisPickWindow::UpdateAll(bool doAll)
 // Creation:   August 26, 2011
 //
 // Modifications:
+//    Kathleen Biagas, Wed Jan 25 15:51:52 MST 2012
+//    Set enabled state of redoPickButton.
 //   
 // ****************************************************************************
 
@@ -852,6 +861,7 @@ QvisPickWindow::UpdateTimeOptions()
     timeOpts->setEnabled(plotList->GetNumPlots() > 0);
     preserveCoord->setEnabled(timeOpts->isEnabled() && timeOpts->isChecked());
     timeCurveType->setEnabled(timeOpts->isEnabled() && timeOpts->isChecked());
+    redoPickButton->setEnabled(timeOpts->isEnabled() && timeOpts->isChecked());
 }
 
 
@@ -2167,6 +2177,8 @@ QvisPickWindow::restorePickAttributesAfterRepick()
 // Creation:   August 26, 2011
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jan 25 16:06:29 MST 2012
+//   When timeOpts tab is the one selected, update time options.
 //
 // ****************************************************************************
 
@@ -2174,6 +2186,11 @@ void
 QvisPickWindow::optionsTabSelected(int index)
 {
     activeOptionsTab = index;
+    if (index == timeOptsTabIndex && isVisible())
+    {
+        // set enabled state
+        UpdateTimeOptions();
+    }
 }
 
 

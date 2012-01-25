@@ -232,15 +232,20 @@ QvisTimeQueryOptionsWidget::setCheckable(bool val)
 // Creation:   August 9, 2011
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jan 25 15:53:01 MST 2012
+//   Make enabled state also depend upon number of time states available.
 //   
 // ****************************************************************************
 
 void
 QvisTimeQueryOptionsWidget::setEnabled(bool val)
 {
-    QGroupBox::setEnabled(val);
-    if (val)
-        SetMax(GetDatabaseNStates() -1);
+    int nStates = GetDatabaseNStates();
+    QGroupBox::setEnabled(val && nStates > 1);
+    if (isEnabled())
+    {
+        SetMax(nStates -1);
+    }
 }
 
 
@@ -333,21 +338,27 @@ QvisTimeQueryOptionsWidget::GetTimeQueryOptions(MapNode &options)
 // Creation:   August 1, 2011 
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Wed Jan 25 15:56:29 MST 2012
+//   Retrieve number of states from active time slider if available, instead
+//   of active source.
+//
 // ****************************************************************************
 
 int
 QvisTimeQueryOptionsWidget::GetDatabaseNStates()
 {
     WindowInformation *wi = GetViewerState()->GetWindowInformation();
-    DatabaseCorrelationList *correlations = GetViewerState()->GetDatabaseCorrelationList();
+    DatabaseCorrelationList *correlations = 
+        GetViewerState()->GetDatabaseCorrelationList();
 
-    // Get the number of states for the active source.
-    const std::string &source = wi->GetActiveSource();
-    DatabaseCorrelation *c = correlations->FindCorrelation(source);
-    int nStates = (source == "notset" || source == "") ? 0 : 1;
-    if(c != 0)
-        nStates = c->GetNumStates();
+    // Get the number of states for the active time slider.
+    int  ats = wi->GetActiveTimeSlider();
+    int nStates = (ats == -1) ? 0 : 1;
+    if(ats != -1)
+    {
+        DatabaseCorrelation c = correlations->GetCorrelations(ats);
+        nStates = c.GetNumStates();
+    }
     return nStates;
 }
 
