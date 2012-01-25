@@ -106,6 +106,9 @@ avtVariablePointGlyphMapper::~avtVariablePointGlyphMapper()
 //    Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
 //    Glyph if topological dimension is <= 1.
 //
+//    Brad Whitlock, Tue Jan 24 17:04:26 PST 2012
+//    Work around mapper/painter issue when setting point type.
+//
 // ****************************************************************************
 
 void
@@ -164,6 +167,18 @@ avtVariablePointGlyphMapper::CustomizeMappers(void)
                           "vtkVisItDataSetMapper") == 0)
                 {
                     vtkVisItDataSetMapper *dsm = (vtkVisItDataSetMapper *)mappers[i];
+                    // Set the modified property on the actors' properties
+                    // to invalidate the polydata mapper so it sets things up 
+                    // again, calling the appropriate delegate to handle
+                    // point drawing whether textured or not. An alternate fix
+                    // would be down in VTK's painters to see if a painter's
+                    // MTime has been changed when choosing delegates.
+                    if(actors != NULL && actors[i] != NULL &&
+                       (glyphType == Sphere || glyphType == Point))
+                    {
+                        actors[i]->GetProperty()->Modified();
+                    }
+
                     dsm->SetPointTextureMethod(glyphType == Sphere ?
                          vtkVisItDataSetMapper::TEXTURE_USING_POINTSPRITES :
                          vtkVisItDataSetMapper::TEXTURE_NO_POINTS);
