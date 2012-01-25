@@ -12,6 +12,7 @@ struct VisIt_UnstructuredMesh : public VisIt_ObjectBase
     void FreeCoordinates();
     void FreeConnectivity();
     void FreeGhostCells();
+    void FreeGhostNodes();
 
     int ndims;
     int coordMode;
@@ -26,6 +27,7 @@ struct VisIt_UnstructuredMesh : public VisIt_ObjectBase
     visit_handle connectivity;
 
     visit_handle ghostCells;
+    visit_handle ghostNodes;
 };
 
 VisIt_UnstructuredMesh::VisIt_UnstructuredMesh() : 
@@ -44,6 +46,7 @@ VisIt_UnstructuredMesh::VisIt_UnstructuredMesh() :
     connectivity = VISIT_INVALID_HANDLE;
 
     ghostCells = VISIT_INVALID_HANDLE;
+    ghostNodes = VISIT_INVALID_HANDLE;
 }
 
 VisIt_UnstructuredMesh::~VisIt_UnstructuredMesh()
@@ -51,6 +54,7 @@ VisIt_UnstructuredMesh::~VisIt_UnstructuredMesh()
     FreeCoordinates();
     FreeConnectivity();
     FreeGhostCells();
+    FreeGhostNodes();
 }
 
 void
@@ -95,6 +99,16 @@ VisIt_UnstructuredMesh::FreeGhostCells()
     {
         simv2_VariableData_free(ghostCells);
         ghostCells = VISIT_INVALID_HANDLE;
+    }
+}
+
+void
+VisIt_UnstructuredMesh::FreeGhostNodes()
+{
+    if(ghostNodes != VISIT_INVALID_HANDLE)
+    {
+        simv2_VariableData_free(ghostNodes);
+        ghostNodes = VISIT_INVALID_HANDLE;
     }
 }
 
@@ -393,6 +407,42 @@ simv2_UnstructuredMesh_setGhostCells(visit_handle h, visit_handle gz)
 }
 
 int
+simv2_UnstructuredMesh_setGhostNodes(visit_handle h, visit_handle gn)
+{
+    int retval = VISIT_ERROR;
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_setGhostNodes");
+    if(obj != NULL)
+    {
+        // Get the ghost node information
+        int owner, dataType, nComps, nTuples;
+        void *data = 0;
+        if(simv2_VariableData_getData(gn, owner, dataType, nComps, nTuples, data) == VISIT_ERROR)
+        {
+            VisItError("Could not obtain ghost node information.");
+            return VISIT_ERROR;
+        }
+
+        if(nComps != 1)
+        {
+            VisItError("Ghost node arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
+        if(dataType != VISIT_DATATYPE_CHAR && dataType != VISIT_DATATYPE_INT)
+        {
+            VisItError("Ghost node arrays must contain either char or int elements.");
+            return VISIT_ERROR;
+        }
+
+        obj->FreeGhostNodes();
+        obj->ghostNodes = gn;
+
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
 simv2_UnstructuredMesh_getCoords(visit_handle h,
     int *ndims, int *coordMode,
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *coords)
@@ -455,6 +505,19 @@ simv2_UnstructuredMesh_getGhostCells(visit_handle h, visit_handle *gz)
     return retval;
 }
 
+int
+simv2_UnstructuredMesh_getGhostNodes(visit_handle h, visit_handle *gn)
+{
+    int retval = VISIT_ERROR;
+    VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_getGhostNodes");
+    if(obj != NULL)
+    {
+        *gn = obj->ghostNodes;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
 /*******************************************************************************
  * C++ code callable from the SimV2 plugin and within the runtime
  ******************************************************************************/
@@ -490,6 +553,30 @@ simv2_UnstructuredMesh_check(visit_handle h)
             {
                  VisItError("The number of elements in the ghost cell array does "
                             "not match the number of cells in the mesh.");
+                 return VISIT_ERROR;
+            }
+        }
+
+        if(obj->ghostNodes != VISIT_INVALID_HANDLE)
+        {
+            // Get the ghost node information
+            int owner, dataType, nComps, nTuples = 0, nNodes = 0;
+            void *data = 0;
+            if(obj->coordMode == VISIT_COORD_MODE_SEPARATE)
+            {
+                simv2_VariableData_getData(obj->xcoords, owner, dataType, nComps, nNodes, data);
+            }
+            else
+            {
+                simv2_VariableData_getData(obj->coords, owner, dataType, nComps, nNodes, data);
+            }
+
+            simv2_VariableData_getData(obj->ghostNodes, owner, dataType, nComps, nTuples, data);
+
+            if(nTuples != nNodes)
+            {
+                 VisItError("The number of elements in the ghost node array does "
+                            "not match the number of nodes in the mesh.");
                  return VISIT_ERROR;
             }
         }

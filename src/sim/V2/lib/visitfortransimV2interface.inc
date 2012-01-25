@@ -33,6 +33,9 @@
 !   I added hidefromgui and numcomponents attributes for variable 
 !   metadata.
 !
+!   William T. Jones, Fri Jan 20 17:28:03 EST 2012
+!   Added functions to set/get ghost nodes on meshes.
+!
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 !... Commonly useful declarations
@@ -176,6 +179,18 @@
       parameter    (VISIT_GHOSTCELL_REDUCED_CONNECTIVITY = 4)
       integer       VISIT_GHOSTCELL_BLANK                 
       parameter    (VISIT_GHOSTCELL_BLANK             = 5)
+
+!... Ghost node types
+      integer       VISIT_GHOSTNODE_REAL                
+      parameter    (VISIT_GHOSTNODE_REAL              = 0)
+      integer       VISIT_GHOSTNODE_INTERIOR_BOUNDARY     
+      parameter    (VISIT_GHOSTNODE_INTERIOR_BOUNDARY = 1)
+      integer       VISIT_GHOSTNODE_BLANK                 
+      parameter    (VISIT_GHOSTNODE_BLANK             = 2)
+      integer       VISIT_GHOSTNODE_COARSE_SIDE           
+      parameter    (VISIT_GHOSTNODE_COARSE_SIDE       = 3)
+      integer       VISIT_GHOSTNODE_FINE_SIDE             
+      parameter    (VISIT_GHOSTNODE_FINE_SIDE         = 4)
 
 !... Image formats 
       integer      VISIT_IMAGEFORMAT_BMP
@@ -1076,6 +1091,10 @@
       external visitcurvmeshsetghostcells
       integer  visitcurvmeshsetghostcells
 
+! visitcurvmeshsetghostnodes(visit_handle obj, visit_handle gn)
+      external visitcurvmeshsetghostnodes
+      integer  visitcurvmeshsetghostnodes
+
 ! visitcurvmeshgetcoords(visit_handle obj, int ndims, int dims, int coordMode,
 !                        visit_handle x, visit_handle y, visit_handle z, 
 !                        visit_handle c)
@@ -1093,6 +1112,10 @@
 ! visitcurvmeshgetghostcells(visit_handle obj, visit_handle gz)
       external visitcurvmeshgetghostcells
       integer  visitcurvmeshgetghostcells
+
+! visitcurvmeshgetghostnodes(visit_handle obj, visit_handle gn)
+      external visitcurvmeshgetghostnodes
+      integer  visitcurvmeshgetghostnodes
 
 
 ! VisIt_DomainBoundaries functions
@@ -1259,6 +1282,10 @@
       external visitrectmeshsetghostcells
       integer  visitrectmeshsetghostcells
 
+! visitrectmeshsetghostnodes(visit_handle obj, visit_handle gn)
+      external visitrectmeshsetghostnodes
+      integer  visitrectmeshsetghostnodes
+
 ! visitrectmeshgetcoords(visit_handle obj, int ndims, visit_handle x, 
 !                        visit_handle y, visit_handle z)
       external visitrectmeshgetcoords
@@ -1275,6 +1302,10 @@
 ! visitrectmeshgetghostcells(visit_handle obj, visit_handle gz)
       external visitrectmeshgetghostcells
       integer  visitrectmeshgetghostcells
+
+! visitrectmeshgetghostnodes(visit_handle obj, visit_handle gn)
+      external visitrectmeshgetghostnodes
+      integer  visitrectmeshgetghostnodes
 
 ! VisIt_SpeciesData functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1339,6 +1370,10 @@
       external visitucdmeshsetghostcells
       integer  visitucdmeshsetghostcells
 
+! visitucdmeshsetghostnodes(visit_handle obj, visit_handle gn)
+      external visitucdmeshsetghostnodes
+      integer  visitucdmeshsetghostnodes
+
 ! visitucdmeshgetcoords(visit_handle obj, int ndims, int coordmode,  
 !     visit_handle x, visit_handle y, visit_handle z, visit_handle c)
       external visitucdmeshgetcoords
@@ -1355,6 +1390,10 @@
 ! visitucdmeshgetghostcells(visit_handle obj, visit_handle gz)
       external visitucdmeshgetghostcells
       integer  visitucdmeshgetghostcells
+
+! visitucdmeshgetghostnodes(visit_handle obj, visit_handle gn)
+      external visitucdmeshgetghostnodes
+      integer  visitucdmeshgetghostnodes
 
 ! VisIt_VariableData functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

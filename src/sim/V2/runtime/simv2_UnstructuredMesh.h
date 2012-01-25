@@ -19,6 +19,7 @@ SIMV2_API int simv2_UnstructuredMesh_setConnectivity(visit_handle obj, int nzone
                                                      visit_handle conn);
 SIMV2_API int simv2_UnstructuredMesh_setRealIndices(visit_handle obj, int,int);
 SIMV2_API int simv2_UnstructuredMesh_setGhostCells(visit_handle h, visit_handle gz);
+SIMV2_API int simv2_UnstructuredMesh_setGhostNodes(visit_handle h, visit_handle gn);
 
 SIMV2_API int simv2_UnstructuredMesh_getCoords(visit_handle h,
                                                int *ndims, int *coordMode,
@@ -30,6 +31,7 @@ SIMV2_API int simv2_UnstructuredMesh_getConnectivity(visit_handle h, int *nzones
                                                      visit_handle *conn);
 SIMV2_API int simv2_UnstructuredMesh_getRealIndices(visit_handle obj, int *, int *);
 SIMV2_API int simv2_UnstructuredMesh_getGhostCells(visit_handle h, visit_handle *gz);
+SIMV2_API int simv2_UnstructuredMesh_getGhostNodes(visit_handle h, visit_handle *gn);
 
 #ifdef __cplusplus
 }

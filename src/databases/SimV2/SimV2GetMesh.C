@@ -75,6 +75,7 @@
 #include <simv2_VariableData.h>
 
 static const char *AVT_GHOST_ZONES_ARRAY = "avtGhostZones";
+static const char *AVT_GHOST_NODES_ARRAY = "avtGhostNodes";
 
 // ****************************************************************************
 //  Function:  GetQuadGhostZones
@@ -279,6 +280,101 @@ AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
             }
 
             ds->GetCellData()->AddArray(ghosts);
+            retval = true;
+        }
+        else
+        {
+            ghosts->Delete();
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Function: AddGhostNodesFromArray
+//
+// Purpose: 
+//   Converts a mesh-sized array of ghost node values into an avtGhostNodes
+//   array that we add to the dataset.
+//
+// Arguments:
+//   ds         : The dataset to which we're adding ghost nodes.
+//   ghostNodes : The source array that contains the ghost node types.
+//
+// Returns:    True if the avtGhostNodes array was added; False otherwise.
+//
+// Note:       
+//
+// Programmer: William T. Jones
+// Creation:   Fri Jan 20 17:45:02 EDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static bool
+AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
+{
+    bool retval = false;
+
+    // Get the ghost node information
+    int owner, dataType, nComps, nTuples = 0;
+    void *data = 0;
+    if(simv2_VariableData_getData(ghostNodes, owner, dataType, nComps, nTuples, data))
+    {
+        unsigned char gnTypes[5] = {0,0,0,0,0};
+        avtGhostData::AddGhostNodeType(gnTypes[VISIT_GHOSTNODE_INTERIOR_BOUNDARY],     DUPLICATED_NODE);
+        avtGhostData::AddGhostNodeType(gnTypes[VISIT_GHOSTNODE_BLANK],                 NODE_NOT_APPLICABLE_TO_PROBLEM);
+        avtGhostData::AddGhostNodeType(gnTypes[VISIT_GHOSTNODE_COARSE_SIDE],           NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
+        avtGhostData::AddGhostNodeType(gnTypes[VISIT_GHOSTNODE_FINE_SIDE],             NODE_IS_ON_FINE_SIDE_OF_COARSE_FINE_BOUNDARY);
+
+        vtkUnsignedCharArray *ghosts = vtkUnsignedCharArray::New();
+        ghosts->SetNumberOfTuples(nTuples);
+        ghosts->SetName(AVT_GHOST_NODES_ARRAY);
+        unsigned char *dest = (unsigned char *)ghosts->GetVoidPointer(0);
+        if(dataType == VISIT_DATATYPE_CHAR)
+        {
+            const unsigned char *src = (const unsigned char *)data;
+            const unsigned char *end = src + nTuples;
+            while(src < end)
+            {
+                if(*src <= VISIT_GHOSTNODE_FINE_SIDE)
+                {
+                    *dest++ = gnTypes[*src];
+                }
+                else
+                {
+                    ghosts->Delete();
+                    EXCEPTION1(ImproperUseException, "Invalid ghost node value");
+                }
+
+                src++;
+            }
+
+            ds->GetPointData()->AddArray(ghosts);
+            retval = true;         
+        }
+        else if(dataType == VISIT_DATATYPE_INT)
+        {
+            const int *src = (const int *)data;
+            const int *end = src + nTuples;
+            while(src < end)
+            {
+                if(*src >= 0 && *src <= VISIT_GHOSTNODE_FINE_SIDE)
+                {
+                    *dest++ = gnTypes[*src];
+                }
+                else
+                {
+                    ghosts->Delete();
+                    EXCEPTION1(ImproperUseException, "Invalid ghost node value");
+                }
+
+                src++;
+            }
+
+            ds->GetPointData()->AddArray(ghosts);
             retval = true;
         }
         else
@@ -593,6 +689,9 @@ SimV2_CreatePoints(int ndims, int coordMode,
 //   Brad Whitlock, Thu Aug 11 13:14:59 PDT 2011
 //   I added support for ghost zones from an array.
 //
+//   William T. Jones, Fri Jan 20 17:55:27 EDT 2012
+//   I added support for ghost nodes from an array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -651,6 +750,13 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
                           sgrid);
     }
 
+    visit_handle ghostNodes;
+    if(simv2_CurvilinearMesh_getGhostNodes(h, &ghostNodes) == VISIT_OKAY)
+    {
+        if(ghostNodes != VISIT_INVALID_HANDLE)
+            AddGhostNodesFromArray(sgrid, ghostNodes);
+    }
+
     vtkIntArray *arr = vtkIntArray::New();
     arr->SetNumberOfTuples(3);
     arr->SetValue(0, baseIndex[0]);
@@ -685,6 +791,9 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
 //
 //   Brad Whitlock, Thu Aug 11 13:17:33 PDT 2011
 //   Add support for ghost cells from an array.
+//
+//   William T. Jones, Fri Jan 20 17:55:27 EDT 2012
+//   I added support for ghost nodes from an array.
 //
 // ****************************************************************************
 
@@ -796,6 +905,13 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
                           minRealIndex,
                           maxRealIndex,
                           rgrid);
+    }
+
+    visit_handle ghostNodes;
+    if(simv2_RectilinearMesh_getGhostNodes(h, &ghostNodes) == VISIT_OKAY)
+    {
+        if(ghostNodes != VISIT_INVALID_HANDLE)
+            AddGhostNodesFromArray(rgrid, ghostNodes);
     }
 
     vtkIntArray *arr = vtkIntArray::New();
@@ -1055,6 +1171,9 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
 //   Brad Whitlock, Thu Aug 11 13:54:49 PDT 2011
 //   I added support for ghost zones from an array.
 //
+//   William T. Jones, Fri Jan 20 17:55:27 EDT 2012
+//   I added support for ghost nodes from an array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1273,6 +1392,15 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
 
         // Return the polyhedral split object.
         *phSplit = polyhedralSplit;
+    }
+
+    visit_handle ghostNodes;
+    if(simv2_UnstructuredMesh_getGhostNodes(h, &ghostNodes) == VISIT_OKAY)
+    {
+        if(ghostNodes != VISIT_INVALID_HANDLE)
+        {
+            AddGhostNodesFromArray(ugrid, ghostNodes);
+        }
     }
 
     return ugrid;
