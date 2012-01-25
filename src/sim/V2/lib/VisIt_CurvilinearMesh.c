@@ -113,6 +113,14 @@ VisIt_CurvilinearMesh_setGhostCells(visit_handle obj, visit_handle gz)
 }
 
 int
+VisIt_CurvilinearMesh_setGhostNodes(visit_handle obj, visit_handle gn)
+{
+    VISIT_DYNAMIC_EXECUTE(CurvilinearMesh_setGhostNodes,
+                    int, (visit_handle,visit_handle), 
+                    (obj,gn));
+}
+
+int
 VisIt_CurvilinearMesh_getCoords(visit_handle obj, int *ndims, int dims[3],
     int *coordMode, 
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
@@ -146,6 +154,14 @@ VisIt_CurvilinearMesh_getGhostCells(visit_handle obj, visit_handle *gz)
                     (obj,gz));
 }
 
+int
+VisIt_CurvilinearMesh_getGhostNodes(visit_handle obj, visit_handle *gn)
+{
+    VISIT_DYNAMIC_EXECUTE(CurvilinearMesh_getGhostNodes,
+                    int, (visit_handle,visit_handle*), 
+                    (obj,gn));
+}
+
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITCURVMESHALLOC             F77_ID(visitcurvmeshalloc_,visitcurvmeshalloc,VISITCURVMESHALLOC)
@@ -157,11 +173,13 @@ VisIt_CurvilinearMesh_getGhostCells(visit_handle obj, visit_handle *gz)
 #define F_VISITCURVMESHSETBASEINDEX      F77_ID(visitcurvmeshsetbaseindex_,visitcurvmeshsetbaseindex,VISITCURVMESHSETBASEINDEX)
 #define F_VISITCURVMESHSETREALINDICES    F77_ID(visitcurvmeshsetrealindices_,visitcurvmeshsetrealindices,VISITCURVMESHSETREALINDICES)
 #define F_VISITCURVMESHSETGHOSTCELLS     F77_ID(visitcurvmeshsetghostcells_,visitcurvmeshsetghostcells,VISITCURVMESHSETGHOSTCELLS)
+#define F_VISITCURVMESHSETGHOSTNODES     F77_ID(visitcurvmeshsetghostnodes_,visitcurvmeshsetghostnodes,VISITCURVMESHSETGHOSTNODES)
 
 #define F_VISITCURVMESHGETCOORDS         F77_ID(visitcurvmeshgetcoords_,visitcurvmeshgetcoords,VISITCURVMESHGETCOORDS)
 #define F_VISITCURVMESHGETBASEINDEX      F77_ID(visitcurvmeshgetbaseindex_,visitcurvmeshgetbaseindex,VISITCURVMESHGETBASEINDEX)
 #define F_VISITCURVMESHGETREALINDICES    F77_ID(visitcurvmeshgetrealindices_,visitcurvmeshgetrealindices,VISITCURVMESHGETREALINDICES)
 #define F_VISITCURVMESHGETGHOSTCELLS     F77_ID(visitcurvmeshgetghostcells_,visitcurvmeshgetghostcells,VISITCURVMESHGETGHOSTCELLS)
+#define F_VISITCURVMESHGETGHOSTNODES     F77_ID(visitcurvmeshgetghostnodes_,visitcurvmeshgetghostnodes,VISITCURVMESHGETGHOSTNODES)
 
 int
 F_VISITCURVMESHALLOC(visit_handle *obj)
@@ -229,6 +247,12 @@ F_VISITCURVMESHSETGHOSTCELLS(visit_handle *obj, visit_handle *gz)
 }
 
 int
+F_VISITCURVMESHSETGHOSTNODES(visit_handle *obj, visit_handle *gn)
+{
+    return VisIt_CurvilinearMesh_setGhostNodes(*obj, *gn);
+}
+
+int
 F_VISITCURVMESHGETCOORDS(visit_handle *obj, int *ndims, int *dims,
     int *coordMode, 
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
@@ -252,4 +276,10 @@ int
 F_VISITCURVMESHGETGHOSTCELLS(visit_handle *obj, visit_handle *gz)
 {
     return VisIt_CurvilinearMesh_getGhostCells(*obj, gz);
+}
+
+int
+F_VISITCURVMESHGETGHOSTNODES(visit_handle *obj, visit_handle *gn)
+{
+    return VisIt_CurvilinearMesh_getGhostNodes(*obj, gn);
 }

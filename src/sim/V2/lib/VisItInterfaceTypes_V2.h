@@ -130,6 +130,13 @@ typedef enum {
 #define VISIT_GHOSTCELL_REDUCED_CONNECTIVITY  4
 #define VISIT_GHOSTCELL_BLANK                 5
 
+/* Ghost node types */
+#define VISIT_GHOSTNODE_REAL                  0
+#define VISIT_GHOSTNODE_INTERIOR_BOUNDARY     1
+#define VISIT_GHOSTNODE_BLANK                 2
+#define VISIT_GHOSTNODE_COARSE_SIDE           3
+#define VISIT_GHOSTNODE_FINE_SIDE             4
+
 /* Definitions for CSG boundary types 
    Designed so low-order 16 bits are unused
    and can be included in silo.inc for Fortran 

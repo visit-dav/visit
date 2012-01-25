@@ -105,6 +105,14 @@ VisIt_UnstructuredMesh_setGhostCells(visit_handle obj, visit_handle gz)
 }
 
 int
+VisIt_UnstructuredMesh_setGhostNodes(visit_handle obj, visit_handle gn)
+{
+    VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_setGhostNodes,
+                    int, (visit_handle,visit_handle), 
+                    (obj,gn));
+}
+
+int
 VisIt_UnstructuredMesh_getCoords(visit_handle obj,
     int *ndims, int *coordMode,
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *coords)
@@ -139,6 +147,14 @@ VisIt_UnstructuredMesh_getGhostCells(visit_handle obj, visit_handle *gz)
                     (obj,gz));
 }
 
+int
+VisIt_UnstructuredMesh_getGhostNodes(visit_handle obj, visit_handle *gn)
+{
+    VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getGhostNodes,
+                    int, (visit_handle,visit_handle*), 
+                    (obj,gn));
+}
+
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITUCDMESHALLOC              F77_ID(visitucdmeshalloc_,visitucdmeshalloc,VISITUCDMESHALLOC)
@@ -149,11 +165,13 @@ VisIt_UnstructuredMesh_getGhostCells(visit_handle obj, visit_handle *gz)
 #define F_VISITUCDMESHSETCONNECTIVITY    F77_ID(visitucdmeshsetconnectivity_,visitucdmeshsetconnectivity,VISITUCDMESHSETCONNECTIVITY)
 #define F_VISITUCDMESHSETREALINDICES     F77_ID(visitucdmeshsetrealindices_,visitucdmeshsetrealindices,VISITUCDMESHSETREALINDICES)
 #define F_VISITUCDMESHSETGHOSTCELLS      F77_ID(visitucdmeshsetghostcells_,visitucdmeshsetghostcells,VISITUCDMESHSETGHOSTCELLS)
+#define F_VISITUCDMESHSETGHOSTNODES      F77_ID(visitucdmeshsetghostnodes_,visitucdmeshsetghostnodes,VISITUCDMESHSETGHOSTNODES)
 
 #define F_VISITUCDMESHGETCOORDS          F77_ID(visitucdmeshgetcoords_,visitucdmeshgetcoords,VISITUCDMESHGETCOORDS)
 #define F_VISITUCDMESHGETCONNECTIVITY    F77_ID(visitucdmeshgetconnectivity_,visitucdmeshgetconnectivity,VISITUCDMESHGETCONNECTIVITY)
 #define F_VISITUCDMESHGETREALINDICES     F77_ID(visitucdmeshgetrealindices_,visitucdmeshgetrealindices,VISITUCDMESHGETREALINDICES)
 #define F_VISITUCDMESHGETGHOSTCELLS      F77_ID(visitucdmeshgetghostcells_,visitucdmeshgetghostcells,VISITUCDMESHGETGHOSTCELLS)
+#define F_VISITUCDMESHGETGHOSTNODES      F77_ID(visitucdmeshgetghostnodes_,visitucdmeshgetghostnodes,VISITUCDMESHGETGHOSTNODES)
 
 int
 F_VISITUCDMESHALLOC(visit_handle *obj)
@@ -204,6 +222,12 @@ F_VISITUCDMESHSETGHOSTCELLS(visit_handle *obj, visit_handle *gz)
 }
 
 int
+F_VISITUCDMESHSETGHOSTNODES(visit_handle *obj, visit_handle *gn)
+{
+    return VisIt_UnstructuredMesh_setGhostNodes(*obj, *gn);
+}
+
+int
 F_VISITUCDMESHGETCOORDS(visit_handle *obj, int *ndims, int *coordMode, 
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
 {
@@ -226,4 +250,10 @@ int
 F_VISITUCDMESHGETGHOSTCELLS(visit_handle *obj, visit_handle *gz)
 {
     return VisIt_UnstructuredMesh_getGhostCells(*obj, gz);
+}
+
+int
+F_VISITUCDMESHGETGHOSTNODES(visit_handle *obj, visit_handle *gn)
+{
+    return VisIt_UnstructuredMesh_getGhostNodes(*obj, gn);
 }

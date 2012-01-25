@@ -98,6 +98,14 @@ VisIt_RectilinearMesh_setGhostCells(visit_handle obj, visit_handle gz)
 }
 
 int
+VisIt_RectilinearMesh_setGhostNodes(visit_handle obj, visit_handle gn)
+{
+    VISIT_DYNAMIC_EXECUTE(RectilinearMesh_setGhostNodes,
+                    int, (visit_handle,visit_handle), 
+                    (obj,gn));
+}
+
+int
 VisIt_RectilinearMesh_getCoords(visit_handle obj, int *ndims, 
                   visit_handle *x, visit_handle *y, visit_handle *z)
 {
@@ -139,6 +147,14 @@ VisIt_RectilinearMesh_getGhostCells(visit_handle obj, visit_handle *gz)
                     (obj,gz));
 }
 
+int
+VisIt_RectilinearMesh_getGhostNodes(visit_handle obj, visit_handle *gn)
+{
+    VISIT_DYNAMIC_EXECUTE(RectilinearMesh_getGhostNodes,
+                    int, (visit_handle,visit_handle*), 
+                    (obj,gn));
+}
+
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITRECTMESHALLOC             F77_ID(visitrectmeshalloc_,visitrectmeshalloc,VISITRECTMESHALLOC)
@@ -148,11 +164,13 @@ VisIt_RectilinearMesh_getGhostCells(visit_handle obj, visit_handle *gz)
 #define F_VISITRECTMESHSETBASEINDEX      F77_ID(visitrectmeshsetbaseindex_,visitrectmeshsetbaseindex,VISITRECTMESHSETBASEINDEX)
 #define F_VISITRECTMESHSETREALINDICES    F77_ID(visitrectmeshsetrealindices_,visitrectmeshsetrealindices,VISITRECTMESHSETREALINDICES)
 #define F_VISITRECTMESHSETGHOSTCELLS     F77_ID(visitrectmeshsetghostcells_,visitrectmeshsetghostcells,VISITRECTMESHSETGHOSTCELLS)
+#define F_VISITRECTMESHSETGHOSTNODES     F77_ID(visitrectmeshsetghostnodes_,visitrectmeshsetghostnodes,VISITRECTMESHSETGHOSTNODES)
 
 #define F_VISITRECTMESHGETCOORDS         F77_ID(visitrectmeshgetcoords_,visitrectmeshgetcoords,VISITRECTMESHGETCOORDS)
 #define F_VISITRECTMESHGETBASEINDEX      F77_ID(visitrectmeshgetbaseindex_,visitrectmeshgetbaseindex,VISITRECTMESHGETBASEINDEX)
 #define F_VISITRECTMESHGETREALINDICES    F77_ID(visitrectmeshgetrealindices_,visitrectmeshgetrealindices,VISITRECTMESHGETREALINDICES)
 #define F_VISITRECTMESHGETGHOSTCELLS     F77_ID(visitrectmeshgetghostcells_,visitrectmeshgetghostcells,VISITRECTMESHGETGHOSTCELLS)
+#define F_VISITRECTMESHGETGHOSTNODES     F77_ID(visitrectmeshgetghostnodes_,visitrectmeshgetghostnodes,VISITRECTMESHGETGHOSTNODES)
 
 int
 F_VISITRECTMESHALLOC(visit_handle *obj)
@@ -212,6 +230,12 @@ F_VISITRECTMESHSETGHOSTCELLS(visit_handle *obj, visit_handle *gz)
 }
 
 int
+F_VISITRECTMESHSETGHOSTNODES(visit_handle *obj, visit_handle *gn)
+{
+    return VisIt_RectilinearMesh_setGhostNodes(*obj, *gn);
+}
+
+int
 F_VISITRECTMESHGETCOORDS(visit_handle *obj, int *ndims, visit_handle *x, visit_handle *y, visit_handle *z)
 {
     return VisIt_RectilinearMesh_getCoords(*obj, ndims, x, y, z);
@@ -233,4 +257,10 @@ int
 F_VISITRECTMESHGETGHOSTCELLS(visit_handle *obj, visit_handle *gz)
 {
     return VisIt_RectilinearMesh_getGhostCells(*obj, gz);
+}
+
+int
+F_VISITRECTMESHGETGHOSTNODES(visit_handle *obj, visit_handle *gn)
+{
+    return VisIt_RectilinearMesh_getGhostNodes(*obj, gn);
 }

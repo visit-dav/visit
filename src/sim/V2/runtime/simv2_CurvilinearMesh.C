@@ -12,6 +12,7 @@ struct VisIt_CurvilinearMesh : public VisIt_ObjectBase
     virtual ~VisIt_CurvilinearMesh();
     void FreeCoordinates();
     void FreeGhostCells();
+    void FreeGhostNodes();
 
     int ndims;
     int dims[3];
@@ -25,6 +26,7 @@ struct VisIt_CurvilinearMesh : public VisIt_ObjectBase
     visit_handle zcoords;
     visit_handle coords;
     visit_handle ghostCells;
+    visit_handle ghostNodes;
 };
 
 VisIt_CurvilinearMesh::VisIt_CurvilinearMesh() : VisIt_ObjectBase(VISIT_CURVILINEAR_MESH)
@@ -41,12 +43,14 @@ VisIt_CurvilinearMesh::VisIt_CurvilinearMesh() : VisIt_ObjectBase(VISIT_CURVILIN
     zcoords = VISIT_INVALID_HANDLE;
     coords = VISIT_INVALID_HANDLE;
     ghostCells = VISIT_INVALID_HANDLE;
+    ghostNodes = VISIT_INVALID_HANDLE;
 }
 
 VisIt_CurvilinearMesh::~VisIt_CurvilinearMesh()
 {
     FreeCoordinates();
     FreeGhostCells();
+    FreeGhostNodes();
 }
 
 void
@@ -81,6 +85,16 @@ VisIt_CurvilinearMesh::FreeGhostCells()
     {
         simv2_VariableData_free(ghostCells);
         ghostCells = VISIT_INVALID_HANDLE;
+    }
+}
+
+void
+VisIt_CurvilinearMesh::FreeGhostNodes()
+{
+    if(ghostNodes != VISIT_INVALID_HANDLE)
+    {
+        simv2_VariableData_free(ghostNodes);
+        ghostNodes = VISIT_INVALID_HANDLE;
     }
 }
 
@@ -381,6 +395,42 @@ simv2_CurvilinearMesh_setGhostCells(visit_handle h, visit_handle gz)
 }
 
 int
+simv2_CurvilinearMesh_setGhostNodes(visit_handle h, visit_handle gn)
+{
+    int retval = VISIT_ERROR;
+    VisIt_CurvilinearMesh *obj = GetObject(h, "simv2_CurvilinearMesh_setGhostNodes");
+    if(obj != NULL)
+    {
+        // Get the ghost node information
+        int owner, dataType, nComps, nTuples;
+        void *data = 0;
+        if(simv2_VariableData_getData(gn, owner, dataType, nComps, nTuples, data) == VISIT_ERROR)
+        {
+            VisItError("Could not obtain ghost node information.");
+            return VISIT_ERROR;
+        }
+
+        if(nComps != 1)
+        {
+            VisItError("Ghost node arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
+        if(dataType != VISIT_DATATYPE_CHAR && dataType != VISIT_DATATYPE_INT)
+        {
+            VisItError("Ghost node arrays must contain either char or int elements.");
+            return VISIT_ERROR;
+        }
+
+        obj->FreeGhostNodes();
+        obj->ghostNodes = gn;
+
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
 simv2_CurvilinearMesh_getCoords(visit_handle h, 
     int *ndims, int dims[3], int *coordMode, 
     visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
@@ -448,6 +498,19 @@ simv2_CurvilinearMesh_getGhostCells(visit_handle h, visit_handle *gz)
     return retval;
 }
 
+int
+simv2_CurvilinearMesh_getGhostNodes(visit_handle h, visit_handle *gn)
+{
+    int retval = VISIT_ERROR;
+    VisIt_CurvilinearMesh *obj = GetObject(h, "simv2_CurvilinearMesh_getGhostNodes");
+    if(obj != NULL)
+    {
+        *gn = obj->ghostNodes;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
 /*******************************************************************************
  * C++ code callable from the SimV2 plugin and within the runtime
  ******************************************************************************/
@@ -484,6 +547,27 @@ simv2_CurvilinearMesh_check(visit_handle h)
                  return VISIT_ERROR;
             }
         }
+
+        if(obj->ghostNodes != VISIT_INVALID_HANDLE)
+        {
+            // Get the ghost node information
+            int owner, dataType, nComps, nTuples = 0;
+            void *data = 0;
+            simv2_VariableData_getData(obj->ghostNodes, owner, dataType, nComps, nTuples, data);
+
+            // Get the number of nodes
+            int nNodes = 1;
+            for(int i = 0; i < obj->ndims; ++i)
+                nNodes *= obj->dims[i];
+
+            if(nTuples != nNodes)
+            {
+                 VisItError("The number of elements in the ghost node array does "
+                            "not match the number of mesh nodes.");
+                 return VISIT_ERROR;
+            }
+        }
+
 
         retval = VISIT_OKAY;
     }
