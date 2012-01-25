@@ -147,6 +147,9 @@ class PlotList;
 //   Kathleen Biagas, Fri Aug 26 11:10:16 PDT 2011
 //   Added tabs for cleaning up window a bit.  Added timeQueryOptionsWidget.
 //
+//   Kathleen Biagas, Wed Jan 25 15:59:12 MST 2012
+//   Added redoPickButton, timeOptsTabIndex.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -264,6 +267,7 @@ private:
     QComboBox          *preserveCoord;
     QComboBox          *timeCurveType;
     QvisTimeQueryOptionsWidget *timeOpts;
+    QPushButton        *redoPickButton;
 
     // Spreadsheet Tab widgets
     QWidget            *pageSpreadsheet;
@@ -275,6 +279,7 @@ private:
 
     int                 saveCount;
     int                 activeOptionsTab;
+    int                 timeOptsTabIndex;
 
     // Saving attributes for restoring them after re-doing a pick
     bool                createSpreadsheetSave;
