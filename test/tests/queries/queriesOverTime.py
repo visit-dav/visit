@@ -138,9 +138,12 @@ def TestAllTimeQueries():
     SetActiveWindow(1) 
     pa = GetPickAttributes()
     pa.doTimeCurve = 1
+    pa.timePreserveCoord = 0
     SetPickAttributes(pa)
     PickByNode(15947)
+    # reset some defaults
     pa.doTimeCurve = 0
+    pa.timePreserveCoord = 1
     SetPickAttributes(pa)
     SetActiveWindow(2);
     Test("AllTimeQueries_07")
@@ -310,8 +313,13 @@ def TestTransientVariable():
 
     pick = GetPickAttributes()
     pick.doTimeCurve = 1
+    pick.timePreserveCoord = 0
     SetPickAttributes(pick)
     PickByNode(327)
+
+    pick.doTimeCurve = 0
+    pick.timePreserveCoord = 1
+    SetPickAttributes(pick)
 
     SetActiveWindow(2)
     InitAnnotation()
