@@ -17,9 +17,25 @@
 # include <GL/glx.h>
 #endif
 
+// ****************************************************************************
+// Class: vtkQtRenderWindowPrivate
 //
-// Private data storage.
+// Purpose:
+//   Private data storage for the vtkQtRenderWindow class.
 //
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   2010
+//
+// Modifications:
+//   Brad Whitlock, Wed Jan 25 23:13:09 PST 2012
+//   I added code to pass the QGLFormat to the widget so we explicitly request
+//   an alpha channel. This fixes transparency on my Linux box. Maybe certain
+//   systems don't have alpha channel defaulted to enabled.
+//
+// ****************************************************************************
+
 class VTKQT_API vtkQtRenderWindowPrivate
 {
 public:
@@ -35,7 +51,9 @@ public:
         showEventCallbackData = NULL;
 
         // Create the VTK widget and force our custom render window into it.
-        gl = new QVTKWidget2(w);
+        gl = new QVTKWidget2(QGLFormat(QGL::DepthBuffer | QGL::AlphaChannel), w);
+        if (!gl->format().alpha())
+            qWarning("Could not get alpha channel; results will be suboptimal");
     }
 
     virtual ~vtkQtRenderWindowPrivate()
