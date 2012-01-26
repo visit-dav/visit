@@ -142,6 +142,7 @@ else
 fi
 
 skipList_for_Edge="\
+    $testHost,scalable,parallel,icet:tests/queries/queriesOverTime.py:AllTimeQueries_07,TimeQuery_trans_02 \
     $testHost,parallel:tests/databases/netcdf.py:netcdf_3_01,netcdf_3_08 \
     $testHost,scalable,parallel,icet:tests/databases/netcdf.py:netcdf_3_01,netcdf_3_08 \
     $testHost,parallel:tests/hybrid/missingdata.py:missingdata_0_04 \
