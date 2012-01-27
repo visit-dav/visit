@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #include <STLPluginInfo.h>
+#include <avtSTLWriter.h>
 
 // ****************************************************************************
 //  Function:  GetEngineInfo
@@ -68,6 +69,6 @@ extern "C" DBP_EXPORT EngineDatabasePluginInfo* STL_GetEngineInfo()
 avtDatabaseWriter *
 STLEnginePluginInfo::GetWriter(void)
 {
-    return NULL;
+    return new avtSTLWriter(writeOptions);
 }
 
