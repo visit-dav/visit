@@ -150,7 +150,7 @@ STLGeneralPluginInfo::EnabledByDefault() const
 bool
 STLGeneralPluginInfo::HasWriter() const
 {
-    return false;
+    return true;
 }
 // ****************************************************************************
 //  Method:  STLGeneralPluginInfo::GetDefaultFilePatterns
