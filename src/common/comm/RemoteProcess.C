@@ -1188,7 +1188,7 @@ RemoteProcess::Open(const std::string &rHost,
     else
     {
         debug5 << mName << "Calling LaunchRemote" << endl;
-        LaunchRemote(commandLine);
+        LaunchRemote(useGateway ? gatewayHost : rHost, commandLine);
     }
 
     childDied[GetProcessId()] = false;
@@ -2174,7 +2174,7 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
 // ****************************************************************************
 
 void
-RemoteProcess::LaunchRemote(const stringVector &args)
+RemoteProcess::LaunchRemote(const std::string &host, const stringVector &args)
 {
     const char *mName = "RemoteProcess::LaunchRemote: ";
 
@@ -2248,7 +2248,7 @@ RemoteProcess::LaunchRemote(const stringVector &args)
     {
         TRY
         {
-            (*getAuthentication)(remoteUserName.c_str(), remoteHost.c_str(),
+            (*getAuthentication)(remoteUserName.c_str(), host.c_str(),
                                  ptyFileDescriptor);
         }
         CATCH(CouldNotConnectException)

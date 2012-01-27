@@ -185,7 +185,7 @@ protected:
                            int numRead, int numWrite);
     virtual void Launch(const stringVector &);
     void LaunchLocal(const stringVector &);
-    void LaunchRemote(const stringVector &);
+    void LaunchRemote(const std::string &host, const stringVector &);
 protected:
     int                      listenPortNum;
     std::string              localHost, localUserName;
