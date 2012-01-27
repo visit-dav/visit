@@ -262,6 +262,11 @@
 #    Gunther H. Weber, Wed Oct  5 19:14:27 PDT 2011
 #    Change NERSC_HOST to VISIT_HOSTNAME to make it more general
 #
+#    Kathleen Biagas, Tue Jan 24 12:22:47 MST 2012
+#    On windows, use VisIt version of FindMPI.cmake to ensure correct search
+#    paths.  Also ensure paths returned from FindMPI are converted to NATIVE
+#    style.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1144,20 +1149,22 @@ IF(VISIT_PARALLEL)
             ENDIF(VISIT_MPI_LD_FLAGS)
         ELSE(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
             IF(WIN32)
-              INCLUDE(${CMAKE_ROOT}/Modules/FindMPI.cmake)
-              IF(MPI_FOUND)
+              INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMPI.cmake)
+               IF(MPI_FOUND)
                 IF(MPI_COMPILE_FLAGS)
                     LIST(APPEND VPFLAGS "${MPI_COMPILE_FLAGS}")
                 ENDIF(MPI_COMPILE_FLAGS)
                 IF(MPI_INCLUDE_PATH)
-                    LIST(APPEND VPFLAGS "/I \"${MPI_INCLUDE_PATH}\"")
+                    FILE(TO_NATIVE_PATH ${MPI_INCLUDE_PATH} MIP_NATIVE)
+                    LIST(APPEND VPFLAGS "/I \"${MIP_NATIVE}\"")
                 ENDIF(MPI_INCLUDE_PATH)
                 STRING(REPLACE ";" " " VPFLAGS "${VPFLAGS}")
                 SET(VISIT_PARALLEL_CFLAGS "${VPFLAGS}" 
                     CACHE STRING "Parallel CFLAGS")
                 SET(VISIT_PARALLEL_CXXFLAGS "${VPFLAGS}" 
                      CACHE STRING "Parallel CXXFLAGS")
-                SET(VISIT_PARALLEL_LIBS "${MPI_LIBRARY}"
+                FILE(TO_NATIVE_PATH ${MPI_LIBRARY} ML_NATIVE)
+                SET(VISIT_PARALLEL_LIBS "${ML_NATIVE}"
                     CACHE STRING "MPI libraries")
                 IF(MPI_LINK_FLAGS)
                     SET(VISIT_PARALLEL_LINKER_FLAGS "${MPI_LINK_FLAGS}"
