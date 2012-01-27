@@ -3,16 +3,42 @@
 #include <string>
 #include <vector>
 
+#define MATERIALPROPERTIES_NUM_ITEMS 70
+
+// ****************************************************************************
+// Class: MaterialProperties
+//
+// Purpose:
+//   This class contains material properties for the material cards read from
+//   a Dyna3D file.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 26 12:23:33 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 struct MaterialProperties
 {
     MaterialProperties();
 
+    void ReadCard(void (*readline)(char *, int, void *), void *cbdata);
+    void WriteCard(void (*writeline)(const char *, void *), void *cbdata) const;
+
     bool        enabled;
     int         materialNumber;
     std::string materialName;
+    std::string eosName;
     double      density;
     double      strength;
     double      equivalentPlasticStrain;
+    double      materialInformation[MATERIALPROPERTIES_NUM_ITEMS];
+    std::vector<std::string> materialLines;
+private:
+    bool RequiresEOS() const;
 };
 
 typedef std::vector<MaterialProperties> MaterialPropertiesVector;

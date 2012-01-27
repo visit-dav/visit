@@ -49,10 +49,6 @@ public:
 
     bool Read(const std::string &filename);
     bool Identify(const std::string &filename);
-    bool Write(const std::string &filename, const avtMatrix &M = avtMatrix()) const;
-
-    void Combine(const Dyna3DFile &);
-    void TransformPoints(const avtMatrix &M);
 
     void           FreeUpResources(void); 
 
@@ -69,9 +65,6 @@ public:
     vtkDataSet    *GetMesh(const char *);
     vtkDataArray  *GetVar(const char *);
     vtkDataArray  *GetVectorVar(const char *);
-
-    static bool CreateTransformedFile(const char *infile, const char *outfile,
-                                      const avtMatrix &);
 
 protected:
     typedef struct
@@ -107,7 +100,6 @@ protected:
     void ReadControlCard8(ifstream &);
     void ReadControlCard9(ifstream &);
     void ReadMaterialCards(ifstream &);
-    void ReadOneMaterialCard(ifstream &, MaterialProperties &);
 
     bool ReadControlCardsNewFormat(ifstream &ifile);
 
