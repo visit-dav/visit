@@ -44,13 +44,14 @@
 
 #include <vtkFloatArray.h>
 #include <vtkPolyData.h>
-#include <vtkVisItSTLReader.h>
+#include <vtkSTLReader.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <avtDatabase.h>
+#include <DBOptionsAttributes.h>
 
 
 //
@@ -73,9 +74,11 @@ const char   *avtSTLFileFormat::MESHNAME = "STL_mesh";
 //    Jeremy Meredith, Thu Jan  7 12:20:01 EST 2010
 //    Initialize checkedFile.
 //
+//    Jean Favre, Fri Jan 27 10:41:38 CET 2012
+//    Added DBOptionsAttributes
 // ****************************************************************************
 
-avtSTLFileFormat::avtSTLFileFormat(const char *fname) 
+avtSTLFileFormat::avtSTLFileFormat(const char *fname, DBOptionsAttributes*&) 
     : avtSTSDFileFormat(fname)
 {
     dataset = NULL;
@@ -126,6 +129,9 @@ avtSTLFileFormat::~avtSTLFileFormat()
 //    Enable strict mode based on the new file format strict mode, not
 //    blindly in the meta-data server.
 //
+//    Jean Favre, Fri Jan 27 10:41:38 CET 2012
+//    Disable strict mode in order to switch to the vtkSTLReader from VTK/IO.
+//
 // ****************************************************************************
 
 void
@@ -146,8 +152,8 @@ avtSTLFileFormat::ReadInDataset(void)
     //
     // Create a file reader and set our dataset to be its output.
     //
-    vtkVisItSTLReader *reader = vtkVisItSTLReader::New();
-    reader->SetStrict(GetStrictMode());
+    vtkSTLReader *reader = vtkSTLReader::New();
+    //reader->SetStrict(GetStrictMode());
     reader->SetFileName(filename);
     dataset = reader->GetOutput();
     dataset->Register(NULL);
@@ -306,7 +312,7 @@ avtSTLFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int spat = 3;
     int topo = 2;
 
-    avtMeshType type = AVT_SURFACE_MESH;;
+    avtMeshType type = AVT_SURFACE_MESH;
 
     AddMeshToMetaData(md, MESHNAME, type, NULL, 1, 0, spat, topo);
 }

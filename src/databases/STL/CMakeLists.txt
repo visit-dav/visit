@@ -16,14 +16,15 @@ SET(LIBM_SOURCES
 STLMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtSTLFileFormat.C
-vtkVisItSTLReader.C
+avtSTLOptions.C
 )
 
 SET(LIBE_SOURCES
 STLEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtSTLFileFormat.C
-vtkVisItSTLReader.C
+avtSTLWriter.C
+avtSTLOptions.C
 )
 
 INCLUDE_DIRECTORIES(

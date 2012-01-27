@@ -1,14 +1,8 @@
 <?xml version="1.0"?>
-  <Plugin name="STL" label="STL" type="database" dbtype="STSD" version="1.0">
+  <Plugin name="STL" type="database" label="STL" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="true" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
-        *.stl
+      *.stl
     </FilePatterns>
-    <Files components="M">
-        avtSTLFileFormat.C
-        vtkVisItSTLReader.C
-    </Files>
-    <Files components="E">
-        avtSTLFileFormat.C
-        vtkVisItSTLReader.C
-    </Files>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
   </Plugin>

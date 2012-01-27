@@ -59,12 +59,16 @@
 //   Jeremy Meredith, Thu Jan  7 11:46:03 EST 2010
 //   Added ability for mdserver to check the file.
 //
+//    Jean Favre, Fri Jan 27 10:41:38 CET 2012
+//    Added DBOptionsAttributes
 // ****************************************************************************
+
+class     DBOptionsAttributes;
 
 class avtSTLFileFormat : public avtSTSDFileFormat
 {
   public:
-                          avtSTLFileFormat(const char *);
+                          avtSTLFileFormat(const char *, DBOptionsAttributes*&);
     virtual              ~avtSTLFileFormat();
 
     virtual vtkDataSet   *GetMesh(const char *);

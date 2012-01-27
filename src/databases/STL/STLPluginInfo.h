@@ -82,6 +82,8 @@ class STLCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virt
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+    virtual DBOptionsAttributes *GetReadOptions() const;
+    virtual DBOptionsAttributes *GetWriteOptions() const;
 };
 
 class STLMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual STLCommonPluginInfo
