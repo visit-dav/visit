@@ -560,71 +560,75 @@ Dyna3DFile::ReadControlCard9(ifstream &ifile)
 }
 
 // ****************************************************************************
-// Method: Dyna3DFile::ReadOneMaterialCard
+// Method: Dyna3DFile_WriteDebug4
 //
 // Purpose: 
-//   Read one material card
+//   This callback function writes a string to the debug logs.
 //
 // Arguments:
-//   ifile : The input file.
-//   mat   : The material card to fill in.
+//   s : The string to write.
+//   cbdata : The callback data.
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon Mar  9 16:12:45 PDT 2009
+// Creation:   Thu Jan 26 13:58:33 PST 2012
 //
 // Modifications:
 //   
 // ****************************************************************************
 
-void
-Dyna3DFile::ReadOneMaterialCard(ifstream &ifile, MaterialProperties &mat)
+static void
+Dyna3DFile_WriteDebug5(const char *s, void *cbdata)
 {
-    const char *mName = "avtDyna3DFileFormat::ReadOneMaterialCard: ";
-    DEBUG_READER(debug5 << mName << "0: " << line << endl;)
-    sscanf(line, "%d", &mat.materialNumber);
+    DEBUG_READER(debug5 << s << endl;)
+}
 
-    // Get the material density out of cols 11-20.
-    line[20] = '\0';
-    mat.density = atof(line + 10);
+// ****************************************************************************
+// Method: Dyna3DFile_ReadLine
+//
+// Purpose: 
+//   This is a callback function that is used by the material properties to
+//   get a line of input for the material card.
+//
+// Arguments:
+//   buf    : The buffer we're filling.
+//   buflen : The length of the buffer.
+//   cbdata : Callback function data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 26 13:58:15 PST 2012
+//
+// Modifications:
+//
+// ****************************************************************************
 
-    // Read the name line of the material card and strip out
-    // extra spaces from the name.
-    GetLine(ifile);
-    DEBUG_READER(debug5 << mName << "1: " << line << endl;)
-    char matNameBuf[1024];
-    memset(matNameBuf, 0, 1024);
-    char *s = matNameBuf, *ptr = line;
-    while(*ptr != '\0' && ((s - matNameBuf) < 1024))
+struct Dyna3DFile_ReadLine_data
+{
+    ifstream *stream;
+    char     *line;
+    int       lineIndex;
+};
+
+static void 
+Dyna3DFile_ReadLine(char *buf, int buflen, void *cbdata)
+{
+    Dyna3DFile_ReadLine_data *s = (Dyna3DFile_ReadLine_data *)cbdata;
+    memset(buf, 0, buflen * sizeof(char));
+    if(s->lineIndex == 0)
     {
-        if(*ptr == ' ')
-        {
-           *s++ = *ptr;
-           while(*ptr == ' ')
-               ptr++;
-        }
-        else if(*ptr != '\n')
-        {
-           *s++ = *ptr++;
-        }
+        // The first time through, the ReadMaterialCards routine has 
+        // already read the first line of the material card into the
+        // line buffer. So, just return that.
+        strncpy(buf, s->line, buflen);
     }
-    mat.materialName = matNameBuf;
-
-    // If there's no material name then use the number.
-    if(mat.materialName.size() == 0 || mat.materialName == " ")
+    else
     {
-        SNPRINTF(matNameBuf, 1024, "%d", mat.materialNumber);
-        mat.materialName = matNameBuf;
+        s->stream->getline(buf, buflen);
     }
+    s->lineIndex++;
 
-    // Get the next line since it contains the strength
-    GetLine(ifile);
-    DEBUG_READER(debug5 << mName << "2: " << line << endl;)
-    double tmp;
-    sscanf(line, "%lg %lg", &tmp, &mat.strength);
-
-    // Get the next line since it contains the eps.
-    GetLine(ifile);
-    sscanf(line, "%lg", &mat.equivalentPlasticStrain);
+    // If the line we read was a comment then try to read another line.
+    if(buf[0] == '*')
+        Dyna3DFile_ReadLine(buf, buflen, cbdata);
 }
 
 // ****************************************************************************
@@ -654,6 +658,9 @@ Dyna3DFile::ReadOneMaterialCard(ifstream &ifile, MaterialProperties &mat)
 //   I added a little code to try and get us to the material cards section
 //   if we're not already there by the time this routine gets called. This
 //   makes the code a little more tolerant of funky control cards.
+//
+//   Brad Whitlock, Thu Jan 26 13:59:32 PST 2012
+//   I rewrote the code that reads in single material cards.
 //
 // ****************************************************************************
 
@@ -712,11 +719,23 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
         if(startsLikeMat || endsLikeMat)
         {
             DEBUG_READER(debug4 << "Reading material " << (materialCards.size()+1) << endl;)
+
+            // Let the material properties object read the card.
+            Dyna3DFile_ReadLine_data cbdata;
+            cbdata.stream = &ifile;
+            cbdata.line = line;
+            cbdata.lineIndex = 0;
             MaterialProperties mat;
-            ReadOneMaterialCard(ifile, mat);
+            mat.ReadCard(Dyna3DFile_ReadLine, &cbdata);
 
             // Make sure that the material name is unique.
             std::string matName(mat.materialName);
+            if(matName.empty())
+            {
+                char matNameBuf[10];
+                SNPRINTF(matNameBuf, 1024, "%d", int(1 + materialCards.size()));
+                matName = std::string(matNameBuf);
+            }
             if(uniqueNames.find(matName) != uniqueNames.end())
             {
                 // Find a unique name.
@@ -779,6 +798,9 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
         debug5 << "Added material (" << materialCards[i].materialNumber << "): "
                << materialCards[i].materialName.c_str() << ", density="
                << materialCards[i].density << ", strength=" << materialCards[i].strength << endl;
+        // Write the card back out so we can see if we read it right.
+        materialCards[i].WriteCard(Dyna3DFile_WriteDebug5, NULL);
+        debug5 << "--" << endl;
     }
     debug5 << "**********************************************************" << endl;
     )
@@ -1125,6 +1147,9 @@ Dyna3DFile::GetMesh(const char *meshname)
 //    Brad Whitlock, Tue Sep 21 14:14:28 PST 2010
 //    I added equivalentPlasticStrain.
 //
+//    Brad Whitlock, Wed Jan 25 17:23:27 PST 2012
+//    Call methods on the material cards to obtain values.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1230,423 +1255,4 @@ Dyna3DFile::GetVectorVar(const char *varname)
     }
 
     return ret;
-}
-
-bool
-Dyna3DFile::Write(const std::string &filename, const avtMatrix &M) const
-{
-    if(ugrid == 0)
-        return false;
-
-    FILE *f = fopen(filename.c_str(), "wt");
-    if(f != NULL)
-    {
-        fprintf(f, "                                                                        88 large\n");
-        fprintf(f, "*\n");
-        fprintf(f, "* This file was created using SDM's Dyna3DFile class.\n");
-        fprintf(f, "*\n");
-        fprintf(f, "*------------------- ANALYSIS INPUT DATA FOR DYNA3D -------------------*\n");
-        fprintf(f, "*\n");
-        fprintf(f, "*\n");
-        fprintf(f, "*-------------------------- CONTROL CARD #2 ---------------------------*\n");
-        fprintf(f, "*\n");
-        fprintf(f, "* number of materials[1] nodal points[2] solid hexahedron elements[3] beam\n");
-        fprintf(f, "* elements[4] 4-node shell elements[5] 8-node solid shell elements[6]\n");
-        fprintf(f, "* interface segments[7] interface interval[8] min. shell time step[9]\n");
-        fprintf(f, "%5d%10d%10d         0         0         0         0 0.000E+00  0.0\n",
-                (int)materialCards.size(), (int)ugrid->GetPoints()->GetNumberOfPoints(), 
-                (int)ugrid->GetNumberOfCells());
-
-        fprintf(f, "*\n");
-        fprintf(f, "*-------------------------- CONTROL CARD #3 ---------------------------*\n");
-        fprintf(f, "*\n");
-        fprintf(f, "* number of time history blocks for nodes[1] hexahedron elements[2] beam\n");
-        fprintf(f, "* elements[3] shell elements[4] thick shell elements[5] and report interval[6]\n");
-        fprintf(f, "* reaction forces print flag[7] discrete element forces print flag[8]\n");
-        fprintf(f, "* element deletion/SAND database flag[9]\n");
-        fprintf(f, "    0    0    0    0    0    0    0    0    1\n");
-        fprintf(f, "*\n");
-        fprintf(f, "*-------------------------- CONTROL CARD #4 ---------------------------*\n");
-        fprintf(f, "*\n");
-        fprintf(f, "* number of sliding boundary planes[1]\n");
-        fprintf(f, "* sliding boundary planes w/ failure[2] points in density vs depth\n");
-        fprintf(f, "* curve[3] brode function flag[4] number of rigid body merge cards[5] \n");
-        fprintf(f, "* nodal coordinate format[6] force cross sections[7] \n");
-        fprintf(f, "* cross section forces interval[8]\n");
-        fprintf(f, "         0    0    0    0    0e20.0    0 0.000E+00\n");
-        fprintf(f, "*\n");
-        fprintf(f, "*-------------------------- CONTROL CARD #5 ---------------------------*\n");
-        fprintf(f, "*\n");
-        fprintf(f, "* number of load curves[1] concentrated nodal loads[2] element sides having\n");
-        fprintf(f, "* pressure loads applied[3] velocity/acceleration boundary condition cards[4]\n");
-        fprintf(f, "* rigid walls (stonewalls)[5] nodal constraint cards[6] initial condition\n");
-        fprintf(f, "* parameter[7] sliding interfaces[8] base acceleration in x[9] y[10] and\n");
-        fprintf(f, "* z-direction[11] angular velocity about x[12] y[13] and z-axis[14] number of \n");
-        fprintf(f, "* solid hexahedron elements for momentum deposit[15] detonation points[16]\n");
-        fprintf(f, "    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0\n");
-        fprintf(f, "*\n");
-        fprintf(f, "*-------------------------- CONTROL CARD #6 ---------------------------*\n");
-        fprintf(f, "*\n");
-        fprintf(f, "* termination time[1] time history dump interval[2] complete dump interval[3]\n");
-        fprintf(f, "* time steps between restart dumps[4] time steps between running restart\n");
-        fprintf(f, "* dumps[5] initial time step[6] sliding interface penalty factor[7] thermal\n");
-        fprintf(f, "* effects option[8] default viscosity flag[9] computed time step factor[10]\n");
-        fprintf(f, " 1.000E+05 1.000E+03 1.000E+03    0    0 0.000E+00 0.000E+00    0    0 0.000E+00\n");
-        fprintf(f, "*\n");
-        fprintf(f, "*-------------------------- CONTROL CARD #7 ---------------------------*\n");
-        fprintf(f, "*\n");
-        fprintf(f, "* number of joint definitions[1] rigid bodies with extra nodes[2] shell-\n");
-        fprintf(f, "* solid interfaces[3] tie-breaking shell slidelines[4] tied node sets with\n");
-        fprintf(f, "* failure[5] limiting time step load curve number[6] springs-dampers-masses\n");
-        fprintf(f, "* flag[7] rigid bodies with inertial properties[8] dump shell strain flag[9]\n");
-        fprintf(f, "* number of material groups for deformable-rigid switching[10] number of\n");
-        fprintf(f, "* mass proportional damping sets[11] Hughes-Liu shell update[12] shell\n");
-        fprintf(f, "* thickness change[13] shell formulation[14] number of nonreflecting boundary\n");
-        fprintf(f, "* segments[15]\n");
-        fprintf(f, "    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0\n");
-        fprintf(f, "*\n");
-        fprintf(f, "*-------------------------- CONTROL CARD #8 ---------------------------*\n");
-        fprintf(f, "*\n");
-        fprintf(f, "* number of point constraint nodes[1] coordinate systems for constraint\n");
-        fprintf(f, "* nodes[2] minimum step factor[3] number of beam integration rules[4]\n");
-        fprintf(f, "* maximum integration points for beams[5] number of shell integration rules[6]\n");
-        fprintf(f, "* maximum integration points for shells[7] relaxation iterations between\n");
-        fprintf(f, "* checks[8] relaxation tolerance[9] dynamic relaxation factor[10] dynamic\n");
-        fprintf(f, "* relaxation time step factor[11] 4-node shell time step option[12]\n");
-        fprintf(f, "    0    0 0.000E+00    0    0    0    0  250 1.000E-03 9.950E-01 0.000E+00    0\n");
-        fprintf(f, "*\n");
-        fprintf(f, "*-------------------------- CONTROL CARD #9 ---------------------------*\n");
-        fprintf(f, "*\n");
-        fprintf(f, "* plane stress plasticity[1] printout flag[2] number of 1D slidelines[3]\n");
-        fprintf(f, "* relaxation database[4] Rayleigh coefficient[5]\n");
-        fprintf(f, "* materials w/Rayleigh damping[6] materials for initial rotation[7]\n");
-        fprintf(f, "* materials w/ body force loads[8]\n");
-        fprintf(f, "    0    0    0    0 0.000E+00    0    0    0\n");
-
-        fprintf(f, "*\n");
-        fprintf(f, "*--------------------------- MATERIAL CARDS ---------------------------*\n");
-        fprintf(f, "*\n");
-
-        if(materialCards.size() > 0)
-        {
-            for(int i = 0; i < materialCards.size(); ++i)
-            {
-                char matname[81];
-                memset(matname, ' ', 80);
-                const char *src = materialCards[i].materialName.c_str();
-                char *dest = matname;
-                while((*src != '\0') && (dest < (matname+80)))
-                    *dest++ = *src++;
-                matname[80] = '\0';
-
-                fprintf(f, "%5d    0%1.4E    0    00.0000E+00    00.0000E+000.0000E+00    0    0    0\n",
-                        materialCards[i].materialNumber, materialCards[i].density);
-                fprintf(f, "%s\n", matname);
-                fprintf(f, " 0.000E+00% 1.3E 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00\n",
-                        materialCards[i].strength);
-                fprintf(f, " 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00\n");
-                fprintf(f, " 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00\n");
-                fprintf(f, " 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00\n");
-                fprintf(f, " 0.000000000E+00 0.000000000E+00 0.000000000E+00 0.000000000E+00 0.000000000E+00\n");
-                fprintf(f, " 0.000000000E+00 0.000000000E+00 0.000000000E+00 0.000000000E+00 0.000000000E+00\n");
-            }
-        }
-
-        fprintf(f, "*\n");
-        fprintf(f, "*-------------------------- NODE DEFINITIONS --------------------------*\n");
-        fprintf(f, "*\n");
-        int npts = ugrid->GetPoints()->GetNumberOfPoints();
-        const float *p = (const float *)ugrid->GetPoints()->GetVoidPointer(0);
-        for(int i = 0; i < npts; ++i)
-        {
-            avtVector v(M * avtVector(p[0],p[1],p[2]));
-            fprintf(f, "%8d    0%+1.13E%+1.13E%+1.13E    0\n", i+1, v.x, v.y, v.z);
-            p += 3;
-        }
-
-        fprintf(f, "*\n");
-        fprintf(f, "*------------------ ELEMENT CARDS FOR SOLID ELEMENTS ------------------*\n");
-        fprintf(f, "*\n");
-        vtkIdType ncells = ugrid->GetNumberOfCells();
-        for(vtkIdType cellid = 0; cellid < ncells; ++cellid)
-        {
-            int mat = (matNumbers != NULL) ? matNumbers[cellid] : 1;
-
-            vtkCell *cell = ugrid->GetCell(cellid);
-            fprintf(f, "%8d%5d%8d%8d%8d%8d%8d%8d%8d%8d\n",
-                    (int)cellid+1,
-                    mat, 
-                    (int)cell->GetPointId(0)+1,
-                    (int)cell->GetPointId(1)+1,
-                    (int)cell->GetPointId(2)+1,
-                    (int)cell->GetPointId(3)+1,
-                    (int)cell->GetPointId(4)+1,
-                    (int)cell->GetPointId(5)+1,
-                    (int)cell->GetPointId(6)+1,
-                    (int)cell->GetPointId(7)+1
-                   );
-        }
-
-        if(velocity != NULL)
-        {
-            fprintf(f, "*\n");
-            fprintf(f, "*---------------------- INITIAL CONDITIONS ----------------------------*\n");
-            fprintf(f, "* \n");
-            int ntuples = velocity->GetNumberOfTuples();
-            float *fptr = (float *)velocity->GetVoidPointer(0);
-            char tmp[80];
-            for(int i = 0; i < ntuples; ++i)
-            {
-                fprintf(f, "%8d%+2.3E%+2.3E%+2.3E\n", i+1, fptr[0], fptr[1], fptr[2]);
-
-                fptr += 3;
-            }
-        }
-
-        fclose(f);
-    }
-    return f != NULL;
-}
-
-void
-Dyna3DFile::Combine(const Dyna3DFile &obj)
-{
-    // Combine the materials
-    std::map<std::string,int> matNames;
-    for(int i = 0; i < materialCards.size(); ++i)
-        matNames[materialCards[i].materialName] = 1;
-    std::map<int,int> oldMat2NewMat;
-    for(int i = 0; i < obj.materialCards.size(); ++i)
-    {
-        MaterialProperties mc;
-        mc = obj.materialCards[i];
-        std::map<std::string,int>::iterator it = matNames.find(mc.materialName);
-        if(it != matNames.end())
-        {
-            it->second = it->second + 1;
-
-            char tmp[10];
-            sprintf(tmp, " (copy %d)", it->second);
-            mc.materialName += std::string(tmp);
-        }
-
-        int nextMat = materialCards.size() + 1;
-        oldMat2NewMat[obj.materialCards[i].materialNumber] = nextMat;
-        mc.materialNumber = nextMat;
-
-        materialCards.push_back(mc);
-    }
-    if(matNumbers != NULL || obj.matNumbers != NULL)
-    {
-        int ncells = cards.card2.nSolidHexes + obj.cards.card2.nSolidHexes;
-        int *newMats = new int[ncells];
-        for(int i = 0; i < ncells; ++i)
-            newMats[i] = 1;
-
-        if(matNumbers != NULL)
-            memcpy(newMats, matNumbers, sizeof(int)*cards.card2.nSolidHexes);
-
-        if(obj.matNumbers != NULL)
-        {
-            int *iptr = newMats + cards.card2.nSolidHexes;
-            for(int i = 0; i < obj.cards.card2.nSolidHexes; ++i)
-            {
-                iptr[i] = oldMat2NewMat[obj.matNumbers[i]];
-            }
-        }
-
-        delete [] matNumbers;
-        matNumbers = newMats;
-    }
-
-    // Combine the datasets.
-    if(ugrid == 0 && obj.ugrid == 0)
-    {
-        // no op 
-    }
-    else if(ugrid != 0 && obj.ugrid != 0)
-    {
-        vtkAppendFilter *append = vtkAppendFilter::New();
-        append->AddInput(ugrid);
-        append->AddInput(obj.ugrid);
-        append->Update();
-        append->GetOutput()->Register(NULL);
-        ugrid->Delete();
-        ugrid = append->GetOutput();
-        append->Delete();
-    }
-    else if(obj.ugrid == 0)
-    {
-        // no op
-    }
-    else if(ugrid == 0)
-    {
-        ugrid = vtkUnstructuredGrid::New();
-        ugrid->DeepCopy(obj.ugrid);
-    }
-
-    // Combine the velocity data
-    if(velocity != NULL || obj.velocity != NULL)
-    {
-        int n1 = cards.card2.nPoints;
-        int n2 = obj.cards.card2.nPoints;
-
-        vtkFloatArray *v2 = vtkFloatArray::New();
-        v2->SetNumberOfComponents(3);
-        v2->SetNumberOfTuples(n1+n2);
-        float *f = (float *)v2->GetVoidPointer(0);
-        memset(f, 0, sizeof(float)*(n1+n2));
-        if(obj.velocity != NULL)
-            memcpy(f+n1, obj.velocity->GetVoidPointer(0), sizeof(float)*n2);
-        if(velocity != NULL)
-        {
-            memcpy(f, velocity->GetVoidPointer(0), sizeof(float)*n1);
-            velocity->Delete();
-        }
-
-        velocity = v2;        
-    }
-
-    // Combine the cards
-    cards.card2.nMaterials += obj.cards.card2.nMaterials;
-    cards.card2.nPoints += obj.cards.card2.nPoints;
-    cards.card2.nSolidHexes += obj.cards.card2.nSolidHexes;
-    cards.card2.nBeamElements += obj.cards.card2.nBeamElements;
-    cards.card2.nShellElements4 += obj.cards.card2.nShellElements4;
-    cards.card2.nShellElements8 += obj.cards.card2.nShellElements8;
-    cards.card2.nInterfaceSegments += obj.cards.card2.nInterfaceSegments;
-}
-
-void
-Dyna3DFile::TransformPoints(const avtMatrix &M)
-{
-    if(ugrid != 0)
-    {
-        int npts = ugrid->GetPoints()->GetNumberOfPoints();
-        float *p = (float *)ugrid->GetPoints()->GetVoidPointer(0);
-        for(int i = 0; i < npts; ++i)
-        {
-            avtVector v(M * avtVector(p[0],p[1],p[2]));
-            p[0] = v.x;
-            p[1] = v.y;
-            p[2] = v.z;
-            p += 3;
-        }
-    }
-}
-
-bool
-Dyna3DFile::CreateTransformedFile(const char *infile, const char *outfile,
-    const avtMatrix &M)
-{
-    // Let's open the file and scan until we find the nodes. Once we find the
-    // nodes, we'll read them in, transform them and write them back out.
-
-    // Open the input file.
-    ifstream ifile(infile);
-    if (ifile.fail())
-    {
-        DEBUG_READER(cerr << "Can't open input file: " << infile << endl;)
-        return false;
-    }
-
-    // Get the number of nodes from the input file.
-    Dyna3DFile f;
-    f.ReadFile(infile, 10);
-    int originalNumNodes = f.cards.card2.nPoints;
-
-    // Open the output file
-    ofstream ofile(outfile);
-    if (ofile.fail())
-    {
-        DEBUG_READER(cerr << "Can't open output file: " << outfile << endl;)
-        ifile.close();
-        return false;
-    }
-
-    // Read in the header stuff, copying it over into the new file
-    bool not_nodes = true;
-    bool comment = false;
-    char *line = new char[2048];
-    memset(line, 0, 2048 * sizeof(char));
-    do
-    {
-        ifile.getline(line, 2048);
-        comment = (line[0] == '*');
-        if(comment && strstr(line, "NODE DEF") != NULL)
-        {
-            not_nodes = false;
-        }
-        ofile << line << endl;
-    } while(!ifile.eof() && not_nodes);
-
-    // Now, let's replace all of the nodes.
-    avtVector vec;
-    for(int node = 0; node < originalNumNodes && !ifile.eof(); )
-    {
-        ifile.getline(line, 2048);
-
-        if(line[0] != '*')
-        {
-//                    if(node < 10 || node >= nPoints-10)
-//                        debug5 << line << endl;
-            char tmp = line[73];
-
-            // Read the point from line
-            char *valstart = line + 53;
-            char *valend = valstart + 73;
-            *valend = '\0';
-            vec.z = atof(valstart);
-    
-            valstart -= 20;
-            valend   -= 20;
-            *valend = '\0';
-            vec.y = atof(valstart);
-
-            valstart -= 20;
-            valend   -= 20;
-            *valend = '\0';
-            vec.x = atof(valstart);
-
-            // Transform the point
-            avtVector vec2(M * vec);
-
-            // Write the point back out into line
-            if(vec2.x < 0)
-                sprintf(line+13,"%1.13E", vec2.x);
-            else
-                sprintf(line+13," %1.13E", vec2.x);
-
-            if(vec2.y < 0)
-                sprintf(line+33,"%1.13E", vec2.y);
-            else
-                sprintf(line+33," %1.13E", vec2.y);
-
-            if(vec2.z < 0)
-                sprintf(line+53,"%1.13E", vec2.z);
-            else
-                sprintf(line+53," %1.13E", vec2.z);
-
-            line[73] = tmp;
-
-            ++node;
-        }
-
-        ofile << line << endl;
-    }
-
-    // Now, read until the end of the file
-    while(!ifile.eof())
-    {
-        ifile.getline(line, 2048);
-        ofile << line;
-        if(!ifile.eof())
-            ofile << endl;
-    }
-    ifile.close();
-    ofile.close();
-
-    delete [] line;
-
-    return true;
 }
