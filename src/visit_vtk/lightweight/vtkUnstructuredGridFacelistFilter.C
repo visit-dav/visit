@@ -507,9 +507,16 @@ static void AddTriQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
 
 static void AddUnknownCell(vtkCell *, int, HashEntryList &);
 
-static int  LoopOverAllCells(vtkUnstructuredGrid *, HashEntryList &);
-static void LoopOverPolygonalCells(vtkUnstructuredGrid *, vtkPolyData *,
-                                   vtkCellData *, vtkCellData *);
+static void LoopOverAllCells(vtkUnstructuredGrid *, HashEntryList &,
+                             int &, int &, int &, int &);
+static void LoopOverVertexCells(vtkUnstructuredGrid *, vtkPolyData *,
+                                vtkCellData *, vtkCellData *);
+static void LoopOverLineCells(vtkUnstructuredGrid *, vtkPolyData *,
+                              vtkCellData *, vtkCellData *);
+static void LoopOverPolygonCells(vtkUnstructuredGrid *, vtkPolyData *,
+                                 vtkCellData *, vtkCellData *);
+static void LoopOverStripCells(vtkUnstructuredGrid *, vtkPolyData *,
+                               vtkCellData *, vtkCellData *);
 
 
 // ****************************************************************************
@@ -1784,6 +1791,12 @@ vtkUnstructuredGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
 //    Brad Whitlock, Fri Oct 1 17:11:47 PST 2004
 //    Passed the field data through.
 //
+//    Eric Brugger, Fri Jan 27 14:31:40 PST 2012
+//    I changed the routine to add cells to the polydata so that cells were
+//    added in the order - vertex based, line based, polygon based, and strip
+//    based. This was so that the cell data would be ordered in that fashion,
+//    since that was necessary for the polydata to be rendered correctly.
+//
 // ****************************************************************************
 
 void
@@ -1815,52 +1828,174 @@ vtkUnstructuredGridFacelistFilter::Execute()
     // This does the work of looping over all the cells and storing them in
     // our hash table.
     //
-    int numPolygonalCells = LoopOverAllCells(input, list);
+    int numVertexCells, numLineCells, numPolygonCells, numStripCells;
+    LoopOverAllCells(input, list, numVertexCells, numLineCells,
+                     numPolygonCells, numStripCells);
 
     //
     // Count up how many output cells we will have.
     //
     int hashedFaces = list.GetNumberOfFaces();
-    int numOutCells = numPolygonalCells + hashedFaces;
+    int numOutCells = numVertexCells + numLineCells + numPolygonCells +
+                      numStripCells + hashedFaces;
 
     //
     // Now create our output cells.
     //
     output->Allocate(numOutCells, numOutCells*(4+1));
     outputCD->CopyAllocate(cd, numOutCells);
-    list.CreateOutputCells(output, cd, outputCD);
-    if (numPolygonalCells > 0)
+    if (numVertexCells > 0)
     {
-        LoopOverPolygonalCells(input, output, cd, outputCD);
+        LoopOverVertexCells(input, output, cd, outputCD);
+    }
+    if (numLineCells > 0)
+    {
+        LoopOverLineCells(input, output, cd, outputCD);
+    }
+    if (numPolygonCells > 0)
+    {
+        LoopOverPolygonCells(input, output, cd, outputCD);
+    }
+    list.CreateOutputCells(output, cd, outputCD);
+    if (numStripCells > 0)
+    {
+        LoopOverStripCells(input, output, cd, outputCD);
     }
 }
 
 
 // ****************************************************************************
-//  Function: LoopOverPolygonalCells
+//  Function: LoopOverVertexCells
 //
 //  Purpose:
-//      If there were cells in the unstructured grid that were polygonal (ie
-//      beams, tris, etc, as opposed to tets, hexes, etc), then this called to
-//      output them.
+//      If there were cells in the unstructured grid that were vertex based,
+//      then this routine is called to output them.
 //
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
 //
 //  Modifications:
-//
-//    Hank Childs, Wed Aug 25 16:11:24 PDT 2004
-//    Since we are translating a pixel into a quad, make sure to tell the
-//    output that it is of "quad" type.
-//
-//    Brad Whitlock, Mon May 8 14:29:48 PST 2006
-//    Added support for turning VTK_QUADRATIC_EDGE into VTK_POLY_LINE.
+//    Eric Brugger, Fri Jan 27 14:31:40 PST 2012
+//    I split the routine LoopOverPolygonalCells into LoopOverVertexCells,
+//    LoopOverLineCells, LoopOverPolygonCells and LoopOverStripCells.
 //
 // ****************************************************************************
 
 void
-LoopOverPolygonalCells(vtkUnstructuredGrid *input, vtkPolyData *output,
-                       vtkCellData *in_cd, vtkCellData *out_cd)
+LoopOverVertexCells(vtkUnstructuredGrid *input, vtkPolyData *output,
+                    vtkCellData *in_cd, vtkCellData *out_cd)
+{
+    vtkCellArray *Connectivity = input->GetCells();
+    if (Connectivity == NULL)
+    {
+        return;
+    }
+
+    vtkIdType   cellId;
+    vtkIdType   newCellId;
+    vtkIdType   npts;
+    vtkIdType   *pts;
+    for (cellId=0, Connectivity->InitTraversal();
+         Connectivity->GetNextCell(npts,pts);
+         cellId++)
+    {
+        int cellType = input->GetCellType(cellId);
+        switch (cellType)
+        {
+          case VTK_VERTEX:
+          case VTK_POLY_VERTEX:
+            newCellId = output->InsertNextCell(cellType, npts, pts);
+            out_cd->CopyData(in_cd, cellId, newCellId);
+            break;
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Function: LoopOverLineCells
+//
+//  Purpose:
+//      If there were cells in the unstructured grid that were line based,
+//      then this routine is called to output them.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 4, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Mon May 8 14:29:48 PST 2006
+//    Added support for turning VTK_QUADRATIC_EDGE into VTK_POLY_LINE.
+//
+//    Eric Brugger, Fri Jan 27 14:31:40 PST 2012
+//    I split the routine LoopOverPolygonalCells into LoopOverVertexCells,
+//    LoopOverLineCells, LoopOverPolygonCells and LoopOverStripCells.
+//
+// ****************************************************************************
+
+void
+LoopOverLineCells(vtkUnstructuredGrid *input, vtkPolyData *output,
+                  vtkCellData *in_cd, vtkCellData *out_cd)
+{
+    vtkCellArray *Connectivity = input->GetCells();
+    if (Connectivity == NULL)
+    {
+        return;
+    }
+
+    vtkIdType   ids[3];
+    vtkIdType   cellId;
+    vtkIdType   newCellId;
+    vtkIdType   npts;
+    vtkIdType   *pts;
+    for (cellId=0, Connectivity->InitTraversal();
+         Connectivity->GetNextCell(npts,pts);
+         cellId++)
+    {
+        int cellType = input->GetCellType(cellId);
+        switch (cellType)
+        {
+          case VTK_LINE:
+          case VTK_POLY_LINE:
+            newCellId = output->InsertNextCell(cellType, npts, pts);
+            out_cd->CopyData(in_cd, cellId, newCellId);
+            break;
+
+          case VTK_QUADRATIC_EDGE:
+            ids[0] = pts[0];
+            ids[1] = pts[2];
+            ids[2] = pts[1];
+            newCellId = output->InsertNextCell(VTK_POLY_LINE, 3, ids);
+            out_cd->CopyData(in_cd, cellId, newCellId);
+            break;
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Function: LoopOverPolygonCells
+//
+//  Purpose:
+//      If there were cells in the unstructured grid that were polygon based,
+//      then this routine is called to output them.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 4, 2002
+//
+//  Modifications:
+//    Hank Childs, Wed Aug 25 16:11:24 PDT 2004
+//    Since we are translating a pixel into a quad, make sure to tell the
+//    output that it is of "quad" type.
+//
+//    Eric Brugger, Fri Jan 27 14:31:40 PST 2012
+//    I split the routine LoopOverPolygonalCells into LoopOverVertexCells,
+//    LoopOverLineCells, LoopOverPolygonCells and LoopOverStripCells.
+//
+// ****************************************************************************
+
+void
+LoopOverPolygonCells(vtkUnstructuredGrid *input, vtkPolyData *output,
+                     vtkCellData *in_cd, vtkCellData *out_cd)
 {
     vtkCellArray *Connectivity = input->GetCells();
     if (Connectivity == NULL)
@@ -1880,12 +2015,7 @@ LoopOverPolygonalCells(vtkUnstructuredGrid *input, vtkPolyData *output,
         int cellType = input->GetCellType(cellId);
         switch (cellType)
         {
-          case VTK_VERTEX:
-          case VTK_POLY_VERTEX:
-          case VTK_LINE:
-          case VTK_POLY_LINE:
           case VTK_TRIANGLE:
-          case VTK_TRIANGLE_STRIP:
           case VTK_QUAD:
           case VTK_POLYGON:
             newCellId = output->InsertNextCell(cellType, npts, pts);
@@ -1900,12 +2030,51 @@ LoopOverPolygonalCells(vtkUnstructuredGrid *input, vtkPolyData *output,
             newCellId = output->InsertNextCell(VTK_QUAD, npts, ids);
             out_cd->CopyData(in_cd, cellId, newCellId);
             break;
+        }
+    }
+}
 
-          case VTK_QUADRATIC_EDGE:
-            ids[0] = pts[0];
-            ids[1] = pts[2];
-            ids[2] = pts[1];
-            newCellId = output->InsertNextCell(VTK_POLY_LINE, 3, ids);
+
+// ****************************************************************************
+//  Function: LoopOverStripCells
+//
+//  Purpose:
+//      If there were cells in the unstructured grid that were poly strip
+//      based, then this routine is called to output them.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 4, 2002
+//
+//  Modifications:
+//    Eric Brugger, Fri Jan 27 14:31:40 PST 2012
+//    I split the routine LoopOverPolygonalCells into LoopOverVertexCells,
+//    LoopOverLineCells, LoopOverPolygonCells and LoopOverStripCells.
+//
+// ****************************************************************************
+
+void
+LoopOverStripCells(vtkUnstructuredGrid *input, vtkPolyData *output,
+                   vtkCellData *in_cd, vtkCellData *out_cd)
+{
+    vtkCellArray *Connectivity = input->GetCells();
+    if (Connectivity == NULL)
+    {
+        return;
+    }
+
+    vtkIdType   cellId;
+    vtkIdType   newCellId;
+    vtkIdType   npts;
+    vtkIdType   *pts;
+    for (cellId=0, Connectivity->InitTraversal();
+         Connectivity->GetNextCell(npts,pts);
+         cellId++)
+    {
+        int cellType = input->GetCellType(cellId);
+        switch (cellType)
+        {
+          case VTK_TRIANGLE_STRIP:
+            newCellId = output->InsertNextCell(cellType, npts, pts);
             out_cd->CopyData(in_cd, cellId, newCellId);
             break;
         }
@@ -1925,29 +2094,39 @@ LoopOverPolygonalCells(vtkUnstructuredGrid *input, vtkPolyData *output,
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
 //
-// Modifications:
-//   Brad Whitlock, Mon May 8 14:54:58 PST 2006
-//   Added cases to add the faces of quadratic cells to the hash entry list
-//   as sets of linear triangles.
+//  Modifications:
+//    Brad Whitlock, Mon May 8 14:54:58 PST 2006
+//    Added cases to add the faces of quadratic cells to the hash entry list
+//    as sets of linear triangles.
 //
-//   Hank Childs, Fri Sep  8 14:38:54 PDT 2006
-//   Add support for unexpected cell types.
+//    Hank Childs, Fri Sep  8 14:38:54 PDT 2006
+//    Add support for unexpected cell types.
 //
-//   Brad Whitlock, Thu Apr 29 14:10:51 PST 2010
-//   I added quadratic pyramid and wedge.
+//    Brad Whitlock, Thu Apr 29 14:10:51 PST 2010
+//    I added quadratic pyramid and wedge.
+//
+//    Eric Brugger, Fri Jan 27 14:31:40 PST 2012
+//    I modified the routine to return the number of vertex based cells, line
+//    based cells, polygon based cells and strip based cells, instead of just
+//    the sum of those numbers. 
 //
 // ****************************************************************************
 
-int
-LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list)
+void
+LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list,
+                 int &numVertexCells, int &numLineCells,
+                 int &numPolygonCells, int &numStripCells)
 {
     vtkCellArray *Connectivity = input->GetCells();
     if (Connectivity == NULL)
     {
-        return 0;
+        return;
     }
 
-    int         numPolygonalCells = 0;
+    numVertexCells = 0;
+    numLineCells = 0;
+    numPolygonCells = 0;
+    numStripCells = 0;
     vtkIdType   cellId;
     vtkIdType   npts;
     vtkIdType   *pts;
@@ -1961,15 +2140,24 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list)
         {
           case VTK_VERTEX:
           case VTK_POLY_VERTEX:
+            numVertexCells++;
+            break;
+ 
           case VTK_LINE:
           case VTK_POLY_LINE:
+          case VTK_QUADRATIC_EDGE:
+            numLineCells++;
+            break;
+ 
           case VTK_TRIANGLE:
-          case VTK_TRIANGLE_STRIP:
           case VTK_QUAD:
           case VTK_POLYGON:
           case VTK_PIXEL:
-          case VTK_QUADRATIC_EDGE:
-            numPolygonalCells++;
+            numPolygonCells++;
+            break;
+ 
+          case VTK_TRIANGLE_STRIP:
+            numStripCells++;
             break;
  
           case VTK_TETRA:
@@ -2048,8 +2236,6 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list)
             AddUnknownCell(input->GetCell(cellId), cellId, list);
         }
     }
-
-    return numPolygonalCells;
 }
 
 // ****************************************************************************
