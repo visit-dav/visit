@@ -1797,6 +1797,12 @@ vtkUnstructuredGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
 //    based. This was so that the cell data would be ordered in that fashion,
 //    since that was necessary for the polydata to be rendered correctly.
 //
+//    Eric Brugger, Mon Jan 30 09:02:23 PST 2012
+//    I changed the order in which polygon cells and polygons from solid
+//    cells are output so that polygon cells are rendered on top of solid
+//    cells. While technically not more correct, this gives the result users
+//    would expect if a polygon cell was on the face of a solid cell.
+//
 // ****************************************************************************
 
 void
@@ -1852,11 +1858,11 @@ vtkUnstructuredGridFacelistFilter::Execute()
     {
         LoopOverLineCells(input, output, cd, outputCD);
     }
+    list.CreateOutputCells(output, cd, outputCD);
     if (numPolygonCells > 0)
     {
         LoopOverPolygonCells(input, output, cd, outputCD);
     }
-    list.CreateOutputCells(output, cd, outputCD);
     if (numStripCells > 0)
     {
         LoopOverStripCells(input, output, cd, outputCD);
