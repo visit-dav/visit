@@ -26,10 +26,14 @@ list of changes in release 2.4.</p>
 <li>The Xdmf reader was fixed so it can read larger grids.</li>
 <li>A bug was fixed with caching the reads of image files when using IndexSelect.</li>
 <li>A bug was fixed with the Streamline plot being used with the Reflect operator.</li>
-<li>Changing Pseudocolor point type to Point/Sphere doesn't take immediate effect.</li>
+<li>Changing the point type with the Psueodcolor plot to Point/Sphere now takes effect immediately.</li>
 <li>Support for transparency has been fixed. VisIt now explicitly requests an alpha-channel for its on-screen OpenGL rendering context.</li>
-<li>Pick Window's time controls were fixed so that stride and start/end settings are actually used, and that the default start/end times would match number of times states in active plot.</li>
+<li>The Pick Window's time controls were fixed so that stride and start/end settings are actually used, and that the default start/end times would match the number of times states in active plot.</li>
 <li>When connecting through a gateway computer, the password window now shows the hostname for the gateway computer instead of showing the hostname for the computer beyond the gateway.</li>
+<li>The Psuedocolor plot now correctly colors zone centered data defined on unstructured grids that contain cells with a mixture of topological dimensions (e.g. points, lines, polygons and volume cell types).</li>
+<li>Build_visit no longer echos the results of the "which" command when it is used to determine the location of the fortran compiler. This was confusing since it did this even when the user was not asking for fortran support to be compiled into the third party libraries.</li>
+<li>Build_visit now correctly downloads the tar file containing the VisIt source code when running build_visit from the main development trunk and not specifying --svn.</li>
+<li>Build_visit now runs on machines with older versions of bash that do not support dashes in function names.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.4.1</font></b></p>
@@ -38,7 +42,7 @@ list of changes in release 2.4.</p>
 <li>Libsim was enhanced so variable metadata objects can be hidden from the gui so variables cannot be plotted directly.</li>
 <li>VisIt and Libsim were enhanced to support array variables.</li>
 <li>The Dyna3D reader was enhanced so it can read a new style of control information.</li>
-<li>Caching behavior was improved for the class of file format readers which incorporate optimizations, such as reading only a portion of the data, directly into the read process.</li>
+<li>The caching behavior was improved for the class of file format readers which incorporate optimizations, such as reading only a portion of the data, directly into the read process.</li>
 <li>the STL database plugin was changed so it uses VTK's vtkSTLReader class to read data instead of relying on an older, modified STL reader implementation.</li>
 <li>The STL database plugin was enhanced so it can export geometry as triangles to STL format.</li>
 <li>The Silo plugin was enhanced to provide limited support for multiblock object definitions using Silo nameschemes.</li>
