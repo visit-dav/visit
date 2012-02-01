@@ -287,7 +287,7 @@ avtOpenGLTuvokVolumeRenderer::Render(
     }
     debug_view(props.view);
 
-    tuvok_set_data(this->renderer, volume.grid, volume.data.data, volume.gmn,
+    tuvok_set_data(this->renderer, (vtkRectilinearGrid *)volume.grid, volume.data.data, volume.gmn,
                    volume.data.data->GetNumberOfTuples());
 
     tuvok_set_transfer_fqn(*this->renderer, props.atts);

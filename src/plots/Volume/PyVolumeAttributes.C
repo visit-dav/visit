@@ -120,9 +120,16 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
         objPrefix += "opacityControlPoints.";
         str += PyGaussianControlPointList_ToString(&atts->GetOpacityControlPoints(), objPrefix.c_str());
     }
+    if(atts->GetResampleFlag())
+        SNPRINTF(tmpStr, 1000, "%sresampleFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sresampleFlag = 0\n", prefix);
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sresampleTarget = %d\n", prefix, atts->GetResampleTarget());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sopacityVariable = \"%s\"\n", prefix, atts->GetOpacityVariable().c_str());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%scompactVariable = \"%s\"\n", prefix, atts->GetCompactVariable().c_str());
     str += tmpStr;
     {   const unsigned char *freeformOpacity = atts->GetFreeformOpacity();
         SNPRINTF(tmpStr, 1000, "%sfreeformOpacity = (", prefix);
@@ -529,6 +536,30 @@ VolumeAttributes_GetOpacityControlPoints(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+VolumeAttributes_SetResampleFlag(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the resampleFlag in the object.
+    obj->data->SetResampleFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetResampleFlag(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetResampleFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 VolumeAttributes_SetResampleTarget(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
@@ -573,6 +604,30 @@ VolumeAttributes_GetOpacityVariable(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetOpacityVariable().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_SetCompactVariable(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the compactVariable in the object.
+    obj->data->SetCompactVariable(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetCompactVariable(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetCompactVariable().c_str());
     return retval;
 }
 
@@ -1374,10 +1429,14 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetOpacityMode", VolumeAttributes_GetOpacityMode, METH_VARARGS},
     {"SetOpacityControlPoints", VolumeAttributes_SetOpacityControlPoints, METH_VARARGS},
     {"GetOpacityControlPoints", VolumeAttributes_GetOpacityControlPoints, METH_VARARGS},
+    {"SetResampleFlag", VolumeAttributes_SetResampleFlag, METH_VARARGS},
+    {"GetResampleFlag", VolumeAttributes_GetResampleFlag, METH_VARARGS},
     {"SetResampleTarget", VolumeAttributes_SetResampleTarget, METH_VARARGS},
     {"GetResampleTarget", VolumeAttributes_GetResampleTarget, METH_VARARGS},
     {"SetOpacityVariable", VolumeAttributes_SetOpacityVariable, METH_VARARGS},
     {"GetOpacityVariable", VolumeAttributes_GetOpacityVariable, METH_VARARGS},
+    {"SetCompactVariable", VolumeAttributes_SetCompactVariable, METH_VARARGS},
+    {"GetCompactVariable", VolumeAttributes_GetCompactVariable, METH_VARARGS},
     {"SetFreeformOpacity", VolumeAttributes_SetFreeformOpacity, METH_VARARGS},
     {"GetFreeformOpacity", VolumeAttributes_GetFreeformOpacity, METH_VARARGS},
     {"SetUseColorVarMin", VolumeAttributes_SetUseColorVarMin, METH_VARARGS},
@@ -1476,10 +1535,14 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "opacityControlPoints") == 0)
         return VolumeAttributes_GetOpacityControlPoints(self, NULL);
+    if(strcmp(name, "resampleFlag") == 0)
+        return VolumeAttributes_GetResampleFlag(self, NULL);
     if(strcmp(name, "resampleTarget") == 0)
         return VolumeAttributes_GetResampleTarget(self, NULL);
     if(strcmp(name, "opacityVariable") == 0)
         return VolumeAttributes_GetOpacityVariable(self, NULL);
+    if(strcmp(name, "compactVariable") == 0)
+        return VolumeAttributes_GetCompactVariable(self, NULL);
     if(strcmp(name, "freeformOpacity") == 0)
         return VolumeAttributes_GetFreeformOpacity(self, NULL);
     if(strcmp(name, "useColorVarMin") == 0)
@@ -1606,10 +1669,14 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetOpacityMode(self, tuple);
     else if(strcmp(name, "opacityControlPoints") == 0)
         obj = VolumeAttributes_SetOpacityControlPoints(self, tuple);
+    else if(strcmp(name, "resampleFlag") == 0)
+        obj = VolumeAttributes_SetResampleFlag(self, tuple);
     else if(strcmp(name, "resampleTarget") == 0)
         obj = VolumeAttributes_SetResampleTarget(self, tuple);
     else if(strcmp(name, "opacityVariable") == 0)
         obj = VolumeAttributes_SetOpacityVariable(self, tuple);
+    else if(strcmp(name, "compactVariable") == 0)
+        obj = VolumeAttributes_SetCompactVariable(self, tuple);
     else if(strcmp(name, "freeformOpacity") == 0)
         obj = VolumeAttributes_SetFreeformOpacity(self, tuple);
     else if(strcmp(name, "useColorVarMin") == 0)

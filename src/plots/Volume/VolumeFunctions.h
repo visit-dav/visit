@@ -50,9 +50,11 @@ class VolumeAttributes;
 //   Jeremy Meredith, Tue Jan  5 15:48:10 EST 2010
 //   Added return value from gradient calculation of maximum gradient value.
 //
+//   Allen Harvey, Sunday September 4 09:12:00 EST 2011
+//   Added function VolumeCalculateGradient_SPH to support unstructured data
 
 
-vtkDataArray *VolumeGetScalar(const VolumeAttributes &atts, vtkDataSet *ds);
+vtkDataArray *VolumeGetScalar(vtkDataSet *ds, const char *);
 
 bool VolumeGetScalars(const VolumeAttributes &atts, vtkDataSet *ds,
                       vtkDataArray *&data, vtkDataArray *&opac);
@@ -73,6 +75,14 @@ float VolumeCalculateGradient(const VolumeAttributes &atts,
                              vtkDataArray *opac,
                              float *gx, float *gy, float *gz,
                              float *gm, float *gmn, 
+                             float ghostval);
+
+float VolumeCalculateGradient_SPH(
+                             vtkDataSet *ds,
+                             vtkDataArray *opac,
+                             float *gx, float *gy, float *gz,
+                             float *gm, float *gmn, 
+                             float *hs, bool calcHS,
                              float ghostval);
 
 void VolumeHistograms(const VolumeAttributes &atts, 

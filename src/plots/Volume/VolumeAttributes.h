@@ -139,6 +139,7 @@ public:
     void SelectColorControlPoints();
     void SelectOpacityControlPoints();
     void SelectOpacityVariable();
+    void SelectCompactVariable();
     void SelectFreeformOpacity();
     void SelectTransferFunction2DWidgets();
 
@@ -149,8 +150,10 @@ public:
     void SetOpacityAttenuation(float opacityAttenuation_);
     void SetOpacityMode(OpacityModes opacityMode_);
     void SetOpacityControlPoints(const GaussianControlPointList &opacityControlPoints_);
+    void SetResampleFlag(bool resampleFlag_);
     void SetResampleTarget(int resampleTarget_);
     void SetOpacityVariable(const std::string &opacityVariable_);
+    void SetCompactVariable(const std::string &compactVariable_);
     void SetFreeformOpacity(const unsigned char *freeformOpacity_);
     void SetUseColorVarMin(bool useColorVarMin_);
     void SetColorVarMin(float colorVarMin_);
@@ -184,9 +187,12 @@ public:
     OpacityModes                   GetOpacityMode() const;
     const GaussianControlPointList &GetOpacityControlPoints() const;
           GaussianControlPointList &GetOpacityControlPoints();
+    bool                           GetResampleFlag() const;
     int                            GetResampleTarget() const;
     const std::string              &GetOpacityVariable() const;
           std::string              &GetOpacityVariable();
+    const std::string              &GetCompactVariable() const;
+          std::string              &GetCompactVariable();
     const unsigned char            *GetFreeformOpacity() const;
           unsigned char            *GetFreeformOpacity();
     bool                           GetUseColorVarMin() const;
@@ -275,7 +281,6 @@ public:
 
     // User-defined methods
     bool ChangesRequireRecalculation(const VolumeAttributes &obj) const;
-    bool GradientWontChange(const VolumeAttributes &obj) const;
     void GetTransferFunction(unsigned char *rgba) const;
     void SetDefaultColorControlPoints();
     void GetGaussianOpacities(unsigned char *alphas) const;
@@ -294,8 +299,10 @@ public:
         ID_opacityAttenuation,
         ID_opacityMode,
         ID_opacityControlPoints,
+        ID_resampleFlag,
         ID_resampleTarget,
         ID_opacityVariable,
+        ID_compactVariable,
         ID_freeformOpacity,
         ID_useColorVarMin,
         ID_colorVarMin,
@@ -332,8 +339,10 @@ private:
     float                    opacityAttenuation;
     int                      opacityMode;
     GaussianControlPointList opacityControlPoints;
+    bool                     resampleFlag;
     int                      resampleTarget;
     std::string              opacityVariable;
+    std::string              compactVariable;
     unsigned char            freeformOpacity[256];
     bool                     useColorVarMin;
     float                    colorVarMin;
@@ -363,6 +372,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bbafiaisUbfbfbfbfbiiiiidiifa*iibd"
+#define VOLUMEATTRIBUTES_TMFS "bbafiabissUbfbfbfbfbiiiiidiifa*iibd"
 
 #endif

@@ -49,6 +49,9 @@ Definition:
 //    Hank Childs, Fri Jan 29 14:23:45 MST 2010
 //    Re-execute the pipeline if we need lighting.
 //
+//    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
+//    Added checks for not doing resampling
+//
 // ****************************************************************************
 
 bool
@@ -57,7 +60,13 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
     if (opacityVariable != obj.opacityVariable)
         return true;
 
+    if (compactVariable != obj.compactVariable)
+        return true;
+
     if (resampleTarget != obj.resampleTarget)
+        return true;
+
+    if (resampleFlag != obj.resampleFlag)
         return true;
 
     if (rendererType == VolumeAttributes::RayCasting ||
@@ -116,58 +125,6 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         return true;
 
     return false;
-}
-
-Function: GradientWontChange
-Declaration: bool GradientWontChange(const VolumeAttributes &obj) const;
-Definition:
-// ****************************************************************************
-//  Method:  VolumeAttributes::GradientWontChange
-//
-//  Purpose:
-//    Determines if the gradient can avoid being invalidated.
-//
-//  Arguments:
-//    obj        the attributes to compare with
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    September 30, 2003
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Oct  2 13:30:29 PDT 2003
-//    Added rendererType and gradientType to the list of modifications
-//    that require re-calculating the gradient.
-//
-//    Jeremy Meredith, Fri Feb 20 15:14:29 EST 2009
-//    Made opacity mode be an enum instead of a flag.
-//
-// ****************************************************************************
-bool
-VolumeAttributes::GradientWontChange(const VolumeAttributes &obj) const
-{
-    int i;
-
-    // Compare the freeformOpacity arrays.
-    bool freeformOpacity_equal = true;
-    for(i = 0; i < 256 && freeformOpacity_equal; ++i)
-        freeformOpacity_equal = (freeformOpacity[i] == obj.freeformOpacity[i]);
-
-    // Create the return value
-    return ((opacityMode          == obj.opacityMode) &&
-            (opacityControlPoints == obj.opacityControlPoints) &&
-            (resampleTarget       == obj.resampleTarget) &&
-            (opacityVariable      == obj.opacityVariable) &&
-            freeformOpacity_equal &&
-            (useColorVarMin       == obj.useColorVarMin) &&
-            (colorVarMin          == obj.colorVarMin) &&
-            (useColorVarMax       == obj.useColorVarMax) &&
-            (colorVarMax          == obj.colorVarMax) &&
-            (useOpacityVarMin     == obj.useOpacityVarMin) &&
-            (opacityVarMin        == obj.opacityVarMin) &&
-            (useOpacityVarMax     == obj.useOpacityVarMax) &&
-            (opacityVarMax        == obj.opacityVarMax) &&
-            (rendererType         == obj.rendererType) &&
-            (gradientType         == obj.gradientType));
 }
 
 Function: GetTransferFunction

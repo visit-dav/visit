@@ -35,7 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
+    
 #include <visit-config.h>
 #include <QvisVolumePlotWindow.h>
 #ifdef HAVE_LIBSLIVR
@@ -785,16 +785,19 @@ QvisVolumePlotWindow::Create2DTransferFunctionGroup()
 //   Hank Childs, Thu Oct 28 19:03:00 PDT 2010
 //   Increase the maximum number of samples per ray.
 //
+//   Allen Harvey, Brad Whitlock, Tue Jan 31 16:32:54 PST 2012
+//   Add support for no resampling.
+//
 // ****************************************************************************
 
 QWidget *
 QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 {
-    QWidget *parent = new QWidget(central);
 
+    QWidget *parent = new QWidget(central);
     // Create the rendering method radio buttons.
     QGridLayout *rendererOptionsLayout = new QGridLayout(parent);
-    rendererOptionsLayout->setMargin(0);
+    rendererOptionsLayout->setMargin(5);
     rendererOptionsLayout->setSpacing(5);
 
     //
@@ -807,7 +810,6 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     QGridLayout *renderLayout = new QGridLayout(renderGroup);
     renderLayout->setMargin(5);
     renderLayout->setSpacing(10);
-
 
     rendererTypesComboBox = new QComboBox(central);
     rendererTypesComboBox->addItem(tr("Splatting"));
@@ -824,7 +826,6 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
             this, SLOT(rendererTypeChanged(int)));
 
     renderLayout->addWidget(rendererTypesComboBox, 0, 0);
-
 
 #ifdef HAVE_LIBSLIVR
     // Create the transfer function dimension button
@@ -845,32 +846,38 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     transferFunctionGroup->addButton(twoDimButton, 1);
     tfLayout->addWidget(twoDimButton);
     tfLayout->addStretch(10);
-
 #endif
 
     //
     // Create the sampling stuff
     //
+    int row = 0;
     QGroupBox *samplingGroup = new QGroupBox(central);
     samplingGroup->setTitle(tr("Sampling"));
-    rendererOptionsLayout->addWidget(samplingGroup, 1, 0, 2, 1 );
+    rendererOptionsLayout->addWidget(samplingGroup, 1, 0, 2, 1);
 
     QGridLayout *samplingLayout = new QGridLayout(samplingGroup);
     samplingLayout->setMargin(5);
     samplingLayout->setSpacing(10);
 
+    // Create the resample toggle
+    resampleToggle = new QCheckBox(tr("Sample data onto regular grid"), central);
+    connect(resampleToggle, SIGNAL(toggled(bool)),
+            this, SLOT(resampleToggled(bool)));
+    samplingLayout->addWidget(resampleToggle, row, 0, 1, 2);
+    row++;
 
     // Create the resample target value
     resampleTarget = new QSpinBox(central);
     resampleTarget->setMinimum(1000);
-    resampleTarget->setMaximum(1000000000);
-    resampleTarget->setSingleStep(1000);
+    resampleTarget->setMaximum(100000000);
+    resampleTarget->setSingleStep(10000);
     connect(resampleTarget, SIGNAL(valueChanged(int)),
             this, SLOT(resampleTargetChanged(int)));
     resampleTargetLabel = new QLabel(tr("Number of samples"), central);
     resampleTargetLabel->setBuddy(resampleTarget);
-    samplingLayout->addWidget(resampleTargetLabel, 0, 0);
-    samplingLayout->addWidget(resampleTarget, 0, 1);
+    samplingLayout->addWidget(resampleTargetLabel, row, 0);
+    samplingLayout->addWidget(resampleTarget, row, 1);
 
     // Create the number of 3D slices.
     num3DSlices = new QSpinBox(central);
@@ -881,8 +888,9 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     num3DSlicesLabel->setBuddy(num3DSlices);
     connect(num3DSlices, SIGNAL(valueChanged(int)), this,
             SLOT(num3DSlicesChanged(int)));
-    samplingLayout->addWidget(num3DSlicesLabel, 0, 2);
-    samplingLayout->addWidget(num3DSlices, 0, 3);
+    samplingLayout->addWidget(num3DSlicesLabel, row, 2);
+    samplingLayout->addWidget(num3DSlices, row, 3);
+    row++;
 
     // Create the number of samples per ray.
     samplesPerRay = new QSpinBox(central);
@@ -893,8 +901,8 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     samplesPerRayLabel->setBuddy(samplesPerRay);
     connect(samplesPerRay, SIGNAL(valueChanged(int)), this,
             SLOT(samplesPerRayChanged(int)));
-    samplingLayout->addWidget(samplesPerRayLabel, 1, 0);
-    samplingLayout->addWidget(samplesPerRay, 1, 1);
+    samplingLayout->addWidget(samplesPerRayLabel, row, 0);
+    samplingLayout->addWidget(samplesPerRay, row, 1);
 
 #ifdef HAVE_LIBSLIVR
     rendererSamples = new QDoubleSpinBox(central);
@@ -905,16 +913,29 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
             this, SLOT(rendererSamplesChanged(double)));
     rendererSamplesLabel = new QLabel(tr("Sampling rate"), central);
     rendererSamplesLabel->setBuddy(rendererSamples);
-    samplingLayout->addWidget(rendererSamplesLabel, 1, 2);
-    samplingLayout->addWidget(rendererSamples, 1, 3);
+    samplingLayout->addWidget(rendererSamplesLabel, row, 2);
+    samplingLayout->addWidget(rendererSamples, row, 3);
 #else
     rendererSamples = 0;
     rendererSamplesLabel = 0;
 #endif
+    row++;
+
+    // Create the compact support variable
+    compactVariable = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Scalars, samplingGroup);
+    connect(compactVariable, SIGNAL(activated(const QString &)),
+            this, SLOT(compactVariableChanged(const QString &)));
+    compactVarLabel = new QLabel(tr("Compact support variable"), samplingGroup);
+    compactVarLabel->setBuddy(compactVariable);
+    samplingLayout->addWidget(compactVarLabel, row, 0, 1, 2);
+    samplingLayout->addWidget(compactVariable, row, 2, 1, 2);
+    row++;
 
     //
     // Create the methods stuff
     //
+    row = 0;
     QGroupBox *methodsGroup = new QGroupBox(central);
     methodsGroup->setTitle(tr("Methods"));
     rendererOptionsLayout->addWidget(methodsGroup, 3, 0, 2, 1 );
@@ -1202,13 +1223,15 @@ QvisVolumePlotWindow::UpdateHistogram(bool need2D)
 //   Hank Childs, Fri May 21 12:05:03 PDT 2010
 //   Add argument to UpdateHistogram.
 //
+//   Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
+//   Make resampling optional.
+//
 // ****************************************************************************
 
 void
 QvisVolumePlotWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-
     // If the plot info atts changed then update the histogram.
     if(doAll || SelectedSubject() == GetViewerState()->GetPlotInformation(plotType))
     {
@@ -1238,7 +1261,24 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             legendToggle->setChecked(volumeAtts->GetLegendFlag());
             legendToggle->blockSignals(false);
             break;
-        case VolumeAttributes::ID_lightingFlag:
+        case VolumeAttributes::ID_resampleFlag:        
+            resampleToggle->blockSignals(true);
+            resampleToggle->setChecked(volumeAtts->GetResampleFlag());
+            resampleToggle->blockSignals(false);
+            resampleTarget->setEnabled(volumeAtts->GetResampleFlag());
+            resampleTargetLabel->setEnabled(volumeAtts->GetResampleFlag());
+            compactVarLabel->setEnabled(!volumeAtts->GetResampleFlag());
+            compactVariable->setEnabled(!volumeAtts->GetResampleFlag());
+            num3DSlices->setEnabled(volumeAtts->GetResampleFlag());
+            num3DSlicesLabel->setEnabled(volumeAtts->GetResampleFlag());
+            samplesPerRay->setEnabled(volumeAtts->GetResampleFlag());
+            samplesPerRayLabel->setEnabled(volumeAtts->GetResampleFlag());
+#ifdef HAVE_LIBSLIVR
+            rendererSamples->setEnabled(volumeAtts->GetResampleFlag());
+            rendererSamplesLabel->setEnabled(volumeAtts->GetResampleFlag());
+#endif
+        break;
+    case VolumeAttributes::ID_lightingFlag:
             lightingToggle->blockSignals(true);
             lightingToggle->setChecked(volumeAtts->GetLightingFlag());
             lightingToggle->blockSignals(false);
@@ -1393,10 +1433,16 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 rendererTypesComboBox->setCurrentIndex(0);
                 num3DSlicesLabel->setEnabled(false);
                 num3DSlices->setEnabled(false);
-                resampleTargetLabel->setEnabled(true);
-                resampleTarget->setEnabled(true);
                 samplesPerRayLabel->setEnabled(false);
                 samplesPerRay->setEnabled(false);
+                resampleTargetLabel->setEnabled(true);
+                resampleTarget->setEnabled(true);
+                resampleToggle->setEnabled(true);
+                compactVariable->setEnabled(!volumeAtts->GetResampleFlag());
+                compactVarLabel->setEnabled(!volumeAtts->GetResampleFlag());
+                resampleTargetLabel->setEnabled(volumeAtts->GetResampleFlag());
+                resampleTarget->setEnabled(volumeAtts->GetResampleFlag());
+        
                 rasterizationButton->setEnabled(false);
                 kernelButton->setEnabled(false);
                 lowGradientLightingReductionLabel->setEnabled(true);
@@ -1427,6 +1473,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 num3DSlices->setEnabled(true);
                 resampleTargetLabel->setEnabled(true);
                 resampleTarget->setEnabled(true);
+                resampleToggle->setEnabled(false);
+                compactVariable->setEnabled(false);
+                compactVarLabel->setEnabled(false);
                 samplesPerRayLabel->setEnabled(false);
                 samplesPerRay->setEnabled(false);
                 rasterizationButton->setEnabled(false);
@@ -1459,6 +1508,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 num3DSlices->setEnabled(false);
                 resampleTargetLabel->setEnabled(false);
                 resampleTarget->setEnabled(false);
+                resampleToggle->setEnabled(false);
+                compactVariable->setEnabled(false);
+                compactVarLabel->setEnabled(false);
                 samplesPerRayLabel->setEnabled(true);
                 samplesPerRay->setEnabled(true);
                 rasterizationButton->setEnabled(true);
@@ -1491,6 +1543,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 num3DSlices->setEnabled(false);
                 resampleTargetLabel->setEnabled(false);
                 resampleTarget->setEnabled(false);
+                resampleToggle->setEnabled(false);
+                compactVariable->setEnabled(false);
+                compactVarLabel->setEnabled(false);
                 samplesPerRayLabel->setEnabled(true);
                 samplesPerRay->setEnabled(true);
                 rasterizationButton->setEnabled(true);
@@ -1518,6 +1573,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 num3DSlices->setEnabled(true);
                 resampleTargetLabel->setEnabled(true);
                 resampleTarget->setEnabled(true);
+                resampleToggle->setEnabled(false);
+                compactVariable->setEnabled(false);
+                compactVarLabel->setEnabled(false);
                 samplesPerRayLabel->setEnabled(false);
                 samplesPerRay->setEnabled(false);
                 rasterizationButton->setEnabled(false);
@@ -1555,6 +1613,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
 #endif
                 resampleTargetLabel->setEnabled(true);
                 resampleTarget->setEnabled(true);
+                resampleToggle->setEnabled(false);
+                compactVariable->setEnabled(false);
+                compactVarLabel->setEnabled(false);
                 samplesPerRayLabel->setEnabled(false);
                 samplesPerRay->setEnabled(false);
                 rasterizationButton->setEnabled(false);
@@ -2055,7 +2116,7 @@ QvisVolumePlotWindow::Update2DTransferFunction()
 void
 QvisVolumePlotWindow::GetCurrentValues(int which_widget)
 {
-    bool doAll = (which_widget == -1);
+    bool okay, doAll = (which_widget == -1);
     QString msg, temp;
     int i;
 
@@ -2137,6 +2198,14 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
     {
         volumeAtts->SetResampleTarget(resampleTarget->value());
     }
+    
+    // Get the value of the compact support target
+    if(which_widget == VolumeAttributes::ID_compactVariable || doAll)
+    {
+        volumeAtts->SetCompactVariable(compactVariable->text().toStdString());
+    }
+    
+    
 
     // Get the value of the minimum for the color variable.
     if(which_widget == VolumeAttributes::ID_colorVarMin || doAll)
@@ -2246,7 +2315,6 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
             Message(msg);
         }
     }
-
 
 }
 
@@ -2767,6 +2835,24 @@ QvisVolumePlotWindow::legendToggled(bool)
 }
 
 // ****************************************************************************
+// Method: QvisVolumePlotWindow::resampleToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the resample toggle is clicked.
+//
+// Programmer: Allen Harvey
+// Creation:   Sun July 31 20:00:OO  2011
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::resampleToggled(bool val)
+{
+    volumeAtts->SetResampleFlag(val);
+    Apply();
+}
+
+// ****************************************************************************
 // Method: QvisVolumePlotWindow::lightingToggled
 //
 // Purpose: 
@@ -3237,6 +3323,26 @@ QvisVolumePlotWindow::opacityVariableChanged(const QString &var)
 }
 
 // ****************************************************************************
+// Method:  QvisVolumePlotWindow::compactVariableChanged
+//
+// Purpose:
+//   Qt slot function, called when compactVariable is changed.
+//
+// Programmer:  Allen Harvey
+// Creation:    October 30, 2011
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::compactVariableChanged(const QString &var)
+{
+    volumeAtts->SetCompactVariable(var.toStdString());
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
 //  Method:  QvisVolumePlotWindow::gradientTypeChanged
 //
 //  Purpose:
@@ -3330,7 +3436,11 @@ QvisVolumePlotWindow::samplingTypeChanged(int val)
 //    Tom Fogal, Thu May 13 09:43:31 MDT 2010
 //    Fix case where tuvok is missing.
 //
+//    Brad Whitlock, Tue Jan 31 16:30:58 PST 2012
+//    Force resampling for HW accelerated renderers except for Splatting.
+//
 // ****************************************************************************
+
 void
 QvisVolumePlotWindow::rendererTypeChanged(int val)
 {
@@ -3341,6 +3451,7 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
         break;
       case 1:
         volumeAtts->SetRendererType(VolumeAttributes::Texture3D);
+        volumeAtts->SetResampleFlag(true);
         break;
       case 2:
         volumeAtts->SetRendererType(VolumeAttributes::RayCasting);
@@ -3360,6 +3471,7 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
         Warning("Renderer is not available. VisIt will revert to 3D texturing.");
         volumeAtts->SetRendererType(VolumeAttributes::Texture3D);
 #endif
+        volumeAtts->SetResampleFlag(true);
         break;
       case 5:
         // If we've got both Tuvok AND SLIVR, SLIVR will end up in slot 5.
@@ -3369,6 +3481,7 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
         Warning("SLIVR is not available. VisIt will revert to 3D texturing.");
         volumeAtts->SetRendererType(VolumeAttributes::Texture3D);
 #endif
+        volumeAtts->SetResampleFlag(true);
         break;
       default:
         EXCEPTION1(ImproperUseException,

@@ -42,7 +42,11 @@
 
 #include "avtVolumePlot.h"
 
+#include <limits.h>
+#include <math.h>
+
 #include <avtCallback.h>
+#include <avtCompactTreeFilter.h>
 #include <avtVolumeRenderer.h>
 #include <avtLookupTable.h>
 #include <avtResampleFilter.h>
@@ -56,9 +60,6 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <LostConnectionException.h>
-
-#include <limits.h>
-#include <math.h>
 
 #include <string>
 
@@ -97,6 +98,9 @@
 //    Brad Whitlock, Mon Dec 15 15:51:38 PST 2008
 //    I added another filter.
 //
+//    Brad Whitlock, Tue Jan 31 12:11:27 PST 2012
+//    I added a compact tree filter.
+//
 // ****************************************************************************
 
 avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
@@ -105,6 +109,7 @@ avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
     volumeImageFilter = NULL;
     resampleFilter = NULL;
     shiftCentering = NULL;
+    compactTree = NULL;
     renderer = avtVolumeRenderer::New();
 
     avtCustomRenderer_p cr;
@@ -151,6 +156,9 @@ avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
 //    Brad Whitlock, Mon Dec 15 15:52:01 PST 2008
 //    I added another filter.
 //
+//    Brad Whitlock, Tue Jan 31 12:11:27 PST 2012
+//    I added a compact tree filter.
+//
 // ****************************************************************************
 
 avtVolumePlot::~avtVolumePlot()
@@ -165,6 +173,9 @@ avtVolumePlot::~avtVolumePlot()
         delete volumeImageFilter;
     if (resampleFilter != NULL)
         delete resampleFilter;
+    if (compactTree != NULL)
+        delete compactTree;
+
     renderer = NULL;
 
     //
@@ -539,6 +550,12 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
 //    Hank Childs, Wed Dec 31 13:47:37 PST 2008
 //    Renamed ResampleAtts to InternalResampleAtts.
 //
+//    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
+//    Make resampling optional.
+//
+//    Brad Whitlock, Tue Jan 31 11:22:01 PST 2012
+//    Add compact tree filter for non-resampling case.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -562,7 +579,11 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         delete resampleFilter;
         resampleFilter = NULL;
     }
-
+    if (compactTree != NULL)
+    {
+        delete compactTree;
+        compactTree = NULL;
+    }
     avtDataObject_p dob = input;
     if (atts.GetRendererType() == VolumeAttributes::RayCasting ||
         atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
@@ -574,23 +595,45 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     }
     else
     {
-        InternalResampleAttributes resampleAtts;
-        resampleAtts.SetDistributedResample(false);
-        resampleAtts.SetTargetVal(atts.GetResampleTarget());
-        resampleAtts.SetUseTargetVal(true);
-        resampleAtts.SetPrefersPowersOfTwo(
-                    atts.GetRendererType() == VolumeAttributes::Texture3D);
-        resampleFilter = new avtResampleFilter(&resampleAtts);
-        resampleFilter->SetInput(input);
-        dob = resampleFilter->GetOutput();
+        // For now, only let splatting skip resampling.
+        bool doResample = true;
+        if (atts.GetRendererType() == VolumeAttributes::Splatting)
+            doResample = atts.GetResampleFlag();
 
-        // Apply a filter that will work on the resampled data
+        if (doResample)
+        {
+            // Resample the data
+            InternalResampleAttributes resampleAtts;
+            resampleAtts.SetDistributedResample(false);
+            resampleAtts.SetTargetVal(atts.GetResampleTarget());
+            resampleAtts.SetUseTargetVal(true);
+            resampleAtts.SetPrefersPowersOfTwo(atts.GetRendererType() == VolumeAttributes::Texture3D);
+            resampleFilter = new avtResampleFilter(&resampleAtts);
+            resampleFilter->SetInput(input);
+            dob = resampleFilter->GetOutput();
+        }
+        else
+        {
+            // Combine multiple domains into a single domain.
+            compactTree = new avtCompactTreeFilter();
+            compactTree->SetInput(input);
+            compactTree->SetParallelMerge(true);
+            compactTree->SetCompactDomainsMode(avtCompactTreeFilter::Always);
+            dob = compactTree->GetOutput();
+
+            // SLIVR would need an additional filter here to turn the likely 
+            // vtkUnstructuredGrid output of compactTree into vtkRectilinearGrid
+            // in the event that the input to the filter is not already rectilinear.
+            // That is, we need a last minute resampling step but only if there
+            // are multiple inputs or if the meshes are not rectilinear.
+        }
+
+        // Apply a filter that will work on the combined data to make histograms.
         volumeFilter = new avtLowerResolutionVolumeFilter();
         volumeFilter->SetAtts(&atts);
         volumeFilter->SetInput(dob);
         dob = volumeFilter->GetOutput();
     }
-
     return dob;
 }
 
@@ -653,9 +696,12 @@ avtVolumePlot::CustomizeBehavior(void)
 //  Creation:   November 15, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Thu Aug 26 17:44:13 PDT 2010
 //    Calculate the extents for the opacity variable.
+//
+//    Brad Whitlock, Mon Jan 30 14:00:46 PST 2012
+//    Add support for "compact" variable, which seems to be a point radius
+//    for splatting volume renderer.
 //
 // ****************************************************************************
 
@@ -663,19 +709,36 @@ avtContract_p
 avtVolumePlot::EnhanceSpecification(avtContract_p spec)
 {
     std::string ov = atts.GetOpacityVariable();
+    std::string cv = atts.GetCompactVariable();
     if (ov == "default")
     {
-        return spec;
+        if(atts.GetResampleFlag())
+            return spec;
+        else if(cv == "default")
+        {
+            // We're not resampling so we can return the original specification
+            // if our compact variable is set to "default".
+            return spec;
+        }
     }
     avtDataRequest_p ds = spec->GetDataRequest();
-    const char *primaryVariable = ds->GetVariable();
+    std::string primaryVariable(ds->GetVariable());
     if (ov == primaryVariable)
     {
-        //
-        // They didn't leave it as "default", but it is the same variable, so
-        // don't read it in again.
-        //
-        return spec;
+         if(atts.GetResampleFlag())
+         {
+             //
+             // They didn't leave it as "default", but it is the same variable, so
+             // don't read it in again.
+             //
+             return spec;
+         }
+         else if(cv == primaryVariable)
+         {
+             // We're not resampling and the compact variable was the same as 
+             // the primary variable, so don't read it again. 
+             return spec;
+         }
     }
 
     //
@@ -683,9 +746,18 @@ avtVolumePlot::EnhanceSpecification(avtContract_p spec)
     // elsewhere, so we can't modify it and return it.  Make a copy and in
     // the new copy, add a secondary variable.
     //
-    avtDataRequest_p nds = new avtDataRequest(primaryVariable,
-                                      ds->GetTimestep(), ds->GetRestriction());
-    nds->AddSecondaryVariable(ov.c_str());
+    avtDataRequest_p nds = new avtDataRequest(primaryVariable.c_str(),
+                                              ds->GetTimestep(), ds->GetRestriction());
+    if(ov != "default")
+    {
+        debug5 << "Adding secondary variable: " << ov << endl;
+        nds->AddSecondaryVariable(ov.c_str());
+    }
+    if(cv != "default" && !atts.GetResampleFlag())
+    {
+        debug5 << "Adding secondary variable: " << cv << endl;
+        nds->AddSecondaryVariable(cv.c_str());
+    }
     avtContract_p rv = new avtContract(spec, nds);
     rv->SetCalculateVariableExtents(ov, true);
 
@@ -732,6 +804,10 @@ avtVolumePlot::ReleaseData(void)
 //  Programmer:  Hank Childs
 //  Creation:    November 20, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jan 31 17:18:59 PST 2012
+//    Added compact variable.
+//
 // ****************************************************************************
 
 bool
@@ -740,7 +816,11 @@ avtVolumePlot::Equivalent(const AttributeGroup *a)
     const VolumeAttributes *objAtts = (const VolumeAttributes *)a;
     // Almost the inverse of changes require recalculation -- doSoftware being
     // different is okay!
+    if (atts.GetResampleFlag() != objAtts->GetResampleFlag())
+        return false;
     if (atts.GetOpacityVariable() != objAtts->GetOpacityVariable())
+        return false;
+    if (atts.GetCompactVariable() != objAtts->GetCompactVariable())
         return false;
     if (atts.GetResampleTarget() != objAtts->GetResampleTarget())
         return false;

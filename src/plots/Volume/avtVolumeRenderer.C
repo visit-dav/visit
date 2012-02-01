@@ -35,17 +35,17 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
+    
 // ************************************************************************* //
 //                             avtVolumeRenderer.C                           //
 // ************************************************************************* //
 
 #include "avtVolumeRenderer.h"
 #include <visit-config.h>
-#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkToolkits.h>
@@ -86,6 +86,9 @@
 //    Brad Whitlock, Mon Dec 15 13:31:55 PST 2008
 //    I removed histogramming code.
 //
+//    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
+//    Added support for holding a compact support variable
+//
 // ****************************************************************************
 avtVolumeRenderer::avtVolumeRenderer()
 {
@@ -100,6 +103,7 @@ avtVolumeRenderer::avtVolumeRenderer()
     gz  = NULL;
     gm  = NULL;
     gmn = NULL;
+    hs  = NULL;
 }
 
 // ****************************************************************************
@@ -113,6 +117,9 @@ avtVolumeRenderer::avtVolumeRenderer()
 //    Pulled out the reference to alphatex.  It belonged in the subclass.
 //    Added a call to ReleaseGraphicsResources.
 //
+//    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
+//    Added support for holding a compact support variable
+//
 // ****************************************************************************
 avtVolumeRenderer::~avtVolumeRenderer()
 {
@@ -122,6 +129,7 @@ avtVolumeRenderer::~avtVolumeRenderer()
     delete[] gz;
     delete[] gm;
     delete[] gmn;
+    delete[] hs;
 }
 
 // ****************************************************************************
@@ -263,6 +271,9 @@ avtVolumeRenderer::ReducedDetailModeOff()
 //    Tom Fogal, Fri Mar 19 16:15:50 MDT 2010
 //    Get rid of Mesa cases; GLEW handles the details.
 //
+//    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
+//    Added support for holding a compact support variable
+//
 // ****************************************************************************
 
 void
@@ -305,9 +316,7 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
     {
         Initialize(ds);
     }
-
-    // get data set
-    vtkRectilinearGrid  *grid = (vtkRectilinearGrid*)ds;
+    
     vtkDataArray *data = NULL;
     vtkDataArray *opac = NULL;
     bool haveScalars = VolumeGetScalars(atts, ds, data, opac);
@@ -328,7 +337,7 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         props.reducedDetail = reducedDetail;
 
         avtVolumeRendererImplementation::VolumeData vd;
-        vd.grid = grid;
+        vd.grid = ds;
         vd.data.data = data;
         vd.data.min = vmin;
         vd.data.max = vmax;
@@ -343,9 +352,13 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         vd.gm = gm;
         vd.gmn = gmn;
         vd.gm_max = gm_max;
+        vd.hs = hs;
 
         StackTimer t2("Implementation Render");
         rendererImplementation->Render(props, vd);
+
+        vd.data.data->Delete();
+        vd.opacity.data->Delete();
     }
 }
 
@@ -408,6 +421,9 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 //    Jeremy Meredith, Tue Jan  5 15:48:41 EST 2010
 //    Output un-normalized gradient magnitude and actual calculated maximum.
 //
+//    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
+//    Added support for holding a compact support variable
+//
 // ****************************************************************************
 
 void
@@ -415,13 +431,10 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
 {
     StackTimer t("avtVolumeRenderer::Initialize");
 
-    // get data set
-    vtkRectilinearGrid  *grid = (vtkRectilinearGrid*)ds;
     vtkDataArray *data = 0, *opac = 0;
     if(!VolumeGetScalars(atts, ds, data, opac))
         return;
 
-    // Get the volume variable's extents.
     VolumeGetVariableExtents(atts, data,
         this->varmin, this->varmax, 
         this->vmin, this->vmax, this->vsize);
@@ -431,20 +444,60 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
         this->omin, this->omax, this->osize);
 
     // calculate gradient
-    if (atts.GetLightingFlag() &&
-        gx == 0) // make sure the gradient was invalidated first
-    { 
-        int dims[3];
-        grid->GetDimensions(dims);
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        if (atts.GetLightingFlag() && gm == NULL) // make sure the gradient was invalidated first
+        { 
+            vtkRectilinearGrid *grid = (vtkRectilinearGrid*)ds;
+            int dims[3];
+            grid->GetDimensions(dims);
 
-        int nels = dims[0] * dims[1] * dims[2];
-        gx  = new float[nels];
-        gy  = new float[nels];
-        gz  = new float[nels];
-        gm  = new float[nels];
-        gmn = new float[nels];
-        float ghostval = omax+osize;
-        gm_max = VolumeCalculateGradient(atts, grid, opac, gx, gy, gz, gm, gmn, ghostval);
+            int nels = dims[0] * dims[1] * dims[2];
+            gx  = new float[nels];
+            gy  = new float[nels];
+            gz  = new float[nels];
+            gm  = new float[nels];
+            gmn = new float[nels];
+            hs = NULL;
+            float ghostval = omax+osize;
+    
+            gm_max = VolumeCalculateGradient(atts, grid, opac, gx, gy, gz, gm, gmn, ghostval);
+        }
+    }
+    else
+    {
+        // If we have a lighting+no gradient then calculate the gradient.
+        // Also do it if we have a default compact variable name since setting
+        // the hs variable happens in that case and its generation is tied to
+        // gradient calculation.
+        if(gm == NULL)
+        {
+            int nels = ds->GetNumberOfPoints();
+            gx  = new float[nels];
+            gy  = new float[nels];
+            gz  = new float[nels];
+            gm  = new float[nels];
+            gmn = new float[nels];
+            hs = new float[nels];
+            float ghostval = omax+osize;
+
+            bool calcHS = atts.GetCompactVariable() == "default";
+            if(!calcHS)
+            {
+                vtkDataArray *compactSupport = 
+                    VolumeGetScalar(ds, atts.GetCompactVariable().c_str());
+                if (compactSupport != NULL)
+                {   //assign h values
+                    for (int i = 0; i<nels; i++)
+                         hs[i] = abs(compactSupport->GetTuple1(i));
+                }
+                else
+                    calcHS = true;
+            }
+
+            gm_max = VolumeCalculateGradient_SPH(ds, opac, 
+                gx, gy, gz, gm, gmn, hs, calcHS, ghostval);
+        }
     }
 
     data->Delete();
@@ -483,6 +536,9 @@ avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&d, vtkDataArray *&o
 //    Hank Childs, Mon Nov 14 09:54:54 PST 2005
 //    If the attributes are the same as what we had before, do nothing.
 //
+//    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
+//    Added support for holding a compact support variable
+//
 // ****************************************************************************
 
 
@@ -490,15 +546,13 @@ void
 avtVolumeRenderer::SetAtts(const AttributeGroup *a)
 {
     const VolumeAttributes *newAtts = (const VolumeAttributes*)a;
+    
     if (*newAtts == atts)
         return;
     currentRendererIsValid = (atts.GetRendererType() == newAtts->GetRendererType());
 
-#if 0
-    bool invalidateGradient = !(atts.GradientWontChange(*newAtts));
-#else
     bool invalidateGradient = atts.ChangesRequireRecalculation(*newAtts);
-#endif
+
     // Clean up memory.
     if (invalidateGradient)
     {
@@ -526,6 +580,11 @@ avtVolumeRenderer::SetAtts(const AttributeGroup *a)
         {
             delete[] gmn;
             gmn = NULL;
+        }
+        if (hs != NULL)
+        {
+            delete[] hs;
+            hs = NULL;
         }
     }
 

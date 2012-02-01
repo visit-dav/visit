@@ -43,14 +43,14 @@
 #include "avtOpenGLSLIVRVolumeRenderer.h"
 #ifdef HAVE_LIBSLIVR
 
+#include <vtkCamera.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkCamera.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
-#include <vtkRenderer.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
 
 #include <avtViewInfo.h>
 #include <avtCallback.h>
@@ -402,7 +402,8 @@ avtOpenGLSLIVRVolumeRenderer::Render(
         CheckContext(context, props.atts);
 
     // If the context needs to be created, do so now.
-    CreateContext(volume.grid,
+    vtkRectilinearGrid *grid = (vtkRectilinearGrid *)volume.grid;
+    CreateContext(grid,
                   volume.data.data, volume.opacity.data,
                   props.atts, 
                   volume.data.min, volume.data.max,
