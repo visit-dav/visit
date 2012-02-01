@@ -78,7 +78,9 @@ simv2_DomainBoundaries_set_type(visit_handle h, int type)
         if(obj->boundaries != NULL)
             delete obj->boundaries;
         if(type == 0)
+        {
             obj->boundaries = new avtRectilinearDomainBoundaries(true);
+        }
         else
             obj->boundaries = new avtCurvilinearDomainBoundaries(true);
         retval = VISIT_OKAY;
@@ -99,27 +101,85 @@ simv2_DomainBoundaries_set_numDomains(visit_handle h, int numDomains)
     return retval;
 }
 
+// ****************************************************************************
+// Method: simv2_DomainBoundaries_set_rectIndices
+//
+// Purpose: 
+//   Set rectilinear domain indices so we know where the domain exists in
+//   the entire dataset.
+//
+// Arguments:
+//   h : The hansle to the domain boundaries object.
+//   patch : The patch for which we're setting extents.
+//   level : the level in which the patch exists.
+//   extents : The global zone indices for the domain e.g. 0, 10, 0, 10, 0, 10
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   2010
+//
+// Modifications:
+//   Brad Whitlock, Wed Feb  1 14:29:51 PST 2012
+//   I added a missing const to the signature so the function will be exposed
+//   to the front end.
+//
+// ****************************************************************************
+
+
 int
-simv2_DomainBoundaries_set_amrIndices(visit_handle h, int patch, int level, int extents[6])
+simv2_DomainBoundaries_set_amrIndices(visit_handle h, int patch, int level, const int extents[6])
 {
     int retval = VISIT_ERROR;
     VisIt_DomainBoundaries *obj = GetObject(h);
     if(obj != NULL && obj->boundaries != NULL)
     {
-        obj->boundaries->SetIndicesForAMRPatch(patch, level, extents);
+        int e[6];
+        memcpy(e, extents, 6 * sizeof(int));
+        obj->boundaries->SetIndicesForAMRPatch(patch, level, e);
         retval = VISIT_OKAY;
     }
     return retval;
 }
 
+// ****************************************************************************
+// Method: simv2_DomainBoundaries_set_rectIndices
+//
+// Purpose: 
+//   Set rectilinear domain indices so we know where the domain exists in
+//   the entire dataset.
+//
+// Arguments:
+//   h : The hansle to the domain boundaries object.
+//   dom : The domain for which we're setting extents.
+//   extents : The global zone indices for the domain e.g. 0, 10, 0, 10, 0, 10
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   2010
+//
+// Modifications:
+//   Brad Whitlock, Wed Feb  1 14:29:51 PST 2012
+//   I added a missing const to the signature so the function will be exposed
+//   to the front end.
+//
+// ****************************************************************************
+
 int
-simv2_DomainBoundaries_set_rectIndices(visit_handle h, int dom, int extents[6])
+simv2_DomainBoundaries_set_rectIndices(visit_handle h, int dom, const int extents[6])
 {
     int retval = VISIT_ERROR;
     VisIt_DomainBoundaries *obj = GetObject(h);
     if(obj != NULL && obj->boundaries != NULL)
     {
-        obj->boundaries->SetIndicesForRectGrid(dom, extents);
+        int e[6];
+        memcpy(e, extents, 6 * sizeof(int));
+        obj->boundaries->SetIndicesForRectGrid(dom, e);
         retval = VISIT_OKAY;
     }
     return retval;

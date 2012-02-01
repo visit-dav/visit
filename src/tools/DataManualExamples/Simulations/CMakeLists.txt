@@ -48,6 +48,9 @@
 #   Brad Whitlock, Thu Aug 11 16:05:07 PDT 2011
 #   Added ghostzones example.
 #
+#   Brad Whitlock, Wed Feb  1 11:06:20 PST 2012
+#   Added domainbounds example.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -204,6 +207,9 @@ ADD_SIMV2_SIMULATION(csg csg.c)
 
 ADD_SIMV2_SIMULATION(curve curve.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fcurve fcurve.f)
+
+ADD_SIMV2_SIMULATION(domainbounds domainbounds.c)
+ADD_PARALLEL_SIMV2_SIMULATION(domainbounds_par domainbounds.c)
 
 ADD_SIMV2_SIMULATION(ghostcells ghostcells.c)
 
