@@ -38,6 +38,7 @@
 
 #include <SplashScreen.h>
 #include <QApplication>
+#include <QDate>
 #include <QFont>
 #include <QLabel>
 #include <QLayout>
@@ -167,6 +168,9 @@
 //    Eric Brugger, Mon Jan 30 10:55:12 PST 2012
 //    Changed the date on the splash screen to February 2012.
 //
+//    Brad Whitlock, Wed Feb  1 15:28:19 PST 2012
+//    Automate the copyright year.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) 
@@ -265,7 +269,7 @@ SplashScreen::SplashScreen(bool cyclePictures)
     lrLayout->addLayout(rLayout );
     
 
-    QString C("(c) 2000-2011 LLNS. ");
+    QString C(QString("(c) 2000-%1 LLNS. ").arg(QDate::currentDate().year()));
     C += tr("All Rights Reserved");
     C += ".";
     lLayout->addWidget(new QLabel(C, this));
