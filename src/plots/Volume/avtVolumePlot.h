@@ -54,6 +54,7 @@
 
 class WindowAttributes;
 
+class avtCompactTreeFilter;
 class avtLookupTable;
 class avtShiftCenteringFilter;
 class avtUserDefinedMapper;
@@ -115,6 +116,9 @@ class avtResampleFilter;
 //    Declare that we are managing transparency within the plot for the
 //    splatting & 3D texturing case.
 //
+//    Brad Whitlock, Tue Jan 31 12:11:11 PST 2012
+//    I added a compact tree filter.
+//
 // ****************************************************************************
 
 class
@@ -146,6 +150,7 @@ avtVolumePlot : public avtVolumeDataPlot
     avtVolumeFilter                *volumeImageFilter;
     avtResampleFilter              *resampleFilter;
     avtShiftCenteringFilter        *shiftCentering;
+    avtCompactTreeFilter           *compactTree;
     avtVolumeRenderer_p             renderer;
     avtUserDefinedMapper           *mapper;
     avtLookupTable                 *avtLUT;

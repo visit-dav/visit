@@ -44,15 +44,27 @@
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 
-#include <vtkSkew.h>
+#include <vtkDelaunay2D.h>
+#include <vtkDelaunay3D.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkSmartPointer.h>
+#include <vtkIdList.h>
+#include <vtkCell.h>
+#include <vtkPolyData.h>
+#include <DebugStream.h>
+#include <StackTimer.h>
+#include <vtkObjectFactory.h>
+#include <vtkPoints.h>
 
+#include <vtkSkew.h>
 #include <avtAccessor.h>
 
 #include <VolumeAttributes.h>
 #include <InvalidLimitsException.h>
 #include <ImproperUseException.h>
-#include <StackTimer.h>
-#include <DebugStream.h>
+#include <string>
+
+const double PI = atan(1.0)*4.0;
 
 #define NO_DATA_VALUE -1e+37
 
@@ -317,9 +329,8 @@ VolumeSkewTransform(const VolumeAttributes &atts,
 // ****************************************************************************
 
 vtkDataArray *
-VolumeGetScalar(const VolumeAttributes &atts, vtkDataSet *ds)
+VolumeGetScalar(vtkDataSet *ds, const char *name)
 {
-    const char *ov = atts.GetOpacityVariable().c_str();
     vtkPointData *pd = ds->GetPointData();
     vtkDataArray *data = pd->GetScalars();
     if (data == NULL)  
@@ -331,7 +342,7 @@ VolumeGetScalar(const VolumeAttributes &atts, vtkDataSet *ds)
         for (int i = 0 ; i < pd->GetNumberOfArrays() ; i++)
         {
             vtkDataArray *arr = pd->GetArray(i);
-            if (strcmp(arr->GetName(), ov) == 0)
+            if (strcmp(arr->GetName(), name) == 0)
             {
                 if (pd->GetNumberOfArrays() > 1)
                 {
@@ -394,7 +405,7 @@ VolumeGetScalars(const VolumeAttributes &atts, vtkDataSet *ds,
     const char *ov = atts.GetOpacityVariable().c_str();
 
     vtkPointData *pd = ds->GetPointData();
-    data = VolumeGetScalar(atts, ds);
+    data = VolumeGetScalar(ds, ov);
     if (data == NULL)
     {
         return false;
@@ -422,7 +433,7 @@ VolumeGetScalars(const VolumeAttributes &atts, vtkDataSet *ds,
         // it.  Unfortunately, we have to create a vtkScalars object from the
         // returned data array.  If we could just return the data array
         // directly, we could get away from all of the memory management we
-        // are doing.   KAT -- NOW WE CAN!
+        // are doing.   KAT -- NOW WE CAN//
         //
         opac = pd->GetArray(ov);
         if (opac == NULL && pd->GetNumberOfArrays() == 1)
@@ -875,6 +886,234 @@ VolumeGradient_Sobel(vtkRectilinearGrid  *grid, vtkDataArray *opac,
             }
         }
     }
+
+    return maxmag;
+}
+
+// ****************************************************************************
+// Method: Unnormalized_Kernel_Gradient
+//
+// Purpose: 
+//   calculates the gradient of the sph kernel
+//
+// Arguments:
+//   r   : radius vector between particles
+//   r12 : distance between particles
+//   h   : kernel size h
+//
+// Returns:    gradient of the kernel
+//
+// Programmer: Allen Harvey
+// Creation:   Mon Jan 30 10:31:13 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static void
+Unnormalized_Kernel_Gradient(int dim, double r, double *r12, double h,
+    double *grad)
+{
+    double s = 0;
+    double temp = 0;
+
+    s = abs(r/h);
+// NORMALIZATION IS SET FOR 1-DIMENSION
+    if( (s>0.0) && (s<=1.0) )
+    {
+        temp = (-3.0*s + 2.25*s*s)/h;
+        grad[0] = temp * r12[0]/r;
+        grad[1] = temp * r12[1]/r;
+        grad[2] = temp * r12[2]/r;
+    }
+    else if( (s>1.0) && (s<2.0) )
+    {
+        temp = -(3.0*(2.0-s)*(2.0-s))/(4.0*h);
+        grad[0] = temp * r12[0]/r;
+        grad[1] = temp * r12[1]/r;
+        grad[2] = temp * r12[2]/r;
+    }
+    else
+    {
+        grad[0] = 0.0;
+        grad[1] = 0.0;
+        grad[2] = 0.0;
+    }
+}
+
+static void 
+GetConnectedVertices(vtkDataSet* mesh, int seed, vtkSmartPointer<vtkIdList> connectedVertices)
+{
+    //get all cells that vertex 'seed' is a part of
+    vtkSmartPointer<vtkIdList> cellIdList = vtkSmartPointer<vtkIdList>::New();
+    mesh->GetPointCells(seed, cellIdList);
+
+    //loop through all the cells that use the seed point
+    for(vtkIdType i = 0; i < cellIdList->GetNumberOfIds(); i++)
+    {
+        vtkCell* cell = mesh->GetCell(cellIdList->GetId(i));
+
+        //if the cell doesn't have any edges, it is a line
+        if(cell->GetNumberOfEdges() <= 0)
+        {
+            continue;
+        }
+
+        for(vtkIdType e = 0; e < cell->GetNumberOfEdges(); e++)
+        {
+            vtkCell* edge = cell->GetEdge(e);
+
+            vtkIdList* pointIdList = edge->GetPointIds();
+
+            if(pointIdList->GetId(0) == seed || pointIdList->GetId(1) == seed)
+            {
+                if(pointIdList->GetId(0) == seed)
+                {
+                    connectedVertices->InsertUniqueId(pointIdList->GetId(1));
+                }
+                else
+                {
+                    connectedVertices->InsertUniqueId(pointIdList->GetId(0));
+                }
+            }
+        } //end for
+    }
+}
+
+// ****************************************************************************
+// Method: VolumeCalculateGradient_SPH
+//
+// Purpose: 
+//   Calculates the gradient by performing Delauney Triangulization followed
+//       by applying an SPH Kernel.
+//
+// Arguments:
+//   ds   : The grid that contains the data.
+//   opac : The opacity data whose gradient we're calculating.
+//   gx   : Optional output array for the X component of the gradient
+//   gy   : Optional output array for the Y component of the gradient
+//   gz   : Optional output array for the Z component of the gradient
+//   gm   : Optional output array for the gradient magnitude
+//   gmn  : Optional output array for the normalized gradient magnitude
+//
+// Returns:    The maximum gradient magnitude.
+//
+// Note:       
+//
+// Programmer: Allen Harvey
+// Creation:   Mon Jan 30 10:33:39 PST 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+float
+VolumeCalculateGradient_SPH(vtkDataSet *ds, vtkDataArray *opac,
+    float *gx, float *gy, float *gz, float *gm, float *gmn, float *hs, bool calcHS, float ghostval)
+{
+    StackTimer t2("SPH gradient");
+
+    float maxmag = 0.f;
+
+    const float *fopac = (const float *)opac->GetVoidPointer(0);
+
+    //Apply a delauney operator on the data
+    //code taken from avtDelaunayFilter.C, ExecuteData Method
+    vtkDelaunay3D *d3 = NULL;
+
+    vtkDataSet *outDS = NULL;
+    int dimension = 3;  //For now, support is limited to 3D only
+    double p[3], r[3], grad[3];
+    double h = 0.0, hmax = 0.0, radius = 0.0;
+    p[0] = p[1] = p[2] = 0.0;
+    r[0] = r[1] = r[2] = 0.0;
+    grad[0] = grad[1] = grad[2] = 0.0;
+
+    d3 = vtkDelaunay3D::New();
+    d3->SetInput(ds);
+    outDS = vtkUnstructuredGrid::New();
+    d3->SetOutput(outDS);
+
+    outDS->Update();
+
+    if (d3)
+        d3->Delete();
+
+    //Loop over all the points.  Collect the points around them (points around points).
+    //  build an SPH kernel around them.
+    vtkSmartPointer<vtkIdList> connectedVertices = vtkSmartPointer<vtkIdList>::New();
+    for ( int index = 0; index < outDS->GetNumberOfPoints(); index++ )
+    {
+        connectedVertices->Reset();
+
+        GetConnectedVertices(outDS, index, connectedVertices);
+        //Get the number of points around this point
+        int nPtsAround = connectedVertices->GetNumberOfIds();
+
+        //If the user provides a compact support variable, use it for 'h', otherwise calculate an 'h'.
+        if (calcHS)
+        {
+            //find the kernel size (i.e. the longest distance)
+            outDS->GetPoint(index,p);
+            hmax = 0.0;
+            for(vtkIdType i = 0; i < connectedVertices->GetNumberOfIds(); i++)
+            {
+                outDS->GetPoint(connectedVertices->GetId(i), r);
+                r[0] = p[0] - r[0];
+                r[1] = p[1] - r[1];
+                r[2] = p[2] - r[2];
+                h = r[0]*r[0]+r[1]*r[1]+r[2]*r[2];
+                h = sqrt(h);
+                hmax = MAX(h,hmax);
+                //cout<<"hmax is now: "<<hmax<<endl;
+            }
+            //calculate the gradient
+            h = hmax/2.0;
+            if(hs != NULL)
+                hs[index] = hmax;
+        }
+        else if(hs != NULL)
+        {
+            //Use the prescribed variable
+            h = hs[index];
+        }
+
+        float temp = PI*h*h*h;
+        float gx_i = 0.f;
+        float gy_i = 0.f;
+        float gz_i = 0.f;
+
+        for(vtkIdType i = 0; i < connectedVertices->GetNumberOfIds(); i++)
+        {
+            outDS->GetPoint(connectedVertices->GetId(i), r);
+            r[0] = p[0] - r[0];
+            r[1] = p[1] - r[1];
+            r[2] = p[2] - r[2];
+            radius = r[0]*r[0]+r[1]*r[1]+r[2]*r[2];
+            radius = sqrt(radius);
+            Unnormalized_Kernel_Gradient(dimension, radius, r, h, grad);
+            grad[0] = grad[0]/temp;
+            grad[1] = grad[1]/temp;
+            grad[2] = grad[2]/temp;
+
+            gx_i = gx_i + grad[0]*fopac[i];
+            gy_i = gy_i + grad[1]*fopac[i];
+            gz_i = gz_i + grad[2]*fopac[i];
+        }
+        STORE_GRADIENT
+    }
+
+    connectedVertices->Reset();
+
+    if (maxmag > 0 && gmn != 0)
+    {
+        vtkIdType nels = outDS->GetNumberOfPoints();
+        for (vtkIdType n=0; n<nels; n++)
+            gmn[n] /= maxmag;
+    }
+
+    if(outDS)
+        outDS->Delete();
 
     return maxmag;
 }

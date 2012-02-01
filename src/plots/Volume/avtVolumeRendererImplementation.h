@@ -40,8 +40,9 @@
 #define AVT_VOLUME_RENDERER_IMPLEMENTATION_H
 #include <avtViewInfo.h>
 #include <VolumeAttributes.h>
+#include <vtkPointData.h>
 
-class vtkRectilinearGrid;
+class vtkDataSet;
 class vtkDataArray;
 
 // ****************************************************************************
@@ -66,6 +67,9 @@ class vtkDataArray;
 //
 //    Jeremy Meredith, Tue Jan  5 15:53:30 EST 2010
 //    Added storage of unnormalize gradient magnitude and its maximum value.
+//
+//    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
+//    Added data items to support volume rendering without resampling
 //
 // ****************************************************************************
 
@@ -107,19 +111,20 @@ class avtVolumeRendererImplementation
         VolumeData() : data(), opacity()
         {
             grid = NULL;
-            gx = gy = gz = gm = gmn = NULL;
+            gx = gy = gz = gm = gmn = hs = NULL;
             gm_max = 0;
         }
 
         VariableData        data;
         VariableData        opacity;
-        vtkRectilinearGrid *grid;
+        vtkDataSet         *grid;
         float              *gx;
         float              *gy;
         float              *gz;
         float              *gm;
         float              *gmn;
         float               gm_max;
+        float              *hs;
     };
 
                    avtVolumeRendererImplementation() { }

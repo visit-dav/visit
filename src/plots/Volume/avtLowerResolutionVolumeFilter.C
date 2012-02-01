@@ -128,7 +128,9 @@ avtLowerResolutionVolumeFilter::SetAtts(const AttributeGroup *a)
 // Creation:   Fri Dec 19 14:08:43 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jan 31 12:08:09 PST 2012
+//   Call the SPH version of the gradient for non-rectilinear meshes.
+//
 // ****************************************************************************
 
 void
@@ -154,13 +156,28 @@ avtLowerResolutionVolumeFilter::CalculateHistograms(vtkDataSet *ds)
         vtkFloatArray *gm = vtkFloatArray::New();
         gm->SetNumberOfTuples(nels);
         gm->SetName("gm");
-        VolumeCalculateGradient(atts, (vtkRectilinearGrid *)ds, opac, 
+        if(ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            VolumeCalculateGradient(atts, (vtkRectilinearGrid *)ds, opac, 
                                 0, // gx
                                 0, // gy
                                 0, // gz
                                 (float *)gm->GetVoidPointer(0),
                                 0, // gmn
                                 ghostval);
+        }
+        else
+        {
+            VolumeCalculateGradient_SPH(ds, opac, 
+                                0, // gx
+                                0, // gy
+                                0, // gz
+                                (float *)gm->GetVoidPointer(0),
+                                0, // gmn
+                                0, // hs
+                                true,
+                                ghostval);
+        }
 
         if(hist2 != 0)
             delete [] hist2;
@@ -214,7 +231,7 @@ avtLowerResolutionVolumeFilter::ExecuteData(vtkDataSet *ds, int, std::string)
     if(atts.GetScaling() != VolumeAttributes::Linear)
     {
         // Get the array that we're "modifying".
-        vtkDataArray *src = VolumeGetScalar(atts, ds);
+        vtkDataArray *src = VolumeGetScalar(ds, atts.GetOpacityVariable().c_str());
         if(src == 0)
         {
             EXCEPTION0(ImproperUseException);

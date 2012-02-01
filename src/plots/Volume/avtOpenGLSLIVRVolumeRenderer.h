@@ -54,6 +54,8 @@
 #include <slivr/ColorMap2.h>
 #include <slivr/VolumeRenderer.h>
 
+class vtkRectilinearGrid;
+
 // ****************************************************************************
 //  Class avtOpenGLSLIVRVolumeRenderer
 //
