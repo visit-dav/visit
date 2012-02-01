@@ -44,7 +44,8 @@
 #include <VolumeAttributes.h>
 
 #include <visit-config.h>
-extern "C" PLOT_EXPORT const char *VolumeVisItPluginVersion = VISIT_VERSION;
+
+VISIT_PLUGIN_VERSION(Volume,PLOT_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
