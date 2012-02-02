@@ -3,6 +3,7 @@
 #include <avtStructuredDomainBoundaries.h>
 
 #include <simv2_DomainBoundaries.h>
+#include <cstring>
 
 struct VisIt_DomainBoundaries : public VisIt_ObjectBase
 {
