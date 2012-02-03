@@ -73,8 +73,8 @@ public class AMRStitchCellAttributes extends AttributeSubject implements Plugin
     {
         super(AMRStitchCellAttributes_numAdditionalAtts);
 
-            AddCaseNo = false;
-        OnlyProcessListedDomains = true;
+            AddCaseNo = true;
+        OnlyProcessListedDomains = false;
         Domains = new Vector();
         OnlyProcessLevel = false;
         Level = 0;
@@ -84,8 +84,8 @@ public class AMRStitchCellAttributes extends AttributeSubject implements Plugin
     {
         super(AMRStitchCellAttributes_numAdditionalAtts + nMoreFields);
 
-            AddCaseNo = false;
-        OnlyProcessListedDomains = true;
+            AddCaseNo = true;
+        OnlyProcessListedDomains = false;
         Domains = new Vector();
         OnlyProcessLevel = false;
         Level = 0;
