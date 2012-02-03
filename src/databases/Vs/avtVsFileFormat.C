@@ -3560,7 +3560,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
           new avtMeshMetaData(it->c_str(), 1, 1, 1, 0,
                               spatialDims, topologicalDims, meshType);
         vmd->SetBounds( bounds );
-//        vmd->SetNumberCells( numCells );
+        vmd->SetNumberCells( numCells );
         setAxisLabels(vmd);
         md->Add(vmd);
       }
@@ -3861,7 +3861,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
       avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
           1, 1, 1, 0, spatialDims, 0, AVT_POINT_MESH);
       vmd->SetBounds( bounds );
-//      vmd->SetNumberCells( numCells );
+      vmd->SetNumberCells( numCells );
       setAxisLabels(vmd);
       md->Add(vmd);
     }

@@ -1206,7 +1206,7 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "Topological Dimension = " << topologicalDimension << std::endl;
 
-    if (hasLogicalBounds)
+    if (hasLogicalBounds || hasNumberCells )
     {
         switch (meshType)
         {
@@ -1225,13 +1225,13 @@ avtMeshMetaData::Print(ostream &out, int indent) const
           case AVT_POINT_MESH:
           case AVT_UNSTRUCTURED_MESH:
             Indent(out, indent);
-            out << "Logical cell bound is (" << logicalBounds[0] << ")"
+            out << "Logical cell bound is (" << numberCells << ")"
                 << std::endl;
             break;
 
 //        Report nothing as the logical bounds are not applicable
           default:
-            out << "The logical bounds are set but not applicable."
+            out << "The logical nodal bounds or number of cells are set but not applicable."
                 << std::endl;
             break;
         }
@@ -1257,7 +1257,6 @@ avtMeshMetaData::Print(ostream &out, int indent) const
 //            break;
         }
     }
-
 
     if (hasNumberCells)
     {

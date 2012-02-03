@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -43,15 +43,6 @@
 #include <IndexSelectPluginInfo.h>
 #include <QApplication>
 #include <IndexSelectAttributes.h>
-#include <avtSIL.h>
-#include <avtSILRestriction.h>
-#include <CompactSILRestrictionAttributes.h>
-#include <avtDatabaseMetaData.h>
-#include <avtMeshMetaData.h>
-#include <ViewerPlot.h>
-
-#include <string>
-#include <vector>
 
 // ****************************************************************************
 //  Function:  GetViewerInfo
@@ -197,6 +188,12 @@ IndexSelectViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 //    Update for new SIL interface.
 //
 // ****************************************************************************
+#include <avtSIL.h>
+#include <avtSILRestriction.h>
+#include <CompactSILRestrictionAttributes.h>
+#include <avtDatabaseMetaData.h>
+#include <avtMeshMetaData.h>
+#include <ViewerPlot.h>
 void
 IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                                               const ViewerPlot *plot,
@@ -209,11 +206,11 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 
     IndexSelectAttributes *isAtts = (IndexSelectAttributes*)atts;
 
-    std::string categoryName = isAtts->GetCategoryName();
-    std::string subsetName = isAtts->GetSubsetName();
-    std::string defaultName = "Whole";
-    std::string firstCategoryName = defaultName;
-    std::string firstSubsetName = defaultName;
+    string categoryName = isAtts->GetCategoryName();
+    string subsetName = isAtts->GetSubsetName();
+    string defaultName = "Whole";
+    string firstCategoryName = defaultName;
+    string firstSubsetName = defaultName;
 
     bool categoryNameValid = false;
     bool subsetNameValid = false;
@@ -318,9 +315,9 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
            {
                isAtts->SetMaxDim(IndexSelectAttributes::OneD);
                isAtts->SetDim(IndexSelectAttributes::OneD);
-               isAtts->SetXAbsMax(mmd->logicalBounds[0]-1);
+               isAtts->SetXAbsMax(mmd->numberCells-1);
                if( isAtts->GetXMax() == -1 )
-                   isAtts->SetXMax(mmd->logicalBounds[0]-1);
+                   isAtts->SetXMax(mmd->numberCells-1);
            }
            else
            {
@@ -391,3 +388,4 @@ IndexSelectViewerPluginInfo::XPMIconData() const
 {
     return IndexSelect_xpm;
 }
+
