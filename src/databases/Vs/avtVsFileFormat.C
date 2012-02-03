@@ -3532,24 +3532,26 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
           registry->registerTransformedMeshName(transformedMeshName, rectMesh->getFullName());
 
           int topologicalDims = meta->getNumTopologicalDims();
-          // Add a note for this interesting case.  It is legal, but since it's a new feature
-          // we want to keep an eye on it
+          // Add a note for this interesting case.  It is legal, but
+          // since it's a new feature we want to keep an eye on it
           if (topologicalDims > spatialDims) {
-            VsLog::errorLog() <<__CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                              <<"ERROR - num topological dims (" << topologicalDims
-                              <<") > num spatial dims (" << spatialDims <<")" <<std::endl;
+            VsLog::errorLog()
+              << __CLASS__ << "(" <<instanceCounter << ")" << __FUNCTION__ << "  " << __LINE__ << "  "
+              << "ERROR - num topological dims (" << topologicalDims
+              << ") > num spatial dims (" << spatialDims << ")" <<std::endl;
             topologicalDims = spatialDims;
           } else if (spatialDims != topologicalDims) {
-            VsLog::debugLog() <<__CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                              <<"Interesting - num topological dims (" << topologicalDims
-                              <<") != num spatial dims (" << spatialDims <<")" <<std::endl;
+            VsLog::debugLog()
+              <<__CLASS__ << "(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+              <<"Interesting - num topological dims (" << topologicalDims
+              <<") != num spatial dims (" << spatialDims << ")" <<std::endl;
           }
 
           avtMeshMetaData* vmd =
             new avtMeshMetaData(transformedMeshName, 1, 1, 1, 0,
                                 spatialDims, topologicalDims, meshType);
           vmd->SetBounds( bounds );
-          // vmd->SetNumberCells( numCells );                                                                                                                      
+          vmd->SetNumberCells( numCells );
           setAxisLabels(vmd);
           md->Add(vmd);
         }
@@ -3663,7 +3665,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
           new avtMeshMetaData(it->c_str(), 1, 1, 1, 0,
                               spatialDims, topologicalDims, meshType);
         vmd->SetBounds( bounds );
-//        vmd->SetNumberCells( numCells );
+        vmd->SetNumberCells( numCells );
         setAxisLabels(vmd);
         md->Add(vmd);
 
@@ -3691,6 +3693,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
               new avtMeshMetaData(nodeOffsetMeshName.c_str(), 1, 1, 1, 0,
                                   spatialDims, topologicalDims, meshType);
             vmd2->SetBounds( bounds );
+            vmd2->SetNumberCells( numCells );
             setAxisLabels(vmd2);
             md->Add(vmd2);
           }
@@ -3992,8 +3995,9 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
                         << "Adding point mesh for this variable." << std::endl;
       avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
           1, 1, 1, 0, spatialDims, 0, AVT_POINT_MESH);
+
       vmd->SetBounds( bounds );
-//      vmd->SetNumberCells( numCells );
+      vmd->SetNumberCells( numCells );
       setAxisLabels(vmd);
       md->Add(vmd);
     }
