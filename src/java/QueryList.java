@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class QueryList extends AttributeSubject
 {
-    private static int QueryList_numAdditionalAtts = 9;
+    private static int QueryList_numAdditionalAtts = 10;
 
     // Enum values
     public final static int QUERYTYPE_DATABASEQUERY = 0;
@@ -108,6 +108,7 @@ public class QueryList extends AttributeSubject
         queryMode = new Vector();
         numVars = new Vector();
         canBePublic = new Vector();
+        requiresVarSelection = new Vector();
     }
 
     public QueryList(int nMoreFields)
@@ -123,6 +124,7 @@ public class QueryList extends AttributeSubject
         queryMode = new Vector();
         numVars = new Vector();
         canBePublic = new Vector();
+        requiresVarSelection = new Vector();
     }
 
     public QueryList(QueryList obj)
@@ -182,6 +184,12 @@ public class QueryList extends AttributeSubject
         {
             Integer iv = (Integer)obj.canBePublic.elementAt(i);
             canBePublic.addElement(new Integer(iv.intValue()));
+        }
+        requiresVarSelection = new Vector();
+        for(i = 0; i < obj.requiresVarSelection.size(); ++i)
+        {
+            Integer iv = (Integer)obj.requiresVarSelection.elementAt(i);
+            requiresVarSelection.addElement(new Integer(iv.intValue()));
         }
 
         SelectAll();
@@ -282,6 +290,15 @@ public class QueryList extends AttributeSubject
             Integer canBePublic2 = (Integer)obj.canBePublic.elementAt(i);
             canBePublic_equal = canBePublic1.equals(canBePublic2);
         }
+        // Compare the elements in the requiresVarSelection vector.
+        boolean requiresVarSelection_equal = (obj.requiresVarSelection.size() == requiresVarSelection.size());
+        for(i = 0; (i < requiresVarSelection.size()) && requiresVarSelection_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer requiresVarSelection1 = (Integer)requiresVarSelection.elementAt(i);
+            Integer requiresVarSelection2 = (Integer)obj.requiresVarSelection.elementAt(i);
+            requiresVarSelection_equal = requiresVarSelection1.equals(requiresVarSelection2);
+        }
         // Create the return value
         return (names_equal &&
                 types_equal &&
@@ -291,7 +308,8 @@ public class QueryList extends AttributeSubject
                 winType_equal &&
                 queryMode_equal &&
                 numVars_equal &&
-                canBePublic_equal);
+                canBePublic_equal &&
+                requiresVarSelection_equal);
     }
 
     // Property setting methods
@@ -349,6 +367,12 @@ public class QueryList extends AttributeSubject
         Select(8);
     }
 
+    public void SetRequiresVarSelection(Vector requiresVarSelection_)
+    {
+        requiresVarSelection = requiresVarSelection_;
+        Select(9);
+    }
+
     // Property getting methods
     public Vector GetNames() { return names; }
     public Vector GetTypes() { return types; }
@@ -359,6 +383,7 @@ public class QueryList extends AttributeSubject
     public Vector GetQueryMode() { return queryMode; }
     public Vector GetNumVars() { return numVars; }
     public Vector GetCanBePublic() { return canBePublic; }
+    public Vector GetRequiresVarSelection() { return requiresVarSelection; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -381,6 +406,8 @@ public class QueryList extends AttributeSubject
             buf.WriteIntVector(numVars);
         if(WriteSelect(8, buf))
             buf.WriteIntVector(canBePublic);
+        if(WriteSelect(9, buf))
+            buf.WriteIntVector(requiresVarSelection);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -414,6 +441,9 @@ public class QueryList extends AttributeSubject
         case 8:
             SetCanBePublic(buf.ReadIntVector());
             break;
+        case 9:
+            SetRequiresVarSelection(buf.ReadIntVector());
+            break;
         }
     }
 
@@ -429,6 +459,7 @@ public class QueryList extends AttributeSubject
         str = str + intVectorToString("queryMode", queryMode, indent) + "\n";
         str = str + intVectorToString("numVars", numVars, indent) + "\n";
         str = str + intVectorToString("canBePublic", canBePublic, indent) + "\n";
+        str = str + intVectorToString("requiresVarSelection", requiresVarSelection, indent) + "\n";
         return str;
     }
 
@@ -443,5 +474,6 @@ public class QueryList extends AttributeSubject
     private Vector queryMode; // vector of Integer objects
     private Vector numVars; // vector of Integer objects
     private Vector canBePublic; // vector of Integer objects
+    private Vector requiresVarSelection; // vector of Integer objects
 }
 

@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -47,6 +47,9 @@
 #
 #   Brad Whitlock, Mon Jun 20 15:44:41 PDT 2011
 #   Add SelectionVariableSummary and SelectionSummary.
+#
+#   Brad Whitlock, Thu Feb  2 10:48:50 PST 2012
+#   Adding in initial Variant, MapNode classes to rehab the Java client.
 #
 #****************************************************************************/
 
@@ -118,6 +121,8 @@ LaunchProfile.java
 LightAttributes.java 
 LightList.java 
 MachineProfile.java
+MapNode.java
+MapNodePair.java
 MaterialAttributes.java 
 MeshManagementAttributes.java 
 MessageAttributes.java
@@ -152,6 +157,7 @@ SelectionSummary.java
 SelectionVariableSummary.java
 StatusAttributes.java 
 SyncAttributes.java 
+Variant.java
 View2DAttributes.java 
 View3DAttributes.java 
 ViewAxisArrayAttributes.java 

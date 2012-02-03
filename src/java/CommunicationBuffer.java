@@ -40,6 +40,7 @@ package llnl.visit;
 
 import java.lang.Float;
 import java.lang.Double;
+import java.lang.Long;
 import java.util.Vector;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
@@ -147,10 +148,7 @@ public class CommunicationBuffer
 
     public void WriteLong(long l)
     {
-        AddByte((byte)((l & 0xff000000) >> 24));
-        AddByte((byte)((l & 0x00ff0000) >> 16));
-        AddByte((byte)((l & 0x0000ff00) >> 8));
-        AddByte((byte)(l & 0xff));
+        WriteInt((int)l);
     }
 
     public void WriteDouble(double d)
@@ -235,6 +233,16 @@ public class CommunicationBuffer
         WriteInt(array.length);
         for(int i = 0; i < array.length; ++i)
             WriteLong(array[i]);
+    }
+
+    public void WriteLongVector(Vector vec)
+    {
+        WriteInt(vec.size());
+        for(int i = 0; i < vec.size(); ++i)
+        {
+            Long lv = (Long)vec.elementAt(i);
+            WriteLong(lv.longValue());
+        }
     }
 
     public void WriteFloatArray(float[] array)
@@ -369,6 +377,22 @@ public class CommunicationBuffer
         Vector retval = new Vector();
         for(int i = 0; i < len; ++i)
             retval.addElement(new Integer(ReadInt()));
+        return retval;
+    }
+
+    public long ReadLong()
+    {
+        // We can do this because our Java communication header tells VisIt that
+        // longs are the same length as int, even though it is not necessarily true.
+        return (long)ReadInt();
+    }
+
+    public Vector ReadLongVector()
+    {
+        int len = ReadInt();
+        Vector retval = new Vector();
+        for(int i = 0; i < len; ++i)
+            retval.addElement(new Long(ReadLong()));
         return retval;
     }
 

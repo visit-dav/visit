@@ -40,7 +40,6 @@ package llnl.visit;
 
 import java.util.Vector;
 import java.lang.Integer;
-import java.lang.Double;
 
 // ****************************************************************************
 // Class: ViewerRPC
@@ -59,7 +58,7 @@ import java.lang.Double;
 
 public class ViewerRPC extends AttributeSubject
 {
-    private static int ViewerRPC_numAdditionalAtts = 35;
+    private static int ViewerRPC_numAdditionalAtts = 31;
 
     // Enum values
     public final static int VIEWERRPCTYPE_CLOSERPC = 0;
@@ -166,98 +165,97 @@ public class ViewerRPC extends AttributeSubject
     public final static int VIEWERRPCTYPE_SETVIEWEXTENTSTYPERPC = 101;
     public final static int VIEWERRPCTYPE_CLEARREFLINESRPC = 102;
     public final static int VIEWERRPCTYPE_SETRENDERINGATTRIBUTESRPC = 103;
-    public final static int VIEWERRPCTYPE_DATABASEQUERYRPC = 104;
-    public final static int VIEWERRPCTYPE_POINTQUERYRPC = 105;
-    public final static int VIEWERRPCTYPE_LINEQUERYRPC = 106;
-    public final static int VIEWERRPCTYPE_CLONEWINDOWRPC = 107;
-    public final static int VIEWERRPCTYPE_SETMATERIALATTRIBUTESRPC = 108;
-    public final static int VIEWERRPCTYPE_SETDEFAULTMATERIALATTRIBUTESRPC = 109;
-    public final static int VIEWERRPCTYPE_RESETMATERIALATTRIBUTESRPC = 110;
-    public final static int VIEWERRPCTYPE_SETPLOTDATABASESTATERPC = 111;
-    public final static int VIEWERRPCTYPE_DELETEPLOTDATABASEKEYFRAMERPC = 112;
-    public final static int VIEWERRPCTYPE_MOVEPLOTDATABASEKEYFRAMERPC = 113;
-    public final static int VIEWERRPCTYPE_CLEARVIEWKEYFRAMESRPC = 114;
-    public final static int VIEWERRPCTYPE_DELETEVIEWKEYFRAMERPC = 115;
-    public final static int VIEWERRPCTYPE_MOVEVIEWKEYFRAMERPC = 116;
-    public final static int VIEWERRPCTYPE_SETVIEWKEYFRAMERPC = 117;
-    public final static int VIEWERRPCTYPE_OPENMDSERVERRPC = 118;
-    public final static int VIEWERRPCTYPE_ENABLETOOLBARRPC = 119;
-    public final static int VIEWERRPCTYPE_HIDETOOLBARSRPC = 120;
-    public final static int VIEWERRPCTYPE_HIDETOOLBARSFORALLWINDOWSRPC = 121;
-    public final static int VIEWERRPCTYPE_SHOWTOOLBARSRPC = 122;
-    public final static int VIEWERRPCTYPE_SHOWTOOLBARSFORALLWINDOWSRPC = 123;
-    public final static int VIEWERRPCTYPE_SETTOOLBARICONSIZERPC = 124;
-    public final static int VIEWERRPCTYPE_SAVEVIEWRPC = 125;
-    public final static int VIEWERRPCTYPE_SETGLOBALLINEOUTATTRIBUTESRPC = 126;
-    public final static int VIEWERRPCTYPE_SETPICKATTRIBUTESRPC = 127;
-    public final static int VIEWERRPCTYPE_EXPORTCOLORTABLERPC = 128;
-    public final static int VIEWERRPCTYPE_EXPORTENTIRESTATERPC = 129;
-    public final static int VIEWERRPCTYPE_IMPORTENTIRESTATERPC = 130;
-    public final static int VIEWERRPCTYPE_IMPORTENTIRESTATEWITHDIFFERENTSOURCESRPC = 131;
-    public final static int VIEWERRPCTYPE_RESETPICKATTRIBUTESRPC = 132;
-    public final static int VIEWERRPCTYPE_ADDANNOTATIONOBJECTRPC = 133;
-    public final static int VIEWERRPCTYPE_HIDEACTIVEANNOTATIONOBJECTSRPC = 134;
-    public final static int VIEWERRPCTYPE_DELETEACTIVEANNOTATIONOBJECTSRPC = 135;
-    public final static int VIEWERRPCTYPE_RAISEACTIVEANNOTATIONOBJECTSRPC = 136;
-    public final static int VIEWERRPCTYPE_LOWERACTIVEANNOTATIONOBJECTSRPC = 137;
-    public final static int VIEWERRPCTYPE_SETANNOTATIONOBJECTOPTIONSRPC = 138;
-    public final static int VIEWERRPCTYPE_SETDEFAULTANNOTATIONOBJECTLISTRPC = 139;
-    public final static int VIEWERRPCTYPE_RESETANNOTATIONOBJECTLISTRPC = 140;
-    public final static int VIEWERRPCTYPE_RESETPICKLETTERRPC = 141;
-    public final static int VIEWERRPCTYPE_SETDEFAULTPICKATTRIBUTESRPC = 142;
-    public final static int VIEWERRPCTYPE_CHOOSECENTEROFROTATIONRPC = 143;
-    public final static int VIEWERRPCTYPE_SETCENTEROFROTATIONRPC = 144;
-    public final static int VIEWERRPCTYPE_SETQUERYOVERTIMEATTRIBUTESRPC = 145;
-    public final static int VIEWERRPCTYPE_SETDEFAULTQUERYOVERTIMEATTRIBUTESRPC = 146;
-    public final static int VIEWERRPCTYPE_RESETQUERYOVERTIMEATTRIBUTESRPC = 147;
-    public final static int VIEWERRPCTYPE_RESETLINEOUTCOLORRPC = 148;
-    public final static int VIEWERRPCTYPE_SETINTERACTORATTRIBUTESRPC = 149;
-    public final static int VIEWERRPCTYPE_SETDEFAULTINTERACTORATTRIBUTESRPC = 150;
-    public final static int VIEWERRPCTYPE_RESETINTERACTORATTRIBUTESRPC = 151;
-    public final static int VIEWERRPCTYPE_GETPROCINFORPC = 152;
-    public final static int VIEWERRPCTYPE_SENDSIMULATIONCOMMANDRPC = 153;
-    public final static int VIEWERRPCTYPE_UPDATEDBPLUGININFORPC = 154;
-    public final static int VIEWERRPCTYPE_EXPORTDBRPC = 155;
-    public final static int VIEWERRPCTYPE_SETTRYHARDERCYCLESTIMESRPC = 156;
-    public final static int VIEWERRPCTYPE_OPENCLIENTRPC = 157;
-    public final static int VIEWERRPCTYPE_OPENGUICLIENTRPC = 158;
-    public final static int VIEWERRPCTYPE_OPENCLICLIENTRPC = 159;
-    public final static int VIEWERRPCTYPE_SUPPRESSQUERYOUTPUTRPC = 160;
-    public final static int VIEWERRPCTYPE_SETQUERYFLOATFORMATRPC = 161;
-    public final static int VIEWERRPCTYPE_SETMESHMANAGEMENTATTRIBUTESRPC = 162;
-    public final static int VIEWERRPCTYPE_SETDEFAULTMESHMANAGEMENTATTRIBUTESRPC = 163;
-    public final static int VIEWERRPCTYPE_RESETMESHMANAGEMENTATTRIBUTESRPC = 164;
-    public final static int VIEWERRPCTYPE_RESIZEWINDOWRPC = 165;
-    public final static int VIEWERRPCTYPE_MOVEWINDOWRPC = 166;
-    public final static int VIEWERRPCTYPE_MOVEANDRESIZEWINDOWRPC = 167;
-    public final static int VIEWERRPCTYPE_SETSTATELOGGINGRPC = 168;
-    public final static int VIEWERRPCTYPE_CONSTRUCTDATABINNINGRPC = 169;
-    public final static int VIEWERRPCTYPE_REQUESTMETADATARPC = 170;
-    public final static int VIEWERRPCTYPE_SETTREATALLDBSASTIMEVARYINGRPC = 171;
-    public final static int VIEWERRPCTYPE_SETCREATEMESHQUALITYEXPRESSIONSRPC = 172;
-    public final static int VIEWERRPCTYPE_SETCREATETIMEDERIVATIVEEXPRESSIONSRPC = 173;
-    public final static int VIEWERRPCTYPE_SETCREATEVECTORMAGNITUDEEXPRESSIONSRPC = 174;
-    public final static int VIEWERRPCTYPE_COPYACTIVEPLOTSRPC = 175;
-    public final static int VIEWERRPCTYPE_SETPLOTFOLLOWSTIMERPC = 176;
-    public final static int VIEWERRPCTYPE_TURNOFFALLLOCKSRPC = 177;
-    public final static int VIEWERRPCTYPE_SETDEFAULTFILEOPENOPTIONSRPC = 178;
-    public final static int VIEWERRPCTYPE_SETSUPPRESSMESSAGESRPC = 179;
-    public final static int VIEWERRPCTYPE_APPLYNAMEDSELECTIONRPC = 180;
-    public final static int VIEWERRPCTYPE_CREATENAMEDSELECTIONRPC = 181;
-    public final static int VIEWERRPCTYPE_DELETENAMEDSELECTIONRPC = 182;
-    public final static int VIEWERRPCTYPE_LOADNAMEDSELECTIONRPC = 183;
-    public final static int VIEWERRPCTYPE_SAVENAMEDSELECTIONRPC = 184;
-    public final static int VIEWERRPCTYPE_SETNAMEDSELECTIONAUTOAPPLYRPC = 185;
-    public final static int VIEWERRPCTYPE_UPDATENAMEDSELECTIONRPC = 186;
-    public final static int VIEWERRPCTYPE_INITIALIZENAMEDSELECTIONVARIABLESRPC = 187;
-    public final static int VIEWERRPCTYPE_MENUQUITRPC = 188;
-    public final static int VIEWERRPCTYPE_SETPLOTDESCRIPTIONRPC = 189;
-    public final static int VIEWERRPCTYPE_MOVEPLOTORDERTOWARDFIRSTRPC = 190;
-    public final static int VIEWERRPCTYPE_MOVEPLOTORDERTOWARDLASTRPC = 191;
-    public final static int VIEWERRPCTYPE_SETPLOTORDERTOFIRSTRPC = 192;
-    public final static int VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC = 193;
-    public final static int VIEWERRPCTYPE_RENAMEPICKLABELRPC = 194;
-    public final static int VIEWERRPCTYPE_MAXRPC = 195;
+    public final static int VIEWERRPCTYPE_QUERYRPC = 104;
+    public final static int VIEWERRPCTYPE_CLONEWINDOWRPC = 105;
+    public final static int VIEWERRPCTYPE_SETMATERIALATTRIBUTESRPC = 106;
+    public final static int VIEWERRPCTYPE_SETDEFAULTMATERIALATTRIBUTESRPC = 107;
+    public final static int VIEWERRPCTYPE_RESETMATERIALATTRIBUTESRPC = 108;
+    public final static int VIEWERRPCTYPE_SETPLOTDATABASESTATERPC = 109;
+    public final static int VIEWERRPCTYPE_DELETEPLOTDATABASEKEYFRAMERPC = 110;
+    public final static int VIEWERRPCTYPE_MOVEPLOTDATABASEKEYFRAMERPC = 111;
+    public final static int VIEWERRPCTYPE_CLEARVIEWKEYFRAMESRPC = 112;
+    public final static int VIEWERRPCTYPE_DELETEVIEWKEYFRAMERPC = 113;
+    public final static int VIEWERRPCTYPE_MOVEVIEWKEYFRAMERPC = 114;
+    public final static int VIEWERRPCTYPE_SETVIEWKEYFRAMERPC = 115;
+    public final static int VIEWERRPCTYPE_OPENMDSERVERRPC = 116;
+    public final static int VIEWERRPCTYPE_ENABLETOOLBARRPC = 117;
+    public final static int VIEWERRPCTYPE_HIDETOOLBARSRPC = 118;
+    public final static int VIEWERRPCTYPE_HIDETOOLBARSFORALLWINDOWSRPC = 119;
+    public final static int VIEWERRPCTYPE_SHOWTOOLBARSRPC = 120;
+    public final static int VIEWERRPCTYPE_SHOWTOOLBARSFORALLWINDOWSRPC = 121;
+    public final static int VIEWERRPCTYPE_SETTOOLBARICONSIZERPC = 122;
+    public final static int VIEWERRPCTYPE_SAVEVIEWRPC = 123;
+    public final static int VIEWERRPCTYPE_SETGLOBALLINEOUTATTRIBUTESRPC = 124;
+    public final static int VIEWERRPCTYPE_SETPICKATTRIBUTESRPC = 125;
+    public final static int VIEWERRPCTYPE_EXPORTCOLORTABLERPC = 126;
+    public final static int VIEWERRPCTYPE_EXPORTENTIRESTATERPC = 127;
+    public final static int VIEWERRPCTYPE_IMPORTENTIRESTATERPC = 128;
+    public final static int VIEWERRPCTYPE_IMPORTENTIRESTATEWITHDIFFERENTSOURCESRPC = 129;
+    public final static int VIEWERRPCTYPE_RESETPICKATTRIBUTESRPC = 130;
+    public final static int VIEWERRPCTYPE_ADDANNOTATIONOBJECTRPC = 131;
+    public final static int VIEWERRPCTYPE_HIDEACTIVEANNOTATIONOBJECTSRPC = 132;
+    public final static int VIEWERRPCTYPE_DELETEACTIVEANNOTATIONOBJECTSRPC = 133;
+    public final static int VIEWERRPCTYPE_RAISEACTIVEANNOTATIONOBJECTSRPC = 134;
+    public final static int VIEWERRPCTYPE_LOWERACTIVEANNOTATIONOBJECTSRPC = 135;
+    public final static int VIEWERRPCTYPE_SETANNOTATIONOBJECTOPTIONSRPC = 136;
+    public final static int VIEWERRPCTYPE_SETDEFAULTANNOTATIONOBJECTLISTRPC = 137;
+    public final static int VIEWERRPCTYPE_RESETANNOTATIONOBJECTLISTRPC = 138;
+    public final static int VIEWERRPCTYPE_RESETPICKLETTERRPC = 139;
+    public final static int VIEWERRPCTYPE_SETDEFAULTPICKATTRIBUTESRPC = 140;
+    public final static int VIEWERRPCTYPE_CHOOSECENTEROFROTATIONRPC = 141;
+    public final static int VIEWERRPCTYPE_SETCENTEROFROTATIONRPC = 142;
+    public final static int VIEWERRPCTYPE_SETQUERYOVERTIMEATTRIBUTESRPC = 143;
+    public final static int VIEWERRPCTYPE_SETDEFAULTQUERYOVERTIMEATTRIBUTESRPC = 144;
+    public final static int VIEWERRPCTYPE_RESETQUERYOVERTIMEATTRIBUTESRPC = 145;
+    public final static int VIEWERRPCTYPE_RESETLINEOUTCOLORRPC = 146;
+    public final static int VIEWERRPCTYPE_SETINTERACTORATTRIBUTESRPC = 147;
+    public final static int VIEWERRPCTYPE_SETDEFAULTINTERACTORATTRIBUTESRPC = 148;
+    public final static int VIEWERRPCTYPE_RESETINTERACTORATTRIBUTESRPC = 149;
+    public final static int VIEWERRPCTYPE_GETPROCINFORPC = 150;
+    public final static int VIEWERRPCTYPE_SENDSIMULATIONCOMMANDRPC = 151;
+    public final static int VIEWERRPCTYPE_UPDATEDBPLUGININFORPC = 152;
+    public final static int VIEWERRPCTYPE_EXPORTDBRPC = 153;
+    public final static int VIEWERRPCTYPE_SETTRYHARDERCYCLESTIMESRPC = 154;
+    public final static int VIEWERRPCTYPE_OPENCLIENTRPC = 155;
+    public final static int VIEWERRPCTYPE_OPENGUICLIENTRPC = 156;
+    public final static int VIEWERRPCTYPE_OPENCLICLIENTRPC = 157;
+    public final static int VIEWERRPCTYPE_SUPPRESSQUERYOUTPUTRPC = 158;
+    public final static int VIEWERRPCTYPE_SETQUERYFLOATFORMATRPC = 159;
+    public final static int VIEWERRPCTYPE_SETMESHMANAGEMENTATTRIBUTESRPC = 160;
+    public final static int VIEWERRPCTYPE_SETDEFAULTMESHMANAGEMENTATTRIBUTESRPC = 161;
+    public final static int VIEWERRPCTYPE_RESETMESHMANAGEMENTATTRIBUTESRPC = 162;
+    public final static int VIEWERRPCTYPE_RESIZEWINDOWRPC = 163;
+    public final static int VIEWERRPCTYPE_MOVEWINDOWRPC = 164;
+    public final static int VIEWERRPCTYPE_MOVEANDRESIZEWINDOWRPC = 165;
+    public final static int VIEWERRPCTYPE_SETSTATELOGGINGRPC = 166;
+    public final static int VIEWERRPCTYPE_CONSTRUCTDATABINNINGRPC = 167;
+    public final static int VIEWERRPCTYPE_REQUESTMETADATARPC = 168;
+    public final static int VIEWERRPCTYPE_SETTREATALLDBSASTIMEVARYINGRPC = 169;
+    public final static int VIEWERRPCTYPE_SETCREATEMESHQUALITYEXPRESSIONSRPC = 170;
+    public final static int VIEWERRPCTYPE_SETCREATETIMEDERIVATIVEEXPRESSIONSRPC = 171;
+    public final static int VIEWERRPCTYPE_SETCREATEVECTORMAGNITUDEEXPRESSIONSRPC = 172;
+    public final static int VIEWERRPCTYPE_COPYACTIVEPLOTSRPC = 173;
+    public final static int VIEWERRPCTYPE_SETPLOTFOLLOWSTIMERPC = 174;
+    public final static int VIEWERRPCTYPE_TURNOFFALLLOCKSRPC = 175;
+    public final static int VIEWERRPCTYPE_SETDEFAULTFILEOPENOPTIONSRPC = 176;
+    public final static int VIEWERRPCTYPE_SETSUPPRESSMESSAGESRPC = 177;
+    public final static int VIEWERRPCTYPE_APPLYNAMEDSELECTIONRPC = 178;
+    public final static int VIEWERRPCTYPE_CREATENAMEDSELECTIONRPC = 179;
+    public final static int VIEWERRPCTYPE_DELETENAMEDSELECTIONRPC = 180;
+    public final static int VIEWERRPCTYPE_LOADNAMEDSELECTIONRPC = 181;
+    public final static int VIEWERRPCTYPE_SAVENAMEDSELECTIONRPC = 182;
+    public final static int VIEWERRPCTYPE_SETNAMEDSELECTIONAUTOAPPLYRPC = 183;
+    public final static int VIEWERRPCTYPE_UPDATENAMEDSELECTIONRPC = 184;
+    public final static int VIEWERRPCTYPE_INITIALIZENAMEDSELECTIONVARIABLESRPC = 185;
+    public final static int VIEWERRPCTYPE_MENUQUITRPC = 186;
+    public final static int VIEWERRPCTYPE_SETPLOTDESCRIPTIONRPC = 187;
+    public final static int VIEWERRPCTYPE_MOVEPLOTORDERTOWARDFIRSTRPC = 188;
+    public final static int VIEWERRPCTYPE_MOVEPLOTORDERTOWARDLASTRPC = 189;
+    public final static int VIEWERRPCTYPE_SETPLOTORDERTOFIRSTRPC = 190;
+    public final static int VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC = 191;
+    public final static int VIEWERRPCTYPE_RENAMEPICKLABELRPC = 192;
+    public final static int VIEWERRPCTYPE_GETQUERYPARAMETERSRPC = 193;
+    public final static int VIEWERRPCTYPE_MAXRPC = 194;
 
 
     public ViewerRPC()
@@ -291,24 +289,15 @@ public class ViewerRPC extends AttributeSubject
         queryPoint1[0] = 0;
         queryPoint1[1] = 0;
         queryPoint1[2] = 0;
-        queryPoint2 = new double[3];
-        queryPoint2[0] = 0;
-        queryPoint2[1] = 0;
-        queryPoint2[2] = 0;
-        queryVariables = new Vector();
         toolId = 0;
         boolFlag = false;
         intArg1 = 0;
         intArg2 = 0;
         intArg3 = 0;
-        intArg4 = 0;
         stringArg1 = new String("");
         stringArg2 = new String("");
-        doubleArg1 = new Vector();
-        doubleArg1.addElement(new Double(0));
-        doubleArg2 = new Vector();
-        doubleArg2.addElement(new Double(0));
         toolUpdateMode = 1;
+        queryParams = new MapNode();
     }
 
     public ViewerRPC(int nMoreFields)
@@ -342,24 +331,15 @@ public class ViewerRPC extends AttributeSubject
         queryPoint1[0] = 0;
         queryPoint1[1] = 0;
         queryPoint1[2] = 0;
-        queryPoint2 = new double[3];
-        queryPoint2[0] = 0;
-        queryPoint2[1] = 0;
-        queryPoint2[2] = 0;
-        queryVariables = new Vector();
         toolId = 0;
         boolFlag = false;
         intArg1 = 0;
         intArg2 = 0;
         intArg3 = 0;
-        intArg4 = 0;
         stringArg1 = new String("");
         stringArg2 = new String("");
-        doubleArg1 = new Vector();
-        doubleArg1.addElement(new Double(0));
-        doubleArg2 = new Vector();
-        doubleArg2.addElement(new Double(0));
         toolUpdateMode = 1;
+        queryParams = new MapNode();
     }
 
     public ViewerRPC(ViewerRPC obj)
@@ -415,38 +395,15 @@ public class ViewerRPC extends AttributeSubject
         queryPoint1[1] = obj.queryPoint1[1];
         queryPoint1[2] = obj.queryPoint1[2];
 
-        queryPoint2 = new double[3];
-        queryPoint2[0] = obj.queryPoint2[0];
-        queryPoint2[1] = obj.queryPoint2[1];
-        queryPoint2[2] = obj.queryPoint2[2];
-
-        queryVariables = new Vector(obj.queryVariables.size());
-        for(i = 0; i < obj.queryVariables.size(); ++i)
-            queryVariables.addElement(new String((String)obj.queryVariables.elementAt(i)));
-
         toolId = obj.toolId;
         boolFlag = obj.boolFlag;
         intArg1 = obj.intArg1;
         intArg2 = obj.intArg2;
         intArg3 = obj.intArg3;
-        intArg4 = obj.intArg4;
         stringArg1 = new String(obj.stringArg1);
         stringArg2 = new String(obj.stringArg2);
-        doubleArg1 = new Vector(obj.doubleArg1.size());
-        for(i = 0; i < obj.doubleArg1.size(); ++i)
-        {
-            Double dv = (Double)obj.doubleArg1.elementAt(i);
-            doubleArg1.addElement(new Double(dv.doubleValue()));
-        }
-
-        doubleArg2 = new Vector(obj.doubleArg2.size());
-        for(i = 0; i < obj.doubleArg2.size(); ++i)
-        {
-            Double dv = (Double)obj.doubleArg2.elementAt(i);
-            doubleArg2.addElement(new Double(dv.doubleValue()));
-        }
-
         toolUpdateMode = obj.toolUpdateMode;
+        queryParams = new MapNode(obj.queryParams);
 
         SelectAll();
     }
@@ -511,38 +468,6 @@ public class ViewerRPC extends AttributeSubject
         for(i = 0; i < 3 && queryPoint1_equal; ++i)
             queryPoint1_equal = (queryPoint1[i] == obj.queryPoint1[i]);
 
-        // Compare the queryPoint2 arrays.
-        boolean queryPoint2_equal = true;
-        for(i = 0; i < 3 && queryPoint2_equal; ++i)
-            queryPoint2_equal = (queryPoint2[i] == obj.queryPoint2[i]);
-
-        // Compare the elements in the queryVariables vector.
-        boolean queryVariables_equal = (obj.queryVariables.size() == queryVariables.size());
-        for(i = 0; (i < queryVariables.size()) && queryVariables_equal; ++i)
-        {
-            // Make references to String from Object.
-            String queryVariables1 = (String)queryVariables.elementAt(i);
-            String queryVariables2 = (String)obj.queryVariables.elementAt(i);
-            queryVariables_equal = queryVariables1.equals(queryVariables2);
-        }
-        // Compare the elements in the doubleArg1 vector.
-        boolean doubleArg1_equal = (obj.doubleArg1.size() == doubleArg1.size());
-        for(i = 0; (i < doubleArg1.size()) && doubleArg1_equal; ++i)
-        {
-            // Make references to Double from Object.
-            Double doubleArg11 = (Double)doubleArg1.elementAt(i);
-            Double doubleArg12 = (Double)obj.doubleArg1.elementAt(i);
-            doubleArg1_equal = doubleArg11.equals(doubleArg12);
-        }
-        // Compare the elements in the doubleArg2 vector.
-        boolean doubleArg2_equal = (obj.doubleArg2.size() == doubleArg2.size());
-        for(i = 0; (i < doubleArg2.size()) && doubleArg2_equal; ++i)
-        {
-            // Make references to Double from Object.
-            Double doubleArg21 = (Double)doubleArg2.elementAt(i);
-            Double doubleArg22 = (Double)obj.doubleArg2.elementAt(i);
-            doubleArg2_equal = doubleArg21.equals(doubleArg22);
-        }
         // Create the return value
         return ((RPCType == obj.RPCType) &&
                 (windowLayout == obj.windowLayout) &&
@@ -566,19 +491,15 @@ public class ViewerRPC extends AttributeSubject
                 (colorTableName.equals(obj.colorTableName)) &&
                 (queryName.equals(obj.queryName)) &&
                 queryPoint1_equal &&
-                queryPoint2_equal &&
-                queryVariables_equal &&
                 (toolId == obj.toolId) &&
                 (boolFlag == obj.boolFlag) &&
                 (intArg1 == obj.intArg1) &&
                 (intArg2 == obj.intArg2) &&
                 (intArg3 == obj.intArg3) &&
-                (intArg4 == obj.intArg4) &&
                 (stringArg1.equals(obj.stringArg1)) &&
                 (stringArg2.equals(obj.stringArg2)) &&
-                doubleArg1_equal &&
-                doubleArg2_equal &&
-                (toolUpdateMode == obj.toolUpdateMode));
+                (toolUpdateMode == obj.toolUpdateMode) &&
+                (queryParams.equals(obj.queryParams)));
     }
 
     // Property setting methods
@@ -732,92 +653,58 @@ public class ViewerRPC extends AttributeSubject
         Select(21);
     }
 
-    public void SetQueryPoint2(double[] queryPoint2_)
-    {
-        queryPoint2[0] = queryPoint2_[0];
-        queryPoint2[1] = queryPoint2_[1];
-        queryPoint2[2] = queryPoint2_[2];
-        Select(22);
-    }
-
-    public void SetQueryPoint2(double e0, double e1, double e2)
-    {
-        queryPoint2[0] = e0;
-        queryPoint2[1] = e1;
-        queryPoint2[2] = e2;
-        Select(22);
-    }
-
-    public void SetQueryVariables(Vector queryVariables_)
-    {
-        queryVariables = queryVariables_;
-        Select(23);
-    }
-
     public void SetToolId(int toolId_)
     {
         toolId = toolId_;
-        Select(24);
+        Select(22);
     }
 
     public void SetBoolFlag(boolean boolFlag_)
     {
         boolFlag = boolFlag_;
-        Select(25);
+        Select(23);
     }
 
     public void SetIntArg1(int intArg1_)
     {
         intArg1 = intArg1_;
-        Select(26);
+        Select(24);
     }
 
     public void SetIntArg2(int intArg2_)
     {
         intArg2 = intArg2_;
-        Select(27);
+        Select(25);
     }
 
     public void SetIntArg3(int intArg3_)
     {
         intArg3 = intArg3_;
-        Select(28);
-    }
-
-    public void SetIntArg4(int intArg4_)
-    {
-        intArg4 = intArg4_;
-        Select(29);
+        Select(26);
     }
 
     public void SetStringArg1(String stringArg1_)
     {
         stringArg1 = stringArg1_;
-        Select(30);
+        Select(27);
     }
 
     public void SetStringArg2(String stringArg2_)
     {
         stringArg2 = stringArg2_;
-        Select(31);
-    }
-
-    public void SetDoubleArg1(Vector doubleArg1_)
-    {
-        doubleArg1 = doubleArg1_;
-        Select(32);
-    }
-
-    public void SetDoubleArg2(Vector doubleArg2_)
-    {
-        doubleArg2 = doubleArg2_;
-        Select(33);
+        Select(28);
     }
 
     public void SetToolUpdateMode(int toolUpdateMode_)
     {
         toolUpdateMode = toolUpdateMode_;
-        Select(34);
+        Select(29);
+    }
+
+    public void SetQueryParams(MapNode queryParams_)
+    {
+        queryParams = queryParams_;
+        Select(30);
     }
 
     // Property getting methods
@@ -843,19 +730,15 @@ public class ViewerRPC extends AttributeSubject
     public String   GetColorTableName() { return colorTableName; }
     public String   GetQueryName() { return queryName; }
     public double[] GetQueryPoint1() { return queryPoint1; }
-    public double[] GetQueryPoint2() { return queryPoint2; }
-    public Vector   GetQueryVariables() { return queryVariables; }
     public int      GetToolId() { return toolId; }
     public boolean  GetBoolFlag() { return boolFlag; }
     public int      GetIntArg1() { return intArg1; }
     public int      GetIntArg2() { return intArg2; }
     public int      GetIntArg3() { return intArg3; }
-    public int      GetIntArg4() { return intArg4; }
     public String   GetStringArg1() { return stringArg1; }
     public String   GetStringArg2() { return stringArg2; }
-    public Vector   GetDoubleArg1() { return doubleArg1; }
-    public Vector   GetDoubleArg2() { return doubleArg2; }
     public int      GetToolUpdateMode() { return toolUpdateMode; }
+    public MapNode  GetQueryParams() { return queryParams; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -905,31 +788,23 @@ public class ViewerRPC extends AttributeSubject
         if(WriteSelect(21, buf))
             buf.WriteDoubleArray(queryPoint1);
         if(WriteSelect(22, buf))
-            buf.WriteDoubleArray(queryPoint2);
-        if(WriteSelect(23, buf))
-            buf.WriteStringVector(queryVariables);
-        if(WriteSelect(24, buf))
             buf.WriteInt(toolId);
-        if(WriteSelect(25, buf))
+        if(WriteSelect(23, buf))
             buf.WriteBool(boolFlag);
-        if(WriteSelect(26, buf))
+        if(WriteSelect(24, buf))
             buf.WriteInt(intArg1);
-        if(WriteSelect(27, buf))
+        if(WriteSelect(25, buf))
             buf.WriteInt(intArg2);
-        if(WriteSelect(28, buf))
+        if(WriteSelect(26, buf))
             buf.WriteInt(intArg3);
-        if(WriteSelect(29, buf))
-            buf.WriteInt(intArg4);
-        if(WriteSelect(30, buf))
+        if(WriteSelect(27, buf))
             buf.WriteString(stringArg1);
-        if(WriteSelect(31, buf))
+        if(WriteSelect(28, buf))
             buf.WriteString(stringArg2);
-        if(WriteSelect(32, buf))
-            buf.WriteDoubleVector(doubleArg1);
-        if(WriteSelect(33, buf))
-            buf.WriteDoubleVector(doubleArg2);
-        if(WriteSelect(34, buf))
+        if(WriteSelect(29, buf))
             buf.WriteInt(toolUpdateMode);
+        if(WriteSelect(30, buf))
+            queryParams.Write(buf);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1003,43 +878,31 @@ public class ViewerRPC extends AttributeSubject
             SetQueryPoint1(buf.ReadDoubleArray());
             break;
         case 22:
-            SetQueryPoint2(buf.ReadDoubleArray());
-            break;
-        case 23:
-            SetQueryVariables(buf.ReadStringVector());
-            break;
-        case 24:
             SetToolId(buf.ReadInt());
             break;
-        case 25:
+        case 23:
             SetBoolFlag(buf.ReadBool());
             break;
-        case 26:
+        case 24:
             SetIntArg1(buf.ReadInt());
             break;
-        case 27:
+        case 25:
             SetIntArg2(buf.ReadInt());
             break;
-        case 28:
+        case 26:
             SetIntArg3(buf.ReadInt());
             break;
-        case 29:
-            SetIntArg4(buf.ReadInt());
-            break;
-        case 30:
+        case 27:
             SetStringArg1(buf.ReadString());
             break;
-        case 31:
+        case 28:
             SetStringArg2(buf.ReadString());
             break;
-        case 32:
-            SetDoubleArg1(buf.ReadDoubleVector());
-            break;
-        case 33:
-            SetDoubleArg2(buf.ReadDoubleVector());
-            break;
-        case 34:
+        case 29:
             SetToolUpdateMode(buf.ReadInt());
+            break;
+        case 30:
+            queryParams.Read(buf);
             break;
         }
     }
@@ -1256,12 +1119,8 @@ public class ViewerRPC extends AttributeSubject
             str = str + "VIEWERRPCTYPE_CLEARREFLINESRPC";
         if(RPCType == VIEWERRPCTYPE_SETRENDERINGATTRIBUTESRPC)
             str = str + "VIEWERRPCTYPE_SETRENDERINGATTRIBUTESRPC";
-        if(RPCType == VIEWERRPCTYPE_DATABASEQUERYRPC)
-            str = str + "VIEWERRPCTYPE_DATABASEQUERYRPC";
-        if(RPCType == VIEWERRPCTYPE_POINTQUERYRPC)
-            str = str + "VIEWERRPCTYPE_POINTQUERYRPC";
-        if(RPCType == VIEWERRPCTYPE_LINEQUERYRPC)
-            str = str + "VIEWERRPCTYPE_LINEQUERYRPC";
+        if(RPCType == VIEWERRPCTYPE_QUERYRPC)
+            str = str + "VIEWERRPCTYPE_QUERYRPC";
         if(RPCType == VIEWERRPCTYPE_CLONEWINDOWRPC)
             str = str + "VIEWERRPCTYPE_CLONEWINDOWRPC";
         if(RPCType == VIEWERRPCTYPE_SETMATERIALATTRIBUTESRPC)
@@ -1438,6 +1297,8 @@ public class ViewerRPC extends AttributeSubject
             str = str + "VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC";
         if(RPCType == VIEWERRPCTYPE_RENAMEPICKLABELRPC)
             str = str + "VIEWERRPCTYPE_RENAMEPICKLABELRPC";
+        if(RPCType == VIEWERRPCTYPE_GETQUERYPARAMETERSRPC)
+            str = str + "VIEWERRPCTYPE_GETQUERYPARAMETERSRPC";
         if(RPCType == VIEWERRPCTYPE_MAXRPC)
             str = str + "VIEWERRPCTYPE_MAXRPC";
         str = str + "\n";
@@ -1462,19 +1323,15 @@ public class ViewerRPC extends AttributeSubject
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
         str = str + stringToString("queryName", queryName, indent) + "\n";
         str = str + doubleArrayToString("queryPoint1", queryPoint1, indent) + "\n";
-        str = str + doubleArrayToString("queryPoint2", queryPoint2, indent) + "\n";
-        str = str + stringVectorToString("queryVariables", queryVariables, indent) + "\n";
         str = str + intToString("toolId", toolId, indent) + "\n";
         str = str + boolToString("boolFlag", boolFlag, indent) + "\n";
         str = str + intToString("intArg1", intArg1, indent) + "\n";
         str = str + intToString("intArg2", intArg2, indent) + "\n";
         str = str + intToString("intArg3", intArg3, indent) + "\n";
-        str = str + intToString("intArg4", intArg4, indent) + "\n";
         str = str + stringToString("stringArg1", stringArg1, indent) + "\n";
         str = str + stringToString("stringArg2", stringArg2, indent) + "\n";
-        str = str + doubleVectorToString("doubleArg1", doubleArg1, indent) + "\n";
-        str = str + doubleVectorToString("doubleArg2", doubleArg2, indent) + "\n";
         str = str + intToString("toolUpdateMode", toolUpdateMode, indent) + "\n";
+        str = str + indent + "queryParams = " + queryParams.toString(indent);
         return str;
     }
 
@@ -1502,18 +1359,14 @@ public class ViewerRPC extends AttributeSubject
     private String   colorTableName;
     private String   queryName;
     private double[] queryPoint1;
-    private double[] queryPoint2;
-    private Vector   queryVariables; // vector of String objects
     private int      toolId;
     private boolean  boolFlag;
     private int      intArg1;
     private int      intArg2;
     private int      intArg3;
-    private int      intArg4;
     private String   stringArg1;
     private String   stringArg2;
-    private Vector   doubleArg1; // vector of Double objects
-    private Vector   doubleArg2; // vector of Double objects
     private int      toolUpdateMode;
+    private MapNode  queryParams;
 }
 
