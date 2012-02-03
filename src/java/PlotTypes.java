@@ -89,6 +89,7 @@ public class PlotTypes extends RunViewer
         namestovar.put("Label", new Integer(MESH | SCALAR | VECTOR | MATERIAL | SUBSET | TENSOR | SYMMETRICTENSOR | LABEL | ARRAY));
         namestovar.put("Mesh", new Integer(MESH));
         namestovar.put("Molecule", new Integer(SCALAR));
+        namestovar.put("MultiCurve", new Integer(CURVE));
         namestovar.put("ParallelCoordinates", new Integer(0)); //SCALAR | ARRAY));
         namestovar.put("Poincare", new Integer(VECTOR));
         namestovar.put("Pseudocolor", new Integer(SCALAR | SPECIES));

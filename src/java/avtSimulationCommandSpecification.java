@@ -74,10 +74,11 @@ public class avtSimulationCommandSpecification extends AttributeSubject
         super(avtSimulationCommandSpecification_numAdditionalAtts);
 
         name = new String("");
-            className = new String("");
-        enabled = false;
+        argumentType = COMMANDARGUMENTTYPE_CMDARGNONE;
+        className = new String("");
+        enabled = true;
         parent = new String("");
-        isOn = false;
+        isOn = true;
         signal = new String("");
         text = new String("");
         uiType = new String("");
@@ -89,10 +90,11 @@ public class avtSimulationCommandSpecification extends AttributeSubject
         super(avtSimulationCommandSpecification_numAdditionalAtts + nMoreFields);
 
         name = new String("");
-            className = new String("");
-        enabled = false;
+        argumentType = COMMANDARGUMENTTYPE_CMDARGNONE;
+        className = new String("");
+        enabled = true;
         parent = new String("");
-        isOn = false;
+        isOn = true;
         signal = new String("");
         text = new String("");
         uiType = new String("");

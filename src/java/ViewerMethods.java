@@ -2807,214 +2807,86 @@ public class ViewerMethods
     }
 
     /**
-     * Performs a database query
+     * Performs a query
      *
-     * @param queryName The name of the query to perform, which must be present
-     *                  in the QueryList state object.
-     * @param vars The variables to involve in the query.
+     * @param queryParams The arguments to the query that we'll perform.
      * @return true on success; false otherwise.
      */
-    public boolean DatabaseQuery(String queryName, Vector vars, boolean bflag, 
-        int arg1, int arg2, boolean globalFlag, Vector darg1, Vector darg2)
+    public boolean Query(MapNode queryParams)
     {
-        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_DATABASEQUERYRPC);
-        GetViewerState().GetViewerRPC().SetQueryName(queryName);
-        GetViewerState().GetViewerRPC().SetQueryVariables(vars);
-        GetViewerState().GetViewerRPC().SetIntArg1(arg1);
-        GetViewerState().GetViewerRPC().SetIntArg2(arg2);
-        GetViewerState().GetViewerRPC().SetBoolFlag(bflag);
-        GetViewerState().GetViewerRPC().SetIntArg3(globalFlag?1:0);
-        GetViewerState().GetViewerRPC().SetDoubleArg1(darg1);
-        GetViewerState().GetViewerRPC().SetDoubleArg2(darg2);
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_QUERYRPC);
+        GetViewerState().GetViewerRPC().SetQueryParams(queryParams);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();
     }
 
     /**
-     * Performs a database query
-     *
-     * @param queryName The name of the query to perform, which must be present
-     *                  in the QueryList state object.
-     * @param vars The variables to involve in the query.
-     * @return true on success; false otherwise.
-     */
-    public boolean DatabaseQuery(String queryName, Vector vars)
-    {
-        return DatabaseQuery(queryName, vars, false, 0, 0, false, new Vector(), new Vector());
-    }
-
-    /**
-     * Performs a point-based query such as pick.
+     * Tell the viewer to retrieve the default parameters for the named query.
      *
      * @return true on success; false otherwise.
      */
-    public boolean PointQuery(String queryName, double[] pt, Vector vars, boolean time, 
-        int arg1, int arg2, boolean globalFlag)
+    public boolean GetQueryParams(String queryName)
     {
-        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_POINTQUERYRPC);
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_GETQUERYPARAMETERSRPC);
         GetViewerState().GetViewerRPC().SetQueryName(queryName);
-        GetViewerState().GetViewerRPC().SetQueryPoint1(pt);
-        GetViewerState().GetViewerRPC().SetQueryVariables(vars);
-        GetViewerState().GetViewerRPC().SetBoolFlag(time);
-        GetViewerState().GetViewerRPC().SetIntArg1(arg1);
-        GetViewerState().GetViewerRPC().SetIntArg2(arg2);
-        GetViewerState().GetViewerRPC().SetIntArg3(globalFlag?1:0);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();
     }
 
     /**
-     * Performs a point-based query such as pick.
+     * Perform a screen pick
      *
-     * @return true on success; false otherwise.
-     */
-    public boolean PointQuery(String queryName, double[] pt, Vector vars)
-    {
-        return PointQuery(queryName, pt, vars, false, -1, -1, false);
-    }
-
-    /**
-     * Performs a line-based query such as lineout.
-     *
-     * @return true on success; false otherwise.
-     */
-    public boolean LineQuery(String queryName, double[] pt1, double[] pt2,
-        Vector vars, int samples, boolean forceSampling)
-    {
-        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_LINEQUERYRPC);
-        GetViewerState().GetViewerRPC().SetQueryName(queryName);
-        GetViewerState().GetViewerRPC().SetQueryPoint1(pt1);
-        GetViewerState().GetViewerRPC().SetQueryPoint2(pt2);
-        GetViewerState().GetViewerRPC().SetQueryVariables(vars);
-        GetViewerState().GetViewerRPC().SetIntArg1(samples);
-        GetViewerState().GetViewerRPC().SetBoolFlag(forceSampling);
-        GetViewerState().GetViewerRPC().Notify();
-        return Synchronize();
-    }
-
-    /**
-     * Performs a line-based query such as lineout.
-     *
-     * @return true on success; false otherwise.
-     */
-    public boolean LineQuery(String queryName, double[] pt1, double[] pt2,
-        Vector vars, int samples)
-    {
-        return LineQuery(queryName, pt1, pt2, vars, samples, false);
-    }
-
-    /**
-     * Performs a zone pick of the active plot based on window screen coordinates.
-     *
-     * @param x The x screen coordinate of the pick point.
-     * @param y The y screen coordinate of the pick point.
-     * @param vars The variables for which to return pick information.
-     * @return true on success; false otherwise.
+     * @param x The screen X coordinate of the pixel on which to pick.
+     * @param y The screen Y coordinate of the pixel on which to pick.
+     * @param vars A vector of String containing the variables we'll pick.
      */
     public boolean Pick(int x, int y, Vector vars)
     {
-        double[] pt = new double[3];
-        pt[0] = (double)x;
-        pt[1] = (double)y;
-        pt[2] = 0.;
-        return PointQuery("ScreenZonePick", pt, vars);
+        MapNode queryParams = new MapNode();
+        queryParams.SetValue("query_name", new MapNode("Pick"));
+        queryParams.SetValue("pick_type", new MapNode("ScreenZone"));
+        MapNode v = new MapNode();
+        v.SetValue(vars, MapNode.VARIANT_STRING_VECTOR_TYPE);
+        queryParams.SetValue("vars", v);
+        queryParams.SetValue("x", new MapNode(x));
+        queryParams.SetValue("y", new MapNode(y));
+        return Query(queryParams);
     }
 
     /**
-     * Performs a zone pick of the active plot based on a 3D coordinate.
+     * Perform a screen pick
      *
-     * @param xyz The 3D location of the pick point
-     * @param vars The variables for which to return pick information.
-     * @return true on success; false otherwise.
-     */
-    public boolean Pick(double[] xyz, Vector vars)
-    {
-        return PointQuery("Pick", xyz, vars);
-    }
-
-    /**
-     * Performs a node pick of the active plot based on window screen coordinates.
-     *
-     * @param x The x screen coordinate of the pick point.
-     * @param y The y screen coordinate of the pick point.
-     * @param vars The variables for which to return pick information.
-     * @return true on success; false otherwise.
-     */
-    public boolean NodePick(int x, int y, Vector vars)
-    {
-        double[] pt = new double[3];
-        pt[0] = (double)x;
-        pt[1] = (double)y;
-        pt[2] = 0.;
-        return PointQuery("ScreenNodePick", pt, vars);
-    }
-
-    /**
-     * Performs a node pick of the active plot based on a 3D coordinate.
-     *
-     * @param xyz The 3D location of the pick point
-     * @param vars The variables for which to return pick information.
-     * @return true on success; false otherwise.
-     */
-    public boolean NodePick(double[] xyz, Vector vars)
-    {
-        return PointQuery("NodePick", xyz, vars);
-    }
-
-    /**
-     * Performs a lineout between the specified endpoints, creating Curve plots
-     * of the resulting data.
-     *
-     * @param p0 The 3D location of the start of the lineout.
-     * @param p1 The 3D location of the end of the lineout.
-     * @param vars The variables for which to create lineouts.
-     * @param samples The number of samples to extract along the line.
-     * @param forceSampling true to use sampling; false to do piecewise intersections.
-     * @return true on success; false otherwise.
-     */
-    public boolean Lineout(double[] p0, double[] p1, Vector vars, 
-        int samples, boolean forceSampling)
-    {
-        return LineQuery("Lineout", p0, p1, vars, samples, forceSampling);
-    }
-
-    /**
-     * Performs a lineout between the specified endpoints, creating Curve plots
-     * of the resulting data.
-     *
-     * @param p0 The 3D location of the start of the lineout.
-     * @param p1 The 3D location of the end of the lineout.
-     * @param vars The variables for which to create lineouts.
-     * @param samples The number of samples to extract along the line.
-     * @return true on success; false otherwise.
-     */
-    public boolean Lineout(double[] p0, double[] p1, Vector vars, int samples)
-    {
-        return LineQuery("Lineout", p0, p1, vars, samples, false);
-    }
-
-    /**
-     * Performs a lineout between the specified endpoints, creating Curve plots
-     * of the resulting data.
-     *
-     * @param x0 The starting x location.
-     * @param y0 The starting y location.
-     * @param x1 The ending x location.
-     * @param y1 The ending y location.
-     * @param vars The variables for which to create lineouts.
-     * @return true on success; false otherwise.
+     * @param x0 The global X coordinate of the line start point.
+     * @param y0 The global Y coordinate of the line start point.
+     * @param x1 The global X coordinate of the line end point.
+     * @param y2 The global Y coordinate of the line end point.
+     * @param vars A vector of String containing the variables we'll pick.
      */
     public boolean Lineout(double x0, double y0, double x1, double y1, Vector vars)
     {
-        double[] pt1 = new double[3];
-        pt1[0] = x0;
-        pt1[1] = y0;
-        pt1[2] = 0.;
-        double[] pt2 = new double[3];
-        pt2[0] = x1;
-        pt2[1] = y1;
-        pt2[2] = 0.;
-        return LineQuery("Lineout", pt1, pt2, vars, 100, false);
+        MapNode queryParams = new MapNode();
+        queryParams.SetValue("query_name", new MapNode("Lineout"));
+        MapNode v = new MapNode();
+        v.SetValue(vars, MapNode.VARIANT_STRING_VECTOR_TYPE);
+        queryParams.SetValue("vars", v);
+
+        Vector p0 = new Vector();
+        p0.addElement(new Double(x0));
+        p0.addElement(new Double(y0));
+        p0.addElement(new Double(0.));
+        MapNode m0 = new MapNode();
+        m0.SetValue(p0, MapNode.VARIANT_DOUBLE_VECTOR_TYPE);
+        queryParams.SetValue("start_point", m0);
+
+        Vector p1 = new Vector();
+        p1.addElement(new Double(x1));
+        p1.addElement(new Double(y1));
+        p1.addElement(new Double(0.));
+        MapNode m1 = new MapNode();
+        m1.SetValue(p1, MapNode.VARIANT_DOUBLE_VECTOR_TYPE);
+        queryParams.SetValue("end_point", m1);
+
+        return Query(queryParams);
     }
 
     /**

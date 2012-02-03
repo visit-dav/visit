@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class PickAttributes extends AttributeSubject
 {
-    private static int PickAttributes_numAdditionalAtts = 68;
+    private static int PickAttributes_numAdditionalAtts = 69;
 
     // Enum values
     public final static int PICKTYPE_ZONE = 0;
@@ -165,6 +165,7 @@ public class PickAttributes extends AttributeSubject
         floatFormat = new String("%g");
         timePreserveCoord = true;
         timeCurveType = TIMECURVETYPE_SINGLE_Y_AXIS;
+        timeOptions = new MapNode();
     }
 
     public PickAttributes(int nMoreFields)
@@ -255,6 +256,7 @@ public class PickAttributes extends AttributeSubject
         floatFormat = new String("%g");
         timePreserveCoord = true;
         timeCurveType = TIMECURVETYPE_SINGLE_Y_AXIS;
+        timeOptions = new MapNode();
     }
 
     public PickAttributes(PickAttributes obj)
@@ -405,6 +407,7 @@ public class PickAttributes extends AttributeSubject
         floatFormat = new String(obj.floatFormat);
         timePreserveCoord = obj.timePreserveCoord;
         timeCurveType = obj.timeCurveType;
+        timeOptions = new MapNode(obj.timeOptions);
 
         SelectAll();
     }
@@ -633,7 +636,8 @@ public class PickAttributes extends AttributeSubject
                 (subsetName.equals(obj.subsetName)) &&
                 (floatFormat.equals(obj.floatFormat)) &&
                 (timePreserveCoord == obj.timePreserveCoord) &&
-                (timeCurveType == obj.timeCurveType));
+                (timeCurveType == obj.timeCurveType) &&
+                (timeOptions.equals(obj.timeOptions)));
     }
 
     // Property setting methods
@@ -1089,6 +1093,12 @@ public class PickAttributes extends AttributeSubject
         Select(67);
     }
 
+    public void SetTimeOptions(MapNode timeOptions_)
+    {
+        timeOptions = timeOptions_;
+        Select(68);
+    }
+
     // Property getting methods
     public Vector   GetVariables() { return variables; }
     public boolean  GetDisplayIncidentElements() { return displayIncidentElements; }
@@ -1158,6 +1168,7 @@ public class PickAttributes extends AttributeSubject
     public String   GetFloatFormat() { return floatFormat; }
     public boolean  GetTimePreserveCoord() { return timePreserveCoord; }
     public int      GetTimeCurveType() { return timeCurveType; }
+    public MapNode  GetTimeOptions() { return timeOptions; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -1305,6 +1316,8 @@ public class PickAttributes extends AttributeSubject
             buf.WriteBool(timePreserveCoord);
         if(WriteSelect(67, buf))
             buf.WriteInt(timeCurveType);
+        if(WriteSelect(68, buf))
+            timeOptions.Write(buf);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1525,6 +1538,9 @@ public class PickAttributes extends AttributeSubject
         case 67:
             SetTimeCurveType(buf.ReadInt());
             break;
+        case 68:
+            timeOptions.Read(buf);
+            break;
         }
     }
 
@@ -1633,6 +1649,7 @@ public class PickAttributes extends AttributeSubject
         if(timeCurveType == TIMECURVETYPE_MULTIPLE_Y_AXES)
             str = str + "TIMECURVETYPE_MULTIPLE_Y_AXES";
         str = str + "\n";
+        str = str + indent + "timeOptions = " + timeOptions.toString(indent);
         return str;
     }
 
@@ -1739,5 +1756,6 @@ public class PickAttributes extends AttributeSubject
     private String   floatFormat;
     private boolean  timePreserveCoord;
     private int      timeCurveType;
+    private MapNode  timeOptions;
 }
 

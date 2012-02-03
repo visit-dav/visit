@@ -270,7 +270,7 @@ public class AnnotationObjectList extends AttributeSubject
      * @param annotName Name of the text annotation that we want to modify.
      * @param x X location of the lower left corner in the visualization window [0.,1.]
      * @param y Y location of the lower left corner in the visualization window [0.,1.]
-     * @param width Width of the annotation [0.,1.]
+     * @param height Height of the annotation [0.,1.]
      * @param text Text to be displayed
      * @param textColor Color used for the text if we're not using the fg color.
      * @param useForegroundColor True to use the foreground color as the text color
@@ -281,7 +281,7 @@ public class AnnotationObjectList extends AttributeSubject
      * @param visible Whether the annotation is visible.
      */
     public void SetText2DOptions(String annotName, 
-        double x, double y, double width,
+        double x, double y, double height,
         String text, 
         ColorAttribute textColor, boolean useForegroundColor, 
         int fontFamily, boolean bold, boolean italic, boolean shadow,
@@ -291,7 +291,7 @@ public class AnnotationObjectList extends AttributeSubject
         if(annot != null)
         {
             annot.SetPosition(x, y, 0.);
-            annot.SetPosition2(width, annot.GetPosition2()[1], annot.GetPosition2()[2]);
+            annot.SetPosition2(height, annot.GetPosition2()[1], annot.GetPosition2()[2]);
             Vector sArgs = new Vector();
             sArgs.addElement(new String(text));
             annot.SetText(sArgs);

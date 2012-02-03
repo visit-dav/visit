@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class avtMeshMetaData extends AttributeSubject
 {
-    private static int avtMeshMetaData_numAdditionalAtts = 47;
+    private static int avtMeshMetaData_numAdditionalAtts = 49;
 
     public avtMeshMetaData()
     {
@@ -76,6 +76,8 @@ public class avtMeshMetaData extends AttributeSubject
         logicalBounds[0] = 0;
         logicalBounds[1] = 0;
         logicalBounds[2] = 0;
+        hasNumberCells = false;
+        numberCells = 0;
         topologicalDimension = 3;
         xUnits = new String("");
         yUnits = new String("");
@@ -166,6 +168,8 @@ public class avtMeshMetaData extends AttributeSubject
         logicalBounds[0] = 0;
         logicalBounds[1] = 0;
         logicalBounds[2] = 0;
+        hasNumberCells = false;
+        numberCells = 0;
         topologicalDimension = 3;
         xUnits = new String("");
         yUnits = new String("");
@@ -259,6 +263,8 @@ public class avtMeshMetaData extends AttributeSubject
         logicalBounds[1] = obj.logicalBounds[1];
         logicalBounds[2] = obj.logicalBounds[2];
 
+        hasNumberCells = obj.hasNumberCells;
+        numberCells = obj.numberCells;
         topologicalDimension = obj.topologicalDimension;
         xUnits = new String(obj.xUnits);
         yUnits = new String(obj.yUnits);
@@ -413,6 +419,8 @@ public class avtMeshMetaData extends AttributeSubject
                 (spatialDimension == obj.spatialDimension) &&
                 (hasLogicalBounds == obj.hasLogicalBounds) &&
                 logicalBounds_equal &&
+                (hasNumberCells == obj.hasNumberCells) &&
+                (numberCells == obj.numberCells) &&
                 (topologicalDimension == obj.topologicalDimension) &&
                 (xUnits.equals(obj.xUnits)) &&
                 (yUnits.equals(obj.yUnits)) &&
@@ -518,52 +526,64 @@ public class avtMeshMetaData extends AttributeSubject
         Select(8);
     }
 
+    public void SetHasNumberCells(boolean hasNumberCells_)
+    {
+        hasNumberCells = hasNumberCells_;
+        Select(9);
+    }
+
+    public void SetNumberCells(int numberCells_)
+    {
+        numberCells = numberCells_;
+        Select(10);
+    }
+
     public void SetTopologicalDimension(int topologicalDimension_)
     {
         topologicalDimension = topologicalDimension_;
-        Select(9);
+        Select(11);
     }
 
     public void SetXUnits(String xUnits_)
     {
         xUnits = xUnits_;
-        Select(10);
+        Select(12);
     }
 
     public void SetYUnits(String yUnits_)
     {
         yUnits = yUnits_;
-        Select(11);
+        Select(13);
     }
 
     public void SetZUnits(String zUnits_)
     {
         zUnits = zUnits_;
-        Select(12);
+        Select(14);
     }
 
     public void SetXLabel(String xLabel_)
     {
         xLabel = xLabel_;
-        Select(13);
+        Select(15);
     }
 
     public void SetYLabel(String yLabel_)
     {
         yLabel = yLabel_;
-        Select(14);
+        Select(16);
     }
 
     public void SetZLabel(String zLabel_)
     {
         zLabel = zLabel_;
-        Select(15);
+        Select(17);
     }
 
     public void SetHasSpatialExtents(boolean hasSpatialExtents_)
     {
         hasSpatialExtents = hasSpatialExtents_;
-        Select(16);
+        Select(18);
     }
 
     public void SetMinSpatialExtents(double[] minSpatialExtents_)
@@ -571,7 +591,7 @@ public class avtMeshMetaData extends AttributeSubject
         minSpatialExtents[0] = minSpatialExtents_[0];
         minSpatialExtents[1] = minSpatialExtents_[1];
         minSpatialExtents[2] = minSpatialExtents_[2];
-        Select(17);
+        Select(19);
     }
 
     public void SetMinSpatialExtents(double e0, double e1, double e2)
@@ -579,7 +599,7 @@ public class avtMeshMetaData extends AttributeSubject
         minSpatialExtents[0] = e0;
         minSpatialExtents[1] = e1;
         minSpatialExtents[2] = e2;
-        Select(17);
+        Select(19);
     }
 
     public void SetMaxSpatialExtents(double[] maxSpatialExtents_)
@@ -587,7 +607,7 @@ public class avtMeshMetaData extends AttributeSubject
         maxSpatialExtents[0] = maxSpatialExtents_[0];
         maxSpatialExtents[1] = maxSpatialExtents_[1];
         maxSpatialExtents[2] = maxSpatialExtents_[2];
-        Select(18);
+        Select(20);
     }
 
     public void SetMaxSpatialExtents(double e0, double e1, double e2)
@@ -595,134 +615,134 @@ public class avtMeshMetaData extends AttributeSubject
         maxSpatialExtents[0] = e0;
         maxSpatialExtents[1] = e1;
         maxSpatialExtents[2] = e2;
-        Select(18);
+        Select(20);
     }
 
     public void SetNumBlocks(int numBlocks_)
     {
         numBlocks = numBlocks_;
-        Select(19);
+        Select(21);
     }
 
     public void SetBlockOrigin(int blockOrigin_)
     {
         blockOrigin = blockOrigin_;
-        Select(20);
+        Select(22);
     }
 
     public void SetBlockPieceName(String blockPieceName_)
     {
         blockPieceName = blockPieceName_;
-        Select(21);
+        Select(23);
     }
 
     public void SetBlockTitle(String blockTitle_)
     {
         blockTitle = blockTitle_;
-        Select(22);
+        Select(24);
     }
 
     public void SetBlockNames(Vector blockNames_)
     {
         blockNames = blockNames_;
-        Select(23);
+        Select(25);
     }
 
     public void SetBlockNameScheme(NameschemeAttributes blockNameScheme_)
     {
         blockNameScheme = blockNameScheme_;
-        Select(24);
+        Select(26);
     }
 
     public void SetNumGroups(int numGroups_)
     {
         numGroups = numGroups_;
-        Select(25);
+        Select(27);
     }
 
     public void SetGroupOrigin(int groupOrigin_)
     {
         groupOrigin = groupOrigin_;
-        Select(26);
+        Select(28);
     }
 
     public void SetGroupPieceName(String groupPieceName_)
     {
         groupPieceName = groupPieceName_;
-        Select(27);
+        Select(29);
     }
 
     public void SetGroupTitle(String groupTitle_)
     {
         groupTitle = groupTitle_;
-        Select(28);
+        Select(30);
     }
 
     public void SetGroupIds(Vector groupIds_)
     {
         groupIds = groupIds_;
-        Select(29);
+        Select(31);
     }
 
     public void SetGroupIdsBasedOnRange(Vector groupIdsBasedOnRange_)
     {
         groupIdsBasedOnRange = groupIdsBasedOnRange_;
-        Select(30);
+        Select(32);
     }
 
     public void SetDisjointElements(boolean disjointElements_)
     {
         disjointElements = disjointElements_;
-        Select(31);
+        Select(33);
     }
 
     public void SetContainsGhostZones(int containsGhostZones_)
     {
         containsGhostZones = containsGhostZones_;
-        Select(32);
+        Select(34);
     }
 
     public void SetContainsOriginalCells(boolean containsOriginalCells_)
     {
         containsOriginalCells = containsOriginalCells_;
-        Select(33);
+        Select(35);
     }
 
     public void SetContainsOriginalNodes(boolean containsOriginalNodes_)
     {
         containsOriginalNodes = containsOriginalNodes_;
-        Select(34);
+        Select(36);
     }
 
     public void SetContainsGlobalNodeIds(boolean containsGlobalNodeIds_)
     {
         containsGlobalNodeIds = containsGlobalNodeIds_;
-        Select(35);
+        Select(37);
     }
 
     public void SetContainsGlobalZoneIds(boolean containsGlobalZoneIds_)
     {
         containsGlobalZoneIds = containsGlobalZoneIds_;
-        Select(36);
+        Select(38);
     }
 
     public void SetLoadBalanceScheme(int loadBalanceScheme_)
     {
         loadBalanceScheme = loadBalanceScheme_;
-        Select(37);
+        Select(39);
     }
 
     public void SetNodesAreCritical(boolean nodesAreCritical_)
     {
         nodesAreCritical = nodesAreCritical_;
-        Select(38);
+        Select(40);
     }
 
     public void SetUnitCellVectors(float[] unitCellVectors_)
     {
         for(int i = 0; i < 9; ++i)
              unitCellVectors[i] = unitCellVectors_[i];
-        Select(39);
+        Select(41);
     }
 
     public void SetUnitCellOrigin(float[] unitCellOrigin_)
@@ -730,7 +750,7 @@ public class avtMeshMetaData extends AttributeSubject
         unitCellOrigin[0] = unitCellOrigin_[0];
         unitCellOrigin[1] = unitCellOrigin_[1];
         unitCellOrigin[2] = unitCellOrigin_[2];
-        Select(40);
+        Select(42);
     }
 
     public void SetUnitCellOrigin(float e0, float e1, float e2)
@@ -738,44 +758,44 @@ public class avtMeshMetaData extends AttributeSubject
         unitCellOrigin[0] = e0;
         unitCellOrigin[1] = e1;
         unitCellOrigin[2] = e2;
-        Select(40);
+        Select(42);
     }
 
     public void SetRectilinearGridHasTransform(boolean rectilinearGridHasTransform_)
     {
         rectilinearGridHasTransform = rectilinearGridHasTransform_;
-        Select(41);
+        Select(43);
     }
 
     public void SetRectilinearGridTransform(double[] rectilinearGridTransform_)
     {
         for(int i = 0; i < 16; ++i)
              rectilinearGridTransform[i] = rectilinearGridTransform_[i];
-        Select(42);
+        Select(44);
     }
 
     public void SetNodeOrigin(int nodeOrigin_)
     {
         nodeOrigin = nodeOrigin_;
-        Select(43);
+        Select(45);
     }
 
     public void SetContainsExteriorBoundaryGhosts(boolean containsExteriorBoundaryGhosts_)
     {
         containsExteriorBoundaryGhosts = containsExteriorBoundaryGhosts_;
-        Select(44);
+        Select(46);
     }
 
     public void SetHideFromGUI(boolean hideFromGUI_)
     {
         hideFromGUI = hideFromGUI_;
-        Select(45);
+        Select(47);
     }
 
     public void SetLODs(int LODs_)
     {
         LODs = LODs_;
-        Select(46);
+        Select(48);
     }
 
     // Property getting methods
@@ -788,6 +808,8 @@ public class avtMeshMetaData extends AttributeSubject
     public int                  GetSpatialDimension() { return spatialDimension; }
     public boolean              GetHasLogicalBounds() { return hasLogicalBounds; }
     public int[]                GetLogicalBounds() { return logicalBounds; }
+    public boolean              GetHasNumberCells() { return hasNumberCells; }
+    public int                  GetNumberCells() { return numberCells; }
     public int                  GetTopologicalDimension() { return topologicalDimension; }
     public String               GetXUnits() { return xUnits; }
     public String               GetYUnits() { return yUnits; }
@@ -849,80 +871,84 @@ public class avtMeshMetaData extends AttributeSubject
         if(WriteSelect(8, buf))
             buf.WriteIntArray(logicalBounds);
         if(WriteSelect(9, buf))
-            buf.WriteInt(topologicalDimension);
+            buf.WriteBool(hasNumberCells);
         if(WriteSelect(10, buf))
-            buf.WriteString(xUnits);
+            buf.WriteInt(numberCells);
         if(WriteSelect(11, buf))
-            buf.WriteString(yUnits);
+            buf.WriteInt(topologicalDimension);
         if(WriteSelect(12, buf))
-            buf.WriteString(zUnits);
+            buf.WriteString(xUnits);
         if(WriteSelect(13, buf))
-            buf.WriteString(xLabel);
+            buf.WriteString(yUnits);
         if(WriteSelect(14, buf))
-            buf.WriteString(yLabel);
+            buf.WriteString(zUnits);
         if(WriteSelect(15, buf))
-            buf.WriteString(zLabel);
+            buf.WriteString(xLabel);
         if(WriteSelect(16, buf))
-            buf.WriteBool(hasSpatialExtents);
+            buf.WriteString(yLabel);
         if(WriteSelect(17, buf))
-            buf.WriteDoubleArray(minSpatialExtents);
+            buf.WriteString(zLabel);
         if(WriteSelect(18, buf))
-            buf.WriteDoubleArray(maxSpatialExtents);
+            buf.WriteBool(hasSpatialExtents);
         if(WriteSelect(19, buf))
-            buf.WriteInt(numBlocks);
+            buf.WriteDoubleArray(minSpatialExtents);
         if(WriteSelect(20, buf))
-            buf.WriteInt(blockOrigin);
+            buf.WriteDoubleArray(maxSpatialExtents);
         if(WriteSelect(21, buf))
-            buf.WriteString(blockPieceName);
+            buf.WriteInt(numBlocks);
         if(WriteSelect(22, buf))
-            buf.WriteString(blockTitle);
+            buf.WriteInt(blockOrigin);
         if(WriteSelect(23, buf))
-            buf.WriteStringVector(blockNames);
+            buf.WriteString(blockPieceName);
         if(WriteSelect(24, buf))
-            blockNameScheme.Write(buf);
+            buf.WriteString(blockTitle);
         if(WriteSelect(25, buf))
-            buf.WriteInt(numGroups);
+            buf.WriteStringVector(blockNames);
         if(WriteSelect(26, buf))
-            buf.WriteInt(groupOrigin);
+            blockNameScheme.Write(buf);
         if(WriteSelect(27, buf))
-            buf.WriteString(groupPieceName);
+            buf.WriteInt(numGroups);
         if(WriteSelect(28, buf))
-            buf.WriteString(groupTitle);
+            buf.WriteInt(groupOrigin);
         if(WriteSelect(29, buf))
-            buf.WriteIntVector(groupIds);
+            buf.WriteString(groupPieceName);
         if(WriteSelect(30, buf))
-            buf.WriteIntVector(groupIdsBasedOnRange);
+            buf.WriteString(groupTitle);
         if(WriteSelect(31, buf))
-            buf.WriteBool(disjointElements);
+            buf.WriteIntVector(groupIds);
         if(WriteSelect(32, buf))
-            buf.WriteInt(containsGhostZones);
+            buf.WriteIntVector(groupIdsBasedOnRange);
         if(WriteSelect(33, buf))
-            buf.WriteBool(containsOriginalCells);
+            buf.WriteBool(disjointElements);
         if(WriteSelect(34, buf))
-            buf.WriteBool(containsOriginalNodes);
+            buf.WriteInt(containsGhostZones);
         if(WriteSelect(35, buf))
-            buf.WriteBool(containsGlobalNodeIds);
+            buf.WriteBool(containsOriginalCells);
         if(WriteSelect(36, buf))
-            buf.WriteBool(containsGlobalZoneIds);
+            buf.WriteBool(containsOriginalNodes);
         if(WriteSelect(37, buf))
-            buf.WriteInt(loadBalanceScheme);
+            buf.WriteBool(containsGlobalNodeIds);
         if(WriteSelect(38, buf))
-            buf.WriteBool(nodesAreCritical);
+            buf.WriteBool(containsGlobalZoneIds);
         if(WriteSelect(39, buf))
-            buf.WriteFloatArray(unitCellVectors);
+            buf.WriteInt(loadBalanceScheme);
         if(WriteSelect(40, buf))
-            buf.WriteFloatArray(unitCellOrigin);
+            buf.WriteBool(nodesAreCritical);
         if(WriteSelect(41, buf))
-            buf.WriteBool(rectilinearGridHasTransform);
+            buf.WriteFloatArray(unitCellVectors);
         if(WriteSelect(42, buf))
-            buf.WriteDoubleArray(rectilinearGridTransform);
+            buf.WriteFloatArray(unitCellOrigin);
         if(WriteSelect(43, buf))
-            buf.WriteInt(nodeOrigin);
+            buf.WriteBool(rectilinearGridHasTransform);
         if(WriteSelect(44, buf))
-            buf.WriteBool(containsExteriorBoundaryGhosts);
+            buf.WriteDoubleArray(rectilinearGridTransform);
         if(WriteSelect(45, buf))
-            buf.WriteBool(hideFromGUI);
+            buf.WriteInt(nodeOrigin);
         if(WriteSelect(46, buf))
+            buf.WriteBool(containsExteriorBoundaryGhosts);
+        if(WriteSelect(47, buf))
+            buf.WriteBool(hideFromGUI);
+        if(WriteSelect(48, buf))
             buf.WriteInt(LODs);
     }
 
@@ -958,118 +984,124 @@ public class avtMeshMetaData extends AttributeSubject
             SetLogicalBounds(buf.ReadIntArray());
             break;
         case 9:
-            SetTopologicalDimension(buf.ReadInt());
+            SetHasNumberCells(buf.ReadBool());
             break;
         case 10:
-            SetXUnits(buf.ReadString());
+            SetNumberCells(buf.ReadInt());
             break;
         case 11:
-            SetYUnits(buf.ReadString());
+            SetTopologicalDimension(buf.ReadInt());
             break;
         case 12:
-            SetZUnits(buf.ReadString());
+            SetXUnits(buf.ReadString());
             break;
         case 13:
-            SetXLabel(buf.ReadString());
+            SetYUnits(buf.ReadString());
             break;
         case 14:
-            SetYLabel(buf.ReadString());
+            SetZUnits(buf.ReadString());
             break;
         case 15:
-            SetZLabel(buf.ReadString());
+            SetXLabel(buf.ReadString());
             break;
         case 16:
-            SetHasSpatialExtents(buf.ReadBool());
+            SetYLabel(buf.ReadString());
             break;
         case 17:
-            SetMinSpatialExtents(buf.ReadDoubleArray());
+            SetZLabel(buf.ReadString());
             break;
         case 18:
-            SetMaxSpatialExtents(buf.ReadDoubleArray());
+            SetHasSpatialExtents(buf.ReadBool());
             break;
         case 19:
-            SetNumBlocks(buf.ReadInt());
+            SetMinSpatialExtents(buf.ReadDoubleArray());
             break;
         case 20:
-            SetBlockOrigin(buf.ReadInt());
+            SetMaxSpatialExtents(buf.ReadDoubleArray());
             break;
         case 21:
-            SetBlockPieceName(buf.ReadString());
+            SetNumBlocks(buf.ReadInt());
             break;
         case 22:
-            SetBlockTitle(buf.ReadString());
+            SetBlockOrigin(buf.ReadInt());
             break;
         case 23:
-            SetBlockNames(buf.ReadStringVector());
+            SetBlockPieceName(buf.ReadString());
             break;
         case 24:
-            blockNameScheme.Read(buf);
-            Select(24);
+            SetBlockTitle(buf.ReadString());
             break;
         case 25:
-            SetNumGroups(buf.ReadInt());
+            SetBlockNames(buf.ReadStringVector());
             break;
         case 26:
-            SetGroupOrigin(buf.ReadInt());
+            blockNameScheme.Read(buf);
+            Select(26);
             break;
         case 27:
-            SetGroupPieceName(buf.ReadString());
+            SetNumGroups(buf.ReadInt());
             break;
         case 28:
-            SetGroupTitle(buf.ReadString());
+            SetGroupOrigin(buf.ReadInt());
             break;
         case 29:
-            SetGroupIds(buf.ReadIntVector());
+            SetGroupPieceName(buf.ReadString());
             break;
         case 30:
-            SetGroupIdsBasedOnRange(buf.ReadIntVector());
+            SetGroupTitle(buf.ReadString());
             break;
         case 31:
-            SetDisjointElements(buf.ReadBool());
+            SetGroupIds(buf.ReadIntVector());
             break;
         case 32:
-            SetContainsGhostZones(buf.ReadInt());
+            SetGroupIdsBasedOnRange(buf.ReadIntVector());
             break;
         case 33:
-            SetContainsOriginalCells(buf.ReadBool());
+            SetDisjointElements(buf.ReadBool());
             break;
         case 34:
-            SetContainsOriginalNodes(buf.ReadBool());
+            SetContainsGhostZones(buf.ReadInt());
             break;
         case 35:
-            SetContainsGlobalNodeIds(buf.ReadBool());
+            SetContainsOriginalCells(buf.ReadBool());
             break;
         case 36:
-            SetContainsGlobalZoneIds(buf.ReadBool());
+            SetContainsOriginalNodes(buf.ReadBool());
             break;
         case 37:
-            SetLoadBalanceScheme(buf.ReadInt());
+            SetContainsGlobalNodeIds(buf.ReadBool());
             break;
         case 38:
-            SetNodesAreCritical(buf.ReadBool());
+            SetContainsGlobalZoneIds(buf.ReadBool());
             break;
         case 39:
-            SetUnitCellVectors(buf.ReadFloatArray());
+            SetLoadBalanceScheme(buf.ReadInt());
             break;
         case 40:
-            SetUnitCellOrigin(buf.ReadFloatArray());
+            SetNodesAreCritical(buf.ReadBool());
             break;
         case 41:
-            SetRectilinearGridHasTransform(buf.ReadBool());
+            SetUnitCellVectors(buf.ReadFloatArray());
             break;
         case 42:
-            SetRectilinearGridTransform(buf.ReadDoubleArray());
+            SetUnitCellOrigin(buf.ReadFloatArray());
             break;
         case 43:
-            SetNodeOrigin(buf.ReadInt());
+            SetRectilinearGridHasTransform(buf.ReadBool());
             break;
         case 44:
-            SetContainsExteriorBoundaryGhosts(buf.ReadBool());
+            SetRectilinearGridTransform(buf.ReadDoubleArray());
             break;
         case 45:
-            SetHideFromGUI(buf.ReadBool());
+            SetNodeOrigin(buf.ReadInt());
             break;
         case 46:
+            SetContainsExteriorBoundaryGhosts(buf.ReadBool());
+            break;
+        case 47:
+            SetHideFromGUI(buf.ReadBool());
+            break;
+        case 48:
             SetLODs(buf.ReadInt());
             break;
         }
@@ -1087,6 +1119,8 @@ public class avtMeshMetaData extends AttributeSubject
         str = str + intToString("spatialDimension", spatialDimension, indent) + "\n";
         str = str + boolToString("hasLogicalBounds", hasLogicalBounds, indent) + "\n";
         str = str + intArrayToString("logicalBounds", logicalBounds, indent) + "\n";
+        str = str + boolToString("hasNumberCells", hasNumberCells, indent) + "\n";
+        str = str + intToString("numberCells", numberCells, indent) + "\n";
         str = str + intToString("topologicalDimension", topologicalDimension, indent) + "\n";
         str = str + stringToString("xUnits", xUnits, indent) + "\n";
         str = str + stringToString("yUnits", yUnits, indent) + "\n";
@@ -1139,6 +1173,8 @@ public class avtMeshMetaData extends AttributeSubject
     private int                  spatialDimension;
     private boolean              hasLogicalBounds;
     private int[]                logicalBounds;
+    private boolean              hasNumberCells;
+    private int                  numberCells;
     private int                  topologicalDimension;
     private String               xUnits;
     private String               yUnits;

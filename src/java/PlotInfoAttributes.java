@@ -38,8 +38,6 @@
 
 package llnl.visit;
 
-import java.lang.Double;
-import java.util.Vector;
 
 // ****************************************************************************
 // Class: PlotInfoAttributes
@@ -58,79 +56,78 @@ import java.util.Vector;
 
 public class PlotInfoAttributes extends AttributeSubject
 {
+    private static int PlotInfoAttributes_numAdditionalAtts = 1;
+
     public PlotInfoAttributes()
     {
-        super(1);
+        super(PlotInfoAttributes_numAdditionalAtts);
 
-        outputArray = new Vector();
+        data = new MapNode();
+    }
+
+    public PlotInfoAttributes(int nMoreFields)
+    {
+        super(PlotInfoAttributes_numAdditionalAtts + nMoreFields);
+
+        data = new MapNode();
     }
 
     public PlotInfoAttributes(PlotInfoAttributes obj)
     {
-        super(1);
+        super(PlotInfoAttributes_numAdditionalAtts);
 
-        int i;
-
-        outputArray = new Vector(obj.outputArray.size());
-        for(i = 0; i < obj.outputArray.size(); ++i)
-        {
-            Double dv = (Double)obj.outputArray.elementAt(i);
-            outputArray.addElement(new Double(dv.doubleValue()));
-        }
-
+        data = new MapNode(obj.data);
 
         SelectAll();
     }
 
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return PlotInfoAttributes_numAdditionalAtts;
+    }
+
     public boolean equals(PlotInfoAttributes obj)
     {
-        int i;
-
-        // Compare the elements in the outputArray vector.
-        boolean outputArray_equal = (obj.outputArray.size() == outputArray.size());
-        for(i = 0; (i < outputArray.size()) && outputArray_equal; ++i)
-        {
-            // Make references to Double from Object.
-            Double outputArray1 = (Double)outputArray.elementAt(i);
-            Double outputArray2 = (Double)obj.outputArray.elementAt(i);
-            outputArray_equal = outputArray1.equals(outputArray2);
-        }
         // Create the return value
-        return (outputArray_equal);
+        return ((data.equals(obj.data)));
     }
 
     // Property setting methods
-    public void SetOutputArray(Vector outputArray_)
+    public void SetData(MapNode data_)
     {
-        outputArray = outputArray_;
+        data = data_;
         Select(0);
     }
 
     // Property getting methods
-    public Vector GetOutputArray() { return outputArray; }
+    public MapNode GetData() { return data; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteDoubleVector(outputArray);
+            data.Write(buf);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
-        SetOutputArray(buf.ReadDoubleVector());
+        data.Read(buf);
     }
 
     public String toString(String indent)
     {
         String str = new String();
-        str = str + doubleVectorToString("outputArray", outputArray, indent) + "\n";
+        str = str + indent + "data = " + data.toString(indent);
         return str;
     }
 
 
     // Attributes
-    private Vector outputArray; // vector of Double objects
+    private MapNode data;
 }
 

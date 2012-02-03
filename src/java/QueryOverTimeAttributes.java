@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class QueryOverTimeAttributes extends AttributeSubject
 {
-    private static int QueryOverTimeAttributes_numAdditionalAtts = 10;
+    private static int QueryOverTimeAttributes_numAdditionalAtts = 11;
 
     // Enum values
     public final static int TIMETYPE_CYCLE = 0;
@@ -73,6 +73,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
         startTime = 0;
         endTimeFlag = false;
         endTime = 1;
+        strideFlag = false;
         stride = 1;
         createWindow = true;
         windowId = 2;
@@ -89,6 +90,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
         startTime = 0;
         endTimeFlag = false;
         endTime = 1;
+        strideFlag = false;
         stride = 1;
         createWindow = true;
         windowId = 2;
@@ -105,6 +107,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
         startTime = obj.startTime;
         endTimeFlag = obj.endTimeFlag;
         endTime = obj.endTime;
+        strideFlag = obj.strideFlag;
         stride = obj.stride;
         createWindow = obj.createWindow;
         windowId = obj.windowId;
@@ -132,6 +135,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
                 (startTime == obj.startTime) &&
                 (endTimeFlag == obj.endTimeFlag) &&
                 (endTime == obj.endTime) &&
+                (strideFlag == obj.strideFlag) &&
                 (stride == obj.stride) &&
                 (createWindow == obj.createWindow) &&
                 (windowId == obj.windowId) &&
@@ -170,34 +174,40 @@ public class QueryOverTimeAttributes extends AttributeSubject
         Select(4);
     }
 
+    public void SetStrideFlag(boolean strideFlag_)
+    {
+        strideFlag = strideFlag_;
+        Select(5);
+    }
+
     public void SetStride(int stride_)
     {
         stride = stride_;
-        Select(5);
+        Select(6);
     }
 
     public void SetCreateWindow(boolean createWindow_)
     {
         createWindow = createWindow_;
-        Select(6);
+        Select(7);
     }
 
     public void SetWindowId(int windowId_)
     {
         windowId = windowId_;
-        Select(7);
+        Select(8);
     }
 
     public void SetQueryAtts(QueryAttributes queryAtts_)
     {
         queryAtts = queryAtts_;
-        Select(8);
+        Select(9);
     }
 
     public void SetPickAtts(PickAttributes pickAtts_)
     {
         pickAtts = pickAtts_;
-        Select(9);
+        Select(10);
     }
 
     // Property getting methods
@@ -206,6 +216,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
     public int             GetStartTime() { return startTime; }
     public boolean         GetEndTimeFlag() { return endTimeFlag; }
     public int             GetEndTime() { return endTime; }
+    public boolean         GetStrideFlag() { return strideFlag; }
     public int             GetStride() { return stride; }
     public boolean         GetCreateWindow() { return createWindow; }
     public int             GetWindowId() { return windowId; }
@@ -226,14 +237,16 @@ public class QueryOverTimeAttributes extends AttributeSubject
         if(WriteSelect(4, buf))
             buf.WriteInt(endTime);
         if(WriteSelect(5, buf))
-            buf.WriteInt(stride);
+            buf.WriteBool(strideFlag);
         if(WriteSelect(6, buf))
-            buf.WriteBool(createWindow);
+            buf.WriteInt(stride);
         if(WriteSelect(7, buf))
-            buf.WriteInt(windowId);
+            buf.WriteBool(createWindow);
         if(WriteSelect(8, buf))
-            queryAtts.Write(buf);
+            buf.WriteInt(windowId);
         if(WriteSelect(9, buf))
+            queryAtts.Write(buf);
+        if(WriteSelect(10, buf))
             pickAtts.Write(buf);
     }
 
@@ -257,21 +270,24 @@ public class QueryOverTimeAttributes extends AttributeSubject
             SetEndTime(buf.ReadInt());
             break;
         case 5:
-            SetStride(buf.ReadInt());
+            SetStrideFlag(buf.ReadBool());
             break;
         case 6:
-            SetCreateWindow(buf.ReadBool());
+            SetStride(buf.ReadInt());
             break;
         case 7:
-            SetWindowId(buf.ReadInt());
+            SetCreateWindow(buf.ReadBool());
             break;
         case 8:
-            queryAtts.Read(buf);
-            Select(8);
+            SetWindowId(buf.ReadInt());
             break;
         case 9:
-            pickAtts.Read(buf);
+            queryAtts.Read(buf);
             Select(9);
+            break;
+        case 10:
+            pickAtts.Read(buf);
+            Select(10);
             break;
         }
     }
@@ -291,6 +307,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
         str = str + intToString("startTime", startTime, indent) + "\n";
         str = str + boolToString("endTimeFlag", endTimeFlag, indent) + "\n";
         str = str + intToString("endTime", endTime, indent) + "\n";
+        str = str + boolToString("strideFlag", strideFlag, indent) + "\n";
         str = str + intToString("stride", stride, indent) + "\n";
         str = str + boolToString("createWindow", createWindow, indent) + "\n";
         str = str + intToString("windowId", windowId, indent) + "\n";
@@ -306,6 +323,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
     private int             startTime;
     private boolean         endTimeFlag;
     private int             endTime;
+    private boolean         strideFlag;
     private int             stride;
     private boolean         createWindow;
     private int             windowId;
