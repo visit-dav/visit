@@ -202,6 +202,10 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                                               const ViewerPlot *plot,
                                               const bool fromDefault)
 {
+//   std::cerr << "InitializeOperatorAtts  "
+//          << (fromDefault ? "from default" : "from client")
+//          << std::endl;
+
     if (fromDefault)
         *(IndexSelectAttributes*)atts = *defaultAtts;
     else
@@ -308,22 +312,35 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 
     // Set the topological dimension and the logical bounds
     const avtDatabaseMetaData *md = plot->GetMetaData();
+
+//      std::cerr << md << std::endl;
+
     if(md != 0)
     {
+//      std::cerr << "have md" << std::endl;
+
        const avtMeshMetaData *mmd = md->GetMesh(plot->GetMeshName());
+//     std::cerr << mmd << std::endl;
        if(mmd && mmd->hasLogicalBounds)
        {
+
+//      std::cerr << "hasLogicalBounds" << std::endl;
+
            if( mmd->meshType == AVT_POINT_MESH ||
                mmd->meshType == AVT_UNSTRUCTURED_MESH)
            {
+//           std::cerr << "point unstructured "
+//                     << mmd->logicalBounds[0] << "  "
+//                     << mmd->numberCells << std::endl;
                isAtts->SetMaxDim(IndexSelectAttributes::OneD);
                isAtts->SetDim(IndexSelectAttributes::OneD);
-               isAtts->SetXAbsMax(mmd->logicalBounds[0]-1);
+               isAtts->SetXAbsMax(mmd->numberCells-1);
                if( isAtts->GetXMax() == -1 )
-                   isAtts->SetXMax(mmd->logicalBounds[0]-1);
+                   isAtts->SetXMax(mmd->numberCells-1);
            }
            else
            {
+//      std::cerr << "structured" << std::endl;
              if( mmd->topologicalDimension >= 1 && mmd->logicalBounds[0] > 1)
              {
                  isAtts->SetMaxDim(IndexSelectAttributes::OneD);
