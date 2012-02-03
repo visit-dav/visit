@@ -75,8 +75,9 @@ public class TryQuery extends RunViewer implements SimpleObserver
         super();
         doUpdate = true;
 
-        // Make this object observe the light attributes.
+        // Make this object observe the query and pick attributes.
         viewer.GetViewerState().GetQueryAttributes().Attach(this);
+        viewer.GetViewerState().GetPickAttributes().Attach(this);
     }
 
     protected void work(String[] args)
@@ -114,18 +115,11 @@ public class TryQuery extends RunViewer implements SimpleObserver
 
     public void Update(AttributeSubject s)
     {
-        QueryAttributes q = (QueryAttributes)s;
-        printResults(q);
+        System.out.println(s.toString(""));
     }
 
     public void SetUpdate(boolean val) { doUpdate = val; }
     public boolean GetUpdate() { return doUpdate; }
-
-    protected void printResults(QueryAttributes q)
-    {
-        System.out.println("Query name="+q.GetName()+
-            " resultString="+q.GetResultsMessage());
-    }
 
     public static void main(String args[])
     {

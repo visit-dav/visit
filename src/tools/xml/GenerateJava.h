@@ -117,6 +117,9 @@
 //    Brad Whitlock, Thu Aug 20 11:35:21 PDT 2009
 //    Added support for state object inheritance.
 //
+//    Brad Whitlock, Thu Feb  2 11:55:54 PST 2012
+//    Add support for MapNode.
+//
 // ****************************************************************************
 
 class JavaGeneratorField : public virtual Field
@@ -1519,6 +1522,51 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
     }
 };
 
+//
+// --------------------------------- MapNode ---------------------------------
+//
+class JavaGeneratorMapNode : public virtual MapNode , public virtual JavaGeneratorField
+{
+  public:
+    JavaGeneratorMapNode(const QString &n, const QString &l)
+        : Field("MapNode",n,l), MapNode(n,l), JavaGeneratorField("MapNode",n,l) { }
+
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "MapNode";
+    }
+
+    virtual void WriteSourceSetDefault(QTextStream &c)
+    {
+        c << "    " << name << " = new MapNode();" << endl;
+    }
+
+    virtual void WriteSourceCopyCode(QTextStream &c)
+    {
+        c << "        " << name << " = new MapNode(obj." << name << ");" << endl;
+    }
+
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
+    {
+        c << indent << "    " << name << ".Write(buf);" << endl;
+    }
+
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
+    {
+        c << indent << name << ".Read(buf);" << endl;
+        return true;
+    }
+
+    virtual void WriteToString(QTextStream &c, const QString &indent)
+    {
+        c << indent << "str = str + indent + \"" << name << " = \" + " << name << ".toString(indent);" << endl;
+    }
+
+    virtual void WriteSourceComparison(QTextStream &c)
+    {
+        c << "(" << name << ".equals(obj." << name << "))";
+    }
+};
 
 //
 // ----------------------------------- Enum -----------------------------------
@@ -1606,6 +1654,8 @@ class JavaGeneratorScaleMode : public virtual ScaleMode , public virtual JavaGen
 //   Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007 
 //   Added scalemode.
 //
+//   Brad Whitlock, Thu Feb  2 12:09:43 PST 2012
+//   Added MapNode.
 // ----------------------------------------------------------------------------
 
 class JavaFieldFactory
@@ -1643,6 +1693,7 @@ class JavaFieldFactory
         else if (type == "attVector")    f = new JavaGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new JavaGeneratorEnum(subtype, name, label);
         else if (type == "scalemode")    f = new JavaGeneratorScaleMode(name,label);
+        else if (type == "MapNode")      f = new JavaGeneratorMapNode(name,label);
 
         // Special built-in AVT enums -- but they don't really need to be treated like enums for this program.
         else if (type == "avtCentering")      f = new JavaGeneratorInt(name, label);

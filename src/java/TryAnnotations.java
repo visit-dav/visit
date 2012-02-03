@@ -119,7 +119,7 @@ public class TryAnnotations extends RunViewer
             // Create a 2D text annotation
             //
             viewer.GetViewerMethods().AddAnnotationObject(AnnotationObject.ANNOTATIONTYPE_TEXT2D, "text");
-            aol.SetText2DOptions("text", 0.4, 0.95, 0.2,
+            aol.SetText2DOptions("text", 0.4, 0.95, 0.05,
                 "Wave simulation",
                 new ColorAttribute(255,0,0,255), false, 
                 2, true, true, true, true);
