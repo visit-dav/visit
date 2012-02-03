@@ -208,9 +208,9 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
            {
                isAtts->SetMaxDim(IndexSelectAttributes::OneD);
                isAtts->SetDim(IndexSelectAttributes::OneD);
-               isAtts->SetXAbsMax(mmd->logicalBounds[0]-1);
+               isAtts->SetXAbsMax(mmd->numberCells-1);
                if( isAtts->GetXMax() == -1 )
-                   isAtts->SetXMax(mmd->logicalBounds[0]-1);
+                   isAtts->SetXMax(mmd->numberCells-1);
            }
            else
            {
