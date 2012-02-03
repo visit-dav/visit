@@ -3,12 +3,12 @@
 <HEAD>
 <TITLE>VisIt What's New</TITLE>
 <meta http-equiv="content-type" content="text/html;charset=ISO-8859-1">
-<meta name="LLNLRandR" content="LLNL-WEB-511854">
+<meta name="LLNLRandR" content="LLNL-WEB-526111">
 <meta name="distribution" content="global">
 <meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
 <meta name="language" content="English">
 <meta name="rating" content="general">
-<meta name="review" content="November 2011">
+<meta name="review" content="February 2012">
 <meta name="keywords" content="visualization, qualitative, quantitative, analysis, distributed, parallel, tera-scale, rectilinear, curvilinear, structured, unstructured, mesh, grid, finite element, hydrodynamics, python, java, unix, irix, tru64, aix, linux, solaris, windows 98, windows xp, open source contour, vector, volume visualization, streamlines">
 <meta name="copyright" content="This document is copyrighted U.S. Department of Energy under Contract W-7405-Eng-48">
 <meta name="Author" content="Eric Brugger">
@@ -226,6 +226,7 @@ function MM_initTimelines() { //v4.0
 <h1>What's New</h1>
 <p>This page provides information about what's new with VisIt, including general news about the tool as well as new features that have been recently added.</p>
 <ol>
+  <li><a href="#February2012">February, 2012</a></li>
   <li><a href="#November2011">November, 2011</a></li>
   <li><a href="#September2011">September, 2011</a></li>
   <li><a href="#July2011">July, 2011</a></li>
@@ -263,8 +264,10 @@ function MM_initTimelines() { //v4.0
   <li><a href="#Dec2005">December, 2005</a></li>
   <li><a href="#Oct2005">October, 2005</a></li>
 </ol>
+<h1><a name="February2012"></a>February, 2012 - VisIt 2.4.1 released</h1>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.4.1, which can be <a href="download.html">downloaded from this site</a> is primarily a bug-fix release that resolves two dozen important issues. For a complete list of changes see the <a href="relnotes2.4.1.html">VisIt 2.4.1 Release Notes</a>.</p>
 <h1><a name="November2011"></a>November, 2011 - VisIt 2.4 released</h1>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.4, which can be <a href="download.html">downloaded from this site</a>, contains many bug-fixes and new features. For a complete list of changes see the <a href="relnotes2.4.0.html">VisIt 2.4 Release Notes</a>.</p>
+<p>VisIt 2.4 contains many bug-fixes and new features. For a complete list of changes see the <a href="relnotes2.4.0.html">VisIt 2.4 Release Notes</a>.</p>
 <h2>1.  VisIt has been ported to VTK 5.8.0.</h2>
 <p>VTK forms the basis for VisIt's visualization and analysis techniques and version 5.8.0 is the latest release of VTK. This will improve the performance and reliability of VisIt, since it has many improvements over the version we were using. It will also allow us to proceed with new enhancements in future releases.</p>
 <h2>2.  A 2D multi-resolution rendering capability was added for 2D AMR data.</h2>
@@ -276,7 +279,7 @@ function MM_initTimelines() { //v4.0
 <h1><a name="July2011"></a>July, 2011 - VisIt 2.3.1 released</h1>
 <p>VisIt 2.3.1 was primarily a bug-fix release that resolved over a dozen important issues. For a complete list of changes see the <a href="relnotes2.3.1.html">VisIt 2.3.1 Release Notes</a>.</p>
 <h1><a name="June2011"></a>June, 2011 - VisIt 2.3 released</h1>
-<p>VisIt 2.3, which can be <a href="download.html">downloaded from this site</a>, contains many bug-fixes and new features. For a complete list of changes see the <a href="relnotes2.3.0.html">VisIt 2.3 Release Notes</a>.</p>
+<p>VisIt 2.3, contains many bug-fixes and new features. For a complete list of changes see the <a href="relnotes2.3.0.html">VisIt 2.3 Release Notes</a>.</p>
 <h2>1.  Selections have been enhanced to support <i>cumulative queries</i>.</h2>
 <p>A cumulative query lets you threshold multiple variables on a dataset for a range of time steps and then combine the results into a single time-aware selection that can then be further reduced using a histogram. The results from each time step can be combined such that the final selection will contain cells that are present in either <i>all</i> or <i>any</i> time steps. The number of cells for each time step can be displayed as a histogram. The other histogram modes are: <i>Matches, ID, Variable</i>. The matches histogram mode takes the selection and sorts the cells in the selection into bins based on how frequently they appear over time. The ID histogram mode sorts the selection based on cell id, creating bins of cell ids. The variable histogram mode sorts the cells in the selection using an auxiliary variable and uses that variable to create bins that group the cells. Once cells have been binned into a histogram, the histogram is returned to the GUI where users can turn off a number of start end end bins to focus on high or low histogram bins. Cumulative query selections can be created using the Selections window.</p>
 <h2>2.  Several enhancements have been made to the database readers.</h2>
@@ -797,11 +800,11 @@ to produce characteristic functions describing a data set's shape. VisIt's expre
     | <a href="manuals.html">Manuals</a> | What's New | <a href="sitemap.html">Index</a></span></p>
   <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
     <span class="body_text">Updated: 
-    <!-- #BeginDate format:Am1 -->November 18, 2011<!-- #EndDate -->
+    <!-- #BeginDate format:Am1 -->February 6, 2012<!-- #EndDate -->
     </span></p>
   <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
     <tr> 
-      <td height="18" background="media/bottom_band.jpg">&copy;<span class="body_text">LLNL-WEB-511854, 
+      <td height="18" background="media/bottom_band.jpg">&copy;<span class="body_text">LLNL-WEB-526111, 
         <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy 
         and legal notice</a></span></td>
       <td width="5">&nbsp;</td>
