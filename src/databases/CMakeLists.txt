@@ -120,6 +120,9 @@
 #    Record that the H5Part plugin can also be dependent on FASTBIT being set
 #    so we can statically link.
 #
+#    Hank Childs, Sun Feb  5 18:52:04 PST 2012
+#    Add CarpetHDF5 reader from Christian Reisswig and Erik Schnetter.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -185,6 +188,7 @@ ENDIF(NOT XDMF_FOUND)
 THIRDPARTY_DEPENDENT_PLUGINS(HDF5     
 AMR
 CaleHDF5
+CarpetHDF5
 Chombo
 CosmosPP
 Enzo
