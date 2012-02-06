@@ -111,8 +111,8 @@ class dataset_entry
                     
                     if (_ghosts[2*d] > 0 || _ghosts[2*d+1] > 0)
                     {
-                       if (_rl > 0 && _iorigin_ghosted[d] % int(pow(2, 1)) >  0) { _npoints_ghosted[d] += 1; _iorigin_ghosted[d] -= 1; _origin_ghosted[d] -= _delta[d]; _ghosts[2*d] -= 1; }
-                       if (_rl > 0 && _npoints_ghosted[d] % int(pow(2, 1)) == 0) { _npoints_ghosted[d] -= 1; /*_ghosts[2*d+1 += 1;*/ }
+                       if (_rl > 0 && _iorigin_ghosted[d] % int(pow((double)2, 1)) >  0) { _npoints_ghosted[d] += 1; _iorigin_ghosted[d] -= 1; _origin_ghosted[d] -= _delta[d]; _ghosts[2*d] -= 1; }
+                       if (_rl > 0 && _npoints_ghosted[d] % int(pow((double)2, 1)) == 0) { _npoints_ghosted[d] -= 1; /*_ghosts[2*d+1 += 1;*/ }
                     }
                 }
                 
@@ -158,8 +158,8 @@ class dataset_entry
                     
                     if (_ghosts[2*d] > 0 || _ghosts[2*d+1] > 0)
                     {
-                       if (_rl > 0 && _iorigin_ghosted[d] % int(pow(2, 1)) >  0) { _npoints_ghosted[d] += 1; _iorigin_ghosted[d] -= 1; _origin_ghosted[d] -= _delta[d]; _ghosts[2*d] -= 1; }
-                       if (_rl > 0 && _npoints_ghosted[d] % int(pow(2, 1)) == 0) { _npoints_ghosted[d] -= 1; /*_ghosts[2*d+1 += 1;*/ }
+                       if (_rl > 0 && _iorigin_ghosted[d] % int(pow((double)2, 1)) >  0) { _npoints_ghosted[d] += 1; _iorigin_ghosted[d] -= 1; _origin_ghosted[d] -= _delta[d]; _ghosts[2*d] -= 1; }
+                       if (_rl > 0 && _npoints_ghosted[d] % int(pow((double)2, 1)) == 0) { _npoints_ghosted[d] -= 1; /*_ghosts[2*d+1 += 1;*/ }
                     }
                 }
                 
