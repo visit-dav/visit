@@ -160,6 +160,7 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     // derived filters can use it for setting the start and stop
     // times.
     currentTime = spec->GetDataRequest()->GetTimestep();
+    //cout<<"avtTimeLoopFilter::Update() currentTime= "<<currentTime<<endl<<endl;
 
     FinalizeTimeLoop();
 
@@ -172,6 +173,7 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     src->SetNumberOfExecutions(numIters);
 
     int curIter = 0;
+
     for (i = startTime; i < actualEnd; i+= stride)
     {
         bool shouldDoThisTimeSlice = true;
@@ -217,7 +219,7 @@ avtTimeLoopFilter::Update(avtContract_p spec)
         }
         else
             contract->NoStreaming();
-
+        
         modified |= avtFilter::Update(contract);
         
         if (ExecutionSuccessful())
@@ -228,7 +230,6 @@ avtTimeLoopFilter::Update(avtContract_p spec)
         {
             skippedTimes.push_back(currentTime);
         }
-
         avtCallback::ResetTimeout(5*60);
     } 
 
@@ -264,6 +265,7 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     GetOutput()->GetInfo().GetAttributes().SetTime(
                              GetInput()->GetInfo().GetAttributes().GetTime());
 
+    //cout<<"avtTimeLoopFilter::Update()  DONE"<<endl<<endl;
     return modified;
 }
 
@@ -304,6 +306,7 @@ avtTimeLoopFilter::DataCanBeParallelizedOverTime(void)
     // This test should ultimately be enhanced to detect new attributes that
     // indicate whether the data is small enough that it can be processed by
     // a single MPI task.  The infrastructure doesn't exist yet.
+    //return true;
     return false;
 }
 
