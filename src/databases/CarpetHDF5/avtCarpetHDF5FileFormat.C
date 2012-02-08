@@ -52,7 +52,9 @@
 // POSIX specific!
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
@@ -654,7 +656,7 @@ avtCarpetHDF5FileFormat::GetVar(int timestate, int domain, const char *varname)
    
    int dims[] = {1, 1, 1};
    float* data;
-   data_file->get_data(not isMultiPatch, timestate, domain, var_no, &data);
+   data_file->get_data(!isMultiPatch, timestate, domain, var_no, &data);
    
    int ntuples = comp[0][domain].dims()[0]*comp[0][domain].dims()[1]*comp[0][domain].dims()[2];
    
@@ -713,7 +715,7 @@ avtCarpetHDF5FileFormat::GetVectorVar(int timestate, int domain,const char *varn
    
    float** data = NULL;
    int dims[3] = {1, 1, 1};
-   data_file->get_vector_data(not isMultipatch, timestate, domain, var_no, &data);
+   data_file->get_vector_data(!isMultipatch, timestate, domain, var_no, &data);
    
    const int ntuples = dims[0]*dims[1]*dims[2];  // this is the number of entries in the variable.
    
@@ -828,7 +830,12 @@ void avtCarpetHDF5FileFormat::open_all_files(const char* fname)
 
 avtCarpetHDF5FileFormat::multi_file* avtCarpetHDF5FileFormat::open_cached_file(const string fname)
 {
-  if(getenv("CARPETHDF5_CACHE_METADATA") && strcasecmp(getenv("CARPETHDF5_CACHE_METADATA"), "no") == 0)
+  if(getenv("CARPETHDF5_CACHE_METADATA") && 
+#ifdef _WIN32
+     stricmp(getenv("CARPETHDF5_CACHE_METADATA"), "no") == 0)
+#else
+     strcasecmp(getenv("CARPETHDF5_CACHE_METADATA"), "no") == 0)
+#endif
     return new multi_file(fname.c_str());
 
   // if file already exists in cache, check if it is not outdated
