@@ -43,15 +43,6 @@
 #include <IndexSelectPluginInfo.h>
 #include <QApplication>
 #include <IndexSelectAttributes.h>
-#include <avtSIL.h>
-#include <avtSILRestriction.h>
-#include <CompactSILRestrictionAttributes.h>
-#include <avtDatabaseMetaData.h>
-#include <avtMeshMetaData.h>
-#include <ViewerPlot.h>
-
-#include <string>
-#include <vector>
 
 // ****************************************************************************
 //  Function:  GetViewerInfo
@@ -197,15 +188,17 @@ IndexSelectViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 //    Update for new SIL interface.
 //
 // ****************************************************************************
+#include <avtSIL.h>
+#include <avtSILRestriction.h>
+#include <CompactSILRestrictionAttributes.h>
+#include <avtDatabaseMetaData.h>
+#include <avtMeshMetaData.h>
+#include <ViewerPlot.h>
 void
 IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                                               const ViewerPlot *plot,
                                               const bool fromDefault)
 {
-//   std::cerr << "InitializeOperatorAtts  "
-//          << (fromDefault ? "from default" : "from client")
-//          << std::endl;
-
     if (fromDefault)
         *(IndexSelectAttributes*)atts = *defaultAtts;
     else
@@ -312,26 +305,14 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 
     // Set the topological dimension and the logical bounds
     const avtDatabaseMetaData *md = plot->GetMetaData();
-
-//      std::cerr << md << std::endl;
-
     if(md != 0)
     {
-//      std::cerr << "have md" << std::endl;
-
        const avtMeshMetaData *mmd = md->GetMesh(plot->GetMeshName());
-//     std::cerr << mmd << std::endl;
        if(mmd && mmd->hasLogicalBounds)
        {
-
-//      std::cerr << "hasLogicalBounds" << std::endl;
-
            if( mmd->meshType == AVT_POINT_MESH ||
                mmd->meshType == AVT_UNSTRUCTURED_MESH)
            {
-//           std::cerr << "point unstructured "
-//                     << mmd->logicalBounds[0] << "  "
-//                     << mmd->numberCells << std::endl;
                isAtts->SetMaxDim(IndexSelectAttributes::OneD);
                isAtts->SetDim(IndexSelectAttributes::OneD);
                isAtts->SetXAbsMax(mmd->numberCells-1);
@@ -340,7 +321,6 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
            }
            else
            {
-//      std::cerr << "structured" << std::endl;
              if( mmd->topologicalDimension >= 1 && mmd->logicalBounds[0] > 1)
              {
                  isAtts->SetMaxDim(IndexSelectAttributes::OneD);
@@ -408,3 +388,4 @@ IndexSelectViewerPluginInfo::XPMIconData() const
 {
     return IndexSelect_xpm;
 }
+
