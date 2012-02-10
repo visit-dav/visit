@@ -162,6 +162,10 @@ avtMatvfExpression::PreExecute(void)
 //    Cyrus Harrison, Wed Apr  9 10:57:19 PDT 2008
 //    Only use post ghost material info if VisIt created the ghost zones.
 //
+//    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
+//    Added logic to support presentGhostZoneTypes, which allows us to
+//    differentiate between ghost zones for boundaries & nesting.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -170,7 +174,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
     int    i, j;
 
     int ncells = in_ds->GetNumberOfCells();
-              
+
     //
     // The 'currentDomainsIndex' is a data member of the base class that is
     // set to be the id of the current domain right before DeriveVariable is
@@ -186,19 +190,29 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
 
     // only ask for post ghost Material info if the dataset actually
     // has ghost zones and VisIt created them. 
-    
-    avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
-    bool created_ghosts = datts.GetContainsGhostZones() != AVT_CREATED_GHOSTS;
-    if(!in_ds->GetCellData()->GetArray("avtGhostZones") || created_ghosts)
-        doPostGhost = false;
 
-    debug5 << "avtMatvfExpression: Using post ghost material object ?  " 
-           << doPostGhost <<endl;
-    
+    avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+    bool created_ghosts = datts.GetContainsGhostZones() == AVT_CREATED_GHOSTS;
+    // check bitmask to make sure we actually have bondary ghost zones
+    // (in some cases we may only have nesting ghosts zones, and post ghost
+    // is not the proper path)
+    if(created_ghosts)
+        created_ghosts = datts.GetGhostZoneTypesPresent() & AVT_BOUNDARY_GHOST_ZONES;
+
+    doPostGhost = doPostGhost  &&
+                  in_ds->GetCellData()->GetArray("avtGhostZones") &&
+                  created_ghosts;
+    debug5 << "avtMatvfExpression: GetGhostZoneTypesPresent() = "
+           << datts.GetGhostZoneTypesPresent() <<  endl;
+
+
+    debug5 << "avtMatvfExpression: Using post ghost material object ?  "
+           << doPostGhost <<  endl;
+
     avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
                                                   currentTimeState,
                                                   doPostGhost);
-    
+
     if (mat == NULL)
     {
         debug1 << "Could not find a material object." << endl;
@@ -643,7 +657,7 @@ avtMatvfExpression::ModifyContract(avtContract_p spec)
     {
         doPostGhost = false;
     }
-    
+
     return spec;
 }
 

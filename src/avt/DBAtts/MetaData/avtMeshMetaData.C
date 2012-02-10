@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -128,6 +128,7 @@ void avtMeshMetaData::Init()
     containsExteriorBoundaryGhosts = false;
     hideFromGUI = false;
     LODs = 1;
+    presentGhostZoneTypes = 0;
 
     avtMeshMetaData::SelectAll();
 }
@@ -215,6 +216,7 @@ void avtMeshMetaData::Copy(const avtMeshMetaData &obj)
     containsExteriorBoundaryGhosts = obj.containsExteriorBoundaryGhosts;
     hideFromGUI = obj.hideFromGUI;
     LODs = obj.LODs;
+    presentGhostZoneTypes = obj.presentGhostZoneTypes;
 
     avtMeshMetaData::SelectAll();
 }
@@ -450,7 +452,8 @@ avtMeshMetaData::operator == (const avtMeshMetaData &obj) const
             (nodeOrigin == obj.nodeOrigin) &&
             (containsExteriorBoundaryGhosts == obj.containsExteriorBoundaryGhosts) &&
             (hideFromGUI == obj.hideFromGUI) &&
-            (LODs == obj.LODs));
+            (LODs == obj.LODs) &&
+            (presentGhostZoneTypes == obj.presentGhostZoneTypes));
 }
 
 // ****************************************************************************
@@ -643,6 +646,7 @@ avtMeshMetaData::SelectAll()
     Select(ID_containsExteriorBoundaryGhosts, (void *)&containsExteriorBoundaryGhosts);
     Select(ID_hideFromGUI,                    (void *)&hideFromGUI);
     Select(ID_LODs,                           (void *)&LODs);
+    Select(ID_presentGhostZoneTypes,          (void *)&presentGhostZoneTypes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

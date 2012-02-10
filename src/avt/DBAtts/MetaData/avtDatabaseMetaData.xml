@@ -253,6 +253,12 @@
     </Function>
     <Function name="Empty" user="true" member="true">
     </Function>
+    <Function name="GetGhostZoneTypesPresent" user="true" member="true">
+    </Function>
+    <Function name="ClearGhostTypesPresent" user="true" member="true">
+    </Function>
+    <Function name="AddGhostZoneTypePresent" user="true" member="true">
+    </Function>
     <Include file="header" quoted="false">
       Expression.h
     </Include>

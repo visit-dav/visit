@@ -113,6 +113,19 @@ enum avtGhostType
     AVT_MAYBE_GHOSTS    /* 3 */
 };
 
+//
+// Note:
+// These are used in a bit mask.
+// If you need to extend the available types
+// make sure to shift new enum values properly.
+//
+enum avtGhostsZonesPresent
+{
+    AVT_NO_GHOST_ZONES          = 0,
+    AVT_BOUNDARY_GHOST_ZONES,  /* 1 */
+    AVT_NESTING_GHOST_ZONES    /* 2 */
+};
+
 enum avtMeshCoordType
 {
     AVT_XY      = 0,

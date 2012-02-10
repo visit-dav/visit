@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -6772,5 +6772,88 @@ const intVector& avtDatabaseMetaData::GetRestrictedMatnos(const std::string& var
 bool avtDatabaseMetaData::Empty() const
 {
     return (GetNumMeshes() == 0 && GetNumCurves() == 0);
+}
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::GetGhostZoneTypesPresent
+//
+//  Purpose:
+//      Gets the type of ghost zones present in a particular mesh.
+//
+//  Arguments:
+//      name     The name of a mesh.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Tue Feb  7 11:15:20 PST 2012
+//
+// ****************************************************************************
+
+int
+avtDatabaseMetaData::GetGhostZoneTypesPresent(std::string name) const
+{
+    for (int i = 0 ; i < GetNumMeshes() ; i++)
+    {
+        if (GetMeshes(i).name == name)
+        {
+            return GetMeshes(i).presentGhostZoneTypes;
+        }
+    }
+    return AVT_NO_GHOST_ZONES;
+}
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::GetGhostZoneTypesPresent
+//
+//  Purpose:
+//      Sets type of ghost zones present to AVT_NO_GHOST_ZONES.
+//
+//  Arguments:
+//      name     The name of a mesh.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Tue Feb  7 11:15:20 PST 2012
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::ClearGhostTypesPresent(std::string name)
+{
+    for (int i = 0 ; i < GetNumMeshes() ; i++)
+    {
+        if (GetMeshes(i).name == name)
+        {
+            GetMeshes(i).presentGhostZoneTypes = AVT_NO_GHOST_ZONES;
+            break;
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::AddGhostZoneTypePresent
+//
+//  Purpose:
+//      Adds to the types of ghost zones present in a particular mesh.
+//
+//  Arguments:
+//      name     The name of a mesh.
+//      v        Type of ghost zones present.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Tue Feb  7 11:15:20 PST 2012
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::AddGhostZoneTypePresent(std::string name,
+                                            avtGhostsZonesPresent v)
+{
+    for (int i = 0 ; i < GetNumMeshes() ; i++)
+    {
+        if (GetMeshes(i).name == name)
+        {
+            GetMeshes(i).presentGhostZoneTypes |= v;
+            break;
+        }
+    }
 }
 
