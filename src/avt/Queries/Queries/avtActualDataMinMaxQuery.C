@@ -44,6 +44,7 @@
 
 #include <avtCondenseDatasetFilter.h>
 #include <avtOriginatingSource.h>
+#include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
 
 
@@ -120,6 +121,11 @@ avtActualDataMinMaxQuery::~avtActualDataMinMaxQuery()
 //    Kathleen Bonnell, Thu May  6 17:36:43 PDT 2004 
 //    Request OriginalCellsArray if zones have not been preserved. 
 //
+//    Kathleen Biagas, Fri Feb 10 11:30:54 PST 2012
+//    ZonesPreserved may not be the same on all processor, so make sure if
+//    any processor reports zones are not preserved, they all take that value
+//    so the same path through the code is used.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -128,6 +134,8 @@ avtActualDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
     Preparation(inData);
 
     bool zonesPreserved  = GetInput()->GetInfo().GetValidity().GetZonesPreserved();
+    zonesPreserved = (bool)UnifyMinimumValue((int)zonesPreserved);
+
     if (!timeVarying && zonesPreserved)
     {
         avtContract_p contract = 
