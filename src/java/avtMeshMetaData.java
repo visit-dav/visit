@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class avtMeshMetaData extends AttributeSubject
 {
-    private static int avtMeshMetaData_numAdditionalAtts = 49;
+    private static int avtMeshMetaData_numAdditionalAtts = 50;
 
     public avtMeshMetaData()
     {
@@ -150,6 +150,7 @@ public class avtMeshMetaData extends AttributeSubject
         containsExteriorBoundaryGhosts = false;
         hideFromGUI = false;
         LODs = 1;
+        presentGhostZoneTypes = 0;
     }
 
     public avtMeshMetaData(int nMoreFields)
@@ -242,6 +243,7 @@ public class avtMeshMetaData extends AttributeSubject
         containsExteriorBoundaryGhosts = false;
         hideFromGUI = false;
         LODs = 1;
+        presentGhostZoneTypes = 0;
     }
 
     public avtMeshMetaData(avtMeshMetaData obj)
@@ -334,6 +336,7 @@ public class avtMeshMetaData extends AttributeSubject
         containsExteriorBoundaryGhosts = obj.containsExteriorBoundaryGhosts;
         hideFromGUI = obj.hideFromGUI;
         LODs = obj.LODs;
+        presentGhostZoneTypes = obj.presentGhostZoneTypes;
 
         SelectAll();
     }
@@ -458,7 +461,8 @@ public class avtMeshMetaData extends AttributeSubject
                 (nodeOrigin == obj.nodeOrigin) &&
                 (containsExteriorBoundaryGhosts == obj.containsExteriorBoundaryGhosts) &&
                 (hideFromGUI == obj.hideFromGUI) &&
-                (LODs == obj.LODs));
+                (LODs == obj.LODs) &&
+                (presentGhostZoneTypes == obj.presentGhostZoneTypes));
     }
 
     // Property setting methods
@@ -798,6 +802,12 @@ public class avtMeshMetaData extends AttributeSubject
         Select(48);
     }
 
+    public void SetPresentGhostZoneTypes(int presentGhostZoneTypes_)
+    {
+        presentGhostZoneTypes = presentGhostZoneTypes_;
+        Select(49);
+    }
+
     // Property getting methods
     public String               GetName() { return name; }
     public String               GetOriginalName() { return originalName; }
@@ -848,6 +858,7 @@ public class avtMeshMetaData extends AttributeSubject
     public boolean              GetContainsExteriorBoundaryGhosts() { return containsExteriorBoundaryGhosts; }
     public boolean              GetHideFromGUI() { return hideFromGUI; }
     public int                  GetLODs() { return LODs; }
+    public int                  GetPresentGhostZoneTypes() { return presentGhostZoneTypes; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -950,6 +961,8 @@ public class avtMeshMetaData extends AttributeSubject
             buf.WriteBool(hideFromGUI);
         if(WriteSelect(48, buf))
             buf.WriteInt(LODs);
+        if(WriteSelect(49, buf))
+            buf.WriteInt(presentGhostZoneTypes);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1104,6 +1117,9 @@ public class avtMeshMetaData extends AttributeSubject
         case 48:
             SetLODs(buf.ReadInt());
             break;
+        case 49:
+            SetPresentGhostZoneTypes(buf.ReadInt());
+            break;
         }
     }
 
@@ -1159,6 +1175,7 @@ public class avtMeshMetaData extends AttributeSubject
         str = str + boolToString("containsExteriorBoundaryGhosts", containsExteriorBoundaryGhosts, indent) + "\n";
         str = str + boolToString("hideFromGUI", hideFromGUI, indent) + "\n";
         str = str + intToString("LODs", LODs, indent) + "\n";
+        str = str + intToString("presentGhostZoneTypes", presentGhostZoneTypes, indent) + "\n";
         return str;
     }
 
@@ -1213,5 +1230,6 @@ public class avtMeshMetaData extends AttributeSubject
     private boolean              containsExteriorBoundaryGhosts;
     private boolean              hideFromGUI;
     private int                  LODs;
+    private int                  presentGhostZoneTypes;
 }
 
