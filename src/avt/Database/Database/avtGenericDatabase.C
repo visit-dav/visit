@@ -664,6 +664,11 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         spec->TurnNodeNumbersOn();
     }
 
+    // clear the present ghost zone types state in the db metadata
+    // (this is the current path to get things set in the data atts...)
+    string meshname = md->MeshForVar(spec->GetVariable());
+    md->ClearGhostTypesPresent(meshname);
+
     bool alreadyDidNesting    = false;
     bool alreadyDidGhosts     = false;
     bool didSimplifiedNesting = false;
@@ -5458,7 +5463,11 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //
 //    Cyrus Harrison, Fri Feb 15 09:35:20 PST 2008
 //    Changed MustMaintainOriginalConnectivity warning to only mention
-//    specmf, since the matvf + ghost zones restriction was resolved. 
+//    specmf, since the matvf + ghost zones restriction was resolved.
+//
+//    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
+//    Added logic to support presentGhostZoneTypes, which allows us to
+//    differentiate between ghost zones for boundaries & nesting.
 //
 // ****************************************************************************
 
@@ -5637,6 +5646,9 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     }
 
     bool madeNewZones = madeGhosts && (ghostType == GHOST_ZONE_DATA);
+    // if we have created ghost zones, add to present ghost types 
+    if(madeNewZones)
+        md->AddGhostZoneTypePresent(meshname, AVT_BOUNDARY_GHOST_ZONES);
     return madeNewZones;
 }
 
@@ -7406,6 +7418,10 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
 //    Fixed bug preventing domain nesting from being applied if we have
 //    more MPI tasks than domains.
 //
+//    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
+//    Added logic to support presentGhostZoneTypes, which allows us to
+//    differentiate between ghost zones for boundaries & nesting.
+//
 // ****************************************************************************
 
 bool
@@ -7481,6 +7497,7 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
         {
             GetMetaData(ts)->SetContainsGhostZones(meshname, 
                                                    AVT_CREATED_GHOSTS);
+            GetMetaData(ts)->AddGhostZoneTypePresent(meshname, AVT_NESTING_GHOST_ZONES);
         }
     }
 
@@ -7744,6 +7761,11 @@ avtGenericDatabase::CreateGlobalNodes(avtDatasetCollection &ds,
 //  Programmer:   Hank Childs
 //  Creation:     July 26, 2007
 //
+//  Modifications:
+//    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
+//    Added logic to support presentGhostZoneTypes, which allows us to
+//    differentiate between ghost zones for boundaries & nesting.
+//
 // ****************************************************************************
 
 bool
@@ -7809,7 +7831,10 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     }
 
     if (spec->GetDesiredGhostDataType() != NO_GHOST_DATA)
+    {
         md->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
+        md->AddGhostZoneTypePresent(meshname, AVT_NESTING_GHOST_ZONES);
+    }
 
     src->DatabaseProgress(1, 0, progressString);
 

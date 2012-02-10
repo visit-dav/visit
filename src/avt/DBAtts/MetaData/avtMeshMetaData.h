@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -152,6 +152,7 @@ public:
         ID_containsExteriorBoundaryGhosts,
         ID_hideFromGUI,
         ID_LODs,
+        ID_presentGhostZoneTypes,
         ID__LAST
     };
 
@@ -205,12 +206,13 @@ public:
     bool                 containsExteriorBoundaryGhosts;
     bool                 hideFromGUI;
     int                  LODs;
+    int                  presentGhostZoneTypes;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTMESHMETADATA_TMFS "ssbiiiibIbiissssssbDDiisss*aiissi*i*bibbbbibFFbDibbi"
+#define AVTMESHMETADATA_TMFS "ssbiiiibIbiissssssbDDiisss*aiissi*i*bibbbbibFFbDibbii"
 
 #endif
