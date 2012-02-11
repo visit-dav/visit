@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (c) 2000 - 2006, The Regents of the University of California
+# Copyright (c) 2000 - 2012, The Regents of the University of California
 # Produced at the Lawrence Livermore National Laboratory
 # All rights reserved.
 #
@@ -619,6 +619,9 @@ class WindowSizeParser(XMLParser):
 #   Added support for reading compute engine information needed to restart
 #   parallel compute engines from the session file.
 #
+#   Brad Whitlock, Fri Feb 10 14:18:54 PST 2012
+#   I added support for -source command line arguments.
+#
 ###############################################################################
 
 class MakeMovie:
@@ -657,6 +660,9 @@ class MakeMovie:
     #
     #   Brad Whitlock, Mon Apr  7 13:22:49 PDT 2008
     #   Added a flag for whether we should use ffmpeg for mpeg encoding.
+    #
+    #   Brad Whitlock, Fri Feb 10 14:19:17 PST 2012
+    #   Set sources to empty list.
     #
     ###########################################################################
 
@@ -757,6 +763,8 @@ class MakeMovie:
         self.debug_real = [0,0,0,0,0]
         self.emailAddresses = ""
         self.engineRestartInterval = 1000000
+        self.sources = []
+        self.adjustview = 0
 
         # Compute engine properties.
         self.useSessionEngineInformation = 1
@@ -844,6 +852,9 @@ class MakeMovie:
     #   Eric Brugger, Tue Jun 16 15:12:46 PDT 2009
     #   Added -enginerestartinterval flag.
     #
+    #   Brad Whitlock, Fri Feb 10 14:20:02 PST 2012
+    #   Add -source argument.
+    #
     ###########################################################################
 
     def PrintUsage(self):
@@ -907,6 +918,36 @@ class MakeMovie:
         print "                       the movie that you want to make and it is created"
         print "                       when you save your session from within VisIt's "
         print "                       GUI after you set up your plots how you want them."
+        print ""
+        print "    -source filename   The source option appends a filename to a list of "
+        print "                       filenames to be used as the new sources when "
+        print "                       restoring the session file selected via the "
+        print "                       -sessionfile command line argument. If you want to"
+        print "                       override multiple sources in the session file then "
+        print "                       you must pass multiple instances of the -source "
+        print "                       command line argument."
+        print ""
+        print "                       Example:"
+        print "                          visit -movie -geometry 1000x1000 -format mpeg \ "
+        print "                                -sessionfile A.session \ "
+        print "                                -source new.silo -source other.silo"
+        print ""
+        print "                       If you are replacing a time series of files, remember"
+        print "                       that VisIt often renames them slightly. A time series"
+        print "                       composed of files with names A0000.silo, A0001.silo, "
+        print '                       A0002.silo, ... will have the name: "A*.silo database"'
+        print "                       When you pass the -source argument to visit -movie, "
+        print '                       be sure to pass -source "A*.silo database". '
+        print ""
+        print "    -adjustview        This command line argument is useful when -sessionfile"
+        print "                       and -source arguments are given since it will cause the"
+        print "                       view to be adjusted for the bounds of the new dataset."
+        print "                       When replacing a dataset using -source, the new dataset"
+        print "                       may have different extents, making the view stored in"
+        print "                       the session file less then optimal. The -adjustview"
+        print "                       option resets the view so the new dataset will fill the"
+        print "                       screen while still preserving the view normal & up "
+        print "                       vectors, 2 important components of the view."
         print ""
         print "    -scriptfile name   The scriptfile option lets you pick the name"
         print "                       of a VisIt Python script to use as input for your"
@@ -1231,6 +1272,9 @@ class MakeMovie:
     #   Eric Brugger, Tue Jun 16 15:12:46 PDT 2009
     #   Added -enginerestartinterval flag.
     #
+    #   Brad Whitlock, Fri Feb 10 14:20:32 PST 2012
+    #   Add -source argument.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -1328,6 +1372,18 @@ class MakeMovie:
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
+            elif(commandLine[i] == "-source"):
+                if((i+1) < len(commandLine)):
+                    filename = commandLine[i+1]
+                    if string.find(filename, ":") == -1:
+                        filename = "localhost:" + filename
+                    self.sources = self.sources + [filename]
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
+            elif(commandLine[i] == "-adjustview"):
+                self.adjustview = 1
             elif(commandLine[i] == "-scriptfile"):
                 if((i+1) < len(commandLine)):
                     self.scriptFile = commandLine[i+1]
@@ -1913,19 +1969,41 @@ class MakeMovie:
     #   self.engineCommandLineProperties. This makes the script once again
     #   able to read engine settings used to create a session file.
     #
+    #   Brad Whitlock, Fri Feb 10 16:05:14 PST 2012
+    #   Something higher up in the session file was choking the parsing so
+    #   let's just focus on the RunningEngines section if we can.
+    #
     ###########################################################################
 
     def ReadEngineProperties(self, sessionfile):   
         try:
             # Read the file.
-            f = open(sessionfile, "r")
+            f = open(sessionfile, "rt")
             lines = f.readlines()
             f.close()
 
-            # Parse the file
+            # Try and just get the RunningEngines part of it. This code here 
+            # relies on the white spacing, which is a hack but session files
+            # are machine-generated so it should not matter much.
+            runningEngines = []
+            reading = 0
+            indent = 0
+            for line in lines:
+                level = string.find(line, "<")
+                if reading == 0:
+                    if string.find(line, "<Object name=\"RunningEngines\">") != -1:
+                        reading = 1
+                        runningEngines = runningEngines + [line]
+                        indent = level
+                else:
+                    runningEngines = runningEngines + [line]
+                    if level <= indent:
+                        break
+
+            # Parse the running engines section, if present.
+            p = EngineAttributesParser()
             try:
-                p = EngineAttributesParser()
-                for line in lines:
+                for line in runningEngines:
                     p.feed(line)
                 p.close()
             except:
@@ -1997,6 +2075,9 @@ class MakeMovie:
     #   Brad Whitlock, Thu Oct  9 13:17:04 PDT 2008
     #   Applied a user's fix for setting the launch arguments.
     #
+    #   Brad Whitlock, Fri Feb 10 16:09:24 PST 2012
+    #   Change -timeout to -idle-timeout.
+    #
     ###########################################################################
 
     def CreateEngineArguments(self, engineProperties):
@@ -2040,7 +2121,7 @@ class MakeMovie:
         arguments = arguments + ["-forcestatic"]
 
         if "timeout" in engineProperties.keys():
-            arguments = arguments + ["-timeout", "%d" % engineProperties["timeout"]]
+            arguments = arguments + ["-idle-timeout", "%d" % engineProperties["timeout"]]
 
         if "arguments" in engineProperties.keys():
             arguments = arguments + engineProperties["arguments"]
@@ -2182,6 +2263,9 @@ class MakeMovie:
     #
     #   Brad Whitlock, Wed Apr 16 16:43:03 PDT 2008
     #   Fixed a problem with finding user-defined movie template work files.
+    #
+    #   Brad Whitlock, Fri Feb 10 14:25:56 PST 2012
+    #   I added support for restoring sessions using different sources.
     #
     ###########################################################################
 
@@ -2404,10 +2488,27 @@ class MakeMovie:
 
             # Make the viewer try and restore its session using the file that
             # was passed in.
-            RestoreSession(self.stateFile, 0)
+            if len(self.sources) == 0:
+                RestoreSession(self.stateFile, 0)
+            else:
+                RestoreSessionWithDifferentSources(self.stateFile, 0, self.sources)
+                # Restoring the session is messing up adding the new time sliders 
+                # from the new databases to the new window. Reopen the files to
+                # make the time sliders get added properly.
+                for src in self.sources:
+                    ReOpenDatabase(src)
 
             # Make sure that plots are all drawn.
             DrawPlots()
+
+            # Reset the view but preserve the viewpoint.
+            if self.adjustview:
+                v0 = GetView3D()
+                ResetView()
+                v1 = GetView3D()
+                v1.viewNormal = v0.viewNormal
+                v1.viewUp = v0.viewUp
+                SetView3D(v1)
 
             # Iterate over all of the frames and save them out.
             self.IterateAndSaveFrames()
