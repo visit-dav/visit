@@ -252,6 +252,41 @@ Test("samrai_20")
 
 DeleteAllPlots()
 
+# test matvf exprs
+DefineScalarExpression("copper_vf",'matvf(materials,"Copper")')
+AddPlot("Pseudocolor","copper_vf")
+DrawPlots()
+patts = PseudocolorAttributes()
+Test("samrai_copper_matvf_01")
+patts.centering = patts.Nodal  # Natural, Nodal, Zonal
+SetPlotOptions(patts)
+Test("samrai_copper_matvf_02")
+patts.centering = patts.Zonal # Natural, Nodal, Zonal
+SetPlotOptions(patts)
+Test("samrai_copper_matvf_03")
+patts.centering = patts.Natural # Natural, Nodal, Zonal
+SetPlotOptions(patts)
+Test("samrai_copper_matvf_04")
+
+DeleteAllPlots()
+
+DefineScalarExpression("gold_den",'val4mat(Density,"Gold")')
+AddPlot("Pseudocolor","gold_den")
+DrawPlots()
+patts = PseudocolorAttributes()
+Test("samrai_gold_val4mat_01")
+patts.centering = patts.Nodal  # Natural, Nodal, Zonal
+SetPlotOptions(patts)
+Test("samrai_gold_val4mat_02")
+patts.centering = patts.Zonal # Natural, Nodal, Zonal
+SetPlotOptions(patts)
+Test("samrai_gold_val4mat_03")
+patts.centering = patts.Natural # Natural, Nodal, Zonal
+SetPlotOptions(patts)
+Test("samrai_gold_val4mat_04")
+
+DeleteAllPlots()
+
 #
 # Open a new database that has levels that change over time so we can test
 # that plots get the right metadata and SIL as time advances.
