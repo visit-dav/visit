@@ -425,6 +425,8 @@ GetMeshes(0).cellOrigin = 0
 GetMeshes(0).spatialDimension = 3
 GetMeshes(0).hasLogicalBounds = 0
 GetMeshes(0).logicalBounds = (0, 0, 0)
+GetMeshes(0).hasNumberCells = 0
+GetMeshes(0).numberCells = 0
 GetMeshes(0).topologicalDimension = 3
 GetMeshes(0).xUnits = ""
 GetMeshes(0).yUnits = ""
@@ -469,6 +471,7 @@ GetMeshes(0).nodeOrigin = 0
 GetMeshes(0).containsExteriorBoundaryGhosts = 0
 GetMeshes(0).hideFromGUI = 0
 GetMeshes(0).LODs = 1
+GetMeshes(0).presentGhostZoneTypes = 0
 #subsets does not contain any avtSubsetsMetaData objects.
 GetScalars(0).name = "pressure"
 GetScalars(0).originalName = "pressure"
