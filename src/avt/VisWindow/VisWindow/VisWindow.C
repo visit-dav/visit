@@ -4849,10 +4849,9 @@ VisWindow::Pick(int x, int y)
     // Compensate for window centering and scaling.
     double *windowCenter = cam->GetWindowCenter();
     double focalDisk = cam->GetFocalDisk();
-
-    viewPoint[0] = viewPoint[0] -
+    viewPoint[0] = viewPoint[0] +
         (aspect[0] - 1.) * windowCenter[0] * focalDisk;
-    viewPoint[1] = viewPoint[1] -
+    viewPoint[1] = viewPoint[1] +
         (aspect[1] - 1.) * windowCenter[1] * focalDisk;
 
     //
