@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -53,6 +53,7 @@
 #include <vtkDataSetWriter.h>
 #include <vtkInformation.h>
 #include <vtkFloatArray.h>
+#include <vtkGeometryFilter.h>
 #include <vtkOBJWriter.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -347,17 +348,16 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //  Modifications:
 //    Kathleen Bonnell, Thu Jan  2 15:16:50 PST 2003 
 //    Replace MakeObject() with NewInstance() to match new vtk api.
+//
+//    Brad Whitlock, Thu Feb 16 10:08:08 PST 2012
+//    Add vtkGeometryFilter to ensure that we have polydata for the OBJ writer.
+//
 // ****************************************************************************
 
 void
 avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
                                    const char *label)
 {
-    if (ds->GetDataObjectType() != VTK_POLY_DATA)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
     vtkDataSet *activeDS = ds;
     vtkCellDataToPointData *cd2pd = NULL;
 
@@ -370,8 +370,13 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
         cd2pd = vtkCellDataToPointData::New();
         cd2pd->SetInput(activeDS);
         activeDS = cd2pd->GetOutput();
-        activeDS->Update();
     }
+
+    // Make sure that we have polydata.
+    vtkGeometryFilter *geom = vtkGeometryFilter::New();
+    geom->SetInput(activeDS);
+    activeDS = geom->GetOutput();
+    activeDS->Update();
 
     vtkDataSet *toBeWritten = (vtkDataSet *) activeDS->NewInstance();
     toBeWritten->ShallowCopy(activeDS);
@@ -427,6 +432,7 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
     {
         cd2pd->Delete();
     }
+    geom->Delete();
 }
 
 

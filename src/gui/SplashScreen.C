@@ -265,7 +265,7 @@ SplashScreen::SplashScreen(bool cyclePictures)
     lrLayout->addLayout(rLayout );
     
 
-    QString C("(c) 2000-2011 LLNS. ");
+    QString C("(c) 2000-2012 LLNS. ");
     C += tr("All Rights Reserved");
     C += ".";
     lLayout->addWidget(new QLabel(C, this));
