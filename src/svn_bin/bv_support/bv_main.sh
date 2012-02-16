@@ -822,7 +822,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
                  VISIT_FILE="$(cat tmp$$)"
                  USE_VISIT_FILE="yes";;
               Parallel)
-                 parallel="yes"; DO_ICET="yes";;
+                 parallel="yes"; DO_ICET="yes"; ON_ICET="on";;
               PythonModule)
                  DO_MODULE="yes";;
               Java)
@@ -860,6 +860,13 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         add_checklist_vars=${add_checklist_vars}" "${output_str}
     done
 
+    for (( i=0; i < ${#noniolibs[*]}; ++i ))
+    do
+        initializeFunc="bv_${noniolibs[$i]}_graphical"
+        output_str="$($initializeFunc)"
+        add_checklist_vars=${add_checklist_vars}" "${output_str}
+    done
+
 
     $DLG --backtitle "$DLG_BACKTITLE" --title "Select 3rd party libraries" --checklist "Select the optional 3rd party libraries to be built and installed:" 0 0 0 $add_checklist_vars 2> tmp$$
     retval=$?
@@ -872,6 +879,12 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         for (( bv_i=0; bv_i < ${#iolibs[*]}; ++bv_i ))
         do
           initializeFunc="bv_${iolibs[$bv_i]}_disable"
+          $initializeFunc
+        done
+        
+        for (( bv_i=0; bv_i < ${#noniolibs[*]}; ++bv_i ))
+        do
+          initializeFunc="bv_${noniolibs[$bv_i]}_disable"
           $initializeFunc
         done
         

@@ -217,25 +217,27 @@ nodbiolibs[1]="qt"
 nodbiolibs[2]="python"
 
 #all the io libraries
-iolibs[0]="advio"
-iolibs[1]="boxlib"
-iolibs[2]="cgns"
-iolibs[3]="cfitsio"
-iolibs[4]="ccmio"
-iolibs[5]="exodus"
-iolibs[6]="fastbit"
-iolibs[7]="gdal"
-iolibs[8]="hdf4"
-iolibs[9]="hdf5"
-iolibs[10]="itaps"
-iolibs[11]="netcdf"
-iolibs[12]="h5part"
-iolibs[13]="szip"
-iolibs[14]="silo"
-iolibs[15]="xdmf"
-iolibs[16]="adios"
-iolibs[17]="mxml"
+iolibs[0]="adios"
+iolibs[1]="advio"
+iolibs[2]="boxlib"
+iolibs[3]="ccmio"
+iolibs[4]="cfitsio"
+iolibs[5]="cgns"
+iolibs[6]="exodus"
+iolibs[7]="fastbit"
+iolibs[8]="gdal"
+iolibs[9]="h5part"
+iolibs[10]="hdf4"
+iolibs[11]="hdf5"
+iolibs[12]="itaps"
+iolibs[13]="mxml"
+iolibs[14]="netcdf"
+iolibs[15]="silo"
+iolibs[16]="szip"
+iolibs[17]="xdmf"
 
+#all the optional non io libraries
+noniolibs[0]="icet"
 
 #
 # Releasibility of these libs is not yet understood
@@ -292,6 +294,11 @@ function bv_write_unified_file
     for (( i = 0; i < ${#iolibs[*]}; ++i ))
     do
         echo "iolibs[$i]=\"${iolibs[$i]}\"" >> $OUTPUT_bv_FILE
+    done
+
+    for (( i = 0; i < ${#noniolibs[*]}; ++i ))
+    do
+        echo "noniolibs[$i]=\"${noniolibs[$i]}\"" >> $OUTPUT_bv_FILE
     done
 
     for (( i = 0; i < ${#advancedlibs[*]}; ++i ))

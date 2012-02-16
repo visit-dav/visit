@@ -44,7 +44,7 @@ printf "%-15s %s [%s]\n" "--advio"   "Build AdvIO" "$DO_ADVIO"
 
 function bv_advio_graphical
 {
-local graphical_out="ADVIO    $ADVIO_VERSION($ADVIO_FILE)     $ON_ADVIO"
+local graphical_out="AdvIO    $ADVIO_VERSION($ADVIO_FILE)     $ON_ADVIO"
 echo $graphical_out
 }
 
