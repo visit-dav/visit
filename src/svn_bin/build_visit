@@ -201,27 +201,30 @@ nodbiolibs[1]="qt"
 nodbiolibs[2]="python"
 
 #all the io libraries
-bsd_iolibs[0]="advio"
-bsd_iolibs[1]="boxlib"
-bsd_iolibs[2]="cgns"
-bsd_iolibs[3]="cfitsio"
-bsd_iolibs[4]="ccmio"
-bsd_iolibs[5]="exodus"
-bsd_iolibs[6]="fastbit"
-bsd_iolibs[7]="gdal"
-bsd_iolibs[8]="hdf4"
-bsd_iolibs[9]="hdf5"
-bsd_iolibs[10]="itaps"
-bsd_iolibs[11]="netcdf"
-bsd_iolibs[12]="h5part"
-bsd_iolibs[13]="szip"
-bsd_iolibs[14]="silo"
-bsd_iolibs[15]="xdmf"
-bsd_iolibs[16]="adios"
-bsd_iolibs[17]="mxml"
+bsd_iolibs[0]="adios"
+bsd_iolibs[1]="advio"
+bsd_iolibs[2]="boxlib"
+bsd_iolibs[3]="ccmio"
+bsd_iolibs[4]="cfitsio"
+bsd_iolibs[5]="cgns"
+bsd_iolibs[6]="exodus"
+bsd_iolibs[7]="fastbit"
+bsd_iolibs[8]="gdal"
+bsd_iolibs[9]="h5part"
+bsd_iolibs[10]="hdf4"
+bsd_iolibs[11]="hdf5"
+bsd_iolibs[12]="itaps"
+bsd_iolibs[13]="mxml"
+bsd_iolibs[14]="netcdf"
+bsd_iolibs[15]="silo"
+bsd_iolibs[16]="szip"
+bsd_iolibs[17]="xdmf"
 
 gpl_iolibs[0]="netcdf"
 gpl_iolibs[1]="R"
+
+#all the optional non io libraries
+noniolibs[0]="icet"
 
 #
 # Releasibility of these libs is not yet understood
@@ -315,6 +318,11 @@ function bv_write_unified_file
     for (( i = 0; i < ${#iolibs[*]}; ++i ))
     do
         echo "iolibs[$i]=\"${iolibs[$i]}\"" >> $OUTPUT_bv_FILE
+    done
+
+    for (( i = 0; i < ${#noniolibs[*]}; ++i ))
+    do
+        echo "noniolibs[$i]=\"${noniolibs[$i]}\"" >> $OUTPUT_bv_FILE
     done
 
     for (( i = 0; i < ${#advancedlibs[*]}; ++i ))
