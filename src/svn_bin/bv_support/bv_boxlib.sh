@@ -23,11 +23,11 @@ return ""
 
 function bv_boxlib_info
 {
-export BOXLIB_VERSION=${BOXLIB_VERSION:-"2011.12.14"}
-export BOXLIB_FILE=${BOXLIB_FILE:-"BoxLib.121411.tar.gz"}
-export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"2011.12.14"}
-export BOXLIB_URL=${BOXLIB_URL:-"https://ccse.lbl.gov/pub/BoxLib/"}
-export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"BoxLib/Src/C_BaseLib"}
+export BOXLIB_VERSION=${BOXLIB_VERSION:-"0.1.8"}
+export BOXLIB_FILE=${BOXLIB_FILE:-"ccse-${BOXLIB_VERSION}.tar.gz"}
+export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"0.1.8"}
+export BOXLIB_URL=${BOXLIB_URL:-"https://ccse.lbl.gov/Software/tarfiles/"}
+export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"ccse-${BOXLIB_VERSION}/Src/C_BaseLib"}
 }
 
 function bv_boxlib_print
