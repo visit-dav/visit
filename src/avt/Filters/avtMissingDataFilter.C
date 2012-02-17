@@ -229,7 +229,10 @@ avtMissingDataFilter::PreExecute()
 // Creation:   Tue Jan 10 09:31:17 PST 2012
 //
 // Modifications:
-//   
+//
+//    Gunther H. Weber, Thu Feb 16 19:38:05 PST 2012
+//    Recompute "missing" if necessary in second pass.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -328,6 +331,20 @@ avtMissingDataFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                     {
                         missingData = input2->GetPointData()->GetArray("avtMissingData");
                         centering = AVT_NODECENT;
+                    }
+
+                    if (missingData)
+                    {
+                        missing = false;
+                        int nTuples = missingData->GetNumberOfTuples();
+                        for (int i = 0; i < nTuples; ++i)
+                        {
+                            if (missingData->GetTuple1(i) != 0)
+                            {
+                                missing = true;
+                                break;
+                            }
+                        }
                     }
                 }
 
