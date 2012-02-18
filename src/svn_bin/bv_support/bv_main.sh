@@ -526,8 +526,6 @@ for arg in "${arguments[@]}" ; do
             cxxflags) CXX_OPT_FLAGS="${arg}";;
             cc) C_COMPILER="${arg}";;
             cxx) CXX_COMPILER="${arg}";;
-            flags-debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"
-                         CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g";;
             makeflags) MAKE_OPT_FLAGS="${arg}";;
             group) GROUP="${arg}";;
             svn) SVNREVISION="${arg}";;
@@ -618,7 +616,7 @@ for arg in "${arguments[@]}" ; do
         --console) GRAPHICAL="no"; ON_GRAPHICAL="off";;
         --debug) set -vx;;
         --download-only) DOWNLOAD_ONLY="yes";;
-        --flags-debug) next_arg="flags-debug";;
+        --flags-debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g";;
         --gdal) DO_GDAL="yes"; ON_GDAL="on";;
         --fortran) DO_FORTRAN="yes"; ON_FORTRAN="on";;
         --group) next_arg="group"; DO_GROUP="yes"; ON_GROUP="on";;
