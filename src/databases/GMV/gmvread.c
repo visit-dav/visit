@@ -404,7 +404,9 @@ int gmvread_open(char *filnam)
       ilast = -1;
       for (i = 0; i < isize - 1; i++)
         {
-         if (strncmp((filnam+i),"/",1) == 0) ilast = i;
+         if (strncmp((filnam+i),"/",1) == 0 ||
+             strncmp((filnam+i),"\\",1) == 0)
+           ilast = i;
         }
       if (ilast > -1)
         {
@@ -875,7 +877,7 @@ void rdints(int iarray[], int nvals, FILE* gmvin)
      {
       fscanf(gmvin,"%d",&iarray[i]);
 
-      if ((feof(gmvin) != 0) | (ferror(gmvin) != 0))
+      if ((feof(gmvin) != 0) || (ferror(gmvin) != 0))
         {
          fprintf(stderr,"I/O error while reading gmv input file.\n");
          gmv_data.keyword = GMVERROR;
@@ -4526,7 +4528,7 @@ void ioerrtst(FILE *gmvin)
    /*  Test input file for eof and error.  */
    /*                                      */
 
-   if ((feof(gmvin) != 0) | (ferror(gmvin) != 0))
+   if ((feof(gmvin) != 0) || (ferror(gmvin) != 0))
      {
 /*LLNL*/
       gmverror("I/O error while reading gmv input file.\n");
@@ -6597,7 +6599,7 @@ int ioerrtst2(FILE * gmvrayin)
    /*  Test input file for eof and error.  */
    /*                                      */
 
-   if ((feof(gmvrayin) != 0) | (ferror(gmvrayin) != 0))
+   if ((feof(gmvrayin) != 0) || (ferror(gmvrayin) != 0))
      {
       fprintf(stderr,"I/O error while reading gmv ray input file.\n");
       gmvray_data.nvars = -1;

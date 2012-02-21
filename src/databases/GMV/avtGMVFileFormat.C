@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -816,6 +816,7 @@ gmvCreateUnstructuredGrid(gmvPolyhedralSplit *polyhedralSplit, int &topoDim)
     {
         vtkDataArray *oz = polyhedralSplit->CreateOriginalCells(0, normalCells);
         ugrid->GetCellData()->AddArray(oz);
+        oz->Delete();
     }
 
     return ugrid;
@@ -1111,7 +1112,9 @@ removets(const char *s)
 // Creation:   Wed Oct 27 12:35:02 PDT 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Feb 21 14:06:14 PST 2012
+//   Fix memory leaks. Only consider the file to be open if err == 0.
+//
 // ****************************************************************************
 
 void
@@ -1123,7 +1126,7 @@ avtGMVFileFormat::ReadData()
         fileOpen = false;
         int err = gmvread_open(filenames[0]);
         debug5 << "gmvread_open(" << filenames[0] << ") returned " << err << endl;
-        fileOpen = err >= 0;
+        fileOpen = (err == 0);
 
         if(fileOpen)
         {
@@ -1280,12 +1283,12 @@ avtGMVFileFormat::ReadData()
                         }
                         else
                         {
-#ifndef MDSERVER
-                            arr->Delete(); arr = 0;
-#endif
                             valid = false;
                             debug1 << "Unsupported variable centering" << endl;
                         }
+#ifndef MDSERVER
+                        arr->Delete(); arr = 0;
+#endif
                         avtVectorMetaData *vmd = new avtVectorMetaData;
                         vmd->name = "velocity";
                         vmd->meshName = meshname;
@@ -1334,6 +1337,9 @@ avtGMVFileFormat::ReadData()
                             valid = false;
                             debug1 << "Unsupported variable centering" << endl;
                         }
+#ifndef MDSERVER
+                        arr->Delete(); arr = 0;
+#endif
                         avtScalarMetaData *smd = new avtScalarMetaData;
                         smd->name = name;
                         smd->meshName = meshname;
@@ -1379,12 +1385,12 @@ avtGMVFileFormat::ReadData()
                         }
                         else
                         {
-#ifndef MDSERVER
-                            arr->Delete(); arr = 0;
-#endif
                             valid = false;
                             debug1 << "Unsupported variable centering" << endl;
                         }
+#ifndef MDSERVER
+                        arr->Delete(); arr = 0;
+#endif
                         avtScalarMetaData *smd = new avtScalarMetaData;
                         smd->name = name;
                         smd->meshName = meshname;
@@ -1437,6 +1443,7 @@ avtGMVFileFormat::ReadData()
 #ifndef MDSERVER
                         vtkDataArray *arr = gmvCreateVariable(name.c_str());
                         pos->second.dataset->GetPointData()->AddArray(arr);
+                        arr->Delete();
 #endif
                         avtScalarMetaData *smd = new avtScalarMetaData;
                         smd->name = name;
