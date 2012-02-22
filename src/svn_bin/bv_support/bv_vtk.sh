@@ -102,45 +102,10 @@ EOF
    fi
 }
 
-function apply_vtk_580_patch_2
-{
-    patch -p0 <<\EOF
-diff -c a/Rendering/vtkXOpenGLRenderWindow.cxx visit-vtk-5.8/Rendering/vtkXOpenGLRenderWindow.cxx
-*** a/Rendering/vtkXOpenGLRenderWindow.cxx
---- visit-vtk-5.8/Rendering/vtkXOpenGLRenderWindow.cxx
-***************
-*** 641,647 ****
-        }
-      }
-
-!   if(this->OwnWindow)
-      {
-      vtkDebugMacro(" Mapping the xwindow\n");
-      XMapWindow(this->DisplayId, this->WindowId);
---- 641,647 ----
-        }
-      }
-
-!   if(this->OwnWindow && !this->OffScreenRendering)
-      {
-      vtkDebugMacro(" Mapping the xwindow\n");
-      XMapWindow(this->DisplayId, this->WindowId);
-EOF
-   if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 2 to VTK 5.8.0"
-        return 1
-   else
-        return 0
-   fi
-}
 
 function apply_vtk_580_patch
 {
     apply_vtk_580_patch_1
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-    apply_vtk_580_patch_2
     if [[ $? != 0 ]] ; then
         return 1
     fi
