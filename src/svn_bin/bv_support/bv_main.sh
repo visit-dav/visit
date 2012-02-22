@@ -1087,11 +1087,6 @@ export VISITDIR=${VISITDIR:-$(pwd)}
 
 
 if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
-    for (( bv_i=0; bv_i<${#thirdpartylibs[*]}; ++bv_i ))
-    do
-        initializeFunc="bv_${thirdpartylibs[$bv_i]}_enable"
-        $initializeFunc
-    done
     if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
         #disable all non dbio libraries
         for (( bv_i=0; bv_i<${#nodbiolibs[*]}; ++bv_i ))
@@ -1100,6 +1095,14 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
             $initializeFunc
         done
     fi
+fi
+
+if [[ "$DO_REQUIRED_THIRD_PARTY" == "no" ]] ; then
+    for (( bv_i=0; bv_i<${#thirdpartylibs[*]}; ++bv_i ))
+    do
+        initializeFunc="bv_${thirdpartylibs[$bv_i]}_disable"
+        $initializeFunc
+    done
 fi
 
 if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
@@ -1114,11 +1117,11 @@ cd "$START_DIR"
 # Later we will build Qt.  We are going to bypass their licensing agreement,
 # so echo it here.
 #
-if [[ "$USE_SYSTEM_QT" != "yes" ]]; then
+if [[ "$USE_SYSTEM_QT" != "yes" && "$DO_QT" == "yes" ]]; then
 
     check_if_installed "qt" $QT_VERSION
     if [[ $? == 0 ]] ; then
-    DO_QT="no"
+        DO_QT="no"
     fi
 
     if [[ "$DO_QT" == "yes" && "$DOWNLOAD_ONLY" == "no" ]] ; then

@@ -1,7 +1,7 @@
 function bv_qt_initialize
 {
-    export DO_QT="no"
-    export ON_QT="off"
+    export DO_QT="yes"
+    export ON_QT="on"
     export USE_SYSTEM_QT="no"
     add_extra_commandline_args "qt" "system-qt" 0 "Use qt found on system"
     add_extra_commandline_args "qt" "alt-qt-dir" 1 "Use qt found in alternative directory"

@@ -72,7 +72,7 @@ function bv_xdmf_host_profile
 function bv_xdmf_ensure
 {
     if [[ "$DO_XDMF" == "yes" ]] ; then
-        ensure_built_or_ready "XDMF" $XDMF_VERSION $XDMF_BUILD_DIR $XDMF_FILE
+        ensure_built_or_ready "Xdmf" $XDMF_VERSION $XDMF_BUILD_DIR $XDMF_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_XDMF="no"
