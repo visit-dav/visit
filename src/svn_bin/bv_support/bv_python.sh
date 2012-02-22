@@ -1,9 +1,9 @@
 function bv_python_initialize
 {
-export DO_PYTHON="no"
-export ON_PYTHON="off"
+export DO_PYTHON="yes"
+export ON_PYTHON="on"
 export USE_SYSTEM_PYTHON="no"
-export VISIT_PYTHON_DIR="" 
+export VISIT_PYTHON_DIR=""
 add_extra_commandline_args "python" "system-python" 0 "Using system python"
 }
 

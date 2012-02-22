@@ -1,7 +1,7 @@
 function bv_vtk_initialize
 {
-export DO_VTK="no"
-export ON_VTK="off"
+export DO_VTK="yes"
+export ON_VTK="on"
 }
 
 function bv_vtk_enable

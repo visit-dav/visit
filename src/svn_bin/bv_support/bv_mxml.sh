@@ -52,8 +52,7 @@ printf "%-15s %s [%s]\n" "--mxml" "Build Mxml" "$DO_MXML"
 function bv_mxml_ensure
 {
     if [[ "$DO_MXML" == "yes" ]] ; then
-        ensure_built_or_ready "MXML" $MXML_VERSION $MXML_BUILD_DIR $MXML_FILE
-            
+        ensure_built_or_ready "mxml" $MXML_VERSION $MXML_BUILD_DIR $MXML_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_MXML="no"
