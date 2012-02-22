@@ -1,7 +1,7 @@
 function bv_mesa_initialize
 {
-    export DO_MESA="no"
-    export ON_MESA="off"
+export DO_MESA="no"
+export ON_MESA="off"
 }
 
 function bv_mesa_enable
@@ -31,45 +31,51 @@ export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2/"
 
 function bv_mesa_print
 {
-  printf "%s%s\n" "MESA_FILE=" "${MESA_FILE}"
-  printf "%s%s\n" "MESA_VERSION=" "${MESA_VERSION}"
-  printf "%s%s\n" "MESA_TARGET=" "${MESA_TARGET}"
-  printf "%s%s\n" "MESA_BUILD_DIR=" "${MESA_BUILD_DIR}"
+printf "%s%s\n" "MESA_FILE=" "${MESA_FILE}"
+printf "%s%s\n" "MESA_VERSION=" "${MESA_VERSION}"
+printf "%s%s\n" "MESA_TARGET=" "${MESA_TARGET}"
+printf "%s%s\n" "MESA_BUILD_DIR=" "${MESA_BUILD_DIR}"
 }
 
 function bv_mesa_print_usage
 {
 printf "\t\t%15s\n" "NOTE: not available for download from web"
-printf "%-15s %s [%s]\n" "--mesa" "Build Mesa" "built by default unless --no-thirdparty flag is used"
+printf "%-15s %s [%s]\n" "--mesa" "Build Mesa" "$DO_MESA"
+}
+
+function bv_mesa_graphical
+{
+local graphical_out="Mesa     $MESA_VERSION($MESA_FILE)      $ON_MESA"
+echo $graphical_out
 }
 
 function bv_mesa_host_profile
 {
-    echo "##" >> $HOSTCONF
-    echo \
-"## Specify the location of the mesa." >> $HOSTCONF
-    echo "##" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(VISIT_MESA_DIR \${VISITHOME}/mesa/$MESA_VERSION/\${VISITARCH})" >> $HOSTCONF
-    echo >> $HOSTCONF
-    echo "##" >> $HOSTCONF
+    if [[ "$DO_MESA" == "yes" ]] ; then
+        echo "##" >> $HOSTCONF
+        echo "## Mesa" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_MESA_DIR \${VISITHOME}/mesa/$MESA_VERSION/\${VISITARCH})" >> $HOSTCONF
+        echo >> $HOSTCONF
+    fi
 }
 
 function bv_mesa_selected
 {
-args=$@
-if [[ $args == "--mesa" ]]; then
-    DO_MESA="yes"
-    ON_MESA="on"
-    return 1
-fi
+    args=$@
+    if [[ $args == "--mesa" ]]; then
+        DO_MESA="yes"
+        ON_MESA="on"
+        return 1
+    fi
 
-return 0
+    return 0
 }
 
 function bv_mesa_ensure
 {
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-        if [[ "$DO_MESA" == "yes" || "$DO_VTK" == "yes" ]] ; then
+        if [[ "$DO_MESA" == "yes" ]] ; then
             ensure_built_or_ready "mesa"   $MESA_VERSION   $MESA_BUILD_DIR   $MESA_FILE $MESA_URL
             if [[ $? != 0 ]] ; then
                 return 1
@@ -80,9 +86,9 @@ function bv_mesa_ensure
 
 function bv_mesa_dry_run
 {
-  if [[ "$DO_MESA" == "yes" ]] ; then
-    echo "Dry run option not set for mesa."
-  fi
+    if [[ "$DO_MESA" == "yes" ]] ; then
+        echo "Dry run option not set for mesa."
+    fi
 }
 
 function apply_mesa_75_patch_1
@@ -571,52 +577,52 @@ EOF
 
 function apply_mesa_patch
 {
-   info "Patching Mesa . . ."
-   if [[ ${MESA_VERSION} == "7.5" ]] ; then
-      apply_mesa_75_patch_1
-      if [[ $? != 0 ]] ; then
+    info "Patching Mesa . . ."
+    if [[ ${MESA_VERSION} == "7.5" ]] ; then
+        apply_mesa_75_patch_1
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mesa_75_patch_2
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mesa_75_patch_3
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mesa_75_patch_4
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    elif [[ ${MESA_VERSION} == "7.8.2" ]] ; then
+        apply_mesa_782_patch_1
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mesa_782_patch_2
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    elif [[ ${MESA_VERSION} == "7.10.2" ]] ; then
+        apply_mesa_7102_patch_1
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mesa_7102_patch_2
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mesa_7102_patch_3
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    else
+        warn "Unsupported Mesa Version ${MESA_VERSION}"
         return 1
-      fi
-      apply_mesa_75_patch_2
-      if [[ $? != 0 ]] ; then
-        return 1
-      fi
-      apply_mesa_75_patch_3
-      if [[ $? != 0 ]] ; then
-        return 1
-      fi
-      apply_mesa_75_patch_4
-      if [[ $? != 0 ]] ; then
-        return 1
-      fi
-   elif [[ ${MESA_VERSION} == "7.8.2" ]] ; then
-      apply_mesa_782_patch_1
-      if [[ $? != 0 ]] ; then
-        return 1
-      fi
-      apply_mesa_782_patch_2
-      if [[ $? != 0 ]] ; then
-        return 1
-      fi
-   elif [[ ${MESA_VERSION} == "7.10.2" ]] ; then
-      apply_mesa_7102_patch_1
-      if [[ $? != 0 ]] ; then
-        return 1
-      fi
-      apply_mesa_7102_patch_2
-      if [[ $? != 0 ]] ; then
-        return 1
-      fi
-      apply_mesa_7102_patch_3
-      if [[ $? != 0 ]] ; then
-        return 1
-      fi
-   else
-      warn "Unsupported Mesa Version ${MESA_VERSION}"
-      return 1
-   fi
+    fi
 
-   return 0
+    return 0
 }
 
 
@@ -629,8 +635,8 @@ function build_mesa
     untarred_mesa=$?
 
     if [[ $untarred_mesa == -1 ]] ; then
-       warn "Unable to prepare Mesa build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare Mesa build directory. Giving Up!"
+        return 1
     fi
 
     #
@@ -638,15 +644,15 @@ function build_mesa
     #
     apply_mesa_patch
     if [[ $? != 0 ]] ; then
-       if [[ $untarred_mesa == 1 ]] ; then
-          warn "Giving up on Mesa build because the patch failed."
-          return 1
-       else
-          warn "Patch failed, but continuing.  I believe that this script\n"\
-               "tried to apply a patch to an existing directory which had\n"\
-               "already been patched ... that is, that the patch is\n"\
-               "failing harmlessly on a second application."
-       fi
+        if [[ $untarred_mesa == 1 ]] ; then
+            warn "Giving up on Mesa build because the patch failed."
+            return 1
+         else
+            warn "Patch failed, but continuing.  I believe that this script\n"\
+                 "tried to apply a patch to an existing directory which had\n"\
+                 "already been patched ... that is, that the patch is\n"\
+                 "failing harmlessly on a second application."
+        fi
     fi
 
     #
@@ -674,12 +680,12 @@ function build_mesa
         export AIX_MESA_CFLAGS="-qcpluscmt -qlanglvl=extc99"
         autoconf
         if [[ $? != 0 ]] ; then
-          error "Mesa: AIX autoconf failed!"
+            error "Mesa: AIX autoconf failed!"
         fi
     fi
 
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
-         MESA_STATIC_DYNAMIC="--disable-shared --enable-static"
+        MESA_STATIC_DYNAMIC="--disable-shared --enable-static"
     fi
 
     info 
@@ -687,7 +693,7 @@ function build_mesa
     # Neither of these should be necessary, but we use them as a temporary
     # workaround for a mesa issue.
     if test `uname` = "Linux" ; then
-      HACK_FLAGS="-fPIC -DGLX_USE_TLS"
+        HACK_FLAGS="-fPIC -DGLX_USE_TLS"
     fi
     ./configure \
       CC="${C_COMPILER}" \
@@ -704,8 +710,8 @@ function build_mesa
       --disable-glu                \
       --disable-egl ${MESA_STATIC_DYNAMIC}
     if [[ $? != 0 ]] ; then
-       warn "Mesa: 'configure' for Mangled glX failed.  Giving up"
-       return 1
+        warn "Mesa: 'configure' for Mangled glX failed.  Giving up"
+        return 1
     fi
 
     # Make sure we build 'MesaGL*' libraries, to avoid conflict with GL
@@ -718,14 +724,14 @@ function build_mesa
     info "Building Mesa (Mangled glX) ..."
     ${MAKE} ${MAKE_OPT_FLAGS}
     if [[ $? != 0 ]] ; then
-       warn "Mesa: 'make' for Mangled glX failed.  Giving up"
-       return 1
+        warn "Mesa: 'make' for Mangled glX failed.  Giving up"
+        return 1
     fi
     info "Installing Mesa (Mangled glX) ..."
     ${MAKE} install
     if [[ $? != 0 ]] ; then
-       warn "Mesa: 'make install' for Mangled glX failed.  Giving up"
-       return 1
+        warn "Mesa: 'make install' for Mangled glX failed.  Giving up"
+        return 1
     fi
 
     # Now install #2, the OSMesa that we want/need.
@@ -761,8 +767,8 @@ function build_mesa
       ${DISABLE_GLU}                    \
       --disable-egl  ${MESA_STATIC_DYNAMIC}
     if [[ $? != 0 ]] ; then
-       warn "Mesa: 'configure' for Mangled Offscreen failed.  Giving up"
-       return 1
+        warn "Mesa: 'configure' for Mangled Offscreen failed.  Giving up"
+        return 1
     fi
     # Make sure we build 'MesaGL*' libraries, to avoid conflict with GL
     # libraries supplied by the vendor.
@@ -774,14 +780,14 @@ function build_mesa
     info "Building Mesa (Mangled Offscreen) ..."
     ${MAKE} ${MAKE_OPT_FLAGS}
     if [[ $? != 0 ]] ; then
-       warn "Mesa: 'make' for Mangled Offscreen failed.  Giving up"
-       return 1
+        warn "Mesa: 'make' for Mangled Offscreen failed.  Giving up"
+        return 1
     fi
     info "Installing Mesa (Mangled Offscreen) ..."
     ${MAKE} install
     if [[ $? != 0 ]] ; then
-       warn "Mesa: 'make install' for Mangled Offscreen failed.  Giving up"
-       return 1
+        warn "Mesa: 'make install' for Mangled Offscreen failed.  Giving up"
+        return 1
     fi
 
     # Some versions of Mesa erroneously install GLEW as well.  We need to make
@@ -790,13 +796,13 @@ function build_mesa
     rm -f ${PF}/include/GL/gl*ew.h
 
     if [[ $? != 0 ]] ; then
-       warn "Mesa build failed.  Giving up"
-       return 1
+        warn "Mesa build failed.  Giving up"
+        return 1
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/mesa"
-       chgrp -R ${GROUP} "$VISITDIR/mesa"
+        chmod -R ug+w,a+rX "$VISITDIR/mesa"
+        chgrp -R ${GROUP} "$VISITDIR/mesa"
     fi
     cd "$START_DIR"
     info "Done with Mesa"
@@ -805,22 +811,22 @@ function build_mesa
 
 function bv_mesa_build
 {
-#
-# Build Mesa
-#
-cd "$START_DIR"
-if [[ "$DO_MESA" == "yes" ]] ; then
-    check_if_installed "mesa" $MESA_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping Mesa build.  Mesa is already installed."
-    else
-        info "Building Mesa (~2 minutes)"
-        build_mesa
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install Mesa.  Bailing out."
+    #
+    # Build Mesa
+    #
+    cd "$START_DIR"
+    if [[ "$DO_MESA" == "yes" ]] ; then
+        check_if_installed "mesa" $MESA_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping Mesa build.  Mesa is already installed."
+        else
+            info "Building Mesa (~2 minutes)"
+            build_mesa
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install Mesa.  Bailing out."
+            fi
+            info "Done building Mesa"
         fi
-        info "Done building Mesa"
     fi
-fi
 }
 
