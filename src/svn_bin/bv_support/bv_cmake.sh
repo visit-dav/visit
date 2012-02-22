@@ -1,7 +1,7 @@
 function bv_cmake_initialize
 {
-    export DO_CMAKE="no"
-    export ON_CMAKE="off"
+    export DO_CMAKE="yes"
+    export ON_CMAKE="on"
 }
 
 function bv_cmake_enable

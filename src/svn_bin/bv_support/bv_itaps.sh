@@ -126,7 +126,7 @@ function bv_itaps_ensure
             DO_ITAPS="no"
             error "Unable to build ITAPS_FMDB.  ${ITAPS_FMDB_FILE} not found."
         fi
-        ensure_built_or_ready "itaps"/$ITAPS_VERSION/GRUMMP $ITAPS_GRUMMP_CGM_VERSION $ITAPS_GRUMMP_CGM_BUILD_DIR  $ITAPS_GRUMMP_CGM_FILE $ITAPS_GRUMMP_CGM_URL
+        ensure_built_or_ready "itaps"/$ITAPS_VERSION/GRUMMP $ITAPS_GRUMMP_VERSION $ITAPS_GRUMMP_CGM_BUILD_DIR  $ITAPS_GRUMMP_CGM_FILE $ITAPS_GRUMMP_CGM_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ITAPS="no"
