@@ -267,6 +267,9 @@
 #    paths.  Also ensure paths returned from FindMPI are converted to NATIVE
 #    style.
 #
+#    Eric Brugger, Wed Feb 22 10:14:46 PST 2012
+#    I added support for building without mesa.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -478,6 +481,10 @@ OPTION(VISIT_CREATE_APPBUNDLE_PACKAGE "Create DMG file with Mac App bundle with 
 IF(WIN32)
   OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS" OFF)
 ENDIF(WIN32)
+IF(VISIT_MESA_DIR)
+  OPTION(VISIT_USE_MANGLED_MESA "Enable use of mangled Mesa classes in VisIt"
+ON)
+ENDIF(VISIT_MESA_DIR)
 
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
     IF(NOT DEFINED VISIT_${libvar})
@@ -800,9 +807,9 @@ IF(NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_DBIO_ONLY)
 
 # Configure Mesa support.
-IF(NOT WIN32 AND NOT VISIT_DBIO_ONLY)
+IF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
-ENDIF(NOT WIN32 AND NOT VISIT_DBIO_ONLY)
+ENDIF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
 
 # Configure VTK support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
@@ -1605,11 +1612,19 @@ IF(NOT VISIT_DISABLE_SELECT)
     ENDIF(WIN32)
 ENDIF(NOT VISIT_DISABLE_SELECT)
 
-IF (NOT WIN32)
-  MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to ${OSMESA_SIZE_LIMIT}")
-  SET(VISIT_RENDERING_SIZE_LIMIT ${OSMESA_SIZE_LIMIT} CACHE INTERNAL "rendering size limit")
+IF (NOT WIN32 AND VISIT_MESA_DIR)
+  IF (NOT VISIT_MESA_DIR)
+    MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to ${OSMESA_SIZE_LIMIT}")
+    SET(VISIT_RENDERING_SIZE_LIMIT ${OSMESA_SIZE_LIMIT} CACHE INTERNAL "rendering size limit")
+  ELSE (NOT VISIT_MESA_DIR)
+    # Using 16384 may be a bit risky when running against an engine not using
+    # mesa, but I didn't want to unnecessarily limit the user when running
+    # client/server to a parallel engine.
+    MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to 16384")
+    SET(VISIT_RENDERING_SIZE_LIMIT 4096 CACHE INTERNAL "rendering size limit")
+  ENDIF (NOT VISIT_MESA_DIR)
 ELSE(NOT WIN32)
-  # totally arbitrary, but it is what Mesa was set to when built on Windows
+  # Totally arbitrary, but it is what Mesa was set to when built on Windows
   MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to 16384")
   SET(VISIT_RENDERING_SIZE_LIMIT 16384 CACHE INTERNAL "rendering size limit")
 ENDIF(NOT WIN32)

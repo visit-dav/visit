@@ -205,11 +205,10 @@ done
 # For example: --all-io uses the iolibs array to determine which modules to enable
 
 #for thirdparty option..
-thirdpartylibs[0]="mesa"
-thirdpartylibs[1]="qt"
-thirdpartylibs[2]="cmake"
-thirdpartylibs[3]="vtk"
-thirdpartylibs[4]="python"
+thirdpartylibs[0]="qt"
+thirdpartylibs[1]="cmake"
+thirdpartylibs[2]="vtk"
+thirdpartylibs[3]="python"
 
 #turn off non dbio
 nodbiolibs[0]="mesa"
@@ -238,6 +237,7 @@ iolibs[17]="xdmf"
 
 #all the optional non io libraries
 noniolibs[0]="icet"
+noniolibs[1]="mesa"
 
 #
 # Releasibility of these libs is not yet understood

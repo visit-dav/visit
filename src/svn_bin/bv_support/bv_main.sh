@@ -625,7 +625,7 @@ for arg in "${arguments[@]}" ; do
         --makeflags) next_arg="makeflags";;
         --no-thirdparty) DO_REQUIRED_THIRD_PARTY="no"; ON_THIRD_PARTY="off";;
         --no-hostconf) DO_HOSTCONF="no"; ON_HOSTCONF="off";;
-        --parallel) parallel="yes"; DO_ICET="yes"; ON_parallel="ON";;
+        --parallel) parallel="yes"; DO_ICET="yes"; ON_ICET="on"; DO_MESA="yes"; ON_MESA="on"; ON_parallel="on";;
         --print-vars) next_action="print-vars";;
         --python-module) DO_MODULE="yes"; ON_MODULE="on";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
@@ -822,7 +822,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
                  VISIT_FILE="$(cat tmp$$)"
                  USE_VISIT_FILE="yes";;
               Parallel)
-                 parallel="yes"; DO_ICET="yes"; ON_ICET="on";;
+                 parallel="yes"; DO_ICET="yes"; ON_ICET="on"; DO_MESA="yes"; ON_MESA="on";;
               PythonModule)
                  DO_MODULE="yes";;
               Java)

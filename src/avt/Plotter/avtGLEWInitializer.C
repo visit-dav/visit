@@ -83,6 +83,9 @@ static bool initialized = false;
 //    Brad Whitlock, Fri Oct 21 13:08:02 PDT 2011
 //    Make it work with static linking.
 //
+//    Eric Brugger, Wed Feb 22 10:19:22 PST 2012
+//    I added support for building without mesa.
+//
 // ****************************************************************************
 
 bool initialize(bool force)
@@ -96,8 +99,12 @@ bool initialize(bool force)
     stringvec gl_errors;
     enum GL_Name_Convention convention;
     enum GL_Library_Type libtype;
+#ifdef VISIT_USE_MANGLED_MESA
 #ifndef WIN32
     const bool use_mesa = avtCallback::GetSoftwareRendering();
+#else
+    const bool use_mesa = false;
+#endif
 #else
     const bool use_mesa = false;
 #endif
