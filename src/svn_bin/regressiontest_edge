@@ -142,8 +142,6 @@ else
 fi
 
 skipList_for_Edge="\
-    $testHost,parallel:tests/databases/netcdf.py:netcdf_3_01,netcdf_3_08 \
-    $testHost,scalable,parallel,icet:tests/databases/netcdf.py:netcdf_3_01,netcdf_3_08 \
     $testHost,parallel:tests/hybrid/missingdata.py:missingdata_0_04 \
     $testHost,scalable,parallel,icet:tests/hybrid/missingdata.py:missingdata_0_04 \
     $testHost,serial:tests/plots/streamline_geom.py:streamline_geom_07,streamline_geom_08,streamline_geom_09 \
