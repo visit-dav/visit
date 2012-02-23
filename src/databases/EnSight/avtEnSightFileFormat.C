@@ -49,6 +49,7 @@
 #include <vtkDataArray.h>
 #include <vtkDataArrayCollection.h>
 #include <vtkDataArraySelection.h>
+#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkDataSet.h>
 #include <vtkEnSightReader.h>
@@ -60,6 +61,7 @@
 #include <vtkMultiBlockDataSet.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtMaterial.h>
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
@@ -308,6 +310,11 @@ avtEnSightFileFormat::~avtEnSightFileFormat()
 //    Hank Childs, Fri Jul  9 08:01:47 PDT 2004
 //    Allow for "parts" to be specified as a variable.
 //
+//    Hank Childs, Thu Feb 23 09:54:50 PST 2012
+//    Automatically add arrays for materials if they are available.
+//    This may lead to unnecessary reads (when materials are present, but not
+//    being used), but doing better takes big effort.
+//
 // ****************************************************************************
 
 void
@@ -325,12 +332,23 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
     for (i = 0 ; i < vars2nd.size() ; i++)
         vars.push_back(*(vars2nd[i]));
  
+    if (matnames.size() > 0)
+    {
+        int numRealMats = matnames.size()-1;
+        for (i = 0 ; i < numRealMats ; i++)
+        {
+            vars.push_back(matnames[i].c_str());
+        }
+    }
+
     //
     // Loop through all of the variables and add the ones we are interested in.
     //
     for (j = 0 ; j < vars.size() ; j++)
     {
         if (strcmp(vars[j], "mesh") == 0)
+            continue;
+        if (strcmp(vars[j], "materials") == 0)
             continue;
         if (strcmp(vars[j], "parts") == 0)
             continue;
@@ -722,6 +740,9 @@ avtEnSightFileFormat::GetVectorVar(int ts, int dom, const char *name)
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added timeState arg to satisfy new interface
 //
+//    Hank Childs, Thu Feb 23 09:54:50 PST 2012
+//    Add support for materials when "volume_fraction" scalars are present.
+//
 // ****************************************************************************
 
 void
@@ -755,11 +776,14 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         AddScalarVarToMetaData(md, name, "mesh", AVT_NODECENT);
     }
 
+    matnames.clear();
     for (i = 0 ; i < reader->GetNumberOfScalarsPerElement() ; i++)
     {
         const char *name = reader->GetDescription(i, 
                                     vtkEnSightReader::SCALAR_PER_ELEMENT);
         AddScalarVarToMetaData(md, name, "mesh", AVT_ZONECENT);
+        if (strncmp(name, "volume_fraction", strlen("volume_fraction")) == 0)
+            matnames.push_back(name);
     }
 
     for (i = 0 ; i < reader->GetNumberOfVectorsPerNode() ; i++)
@@ -775,6 +799,140 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                                     vtkEnSightReader::VECTOR_PER_ELEMENT);
         AddVectorVarToMetaData(md, name, "mesh", AVT_ZONECENT);
     }
+
+    if (matnames.size() > 0)
+    {
+        char str[128];
+        SNPRINTF(str, 128, "volume_fraction%d", matnames.size()+1);
+        matnames.push_back(str);
+        avtMaterialMetaData *mmd;
+        mmd = new avtMaterialMetaData("materials", "mesh",
+                                      matnames.size(), matnames);
+        md->Add(mmd);
+    }
 }
 
+
+// ****************************************************************************
+//  Method: avtEnSightFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//      Reads in material information.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 23, 2012
+//
+// ****************************************************************************
+
+void *
+avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
+                              const char *type, void *, DestructorFunction &df)
+{
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) != 0)
+        return NULL;
+
+    int i;
+    int nMaterials = matnames.size();
+
+    // Get the material fractions
+    std::vector<float *> mats(nMaterials);
+    std::vector<vtkFloatArray *> deleteList;
+    int nCells = 0;
+    for (i = 0; i < nMaterials-1; i++)
+    {
+        vtkDataArray *arr = GetVar(ts, domain, matnames[i].c_str());
+        if (arr == NULL)
+        {
+            EXCEPTION1(InvalidVariableException, var);
+        }
+        nCells = arr->GetNumberOfTuples();
+        mats[i] = (float *) arr->GetVoidPointer(0);
+        deleteList.push_back((vtkFloatArray *) arr);
+    }
+
+
+    // Calculate fractions for additional "missing" material
+    float *addMatPtr =  new float[nCells];
+    for(unsigned int cellNo = 0; cellNo < nCells; ++cellNo)
+    {
+        double frac = 1.0;
+        for (int matNo = 0; matNo < nMaterials - 1; ++matNo)
+            frac -= mats[matNo][cellNo];
+        addMatPtr[cellNo] = frac;
+    }
+    mats[nMaterials - 1] = addMatPtr;
+
+    // Build the appropriate data structures
+    std::vector<int> material_list(nCells);
+    std::vector<int> mix_mat;
+    std::vector<int> mix_next;
+    std::vector<int> mix_zone;
+    std::vector<float> mix_vf;
+
+    for (i = 0; i < nCells; ++i)
+    {
+        int j;
+
+        // First look for pure materials
+        int nmats = 0;
+        int lastMat = -1;
+        for (j = 0; j < nMaterials; ++j)
+        {
+            if (mats[j][i] > 0)
+            {
+                nmats++;
+                lastMat = j;
+            }
+        }
+
+        if (nmats == 1)
+        {
+            material_list[i] = lastMat;
+            continue;
+        }
+
+        // For unpure materials, we need to add entries to the tables.
+        material_list[i] = -1 * (1 + mix_zone.size());
+        for (j = 0; j < nMaterials; ++j)
+        {
+            if (mats[j][i] <= 0)
+                continue;
+            // For each material that's present, add to the tables
+            mix_zone.push_back(i);
+            mix_mat.push_back(j);
+            mix_vf.push_back(mats[j][i]);
+            mix_next.push_back(mix_zone.size() + 1);
+        }
+
+        // When we're done, the last entry is a '0' in the mix_next
+        mix_next[mix_next.size() - 1] = 0;
+    }
+
+    int mixed_size = mix_zone.size();
+    // get pointers to pass to avtMaterial.  Windows will except if
+    // an empty std::vector's zeroth item is dereferenced.
+    int *ml = NULL, *mixm = NULL, *mixn = NULL, *mixz = NULL;
+    float *mixv = NULL;
+    if (material_list.size() > 0)
+        ml = &(material_list[0]);
+    if (mix_mat.size() > 0)
+        mixm = &(mix_mat[0]);
+    if (mix_next.size() > 0)
+        mixn = &(mix_next[0]);
+    if (mix_zone.size() > 0)
+        mixz = &(mix_zone[0]);
+    if (mix_vf.size() > 0)
+        mixv = &(mix_vf[0]);
+
+    avtMaterial * mat = new avtMaterial(nMaterials, matnames, nCells, ml,
+                                        mixed_size, mixm, mixn, mixz, mixv);
+
+    df = avtMaterial::Destruct;
+
+    delete [] addMatPtr;
+    for (i = 0 ; i < deleteList.size() ; i++)
+        deleteList[i]->Delete();
+
+    return (void*) mat;
+}
 
