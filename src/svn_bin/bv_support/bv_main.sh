@@ -1099,8 +1099,13 @@ fi
 if [[ "$DO_REQUIRED_THIRD_PARTY" == "no" ]] ; then
     for (( bv_i=0; bv_i<${#thirdpartylibs[*]}; ++bv_i ))
     do
-        initializeFunc="bv_${thirdpartylibs[$bv_i]}_disable"
-        $initializeFunc
+        # check force
+        forceFunc="bv_${thirdpartylibs[$bv_i]}_force"
+        $forceFunc
+        if [[ $? != 0 ]] ; then
+            disableFunc="bv_${thirdpartylibs[$bv_i]}_disable"
+            $disableFunc
+        fi
     done
 fi
 

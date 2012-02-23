@@ -2,6 +2,7 @@ function bv_python_initialize
 {
 export DO_PYTHON="yes"
 export ON_PYTHON="on"
+export FORCE_PYTHON="no"
 export USE_SYSTEM_PYTHON="no"
 export VISIT_PYTHON_DIR=""
 add_extra_commandline_args "python" "system-python" 0 "Using system python"
@@ -11,12 +12,22 @@ function bv_python_enable
 {
 DO_PYTHON="yes"
 ON_PYTHON="on"
+FORCE_PYTHON="yes"
 }
 
 function bv_python_disable
 {
 DO_PYTHON="no"
 ON_PYTHON="off"
+FORCE_PYTHON="no"
+}
+
+function bv_python_force
+{
+  if [[ "$FORCE_PYTHON" == "yes" ]]; then
+     return 0;
+  fi
+  return 1;
 }
 
 function bv_python_system_python

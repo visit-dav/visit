@@ -2,23 +2,34 @@ function bv_cmake_initialize
 {
     export DO_CMAKE="yes"
     export ON_CMAKE="on"
+    export FORCE_CMAKE="no"
 }
 
 function bv_cmake_enable
 {
 DO_CMAKE="yes"
 ON_CMAKE="on"
+FORCE_CMAKE="yes"
 }
 
 function bv_cmake_disable
 {
 DO_CMAKE="no"
 ON_CMAKE="off"
+FORCE_CMAKE="no"
 }
 
 function bv_cmake_depends_on
 {
 return ""
+}
+
+function bv_cmake_force
+{
+  if [[ "$FORCE_CMAKE" == "yes" ]]; then
+     return 0;
+  fi
+  return 1;
 }
 
 function bv_cmake_info
