@@ -1,4 +1,4 @@
-#/usr/common/graphics/installs/visit_3rdparty/cmake/2.8.0/linux-x86_64_gcc-4.5/bin/cmake
+#/usr/common/graphics/installs/visit_3rdparty/cmake/2.8.3/linux-x86_64_gcc-4.5/bin/cmake
 ##
 ## ../visit_svn/2.1RC_trunk/src/svn_bin/build_visit generated host.cmake
 ## created: Mon Nov 15 17:10:11 PST 2010
@@ -31,8 +31,8 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-m64 -fPIC -DVIZSCHEMA_DECOMPOSE_DOMAINS")
 #SET(VISIT_EXE_LINKER_FLAGS "-Wl,--rpath,/opt/gcc/4.3.3/snos/lib64")
 # Get these via CC -v
 VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/opt/cray/mpt/default/xt/gemini/mpich2-gnu/46/include" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/default/xt/gemini/mpich2-gnu/46/lib -L/opt/cray/pmi/default/lib64 -L/opt/cray/stat/default/lib/alps" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/cray/mpt/default/xt/gemini/mpich2-gnu/46/lib;/opt/cray/pmi/default/lib64;/opt/cray/stat/default/lib/alps" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/default/xt/gemini/mpich2-gnu/46/lib -L/opt/cray/pmi/default/lib64 -L/opt/cray/xt-tools/lgdb/default/lib/alps" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/cray/mpt/default/xt/gemini/mpich2-gnu/46/lib;/opt/cray/pmi/default/lib64;/opt/cray/xt-tools/lgdb/default/lib/alps" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich pmi alpslli alpsutil pthread rt)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 VISIT_OPTION_DEFAULT(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE ON)
