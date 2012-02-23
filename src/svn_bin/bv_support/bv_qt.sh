@@ -2,6 +2,7 @@ function bv_qt_initialize
 {
     export DO_QT="yes"
     export ON_QT="on"
+    export FORCE_QT="no"
     export USE_SYSTEM_QT="no"
     add_extra_commandline_args "qt" "system-qt" 0 "Use qt found on system"
     add_extra_commandline_args "qt" "alt-qt-dir" 1 "Use qt found in alternative directory"
@@ -11,12 +12,22 @@ function bv_qt_enable
 {
 DO_QT="yes"
 ON_QT="on"
+FORCE_QT="yes"
 }
 
 function bv_qt_disable
 {
 DO_QT="no"
 ON_QT="off"
+FORCE_QT="no"
+}
+
+function bv_qt_force
+{
+  if [[ "$FORCE_QT" == "yes" ]]; then
+     return 0;
+  fi
+  return 1;
 }
 
 function bv_qt_system_qt
