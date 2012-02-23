@@ -173,6 +173,9 @@ avtUserDefinedMapper::GetCurrentDataRange(double &rmin, double &rmax)
 //    Hank Childs, Thu Sep 30 00:45:38 PDT 2010
 //    Also do bounding boxes.
 //
+//    Hank Childs, Thu Feb 23 15:17:49 PST 2012
+//    Properly initialize bounding boxes.
+//
 // ****************************************************************************
 
 void
@@ -191,7 +194,7 @@ avtUserDefinedMapper::CustomizeMappers(void)
     }
     if (renderer->NeedsBoundingBox())
     {
-        double bbox[6];
+        double bbox[6] = { 0, 0, 0, 0, 0, 0 };
         avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
         atts.GetSpatialExtents(bbox);
         renderer->SetBoundingBox(bbox);
