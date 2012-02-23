@@ -38,7 +38,7 @@
 #
 #****************************************************************************/
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF(VISIT_PYSIDE_DIR)
 
