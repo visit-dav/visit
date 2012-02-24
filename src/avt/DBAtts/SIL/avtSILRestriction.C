@@ -482,7 +482,7 @@ avtSILRestriction::SetTopSet(int ts)
         EXCEPTION2(BadIndexException, ts, ns);
     }
 
-    int i, found = 0;
+    size_t i, found = 0;
     for (i = 0 ; i < wholesList.size() && !found; i++)
     {
         if (wholesList[i] == ts)
@@ -504,7 +504,7 @@ avtSILRestriction::SetTopSet(int ts)
     //
     // Turn off the other whole sets that were not selected as "top".
     //
-    int listSize = wholesList.size();
+    size_t listSize = wholesList.size();
     for (i = 0 ; i < listSize ; i++)
     {
         if (wholesList[i] != topSet)
@@ -548,8 +548,8 @@ void
 avtSILRestriction::SetTopSet(const char *meshname)
 {
     int setIndex = -1;
-    int listSize = wholesList.size();
-    for (int i = 0 ; i < listSize ; i++)
+    size_t listSize = wholesList.size();
+    for (size_t i = 0 ; i < listSize ; i++)
     {
         avtSILSet_p set = GetSILSet(wholesList[i]);
         const string &str = set->GetName();
@@ -1108,8 +1108,8 @@ avtSILRestriction::FastIntersect(avtSILRestriction_p silr)
 {
     if (useSet.size() != silr->useSet.size())
     {
-        EXCEPTION2(IncompatibleDomainListsException, useSet.size(),
-                   silr->useSet.size());
+        EXCEPTION2(IncompatibleDomainListsException, static_cast<int>(useSet.size()),
+                   static_cast<int>(silr->useSet.size()));
     }
 
     //
@@ -1123,8 +1123,8 @@ avtSILRestriction::FastIntersect(avtSILRestriction_p silr)
                          NoneUsed, SomeUsedOtherProc, SomeUsedOtherProc, SomeUsedOtherProc,
                          NoneUsed, SomeUsedOtherProc, AllUsedOtherProc, SomeUsedOtherProc, AllUsedOtherProc };
 
-    const int nsets = useSet.size();
-    for (int i = 0 ; i < nsets ; i++)
+    size_t nsets = useSet.size();
+    for (size_t i = 0 ; i < nsets ; i++)
     {
         int index = (STATE_INDEX(useSet[i]) * 5) +
                      STATE_INDEX(silr->useSet[i]);
@@ -1171,8 +1171,8 @@ avtSILRestriction::Union(avtSILRestriction_p silr)
 {
     if (useSet.size() != silr->useSet.size())
     {
-        EXCEPTION2(IncompatibleDomainListsException, useSet.size(),
-                   silr->useSet.size());
+        EXCEPTION2(IncompatibleDomainListsException, static_cast<int>(useSet.size()),
+                   static_cast<int>(silr->useSet.size()));
     }
 
     //
@@ -1904,6 +1904,9 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
 //    Cyrus Harrison, Tue Feb 22 14:39:19 PST 2011
 //    More robust matching for case were leaves & names may not exactly match.
 //
+//    Hank Childs, Fri Feb 24 14:38:15 PST 2012
+//    Make sure material selections get propagated.
+//
 // ****************************************************************************
 
 bool
@@ -2052,6 +2055,46 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
 
         EnableCorrectnessChecking();
 
+        // special pass for materials
+        avtSILCollection_p otherMatColl = NULL;
+        for (i = 0 ; i < silr->GetNumCollections() ; i++)
+        {
+            if (silr->GetSILCollection(i)->GetRole() == SIL_MATERIAL)
+            {
+                if (silr->GetSILCollection(i)->GetSupersetIndex()==silr->GetTopSet())
+                {
+                    otherMatColl = silr->GetSILCollection(i);
+                    break; // Traversing the rest of the SIL could take a while
+                }
+            }
+        }
+        avtSILCollection_p matColl = NULL;
+        for (i = 0 ; i < GetNumCollections() ; i++)
+        {
+            if (GetSILCollection(i)->GetRole() == SIL_MATERIAL)
+            {
+                if (GetSILCollection(i)->GetSupersetIndex() == GetTopSet())
+                {
+                    matColl = GetSILCollection(i);
+                    break; // Traversing the rest of the SIL could take a while
+                }
+            }
+        }
+        if (*matColl != NULL && *otherMatColl != NULL)
+        {
+            if (matColl->GetNumberOfSubsets() == otherMatColl->GetNumberOfSubsets())
+            {
+                // If a material is turned off in the original SIL restriction,
+                // then turn it off here.
+                int numSubsets = otherMatColl->GetNumberOfSubsets();
+                for (i = 0 ; i < numSubsets ; i++)
+                {
+                    int idx = otherMatColl->GetSubset(i);
+                    if (silr->useSet[otherLeaves[i]] == NoneUsed)
+                        TurnOffSet(matColl->GetSubset(i));   
+                }
+            }
+        }
     }
 
     visitTimer->StopTimer(t1, "SILR::SetFromCompatibleRestriction");
