@@ -54,161 +54,206 @@
  *      Get the pythagorean distance between two points
  *
  **/
-float pythDist(avtVector p1, avtVector p2)
+double pythDist( avtVector p1, avtVector p2 )
 {
-  return (p1-p2).length();
+  return (p1 - p2).length();
 }
+
 
 /**     
  *
  *      getAngle
- *      Get the angle between three points, let c be the center.
+ *      Get the angle between three points, let b be the center.
  *
  */
-float getAngle(avtVector a, avtVector b, avtVector c)
+double getAngle( avtVector a, avtVector b, avtVector c )
 {
-  return acos( (pythDist(c,a)*pythDist(c,a) + 
-                pythDist(c,b)*pythDist(c,b) -
-                pythDist(b,a)*pythDist(b,a)) / 
-               (2.0f * pythDist(c,a) * pythDist(c,b)) );
+  return acos( (pythDist(b,a)*pythDist(b,a) + 
+                pythDist(b,c)*pythDist(b,c) -
+                pythDist(c,a)*pythDist(c,a)) / 
+               (2.0f * pythDist(b,a) * pythDist(b,c)) );
 }
         
-/**     
- *
- *      getPunctureAngles
- *      Get the angle each puncture point forms with its immediate neighbors
- *
- */
-std::vector<float> getPunctureAngles(std::vector<avtVector> puncturePts,
-                                     int skip)
-{
-  std::vector<float> punctureAngles;
-  avtVector p0,p1,p2;
-
-  for( int i=0; i<puncturePts.size(); ++i )
-  {
-    p0 = puncturePts[i]; //vertex we want the angle of
-    p1 = puncturePts[(i+skip) % puncturePts.size()];
-
-    if (i - skip < 0)
-      p2 = puncturePts[puncturePts.size() + i - skip];
-    else
-      p2 = puncturePts[(i-skip) % puncturePts.size()];
-    
-    float angle = getAngle( p2, p1, p0 );
-
-    punctureAngles.push_back(angle);
-  }
-
-  return punctureAngles;
-}
-
 
 /**
  *
  * return a vector of seed points for the given rational
  *
  **/
-std::vector<avtVector> getSeeds(avtPoincareIC *poincare_ic)
+std::vector<avtVector> getSeeds( avtPoincareIC *poincare_ic,
+                                 double maxDistance )
 {
-  std::vector<avtVector> puncturePts;
-  avtVector xzplane(0,1,0);
+  std::vector<avtVector> puncturePoints;
+
   FieldlineLib fieldlib;
-  fieldlib.getPunctures(poincare_ic->points,xzplane,puncturePts);
-  int skip = fieldlib.Blankinship(poincare_ic->properties.toroidalWinding, poincare_ic->properties.poloidalWinding, 1);
+  fieldlib.getPunctures(poincare_ic->points, avtVector(0, 1, 0), puncturePoints);
+
+  unsigned int toroidalWinding = poincare_ic->properties.toroidalWinding;
+  unsigned int windingGroupOffset = poincare_ic->properties.windingGroupOffset;
   
-  // Calculate angle size for each puncture points
-  std::vector<float> puncturePtAngles;
-  avtVector p0,p1,p2;
-
+  // Calculate angle size for each puncture point and find the one
+  // that forms the largest angle (i.e. flatest protion of the
+  // surface).
+  int nSeeds = 0;
   double maxAngle = 0;
-  int max = 0;
+  unsigned int index = 0;
 
-  for( int i=0; i<puncturePts.size(); ++i )
+  for( int i=0; i<toroidalWinding; ++i )
   {
-    p0 = puncturePts[i]; //vertex we want the angle of
-    p1 = puncturePts[(i+skip) % puncturePts.size()];
+    avtVector pt0 = puncturePoints[(i-windingGroupOffset+toroidalWinding) % toroidalWinding];
+    avtVector pt1 = puncturePoints[i];
+    avtVector pt2 = puncturePoints[(i+windingGroupOffset) % toroidalWinding];
 
-    if (i - skip < 0)
-      p2 = puncturePts[puncturePts.size() + i - skip];
-    else
-      p2 = puncturePts[(i-skip) % puncturePts.size()];
-    
-    float angle = getAngle( p2, p1, p0 );
+    // Save the maximum angle angle and the index of the puncture point.
+    double angle = getAngle( pt0, pt1, pt2 );
 
     if (maxAngle < angle)
     {
       maxAngle = angle;
+      index = i;
+    }
 
-      max = i;
+    // Get the number of points needed to cover the range between two of
+    // the puncture points.
+    double dist = pythDist(pt1, pt2);
+
+    unsigned int seeds = dist / maxDistance;
+
+    if( dist > (double) seeds * maxDistance )
+      ++seeds;
+
+    // Use the greatest number of seeds necessary.
+    if (nSeeds < seeds)
+    {
+      nSeeds = seeds;
     }
   }
 
-  // Get Circle Equation
-  avtVector pt1 = puncturePts[(puncturePts.size() + max + skip) % puncturePts.size()];
-  avtVector pt2 = puncturePts[max]; // this is the puncture point at the center of the max angle
-  avtVector pt3 = puncturePts[(puncturePts.size() + max - skip) % puncturePts.size()];
-  // slopes
-  float ma = (pt2[2] - pt1[2]) / (pt2[0] - pt1[0]);
-  float mb = (pt3[2] - pt2[2]) / (pt3[0] - pt2[0]);
+//   index = puncturePoints.size() - 1;
+//   toroidalWinding = puncturePoints.size();
 
-  // center
-  float x = (ma * mb * (pt1[2] - pt3[2]) + mb * (pt1[0] + pt2[0]) - ma * (pt2[0] + pt3[0])) / (2 * (mb - ma));
-  float z = -(1/ma) * (x - (pt1[0] + pt2[0]) / 2) + (pt1[2] + pt2[2]) / 2;
+  if (RATIONAL_DEBUG)
+    std::cerr << "************************************"
+              << index << "  " << puncturePoints.size()-1 << std::endl;
+
+  // Find the circle that intersects the three punctures points which
+  // approximates the cross section of the surface.
+
+  // Get circle equation 
+  avtVector pt0 = puncturePoints[(index - windingGroupOffset+toroidalWinding) % toroidalWinding];
+  avtVector pt1 = puncturePoints[index];
+  avtVector pt2 = puncturePoints[(index + windingGroupOffset) % toroidalWinding];
+
+  // Slopes
+  double ma = (pt1[2] - pt2[2]) / (pt1[0] - pt2[0]);
+  double mb = (pt0[2] - pt1[2]) / (pt0[0] - pt1[0]);
+
+  // Center of the circle
   avtVector center;
-  center[0] = x;
-  center[2] = z;
+  center[0] = (ma *
+               mb * (pt2[2] - pt0[2]) +
+               mb * (pt2[0] + pt1[0]) -
+               ma * (pt1[0] + pt0[0])) / (2 * (mb - ma));
+  center[1] = 0;
+  center[2] = (-(1/ma) * (center[0] - (pt2[0] + pt1[0]) / 2) +
+               (pt2[2] + pt1[2]) / 2);
 
-  // radius
-  float dx = pt1[0] - x;
-  float dz = pt1[2] - z;
-  float r = sqrt(dx*dx + dz*dz);
+  // Radius of the circle
+  double radius = pythDist(center, pt1);
 
-  // Figure out the angle to increment by
-  std::vector<avtVector> cPoints;
-  float dist = pythDist(pt2,pt3);
-  float n = dist / .005; // Number of total points needed to cover the range between rational points
-                        //  The optimal spacing factor is hardcoded here...
-  float alpha = getAngle(pt2,pt3,center) / n;
-  int i = 0;
-  avtVector point;
+  // Angle between two of the puncture points.
+  double delta = getAngle(pt1, center, pt0) / nSeeds;
 
-  //Add seeds stretching between two of the rationals points
-  avtVector horizontal;
-  horizontal[0] = x+r;
-  horizontal[2] = z;
-  float theta = getAngle(horizontal,pt2,center);
+  avtVector horizontal = center + avtVector(radius, 0, 0);
 
-  while (i++ < n)
+  // Base angle from the center puncture point.
+  double theta = getAngle(horizontal,center,pt1);
+
+  if (RATIONAL_DEBUG)
+    std::cerr << "center " << center << "  radius " << radius << "  "
+              << "nSeeds " << nSeeds
+              << std::endl;
+
+  // Add seeds stretching between two of the puncture points.
+  std::vector<avtVector> seedPts;
+  seedPts.resize( nSeeds );
+
+  for( int i=0; i<nSeeds; ++i, theta += delta )
   {
-    point[0] = cos(theta) * r + x;
-    point[2] = sin(theta) * r + z;
-    cPoints.push_back(point);
-    theta += alpha;
+    seedPts[i] = center + radius * avtVector(cos(theta), 0, sin(theta));
+
+    if (RATIONAL_DEBUG)
+      std::cerr << "seed " << i << "  " << seedPts[i] << std::endl;
   }
 
-  return cPoints;
+  return seedPts;
 }
 
 
-// Takes in a curve, returns index of puncture point contained between pt1 and pt2
-int findMinimizationIndex(std::vector<avtVector> puncturePts,
-                          avtVector pt1,
-                          avtVector pt2)
+/**
+ *
+ * Look at the distance between the centroid of each toroidal group
+ * and the points that are in it.
+ *
+ **/
+float rationalDistance( std::vector< avtVector >& points,
+                        unsigned int toroidalWinding,
+                        unsigned int &index )
 {
-  for (int i = 0; i < puncturePts.size(); i++)
+  float delta = 0;
+
+  for( unsigned int i=0; i<toroidalWinding; i++ )
+  {
+    // Get the local centroid for the toroidal group.
+    avtVector localCentroid(0,0,0);
+
+    int npts = 0;
+
+    for( unsigned int j=i; j<points.size(); j+=toroidalWinding, ++npts )
+      localCentroid += (Vector) points[j];
+
+    localCentroid /= (float) npts;
+
+    for( unsigned int j=i; j<points.size(); j+=toroidalWinding )
+    {
+      avtVector vec = (avtVector) points[j] - localCentroid;
+
+      if( delta < vec.length() )
+      {
+        delta = vec.length();
+        index = j;
+      }
+    }
+  }
+
+  return delta;
+}
+
+
+/**
+ *
+ * Takes in a curve, returns the index of puncture point contained
+ * between pt0 and pt1.
+ *
+ **/
+int findMinimizationIndex( std::vector<avtVector> puncturePts,
+                           avtVector pt0,
+                           avtVector pt1 )
+{
+  for( unsigned int i=0; i<puncturePts.size(); ++i )
   {
     avtVector puncture = puncturePts[i];
-    float c = pythDist(pt1,pt2);
-    float a = pythDist(pt1,puncture);
-    float b = pythDist(pt2,puncture);
 
-    if ((pt1[0] < puncture[0] && pt2[0] > puncture[0] || 
-         pt1[0] > puncture[0] && pt2[0] < puncture[0]) ||
-        (pt1[2] < puncture[2] && pt2[2] > puncture[2] || 
-         pt1[2] > puncture[2] && pt2[2] < puncture[2]) && 
+    double a = pythDist(pt0, puncture);
+    double b = pythDist(pt1, puncture);
+    double c = pythDist(pt0, pt1);
+
+    if( (pt0[0] < puncture[0] && pt1[0] > puncture[0] || 
+         pt0[0] > puncture[0] && pt1[0] < puncture[0]) ||
+        (pt0[2] < puncture[2] && pt1[2] > puncture[2] || 
+         pt0[2] > puncture[2] && pt1[2] < puncture[2]) && 
         a < c &&
-        b < c)
+        b < c )
     {
       return i;
     }
@@ -218,7 +263,7 @@ int findMinimizationIndex(std::vector<avtVector> puncturePts,
   {
     std::cerr << __LINE__ << "  "
               << "Failed to locate index for points: "
-              << pt1 <<" , " << pt2 << std::endl;
+              << pt0 <<" , " << pt1 << std::endl;
     std::cerr << __LINE__ << "  "
               << "Size of puncturePts: "<<puncturePts.size() << std::endl;
     std::cerr << __LINE__ << "  " << std::endl;

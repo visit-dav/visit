@@ -1895,7 +1895,7 @@ islandChecks( std::vector< Point >& points,
 void
 FieldlineLib::getPunctures( std::vector< Point > &ptList,
                             Vector planeN,
-                           std::vector< Point > &puncturePts )
+                            std::vector< Point > &puncturePts )
 {
   unsigned int startIndex = 0;
 
@@ -2234,7 +2234,7 @@ GetPeriodWindingPairs( std::vector< WindingPair > &baseWindingPairs,
           if( poloidalStats[k].first == baseWindingPairs[i].poloidal &&
            
               // Make sure the ratio of both periods is the same. This
-              // ration is important for island chains.
+              // ratio is important for island chains.
               toroidalStats[j].first / baseWindingPairs[i].toroidal ==
               poloidalStats[k].first / baseWindingPairs[i].poloidal )
           {
@@ -2483,6 +2483,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   GetPeriodWindingPairs( baseWindingPairs, periodWindingPairs,
                          toroidalStats, poloidalStats );
 
+
   // Merge the base and period winding pairs together based on the
   // Euclidian distance via the index.
   for( unsigned int i=0; i<baseWindingPairs.size(); ++i )
@@ -2518,6 +2519,104 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   // Now sort the results based on the Euclidian distance via the index.
   SortWindingPairs( mergedWindingPairs, true );
   RankWindingPairs( mergedWindingPairs, false );
+
+
+  // Perform resonance checks on the toriodal and poloidal stats.
+  if( mergedWindingPairs.size() > 1 )
+  {
+    // The base values are the first order resonances if present.
+    toroidalResonance = ResonanceCheck( toroidalStats, 1, 3 );
+    poloidalResonance = ResonanceCheck( poloidalStats, 1, 3 );
+
+    // It is possible when near the chaotic regime that the resonance
+    // will not fall out from the toroidal and poloidal stats. As
+    // such, try to get it from the winding pairs which while limited
+    // should be more consistant.
+    if( (float) mergedWindingPairs[0].toroidal /
+        (float) mergedWindingPairs[0].poloidal !=
+        (float) toroidalResonance / (float) poloidalResonance )
+    {
+      if( verboseFlag )
+        std::cerr << toroidalResonance << "  "
+                  << poloidalResonance << std::endl;
+
+      // Can not remember this case ... and why????????????
+      if ( toroidalWinding % toroidalResonance == 0 &&
+           poloidalWinding != poloidalResonance )
+      {
+        // Get GCD from winding pairs ...
+        unsigned int freq;
+        std::vector< unsigned int > values;
+
+        values.resize( mergedWindingPairs.size() );
+
+        // Check the toroidal windings ...
+        for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
+          values[i] = mergedWindingPairs[i].toroidal;
+
+        toroidalResonance = GCD( values, freq );
+
+        // Check the poloidal windings ...
+        for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
+          values[i] = mergedWindingPairs[i].poloidal;
+
+        poloidalResonance = GCD( values, freq );
+
+        if( verboseFlag )
+          std::cerr << "winding pair resonance "
+                    << toroidalResonance << "  "
+                    << poloidalResonance << std::endl;
+
+        // Still no match so give up.
+        if( (float) mergedWindingPairs[0].toroidal /
+            (float) mergedWindingPairs[0].poloidal !=
+            (float) toroidalResonance / (float) poloidalResonance )
+        {
+          toroidalResonance = 1;
+          poloidalResonance = 1;
+        }
+        else
+        {
+          if( verboseFlag )
+            std::cerr << "Using resonance from the winding pairs." << std::endl;
+        }
+      }
+      else
+      {
+        toroidalResonance = 1;
+        poloidalResonance = 1;
+      }
+    }
+  }
+  else
+  {
+    toroidalResonance = 1;
+    poloidalResonance = 1;
+  }
+
+  // Get the resonance GCD which gives the indication that there are
+  // secondary islands.
+  unsigned int resonanceGCD = GCD( toroidalResonance, poloidalResonance );
+
+  if( verboseFlag )
+    std::cerr << "Winding Pair " << mergedWindingPairs[0].toroidal << ","
+              << mergedWindingPairs[0].poloidal << "  "
+              << "GCD = " << GCD( mergedWindingPairs[0].toroidal,
+                                  mergedWindingPairs[0].poloidal ) << "   "
+              << "Toroial, Poloidal resonances = "
+              << toroidalResonance << "," << poloidalResonance << "  "
+              << "GCD = " << resonanceGCD << "   "
+              << std::endl;
+
+
+
+
+
+
+
+
+
+
 
   int drawableRank  = -1;  // Rank of the first drawable widing pair
   int drawableIndex = -1;  // Index of the first drawable widing pair
@@ -2802,88 +2901,6 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   unsigned int windingGCD = GCD( mergedWindingPairs[drawableIndex].toroidal,
                                  mergedWindingPairs[drawableIndex].poloidal );
 
-  if( mergedWindingPairs.size() > 1 )
-  {
-    // The base values are the first order resonances if present.
-    toroidalResonance = ResonanceCheck( toroidalStats, 1, 3 );
-    poloidalResonance = ResonanceCheck( poloidalStats, 1, 3 );
-
-    // It is possible when near the chaotic regime that the resonance
-    // will be fall out from the toroidal / poloidal stats. As such,
-    // try to get it from the winding pairs which while limited should
-    // be more consistant.
-    if( local_safetyFactor !=
-        (float) toroidalResonance / (float) poloidalResonance )
-    {
-      if( verboseFlag )
-        std::cerr << toroidalResonance << "  "
-                  << poloidalResonance << std::endl;
-
-      // Can not remember this case ... and why????????????
-      if ( toroidalWinding % toroidalResonance == 0 &&
-           poloidalWinding != poloidalResonance )
-      {
-        // Get GCD from winding pairs ...
-        unsigned int freq;
-        std::vector< unsigned int > values;
-
-        values.resize( mergedWindingPairs.size() );
-
-        // Check the toroidal windings ...
-        for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
-          values[i] = mergedWindingPairs[i].toroidal;
-
-        toroidalResonance = GCD( values, freq );
-
-        // Check the poloidal windings ...
-        for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
-          values[i] = mergedWindingPairs[i].poloidal;
-
-        poloidalResonance = GCD( values, freq );
-
-        if( verboseFlag )
-          std::cerr << "winding pair resonance "
-                    << toroidalResonance << "  "
-                    << poloidalResonance << std::endl;
-
-        // Still no match so give up.
-        if( local_safetyFactor !=
-            (float) toroidalResonance / (float) poloidalResonance )
-        {
-          toroidalResonance = 1;
-          poloidalResonance = 1;
-        }
-        else
-        {
-          if( verboseFlag )
-            std::cerr << "Using resonance from the winding pairs." << std::endl;
-        }
-      }
-      else
-      {
-        toroidalResonance = 1;
-        poloidalResonance = 1;
-      }
-    }
-  }
-  else
-  {
-    toroidalResonance = 1;
-    poloidalResonance = 1;
-  }
-
-  // Get the resonance GCD which gives the indication that there are
-  // secondary islands.
-  unsigned int resonanceGCD = GCD( toroidalResonance, poloidalResonance );
-
-  if( verboseFlag )
-    std::cerr << "Winding Pair " << toroidalWinding << ","
-              << poloidalWinding << "  "
-              << "GCD = " << windingGCD << "   "
-              << "Toroial, Poloidal resonances = "
-              << toroidalResonance << "," << poloidalResonance << "  "
-              << "GCD = " << resonanceGCD << "   "
-              << std::endl;
 
   // Check for primary islands and secondary islands.  NOTE: Even with
   // islands the poloidal resonance can be one as such only check
@@ -3191,7 +3208,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         
         // Not found, new offset.
         if( ic == offsets.end() )
-          offsets.insert( std::pair<int, int>( offset, 1) );
+          offsets.insert( std::pair<unsigned int, unsigned int>( offset, 1) );
         // Found this offset, increment the count.
         else
           (*ic).second++;
@@ -3280,7 +3297,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
   }
 
-  // At this point assume the surface is irrational.
+  // At this point assume the surface is irrational and thus a flux
+  // surface.
   else
   {
     type = FieldlineProperties::FLUX_SURFACE;
@@ -3577,6 +3595,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
                                     double rationalSurfaceFactor,
                                     FieldlineProperties &fi )
 {
+  /*
  std::vector< Point > poloidal_puncture_pts;
  std::vector< Point > ridgeline_points;
 
@@ -3956,6 +3975,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
     fi.nPuncturesNeeded = nPuncturesNeeded + (nPuncturesNeeded ? 1 : 0);
 
   fi.OPoints.clear();
+  */
 }
 
 
