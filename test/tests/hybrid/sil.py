@@ -17,6 +17,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Hank Childs, Fri Feb 24 15:45:41 PST 2012
+#    Add test for preserving SILs across time slice changes.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -60,6 +64,20 @@ AddPlot("Subset", "domains")
 DrawPlots()
 Test("sil5")
 
+OpenDatabase("../data/Chombo_test_data/chombo.visit")
+AddPlot("Pseudocolor", "Density")
+s = SILRestriction()
+s.TurnOffSet(s.SetsInCategory("materials")[1])
+SetPlotSILRestriction(s)
+DrawPlots()
+TimeSliderSetState(4)
+s = SILRestriction()
+if (s.UsesData(s.SetsInCategory("materials")[1])):
+   str="Material 1 got turned back on!  (incorrect)\n"
+else:
+   str="Material 1 was correctly left off.\n"
+
+TestText("sil6", str)
 Exit()
 
 
