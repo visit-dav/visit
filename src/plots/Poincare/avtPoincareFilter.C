@@ -591,7 +591,12 @@ avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
         // while the streamline uses the plane regardless of the normal.
 
         if( poincare_ic->maxIntersections / 2 >= maxPunctures ||
-            poincare_ic->properties.nPuncturesNeeded == 0 )
+            poincare_ic->properties.nPuncturesNeeded == 0  ||
+
+            // Did the analysis but the integration can not continue.
+            // This test bacially makes the code fall through here
+            // rather than continuing.
+            poincare_ic->status == avtIntegralCurve::STATUS_FINISHED )
         {
           if( poincare_ic->properties.analysisState ==
               FieldlineProperties::COMPLETED )
