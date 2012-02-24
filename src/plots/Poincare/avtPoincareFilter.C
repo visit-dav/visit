@@ -405,26 +405,18 @@ avtPoincareFilter::ContinueExecute()
       for ( int i=0; i<nics; ++i )
       {
         avtPoincareIC * poincare_ic = (avtPoincareIC *) ics[i];
+        FieldlineProperties &properties = poincare_ic->properties;
 
 #ifdef STRAIGHTLINE_SKELETON
 
         // For Island Chains add in the O Points.
         if( showOPoints &&
 
-            (poincare_ic->properties.type ==
-             FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
-
-             poincare_ic->properties.type ==
-             FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
-
-             poincare_ic->properties.type ==
-             FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS) &&
-
-             poincare_ic->properties.type ==
-             FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS) &&
-
-            poincare_ic->properties.analysisState ==
-            FieldlineProperties::ADD_O_POINTS &&
+            (properties.type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
+             properties.type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
+             properties.type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS &&
+             properties.type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS &&
+             properties.analysisState == FieldlineProperties::ADD_O_POINTS &&
 
             !(poincare_ic->properties.OPoints.empty()) )
         {
@@ -433,31 +425,29 @@ avtPoincareFilter::ContinueExecute()
           poincare_ic->properties.analysisState =
             FieldlineProperties::TERMINATED;
 
-          if( poincare_ic->properties.iteration < OPointMaxIterations )
+          if( properties.iteration < OPointMaxIterations )
           {
             std::vector<avtIntegralCurve *> new_ics;
             avtVector vec(0,0,0);
 
-            AddSeedPoint( poincare_ic->properties.OPoints[0], vec,
-                          new_ics );
+            AddSeedPoint( properties.OPoints[0], vec, new_ics );
           
-            for( unsigned int j=0; j<new_ics.size(); j++ )
+            for( unsigned int j=0; j<new_ics.size(); ++j )
             {
               std::cerr << "New island seed ids " << new_ics[j]->id << "  ";
 
-                avtPoincareIC * seed_poincare_ic = (avtPoincareIC *) new_ics[j];
+              avtPoincareIC * seed_poincare_ic = (avtPoincareIC *) new_ics[j];
 
-                // Transfer and update properties.
-                seed_poincare_ic->properties = poincare_ic->properties;
-                
-                seed_poincare_ic->properties.analysisState =
-                  FieldlineProperties::UNKNOWN_STATE;
-
-                seed_poincare_ic->properties.source =
-                  FieldlineProperties::ISLAND_PRIMARY_CHAIN;
-
-                seed_poincare_ic->properties.iteration =
-                  poincare_ic->properties.iteration + 1;
+              // Transfer and update properties.
+              seed_poincare_ic->properties = properties;
+              
+              seed_poincare_ic->properties.analysisState =
+                FieldlineProperties::UNKNOWN_STATE;
+              
+              seed_poincare_ic->properties.source =
+                FieldlineProperties::ISLAND_PRIMARY_CHAIN;
+              
+              seed_poincare_ic->properties.iteration = properties.iteration + 1;
             }
 
             std::cerr << std::endl;
@@ -465,8 +455,7 @@ avtPoincareFilter::ContinueExecute()
 
           // The source was an island_chain which meant the seed was
           // an intermediate seed so delete it.
-          if( poincare_ic->properties.source ==
-              FieldlineProperties::ISLAND_PRIMARY_CHAIN )
+          if( properties.source == FieldlineProperties::ISLAND_PRIMARY_CHAIN )
           {
             std::cerr << "Deleting old O Point seed "
                       << poincare_ic->id << std::endl;
@@ -480,123 +469,132 @@ avtPoincareFilter::ContinueExecute()
         /////////////////////////
         // Begin Rational Search
         /////////////////////////
-        if( poincare_ic->properties.analysisMethod  == FieldlineProperties::DEFAULT_METHOD &&
-            poincare_ic->properties.type            == FieldlineProperties::RATIONAL &&
-            (poincare_ic->properties.analysisState  == FieldlineProperties::COMPLETED ||
-             poincare_ic->properties.analysisState  == FieldlineProperties::TERMINATED) )
+        if( properties.analysisMethod  == FieldlineProperties::DEFAULT_METHOD &&
+            properties.type            == FieldlineProperties::RATIONAL &&
+            (properties.analysisState  == FieldlineProperties::COMPLETED ||
+             properties.analysisState  == FieldlineProperties::TERMINATED) )
         {
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "Found a rational."<<endl;
+            std::cerr << __LINE__ << "  " << "Found a rational." << std::endl;
 
-          //Update rational's properties
-          // The analysis method is Rational_Search for most of the process
-          // The Original_Rational is kept around mainly to help with organization
+          // Update rational's properties
+          // The analysis method is Rational_Search for most of the process.
+
+          // The Original_Rational is kept around mainly to help with
+          // organization.
           poincare_ic->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
           poincare_ic->properties.searchState  = FieldlineProperties::ORIGINAL_RATIONAL;
 
-          // The Original_Rational has a list of each of the seeds. These get swapped
-          // out with better curves over the course of the minimization and this list
-          // is used to draw the final curves
+          // The Original_Rational has a list of each of the
+          // seeds. These get swapped out with better curves over the
+          // course of the minimization and this list is used to draw
+          // the final curves
           poincare_ic->properties.children = new std::vector< avtPoincareIC* >();
                 
-          //Initialize seeds
+          // Initialize seeds
           // Each Seed is marked as a Searching_seed
           // a_IC and c_IC are used later
           // For now, we just create each seed and wait for them to come back
           std::vector<avtVector> seeds = getSeeds(poincare_ic);
-          for (int s = 0; s < seeds.size(); s++)
+
+          for( unsigned int s=0; s<seeds.size(); ++s )
           {
             if (RATIONAL_DEBUG)
-              std::cerr << __LINE__ << "  " << "New seed planted."<<endl;
+              std::cerr << __LINE__ << "  " << seeds[s] << "  "
+                        << "New seed planted";
+
             std::vector<avtIntegralCurve *> new_ics;
-            avtVector zeroVec = avtVector(0,0,0);
-            AddSeedPoint( seeds[s], zeroVec, new_ics );
-            for (int i = 0; i <new_ics.size(); i++)
+            avtVector vec(0,0,0);
+
+            AddSeedPoint( seeds[s], vec, new_ics );
+          
+            for( unsigned int j=0; j<new_ics.size(); ++j )
             {
-              avtPoincareIC * seed = (avtPoincareIC *) new_ics[i];
-                        
+              avtPoincareIC *seed = (avtPoincareIC *) new_ics[j];
+
               // Transfer and update properties.
-              seed->properties = poincare_ic->properties;
+              seed->properties = properties;
               seed->source_ic = poincare_ic;
-              seed->properties.iteration = poincare_ic->properties.iteration + 1;
-              seed->maxIntersections *= 2;
+              seed->properties.iteration = properties.iteration + 1;
+              seed->maxIntersections = 6 * properties.toroidalWinding + 2;
               seed->properties.type = FieldlineProperties::IRRATIONAL;
               seed->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
               seed->properties.searchState = FieldlineProperties::SEARCHING_SEED;
               seed->a_IC = NULL;
               seed->c_IC = NULL;
-              seed->properties.nPuncturesNeeded = 2*poincare_ic->properties.toroidalWinding+1;          
+
               poincare_ic->properties.children->push_back(seed);
+
               if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "New Seed with ID :"<<seed->id<<endl;
+                std::cerr << " with ID :" << seed->id;
             }
+
+            if (RATIONAL_DEBUG)
+              std::cerr << std::endl;
           }
         }
 
         /////////////////////////////////////////////
         // Grab each seed generated by the original_rational
-          /////////////////////////////////////////////
-        if( poincare_ic->properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH &&
-            poincare_ic->properties.searchState  == FieldlineProperties::SEARCHING_SEED )
+        /////////////////////////////////////////////
+        if( properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH &&
+            properties.searchState    == FieldlineProperties::SEARCHING_SEED )
         {
-          avtPoincareIC *seed = poincare_ic;
-              
-          if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "Found a seed."<<endl;
+          int toroidalWinding    = properties.toroidalWinding;
+          int windingGroupOffset = properties.windingGroupOffset;
 
-          std::vector<avtVector> seed_puncture_points;
+          if (RATIONAL_DEBUG)
+            std::cerr << __LINE__ << "  " << "Found seed  " << poincare_ic->id
+                      << std::endl;
+
           Vector xzplane(0,1,0);
           FieldlineLib fieldlib;
-          fieldlib.getPunctures(poincare_ic->points,xzplane,seed_puncture_points);
-          int skip = fieldlib.Blankinship(poincare_ic->properties.toroidalWinding, poincare_ic->properties.poloidalWinding, 1);
-                
-          std::vector<avtVector> orig_rational_puncture_points;
-          fieldlib.getPunctures(poincare_ic->source_ic->points,xzplane,orig_rational_puncture_points);
+
+          std::vector<avtVector> seed_puncture_points;
+          fieldlib.getPunctures( poincare_ic->points, xzplane,
+                                 seed_puncture_points);
+
+          std::vector<avtVector> orig_puncture_points;
+          fieldlib.getPunctures( poincare_ic->source_ic->points, xzplane,
+                                 orig_puncture_points);
                 
           // Find distance between puncture points
-          float dist = 0.0f;
-          float origDist = 0.0f;
-          float maxDist = 0.0f;
-          float maxOrigDist = 0.0f;
-          int maxi = 0;
+          unsigned int index = 0;
 
-          // Here, we're looking for the largest distance for both the current seed and the original rational
-          for (int i = 0; i < poincare_ic->properties.toroidalWinding; i++)
-          {
-            // Maximum distance on the seed
-            dist = pythDist(seed_puncture_points[i],seed_puncture_points[i+poincare_ic->properties.toroidalWinding]);
-            if (maxDist < dist)
-            {
-              maxDist = dist;
-              maxi = i;
-            }
-            // Maximum distance on the original rational
-            origDist = pythDist(orig_rational_puncture_points[i],orig_rational_puncture_points[i+poincare_ic->properties.toroidalWinding]);
-            if (maxOrigDist < origDist)
-              maxOrigDist = origDist;                 
-          }
+          float maxOrigDist =
+            rationalDistance( orig_puncture_points, toroidalWinding, index );
+          
+          float maxDist =
+            rationalDistance( seed_puncture_points, toroidalWinding, index );
+          
           if (RATIONAL_DEBUG)
           {
-            cerr << "Max distance: "<< maxDist << endl;
-            cerr << "Max dist Original: "<<maxOrigDist << endl;
+            std::cerr << __LINE__ << "  "
+                      << "Max original dist: " << maxOrigDist << "  "
+                      << "Max distance: " << maxDist << "  "
+                      << std::endl;
           }
-          avtVector maxPuncture = seed_puncture_points[maxi];
-                
-          // If the puncture pts line up as well as or better than the original rational, it should be good enough
-          // This should rarely happen
-          if (maxDist < origDist)
-            poincare_ic->properties.searchState = FieldlineProperties::WAITING_SEED;
-                
+
+          // If the puncture pts line up as well as or better than the
+          // original rational, it should be good enough.
+          if( maxDist < maxOrigDist )
+          {
+            properties.searchState = FieldlineProperties::WAITING_SEED;
+          }
           // Otherwise, we need to minimize
           else
           {
-            // To start, we need to locate the enclosing points from the original rational
+            avtVector maxPuncture = seed_puncture_points[index];
+                
+            // To start, we need to locate the enclosing points from
+            // the original rational
             avtVector origPt1;
             avtVector origPt2;
-            for (int i = 0; i < poincare_ic->source_ic->properties.toroidalWinding; i++)
+
+            for( unsigned int j=0; j<toroidalWinding; ++j )
             {
-              origPt1 = orig_rational_puncture_points[i];
-              origPt2 = orig_rational_puncture_points[(i + skip) % poincare_ic->properties.toroidalWinding];
+              avtVector origPt1 = orig_puncture_points[j];
+              avtVector origPt2 = orig_puncture_points[(j + windingGroupOffset) % toroidalWinding];
                         
               // Is poincare_ic in region bounded by origPt1 & origPt2?
               // Doing this by searching the area in the rectangle defined by two points
@@ -622,16 +620,18 @@ avtPoincareFilter::ContinueExecute()
                 float new_x = (maxPuncture[0] + x) / 2.0f;
                 float new_z = (maxPuncture[2] + z) / 2.0f;
                 avtVector newPoint = avtVector(new_x, 0, new_z);
+
                 if (RATIONAL_DEBUG)
                 {
-                  std::cerr << __LINE__ << "  " << "A point: "<<maxPuncture[0]<<" 0.0 "<<maxPuncture[2]<<endl;
-                  std::cerr << __LINE__ << "  " << "new B point: "<<new_x<<" 0.0 "<<new_z<<endl;
-                  std::cerr << __LINE__ << "  " << "new C point: "<<x<<" 0.0 "<<z<<endl;
+                  std::cerr << __LINE__ << "  " << "A point: "
+                            << maxPuncture << std::endl;
+                  std::cerr << __LINE__ << "  " << "new B point: "
+                            << newPoint << std::endl;
+                  std::cerr << __LINE__ << "  " << "new C point: "
+                            << intersectionPoint << std::endl;
                 }
-                std::vector<avtIntegralCurve *> new_ics;
+
                 avtVector zeroVec = avtVector(0,0,0);
-                avtPoincareIC *seed_c;
-                unsigned int j;
 
                 poincare_ic->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
                 poincare_ic->properties.searchState = FieldlineProperties::MINIMIZING_A;
@@ -639,74 +639,95 @@ avtPoincareFilter::ContinueExecute()
 
                 //*******************
                 // To start the minimization, we need to define three points
-                // If the middle point ('b) is already lower than the other two we can
-                // go straight to minimization. Otherwise, we have to bracket the minimum. 
-                // First things first, setup the two new points (b & c) and send them off
+                // If the middle point ('b) is already lower than the
+                // other two we can go straight to
+                // minimization. Otherwise, we have to bracket the
+                // minimum.  First things first, setup the two new
+                // points (b & c) and send them off
                           
 
                 // Setup 'c' (use the intersection just calculated)
+                std::vector<avtIntegralCurve *> new_ics;
                 AddSeedPoint( intersectionPoint, zeroVec, new_ics );
-                for( j=0; j<new_ics.size(); j++ )
+                avtPoincareIC *seed_c;
+
+                for( unsigned int k=0; k<new_ics.size(); k++ )
                 {
-                  seed_c = (avtPoincareIC *) new_ics[j];                  
+                  seed_c = (avtPoincareIC *) new_ics[k];
+                
                   // Transfer and update properties.
-                  seed_c->properties = poincare_ic->properties;
-                  seed_c->source_ic = seed;
-                  seed_c->properties.iteration = poincare_ic->properties.iteration + 1;
-                  seed_c->maxIntersections *= 2;
+                  seed_c->properties = properties;
+                  seed_c->source_ic = poincare_ic;
+                  seed_c->properties.iteration = properties.iteration + 1;
+                  seed_c->maxIntersections = 8 * properties.toroidalWinding + 2;
                   seed_c->properties.type = FieldlineProperties::IRRATIONAL;
-                  seed_c->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
-                  seed_c->properties.searchState = FieldlineProperties::MINIMIZING_C;
-                  seed_c->properties.nPuncturesNeeded = 2*poincare_ic->properties.toroidalWinding+1;
+                  seed_c->properties.analysisMethod =
+                    FieldlineProperties::RATIONAL_SEARCH;
+                  seed_c->properties.searchState =
+                    FieldlineProperties::MINIMIZING_C;
+
                   if (RATIONAL_DEBUG)
-                    std::cerr << __LINE__ << "  " << "Start Minimizing, New C ID :"<<seed_c->id<<endl;
+                    std::cerr << __LINE__ << "  "
+                              << "Start Minimizing, New C ID :"
+                              << seed_c->id << std::endl;
                 }
 
+                // Setup 'b' (use the new pont just calculated)
                 std::vector<avtIntegralCurve *> new_ics_2;
                 AddSeedPoint( newPoint, zeroVec, new_ics_2 );
                 avtPoincareIC *seed_b;
-                for( j=0; j<new_ics.size(); j++ )
+
+                for( unsigned int k=0; k<new_ics.size(); k++ )
                 {
-                  seed_b = (avtPoincareIC *) new_ics_2[j];                
+                  seed_b = (avtPoincareIC *) new_ics_2[k];
+
                   // Transfer and update properties.
-                  seed_b->properties = poincare_ic->properties;
-                  seed_b->source_ic = seed;
-                  seed_b->properties.iteration = poincare_ic->properties.iteration + 1;
-                  seed_b->maxIntersections *= 2;
+                  seed_b->properties = properties;
+                  seed_b->source_ic = poincare_ic;
+                  seed_b->properties.iteration = properties.iteration + 1;
+                  seed_b->maxIntersections = 8 * properties.toroidalWinding + 2;
                   seed_b->properties.type = FieldlineProperties::IRRATIONAL;
-                  seed_b->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
-                  seed_b->properties.searchState = FieldlineProperties::MINIMIZING_B;
+                  seed_b->properties.analysisMethod =
+                    FieldlineProperties::RATIONAL_SEARCH;
+                  seed_b->properties.searchState =
+                    FieldlineProperties::MINIMIZING_B;
                   seed_b->a_bound_dist = maxDist;
+
                   if (RATIONAL_DEBUG)
-                    std::cerr << __LINE__ << "  " << "Creating B with original pts: "<< origPt1 <<" , "<< origPt2<< endl;
-                  seed_b->properties.rationalPt1 = avtVector(origPt1[0], origPt1[1], origPt1[2]);
-                  seed_b->properties.rationalPt2 = avtVector(origPt2[0], origPt2[1], origPt2[2]);
-                  seed_b->properties.nPuncturesNeeded = 2*poincare_ic->properties.toroidalWinding+1;
+                    std::cerr << __LINE__ << "  "
+                              << "Creating B with original pts: "
+                              << origPt1 <<" , "<< origPt2 << std::endl;
+
+                  seed_b->properties.rationalPt1 = origPt1;
+                  seed_b->properties.rationalPt2 = origPt2;
+
                   seed_b->a_IC = poincare_ic;
                   seed_b->c_IC = seed_c;
+
                   if (RATIONAL_DEBUG)
-                    std::cerr << __LINE__ << "  " << "New B ID :"<<seed_b->id<<endl;
+                    std::cerr << __LINE__ << "  " << "New B ID :"
+                              << seed_b->id << std::endl;
                 }
               }
             }
           }          
         }
-        else if (poincare_ic->properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH &&
-                 poincare_ic->properties.searchState == FieldlineProperties::MINIMIZING_A)
+        else if (properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH &&
+                 properties.searchState == FieldlineProperties::MINIMIZING_A)
         {
           // Intentionally empty
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "minimizing A"<<endl;
+            std::cerr << __LINE__ << "  " << "minimizing A" << std::endl;
         }
-        else if (poincare_ic->properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH &&
-                 poincare_ic->properties.searchState == FieldlineProperties::MINIMIZING_C)
+        else if (properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH &&
+                 properties.searchState == FieldlineProperties::MINIMIZING_C)
         {
           // Intentionally empty
           if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "minimizing C"<<endl;
+                std::cerr << __LINE__ << "  " << "minimizing C" << std::endl;
         }
-        else if ( poincare_ic->properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH &&
-                  poincare_ic->properties.searchState == FieldlineProperties::MINIMIZING_B &&
+        else if ( properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH &&
+                  properties.searchState == FieldlineProperties::MINIMIZING_B &&
                   poincare_ic->a_IC != NULL && poincare_ic->c_IC != NULL)
         {
           // Base the 1st stage of the minimization on 'b', since it
@@ -717,7 +738,8 @@ avtPoincareFilter::ContinueExecute()
          
           std::vector<avtPoincareIC *> *children = seed->source_ic->properties.children;
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "Found MINIMIZING_B"<<endl;
+            std::cerr << __LINE__ << "  " << "Found MINIMIZING_B" << std::endl;
+
           Vector xzplane(0,1,0);
           FieldlineLib fieldlib;
           avtPoincareIC *_a = poincare_ic->a_IC;
@@ -731,12 +753,22 @@ avtPoincareFilter::ContinueExecute()
           fieldlib.getPunctures(_c->points,xzplane,c_puncturePoints);
                 
           // Need to get distances for each a, b & c
-          int a_i = findMinimizationIndex(a_puncturePoints,_b->properties.rationalPt1,_b->properties.rationalPt2);
-          int b_i = findMinimizationIndex(b_puncturePoints,_b->properties.rationalPt1,_b->properties.rationalPt2);
-          int c_i = findMinimizationIndex(c_puncturePoints,_b->properties.rationalPt1,_b->properties.rationalPt2);
+          int a_i = findMinimizationIndex(a_puncturePoints,
+                                          _b->properties.rationalPt1,
+                                          _b->properties.rationalPt2);
+          int b_i = findMinimizationIndex(b_puncturePoints,
+                                          _b->properties.rationalPt1,
+                                          _b->properties.rationalPt2);
+          int c_i = findMinimizationIndex(c_puncturePoints,
+                                          _b->properties.rationalPt1,
+                                          _b->properties.rationalPt2);
+
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "a_i, b_i, c_i: "<< a_i<<", "<<b_i<<", "<<c_i <<endl;
+            std::cerr << __LINE__ << "  " << "a_i, b_i, c_i: "
+                      << a_i<<", "<<b_i<<", "<<c_i  << std::endl;
+
           bool cont = true;
+
           if (a_i == -1 || b_i == -1 || c_i == -1)
           {
             // One of these curves isn't showing up. Get rid of it if
@@ -747,29 +779,31 @@ avtPoincareFilter::ContinueExecute()
             {
               ids_to_delete.push_back(_a->id);
               if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_a->id<<endl;
+                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_a->id << std::endl;
             }
             else
             {
               _a->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
               _a->properties.searchState = FieldlineProperties::WAITING_SEED;
             }
+
             if(std::find(children->begin(), children->end(), _b) == children->end())
             {
               ids_to_delete.push_back(_b->id);
               if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_b->id<<endl;
+                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_b->id << std::endl;
             }
             else
             {
               _b->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
               _b->properties.searchState = FieldlineProperties::WAITING_SEED;
             }
+
             if(std::find(children->begin(), children->end(), _c) == children->end())
             {
               ids_to_delete.push_back(_c->id);
               if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_c->id<<endl;
+                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_c->id << std::endl;
             }
             else
             {
@@ -779,14 +813,16 @@ avtPoincareFilter::ContinueExecute()
 
             cont = false;
           }
+
           if (cont)
           {
             // Find distance between puncture points
             float a_dist = pythDist(a_puncturePoints[a_i],a_puncturePoints[a_i + _a->properties.toroidalWinding]);
             float b_dist = pythDist(b_puncturePoints[b_i],b_puncturePoints[b_i + _b->properties.toroidalWinding]);
             float c_dist = pythDist(c_puncturePoints[c_i],c_puncturePoints[c_i + _c->properties.toroidalWinding]);
+
             if (RATIONAL_DEBUG)
-              std::cerr << __LINE__ << "  " << "a_dist, b_dist, c_dist: "<< a_dist<<", "<<b_dist<<", "<<c_dist <<endl;
+              std::cerr << __LINE__ << "  " << "a_dist, b_dist, c_dist: "<< a_dist<<", "<<b_dist<<", "<<c_dist  << std::endl;
 
             ///////////////////////////////////
             // If the b_dist is smaller than a or c, then we know a minimum lies between a & c
@@ -794,7 +830,7 @@ avtPoincareFilter::ContinueExecute()
             if (b_dist < a_dist && b_dist < c_dist)
             {
               if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "Got B, minimum is bracketed, setup for minimization"<<endl;
+                std::cerr << __LINE__ << "  " << "Got B, minimum is bracketed, setup for minimization" << std::endl;
               std::vector<avtPoincareIC *> *children = seed->source_ic->properties.children;
               
               // A lot of this is just book keeping. Modify with care!
@@ -818,8 +854,8 @@ avtPoincareFilter::ContinueExecute()
                 
               if (RATIONAL_DEBUG)
               {
-                std::cerr << __LINE__ << "  " << "C point"<<c_x<<", "<<c_z<<endl;
-                std::cerr << __LINE__ << "  " << "B point"<<b_x<<", "<<b_z<<endl;
+                std::cerr << __LINE__ << "  " << "C point"<<c_x<<", "<<c_z << std::endl;
+                std::cerr << __LINE__ << "  " << "B point"<<b_x<<", "<<b_z << std::endl;
               }
               float new_x,new_z;
               avtVector newPoint;
@@ -836,34 +872,33 @@ avtPoincareFilter::ContinueExecute()
                 new_z = b_z + golden_C * (c_z-b_z);
 
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " << "new x,z: "<<new_x<<", "<<new_z<<endl; 
+                  std::cerr << __LINE__ << "  " << "new x,z: "<<new_x<<", "<<new_z << std::endl; 
                           
                 newPoint = avtVector(new_x, 0, new_z);         
                 AddSeedPoint( newPoint, zeroVec, new_ics );
                 for( j=0; j<new_ics.size(); j++ )
                 {
-                  newIC = (avtPoincareIC*)new_ics[j];
-                  newIC->maxIntersections = poincare_ic->properties.toroidalWinding * 2+1;
+                  newIC = (avtPoincareIC*) new_ics[j];
+                  newIC->maxIntersections = 8 * properties.toroidalWinding + 2;
                   newIC->properties = poincare_ic->properties;
                   newIC->properties.searchState = FieldlineProperties::MINIMIZING_X2;
                   newIC->properties.type = FieldlineProperties::IRRATIONAL;
                   newIC->properties.analysisMethod = FieldlineProperties::RATIONAL_MINIMIZE;
                   newIC->properties.iteration = poincare_ic->properties.iteration + 1;
-                  newIC->properties.nPuncturesNeeded = 2*poincare_ic->properties.toroidalWinding+1;
                   newIC->source_ic = seed;
 
                   if (RATIONAL_DEBUG)
-                    std::cerr << __LINE__ << "  " <<  "Bracketed, New X2 id :"<<newIC->id<<endl;
+                    std::cerr << __LINE__ << "  " <<  "Bracketed, New X2 id :"<<newIC->id << std::endl;
                 }
                 _a->GS_x1 = _b;
                 _a->GS_x2 = newIC;
                 _a->GS_x3 = _c;
                 if (RATIONAL_DEBUG)
                 {
-                  std::cerr << __LINE__ << "  " << "1 x0 ID: "<<_a->id<<endl;
-                  std::cerr << __LINE__ << "  " << "1 x1 ID: "<<_b->id<<endl; 
-                  std::cerr << __LINE__ << "  " << "1 x2 ID: "<<newIC->id<<endl; 
-                  std::cerr << __LINE__ << "  " << "1 x3 ID: "<<_c->id<<endl; 
+                  std::cerr << __LINE__ << "  " << "1 x0 ID: "<<_a->id << std::endl;
+                  std::cerr << __LINE__ << "  " << "1 x1 ID: "<<_b->id << std::endl; 
+                  std::cerr << __LINE__ << "  " << "1 x2 ID: "<<newIC->id << std::endl; 
+                  std::cerr << __LINE__ << "  " << "1 x3 ID: "<<_c->id << std::endl;
                 }
               }
               else
@@ -874,32 +909,31 @@ avtPoincareFilter::ContinueExecute()
                 new_x = b_x + golden_C * (c_x-b_x);
                 new_z = b_z + golden_C * (c_z-b_z);
                 if (RATIONAL_DEBUG)   
-                  std::cerr << __LINE__ << "  " << "new x,y: "<<new_x<<", "<<new_z<<endl; 
+                  std::cerr << __LINE__ << "  " << "new x,y: "<<new_x<<", "<<new_z << std::endl; 
                 newPoint = avtVector(new_x, 0, new_z);         
                 AddSeedPoint( newPoint, zeroVec, new_ics );
                 for( j=0; j<new_ics.size(); j++ )
                 {
                   newIC = (avtPoincareIC*)new_ics[j];
-                  newIC->maxIntersections = poincare_ic->properties.toroidalWinding * 2;
+                  newIC->maxIntersections = 8 * properties.toroidalWinding + 2;
                   newIC->properties = poincare_ic->properties;
                   newIC->properties.searchState = FieldlineProperties::MINIMIZING_X1;
                   newIC->properties.analysisMethod = FieldlineProperties::RATIONAL_MINIMIZE;
                   newIC->properties.type = FieldlineProperties::IRRATIONAL;
                   newIC->properties.iteration = poincare_ic->properties.iteration + 1;
-                  newIC->properties.nPuncturesNeeded = 2*poincare_ic->properties.toroidalWinding+1;
                   newIC->source_ic = seed;
                   if (RATIONAL_DEBUG)
-                    std::cerr << __LINE__ << "  " << "Bracketed, new X1 ID :"<<newIC->id<<endl;
+                    std::cerr << __LINE__ << "  " << "Bracketed, new X1 ID :"<<newIC->id << std::endl;
                 }
                 _a->GS_x1 = newIC;
                 _a->GS_x2 = _b;
                 _a->GS_x3 = _c;
                 if (RATIONAL_DEBUG)
                 {
-                  std::cerr << __LINE__ << "  " << "2 x0 ID: "<<_a->id<<endl;
-                  std::cerr << __LINE__ << "  " << "2 x1 ID: "<<newIC->id<<endl;
-                  std::cerr << __LINE__ << "  " << "2 x2 ID: "<<_b->id<<endl; 
-                  std::cerr << __LINE__ << "  " << "2 x3 ID: "<<_c->id<<endl; 
+                  std::cerr << __LINE__ << "  " << "2 x0 ID: "<<_a->id << std::endl;
+                  std::cerr << __LINE__ << "  " << "2 x1 ID: "<<newIC->id << std::endl;
+                  std::cerr << __LINE__ << "  " << "2 x2 ID: "<<_b->id << std::endl; 
+                  std::cerr << __LINE__ << "  " << "2 x3 ID: "<<_c->id << std::endl; 
                 }
               }
             }
@@ -908,12 +942,12 @@ avtPoincareFilter::ContinueExecute()
             else
             {
               if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "Minimum needs to be bracketed"<<endl;
+                std::cerr << __LINE__ << "  " << "Minimum needs to be bracketed" << std::endl;
               if(std::find(children->begin(), children->end(), _c) == children->end())
               {
                 ids_to_delete.push_back(_c->id);
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " << "Deleting ID: "<<_c->id<<endl;
+                  std::cerr << __LINE__ << "  " << "Deleting ID: "<<_c->id << std::endl;
               }
               else
               {
@@ -945,16 +979,15 @@ avtPoincareFilter::ContinueExecute()
               for(int j=0; j<new_ics.size(); j++ )
               {
                 newIC = (avtPoincareIC*)new_ics[j];
-                newIC->maxIntersections = poincare_ic->properties.toroidalWinding * 2;
+                newIC->maxIntersections = 8 * properties.toroidalWinding + 2;
                 newIC->properties = poincare_ic->properties;
                 newIC->properties.searchState = FieldlineProperties::BRACKETING_C;
                 newIC->properties.analysisMethod = FieldlineProperties::RATIONAL_BRACKET;
                 newIC->properties.type = FieldlineProperties::IRRATIONAL;
                 newIC->properties.iteration = poincare_ic->properties.iteration + 1;
-                newIC->properties.nPuncturesNeeded = 2*poincare_ic->properties.toroidalWinding+1;
                 newIC->source_ic = seed;
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " << "Bracketing, New C ID :"<<newIC->id<<endl;
+                  std::cerr << __LINE__ << "  " << "Bracketing, New C ID :"<<newIC->id << std::endl;
 
                 newIC->a_IC = _a;
                 newIC->b_IC = _b;
@@ -980,8 +1013,8 @@ avtPoincareFilter::ContinueExecute()
         {
           if (RATIONAL_DEBUG)
           {
-            std::cerr << __LINE__ << "  " << "Bracketing minimum, found BRACKETING_C"<<endl;
-            std::cerr << __LINE__ << "  " << "Surrounding original rational pt1 "<<poincare_ic->properties.rationalPt1<<endl;
+            std::cerr << __LINE__ << "  " << "Bracketing minimum, found BRACKETING_C" << std::endl;
+            std::cerr << __LINE__ << "  " << "Surrounding original rational pt1 "<<poincare_ic->properties.rationalPt1 << std::endl;
           }
           
           avtPoincareIC *seed = poincare_ic->source_ic;
@@ -990,7 +1023,7 @@ avtPoincareFilter::ContinueExecute()
           if (seed->properties.searchState == FieldlineProperties::ORIGINAL_RATIONAL)
           {
             if (RATIONAL_DEBUG)
-              std::cerr << __LINE__ << "  " << "This is the seed."<<endl;
+              std::cerr << __LINE__ << "  " << "This is the seed." << std::endl;
             seed = poincare_ic;
           }
 
@@ -1013,7 +1046,7 @@ avtPoincareFilter::ContinueExecute()
           int b_i = findMinimizationIndex(b_puncturePoints,_b->properties.rationalPt1,_b->properties.rationalPt2);
           int c_i = findMinimizationIndex(c_puncturePoints,_b->properties.rationalPt1,_b->properties.rationalPt2);
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "a_i, b_i, c_i: "<< a_i<<", "<<b_i<<", "<<c_i <<endl;
+            std::cerr << __LINE__ << "  " << "a_i, b_i, c_i: "<< a_i<<", "<<b_i<<", "<<c_i  << std::endl;
           bool cont = true;
           if (a_i == -1 || b_i == -1 || c_i == -1)
           {
@@ -1022,7 +1055,7 @@ avtPoincareFilter::ContinueExecute()
             {
               ids_to_delete.push_back(_a->id);
               if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_a->id<<endl;
+                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_a->id << std::endl;
             }
             else
             {
@@ -1033,7 +1066,7 @@ avtPoincareFilter::ContinueExecute()
             {
               ids_to_delete.push_back(_b->id);
               if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_b->id<<endl;
+                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_b->id << std::endl;
             }
             else
             {
@@ -1044,7 +1077,7 @@ avtPoincareFilter::ContinueExecute()
             {
               ids_to_delete.push_back(_c->id);
               if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_c->id<<endl;
+                std::cerr << __LINE__ << "  " << "Deleting ID: "<<_c->id << std::endl;
             }
             else
             {
@@ -1053,14 +1086,21 @@ avtPoincareFilter::ContinueExecute()
             }
             cont = false;
           }
+
           if (cont)
           {
             // Find distance between puncture points
-            float a_dist = pythDist(a_puncturePoints[a_i],a_puncturePoints[a_i + _a->properties.toroidalWinding]);
-            float b_dist = pythDist(b_puncturePoints[b_i],b_puncturePoints[b_i + _b->properties.toroidalWinding]);
-            float c_dist = pythDist(c_puncturePoints[c_i],c_puncturePoints[c_i + _c->properties.toroidalWinding]);
+            float a_dist = pythDist(a_puncturePoints[a_i],
+                                    a_puncturePoints[a_i + _a->properties.toroidalWinding]);
+            float b_dist = pythDist(b_puncturePoints[b_i],
+                                    b_puncturePoints[b_i + _b->properties.toroidalWinding]);
+            float c_dist = pythDist(c_puncturePoints[c_i],
+                                    c_puncturePoints[c_i + _c->properties.toroidalWinding]);
+
             if (RATIONAL_DEBUG)
-              std::cerr << __LINE__ << "  " << "a_dist, b_dist, c_dist: "<< a_dist<<", "<<b_dist<<", "<<c_dist <<endl;
+              std::cerr << __LINE__ << "  " << "a_dist, b_dist, c_dist: "
+                        << a_dist<<", "<<b_dist<<", "<<c_dist  << std::endl;
+
             if (b_dist > c_dist)
             {
               // USE DEFAULT MAGNIFICATION
@@ -1083,19 +1123,19 @@ avtPoincareFilter::ContinueExecute()
               avtVector zeroVec = avtVector(0,0,0);
               avtPoincareIC *newIC;
               AddSeedPoint( newPoint, zeroVec, new_ics );
+
               for(int j=0; j<new_ics.size(); j++ )
               {
                 newIC = (avtPoincareIC*)new_ics[j];
-                newIC->maxIntersections = poincare_ic->properties.toroidalWinding * 2;
+                newIC->maxIntersections = 8 * properties.toroidalWinding + 2;
                 newIC->properties = poincare_ic->properties;
                 newIC->properties.searchState = FieldlineProperties::BRACKETING_C;
                 newIC->properties.analysisMethod = FieldlineProperties::RATIONAL_BRACKET;
                 newIC->properties.type = FieldlineProperties::IRRATIONAL;
                 newIC->properties.iteration = poincare_ic->properties.iteration + 1;
-                newIC->properties.nPuncturesNeeded = 2*poincare_ic->properties.toroidalWinding+1;
                 newIC->source_ic = seed;
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " << "Bracketing still, New C ID :"<<newIC->id<<endl;
+                  std::cerr << __LINE__ << "  " << "Bracketing still, New C ID :"<<newIC->id << std::endl;
                 newIC->a_IC = _b; //Shifting
                 newIC->b_IC = _c; //Shifting
                 newIC->properties.rationalPt1 = avtVector(_b->properties.rationalPt1[0], _b->properties.rationalPt1[1], _b->properties.rationalPt1[2]);
@@ -1114,7 +1154,7 @@ avtPoincareFilter::ContinueExecute()
             else
             {
               if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "Bracketed the minimum, preparing to minimize"<<endl;
+                std::cerr << __LINE__ << "  " << "Bracketed the minimum, preparing to minimize" << std::endl;
               // We have bracketed a minimum and can minimize now
               _a->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
               _b->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
@@ -1138,7 +1178,7 @@ avtPoincareFilter::ContinueExecute()
                  )
         {
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "Done bracketing, found minimizing X0, finding minimum now"<<endl;
+            std::cerr << __LINE__ << "  " << "Done bracketing, found minimizing X0, finding minimum now" << std::endl;
           Vector xzplane(0,1,0);
           FieldlineLib fieldlib;
 
@@ -1148,12 +1188,12 @@ avtPoincareFilter::ContinueExecute()
           if (seed->properties.searchState == FieldlineProperties::ORIGINAL_RATIONAL)
             {
               if (RATIONAL_DEBUG)
-                std::cerr << __LINE__ << "  " << "This is the seed."<<endl;
+                std::cerr << __LINE__ << "  " << "This is the seed." << std::endl;
               seed = poincare_ic;
             }
               
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "original rational: "<<seed->source_ic->properties.searchState<<endl;
+            std::cerr << __LINE__ << "  " << "original rational: "<<seed->source_ic->properties.searchState << std::endl;
           std::vector<avtPoincareIC *> *children = seed->source_ic->properties.children;
 
           avtPoincareIC *_x0 = poincare_ic;
@@ -1163,10 +1203,10 @@ avtPoincareFilter::ContinueExecute()
 
           if (RATIONAL_DEBUG)
           {
-            std::cerr << __LINE__ << "  " << "x0 ID: "<<_x0->id<<endl;
-            std::cerr << __LINE__ << "  " << "x1 ID: "<<_x1->id<<endl;
-            std::cerr << __LINE__ << "  " << "x2 ID: "<<_x2->id<<endl;
-            std::cerr << __LINE__ << "  " << "x3 ID: "<<_x3->id<<endl;
+            std::cerr << __LINE__ << "  " << "x0 ID: "<<_x0->id << std::endl;
+            std::cerr << __LINE__ << "  " << "x1 ID: "<<_x1->id << std::endl;
+            std::cerr << __LINE__ << "  " << "x2 ID: "<<_x2->id << std::endl;
+            std::cerr << __LINE__ << "  " << "x3 ID: "<<_x3->id << std::endl;
           }
 
           std::vector<avtVector> x0_puncturePoints;
@@ -1175,16 +1215,16 @@ avtPoincareFilter::ContinueExecute()
           std::vector<avtVector> x3_puncturePoints;
           fieldlib.getPunctures(_x0->points,xzplane,x0_puncturePoints);
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "x0 ID: "<<_x0->id<<endl;
+            std::cerr << __LINE__ << "  " << "x0 ID: "<<_x0->id << std::endl;
           fieldlib.getPunctures(_x1->points,xzplane,x1_puncturePoints);
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "x1 ID: "<<_x1->id<<endl;
+            std::cerr << __LINE__ << "  " << "x1 ID: "<<_x1->id << std::endl;
           fieldlib.getPunctures(_x2->points,xzplane,x2_puncturePoints);
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "x2 ID: "<<_x2->id<<endl;
+            std::cerr << __LINE__ << "  " << "x2 ID: "<<_x2->id << std::endl;
           fieldlib.getPunctures(_x3->points,xzplane,x3_puncturePoints);
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "x3 ID: "<<_x3->id<<endl;
+            std::cerr << __LINE__ << "  " << "x3 ID: "<<_x3->id << std::endl;
               
           // Need to get distances, so get the index first
           int x0_i = findMinimizationIndex(x0_puncturePoints,_x0->properties.rationalPt1,_x0->properties.rationalPt2);
@@ -1225,14 +1265,14 @@ avtPoincareFilter::ContinueExecute()
               {
                 newIC = (avtPoincareIC*)new_ics[j];
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " << "Adding ID: "<<newIC->id<<endl;
+                  std::cerr << __LINE__ << "  " << "Adding ID: "<<newIC->id << std::endl;
                 newIC->properties = poincare_ic->properties;
                 newIC->source_ic = seed;
               }
               if(std::find(children->begin(), children->end(), _x0) == children->end())
               {
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " << "Deleting ID: "<<_x0->id<<endl;
+                  std::cerr << __LINE__ << "  " << "Deleting ID: "<<_x0->id << std::endl;
                 ids_to_delete.push_back(_x0->id);     
               }
               else
@@ -1252,11 +1292,12 @@ avtPoincareFilter::ContinueExecute()
               new_y = golden_R * x1_y + golden_C * x0_y;
               newPoint = avtVector(new_x, 0, new_y);     
               AddSeedPoint( newPoint, zeroVec, new_ics );
+
               for( j=0; j<new_ics.size(); j++ )
               {
                 newIC = (avtPoincareIC*)new_ics[j];
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " << "Adding ID: "<<newIC->id<<endl;
+                  std::cerr << __LINE__ << "  " << "Adding ID: "<<newIC->id << std::endl;
                 newIC->properties = poincare_ic->properties;
                 newIC->source_ic = seed;
               }
@@ -1265,27 +1306,28 @@ avtPoincareFilter::ContinueExecute()
               {
                 ids_to_delete.push_back(_x3->id);              
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " << "Deleting ID: "<<_x3->id<<endl;
+                  std::cerr << __LINE__ << "  " << "Deleting ID: "<<_x3->id << std::endl;
               }
               else
-                {
-                  _x3->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
-                  _x3->properties.searchState = FieldlineProperties::WAITING_SEED;
-                }
+              {
+                _x3->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
+                _x3->properties.searchState = FieldlineProperties::WAITING_SEED;
+              }
               
               // Shift pointers to prepare for next run
               _x3 = _x2;
               _x2 = _x1;
               _x1 = newIC;
             }
+
             _x0->GS_x1 = _x1;
             _x0->GS_x2 = _x2;
             _x0->GS_x3 = _x3;
             if (RATIONAL_DEBUG){
-              std::cerr << __LINE__ << "  " << _x0->id<<" ID becomes X0"<<endl;
-              std::cerr << __LINE__ << "  " << _x1->id<<" ID becomes X1"<<endl;
-              std::cerr << __LINE__ << "  " << _x2->id<<" ID becomes X2"<<endl;
-              std::cerr << __LINE__ << "  " << _x3->id<<" ID becomes X3"<<endl;
+              std::cerr << __LINE__ << "  " << _x0->id<<" ID becomes X0" << std::endl;
+              std::cerr << __LINE__ << "  " << _x1->id<<" ID becomes X1" << std::endl;
+              std::cerr << __LINE__ << "  " << _x2->id<<" ID becomes X2" << std::endl;
+              std::cerr << __LINE__ << "  " << _x3->id<<" ID becomes X3" << std::endl;
             }
             _x0->properties.searchState = FieldlineProperties::MINIMIZING_X0;
             _x1->properties.searchState = FieldlineProperties::MINIMIZING_X1;
@@ -1296,7 +1338,7 @@ avtPoincareFilter::ContinueExecute()
           else
           {
             if (RATIONAL_DEBUG)
-              std::cerr << __LINE__ << "  " << "Found the minimum."<<endl;
+              std::cerr << __LINE__ << "  " << "Found the minimum." << std::endl;
             std::vector<avtPoincareIC *>::iterator it = children->begin();
             if (x1_dist < x2_dist)
             {
@@ -1307,7 +1349,7 @@ avtPoincareFilter::ContinueExecute()
               {
                 ids_to_delete.push_back(_x0->id);
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " <<" Deleting ID: "<<_x0->id<<endl;
+                  std::cerr << __LINE__ << "  " <<" Deleting ID: "<<_x0->id << std::endl;
               }
               else
               {
@@ -1318,7 +1360,7 @@ avtPoincareFilter::ContinueExecute()
               {
                 ids_to_delete.push_back(_x2->id);
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " <<" Deleting ID: "<<_x2->id<<endl;
+                  std::cerr << __LINE__ << "  " <<" Deleting ID: "<<_x2->id << std::endl;
               }
               else
               {
@@ -1329,7 +1371,7 @@ avtPoincareFilter::ContinueExecute()
               {
                 ids_to_delete.push_back(_x3->id);
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " <<"Deleting ID: "<<_x3->id<<endl;                       
+                  std::cerr << __LINE__ << "  " <<"Deleting ID: "<<_x3->id << std::endl;                       
               }
               else
               {
@@ -1342,12 +1384,12 @@ avtPoincareFilter::ContinueExecute()
                 {
                   std::replace(children->begin(),children->end(),seed,_x1);
                   if (RATIONAL_DEBUG)
-                    std::cerr << __LINE__ << "  " << "x1 swapped with seed"<<endl;
+                    std::cerr << __LINE__ << "  " << "x1 swapped with seed" << std::endl;
                   ids_to_delete.push_back(seed->id);
                 }
                 else
                   if (RATIONAL_DEBUG)
-                    std::cerr << __LINE__ << "  " << "original seed was already minimum"<<endl; 
+                    std::cerr << __LINE__ << "  " << "original seed was already minimum" << std::endl; 
               }
             }
             else
@@ -1359,7 +1401,7 @@ avtPoincareFilter::ContinueExecute()
               {
                 ids_to_delete.push_back(_x0->id);
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " <<" Deleting ID: "<<_x0->id<<endl;
+                  std::cerr << __LINE__ << "  " <<" Deleting ID: "<<_x0->id << std::endl;
               }
               else
               {
@@ -1370,7 +1412,7 @@ avtPoincareFilter::ContinueExecute()
               {
                 ids_to_delete.push_back(_x1->id);
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " <<" Deleting ID: "<<_x1->id<<endl;
+                  std::cerr << __LINE__ << "  " <<" Deleting ID: "<<_x1->id << std::endl;
               }
               else
               {
@@ -1381,7 +1423,7 @@ avtPoincareFilter::ContinueExecute()
               {
                 ids_to_delete.push_back(_x3->id);
                 if (RATIONAL_DEBUG)
-                  std::cerr << __LINE__ << "  " <<" Deleting ID: "<<_x3->id<<endl;                      
+                  std::cerr << __LINE__ << "  " <<" Deleting ID: "<<_x3->id << std::endl;                      
               }
               else
               {
@@ -1394,12 +1436,12 @@ avtPoincareFilter::ContinueExecute()
                 {
                   std::replace(children->begin(),children->end(),seed,_x2);
                   if (RATIONAL_DEBUG)
-                    std::cerr << __LINE__ << "  " << "x2 swapped with seed"<<endl;
+                    std::cerr << __LINE__ << "  " << "x2 swapped with seed" << std::endl;
                   ids_to_delete.push_back(seed->id);
                 }
                 else
                   if (RATIONAL_DEBUG)
-                    std::cerr << __LINE__ << "  " << "original seed was already minimum"<<endl; 
+                    std::cerr << __LINE__ << "  " << "original seed was already minimum" << std::endl; 
               }
             }
           }
@@ -1410,7 +1452,7 @@ avtPoincareFilter::ContinueExecute()
           if (RATIONAL_DEBUG)
           {
             std::cerr << __LINE__ << "  " << "In ContinueExecute - " 
-                      << poincare_ic->id << " case fell through"<<endl;
+                      << poincare_ic->id << " case fell through" << std::endl;
           }
         }
 #endif
@@ -1514,11 +1556,12 @@ avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
     for ( int i=0; i<ics.size(); ++i )
     {
         avtPoincareIC * poincare_ic = (avtPoincareIC *) ics[i];
+        FieldlineProperties &properties = poincare_ic->properties;
 
         // If the analysis is completed then skip it.
-        if( poincare_ic->properties.analysisMethod != FieldlineProperties::DEFAULT_METHOD ||
-            poincare_ic->properties.analysisState == FieldlineProperties::COMPLETED ||
-            poincare_ic->properties.analysisState == FieldlineProperties::TERMINATED )
+        if( properties.analysisMethod != FieldlineProperties::DEFAULT_METHOD ||
+            properties.analysisState  == FieldlineProperties::COMPLETED ||
+            properties.analysisState  == FieldlineProperties::TERMINATED )
         {
           poincare_ic->status = avtIntegralCurve::STATUS_FINISHED;
 
@@ -1544,7 +1587,10 @@ avtPoincareFilter::ClassifyStreamlines(std::vector<avtIntegralCurve *> &ics)
         // while the streamline uses the plane regardless of the normal.
 
         if( poincare_ic->maxIntersections / 2 >= maxPunctures ||
-            poincare_ic->properties.nPuncturesNeeded == 0 )
+            poincare_ic->properties.nPuncturesNeeded == 0  ||
+
+            // Did the analysis but the integration can not continue.
+            poincare_ic->status == avtIntegralCurve::STATUS_FINISHED )
         {
 //           if( poincare_ic->properties.analysisState ==
 //               FieldlineProperties::COMPLETED )
@@ -1632,9 +1678,7 @@ bool
 avtPoincareFilter::ClassifyRationals(std::vector<avtIntegralCurve *> &ics)
 {
 #ifdef RATIONAL_SURFACE
-  FieldlineLib FLlib;
-  FLlib.verboseFlag = verboseFlag;
-  
+
   bool inRationalSearch = false;
   bool haveNewCompletedRational = false;
   bool seedsAreMinimizing = false;
@@ -1643,9 +1687,9 @@ avtPoincareFilter::ClassifyRationals(std::vector<avtIntegralCurve *> &ics)
   
   // 2d array - 1st is for each rational, 2nd is the collection of
   // curves belonging to the rational
-  std::map<long,std::vector<avtPoincareIC *> > rationalCurves;
-  std::map<long,int> rationalCounts; //Count the number of waiting curves per rational
-  std::map<long,int> waitingCounts;
+  std::map<long, std::vector<avtPoincareIC *> > rationalCurves;
+  std::map<long, int> rationalCounts; // Number of waiting curves per rational.
+  std::map<long, int> waitingCounts;
   
   // Count up waiting streamlines for each original_rational
   // Keep it organized by original_rational
@@ -1653,15 +1697,18 @@ avtPoincareFilter::ClassifyRationals(std::vector<avtIntegralCurve *> &ics)
   {
     avtPoincareIC * poincare_ic = (avtPoincareIC *) ics[i];
     
+    FieldlineProperties &properties = poincare_ic->properties;
+
     // If we have curves involved in the rational search
-    if( poincare_ic->properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH ||
-        poincare_ic->properties.analysisMethod == FieldlineProperties::RATIONAL_BRACKET ||
-        poincare_ic->properties.analysisMethod == FieldlineProperties::RATIONAL_MINIMIZE )
+    if( properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH ||
+        properties.analysisMethod == FieldlineProperties::RATIONAL_BRACKET ||
+        properties.analysisMethod == FieldlineProperties::RATIONAL_MINIMIZE )
     {
       inRationalSearch = true;
+
       // Seeds
-      if( poincare_ic->properties.searchState == FieldlineProperties::SEARCHING_SEED ||
-          poincare_ic->properties.searchState == FieldlineProperties::WAITING_SEED)
+      if( properties.searchState == FieldlineProperties::SEARCHING_SEED ||
+          properties.searchState == FieldlineProperties::WAITING_SEED)
       {   
         seedSearching = true;
         rationalCurves[poincare_ic->source_ic->id].push_back(poincare_ic);
@@ -1669,42 +1716,44 @@ avtPoincareFilter::ClassifyRationals(std::vector<avtIntegralCurve *> &ics)
         // Initialize and update the counts       
         rationalCounts[poincare_ic->source_ic->id]++;
         
-        if( poincare_ic->properties.searchState == FieldlineProperties::WAITING_SEED)
+        if( properties.searchState == FieldlineProperties::WAITING_SEED)
           waitingCounts[poincare_ic->source_ic->id]++;
       }
-      else if( poincare_ic->properties.searchState == FieldlineProperties::MINIMIZING_A ||
-               poincare_ic->properties.searchState == FieldlineProperties::MINIMIZING_B ||
-               poincare_ic->properties.searchState == FieldlineProperties::MINIMIZING_C ||
-               poincare_ic->properties.searchState == FieldlineProperties::MINIMIZING_X0 ||
-               poincare_ic->properties.searchState == FieldlineProperties::MINIMIZING_X1 ||
-               poincare_ic->properties.searchState == FieldlineProperties::MINIMIZING_X2 ||
-               poincare_ic->properties.searchState == FieldlineProperties::MINIMIZING_X3 ||
-               poincare_ic->properties.searchState == FieldlineProperties::BRACKETING_A || 
-               poincare_ic->properties.searchState == FieldlineProperties::BRACKETING_B ||
-               poincare_ic->properties.searchState == FieldlineProperties::BRACKETING_C )
+      else if( properties.searchState == FieldlineProperties::MINIMIZING_A ||
+               properties.searchState == FieldlineProperties::MINIMIZING_B ||
+               properties.searchState == FieldlineProperties::MINIMIZING_C ||
+               properties.searchState == FieldlineProperties::MINIMIZING_X0 ||
+               properties.searchState == FieldlineProperties::MINIMIZING_X1 ||
+               properties.searchState == FieldlineProperties::MINIMIZING_X2 ||
+               properties.searchState == FieldlineProperties::MINIMIZING_X3 ||
+               properties.searchState == FieldlineProperties::BRACKETING_A || 
+               properties.searchState == FieldlineProperties::BRACKETING_B ||
+               properties.searchState == FieldlineProperties::BRACKETING_C )
       {
         seedsAreMinimizing = true;
         seedSearching = true;
       }
-      else if( poincare_ic->properties.searchState == FieldlineProperties::ORIGINAL_RATIONAL)
+      else if( properties.searchState == FieldlineProperties::ORIGINAL_RATIONAL)
       {
         if( !seedSearching )
         {
-          poincare_ic->properties.analysisMethod = FieldlineProperties::DEFAULT_METHOD;
+          properties.analysisMethod = FieldlineProperties::DEFAULT_METHOD;
+
           if (RATIONAL_DEBUG)
-            std::cerr << __LINE__ << "  " << "Lone original rational"<<endl;
+            std::cerr << __LINE__ << "  " << "Lone original rational" << std::endl;
           return true;
         }
       }
     }
     // Otherwise, we need to continueExecute if we have a completed rational
-    else if( poincare_ic->properties.analysisMethod == FieldlineProperties::DEFAULT_METHOD && 
-             poincare_ic->properties.type           == FieldlineProperties::RATIONAL &&
-             (poincare_ic->properties.analysisState  == FieldlineProperties::COMPLETED ||
-              poincare_ic->properties.analysisState  == FieldlineProperties::TERMINATED) )
+    else if( properties.analysisMethod == FieldlineProperties::DEFAULT_METHOD && 
+             properties.type           == FieldlineProperties::RATIONAL &&
+             (properties.analysisState  == FieldlineProperties::COMPLETED ||
+              properties.analysisState  == FieldlineProperties::TERMINATED) )
     {
       if (RATIONAL_DEBUG)
-        cerr << "HAVE NEW COMPLETED RATIONAL" <<endl;
+        std::cerr << "HAVE NEW COMPLETED RATIONAL"  << std::endl;
+
       haveNewCompletedRational = true;
     }
   }
@@ -1733,9 +1782,10 @@ avtPoincareFilter::ClassifyRationals(std::vector<avtIntegralCurve *> &ics)
         (*inneritr)->properties.searchState = FieldlineProperties::FINISHED_SEED;
       }
     }
-  }   
+  }
+
   if (seedSearching && origFlag)
-    std::cerr << __LINE__ << "  " << "Problem!"<<endl;
+    std::cerr << __LINE__ << "  " << "Problem!" << std::endl;
   
   // If we've come this far, then we are done unless there are
   // unfinished curves or there is a new rational
@@ -1845,11 +1895,11 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
     {
         avtPoincareIC * poincare_ic = (avtPoincareIC *) ic[i];
 
-        // Skip rational-search curves
-        if (poincare_ic->properties.analysisMethod != FieldlineProperties::DEFAULT_METHOD)
-          continue;
-
         FieldlineProperties &properties = poincare_ic->properties;
+
+        // Skip rational-search curves
+        if (properties.analysisMethod != FieldlineProperties::DEFAULT_METHOD)
+          continue;
 
         FieldlineProperties::FieldlineType type = properties.type;
         bool complete =
@@ -2322,15 +2372,15 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                     
                     VALID = false;
                     
-//                    return NULL;
+//                  return NULL;
                 }
                 
-                //     std::cerr << "Surface " << i
-                //           << " plane " << p
-                //           << " bin " << j
-                //           << " base number of nodes " << nnodes
-                //           << " number of points " << puncturePts[p][j].size()
-                //           << std::endl;
+//              std::cerr << "Surface " << i
+//                           << " plane " << p
+//                           << " bin " << j
+//                           << " base number of nodes " << nnodes
+//                           << " number of points " << puncturePts[p][j].size()
+//                           << std::endl;
             }
         }
 
@@ -2476,7 +2526,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         }
     }
     
-    debug5 << "Finished creating output " << std::endl;
+    debug5 << "Finished creating poincare output " << std::endl;
 }
 
 // ****************************************************************************
@@ -2520,89 +2570,44 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
   for ( int i=0; i<ic.size(); ++i )
   {
     avtPoincareIC * poincare_ic = (avtPoincareIC *) ic[i];
-    
-    if( poincare_ic->properties.analysisMethod != FieldlineProperties::RATIONAL_SEARCH ||
-        poincare_ic->properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH &&
-        poincare_ic->properties.searchState  != FieldlineProperties::ORIGINAL_RATIONAL)
-      continue;
-    
-    FieldlineLib fieldlib;
-    int skip = fieldlib.Blankinship(poincare_ic->properties.toroidalWinding, 
-                                    poincare_ic->properties.poloidalWinding, 1);
-    
     FieldlineProperties &properties = poincare_ic->properties;
+    
+    if( properties.analysisMethod != FieldlineProperties::RATIONAL_SEARCH ||
+        properties.analysisMethod == FieldlineProperties::RATIONAL_SEARCH &&
+        properties.searchState    != FieldlineProperties::ORIGINAL_RATIONAL)
+      continue;
     
     FieldlineProperties::FieldlineType type = properties.type;
     bool complete = (properties.analysisState == FieldlineProperties::COMPLETED);
 
     unsigned int toroidalWinding    = properties.toroidalWinding;
     unsigned int poloidalWinding    = properties.poloidalWinding;
-    unsigned int poloidalWindingP   = properties.poloidalWindingP;
-    unsigned int toroidalResonance  = properties.toroidalResonance;
-    unsigned int poloidalResonance  = properties.poloidalResonance;
     unsigned int windingGroupOffset = properties.windingGroupOffset;
+    unsigned int poloidalWindingP   = properties.poloidalWindingP;
     unsigned int islands            = properties.islands;
-    unsigned int islandGroups       = properties.islandGroups;            
         
-    std::vector< avtVector > &OPoints    = properties.OPoints;
-    std::vector< avtPoincareIC *> *children      = poincare_ic->properties.children;
+    std::vector< avtPoincareIC *> *children = poincare_ic->properties.children;
 
-    unsigned int nnodes             = children->size();       
-    bool completeIslands = true;
+    unsigned int nnodes = children->size();       
         
     cerr << "Rational Search Parent: id = " << poincare_ic->id << "  "
-         << "< " << poincare_ic->points[0].x << " "
-         << poincare_ic->points[0].y << " "
-         << poincare_ic->points[0].z << " >  "
-         << poincare_ic->properties.children->size() << " "<<endl;
+         << poincare_ic->points[0] << "  with  "
+         << poincare_ic->properties.children->size() << " children"
+         << std::endl;
         
     puncturePts.resize( planes.size() );
 
-    for( unsigned int p = 0; p < planes.size(); ++p )
+    for( unsigned int p=0; p<planes.size(); ++p )
     {
       puncturePts[p].resize( toroidalWinding );
-      for (unsigned int t = 0; t < toroidalWinding; t++)
+
+      for( unsigned int t = 0; t<toroidalWinding; ++t )
         puncturePts[p][t].resize(children->size());
     }
 
-    avtPoincareIC *child_poincare_ic;
-    for (int j = 0, seedNum = 0; j < children->size(); j++, seedNum++)
+    for( int j=0; j<children->size(); ++j )
     {       
-      child_poincare_ic = children->at(j);
-
-      FieldlineLib fieldlib;
-      int skip = fieldlib.Blankinship(child_poincare_ic->properties.toroidalWinding, 
-                                      child_poincare_ic->properties.poloidalWinding, 1);
-            
-      FieldlineProperties &child_properties = child_poincare_ic->properties;
-      FieldlineProperties::FieldlineType type = properties.type;
-      bool complete =
-        (properties.analysisState == FieldlineProperties::COMPLETED);
-
-      unsigned int child_toroidalWinding    = child_properties.toroidalWinding;
-      unsigned int child_poloidalWinding    = child_properties.poloidalWinding;
-      unsigned int child_poloidalWindingP   = child_properties.poloidalWindingP;
-      unsigned int child_toroidalResonance  = child_properties.toroidalResonance;
-      unsigned int child_poloidalResonance  = child_properties.poloidalResonance;
-      unsigned int child_windingGroupOffset = child_properties.windingGroupOffset;
-      unsigned int child_islands            = child_properties.islands;
-      unsigned int child_islandGroups       = child_properties.islandGroups;
-      unsigned int child_nnodes             = child_properties.nnodes;
-            
-      //std::vector< avtVector > &child_OPoints         = child_properties.OPoints;
-                   
-      bool completeIslands = true;
-
-      if( RATIONAL_DEBUG ) 
-      {
-        cerr << "Rational Search Child: id = " << child_poincare_ic->id << "  "
-             << "< " << child_poincare_ic->points[0].x << " "
-             << child_poincare_ic->points[0].y << " "
-             << child_poincare_ic->points[0].z << " >  "
-             << child_toroidalWinding << "," << child_poloidalWinding << " ("
-             << (float) child_toroidalWinding / (float) child_poloidalWinding << ")  "
-             << child_toroidalResonance << "," << child_poloidalResonance << "  "<<endl;
-      }
+      avtPoincareIC *child_poincare_ic = children->at(j);
 
       // Get the direction of the streamline toroidalWinding.
       Point lastPt = child_poincare_ic->points[0];
@@ -2626,7 +2631,7 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
         
         if( puncturePlane == 0 ) // Poloidal Plane
         {
-                  // Go through the planes in the same direction as the streamline.
+          // Go through the planes in the same direction as the streamline.
           if( CCWstreamline )
           {
             planeN = Vector( cos(planes[p]),
@@ -2661,7 +2666,7 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
         currPt = child_poincare_ic->points[startIndex];
         currDist = planeN.dot( currPt ) - plane[3];
                 
-        for( unsigned int k = startIndex+1; k < child_poincare_ic->points.size(); ++k )
+        for( unsigned int k=startIndex+1; k<child_poincare_ic->points.size(); ++k )
         {
           lastPt = currPt;
           currPt = Vector(child_poincare_ic->points[k]);
@@ -2692,7 +2697,7 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
                double t = -Dot(planeN, w ) / dot;
                             
                Point point = Point(lastPt + dir * t);
-               puncturePts[p][bin][seedNum] = point;
+               puncturePts[p][bin][j] = point;
 
                if (++bin >= toroidalWinding)
                  break;
@@ -2725,7 +2730,7 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
           
           VALID = false;
           
-                  //                    return NULL;
+          //                    return NULL;
         }
         
         //      cerr << "Surface " << i
@@ -2741,7 +2746,7 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
         double color_value;
         
         if( dataValue == DATA_FieldlineOrder )
-          color_value = child_poincare_ic->id;
+          color_value = poincare_ic->id;
         else if( dataValue == DATA_ToroidalWindings )
           color_value = toroidalWinding;
         else if( dataValue == DATA_PoloidalWindingsQ )
@@ -2795,11 +2800,7 @@ avtPoincareFilter::CreateRationalOutput( avtDataTree *dt,
     }
   }
     
-    
-  if( verboseFlag ) 
-    cerr << endl << endl << "count " << ic.size() << endl << endl;
-  
-  debug5 << "Finished creating output " << endl;
+  debug5 << "Finished creating rational output " << endl;
 #endif
 }
 

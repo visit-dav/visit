@@ -59,40 +59,34 @@ const double golden_R = 0.61803399, golden_C = 1 - golden_R;
  *      Get the pythagorean distance between two points on the xz-plane
  *
  **/
-float pythDist(avtVector p1, avtVector p2);
+double pythDist( avtVector p1, avtVector p2 );
 
 /**     
  *
- *      getPunctureAngles
- *      Get the angle each puncture point forms with its immediate neighbors
- *
- **/
-std::vector<float> getPunctureAngles(std::vector<avtVector> puncturePts,
-                                     int skip);
-
-/**
- *
  *      getAngle
- *      Get the angle between three points (a c b)
- *
- **/
-float getAngle(avtVector a, avtVector b, avtVector c);
-
-
-/**
- *
- *      getMaximumAngleIndex
- *      Get the index of the angle with the maximum angle
+ *      Get the angle between three points, let c be the center.
  *
  */
-int getMaximumAngleIndex(std::vector<float> angles);
+double getAngle( avtVector a, avtVector b, avtVector c );
 
 /**
  *      getSeeds
  *      Return a vector of seed points for the given rational
  *
  **/
-std::vector<avtVector> getSeeds(avtPoincareIC *poincare_ic);
+std::vector<avtVector> getSeeds( avtPoincareIC *poincare_ic,
+                                 double maxDistance = .025);
+
+
+/**
+ *
+ * Look at the distance between the centroid of each toroidal group
+ * and the points that are in it.
+ *
+ **/
+float rationalDistance( std::vector< avtVector >& points,
+                        unsigned int toroidalWinding,
+                        unsigned int &index );
 
 /**
  *      findMinimizationIndex
@@ -100,7 +94,7 @@ std::vector<avtVector> getSeeds(avtPoincareIC *poincare_ic);
  *      pt1 and pt2
  *
  **/
-int findMinimizationIndex(std::vector<avtVector> puncturePts,
-                          avtVector pt1,
-                          avtVector pt2);
+int findMinimizationIndex( std::vector<avtVector> puncturePts,
+                           avtVector pt1,
+                           avtVector pt2);
 #endif
