@@ -1356,6 +1356,10 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname,
 //    Hank Childs, Thu Sep 23 14:06:57 PDT 2010
 //    Use the original pointer when doing a recursive call.
 //
+//    Hank Childs, Fri Feb 24 14:53:01 PST 2012
+//    Fix uninitialized memory read that can lead to possible infinite 
+//    recursion when there is no valid data in the array.
+//
 // ****************************************************************************
 
 template <class T> static bool
@@ -1393,11 +1397,17 @@ GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts,
                 max = *buf;
         }
     }
-    if (! visitIsFinite(min) || ! visitIsFinite(max))
-        return GetScalarRange(buf_orig, n, exts, ghosts, true);
 
-    exts[0] = (double) min;
-    exts[1] = (double) max;
+    if (setOne)
+    {
+        if (! visitIsFinite(min) || ! visitIsFinite(max))
+            return GetScalarRange(buf_orig, n, exts, ghosts, true);
+        else
+        {
+            exts[0] = (double) min;
+            exts[1] = (double) max;
+        }
+    }
 
     return setOne;
 }
@@ -1503,6 +1513,9 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname,
 //
 //  Modifications:
 //
+//    Hank Childs, Fri Feb 24 14:53:01 PST 2012
+//    Don't set the min/max if there are no valid values.
+//
 // ****************************************************************************
 
 template <class T> static bool
@@ -1535,8 +1548,11 @@ GetComponentRange(T *buf, int n, int c, int nc, double *exts, unsigned char *gho
                 max = *buf;
         }
     }
-    exts[0] = (double) min;
-    exts[1] = (double) max;
+    if (setOne)
+    {
+        exts[0] = (double) min;
+        exts[1] = (double) max;
+    }
 
     return setOne;
 }
