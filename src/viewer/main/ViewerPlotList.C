@@ -2530,6 +2530,11 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Hank Childs, Thu Dec 30 12:56:21 PST 2010
 //    Add support for operator expression from scalars, vectors, tensors, etc.
 //
+//    Eric Brugger, Thu Feb 23 14:51:11 PST 2012
+//    I modified the routine to only set the SIL restriction from a compatible
+//    SIL if the material restrictions for the new plot and matched plot are
+//    the same.
+//
 // ****************************************************************************
 
 int
@@ -2615,7 +2620,38 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
                 newPlot->GetHostName(), newPlot->GetDatabaseName(),
                 newPlot->GetVariableName(), newPlot->GetState());
             ViewerPlot *matchedPlot = plots[compatiblePlotIndex].plot;
-            new_silr->SetFromCompatibleRestriction(matchedPlot->GetSILRestriction());
+
+            //
+            // Check if the new plot and matched plot variables are
+            // restricted to the same materials.
+            //
+            bool restrictedMatnosMatch = true;
+            ViewerFileServer *server = ViewerFileServer::Instance();
+            avtDatabaseMetaData *mdNewPlot =
+                (avtDatabaseMetaData *)server->GetMetaDataForState(
+                    newPlot->GetHostName(), newPlot->GetDatabaseName(),
+                    newPlot->GetState());
+            avtDatabaseMetaData *mdMatchedPlot =
+                (avtDatabaseMetaData *)server->GetMetaDataForState(
+                    matchedPlot->GetHostName(), matchedPlot->GetDatabaseName(),
+                    matchedPlot->GetState());
+            if (mdNewPlot != 0 && mdMatchedPlot != 0)
+            {
+                string realvarNewPlot = ParsingExprList::GetRealVariable(newPlot->GetVariableName());
+                string realvarMatchedPlot = ParsingExprList::GetRealVariable(matchedPlot->GetVariableName());
+
+                intVector matsNewPlot = mdNewPlot->GetRestrictedMatnos(realvarNewPlot);
+                intVector matsMatchedPlot = mdMatchedPlot->GetRestrictedMatnos(realvarMatchedPlot);
+                if (matsNewPlot != matsMatchedPlot)
+                    restrictedMatnosMatch = false;
+            }
+
+            //
+            // If the variables are restricted to the same materials,
+            // then set the restriction.
+            //
+            if (restrictedMatnosMatch)
+                new_silr->SetFromCompatibleRestriction(matchedPlot->GetSILRestriction());
             newPlot->SetSILRestriction(new_silr);
         }
     }
@@ -4752,6 +4788,10 @@ ViewerPlotList::CloseDatabase(const std::string &dbName)
 //   Cyrus Harrison, Tue Apr 14 13:32:18 PDT 2009
 //   Added ability to only replace active plots.
 //
+//   Eric Brugger, Thu Feb 23 14:51:11 PST 2012
+//   I modified the routine so that it only sets the SIL restriction from a
+//   compatible SIL if the plot variable is not material restricted.
+//
 // ****************************************************************************
 
 void
@@ -4784,18 +4824,23 @@ ViewerPlotList::ReplaceDatabase(const EngineKey &key,
         //
         // Replace the database in the plot.
         //
-        int numNewStates = -2;
         if (doReplace)
         {
             //
-            // Get metadata so we can adjust the cache for the new plot 
+            // Determine the new number of states and if the plot is
+            // material selected.
             //
-            if (numNewStates == -2)
+            avtDatabaseMetaData *md = (avtDatabaseMetaData *)
+                                      ViewerFileServer::Instance()->
+                                      GetMetaDataForState(host, database, timeState);
+            int  numNewStates = -1;
+            bool matSelected = false;
+            if (md)
             {
-                avtDatabaseMetaData *md = (avtDatabaseMetaData *)
-                                          ViewerFileServer::Instance()->
-                                          GetMetaDataForState(host, database, timeState);
-                numNewStates = md ? md->GetNumStates() : -1;
+                numNewStates = md->GetNumStates();
+                string realvar = ParsingExprList::GetRealVariable(plot->GetVariableName());
+                intVector oldMats = md->GetRestrictedMatnos(realvar);
+                matSelected = oldMats.size() > 0 ? true : false;
             }
 
             //
@@ -4818,20 +4863,24 @@ ViewerPlotList::ReplaceDatabase(const EngineKey &key,
                     // This is useful for related files that have not been
                     // grouped.
                     //
-                    if(silr->SetFromCompatibleRestriction(plot->GetSILRestriction()))
+                    if (!matSelected)
                     {
-                         //
-                         // If the default has not been changed then make the
-                         // default SIL restriction have the same settings as
-                         // the new SIL restriction.
-                         //
-                         if (!defaultChanged)
-                         {
-                             defaultChanged = true;
-                             std::string key(SILRestrictionKey(host, database, silr->GetTopSet()));
-                             SILRestrictions[key] = new avtSILRestriction(silr);
-                         }
+                        if (silr->SetFromCompatibleRestriction(plot->GetSILRestriction()))
+                        {
+                            //
+                            // If the default has not been changed then make
+                            // the default SIL restriction have the same
+                            // settings as the new SIL restriction.
+                            //
+                            if (!defaultChanged)
+                            {
+                                defaultChanged = true;
+                                std::string key(SILRestrictionKey(host, database, silr->GetTopSet()));
+                                SILRestrictions[key] = new avtSILRestriction(silr);
+                            }
+                        }
                     }
+
                     //
                     // Set the new host, database and SIL restriction.
                     //
@@ -4939,6 +4988,11 @@ ViewerPlotList::ReplaceDatabase(const EngineKey &key,
 //
 //   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL.
+//
+//   Eric Brugger, Thu Feb 23 14:51:11 PST 2012
+//   I modified the routine so that it only sets the SIL restriction from a
+//   compatible SIL if the plot variable is not material restricted.
+//
 // ****************************************************************************
 
 void
@@ -4974,12 +5028,25 @@ ViewerPlotList::OverlayDatabase(const EngineKey &key,
             //
             TRY
             {
+                //
+                // Determine the new number of states and if the plot is
+                // material selected.
+                //
                 std::string host = key.OriginalHostName();
                 avtDatabaseMetaData *md = (avtDatabaseMetaData *)
                                           ViewerFileServer::Instance()->
                                           GetMetaData(host, database);
-                int nStates = md ? md->GetNumStates() : -1;
-                int ts = (timeState < nStates) ? timeState : 0;
+                int  numNewStates = -1;
+                bool matSelected = false;
+                if (md)
+                {
+                    numNewStates = md->GetNumStates();
+                    string realvar = ParsingExprList::GetRealVariable(newPlot->GetVariableName());
+                    intVector oldMats = md->GetRestrictedMatnos(realvar);
+                    matSelected = oldMats.size() > 0 ? true : false;
+                }
+
+                int ts = (timeState < numNewStates) ? timeState : 0;
                 avtSILRestriction_p silr = GetDefaultSILRestriction(
                     key.OriginalHostName(),
                     database, 
@@ -4989,7 +5056,7 @@ ViewerPlotList::OverlayDatabase(const EngineKey &key,
                     //
                     // First, adjust the plot's cache for new database
                     //
-                    newPlot->PrepareCacheForReplace(ts, nStates,
+                    newPlot->PrepareCacheForReplace(ts, numNewStates,
                                                     GetKeyframeMode());
 
                     //
@@ -4997,21 +5064,25 @@ ViewerPlotList::OverlayDatabase(const EngineKey &key,
                     // This is useful for related files that have not been
                     // grouped.
                     //
-                    if(silr->SetFromCompatibleRestriction(
-                        plots[i].plot->GetSILRestriction()))
+                    if (!matSelected)
                     {
-                        //
-                        // If the default has not been changed then make the
-                        // default SIL restriction have the same settings as
-                        // the new SIL restriction.
-                        //
-                        if (!defaultChanged)
+                        if(silr->SetFromCompatibleRestriction(
+                            plots[i].plot->GetSILRestriction()))
                         {
-                            defaultChanged = true;
-                            std::string key(SILRestrictionKey(host, database, silr->GetTopSet()));
-                            SILRestrictions[key] = new avtSILRestriction(silr);
+                            //
+                            // If the default has not been changed then make
+                            // the default SIL restriction have the same
+                            // settings as the new SIL restriction.
+                            //
+                            if (!defaultChanged)
+                            {
+                                defaultChanged = true;
+                                std::string key(SILRestrictionKey(host, database, silr->GetTopSet()));
+                                SILRestrictions[key] = new avtSILRestriction(silr);
+                            }
                         }
                     }
+
                     //
                     // Set the new host, database and SIL restriction.
                     //
@@ -5678,6 +5749,11 @@ ViewerPlotList::SetActivePlots(const intVector &activePlots,
 //    Brad Whitlock, Fri Mar 26 14:48:51 PST 2004
 //    Made plot name comparison use strings.
 //
+//    Eric Brugger, Thu Feb 23 14:51:11 PST 2012
+//    I modified the routine so that if we are applying the SIL restriction
+//    to all the plots that it only sets the SIL restriction if the plot
+//    variable is not material restricted.
+//
 // ****************************************************************************
 
 void
@@ -5702,7 +5778,22 @@ ViewerPlotList::SetPlotSILRestriction(bool applyToAll)
                 firstSelected = activePlots.size() - 1;
         }
         else if (applyToAll)
-            activePlots.push_back(i);
+        {
+            avtDatabaseMetaData *md = (avtDatabaseMetaData *)
+                ViewerFileServer::Instance()->
+                GetMetaDataForState(plots[i].plot->GetHostName(),
+                                    plots[i].plot->GetDatabaseName(),
+                                    plots[i].plot->GetState());
+            bool matSelected = false;
+            if (md)
+            {
+                string realvar = ParsingExprList::GetRealVariable(plots[i].plot->GetVariableName());
+                intVector mats = md->GetRestrictedMatnos(realvar);
+                matSelected = mats.size() > 0 ? true : false;
+            }
+            if (!matSelected)
+                activePlots.push_back(i);
+        }
     }
 
     if (firstSelected < 0)
