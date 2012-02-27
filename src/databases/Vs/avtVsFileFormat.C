@@ -2434,7 +2434,7 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const std::string& requestedNa
     vtkFloatArray* vals = vtkFloatArray::New();
     vals->SetNumberOfComponents(1);
     vals->SetNumberOfTuples(nPtsInOutput);
-    vals->SetName(name.c_str());
+    vals->SetName(requestedName.c_str());
 
     vtkRectilinearGrid* rg = vtkVisItUtility::Create1DRGrid(nPtsInOutput, VTK_FLOAT);
     rg->GetPointData()->SetScalars(vals);
