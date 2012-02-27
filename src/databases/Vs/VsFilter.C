@@ -33,7 +33,10 @@ struct RECURSION_DATA {
 };
 
 VsH5File* VsFilter::readFile(VsRegistry* registry, std::string fileName) {  
-  hid_t fileId = H5Fopen(fileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+  hid_t fapl = H5Pcreate(H5P_FILE_ACCESS);
+  H5Pset_fclose_degree(fapl, H5F_CLOSE_SEMI);
+  hid_t fileId = H5Fopen(fileName.c_str(), H5F_ACC_RDONLY, fapl);
+  H5Pclose(fapl);
   if (fileId < 0) {
     VsLog::errorLog() << "VsH5File::readFile(): HDF5 error opening the file '"
       << fileName << "'." << std::endl;
