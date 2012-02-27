@@ -42,6 +42,8 @@
 
 #include <avtView2D.h>
 
+#include <cmath>
+
 #include <avtViewInfo.h>
 #include <View2DAttributes.h>
 
@@ -295,6 +297,9 @@ avtView2D::SetToDefault()
 //    Eric Brugger, Tue Nov 18 08:38:38 PST 2003
 //    I replaced GetValidWindow with CheckAndCorrectWindow.
 //
+//    Hank Childs, Mon Feb 27 14:22:10 PST 2012
+//    Set camera further away for large 2D data.
+//
 // ****************************************************************************
 
 void
@@ -332,9 +337,7 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo, int *size)
     // Reset the view up vector, the focal point and the camera position.
     // The width is set based on the y window dimension.
     //
-    double    width;
-
-    width = realWindow[3] - realWindow[2];
+    double    height = fabs(realWindow[3] - realWindow[2]);
 
     viewInfo.viewUp[0] = 0.;
     viewInfo.viewUp[1] = 1.;
@@ -346,7 +349,7 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo, int *size)
 
     viewInfo.camera[0] = viewInfo.focus[0];
     viewInfo.camera[1] = viewInfo.focus[1];
-    viewInfo.camera[2] = 1.;
+    viewInfo.camera[2] = 1.+height;
 
     //
     // Set the projection mode, parallel scale and view angle.  The
@@ -355,7 +358,7 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo, int *size)
     //
     viewInfo.orthographic = true;
     viewInfo.setScale = true;
-    viewInfo.parallelScale = width / 2.;
+    viewInfo.parallelScale = height / 2.;
     viewInfo.viewAngle = 30.;
 
     //
@@ -363,8 +366,10 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo, int *size)
     // the coordinate extents, since it doesn't matter.  Setting the values
     // too tight around the focus causes problems.
     //
-    viewInfo.nearPlane = 0.5;
-    viewInfo.farPlane  = 1.5;
+    double fudge = 0.1; // without fudge, tiny heights will have camera at 
+                        // 1+espilon, near at 1 and far at 1+2*epsilon.
+    viewInfo.nearPlane = 1-fudge;
+    viewInfo.farPlane  = 1+fudge+2*height;
 }
 
 // ****************************************************************************
