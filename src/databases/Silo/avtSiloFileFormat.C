@@ -144,7 +144,7 @@ static bool TetIsInverted(const int *siloTetrahedron,
                             vtkUnstructuredGrid *ugrid);
 
 static void ArbInsertArbitrary(vtkUnstructuredGrid *ugrid,
-    DBphzonelist *phzl, int gz, const vector<int> &nloffs,
+    int nsdims, DBphzonelist *phzl, int gz, const vector<int> &nloffs,
     const vector<int> &floffs, unsigned int ocdata[2],
     vector<int> *cellReMap, vector<int> *nodeReMap);
 
@@ -9118,7 +9118,7 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     {
         vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
         ugrid->SetPoints(points);
-        ReadInConnectivity(ugrid, um->zones, um->zones->origin,
+        ReadInConnectivity(ugrid, um->ndims, um->zones, um->zones->origin,
             mesh, domain);
         rv = ugrid;
 
@@ -9304,7 +9304,7 @@ MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
 // ****************************************************************************
 
 void
-avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
+avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid, int nsdims,
                                       DBzonelist *zl, int origin,
                                       const char *meshname, int domain)
 {
@@ -9657,11 +9657,13 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
             for (j = 0; j < arbZoneCounts[i]; j++, gz++)
             {
                 unsigned int ocdata[2] = {domain, gz};
-                ArbInsertArbitrary(ugrid, phzl, j, nloffs, floffs,
+                ArbInsertArbitrary(ugrid, nsdims, phzl, j, nloffs, floffs,
                     ocdata, cellReMap, nodeReMap);
             }
 
             DBFreePHZonelist(phzl);
+
+            numCells += arbZoneCounts[i];
         }
     }
 
@@ -9809,6 +9811,62 @@ QuadFaceIsTwisted(vtkUnstructuredGrid *ugrid, int *nids)
         return true;
 
     return false;
+}
+
+// ****************************************************************************
+//  Function: ArbInsertTriangle
+//
+//  Purpose: Insert a triangle element from the arbitrary connectivity.
+//
+//  Programmer: Mark C. Miller, Mon Feb 13 19:09:23 PST 2012
+//
+// ****************************************************************************
+static void
+ArbInsertTriangle(vtkUnstructuredGrid *ugrid, int *nids, unsigned int ocdata[2],
+    vector<int> *cellReMap)
+{
+    vtkIdType ids[3];
+    ids[0] = (vtkIdType)nids[0];
+    ids[1] = (vtkIdType)nids[1];
+    ids[2] = (vtkIdType)nids[2];
+
+    ugrid->InsertNextCell(VTK_TRIANGLE, 3, ids);
+    vtkUnsignedIntArray *oca = vtkUnsignedIntArray::SafeDownCast(
+        ugrid->GetCellData()->GetArray("avtOriginalCellNumbers"));
+    oca->InsertNextTupleValue(ocdata);
+    cellReMap->push_back(ocdata[1]);
+}
+
+// ****************************************************************************
+//  Function: ArbInsertQuadrilateral
+//
+//  Purpose: Insert a quad element from the arbitrary connectivity.
+//
+//  Programmer: Mark C. Miller, Mon Feb 13 19:09:23 PST 2012
+//
+// ****************************************************************************
+static void
+ArbInsertQuadrilateral(vtkUnstructuredGrid *ugrid, int *nids, unsigned int ocdata[2],
+    vector<int> *cellReMap)
+{
+    vtkIdType ids[4];
+    ids[0] = (vtkIdType)nids[0];
+    ids[1] = (vtkIdType)nids[1];
+    ids[2] = (vtkIdType)nids[2];
+    ids[3] = (vtkIdType)nids[3];
+
+    if (QuadFaceIsTwisted(ugrid, nids))
+    {
+        vtkIdType tmp = ids[2];
+        ids[2] = ids[3];
+        ids[3] = tmp;
+    }
+
+    ugrid->InsertNextCell(VTK_QUAD, 4, ids);
+    vtkUnsignedIntArray *oca = vtkUnsignedIntArray::SafeDownCast(
+        ugrid->GetCellData()->GetArray("avtOriginalCellNumbers"));
+    oca->InsertNextTupleValue(ocdata);
+    cellReMap->push_back(ocdata[1]);
 }
 
 // ****************************************************************************
@@ -9988,15 +10046,20 @@ ArbInsertHex(vtkUnstructuredGrid *ugrid, int *nids, unsigned int ocdata[2],
 //    DBucdmesh*.
 // ****************************************************************************
 static void
-ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
+ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, int nsdims, DBphzonelist *phzl, int gz,
     const vector<int> &nloffs, const vector<int> &floffs, unsigned int ocdata[2],
     vector<int> *cellReMap, vector<int> *nodeReMap)
 {
     //
     // Compute cell center and insert it into the ugrid
     //
+    bool allFacesAre2NodeEdges = true;
     double coord_sum[3] = {0.0, 0.0, 0.0};
-    int fcnt = phzl->facecnt[gz];
+    int fcnt;
+    if (phzl->nzones == 0)
+        fcnt = phzl->nodecnt[gz];
+    else
+        fcnt = phzl->facecnt[gz];
     vector<int> lnmingnvec;
     map<int,int> nodemap;
     int ncnttot = 0, lf, k;
@@ -10004,10 +10067,20 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
     {
         int lnmingn;
         int mingn = INT_MAX;
-        int flidx = floffs[gz]+lf;          // flidx = index into facelist
-        int sgf = phzl->facelist[flidx];    // sgf = signed global face #
+        int flidx, sgf;
+        if (phzl->nzones == 0)
+        {
+            flidx = nloffs[gz]+lf;
+            sgf = gz;
+        }
+        else
+        {
+            flidx = floffs[gz]+lf;
+            sgf = phzl->facelist[flidx];
+        }
         int gf = sgf < 0 ? ~sgf : sgf;      // gf = global face #
         int ncnt = phzl->nodecnt[gf];       // ncnt = # nodes for this face
+        if (ncnt != 2) allFacesAre2NodeEdges = false;
         for (int ln = 0; ln < ncnt; ln++)   // ln = local node # 
         {
             int nlidx = nloffs[gf]+ln;      // nlidx = index into nodelist
@@ -10033,52 +10106,85 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
     for (map<int,int>::iterator it = nodemap.begin(); it != nodemap.end(); it++)
         nodeReMap->push_back(it->first);
 
-    //
-    // Loop over faces, creating pyramid and tets using 4 or
-    // 3 nodes on the face and the cell center.
-    //
-    for (lf = 0; lf < fcnt; lf++)               // lf = local face #
+    if (phzl->nzones && !allFacesAre2NodeEdges)
     {
-        int flidx = floffs[gz]+lf;              // flidx = index into facelist
-        int sgf = phzl->facelist[flidx];        // sgf = signed global face #
-        int gf = sgf < 0 ? ~sgf : sgf;          // gf = global face #
-        int ncnt = phzl->nodecnt[gf];           // ncnt = # nodes for this face
-        int newcellcnt = ncnt / 2 - ((ncnt%2)?0:1);
-        int lnmingn = lnmingnvec[lf];
-
-        int toplast = (lnmingn==ncnt-1)?0:lnmingn+1;
-        int botlast = lnmingn;
-        int topcur =  (toplast==ncnt-1)?0:toplast+1;
-        int botcur =  (botlast==0)?ncnt-1:botlast-1;
-
-        int nloff = nloffs[gf];
-        for (int c = 0; c < newcellcnt; c++)
+        //
+        // Loop over faces, creating pyramid and tets using 4 or
+        // 3 nodes on the face and the cell center.
+        //
+        for (lf = 0; lf < fcnt; lf++)               // lf = local face #
         {
-            if (c == newcellcnt-1 && ncnt%2)
+            int flidx = floffs[gz]+lf;              // flidx = index into facelist
+            int sgf = phzl->facelist[flidx];        // sgf = signed global face #
+            int gf = sgf < 0 ? ~sgf : sgf;          // gf = global face #
+            int ncnt = phzl->nodecnt[gf];           // ncnt = # nodes for this face
+            int newcellcnt = ncnt / 2 - ((ncnt%2)?0:1);
+            int lnmingn = lnmingnvec[lf];
+
+            int toplast = (lnmingn==ncnt-1)?0:lnmingn+1;
+            int botlast = lnmingn;
+            int topcur =  (toplast==ncnt-1)?0:toplast+1;
+            int botcur =  (botlast==0)?ncnt-1:botlast-1;
+
+            int nloff = nloffs[gf];
+            for (int c = 0; c < newcellcnt; c++)
             {
-                int nids[4];
-                nids[0] =  phzl->nodelist[nloff+botcur];
-                nids[1] =  phzl->nodelist[nloff+botlast];
-                nids[2] =  phzl->nodelist[nloff+toplast];
-                nids[3] = cmidn;
-                ArbInsertTet(ugrid, nids, ocdata, cellReMap);
+                if (c == newcellcnt-1 && ncnt%2)
+                {
+                    int nids[4];
+                    nids[0] =  phzl->nodelist[nloff+botcur];
+                    nids[1] =  phzl->nodelist[nloff+botlast];
+                    nids[2] =  phzl->nodelist[nloff+toplast];
+                    nids[3] = cmidn;
+                    ArbInsertTet(ugrid, nids, ocdata, cellReMap);
+                }
+                else
+                {
+                    int nids[5];
+                    nids[0] =  phzl->nodelist[nloff+botcur];
+                    nids[1] =  phzl->nodelist[nloff+botlast];
+                    nids[2] =  phzl->nodelist[nloff+toplast];
+                    nids[3] =  phzl->nodelist[nloff+topcur];
+                    nids[4] = cmidn;
+                    ArbInsertPyramid(ugrid, nids, ocdata, cellReMap);
+                }
+
+                toplast = topcur;
+                topcur = (topcur==ncnt-1)?0:topcur+1;
+                botlast = botcur;
+                botcur = (botcur==0)?ncnt-1:botcur-1;
+            } 
+        }
+    }
+    else
+    {
+        //
+        // Loop over edges, creating triangles using 2 nodes on the 
+        // edge and the cell center.
+        //
+        for (lf = 0; lf < fcnt; lf++)
+        {
+            int nloff;
+            if (phzl->facecnt == 0)
+            {
+                nloff = nloffs[gz]+lf;
             }
             else
             {
-                int nids[5];
-                nids[0] =  phzl->nodelist[nloff+botcur];
-                nids[1] =  phzl->nodelist[nloff+botlast];
-                nids[2] =  phzl->nodelist[nloff+toplast];
-                nids[3] =  phzl->nodelist[nloff+topcur];
-                nids[4] = cmidn;
-                ArbInsertPyramid(ugrid, nids, ocdata, cellReMap);
+                int flidx = floffs[gz]+lf;
+                int sgf = phzl->facelist[flidx];
+                int gf = sgf < 0 ? ~sgf : sgf;
+                nloff = nloffs[gf];
             }
-
-            toplast = topcur;
-            topcur = (topcur==ncnt-1)?0:topcur+1;
-            botlast = botcur;
-            botcur = (botcur==0)?ncnt-1:botcur-1;
-        } 
+            int nids[3];
+            nids[0] =  phzl->nodelist[nloff+0];
+            if (phzl->facecnt == 0)
+                nids[1] =  phzl->nodelist[(lf==fcnt-1)?nloffs[gz]:nloff+1];
+            else
+                nids[1] =  phzl->nodelist[nloff+1];
+            nids[2] = cmidn;
+            ArbInsertTriangle(ugrid, nids, ocdata, cellReMap);
+        }
     }
 }
 
@@ -10130,6 +10236,10 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     if (!phzl)
         return;
     
+    int nsdims = um->ndims;
+    if (nsdims != 2 && nsdims != 3)
+        return;
+
     //
     // Go ahead and add an empty avtOriginalCellNumbers array now.
     // We'll populate it as we proceed but, if we never encounter 
@@ -10178,14 +10288,23 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     //
     // Main loop over all zones in this phzl
     //
-    for (int gz = 0; gz < phzl->nzones; gz++)        // gz = global zone #
+    int nthings = (phzl->nzones)?phzl->nzones:phzl->nfaces;
+    for (int gz = 0; gz < nthings; gz++)
     {
-        int fcnt = phzl->facecnt[gz];            // fcnt = # faces for this zone
+        int fcnt;
+        if (phzl->nzones)
+            fcnt = phzl->facecnt[gz];
+        else
+            fcnt = phzl->nodecnt[gz];
+
         unsigned int ocdata[2] = {domain, gz};
 
-        if (fcnt == 4 || // Must be tet
-            fcnt == 5 || // Maybe pyramid or prism/wedge
-            fcnt == 6)   // Maybe hex
+        if (((nsdims == 3) && (fcnt == 3 || // Must be tri
+                               fcnt == 4 || // Maybe tet or quad
+                               fcnt == 5 || // Maybe pyramid or prism/wedge
+                               fcnt == 6)) || // Maybe hex
+            ((nsdims == 2) && (fcnt == 3 || // Must be tri
+                               fcnt == 4))) // Must be quad
         {
             // Iterate over all faces for this zone finding the UNIQUE
             // set of nodes the union of all the faces references. Also,
@@ -10205,28 +10324,45 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             int nloff;
             for (int lf = 0; lf < fcnt; lf++)     // lf = local face #
             {
-                int flidx = floffs[gz]+lf;        // flidx = index into facelist
-                int sgf = phzl->facelist[flidx];  // sgf = signed global face #
+                int flidx;                        // flidx = index into facelist
+                int sgf;                          // sgf = signed global face #
+                if (phzl->nzones == 0)
+                {
+                    flidx = nloffs[gz]+lf;
+                    sgf = gz;
+                }
+                else
+                {
+                    flidx = floffs[gz]+lf;
+                    sgf = phzl->facelist[flidx];
+                }
                 int gf = sgf < 0 ? ~sgf : sgf;    // gf = global face #
                 int ncnt = phzl->nodecnt[gf];     // ncnt = # nodes for this face
 
                 // If face is not a tri or quad, cannot be a zoo element.
-                if (ncnt != 3 && ncnt != 4)
+#if 0
+                if ((nsdims == 3 && ncnt != 3 && ncnt != 4) ||
+                    (nsdims == 2 && ncnt != 2 && ncnt != 3 && ncnt != 4))
+#endif
+                if (ncnt != 2 && ncnt != 3 && ncnt != 4)
                 {
                     isNotZooElement = true;
                     break;
                 }
 
                 // Maintain counts of 3 and 4 node faces
-                if (ncnt == 3)
+                if (nsdims == 3)
                 {
-                    num3NodeFaces++;
-                }
-                else
-                {
-                    if (num4NodeFaces == 0)
-                        first4NodeFace = sgf;
-                    num4NodeFaces++;
+                    if (ncnt == 3)
+                    {
+                        num3NodeFaces++;
+                    }
+                    else if (ncnt == 4)
+                    {
+                        if (num4NodeFaces == 0)
+                            first4NodeFace = sgf;
+                        num4NodeFaces++;
+                    }
                 }
 
                 // Maintain list of unique nodes
@@ -10257,68 +10393,71 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 // first face is currently a quad, we replace it with the tri.
                 // Thus, after iterating over all faces, opposingFace will be
                 // set to something other than -INT_MAX only if we have indeed
-                // encountered a prism or a hex.
+                // encountered a prism or a hex. Only do this for 3D.
                 // 
-                if (firstFaceNodes[3] == -INT_MAX) // first face is a tri
+                if (nsdims == 3)
                 {
-                    if (ncnt == 3) // curr face is a tri
+                    if (firstFaceNodes[3] == -INT_MAX) // first face is a tri
                     {
-                        // check any nodes in common with first
-                        const int *ff = firstFaceNodes;
-                        const int *nl = phzl->nodelist;
-                        int n = nloffs[gf];
-                        bool hasNodesInCommonWithFirst =
-                            ff[0] == nl[n+0] || ff[0] == nl[n+1] || ff[0] == nl[n+2] ||
-                            ff[1] == nl[n+0] || ff[1] == nl[n+1] || ff[1] == nl[n+2] ||
-                            ff[2] == nl[n+0] || ff[2] == nl[n+1] || ff[2] == nl[n+2];
-                        if (!hasNodesInCommonWithFirst)
+                        if (ncnt == 3) // curr face is a tri
                         {
-                            opposingFace = sgf;
-                            for (int ln = 0; ln < ncnt; ln++)    // ln = local node # 
+                            // check any nodes in common with first
+                            const int *ff = firstFaceNodes;
+                            const int *nl = phzl->nodelist;
+                            int n = nloffs[gf];
+                            bool hasNodesInCommonWithFirst =
+                                ff[0] == nl[n+0] || ff[0] == nl[n+1] || ff[0] == nl[n+2] ||
+                                ff[1] == nl[n+0] || ff[1] == nl[n+1] || ff[1] == nl[n+2] ||
+                                ff[2] == nl[n+0] || ff[2] == nl[n+1] || ff[2] == nl[n+2];
+                            if (!hasNodesInCommonWithFirst)
                             {
-                                int nlidx = nloffs[gf]+ln;       // nlidx = index into nodelist
-                                int gn = phzl->nodelist[nlidx];  // gn = global node #
-                                opposingFaceNodes[ln] = gn;
+                                opposingFace = sgf;
+                                for (int ln = 0; ln < ncnt; ln++)    // ln = local node # 
+                                {
+                                    int nlidx = nloffs[gf]+ln;       // nlidx = index into nodelist
+                                    int gn = phzl->nodelist[nlidx];  // gn = global node #
+                                    opposingFaceNodes[ln] = gn;
+                                }
                             }
                         }
-                    }
-                    else           // curr face is a quad
-                    {
-                        // do nothing
-                    }
-                }
-                else                          // first face is a quad
-                {
-                    if (ncnt == 3) // curr face is a tri
-                    {
-                        // Replace first face with this tri
-                        firstFace = sgf;
-                        for (int ln = 0; ln < ncnt; ln++)
+                        else if (ncnt == 4)          // curr face is a quad
                         {
-                            int nlidx = nloffs[gf]+ln;
-                            int gn = phzl->nodelist[nlidx];
-                            firstFaceNodes[ln] = gn;
+                            // do nothing
                         }
-                        firstFaceNodes[3] = -INT_MAX;
                     }
-                    else           // curr face is a quad
+                    else                          // first face is a quad
                     {
-                        const int *ff = firstFaceNodes;
-                        const int *nl = phzl->nodelist;
-                        int n = nloffs[gf];
-                        bool hasNodesInCommonWithFirst =
-                            ff[0] == nl[n+0] || ff[0] == nl[n+1] || ff[0] == nl[n+2] || ff[0] == nl[n+3] ||
-                            ff[1] == nl[n+0] || ff[1] == nl[n+1] || ff[1] == nl[n+2] || ff[1] == nl[n+3] ||
-                            ff[2] == nl[n+0] || ff[2] == nl[n+1] || ff[2] == nl[n+2] || ff[2] == nl[n+3] ||
-                            ff[3] == nl[n+0] || ff[3] == nl[n+1] || ff[3] == nl[n+2] || ff[3] == nl[n+3];
-                        if (!hasNodesInCommonWithFirst)
+                        if (ncnt == 3) // curr face is a tri
                         {
-                            opposingFace = sgf;
+                            // Replace first face with this tri
+                            firstFace = sgf;
                             for (int ln = 0; ln < ncnt; ln++)
                             {
                                 int nlidx = nloffs[gf]+ln;
                                 int gn = phzl->nodelist[nlidx];
-                                opposingFaceNodes[ln] = gn;
+                                firstFaceNodes[ln] = gn;
+                            }
+                            firstFaceNodes[3] = -INT_MAX;
+                        }
+                        else if (ncnt == 4)          // curr face is a quad
+                        {
+                            const int *ff = firstFaceNodes;
+                            const int *nl = phzl->nodelist;
+                            int n = nloffs[gf];
+                            bool hasNodesInCommonWithFirst =
+                                ff[0] == nl[n+0] || ff[0] == nl[n+1] || ff[0] == nl[n+2] || ff[0] == nl[n+3] ||
+                                ff[1] == nl[n+0] || ff[1] == nl[n+1] || ff[1] == nl[n+2] || ff[1] == nl[n+3] ||
+                                ff[2] == nl[n+0] || ff[2] == nl[n+1] || ff[2] == nl[n+2] || ff[2] == nl[n+3] ||
+                                ff[3] == nl[n+0] || ff[3] == nl[n+1] || ff[3] == nl[n+2] || ff[3] == nl[n+3];
+                            if (!hasNodesInCommonWithFirst)
+                            {
+                                opposingFace = sgf;
+                                for (int ln = 0; ln < ncnt; ln++)
+                                {
+                                    int nlidx = nloffs[gf]+ln;
+                                    int gn = phzl->nodelist[nlidx];
+                                    opposingFaceNodes[ln] = gn;
+                                }
                             }
                         }
                     }
@@ -10333,8 +10472,28 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             set<int>::iterator it;
             if (isNotZooElement)                // Arbitrary
             {
-                ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
+                ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
                     cellReMap, nodeReMap);
+            }
+            else if (num3NodeFaces == 0 && num4NodeFaces == 0)
+            {
+                if (fcnt == 3 && uniqnodes.size() == 3)
+                {
+                    for (it = uniqnodes.begin(), j = 0; it != uniqnodes.end() && j < 3; it++, j++)
+                        nids[j] = *it;
+                    ArbInsertTriangle(ugrid, nids, ocdata, cellReMap);
+                }
+                else if (fcnt == 4 && uniqnodes.size() == 4)
+                {
+                    for (it = uniqnodes.begin(), j = 0; it != uniqnodes.end() && j < 4; it++, j++)
+                        nids[j] = *it;
+                    ArbInsertQuadrilateral(ugrid, nids, ocdata, cellReMap);
+                }
+                else
+                {
+                    ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
+                        cellReMap, nodeReMap);
+                }
             }
             else if (fcnt == 4 && uniqnodes.size() == 4 &&
                      num3NodeFaces == 4 && num4NodeFaces == 0)    // Tet
@@ -10616,13 +10775,13 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             }
             else                        // Arbitrary
             {
-                ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
+                ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
                     cellReMap, nodeReMap);
             }
         }
         else                            // Arbitrary
         {
-            ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
+            ArbInsertArbitrary(ugrid, nsdims, phzl, gz, nloffs, floffs, ocdata,
                 cellReMap, nodeReMap);
         }
     } // end of loop over all zones
