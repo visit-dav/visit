@@ -292,7 +292,7 @@ DOWNLOAD_ONLY="no"
 
 export VTK_INSTALL_DIR="vtk"
 
-if [[ "$OPSYS" != "Darwin" ]]; then
+if [[ "$OPSYS" == "Darwin" ]]; then
     export DO_MESA="yes"
     export ON_MESA="on"
 fi
