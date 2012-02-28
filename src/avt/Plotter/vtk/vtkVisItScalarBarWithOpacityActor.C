@@ -54,7 +54,6 @@
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper2D.h>
-#include <vtkTextMapper.h>
 #include <vtkViewport.h>
 #include <float.h>
 
@@ -122,7 +121,7 @@ void vtkVisItScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
 
   float barOrigin;
   int rsizePixels[2];
-  this->RangeMapper->GetSize(viewport, rsizePixels);
+  this->GetTextActorSize(viewport, this->RangeActor, rsizePixels);
   if (this->RangeVisibility)
     barOrigin = (float)(rsizePixels[1] + halfFontSize);
   else

@@ -78,7 +78,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkActor2D.h>
 #include <vtkLookupTable.h>
 #include <vtkPolyDataMapper2D.h>
-#include <vtkTextMapper.h>
+#include <vtkTextActor.h>
 
 #include <vector>
 #include <string>
@@ -125,6 +125,11 @@ typedef std::vector<double> doubleVector;
 //    Added legend type, and methods/ivars to support user supplied
 //    labels and tick values.  Changed label visibility from on/off to modal,
 //    with 4 modes.
+//
+//    Brad Whitlock, Mon Feb 27 16:11:35 PST 2012
+//    Switch actor over to vtkTextActor instead of mapper/actor pair since the
+//    new way is so much faster.
+//
 // ****************************************************************************
 
 class PLOTTER_API vtkVisItScalarBarActor : public vtkActor2D
@@ -376,6 +381,7 @@ protected:
   void BuildLabels(vtkViewport *, double, double, double, int);
   virtual void BuildColorBar(vtkViewport *);
   void BuildBoundingBox(vtkViewport *viewport);
+  void GetTextActorSize(vtkViewport *viewport, vtkTextActor *text, int size[2]);
 
   bool   ShouldCollapseDiscrete(void);
 
@@ -407,14 +413,11 @@ protected:
   vtkPolyDataMapper2D *ColorBarMapper;
   vtkActor2D          *ColorBarActor;
   
-  vtkTextMapper *TitleMapper;
-  vtkActor2D    *TitleActor;
+  vtkTextActor  *TitleActor;
 
-  vtkTextMapper *RangeMapper;
-  vtkActor2D    *RangeActor;
+  vtkTextActor  *RangeActor;
 
-  vtkTextMapper **LabelMappers;
-  vtkActor2D    **LabelActors;
+  vtkTextActor  **LabelActors;
 
   vtkPolyData         *Tics;
   vtkPolyDataMapper2D *TicsMapper;

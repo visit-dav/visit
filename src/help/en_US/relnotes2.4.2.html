@@ -25,7 +25,8 @@ list of changes in release 2.4.1.</p>
 <li>A memory leak was fixed in VisIt's GMV reader.</li>
 <li>The GMV reader caused the metadata server to crash on some versions of Windows when reading certain GMV files composed of multiple smaller files.</li>
 <li>An angle conversion in the Cylinder operator was fixed so the operator works again.</li>
-<li></li>
+<li>Axis titles and text annotations and sometimes are truncated when drawn.</li>
+<li>VisIt's rendering performance when displaying back from the RZ to local machines is very slow compared to VisIt 2.3.0.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.4.2</font></b></p>
@@ -34,13 +35,14 @@ list of changes in release 2.4.1.</p>
 <li>The <i>visit -movie</i> script has been enhanced to support a <i>-adjustview</i> command line argument that resets the view for session-based movies, but preserving the view normal and up vector. This argument is meant to be passed when replacing sources with the <i>-source</i> argument since it can adjust the view to be more suitable to the new datasets' spatial extents.</li>
 <li>The <i>build_visit</i> script was enhanced so that it is possible to enable and disable Ice-T in the graphical interface. The control is listed as the last entry on the "Select 3rd party libraries" screen. It is on by default when building a parallel version and off by default otherwise.</li>
 <li>The <i>build_visit</i> script was modified so that it now builds VisIt without Mangled Mesa support unless explicitly enabled or if building a parallel version. This allows VisIt to run on systems were there are conflicts between VisIt's version of Mesa and the graphics drivers on those systems. The conflicts occured when the drivers were based on Mesa (typically on Ubuntu systems).</li>
-<li>A number of improvements were made to the handling of variables restricted to specific materials. These include:</li>
+<li>A number of improvements were made to the handling of variables restricted to specific materials. These include:
   <ul>
     <li>If you have <i>Apply subset selections to all plots</i> set and you add a  plot, it doesn't apply the subset selection from a compatible plot unless both plots are restricted to the same materials.</li>
     <li>If you replace the database, it only applies the subset selection from a compatible plot to plots that don't contain material restricted variables.</li>
     <li>If you overlay another database, it only applies the subset selection from a compatible plot to plots that don't contain material restricted variables./li>
     <li>If you have <i>Apply subset selections to all plots</i> set and you change the subset selection, it doesn't apply the subset selection to any non-active plots that contain material restricted variables.</li>
   </ul>
+</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous
