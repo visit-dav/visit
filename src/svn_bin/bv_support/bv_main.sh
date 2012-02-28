@@ -292,6 +292,11 @@ DOWNLOAD_ONLY="no"
 
 export VTK_INSTALL_DIR="vtk"
 
+if [[ "$OPSYS" != "Darwin" ]]; then
+    export DO_MESA="yes"
+    export ON_MESA="on"
+fi
+
 if [[ "$CXX_COMPILER" == "g++" ]] ; then
     VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-1)
     if [[ ${VERSION} -ge 4 ]] ; then
