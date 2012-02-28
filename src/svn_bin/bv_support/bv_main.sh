@@ -290,7 +290,7 @@ export DO_STATIC_BUILD="no"
 export USE_VISIBILITY_HIDDEN="no"
 DOWNLOAD_ONLY="no"
 
-if [[ "$OPSYS" != "Darwin" ]]; then
+if [[ "$OPSYS" == "Darwin" ]]; then
     export DO_MESA="yes"
     export ON_MESA="on"
 fi
