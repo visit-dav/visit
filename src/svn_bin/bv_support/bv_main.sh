@@ -290,6 +290,11 @@ export DO_STATIC_BUILD="no"
 export USE_VISIBILITY_HIDDEN="no"
 DOWNLOAD_ONLY="no"
 
+if [[ "$OPSYS" != "Darwin" ]]; then
+    export DO_MESA="yes"
+    export ON_MESA="on"
+fi
+
 if [[ "$CXX_COMPILER" == "g++" ]] ; then
     VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-1)
     if [[ ${VERSION} -ge 4 ]] ; then
