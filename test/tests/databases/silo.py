@@ -452,7 +452,6 @@ TestSection("Various arbitrary polygonal/polyhedral meshes")
 
 ma = MeshAttributes()
 ma.showInternal = 1
-ma.opaqueMode = ma.On
 for meshname in ("2D/mesh1_zl1","2D/mesh1_zl2","2D/mesh1_phzl","2D/mesh1_phzl2", "2D/mesh1g_zl2"):
     DeleteAllPlots()
     AddPlot("Mesh", meshname)
