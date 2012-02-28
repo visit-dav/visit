@@ -16,6 +16,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Brad Whitlock, Tue Feb 28 12:00:21 PST 2012
+#    Add test for words that used to get truncated.
+#
 # ----------------------------------------------------------------------------
 
 # Set up the annotation colors, etc.
@@ -98,5 +102,20 @@ times.Delete()
 Test("text2d09")
 text.Delete()
 Test("text2d10")
+
+# Test for words that used to get truncated
+erg = CreateAnnotationObject("Text2D")
+erg.position = (0.5, 0.3)
+erg.text = "Erg"
+erg.height = 0.08
+erg.useForegroundForTextColor = 0
+erg.textColor = (255, 255, 255, 255)
+era = CreateAnnotationObject("Text2D")
+era.position = (0.5, 0.2)
+era.text = "    Era"
+era.height = 0.12
+era.useForegroundForTextColor = 0
+era.textColor = (255, 255, 255, 255)
+Test("text2d11")
 
 Exit()
