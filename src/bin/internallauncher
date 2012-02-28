@@ -731,6 +731,9 @@ $0 = shift @ARGV;
 #    Jean Favre, Fri Nov 18 08:43:21 PST 2011 (committed by Hank)
 #    Pass along additional launch arguments when using sbatch.
 #
+#    Eric Brugger, Mon Feb 27 17:51:04 PST 2012
+#    I added support for Unity and Whitney at Sandia.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2025,10 +2028,10 @@ if ( $host =~ /^ci-fe\d+$/ or $host =~ /^ci-login\d+$/ or
 }
 
 # ----
-# HACK for Glory @ Sandia
+# HACK for Glory, Unity and Whitney @ Sandia
 # ----
 $IsRunningOnGlorySandia = 0;
-if ( $host =~ /^glory\d+$/ )
+if ( $host =~ /^glory\d+$/ or $host =~ /^unity\d+$/ or $host =~ /^whitney\d+$/ )
 {
     $IsRunningOnGlorySandia = 1;
     $ENV{LD_LIBRARY_PATH} = "apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:$ENV{LD_LIBRARY_PATH}";

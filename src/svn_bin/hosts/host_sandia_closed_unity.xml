@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="host" type="string">glory.sandia.gov</Field>
-    <Field name="hostAliases" type="string">glory#.sandia.gov glory##.sandia.gov glory###.sandia.gov glory# glory## glory###</Field>
-    <Field name="hostNickname" type="string">Sandia Glory</Field>
+    <Field name="host" type="string">unity.sandia.gov</Field>
+    <Field name="hostAliases" type="string">unity#.sandia.gov unity##.sandia.gov unity###.sandia.gov unity# unity## unity###</Field>
+    <Field name="hostNickname" type="string">Sandia Unity</Field>
     <Field name="directory" type="string">/projects/visit</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
     <Object name="LaunchProfile">
