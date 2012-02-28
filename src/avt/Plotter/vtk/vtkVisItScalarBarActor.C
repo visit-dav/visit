@@ -53,6 +53,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
 #include <vtkProperty2D.h>
+#include <vtkTextMapper.h>
 #include <vtkTextProperty.h>
 #include <vtkViewport.h>
 #include <vtkWindow.h>
@@ -63,6 +64,7 @@
 
 #define DefaultNumLabels 5
 using std::string;
+
 //------------------------------------------------------------------------------
 //  Modifications:
 //    Kathleen Bonnell, Wed Mar  6 17:10:03 PST 2002 
@@ -101,6 +103,9 @@ vtkStandardNewMacro(vtkVisItScalarBarActor);
 //    tables to be something which was more in line with window resolutions,
 //    specifically increasing it from 64 to 1024.
 //
+//    Brad Whitlock, Mon Feb 27 16:12:33 PST 2012
+//    Switch to vtkTextActor.
+//
 //------------------------------------------------------------------------------
 vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubleLabels(), labelColorMap(), suppliedLabels(), suppliedValues(), calculatedValues()
 {
@@ -130,20 +135,16 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
   this->RangeFormat = new char[30]; 
   sprintf(this->RangeFormat, "%s", "Max: %# -9.4g\nMin: %# -9.4g");
 
-  this->TitleMapper = vtkTextMapper::New();
-  this->TitleMapper->GetTextProperty()->SetJustificationToLeft();
-  this->TitleActor = vtkActor2D::New();
-  this->TitleActor->SetMapper(this->TitleMapper);
+  this->TitleActor = vtkTextActor::New();
+  this->TitleActor->GetTextProperty()->SetJustificationToLeft();
   this->TitleActor->GetPositionCoordinate()->
     SetReferenceCoordinate(this->PositionCoordinate);
 
   this->varRange = new double [2];
   this->range = new double [2];
   varRange[0] = varRange[1] = range[0] = range[1] = FLT_MAX;  
-  this->RangeMapper = vtkTextMapper::New();
-  this->RangeMapper->GetTextProperty()->SetJustificationToLeft();
-  this->RangeActor = vtkActor2D::New();
-  this->RangeActor->SetMapper(this->RangeMapper);
+  this->RangeActor = vtkTextActor::New();
+  this->RangeActor->GetTextProperty()->SetJustificationToLeft();
   this->RangeActor->GetPositionCoordinate()->
     SetReferenceCoordinate(this->PositionCoordinate);
   this->RangeActor->GetPositionCoordinate()->
@@ -152,15 +153,12 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
 
   // to avoid deleting/rebuilding create once up front
   // and set unchangeable properties
-  this->LabelMappers = new vtkTextMapper * [VTK_MAX_NUMLABELS];
-  this->LabelActors  = new vtkActor2D    * [VTK_MAX_NUMLABELS];
+  this->LabelActors  = new vtkTextActor * [VTK_MAX_NUMLABELS];
   for (int i = 0; i < VTK_MAX_NUMLABELS; i++)
     {
-    this->LabelMappers[i] = vtkTextMapper::New();
-    this->LabelMappers[i]->GetTextProperty()->SetJustificationToLeft();
-    this->LabelMappers[i]->GetTextProperty()->SetVerticalJustificationToCentered();
-    this->LabelActors[i]  = vtkActor2D::New();
-    this->LabelActors[i]->SetMapper(this->LabelMappers[i]);
+    this->LabelActors[i] = vtkTextActor::New();
+    this->LabelActors[i]->GetTextProperty()->SetJustificationToLeft();
+    this->LabelActors[i]->GetTextProperty()->SetVerticalJustificationToCentered();
     this->LabelActors[i]->GetPositionCoordinate()->
         SetReferenceCoordinate(this->PositionCoordinate);
     }
@@ -249,6 +247,9 @@ void vtkVisItScalarBarActor::ReleaseGraphicsResources(vtkWindow *win)
 //    Brad Whitlock, Wed Mar 21 16:01:44 PST 2007
 //    Added BoundingBox.
 //
+//    Brad Whitlock, Mon Feb 27 16:12:33 PST 2012
+//    Switch to vtkTextActor.
+//
 // ****************************************************************************
 
 vtkVisItScalarBarActor::~vtkVisItScalarBarActor()
@@ -280,20 +281,16 @@ vtkVisItScalarBarActor::~vtkVisItScalarBarActor()
     this->AltTitle = NULL;
     }
 
-  this->TitleMapper->Delete();
   this->TitleActor->Delete();
 
-  this->RangeMapper->Delete();
   this->RangeActor->Delete();
 
-  if (this->LabelMappers != NULL )
+  if (this->LabelActors != NULL )
     {
     for (int i=0; i < VTK_MAX_NUMLABELS; i++)
       {
-      this->LabelMappers[i]->Delete();
       this->LabelActors[i]->Delete();
       }
-    delete [] this->LabelMappers;
     delete [] this->LabelActors;
     }
 
@@ -408,6 +405,9 @@ int vtkVisItScalarBarActor::RenderOverlay(vtkViewport *viewport)
 //    Dave Pugmire, Wed Oct 29 14:31:20 EDT 2008
 //    Undo previous change.
 //
+//    Brad Whitlock, Mon Feb 27 16:12:33 PST 2012
+//    Switch to vtkTextActor.
+//
 // ****************************************************************************
 
 // Build the title for this actor 
@@ -415,7 +415,7 @@ void vtkVisItScalarBarActor::BuildTitle(vtkViewport *viewport)
 {
   double titleOrigin[3] = { 0., 0., 0. };
 
-  this->TitleMapper->SetInput(this->Title);
+  this->TitleActor->SetInput(this->Title);
   int *viewSize = viewport->GetSize();
 
   if (0 == viewSize[0]  && 0 == viewSize[1] )
@@ -429,7 +429,7 @@ void vtkVisItScalarBarActor::BuildTitle(vtkViewport *viewport)
   //
   int fontSize = (int)(FontHeight * viewSize[1]); 
 
-  vtkTextProperty *tprop = this->TitleMapper->GetTextProperty();
+  vtkTextProperty *tprop = this->TitleActor->GetTextProperty();
   tprop->SetFontSize(fontSize);
   tprop->SetBold(this->Bold);
   tprop->SetItalic(this->Italic);
@@ -442,7 +442,7 @@ void vtkVisItScalarBarActor::BuildTitle(vtkViewport *viewport)
   // percentage of the viewport.
   //
   int tsizePixels[2];
-  this->TitleMapper->GetSize(viewport, tsizePixels); 
+  this->GetTextActorSize(viewport, this->TitleActor, tsizePixels);
 
   titleOrigin[0] = 0;
   int legURy = LastOrigin[1] + LastSize[1];
@@ -490,12 +490,12 @@ void vtkVisItScalarBarActor::BuildRange(vtkViewport *viewport)
   //
   char *rangeString = new char[256];
   sprintf(rangeString, this->RangeFormat, this->varRange[1], this->varRange[0]);
-  this->RangeMapper->SetInput(rangeString);
+  this->RangeActor->SetInput(rangeString);
   delete [] rangeString;
 
   int fontSize = (int)(this->FontHeight * viewSize[1]); 
 
-  vtkTextProperty *rprop = this->RangeMapper->GetTextProperty();
+  vtkTextProperty *rprop = this->RangeActor->GetTextProperty();
   rprop->SetFontSize(fontSize);
   rprop->SetBold(this->Bold);
   rprop->SetItalic(this->Italic);
@@ -553,6 +553,9 @@ void vtkVisItScalarBarActor::BuildRange(vtkViewport *viewport)
 //
 //    Hank Childs, Mon Aug 30 07:36:43 PDT 2010
 //    Add support for log and skew scaling.
+//
+//    Brad Whitlock, Mon Feb 27 16:12:33 PST 2012
+//    Switch to vtkTextActor.
 //
 // ****************************************************************************
 
@@ -697,7 +700,7 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
           }
         else // not using supplied labels
           sprintf(labelString, "%s", this->definedLabels[idx].c_str());
-        this->LabelMappers[i]->SetInput(labelString);
+        this->LabelActors[i]->SetInput(labelString);
         }
         break;
       }
@@ -731,7 +734,7 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
             {
             sprintf(labelString, "%s", "");
             }
-          this->LabelMappers[i]->SetInput(labelString);
+          this->LabelActors[i]->SetInput(labelString);
           }
         this->NumberOfLabelsBuilt = nLabels;
         }
@@ -780,7 +783,7 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
             }
           calculatedValues.push_back(val);
           sprintf(labelString, this->LabelFormat, val);
-          this->LabelMappers[i]->SetInput(labelString);
+          this->LabelActors[i]->SetInput(labelString);
           }
         this->NumberOfLabelsBuilt = nLabels;
         } 
@@ -791,7 +794,7 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
 
   for (i = 0; i < this->NumberOfLabelsBuilt; ++i)
     {
-    vtkTextProperty *tprop = this->LabelMappers[i]->GetTextProperty();
+    vtkTextProperty *tprop = this->LabelActors[i]->GetTextProperty();
     tprop->SetFontSize(fontSize);
     tprop->SetBold(this->Bold);
     tprop->SetItalic(this->Italic);
@@ -799,8 +802,9 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
     tprop->SetFontFamily(this->FontFamily);
     tprop->SetColor(this->GetProperty()->GetColor());
 
-    double textWidth = (double)(this->LabelMappers[i]->GetWidth(viewport)) / 
-                       viewSize[0];
+    int labelSize[2];
+    this->GetTextActorSize(viewport, this->LabelActors[i], labelSize);
+    double textWidth = (double)(labelSize[0]) / viewSize[0];
 
     if (this->Type == VTK_CONTINUOUS && this->UseSuppliedLabels)
       {
@@ -1129,6 +1133,9 @@ vtkVisItScalarBarActor::BuildTics(double origin, double width,
 //    Kathleen Bonnell, Thu Oct  1 14:00:02 PDT 2009
 //    Modified to support user supplied Labels and user supplied tick values.
 //
+//    Brad Whitlock, Mon Feb 27 16:12:33 PST 2012
+//    Switch to vtkTextActor.
+//
 // **********************************************************************
 
 void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
@@ -1149,7 +1156,7 @@ void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
 
   double barOrigin;
   int rsizePixels[2];
-  this->RangeMapper->GetSize(viewport, rsizePixels); 
+  this->GetTextActorSize(viewport, this->RangeActor, rsizePixels);
   if (this->RangeVisibility)
     barOrigin = (double)(rsizePixels[1] + halfFontSize);
   else
@@ -1442,7 +1449,10 @@ vtkVisItScalarBarActor::ShouldCollapseDiscrete(void)
 //    Updated to factor in text that may spill out the left edge of the legend.
 //    The current layout of the horizontal legend can put a label outside the
 //    left edge.
-//   
+//
+//    Brad Whitlock, Mon Feb 27 16:12:33 PST 2012
+//    Switch to vtkTextActor.
+//
 // ****************************************************************************
 
 void vtkVisItScalarBarActor::BuildBoundingBox(vtkViewport *viewport)
@@ -1484,7 +1494,9 @@ void vtkVisItScalarBarActor::BuildBoundingBox(vtkViewport *viewport)
     {
     int *titleLL = this->TitleActor->GetPositionCoordinate()->
             GetComputedViewportValue(viewport);
-    int rightX = titleLL[0] + this->TitleMapper->GetWidth(viewport);
+    int tSize[2];
+    this->GetTextActorSize(viewport, this->TitleActor, tSize);
+    int rightX = titleLL[0] + tSize[0];
     if(rightX > maxX)
       maxX = rightX;
     if(titleLL[0] < minX)
@@ -1495,7 +1507,9 @@ void vtkVisItScalarBarActor::BuildBoundingBox(vtkViewport *viewport)
     {
     int *rangeLL = this->RangeActor->GetPositionCoordinate()->
             GetComputedViewportValue(viewport);
-    int rightX = rangeLL[0] + this->RangeMapper->GetWidth(viewport);
+    int rSize[2];
+    this->GetTextActorSize(viewport, this->RangeActor, rSize);
+    int rightX = rangeLL[0] + rSize[0];
     if(rightX > maxX)
       maxX = rightX;
     if(rangeLL[0] < minX)
@@ -1508,7 +1522,9 @@ void vtkVisItScalarBarActor::BuildBoundingBox(vtkViewport *viewport)
       {
       int *labelLL = this->LabelActors[i]->GetPositionCoordinate()->
             GetComputedViewportValue(viewport);
-      int rightX = labelLL[0] + this->LabelMappers[i]->GetWidth(viewport);
+      int lSize[2];
+      this->GetTextActorSize(viewport, this->LabelActors[i], lSize);
+      int rightX = labelLL[0] + lSize[0];
       if(rightX > maxX)
         maxX = rightX;
       if(labelLL[0] < minX)
@@ -2168,4 +2184,35 @@ vtkVisItScalarBarActor::GetCalculatedLabels(stringVector &v)
             v.push_back(labelString);
         }
     }
+}
+
+// ****************************************************************************
+// Method: vtkVisItScalarBarActor::GetTextActorSize
+//
+// Purpose: 
+//   Use vtkTextMapper's GetSize routine instead of calling vtkTextActor's
+//   GetSize routine so we can get the same label layout as before.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Feb 27 15:03:03 PST 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkVisItScalarBarActor::GetTextActorSize(vtkViewport *viewport, 
+    vtkTextActor *text, int size[2])
+{
+  vtkTextMapper *mapper = vtkTextMapper::New();
+  mapper->SetInput(text->GetInput());
+  mapper->SetTextProperty(text->GetTextProperty());
+  mapper->GetSize(viewport, size);
+  mapper->Delete();
 }
