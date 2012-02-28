@@ -423,7 +423,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 #else
     void                  HandleGlobalZoneIds(const char *, int, int*, int);
 #endif
-    void                  ReadInConnectivity(vtkUnstructuredGrid *,
+    void                  ReadInConnectivity(vtkUnstructuredGrid *, int,
                                              DBzonelist *, int,
                                              const char *,int);
     void                  ReadInArbConnectivity(const char *, vtkUnstructuredGrid*,
