@@ -66,6 +66,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Mark C. Miller, Tue Feb 28 00:36:09 PST 2012
+#    Added a slew of tests for hybrid zoo and arbitrary polygonal/polyhedral
+#    meshes and variables defined upon them.
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -439,6 +442,84 @@ for varname in ("p_on_mats_2","d_on_mats_1_3","m1vf_on_mats_1","m2vf_on_mats_2",
     DrawPlots()
     SetViewExtentsType("actual")
     ResetView()
+    Test("silo_%d"%testNum)
+    testNum = testNum + 1
+
+DeleteAllPlots()
+CloseDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase("../data/silo_%s_test_data/arbpoly-zoohybrid.silo"%SILO_MODE)
+TestSection("Various arbitrary polygonal/polyhedral meshes")
+
+ma = MeshAttributes()
+ma.showInternal = 1
+ma.opaqueMode = ma.On
+for meshname in ("2D/mesh1_zl1","2D/mesh1_zl2","2D/mesh1_phzl","2D/mesh1_phzl2", "2D/mesh1g_zl2"):
+    DeleteAllPlots()
+    AddPlot("Mesh", meshname)
+    SetPlotOptions(ma)
+    DrawPlots()
+    ResetView()
+    v = GetView2D()
+    v.windowCoords=(-1, 10, -1, 2)
+    SetView2D(v)
+    Test("silo_%d"%testNum)
+    testNum = testNum + 1
+
+for meshname in ("2Dz/mesh1_zl1","2Dz/mesh1_zl2","2Dz/mesh1_phzl","2Dz/mesh1_phzl2", "2Dz/mesh1g_zl2"):
+    DeleteAllPlots()
+    AddPlot("Mesh", meshname)
+    DrawPlots()
+    ResetView()
+    Test("silo_%d"%testNum)
+    testNum = testNum + 1
+
+ma = MeshAttributes()
+ma.showInternal = 1
+ma.opaqueMode = ma.On
+for meshname in ("3D/mesh1", "3D/mesh2", "3D/mesh2g", "3D/mesh3", "3D/mesh3r"):
+    DeleteAllPlots()
+    AddPlot("Mesh", meshname)
+    SetPlotOptions(ma)
+    DrawPlots()
+    ResetView()
+    v = GetView3D()
+    v.RotateAxis(1,-30)
+    v.RotateAxis(0,20)
+    SetView3D(v)
+    Test("silo_%d"%testNum)
+    testNum = testNum + 1
+
+for varname in ("2D/n11", "2D/n12", "2D/n12g", "2D/n1phzl", "2D/n1phzl2",
+                "2D/z11", "2D/z12", "2D/z12g", "2D/z1phzl", "2D/z1phzl2"):
+    DeleteAllPlots()
+    AddPlot("Pseudocolor", varname)
+    DrawPlots()
+    ResetView()
+    v = GetView2D()
+    v.windowCoords=(-1, 10, -1, 2)
+    SetView2D(v)
+    Test("silo_%d"%testNum)
+    testNum = testNum + 1
+
+for varname in ("2Dz/n11", "2Dz/n12", "2Dz/n12g", "2Dz/n1phzl", "2Dz/n1phzl2",
+                "2Dz/z11", "2Dz/z12", "2Dz/z12g", "2Dz/z1phzl", "2Dz/z1phzl2"):
+    DeleteAllPlots()
+    AddPlot("Pseudocolor", varname)
+    DrawPlots()
+    ResetView()
+    Test("silo_%d"%testNum)
+    testNum = testNum + 1
+
+for varname in ("3D/n1", "3D/n2", "3D/n2g", "3D/n3", "3D/n3r",
+                "3D/z1", "3D/z2", "3D/z2g", "3D/z3", "3D/z3r"):
+    DeleteAllPlots()
+    AddPlot("Pseudocolor", varname)
+    DrawPlots()
+    ResetView()
+    v = GetView3D()
+    v.RotateAxis(1,-30)
+    v.RotateAxis(0,20)
+    SetView3D(v)
     Test("silo_%d"%testNum)
     testNum = testNum + 1
 
