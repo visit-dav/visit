@@ -11,16 +11,14 @@
 SET(VISITARCH i386-apple-darwin10_gcc-4.2)
 IF(VISIT_STATIC)
     SET(VISITHOME /Users/whitlock2/Development/thirdparty_static)
-    SET(MESAver 7.8.2)
 ELSE(VISIT_STATIC)
     SET(VISITHOME /Users/whitlock2/Development/thirdparty_shared)
-    SET(MESAver 7.10.2)
 ENDIF(VISIT_STATIC)
 
 ##
 ## Specify the location of the mesa.
 ##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/${MESAver}/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 
 ##
 ## Specify the location of the vtk.
