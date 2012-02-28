@@ -291,6 +291,9 @@
 #    Brad Whitlock, Wed Oct 12 09:49:37 PDT 2011
 #    I added RZ/CZ options for LLNL.
 #
+#    Eric Brugger, Mon Feb 27 17:52:44 PST 2012
+#    I added host profiles for unity, whitney and redsky-s.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -479,9 +482,10 @@ while [ "$config" = "prompt" ]; do
    echo "   9) ORNL network"
    echo "   10) Princeton network"
    echo "   11) Sandia network"
-   echo "   12) TACC network"
-   echo "   13) U of Michigan Center for Advanced Computing network"
-   echo "   14) NICS at University of Tennessee at Knoxville"
+   echo "   12) Sandia closed network"
+   echo "   13) TACC network"
+   echo "   14) U of Michigan Center for Advanced Computing network"
+   echo "   15) NICS at University of Tennessee at Knoxville"
    echo ""
    echo "Enter (1-14):"
 
@@ -521,12 +525,15 @@ while [ "$config" = "prompt" ]; do
          config=sandia
          ;;
       12)
-         config=tacc
+         config=sandia_closed
          ;;
       13)
-         config=umich
+         config=tacc
          ;;
       14)
+         config=umich
+         ;;
+      15)
          config=nics
          ;;
       *)
@@ -733,6 +740,10 @@ elif [ "$config" = "princeton" ]; then
 elif [ "$config" = "sandia" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_sandia_glory.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_sandia_redsky.xml "$dir"/$version+/.visit/hosts/
+elif [ "$config" = "sandia_closed" ]; then
+   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_unity.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_whitney.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_redsky-s.xml "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "tacc" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_tacc_longhorn.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_tacc_ranger.xml "$dir"/$version+/.visit/hosts/
