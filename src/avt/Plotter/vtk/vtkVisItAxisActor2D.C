@@ -500,6 +500,9 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Hank Childs, Tue Sep 13 14:17:34 PDT 2011
 //   Increase precision if label is significantly different from location.
 //
+//   Brad Whitlock, Tue Feb 28 13:55:27 PST 2012
+//   Prevent a crash in the event that we're supposed to draw 0 labels.
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -890,7 +893,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
 
       pos[0] -= this->TickLength;
 
-      if (this->LabelVisibility && !this->TitleAtEnd)
+      if (this->LabelVisibility && !this->TitleAtEnd && this->NumberOfLabelsBuilt > 0)
         {
           pos[0] -= (0.8 * maxStringLen * 
                      this->LabelActors[0]->GetTextProperty()->GetFontSize());
@@ -907,7 +910,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
 
       pos[1] -= this->TickLength;
 
-      if (this->LabelVisibility)
+      if (this->LabelVisibility && this->NumberOfLabelsBuilt > 0)
         {
           pos[1] -= (this->LabelActors[0]->GetTextProperty()->GetFontSize());
         }
