@@ -1887,7 +1887,7 @@ if ($ENV{NERSC_HOST} eq "hopper")
     # Are we running on a login node?
     if ($host =~ /^hopper/)
     {
-        if ($exe_name eq "gui")
+        if ((!$envonly) and ($exe_name eq "gui"))
         {
             print "To run the VisIt GUI on Hopper, you need to run it on a MOM node!\n\n ";
             print "For more information about running VisIt at NERSC:";
