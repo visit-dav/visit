@@ -16,12 +16,7 @@ ENDIF(VISIT_STATIC)
 SET(VISITARCH linux-i686_gcc-3.2)
 
 ##
-## Specify the location of the mesa.
-##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.5/${VISITARCH})
-
-##
-## Specify the location of the vtk.
+## VTK
 ##
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
 
