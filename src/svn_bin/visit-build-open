@@ -77,6 +77,9 @@
 #   Eric Brugger, Mon Jan 23 11:59:40 PST 2012
 #   I added sidious.
 #
+#   Eric Brugger, Wed Feb 29 12:15:34 PST 2012
+#   I added ubuntu1104_64.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -123,6 +126,7 @@ esac
 hoth=true
 kickit=true
 sidious=true
+ubuntu1104_64=false
 aztec=true
 rzzeus=true
 alastor=false
@@ -146,6 +150,7 @@ do
          hoth=false
          kickit=false
          sidious=false
+         ubuntu1104_64=false
          aztec=false
          rzzeus=false
          alastor=false
@@ -178,6 +183,14 @@ do
          ;;
       +sidious)
          sidious=true
+         shift
+         ;;
+      -ubuntu1104_64)
+         ubuntu1104_64=false
+         shift
+         ;;
+      +ubuntu1104_64)
+         ubuntu1104_64=true
          shift
          ;;
       -aztec)
@@ -261,6 +274,7 @@ then
    echo "    hoth (B-Div, Linux),"
    echo "    kickit (B-Div, Linux),"
    echo "    sidious(B-Div, Linux),"
+   echo "    Ubunut1104-64(B-Div, Linux),"
    echo "    aztec (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
    echo "    alastor (LC, Linux, x86_64),"
@@ -430,6 +444,53 @@ then
       scp sidious sidious:sidious_buildit
       scp $dist.tar.gz sidious:sidious_$dist.tar.gz
       ssh sidious "chmod 750 sidious_buildit;./sidious_buildit" &
+   fi
+fi
+
+#
+# Build on ubuntu1104_64.
+#
+rm -f ubuntu1104_64
+cat <<EOF > ubuntu1104_64
+#!/bin/sh
+if test ! -e /home/visit/ubuntu1104_64; then
+   mkdir /home/visit/ubuntu1104_64
+fi
+rm -rf /home/visit/ubuntu1104_64/visitbuild
+mkdir /home/visit/ubuntu1104_64/visitbuild
+mv ubuntu1104_64_$dist.tar.gz /home/visit/ubuntu1104_64/visitbuild/$dist.tar.gz
+cd /home/visit/ubuntu1104_64/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/home/visit/visit/cmake/2.8.3/linux-x86_64_gcc-4.5/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make -j 2 >> ../../buildlog 2>&1
+make -j 2 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "     build of visit on ubuntu1104_64"    > resultlog 2>&1
+echo "    ---------------------------------"  >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $ubuntu1104_64 = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on ubuntu1104_64"
+      cp ubuntu1104_64 ubuntu1104_64_buildit
+      cp $dist.tar.gz ubuntu1104_64_$dist.tar.gz
+      chmod 750 ubuntu1104_64_buildit;./ubuntu1104_64_buildit &
    fi
 fi
 
@@ -870,5 +931,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit sidious aztec rzzeus alastor xchem euclid ellipse glory redsky
+   rm -f hoth kickit sidious ubuntu104_64 aztec rzzeus alastor xchem euclid ellipse glory redsky
 fi
