@@ -12,12 +12,7 @@ SET(VISITHOME /usr/gapps/visit/thirdparty_shared)
 SET(VISITARCH linux-x86_64_gcc-4.1)
 
 ##
-## Specify the location of the mesa.
-##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
-
-##
-## Specify the location of the vtk.
+## VTK
 ##
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
 
