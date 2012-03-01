@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisFilledBoundaryPlotWindow.h
 )
-QT_WRAP_CPP(GFilledBoundaryPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 FilledBoundaryViewerPluginInfo.C
@@ -83,6 +82,7 @@ TARGET_LINK_LIBRARIES(IFilledBoundaryPlot visitcommon)
 SET(INSTALLTARGETS IFilledBoundaryPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GFilledBoundaryPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GFilledBoundaryPlot ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GFilledBoundaryPlot visitcommon gui )
 

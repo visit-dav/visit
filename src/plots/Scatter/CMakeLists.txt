@@ -27,7 +27,6 @@ QvisScatterWidget.h
 QvisScatterPlotWizard.h
 QvisScatterPlotWizardPage.h
 )
-QT_WRAP_CPP(GScatterPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 ScatterViewerPluginInfo.C
@@ -89,6 +88,7 @@ TARGET_LINK_LIBRARIES(IScatterPlot visitcommon)
 SET(INSTALLTARGETS IScatterPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GScatterPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GScatterPlot ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GScatterPlot visitcommon gui )
 
