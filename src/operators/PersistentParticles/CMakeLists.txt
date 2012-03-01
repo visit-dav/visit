@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisPersistentParticlesWindow.h
 )
-QT_WRAP_CPP(GPersistentParticlesOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 PersistentParticlesViewerPluginInfo.C
@@ -92,6 +91,7 @@ TARGET_LINK_LIBRARIES(IPersistentParticlesOperator visitcommon)
 SET(INSTALLTARGETS IPersistentParticlesOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GPersistentParticlesOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GPersistentParticlesOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GPersistentParticlesOperator visitcommon gui )
 

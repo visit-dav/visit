@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisMultiresControlWindow.h
 )
-QT_WRAP_CPP(GMultiresControlOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 MultiresControlViewerPluginInfo.C
@@ -93,6 +92,7 @@ TARGET_LINK_LIBRARIES(IMultiresControlOperator visitcommon)
 SET(INSTALLTARGETS IMultiresControlOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GMultiresControlOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GMultiresControlOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GMultiresControlOperator visitcommon gui )
 

@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisFiveFoldTetSubdivisionWindow.h
 )
-QT_WRAP_CPP(GFiveFoldTetSubdivisionOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 FiveFoldTetSubdivisionViewerPluginInfo.C
@@ -93,6 +92,7 @@ TARGET_LINK_LIBRARIES(IFiveFoldTetSubdivisionOperator visitcommon)
 SET(INSTALLTARGETS IFiveFoldTetSubdivisionOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GFiveFoldTetSubdivisionOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GFiveFoldTetSubdivisionOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GFiveFoldTetSubdivisionOperator visitcommon gui )
 
