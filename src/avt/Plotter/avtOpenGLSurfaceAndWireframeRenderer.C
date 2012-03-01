@@ -4001,6 +4001,11 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
 //   up in the call sequence to the routine DrawEdges so that it would
 //   always be executed when DrawEdges is executed.
 //
+//   Hank Childs, Thu Mar  1 13:34:09 PST 2012
+//   Change test for near/far planes to use the exact near & far values, rather
+//   than reverse engineering them.  This change came about because the test
+//   only worked for perspective transformations.
+//
 // ****************************************************************************
 
 void
@@ -4039,17 +4044,8 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
     bool didZShift = false;
     if (ShouldDrawSurface() && surfaceListId.size() > 0)
     {
-        //
-        // examine the current projection matrix to compute a zShift 
-        // see documentation for glFrustum for what C, D and r are
-        //
-        float pmatrix[16];
-        glGetFloatv(GL_PROJECTION_MATRIX, pmatrix);
-        double C = pmatrix[10];
-        double D = pmatrix[14];
-        double r = (C-1.)/(C+1.);
-        double farPlane = D * (1.-r)/2.;
-        double nearPlane = farPlane / r;
+        double farPlane = view.farPlane;
+        double nearPlane = view.nearPlane;
 
         // compute a shift based upon total range in Z
         double zShift1 = (farPlane - nearPlane) / 1.0e+4;
