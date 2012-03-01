@@ -365,7 +365,7 @@ then
    then
       cp /home/visit/ubuntu1104_64/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-ubuntu11.tar.gz
       scp ubuntu1104_64 ubuntu1104_64_install
-      chmod 750 ubuntu1104_64_install;./ubuntu1104_64_install"
+      chmod 750 ubuntu1104_64_install;./ubuntu1104_64_install
    fi
 fi
 
