@@ -199,6 +199,9 @@ nodbiolibs[0]="mesa"
 nodbiolibs[1]="qt"
 nodbiolibs[2]="python"
 
+# turn off non engine/server
+noserverlibs[0]="qt"
+
 #all the io libraries
 bsd_iolibs[0]="adios"
 bsd_iolibs[1]="advio"
@@ -313,6 +316,11 @@ function bv_write_unified_file
     for (( i = 0; i < ${#nodbiolibs[*]}; ++i ))
     do
         echo "nodbiolibs[$i]=\"${nodbiolibs[$i]}\"" >> $OUTPUT_bv_FILE
+    done
+
+    for (( i = 0; i < ${#noserverlibs[*]}; ++i ))
+    do
+        echo "noserverlibs[$i]=\"${noserverlibs[$i]}\"" >> $OUTPUT_bv_FILE
     done
 
     for (( i = 0; i < ${#iolibs[*]}; ++i ))

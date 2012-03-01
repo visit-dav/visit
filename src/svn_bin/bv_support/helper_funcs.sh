@@ -80,6 +80,25 @@ function error
 }
 
 # *************************************************************************** #
+# Function: issue_command                                                     #
+#                                                                             #
+# Purpose: Print a command and execute it too.                                #
+#                                                                             #
+# Programmer: Brad Whitlock,                                                  #
+# Date: Tue Feb 28 17:04:43 PST 2012                                          #
+#                                                                             #
+# Modifications:                                                              #
+#
+# *************************************************************************** #
+
+function issue_command
+{
+    echo $@
+    $@
+    return $?
+}
+
+# *************************************************************************** #
 # Function: add_extra_commandline_args                                        #
 #                                                                             #
 # Purpose: Allows modules to add extra arguments to VisIt                     #
@@ -1291,10 +1310,12 @@ usage () {
   printf "BOOLEAN FLAGS\n"
   printf "\tThese are used to enable or disable specific functionality.  They do not take option values.\n\n"
   printf "%-15s %s [%s]\n" "--dry-run"  "Dry run of the presented options" "false"
+  printf "%-15s %s [%s]\n" "--build-mode" "VisIt build mode (Debug or Release)" "$VISIT_BUILD_MODE"
   printf "%-15s %s [%s]\n" "--build-with-version"  "install using build_visit of a different version of VisIt (experimental)" "$VISIT_VERSION"
   printf "%-15s %s [%s]\n" "--all-io"  "Build all available I/O libraries" "$DO_ALLIO"
   printf "%-15s %s [%s]\n" "--console" "Do not use dialog ('graphical') interface" "!$GRAPHICAL"
   printf "%-15s %s [%s]\n" "--dbio-only" "Disables EVERYTHING but I/O." "$DO_DBIO_ONLY"
+  printf "%-15s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
   printf "%-15s %s [%s]\n" "--debug"   "Enable debugging for this script" "false"
   printf "%-15s %s [%s]\n" "--download-only" "Only download the specified packages" "false"
   printf "%-15s %s [%s]\n" "--flags-debug" "Add '-g' to C[XX]FLAGS" "false"
@@ -1305,8 +1326,10 @@ usage () {
   printf "%-15s %s [%s]\n" "--no-thirdparty" "Do not build required 3rd party libraries" "$ON_THIRD_PARTY"
   printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$ON_HOSTCONF"
   printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
+  printf "%-15s %s [%s]\n" "--prefix" "The directory to which VisIt should be installed once it is built" "$VISIT_INSTALL_PREFIX"
   printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"
   printf "%-15s %s [%s]\n" "--python-module" "Build with the VisIt Python module" "$DO_MODULE"
+  printf "%-15s %s [%s]\n" "--server-components-only" "Only build VisIt's server components (mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
   printf "%-15s %s [%s]\n" "--slivr" "Build with SLIVR shader support" "$DO_SLIVR"
   printf "%-15s %s [%s]\n" "--static" "Build using static linking" "$DO_STATIC_BUILD"
   printf "%-15s %s [%s]\n" "--stdout" "Write build log to stdout" "$LOG_FILE"
