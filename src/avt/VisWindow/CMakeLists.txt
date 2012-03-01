@@ -35,6 +35,10 @@
 # DAMAGE.
 #
 # Modifications:
+#   Eric Brugger, Thu Mar  1 10:56:34 PST 2012
+#   I modified the CMakeList to remove the include path for the mesa header
+#   files when building without Mesa. This caused a compile failure on some
+#   systems because the include path was blank.
 #
 #****************************************************************************/
 
@@ -68,23 +72,31 @@ Colleagues/avtText3DColleague.C
 Colleagues/avtTimeSliderColleague.C
 )
 IF (NOT WIN32)
-SET_SOURCE_FILES_PROPERTIES(
+  IF(MESA_FOUND)
+    SET_SOURCE_FILES_PROPERTIES(
     Colleagues/VisWinRendering.C
     PROPERTIES
-    COMPILE_FLAGS "-I ${MESA_INCLUDE_DIR} -I ${OPENGL_INCLUDE_DIR} -I ${GLEW_INCLUDE_DIR}"
-)
+    COMPILE_FLAGS "-I${MESA_INCLUDE_DIR} -I${OPENGL_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
+    )
+  ELSE(MESA_FOUND)
+    SET_SOURCE_FILES_PROPERTIES(
+    Colleagues/VisWinRendering.C
+    PROPERTIES
+    COMPILE_FLAGS "-I${OPENGL_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
+    )
+  ENDIF(MESA_FOUND)
 ELSE (NOT WIN32)
   IF(MESA_FOUND)
   SET_SOURCE_FILES_PROPERTIES(
     Colleagues/VisWinRendering.C
     PROPERTIES
-    COMPILE_FLAGS "-I ${MESA_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
+    COMPILE_FLAGS "-I${MESA_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
   )
   ELSE()
   SET_SOURCE_FILES_PROPERTIES(
     Colleagues/VisWinRendering.C
     PROPERTIES
-    COMPILE_FLAGS "-I ${GLEW_INCLUDE_DIR}"
+    COMPILE_FLAGS "-I${GLEW_INCLUDE_DIR}"
   )
   ENDIF()
 ENDIF (NOT WIN32)
