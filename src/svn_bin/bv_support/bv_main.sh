@@ -286,8 +286,12 @@ export ON_OPTIONAL2="off"
 export DO_MORE="no"
 export ON_MORE="off"
 export DO_DBIO_ONLY="no"
+export DO_ENGINE_ONLY="no"
+export DO_SERVER_COMPONENTS_ONLY="no"
 export DO_STATIC_BUILD="no"
 export USE_VISIBILITY_HIDDEN="no"
+export VISIT_INSTALL_PREFIX=""
+export VISIT_BUILD_MODE="Release"
 DOWNLOAD_ONLY="no"
 
 export VTK_INSTALL_DIR="vtk"
@@ -527,11 +531,13 @@ for arg in "${arguments[@]}" ; do
             append-cflags) C_OPT_FLAGS="${C_OPT_FLAGS} ${arg}";;
             append-cxxflags) CXX_OPT_FLAGS="${CXX_OPT_FLAGS} ${arg}";;
             arch) VISITARCH="${arg}";;
+            build-mode) VISIT_BUILD_MODE="${arg}";;
             cflags) C_OPT_FLAGS="${arg}";;
             cxxflags) CXX_OPT_FLAGS="${arg}";;
             cc) C_COMPILER="${arg}";;
             cxx) CXX_COMPILER="${arg}";;
             makeflags) MAKE_OPT_FLAGS="${arg}";;
+            prefix) VISIT_INSTALL_PREFIX="${arg}";;
             group) GROUP="${arg}";;
             svn) SVNREVISION="${arg}";;
             tarball) VISIT_FILE="${arg}";;
@@ -612,6 +618,7 @@ for arg in "${arguments[@]}" ; do
         --all-io) continue;; #do nothing now..
         --dbio-only) continue;; #do nothing now..
         --arch) next_arg="arch";;
+        --build-mode) next_arg="build-mode";;
         --cflag) next_arg="append-cflags";;
         --cflags) next_arg="cflags";;
         --cxxflag) next_arg="append-cxxflags";;
@@ -621,7 +628,8 @@ for arg in "${arguments[@]}" ; do
         --console) GRAPHICAL="no"; ON_GRAPHICAL="off";;
         --debug) set -vx;;
         --download-only) DOWNLOAD_ONLY="yes";;
-        --flags-debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g";;
+        --engine-only) DO_ENGINE_ONLY="yes";;
+        --flags-debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"; VISIT_BUILD_MODE="Debug";;
         --gdal) DO_GDAL="yes"; ON_GDAL="on";;
         --fortran) DO_FORTRAN="yes"; ON_FORTRAN="on";;
         --group) next_arg="group"; DO_GROUP="yes"; ON_GROUP="on";;
@@ -631,8 +639,10 @@ for arg in "${arguments[@]}" ; do
         --no-thirdparty) DO_REQUIRED_THIRD_PARTY="no"; ON_THIRD_PARTY="off";;
         --no-hostconf) DO_HOSTCONF="no"; ON_HOSTCONF="off";;
         --parallel) parallel="yes"; DO_ICET="yes"; ON_ICET="on"; DO_MESA="yes"; ON_MESA="on"; ON_parallel="on";;
+        --prefix) next_arg="prefix";;
         --print-vars) next_action="print-vars";;
         --python-module) DO_MODULE="yes"; ON_MODULE="on";;
+        --server-components-only) DO_SERVER_COMPONENTS_ONLY="yes";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
         --static) DO_STATIC_BUILD="yes";;
         --stdout) LOG_FILE="/dev/tty";;
@@ -1097,6 +1107,14 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
         for (( bv_i=0; bv_i<${#nodbiolibs[*]}; ++bv_i ))
         do
             initializeFunc="bv_${nodbiolibs[$bv_i]}_disable"
+            $initializeFunc
+        done
+    fi
+    if [[ "$DO_ENGINE_ONLY" == "yes" || "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]] ; then
+        #disable all non server libraries
+        for (( bv_i=0; bv_i<${#noserverlibs[*]}; ++bv_i ))
+        do
+            initializeFunc="bv_${noserverlibs[$bv_i]}_disable"
             $initializeFunc
         done
     fi

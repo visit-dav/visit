@@ -430,7 +430,7 @@ function build_qt
     #
     # Figure out if configure found the OpenGL libraries
     #
-    if [[ "${DO_DBIO_ONLY}" != "yes" ]] ; then
+    if [[ "${DO_DBIO_ONLY}" != "yes" && "${DO_ENGINE_ONLY}" != "yes" && "${DO_SERVER_COMPONENTS_ONLY}" != "yes" ]] ; then
        HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'  | cut -c 1-3`
        if [[ "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
           warn "Qt4 configure did not find OpenGL." \
