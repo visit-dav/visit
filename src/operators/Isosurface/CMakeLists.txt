@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisIsosurfaceWindow.h
 )
-QT_WRAP_CPP(GIsosurfaceOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 IsosurfaceViewerPluginInfo.C
@@ -92,6 +91,7 @@ TARGET_LINK_LIBRARIES(IIsosurfaceOperator visitcommon)
 SET(INSTALLTARGETS IIsosurfaceOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GIsosurfaceOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GIsosurfaceOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GIsosurfaceOperator visitcommon gui )
 

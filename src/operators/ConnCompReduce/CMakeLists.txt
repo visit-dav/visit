@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisConnCompReduceWindow.h
 )
-QT_WRAP_CPP(GConnCompReduceOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 ConnCompReduceViewerPluginInfo.C
@@ -92,6 +91,7 @@ TARGET_LINK_LIBRARIES(IConnCompReduceOperator visitcommon)
 SET(INSTALLTARGETS IConnCompReduceOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GConnCompReduceOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GConnCompReduceOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GConnCompReduceOperator visitcommon gui )
 

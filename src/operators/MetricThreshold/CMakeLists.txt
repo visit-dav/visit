@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisMetricThresholdWindow.h
 )
-QT_WRAP_CPP(GMetricThresholdOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 MetricThresholdViewerPluginInfo.C
@@ -92,6 +91,7 @@ TARGET_LINK_LIBRARIES(IMetricThresholdOperator visitcommon)
 SET(INSTALLTARGETS IMetricThresholdOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GMetricThresholdOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GMetricThresholdOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GMetricThresholdOperator visitcommon gui )
 

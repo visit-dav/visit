@@ -27,7 +27,6 @@ QvisParallelCoordinatesWidget.h
 QvisParallelCoordinatesPlotWizard.h
 QvisParallelCoordinatesPlotWizardPage.h
 )
-QT_WRAP_CPP(GParallelCoordinatesPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 ParallelCoordinatesViewerPluginInfo.C
@@ -89,6 +88,7 @@ TARGET_LINK_LIBRARIES(IParallelCoordinatesPlot visitcommon)
 SET(INSTALLTARGETS IParallelCoordinatesPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GParallelCoordinatesPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GParallelCoordinatesPlot ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GParallelCoordinatesPlot visitcommon gui )
 

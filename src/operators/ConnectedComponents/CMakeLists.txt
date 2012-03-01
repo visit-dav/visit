@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisConnectedComponentsWindow.h
 )
-QT_WRAP_CPP(GConnectedComponentsOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 ConnectedComponentsViewerPluginInfo.C
@@ -92,6 +91,7 @@ TARGET_LINK_LIBRARIES(IConnectedComponentsOperator visitcommon)
 SET(INSTALLTARGETS IConnectedComponentsOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GConnectedComponentsOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GConnectedComponentsOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GConnectedComponentsOperator visitcommon gui )
 

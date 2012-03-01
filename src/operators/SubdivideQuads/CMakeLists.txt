@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisSubdivideQuadsWindow.h
 )
-QT_WRAP_CPP(GSubdivideQuadsOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 SubdivideQuadsViewerPluginInfo.C
@@ -92,6 +91,7 @@ TARGET_LINK_LIBRARIES(ISubdivideQuadsOperator visitcommon)
 SET(INSTALLTARGETS ISubdivideQuadsOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GSubdivideQuadsOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GSubdivideQuadsOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GSubdivideQuadsOperator visitcommon gui )
 

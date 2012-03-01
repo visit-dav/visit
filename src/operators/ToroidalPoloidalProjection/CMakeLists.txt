@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisToroidalPoloidalProjectionWindow.h
 )
-QT_WRAP_CPP(GToroidalPoloidalProjectionOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 ToroidalPoloidalProjectionViewerPluginInfo.C
@@ -92,6 +91,7 @@ TARGET_LINK_LIBRARIES(IToroidalPoloidalProjectionOperator visitcommon)
 SET(INSTALLTARGETS IToroidalPoloidalProjectionOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GToroidalPoloidalProjectionOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GToroidalPoloidalProjectionOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GToroidalPoloidalProjectionOperator visitcommon gui )
 

@@ -368,8 +368,6 @@ class CMakeGeneratorPlugin : public Plugin
             for (size_t i=0; i<wfiles.size(); i++)
                 out << wfiles[i] << endl;
         out << ")" << endl;
-        out << "QT_WRAP_CPP(G" << name 
-            << "Plot LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
         out << endl;
 
         // libV sources
@@ -393,8 +391,6 @@ class CMakeGeneratorPlugin : public Plugin
             for (size_t i=0; i<vwfiles.size(); i++)
                 out << vwfiles[i] << endl;
             out << ")" << endl;
-            out << "QT_WRAP_CPP(V" << name
-                << "Plot LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
         }
         out << endl;
 
@@ -475,12 +471,15 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
 
         out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
-
+        out << "    QT_WRAP_CPP(G" << name << "Plot LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
         out << "    ADD_LIBRARY(G"<<name<<"Plot ${LIBG_SOURCES})" << endl;
         out << "    TARGET_LINK_LIBRARIES(G" << name << "Plot visitcommon "
             << guilibname << " " << ToString(libs) << ToString(glibs) 
             << ")" << endl;
         out << endl;
+
+        if (customvwfiles)
+            out << "    QT_WRAP_CPP(V" << name << "Plot LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
         out << "    ADD_LIBRARY(V"<<name<<"Plot ${LIBV_SOURCES})" << endl;
         out << "    TARGET_LINK_LIBRARIES(V" << name << "Plot visitcommon "
             << viewerlibname << " " << ToString(libs) << ToString(vlibs) 
@@ -588,7 +587,6 @@ class CMakeGeneratorPlugin : public Plugin
             for (size_t i=0; i<wfiles.size(); i++)
                 out << wfiles[i] << endl;
         out << ")" << endl;
-        out << "QT_WRAP_CPP(G"<<name<<"Operator LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
         out << endl;
 
         // libV sources
@@ -611,7 +609,6 @@ class CMakeGeneratorPlugin : public Plugin
             for (size_t i=0; i<vwfiles.size(); i++)
                 out << vwfiles[i] << endl;
             out << ")" << endl;
-            out << "QT_WRAP_CPP(V"<<name<<"Operator LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
         }
         out << endl;
 
@@ -672,12 +669,14 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
 
         out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
-
+        out << "    QT_WRAP_CPP(G"<<name<<"Operator LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
         out << "    ADD_LIBRARY(G"<<name<<"Operator ${LIBG_SOURCES})" << endl;
         out << "    TARGET_LINK_LIBRARIES(G" << name << "Operator visitcommon "
             << guilibname << " " << ToString(libs) << ToString(glibs) 
             << ")" << endl;
         out << endl;
+        if (customvwfiles)
+            out << "    QT_WRAP_CPP(V"<<name<<"Operator LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
         out << "    ADD_LIBRARY(V"<<name<<"Operator ${LIBV_SOURCES})" << endl;
         out << "    TARGET_LINK_LIBRARIES(V" << name << "Operator visitcommon "
             << viewerlibname << " " << ToString(libs) << ToString(vlibs) 

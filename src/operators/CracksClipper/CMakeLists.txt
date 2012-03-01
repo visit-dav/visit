@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisCracksClipperWindow.h
 )
-QT_WRAP_CPP(GCracksClipperOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 CracksClipperViewerPluginInfo.C
@@ -101,6 +100,7 @@ TARGET_LINK_LIBRARIES(ICracksClipperOperator visitcommon)
 SET(INSTALLTARGETS ICracksClipperOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GCracksClipperOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GCracksClipperOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GCracksClipperOperator visitcommon gui )
 

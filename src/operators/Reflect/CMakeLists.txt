@@ -23,7 +23,6 @@ SET(LIBG_MOC_SOURCES
 QvisReflectWindow.h
 QvisReflectWidget.h
 )
-QT_WRAP_CPP(GReflectOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 ReflectViewerPluginInfo.C
@@ -94,6 +93,7 @@ TARGET_LINK_LIBRARIES(IReflectOperator visitcommon)
 SET(INSTALLTARGETS IReflectOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GReflectOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GReflectOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GReflectOperator visitcommon gui )
 

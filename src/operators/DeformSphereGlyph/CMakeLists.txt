@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisDeformSphereGlyphWindow.h
 )
-QT_WRAP_CPP(GDeformSphereGlyphOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 DeformSphereGlyphViewerPluginInfo.C
@@ -92,6 +91,7 @@ TARGET_LINK_LIBRARIES(IDeformSphereGlyphOperator visitcommon)
 SET(INSTALLTARGETS IDeformSphereGlyphOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GDeformSphereGlyphOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GDeformSphereGlyphOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GDeformSphereGlyphOperator visitcommon gui )
 

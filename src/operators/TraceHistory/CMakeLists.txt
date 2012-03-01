@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisTraceHistoryWindow.h
 )
-QT_WRAP_CPP(GTraceHistoryOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 TraceHistoryViewerPluginInfo.C
@@ -93,6 +92,7 @@ TARGET_LINK_LIBRARIES(ITraceHistoryOperator visitcommon)
 SET(INSTALLTARGETS ITraceHistoryOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GTraceHistoryOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GTraceHistoryOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GTraceHistoryOperator visitcommon gui )
 

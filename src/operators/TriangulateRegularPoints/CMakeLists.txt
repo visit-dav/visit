@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisTriangulateRegularPointsWindow.h
 )
-QT_WRAP_CPP(GTriangulateRegularPointsOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 TriangulateRegularPointsViewerPluginInfo.C
@@ -92,6 +91,7 @@ TARGET_LINK_LIBRARIES(ITriangulateRegularPointsOperator visitcommon)
 SET(INSTALLTARGETS ITriangulateRegularPointsOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GTriangulateRegularPointsOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GTriangulateRegularPointsOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GTriangulateRegularPointsOperator visitcommon gui )
 
