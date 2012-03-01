@@ -3233,6 +3233,9 @@ avtNek5000FileFormat::CombineElementLists(
 //    Hank Childs, Tue Sep 27 16:32:55 PDT 2011
 //    Add support for meshes whose coordinates vary over time.
 //
+//    Hank Childs, Thu Mar  1 08:18:55 PST 2012
+//    Fix memory leak with time varying meshes.
+//
 // ****************************************************************************
 
 void
@@ -3242,7 +3245,18 @@ avtNek5000FileFormat::ActivateTimestep(int ts)
     map<PointerKey, float *, KeyCompare> new_cachedData;
     for (it = cachedData.begin() ; it != cachedData.end() ; it++)
     {
-        if (it->first.timestep != ts && it->first.var != "points")
+        bool deleteThis = false;
+        if (it->first.timestep != ts)
+        {
+            if (it->first.var == "points")
+                // The timestep for the mesh may come from another time slice
+                // (typically 0).  If that's the case, don't delete it.
+                deleteThis = (it->first.timestep != timestepToUseForMesh);
+            else
+                deleteThis = true;
+        }
+
+        if (deleteThis)
             delete [] it->second;
         else
             new_cachedData[it->first] = it->second;
