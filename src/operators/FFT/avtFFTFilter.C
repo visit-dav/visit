@@ -352,8 +352,9 @@ vtkRectilinearGrid* avtFFTFilter::ComputeFFT(std::vector<double>* data, long nDa
   // 6) compute complex amplitude, dB, and compress in array
   double oneENeg25 = pow((double)10, -25);
 
-  for(int i = 0, j = -1; i < nFFThalf; i++) {
-    fftData[i] = 10 * log10(std::max(oneENeg25, (pow(fftData[++j], 2) + pow(fftData[++j], 2))));
+  for(int i = 0; i < nFFThalf; i++) {
+    int jIndex = i * 2;
+    fftData[i] = 10 * log10(std::max(oneENeg25, (pow(fftData[jIndex], 2) + pow(fftData[jIndex + 1], 2))));
   }
 
   // 7) df = 1.0/(nFFT*dt)
