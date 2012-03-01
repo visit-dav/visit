@@ -47,6 +47,14 @@ list of changes in release 2.4.1.</p>
     <li>If you have <i>Apply subset selections to all plots</i> set and you change the subset selection, it doesn't apply the subset selection to any non-active plots that contain material restricted variables.</li>
   </ul>
 </li>
+<li>New command line arguments have been added to the build_visit script:
+  <ul>
+    <li><i>--engine-only</i> lets you build just the compute engine and its dependencies.</li>
+    <li><i>--server-components-only</i> lets you build just the compute engine, metadata server, launcher and their dependencies.</li>
+    <li><i>--build-mode</i> lets you specify whether you want to build VisIt in "Release" or "Debug" mode.</li>
+    <li><i>--prefix</i> lets you pick where VisIt should be installed. When this argument is passed, VisIt is automatically installed at the specified location once it has been built.</li>
+  </ul>
+</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous
