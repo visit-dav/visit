@@ -943,5 +943,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit sidious ubuntu104_64 aztec rzzeus alastor xchem euclid ellipse glory redsky
+   rm -f hoth kickit sidious ubuntu1104_64 aztec rzzeus alastor xchem euclid ellipse glory redsky
 fi
