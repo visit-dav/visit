@@ -80,6 +80,10 @@
 #   Eric Brugger, Wed Feb 29 12:15:34 PST 2012
 #   I added ubuntu1104_64.
 #
+#   Eric Brugger, Thu Mar  1 07:57:45 PST 2012
+#   I modified the builds on hoth and sidious to use the serial config
+#   site files.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -314,6 +318,10 @@ mv hoth_$dist.tar.gz /scratch/$user/hoth/visitbuild/$dist.tar.gz
 cd /scratch/$user/hoth/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
+cd config-site
+mv hoth.llnl.gov.cmake hoth.llnl.gov.parallel.cmake
+mv hoth.llnl.gov.serial.cmake hoth.llnl.gov.cmake
+cd ..
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 /usr/gapps/visit/thirdparty_shared/cmake/2.8.3/linux-i686_gcc-3.2/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
@@ -415,6 +423,10 @@ mv sidious_$dist.tar.gz /tmp/$user/sidious/visitbuild/$dist.tar.gz
 cd /tmp/$user/sidious/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
+cd config-site
+mv sidious.llnl.gov.cmake sidious.llnl.gov.parallel.cmake
+mv sidious.llnl.gov.serial.cmake sidious.llnl.gov.cmake
+cd ..
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 /usr/gapps/visit/thirdparty_shared/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
