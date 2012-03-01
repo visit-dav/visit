@@ -2090,7 +2090,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
                 for (i = 0 ; i < numSubsets ; i++)
                 {
                     int idx = otherMatColl->GetSubset(i);
-                    if (silr->useSet[otherLeaves[i]] == NoneUsed)
+                    if (silr->useSet[idx] == NoneUsed)
                         TurnOffSet(matColl->GetSubset(i));   
                 }
             }
