@@ -4315,6 +4315,33 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 }
 
 // ****************************************************************************
+// Method: QvisGUIApplication::SetSessionNameInWindowTitle
+//
+// Purpose: 
+//   Set the name of the session file into the window title.
+//
+// Arguments:
+//   filename : The name of the session file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar  2 15:38:05 PST 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::SetSessionNameInWindowTitle(const QString &filename)
+{
+    // Set the name of the session file that we loaded.
+    if(!filename.isEmpty() && mainWin != NULL)
+    {
+        std::string fileOnly(QualifiedFilename(sessionFile.toStdString()).filename);
+        mainWin->setWindowTitle(tr("VisIt %1 [%2]").arg(VISIT_VERSION).arg(fileOnly.c_str()));
+    }
+}
+
+// ****************************************************************************
 // Method: QvisGUIApplication::SaveSession
 //
 // Purpose: 
@@ -4323,6 +4350,10 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jul 14 11:52:52 PDT 2003
+//
+// Modifications:
+//   Brad Whitlock, Fri Mar  2 15:35:51 PST 2012
+//   Set the session name in the window title.
 //
 // ****************************************************************************
 
@@ -4336,6 +4367,9 @@ QvisGUIApplication::SaveSession()
         ++sessionCount;
         SaveSessionFile(sessionFile);
         UpdateSessionDir(sessionFile.toStdString());
+
+        // Set the name of the session file that we saved.
+        SetSessionNameInWindowTitle(sessionFile);
     }
 }
 
@@ -4369,6 +4403,9 @@ QvisGUIApplication::SaveSession()
 //   Use '.session' on windows, too. Send sessionDir to getSaveFileName 
 //   instead of '.'
 //
+//   Brad Whitlock, Fri Mar  2 15:35:51 PST 2012
+//   Set the session name in the window title.
+//
 // ****************************************************************************
 
 void
@@ -4395,6 +4432,9 @@ QvisGUIApplication::SaveSessionAs()
         ++sessionCount;
         SaveSessionFile(fileName);
         UpdateSessionDir(fileName.toStdString());
+
+        // Set the name of the session file that we saved.
+        SetSessionNameInWindowTitle(sessionFile);
     }
 }
 
@@ -4817,6 +4857,9 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
 //   Kathleen Bonnell, Tue Nov 1 14:28:57 PDT 2010
 //   Don't prepend 'VisItUserDir' to guifilename on Windows.
 //
+//   Brad Whitlock, Fri Mar  2 15:31:41 PST 2012
+//   Add the name of the open session file in the main window's caption.
+//
 // ****************************************************************************
 
 void
@@ -4953,6 +4996,10 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
             // already part of the filename.
             GetViewerMethods()->ImportEntireState(filename, false);
         }
+
+        // Set the name of the session file that we loaded.
+        SetSessionNameInWindowTitle(sessionFile);
+
     restoringSession = false;
     }
 }
