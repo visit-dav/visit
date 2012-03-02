@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -122,6 +122,9 @@
 #
 #    Hank Childs, Sun Feb  5 18:52:04 PST 2012
 #    Add CarpetHDF5 reader from Christian Reisswig and Erik Schnetter.
+#
+#    Brad Whitlock, Fri Mar  2 12:04:25 PST 2012
+#    Remove BOW reader.
 #
 #****************************************************************************/
 
@@ -254,7 +257,6 @@ ANSYS
 AUXFile
 AugDecomp
 BOV
-BOW
 CEAucd
 CMAT
 CTRL
