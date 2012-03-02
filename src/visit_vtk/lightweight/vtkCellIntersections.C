@@ -315,6 +315,9 @@ vtkCellIntersections::PolyLineIntersectWithLine(vtkPolyLine *cell, double p1[3],
 //   If the line is coplanar with the triangle, and we should test for
 //   intersection in this case, call EdgeLineIsect. 
 //
+//   Hank Childs, Fri Mar  2 15:18:17 PST 2012
+//   Add special handling for cases close to 0.  (Needed for 2D.)
+//
 // ****************************************************************************
 int
 vtkCellIntersections::TriangleIntersectWithLine(vtkTriangle *cell, 
@@ -382,6 +385,16 @@ vtkCellIntersections::TriangleIntersectWithLine(vtkTriangle *cell,
   for (i = 0; i < 3; i++)
     {
     x[i] = p1[i] + (dt*rayDir[i]);
+    }
+  if (fabs(dt-0.5) < 1e-7)
+    {
+    double mag = sqrt(rayDir[0]*rayDir[0]+rayDir[1]*rayDir[1]+rayDir[2]*rayDir[2]);
+    if (mag > 1e-3)
+      {
+      for (i = 0 ; i < 3 ; i++)
+        if (fabs(x[i]) < 1e-10)
+          x[i] = 0.;
+      }
     }
   t = vtkMath::Distance2BetweenPoints(p1, x);
 
