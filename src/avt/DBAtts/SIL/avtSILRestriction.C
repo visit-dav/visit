@@ -1907,6 +1907,9 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
 //    Hank Childs, Fri Feb 24 14:38:15 PST 2012
 //    Make sure material selections get propagated.
 //
+//    Hank Childs, Thu Mar  1 13:48:17 PST 2012
+//    Propagate levels selections as well.
+//
 // ****************************************************************************
 
 bool
@@ -2093,6 +2096,61 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
                     if (silr->useSet[idx] == NoneUsed)
                         TurnOffSet(matColl->GetSubset(i));   
                 }
+            }
+        }
+
+        // special pass for blocks (often refinement levels)
+        avtSILCollection_p otherBlockColl = NULL;
+        for (i = 0 ; i < silr->GetNumCollections() ; i++)
+        {
+            if (silr->GetSILCollection(i)->GetRole() == SIL_BLOCK)
+            {
+                if (silr->GetSILCollection(i)->GetSupersetIndex()==silr->GetTopSet())
+                {
+                    otherBlockColl = silr->GetSILCollection(i);
+                    break; // Traversing the rest of the SIL could take a while
+                }
+            }
+        }
+        avtSILCollection_p blockColl = NULL;
+        for (i = 0 ; i < GetNumCollections() ; i++)
+        {
+            if (GetSILCollection(i)->GetRole() == SIL_BLOCK)
+            {
+                if (GetSILCollection(i)->GetSupersetIndex() == GetTopSet())
+                {
+                    blockColl = GetSILCollection(i);
+                    break; // Traversing the rest of the SIL could take a while
+                }
+            }
+        }
+        if (*blockColl != NULL && *otherBlockColl != NULL)
+        {
+            // If a block is turned off in the original SIL restriction,
+            // then turn it off here.
+            // If new blocks get added, then only turn them off if
+            // the last block was off.  (I.e. if refinement level 7 is
+            // introduced, then turn it off is refinement level 6 was
+            // previously off.)
+            int numOrigSubsets = otherBlockColl->GetNumberOfSubsets();
+            int numNewSubsets = blockColl->GetNumberOfSubsets();
+            int numSubsets = (numNewSubsets < numOrigSubsets ? numNewSubsets
+                                                             : numOrigSubsets);
+            bool lastIsOff = false;
+            for (i = 0 ; i < numSubsets ; i++)
+            {
+                lastIsOff = false;
+                int idx = otherBlockColl->GetSubset(i);
+                if (silr->useSet[idx] == NoneUsed)
+                {
+                    TurnOffSet(blockColl->GetSubset(i));   
+                    lastIsOff = true;
+                }
+            }
+            if (lastIsOff && (numNewSubsets > numOrigSubsets))
+            {
+                for (i = numSubsets ; i < numNewSubsets ; i++)
+                    TurnOffSet(blockColl->GetSubset(i));   
             }
         }
     }
