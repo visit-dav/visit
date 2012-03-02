@@ -83,10 +83,16 @@ BOOL g_bSaclPrivilege = FALSE;      /* for local set sacl operations, only when
    This approach should be reworked to a linked list approach if we expect to    
    be called by many threads which are processing a variety of input/output    
    volumes, since lock contention and stale data may become a bottleneck. */    
-    
+
+#if 1
+/* LLNL changed */
+VOLUMECAPS g_VolumeCaps;    
+CRITICAL_SECTION VolumeCapsLock;    
+#else
 extern VOLUMECAPS g_VolumeCaps;    
-extern CRITICAL_SECTION VolumeCapsLock;    
-    
+extern CRITICAL_SECTION VolumeCapsLock;  
+#endif
+
     
 /* our deferred set structure linked list element, used for making a copy    
    of input data which is used at a later time to process the original input    
