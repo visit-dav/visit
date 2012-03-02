@@ -3,6 +3,9 @@
     <FilePatterns>
       *.log
     </FilePatterns>
+    <LIBS>  
+      ${ZLIB_LIB} 
+    </LIBS>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>
