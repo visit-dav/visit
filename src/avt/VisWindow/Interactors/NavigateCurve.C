@@ -193,6 +193,53 @@ NavigateCurve::EndMiddleButtonAction()
     IssueViewCallback();
 }
 
+// ****************************************************************************
+//  Method: NavigateCurve::OnMouseWheelForward()
+//
+//  Purpose:
+//    Handles the mouse wheel turned backward.
+//
+//  Arguments:
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Mar  2 15:00:32 PST 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+NavigateCurve::OnMouseWheelForward()
+{
+    StartZoom();
+    ZoomCamera(MotionFactor * 0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
+    IssueViewCallback(true);
+}
+
+// ****************************************************************************
+//  Method: NavigateCurve::OnMouseWheelBackward()
+//
+//  Purpose:
+//    Handles the mouse wheel turned forward.  
+//
+//  Arguments:
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Mar  2 15:00:32 PST 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+NavigateCurve::OnMouseWheelBackward()
+{
+    StartZoom();
+    ZoomCamera(MotionFactor * -0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
+    IssueViewCallback(true);
+}
 
 // ****************************************************************************
 //  Method: NavigateCurve::PanCamera
@@ -259,13 +306,15 @@ NavigateCurve::PanCamera(const int x, const int y)
 //  Programmer: Eric Brugger
 //  Creation:   October 15, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar  2 14:57:11 PST 2012
+//    I moved the guts into ZoomCamera.
+//
 // ****************************************************************************
 
 void
 NavigateCurve::ZoomCamera(const int x, const int y)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
-
     if (OldY != y)
     {
         //
@@ -273,30 +322,54 @@ NavigateCurve::ZoomCamera(const int x, const int y)
         //
         double dyf = MotionFactor * (double)(y - OldY) /
                          (double)(Center[1]);
-        double zoomFactor = pow((double)1.1, dyf);
 
-        //
-        // Calculate the new parallel scale.
-        //
-        VisWindow *vw = proxy;
-
-        avtViewCurve newViewCurve = vw->GetViewCurve();
-
-        double dX = ((1. / zoomFactor) - 1.) *
-                    ((newViewCurve.domain[1] - newViewCurve.domain[0]) / 2.);
-        double dY = ((1. / zoomFactor) - 1.) *
-                    ((newViewCurve.range[1] - newViewCurve.range[0]) / 2.);
-
-        newViewCurve.domain[0] -= dX;
-        newViewCurve.domain[1] += dX;
-        newViewCurve.range[0]  -= dY;
-        newViewCurve.range[1]  += dY;
-
-        vw->SetViewCurve(newViewCurve);
+        ZoomCamera(dyf);
 
         OldX = x;
         OldY = y;
-        rwi->Render();
     }
 }
 
+// ****************************************************************************
+// Method: NavigateCurve::ZoomCamera
+//
+// Purpose: 
+//   Zoom the camera based on a zoom factor.
+//
+// Arguments:
+//   f : The zoom factor.
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Mar  2 14:57:21 PST 2012
+//
+// Modifications:
+//   Brad Whitlock, Fri Mar  2 15:00:02 PST 2012
+//   I made this routine from the other ZoomCamera routine.
+//
+// ****************************************************************************
+
+void
+NavigateCurve::ZoomCamera(double f)
+{
+    vtkRenderWindowInteractor *rwi = Interactor;
+
+    double zoomFactor = pow((double)1.1, f);
+
+    //
+    // Calculate the new parallel scale.
+    //
+    VisWindow *vw = proxy;
+
+    avtViewCurve newViewCurve = vw->GetViewCurve();
+    double dX = ((1. / zoomFactor) - 1.) *
+                ((newViewCurve.domain[1] - newViewCurve.domain[0]) / 2.);
+    double dY = ((1. / zoomFactor) - 1.) *
+                ((newViewCurve.range[1] - newViewCurve.range[0]) / 2.);
+
+    newViewCurve.domain[0] -= dX;
+    newViewCurve.domain[1] += dX;
+    newViewCurve.range[0]  -= dY;
+    newViewCurve.range[1]  += dY;
+
+    vw->SetViewCurve(newViewCurve);
+}

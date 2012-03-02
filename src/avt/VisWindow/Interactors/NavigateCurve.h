@@ -60,6 +60,10 @@ class VisWindowInteractorProxy;
 //  Programmer: Eric Brugger
 //  Creation:   October 15, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar  2 14:21:58 PST 2012
+//    I added mouse wheel functions.
+//
 // ****************************************************************************
 
 class VISWINDOW_API NavigateCurve : public VisitInteractor
@@ -73,10 +77,13 @@ class VISWINDOW_API NavigateCurve : public VisitInteractor
     virtual void        EndLeftButtonAction();
     virtual void        StartMiddleButtonAction();
     virtual void        EndMiddleButtonAction();
+    virtual void        OnMouseWheelForward();
+    virtual void        OnMouseWheelBackward();
 
   private:
     void                PanCamera(const int x, const int y);
     void                ZoomCamera(const int x, const int y);
+    void                ZoomCamera(double);
 };
 
 
