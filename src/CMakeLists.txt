@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -1176,7 +1176,7 @@ IF(VISIT_PARALLEL)
                 ENDIF(MPI_COMPILE_FLAGS)
                 IF(MPI_INCLUDE_PATH)
                     FILE(TO_NATIVE_PATH ${MPI_INCLUDE_PATH} MIP_NATIVE)
-                    LIST(APPEND VPFLAGS "/I \"${MIP_NATIVE}\"")
+                    LIST(APPEND VPFLAGS "/I\"${MIP_NATIVE}\"")
                 ENDIF(MPI_INCLUDE_PATH)
                 STRING(REPLACE ";" " " VPFLAGS "${VPFLAGS}")
                 SET(VISIT_PARALLEL_CFLAGS "${VPFLAGS}" 
