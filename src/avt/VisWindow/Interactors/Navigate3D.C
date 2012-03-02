@@ -357,6 +357,9 @@ Navigate3D::EndMiddleButtonAction()
 //    Gunther H. Weber, Fri Sep 28 13:48:04 PDT 2007
 //    Added missing StartZoom() / EndZoom()
 //
+//    Brad Whitlock, Fri Mar  2 14:19:45 PST 2012
+//    I added a call to issue the view callback.
+//
 // ****************************************************************************
 
 void
@@ -365,6 +368,7 @@ Navigate3D::OnMouseWheelForward()
     StartZoom();
     ZoomImage3D(MotionFactor * 0.2 * this->MouseWheelMotionFactor);
     EndZoom();
+    IssueViewCallback(true);
 }
 
 
@@ -383,6 +387,9 @@ Navigate3D::OnMouseWheelForward()
 //    Gunther H. Weber, Fri Sep 28 13:48:04 PDT 2007
 //    Added missing StartZoom() / EndZoom()
 //
+//    Brad Whitlock, Fri Mar  2 14:19:45 PST 2012
+//    I added a call to issue the view callback.
+//
 // ****************************************************************************
 
 void
@@ -391,6 +398,7 @@ Navigate3D::OnMouseWheelBackward()
     StartZoom();
     ZoomImage3D(MotionFactor * -0.2 * this->MouseWheelMotionFactor);
     EndZoom();
+    IssueViewCallback(true);
 }
 
 // ****************************************************************************
