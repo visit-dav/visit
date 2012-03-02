@@ -398,6 +398,7 @@ private:
     void HandleClientMethod();
     void GetVirtualDatabaseDefinitions(StringStringVectorMap &defs);
 
+    void SetSessionNameInWindowTitle(const QString &filename);
     QString SaveSessionFile(const QString &s);
 
     // Internal callbacks
