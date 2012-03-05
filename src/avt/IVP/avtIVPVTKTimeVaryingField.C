@@ -248,13 +248,13 @@ avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) 
 //
 // ****************************************************************************
 
-avtVector
-avtIVPVTKTimeVaryingField::operator()( const double &t, const avtVector &p ) const
+avtIVPField::Result
+avtIVPVTKTimeVaryingField::operator()( const double &t, const avtVector &p, avtVector &vel ) const
 {
-    if( t < t0 || t > t1 || !FindCell( t, p ) )
-        throw Undefined();
-
-    avtVector vel( 0.0, 0.0, 0.0 );
+    if( !FindCell( t, p ) )
+        return( avtIVPSolverResult::OUTSIDE_DOMAIN );
+    if( t < t0 || t > t1 )
+        return( avtIVPSolverResult::OUTSIDE_TIME_FRAME );
 
     if( velCellBased )
     {
@@ -287,7 +287,7 @@ avtIVPVTKTimeVaryingField::operator()( const double &t, const avtVector &p ) con
         }
     }
 
-    return vel;
+    return( avtIVPSolverResult::OK );
 }
 
 // ****************************************************************************
@@ -358,7 +358,8 @@ avtIVPVTKTimeVaryingField::ComputeVorticity( const double& t, const avtVector &p
     if( velCellBased )
         return 0.0;
 
-    avtVector y = this->operator()( t, pt );
+    avtVector y;
+    this->operator()( t, pt, y );
 
     double ylen = y.length();
 
@@ -432,7 +433,7 @@ avtIVPVTKTimeVaryingField::ComputeScalarVariable(unsigned char index,
         return 0.0;
 
     if( !FindCell( t, pt ) )
-        throw Undefined();
+        return 0.0;
 
     double result = 0.0, tmp0, tmp1;
 

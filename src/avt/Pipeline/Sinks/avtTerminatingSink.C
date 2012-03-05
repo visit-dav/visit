@@ -210,7 +210,7 @@ avtTerminatingSink::Execute(avtContract_p contract)
 
             if (DebugStream::Level3())
             {
-                unsigned int size = 0, rss = 0;
+                unsigned long size = 0, rss = 0;
                 GetMemorySize(size, rss);
                 if (size > 0 && rss > 0)
                 {
@@ -242,7 +242,7 @@ avtTerminatingSink::Execute(avtContract_p contract)
 
                 if (DebugStream::Level3())
                 {
-                    unsigned int size = 0, rss = 0;
+                    unsigned long size = 0, rss = 0;
                     GetMemorySize(size, rss);
                     if (size > 0 && rss > 0)
                     {

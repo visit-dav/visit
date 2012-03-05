@@ -275,25 +275,18 @@ void avtIntegralCurve::Advance( avtIVPField* field )
         avtIVPStep           step;
         avtIVPSolver::Result result;
 
-        try
-        { 
-            result = ivp->Step( field, tfinal, &step );
-        }
-        catch (avtIVPField::Undefined&)
-        {
-            result = avtIVPSolver::OUTSIDE_DOMAIN;
-        }
+        result = ivp->Step( field, tfinal, &step );
 
-        if( result == avtIVPSolver::OK || result == avtIVPSolver::TERMINATE )
+        if( result == avtIVPSolverResult::OK || result == avtIVPSolverResult::TERMINATE )
         {
             // The step was successful, call AnalyzeStep() which will
             // determine((among other things) whether to terminate.
             AnalyzeStep( step, field );
 
-            if( result == avtIVPSolver::TERMINATE )
+            if( result == avtIVPSolverResult::TERMINATE )
                 break;
         }
-        else if( result == avtIVPSolver::OUTSIDE_DOMAIN )
+        else if( result == avtIVPSolverResult::OUTSIDE_DOMAIN )
         {
             // Last step took us outside the domain, see what can be done.
 
@@ -340,11 +333,7 @@ void avtIntegralCurve::Advance( avtIVPField* field )
                 // next domain.
                 avtVector y = ivp->GetCurrentY();
                 avtVector v;
-                try
-                { 
-                    v = (*field)( t, y );
-                }
-                catch (avtIVPField::Undefined&)
+                if( (*field)(t, y, v) != avtIVPSolverResult::OK )
                 {
                     if( DebugStream::Level5() )
                         debug5 << "avtIntegralCurve::Advance(): bad step, "

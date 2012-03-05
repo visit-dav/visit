@@ -224,13 +224,13 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
 //
 // ****************************************************************************
 
-avtVector
-avtIVPVTKField::operator()( const double &t, const avtVector &p ) const
+avtIVPField::Result
+avtIVPVTKField::operator()( const double &t, const avtVector &p, avtVector &retV ) const
 {
     if( !FindCell( t, p ) )
-        throw Undefined();
+        return( avtIVPSolverResult::OUTSIDE_DOMAIN );
 
-    return FindValue( velData );
+    return FindValue( velData, retV );
 }
 
 // ****************************************************************************
@@ -244,11 +244,9 @@ avtIVPVTKField::operator()( const double &t, const avtVector &p ) const
 //
 // ****************************************************************************
 
-avtVector
-avtIVPVTKField::FindValue( vtkDataArray* vectorData ) const
+avtIVPField::Result
+avtIVPVTKField::FindValue( vtkDataArray* vectorData, avtVector &vel ) const
 {
-    avtVector vel( 0.0, 0.0, 0.0 );
-
     if( velCellBased )
         vectorData->GetTuple( lastCell, &vel.x );
     else
@@ -274,7 +272,7 @@ avtIVPVTKField::FindValue( vtkDataArray* vectorData ) const
             vel /= len;
     }
 
-    return vel;
+    return( avtIVPSolverResult::OK );
 }
 
 
@@ -345,7 +343,8 @@ avtIVPVTKField::ComputeVorticity( const double& t, const avtVector &pt ) const
     if( velCellBased )
         return 0.0;
 
-    avtVector y = this->operator()( t, pt );
+    avtVector y;
+    this->operator()( t, pt, y );
 
     double ylen = y.length();
 
@@ -412,7 +411,7 @@ avtIVPVTKField::ComputeScalarVariable(unsigned char index,
         return 0.0;
 
     if( !FindCell( t, pt ) )
-        throw Undefined();
+        return 0.0;
 
     double result = 0.0, tmp;
 

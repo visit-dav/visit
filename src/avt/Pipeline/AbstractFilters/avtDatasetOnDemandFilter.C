@@ -112,12 +112,30 @@ avtDatasetOnDemandFilter::avtDatasetOnDemandFilter()
 
 avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
 {
+   EmptyQueue();
+}
+
+// ****************************************************************************
+//  Method: EmptyQueue
+//
+//  Purpose:
+//      Empty the vtk data cache.
+//
+//  Programmer: David Camp
+//  Creation:   Mon Mar  5 14:04:42 PST 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtDatasetOnDemandFilter::EmptyQueue()
+{
     while ( ! domainQueue.empty() )
     {
         domainQueue.pop_front();
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtDatasetOnDemandFilter::GetDomain
@@ -175,6 +193,7 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
     // See if it is already in the cache.  If so, just return it.
     std::list<DomainCacheEntry>::iterator it;
     for ( it = domainQueue.begin(); it != domainQueue.end(); it++ )
+    {
         // Found it. Move it to the front of the list.
         if (it->domainID == domainId &&
             it->timeStep == timeStep)
@@ -186,6 +205,7 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
             domainQueue.push_front( entry );
             return entry.ds;
         }
+    }
 
 
     if (DebugStream::Level5())
@@ -209,7 +229,7 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
     entry.ds = rv;
     rv->Register(NULL);
     loadDSCount++;
-    
+
     //Update the domainLoadCount.
     //Turn two ints into a long. Put timeStep in upper, domain in lower.
     unsigned long long A =  (((unsigned long long)timeStep)<<32);
@@ -217,8 +237,9 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
     unsigned long long idx = A | B;
 
     if (domainLoadCount.find(idx) == domainLoadCount.end())
-        domainLoadCount[idx] = 0;
-    domainLoadCount[idx] ++;
+        domainLoadCount[idx] = 1;
+    else
+        domainLoadCount[idx] ++;
 
     domainQueue.push_front(entry);
     if ( domainQueue.size() > maxQueueLength )
@@ -230,6 +251,23 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
     }
 
     return rv;
+}
+
+// ****************************************************************************
+//  Method: avtDatasetOnDemandFilter::CopyCache
+//
+//  Purpose:
+//    Copies the cache from one DoD filter to another.
+//
+//  Programmer: Hank Childs
+//  Creation:  January 17, 2009
+//
+// ****************************************************************************
+
+void
+avtDatasetOnDemandFilter::CopyCache(avtDatasetOnDemandFilter *f)
+{
+    domainQueue = f->domainQueue;
 }
 
 // ****************************************************************************

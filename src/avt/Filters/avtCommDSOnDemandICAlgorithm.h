@@ -84,7 +84,7 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
 
     virtual const char*       AlgoName() const {return "CommDSOnDemand";}
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
-    virtual void              ResetIntegralCurvesForContinueExecute();
+    virtual void              ResetIntegralCurvesForContinueExecute(int curTimeSlice=-1);
     virtual bool              CheckNextTimeStepNeeded(int curTimeSlice);
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics);
     virtual bool              PostStepCallback();

@@ -82,7 +82,7 @@ class IVP_API avtIVPNIMRODField: public avtIVPVTKField
 
   ~avtIVPNIMRODField();
 
-  avtVector operator()( const double &t, const avtVector &p ) const;
+  Result    operator()( const double &t, const avtVector &p, avtVector &retV ) const;
 
   avtVector ConvertToCartesian(const avtVector& pt) const;
   avtVector ConvertToCylindrical(const avtVector& pt) const;

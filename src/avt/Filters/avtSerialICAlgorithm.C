@@ -114,6 +114,40 @@ avtSerialICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
 }
 
 // ****************************************************************************
+//  Method: avtSerialICAlgorithm::Initialize
+//
+//  Purpose:
+//      Do a restore initialization, don't add ICs that are not in current
+//  time slice.
+//
+//  Programmer: David Camp
+//  Creation:   March 5, 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtSerialICAlgorithm::RestoreInitialize(std::vector<avtIntegralCurve *> &ics, int curTimeSlice)
+{
+    for (int i = 0; i < ics.size(); i++)
+    {
+        avtIntegralCurve *s = ics[i];
+
+        if (s->domain.timeStep == curTimeSlice)
+        {
+            s->status = avtIntegralCurve::STATUS_OK;
+            SetDomain(s);
+            activeICs.push_back(s);
+        }
+        else
+        {
+            terminatedICs.push_back(s);
+        }
+    }
+}
+
+// ****************************************************************************
 //  Method: avtSerialICAlgorithm::AddIntegralCurves
 //
 //  Purpose:
@@ -335,16 +369,27 @@ avtSerialICAlgorithm::RunAlgorithm()
 // ****************************************************************************
 
 void
-avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute()
+avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
 {
+    std::list<avtIntegralCurve *> termICs;
+
     while (! terminatedICs.empty())
     {
         avtIntegralCurve *s = terminatedICs.front();
         terminatedICs.pop_front();
         
-        activeICs.push_back(s);
-        s->status = avtIntegralCurve::STATUS_OK;
+        if (curTimeSlice == -1 || s->domain.timeStep == curTimeSlice)
+        {
+            activeICs.push_back(s);
+            s->status = avtIntegralCurve::STATUS_OK;
+        }
+        else
+        {
+            termICs.push_back(s);
+        }
     }
+
+    terminatedICs = termICs;
 }
 
 

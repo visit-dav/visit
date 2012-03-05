@@ -311,7 +311,16 @@ class AVTFILTERS_API avtPICSFilter :
     void                      ClearDomainToCellLocatorMap();
     virtual avtIVPField      *GetFieldForDomain(const DomainType&, vtkDataSet*);
 
-    void                      UpdateIntervalTree();
+    void                      UpdateIntervalTree(int timeSlice);
+
+    // Use this to be able to save the ICs for restart.
+    std::vector<avtIntegralCurve *> _ics;
+    int                             restart;
+
+    void                      SaveICs( int timeStep );
+    void                      RestoreICs( std::vector<avtIntegralCurve *> &_ics, int timeStep );
+    bool                      CheckIfRestart( int &timeStep );
+    void                      RestoreICsFilename( int timeStep, char *filename, size_t filenameSize );
 
     friend class avtICAlgorithm;
 };

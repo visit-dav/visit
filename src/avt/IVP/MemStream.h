@@ -80,7 +80,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-struct IVP_API MemStream
+class IVP_API MemStream
 {
   public:
     enum Mode {
@@ -121,6 +121,10 @@ struct IVP_API MemStream
     void write(const avtVector &v);
     void write(const std::string &str);
     void write(vtkDataSet *ds);
+
+    void SaveFile( const char *filename );
+    void LoadFile( const char *filename );
+    void ClearMemStream();
 
   private:
     // data members

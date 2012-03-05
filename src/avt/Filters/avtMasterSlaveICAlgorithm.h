@@ -104,7 +104,7 @@ class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     virtual const char*       AlgoName() const {return "MasterSlave";}
     
-    virtual void              ResetIntegralCurvesForContinueExecute();
+    virtual void              ResetIntegralCurvesForContinueExecute(int curTimeSlice=-1);
     virtual bool              CheckNextTimeStepNeeded(int curTimeSlice) { return true; }
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics);
 

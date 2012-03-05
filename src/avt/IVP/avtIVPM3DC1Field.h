@@ -98,7 +98,7 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   int get_tri_coords2D(double *x, double *xout) const;
   int get_tri_coords2D(double *x, int el, double *xout) const;
 
-  avtVector operator()( const double &t, const avtVector &v ) const;
+  Result    operator()( const double &t, const avtVector &v, avtVector &retV ) const;
 
   avtVector ConvertToCartesian(const avtVector& pt) const;
   avtVector ConvertToCylindrical(const avtVector& pt) const;

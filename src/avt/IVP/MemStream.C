@@ -131,12 +131,31 @@ MemStream::MemStream(const MemStream &s)
 
 MemStream::~MemStream()
 {
+    ClearMemStream();
+}
+
+// ****************************************************************************
+//  Method: ClearMemStream
+//
+//  Purpose:
+//      This function will free all memory and reset the MemStream object.
+//
+//  Programmer: David Camp
+//  Creation:   February 24, 2012
+//
+// ****************************************************************************
+
+void
+MemStream::ClearMemStream()
+{
     if (_data)
+    {
         delete [] _data;
+        _data = NULL;
+    }
     _pos = 0;
     _len = 0;
     _maxLen = 0;
-    _data = NULL;
 }
 
 // ****************************************************************************
@@ -553,3 +572,58 @@ readRG(MemStream *buff)
 
     return rg;
 }
+
+// ****************************************************************************
+//  Method: MemStream::SaveFile
+//
+//  Purpose:
+//     Save MemStream to file.
+//
+//  Programmer: David Camp
+//  Creation:   February 24, 2012
+//
+// ****************************************************************************
+
+void 
+MemStream::SaveFile( const char *filename )
+{
+    FILE *fp = fopen( filename, "wb" );
+
+    if( fp )
+    {
+        fwrite( &_len, sizeof(_len), 1, fp );
+        fwrite( _data, sizeof(_data[0]), _len, fp );
+
+        fflush( fp );
+        fclose( fp );
+    }
+}
+
+// ****************************************************************************
+//  Method: MemStream::LoadFile
+//
+//  Purpose:
+//     Load MemStream from file.
+//
+//  Programmer: David Camp
+//  Creation:   February 24, 2012
+//
+// ****************************************************************************
+
+void 
+MemStream::LoadFile( const char *filename )
+{
+    FILE *fp = fopen( filename, "rb" );
+
+    if( fp )
+    {
+        ClearMemStream();
+
+        fread( &_len, sizeof(_len), 1, fp );
+        CheckSize( _len );
+        fread( _data, sizeof(_data[0]), _len, fp );
+
+        fclose( fp );
+    }
+}
+

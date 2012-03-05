@@ -261,7 +261,7 @@ avtMasterSlaveICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 }
 
 void
-avtMasterSlaveICAlgorithm::ResetIntegralCurvesForContinueExecute()
+avtMasterSlaveICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
 {
     EXCEPTION0(ImproperUseException);
 }
