@@ -143,6 +143,10 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //    Hank Childs, Wed Dec 15 14:30:42 PST 2010
 //    Add support for parallelizing over time.
 //
+//    Hank Childs, Mon Mar  5 13:19:22 PST 2012
+//    Set attributes to prevent exception when merging objects with time
+//    parallelization.
+//
 // ****************************************************************************
 
 bool
@@ -264,6 +268,8 @@ avtTimeLoopFilter::Update(avtContract_p spec)
                              GetInput()->GetInfo().GetAttributes().GetCycle());
     GetOutput()->GetInfo().GetAttributes().SetTime(
                              GetInput()->GetInfo().GetAttributes().GetTime());
+    GetOutput()->GetInfo().GetAttributes().SetTimeIndex(
+                             GetInput()->GetInfo().GetAttributes().GetTimeIndex());
 
     //cout<<"avtTimeLoopFilter::Update()  DONE"<<endl<<endl;
     return modified;
