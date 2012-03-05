@@ -734,6 +734,10 @@ $0 = shift @ARGV;
 #    Eric Brugger, Mon Feb 27 17:51:04 PST 2012
 #    I added support for Unity and Whitney at Sandia.
 #
+#    Eric Brugger, Mon Mar  5 10:01:28 PST 2012
+#    I corrected a typo with my changes to support Unity and Whitney at
+#    Sandia.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2034,7 +2038,7 @@ $IsRunningOnGlorySandia = 0;
 if ( $host =~ /^glory\d+$/ or $host =~ /^unity\d+$/ or $host =~ /^whitney\d+$/ )
 {
     $IsRunningOnGlorySandia = 1;
-    $ENV{LD_LIBRARY_PATH} = "apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:$ENV{LD_LIBRARY_PATH}";
+    $ENV{LD_LIBRARY_PATH} = "/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:$ENV{LD_LIBRARY_PATH}";
 }
 
 #  We stripped off the "port" argument above, so put it back here. Put it
