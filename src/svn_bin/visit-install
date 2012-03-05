@@ -294,6 +294,10 @@
 #    Eric Brugger, Mon Feb 27 17:52:44 PST 2012
 #    I added host profiles for unity, whitney and redsky-s.
 #
+#    Eric Brugger, Mon Mar  5 10:00:03 PST 2012
+#    I corrected some errors with the changes I made to add host
+#    profiles for unity, whitney and redsky-s.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -359,7 +363,7 @@ while [ "$option_found" = "true" ]; do
 done
 
 if [ "$#" != "3" ]; then
-   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_open_rz | llnl_open_cz | llnl_closed | nersc | ornl | princeton | sandia | tacc | umich | nics]"
+   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_open_rz | llnl_open_cz | llnl_closed | nersc | ornl | princeton | sandia | sandia_closed | tacc | umich | nics]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -565,6 +569,8 @@ case "$config" in
       ;;
    sandia)
       ;;
+   sandia_closed)
+      ;;
    tacc)
       ;;
    umich)
@@ -574,7 +580,7 @@ case "$config" in
    *)
       echo "Illegal configuration option, choices are none, anag, anl,"
       echo "llnl_open, llnl_open_cz, llnl_open_rz, llnl_closed, nersc, ornl, "
-      echo "princeton, sandia, tacc, umich, and nics."
+      echo "princeton, sandia, sandia_closed, tacc, umich, and nics."
       exit 4
       ;;
 esac
