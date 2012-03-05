@@ -626,7 +626,7 @@ avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
 // ****************************************************************************
 
 void
-avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute()
+avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
 {
     std::list<avtIntegralCurve *> saveICs;
 

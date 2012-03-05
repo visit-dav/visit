@@ -76,15 +76,25 @@ public:
         delete field1;
     }
 
-    virtual avtVector    operator()( const double& t, 
-                                     const avtVector& x ) const 
+    virtual Result       operator()( const double& t, 
+                                  const avtVector& x,
+                                        avtVector& retV ) const 
     {
         if( t < time0 || t > time1 )
-            throw Undefined();
+            return( OUTSIDE_TIME_FRAME );
 
         double s = (t - time0) / (time1 - time0);
+        Result result;
+        avtVector v0, v1;
 
-        return (1.0-s)*(*field0)(t,x) + s*(*field1)(t,x);
+        if( (result = (*field0)(t, x, v0)) == OK )
+        {
+            if( (result = (*field1)(t, x, v1)) == OK )
+            {
+                retV = ((1.0 - s) * v0) + (s * v1);
+            }
+        }
+        return( result );
     }
 
     virtual double       ComputeVorticity(const double& t, 
@@ -136,7 +146,12 @@ public:
 
     virtual void         GetExtents(double *extents) const
     {
+        // This should not happen. 
+        // We had abort here, but the svn does not want us to use it
+        // unless there is debug around it.
+#ifdef DEBUG
         abort();
+#endif
     }
 
 protected:

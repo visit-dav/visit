@@ -156,6 +156,8 @@ class PIPELINE_API avtDatasetOnDemandFilter : virtual public
                                  avtDatasetOnDemandFilter();
      virtual                    ~avtDatasetOnDemandFilter();
 
+     void                        CopyCache(avtDatasetOnDemandFilter *);
+
   protected:
     virtual bool                 DomainLoaded(int, int) const;
     void                         GetLoadedDomains(std::vector<std::vector<int> > &domains);
@@ -174,6 +176,7 @@ class PIPELINE_API avtDatasetOnDemandFilter : virtual public
     void                         SetOperatingOnDemand( bool v ) { operatingOnDemand = v; }
 
     virtual void                 PurgeDomain( const int domain, const int timeStep ) = 0;
+    void                         EmptyQueue();
 
 protected:
     int                          GetPurgeDSCount() const { return purgeDSCount; }

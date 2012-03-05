@@ -1499,7 +1499,7 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     if (!avtDatabase::OnlyServeUpMetaData() && nbricks > 1)
     {
-        unsigned int size, rss;
+        unsigned long size, rss;
         GetMemorySize(size, rss);
         debug5 << "Memory size before creating domain boundaries object: "
                << size << ", rss=" << rss << endl;

@@ -413,15 +413,8 @@ class avtIVPState
 class IVP_API avtIVPSolver
 {
   public:
-    enum Result
-    {
-        OK,
-        TERMINATE,
-        OUTSIDE_DOMAIN,
-        STEPSIZE_UNDERFLOW,
-        STIFFNESS_DETECTED,
-        UNSPECIFIED_ERROR,
-    };
+    typedef avtIVPSolverResult::Result Result;
+
                     avtIVPSolver();
     virtual         ~avtIVPSolver() {};
 
@@ -464,21 +457,21 @@ protected:
 
 
 inline std::ostream& operator<<( std::ostream& out, 
-                                 const avtIVPSolver::Result &res )
+                                 const avtIVPSolverResult::Result &res )
 {
     switch (res)
     {
-    case avtIVPSolver::OK:  
+    case avtIVPSolverResult::OK:  
         return out <<"OK";
-    case avtIVPSolver::TERMINATE:
+    case avtIVPSolverResult::TERMINATE:
         return out << "TERMINATE";
-    case avtIVPSolver::OUTSIDE_DOMAIN:
+    case avtIVPSolverResult::OUTSIDE_DOMAIN:
         return out <<"OUTSIDE_DOMAIN";
-    case avtIVPSolver::STEPSIZE_UNDERFLOW: 
+    case avtIVPSolverResult::STEPSIZE_UNDERFLOW: 
         return out << "STEPSIZE_UNDERFLOW";
-    case avtIVPSolver::STIFFNESS_DETECTED: 
+    case avtIVPSolverResult::STIFFNESS_DETECTED: 
         return out << "STIFFNESS_DETECTED";
-    case avtIVPSolver::UNSPECIFIED_ERROR:  
+    case avtIVPSolverResult::UNSPECIFIED_ERROR:  
         return out << "UNSPECIFIED_ERROR";
     default:                             
         return out<<"UNKNOWN";

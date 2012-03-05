@@ -382,85 +382,84 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
     // loop until an estimate succeeds
     while( true )
     {
-        try
+        double sk, sqr;
+        double dnf = 0.0;
+        double dny = 0.0;
+
+        double h;
+
+        for(size_t i=0 ; i < 3; i++) 
         {
-            double sk, sqr;
-            double dnf = 0.0;
-            double dny = 0.0;
-    
-            double h;
-    
-            for(size_t i=0 ; i < 3; i++) 
-            {
-                sk = abstol + reltol * std::abs(y[i]);
-                sqr = k1[i] / sk;
-                dnf += sqr * sqr;
-                sqr = y[i] / sk;
-                dny += sqr * sqr;
-            }
-
-            if( (dnf <= 1.0e-10) || (dny <= 1.0e-10) ) 
-                h = 1.0e-6;
-            else 
-                h = sqrt( dny/dnf ) * 0.01;
-
-            h = std::min( h, local_h_max );
-            h = sign( h, direction );
-
-            // perform an explicit Euler step
-            avtVector k3 = y + h * k1;
-            avtVector k2 = (*field)( t+h, k3 );
-
-            n_eval++;
-
-            // estimate the second derivative of the solution
-            double der2 = 0.0;
-
-            for( size_t i=0; i < 3; i++) 
-            {
-                sk = abstol + reltol * std::abs( y[i] );
-                sqr = ( k2[i] - k1[i] ) / sk;
-                der2 += sqr*sqr;
-            }
-
-            der2 = sqrt( der2 ) / h;
-
-            // step size is computed such that
-            // h**(1/5) * max( norm(k1), norm(der2) ) = 0.01
-            double der12 = std::max( std::abs(der2), sqrt(dnf) );
-            double h1;
-
-            if( der12 <= 1.0e-15 ) 
-                h1 = std::max( 1.0e-6, std::abs(h)*1.0e-3 );
-            else 
-                h1 = pow( 0.01/der12, 0.2 );
-
-            h = std::min( fabs(100.0*h), std::min( h1, local_h_max ) );
-            h = sign( h, direction );
-
-            return h;
+            sk = abstol + reltol * std::abs(y[i]);
+            sqr = k1[i] / sk;
+            dnf += sqr * sqr;
+            sqr = y[i] / sk;
+            dny += sqr * sqr;
         }
-        catch( avtIVPField::Undefined& )
+
+        if( (dnf <= 1.0e-10) || (dny <= 1.0e-10) ) 
+            h = 1.0e-6;
+        else 
+            h = sqrt( dny/dnf ) * 0.01;
+
+        h = std::min( h, local_h_max );
+        h = sign( h, direction );
+
+        // perform an explicit Euler step
+        avtVector k2, k3 = y + h * k1;
+        if( (*field)(t+h, k3, k2) != avtIVPSolverResult::OK )
         {
-            // Somehow we couldn't evaluate one of the points we need for the 
-            // starting estimate. The above code adheres to the h_max that is 
+            // Somehow we couldn't evaluate one of the points we need for the
+            // starting estimate. The above code adheres to the h_max that is
             // passed in - let's reduce that and try again.
             // (we're really using local_h_max since h_max is const double&)
-            
+
             // (Oh, and if local_h_max is zero or infinite, let's set it to unit
             // length (= direction))
             if( local_h_max == 0.0 ||
                 local_h_max == std::numeric_limits<double>::infinity() )
                 local_h_max = direction;
-            else 
+            else
                 local_h_max /= 2;
-                
+
             // if local_h_max is smaller then epsilon, we stop trying
-            // return that back to Step() which will then fail with a 
+            // return that back to Step() which will then fail with a
             // stepsize underflow
             if( local_h_max < std::numeric_limits<double>::epsilon() )
                 return local_h_max;
+
+            continue;
         }
+
+
+        n_eval++;
+
+        // estimate the second derivative of the solution
+        double der2 = 0.0;
+
+        for( size_t i=0; i < 3; i++) 
+        {
+            sk = abstol + reltol * std::abs( y[i] );
+            sqr = ( k2[i] - k1[i] ) / sk;
+            der2 += sqr*sqr;
+        }
+
+        der2 = sqrt( der2 ) / h;
+
+        // step size is computed such that
+        // h**(1/5) * max( norm(k1), norm(der2) ) = 0.01
+        double der12 = std::max( std::abs(der2), sqrt(dnf) );
+        double h1;
+
+        if( der12 <= 1.0e-15 ) 
+            h1 = std::max( 1.0e-6, std::abs(h)*1.0e-3 );
+        else 
+            h1 = pow( 0.01/der12, 0.2 );
+
+        h = std::min( fabs(100.0*h), std::min( h1, local_h_max ) );
+        h = sign( h, direction );
+
+        return h;
     }
 }
 
@@ -512,6 +511,9 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 //    Fix problem where stepsize can creep to infinity if no max step size is
 //    set.
 //
+//    David Camp, Mon Mar  5 09:48:43 PST 2012
+//    Changed optimation, reduce the number of compares and memory copies.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -530,16 +532,23 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
     // maybe also needed for hinit())
     if( n_steps == 0 )
     {
-        k1 = (*field)( t, y );
+        avtIVPSolver::Result result;
+        if( (result = (*field)( t, y, k1 )) != avtIVPSolverResult::OK )
+            return( result );
         n_eval++;
     }
 
     // determine stepsize (user-specified or educated guess)
     if( h == 0.0 )
-        h = h_init;
-    if( h == 0.0 )
     {
-        h = GuessInitialStep( field, local_h_max, t_max );
+        if( h_init == 0.0 )
+        {
+            h = GuessInitialStep( field, local_h_max, t_max );
+        }
+        else
+        {
+            h = h_init;
+        }
     }
     else
     {   
@@ -560,7 +569,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             if (DebugStream::Level5())
                 debug5 << "\tavtIVPDopri5::Step(): exiting at t = " 
                        << t << ", step size too small (h = " << h << ")\n";
-            return STEPSIZE_UNDERFLOW;
+            return avtIVPSolverResult::STEPSIZE_UNDERFLOW;
         }
 
         // Check to make sure we don't exceed the max step.
@@ -580,24 +589,33 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             debug5 << "\tavtIVPDopri5::Step(): t = " << t << ", y = " << y 
                    << ", h = " << h << ", t+h = " << t+h << '\n';
 
+        avtVector k2, k3, k4, k5, k6, k7;
+        avtIVPSolver::Result result;
+
         // perform stages
         y_new = y + h*a21*k1;
-        avtVector k2 = (*field)( t+c2*h, y_new );
+        if( (result = (*field)( t+c2*h, y_new, k2 )) != avtIVPSolverResult::OK )
+            return( result );
 
         y_new = y + h * ( a31*k1 + a32*k2 );
-        avtVector k3 = (*field)( t+c3*h, y_new );
+        if( (result = (*field)( t+c3*h, y_new, k3 )) != avtIVPSolverResult::OK )
+            return( result );
         
         y_new = y + h * ( a41*k1 + a42*k2 + a43*k3 );
-        avtVector k4 = (*field)( t+c4*h, y_new );
+        if( (result = (*field)( t+c4*h, y_new, k4 )) != avtIVPSolverResult::OK )
+            return( result );
         
         y_new = y + h * ( a51*k1 + a52*k2 + a53*k3 + a54*k4 );
-        avtVector k5 = (*field)( t+c5*h, y_new );
+        if( (result = (*field)( t+c5*h, y_new, k5 )) != avtIVPSolverResult::OK )
+            return( result );
 
         y_stiff = y_new = y + h * (a61*k1 + a62*k2 + a63*k3 + a64*k4 + a65*k5);
-        avtVector k6 = (*field)( t+h, y_new );
+        if( (result = (*field)( t+h, y_new, k6 )) != avtIVPSolverResult::OK )
+            return( result );
         
         y_new = y + h * (a71*k1 + a73*k3 + a74*k4 + a75*k5 + a76*k6 );
-        avtVector k7 = (*field)( t+h, y_new );
+        if( (result = (*field)( t+h, y_new, k7 )) != avtIVPSolverResult::OK )
+            return( result );
 
         n_eval += 6;
 
@@ -666,7 +684,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
                             debug5 << "\tavtIVPDopri5::Step(): exiting at t = " 
                                    << t << ", problem seems stiff (y = " << y 
                                    << ")\n";
-                        return STIFFNESS_DETECTED;
+                        return avtIVPSolverResult::STIFFNESS_DETECTED;
                     }
                 }
                 else 
@@ -722,14 +740,14 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             h = h_new;
             numStep++;
 
-            return last ? TERMINATE : OK;
+            return last ? avtIVPSolverResult::TERMINATE : avtIVPSolverResult::OK;
 
             // normal exit
             if (DebugStream::Level5())
                 debug5 << "\tavtIVPDopri5::Step(): normal exit, now at t = " 
                        << t << ", y = " << y << ", h = " << h << '\n';
 
-            return OK;
+            return avtIVPSolverResult::OK;
         }
         else 
         {

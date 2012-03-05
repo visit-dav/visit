@@ -96,15 +96,17 @@ class IVP_API avtIVPVTKField: public avtIVPField
     ~avtIVPVTKField();
 
     // avtIVPField interface
-    virtual avtVector operator()(const double& t,
-                                 const avtVector &pt) const;
-
-    virtual avtVector operator()(const double& t,
+    virtual Result    operator()(const double& t,
                                  const avtVector &pt,
-                                 const avtVector &vel) const
-    { return avtVector(0,0,0); };
+                                       avtVector &retV) const;
 
-    virtual avtVector FindValue( vtkDataArray* vectorData ) const;
+    virtual Result    operator()(const double& t,
+                                 const avtVector &pt,
+                                 const avtVector &vel,
+                                       avtVector &retV) const
+    { return( avtIVPSolverResult::TERMINATE ); };
+
+    virtual Result    FindValue(vtkDataArray* vectorData, avtVector &vel) const;
 
     virtual avtVector ConvertToCartesian(const avtVector& pt) const;
     virtual avtVector ConvertToCylindrical(const avtVector& pt) const;

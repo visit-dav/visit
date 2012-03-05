@@ -163,8 +163,14 @@ avtMetaData::GetDataExtents(const char *var)
 avtIntervalTree *
 avtMetaData::GetSpatialExtents(const char *var)
 {
+    GetSpatialExtents(-1, var);
+}
+
+avtIntervalTree *
+avtMetaData::GetSpatialExtents(int timeSlice, const char *var)
+{
     VoidRefList list;
-    avtContract_p contract = GetContract();
+    avtContract_p contract = GetContract(-1, timeSlice);
     source->GetMeshAuxiliaryData(AUXILIARY_DATA_SPATIAL_EXTENTS, (void*) var,
                                  contract, list);
     if (list.nList == 0)
@@ -430,7 +436,7 @@ avtMetaData::GetContract(void)
 // ****************************************************************************
 
 avtContract_p
-avtMetaData::GetContract(int domain)
+avtMetaData::GetContract(int domain, int timeSlice)
 {
     //
     // Get the data from the source that represents all data.  Then override it
@@ -445,6 +451,8 @@ avtMetaData::GetContract(int domain)
     // should be aware of this.
     //
     avtContract_p ps = new avtContract(alldata, -1);
+    if( timeSlice != -1 )
+        ps->GetDataRequest()->SetTimestep(timeSlice);
     ps->UseLoadBalancing(false);
 
     return ps;

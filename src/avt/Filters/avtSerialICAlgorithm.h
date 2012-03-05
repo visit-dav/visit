@@ -87,14 +87,14 @@ class avtSerialICAlgorithm : public avtICAlgorithm
     
     virtual const char*       AlgoName() const {return "Serial";}
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
-    virtual void              ResetIntegralCurvesForContinueExecute();
+    virtual void              RestoreInitialize(std::vector<avtIntegralCurve *> &, int curTimeSlice);
+    virtual void              ResetIntegralCurvesForContinueExecute(int curTimeSlice = -1);
     virtual bool              CheckNextTimeStepNeeded(int curTimeSlice);
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics);
 
   protected:
     virtual void              RunAlgorithm();
     std::list<avtIntegralCurve *> activeICs, oobICs;
-    
 };
 
 #endif

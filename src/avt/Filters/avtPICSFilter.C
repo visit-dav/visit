@@ -112,8 +112,11 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #endif
 
 #include <vector>
+#include<dirent.h>
 
 using std::vector;
+
+static const char restartFilename[] = "PICS_Restart";
 
 avtPICSFilter *pcFilter = NULL;
 bool PostStepCB(void)
@@ -172,6 +175,8 @@ avtPICSFilter::avtPICSFilter()
     MaxID = 0;
 
     convertToCartesian = false;
+
+    restart = -1;
 }
 
 
@@ -484,13 +489,121 @@ avtPICSFilter::GetDomain(const DomainType &domain,
 //
 // ****************************************************************************
 
+#include "Utility.h"
+
+inline void PrintTreeExtents( avtIntervalTree * intervalTree, int curTimeSlice, char *message )
+{
+    if (DebugStream::Level5())
+    {
+        int nDomains = intervalTree->GetNLeaves();
+
+        debug5 << curTimeSlice << message << " Number of Domains: " << nDomains << endl;
+        for (int i = 0 ; i < nDomains ; i++)
+        {
+            double  extents[6] = {-1.0, -1.0, -1.0, -1.0, -1.0, -1.0 };
+            int    domain = intervalTree->GetLeafExtents(i, extents);
+
+            debug5 << curTimeSlice << message << " Domains: " << domain;
+            for (int j = 0 ; j < 6 ; ++j)
+                debug5 << " " << extents[j];
+            debug5 << endl;
+        }
+    }
+}
+
+void
+avtPICSFilter::RestoreICsFilename( int timeStep, char *filename, size_t filenameSize )
+{
+    snprintf( filename, filenameSize, "%s_%d_%03d", restartFilename, PAR_Rank(), timeStep );
+}
+
+void
+avtPICSFilter::RestoreICs( vector<avtIntegralCurve *> &_ics, int timeStep )
+{
+    int i, icNum;
+
+    // Look at doing a better guess in starting buffer size
+    MemStream buff;
+
+    // Load data into buff from file.
+    char filename[32];
+    RestoreICsFilename( timeStep, filename, 32 );
+    buff.LoadFile( filename );
+
+    buff.read(icNum);
+    _ics.resize( icNum );
+    for(i=0; i < icNum ;i++)
+    {
+        avtIntegralCurve *ic = CreateIntegralCurve();
+        ic->Serialize(MemStream::READ, buff, solver);
+        // Moved this to the RestoreInitialize, so we don't process ICs that are done.
+        //ic->status = avtIntegralCurve::STATUS_OK;
+        //SetDomain( ic );
+        _ics[i] = ic;
+    }
+}
+
+#include <avtStateRecorderIntegralCurve.h>
+
+void
+avtPICSFilter::SaveICs( int timeStep )
+{
+    int i, icNum = _ics.size();
+
+    // Look at doing a better guess in starting buffer size
+    MemStream buff( icNum * 100 );
+
+    buff.write(icNum);
+
+    for(i=0; i < icNum ;i++)
+    {
+        ((avtStateRecorderIntegralCurve*)_ics[i])->serializeFlags |= avtIntegralCurve::SERIALIZE_STEPS;
+        _ics[i]->Serialize(MemStream::WRITE, buff, solver);
+    }
+
+    // Save MemStream to file.
+    char filename[32];
+    RestoreICsFilename( timeStep, filename, 32 );
+    buff.SaveFile( filename );
+}
+
+bool
+avtPICSFilter::CheckIfRestart( int &timeStep )
+{
+    DIR *pDIR;
+    struct dirent *entry;
+    bool found = false;
+
+    if( pDIR = opendir(".") )
+    {
+        while( entry = readdir(pDIR) )
+        {
+            if( strncmp(entry->d_name, restartFilename, sizeof(restartFilename)-1) == 0 )
+            {
+                found = true;
+
+                char *s = entry->d_name + sizeof(restartFilename); // skip the filename
+                s = strstr( s, "_" ) + 1;                          // skip the rank.
+                int num = atoi( s );                               // Get time step
+                if( num > timeStep )
+                    timeStep = num;
+            }
+        }
+        closedir( pDIR );
+    }
+
+    return( found );
+}
+
+
 bool
 avtPICSFilter::LoadNextTimeSlice()
 {
     ClearDomainToCellLocatorMap();
+    EmptyQueue();  // Clear the avtDatasetOnDemandFilter data queue
 
-    if (!doPathlines)
-        return false;
+    // Save ICs for restart.
+    //SaveICs( curTimeSlice );
 
     if ((curTimeSlice+1) >= domainTimeIntervals.size())
         return false;
@@ -502,9 +615,6 @@ avtPICSFilter::LoadNextTimeSlice()
     if (DebugStream::Level5())
         debug5<<"LoadNextTimeSlice() "<<curTimeSlice<<" tsMax= "<<domainTimeIntervals.size()<<endl;
     
-    if (OperatingOnDemand())
-        return true;
-
     avtContract_p new_contract = new avtContract(lastContract);
     new_contract->GetDataRequest()->SetTimestep(curTimeSlice);
     GetInput()->Update(new_contract);
@@ -515,37 +625,45 @@ avtPICSFilter::LoadNextTimeSlice()
     GetPathlineVelocityMeshVariables(dr, velocityName, meshName);
     GetTypedInput()->SetActiveVariable(velocityName.c_str());
 
-    UpdateIntervalTree();
-    if( intervalTree == NULL )
+    UpdateIntervalTree(curTimeSlice);
+    if (intervalTree == NULL)
       return false;
 
-    GetAllDatasetsArgs ds_list;
-    bool dummy = false;
-    GetInputDataTree()->Traverse(CGetAllDatasets, (void*)&ds_list, dummy);
-
-    // Release all the old dataSets.
-    for (int i = 0; i < dataSets.size(); i++)
+    if (! OperatingOnDemand())
     {
-        if(dataSets[i])
+        GetAllDatasetsArgs ds_list;
+        bool dummy = false;
+        GetInputDataTree()->Traverse(CGetAllDatasets, (void*)&ds_list, dummy);
+
+        // Release all the old dataSets.
+        for (int i = 0; i < dataSets.size(); i++)
         {
-            dataSets[i]->UnRegister(NULL);
-            dataSets[i] = NULL;
+            if(dataSets[i])
+            {
+                dataSets[i]->UnRegister(NULL);
+                dataSets[i] = NULL;
+            }
         }
-    }
 
-    // Load the dataSets map with the new datasets for the next time step.
-    numDomains = intervalTree->GetNLeaves();
-    dataSets.resize(numDomains, NULL);
-    for (int i = 0; i < ds_list.domains.size(); i++)
-    {
-        vtkDataSet *ds = ds_list.datasets[i];
-        ds->Register(NULL);
-        dataSets[ ds_list.domains[i] ] = ds;
+        // Load the dataSets map with the new datasets for the next time step.
+        numDomains = intervalTree->GetNLeaves();
+        dataSets.resize(numDomains, NULL);
+        for (int i = 0; i < ds_list.domains.size(); i++)
+        {
+            vtkDataSet *ds = ds_list.datasets[i];
+            ds->Register(NULL);
+            dataSets[ ds_list.domains[i] ] = ds;
+        }
     }
 
     // Need to update the domain to rank mapping because the
     // domain numbers have changed.
     ComputeDomainToRankMapping();
+
+// TODO: HANK. I think this is only needed for AMR type mesh maybe we can tell that and only
+// do it for them. I don't think this will be a cheap call.
+    // The mesh may have changed and the ICs need to update their domain.
+    //icAlgo->UpdateICsDomain( curTimeSlice );
 
     return true;
 }
@@ -944,9 +1062,6 @@ avtPICSFilter::Execute(void)
         return;
     }
 
-    vector<avtIntegralCurve *> ics;
-    GetIntegralCurvesFromInitialSeeds(ics);
-
     SetMaxQueueLength(cacheQLen);
 
 #ifdef PARALLEL
@@ -970,7 +1085,18 @@ avtPICSFilter::Execute(void)
 
     InitialIOTime = visitTimer->LookupTimer("Reading dataset");
     
-    icAlgo->Initialize(ics);
+    // Check if we have a restart condition.
+    if( restart != -1 )
+    {
+        RestoreICs(_ics, restart);
+        icAlgo->RestoreInitialize(_ics, curTimeSlice);
+    }
+    else
+    {
+        GetIntegralCurvesFromInitialSeeds(_ics);
+        icAlgo->Initialize(_ics);
+    }
+
     if (doPathlines)
     {
         for (int i = 0; i < domainTimeIntervals.size(); i++)
@@ -978,12 +1104,12 @@ avtPICSFilter::Execute(void)
             icAlgo->Execute();
             while (ContinueExecute())
             {
-                icAlgo->ResetIntegralCurvesForContinueExecute();
+                icAlgo->ResetIntegralCurvesForContinueExecute(curTimeSlice);
                 icAlgo->Execute();
             }
 
             if (icAlgo->CheckNextTimeStepNeeded(curTimeSlice) && LoadNextTimeSlice())
-                icAlgo->ResetIntegralCurvesForContinueExecute();
+                icAlgo->ResetIntegralCurvesForContinueExecute(curTimeSlice);
             else
                 break;
         }
@@ -1130,7 +1256,7 @@ avtPICSFilter::Initialize()
     dataSpatialDimension = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
 
     // Get/Compute the interval tree.
-    avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents();
+    avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents( curTimeSlice );
 
     bool dontUseIntervalTree = false;
     if (GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition() ||
@@ -1144,7 +1270,7 @@ avtPICSFilter::Initialize()
 
     if (it_tmp == NULL || dontUseIntervalTree)
     {
-        UpdateIntervalTree();
+        UpdateIntervalTree(curTimeSlice);
         if( intervalTree == NULL )
             return;
     }
@@ -1308,14 +1434,19 @@ avtPICSFilter::Initialize()
         if (! pathlineOverrideTime)
             seedTime0 = GetInput()->GetInfo().GetAttributes().GetTime();
 
-        seedTimeStep0 = -1;
-        for (int i = 0; i < domainTimeIntervals.size(); i++)
+        // Check if we have a restart.
+        if( restart == -1 )
         {
-            if (seedTime0 >= domainTimeIntervals[i][0] &&
-                seedTime0 < domainTimeIntervals[i][1])
+            // No restart, so set seedTimeStep0.
+            seedTimeStep0 = -1;
+            for (int i = 0; i < domainTimeIntervals.size(); i++)
             {
-                seedTimeStep0 = i;
-                break;
+                if (seedTime0 >= domainTimeIntervals[i][0] &&
+                    seedTime0 < domainTimeIntervals[i][1])
+                {
+                    seedTimeStep0 = i;
+                    break;
+                }
             }
         }
 
@@ -1335,13 +1466,14 @@ avtPICSFilter::Initialize()
 
 
 void 
-avtPICSFilter::UpdateIntervalTree()
+avtPICSFilter::UpdateIntervalTree(int timeSlice)
 {
-    // Get/Compute the interval tree.
-    avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents();
-
     if (OperatingOnDemand())
     {
+        // Get/Compute the interval tree.
+        avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents(timeSlice);
+
+// TODO: The code below can be simplified. Move duplicate code out side of the if statement.
         if (GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition())
         {
             // We are going to assume that the format that operates on
@@ -1369,8 +1501,9 @@ avtPICSFilter::UpdateIntervalTree()
         {
             // It should be there, or else we would have precluded 
             // OnDemand processing in the method CheckOnDemandViability.
-            // Basically, this should never happen, so throw an exception.
-            EXCEPTION0(ImproperUseException);
+            if (intervalTree)
+                delete intervalTree;
+            intervalTree = new avtIntervalTree(it_tmp);
         }
     }
     else 
@@ -1709,11 +1842,15 @@ avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
     {
         if (DebugStream::Level5())
             debug5<<"Get DS failed for domain= "<<domain<<endl;
+        visitTimer->StopTimer( t1, "PointInDomain" );
         return false;
     }
 
     if (ds->GetNumberOfCells() == 0)
+    {
+        visitTimer->StopTimer( t1, "PointInDomain" );
         return false;
+    }
 
     // If it's rectilinear, we can do bbox test...
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
@@ -1724,6 +1861,7 @@ avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
             pt.y < bbox[2] || pt.y > bbox[3])
         {
             if (DebugStream::Level5()) debug5<<"FALSE bboxXY"<<endl;
+            visitTimer->StopTimer( t1, "PointInDomain" );
             return false;
         }
         
@@ -1731,6 +1869,7 @@ avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
            (pt.z < bbox[4] || pt.z > bbox[5]))
         {
             if (DebugStream::Level5()) debug5<<"FALSE bboxZ"<<endl;
+            visitTimer->StopTimer( t1, "PointInDomain" );
             return false;
         }
 
@@ -1739,6 +1878,7 @@ avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
         if (ds->GetCellData()->GetArray("avtGhostZones") == NULL)
         {
             if (DebugStream::Level5()) debug5<<"TRUE noGhosts"<<endl;
+            visitTimer->StopTimer( t1, "PointInDomain" );
             return true;
         }
     }
@@ -2510,13 +2650,13 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 
         // Need a single ID for the IC even if there are many domains.
         int currentID = i;
-        int nextID = -1; 
+        int nextID = -1;
         if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
         {
-            currentID = 2*i; 
-            nextID = 2*i+1; 
+            currentID = 2*i;
+            nextID = 2*i+1;
         }
-        
+
         for (int j = 0; j < dl.size(); j++)
         {
             DomainType dom(dl[j], seedTimeStep0);
@@ -2575,10 +2715,11 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
             }
         }
         
+// TODO: what happens if we get 0 domains returned. We will still add the seed point to the list.
         ids.push_back(seedPtIds);
     }
     MaxID = pts.size();
-    
+
     // Sort them on domain.
     std::sort(curves.begin(), curves.end(), avtIntegralCurve::DomainCompare);
 
@@ -2774,6 +2915,12 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         }
     }
 
+    if( CheckIfRestart(restart) )
+    {
+        curTimeSlice = seedTimeStep0 = restart + 1;
+        out_contract->GetDataRequest()->SetTimestep(curTimeSlice);
+    }
+
     lastContract = out_contract;
 
     return avtDatasetOnDemandFilter::ModifyContract(out_contract);
@@ -2918,7 +3065,7 @@ avtPICSFilter::PostStepCallback()
 }
 
 // ****************************************************************************
-// Method:  avtPICSFilter::PurgeDS()
+// Method:  avtPICSFilter::PurgeDomain()
 //
 // Purpose: The avtDatasetOnDemandFilter is purging a data set and we need
 //          to remove the cell locator.

@@ -373,6 +373,8 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
                << "Variable " << varname
                << " is not of type float - can not safely down cast"
                << endl;
+    if( newptr )
+        delete [] newptr;
     return 0;
   }
 }
@@ -828,8 +830,8 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
 //
 // ****************************************************************************
 
-avtVector
-avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
+avtIVPField::Result
+avtIVPM3DC1Field::operator()( const double &t, const avtVector &p, avtVector &vec ) const
 {
   // NOTE: Assumes the point is in cylindrical coordiantes.
   double pt[3] = { p[0], p[1], p[2] };
@@ -838,11 +840,11 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
   double *xieta = new double[element_dimension];
   int    element;
 
-  avtVector vec;
-
   if ((element = get_tri_coords2D(pt, xieta)) < 0) 
   {
-    vec = avtVector(0,0,0);
+    vec.x = 0.0;
+    vec.y = 0.0;
+    vec.z = 0.0;
   }
   else 
   {
@@ -851,7 +853,9 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
     interpBcomps(B, pt, element, xieta);
 
     // The B value is in cylindrical coordiantes
-    vec = avtVector( B[0], B[1], B[2] );
+    vec.x = B[0];
+    vec.y = B[1];
+    vec.z = B[2];
   }
 
   delete [] xieta;
@@ -859,7 +863,7 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
   if( reparameterize )
     reparameterizeBcomps( p, vec );
 
-  return vec;
+  return( avtIVPSolverResult::OK );
 }
 
 

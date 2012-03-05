@@ -449,7 +449,7 @@ avtCommDSOnDemandICAlgorithm::HandleMessages(bool checkMsgs,
 // ****************************************************************************
 
 void
-avtCommDSOnDemandICAlgorithm::ResetIntegralCurvesForContinueExecute()
+avtCommDSOnDemandICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
 {
     while (! terminatedICs.empty())
     {

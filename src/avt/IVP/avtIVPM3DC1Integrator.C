@@ -354,7 +354,7 @@ avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
 
     // stepsize underflow?
     if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
-        return avtIVPSolver::STEPSIZE_UNDERFLOW;
+        return avtIVPSolverResult::STEPSIZE_UNDERFLOW;
 
     avtIVPSolver::Result res;
     avtVector yNew = yCur;
@@ -362,7 +362,7 @@ avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
     // This call begins the M3D code.
     res = vpstep(field, yCur, h, yNew);
 
-    if( res == avtIVPSolver::OK )
+    if( res == avtIVPSolverResult::OK )
     {
         ivpstep->resize( 2 );
 
@@ -426,7 +426,7 @@ avtIVPM3DC1Integrator::vpstep(const avtIVPField* field,
   yNew[1] = xout[1];
   yNew[2] = xout[2];
 
-  return avtIVPSolver::OK;
+  return avtIVPSolverResult::OK;
 }
 
 // ****************************************************************************
@@ -455,25 +455,25 @@ avtIVPM3DC1Integrator::partial_step(const avtIVPField* field,
 
   /* Q_i */
   if (advance(field, xout, iflow, 0, 0.5*h, NEWTACC))
-    return avtIVPSolver::UNSPECIFIED_ERROR;
+    return avtIVPSolverResult::UNSPECIFIED_ERROR;
 
   /* P_e */
   if (getBfield(field, xout, iflow, 1, &Bval, 0, &dummy))
-    return avtIVPSolver::UNSPECIFIED_ERROR;
+    return avtIVPSolverResult::UNSPECIFIED_ERROR;
 
   xout[flowtable[iflow][1]] += 0.5*h*Bval;
 
   /* P_i */
   if (advance(field, xout, iflow, 1, 0.5*h, NEWTACC))
-    return avtIVPSolver::UNSPECIFIED_ERROR;
+    return avtIVPSolverResult::UNSPECIFIED_ERROR;
 
   /* Q_e */
   if (getBfield(field, xout, iflow, 0, &Bval, 0, &dummy))
-    return avtIVPSolver::UNSPECIFIED_ERROR;
+    return avtIVPSolverResult::UNSPECIFIED_ERROR;
 
   xout[flowtable[iflow][0]] += 0.5*h*Bval;
 
-  return avtIVPSolver::OK;
+  return avtIVPSolverResult::OK;
 }
 
 

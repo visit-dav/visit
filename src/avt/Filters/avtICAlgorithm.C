@@ -1081,3 +1081,29 @@ avtICAlgorithm::PrintCounter(ostream &os,
         os<<endl;
     }
 }
+
+// ****************************************************************************
+//  Method: avtICAlgorithm::UpdateICsDomain
+//
+//  Purpose:
+//      For Pathlines the mesh may change between time frames and we need to
+//  update the domain for the ICs.
+//
+//  Programmer: David Camp
+//  Creation:   Dec 20, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtICAlgorithm::UpdateICsDomain( int curTimeSlice )
+{
+    list<avtIntegralCurve *>::const_iterator it;
+    for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
+    {
+        // Update the current time slice ICs. No need to update others ICs.
+        if( (*it)->domain.timeStep == curTimeSlice )
+            SetDomain( (*it) );
+    }
+}
+

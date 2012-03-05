@@ -130,6 +130,7 @@ class PIPELINE_API avtMetaData
 
     avtIntervalTree             *GetDataExtents(const char *var = NULL);
     avtIntervalTree             *GetSpatialExtents(const char *var = NULL);
+    avtIntervalTree             *GetSpatialExtents(int timeSlice, const char *var = NULL);
     bool                         GetHistogram(avtHistogramSpecification *);
     avtIdentifierSelection      *GetIdentifiers(std::vector<avtDataSelection *>);
 
@@ -147,7 +148,7 @@ class PIPELINE_API avtMetaData
     avtOriginatingSource        *source;
 
     avtContract_p   GetContract(void);
-    avtContract_p   GetContract(int);
+    avtContract_p   GetContract(int domain, int timeSlice = -1);
 
   private:
     // These methods are defined to prevent accidental use of bitwise copy

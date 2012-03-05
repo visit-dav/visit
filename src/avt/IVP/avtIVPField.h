@@ -47,6 +47,21 @@
 #include <avtVector.h>
 #include <ivp_exports.h>
 
+namespace avtIVPSolverResult
+{
+    enum Result
+    {
+        OK,
+        TERMINATE,
+        OUTSIDE_DOMAIN,
+        OUTSIDE_TIME_FRAME,
+        STEPSIZE_UNDERFLOW,
+        STIFFNESS_DETECTED,
+        UNSPECIFIED_ERROR,
+    };
+}
+
+
 // ****************************************************************************
 //  Class: avtIVPField
 //
@@ -54,8 +69,7 @@
 //      avtIVPField is a base class for all manners of vector fields. 
 //      Deriving from it should allow an adaptation of many different vector 
 //      field types for the use of streamlines/IVP solutions by wrapping 
-//      existing interpolation facilities. If the queried point is invalid, 
-//      avtIVPField can throw an exception that will pass through avtIVPSolver.
+//      existing interpolation facilities.
 //
 //      The IVP right-hand side is made accessible to an IVP solver by means of 
 //      the avtIVPField class, allowing the IVP solver to query points of the 
@@ -72,8 +86,8 @@
 //   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
 //   Added ComputeScalarVariable, HasGhostZones and GetExtents methods.
 //
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
+//   Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//   Switch from avtVec to avtVector.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Generalize the compute scalar variable.
@@ -89,27 +103,22 @@
 class IVP_API avtIVPField
 {
   public:
-    class Undefined: public std::exception
-    {
-      public:
-        const char* what() const throw()
-        {
-            return "field undefined";
-        }
-    };
+    typedef avtIVPSolverResult::Result Result;
 
                          avtIVPField() : order(1) {}
     virtual             ~avtIVPField() {}
 
-    virtual avtVector    operator()(const double& t, 
-                                    const avtVector& x) const = 0;
+    virtual Result       operator()(const double& t, 
+                                    const avtVector& x,
+                                          avtVector& retV) const = 0;
 
-    virtual avtVector    operator()(const double& t, 
+    virtual Result       operator()(const double& t, 
                                     const avtVector& x, 
-                                    const avtVector& v) const = 0;
+                                    const avtVector& v,
+                                          avtVector& retV) const = 0;
 
-    virtual avtVector ConvertToCartesian(const avtVector& pt) const = 0;
-    virtual avtVector ConvertToCylindrical(const avtVector& pt) const = 0;
+    virtual avtVector    ConvertToCartesian(const avtVector& pt) const = 0;
+    virtual avtVector    ConvertToCylindrical(const avtVector& pt) const = 0;
 
     virtual double       ComputeVorticity(const double& t, 
                                           const avtVector& x ) const = 0;

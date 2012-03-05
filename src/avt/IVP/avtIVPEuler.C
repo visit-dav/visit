@@ -407,14 +407,17 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
 
     // stepsize underflow?
     if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
-        return avtIVPSolver::STEPSIZE_UNDERFLOW;
+        return avtIVPSolverResult::STEPSIZE_UNDERFLOW;
 
-    avtIVPSolver::Result res = avtIVPSolver::OK;
+    avtIVPSolver::Result res = avtIVPSolverResult::OK;
     avtVector yNew, vNew;
 
     if( field->GetOrder() == 2 )
     {
-      avtVector aCur = (*field)(t,yCur,vCur);
+      avtVector aCur;
+
+      if( (res = (*field)(t, yCur, vCur, aCur)) != avtIVPSolverResult::OK )
+        return( res );
 
       vNew = vCur + aCur * h;  // New velocity
 
@@ -422,12 +425,13 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     }
     else  //if( field->GetOrder() == 1 )
     {
-      vCur = (*field)(t,yCur);
+      if( (res = (*field)(t, yCur, vCur)) != avtIVPSolverResult::OK )
+        return( res );
 
       yNew = yCur + vCur * h;     // New position
     }
 
-    if( res == avtIVPSolver::OK )
+    if( res == avtIVPSolverResult::OK )
     {
         ivpstep->resize(2);
 
@@ -451,7 +455,7 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
         t = t+h;
 
         if( last )
-            res = TERMINATE;
+            res = avtIVPSolverResult::TERMINATE;
     }
 
     // Reset the step size on sucessful step.

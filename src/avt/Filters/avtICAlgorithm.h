@@ -122,14 +122,17 @@ class avtICAlgorithm
 
     //Execution of the algorithm.
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
+    virtual void              RestoreInitialize(std::vector<avtIntegralCurve *> &, int curTimeSlice) {}
     void                      Execute();
-    virtual void              ResetIntegralCurvesForContinueExecute() = 0;
+    virtual void              ResetIntegralCurvesForContinueExecute(int curTimeSlice=-1) = 0;
     virtual bool              CheckNextTimeStepNeeded(int curTimeSlice) = 0;
     virtual void              PostExecute();
     virtual void              GetTerminatedICs(std::vector<avtIntegralCurve *> &v);
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics) = 0;
     virtual void              DeleteIntegralCurves(std::vector<int> &icIDs);
     virtual bool              PostStepCallback() { return false; }
+
+    virtual void              UpdateICsDomain( int curTimeSlice );
 
   protected:
     virtual void              RunAlgorithm() = 0;
