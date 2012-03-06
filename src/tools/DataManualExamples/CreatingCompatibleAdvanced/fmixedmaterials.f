@@ -1,6 +1,6 @@
 c-----------------------------------------------------------------------------
 c
-c Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+c Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 c Produced at the Lawrence Livermore National Laboratory
 c LLNL-CODE-442911
 c All rights reserved.
