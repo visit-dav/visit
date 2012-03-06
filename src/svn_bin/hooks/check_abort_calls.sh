@@ -7,12 +7,15 @@
 # Created:    Wed Jun 22 09:57:42 PDT 2011
 #
 # Modifications:
-#
 #   Mark C. Miller, Wed Jun 22 17:20:09 PDT 2011
 #   Check -DPARALLEL code too
 #  
 #   Kathleen Biagas, Fri Oct 21 18:03:33 PDT 2011
 #   Skip windowsbuild directory.
+#
+#   Eric Brugger, Tue Mar  6 07:57:28 PST 2012
+#   Skip the data directory.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -41,6 +44,7 @@ while read fline; do
     # be permitted. The grep, below, eliminates those cases from consideration.
     #
     case $fname in
+        */data/*|\
         */src/tools/*|\
         */src/cqscore/*|\
         */src/third_party_builtin/*|\
