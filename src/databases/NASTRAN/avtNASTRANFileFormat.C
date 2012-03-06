@@ -43,6 +43,8 @@
 #include <avtNASTRANFileFormat.h>
 #include <avtNASTRANOptions.h>
 
+using namespace NASTRANDBOptions;
+
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
 #include <vtkUnstructuredGrid.h>

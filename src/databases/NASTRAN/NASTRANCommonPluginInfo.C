@@ -42,6 +42,8 @@
 #include <avtGenericDatabase.h>
 #include <avtNASTRANOptions.h>
 
+using namespace NASTRANDBOptions;
+
 // ****************************************************************************
 //  Method:  NASTRANCommonPluginInfo::GetDatabaseType
 //

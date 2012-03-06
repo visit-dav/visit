@@ -65,7 +65,7 @@
 #include <avtParallel.h>
 #endif
 
-using     std::string;
+using     namespace std;
 
 
 // ****************************************************************************
