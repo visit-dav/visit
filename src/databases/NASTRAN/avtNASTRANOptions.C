@@ -42,6 +42,8 @@
 
 #include <avtNASTRANOptions.h>
 
+using namespace NASTRANDBOptions;
+
 #include <DBOptionsAttributes.h>
 
 #include <string>
