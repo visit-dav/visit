@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+  <Plugin name="FTLE" type="operator" label="FTLE" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="vector" exprOutType="scalar" category="Analysis">
+    <Attribute name="FTLEAttributes" purpose="Attributes for FTLE" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="Region">
+        NativeResolutionOfMesh
+        RegularGrid
+      </Enum>
+      <Field name="integrationTime" label="Integration Time" type="double">
+        1.000000
+      </Field>
+      <Field name="regionType" label="Region Type" type="enum" subtype="Region">
+        RegularGrid
+      </Field>
+      <Field name="Resolution" label="Resolution" type="intArray" length="3" enabler="regionType:RegularGrid">
+        10
+        10
+        10
+      </Field>
+      <Field name="UseDataSetStart" label="Start at DataSet Extent" type="bool" enabler="regionType:RegularGrid">
+        true
+      </Field>
+      <Field name="StartPosition" label="Subset Start" type="doubleArray" length="3" enabler="UseDataSetStart:false">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="UseDataSetEnd" label="End at DataSet Extent" type="bool" enabler="regionType:RegularGrid">
+        true
+      </Field>
+      <Field name="EndPosition" label="Subset End" type="doubleArray" length="3" enabler="UseDataSetEnd:false">
+        1.000000
+        1.000000
+        1.000000
+      </Field>
+    </Attribute>
+  </Plugin>
