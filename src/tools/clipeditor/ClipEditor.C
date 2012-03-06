@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -70,7 +70,7 @@
 std::string copyright_str = 
 "/*****************************************************************************\n"
 "*\n"
-"* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC\n"
+"* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC\n"
 "* Produced at the Lawrence Livermore National Laboratory\n"
 "* LLNL-CODE-442911\n"
 "* All rights reserved.\n"
