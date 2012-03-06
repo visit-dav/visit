@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -51,8 +51,6 @@
 #include <string>
 #include <vector>
 
-using std::vector;
-
 #ifdef PARALLEL
 #include <avtParallel.h>
 #endif
@@ -63,8 +61,8 @@ using std::vector;
 
 #include <InvalidVariableException.h>
 
-using rclib::Point; 
-using     std::string;
+using     namespace std;
+using     rclib::Point; 
 
 
 // ****************************************************************************

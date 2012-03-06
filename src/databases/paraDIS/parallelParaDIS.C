@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -76,6 +76,7 @@
 #endif
 
 using namespace std; 
+
 // ************************************************************************* //
 //                            parallelParDIS.C                          //
 // ************************************************************************* //

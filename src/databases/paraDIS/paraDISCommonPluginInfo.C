@@ -42,6 +42,8 @@
 #include <avtGenericDatabase.h>
 #include <avtparaDISOptions.h>
 
+using namespace std;
+
 // ****************************************************************************
 //  Method:  paraDISCommonPluginInfo::GetDatabaseType
 //
