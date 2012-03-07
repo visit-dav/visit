@@ -112,7 +112,15 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #endif
 
 #include <vector>
-#include<dirent.h>
+
+#ifndef _WIN32
+#include <dirent.h>
+#else
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
 
 using std::vector;
 
@@ -514,7 +522,7 @@ inline void PrintTreeExtents( avtIntervalTree * intervalTree, int curTimeSlice, 
 void
 avtPICSFilter::RestoreICsFilename( int timeStep, char *filename, size_t filenameSize )
 {
-    snprintf( filename, filenameSize, "%s_%d_%03d", restartFilename, PAR_Rank(), timeStep );
+    SNPRINTF( filename, filenameSize, "%s_%d_%03d", restartFilename, PAR_Rank(), timeStep );
 }
 
 void
@@ -570,9 +578,10 @@ avtPICSFilter::SaveICs( int timeStep )
 bool
 avtPICSFilter::CheckIfRestart( int &timeStep )
 {
+    bool found = false;
+#ifndef _WIN32
     DIR *pDIR;
     struct dirent *entry;
-    bool found = false;
 
     if( pDIR = opendir(".") )
     {
@@ -591,6 +600,26 @@ avtPICSFilter::CheckIfRestart( int &timeStep )
         }
         closedir( pDIR );
     }
+#else
+    WIN32_FIND_DATA fd;
+    HANDLE dirHandle = FindFirstFile(".\\*", &fd);
+    if (dirHandle != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            if (strncmp(fd.cFileName, restartFilename, sizeof(restartFilename)-1) == 0)
+            {
+                found = true;
+                char *s = fd.cFileName + sizeof(restartFilename);
+                s = strstr(s, "_") +1;
+                int num = atoi(s);
+                if (num > timeStep)
+                    timeStep = num;
+            }
+        } while(FindNextFile(dirHandle, &fd));
+        FindClose(dirHandle);
+    } 
+#endif
 
     return( found );
 }

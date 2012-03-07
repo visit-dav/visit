@@ -163,7 +163,7 @@ avtMetaData::GetDataExtents(const char *var)
 avtIntervalTree *
 avtMetaData::GetSpatialExtents(const char *var)
 {
-    GetSpatialExtents(-1, var);
+    return GetSpatialExtents(-1, var);
 }
 
 avtIntervalTree *
