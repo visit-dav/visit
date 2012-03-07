@@ -372,16 +372,18 @@ avtIVPAdamsBashforth::RK4Step(const avtIVPField* field,
 
   if( (result = (*field)(t, yCur,              f[0])) != avtIVPSolverResult::OK )
     return( result );
+  f[0] *= h;
+
   if( (result = (*field)(t, yCur + f[0] * 0.5, f[1])) != avtIVPSolverResult::OK )
     return( result );
+  f[1] *= h;
+
   if( (result = (*field)(t, yCur + f[1] * 0.5, f[2])) != avtIVPSolverResult::OK )
     return( result );
+  f[2] *= h;
+
   if( (result = (*field)(t, yCur + f[2],       f[3])) != avtIVPSolverResult::OK )
     return( result );
-
-  f[0] *= h;
-  f[1] *= h;
-  f[2] *= h;
   f[3] *= h;
 
   yNew = yCur + (f[0] + 2.0 * f[1] + 2.0 * f[2] + f[3]) * (1.0 / 6.0);
@@ -494,9 +496,8 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
         // Save the first vector values in the history. 
         if( numStep == 0 )
         {
-            avtIVPField::Result result;
-            if( (result = (*field)(t, yCur, history[0])) != avtIVPSolverResult::OK )
-                return( result );
+            if( (res = (*field)(t, yCur, history[0])) != avtIVPSolverResult::OK )
+                return( res );
         }
          
         res = RK4Step( field, yNew );
@@ -528,19 +529,19 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
         history[3] = history[2];
         history[2] = history[1];
         history[1] = history[0];
-        // TODO. How should we handle a bad/out of domain step here.
-        //history[0] = (*field)(t,yNew);
-        (*field)(t, yNew, history[0]);
+        if( (res = (*field)(t, yNew, history[0])) != avtIVPSolverResult::OK )
+            return( res );
 
         yCur = yNew;
         t = t+h;
 
         if( last )
             res = avtIVPSolverResult::TERMINATE;
+
+        // Reset the step size on sucessful step.
+        h = h_max;
     }
 
-    // Reset the step size on sucessful step.
-    h = h_max;
     return res;
 }
 
