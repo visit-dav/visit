@@ -528,7 +528,7 @@ void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3],vtkDataArray *result)
 
         //std::cout << a << " " << b << " " << c << " " << d << " "
         //          << e << " " << f << " " << x << " " << q << " " << r << std::endl;
-        if( D < __FLT_EPSILON__  )
+        if( D < std::numeric_limits<float>::epsilon())
             phi = 0.0f;
         else
         {
@@ -546,9 +546,9 @@ void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3],vtkDataArray *result)
         cosphi = cosf(phi);
 
         float lambda = 1.0f;
-        lambda = fmaxf( lambda, x + 2.0f*sqrtr*cosphi );
-        lambda = fmaxf( lambda, x - sqrtr*(cosphi + sqrt3*sinphi) );
-        lambda = fmaxf( lambda, x - sqrtr*(cosphi - sqrt3*sinphi) );
+        lambda = std::max( lambda, x + 2.0f*sqrtr*cosphi );
+        lambda = std::max( lambda, x - sqrtr*(cosphi + sqrt3*sinphi) );
+        lambda = std::max( lambda, x - sqrtr*(cosphi - sqrt3*sinphi) );
 
         //lambda = log( sqrtf( lambda ) ) + 0.000000001;
         //                    std::cout << "s: " << lambda << std::endl;
