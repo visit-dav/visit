@@ -247,6 +247,8 @@ avtIVPVTKField::operator()( const double &t, const avtVector &p, avtVector &retV
 avtIVPField::Result
 avtIVPVTKField::FindValue( vtkDataArray* vectorData, avtVector &vel ) const
 {
+    vel.x = vel.y = vel.z = 0.0;
+
     if( velCellBased )
         vectorData->GetTuple( lastCell, &vel.x );
     else
