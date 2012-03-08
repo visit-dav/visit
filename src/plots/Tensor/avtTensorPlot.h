@@ -77,6 +77,9 @@ class     avtLookupTable;
 //    Turn on NeedZBufferToCompositeEvenIn2D, as tensor glyphs can bleed
 //    into other processor's portion of image space.
 //
+//    Kathleen Biagas, Wed Feb 29 13:10:11 MST 2012
+//    Add GetExtraInfoForPick.
+//
 // ****************************************************************************
 
 class avtTensorPlot : public avtPointDataPlot
@@ -94,6 +97,7 @@ class avtTensorPlot : public avtPointDataPlot
     virtual bool                NeedZBufferToCompositeEvenIn2D(void)
                                                           { return true; };
 
+    virtual const MapNode      &GetExtraInfoForPick(void);
 
   protected:
     TensorAttributes              atts;

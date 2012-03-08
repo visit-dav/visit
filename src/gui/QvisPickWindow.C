@@ -693,10 +693,10 @@ QvisPickWindow::UpdateAll(bool doAll)
     }
 
     // displayIncidentElements
-    if (pickAtts->IsSelected(PickAttributes::ID_displayIncidentElements) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_showIncidentElements) || doAll)
     {
         displayIncEls->blockSignals(true);
-        displayIncEls->setChecked(pickAtts->GetDisplayIncidentElements());
+        displayIncEls->setChecked(pickAtts->GetShowIncidentElements());
         displayIncEls->blockSignals(false);
  
    }
@@ -792,18 +792,18 @@ QvisPickWindow::UpdateAll(bool doAll)
     }
 
     // displayGlobalIds
-    if (pickAtts->IsSelected(PickAttributes::ID_displayGlobalIds) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_showGlobalIds) || doAll)
     {
         displayGlobalIds->blockSignals(true);
-        displayGlobalIds->setChecked(pickAtts->GetDisplayGlobalIds());
+        displayGlobalIds->setChecked(pickAtts->GetShowGlobalIds());
         displayGlobalIds->blockSignals(false);
     }
 
     // displayPickLetter
-    if (pickAtts->IsSelected(PickAttributes::ID_displayPickLetter) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_showPickLetter) || doAll)
     {
         displayPickLetter->blockSignals(true);
-        displayPickLetter->setChecked(pickAtts->GetDisplayPickLetter());
+        displayPickLetter->setChecked(pickAtts->GetShowPickLetter());
         displayPickLetter->blockSignals(false);
     }
 
@@ -1419,7 +1419,7 @@ QvisPickWindow::reset()
 void
 QvisPickWindow::displayIncElsToggled(bool val)
 {
-    pickAtts->SetDisplayIncidentElements(val);
+    pickAtts->SetShowIncidentElements(val);
     Apply();
 }
 
@@ -1759,7 +1759,7 @@ QvisPickWindow::addPickVariable(const QString &var)
 void
 QvisPickWindow::displayGlobalIdsToggled(bool val)
 {
-    pickAtts->SetDisplayGlobalIds(val);
+    pickAtts->SetShowGlobalIds(val);
     Apply();
 }
 
@@ -1781,7 +1781,7 @@ QvisPickWindow::displayGlobalIdsToggled(bool val)
 void
 QvisPickWindow::displayPickLetterToggled(bool val)
 {
-    pickAtts->SetDisplayPickLetter(val);
+    pickAtts->SetShowPickLetter(val);
     Apply();
 }
 
@@ -2010,12 +2010,12 @@ QvisPickWindow::redoPickClicked()
 {
     // Save old state
     createSpreadsheetSave = pickAtts->GetCreateSpreadsheet();
-    displayPickLetterSave = pickAtts->GetDisplayPickLetter();
+    displayPickLetterSave = pickAtts->GetShowPickLetter();
     reusePickLetterSave = pickAtts->GetReusePickLetter();
 
     // Do not display a new pick letter, do not advance pick letter, 
     // do not create a spreadsheet
-    pickAtts->SetDisplayPickLetter(!pickAtts->GetDoTimeCurve());
+    pickAtts->SetShowPickLetter(!pickAtts->GetDoTimeCurve());
     pickAtts->SetReusePickLetter(true);
     pickAtts->SetCreateSpreadsheet(false);
     pickAtts->Notify();
@@ -2049,13 +2049,13 @@ QvisPickWindow::redoPickWithSpreadsheetClicked()
 {
     // Save old state
     createSpreadsheetSave = pickAtts->GetCreateSpreadsheet();
-    displayPickLetterSave = pickAtts->GetDisplayPickLetter();
+    displayPickLetterSave = pickAtts->GetShowPickLetter();
     reusePickLetterSave = pickAtts->GetReusePickLetter();
 
     // Do not display a new pick letter, do not advance pick letter, create
     // a spreadsheet
     pickAtts->SetCreateSpreadsheet(true);
-    pickAtts->SetDisplayPickLetter(false);
+    pickAtts->SetShowPickLetter(false);
     pickAtts->SetReusePickLetter(true);
     pickAtts->Notify();
     GetViewerMethods()->SetPickAttributes();
@@ -2158,7 +2158,7 @@ QvisPickWindow::restorePickAttributesAfterRepick()
 {
     // Restore the pick attributes
     pickAtts->SetCreateSpreadsheet(createSpreadsheetSave);
-    pickAtts->SetDisplayPickLetter(displayPickLetterSave);
+    pickAtts->SetShowPickLetter(displayPickLetterSave);
     pickAtts->SetReusePickLetter(reusePickLetterSave);
     pickAtts->Notify();
     GetViewerMethods()->SetPickAttributes();

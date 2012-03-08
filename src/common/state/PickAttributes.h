@@ -137,10 +137,11 @@ public:
     void SelectSubsetName();
     void SelectFloatFormat();
     void SelectTimeOptions();
+    void SelectPlotRequested();
 
     // Property setting methods
     void SetVariables(const stringVector &variables_);
-    void SetDisplayIncidentElements(bool displayIncidentElements_);
+    void SetShowIncidentElements(bool showIncidentElements_);
     void SetShowNodeId(bool showNodeId_);
     void SetShowNodeDomainLogicalCoords(bool showNodeDomainLogicalCoords_);
     void SetShowNodeBlockLogicalCoords(bool showNodeBlockLogicalCoords_);
@@ -190,11 +191,11 @@ public:
     void SetElementIsGhost(bool elementIsGhost_);
     void SetRequiresGlyphPick(bool requiresGlyphPick_);
     void SetLocationSuccessful(bool locationSuccessful_);
-    void SetDisplayGlobalIds(bool displayGlobalIds_);
+    void SetShowGlobalIds(bool showGlobalIds_);
     void SetGlobalElement(int globalElement_);
     void SetGlobalIncidentElements(const intVector &globalIncidentElements_);
     void SetElementIsGlobal(bool elementIsGlobal_);
-    void SetDisplayPickLetter(bool displayPickLetter_);
+    void SetShowPickLetter(bool showPickLetter_);
     void SetReusePickLetter(bool reusePickLetter_);
     void SetGhostType(int ghostType_);
     void SetHasMixedGhostTypes(int hasMixedGhostTypes_);
@@ -207,11 +208,12 @@ public:
     void SetTimePreserveCoord(bool timePreserveCoord_);
     void SetTimeCurveType(TimeCurveType timeCurveType_);
     void SetTimeOptions(const MapNode &timeOptions_);
+    void SetPlotRequested(const MapNode &plotRequested_);
 
     // Property getting methods
     const stringVector &GetVariables() const;
           stringVector &GetVariables();
-    bool               GetDisplayIncidentElements() const;
+    bool               GetShowIncidentElements() const;
     bool               GetShowNodeId() const;
     bool               GetShowNodeDomainLogicalCoords() const;
     bool               GetShowNodeBlockLogicalCoords() const;
@@ -285,12 +287,12 @@ public:
     bool               GetElementIsGhost() const;
     bool               GetRequiresGlyphPick() const;
     bool               GetLocationSuccessful() const;
-    bool               GetDisplayGlobalIds() const;
+    bool               GetShowGlobalIds() const;
     int                GetGlobalElement() const;
     const intVector    &GetGlobalIncidentElements() const;
           intVector    &GetGlobalIncidentElements();
     bool               GetElementIsGlobal() const;
-    bool               GetDisplayPickLetter() const;
+    bool               GetShowPickLetter() const;
     bool               GetReusePickLetter() const;
     int                GetGhostType() const;
     int                GetHasMixedGhostTypes() const;
@@ -306,6 +308,8 @@ public:
     TimeCurveType      GetTimeCurveType() const;
     const MapNode      &GetTimeOptions() const;
           MapNode      &GetTimeOptions();
+    const MapNode      &GetPlotRequested() const;
+          MapNode      &GetPlotRequested();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -353,12 +357,13 @@ public:
     void CreateConciseOutputString(std::string &os, bool withLetter = true);
     void SetRayPoint1(const doubleVector &);
     void SetRayPoint2(const doubleVector &);
+    void CreateOutputMapNode(MapNode &m, bool withLetter);
     void CreateXMLString(std::string &os, bool withLetter = true);
 
     // IDs that can be used to identify fields in case statements
     enum {
         ID_variables = 0,
-        ID_displayIncidentElements,
+        ID_showIncidentElements,
         ID_showNodeId,
         ID_showNodeDomainLogicalCoords,
         ID_showNodeBlockLogicalCoords,
@@ -409,11 +414,11 @@ public:
         ID_elementIsGhost,
         ID_requiresGlyphPick,
         ID_locationSuccessful,
-        ID_displayGlobalIds,
+        ID_showGlobalIds,
         ID_globalElement,
         ID_globalIncidentElements,
         ID_elementIsGlobal,
-        ID_displayPickLetter,
+        ID_showPickLetter,
         ID_reusePickLetter,
         ID_ghostType,
         ID_hasMixedGhostTypes,
@@ -426,6 +431,7 @@ public:
         ID_timePreserveCoord,
         ID_timeCurveType,
         ID_timeOptions,
+        ID_plotRequested,
         ID__LAST
     };
 
@@ -433,7 +439,7 @@ protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
 private:
     stringVector         variables;
-    bool                 displayIncidentElements;
+    bool                 showIncidentElements;
     bool                 showNodeId;
     bool                 showNodeDomainLogicalCoords;
     bool                 showNodeBlockLogicalCoords;
@@ -484,11 +490,11 @@ private:
     bool                 elementIsGhost;
     bool                 requiresGlyphPick;
     bool                 locationSuccessful;
-    bool                 displayGlobalIds;
+    bool                 showGlobalIds;
     int                  globalElement;
     intVector            globalIncidentElements;
     bool                 elementIsGlobal;
-    bool                 displayPickLetter;
+    bool                 showPickLetter;
     bool                 reusePickLetter;
     int                  ghostType;
     int                  hasMixedGhostTypes;
@@ -501,11 +507,12 @@ private:
     bool                 timePreserveCoord;
     int                  timeCurveType;
     MapNode              timeOptions;
+    MapNode              plotRequested;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibiibssbim"
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibiibssbimm"
 
 #endif

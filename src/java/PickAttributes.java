@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class PickAttributes extends AttributeSubject
 {
-    private static int PickAttributes_numAdditionalAtts = 69;
+    private static int PickAttributes_numAdditionalAtts = 70;
 
     // Enum values
     public final static int PICKTYPE_ZONE = 0;
@@ -83,7 +83,7 @@ public class PickAttributes extends AttributeSubject
 
         variables = new Vector();
         variables.addElement(new String("default"));
-        displayIncidentElements = true;
+        showIncidentElements = true;
         showNodeId = true;
         showNodeDomainLogicalCoords = false;
         showNodeBlockLogicalCoords = false;
@@ -149,11 +149,11 @@ public class PickAttributes extends AttributeSubject
         elementIsGhost = false;
         requiresGlyphPick = false;
         locationSuccessful = false;
-        displayGlobalIds = false;
+        showGlobalIds = false;
         globalElement = -1;
         globalIncidentElements = new Vector();
         elementIsGlobal = false;
-        displayPickLetter = true;
+        showPickLetter = true;
         reusePickLetter = false;
         ghostType = 0;
         hasMixedGhostTypes = -1;
@@ -166,6 +166,7 @@ public class PickAttributes extends AttributeSubject
         timePreserveCoord = true;
         timeCurveType = TIMECURVETYPE_SINGLE_Y_AXIS;
         timeOptions = new MapNode();
+        plotRequested = new MapNode();
     }
 
     public PickAttributes(int nMoreFields)
@@ -174,7 +175,7 @@ public class PickAttributes extends AttributeSubject
 
         variables = new Vector();
         variables.addElement(new String("default"));
-        displayIncidentElements = true;
+        showIncidentElements = true;
         showNodeId = true;
         showNodeDomainLogicalCoords = false;
         showNodeBlockLogicalCoords = false;
@@ -240,11 +241,11 @@ public class PickAttributes extends AttributeSubject
         elementIsGhost = false;
         requiresGlyphPick = false;
         locationSuccessful = false;
-        displayGlobalIds = false;
+        showGlobalIds = false;
         globalElement = -1;
         globalIncidentElements = new Vector();
         elementIsGlobal = false;
-        displayPickLetter = true;
+        showPickLetter = true;
         reusePickLetter = false;
         ghostType = 0;
         hasMixedGhostTypes = -1;
@@ -257,6 +258,7 @@ public class PickAttributes extends AttributeSubject
         timePreserveCoord = true;
         timeCurveType = TIMECURVETYPE_SINGLE_Y_AXIS;
         timeOptions = new MapNode();
+        plotRequested = new MapNode();
     }
 
     public PickAttributes(PickAttributes obj)
@@ -269,7 +271,7 @@ public class PickAttributes extends AttributeSubject
         for(i = 0; i < obj.variables.size(); ++i)
             variables.addElement(new String((String)obj.variables.elementAt(i)));
 
-        displayIncidentElements = obj.displayIncidentElements;
+        showIncidentElements = obj.showIncidentElements;
         showNodeId = obj.showNodeId;
         showNodeDomainLogicalCoords = obj.showNodeDomainLogicalCoords;
         showNodeBlockLogicalCoords = obj.showNodeBlockLogicalCoords;
@@ -386,7 +388,7 @@ public class PickAttributes extends AttributeSubject
         elementIsGhost = obj.elementIsGhost;
         requiresGlyphPick = obj.requiresGlyphPick;
         locationSuccessful = obj.locationSuccessful;
-        displayGlobalIds = obj.displayGlobalIds;
+        showGlobalIds = obj.showGlobalIds;
         globalElement = obj.globalElement;
         globalIncidentElements = new Vector();
         for(i = 0; i < obj.globalIncidentElements.size(); ++i)
@@ -395,7 +397,7 @@ public class PickAttributes extends AttributeSubject
             globalIncidentElements.addElement(new Integer(iv.intValue()));
         }
         elementIsGlobal = obj.elementIsGlobal;
-        displayPickLetter = obj.displayPickLetter;
+        showPickLetter = obj.showPickLetter;
         reusePickLetter = obj.reusePickLetter;
         ghostType = obj.ghostType;
         hasMixedGhostTypes = obj.hasMixedGhostTypes;
@@ -408,6 +410,7 @@ public class PickAttributes extends AttributeSubject
         timePreserveCoord = obj.timePreserveCoord;
         timeCurveType = obj.timeCurveType;
         timeOptions = new MapNode(obj.timeOptions);
+        plotRequested = new MapNode(obj.plotRequested);
 
         SelectAll();
     }
@@ -570,7 +573,7 @@ public class PickAttributes extends AttributeSubject
         }
         // Create the return value
         return (variables_equal &&
-                (displayIncidentElements == obj.displayIncidentElements) &&
+                (showIncidentElements == obj.showIncidentElements) &&
                 (showNodeId == obj.showNodeId) &&
                 (showNodeDomainLogicalCoords == obj.showNodeDomainLogicalCoords) &&
                 (showNodeBlockLogicalCoords == obj.showNodeBlockLogicalCoords) &&
@@ -621,11 +624,11 @@ public class PickAttributes extends AttributeSubject
                 (elementIsGhost == obj.elementIsGhost) &&
                 (requiresGlyphPick == obj.requiresGlyphPick) &&
                 (locationSuccessful == obj.locationSuccessful) &&
-                (displayGlobalIds == obj.displayGlobalIds) &&
+                (showGlobalIds == obj.showGlobalIds) &&
                 (globalElement == obj.globalElement) &&
                 globalIncidentElements_equal &&
                 (elementIsGlobal == obj.elementIsGlobal) &&
-                (displayPickLetter == obj.displayPickLetter) &&
+                (showPickLetter == obj.showPickLetter) &&
                 (reusePickLetter == obj.reusePickLetter) &&
                 (ghostType == obj.ghostType) &&
                 (hasMixedGhostTypes == obj.hasMixedGhostTypes) &&
@@ -637,7 +640,8 @@ public class PickAttributes extends AttributeSubject
                 (floatFormat.equals(obj.floatFormat)) &&
                 (timePreserveCoord == obj.timePreserveCoord) &&
                 (timeCurveType == obj.timeCurveType) &&
-                (timeOptions.equals(obj.timeOptions)));
+                (timeOptions.equals(obj.timeOptions)) &&
+                (plotRequested.equals(obj.plotRequested)));
     }
 
     // Property setting methods
@@ -647,9 +651,9 @@ public class PickAttributes extends AttributeSubject
         Select(0);
     }
 
-    public void SetDisplayIncidentElements(boolean displayIncidentElements_)
+    public void SetShowIncidentElements(boolean showIncidentElements_)
     {
-        displayIncidentElements = displayIncidentElements_;
+        showIncidentElements = showIncidentElements_;
         Select(1);
     }
 
@@ -997,9 +1001,9 @@ public class PickAttributes extends AttributeSubject
         Select(51);
     }
 
-    public void SetDisplayGlobalIds(boolean displayGlobalIds_)
+    public void SetShowGlobalIds(boolean showGlobalIds_)
     {
-        displayGlobalIds = displayGlobalIds_;
+        showGlobalIds = showGlobalIds_;
         Select(52);
     }
 
@@ -1021,9 +1025,9 @@ public class PickAttributes extends AttributeSubject
         Select(55);
     }
 
-    public void SetDisplayPickLetter(boolean displayPickLetter_)
+    public void SetShowPickLetter(boolean showPickLetter_)
     {
-        displayPickLetter = displayPickLetter_;
+        showPickLetter = showPickLetter_;
         Select(56);
     }
 
@@ -1099,9 +1103,15 @@ public class PickAttributes extends AttributeSubject
         Select(68);
     }
 
+    public void SetPlotRequested(MapNode plotRequested_)
+    {
+        plotRequested = plotRequested_;
+        Select(69);
+    }
+
     // Property getting methods
     public Vector   GetVariables() { return variables; }
-    public boolean  GetDisplayIncidentElements() { return displayIncidentElements; }
+    public boolean  GetShowIncidentElements() { return showIncidentElements; }
     public boolean  GetShowNodeId() { return showNodeId; }
     public boolean  GetShowNodeDomainLogicalCoords() { return showNodeDomainLogicalCoords; }
     public boolean  GetShowNodeBlockLogicalCoords() { return showNodeBlockLogicalCoords; }
@@ -1152,11 +1162,11 @@ public class PickAttributes extends AttributeSubject
     public boolean  GetElementIsGhost() { return elementIsGhost; }
     public boolean  GetRequiresGlyphPick() { return requiresGlyphPick; }
     public boolean  GetLocationSuccessful() { return locationSuccessful; }
-    public boolean  GetDisplayGlobalIds() { return displayGlobalIds; }
+    public boolean  GetShowGlobalIds() { return showGlobalIds; }
     public int      GetGlobalElement() { return globalElement; }
     public Vector   GetGlobalIncidentElements() { return globalIncidentElements; }
     public boolean  GetElementIsGlobal() { return elementIsGlobal; }
-    public boolean  GetDisplayPickLetter() { return displayPickLetter; }
+    public boolean  GetShowPickLetter() { return showPickLetter; }
     public boolean  GetReusePickLetter() { return reusePickLetter; }
     public int      GetGhostType() { return ghostType; }
     public int      GetHasMixedGhostTypes() { return hasMixedGhostTypes; }
@@ -1169,6 +1179,7 @@ public class PickAttributes extends AttributeSubject
     public boolean  GetTimePreserveCoord() { return timePreserveCoord; }
     public int      GetTimeCurveType() { return timeCurveType; }
     public MapNode  GetTimeOptions() { return timeOptions; }
+    public MapNode  GetPlotRequested() { return plotRequested; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -1176,7 +1187,7 @@ public class PickAttributes extends AttributeSubject
         if(WriteSelect(0, buf))
             buf.WriteStringVector(variables);
         if(WriteSelect(1, buf))
-            buf.WriteBool(displayIncidentElements);
+            buf.WriteBool(showIncidentElements);
         if(WriteSelect(2, buf))
             buf.WriteBool(showNodeId);
         if(WriteSelect(3, buf))
@@ -1285,7 +1296,7 @@ public class PickAttributes extends AttributeSubject
         if(WriteSelect(51, buf))
             buf.WriteBool(locationSuccessful);
         if(WriteSelect(52, buf))
-            buf.WriteBool(displayGlobalIds);
+            buf.WriteBool(showGlobalIds);
         if(WriteSelect(53, buf))
             buf.WriteInt(globalElement);
         if(WriteSelect(54, buf))
@@ -1293,7 +1304,7 @@ public class PickAttributes extends AttributeSubject
         if(WriteSelect(55, buf))
             buf.WriteBool(elementIsGlobal);
         if(WriteSelect(56, buf))
-            buf.WriteBool(displayPickLetter);
+            buf.WriteBool(showPickLetter);
         if(WriteSelect(57, buf))
             buf.WriteBool(reusePickLetter);
         if(WriteSelect(58, buf))
@@ -1318,6 +1329,8 @@ public class PickAttributes extends AttributeSubject
             buf.WriteInt(timeCurveType);
         if(WriteSelect(68, buf))
             timeOptions.Write(buf);
+        if(WriteSelect(69, buf))
+            plotRequested.Write(buf);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1328,7 +1341,7 @@ public class PickAttributes extends AttributeSubject
             SetVariables(buf.ReadStringVector());
             break;
         case 1:
-            SetDisplayIncidentElements(buf.ReadBool());
+            SetShowIncidentElements(buf.ReadBool());
             break;
         case 2:
             SetShowNodeId(buf.ReadBool());
@@ -1491,7 +1504,7 @@ public class PickAttributes extends AttributeSubject
             SetLocationSuccessful(buf.ReadBool());
             break;
         case 52:
-            SetDisplayGlobalIds(buf.ReadBool());
+            SetShowGlobalIds(buf.ReadBool());
             break;
         case 53:
             SetGlobalElement(buf.ReadInt());
@@ -1503,7 +1516,7 @@ public class PickAttributes extends AttributeSubject
             SetElementIsGlobal(buf.ReadBool());
             break;
         case 56:
-            SetDisplayPickLetter(buf.ReadBool());
+            SetShowPickLetter(buf.ReadBool());
             break;
         case 57:
             SetReusePickLetter(buf.ReadBool());
@@ -1541,6 +1554,9 @@ public class PickAttributes extends AttributeSubject
         case 68:
             timeOptions.Read(buf);
             break;
+        case 69:
+            plotRequested.Read(buf);
+            break;
         }
     }
 
@@ -1548,7 +1564,7 @@ public class PickAttributes extends AttributeSubject
     {
         String str = new String();
         str = str + stringVectorToString("variables", variables, indent) + "\n";
-        str = str + boolToString("displayIncidentElements", displayIncidentElements, indent) + "\n";
+        str = str + boolToString("showIncidentElements", showIncidentElements, indent) + "\n";
         str = str + boolToString("showNodeId", showNodeId, indent) + "\n";
         str = str + boolToString("showNodeDomainLogicalCoords", showNodeDomainLogicalCoords, indent) + "\n";
         str = str + boolToString("showNodeBlockLogicalCoords", showNodeBlockLogicalCoords, indent) + "\n";
@@ -1621,11 +1637,11 @@ public class PickAttributes extends AttributeSubject
         str = str + boolToString("elementIsGhost", elementIsGhost, indent) + "\n";
         str = str + boolToString("requiresGlyphPick", requiresGlyphPick, indent) + "\n";
         str = str + boolToString("locationSuccessful", locationSuccessful, indent) + "\n";
-        str = str + boolToString("displayGlobalIds", displayGlobalIds, indent) + "\n";
+        str = str + boolToString("showGlobalIds", showGlobalIds, indent) + "\n";
         str = str + intToString("globalElement", globalElement, indent) + "\n";
         str = str + intVectorToString("globalIncidentElements", globalIncidentElements, indent) + "\n";
         str = str + boolToString("elementIsGlobal", elementIsGlobal, indent) + "\n";
-        str = str + boolToString("displayPickLetter", displayPickLetter, indent) + "\n";
+        str = str + boolToString("showPickLetter", showPickLetter, indent) + "\n";
         str = str + boolToString("reusePickLetter", reusePickLetter, indent) + "\n";
         str = str + intToString("ghostType", ghostType, indent) + "\n";
         str = str + intToString("hasMixedGhostTypes", hasMixedGhostTypes, indent) + "\n";
@@ -1650,6 +1666,7 @@ public class PickAttributes extends AttributeSubject
             str = str + "TIMECURVETYPE_MULTIPLE_Y_AXES";
         str = str + "\n";
         str = str + indent + "timeOptions = " + timeOptions.toString(indent);
+        str = str + indent + "plotRequested = " + plotRequested.toString(indent);
         return str;
     }
 
@@ -1689,7 +1706,7 @@ public class PickAttributes extends AttributeSubject
 
     // Attributes
     private Vector   variables; // vector of String objects
-    private boolean  displayIncidentElements;
+    private boolean  showIncidentElements;
     private boolean  showNodeId;
     private boolean  showNodeDomainLogicalCoords;
     private boolean  showNodeBlockLogicalCoords;
@@ -1740,11 +1757,11 @@ public class PickAttributes extends AttributeSubject
     private boolean  elementIsGhost;
     private boolean  requiresGlyphPick;
     private boolean  locationSuccessful;
-    private boolean  displayGlobalIds;
+    private boolean  showGlobalIds;
     private int      globalElement;
     private Vector   globalIncidentElements; // vector of Integer objects
     private boolean  elementIsGlobal;
-    private boolean  displayPickLetter;
+    private boolean  showPickLetter;
     private boolean  reusePickLetter;
     private int      ghostType;
     private int      hasMixedGhostTypes;
@@ -1757,5 +1774,6 @@ public class PickAttributes extends AttributeSubject
     private boolean  timePreserveCoord;
     private int      timeCurveType;
     private MapNode  timeOptions;
+    private MapNode  plotRequested;
 }
 

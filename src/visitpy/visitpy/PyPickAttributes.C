@@ -93,10 +93,10 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    if(atts->GetDisplayIncidentElements())
-        SNPRINTF(tmpStr, 1000, "%sdisplayIncidentElements = 1\n", prefix);
+    if(atts->GetShowIncidentElements())
+        SNPRINTF(tmpStr, 1000, "%sshowIncidentElements = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdisplayIncidentElements = 0\n", prefix);
+        SNPRINTF(tmpStr, 1000, "%sshowIncidentElements = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowNodeId())
         SNPRINTF(tmpStr, 1000, "%sshowNodeId = 1\n", prefix);
@@ -157,15 +157,15 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sgroupPieceName = \"%s\"\n", prefix, atts->GetGroupPieceName().c_str());
     str += tmpStr;
-    if(atts->GetDisplayGlobalIds())
-        SNPRINTF(tmpStr, 1000, "%sdisplayGlobalIds = 1\n", prefix);
+    if(atts->GetShowGlobalIds())
+        SNPRINTF(tmpStr, 1000, "%sshowGlobalIds = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdisplayGlobalIds = 0\n", prefix);
+        SNPRINTF(tmpStr, 1000, "%sshowGlobalIds = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetDisplayPickLetter())
-        SNPRINTF(tmpStr, 1000, "%sdisplayPickLetter = 1\n", prefix);
+    if(atts->GetShowPickLetter())
+        SNPRINTF(tmpStr, 1000, "%sshowPickLetter = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdisplayPickLetter = 0\n", prefix);
+        SNPRINTF(tmpStr, 1000, "%sshowPickLetter = 0\n", prefix);
     str += tmpStr;
     if(atts->GetReusePickLetter())
         SNPRINTF(tmpStr, 1000, "%sreusePickLetter = 1\n", prefix);
@@ -280,7 +280,7 @@ PickAttributes_GetVariables(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PickAttributes_SetDisplayIncidentElements(PyObject *self, PyObject *args)
+PickAttributes_SetShowIncidentElements(PyObject *self, PyObject *args)
 {
     PickAttributesObject *obj = (PickAttributesObject *)self;
 
@@ -288,18 +288,18 @@ PickAttributes_SetDisplayIncidentElements(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the displayIncidentElements in the object.
-    obj->data->SetDisplayIncidentElements(ival != 0);
+    // Set the showIncidentElements in the object.
+    obj->data->SetShowIncidentElements(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PickAttributes_GetDisplayIncidentElements(PyObject *self, PyObject *args)
+PickAttributes_GetShowIncidentElements(PyObject *self, PyObject *args)
 {
     PickAttributesObject *obj = (PickAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetDisplayIncidentElements()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowIncidentElements()?1L:0L);
     return retval;
 }
 
@@ -616,7 +616,7 @@ PickAttributes_GetGroupPieceName(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PickAttributes_SetDisplayGlobalIds(PyObject *self, PyObject *args)
+PickAttributes_SetShowGlobalIds(PyObject *self, PyObject *args)
 {
     PickAttributesObject *obj = (PickAttributesObject *)self;
 
@@ -624,23 +624,23 @@ PickAttributes_SetDisplayGlobalIds(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the displayGlobalIds in the object.
-    obj->data->SetDisplayGlobalIds(ival != 0);
+    // Set the showGlobalIds in the object.
+    obj->data->SetShowGlobalIds(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PickAttributes_GetDisplayGlobalIds(PyObject *self, PyObject *args)
+PickAttributes_GetShowGlobalIds(PyObject *self, PyObject *args)
 {
     PickAttributesObject *obj = (PickAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetDisplayGlobalIds()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowGlobalIds()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-PickAttributes_SetDisplayPickLetter(PyObject *self, PyObject *args)
+PickAttributes_SetShowPickLetter(PyObject *self, PyObject *args)
 {
     PickAttributesObject *obj = (PickAttributesObject *)self;
 
@@ -648,18 +648,18 @@ PickAttributes_SetDisplayPickLetter(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the displayPickLetter in the object.
-    obj->data->SetDisplayPickLetter(ival != 0);
+    // Set the showPickLetter in the object.
+    obj->data->SetShowPickLetter(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PickAttributes_GetDisplayPickLetter(PyObject *self, PyObject *args)
+PickAttributes_GetShowPickLetter(PyObject *self, PyObject *args)
 {
     PickAttributesObject *obj = (PickAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetDisplayPickLetter()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowPickLetter()?1L:0L);
     return retval;
 }
 
@@ -831,8 +831,8 @@ PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
     {"Notify", PickAttributes_Notify, METH_VARARGS},
     {"SetVariables", PickAttributes_SetVariables, METH_VARARGS},
     {"GetVariables", PickAttributes_GetVariables, METH_VARARGS},
-    {"SetDisplayIncidentElements", PickAttributes_SetDisplayIncidentElements, METH_VARARGS},
-    {"GetDisplayIncidentElements", PickAttributes_GetDisplayIncidentElements, METH_VARARGS},
+    {"SetShowIncidentElements", PickAttributes_SetShowIncidentElements, METH_VARARGS},
+    {"GetShowIncidentElements", PickAttributes_GetShowIncidentElements, METH_VARARGS},
     {"SetShowNodeId", PickAttributes_SetShowNodeId, METH_VARARGS},
     {"GetShowNodeId", PickAttributes_GetShowNodeId, METH_VARARGS},
     {"SetShowNodeDomainLogicalCoords", PickAttributes_SetShowNodeDomainLogicalCoords, METH_VARARGS},
@@ -859,10 +859,10 @@ PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
     {"GetBlockPieceName", PickAttributes_GetBlockPieceName, METH_VARARGS},
     {"SetGroupPieceName", PickAttributes_SetGroupPieceName, METH_VARARGS},
     {"GetGroupPieceName", PickAttributes_GetGroupPieceName, METH_VARARGS},
-    {"SetDisplayGlobalIds", PickAttributes_SetDisplayGlobalIds, METH_VARARGS},
-    {"GetDisplayGlobalIds", PickAttributes_GetDisplayGlobalIds, METH_VARARGS},
-    {"SetDisplayPickLetter", PickAttributes_SetDisplayPickLetter, METH_VARARGS},
-    {"GetDisplayPickLetter", PickAttributes_GetDisplayPickLetter, METH_VARARGS},
+    {"SetShowGlobalIds", PickAttributes_SetShowGlobalIds, METH_VARARGS},
+    {"GetShowGlobalIds", PickAttributes_GetShowGlobalIds, METH_VARARGS},
+    {"SetShowPickLetter", PickAttributes_SetShowPickLetter, METH_VARARGS},
+    {"GetShowPickLetter", PickAttributes_GetShowPickLetter, METH_VARARGS},
     {"SetReusePickLetter", PickAttributes_SetReusePickLetter, METH_VARARGS},
     {"GetReusePickLetter", PickAttributes_GetReusePickLetter, METH_VARARGS},
     {"SetMeshCoordType", PickAttributes_SetMeshCoordType, METH_VARARGS},
@@ -905,8 +905,8 @@ PyPickAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "variables") == 0)
         return PickAttributes_GetVariables(self, NULL);
-    if(strcmp(name, "displayIncidentElements") == 0)
-        return PickAttributes_GetDisplayIncidentElements(self, NULL);
+    if(strcmp(name, "showIncidentElements") == 0)
+        return PickAttributes_GetShowIncidentElements(self, NULL);
     if(strcmp(name, "showNodeId") == 0)
         return PickAttributes_GetShowNodeId(self, NULL);
     if(strcmp(name, "showNodeDomainLogicalCoords") == 0)
@@ -933,10 +933,10 @@ PyPickAttributes_getattr(PyObject *self, char *name)
         return PickAttributes_GetBlockPieceName(self, NULL);
     if(strcmp(name, "groupPieceName") == 0)
         return PickAttributes_GetGroupPieceName(self, NULL);
-    if(strcmp(name, "displayGlobalIds") == 0)
-        return PickAttributes_GetDisplayGlobalIds(self, NULL);
-    if(strcmp(name, "displayPickLetter") == 0)
-        return PickAttributes_GetDisplayPickLetter(self, NULL);
+    if(strcmp(name, "showGlobalIds") == 0)
+        return PickAttributes_GetShowGlobalIds(self, NULL);
+    if(strcmp(name, "showPickLetter") == 0)
+        return PickAttributes_GetShowPickLetter(self, NULL);
     if(strcmp(name, "reusePickLetter") == 0)
         return PickAttributes_GetReusePickLetter(self, NULL);
     if(strcmp(name, "meshCoordType") == 0)
@@ -977,8 +977,8 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "variables") == 0)
         obj = PickAttributes_SetVariables(self, tuple);
-    else if(strcmp(name, "displayIncidentElements") == 0)
-        obj = PickAttributes_SetDisplayIncidentElements(self, tuple);
+    else if(strcmp(name, "showIncidentElements") == 0)
+        obj = PickAttributes_SetShowIncidentElements(self, tuple);
     else if(strcmp(name, "showNodeId") == 0)
         obj = PickAttributes_SetShowNodeId(self, tuple);
     else if(strcmp(name, "showNodeDomainLogicalCoords") == 0)
@@ -1005,10 +1005,10 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PickAttributes_SetBlockPieceName(self, tuple);
     else if(strcmp(name, "groupPieceName") == 0)
         obj = PickAttributes_SetGroupPieceName(self, tuple);
-    else if(strcmp(name, "displayGlobalIds") == 0)
-        obj = PickAttributes_SetDisplayGlobalIds(self, tuple);
-    else if(strcmp(name, "displayPickLetter") == 0)
-        obj = PickAttributes_SetDisplayPickLetter(self, tuple);
+    else if(strcmp(name, "showGlobalIds") == 0)
+        obj = PickAttributes_SetShowGlobalIds(self, tuple);
+    else if(strcmp(name, "showPickLetter") == 0)
+        obj = PickAttributes_SetShowPickLetter(self, tuple);
     else if(strcmp(name, "reusePickLetter") == 0)
         obj = PickAttributes_SetReusePickLetter(self, tuple);
     else if(strcmp(name, "meshCoordType") == 0)

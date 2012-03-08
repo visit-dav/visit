@@ -104,6 +104,9 @@ class     avtLookupTable;
 //    Hank Childs, Tue Aug 24 22:31:43 PDT 2010
 //    Add resample operator for uniform glyph placement.
 //
+//    Kathleen Biagas, Wed Feb 29 13:10:11 MST 2012
+//    Add GetExtraInfoForPick.
+//
 // ****************************************************************************
 
 class avtVectorPlot : public avtPointDataPlot
@@ -123,6 +126,8 @@ class avtVectorPlot : public avtPointDataPlot
     void                        SetLimitsMode(int);
     virtual bool                NeedZBufferToCompositeEvenIn2D(void)
                                                           { return true; };
+
+    virtual const MapNode     &GetExtraInfoForPick(void);
 
   protected:
     VectorAttributes            atts;

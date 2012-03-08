@@ -137,6 +137,9 @@
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domains options.
 //
+//    Kathleen Biagas, Wed Feb 29 07:36:59 PST 2012
+//    Added extraPickInfo.
+//
 // ****************************************************************************
 
 avtPlot::avtPlot()
@@ -170,6 +173,15 @@ avtPlot::avtPlot()
     yScaleModeCurve = LINEAR;
     havePerformedLogXCurve = false;
     havePerformedLogYCurve = false;
+
+
+    stringVector v;
+    extraPickInfo["additionalVars"] = v;
+    extraPickInfo["glyphPickAlways"] = false;
+    extraPickInfo["glyphPickIfPointMesh"] = true;
+    extraPickInfo["canGlyphPickOnEngine"] = true;
+    extraPickInfo["2DCreatesLines"] = false;
+    extraPickInfo["nodeCenteredNeedZonesForPick"] = true;
 }
 
 
@@ -1615,3 +1627,46 @@ avtPlot::ScaleModeRequiresUpdate(WINDOW_MODE wm, ScaleMode ds, ScaleMode rs)
                  (havePerformedLogY2D != (rs == LOG)) ); 
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtPlot::GetExtraInfoForPick
+//
+//  Purpose:
+//    Sets some flags used by Pick.
+//    Defined here so derived types don't have to.
+//
+//  Notes:
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    February 29, 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const MapNode&
+avtPlot::GetExtraInfoForPick()
+{
+    // The defaults that control how Pick is performed are listed below, 
+    // derived classes should overide individual items as necessary
+    //
+    // extraPickInfo["additionalVars"] = <empty stringVector>;
+    // extraPickInfo["glyphPickAlways"] = false;
+    // extraPickInfo["glyphPickIfPointMesh"] = true;
+    // extraPickInfo["canGlyphPickOnEngine"] = true;
+    // extraPickInfo["2DCreatesLines"] = false;
+    // extraPickInfo["nodeCenteredNeedZonesForPick"] = true;
+    //
+    // EXTRA:
+    // Can also change how Pick output is displayed by adding:
+    // extraPickInfo["showMeshInfo"] = false;
+    // extraPickInfo["showIncidentElements"] = false;
+    // Look at Pick Attributes "showXXX" members for more examples.
+    // 
+    // To override how the intersection 'Point' is displayed:
+    // extraPickInfo["pointString"] = string("<somestring representing xyz>")
+
+    return extraPickInfo;
+}
+

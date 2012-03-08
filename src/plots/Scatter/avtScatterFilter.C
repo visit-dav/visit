@@ -111,6 +111,9 @@
 //    Cyrus Harrison, Thu Aug 19 13:33:53 PDT 2010
 //    Removed unused code.
 //
+//    Kathleen Biagas, Thu Mar  1 14:49:50 MST 2012
+//    Added keepNodeZone.
+//
 // ****************************************************************************
 
 avtScatterFilter::avtScatterFilter(const ScatterAttributes &a)
@@ -127,6 +130,8 @@ avtScatterFilter::avtScatterFilter(const ScatterAttributes &a)
 
     needColorExtents = false;
     colorExtents[0] = 0., colorExtents[1] = 0.;
+
+    keepNodeZone = false;
 }
 
 
@@ -236,6 +241,9 @@ avtScatterFilter::PreExecute(void)
 //    Cyrus Harrison, Thu Aug 19 13:34:28 PDT 2010
 //    Obtain var1 from atts.
 //
+//    Kathleen Biagas, Thu Mar  1 14:49:50 MST 2012
+//    Keep track of original node numbers.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -333,7 +341,8 @@ debug4 << "avtScatterFilter::ExecuteData" << endl;
         //
         outDS = PointMeshFromVariables(&orderedArrays[0],
             &orderedArrays[1], &orderedArrays[2], &orderedArrays[3],
-            createdData);
+            createdData,
+            inDS->GetPointData()->GetArray("avtOriginalNodeNumbers"));
 
         //
         // If we have a variable that's taking on the color role then add it
@@ -518,11 +527,15 @@ avtScatterFilter::PostExecute(void)
 //    Moved logic that modifies the output data atts to PostExecute.
 //    Removed extents logic that was #ifdef-ed out.
 //
+//    Kathleen Biagas, Thu Mar  1 14:49:50 MST 2012
+//    Keep track of original node numbers.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtScatterFilter::PointMeshFromVariables(DataInput *d1,
-    DataInput *d2, DataInput *d3, DataInput *d4, bool &createdData)
+    DataInput *d2, DataInput *d3, DataInput *d4, bool &createdData,
+    vtkDataArray *origNodes)
 {
     const char *mName = "avtScatterFilter::PointMeshFromVariables: ";
     vtkPolyData *outDS = vtkPolyData::New();
@@ -540,6 +553,15 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     vtkDataArray *arr2 = d2->data; // Y
     vtkDataArray *arr3 = d3->data; // Z
     vtkDataArray *arr4 = d4->data; // Color
+
+    vtkDataArray *newOrigNodes = NULL;
+    if (origNodes != NULL)
+    {
+        newOrigNodes  = origNodes->NewInstance();
+        newOrigNodes->SetNumberOfComponents(origNodes->GetNumberOfComponents());
+        newOrigNodes->Allocate(origNodes->GetNumberOfTuples());
+        newOrigNodes->SetName(origNodes->GetName());
+    }
 
     // Indicate that we're not creating data, though that could change.
     createdData = false;
@@ -593,6 +615,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                             coord += 3;
                             cells->InsertNextCell(1, &nCells);
                             ++nCells;
+                            if (origNodes)
+                                newOrigNodes->InsertNextTuple(i, origNodes);
                         END_Y_RANGE            
                     END_X_RANGE
                 }
@@ -621,6 +645,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                             cells->InsertNextCell(1, &nCells);
                             newColorData->InsertNextTuple(arr4->GetTuple(i));
                             ++nCells;
+                            if (origNodes)
+                                newOrigNodes->InsertNextTuple(i, origNodes);
                         END_Y_RANGE            
                     END_X_RANGE
                 }
@@ -641,6 +667,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                 coord[1] = arr2->GetTuple1(i);
                 coord[2] = 0.;
                 cells->InsertNextCell(1, &i);
+                if (origNodes)
+                    newOrigNodes->InsertNextTuple(i, origNodes);
             }
         }
     }
@@ -671,6 +699,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                                 coord += 3;
                                 cells->InsertNextCell(1, &nCells);
                                 ++nCells;
+                                if (origNodes)
+                                    newOrigNodes->InsertNextTuple(i, origNodes);
                             END_Z_RANGE
                         END_Y_RANGE            
                     END_X_RANGE
@@ -705,6 +735,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                                 cells->InsertNextCell(1, &nCells);
                                 newColorData->InsertNextTuple(arr4->GetTuple(i));
                                 ++nCells;
+                                if (origNodes)
+                                    newOrigNodes->InsertNextTuple(i, origNodes);
                             END_Z_RANGE
                         END_Y_RANGE            
                     END_X_RANGE
@@ -727,8 +759,14 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                 coord[1] = arr2->GetTuple1(i);
                 coord[2] = arr3->GetTuple1(i);
                 cells->InsertNextCell(1, &i);
+                if (origNodes)
+                    newOrigNodes->InsertNextTuple(i, origNodes);
             }
         }
+    }
+    if (origNodes)
+    {
+        outDS->GetPointData()->AddArray(newOrigNodes);
     }
 
     //
@@ -1167,6 +1205,9 @@ avtScatterFilter::PopulateNames(const char **names) const
 //    Kathleen Bonnell, Fri Jan  7 13:30:30 PST 2005
 //    Removed TRY-CATCH blocks in favor of testing for ValidVariable.
 //
+//    Kathleen Biagas, Thu Mar  1 14:49:50 MST 2012
+//    Keep  original nodes/zones when necessary.
+//
 // ****************************************************************************
 
 void
@@ -1235,6 +1276,8 @@ debug4 << "avtScatterFilter::UpdateDataObjectInfo" << endl;
 
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
+    GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
+    GetOutput()->GetInfo().GetAttributes().SetKeepNodeZoneArrays(keepNodeZone);
 }
 
 int
@@ -1403,6 +1446,9 @@ avtScatterFilter::NeedSpatialExtents() const
 //   are streaming, not about whether we are doing dynamic load balancing.
 //   And the two are no longer synonymous.
 //
+//   Kathleen Biagas, Thu Mar  1 14:51:45 PST 2012
+//   Request Original Nodes when necessary.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -1500,6 +1546,16 @@ avtScatterFilter::ModifyContract(avtContract_p spec)
             }
         }
     }
+
+    if (rv->GetDataRequest()->MayRequireNodes() ||
+        rv->GetDataRequest()->MayRequireZones())
+    {
+        keepNodeZone = true;
+        rv->GetDataRequest()->TurnNodeNumbersOn();
+    }
+    else
+        keepNodeZone = false;
+
 
     return rv;
 }

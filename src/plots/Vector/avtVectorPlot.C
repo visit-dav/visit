@@ -875,3 +875,23 @@ avtVectorPlot::SetLimitsMode(int limitsMode)
 }
 
 
+// ****************************************************************************
+//  Method: avtVectorPlot::GetExtraInfoForPick
+//
+//  Purpose:
+//    Override default settings for extraPickinfo.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   February 29, 2012
+//
+// ****************************************************************************
+
+const MapNode &
+avtVectorPlot::GetExtraInfoForPick()
+{
+    extraPickInfo["glyphPickAlways"] = true;
+    extraPickInfo["nodeCenteredNeedZonesForPick"] = false;
+
+    return extraPickInfo;
+}
+

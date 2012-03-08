@@ -85,6 +85,9 @@ class     avtSmoothPolyDataFilter;
 //    Add NeedZBufferToCompositeEvenIn2D because thick lines can bleed into
 //    other processor's portion of image space.
 //
+//    Kathleen Biagas, Wed Feb 29 13:10:11 MST 2012
+//    Add GetExtraInfoForPick.
+//
 // ****************************************************************************
 
 class
@@ -110,6 +113,8 @@ avtBoundaryPlot : public avtVolumeDataPlot
     void                      SetLegend(bool);
     void                      SetLineWidth(int);
     void                      SetLineStyle(int);
+
+    virtual const MapNode    &GetExtraInfoForPick(void);
 
   protected:
     avtFeatureEdgesFilter           *wf;

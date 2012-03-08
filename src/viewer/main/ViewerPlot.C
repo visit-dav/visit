@@ -60,6 +60,7 @@
 #include <GlobalAttributes.h>
 #include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
+#include <MapNode.h>
 #include <Plot.h>
 #include <PlotPluginInfo.h>
 #include <PlotQueryInfo.h>
@@ -5297,6 +5298,8 @@ ViewerPlot::GetEngineKey() const
 //  Creation:   April 2, 2004
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Feb 29 14:08:13 MST 2012
+//    Wrapped in a Try-catch block.
 //
 // ****************************************************************************
 
@@ -5309,9 +5312,17 @@ ViewerPlot::GetVariableCentering() const
     {
         if(*(readerList[cacheIndex]) != NULL)
         {
-            avtDataAttributes &atts = readerList[cacheIndex]->
-                GetInfo().GetAttributes();
-            retval = atts.GetCentering(variableName.c_str());
+            TRY
+            {
+                avtDataAttributes &atts = readerList[cacheIndex]->
+                    GetInfo().GetAttributes();
+                retval = atts.GetCentering(variableName.c_str());
+            }
+            CATCHALL
+            {
+               ; // do nothing
+            }
+            ENDTRY
         }
     }
 
@@ -5872,4 +5883,27 @@ const std::string &
 ViewerPlot::GetNamedSelection() const
 {
     return namedSelection;
+}
+
+
+// ****************************************************************************
+// Method: ViewerPlot::GetExtraInfoForPick
+//
+// Purpose: 
+//   Return the name of the selection for the plot.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   February 29, 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::GetExtraInfoForPick(MapNode &info)
+{
+    if (*plotList[cacheIndex] != NULL)
+    {
+         info = plotList[cacheIndex]->GetExtraInfoForPick();
+    }
 }

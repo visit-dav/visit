@@ -917,3 +917,21 @@ avtContourPlot::ReleaseData(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtContourPlot::GetExtraInfoForPick
+//
+//  Purpose:
+//    Overide default settings for extraInfoForPick.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   February 29, 2012
+//
+// ****************************************************************************
+
+const MapNode &
+avtContourPlot::GetExtraInfoForPick()
+{
+    extraPickInfo["2DCreatesLines"] = true;
+
+    return extraPickInfo;
+}

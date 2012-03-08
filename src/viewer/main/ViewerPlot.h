@@ -302,6 +302,9 @@ class avtToolInterface;
 //    Brad Whitlock, Mon Aug 22 10:59:48 PDT 2011
 //    I moved some selection method bodies into the C file.
 //
+//    Kathleen Biagas, Wed Feb 29 07:46:10 MST 2012
+//    Added GetExtraInfoForPick.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot : public ViewerBase
@@ -509,6 +512,8 @@ class VIEWER_API ViewerPlot : public ViewerBase
     bool PermitsLogViewScaling(WINDOW_MODE wm);
 
     static void SetNumPlotsCreated(int);
+
+    void GetExtraInfoForPick(MapNode &);
 
   protected:
     void CopyHelper(const ViewerPlot &);

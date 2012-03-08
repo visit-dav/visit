@@ -864,3 +864,21 @@ avtBoundaryPlot::SortLabels()
 }
 
 
+// ****************************************************************************
+//  Method: avtBoundaryPlot::GetExtraInfoForPick
+//
+//  Purpose:
+//    Overide default settings for extraInfoForPick.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   February 29, 2012
+//
+// ****************************************************************************
+
+const MapNode &
+avtBoundaryPlot::GetExtraInfoForPick()
+{
+    extraPickInfo["2DCreatesLines"] = true;
+
+    return extraPickInfo;
+}

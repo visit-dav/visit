@@ -660,3 +660,24 @@ avtLabelPlot::ReleaseData(void)
     }
     debug3 << "avtLabelPlot::ReleaseData: 1" << endl;
 }
+
+
+// ****************************************************************************
+//  Method: avtLabelPlot::GetExtraInfoForPick
+//
+//  Purpose:
+//    Override default settings for extraPickinfo.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   February 29, 2012
+//
+// ****************************************************************************
+
+const MapNode &
+avtLabelPlot::GetExtraInfoForPick()
+{
+    extraPickInfo["glyphPickIfPointMesh"] = false;
+
+    return extraPickInfo;
+}
+

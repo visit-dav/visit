@@ -121,6 +121,9 @@ class     avtLookupTable;
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Rename Current->Actual.
 //
+//    Kathleen Biagas, Wed Feb 29 13:10:11 MST 2012
+//    Add GetExtraInfoForPick.
+//
 // ****************************************************************************
 
 class avtContourPlot : public avtSurfaceDataPlot
@@ -143,6 +146,8 @@ class avtContourPlot : public avtSurfaceDataPlot
     void            SetLineStyle(int);
 
     virtual bool    NeedZBufferToCompositeEvenIn2D(void);
+
+    virtual const MapNode    &GetExtraInfoForPick(void);
 
   protected:
      virtual avtDataObject_p SetActualExtents(avtDataObject_p);
