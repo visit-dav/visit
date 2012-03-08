@@ -646,6 +646,75 @@ Text2DObject_print(PyObject *v, FILE *fp, int flags)
     return 0;
 }
 
+#include <snprintf.h>
+static PyObject *
+PyText2DObject_StringRepresentation(const AnnotationObject *atts)
+{
+    std::string str; 
+    char tmpStr[1000]; 
+
+    if(atts->GetVisible())
+        SNPRINTF(tmpStr, 1000, "visible = 1\n");
+    else
+        SNPRINTF(tmpStr, 1000, "visible = 0\n");
+    str += tmpStr;
+    if(atts->GetActive())
+        SNPRINTF(tmpStr, 1000, "active = 1\n");
+    else
+        SNPRINTF(tmpStr, 1000, "active = 0\n");
+/*CUSTOM*/
+    {   const double *position = atts->GetPosition();
+        SNPRINTF(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
+    }
+    str += tmpStr;
+    const double *position2 = atts->GetPosition2();
+    SNPRINTF(tmpStr, 1000, "height = %g\n", position2[0]);
+    str += tmpStr;
+    const unsigned char *textColor = atts->GetTextColor().GetColor();
+    SNPRINTF(tmpStr, 1000, "textColor = (%d, %d, %d, %d)\n", int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
+    str += tmpStr;
+    if(atts->GetUseForegroundForTextColor())
+        SNPRINTF(tmpStr, 1000, "useForegroundForTextColor = 1\n");
+    else
+        SNPRINTF(tmpStr, 1000, "useForegroundForTextColor = 0\n");
+    str += tmpStr;
+    const stringVector &s = atts->GetText();
+    SNPRINTF(tmpStr, 1000, "text = \"%s\"\n", s.size() > 0 ? s[0].c_str() : "");
+    str += tmpStr;
+    const char *fontFamily_names = "Arial, Courier, Times";
+    if(atts->GetFontFamily() == AnnotationObject::Arial)
+        SNPRINTF(tmpStr, 1000, "fontFamily = Arial  # %s\n", fontFamily_names);
+    else if(atts->GetFontFamily() == AnnotationObject::Courier)
+        SNPRINTF(tmpStr, 1000, "fontFamily = Courier  # %s\n", fontFamily_names);
+    else
+        SNPRINTF(tmpStr, 1000, "fontFamily = Times  # %s\n", fontFamily_names);
+    str += tmpStr;
+
+    if(atts->GetFontBold())
+        SNPRINTF(tmpStr, 1000, "fontBold = 1\n");
+    else
+        SNPRINTF(tmpStr, 1000, "fontBold = 0\n");
+    str += tmpStr;
+    if(atts->GetFontItalic())
+        SNPRINTF(tmpStr, 1000, "fontItalic = 1\n");
+    else
+        SNPRINTF(tmpStr, 1000, "fontItalic = 0\n");
+    str += tmpStr;
+    if(atts->GetFontShadow())
+        SNPRINTF(tmpStr, 1000, "fontShadow = 1\n");
+    else
+        SNPRINTF(tmpStr, 1000, "fontShadow = 0\n");
+    str += tmpStr;
+    return PyString_FromString(str.c_str());
+}
+
+static PyObject *
+Text2DObject_str(PyObject *v)
+{
+    Text2DObjectObject *obj = (Text2DObjectObject *)v;
+    return PyText2DObject_StringRepresentation(obj->data);
+}
+
 //
 // The doc string for the class.
 //
@@ -688,7 +757,7 @@ static PyTypeObject Text2DObjectType =
     //
     0,                                   // tp_hash
     0,                                   // tp_call
-    0,                                   // tp_str
+    (reprfunc)Text2DObject_str,          // tp_str
     0,                                   // tp_getattro
     0,                                   // tp_setattro
     0,                                   // tp_as_buffer
