@@ -396,15 +396,13 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 bool avtIVPM3DC1Field::IsInside(const double& t, const avtVector& x) const
 {
   double xin[3];
-  double *xieta = new double[element_dimension];
+  double xieta[3];
 
   xin[0] = x[0];
   xin[1] = x[1];
   xin[2] = x[2];
 
   int el = get_tri_coords2D(xin, xieta);
-
-  delete [] xieta;
 
   return (bool) ( el >= 0 );
 }
@@ -837,7 +835,7 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p, avtVector &ve
   double pt[3] = { p[0], p[1], p[2] };
 
   /* Find the element containing the point; get local coords xi,eta */
-  double *xieta = new double[element_dimension];
+  double xieta[3];
   int    element;
 
   if ((element = get_tri_coords2D(pt, xieta)) < 0) 
@@ -857,8 +855,6 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p, avtVector &ve
     vec.y = B[1];
     vec.z = B[2];
   }
-
-  delete [] xieta;
 
   if( reparameterize )
     reparameterizeBcomps( p, vec );
