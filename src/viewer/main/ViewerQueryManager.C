@@ -1894,6 +1894,11 @@ ViewerQueryManager::ClearPickPoints()
 //    Brad Whitlock, Fri Aug 19 10:02:11 PDT 2011
 //    I changed the UpdateExpressions method on the engine manager.
 //
+//    Kathleen Biagas, Wed Feb 29 15:05:25 MST 2012
+//    Use new plot method 'GetExtraInfoFroPick' to get determine if GlyphPick
+//    should be performed, or miscellaneous other information that used to be
+//    determined by comparing GetPlotTypeName.
+//
 // ****************************************************************************
 
 bool
@@ -1928,13 +1933,15 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         bool needInvTrans = (pickType == PickAttributes::Node ||
                              pickType == PickAttributes::Zone);
 
-        if ((strcmp(plot->GetPlotTypeName(), "Vector") == 0) ||
-            (strcmp(plot->GetPlotTypeName(), "Tensor") == 0)) 
+        // May need to override this 
+        if (needZones && plot->GetVariableCentering() == AVT_NODECENT)
         {
-            if ( plot->GetVariableCentering() == AVT_NODECENT)
-                needZones = false;
-        }
-   
+            MapNode fromPlot;
+            plot->GetExtraInfoForPick(fromPlot);
+            if (fromPlot.HasEntry("nodeCenteredNeedZonesForPick"))
+                needZones &= fromPlot.GetEntry("nodeCenteredNeedZonesForPick")->AsBool();
+        } 
+
         plist->StartPick(needZones, needInvTrans);
         initialPick = false;
         preparingPick = false;
@@ -2002,12 +2009,28 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             delete [] dext;
         }
 
+        stringVector userVars = pickAtts->GetVariables();
+        stringVector useTheseVars = userVars;
+
+        //
+        // See if the plot needs Pick to do anything special, if
+        // 'additionalVars' is set, add them to the list of useTheseVars.
+        //
+        MapNode fromPlot;
+        plot->GetExtraInfoForPick(fromPlot);
+        if (fromPlot.HasEntry("additionalVars"))
+        {
+            stringVector avars = 
+                fromPlot.GetEntry("additionalVars")->AsStringVector();
+            stringVector::iterator it = useTheseVars.end();
+            useTheseVars.insert(it-1, avars.begin(), avars.end());
+        }
+
         //
         // Remove duplicate vars, so that query doesn't report them twice.
         //
-        stringVector userVars = pickAtts->GetVariables();
         stringVector uniqueVars; 
-        GetUniqueVars(userVars, activeVar, uniqueVars, plot->GetMetaData());
+        GetUniqueVars(useTheseVars, activeVar, uniqueVars, plot->GetMetaData());
         stringVector validVars;
         stringVector invalidVars;
         for (int i = 0; i < uniqueVars.size(); i++)
@@ -2088,20 +2111,35 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         pickAtts->SetRayPoint1(rp1);
         pickAtts->SetRayPoint2(rp2);
 
-        bool doGlyphPick = 
-                  (strcmp(plot->GetPlotTypeName(), "Vector") == 0) ||
-                  (strcmp(plot->GetPlotTypeName(), "Tensor") == 0) ||
-                  ((plot->GetMeshType() == AVT_POINT_MESH) &&
-                   (strcmp(plot->GetPlotTypeName(), "Label") != 0));
+        bool doGlyphPick = false;
+        if (fromPlot.HasEntry("glyphPickAlways"))
+            doGlyphPick = fromPlot.GetEntry("glyphPickAlways")->AsBool();
 
-        bool mustGlyphPickOnEngine = doGlyphPick && 
-                   GetViewerProperties()->GetNowin() && 
-                  ((plot->GetMeshType() == AVT_POINT_MESH) &&
-                   (strcmp(plot->GetPlotTypeName(), "Mesh") != 0));
+        // Point meshes may need to be glyph picked
+        if (!doGlyphPick && plot->GetMeshType() == AVT_POINT_MESH)
+        { 
+            if (fromPlot.HasEntry("glyphPickIfPointMesh"))
+                doGlyphPick = fromPlot.GetEntry("glyphPickIfPointMesh")->AsBool();
+        }
 
-        bool isLinesData = (plot->GetSpatialDimension() == 2) &&
-                  ((strcmp(plot->GetPlotTypeName(), "Boundary") == 0) ||
-                   (strcmp(plot->GetPlotTypeName(), "Contour") == 0));
+ 
+        // Certain glyph picks should be done on the engine
+        bool mustGlyphPickOnEngine = false;
+        if (doGlyphPick && 
+            GetViewerProperties()->GetNowin() &&
+            plot->GetMeshType() == AVT_POINT_MESH)
+        {
+            if (fromPlot.HasEntry("canGlyphPickOnEngine"))
+                mustGlyphPickOnEngine = 
+                    fromPlot.GetEntry("canGlyphPickOnEngine")->AsBool();
+        } 
+
+        bool isLinesData = false;
+        if (plot->GetSpatialDimension() == 2)
+        {
+            if (fromPlot.HasEntry("2DCreatesLines"))
+                isLinesData = fromPlot.GetEntry("2DCreatesLines")->AsBool();
+        }
 
         pickAtts->SetLinesData(isLinesData);
         pickAtts->SetInputTopoDim(plot->GetTopologicalDimension());
@@ -2207,11 +2245,12 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 {
                    *pickAtts = pa;
 
-                   //
                    // Reset the vars to what the user actually typed.
-                   //
                    pickAtts->SetVariables(userVars);
+                   // Set the invalid vars for output messages.
                    pickAtts->SetInvalidVars(invalidVars);
+                   // Plot may request override on output formatting.
+                   pickAtts->SetPlotRequested(fromPlot);
 
                    //
                    // At this point, pickAtts contains information for a 
@@ -2636,7 +2675,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
         //
         // Add a pick point to the window
         //
-        if (pickAtts->GetDisplayPickLetter() && 
+        if (pickAtts->GetShowPickLetter() && 
             pickAtts->GetPickPoint()[0] != FLT_MAX)
         {
             win->ValidateQuery(pickAtts, NULL);

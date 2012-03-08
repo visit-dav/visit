@@ -20,7 +20,7 @@
     <Field name="variables" label="variables" type="stringVector">
       default
     </Field>
-    <Field name="displayIncidentElements" label="displayIncidentElement" type="bool">
+    <Field name="showIncidentElements" label="showIncidentElement" type="bool">
       true
     </Field>
     <Field name="showNodeId" label="showNodeId" type="bool">
@@ -165,7 +165,7 @@
     <Field name="locationSuccessful" label="locationSuccessful" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="displayGlobalIds" label="displayGlobalIds" type="bool">
+    <Field name="showGlobalIds" label="showGlobalIds" type="bool">
       false
     </Field>
     <Field name="globalElement" label="globalElement" type="int" internal="true" persistent="false">
@@ -176,7 +176,7 @@
     <Field name="elementIsGlobal" label="elementIsGlobal" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="displayPickLetter" label="displayPickLetter" type="bool">
+    <Field name="showPickLetter" label="showPickLetter" type="bool">
       true
     </Field>
     <Field name="reusePickLetter" label="reusePickLetter" type="bool" persistent="false">
@@ -213,6 +213,8 @@
     </Field>
     <Field name="timeOptions" label="timeOptions" type="MapNode" internal="true" persistent="false">
     </Field>
+    <Field name="plotRequested" label="plotRequested" type="MapNode" internal="true" persistent="false">
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">
@@ -224,6 +226,8 @@
     <Function name="SetRayPoint1" user="true" member="true">
     </Function>
     <Function name="SetRayPoint2" user="true" member="true">
+    </Function>
+    <Function name="CreateOutputMapNode" user="true" member="true">
     </Function>
     <Function name="CreateXMLString" user="true" member="true">
     </Function>

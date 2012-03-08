@@ -2572,7 +2572,7 @@ avtDatabase::Query(PickAttributes *pa)
             pa->SetBzoneCoords(bzoneCoords);
             pa->SetPickPoint(ppt);
             pa->SetCellPoint(cpt);
-            if (pa->GetDisplayGlobalIds())
+            if (pa->GetShowGlobalIds())
             {
                 intVector gie;
                 int ge = -1;

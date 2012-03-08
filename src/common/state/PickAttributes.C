@@ -175,7 +175,7 @@ PickAttributes::TimeCurveType_FromString(const std::string &s, PickAttributes::T
 void PickAttributes::Init()
 {
     variables.push_back("default");
-    displayIncidentElements = true;
+    showIncidentElements = true;
     showNodeId = true;
     showNodeDomainLogicalCoords = false;
     showNodeBlockLogicalCoords = false;
@@ -218,10 +218,10 @@ void PickAttributes::Init()
     elementIsGhost = false;
     requiresGlyphPick = false;
     locationSuccessful = false;
-    displayGlobalIds = false;
+    showGlobalIds = false;
     globalElement = -1;
     elementIsGlobal = false;
-    displayPickLetter = true;
+    showPickLetter = true;
     reusePickLetter = false;
     ghostType = 0;
     hasMixedGhostTypes = -1;
@@ -256,7 +256,7 @@ void PickAttributes::Copy(const PickAttributes &obj)
     AttributeGroupVector::const_iterator pos;
 
     variables = obj.variables;
-    displayIncidentElements = obj.displayIncidentElements;
+    showIncidentElements = obj.showIncidentElements;
     showNodeId = obj.showNodeId;
     showNodeDomainLogicalCoords = obj.showNodeDomainLogicalCoords;
     showNodeBlockLogicalCoords = obj.showNodeBlockLogicalCoords;
@@ -336,11 +336,11 @@ void PickAttributes::Copy(const PickAttributes &obj)
     elementIsGhost = obj.elementIsGhost;
     requiresGlyphPick = obj.requiresGlyphPick;
     locationSuccessful = obj.locationSuccessful;
-    displayGlobalIds = obj.displayGlobalIds;
+    showGlobalIds = obj.showGlobalIds;
     globalElement = obj.globalElement;
     globalIncidentElements = obj.globalIncidentElements;
     elementIsGlobal = obj.elementIsGlobal;
-    displayPickLetter = obj.displayPickLetter;
+    showPickLetter = obj.showPickLetter;
     reusePickLetter = obj.reusePickLetter;
     ghostType = obj.ghostType;
     hasMixedGhostTypes = obj.hasMixedGhostTypes;
@@ -353,6 +353,7 @@ void PickAttributes::Copy(const PickAttributes &obj)
     timePreserveCoord = obj.timePreserveCoord;
     timeCurveType = obj.timeCurveType;
     timeOptions = obj.timeOptions;
+    plotRequested = obj.plotRequested;
 
     PickAttributes::SelectAll();
 }
@@ -549,7 +550,7 @@ PickAttributes::operator == (const PickAttributes &obj) const
 
     // Create the return value
     return ((variables == obj.variables) &&
-            (displayIncidentElements == obj.displayIncidentElements) &&
+            (showIncidentElements == obj.showIncidentElements) &&
             (showNodeId == obj.showNodeId) &&
             (showNodeDomainLogicalCoords == obj.showNodeDomainLogicalCoords) &&
             (showNodeBlockLogicalCoords == obj.showNodeBlockLogicalCoords) &&
@@ -600,11 +601,11 @@ PickAttributes::operator == (const PickAttributes &obj) const
             (elementIsGhost == obj.elementIsGhost) &&
             (requiresGlyphPick == obj.requiresGlyphPick) &&
             (locationSuccessful == obj.locationSuccessful) &&
-            (displayGlobalIds == obj.displayGlobalIds) &&
+            (showGlobalIds == obj.showGlobalIds) &&
             (globalElement == obj.globalElement) &&
             (globalIncidentElements == obj.globalIncidentElements) &&
             (elementIsGlobal == obj.elementIsGlobal) &&
-            (displayPickLetter == obj.displayPickLetter) &&
+            (showPickLetter == obj.showPickLetter) &&
             (reusePickLetter == obj.reusePickLetter) &&
             (ghostType == obj.ghostType) &&
             (hasMixedGhostTypes == obj.hasMixedGhostTypes) &&
@@ -616,7 +617,8 @@ PickAttributes::operator == (const PickAttributes &obj) const
             (floatFormat == obj.floatFormat) &&
             (timePreserveCoord == obj.timePreserveCoord) &&
             (timeCurveType == obj.timeCurveType) &&
-            (timeOptions == obj.timeOptions));
+            (timeOptions == obj.timeOptions) &&
+            (plotRequested == obj.plotRequested));
 }
 
 // ****************************************************************************
@@ -761,7 +763,7 @@ void
 PickAttributes::SelectAll()
 {
     Select(ID_variables,                   (void *)&variables);
-    Select(ID_displayIncidentElements,     (void *)&displayIncidentElements);
+    Select(ID_showIncidentElements,        (void *)&showIncidentElements);
     Select(ID_showNodeId,                  (void *)&showNodeId);
     Select(ID_showNodeDomainLogicalCoords, (void *)&showNodeDomainLogicalCoords);
     Select(ID_showNodeBlockLogicalCoords,  (void *)&showNodeBlockLogicalCoords);
@@ -812,11 +814,11 @@ PickAttributes::SelectAll()
     Select(ID_elementIsGhost,              (void *)&elementIsGhost);
     Select(ID_requiresGlyphPick,           (void *)&requiresGlyphPick);
     Select(ID_locationSuccessful,          (void *)&locationSuccessful);
-    Select(ID_displayGlobalIds,            (void *)&displayGlobalIds);
+    Select(ID_showGlobalIds,               (void *)&showGlobalIds);
     Select(ID_globalElement,               (void *)&globalElement);
     Select(ID_globalIncidentElements,      (void *)&globalIncidentElements);
     Select(ID_elementIsGlobal,             (void *)&elementIsGlobal);
-    Select(ID_displayPickLetter,           (void *)&displayPickLetter);
+    Select(ID_showPickLetter,              (void *)&showPickLetter);
     Select(ID_reusePickLetter,             (void *)&reusePickLetter);
     Select(ID_ghostType,                   (void *)&ghostType);
     Select(ID_hasMixedGhostTypes,          (void *)&hasMixedGhostTypes);
@@ -829,6 +831,7 @@ PickAttributes::SelectAll()
     Select(ID_timePreserveCoord,           (void *)&timePreserveCoord);
     Select(ID_timeCurveType,               (void *)&timeCurveType);
     Select(ID_timeOptions,                 (void *)&timeOptions);
+    Select(ID_plotRequested,               (void *)&plotRequested);
 }
 
 // ****************************************************************************
@@ -888,10 +891,10 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("variables", variables));
     }
 
-    if(completeSave || !FieldsEqual(ID_displayIncidentElements, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showIncidentElements, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("displayIncidentElements", displayIncidentElements));
+        node->AddNode(new DataNode("showIncidentElements", showIncidentElements));
     }
 
     if(completeSave || !FieldsEqual(ID_showNodeId, &defaultObject))
@@ -999,19 +1002,19 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     // elementIsGhost is not persistent and should not be saved.
     // requiresGlyphPick is not persistent and should not be saved.
     // locationSuccessful is not persistent and should not be saved.
-    if(completeSave || !FieldsEqual(ID_displayGlobalIds, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showGlobalIds, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("displayGlobalIds", displayGlobalIds));
+        node->AddNode(new DataNode("showGlobalIds", showGlobalIds));
     }
 
     // globalElement is not persistent and should not be saved.
     // globalIncidentElements is not persistent and should not be saved.
     // elementIsGlobal is not persistent and should not be saved.
-    if(completeSave || !FieldsEqual(ID_displayPickLetter, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showPickLetter, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("displayPickLetter", displayPickLetter));
+        node->AddNode(new DataNode("showPickLetter", showPickLetter));
     }
 
     // reusePickLetter is not persistent and should not be saved.
@@ -1041,6 +1044,7 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
 
     // timeCurveType is not persistent and should not be saved.
     // timeOptions is not persistent and should not be saved.
+    // plotRequested is not persistent and should not be saved.
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1080,8 +1084,8 @@ PickAttributes::SetFromNode(DataNode *parentNode)
     DataNode **children;
     if((node = searchNode->GetNode("variables")) != 0)
         SetVariables(node->AsStringVector());
-    if((node = searchNode->GetNode("displayIncidentElements")) != 0)
-        SetDisplayIncidentElements(node->AsBool());
+    if((node = searchNode->GetNode("showIncidentElements")) != 0)
+        SetShowIncidentElements(node->AsBool());
     if((node = searchNode->GetNode("showNodeId")) != 0)
         SetShowNodeId(node->AsBool());
     if((node = searchNode->GetNode("showNodeDomainLogicalCoords")) != 0)
@@ -1143,13 +1147,13 @@ PickAttributes::SetFromNode(DataNode *parentNode)
     // elementIsGhost is not persistent and was not saved.
     // requiresGlyphPick is not persistent and was not saved.
     // locationSuccessful is not persistent and was not saved.
-    if((node = searchNode->GetNode("displayGlobalIds")) != 0)
-        SetDisplayGlobalIds(node->AsBool());
+    if((node = searchNode->GetNode("showGlobalIds")) != 0)
+        SetShowGlobalIds(node->AsBool());
     // globalElement is not persistent and was not saved.
     // globalIncidentElements is not persistent and was not saved.
     // elementIsGlobal is not persistent and was not saved.
-    if((node = searchNode->GetNode("displayPickLetter")) != 0)
-        SetDisplayPickLetter(node->AsBool());
+    if((node = searchNode->GetNode("showPickLetter")) != 0)
+        SetShowPickLetter(node->AsBool());
     // reusePickLetter is not persistent and was not saved.
     // ghostType is not persistent and was not saved.
     // hasMixedGhostTypes is not persistent and was not saved.
@@ -1165,6 +1169,7 @@ PickAttributes::SetFromNode(DataNode *parentNode)
         SetTimePreserveCoord(node->AsBool());
     // timeCurveType is not persistent and was not saved.
     // timeOptions is not persistent and was not saved.
+    // plotRequested is not persistent and was not saved.
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1179,10 +1184,10 @@ PickAttributes::SetVariables(const stringVector &variables_)
 }
 
 void
-PickAttributes::SetDisplayIncidentElements(bool displayIncidentElements_)
+PickAttributes::SetShowIncidentElements(bool showIncidentElements_)
 {
-    displayIncidentElements = displayIncidentElements_;
-    Select(ID_displayIncidentElements, (void *)&displayIncidentElements);
+    showIncidentElements = showIncidentElements_;
+    Select(ID_showIncidentElements, (void *)&showIncidentElements);
 }
 
 void
@@ -1539,10 +1544,10 @@ PickAttributes::SetLocationSuccessful(bool locationSuccessful_)
 }
 
 void
-PickAttributes::SetDisplayGlobalIds(bool displayGlobalIds_)
+PickAttributes::SetShowGlobalIds(bool showGlobalIds_)
 {
-    displayGlobalIds = displayGlobalIds_;
-    Select(ID_displayGlobalIds, (void *)&displayGlobalIds);
+    showGlobalIds = showGlobalIds_;
+    Select(ID_showGlobalIds, (void *)&showGlobalIds);
 }
 
 void
@@ -1567,10 +1572,10 @@ PickAttributes::SetElementIsGlobal(bool elementIsGlobal_)
 }
 
 void
-PickAttributes::SetDisplayPickLetter(bool displayPickLetter_)
+PickAttributes::SetShowPickLetter(bool showPickLetter_)
 {
-    displayPickLetter = displayPickLetter_;
-    Select(ID_displayPickLetter, (void *)&displayPickLetter);
+    showPickLetter = showPickLetter_;
+    Select(ID_showPickLetter, (void *)&showPickLetter);
 }
 
 void
@@ -1657,6 +1662,13 @@ PickAttributes::SetTimeOptions(const MapNode &timeOptions_)
     Select(ID_timeOptions, (void *)&timeOptions);
 }
 
+void
+PickAttributes::SetPlotRequested(const MapNode &plotRequested_)
+{
+    plotRequested = plotRequested_;
+    Select(ID_plotRequested, (void *)&plotRequested);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1674,9 +1686,9 @@ PickAttributes::GetVariables()
 }
 
 bool
-PickAttributes::GetDisplayIncidentElements() const
+PickAttributes::GetShowIncidentElements() const
 {
-    return displayIncidentElements;
+    return showIncidentElements;
 }
 
 bool
@@ -2118,9 +2130,9 @@ PickAttributes::GetLocationSuccessful() const
 }
 
 bool
-PickAttributes::GetDisplayGlobalIds() const
+PickAttributes::GetShowGlobalIds() const
 {
-    return displayGlobalIds;
+    return showGlobalIds;
 }
 
 int
@@ -2148,9 +2160,9 @@ PickAttributes::GetElementIsGlobal() const
 }
 
 bool
-PickAttributes::GetDisplayPickLetter() const
+PickAttributes::GetShowPickLetter() const
 {
-    return displayPickLetter;
+    return showPickLetter;
 }
 
 bool
@@ -2241,6 +2253,18 @@ MapNode &
 PickAttributes::GetTimeOptions()
 {
     return timeOptions;
+}
+
+const MapNode &
+PickAttributes::GetPlotRequested() const
+{
+    return plotRequested;
+}
+
+MapNode &
+PickAttributes::GetPlotRequested()
+{
+    return plotRequested;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2413,6 +2437,12 @@ void
 PickAttributes::SelectTimeOptions()
 {
     Select(ID_timeOptions, (void *)&timeOptions);
+}
+
+void
+PickAttributes::SelectPlotRequested()
+{
+    Select(ID_plotRequested, (void *)&plotRequested);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2637,7 +2667,7 @@ PickAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_variables:                   return "variables";
-    case ID_displayIncidentElements:     return "displayIncidentElements";
+    case ID_showIncidentElements:        return "showIncidentElements";
     case ID_showNodeId:                  return "showNodeId";
     case ID_showNodeDomainLogicalCoords: return "showNodeDomainLogicalCoords";
     case ID_showNodeBlockLogicalCoords:  return "showNodeBlockLogicalCoords";
@@ -2688,11 +2718,11 @@ PickAttributes::GetFieldName(int index) const
     case ID_elementIsGhost:              return "elementIsGhost";
     case ID_requiresGlyphPick:           return "requiresGlyphPick";
     case ID_locationSuccessful:          return "locationSuccessful";
-    case ID_displayGlobalIds:            return "displayGlobalIds";
+    case ID_showGlobalIds:               return "showGlobalIds";
     case ID_globalElement:               return "globalElement";
     case ID_globalIncidentElements:      return "globalIncidentElements";
     case ID_elementIsGlobal:             return "elementIsGlobal";
-    case ID_displayPickLetter:           return "displayPickLetter";
+    case ID_showPickLetter:              return "showPickLetter";
     case ID_reusePickLetter:             return "reusePickLetter";
     case ID_ghostType:                   return "ghostType";
     case ID_hasMixedGhostTypes:          return "hasMixedGhostTypes";
@@ -2705,6 +2735,7 @@ PickAttributes::GetFieldName(int index) const
     case ID_timePreserveCoord:           return "timePreserveCoord";
     case ID_timeCurveType:               return "timeCurveType";
     case ID_timeOptions:                 return "timeOptions";
+    case ID_plotRequested:               return "plotRequested";
     default:  return "invalid index";
     }
 }
@@ -2730,7 +2761,7 @@ PickAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_variables:                   return FieldType_stringVector;
-    case ID_displayIncidentElements:     return FieldType_bool;
+    case ID_showIncidentElements:        return FieldType_bool;
     case ID_showNodeId:                  return FieldType_bool;
     case ID_showNodeDomainLogicalCoords: return FieldType_bool;
     case ID_showNodeBlockLogicalCoords:  return FieldType_bool;
@@ -2781,11 +2812,11 @@ PickAttributes::GetFieldType(int index) const
     case ID_elementIsGhost:              return FieldType_bool;
     case ID_requiresGlyphPick:           return FieldType_bool;
     case ID_locationSuccessful:          return FieldType_bool;
-    case ID_displayGlobalIds:            return FieldType_bool;
+    case ID_showGlobalIds:               return FieldType_bool;
     case ID_globalElement:               return FieldType_int;
     case ID_globalIncidentElements:      return FieldType_intVector;
     case ID_elementIsGlobal:             return FieldType_bool;
-    case ID_displayPickLetter:           return FieldType_bool;
+    case ID_showPickLetter:              return FieldType_bool;
     case ID_reusePickLetter:             return FieldType_bool;
     case ID_ghostType:                   return FieldType_int;
     case ID_hasMixedGhostTypes:          return FieldType_int;
@@ -2798,6 +2829,7 @@ PickAttributes::GetFieldType(int index) const
     case ID_timePreserveCoord:           return FieldType_bool;
     case ID_timeCurveType:               return FieldType_enum;
     case ID_timeOptions:                 return FieldType_MapNode;
+    case ID_plotRequested:               return FieldType_MapNode;
     default:  return FieldType_unknown;
     }
 }
@@ -2823,7 +2855,7 @@ PickAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_variables:                   return "stringVector";
-    case ID_displayIncidentElements:     return "bool";
+    case ID_showIncidentElements:        return "bool";
     case ID_showNodeId:                  return "bool";
     case ID_showNodeDomainLogicalCoords: return "bool";
     case ID_showNodeBlockLogicalCoords:  return "bool";
@@ -2874,11 +2906,11 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_elementIsGhost:              return "bool";
     case ID_requiresGlyphPick:           return "bool";
     case ID_locationSuccessful:          return "bool";
-    case ID_displayGlobalIds:            return "bool";
+    case ID_showGlobalIds:               return "bool";
     case ID_globalElement:               return "int";
     case ID_globalIncidentElements:      return "intVector";
     case ID_elementIsGlobal:             return "bool";
-    case ID_displayPickLetter:           return "bool";
+    case ID_showPickLetter:              return "bool";
     case ID_reusePickLetter:             return "bool";
     case ID_ghostType:                   return "int";
     case ID_hasMixedGhostTypes:          return "int";
@@ -2891,6 +2923,7 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_timePreserveCoord:           return "bool";
     case ID_timeCurveType:               return "enum";
     case ID_timeOptions:                 return "MapNode";
+    case ID_plotRequested:               return "MapNode";
     default:  return "invalid index";
     }
 }
@@ -2922,9 +2955,9 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (variables == obj.variables);
         }
         break;
-    case ID_displayIncidentElements:
+    case ID_showIncidentElements:
         {  // new scope
-        retval = (displayIncidentElements == obj.displayIncidentElements);
+        retval = (showIncidentElements == obj.showIncidentElements);
         }
         break;
     case ID_showNodeId:
@@ -3211,9 +3244,9 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (locationSuccessful == obj.locationSuccessful);
         }
         break;
-    case ID_displayGlobalIds:
+    case ID_showGlobalIds:
         {  // new scope
-        retval = (displayGlobalIds == obj.displayGlobalIds);
+        retval = (showGlobalIds == obj.showGlobalIds);
         }
         break;
     case ID_globalElement:
@@ -3231,9 +3264,9 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (elementIsGlobal == obj.elementIsGlobal);
         }
         break;
-    case ID_displayPickLetter:
+    case ID_showPickLetter:
         {  // new scope
-        retval = (displayPickLetter == obj.displayPickLetter);
+        retval = (showPickLetter == obj.showPickLetter);
         }
         break;
     case ID_reusePickLetter:
@@ -3294,6 +3327,11 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_timeOptions:
         {  // new scope
         retval = (timeOptions == obj.timeOptions);
+        }
+        break;
+    case ID_plotRequested:
+        {  // new scope
+        retval = (plotRequested == obj.plotRequested);
         }
         break;
     default: retval = false;
@@ -3487,7 +3525,7 @@ PickAttributes::PrintSelf(ostream &os)
         }
         os << "\n";
     }
-    if (displayIncidentElements)
+    if (showIncidentElements)
     {
         bool showId = false;
         if (pickType == Zone || pickType == DomainZone)
@@ -3622,7 +3660,11 @@ PickAttributes::PrintSelf(ostream &os)
 //   Kathleen Biagas, Wed Oct 26 13:31:50 PDT 2011
 //   Only print timeStep information if requested and not -1.
 //
+//   Kathleen Biagas, Wed Mar 08 17:12:07 PST 2012
+//   Use plot overrides of showXXX settings if set in plotRequested MapNode.
+//
 // ****************************************************************************
+
 void
 PickAttributes::CreateOutputString(std::string &os, bool withLetter)
 {
@@ -3643,8 +3685,8 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
 
     char buff[512];
    
-    std::string fileName; 
-    std::string format; 
+    std::string fileName;
+    std::string format;
     size_t pos = databaseName.find_last_of('/');
     if (pos >= databaseName.size())
         fileName = databaseName;
@@ -3660,6 +3702,18 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         os += buff;
     }
     os += fileName;
+    if (timeStep != -1)
+    {
+        bool showTS = showTimeStep;
+        if (plotRequested.HasEntry("showTimeStep"))
+            showTS = plotRequested.GetEntry("showTimeStep")->AsBool();
+      
+        if (showTS)
+        {
+            SNPRINTF(buff, 512, "  timestep %d", timeStep);
+            os += buff;
+        }
+    }
 
     std::string domStr = (blockPieceName == "" ? "domain" : blockPieceName);
     std::string grpStr = (groupPieceName == "" ? "group" : groupPieceName);
@@ -3670,11 +3724,6 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         domStr = buff;
     }
     
-    if (showTimeStep && timeStep != -1)
-    {
-        SNPRINTF(buff, 512, "  timestep %d", timeStep);
-        os += buff;
-    }
     if (meshInfo.empty())
     {
         if (domain != -1)
@@ -3687,8 +3736,15 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     }
     else
     {
-        SNPRINTF(buff, 512, "\n%s\n", meshInfo.c_str());
-        os += buff;
+        bool showMN = showMeshName;
+        if (plotRequested.HasEntry("showMeshName"))
+            showMN = plotRequested.GetEntry("showMeshName")->AsBool();
+
+        if (showMN)
+        {
+            SNPRINTF(buff, 512, "\n%s\n", meshInfo.c_str());
+            os += buff;
+        }
     }
 
     std::string point = "Point";
@@ -3697,75 +3753,113 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     else if (meshCoordType == ZR)
         point += " (R,Z)";
 
-    if (pickType == CurveNode)
-    {
-        format = "Point: <" + floatFormat + ", " + floatFormat + ">\n";
-        SNPRINTF(buff, 512, format.c_str(), nodePoint[0], nodePoint[1]);
-        os += buff;
-    }
-    else if (pickType == CurveZone)
-    {
-        format = "Point1: <" + floatFormat + ", " + floatFormat + ">\n"
-                +"Point2: <" + floatFormat + ", " + floatFormat + ">\n";
+    std::string pointString;
+    if (plotRequested.HasEntry("pointString"))
+        pointString = plotRequested.GetEntry("pointString")->AsString();
 
-        SNPRINTF(buff, 512, format.c_str(),
-                  nodePoint[0], nodePoint[1], cellPoint[0], cellPoint[1]);
-        os += buff;
-    }
-    else if (cellPoint[0] != FLT_MAX)
+    if (pointString.empty())
     {
-        if (dimension == 2)
+        if (pickType == CurveNode)
         {
-            if (!needTransformMessage)
+            format = "Point: <" + floatFormat + ", " + floatFormat + ">\n";
+            SNPRINTF(buff, 512, format.c_str(), nodePoint[0], nodePoint[1]);
+            os += buff;
+        }
+        else if (pickType == CurveZone)
+        {
+            format = "Point1: <" + floatFormat + ", " + floatFormat + ">\n"
+                    +"Point2: <" + floatFormat + ", " + floatFormat + ">\n";
+
+            SNPRINTF(buff, 512, format.c_str(),
+                      nodePoint[0], nodePoint[1], cellPoint[0], cellPoint[1]);
+            os += buff;
+        }
+        else if (cellPoint[0] != FLT_MAX)
+        {
+            if (dimension == 2)
             {
-                format = "%s: <" + floatFormat + ", " + floatFormat + ">\n";
-                SNPRINTF(buff, 512, format.c_str(),
-                        point.c_str(), cellPoint[0], cellPoint[1]);
+                if (!needTransformMessage)
+                {
+                    format = "%s: <" + floatFormat + ", " + floatFormat + ">\n";
+                    SNPRINTF(buff, 512, format.c_str(),
+                            point.c_str(), cellPoint[0], cellPoint[1]);
+                }
+                else 
+                {
+                    format = "%s: (in transformed space)\n        <"  
+                                + floatFormat + ", " + floatFormat + ">\n";
+                    SNPRINTF(buff, 512, format.c_str(),
+                            point.c_str(), cellPoint[0], cellPoint[1]);
+                }
             }
             else 
             {
-                format = "%s: (in transformed space)\n        <"  
-                            + floatFormat + ", " + floatFormat + ">\n";
-                SNPRINTF(buff, 512, format.c_str(),
-                        point.c_str(), cellPoint[0], cellPoint[1]);
+                if (!needTransformMessage)
+                {
+                    format = "%s: <" + floatFormat + ", " 
+                                     + floatFormat + ", " 
+                                     + floatFormat + ">\n";
+                    SNPRINTF(buff, 512, format.c_str(),
+                            point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
+                }
+                else 
+                {
+                    format = "%s: (in transformed space) \n       <" 
+                                     + floatFormat + ", " 
+                                     + floatFormat + ", " 
+                                     + floatFormat + ">\n";
+                    SNPRINTF(buff, 512, format.c_str(),
+                            point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
+                }
             }
+            os += buff;
         }
-        else 
-        {
-            if (!needTransformMessage)
-            {
-                format = "%s: <" + floatFormat + ", " 
-                                 + floatFormat + ", " 
-                                 + floatFormat + ">\n";
-                SNPRINTF(buff, 512, format.c_str(),
-                        point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
-            }
-            else 
-            {
-                format = "%s: (in transformed space) \n       <" 
-                                 + floatFormat + ", " 
-                                 + floatFormat + ", " 
-                                 + floatFormat + ">\n";
-                SNPRINTF(buff, 512, format.c_str(),
-                        point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
-            }
-        }
+    }
+    else
+    {
+        SNPRINTF(buff, 512, "\nPoint: %s\n", pointString.c_str());
         os += buff;
     }
-    bool showZoneCoords = (showZoneDomainLogicalCoords  && !dzoneCoords.empty()) || 
-                          (showZoneBlockLogicalCoords && !bzoneCoords.empty());
-    bool showNodeCoords = (showNodePhysicalCoords && !pnodeCoords.empty())||
-                          (showNodeDomainLogicalCoords && !dnodeCoords.empty())|| 
-                          (showNodeBlockLogicalCoords && !bnodeCoords.empty());
+
+    bool showZDLC = showZoneDomainLogicalCoords;
+    if (plotRequested.HasEntry("showZoneDomainLogicalCoords"))
+        showZDLC = plotRequested.GetEntry("showZoneDomainLogicalCoords")->AsBool(); 
+    bool showZBLC = showZoneBlockLogicalCoords;
+    if (plotRequested.HasEntry("showZoneBlockLogicalCoords"))
+        showZBLC = plotRequested.GetEntry("showZoneBlockLogicalCoords")->AsBool(); 
+    bool showZoneCoords = (showZDLC && !dzoneCoords.empty())  || 
+                          (showZBLC && !bzoneCoords.empty());
+
+    bool showNPC = showNodePhysicalCoords;
+    if (plotRequested.HasEntry("showNodePhysicalCoords"))
+        showNPC = plotRequested.GetEntry("showNodePhysicalCoords")->AsBool();
+    bool showNDLC = showNodeDomainLogicalCoords;
+    if (plotRequested.HasEntry("showNodeDomainLogicalCoords"))
+        showNDLC = plotRequested.GetEntry("showNodeDomainLogicalCoords")->AsBool();
+    bool showNBLC = showNodeBlockLogicalCoords;
+    if (plotRequested.HasEntry("showNodeBlockLogicalCoords"))
+        showNBLC = plotRequested.GetEntry("showNodeBlockLogicalCoords")->AsBool();
+    bool showNodeCoords = (showNPC  && !pnodeCoords.empty()) || 
+                          (showNDLC && !dnodeCoords.empty()) || 
+                          (showNBLC && !bnodeCoords.empty());
+
+    bool showZId = showZoneId;
+    if (plotRequested.HasEntry("showZoneId"))
+        showZId = plotRequested.GetEntry("showZoneId")->AsBool();
+
+    bool showNId = showNodeId;
+    if (plotRequested.HasEntry("showNodeId"))
+        showNId = plotRequested.GetEntry("showNodeId")->AsBool();
+
     if (pickType == Zone || pickType == DomainZone)
     {
-        if (showZoneId || showZoneCoords)
+        if (showZId || showZoneCoords)
             os += "Zone:  ";
-        if (showZoneId)
+        if (showZId)
         {
-            if (!elementIsGhost) 
+            if (!elementIsGhost)
             {
-                if (!displayGlobalIds || globalElement == -1) 
+                if (!showGlobalIds || globalElement == -1) 
                     SNPRINTF(buff, 512, "%d", elementNumber);
                 else 
                     SNPRINTF(buff, 512, "%d (global)", globalElement);
@@ -3774,12 +3868,12 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                 SNPRINTF(buff, 512, "%d(ghost)", elementNumber);
             os += buff;
         }
-        if (showZoneDomainLogicalCoords & !dzoneCoords.empty()) 
+        if (showZDLC)
         {
             SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dzoneCoords[0].c_str());
             os += buff;
         }
-        if (showZoneBlockLogicalCoords & !bzoneCoords.empty()) 
+        if (showZBLC)
         {
             SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bzoneCoords[0].c_str());
             os += buff;
@@ -3789,13 +3883,13 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     }
     else if (pickType == Node || pickType == DomainNode)
     {
-        if (showNodeId || showNodeCoords)
+        if (showNId || showNodeCoords)
             os += "Node:  ";
-        if (showNodeId)
+        if (showNId)
         {
             if (!elementIsGhost)
             {
-                if (!displayGlobalIds || globalElement == -1)
+                if (!showGlobalIds || globalElement == -1)
                     SNPRINTF(buff, 512, "%d", elementNumber);
                 else 
                     SNPRINTF(buff, 512, "%d (global)", globalElement);
@@ -3804,17 +3898,17 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                 SNPRINTF(buff, 512, "%d(ghost)", elementNumber);
             os += buff;
         }
-        if (showNodePhysicalCoords & !pnodeCoords.empty()) 
+        if (showNPC)
         {
             SNPRINTF(buff, 512, " %s", pnodeCoords[0].c_str());
             os += buff;
         }
-        if (showNodeDomainLogicalCoords & !dnodeCoords.empty()) 
+        if (showNDLC)
         {
             SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dnodeCoords[0].c_str());
             os += buff;
         }
-        if (showNodeBlockLogicalCoords & !bnodeCoords.empty()) 
+        if (showNBLC)
         {
             SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bnodeCoords[0].c_str());
             os += buff;
@@ -3822,7 +3916,12 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         if (showNodeId || showNodeCoords)
             os += "\n";
     }
-    if (displayIncidentElements)
+
+    bool showIE = showIncidentElements;
+    if (plotRequested.HasEntry("showIncidentElements"))
+        showIE = plotRequested.GetEntry("showIncidentElements")->AsBool();
+
+    if (showIE)
     {
         bool showId = false;
         bool showGlobal = globalIncidentElements.size() == incidentElements.size();
@@ -3837,6 +3936,8 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                 os += "\n    "; 
             }
             showId = showNodeId;
+            if (plotRequested.HasEntry("showNodeId"))
+                showId = plotRequested.GetEntry("showNodeId")->AsBool();
         }
         else if (pickType == Node || pickType == DomainNode)
         {
@@ -3849,6 +3950,8 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                 os += "\n    "; 
             }
             showId = showZoneId;
+            if (plotRequested.HasEntry("showZoneId"))
+                showId = plotRequested.GetEntry("showZoneId")->AsBool();
         }
         for (size_t i = 0; i < incidentElements.size(); i++)
         {
@@ -3864,17 +3967,17 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             }
             if (pickType == Zone || pickType == DomainZone)
             {
-                if (showNodePhysicalCoords & !pnodeCoords.empty()) 
+                if (showNPC)
                 {
                     SNPRINTF(buff, 512, " %s", pnodeCoords[i].c_str());
                     os += buff;
                 }
-                if (showNodeDomainLogicalCoords & !dnodeCoords.empty()) 
+                if (showNDLC)
                 {
                     SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dnodeCoords[i].c_str());
                     os += buff;
                 }
-                if (showNodeBlockLogicalCoords & !bnodeCoords.empty()) 
+                if (showNBLC)
                 {
                     SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bnodeCoords[i].c_str());
                     os += buff;
@@ -3886,12 +3989,12 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             }
             else if (pickType == Node || pickType == DomainNode)
             {
-                if (showZoneDomainLogicalCoords & !dzoneCoords.empty()) 
+                if (showZDLC)
                 {
                     SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dzoneCoords[i].c_str());
                     os += buff;
                 }
-                if (showZoneBlockLogicalCoords & !bzoneCoords.empty()) 
+                if (showZBLC)
                 {
                     SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bzoneCoords[i].c_str());
                     os += buff;
@@ -4078,6 +4181,9 @@ PickAttributes::PrepareForNewPick()
 //   Kathleen Biagas, Wed Oct 26 13:31:50 PDT 2011
 //   Only print timeStep information if requested and not -1.
 //
+//   Kathleen Biagas, Wed Mar 08 17:12:07 PST 2012
+//   Use plot overrides of showXXX settings if set in plotRequested MapNode.
+//
 // ****************************************************************************
 
 void
@@ -4102,15 +4208,22 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         os += buff;
     }
     os += fileName;
-    if (showTimeStep && timeStep != -1)
+    if (timeStep != -1)
     {
-        SNPRINTF(buff, 512, "  timestep %d", timeStep);
-        os += buff;
+        bool showTS = showTimeStep;
+        if (plotRequested.HasEntry("showTimeStep"))
+            showTS = plotRequested.GetEntry("showTimeStep")->AsBool();
+      
+        if (showTS)
+        {
+            SNPRINTF(buff, 512, "  timestep %d", timeStep);
+            os += buff;
+        }
     }
 
     std::string domStr = (blockPieceName == "" ? "domain" : blockPieceName);
 
-    if (meshInfo.empty()) 
+    if (meshInfo.empty())
     {
         if (domain != -1)
         {
@@ -4128,54 +4241,101 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     }
     else
     {
-        SNPRINTF(buff, 512, "  %s", meshInfo.c_str());
-        os += buff;
+        bool showMN = showMeshName;
+        if (plotRequested.HasEntry("showMeshName"))
+            showMN = plotRequested.GetEntry("showMeshName")->AsBool();
+
+        if (showMN)
+        {
+            SNPRINTF(buff, 512, "  %s", meshInfo.c_str());
+            os += buff;
+        }
     }
-    if (pickType == CurveNode)
+
+    std::string pointString;
+    if (plotRequested.HasEntry("pointString"))
+        pointString = plotRequested.GetEntry("pointString")->AsString();
+
+    if (pointString.empty())
     {
-        format = " at <" + floatFormat + ", " + floatFormat +  ">\n";
-        SNPRINTF(buff, 512, format.c_str() , nodePoint[0], nodePoint[1]);
-        os += buff;
-    }
-    else if (pickType == CurveZone)
-    {
-        format = " at <" + floatFormat + ", " + floatFormat +  ">"
-                 +" & <" + floatFormat + ", " + floatFormat +  ">\b";
-        SNPRINTF(buff, 512, format.c_str(), 
-                  nodePoint[0], nodePoint[1], cellPoint[0], cellPoint[1]);
-        os += buff;
-    }
-    else if (cellPoint[0] != FLT_MAX)
-    {
-        if (dimension == 2)
+        if (pickType == CurveNode)
         {
             format = " at <" + floatFormat + ", " + floatFormat +  ">\n";
-            SNPRINTF(buff, 512, format.c_str(), cellPoint[0], cellPoint[1]);
+            SNPRINTF(buff, 512, format.c_str() , nodePoint[0], nodePoint[1]);
+            os += buff;
         }
-        else 
+        else if (pickType == CurveZone)
         {
-            format = " at <" + floatFormat + ", " 
-                             + floatFormat + ", " 
-                             + floatFormat +  ">\n";
-            SNPRINTF(buff, 512, format.c_str(),
-                        cellPoint[0], cellPoint[1], cellPoint[2]);
+            format = " at <" + floatFormat + ", " + floatFormat +  ">"
+                     +" & <" + floatFormat + ", " + floatFormat +  ">\b";
+            SNPRINTF(buff, 512, format.c_str(), 
+                      nodePoint[0], nodePoint[1], cellPoint[0], cellPoint[1]);
+            os += buff;
         }
+        else if (cellPoint[0] != FLT_MAX)
+        {
+            if (dimension == 2)
+            {
+                format = " at <" + floatFormat + ", " + floatFormat +  ">\n";
+                SNPRINTF(buff, 512, format.c_str(), cellPoint[0], cellPoint[1]);
+            }
+            else 
+            {
+                format = " at <" + floatFormat + ", " 
+                                 + floatFormat + ", " 
+                                 + floatFormat +  ">\n";
+                SNPRINTF(buff, 512, format.c_str(),
+                            cellPoint[0], cellPoint[1], cellPoint[2]);
+            }
+            os += buff;
+        }
+    }
+    else
+    {
+        SNPRINTF(buff, 512, " at %s\n", pointString.c_str());
         os += buff;
     }
-    bool showZoneCoords = (showZoneDomainLogicalCoords  && !dzoneCoords.empty()) || 
-                          (showZoneBlockLogicalCoords && !bzoneCoords.empty());
-    bool showNodeCoords = (showNodePhysicalCoords && !pnodeCoords.empty())||
-                          (showNodeDomainLogicalCoords && !dnodeCoords.empty())|| 
-                          (showNodeBlockLogicalCoords && !bnodeCoords.empty());
+
+
+    bool showZDLC = showZoneDomainLogicalCoords;
+    if (plotRequested.HasEntry("showZoneDomainLogicalCoords"))
+        showZDLC = plotRequested.GetEntry("showZoneDomainLogicalCoords")->AsBool(); 
+    bool showZBLC = showZoneBlockLogicalCoords;
+    if (plotRequested.HasEntry("showZoneBlockLogicalCoords"))
+        showZBLC = plotRequested.GetEntry("showZoneBlockLogicalCoords")->AsBool(); 
+    bool showZoneCoords = (showZDLC && !dzoneCoords.empty())  || 
+                          (showZBLC && !bzoneCoords.empty());
+
+    bool showNPC = showNodePhysicalCoords;
+    if (plotRequested.HasEntry("showNodePhysicalCoords"))
+        showNPC = plotRequested.GetEntry("showNodePhysicalCoords")->AsBool();
+    bool showNDLC = showNodeDomainLogicalCoords;
+    if (plotRequested.HasEntry("showNodeDomainLogicalCoords"))
+        showNDLC = plotRequested.GetEntry("showNodeDomainLogicalCoords")->AsBool();
+    bool showNBLC = showNodeBlockLogicalCoords;
+    if (plotRequested.HasEntry("showNodeBlockLogicalCoords"))
+        showNBLC = plotRequested.GetEntry("showNodeBlockLogicalCoords")->AsBool();
+    bool showNodeCoords = (showNPC  && !pnodeCoords.empty()) || 
+                          (showNDLC && !dnodeCoords.empty()) || 
+                          (showNBLC && !bnodeCoords.empty());
+
+    bool showZId = showZoneId;
+    if (plotRequested.HasEntry("showZoneId"))
+        showZId = plotRequested.GetEntry("showZoneId")->AsBool();
+
+    bool showNId = showNodeId;
+    if (plotRequested.HasEntry("showNodeId"))
+        showNId = plotRequested.GetEntry("showNodeId")->AsBool();
+
     if (pickType == Zone || pickType == DomainZone)
     {
-        if (showZoneId || showZoneCoords)
+        if (showZId || showZoneCoords)
             os += "Zone: ";
-        if (showZoneId)
+        if (showZId)
         {
             if (!elementIsGhost)
             {
-                if (globalElement == -1)
+                if (!showGlobalIds || globalElement == -1) 
                     SNPRINTF(buff, 512, "%d ", elementNumber);
                 else 
                     SNPRINTF(buff, 512, "%d (global) ", globalElement);
@@ -4184,12 +4344,12 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
                 SNPRINTF(buff, 512, "%d(ghost) ", elementNumber);
             os += buff;
         }
-        if (showZoneDomainLogicalCoords & !dzoneCoords.empty()) 
+        if (showZDLC)
         {
             SNPRINTF(buff, 512, "%s ", dzoneCoords[0].c_str());
             os += buff;
         }
-        if (showZoneBlockLogicalCoords & !bzoneCoords.empty()) 
+        if (showZBLC)
         {
             SNPRINTF(buff, 512, "%s ", bzoneCoords[0].c_str());
             os += buff;
@@ -4197,13 +4357,13 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     }
     else if (pickType == Node || pickType == DomainNode)
     {
-        if (showNodeId || showNodeCoords)
+        if (showNId || showNodeCoords)
             os += "Node: ";
-        if (showNodeId)
+        if (showNId)
         {
             if (!elementIsGhost)
             {
-                if (globalElement == -1)
+                if (!showGlobalIds || globalElement == -1)
                     SNPRINTF(buff, 512, "%d ", elementNumber);
                 else 
                     SNPRINTF(buff, 512, "%d (global) ", globalElement);
@@ -4212,23 +4372,28 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
                 SNPRINTF(buff, 512, "%d(ghost) ", elementNumber);
             os += buff;
         }
-        if (showNodePhysicalCoords & !pnodeCoords.empty()) 
+        if (showNPC)
         {
             SNPRINTF(buff, 512, "%s ", pnodeCoords[0].c_str());
             os += buff;
         }
-        if (showNodeDomainLogicalCoords & !dnodeCoords.empty()) 
+        if (showNDLC)
         {
             SNPRINTF(buff, 512, "%s ", dnodeCoords[0].c_str());
             os += buff;
         }
-        if (showNodeBlockLogicalCoords & !bnodeCoords.empty()) 
+        if (showNBLC)
         {
             SNPRINTF(buff, 512, "%s ", bnodeCoords[0].c_str());
             os += buff;
         }
     }
-    if (displayIncidentElements)
+
+    bool showIE = showIncidentElements;
+    if (plotRequested.HasEntry("showIncidentElements"))
+        showIE = plotRequested.GetEntry("showIncidentElements")->AsBool();
+
+    if (showIE)
     {
         bool showId = false;
         bool showGlobal = globalIncidentElements.size() == incidentElements.size();
@@ -4236,11 +4401,16 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         {
             os += "  Nodes: " ; 
             showId = showNodeId;
+            if (plotRequested.HasEntry("showNodeId"))
+                showId = plotRequested.GetEntry("showNodeId")->AsBool();
+           
         }
         else if (pickType == Node || pickType == DomainNode)
         {
             os += "  Zones: " ; 
             showId = showZoneId;
+            if (plotRequested.HasEntry("showZoneId"))
+                showId = plotRequested.GetEntry("showZoneId")->AsBool();
         }
         if (showId && showGlobal)
             os += " (global) ";
@@ -4258,17 +4428,17 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
             }
             if (pickType == Zone || pickType == DomainZone)
             {
-                if (showNodePhysicalCoords & !pnodeCoords.empty()) 
+                if (showNPC)
                 {
                     SNPRINTF(buff, 512, "%s ", pnodeCoords[i].c_str());
                     os += buff;
                 }
-                if (showNodeDomainLogicalCoords & !dnodeCoords.empty()) 
+                if (showNDLC)
                 {
                     SNPRINTF(buff, 512, "%s ", dnodeCoords[i].c_str());
                     os += buff;
                 }
-                if (showNodeBlockLogicalCoords & !bnodeCoords.empty()) 
+                if (showNBLC)
                 {
                     SNPRINTF(buff, 512, "%s ", bnodeCoords[i].c_str());
                     os += buff;
@@ -4276,12 +4446,12 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
             }
             else if (pickType == Node || pickType == DomainNode)
             {
-                if (showZoneDomainLogicalCoords & !dzoneCoords.empty()) 
+                if (showZDLC)
                 {
                     SNPRINTF(buff, 512, "%s ", dzoneCoords[i].c_str());
                     os += buff;
                 }
-                if (showZoneBlockLogicalCoords & !bzoneCoords.empty()) 
+                if (showZBLC)
                 {
                     SNPRINTF(buff, 512, "%s ", bzoneCoords[i].c_str());
                     os += buff;
@@ -4359,11 +4529,10 @@ PickAttributes::SetRayPoint2(const doubleVector &_v)
 
 
 // ****************************************************************************
-// Method: PickAttributes::CreateXMLString
+// Method: PickAttributes::CreateOutputMapNode
 //
 // Purpose: 
-//   Creates an xml output string containing all the information gathered
-//   from a pick. 
+//   Creates a MapNode containing all the information gathered from a pick. 
 //
 // Programmer:  Kathleen Biagas
 // Creation:    September 22, 2011
@@ -4373,18 +4542,16 @@ PickAttributes::SetRayPoint2(const doubleVector &_v)
 // ****************************************************************************
 
 void
-PickAttributes::CreateXMLString(std::string &os, bool withLetter)
+PickAttributes::CreateOutputMapNode(MapNode &m, bool withLetter)
 {
-    if (!os.empty())
-        os.clear();
+    if (m.GetNumEntries() != 0)
+        m.Reset();
 
     if (error)
         return;
 
     if (!fulfilled)
         return;
-
-    MapNode m;
 
     if (pickType == Zone || pickType == DomainZone)
     {
@@ -4457,7 +4624,7 @@ PickAttributes::CreateXMLString(std::string &os, bool withLetter)
         m["timestep"] = timeStep;
     }
 
-    if (displayIncidentElements)
+    if (showIncidentElements)
     {
         bool showId = false;
         bool showGlobal = globalIncidentElements.size() == incidentElements.size();
@@ -4508,13 +4675,44 @@ PickAttributes::CreateXMLString(std::string &os, bool withLetter)
         PickVarInfo* info = (PickVarInfo*)varInfo[i];
         info->CreateOutputMapNode(pt, m);
     }
+
     if (invalidVars.size() > 0)
     {
-        for (size_t i = 0; i < invalidVars.size(); ++i)
-        {
-            m[invalidVars[i]] = std::string("invalid");
-        }
+        m["invalidVars"] = invalidVars;
     }
-    os = m.ToXML();
+}
+
+
+// ****************************************************************************
+// Method: PickAttributes::CreateXMLString
+//
+// Purpose: 
+//   Creates an xml output string containing all the information gathered
+//   from a pick. 
+//
+// Programmer:  Kathleen Biagas
+// Creation:    September 22, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickAttributes::CreateXMLString(std::string &os, bool withLetter)
+{
+    if (!os.empty())
+        os.clear();
+
+    if (error)
+        return;
+
+    if (!fulfilled)
+        return;
+
+    MapNode m;
+
+    CreateOutputMapNode(m, withLetter);
+    if (m.GetNumEntries()  > 0)
+        os = m.ToXML();
 }
 

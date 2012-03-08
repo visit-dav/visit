@@ -447,7 +447,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
             dataRequest->TurnNodeNumbersOn();
             requiresUpdate = true;
         }
-        if (pickAtts.GetDisplayGlobalIds() || pickAtts.GetElementIsGlobal()) 
+        if (pickAtts.GetShowGlobalIds() || pickAtts.GetElementIsGlobal()) 
         {
             dataRequest->TurnGlobalZoneNumbersOn();
             dataRequest->TurnGlobalNodeNumbersOn();
@@ -933,7 +933,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 // data we want is associated with incidentElements
                 for (int k = 0; k < incidentElements.size(); k++)
                 {
-                    if (pickAtts.GetDisplayGlobalIds() && 
+                    if (pickAtts.GetShowGlobalIds() && 
                         globalIncEl.size() == incidentElements.size())
                     {
                         SNPRINTF(buff, 80, "(%d)", globalIncEl[k]);
@@ -965,7 +965,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
             else  
             {
                 // data we want is associated with element
-                if (pickAtts.GetDisplayGlobalIds() && 
+                if (pickAtts.GetShowGlobalIds() && 
                     pickAtts.GetGlobalElement() != -1)
                     SNPRINTF(buff, 80, "(%d)", pickAtts.GetGlobalElement());
                 else 
@@ -1248,7 +1248,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
         if (cells)
             cells->Delete();
     }
-    if (success && pickAtts.GetDisplayGlobalIds())
+    if (success && pickAtts.GetShowGlobalIds())
     {
         SetGlobalIds(ds, zone);
     }
@@ -1404,7 +1404,7 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
         pickAtts.SetGhosts(ghostZones);
     }
     cellIds->Delete();
-    if (success && pickAtts.GetDisplayGlobalIds())
+    if (success && pickAtts.GetShowGlobalIds())
     {
         SetGlobalIds(ds, foundNode);
     }

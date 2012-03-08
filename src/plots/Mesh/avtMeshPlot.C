@@ -1270,3 +1270,24 @@ avtMeshPlot::SetPointGlyphSize()
        atts.GetPointType() == MeshAttributes::Sphere)
         glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }
+
+
+// ****************************************************************************
+//  Method: avtMeshPlot::GetExtraInfoForPick
+//
+//  Purpose:
+//    Override default settings for extraPickinfo.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   February 29, 2012
+//
+// ****************************************************************************
+
+const MapNode &
+avtMeshPlot::GetExtraInfoForPick()
+{
+    extraPickInfo["canGlyphPickOnEngine"] = false;
+
+    return extraPickInfo;
+}
+

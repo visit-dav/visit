@@ -73,6 +73,9 @@ class avtVertexNormalsFilter;
 //    Brad Whitlock, Wed Aug 3 18:04:15 PST 2005
 //    I made it use a avtLabelsMapper so we can label subsets.
 //
+//    Kathleen Biagas, Wed Feb 29 13:09:36 MST 2012
+//    Added GetExtraInfoForPick.
+//
 // ****************************************************************************
 
 class avtLabelPlot : public avtSurfaceDataPlot
@@ -91,6 +94,8 @@ class avtLabelPlot : public avtSurfaceDataPlot
     void                        SetLegend(bool);
 
     virtual avtContract_p EnhanceSpecification(avtContract_p spec);
+
+    virtual const MapNode      &GetExtraInfoForPick(void);
 
   protected:
     LabelAttributes                atts;

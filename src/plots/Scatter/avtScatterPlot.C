@@ -50,6 +50,7 @@
 
 #include <avtLookupTable.h>
 #include <InvalidLimitsException.h>
+#include <MapNode.h>
 
 #include <DebugStream.h>
 
@@ -961,4 +962,104 @@ avtScatterPlot::EnhanceSpecification(avtContract_p contract_in)
         rv->SetCalculateVariableExtents(var4, true);
 
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtScatterPlot::GetExtraInfoForPick
+//
+//  Purpose:
+//    Overide default settings for extraInfoForPick.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   February 29, 2012
+//
+// ****************************************************************************
+
+const MapNode &
+avtScatterPlot::GetExtraInfoForPick()
+{
+    stringVector addVars;
+    std::string xvar, yvar, zvar;
+
+    ScatterAttributes::VariableRole varRole = atts.GetVar1Role();
+    std::string var1Name(atts.GetVar1());
+    if (varRole != ScatterAttributes::None)
+    {
+        addVars.push_back(var1Name);
+        if (varRole == ScatterAttributes::Coordinate0)
+            xvar = var1Name;
+        else if (varRole == ScatterAttributes::Coordinate1)
+            yvar = var1Name;
+        else if (varRole == ScatterAttributes::Coordinate2)
+            zvar = var1Name;
+    }
+
+    varRole = atts.GetVar2Role();
+    if (varRole != ScatterAttributes::None)
+    {
+        std::string var2Name(atts.GetVar2());
+        if (var2Name == "default")
+            var2Name = var1Name;
+        else
+            addVars.push_back(var2Name);
+          
+        if (varRole == ScatterAttributes::Coordinate0)
+            xvar = var2Name;
+        else if (varRole == ScatterAttributes::Coordinate1)
+            yvar = var2Name;
+        else if (varRole == ScatterAttributes::Coordinate2)
+            zvar = var2Name;
+    }
+
+    varRole = atts.GetVar3Role();
+    if (varRole != ScatterAttributes::None)
+    {
+        std::string var3Name(atts.GetVar3());
+        if (var3Name == "default")
+            var3Name = var1Name;
+        else
+            addVars.push_back(var3Name);
+
+        if (varRole == ScatterAttributes::Coordinate0)
+            xvar = var3Name;
+        else if (varRole == ScatterAttributes::Coordinate1)
+            yvar = var3Name;
+        else if (varRole == ScatterAttributes::Coordinate2)
+            zvar = var3Name;
+    }
+
+    varRole = atts.GetVar4Role();
+    if (varRole != ScatterAttributes::None)
+    {
+        std::string var4Name(atts.GetVar4());
+        if (var4Name == "default")
+            var4Name = var1Name;
+        else
+            addVars.push_back(var4Name);
+
+        if (varRole == ScatterAttributes::Coordinate0)
+            xvar = var4Name;
+        else if (varRole == ScatterAttributes::Coordinate1)
+            yvar = var4Name;
+        else if (varRole == ScatterAttributes::Coordinate2)
+            zvar = var4Name;
+    }
+
+    std::string pointString("<" + xvar + ", " + yvar);
+    if (!zvar.empty())
+        pointString.append(", " + zvar);
+    pointString.append(">");
+
+    // control how pick is performed
+    if (!addVars.empty())
+        extraPickInfo["additionalVars"] = addVars;
+    extraPickInfo["glyphPickAlways"] = true;
+
+    // control how pick output is diplayed
+    extraPickInfo["showMeshName"] = false;
+    extraPickInfo["showIncidentElements"] = false;
+    extraPickInfo["pointString"] = pointString;
+
+    return extraPickInfo;
 }

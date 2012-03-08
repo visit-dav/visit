@@ -66,6 +66,9 @@ class avtScatterFilter;
 //   Brad Whitlock, Thu Jul 21 15:29:40 PST 2005
 //   Added SetPointGlyphMode.
 //
+//   Kathleen Biagas, Wed Feb 29 13:10:11 MST 2012
+//   Add GetExtraInfoForPick.
+//
 // ****************************************************************************
 
 class avtScatterPlot : public avtPlot
@@ -89,6 +92,8 @@ public:
     virtual bool    SetForegroundColor(const double *);
 
     virtual int     TargetTopologicalDimension(void);
+
+    virtual const MapNode &GetExtraInfoForPick(void);
 
 protected:
     avtVariablePointGlyphMapper     *glyphMapper;

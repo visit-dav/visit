@@ -73,6 +73,7 @@ class     AttributeSubject;
 class     PlotInfoAttributes;
 class     WindowAttributes;
 class     RenderingAttributes;
+class     MapNode;
 
 // ****************************************************************************
 //  Class: avtPlot
@@ -266,6 +267,9 @@ class     RenderingAttributes;
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Rename SetCurrentExtents to SetActualExtents.
 //
+//    Kathleen Biagas, Wed Feb 29 07:36:59 PST 2012
+//    Added GetExtraInfoForPick.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -342,6 +346,8 @@ class PLOTTER_API avtPlot
     virtual avtFilter         *GetFilterForTopOfPipeline() { return 0; }
 
     virtual bool               CompatibleWithCumulativeQuery() const { return true; }
+  
+    virtual const MapNode&     GetExtraInfoForPick(void);
 
   protected:
     bool                       needsRecalculation;
@@ -404,6 +410,8 @@ class PLOTTER_API avtPlot
     ScaleMode yScaleModeCurve;
     bool havePerformedLogXCurve;
     bool havePerformedLogYCurve;
+
+    MapNode extraPickInfo;
 };
 
 typedef ref_ptr<avtPlot> avtPlot_p;
