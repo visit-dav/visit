@@ -188,6 +188,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state 
 #    behavior when an operator is added.
 #
+#    Kathleen Biagas, Wed Mar  7 19:33:48 PST 2012
+#    'displayXXX' attributes have been changed to 'showXXX'.
+#
 # ----------------------------------------------------------------------------
 
 def Pick3DTo2D():
@@ -1874,32 +1877,32 @@ def PickGlobalIds():
     DrawPlots()
     ResetView()
     p = GetPickAttributes()
-    p.displayGlobalIds = 0
+    p.showGlobalIds = 0
     p.variables = ("default")
     SetPickAttributes(p)
 
     Pick(82, 225)
     s = GetPickOutput()
 
-    p.displayGlobalIds = 1
+    p.showGlobalIds = 1
     SetPickAttributes(p)
 
     Pick(82, 225)
     s = s + GetPickOutput()
 
-    p.displayGlobalIds = 0
+    p.showGlobalIds = 0
     SetPickAttributes(p)
 
     NodePick(195, 101)
     s = s + GetPickOutput()
 
-    p.displayGlobalIds = 1
+    p.showGlobalIds = 1
     SetPickAttributes(p)
 
     NodePick(195, 101)
     s = s + GetPickOutput()
 
-    p.displayGlobalIds = 0
+    p.showGlobalIds = 0
     SetPickAttributes(p)
 
     Pick(175, 162)
@@ -1907,7 +1910,7 @@ def PickGlobalIds():
     NodePick(175, 162)
     s = s + GetPickOutput()
 
-    p.displayGlobalIds = 1
+    p.showGlobalIds = 1
     SetPickAttributes(p)
 
     Pick(175, 162)
@@ -1925,7 +1928,7 @@ def PickGlobalIds():
     s = s + GetPickOutput()
 
     # bug '6097 -- global ids not displayed correctly with global picks. 
-    p.displayGlobalIds = 1
+    p.showGlobalIds = 1
     SetPickAttributes(p)
 
     PickByGlobalZone(236919)
@@ -1940,7 +1943,7 @@ def PickGlobalIds():
     s = s + GetPickOutput()
 
     TestText("PickGlobalIds", s)
-    p.displayGlobalIds = 0
+    p.showGlobalIds = 0
     SetPickAttributes(p)
     DeleteAllPlots()
     ResetPickLetter()
