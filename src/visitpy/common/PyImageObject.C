@@ -591,14 +591,7 @@ ImageObject_print(PyObject *v, FILE *fp, int flags)
     else
         fprintf(fp, "active = 0\n");
     {   const double *position = obj->data->GetPosition();
-        fprintf(fp, "position = (");
-        for(int i = 0; i < 3; ++i)
-        {
-            fprintf(fp, "%g", position[i]);
-            if(i < 2)
-                fprintf(fp, ", ");
-        }
-        fprintf(fp, ")\n");
+        fprintf(fp, "position = (%g, %g)\n", position[0], position[1]);
     }
 
 /* CUSTOM - Made various changes to where things are. */
@@ -632,50 +625,8 @@ ImageObject_print(PyObject *v, FILE *fp, int flags)
 PyObject *
 PyImageObject_StringRepresentation(const AnnotationObject *atts)
 {
-   std::string str; 
-   char tmpStr[1000]; 
-
-    const char *objectType_names = "Text2D, Text3D, TimeSlider, Line2D, Arrow2D, Arrow3D, Box, Image";
-    if(atts->GetObjectType() == AnnotationObject::Text2D)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Text2D  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::Text3D)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Text3D  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::TimeSlider)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = TimeSlider  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::Line2D)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Line2D  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::Arrow2D)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Arrow2D  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::Arrow3D)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Arrow3D  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::Box)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Box  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Image  # %s\n", objectType_names);
-             str += tmpStr;
-        }
+    std::string str; 
+    char tmpStr[1000]; 
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "visible = 1\n");
@@ -688,19 +639,7 @@ PyImageObject_StringRepresentation(const AnnotationObject *atts)
         SNPRINTF(tmpStr, 1000, "active = 0\n");
     str += tmpStr;
     {   const double *position = atts->GetPosition();
-        SNPRINTF(tmpStr, 1000, "position = (");
-        str += tmpStr;
-        for(int i = 0; i < 3; ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", position[i]);
-            str += tmpStr;
-            if(i < 2)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        SNPRINTF(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
         str += tmpStr;
     }
 

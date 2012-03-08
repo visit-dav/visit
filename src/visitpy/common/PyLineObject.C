@@ -586,20 +586,20 @@ LineObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "active = 0\n");
     {   const double *position = obj->data->GetPosition();
         fprintf(fp, "position = (");
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < 2; ++i)
         {
             fprintf(fp, "%g", position[i]);
-            if(i < 2)
+            if(i < 1)
                 fprintf(fp, ", ");
         }
         fprintf(fp, ")\n");
     }
     {   const double *position2 = obj->data->GetPosition2();
         fprintf(fp, "position2 = (");
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < 2; ++i)
         {
             fprintf(fp, "%g", position2[i]);
-            if(i < 2)
+            if(i < 1)
                 fprintf(fp, ", ");
         }
         fprintf(fp, ")\n");
@@ -619,50 +619,8 @@ LineObject_print(PyObject *v, FILE *fp, int flags)
 PyObject *
 PyLineObject_StringRepresentation(const AnnotationObject *atts)
 {
-   std::string str; 
-   char tmpStr[1000]; 
-
-    const char *objectType_names = "Text2D, Text3D, TimeSlider, Line2D, Arrow2D, Arrow3D, Box, Image";
-    if(atts->GetObjectType() == AnnotationObject::Text2D)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Text2D  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::Text3D)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Text3D  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::TimeSlider)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = TimeSlider  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::Line2D)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Line2D  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::Arrow2D)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Arrow2D  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::Arrow3D)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Arrow3D  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else if(atts->GetObjectType() == AnnotationObject::Box)
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Box  # %s\n", objectType_names);
-             str += tmpStr;
-        }
-    else
-        {
-             SNPRINTF(tmpStr, 1000, "objectType = Image  # %s\n", objectType_names);
-             str += tmpStr;
-        }
+    std::string str; 
+    char tmpStr[1000]; 
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "visible = 1\n");
@@ -677,11 +635,11 @@ PyLineObject_StringRepresentation(const AnnotationObject *atts)
     {   const double *position = atts->GetPosition();
         SNPRINTF(tmpStr, 1000, "position = (");
         str += tmpStr;
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < 2; ++i)
         {
             SNPRINTF(tmpStr, 1000, "%g", position[i]);
             str += tmpStr;
-            if(i < 2)
+            if(i < 1)
             {
                 SNPRINTF(tmpStr, 1000, ", ");
                 str += tmpStr;
@@ -693,11 +651,11 @@ PyLineObject_StringRepresentation(const AnnotationObject *atts)
     {   const double *position2 = atts->GetPosition2();
         SNPRINTF(tmpStr, 1000, "position2 = (");
         str += tmpStr;
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < 2; ++i)
         {
             SNPRINTF(tmpStr, 1000, "%g", position2[i]);
             str += tmpStr;
-            if(i < 2)
+            if(i < 1)
             {
                 SNPRINTF(tmpStr, 1000, ", ");
                 str += tmpStr;

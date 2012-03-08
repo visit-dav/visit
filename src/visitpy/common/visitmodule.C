@@ -148,6 +148,8 @@
 #include <PyConstructDataBinningAttributes.h>
 #include <PyDatabaseCorrelation.h>
 #include <PyExportDBAttributes.h>
+#include <PyExpression.h>
+#include <PyExpressionList.h>
 #include <PyFileOpenOptions.h>
 #include <PyFontAttributes.h>
 #include <PyGaussianControlPoint.h>
@@ -16406,6 +16408,9 @@ AddDefaultMethods()
 //   Brad Whitlock, Tue Dec 14 16:27:10 PST 2010
 //   Add SelectionProperties.
 //
+//   Brad Whitlock, Wed Mar  7 13:56:18 PST 2012
+//   Add Expression and ExpressionList.
+//
 // ****************************************************************************
 
 static void
@@ -16422,6 +16427,8 @@ AddExtensions()
     ADD_EXTENSION(PyColorControlPointList_GetMethodTable);
     ADD_EXTENSION(PyConstructDataBinningAttributes_GetMethodTable);
     ADD_EXTENSION(PyExportDBAttributes_GetMethodTable);
+    ADD_EXTENSION(PyExpression_GetMethodTable);
+    ADD_EXTENSION(PyExpressionList_GetMethodTable);
     ADD_EXTENSION(PyGaussianControlPoint_GetMethodTable);
     ADD_EXTENSION(PyGaussianControlPointList_GetMethodTable);
     ADD_EXTENSION(PyGlobalAttributes_GetMethodTable);
@@ -16520,6 +16527,8 @@ InitializeExtensions()
     PyAnnotationAttributes_StartUp(GetViewerState()->GetAnnotationAttributes(), 0);
     PyConstructDataBinningAttributes_StartUp(GetViewerState()->GetConstructDataBinningAttributes(), 0);
     PyExportDBAttributes_StartUp(GetViewerState()->GetExportDBAttributes(), 0);
+    PyExpression_StartUp(0, 0);
+    PyExpressionList_StartUp(GetViewerState()->GetExpressionList(), 0);
     PyGlobalAttributes_StartUp(GetViewerState()->GetGlobalAttributes(), 0);
     PyLaunchProfile_StartUp(0, 0);
     PyMachineProfile_StartUp(0, 0);
