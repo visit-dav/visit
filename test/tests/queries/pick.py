@@ -191,6 +191,9 @@
 #    Kathleen Biagas, Wed Mar  7 19:33:48 PST 2012
 #    'displayXXX' attributes have been changed to 'showXXX'.
 #
+#    Kathleen Biagas, Thu Mar  8 13:52:37 PST 2012
+#    Added test for picking scatter plots.
+#
 # ----------------------------------------------------------------------------
 
 def Pick3DTo2D():
@@ -2615,6 +2618,64 @@ def PickBox():
     TestText("PickBox", s)
     DeleteAllPlots()
     ResetPickLetter()
+
+def PickScatter():
+    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+    AddPlot("Scatter", "hardyglobal")
+    scatter = ScatterAttributes()
+    scatter.var1= "hardyglobal"
+    scatter.var2= "shepardglobal"
+    scatter.var3= "radial"
+    scatter.var3Role = scatter.Color
+    scatter.scaleCube = 1
+    SetPlotOptions(scatter)
+    DrawPlots()
+    Pick(124, 174)
+    s = GetPickOutput()
+
+    scatter.scaleCube = 0
+    SetPlotOptions(scatter)
+    DrawPlots()
+    ResetView()
+    Pick(124, 174)
+    s = s + GetPickOutput()
+
+
+    DeleteAllPlots()
+
+    s = s + "Expressions used in Scatter\n";
+    OpenDatabase("../data/silo_%s_test_data/multi_rect3d.silo"%SILO_MODE)
+    DefineScalarExpression("xc", "coord(mesh1)[0]")
+    DefineScalarExpression("yc", "coord(mesh1)[1]")
+    DefineScalarExpression("zc", "coord(mesh1)[2]")
+    DefineScalarExpression("uvw_prod", "u*v*w")
+    AddPlot("Scatter", "xc")
+    scatter.var1 = "xc"
+    scatter.var1Role = scatter.Coordinate0
+    scatter.var2 = "yc"
+    scatter.var2Role = scatter.Coordinate1
+    scatter.var3 = "zc"
+    scatter.var3Role = scatter.Coordinate2
+    scatter.var4 = "uvw_prod"
+    scatter.var4Role = scatter.Color
+    SetPlotOptions(scatter)
+    DrawPlots()
+    ResetView() 
+
+    Pick(100, 200)
+    s = s + GetPickOutput()
+
+    s = s + "Mix up the coordinates\n";
+    scatter.var1Role = scatter.Coordinate1
+    scatter.var2Role = scatter.Coordinate0
+    SetPlotOptions(scatter)
+    DrawPlots()
+    Pick(100, 200)
+    s = s + GetPickOutput()
+
+    TestText("PickScatter", s)
+    DeleteAllPlots()
+    ResetPickLetter()
     
 def PickMain():
     Pick3DTo2D()
@@ -2645,6 +2706,7 @@ def PickMain():
     PickMili()
     PickContour()
     PickBox()
+    PickScatter()
 
 # Call the main function
 TurnOnAllAnnotations()
