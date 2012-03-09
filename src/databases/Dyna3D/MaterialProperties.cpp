@@ -1,7 +1,4 @@
 #include <MaterialProperties.h>
-#include <Dyna3DFile.h>
-
-#include <sstream>
 
 // ****************************************************************************
 // Method: MaterialProperties::MaterialProperties
@@ -108,16 +105,29 @@ static void GetD16(char *line, double *v, int n)
 // Creation:   Thu Jan 26 12:21:38 PST 2012
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Mar  9 10:24:04 PST 2012
+//   I added material models 10, 15.
+//
 // ****************************************************************************
 
-void
-MaterialProperties::ReadCard(void (*readline)(char *, int, void *), void *cbdata)
+static void
+fillspaces(char *buf, int buflen)
 {
-    char line[1024];
+    for(int i = 0; i < buflen; ++i) 
+        buf[i] = ' ';
+    buf[buflen-1] = '\0';
+}
 
-    if(readline == NULL)
+void
+MaterialProperties::ReadCard(void (*readline_cb)(char *, int, void *), void *cbdata)
+{
+    if(readline_cb == NULL)
         return;
+
+    char line[1024];
+    memset(line, 0, 1024 * sizeof(char));
+
+#define readline fillspaces(line, 1024);readline_cb
 
     //
     // The structure of the material card is taken from DYNA3D.pdf section 4.4.
@@ -174,9 +184,47 @@ MaterialProperties::ReadCard(void (*readline)(char *, int, void *), void *cbdata
             v += 8;
         }
     }
+    else if(materialType == 10)
+    {
+        // DYNA3D.pdf page 205
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 8);
+        this->strength = v[1];
+        bool needCard9 = v[7] > 0.;
+        v += 8;
+
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 8);
+        this->equivalentPlasticStrain = v[0];
+        v += 8;
+
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 8);
+        v += 8;
+
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 8);
+        v += 8;
+
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 8);
+        v += 8;
+
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 8);
+        v += 8;
+
+        if(needCard9)
+        {
+            readline(line, 1024, cbdata);
+            GetD10(line, v, 4);
+            v += 4;
+        }
+    }
     else if(materialType == 11)
     {
         readline(line, 1024, cbdata);
+        this->strength = v[1]; // card3, value 2
         GetD10(line, v, 8);
         v += 8;
 
@@ -189,10 +237,11 @@ MaterialProperties::ReadCard(void (*readline)(char *, int, void *), void *cbdata
         v += 8;
 
         readline(line, 1024, cbdata);
+        this->equivalentPlasticStrain = v[2]; // card6, value 3
         GetD10(line, v, 7);
         v += 7;
 
-#if 0
+#if 1
 // This is how it is described in the book.
         for(int i = 0; i < 2; ++i)
         {
@@ -210,6 +259,38 @@ MaterialProperties::ReadCard(void (*readline)(char *, int, void *), void *cbdata
         GetD16(line, v, 1);
         v ++;
 #endif
+    }
+    else if(materialType == 15)
+    {
+        // DYNA3D.pdf page 225
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 8);
+        this->strength = v[1];
+        v += 8;
+
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 6);
+        this->equivalentPlasticStrain = v[0];
+        v += 6;
+
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 7);
+        v += 7;
+
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 6);
+        v += 6;
+
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 4);
+        v += 4;
+
+        // Read as - - val - val
+        // The dash represents a value we read from spaces but store anyway.
+        // We don't write it back out that way.
+        readline(line, 1024, cbdata);
+        GetD10(line, v, 5);
+        v += 5;
     }
     else if(materialType == 64)
     {
@@ -243,14 +324,22 @@ MaterialProperties::ReadCard(void (*readline)(char *, int, void *), void *cbdata
     int eosType = int(this->materialInformation[2]);
     if(eosType > 0)
     {
+        // DYNA3D.pdf page 445
         readline(line, 1024, cbdata);
         this->eosName = std::string(line);
 
         readline(line, 1024, cbdata);
         GetD10(line, v, 8);
         v += 8;
-        readline(line, 1024, cbdata);
-        v[0] = GetD(line, 1,10);
+
+        if(eosType == 4)
+        {
+        }
+        else // most forms are like form 1, which has 1 more number.
+        {
+            readline(line, 1024, cbdata);
+            v[0] = GetD(line, 1,10);
+        }
     }
 }
 
@@ -272,7 +361,9 @@ MaterialProperties::ReadCard(void (*readline)(char *, int, void *), void *cbdata
 // Creation:   Thu Jan 26 12:21:38 PST 2012
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Mar  9 10:26:04 PST 2012
+//   I added material models 10, 15.
+//
 // ****************************************************************************
 
 
@@ -316,8 +407,34 @@ MaterialProperties::WriteCard(void (*writeline)(const char *, void *), void *cbd
             v += 8;
         }
     }
+    else if(materialType == 10)
+    {
+        bool needCard9 = mvalues[18] > 0.;
+
+        // Poke potentially modified values back into mvalues before we write out.
+        mvalues[12] = this->strength;
+        mvalues[19] = this->equivalentPlasticStrain;
+        for(int i = 0; i < 6; ++i)
+        {
+            sprintf(line, "% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE",
+                    v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
+            writeline(line, cbdata);
+            v += 8;
+        }
+        if(needCard9)
+        {
+            sprintf(line, "% 1.3lE% 1.3lE% 1.3lE% 1.3lE",
+                    v[0], v[1], v[2], v[3]);
+            writeline(line, cbdata);
+            v += 4;
+        }
+    }
     else if(materialType == 11)
     {
+        // Poke potentially modified values back into mvalues before we write out.
+        mvalues[12] = this->strength;
+        mvalues[34] = this->equivalentPlasticStrain;
+
         sprintf(line, "% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE",
                 v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
         writeline(line, cbdata);
@@ -337,7 +454,7 @@ MaterialProperties::WriteCard(void (*writeline)(const char *, void *), void *cbd
                 v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
         writeline(line, cbdata);
         v += 7;
-#if 0
+#if 1
 // This is how it is described in the book
         for(int i = 0; i < 2; ++i)
         {
@@ -361,8 +478,45 @@ MaterialProperties::WriteCard(void (*writeline)(const char *, void *), void *cbd
         v ++;
 #endif
     }
+    else if(materialType == 15)
+    {
+        // Poke potentially modified values back into mvalues before we write out.
+        mvalues[12] = this->strength;
+        mvalues[19] = this->equivalentPlasticStrain;
+
+        sprintf(line, "% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE",
+                v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
+        writeline(line, cbdata);
+        v += 8;
+
+        sprintf(line, "% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE",
+                v[0], v[1], v[2], v[3], v[4], v[5]);
+        writeline(line, cbdata);
+        v += 6;
+
+        sprintf(line, "% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE",
+                v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
+        writeline(line, cbdata);
+        v += 7;
+
+        sprintf(line, "% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE",
+                v[0], v[1], v[2], v[3], v[4], v[5]);
+        writeline(line, cbdata);
+        v += 6;
+
+        sprintf(line, "% 1.3lE% 1.3lE% 1.3lE% 1.3lE",
+                v[0], v[1], v[2], v[3]);
+        writeline(line, cbdata);
+        v += 4;
+
+        sprintf(line, "                    % 1.3lE          % 1.3lE",
+                v[2], v[4]);
+        writeline(line, cbdata);
+        v += 5;
+    }
     else if(materialType == 64)
     {
+        // Poke potentially modified values back into mvalues before we write out.
         mvalues[12] = this->strength;
         mvalues[19] = this->equivalentPlasticStrain;
 
@@ -396,159 +550,20 @@ MaterialProperties::WriteCard(void (*writeline)(const char *, void *), void *cbd
 
     if(RequiresEOS())
     {
+        // DYNA3D.pdf page 445
         writeline(this->eosName.c_str(), cbdata);
         sprintf(line, "% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE% 1.3lE",
                     v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
         writeline(line, cbdata);
         v += 8;
-        sprintf(line, "% 1.3lE", v[0]);
-        writeline(line, cbdata);
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void
-OverrideMaterialProperties(MaterialPropertiesVector &props,
-    const MaterialPropertiesVector &overrides)
-{
-    for(size_t i = 0; i < props.size(); ++i)
-    {
-        for(size_t j = 0; j < overrides.size(); ++j)
+        int eosType = int(this->materialInformation[2]);
+        if(eosType == 4)
         {
-            if(overrides[j].materialNumber == props[i].materialNumber)
-            {
-                props[i] = overrides[j];
-                break;
-            }
+        }
+        else // Form 1 and those derived from it.
+        {
+            sprintf(line, "% 1.3lE", v[0]);
+            writeline(line, cbdata);
         }
     }
-}
-
-void
-SetEnabledMaterials(MaterialPropertiesVector &props, const std::string &matlist)
-{
-    if(!matlist.empty())
-    {
-        for(size_t i = 0; i < props.size(); ++i)
-            props[i].enabled = false;
-
-        std::istringstream iss(matlist);
-        std::string cur;
-        const char separator = ',';
-        while(std::getline(iss, cur, separator))
-        {
-            if(iss)
-            {
-                int materialNumber = atoi(cur.c_str());
-                for(size_t i = 0; i < props.size(); ++i)
-                {
-                    if(props[i].materialNumber == materialNumber)
-                    {
-                        props[i].enabled = true;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
-
-void
-PrintMaterialData(FILE *f, const MaterialPropertiesVector &props)
-{
-    for(size_t i = 0; i < props.size(); ++i)
-    {
-        const MaterialProperties &m = props[i];
-        fprintf(f, "Material %d\n", m.materialNumber);
-        fprintf(f, "\tname=%s\n", m.materialName.c_str());
-        fprintf(f, "\tdensity=%lg\n", m.density);
-        fprintf(f, "\tstrength=%lg\n", m.strength);
-        fprintf(f, "\tequivalentPlasticStrain=%lg\n", m.equivalentPlasticStrain);
-    }
-}
-
-// ****************************************************************************
-// Method: ReadMaterialPropertiesFile
-//
-// Purpose: 
-//   Read a material properties file and return the material properties therein.
-//
-// Arguments:
-//   filename : The name of the file to open.
-//
-// Returns:    The vector of material properties.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 6 10:17:00 PDT 2010
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-MaterialPropertiesVector
-ReadMaterialPropertiesFile(const std::string &filename)
-{
-    MaterialPropertiesVector mats;
-
-    // If the file extension is ".dyn" then try and read the material properties
-    // from the Dyna3D file.
-    bool readProps = true;
-    if(filename.substr(filename.size()-3, 3) == "dyn")
-    {
-        Dyna3DFile matfile;
-        if(matfile.Read(filename.c_str()))
-        {
-            for(int i = 0; i < matfile.GetNumMaterials(); ++i)
-                mats.push_back(matfile.GetMaterial(i));
-
-            readProps = false;
-        }
-    }
-
-    // Try and read the file as a text file that contains the material props.
-    if(readProps)
-    {
-        ifstream file(filename.c_str());
-        if(!file.fail())
-        {
-            char buf[1024];
-            while(!file.eof())
-            {
-                file.getline(buf, 1024);
-                if(buf[0] != '#')
-                {
-                    MaterialProperties m;
-
-                    // Get the material number
-                    char tmp = buf[10];
-                    buf[10] = '\0';
-                    m.materialNumber = atoi(buf);
-                    buf[10] = tmp;
-
-                    // Get the string name (eliminate trailing spaces)
-                    tmp = buf[60];
-                    buf[60] = '\0';
-                    for(int i = 60-1; i >= 10; i--)
-                    {
-                        if(buf[i] == ' ')
-                            buf[i] = '\0';
-                        else
-                            break;
-                    }
-                    m.materialName = std::string(buf+10);
-                    buf[60] = tmp;
-
-                    sscanf(buf + 60, "%lg %lg %lg", &m.density, &m.strength,
-                           &m.equivalentPlasticStrain);
-
-                    mats.push_back(m);
-                }
-            }
-        }
-    }
-
-    return mats;
 }

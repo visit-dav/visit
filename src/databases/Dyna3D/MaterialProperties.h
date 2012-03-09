@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#define MATERIALPROPERTIES_NUM_ITEMS 70
+#define MATERIALPROPERTIES_NUM_ITEMS 80
 
 // ****************************************************************************
 // Class: MaterialProperties
