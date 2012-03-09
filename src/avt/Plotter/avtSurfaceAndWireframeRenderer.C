@@ -309,6 +309,9 @@ avtSurfaceAndWireframeRenderer::Draw()
 //    Kathleen Bonnell, Mon Oct 29 21:53:14 PDT 2007 
 //    Added drawEdgeVerts.
 //
+//    Kathleen Biagas, Fri Mar  9 13:33:47 PST 2012 
+//    Delete the geometry filter when we are done with it.
+//
 // ****************************************************************************
 
 void
@@ -354,6 +357,7 @@ avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
         input = vtkPolyData::New();
         gf->SetOutput(input);
         gf->Update();
+        gf->Delete();
     }
     else 
     {

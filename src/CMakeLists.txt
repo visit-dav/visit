@@ -273,6 +273,9 @@
 #    Eric Brugger, Wed Feb 22 10:14:46 PST 2012
 #    I added support for building without mesa.
 #
+#    Kathleen Biagas, Fri Mar  9 15:30:58 PST 2012
+#    Prevent retesting of PROTOTYPE functions on re-configure.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1558,6 +1561,7 @@ IF(NOT WIN32)
 ENDIF(NOT WIN32)
 
 FUNCTION(CHECK_ISFINITE_EXISTS VAR)
+  IF("${VAR}" MATCHES "^${VAR}$")
     MESSAGE(STATUS "Check for isfinite")
     TRY_COMPILE(tmpVar
             ${CMAKE_CURRENT_BINARY_DIR}
@@ -1568,14 +1572,17 @@ FUNCTION(CHECK_ISFINITE_EXISTS VAR)
         SET(${VAR} 1 CACHE INTERNAL "isfinite found")
         MESSAGE(STATUS "Check for isfinite - found")
     ELSE(tmpVar)
+        SET(${VAR} 0 CACHE INTERNAL "isfinite found")
         MESSAGE(STATUS "Check for isfinite - not found")
         IF (NOT WIN32)
             MESSAGE(STATUS "Check for isfinite - ${outvar}")
         ENDIF (NOT WIN32)
     ENDIF(tmpVar)
+  ENDIF("${VAR}" MATCHES "^${VAR}$")
 ENDFUNCTION(CHECK_ISFINITE_EXISTS)
 
 FUNCTION(CHECK_STRTOF_PROTOTYPE VAR)
+  IF("${VAR}" MATCHES "^${VAR}$")
     MESSAGE(STATUS "Check for strtof prototype")
     TRY_COMPILE(tmpVar
             ${CMAKE_CURRENT_BINARY_DIR}
@@ -1585,11 +1592,14 @@ FUNCTION(CHECK_STRTOF_PROTOTYPE VAR)
         SET(${VAR} 1 CACHE INTERNAL "strtof prototype")
         MESSAGE(STATUS "Check for strtof prototype - found")
     ELSE(tmpVar)
+        SET(${VAR} 0 CACHE INTERNAL "strtof prototype")
         MESSAGE(STATUS "Check for strtof prototype - not found")
     ENDIF(tmpVar)
+  ENDIF("${VAR}" MATCHES "^${VAR}$")
 ENDFUNCTION(CHECK_STRTOF_PROTOTYPE)
 
 FUNCTION(CHECK_FTIME_PROTOTYPE VAR)
+  IF("${VAR}" MATCHES "^${VAR}$")
     MESSAGE(STATUS "Check for ftime prototype")
     TRY_COMPILE(tmpVar
             ${CMAKE_CURRENT_BINARY_DIR}
@@ -1599,8 +1609,10 @@ FUNCTION(CHECK_FTIME_PROTOTYPE VAR)
         SET(${VAR} 1 CACHE INTERNAL "ftime prototype")
         MESSAGE(STATUS "Check for ftime prototype - found")
     ELSE(tmpVar)
+        SET(${VAR} 0 CACHE INTERNAL "ftime prototype")
         MESSAGE(STATUS "Check for ftime prototype - not found")
     ENDIF(tmpVar)
+  ENDIF("${VAR}" MATCHES "^${VAR}$")
 ENDFUNCTION(CHECK_FTIME_PROTOTYPE)
 
 # Check for some functions

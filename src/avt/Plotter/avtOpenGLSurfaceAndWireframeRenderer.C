@@ -3341,6 +3341,9 @@ DrawNSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n
 //   Make sure that a display list has been created before it is called.
 //   Also re-organize code to be more intuitive for display lists.
 //
+//   Kathleen Biagas, Fri Mar 09 15:36:32 PST 2012
+//   Delete the list if it's ID is NOT zero.
+//
 // ****************************************************************************
 
 void 
@@ -3374,7 +3377,7 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary()
         if (setupModified[inputNum] || (propMTime[inputNum] < prop->GetMTime())
             || (setupListId[inputNum] == 0))
         {
-            if (setupListId[inputNum] == 0)
+            if (setupListId[inputNum] != 0)
             {
                 glDeleteLists(setupListId[inputNum], 1);
             }
@@ -3562,6 +3565,9 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary2()
 //   Make sure that a display list has been created before it is called.
 //   Also re-organize code to be more intuitive for display lists.
 //
+//   Kathleen Biagas, Fri Mar 09 15:36:32 PST 2012
+//   Delete the list if it's ID is NOT zero.
+//
 // ****************************************************************************
 
 void 
@@ -3599,7 +3605,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
 
         if (surfaceModified[inputNum] || (surfaceListId[inputNum] == 0))
         {
-            if (surfaceListId[inputNum] == 0)
+            if (surfaceListId[inputNum] != 0)
             {
                 glDeleteLists(surfaceListId[inputNum], 1);
             }
@@ -4006,6 +4012,9 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
 //   than reverse engineering them.  This change came about because the test
 //   only worked for perspective transformations.
 //
+//   Kathleen Biagas, Fri Mar 09 15:36:32 PST 2012
+//   Delete the list if it's ID is NOT zero.
+//
 // ****************************************************************************
 
 void
@@ -4092,7 +4101,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
     
         if (edgesModified[inputNum] || (edgesListId[inputNum] == 0))
         {
-            if (edgesListId[inputNum] == 0)
+            if (edgesListId[inputNum] != 0)
             {
                 glDeleteLists(edgesListId[inputNum], 1);
             }
