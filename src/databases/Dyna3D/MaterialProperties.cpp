@@ -1,4 +1,6 @@
 #include <MaterialProperties.h>
+#include <cstring>
+#include <cstdio>
 
 // ****************************************************************************
 // Method: MaterialProperties::MaterialProperties
