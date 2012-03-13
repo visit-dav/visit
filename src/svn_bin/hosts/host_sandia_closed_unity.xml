@@ -4,6 +4,7 @@
     <Field name="hostAliases" type="string">unity#.sandia.gov unity##.sandia.gov unity###.sandia.gov unity# unity## unity###</Field>
     <Field name="hostNickname" type="string">Sandia Unity</Field>
     <Field name="directory" type="string">/projects/visit</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">serial</Field>
