@@ -57,8 +57,21 @@
 //  Creation:       June 25, 2003
 //
 // ***************************************************************************
+// Modifications:
+//  I. R. Corey - May 10, 2011: Modified to build standalone from Visit.
+//
+//     Compile Line: /usr/bin/c++ -I/usr/apps/mdg/include -L/usr/apps/mdg/lib -g -c MakeMili.C
+//     Link Line:    /usr/bin/c++ MakeMili.o -L/usr/apps/mdg/lib -lmili -o mdgmakemili  
+//
+//  I. R. Corey - June 11, 2011: Added ability to update number of states.
+// ***************************************************************************
+//
+
+#define VERSION_STRING "V11.0"
+#define DATE_STRING    "June 30, 2011"
 
 #include <sys/types.h>
+#include <sys/stat.h> 
 #include <dirent.h>
 #include <string.h>
 #include <ctype.h>
@@ -68,16 +81,18 @@
 #include <vector>
 #include <string>
 
-#include <visitstream.h>
+using namespace std; 
+using std::string;
+
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
 
 extern "C"{
 #include <mili.h>
 #include <mili_enum.h>
 }
-
-#include <visit-config.h>
-
-using namespace std;
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -88,20 +103,23 @@ using namespace std;
 //
 
 // The rootname and path generated from the arguments.
-char root[128];
+char root[512];
 int rootLen;
 char *path;
-char path_text[256];
+char path_text[256], infoFilename[256];
 
 // Flag: set if we're a single domain (and thus handle names differently).
 bool singleDomainName = false;
+
+bool verboseMode   = false;
+bool createMode = false;
 
 // Process information. Default values for serial runs.
 int numProcesses = 1;
 int myRank = 0;
 
 // Number of domains.
-int ndomains;
+int ndomains = 1;
 
 // From avtTypes.h
 #define     AVT_SCALAR_VAR      1
@@ -109,6 +127,10 @@ int ndomains;
 #define     AVT_UNKNOWN_TYPE    7  
 #define     AVT_NODECENT        0
 #define     AVT_ZONECENT        1
+
+char *dynapartFile = NULL;
+char currentPath[512];
+bool updateMode = false;
 
 // ***************************************************************************
 //  Struct: MiliInfo
@@ -131,13 +153,16 @@ struct MiliInfo
     int                             ndomains;
     int                             dimensions;
     int                             numMeshes;
-    
+
   // Unique to each domain
+    vector<int>                     numMats;    
+    vector<int>                     numVars;
     vector<int>                     highestMaterial;
     vector<vector<int> >            varType;
     vector<vector<int> >            varCentering;
     vector<vector<string> >         varNames;
-    vector<vector<int> >            varDimension;
+    vector<vector<string> >         varDescr;
+    vector<vector<int> >            varDims;
 };
 
 //
@@ -145,15 +170,16 @@ struct MiliInfo
 //
 
 void DetermineRootAndPath(char *);
-int GetNumDomains();
+int  GetNumDomains();
 void ReadDomain(int, MiliInfo &);
 void ReceiveInfo(vector<MiliInfo> &);
 void SendInfo(MiliInfo &);
 void CompileInfo(const vector<MiliInfo> &, MiliInfo &);
-void PrintInfo(ostream &o, const MiliInfo &, bool);
+void PrintInfo(ostream &o, const MiliInfo &, bool, bool);
 int  VSSearch(const vector<string> &v, const string &s);
 void FatalError(const string &);
-
+void GetGlobalData(MiliInfo &);
+void loadMiliFile(char *filename, MiliInfo &);
 
 // ***************************************************************************
 //  Function: DetermineRootAndPath
@@ -220,6 +246,8 @@ void DetermineRootAndPath(char *fname)
     *p_dest = '\0';
 
     rootLen = strlen(root);
+
+    getcwd(currentPath, sizeof(currentPath));
 }
 
 
@@ -249,19 +277,39 @@ int GetNumDomains()
     int lastdomain = -1;
     dirent *dp;
     DIR *dirp = opendir(path);
+    int singleDomain = true;
+    int fileLen=0;
+
     while ((dp = readdir(dirp)) != NULL)
     {
         char const *f = dp->d_name;
-        if (strstr(f, root) == f)
+        fileLen=strlen(f);
+        if (strstr(f, root) == f && isalpha(f[fileLen-1]))
         {
             //
-            // If it starts with our root, look at the next three
+            // If it starts with our root, look at the next four
             // characters. If they're numbers, it's a multi domain.
             // If they're not, then it's a single domain.
             // 
 
             if (isdigit(f[rootLen]) && isdigit(f[rootLen + 1])
-                                    && isdigit(f[rootLen + 2]))
+                                    && isdigit(f[rootLen + 2])
+                                    && isdigit(f[rootLen + 3]))
+            {
+                int thousand = f[rootLen] - '0';
+                int hundred = f[rootLen+1] - '0';
+                int ten = f[rootLen + 2] - '0';
+                int one = f[rootLen + 3] - '0';
+
+                int dom = thousand * 1000 + hundred * 100 + ten * 10 + one;
+                if (dom > lastdomain)
+                    lastdomain = dom;
+                singleDomain = false;
+            }
+            else
+            {
+            if (isdigit(f[rootLen]) && isdigit(f[rootLen + 1])
+                                     && isdigit(f[rootLen + 2]))
             {
                 int hundred = f[rootLen] - '0';
                 int ten = f[rootLen + 1] - '0';
@@ -270,12 +318,9 @@ int GetNumDomains()
                 int dom = hundred * 100 + ten * 10 + one;
                 if (dom > lastdomain)
                     lastdomain = dom;
+                singleDomain = false;
             }
-            else
-            {
-                // There exists a single domain name.
-                singleDomainName = true;
-            }
+               }
         }
     }
     closedir(dirp);
@@ -335,8 +380,11 @@ void ReadDomain(int dom, MiliInfo &mi)
     // Open the family.
     //
     char rootname[255];
-    sprintf(rootname, "%s%.3d", root, dom); 
-    
+    if ( ndomains > 999 ) 
+         sprintf(rootname, "%s%.4d", root, dom); 
+    else
+         sprintf(rootname, "%s%.3d", root, dom); 
+
     Famid dbid;
     int rval;
     if (singleDomainName)
@@ -364,7 +412,8 @@ void ReadDomain(int dom, MiliInfo &mi)
     mi.varType.resize(nmeshes);
     mi.varCentering.resize(nmeshes);
     mi.varNames.resize(nmeshes);
-    mi.varDimension.resize(nmeshes);
+    mi.varDescr.resize(nmeshes);
+    mi.varDims.resize(nmeshes);
     
     int mesh_id;
     for (mesh_id = 0; mesh_id < nmeshes; ++mesh_id)
@@ -497,6 +546,14 @@ void ReadDomain(int dom, MiliInfo &mi)
 
                      mi.varNames[mesh_id].push_back(sv.short_name);
 
+                     for (int i=0;
+                          i<strlen(sv.long_name);
+                          i++ )
+                          if (sv.long_name[i]==' ' )
+                                sv.long_name[i]='_';
+
+                     mi.varDescr[mesh_id].push_back(string(sv.long_name));
+
                      int cent;
                      if (strcmp(sr.class_name, "node") == 0)
                          cent = AVT_NODECENT;
@@ -514,9 +571,9 @@ void ReadDomain(int dom, MiliInfo &mi)
                      mi.varType[mesh_id].push_back(vartype);
 
                     if (vartype == AVT_SCALAR_VAR)
-                        mi.varDimension[mesh_id].push_back(1);
+                        mi.varDims[mesh_id].push_back(1);
                     else
-                        mi.varDimension[mesh_id].push_back(sv.vec_size);
+                        mi.varDims[mesh_id].push_back(sv.vec_size);
                 }
             }
         }
@@ -565,9 +622,10 @@ void ReadDomain(int dom, MiliInfo &mi)
             for (i = 0; i < paramVarNames.size(); i++)
             {
                 mi.varNames[mesh_id].push_back(paramVarNames[i]);
+                mi.varDescr[mesh_id].push_back(" ");
                 mi.varCentering[mesh_id].push_back(paramVarTypes[i]);
                 mi.varType[mesh_id].push_back(AVT_SCALAR_VAR);
-                mi.varDimension[mesh_id].push_back(1);
+                mi.varDims[mesh_id].push_back(1);
             }
         }
     }
@@ -616,9 +674,10 @@ void ReceiveInfo(vector<MiliInfo> &info)
 
         mi.highestMaterial.resize(nm);
         mi.varNames.resize(nm);
+        mi.varDescr.resize(nm);
         mi.varType.resize(nm);
         mi.varCentering.resize(nm);
-        mi.varDimension.resize(nm);
+        mi.varDims.resize(nm);
 
         // Recv highest materials
         MPI_Recv(&(mi.highestMaterial[0]), nm, MPI_INT, p, 0, 
@@ -648,8 +707,8 @@ void ReceiveInfo(vector<MiliInfo> &info)
         // Recv var dimensions
         for (i = 0; i < nm; ++i)
         {
-            mi.varDimension[i].resize(numVars[i]);
-            MPI_Recv(&(mi.varDimension[i][0]), numVars[i], MPI_INT, p, 0,
+            mi.varDims[i].resize(numVars[i]);
+            MPI_Recv(&(mi.varDims[i][0]), numVars[i], MPI_INT, p, 0,
                                                         MPI_COMM_WORLD, &st);
         }
 
@@ -671,6 +730,22 @@ void ReceiveInfo(vector<MiliInfo> &info)
         
         delete []str;
         
+        // Recv max_length
+        MPI_Recv(&maxLen, 1, MPI_INT, p, 0, MPI_COMM_WORLD, &st);
+
+        // Recv the var descriptions (long names)
+        char *descr = new char[maxLen];
+        for (i = 0; i < nm; ++i)
+        {
+            int j;
+            for (j = 0; j < numVars[i]; ++j)
+            {
+                MPI_Recv(descr, maxLen, MPI_CHAR, p, 0, MPI_COMM_WORLD, &st);
+                mi.varDescr[i].push_back(string(descr));
+            }
+        }
+        
+        delete []descr;
     }
 #endif
 }
@@ -739,7 +814,7 @@ void SendInfo(MiliInfo &mi)
                                                              MPI_COMM_WORLD);
     // Send the var dimension 
     for (i = 0; i < nm; ++i)
-        MPI_Send(&(mi.varDimension[i][0]), numVars[i], MPI_INT, 0, 0,
+        MPI_Send(&(mi.varDims[i][0]), numVars[i], MPI_INT, 0, 0,
                                                              MPI_COMM_WORLD);
     int maxLen = 0;
     for (i = 0; i < nm; ++i)
@@ -766,6 +841,32 @@ void SendInfo(MiliInfo &mi)
     }
 
     delete[] str;
+
+    // Send the variable descriptions (long names)
+    maxlen=0;
+    for (i = 0; i < nm; ++i)
+    {
+        int j;
+        for (j = 0; j < numVars[i]; ++j)
+            if (mi.varDescr[i][j].length() > maxLen)
+                maxLen = mi.varDescr[i][j].length();
+    }
+    ++maxLen;
+
+    // Send the max_length
+    MPI_Send(&maxLen, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+    char *descr = new char[maxLen];
+    for (i = 0; i < nm; ++i)
+    {
+        int j;
+        for (j = 0; j < numVars[i]; ++j)
+        {
+            strcpy(descr, mi.varDescr[i][j].c_str());
+            MPI_Send(descr, maxLen, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
+        }
+    }
+
+    delete[] descr;
 #endif
 }
 
@@ -803,8 +904,9 @@ void CompileInfo(const vector<MiliInfo> &info, MiliInfo &result)
     result.highestMaterial.resize(nm, -1);
     result.varType.resize(nm);
     result.varCentering.resize(nm);
-    result.varDimension.resize(nm);
+    result.varDims.resize(nm);
     result.varNames.resize(nm);
+    result.varDescr.resize(nm);
    
     int i; 
     for (i = 0; i < info.size(); ++i)
@@ -819,18 +921,23 @@ void CompileInfo(const vector<MiliInfo> &info, MiliInfo &result)
             int v;
             for (v = 0; v < mi.varNames[m].size(); ++v)
             {
-                const string &vn = mi.varNames[m][v];
+                const string &vn     = mi.varNames[m][v];
+                const string &vdescr = mi.varDescr[m][v];
+
                 if (VSSearch(result.varNames[m], vn) == -1)
                 {
                     result.varNames[m].push_back(vn);
+                    result.varDescr[m].push_back(vdescr);
                     result.varType[m].push_back(mi.varType[m][v]);
                     result.varCentering[m].push_back(mi.varCentering[m][v]);
-                    result.varDimension[m].push_back(mi.varDimension[m][v]);
+                    result.varDims[m].push_back(mi.varDims[m][v]);
                 } 
             }
         }
     }
 }
+
+#define vp(a) if (verbose) o << a
 
 // ***************************************************************************
 //  Function: PrintInfo
@@ -848,43 +955,47 @@ void CompileInfo(const vector<MiliInfo> &info, MiliInfo &result)
 //    Added variable dimensionality.
 //
 // ***************************************************************************
-
-#define vp(a) if (verbose) o << a
-void PrintInfo(ostream &o, const MiliInfo &mi, bool verbose)
+void PrintInfo(ostream &o, const MiliInfo &mi, bool miliFile, bool verbose)
 {
-    vp("MiliInfo: \n----------------------\n");
+    if (!miliFile)
+        vp("MiliInfo: \n----------------------\n");
+    o << "Path:\t\t\t" << currentPath << endl;
     vp("Domains:\t\t");
     o << mi.ndomains << endl;
     vp("Timesteps:\t\t");
     o << mi.ntimesteps << endl;
     vp("Dimensions:\t\t");
     o << mi.dimensions << endl;
-    vp("Number of Meshes:\t");
+    vp("Number_of_Meshes:\t");
     o << mi.numMeshes << endl;
     o << endl;
 
     int mesh;
     for (mesh = 0; mesh < mi.numMeshes; ++mesh)
     {
-        vp("Mesh " << mesh << endl);
-        vp("Number of Materials: ");
+        vp("Mesh: " << mesh+1 << endl);
+        vp("Number_of_Materials: ");
         o << mi.highestMaterial[mesh] + 1 << endl;
         int nVar = mi.varNames[mesh].size();
-        vp("Number of Variables: " );
+        vp("Number_of_Variables: " );
         o << nVar << endl;
-        vp("\tType\tCenter\tDims\tName" << endl);
+        vp("*\tType\tCenter\tDims\tName \t\t\tLong Name" << endl);
         int var;
-        for (var = 0; var < mi.varNames[mesh].size(); ++var)
+
+        for (var = 0; 
+             var < mi.varNames[mesh].size(); 
+             ++var)
         {
-            o << '\t' << mi.varType[mesh][var]  << '\t'
+ 
+           o << '\t' << mi.varType[mesh][var]  << '\t'
                       << mi.varCentering[mesh][var] << '\t'
-                      << mi.varDimension[mesh][var] << '\t'
-                      << mi.varNames[mesh][var] << endl;
+                      << mi.varDims[mesh][var] << '\t' << setw(16) << setiosflags(ios::left)
+                      << mi.varNames[mesh][var] << '\t'
+                      << mi.varDescr[mesh][var] << endl;
         }
         o << endl;
     }
 }
-
 
 // ***************************************************************************
 //  Function: VSSearch
@@ -935,6 +1046,367 @@ void FatalError(const string &s)
 }
 
 // ***************************************************************************
+//  Function: GetGlobalData
+//
+//  Purpose:
+//    Reads some global fields from the domain 0 Mili file.
+//
+//  Arguments: None
+//
+//  Notes:
+//    Will abort program if failure to open family or read variables.
+//
+//  Modifications:
+//
+// ***************************************************************************
+
+void GetGlobalData( MiliInfo &mi )
+{
+    //
+    // Open the family.
+    //
+    int i,j,k;
+    int dom = 0;
+    char short_name[1024];
+    char long_name[1024];
+
+    char rootname[512];
+    if ( ndomains > 999 )
+         sprintf(rootname, "%s%.4d", root, dom);
+    else
+         sprintf(rootname, "%s%.3d", root, dom);         
+    
+    Famid dbid;
+    int rval;
+    if (singleDomainName)
+        rval = mc_open (root, path, "r", &dbid);
+    else
+        rval = mc_open (rootname, path, "r", &dbid);
+
+    mi.ndomains = ndomains;
+    mc_query_family(dbid, QTY_STATES, NULL, NULL, &(mi.ntimesteps));
+    mc_query_family(dbid, QTY_DIMENSIONS, NULL, NULL, &(mi.dimensions));
+
+    // Get the variable long names if we dont already have them
+    int srec_qty=0;
+    rval = mc_query_family(dbid, QTY_SREC_FMTS, NULL, NULL,
+                           (void*) &srec_qty); 
+
+    for (int i = 0; 
+         i < srec_qty;
+         i++) {
+
+        int mesh_id=0;
+        rval = mc_query_family(dbid, SREC_MESH, (void *) &i, NULL,
+                               (void *) &mesh_id);
+        
+        
+        if (mi.varDescr[mesh_id].size()>0 )
+            continue;
+
+        int srec_qty = 0;
+        int substates = 0;
+        rval = mc_query_family(dbid, QTY_SUBRECS, (void *) &i, NULL,
+                               (void *) &substates);
+        for (int j = 0;
+             j < substates;
+             j++) {
+              Subrecord sr;
+             rval = mc_get_subrec_def(dbid, i, j, &sr);
+             for (int k = 0; 
+                  k < sr.qty_svars;
+                  k++) {
+                   State_variable sv;
+                  mc_get_svar_def(dbid, sr.svar_names[k], &sv);
+                  for (int i=0;
+                       i<strlen(sv.long_name);
+                       i++ )
+                       if (sv.long_name[i]==' ' )
+                           sv.long_name[i]='_';
+
+                    mi.varDescr[mesh_id].push_back(string(sv.long_name));
+              }
+          }
+      }
+
+    mc_close(dbid);
+}
+
+// ***************************************************************************
+//  Function: readMiliFileLine
+//
+//  Purpose:
+//   
+//
+//  Arguments: in - input stream
+//             commentSymbol - optional comment string
+//             keyword - if set, then return line beginning with this string
+//             lineN - return line number N
+//             eof - return eof state (true | false)
+//           
+//  Notes:
+//
+//  Modifications:
+//
+// ****************************************************************************
+char *readMiliFileLine(ifstream &in, const char *commentSymbol, const char *kw,
+                       int lineN, bool *lineReturned, bool *eof)
+{
+  char *oneLine, dummy[512];
+  int i=0;
+  int maxLen=0;
+  int lineNumber=0;
+
+  bool lineFound=false, commentFound=false;
+
+  if (lineN>0)
+      in.seekg(0); // Rewind file
+  
+  *lineReturned=false;
+  *eof=false;
+
+  while (!lineFound) {
+         in.getline(dummy, 512 );
+
+         if (in.eof()) {
+             *eof=true;
+             *lineReturned=false;
+             return NULL;
+         }
+
+         if (strlen(dummy)==0)
+             continue;
+
+         string field1;
+         std::stringstream ss(dummy);
+         field1="";
+         ss >> field1;
+
+         // Check for a comment line
+         if (commentSymbol)
+             if (strlen(commentSymbol)>0) {
+                 if (strlen(commentSymbol) <= field1.length())
+                     maxLen = strlen(commentSymbol);
+                 else
+                     maxLen = field1.length();
+
+                 commentFound=true;
+                 int charMatch=0;
+                 for (int i=0;
+                        i<maxLen;
+                      i++) {
+                 if (field1[i]!=commentSymbol[i]) {
+                     commentFound=false;
+                     break;
+                 }
+                 else
+                     charMatch++;
+                 if (  charMatch!=strlen(commentSymbol) )
+                       commentFound=false;
+                 }
+             }
+
+         if (commentFound)
+             continue;
+
+         char kwUpper[256];
+         if (kw)
+             if (strlen(kw)>0) {
+                 /* Convert fields to upper case */ 
+                 strcpy(kwUpper, kw);
+                 for (int i=0; 
+                      i<strlen(kw);
+                      i++)
+                      kwUpper[i] = toupper(kw[i]);
+             }
+         
+         for (int i = 0; 
+              i < field1.length(); 
+              i++)
+              field1[i]=toupper(field1[i]);
+         
+         if ( !strcmp(field1.c_str(), kwUpper )) {
+              lineFound=true;
+              break;
+         }
+
+         if ( lineN>0 ) {
+           if (lineNumber==lineN) {
+               if (in.eof())
+                   *eof=true;
+               lineFound=true;
+           }
+         }
+
+         if (lineN<=0 && strlen(kw)==0)
+             lineFound=true;
+  }
+  if (lineFound) {
+      oneLine = new char[(strlen(dummy)+2)];
+      strcpy(oneLine, dummy);
+      *lineReturned=true;
+      return oneLine;
+  }
+  else {
+      *lineReturned=false;
+      return NULL;
+  }
+}
+
+// ***************************************************************************
+//  Function: loadMiliFile
+//
+//  Purpose:  Read the Mili Metadata file - old and new formats
+//   
+//
+//  Arguments: filename
+//             
+//
+//  Notes:
+//
+//  Modifications:
+//
+// ***************************************************************************
+
+void loadMiliFile(char *filename, MiliInfo &mi)
+{
+   ifstream in;
+   bool newFormat = false;
+   int i=0, meshid=0, varid=0;
+   int nmeshes=1, nmaterials=1;
+   int varInt;
+
+   int type, centering, dims;
+   string name, descr;
+   char nameC[256], descrC[256];
+
+   char path[512], dummy[512], *oneLine;
+   bool eof, lineReturned;
+
+   in.open(filename, ios::in);
+   oneLine = readMiliFileLine(in, "*", "Path:", 0, &lineReturned, &eof);
+   
+   if (lineReturned) {
+       newFormat=true;
+       sscanf(oneLine,"%*s %s", path);
+   }
+   else {
+       in.clear();
+       in.seekg(0);
+
+   }
+   if ( newFormat ) {
+        oneLine = readMiliFileLine(in, "*", "Domains:", 0, &lineReturned, &eof);
+        sscanf(oneLine,"%*s %d", &mi.ndomains);    // Num Domains
+        free(oneLine);
+
+        oneLine = readMiliFileLine(in, "*", "Timesteps:", 0, &lineReturned, &eof);
+        sscanf(oneLine,"%*s %d", &mi.ntimesteps); // Num Timesteps
+        free(oneLine);
+
+        oneLine = readMiliFileLine(in, "*", "Dimensions:", 0, &lineReturned, &eof);
+        sscanf(oneLine,"%*s %d", &mi.dimensions); // Num Dimensions
+        free(oneLine);
+
+        oneLine = readMiliFileLine(in, "*", "Number_of_Meshes:", 0, &lineReturned, &eof);
+        sscanf(oneLine,"%*s %d", &mi.numMeshes); // Num Meshes
+        free(oneLine);
+   }
+   else {
+        in >> mi.ndomains >> mi.ntimesteps >>  mi.dimensions >> mi.numMeshes;
+   }
+
+   nmeshes = mi.numMeshes;
+   
+   mi.numMats.resize(nmeshes);
+   mi.numVars.resize(nmeshes);
+   mi.highestMaterial.resize(nmeshes);
+   mi.varType.resize(nmeshes);
+   mi.varCentering.resize(nmeshes);
+   mi.varNames.resize(nmeshes);
+   mi.varDescr.resize(nmeshes);
+   mi.varDims.resize(nmeshes);
+   
+   for ( meshid=0;
+         meshid<mi.numMeshes;
+         meshid++ ) {
+
+         if ( newFormat ) {
+              oneLine = readMiliFileLine(in, "*", "Mesh:", 0, &lineReturned, &eof);
+              free(oneLine);
+
+              oneLine = readMiliFileLine(in, "*", "Number_of_Materials:", 0, &lineReturned, &eof);
+              sscanf(oneLine,"%*s %d", &mi.numMats[meshid]); // Num Mats
+              free(oneLine);
+
+              oneLine = readMiliFileLine(in, "*", "Number_of_Variables:", 0, &lineReturned, &eof);
+              sscanf(oneLine,"%*s %d", &mi.numVars[meshid]); // Num Vars
+              free(oneLine);
+
+              for ( varid=0; 
+                    varid<mi.numVars[meshid];
+                    varid++ ) {
+                    oneLine = readMiliFileLine(in, "*", "", 0, &lineReturned, &eof);
+
+                    // Replace spaces in var names with special character so
+                    // we can parse as a single name.
+                    if ( strlen(oneLine)>=10)
+                         for ( int i=10;
+                               i<strlen(oneLine)-1;
+                               i++ ) if ( oneLine[i]==' ' && oneLine[i-1]!=' ' && oneLine[i+1]!=' ' )
+                                          oneLine[i]='~';
+
+                    if (lineReturned) {
+                        descrC[0]='\0';
+                        sscanf(oneLine,"%d %d %d %s %s", &type, &centering, &dims, nameC, descrC); 
+                        free(oneLine);
+                        
+                        mi.varType[meshid].push_back(type);
+                        mi.varCentering[meshid].push_back(centering);
+                        mi.varDims[meshid].push_back(dims);
+
+                        for ( int i=0;
+                              i<strlen(nameC);
+                              i++ ) if ( nameC[i]=='~' )
+                                         nameC[i]=' ';
+                        mi.varNames[meshid].push_back(string(nameC)); 
+
+                        for ( int i=0;
+                              i<strlen(descrC);
+                              i++ ) if ( descrC[i]=='~' )
+                                         descrC[i]=' ';
+                        mi.varDescr[meshid].push_back(string(descrC));
+                    }
+              }
+         }
+         else {
+              in >> mi.numMats[meshid] >> mi.numVars[meshid];  // Num Mats + Num Var        
+              for ( varid=0; 
+                    varid<mi.numVars[meshid];
+                    varid++ ) {
+                    in >> type >> centering >> dims >> name;
+
+                    mi.varType[meshid].push_back(type);
+                    mi.varCentering[meshid].push_back(centering);
+                    mi.varDims[meshid].push_back(dims);
+                    mi.varNames[meshid].push_back(name);
+              }
+         }
+   }
+
+   // Get the Partfile name if it exists
+   if (!dynapartFile) {
+       oneLine = readMiliFileLine(in, "*", "", 0, &lineReturned, &eof);
+       if (lineReturned) {
+           dynapartFile = new char[strlen(oneLine)];
+           strcpy(dynapartFile, oneLine);
+       }
+   }
+
+   in.close();
+}
+
+// ***************************************************************************
 //  Main
 //
 //  Arguments:
@@ -954,6 +1426,7 @@ void FatalError(const string &s)
 
 int main(int argc, char* argv[])
 {
+
 #ifdef PARALLEL
     MPI_Init(&argc, &argv);
 
@@ -961,11 +1434,25 @@ int main(int argc, char* argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
 #endif 
 
-    char *dynapartFile = NULL;
     char * argument = NULL;
     int argi;
-    for (argi = 1; argi < argc; ++argi)
+
+    printf("\nRunning Makemili Version %s. Created on: %s", VERSION_STRING, DATE_STRING);
+
+    for (argi = 1; 
+         argi < argc; 
+         ++argi)
     {
+        if (!strcmp(argv[argi], "-c") || !strcmp(argv[argi], "-create"))
+        {
+            createMode = true;
+        }
+
+        if (!strcmp(argv[argi], "-v") || !strcmp(argv[argi], "-verbose"))
+        {
+            verboseMode = true;
+        }
+
         if (!strcmp(argv[argi], "-dynapart"))
         {
             // Check the next argument for bad usage.
@@ -989,12 +1476,16 @@ int main(int argc, char* argv[])
             exit(-1);
         
         cout <<
+
 "makemili help:\n"
+
 "  Req. Argument:   the root name of a single or multi domained Mili dataset.\n"
 "                   The path to the dataset may be included in the name.\n"
 "                   The output .mili file will be written in the same\n"
 "                   directory as the dataset.\n\n"
-"  Opt. Argument:   -dynapart <DynaPart partition filename>\n" << endl;
+"\n"
+"  Opt. Argument:   -dynapart <DynaPart partition filename>\n" 
+"                   -c Create new .mili file - do not update if file exists." << endl;
  
         exit(-1);
     }
@@ -1008,7 +1499,7 @@ int main(int argc, char* argv[])
     {
         ndomains = GetNumDomains();
         cout << "General: \n----------------------\n";
-        cout << "Root: " << root << " \tPath: " << path << endl;
+        cout << "Root: " << root << " \tPath: " << currentPath << endl;
         if (dynapartFile)
             cout << "DynaPart file option: " << dynapartFile << endl;
         if (ndomains <= 0)
@@ -1061,7 +1552,7 @@ int main(int argc, char* argv[])
         }
         
         startDomain = myRank;
-        endDomain = myRank;
+        endDomain   = myRank;
         
         //
         // At this point, the number of processes may have changed.
@@ -1082,19 +1573,64 @@ int main(int argc, char* argv[])
         endDomain = ndomains - 1;
     }
     
-    vector<MiliInfo> info(endDomain - startDomain + 1);
+    // Check if a .mili file exists to update
+    struct stat stFileInfo;
+    int status=0;
+    strcpy( infoFilename, root );
+    strcat( infoFilename, ".mili" );
+    status = stat(infoFilename, &stFileInfo);
+    if(status == 0) 
+       updateMode = true;
+    else
+       updateMode = false;
     
-    int i;
-    for (i = startDomain; i <= endDomain; ++i)
+    if ( updateMode && !createMode ) 
     {
-        ReadDomain(i, info[i - startDomain]);
+         ofstream out;
+         char tempFilename[512];
+         char oneLine[512];
+         int  status=0;
+         MiliInfo compiledInfo;
+
+         loadMiliFile( infoFilename, compiledInfo );
+         GetGlobalData( compiledInfo );
+
+         strcpy( tempFilename, infoFilename );
+         strcat( tempFilename, ".old" );
+         status = rename( infoFilename, tempFilename );
+         
+         out.open( infoFilename, ios::out );
+         PrintInfo(out, compiledInfo, false, true); 
+
+          if (dynapartFile)
+             out << dynapartFile << endl;
+
+         out.close();
+
+         PrintInfo(cout, compiledInfo, false, true);            
+         if (dynapartFile)
+             cout << "DynaPart file: " << dynapartFile << endl;
+         cout << "File " << infoFilename << " successfully written." << endl; 
+
+#ifdef PARALLEL
+         MPI_Finalize();
+#endif
+         exit(1);
     }
-    
+
+    int i;
+    vector<MiliInfo> info(endDomain - startDomain + 1);
+    for (i = startDomain; 
+         i <= endDomain; 
+         ++i)
+    {
+         ReadDomain(i, info[i - startDomain]);
+    }
     MiliInfo compiledInfo;
     CompileInfo(info, compiledInfo);
     
 #ifdef PARALLEL
-    if (myRank == 0)
+    if (myRank == 0) 
     {
         vector<MiliInfo> gatheredInfo(numProcesses);
         gatheredInfo[0] = compiledInfo;
@@ -1110,7 +1646,7 @@ int main(int argc, char* argv[])
 
     if (myRank == 0)
     {
-        PrintInfo(cout, compiledInfo, true);
+        PrintInfo(cout, compiledInfo, false, true);
         if (dynapartFile)
             cout << "DynaPart file: " << dynapartFile << endl;
 
@@ -1122,7 +1658,8 @@ int main(int argc, char* argv[])
             cerr << "** Error! Could not write to file: " << outfname << endl; 
         else
         {
-            PrintInfo(out, compiledInfo, false);
+             PrintInfo(out, compiledInfo, true, true);
+
             // Write out the dynapart file if we have one
             if (dynapartFile)
                 out << dynapartFile << endl;
@@ -1134,4 +1671,6 @@ int main(int argc, char* argv[])
 #ifdef PARALLEL
     MPI_Finalize();
 #endif
+    exit(1);
 }
+
