@@ -4,6 +4,7 @@
     <Field name="hostAliases" type="string">redsky-login#.sandia.gov redsky-login#</Field>
     <Field name="hostNickname" type="string">Sandia Redsky</Field>
     <Field name="directory" type="string">/projects/visit</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">serial</Field>
