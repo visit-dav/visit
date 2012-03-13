@@ -2037,6 +2037,15 @@ if ( $host =~ /^glory\d+$/ or $host =~ /^unity\d+$/ or $host =~ /^whitney\d+$/ )
     $ENV{LD_LIBRARY_PATH} = "/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:$ENV{LD_LIBRARY_PATH}";
 }
 
+# ----
+# HACK for Redsky and Redsky-s @ Sandia
+# ----
+$IsRunningOnRedskySandia = 0;
+if ( $host =~ /^redsky-login\d+$/ )
+{
+    $IsRunningOnRedskySandia = 1;
+}
+
 #  We stripped off the "port" argument above, so put it back here. Put it
 #  at the beginning so that it ends after the -host argument, see below.
 if ($remoteport_set)
@@ -3029,7 +3038,16 @@ if ($procs_set or ($parallel and $parlaunch_set))
             print TFILE "#!/bin/sh\n";
             if ($IsRunningOnGlorySandia)
             {
+                print TFILE "source /usr/share/modules/init/bash\n";
+                print TFILE "module purge\n";
+                print TFILE "module load mpi/openmpi-1.4.3_pgi-9.0-4\n";
                 print TFILE "module load compilers/gcc-4.3.4\n";
+            }
+            if ($IsRunningOnRedskySandia)
+            {
+                print TFILE "source /usr/share/Modules/init/bash\n";
+                print TFILE "module purge\n";
+                print TFILE "module load mpi/openmpi-1.4.3_oobpr_intel-11.1-f064-c064\n";
             }
             print TFILE $cdcmd;
             print TFILE $limitcmd;

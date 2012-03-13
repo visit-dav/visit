@@ -553,7 +553,7 @@ fi
 rm -f glory
 cat <<EOF > glory
 #!/bin/sh
-./visit-install -private -c sandia $ver linux-glory /projects/visit > installlog 2>&1
+./visit-install -private -c sandia -l $ver linux-glory /projects/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on glory"           > resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -587,7 +587,7 @@ fi
 rm -f redsky
 cat <<EOF > redsky
 #!/bin/sh
-./visit-install -private -c sandia $ver linux-redsky /projects/visit > installlog 2>&1
+./visit-install -private -c sandia -l $ver linux-redsky /projects/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on redsky"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
