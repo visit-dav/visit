@@ -23,18 +23,18 @@ return ""
 
 function bv_mili_info
 {
-export MILI_FILE=${MILI_FILE:-"mili-1.10a.tar.gz"}
-export MILI_VERSION=${MILI_VERSION:-"1.10.0"}
-export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"1.0"}
+export MILI_FILE=${MILI_FILE:-"Mili-111.tar.gz"}
+export MILI_VERSION=${MILI_VERSION:-"1.11.1"}
+export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"1.11.1"}
 export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
 }
 
 function bv_mili_print
 {
-  printf "%s%s\n" "MILI_FILE=" "${MILI_FILE}"
-  printf "%s%s\n" "MILI_VERSION=" "${MILI_VERSION}"
-  printf "%s%s\n" "MILI_COMPATIBILITY_VERSION=" "${MILI_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "MILI_BUILD_DIR=" "${MILI_BUILD_DIR}"
+printf "%s%s\n" "MILI_FILE=" "${MILI_FILE}"
+printf "%s%s\n" "MILI_VERSION=" "${MILI_VERSION}"
+printf "%s%s\n" "MILI_COMPATIBILITY_VERSION=" "${MILI_COMPATIBILITY_VERSION}"
+printf "%s%s\n" "MILI_BUILD_DIR=" "${MILI_BUILD_DIR}"
 }
 
 function bv_mili_print_usage
@@ -91,9 +91,9 @@ function bv_mili_dry_run
 #                          Function 8.2, build_mili                           #
 # *************************************************************************** #
 
-function apply_mili_110_darwin_patch
+function apply_mili_100_darwin_patch
 {
-   patch -p0 << \EOF
+    patch -p0 << \EOF
 diff -c a/src/mili_internal.h mili/src/mili_internal.h
 *** a/src/mili_internal.h
 --- mili/src/mili_internal.h
@@ -108,36 +108,114 @@ diff -c a/src/mili_internal.h mili/src/mili_internal.h
   #include "misc.h"
   #include "mili.h"
 EOF
-   if [[ $? != 0 ]] ; then
-      warn "Mili patch for V1.10 on Darwin failed."
-      return 1
-   fi
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply Darwin patch to Mili 1.10.0."
+        return 1
+    fi
 
-   return 0
+    return 0
 }
 
-function apply_mili_110_patch
+function apply_mili_100_patch
 {
-   if [[ "$OPSYS" == "Darwin" ]]; then
-       apply_mili_110_darwin_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        apply_mili_100_darwin_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
 
-   return 0
+    return 0
+}
+
+function apply_mili_111_patch_1
+{
+    patch -p0 << \EOF
+diff -c a/src/mili.h mili/src/mili.h
+*** a/src/mili.h
+--- mili/src/mili.h
+***************
+*** 226,232 ****
+  } ObjDef;
+
+  /* Mili version */
+! const char *mili_version;
+
+  /*
+                  * *                                      * *
+--- 226,232 ----
+  } ObjDef;
+
+  /* Mili version */
+! extern const char *mili_version;
+
+  /*
+                  * *                                      * *
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 1 to Mili 1.11.1."
+        return 1
+    fi
+
+    return 0
+}
+
+function apply_mili_111_patch_2
+{
+    patch -p0 << \EOF
+diff -c a/src/mili.c mili/src/mili.c
+*** a/src/mili.c
+--- mili/src/mili.c
+***************
+*** 94,99 ****
+--- 94,102 ----
+                           && ( f->ti_directory[f->ti_file_count - 1].commit_count == 0\
+                                || f->non_state_ready ) )
+
++ /* Mili version */
++ const char *mili_version;
++
+  static void set_path( char *in_path, char **out_path, int *out_path_len );
+  static void map_old_header( char header[CHAR_HEADER_SIZE] );
+  static Return_value create_family( Mili_family * );
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 2 to Mili 1.11.1."
+        return 1
+    fi
+
+    return 0
+}
+
+function apply_mili_111_patch
+{
+    apply_mili_111_patch_1
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+    apply_mili_111_patch_2
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    return 0
 }
 
 function apply_mili_patch
 {
-   if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
-       apply_mili_110_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
+    if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
+        apply_mili_100_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
+        apply_mili_111_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
 
-   return 0
+    return 0
 }
 
 function build_mili
@@ -159,7 +237,7 @@ function build_mili
     apply_mili_patch
     if [[ $? != 0 ]] ; then
        if [[ $untarred_mili == 1 ]] ; then
-          warn "Giving up on Mili build because the patch failed."
+          warn "Giving up on Mili build because the patches failed."
           return 1
        else
           warn "Patch failed, but continuing.  I believe that this script " 
@@ -186,16 +264,32 @@ function build_mili
     #
     info "Building Mili . . . (~2 minutes)"
 
-    cd MILI-$OPSYS-*
-    cd src
-    $C_COMPILER $CFLAGS $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c \
-        mili.c direc.c param.c io.c util.c dep.c svar.c \
-        srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c \
-        sarray.c gahl.c util.c partition.c ti.c tidirc.c
-    if [[ $? != 0 ]] ; then
-        warn "Mili build failed.  Giving up"
-        return 1
+    if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
+        cd MILI-$OPSYS-*
+        cd src
+        $C_COMPILER $CFLAGS $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c \
+            mili.c direc.c param.c io.c util.c dep.c svar.c \
+            srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c \
+            sarray.c gahl.c util.c partition.c ti.c tidirc.c
+        if [[ $? != 0 ]] ; then
+            warn "Mili build failed.  Giving up"
+            return 1
+        fi
+    elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
+        cd MILI-*-*
+        cd src
+        $C_COMPILER $CFLAGS $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c \
+            mili.c dep.c direc.c eprtf.c gahl.c io_mem.c \
+            mesh_u.c mr_funcs.c param.c partition.c read_db.c sarray.c \
+            srec.c svar.c taurus_db.c taurus_mesh_u.c taurus_srec.c \
+            taurus_svars.c taurus_util.c ti.c tidirc.c util.c wrap_c.c \
+            write_db.c
+        if [[ $? != 0 ]] ; then
+            warn "Mili build failed.  Giving up"
+            return 1
+        fi
     fi
+
     #
     # Install into the VisIt third party location.
     #
@@ -206,7 +300,11 @@ function build_mili
     mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    cp mili.h mili_enum.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
+    if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
+        cp mili.h mili_enum.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
+    elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
+        cp mili.h mili_enum.h misc.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
+    fi
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         INSTALLNAMEPATH="$VISITDIR/mili/${MILI_VERSION}/$VISITARCH/lib"
 

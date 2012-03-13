@@ -40,10 +40,26 @@
 //                              avtMiliFileFormat.C                          //
 // ************************************************************************* //
 
+/*
+ ************************************************************************
+ * Modifications:
+ *
+ *  I. R. Corey - June 21, 2011: Modifications to support new features in
+ *  the .mili file such as specification of file paths and SPH particles.
+ *
+ ************************************************************************/
+
+#define PLUGIN_VERSION "11.1"
+#define DATE_VERSION "March 7th, 2012"
+
 #include <avtMiliFileFormat.h>
 
+#include <vector>
+#include <string>
+using std::getline;
 #include <snprintf.h>
 #include <visitstream.h>
+#include <set>
 
 extern "C" {
 #include <mili_enum.h>
@@ -72,13 +88,9 @@ extern "C" {
 #include <InvalidVariableException.h>
 #include <UnexpectedValueException.h>
 
-#include <set>
-#include <string>
-#include <utility>
-#include <vector>
-
-using std::getline;
 using std::ifstream;
+using std::list;
+using std::map;
 using std::pair;
 using std::string;
 using std::vector;
@@ -88,7 +100,20 @@ static const char *no_free_nodes_str = "no_free_nodes";
 static const int free_nodes_strlen = strlen(free_nodes_str);
 static const int no_free_nodes_strlen = strlen(no_free_nodes_str);
 
+// Mili geometry data 
+static const int n_elem_types = 8;
+static const int elem_sclasses[n_elem_types] =
+{
+    M_TRUSS, M_BEAM, M_TRI, M_QUAD, M_TET, M_PYRAMID, M_WEDGE, M_HEX
+};
+static int conn_count[n_elem_types] =
+{
+    2, 3, 3, 4, 4, 5, 6, 8
+};   
+
 #define Warn(msg)          IssueWarning(msg, __LINE__)
+
+bool miliLoadMessageDisplayed = false;
 
 // ****************************************************************************
 //  Method:  avtMiliFileFormat::IssueWarning
@@ -159,89 +184,13 @@ avtMiliFileFormat::IssueWarning(const char *msg, int key)
 avtMiliFileFormat::avtMiliFileFormat(const char *fname)
     : avtMTMDFileFormat(fname)
 {
-    ifstream in;
-    in.open(fname);
 
-    ndomains = nmeshes = 0;
-    setTimesteps = false;
-    
-    in >> ndomains;
-    in >> ntimesteps;
-    in >> dims;
-    in >> nmeshes;
-    
-    dbid.resize(ndomains, -1);
-    readMesh.resize(ndomains, false);
-    validateVars.resize(ndomains, false);
-    nnodes.resize(ndomains);
-    ncells.resize(ndomains);
-    connectivity.resize(ndomains);
-    sub_records.resize(ndomains);
-    sub_record_ids.resize(ndomains);
-    element_group_name.resize(ndomains);
-    connectivity_offset.resize(ndomains);
-    group_mesh_associations.resize(ndomains);
-    materials.resize(ndomains);
-    
-    nmaterials.resize(nmeshes);
-
-    int dom;
-    for (dom = 0; dom < ndomains; ++dom)
-    {
-        nnodes[dom].resize(nmeshes, 0);
-        ncells[dom].resize(nmeshes, 0);
-        connectivity[dom].resize(nmeshes, NULL);
-        materials[dom].resize(nmeshes, NULL);
+    if ( !miliLoadMessageDisplayed ) {
+         printf("\nUsing MDG Visit Mili Plugin. Visit Version %s / Mili Version %s (%s)\n\n\n", VISIT_VERSION, MILI_VERSION, DATE_VERSION );
     }
 
-    int mesh_id;
-    for (mesh_id = 0; mesh_id < nmeshes; ++mesh_id)
-    {
-        in >> nmaterials[mesh_id];
-        int nVars;
-        in >> nVars;
-        int v;
-        for (v = 0; v < nVars; ++v)
-        {
-            int type, center, v_dimension;
-            string name;
-            in >> type >> center >> v_dimension;
-
-            // Strip out leading white space.
-            while(isspace(in.peek()))
-                in.get();
-            
-            getline(in, name);
-
-            vars.push_back(name);
-            centering.push_back(avtCentering(center));
-            vartype.push_back(avtVarType(type));
-            var_dimension.push_back(v_dimension);
-            var_mesh_associations.push_back(mesh_id);
-        }
-    }
-
-    vars_valid.resize(ndomains);
-    var_size.resize(ndomains);
-    for (dom = 0; dom < ndomains; ++dom)
-    {
-        vars_valid[dom].resize(vars.size());
-        var_size[dom].resize(vars.size());
-    }
-
-    if (in.fail())
-        EXCEPTION1(InvalidFilesException, fname);
-
-    // Read part file, if it exists.
-    dynaPartFilename = "";
-    in >> dynaPartFilename;
-    if (dynaPartFilename != "")
-        readPartInfo = false;
-    else
-        readPartInfo = true;
-    
-    in.close();
-
+    LoadMiliInfo(fname);
+ 
     //
     // Code from GRIZ.
     //
@@ -295,6 +244,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
     // If it ends in .m or .mili, strip it off.
     //
     int len = strlen(root);
+
     if (len > 4 && strcmp(&(root[len - 5]), ".mili") == 0)
     {
         root[len - 5] = '\0';
@@ -308,6 +258,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
         EXCEPTION1(InvalidFilesException, fname);
     }
 
+    fampath=NULL;
     famroot = new char[strlen(root) + 1];
     strcpy(famroot, root);
     if (path)
@@ -315,12 +266,18 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
         fampath = new char[strlen(path) + 1];
         strcpy(fampath, path);
     }
-    else
-       fampath = NULL; 
+
+    if (strlen(filepath) > 0)
+    {
+        if (fampath)
+            delete [] fampath;
+        fampath = new char[strlen(filepath) + 1];
+        strcpy(fampath, filepath);
+    }
 
     free_nodes = 0;
     num_free_nodes = 0;
-    free_nodes_ts = -1;
+    free_nodes_ts = -1; 
 }
 
 
@@ -634,6 +591,11 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
         }
     }
 
+    /*    Subrecord sr;
+    memset(&sr, 0, sizeof(sr));
+    rval = mc_get_subrec_def(dbid[dom], 0, j, &sr);
+    */
+        
     int amt = dims*nnodes[dom][mesh_id];
     float *fpts = 0;
     if (nodpos != -1)
@@ -978,6 +940,45 @@ avtMiliFileFormat::DecodeMultiMeshVarname(const string &varname,
 }
 
 // ****************************************************************************
+//  Method: avtMiliFileFormat::DecodeMultiLevelVarname
+//
+//  Purpose:
+//      Takes in a variable name used to populate, and returns the
+//      original variable name less the directory path.
+//
+//  Programmer: Ivan R. Corey
+//  Creation:   June 22, 2011
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::DecodeMultiLevelVarname(const string &inname, string &decoded)
+{
+    size_t found;
+    string vname;
+    bool moreLevels=true;
+
+    // Seperate var dir from name
+    decoded = inname;
+    if (strncmp(inname.c_str(), "params/", 7) == 0)
+        return;
+
+    while (moreLevels)
+    {
+        found=0;
+        found = decoded.find_first_of("/");
+        if ( found!=string::npos )
+            decoded = inname.substr(found+1);
+        else
+            moreLevels=false;
+
+        if (strncmp(decoded.c_str(), "params/", 7) == 0)
+            moreLevels=false;
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtMiliFileFormat::OpenDB
 //
 //  Purpose:
@@ -1008,6 +1009,7 @@ avtMiliFileFormat::OpenDB(int dom)
         if (ndomains == 1)
         {
             rval = mc_open( famroot, fampath, "r", &(dbid[dom]) );
+
             if ( rval != OK )
             {
                 // Try putting in the domain number and see what happens...
@@ -1259,6 +1261,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                 element_group_name[dom].push_back(short_name);
                 group_mesh_associations[dom].push_back(mesh_id);
                 ncells[dom][mesh_id] += list_size[i][j];
+
                 ncoords += list_size[i][j] * (conn_count[i] + 1);
                 delete [] part;
             }
@@ -1294,7 +1297,6 @@ avtMiliFileFormat::ReadMesh(int dom)
             {
                 int *conn = conn_list[i][j];
                 int nelems = list_size[i][j];
-
                 for (k = 0 ; k < nelems ; k++)
                 {
                     vtkIdType verts[100];
@@ -1340,8 +1342,8 @@ avtMiliFileFormat::ReadMesh(int dom)
                             conn[5] == conn[6] && conn[6] == conn[7])
                         {
                             vtkIdType tet[4];
-                            tet[0] = verts[0]; verts[1] = verts[1];
-                            tet[2] = verts[2]; verts[3] = verts[4];
+                            tet[0] = verts[2]; tet[1] = verts[2];
+                            tet[2] = verts[2]; tet[3] = verts[2];
                             connectivity[dom][mesh_id]->InsertNextCell(
                                                      VTK_TETRA,
                                                      4, tet);
@@ -1555,7 +1557,8 @@ avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
     char str[32];
     for (i = 0; i < mat_names.size(); ++i)
     {
-        sprintf(str, "mat%d", i+1);
+        // sprintf(str, "mat%d", i+1);
+        sprintf(str, "%d", i+1);
         mat_names[i] = str;
     }
 
@@ -1630,16 +1633,41 @@ avtMiliFileFormat::RestrictVarToFreeNodes(vtkFloatArray *src, int ts) const
 // ****************************************************************************
 
 vtkDataArray *
+avtMiliFileFormat::GetVar(const char *name)
+{
+  int i=0;  
+}
+
+vtkDataArray *
 avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
 {
+    bool isParamArray=false;
+
     if (!readMesh[dom])
         ReadMesh(dom);
     if (!validateVars[dom])
         ValidateVariables(dom);
 
-    bool isParamArray = strncmp(name, "params/", 7) == 0; 
     string usename = name;
     bool isFreeNodesVar = false;
+
+    int meshid = 0;
+    vtkFloatArray *rv = 0;
+
+    /*    if ( !strcmp("MiliClasses", name) ) {
+         vtkIntArray *scalars = 0;
+         scalars = vtkIntArray::New();
+         scalars->SetNumberOfTuples(ncells[dom][meshid]);
+         int *p = (int *) scalars->GetVoidPointer(0);
+         int i, mycount=ncells[dom][meshid];
+         for (i = 0 ; i < mycount ; i++)
+              p[i] = 2;
+         for (i = 0 ; i < mycount/2 ; i++)
+              p[i] = 1;
+        return scalars;
+    }
+    */
+
     if (strstr(name, no_free_nodes_str))
     {
         usename = string(name, no_free_nodes_strlen+1,
@@ -1653,17 +1681,21 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
         isFreeNodesVar = true;
     }
 
+    size_t found;
     string vname;
-    int meshid = 0;
-    if (nmeshes == 1)
-        vname = usename;
-    else
+    if (nmeshes != 1)
+    {
         DecodeMultiMeshVarname(usename, vname, meshid);
+        usename = vname;
+    }
     
+    // Seperate var dir from name
+    DecodeMultiLevelVarname(usename, vname);
+    if (strncmp(vname.c_str(), "params/", 7) == 0)
+        isParamArray=true; 
+
     int v_index = GetVariableIndex(vname.c_str(), meshid);
     int mesh_id = var_mesh_associations[v_index];
-
-    vtkFloatArray *rv = 0;
 
     if (centering[v_index] == AVT_NODECENT)
     {
@@ -1699,7 +1731,10 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
             rv = vtkFloatArray::New();
             rv->SetNumberOfTuples(amt);
             float *p = (float *) rv->GetVoidPointer(0);
-            char *tmp = (char *) usename.c_str();  // Bypass const
+
+            string vname;
+            DecodeMultiLevelVarname(usename, vname);
+            char *tmp = (char *) vname.c_str();  // Bypass const
             read_results(dbid[dom], ts+1, sub_record_ids[dom][sr_valid], 1,
                             &tmp, vsize, amt, p);
 
@@ -1747,7 +1782,9 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
                 GetSizeInfoForGroup(sub_records[dom][i].class_name, start,
                                     csize, dom);
 
-                char *tmp = (char *) usename.c_str();  // Bypass const
+                string vname;
+                DecodeMultiLevelVarname(usename, vname);
+                char *tmp = (char *) vname.c_str();  // Bypass const
                 
                 // Simple read in: one block 
                 if (sub_records[dom][i].qty_blocks == 1)
@@ -1853,10 +1890,15 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
         isFreeNodesVar = true;
     }
 
-    string vname;
+    string vname, tmpname;
     int meshid = 0;
     if (nmeshes == 1)
+    {
         vname = usename;
+        DecodeMultiLevelVarname(vname, tmpname);
+        vname   = tmpname;
+        usename = tmpname;
+    }
     else
         DecodeMultiMeshVarname(usename, vname, meshid);
     
@@ -1893,7 +1935,11 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
         int amt = nnodes[dom][mesh_id];
         rv->SetNumberOfTuples(amt);
         float *ptr = (float *) rv->GetVoidPointer(0);
-        char *tmp = (char *) usename.c_str();  // Bypass const
+
+        string vname;
+        DecodeMultiLevelVarname(usename, vname);
+        char *tmp = (char *) vname.c_str();  // Bypass const
+        
         read_results(dbid[dom], ts+1, sub_record_ids[dom][sr_valid], 1,
                         &tmp, vsize, amt*vdim, ptr);
 
@@ -1925,7 +1971,9 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
                 GetSizeInfoForGroup(sub_records[dom][i].class_name, start, 
                                     csize, dom);
 
-                char *tmp = (char *) usename.c_str();  // Bypass const
+                string vname;
+                DecodeMultiLevelVarname(usename, vname);
+                char *tmp = (char *) vname.c_str();  // Bypass const
 
                 // Simple read in: one block 
                 if (sub_records[dom][i].qty_blocks == 1)
@@ -2166,7 +2214,8 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         char str[32];
         for (j = 0; j < nmaterials[i]; ++j)
         {
-            sprintf(str, "mat%d", j+1);
+            // sprintf(str, "mat%d", j+1);
+            sprintf(str, "%d", j+1);
             mnames[j] = str;
         }
         AddMaterialToMetaData(md, matname, meshname, nmaterials[i], mnames);
@@ -2255,43 +2304,48 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 continue;
         }
         
-        string *vname;
+        string vname;
         string mvnStr;
         char multiVname[64];
         if (nmeshes == 1)
-            vname = &(vars[i]);
+        {
+            vname = vars_dir[i] + vars[i];
+        }
         else
         {
+            sprintf(multiVname, "%s%s(mesh%d)", vars_dir[i].c_str(),
+                                                vars[i].c_str(), 
+                                                var_mesh_associations[i] + 1);
             sprintf(multiVname, "%s(mesh%d)", vars[i].c_str(), 
                                               var_mesh_associations[i] + 1);
             mvnStr = multiVname;
-            vname = &mvnStr;
+            vname  = mvnStr;
         }
 
         bool do_fn_mesh_too = has_fn_mesh[var_mesh_associations[i]] && 
                               (centering[i] == AVT_NODECENT);
         bool do_nofn_mesh_too = has_fn_mesh[var_mesh_associations[i]];
-        string fnvname = string(free_nodes_str) + "/" + *vname;
-        string nofnvname = string(no_free_nodes_str) + "/" + *vname;
+        string fnvname = string(free_nodes_str) + "/" + vname;
+        string nofnvname = string(no_free_nodes_str) + "/" + vname;
         
         switch (vartype[i])
         {
           case AVT_SCALAR_VAR:
-            AddScalarVarToMetaData(md, *vname, meshname, centering[i]);
+            AddScalarVarToMetaData(md, vname, meshname, centering[i]);
             if (do_fn_mesh_too)
                 AddScalarVarToMetaData(md, fnvname, fnmeshname.c_str(), centering[i]);
             if (do_nofn_mesh_too)
                 AddScalarVarToMetaData(md, nofnvname, nofnmeshname.c_str(), centering[i]);
             break;
           case AVT_VECTOR_VAR:
-            AddVectorVarToMetaData(md, *vname, meshname, centering[i], dims);
+            AddVectorVarToMetaData(md, vname, meshname, centering[i], dims);
             if (do_fn_mesh_too)
                 AddVectorVarToMetaData(md, fnvname, fnmeshname.c_str(), centering[i], dims);
             if (do_nofn_mesh_too)
                 AddVectorVarToMetaData(md, nofnvname, nofnmeshname.c_str(), centering[i], dims);
             break;
           case AVT_SYMMETRIC_TENSOR_VAR:
-            AddSymmetricTensorVarToMetaData(md, *vname, meshname, centering[i],
+            AddSymmetricTensorVarToMetaData(md, vname, meshname, centering[i],
                                             dims);
             if (do_fn_mesh_too)
                 AddSymmetricTensorVarToMetaData(md, fnvname, fnmeshname.c_str(),
@@ -2301,7 +2355,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                                                 centering[i], dims);
             break;
           case AVT_TENSOR_VAR:
-            AddTensorVarToMetaData(md, *vname, meshname, centering[i], dims);
+            AddTensorVarToMetaData(md, vname, meshname, centering[i], dims);
             if (do_fn_mesh_too)
                 AddTensorVarToMetaData(md, fnvname, fnmeshname.c_str(), centering[i], dims);
             if (do_nofn_mesh_too)
@@ -3273,6 +3327,15 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     if (!readPartInfo && !avtDatabase::OnlyServeUpMetaData())
         ParseDynaPart();
+
+    /*
+    avtScalarMetaData *classes =
+       new avtScalarMetaData("MiliClasses", "mesh1", AVT_ZONECENT);
+       classes->SetEnumerationType(avtScalarMetaData::ByValue);
+       classes->AddEnumNameValue("Hex", 1);
+       classes->AddEnumNameValue("Shell", 2);
+    md->Add(classes);
+    */
 }
 
 // ****************************************************************************
@@ -3622,3 +3685,388 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
     else
         return true;
 }
+
+
+// ****************************************************************************
+//  Method: avtMiliFileFormat::LoadMiliInfo
+//
+//  Purpose:
+//    Read though a DynaPart output file to gather information about
+//    shared nodes for generating ghostzones.
+//
+//  Programmer: I. R. Corey
+//  Creation:   June 21, 2011
+//
+// ****************************************************************************
+void
+avtMiliFileFormat::LoadMiliInfo(const char *fname)
+{
+    ifstream in;
+    char dummy[256], path[256];
+    bool newFormat=false;
+    int i=0, j=0;
+    int meshid=0;
+    char *oneLine;
+    bool lineReturned=false, eof=false;
+    
+    in.open(fname);
+    strcpy( filepath, "" );
+    oneLine = ReadMiliFileLine(in, "*", "Path:", 0, &lineReturned, &eof);
+    newFormat=false;
+ 
+    if (lineReturned)
+    {
+        newFormat=true; 
+        sscanf(oneLine,"%*s %s", path);
+        if ( !miliLoadMessageDisplayed )
+        {
+            printf("\nOpening Mili file with path=%s\n", path);
+            miliLoadMessageDisplayed = true;
+        }
+        strcpy( filepath, path );
+        delete [] oneLine;
+    }
+    else
+    {
+         in.clear();
+         in.seekg(0);
+    }
+   
+   ndomains = nmeshes = 1;
+   setTimesteps = false;
+    
+    if (newFormat )
+    {
+        oneLine = ReadMiliFileLine(in, "*", "Domains:", 0, &lineReturned, &eof);
+        if ( lineReturned )
+        {
+            sscanf(oneLine,"%*s %d", &ndomains);   // Num Domains
+            delete [] oneLine;
+        }
+
+        oneLine = ReadMiliFileLine(in, "*", "Timesteps:", 0, &lineReturned, &eof);
+        if ( lineReturned )
+        {
+            sscanf(oneLine,"%*s %d", &ntimesteps); // Num Timesteps
+            delete [] oneLine;
+        }
+
+        oneLine = ReadMiliFileLine(in, "*", "Dimensions:", 0, &lineReturned, &eof);
+        if ( lineReturned )
+        {
+            sscanf(oneLine,"%*s %d", &dims);       // Num Dimensions
+            delete [] oneLine;
+        }
+
+        oneLine = ReadMiliFileLine(in, "*", "Number_of_Meshes:", 0, &lineReturned, &eof);
+        if ( lineReturned )
+        {
+            sscanf(oneLine,"%*s %d", &nmeshes);    // Num Meshes
+            delete [] oneLine;
+        }
+    }
+    else
+    {
+         in >> ndomains >> ntimesteps >> dims >> nmeshes;
+    }
+    dbid.resize(ndomains, -1);
+    readMesh.resize(ndomains, false);
+    validateVars.resize(ndomains, false);
+    nnodes.resize(ndomains);
+    ncells.resize(ndomains);
+    connectivity.resize(ndomains);
+    sub_records.resize(ndomains);
+    sub_record_ids.resize(ndomains);
+    element_group_name.resize(ndomains);
+    connectivity_offset.resize(ndomains);
+    group_mesh_associations.resize(ndomains);
+    materials.resize(ndomains);
+    
+    nmaterials.resize(nmeshes);
+
+    int dom;
+    for (dom = 0; dom < ndomains; ++dom)
+    {
+        nnodes[dom].resize(nmeshes, 0);
+        ncells[dom].resize(nmeshes, 0);
+        connectivity[dom].resize(nmeshes, NULL);
+        materials[dom].resize(nmeshes, NULL);
+    }
+
+    int nvars;
+    for (int mesh_id = 0; mesh_id < nmeshes; ++mesh_id)
+    {
+        if ( newFormat )
+        {
+            oneLine = ReadMiliFileLine(in, "*", "Mesh:", 0, &lineReturned, &eof);
+            if ( lineReturned )
+                delete [] oneLine;
+           
+            int nmats=0;
+            oneLine = ReadMiliFileLine(in, "*", "Number_of_Materials:", 0, &lineReturned, &eof);
+            if ( lineReturned )
+            {
+                sscanf(oneLine,"%*s %d", &nmats); // Num Mats
+                nmaterials[mesh_id] = nmats;
+                delete [] oneLine;
+            }
+           
+            oneLine = ReadMiliFileLine(in, "*", "Number_of_Variables:", 0, &lineReturned, &eof);
+            if ( lineReturned )
+            {
+                sscanf(oneLine,"%*s %d", &nvars); // Num Vars
+                delete [] oneLine;
+            }
+        }
+        else
+        {
+           in >> nmaterials[mesh_id];
+           in >> nvars;
+        }
+      
+       for ( int varid=0; varid<nvars; varid++ )
+       {
+           char nameC[256], descrC[256];
+           int dim, type, center;
+           string dir, name, tempName;
+           string varDescr, varDir, varName;
+           size_t found;
+            
+           // Replace spaces in var names with special character so we can parse as a
+           if ( newFormat )
+           {
+               int i=0, savei=0;
+               oneLine = ReadMiliFileLine(in, "*", "", 0, &lineReturned, &eof);
+               if (lineReturned)
+               {
+                   // Replace spaces in var names with special character so
+                   // we can parse as a single name.
+                   if ( strlen(oneLine)>10)
+                       for ( i=10; i<(strlen(oneLine)-1); i++ )
+                       {
+                           if ( oneLine[i]==' ' && oneLine[i-1]!=' ' && oneLine[i+1]!=' ' )
+                               oneLine[i]='~';
+                           savei=i;
+                       } 
+
+                     sscanf(oneLine,"%d %d %d %s %s", &type, &center, &dim, nameC, descrC);  
+                     delete [] oneLine;
+                     
+                     for ( int i=0; i<strlen(nameC); i++ )
+                         if ( nameC[i]=='~' )
+                                      nameC[i]=' ';
+                     name = string(nameC);
+
+                     // Remove trailing spaces
+                     int len=name.length();
+
+                     found = name.find_last_not_of(" ");
+                     if ( found!=string::npos && found!=(name.length()-1) )
+                          name = name.substr(0, found+1);
+
+                     for ( int i=0;
+                           i<strlen(descrC);
+                           i++ ) if ( descrC[i]=='~' )
+                           descrC[i]=' ';
+                     varDescr = string(descrC);
+                     descr.push_back(varDescr);
+                 }
+            }
+            else
+            {
+                in >> type >> center >> dim;
+
+                // Strip out leading white space.
+                while(isspace(in.peek()))
+                    in.get();
+
+                getline(in, name);
+            }
+                 
+            // Seperate var dir from name
+            found=0;
+            varName = name;
+            found = name.find_last_of("/");
+            if ( found!=string::npos )
+            {
+                varDir  = name.substr(0, found+1);
+                if (varDir!="params/")
+                    varName = name.substr(found+1);
+            }
+            if (varDir=="params/")
+            varDir="";
+
+            vars_dir.push_back(varDir);
+            vars.push_back(varName);
+            
+            centering.push_back(avtCentering(center));
+            vartype.push_back(avtVarType(type));
+            var_dimension.push_back(dim);
+            var_mesh_associations.push_back(mesh_id);
+        }
+    }
+
+    vars_valid.resize(ndomains);
+    var_size.resize(ndomains);
+    for (dom = 0; 
+         dom < ndomains;
+         ++dom)
+    {
+        vars_valid[dom].resize(vars.size());
+        var_size[dom].resize(vars.size());
+    }
+
+    //    if (in.fail())
+    //     EXCEPTION1(InvalidFilesException, fname);
+
+    // Read int the part file, if it exists.
+    readPartInfo = true;
+    dynaPartFilename = "";
+
+    in >> dynaPartFilename;
+    if (dynaPartFilename != "")
+        readPartInfo = false;
+    else
+    readPartInfo = true;
+
+    in.close();
+}
+
+
+// ***************************************************************************
+//  Function: ReadMiliFileLine
+//
+//  Purpose:
+//   
+//  Arguments: in - input stream
+//             commentSymbol - optional comment string
+//             keyword - if set, then return line beginning with this string
+//             lineN - return line number N
+//             lineReturned - set to true if a line of data is returned
+//             eof - return eof state (true | false)
+//           
+//  Notes:
+//
+//  Modifications:
+//
+// ****************************************************************************
+char *
+avtMiliFileFormat::ReadMiliFileLine(ifstream &in, const char *commentSymbol,
+    const char *kw, int lineN, bool *lineReturned, bool *eof)
+{
+    char *oneLine, dummy[512];
+    int i=0;
+    int maxLen=0;
+    int lineNumber=0;
+
+    bool lineFound=false, commentFound=false;
+
+    if (lineN>0)
+        in.seekg(0); // Rewind file
+  
+    *eof=false;
+
+    while (!lineFound)
+    {
+        in.getline(dummy, 500 );
+
+        if (in.eof())
+        {
+            *eof=true;
+            return NULL;
+        }
+
+        if (strlen(dummy)==0)
+            continue;
+
+        string field1;
+        std::stringstream ss(dummy);
+        field1="";
+        ss >> field1;
+
+        // Check for a comment line
+        if (commentSymbol)
+        {
+            if (strlen(commentSymbol)>0)
+            {
+                if (strlen(commentSymbol) <= field1.length())
+                    maxLen = strlen(commentSymbol);
+                else
+                    maxLen = field1.length();
+
+                commentFound=true;
+                int charMatch=0;
+                for (int i=0; i<maxLen; i++)
+                {
+                    if (field1[i]!=commentSymbol[i])
+                    {
+                        commentFound=false;
+                        break;
+                    }
+                    else
+                        charMatch++;
+                    if ( charMatch!=strlen(commentSymbol) )
+                        commentFound=false;
+                }
+            }
+        }
+
+        if (commentFound)
+            continue;
+
+        char kwUpper[256];
+        if (kw)
+            if (strlen(kw)>0)
+            {
+                /* Convert fields to upper case */ 
+                strcpy(kwUpper, kw);
+                for (int i=0; i<strlen(kw); i++)
+                    kwUpper[i] = toupper(kw[i]);
+            }
+
+        for (int i = 0; i < field1.length(); i++)
+            field1[i]=toupper(field1[i]);
+         
+        if ( !strcmp(field1.c_str(), kwUpper ))
+        {
+            lineFound=true;
+            break;
+        }
+
+        if ( lineN>0 )
+        {
+            if (lineNumber==lineN)
+            {
+                if (in.eof())
+                    *eof=true;
+                lineFound=true;
+            }
+        }
+
+        if (lineN<=0 && strlen(kw)==0)
+            lineFound=true;
+    }
+
+    if (lineFound)
+    {
+        oneLine = new char[strlen(dummy)+2];
+        strcpy(oneLine, dummy);
+        *lineReturned=true;
+        return oneLine;
+    }
+    else
+    {
+        *lineReturned=false;
+        return NULL;
+    }
+}
+
+#ifdef TEST
+int main(int argc, char* argv[])
+{
+    char * argument = NULL;
+    char filename[512];
+
+    strcpy( filename, argv[1] );
+}
+#endif
