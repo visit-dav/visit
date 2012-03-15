@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="host" type="string">whitney.sandia.gov</Field>
-    <Field name="hostAliases" type="string">whitney#.sandia.gov whitney##.sandia.gov whitney###.sandia.gov whitney# whitney## whitney###</Field>
+    <Field name="host" type="string">wlogin1.scn.sandia.gov</Field>
+    <Field name="hostAliases" type="string">whitney# whitney## whitney###</Field>
     <Field name="hostNickname" type="string">Sandia Whitney</Field>
     <Field name="directory" type="string">/projects/visit/tlcc</Field>
     <Field name="tunnelSSH" type="bool">true</Field>
