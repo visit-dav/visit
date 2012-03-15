@@ -83,6 +83,8 @@
 #include <iostream>
 #endif
 
+#define H5PART_DEFAULT_ID_VARIABLE_NAME "id"
+
 // ****************************************************************************
 //  Method: avtH5PartFileFormat constructor
 //
@@ -137,7 +139,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     querySpecified = noQuery;
     queryResultsValid = false;
     queryString = "";
-    idVariableName = "id"; // FIXME: This information should be read as attribute from file.
+    idVariableName = H5PART_DEFAULT_ID_VARIABLE_NAME; // FIXME: This information should be read as attribute from file.
 #endif
 
     // Here we only open the file broiefly to ensure that it is really an
@@ -582,6 +584,8 @@ avtH5PartFileFormat::RegisterDataSelections(
 
     if (useFastBitIndex)
     {
+        idVariableName = H5PART_DEFAULT_ID_VARIABLE_NAME;
+
         if (selList.size() == 1 &&
             std::string(selList[0]->GetType()) ==
                std::string("Identifier Data Selection"))
@@ -593,6 +597,8 @@ avtH5PartFileFormat::RegisterDataSelections(
             querySpecified = idListQuery;
             avtIdentifierSelection *ids = (avtIdentifierSelection *) *(selList[0]);
             queryIdList = ids->GetIdentifiers();
+            if(!ids->GetIdVariable().empty())
+                idVariableName = ids->GetIdVariable();
             debug5 << "Single Identifier Data Selection with " << queryIdList.size();
             debug5 << " ids specified." << std::endl;
         }
@@ -643,7 +649,7 @@ avtH5PartFileFormat::RegisterDataSelections(
                     avtIdentifierSelection *ids =
                         (avtIdentifierSelection *) *(selList[i]);
 
-                    const std::vector<double> identifiers = ids->GetIdentifiers();
+                    const std::vector<double> &identifiers = ids->GetIdentifiers();
                     debug5 << "Returned identifiers list size is ";
                     debug5 << identifiers.size() << endl;
 
@@ -655,7 +661,9 @@ avtH5PartFileFormat::RegisterDataSelections(
                         // of identifiers with a string specifying thresholds. It may make sense to add
                         // this functionality or add a non-string based API for range queries and logical
                         // combination of queries.
-                        ConstructIdQueryString(identifiers, id_string);
+                        if(!ids->GetIdVariable().empty())
+                            idVariableName = ids->GetIdVariable();
+                        ConstructIdQueryString(identifiers, idVariableName, id_string);
 
                         if (queryString.empty())
                             queryString = id_string;
@@ -2236,6 +2244,11 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
 //    Gunther H. Weber, Wed Aug 17 13:15:46 PDT 2011
 //    Make queries inclusive to match Threshold operator
 //
+//    Brad Whitlock, Thu Mar 15 14:30:44 PDT 2012
+//    Set the avtIdentifierSelection's name so it will have the right variable
+//    later in it when we later store the results as an 
+//    avtFloatingPointIdNamedSelection.
+//
 // ****************************************************************************
 
 avtIdentifierSelection *
@@ -2259,6 +2272,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
     // function.
 
     // Iterate over all the selections
+    idVariableName = H5PART_DEFAULT_ID_VARIABLE_NAME;
     for (int i=0; i<drs.size(); ++i)
     {
         if (std::string(drs[i]->GetType()) == std::string("Data Range Selection"))
@@ -2291,7 +2305,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
             avtIdentifierSelection *id = (avtIdentifierSelection*)drs[i];
             const std::vector<double>& ids = id->GetIdentifiers();
 
-            if (ids.size()>0)
+            if (!ids.empty())
             {
                 std::string id_string;
                 // FIXME: Constructing a string is very inefficient for large selection. However,
@@ -2299,8 +2313,11 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
                 // of identifiers with a string specifying thresholds. It may make sense to add
                 // this functionality or add a non-string based API for range queries and logical
                 // combination of queries.
+                if(!id->GetIdVariable().empty())
+                    idVariableName = id->GetIdVariable();
+                debug5 << method << "Setting idVariableName to " << idVariableName << endl;
 
-                ConstructIdQueryString(ids, id_string);
+                ConstructIdQueryString(ids, idVariableName, id_string);
 
                 if (selectionQuery.empty())
                     selectionQuery = id_string;
@@ -2405,13 +2422,14 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
 
     avtIdentifierSelection *rv = new avtIdentifierSelection();
     rv->SetIdentifiers(returnIds);
+    rv->SetIdVariable(idVariableName);
 
     visitTimer->StopTimer(t1, "H5PartFileFormat::ConstructIdentifiersFromDataRangeSelection()");
     return rv;
 }
 
 // ****************************************************************************
-//  Method: avtH5PartFileFormat::ConstructIdeQueryString
+//  Method: avtH5PartFileFormat::ConstructIdQueryString
 //
 //  Purpose:
 //      Generate a string from a list of identifiers
@@ -2427,10 +2445,13 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
 //    Gunther H. Weber, Wed Aug 17 13:36:48 PDT 2011
 //    Commented out potentially very long debug message.
 //
+//    Brad Whitlock, Thu Mar 15 14:26:52 PDT 2012
+//    Pass in the id variable name.
+//
 // ****************************************************************************
 
 void avtH5PartFileFormat::ConstructIdQueryString(
-        const std::vector<double>& identifiers, std::string& id_string)
+        const std::vector<double>& identifiers, const std::string &idVar, std::string& id_string)
 {
     int t1 = visitTimer->StartTimer();
 
@@ -2444,7 +2465,7 @@ void avtH5PartFileFormat::ConstructIdQueryString(
     if (identifiers.size()>0)
     {
         std::ostringstream queryStream;
-        queryStream << "( " << idVariableName << " in ( ";
+        queryStream << "( " << idVar << " in ( ";
 
         // FIXME: Precision always sufficient? In particular with floats this
         // may not be true.

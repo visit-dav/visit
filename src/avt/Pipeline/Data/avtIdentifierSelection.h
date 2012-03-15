@@ -50,7 +50,7 @@
 #include <avtDataSelection.h>
 
 #include <vector>
-
+#include <string>
 
 // ****************************************************************************
 //  Class: avtIdentifierSelection
@@ -68,6 +68,9 @@
 //
 //    Hank Childs, Tue Dec 20 14:43:08 PST 2011
 //    Add method DescriptionString.
+//
+//    Brad Whitlock, Thu Mar 15 14:13:59 PDT 2012
+//    Added idVar.
 //
 // ****************************************************************************
 
@@ -87,10 +90,14 @@ class PIPELINE_API avtIdentifierSelection : public avtDataSelection
                                 { ids = a; };
     const std::vector<double> &GetIdentifiers(void) { return ids; };
 
+    void                    SetIdVariable(const std::string &id) {idVar = id; }
+    const std::string      &GetIdVariable() const {return idVar; }
+
     bool                    operator==(const avtIdentifierSelection &) const;
 
   private:
     std::vector<double>     ids;
+    std::string             idVar;
 
     // These methods are defined to prevent accidental use of bitwise copy
     // implementations.  If you want to re-define them to do something

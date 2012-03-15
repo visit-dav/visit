@@ -1109,6 +1109,9 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
 //    Brad Whitlock, Fri Oct 28 11:00:26 PDT 2011
 //    Change named selection API.
 //
+//    Brad Whitlock, Thu Mar 15 14:19:04 PDT 2012
+//    Set the id variable for the floating point named selection.
+//
 // ****************************************************************************
 
 avtNamedSelection *
@@ -1145,6 +1148,7 @@ avtThresholdFilter::CreateNamedSelection(avtContract_p c, const std::string &s)
     {
         avtFloatingPointIdNamedSelection *fpns = new avtFloatingPointIdNamedSelection(s);
         fpns->SetIdentifiers(ids->GetIdentifiers());
+        fpns->SetIdVariable(ids->GetIdVariable());
         rv = fpns;
     }
 
