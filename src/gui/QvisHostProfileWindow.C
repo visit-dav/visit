@@ -593,6 +593,9 @@ QvisHostProfileWindow::CreateParallelSettingsGroup()
 //   Brad Whitlock, Wed Nov 30 09:15:35 PST 2011
 //   Add Windows HPC.
 //
+//   Brad Whitlock, Thu Mar 15 11:29:01 PDT 2012
+//   Add sbatch/aprun.
+//
 // ****************************************************************************
 
 QWidget *
@@ -635,6 +638,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("qsub/mpiexec");
     launchMethod->addItem("qsub/mpirun");
     launchMethod->addItem("qsub/srun");
+    launchMethod->addItem("sbatch/aprun");
     launchMethod->addItem("sbatch/mpiexec");
     connect(launchMethod, SIGNAL(activated(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));

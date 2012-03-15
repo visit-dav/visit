@@ -3026,6 +3026,15 @@ if ($procs_set or ($parallel and $parlaunch_set))
             if ($security_key_set) { push @mpicmd, "-key", $security_key; }
             push @mpicmd, @post_args;
         }
+        elsif ($sublauncher eq "aprun")
+        {
+            @mpicmd = ("aprun");
+            push @mpicmd, "-n", $procs;
+            push @mpicmd, @sublaunchargs if $sublaunchargs_set;
+            push @mpicmd, "@visitcmd";
+            if ($security_key_set) { push @mpicmd, "-key", $security_key; }
+            push @mpicmd, @post_args;
+        }
         elsif ($sublauncher eq "")
         {
             @mpicmd = "@visitcmd";
