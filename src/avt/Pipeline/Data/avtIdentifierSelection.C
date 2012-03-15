@@ -51,9 +51,14 @@
 //  Programmer: Hank Childs
 //  Creation:   March 5, 2008
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 15 14:17:11 PDT 2012
+//    Initialize ids, idVar.
+//
 // ****************************************************************************
 
-avtIdentifierSelection::avtIdentifierSelection()
+avtIdentifierSelection::avtIdentifierSelection() : avtDataSelection(), 
+    ids(), idVar()
 {
 }
 
@@ -82,7 +87,7 @@ avtIdentifierSelection::~avtIdentifierSelection()
 bool
 avtIdentifierSelection::operator==(const avtIdentifierSelection &sel) const
 {
-    return (ids == sel.ids);
+    return (ids == sel.ids) && (idVar == sel.idVar);
 }
 
 

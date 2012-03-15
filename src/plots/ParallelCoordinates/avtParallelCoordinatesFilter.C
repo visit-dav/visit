@@ -2183,6 +2183,9 @@ avtParallelCoordinatesFilter::CreateNamedSelection(avtContract_p c,
 //    Brad Whitlock, Fri Oct 28 15:07:17 PDT 2011
 //    Changed due to constructor arguments.
 //
+//    Brad Whitlock, Thu Mar 15 14:19:04 PDT 2012
+//    Set the id variable for the floating point named selection.
+//
 // ****************************************************************************
 
 avtNamedSelection *
@@ -2216,6 +2219,7 @@ avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection(
         avtFloatingPointIdNamedSelection *fpns = 
             new avtFloatingPointIdNamedSelection(selName);
         fpns->SetIdentifiers(ids->GetIdentifiers());
+        fpns->SetIdVariable(ids->GetIdVariable());
         rv = fpns;
     }
 

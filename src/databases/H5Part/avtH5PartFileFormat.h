@@ -180,7 +180,7 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
                           *ConstructIdentifiersFromDataRangeSelection(
                                   std::vector<avtDataSelection *> &);
     void                   ConstructIdQueryString(const std::vector<double>&,
-                                  std::string& );
+                                  const std::string &, std::string& );
     void                   PerformQuery();
     
     // Is there an active query? If value is stringQuery, "queryString" contains

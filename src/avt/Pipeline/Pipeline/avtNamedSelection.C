@@ -700,12 +700,17 @@ avtFloatingPointIdNamedSelection::ModifyContract(avtContract_p contract) const
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 15 14:15:13 PDT 2012
+//    Store the id variable in the data selection.
+//
 // ****************************************************************************
 
 avtDataSelection *
 avtFloatingPointIdNamedSelection::CreateSelection(void)
 {
     avtIdentifierSelection *rv = new avtIdentifierSelection;
+    rv->SetIdVariable(GetIdVariable());
     rv->SetIdentifiers(ids);
     return rv;
 }
