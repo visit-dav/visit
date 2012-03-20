@@ -5,6 +5,7 @@
     <Field name="hostNickname" type="string">LLNL Aztec</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">serial</Field>
         <Field name="timeout" type="int">480</Field>
