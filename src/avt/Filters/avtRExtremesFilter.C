@@ -163,6 +163,8 @@ avtRExtremesFilter::Initialize()
     else if (computeMaxes == avtRExtremesFilter::YEARLY)
         numArrays = numYears;
     
+    if (numArrays == 0)
+        numArrays = 1;
     //cout<<"Array: "<<numArrays<<" of "<<numTuples<<endl;
     values.resize(numArrays);
     for (int i = 0; i < numArrays; i++)
@@ -201,6 +203,37 @@ avtRExtremesFilter::Initialize()
     delete [] leaves;
 }
 
+
+// ****************************************************************************
+// Method:  avtRExtremesFilter::PreExecute
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 16, 2012
+//
+// ****************************************************************************
+
+void
+avtRExtremesFilter::PreExecute()
+{
+    avtDatasetToDatasetFilter::PreExecute();
+    avtCallback::ResetTimeout(0);
+}
+
+// ****************************************************************************
+// Method:  avtRExtremesFilter::PostExecute
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 16, 2012
+//
+// ****************************************************************************
+
+void
+avtRExtremesFilter::PostExecute()
+{
+    avtDatasetToDatasetFilter::PostExecute();
+    avtCallback::ResetTimeout(5*60);
+}
+
 // ****************************************************************************
 // Method:  avtRExtremesFilter::Execute
 //
@@ -212,6 +245,8 @@ avtRExtremesFilter::Initialize()
 void
 avtRExtremesFilter::Execute()
 {
+    debug1<<"avtRExtremesFilter::Execute() time= "<<currentTime<<endl;
+
     Initialize();
     int nleaves;
     vtkDataSet **leaves = GetInputDataTree()->GetAllLeaves(nleaves);
@@ -224,8 +259,6 @@ avtRExtremesFilter::Execute()
         scalars = (vtkFloatArray *)ds->GetCellData()->GetScalars();
     float *vals = (float *) scalars->GetVoidPointer(0);
     
-    float *v = vals;
-
     int index = GetIndexFromDay(currentTime);
     vector<double>::iterator it = values[index].begin();
     vector<double>::iterator end = values[index].end();
@@ -253,6 +286,8 @@ avtRExtremesFilter::Execute()
 void
 avtRExtremesFilter::CreateFinalOutput()
 {
+    debug1<<"avtRExtremesFilter::CreateFinalOutput()"<<endl;
+    
     //Unify maxima
 #ifdef PARALLEL
     double *outvalues = new double[values[0].size()];
@@ -263,8 +298,7 @@ avtRExtremesFilter::CreateFinalOutput()
             values[i][j] = outvalues[j];
     }
     delete [] outvalues;
-    
-    cout<<PAR_Rank()<<" ["<<idx0<<" "<<idxN<<"]"<<endl;
+    //cout<<PAR_Rank()<<" ["<<idx0<<" "<<idxN<<"]"<<endl;
 #endif
 
     //Run R code.
@@ -289,12 +323,13 @@ avtRExtremesFilter::CreateFinalOutput()
     {
         if (i1 > idxN)
             i1 = idxN;
-        cout<<"R iteration: "<<ni<<" of "<<numIters<<" Is= "<<i0<<" "<<i1<<endl;
+        //cout<<"R iteration: "<<ni<<" of "<<numIters<<" Is= "<<i0<<" "<<i1<<endl;
         
         vtkDoubleArray *inData = vtkDoubleArray::New();
         inData->SetNumberOfComponents(1);
         inData->SetNumberOfTuples((i1-i0)*values.size());
         int idx = 0, N=i1-i0;
+
         for (int d = 0; d < values.size(); d++)
             for (int i = 0; i < N; i++)
             {
@@ -304,8 +339,8 @@ avtRExtremesFilter::CreateFinalOutput()
             }
         RI->AssignVTKDataArrayToRVariable(inData, "inData");
 
-        cout<<"inData : "<<inData->GetNumberOfTuples()<<" : "<<inData->GetNumberOfComponents()<<endl;
-        cout<<"I have "<<i0<<" "<<i1<<endl;
+        //cout<<"inData : "<<inData->GetNumberOfTuples()<<" : "<<inData->GetNumberOfComponents()<<endl;
+        //cout<<"I have "<<i0<<" "<<i1<<endl;
 
         char cmd[512];
         if (computeMaxes == avtRExtremesFilter::MONTHLY)
@@ -330,7 +365,7 @@ avtRExtremesFilter::CreateFinalOutput()
         
         vtkDoubleArray *output = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("result"));
         //output->Print(cout);
-        cout<<"OUTPUT: "<<output->GetNumberOfTuples()<<" : "<<output->GetNumberOfComponents()<<endl;
+        //cout<<"OUTPUT: "<<output->GetNumberOfTuples()<<" : "<<output->GetNumberOfComponents()<<endl;
 
         int j = 0;
         idx = i0*numOutputComponents;
@@ -360,7 +395,7 @@ avtRExtremesFilter::CreateFinalOutput()
 
     if (PAR_Rank() == 0)
     {
-        cout<<"Create output.....("<<numOutputComponents<<" x "<<numTuples<<")"<<endl;
+        //cout<<"Create output.....("<<numOutputComponents<<" x "<<numTuples<<")"<<endl;
         vtkFloatArray *outVar = vtkFloatArray::New();
         outVar->SetNumberOfComponents(numOutputComponents);
         outVar->SetNumberOfTuples(numTuples);
@@ -369,7 +404,10 @@ avtRExtremesFilter::CreateFinalOutput()
         for (int i = 0; i < numTuples; i++, idx+=numOutputComponents)
         {
             for (int k = 0; k < numOutputComponents; k++)
+            {
                 outVar->SetValue(i, result[idx+k]);
+                //cout<<i<<": "<<result[idx+k]<<endl;
+            }
         }
     
         if (numOutputComponents == 1)

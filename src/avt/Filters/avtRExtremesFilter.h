@@ -36,6 +36,8 @@ class AVTFILTERS_API avtRExtremesFilter : virtual public avtDatasetToDatasetFilt
   protected:
     void                    Initialize();
     virtual void            Execute();
+    virtual void            PreExecute();
+    virtual void            PostExecute();
     virtual void            CreateFinalOutput();
     virtual bool            ExecutionSuccessful();
 
