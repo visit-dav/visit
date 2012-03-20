@@ -483,6 +483,7 @@ private slots:
     void showEngineWindow();
     void showAnimationWindow();
     void showAnnotationWindow();
+    void showCLI();
     void showCommandWindow();
     void showExpressionsWindow();
     void showSubsetWindow();

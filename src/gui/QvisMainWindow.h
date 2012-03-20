@@ -281,6 +281,7 @@ signals:
     void activateAnimationWindow();
     void activateAnnotationWindow();
     void activateColorTableWindow();
+    void activateCLI();
     void activateCommandWindow();
     void activateCorrelationListWindow();
     void activateExpressionsWindow();

@@ -3233,6 +3233,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showSimulationWindow()));
      connect(mainWin, SIGNAL(activateExportDBWindow()),
              this, SLOT(showExportDBWindow()));
+    connect(mainWin, SIGNAL(activateCLI()),
+             this, SLOT(showCLI()));
      connect(mainWin, SIGNAL(activateCommandWindow()),
              this, SLOT(showCommandWindow()));
      connect(mainWin, SIGNAL(activateMeshManagementWindow()),
@@ -8672,6 +8674,23 @@ QvisGUIApplication::restorePickAttributesAfterRepick()
 {
     Synchronize(RESTORE_PICK_ATTS_TAG);
 }
+// ****************************************************************************
+// Method: QvisGUIApplication::showCLI
+//
+// Purpose:
+//   Launch a CLI if one is not actively connected.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Tue Mar 20 12:33:11 PDT 2012
+//
+// ****************************************************************************
+void
+QvisGUIApplication::showCLI()
+{
+
+    Interpret("");
+}
+
 
 //
 // Qt slot functions to show windows that are created later on demand.
