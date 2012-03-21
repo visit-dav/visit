@@ -130,6 +130,8 @@ enum AnalysisMethod { DEFAULT_METHOD,
 
 enum AnalysisState { UNKNOWN_STATE = 0,
 
+                     OVERRIDE = 5,
+
                      ADDING_POINTS = 10,
 
                      O_POINT_SEED = 22,
@@ -290,4 +292,25 @@ public:
     avtPoincareIC *GS_x3;
     ////// Code for rational surface search
 };
+
+// ostream operators for FieldlineProperties::AnalysisState's enum types
+inline std::ostream& operator<<( std::ostream& out, 
+                                 FieldlineProperties::AnalysisState status )
+{
+    switch( status )
+    {
+    case FieldlineProperties::UNKNOWN_STATE:
+        return out << "UNKNOWN_STATE";
+    case FieldlineProperties::OVERRIDE:
+        return out << "OVERRIDE";
+    case FieldlineProperties::ADDING_POINTS:
+        return out << "ADDING_POINTS";
+    case FieldlineProperties::COMPLETED:
+        return out << "COMPLETED";
+    case FieldlineProperties::TERMINATED:
+        return out << "TERMINATED";
+    default:
+        return out << "UNKNOWN";
+    }
+}
 #endif 

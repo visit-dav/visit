@@ -206,8 +206,9 @@ class IVP_API avtIntegralCurve
 
     enum Status
     {
-        STATUS_OK       = 0,
-        STATUS_FINISHED = 1,
+        STATUS_OK         = 0,
+        STATUS_FINISHED   = 1,
+        STATUS_TERMINATED = 2,
     };
 
     enum SerializeFlags
@@ -297,6 +298,8 @@ inline std::ostream& operator<<( std::ostream& out,
         return out << "OK";
     case avtIntegralCurve::STATUS_FINISHED:
         return out << "FINISHED";
+    case avtIntegralCurve::STATUS_TERMINATED:
+        return out << "TERMINATED";
     default:
         return out << "UNKNOWN";
     }
