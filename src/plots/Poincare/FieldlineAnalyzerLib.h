@@ -130,6 +130,8 @@ enum AnalysisMethod { DEFAULT_METHOD,
 
 enum AnalysisState { UNKNOWN_STATE = 0,
 
+                     OVERRIDE = 5,
+
                      ADDING_POINTS = 10,
                      RATIONAL_TEMPLATE_SEED = 11,
                      RATIONAL_SURFACE_SEED = 12,

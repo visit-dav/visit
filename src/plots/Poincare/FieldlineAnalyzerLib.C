@@ -2306,7 +2306,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       ridgeline_points.empty() )
   {
     fi.type = FieldlineProperties::UNKNOWN_TYPE;
-    fi.analysisState = FieldlineProperties::UNKNOWN_STATE;
+    fi.analysisState = FieldlineProperties::TERMINATED;
 
     fi.safetyFactor = 0;
     fi.toroidalWinding = 0;
@@ -2704,7 +2704,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         // Blankinship value as it is a low order value. Such that we
         // believe that the correct poloidal winding for these cases
         // will be mergedWindingPairs[i].toroidal + wMax. Where wMax
-        // is the lowestof the two possblie value.
+        // is the lowest of the two possible values.
  
 
         // The best windingGroupOffset can be either either side
@@ -2728,6 +2728,9 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         wMax = Blankinship( mergedWindingPairs[i].toroidal,
                             windingGroupOffset );
         
+        std::cerr << "windingGroupOffset " << windingGroupOffset << "  "
+                  << "wMax " << wMax << std::endl;
+
         unsigned int w;
 
         // Search through the possible choices to find an offset.
@@ -2752,17 +2755,20 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         if( w > wMax )
         {
           if( verboseFlag && (drawable || i < 10) )
+          {
             std::cerr << "Can not correct poloidal winding." << std::endl;
           
-//        for( w=1; w<=wMax; ++w )
-//        {
-//          if( verboseFlag && (drawable || i < 10) )
-//            std::cerr << "Checking poloidal value " << w;
-
-//          std::cerr << "  Failed  "
-//               << Blankinship( mergedWindingPairs[i].toroidal,
-//                               mergedWindingPairs[i].toroidal+w ) << std::endl;
-//        }
+            for( w=1; w<=wMax; ++w )
+            {
+              if( verboseFlag && (drawable || i < 10) )
+                std::cerr << "Checking poloidal value " << w;
+              
+              std::cerr << "  Failed  "
+                        << Blankinship( mergedWindingPairs[i].toroidal,
+                                        mergedWindingPairs[i].toroidal+w )
+                        << std::endl;
+            }
+          }
         }
       }
     }
@@ -2830,7 +2836,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         type = FieldlineProperties::RATIONAL;
         islands = 0;
         
-        analysisState = FieldlineProperties::COMPLETED;
+        analysisState = FieldlineProperties::OVERRIDE;
         
         if( verboseFlag )
           std::cerr << "Appears to be a rational surface "
@@ -2838,7 +2844,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       }
       else
       {
-        fi.analysisState = FieldlineProperties::UNKNOWN_STATE;
+        fi.analysisState = FieldlineProperties::OVERRIDE;
         fi.type = FieldlineProperties::CHAOTIC;
       }
 
@@ -2870,10 +2876,14 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         if( verboseFlag )
           std::cerr << "Garbage matches adding more points" << std::endl;
         
-        fi.nPuncturesNeeded = poloidal_puncture_pts.size() * 1.25;
+        fi.nPuncturesNeeded = fi.maxPunctures * 1.25;
+        fi.analysisState = FieldlineProperties::ADDING_POINTS;
       }
       else
+      {
+        fi.nPuncturesNeeded = 0;
         fi.analysisState = FieldlineProperties::TERMINATED;
+      }
 
       return;
     }
@@ -2973,21 +2983,24 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     if( toroidalResonance == mergedWindingPairs[drawableIndex].toroidal &&
         poloidalResonance == mergedWindingPairs[drawableIndex].poloidal )
     {
+
+      if( toroidalResonance == poloidalResonance )
+        nnodes = toroidalResonance;
+
       // The best guestimate of number of nodes will be the GCD of the
       // best winding pair. If there is a tie it does not matter as it
       // is a guestimate.
 
       // Note: when the island is intering the chaotic zone the nnodes
       // will not be stable between two tracings of the boundary.
-      nnodes = GCD( mergedWindingPairs[0].toroidal,
-                    mergedWindingPairs[0].poloidal ) / resonanceGCD;
+      else
+        nnodes = GCD( mergedWindingPairs[0].toroidal,
+                      mergedWindingPairs[0].poloidal ) / resonanceGCD;
 
       // Less than the maximum number punctures allowed so add more
       // puncture points.
       if( poloidal_puncture_pts.size() < fi.maxPunctures )
       {
-        analysisState = FieldlineProperties::ADDING_POINTS;
-
         // Get the number of nodes per island.
         unsigned int nodes = poloidal_puncture_pts.size() / islands / 2;
         
@@ -2997,6 +3010,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         // Add five more puncture points per island.
         else //if( type == FieldlineProperties::ISLAND_PRIMARY_CHAIN )
           nPuncturesNeeded = (nodes + 5) * islands * 2;
+
+        analysisState = FieldlineProperties::ADDING_POINTS;
 
         if( verboseFlag )
           std::cerr << std::endl
@@ -3039,12 +3054,12 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       {
         nnodes = poloidal_puncture_pts.size() / toroidalWinding / 2;
 
-        analysisState = FieldlineProperties::ADDING_POINTS;
-
         nPuncturesNeeded = poloidal_puncture_pts.size() * 1.05;
 
         if( nPuncturesNeeded - poloidal_puncture_pts.size() < 5 )
           nPuncturesNeeded = poloidal_puncture_pts.size() + 5;
+
+        analysisState = FieldlineProperties::ADDING_POINTS;
 
         if( verboseFlag )
           std::cerr << "Island: Local minimum 0, not enough puncture points; "
@@ -3054,20 +3069,21 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
                     << std::endl;
       }
 
-      // Try to get at least four points per island.
+      // Try to get at least four points per island which doubled so
+      // the analysis has enough points to work on.
       else if( nnodes < 4 )
       {
-        analysisState = FieldlineProperties::ADDING_POINTS;
-
-        nPuncturesNeeded = 4 * islands * 2;
-
-        if( nPuncturesNeeded > poloidal_puncture_pts.size() )
+        if( 4 * islands * 2 > poloidal_puncture_pts.size() )
         {
+          nPuncturesNeeded = 4 * islands * 2;
+          analysisState = FieldlineProperties::ADDING_POINTS;
+
           if( verboseFlag )
             std::cerr << "Adding puncture points for four points per island; "
                       << "have " << poloidal_puncture_pts.size() << " "
                       << "asking for " << nPuncturesNeeded << " puncture points"
                       << std::endl;
+
         }
         else
         {
@@ -3081,13 +3097,12 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       else if( poloidal_puncture_pts.size() < 2*(toroidalResonance*nnodesPlus1) ||
                ridgeline_points.size()      < 2*(poloidalResonance*nnodesPlus1) )
       {
-        analysisState = FieldlineProperties::ADDING_POINTS;
-
         // For the toroidal period allow for one more possible period
         // to be exaimed.
         if( nPuncturesNeeded < 2.0 * (toroidalResonance*nnodesPlus1) )
         {
           nPuncturesNeeded = 2.0 * (toroidalResonance*nnodesPlus1);
+          analysisState = FieldlineProperties::ADDING_POINTS;
         
           if( verboseFlag )
             std::cerr << "Analysis: Not enough puncture points; "
@@ -3105,6 +3120,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         {
           nPuncturesNeeded =
             2.0 * (poloidalResonance*(nnodes+2)) * local_safetyFactor + 0.5;
+          analysisState = FieldlineProperties::ADDING_POINTS;
 
           if( verboseFlag )
             std::cerr << "Analysis: Not enough ridgeline points; "
@@ -3151,42 +3167,62 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
 
-    // Here is a 1,1 surface/island. Check for the ambiguous axis
-    // case.
+    // Surface or island so check for the ambiguous axis case. To date
+    // we have seen ambiguous axis in 1,1 surfaces and islands and in
+    // higher order islands. But no in higher order surfaces.
     if( analysisState == FieldlineProperties::COMPLETED &&
-        toroidalWinding == poloidalWinding &&
+        //        toroidalWinding == poloidalWinding &&
         (type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
          type == FieldlineProperties::ISLAND_SECONDARY_CHAIN) )
     {
       // QUESTION - is it possible to have secondary islands within
       // the 1,1 that have an ambiguous axis. YES
 
-      if(type == FieldlineProperties::ISLAND_PRIMARY_CHAIN)
-        toroidalWindingP = toroidalWinding;
+      if( toroidalWinding == poloidalWinding )
+      {
+        if( toroidalWinding > 1 ) 
+          toroidalWindingP = toroidalWinding;
+        else
+          toroidalWindingP = nnodes;
+      }
+      else
+      {
+        toroidalWindingP = nnodes;
+      }
 
-      else if(type == FieldlineProperties::ISLAND_SECONDARY_CHAIN)
-        toroidalWindingP = toroidalResonance;
-
+      if( verboseFlag )
+        std::cerr << "Checking for an ambiguous axis " << toroidalWindingP
+                  << std::endl; 
+      
       std::vector< std::pair< Point, unsigned int > > hullPts;
       
       hullPts.resize( toroidalWindingP+1 );
       
-      for(unsigned int i=0; i<toroidalWindingP; ++i )
+      for(unsigned int i=0, j=0; i<toroidalWindingP*islands; i+=islands, ++j )
       {
-        hullPts[i] =
-          std::pair< Point, unsigned int >( poloidal_puncture_pts[i], i );
+        hullPts[j] =
+          std::pair< Point, unsigned int >( poloidal_puncture_pts[i], j );
       }
       
-      unsigned int m = 0; // starting index
+      // input - starting index, output - number of points on the hull.
+      unsigned int nHullPts = 0;
       
-      convexHull( hullPts, m, toroidalWindingP, helicity );
+      convexHull( hullPts, nHullPts, toroidalWindingP, helicity );
 
-      if( m != toroidalWindingP )
+      if( nHullPts != toroidalWindingP )
       {
         if( verboseFlag )
           std::cerr << "The surface does not have a convex hull, "
-               << toroidalWinding-m << " point(s) are missing."
+               << toroidalWindingP-nHullPts << " point(s) are missing."
                << std::endl; 
+        
+        convexHull( hullPts, nHullPts, toroidalWindingP, -helicity );
+
+        if( nHullPts != toroidalWindingP )
+          if( verboseFlag )
+            std::cerr << "The second surface does not have a convex hull, "
+                      << toroidalWindingP-nHullPts << " point(s) are missing."
+                      << std::endl; 
       }
       
       std::map< unsigned int, unsigned int > offsets;
@@ -3195,7 +3231,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       unsigned int offset;
       
       // Find all the differences and count each one.
-      for(unsigned int i=0; i<toroidalWindingP; ++i )
+      for(unsigned int i=0; i<nHullPts; ++i )
       {
         unsigned int i1 = (i+1) % toroidalWindingP;
 
@@ -3295,6 +3331,11 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
                 << delta*rationalSurfaceFactor << std::endl;
 
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
+
+    if( windingGroupOffset == 0 &&
+        toroidalWinding < poloidalWinding &&
+        GCD(toroidalWinding, poloidalWinding) )
+      windingGroupOffset = 1;
   }
 
   // At this point assume the surface is irrational and thus a flux
@@ -3451,13 +3492,16 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       if( additionalPts )
       {
         if( nPuncturesNeeded == 0 )
+        {
           nPuncturesNeeded = (nnodes+additionalPts) * toroidalWinding + 1;
+          analysisState = FieldlineProperties::ADDING_POINTS;
         
-        if( verboseFlag )
-          std::cerr << "Too few puncture points, at least "
-               << (nnodes+additionalPts) * toroidalWinding
-               << " are needed to complete the boundary."
-               << std::endl;
+          if( verboseFlag )
+            std::cerr << "Too few puncture points, at least "
+                      << (nnodes+additionalPts) * toroidalWinding
+                      << " are needed to complete the boundary."
+                      << std::endl;
+        }
       }
       else
         analysisState = FieldlineProperties::COMPLETED;
@@ -3470,71 +3514,88 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   {
     toroidalWinding = overrideToroidalWinding;
 
-    unsigned int nsets = poloidalWindingCounts.size();
-
-    std::map< unsigned int, unsigned int > differenceCount;
-    std::map< unsigned int, unsigned int >::iterator ic;
-
-    // Find all the differences and count each one.
-    for( unsigned int i=0; i<nsets-toroidalWinding; ++i)
-    {
-      // Get the poloidal winding between two counts.
-      poloidalWinding = poloidalWindingP =
-        poloidalWindingCounts[i+toroidalWinding] - poloidalWindingCounts[i];
-
-      // Find this difference in the list.
-      ic = differenceCount.find( poloidalWinding );
-
-      // Not found, new difference.
-      if( ic == differenceCount.end() )
-        differenceCount.insert( std::pair<int, int>( poloidalWinding, 1) );
-      // Found this difference, increment the count.
-      else (*ic).second++;
-    }
-
-    // Find the difference that occurs most often.
-    unsigned int nMatches = 0;
-    
-    ic = differenceCount.begin();
-    
-    while( ic != differenceCount.end() )
-    {
-      if( nMatches < (*ic).second )
-      {
-        poloidalWinding  = (*ic).first;
-        poloidalWindingP = (*ic).first;
-        nMatches = (*ic).second;
-      }
-
-      ++ic;
-    }
-
-    double consistency = (double) nMatches / (double) (nsets-toroidalWinding);
-
     if( overridePoloidalWinding )
     {
       poloidalWinding  = overridePoloidalWinding;
       poloidalWindingP = overridePoloidalWinding;
-    }
 
-    double local_safetyFactor =
-      (double) toroidalWinding / (double) poloidalWinding;
+      double local_safetyFactor =
+        (double) toroidalWinding / (double) poloidalWinding;
+
+      if( verboseFlag )
+        std::cerr << "overriding" << std::endl
+                  << "**using**   winding pair "
+                  << toroidalWinding << ","
+                  << poloidalWinding << "  ("
+                  << local_safetyFactor << " - "
+                  << fabs(safetyFactor - local_safetyFactor) << ")  "
+                  << std::endl;
+    }
+    else
+    {
+      unsigned int nsets = poloidalWindingCounts.size();
+
+      std::map< unsigned int, unsigned int > differenceCount;
+      std::map< unsigned int, unsigned int >::iterator ic;
+      
+      // Find all the differences and count each one.
+      for( unsigned int i=0; i<nsets-toroidalWinding; ++i)
+      {
+        // Get the poloidal winding between two counts.
+        poloidalWinding = poloidalWindingP =
+          poloidalWindingCounts[i+toroidalWinding] - poloidalWindingCounts[i];
+        
+        // Find this difference in the list.
+        ic = differenceCount.find( poloidalWinding );
+        
+        // Not found, new difference.
+        if( ic == differenceCount.end() )
+        differenceCount.insert( std::pair<int, int>( poloidalWinding, 1) );
+        // Found this difference, increment the count.
+        else (*ic).second++;
+      }
+      
+      // Find the difference that occurs most often.
+      unsigned int nMatches = 0;
+      
+      ic = differenceCount.begin();
+      
+      while( ic != differenceCount.end() )
+      {
+        if( nMatches < (*ic).second )
+        {
+          poloidalWinding  = (*ic).first;
+          poloidalWindingP = (*ic).first;
+          nMatches = (*ic).second;
+        }
+        
+        ++ic;
+      }
+
+      double local_safetyFactor =
+        (double) toroidalWinding / (double) poloidalWinding;
+
+      double consistency =
+        (double) nMatches / (double) (nsets-toroidalWinding);
+
+      if( verboseFlag )
+        std::cerr << "overriding" << std::endl
+                  << "**using**   winding pair "
+                  << toroidalWinding << ","
+                  << poloidalWinding << "  ("
+                  << local_safetyFactor << " - "
+                  << fabs(safetyFactor - local_safetyFactor) << ")  "
+                  << "consistency "
+                  << 100.0 * consistency
+                  << " %)" << std::endl;
+    }
 
     if( poloidalWinding == poloidalWindingP )
       windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
 
     nnodes = poloidal_puncture_pts.size() / toroidalWinding;
 
-    if( verboseFlag )
-      std::cerr << "overriding" << std::endl
-           << "**using**   winding pair "
-           << toroidalWinding << ","
-           << poloidalWinding << "  ("
-           << local_safetyFactor << " - "
-           << fabs(safetyFactor - local_safetyFactor) << ")  "
-           << "consistency "
-           << 100.0 * consistency
-           << " %)" << std::endl;
+    analysisState = FieldlineProperties::OVERRIDE;
   }
 
   // A catch all in case the somehow the number of puncture points
@@ -3544,9 +3605,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     if( verboseFlag )
       std::cerr << "FORCE TERMINATING  " << nPuncturesNeeded << std::endl;
 
-    analysisState = FieldlineProperties::TERMINATED;
-
     nPuncturesNeeded = 0;
+    analysisState = FieldlineProperties::TERMINATED;
   }
 
   // Record the analysis.
@@ -4400,6 +4460,14 @@ removeOverlap( std::vector< std::vector < Point > > &bins,
   // Surface
   else // if( !islands )
   {
+//     std::cerr << "nnodes  " << nnodes << std::endl;
+
+//     for( unsigned int i=0; i<toroidalWinding; i++ )
+//     {
+//       std::cerr << bins[i].size() << "  ";
+//     }
+
+
     // This gives the minimal number of nodes for each group.
     surfaceOverlapCheck( bins, toroidalWinding, windingGroupOffset, nnodes );
     
@@ -4412,11 +4480,17 @@ removeOverlap( std::vector< std::vector < Point > > &bins,
 
       nnodes = bins[0].size();
 
+//       std::cerr << bins[0].size() << "  ";
+
       for( unsigned int i=1; i<toroidalWinding; i++ )
       {
+//      std::cerr << bins[i].size() << "  ";
+
         if( nnodes > bins[i].size())
           nnodes = bins[i].size();
       }
+
+//       std::cerr << std::endl;
     }
 
     // If the offset and point ordering are opposite in directions

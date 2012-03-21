@@ -67,10 +67,10 @@ class avtPoincareIC;
 //    Changed color to colorBy
 //
 //    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
-//    Removed GetStreamlinePoints().
+//    Removed GetFieldlinePoints().
 //
 //    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
-//    Add ability to restart streamline integration.
+//    Add ability to restart fieldline integration.
 //
 //    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //    Use avtStreamlines, not avtStreamlineWrappers.
@@ -138,7 +138,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     void                      SetIntersectionCriteria(vtkObject *obj, int);
 
   protected:
-    // Streamline overides.
+    // Fieldline overides.
     virtual void Execute(void);
     virtual bool ContinueExecute();
     virtual void PreExecute(void);
@@ -193,7 +193,7 @@ class avtPoincareFilter : public avtStreamlineFilter
                                 bool ptFlag );
 
     // Poincare filter methods.
-    bool ClassifyStreamlines(std::vector<avtIntegralCurve *> &ic);
+    bool ClassifyFieldlines(std::vector<avtIntegralCurve *> &ic);
     void CreatePoincareOutput(avtDataTree *dt,
                               std::vector<avtIntegralCurve *> &ic);
 
