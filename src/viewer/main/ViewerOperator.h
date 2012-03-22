@@ -51,7 +51,6 @@ class DataNode;
 class ViewerPlot;
 class ViewerOperatorPluginInfo;
 class avtDatabaseMetaData;
-class avtPluginFilter;
 class ExpressionList;
 
 #include <vector>
@@ -169,8 +168,6 @@ class VIEWER_API ViewerOperator : public ViewerBase
     int                           type;
     ViewerOperatorPluginInfo     *viewerPluginInfo;
     AttributeSubject             *operatorAtts;
-    avtPluginFilter              *avtfilter;
-
 };
 
 #endif
