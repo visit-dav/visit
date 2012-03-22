@@ -65,9 +65,6 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
-// HACK HACK
-#include <GL/gl.h>
-
 static void RemoveCullers(vtkRenderer *);
 
 bool VisWinRendering::stereoEnabled = false;
