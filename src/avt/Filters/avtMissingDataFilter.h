@@ -54,6 +54,10 @@
 // Creation:   Tue Jan 10 09:36:35 PST 2012
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Mar 22 13:06:30 EDT 2012
+//   Added canDoCollectiveCommunication flag to detect and handle when we
+//   are streaming.
 //   
 // ****************************************************************************
 
@@ -94,6 +98,7 @@ protected:
     bool                removedData;
     bool                generateMode;
     bool                removeMode;
+    bool                canDoCollectiveCommunication;
     avtContract_p       contract;
     avtDatabaseMetaData metadata;
 };

@@ -60,6 +60,10 @@
 // Creation:   Tue Jan 10 09:34:37 PST 2012
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Mar 22 13:06:30 EDT 2012
+//   Added canDoCollectiveCommunication flag to detect and handle when we
+//   are streaming.
 //   
 // ****************************************************************************
 
@@ -67,6 +71,7 @@ avtMissingDataFilter::avtMissingDataFilter() : avtDataTreeIterator(),
     removedData(false), generateMode(true), removeMode(true),
     contract(NULL), metadata()
 {
+    canDoCollectiveCommunication = false;
 }
 
 // ****************************************************************************
@@ -422,6 +427,10 @@ avtMissingDataFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // Creation:   Wed Jan 18 14:00:48 PST 2012
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Mar 22 13:06:30 EDT 2012
+//   Added canDoCollectiveCommunication flag to detect and handle when we
+//   are streaming.
 //   
 // ****************************************************************************
 
@@ -445,7 +454,9 @@ avtMissingDataFilter::PostExecute(void)
     if(removeMode)
     {
         // If anyone removed data, redo the original extents.
-        int dataWasRemoved = UnifyMaximumValue((int) this->removedData);
+        int dataWasRemoved = (int) this->removedData;
+        if (canDoCollectiveCommunication)
+            dataWasRemoved = UnifyMaximumValue(dataWasRemoved);
         if(dataWasRemoved > 0)
         {
             avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
@@ -487,12 +498,18 @@ avtMissingDataFilter::PostExecute(void)
 // Creation:   Tue Jan 10 09:30:37 PST 2012
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Mar 22 13:06:30 EDT 2012
+//   Added canDoCollectiveCommunication flag to detect and handle when we
+//   are streaming.
 //   
 // ****************************************************************************
 
 avtContract_p
 avtMissingDataFilter::ModifyContract(avtContract_p c0)
 {
+    canDoCollectiveCommunication = ! c0->DoingOnDemandStreaming();
+    
     // Store the contract.
     contract = new avtContract(c0);
 
