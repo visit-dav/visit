@@ -49,7 +49,6 @@
 #include <ViewerEngineManager.h>
 #include <ViewerOperator.h>
 #include <ViewerPlot.h>
-#include <avtPluginFilter.h>
 #include <VisItException.h>
 
 // ****************************************************************************
@@ -87,7 +86,6 @@ ViewerOperator::ViewerOperator(const int type_,
     type              = type_;
     viewerPluginInfo  = viewerPluginInfo_;
     operatorAtts      = viewerPluginInfo->AllocAttributes();
-    avtfilter         = NULL;
     needsRecalculation= true;
     plot              = plot_;
 
@@ -115,7 +113,6 @@ ViewerOperator::ViewerOperator(const ViewerOperator &obj)
     type               = obj.type;
     viewerPluginInfo   = obj.viewerPluginInfo;
     operatorAtts       = obj.operatorAtts->NewInstance(true);
-    avtfilter          = NULL;
     needsRecalculation = true;
     plot               = obj.plot;
 }
@@ -133,9 +130,6 @@ ViewerOperator::ViewerOperator(const ViewerOperator &obj)
 ViewerOperator::~ViewerOperator()
 {
     delete operatorAtts;
-
-    if (avtfilter)
-        delete avtfilter;
 }
 
 // ****************************************************************************
@@ -266,11 +260,6 @@ ViewerOperator::SetOperatorAttsFromClient()
     // client.
     //
     viewerPluginInfo->GetClientAtts(operatorAtts);
-
-    if (avtfilter != 0)
-    {
-        avtfilter->SetAtts(operatorAtts);
-    }
 }
 
 // ****************************************************************************
@@ -313,9 +302,6 @@ ViewerOperator::SetOperatorAtts(const AttributeSubject *atts)
     bool retval = false;
     if (operatorAtts->CopyAttributes(atts))
     {
-        if (avtfilter != 0)
-            avtfilter->SetAtts(operatorAtts);
-
         if (mightNeedRecalculation)
         {
             plot->ClearActors();
