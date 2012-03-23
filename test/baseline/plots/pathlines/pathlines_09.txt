@@ -1,0 +1,2 @@
+Streamline:  (VisItException)
+viewer: engine_ser: You cannot advect backward in time since the specified starting time is already at the beginning of the simulation time.  The plot can successfully execute if you move to a later time time step or if you override the pathline start time.
