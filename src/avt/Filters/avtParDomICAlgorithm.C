@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -354,8 +354,8 @@ avtParDomICAlgorithm::RunAlgorithm()
 void
 avtParDomICAlgorithm::HandleCommunication()
 {
-    //Send terminations, if any.
-    if (numICChange != 0)
+    // Send terminations, if any.
+    if (activeICs.size() == 0 && numICChange != 0)
     {
         vector<int> msg(2);
         msg[0] = PARTICLE_TERMINATE_COUNT;
@@ -673,6 +673,11 @@ avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
 // Programmer:  Dave Pugmire
 // Creation:    December  2, 2010
 //
+// Modifications:
+//
+//   Hank Childs, Fri Mar  9 16:49:06 PST 2012
+//   Add support for reverse pathlines.
+//
 // ****************************************************************************
 
 bool
@@ -682,7 +687,7 @@ avtParDomICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
     list<avtIntegralCurve *>::const_iterator it;
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
-        if ((*it)->domain.domain != -1 && (*it)->domain.timeStep > curTimeSlice)
+        if ((*it)->domain.domain != -1 && (*it)->domain.timeStep != curTimeSlice)
         {
             val = 1;
             break;
@@ -695,4 +700,3 @@ avtParDomICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
 }
 
 #endif
-

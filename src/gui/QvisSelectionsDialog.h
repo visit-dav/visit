@@ -59,6 +59,9 @@ class QvisVariableButton;
 //   Brad Whitlock, Sat Nov  5 02:14:58 PDT 2011
 //   Let the user pick different id variable types.
 //
+//   Dave Pugmire, Thu Mar 15 11:19:33 EDT 2012
+//   Add location named selections.
+//
 // ****************************************************************************
 
 class QvisSelectionsDialog : public QDialog
@@ -75,6 +78,7 @@ public:
     {
         UseZoneIDForID,
         UseGlobalZoneIDForID,
+        UseLocationsForID,
         UseVariableForID
     } IDVariableType;
 

@@ -64,6 +64,10 @@
 //    Hank Childs, Sun Dec  5 10:18:13 PST 2010
 //    Initialize new data members for issuing warnings.
 //
+//    Hank Childs, Sun Mar 11 11:16:56 PDT 2012
+//    Change handling for backwards pathlines and maxTime ... it is now
+//    handled at a higher level.
+//
 // ****************************************************************************
 
 avtStreamlineIC::avtStreamlineIC(
@@ -89,8 +93,6 @@ avtStreamlineIC::avtStreamlineIC(
 
     doTime = doTime_;
     maxTime = maxTime_;
-    if (dir == DIRECTION_BACKWARD)
-        maxTime = -maxTime;
 
     terminatedBecauseOfMaxSteps  = false;
     speedAtTermination = 0.;
@@ -233,14 +235,18 @@ avtStreamlineIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
 //    David Camp, Mon Jan 17 12:48:18 PST 2011
 //    Added missing data members to list.
 //
+//   David Camp, Wed Mar  7 10:43:07 PST 2012
+//   Added a Serialize flag to the arguments. This is to support the restore
+//   ICs code.
+//
 // ****************************************************************************
 
 void
 avtStreamlineIC::Serialize(MemStream::Mode mode, MemStream &buff, 
-                           avtIVPSolver *solver)
+                           avtIVPSolver *solver, SerializeFlags serializeFlags)
 {
     // Have the base class serialize its part
-    avtStateRecorderIntegralCurve::Serialize(mode, buff, solver);
+    avtStateRecorderIntegralCurve::Serialize(mode, buff, solver, serializeFlags);
 
     buff.io(mode, numSteps);
     buff.io(mode, maxSteps);

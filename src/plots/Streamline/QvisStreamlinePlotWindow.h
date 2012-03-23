@@ -59,6 +59,7 @@ class QPushButton;
 class QButtonGroup;
 class QRadioButton;
 class StreamlineAttributes;
+class SelectionList;
 
 // ****************************************************************************
 // Class: QvisStreamlinePlotWindow
@@ -149,6 +150,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Mon Feb 21 08:17:42 EST 2011
 //   Add color by correlation distance.
 //
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -168,6 +172,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     virtual void apply();
     virtual void makeDefault();
     virtual void reset();
+    virtual void show();
   protected:
     void CreateAppearanceTab(QWidget *);
     void CreateAdvancedTab(QWidget *);
@@ -287,6 +292,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void correlationDistanceMinDistTypeChanged(int);
     void processCorrelationDistanceAngTolEditText();
     void processCorrelationDistanceMinDistEditText();
+    void selectionsChanged(int val);
   private:
     int plotType;
     QComboBox *sourceType;
@@ -332,6 +338,8 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *sampleDensityLabel[3], *sampleDistanceLabel[3];
     QSpinBox  *sampleDensity[3];
     QLineEdit *sampleDistance[3];
+    QLabel    *selectionsLabel;
+    QComboBox *selections;
 
     QGroupBox *samplingGroup;
     QLabel    *fillLabel;
@@ -427,6 +435,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *criticalPointThresholdLabel;
 
     StreamlineAttributes *streamAtts;
+    SelectionList *selectionList;
 };
 
 #endif

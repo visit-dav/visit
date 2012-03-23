@@ -44,7 +44,9 @@
 
 #include <vtkDataSet.h>
 
+#include <avtCallback.h>
 #include <avtCommonDataFunctions.h>
+#include <avtDatabase.h>
 #include <avtDataTree.h>
 #include <avtExtents.h>
 #include <avtOriginatingSource.h>
@@ -53,6 +55,7 @@
 
 #include <ImproperUseException.h>
 #include <IncompatibleDomainListsException.h>
+#include <InvalidFilesException.h>
 #include <DebugStream.h>
 
 #include <vector>
@@ -176,6 +179,9 @@ avtDatasetOnDemandFilter::EmptyQueue()
 //    David Camp, Mon Aug 15 09:36:04 PDT 2011
 //    Need to remove the domain reference from the PIC locator cache.
 //
+//    Hank Childs/David Camp, Tue Mar 13 12:43:15 PDT 2012
+//    Make sure we are dealing with the right SIL restriction.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -207,20 +213,55 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
         }
     }
 
+    avtSILRestriction_p silr;
+    if (timeStep == firstContract->GetDataRequest()->GetTimestep())
+    {
+        silr = firstContract->GetDataRequest()->GetRestriction();
+    }
+    else if ((*lastUsedContract != NULL) && 
+             (timeStep == lastUsedContract->GetDataRequest()->GetTimestep()))
+    {
+        silr = lastUsedContract->GetDataRequest()->GetRestriction();
+    }
+    else
+    {
+        // The SIL restriction associated with the contract may be for the wrong
+        // time step.  Go get the correct one.
+        std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+        ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
+        if (*dbp == NULL)
+            EXCEPTION1(InvalidFilesException, db.c_str());
+
+        std::string mesh = GetInput()->GetInfo().GetAttributes().GetMeshname();
+        avtDataObject_p dob = dbp->GetOutput(mesh.c_str(), timeStep);
+        lastUsedContract = dob->GetOriginatingSource()->GetGeneralContract();
+        silr = lastUsedContract->GetDataRequest()->GetRestriction();
+   }
+
+    avtDataRequest_p new_dr = new avtDataRequest(firstContract->GetDataRequest(), silr);
+    avtContract_p new_contract = new avtContract(firstContract, new_dr);
 
     if (DebugStream::Level5())
         debug5<<"     Update->GetDomain "<<domainId<<" time= "<<timeStep<<endl;
-    avtContract_p new_contract = new avtContract(firstContract);
     std::vector<int> domains;
     domains.push_back(domainId);
     new_contract->GetDataRequest()->GetRestriction()->TurnOnAll();
     new_contract->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
-    if (timeStep >= 0)
-        new_contract->GetDataRequest()->SetTimestep(timeStep);
+    new_contract->GetDataRequest()->SetTimestep(timeStep);
     new_contract->SetOnDemandStreaming(true);
 
     GetInput()->Update(new_contract);
     vtkDataSet *rv = GetInputDataTree()->GetSingleLeaf();
+    if (rv == NULL)
+    {
+        // This issue has been known to occur when: 
+        //  -- the SIL is time varying
+        //  -- the domain requested doesn't exist for the initial time step
+        //     (which is the one where the SIL is created from).
+        EXCEPTION1(VisItException, "Failure retrieving a data set while "
+                     "advecting particles.  Please report this to a VisIt "
+                     "developer.");
+    }
 
     // Add it to the cache.
     DomainCacheEntry entry;
@@ -398,8 +439,7 @@ avtDatasetOnDemandFilter::GetDataAroundPoint(double X, double Y, double Z,
     // data selection will be deleted by contract.
     new_contract->GetDataRequest()->AddDataSelection(ptsel);
 
-    if (timeStep >= 0)
-        new_contract->GetDataRequest()->SetTimestep(timeStep);
+    new_contract->GetDataRequest()->SetTimestep(timeStep);
     new_contract->SetOnDemandStreaming(true);
 
     GetInput()->Update(new_contract);

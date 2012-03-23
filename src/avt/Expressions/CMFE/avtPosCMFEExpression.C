@@ -96,6 +96,15 @@ avtPosCMFEExpression::~avtPosCMFEExpression()
 //    Hank Childs, Sat Jan 21 12:56:57 PST 2006
 //    Re-wrote to use avtPosCMFEAlgorithm.
 //
+//    Hank Childs, Tue Mar 13 11:16:24 PDT 2012
+//    Return early if we were given a SIL with no data.  
+//
+//    Hank Childs, Wed Mar 14 08:47:56 PDT 2012
+//    Determine if we should run in a "serial-only" mode.
+//
+//    David Camp, Wed Mar 15 08:47:56 PDT 2012
+//    Change the emtpy data to return an avtDataTree_p object.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -104,8 +113,17 @@ avtPosCMFEExpression::PerformCMFE(avtDataTree_p output_mesh,
                                   const std::string &invar,
                                   const std::string &outvar)
 {
+    if (!onDemandProcessing && !initialSILHasData)
+    {
+        // This is empty data, just return an empty tree.
+        avtDataTree_p rv = new avtDataTree();
+        return rv;
+    }
+
+    bool serialOnly = onDemandProcessing;
     return avtPosCMFEAlgorithm::PerformCMFE(output_mesh, mesh_to_be_sampled,
-                                            invar, varnames[1], outvar);
+                                            invar, varnames[1], outvar,
+                                            serialOnly);
 }
 
 

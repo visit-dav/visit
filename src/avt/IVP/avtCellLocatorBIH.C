@@ -585,7 +585,8 @@ void avtCellLocatorBIH::Free()
 void avtCellLocatorBIH::FindCellRecursive( const double pos[3], 
                                            avtInterpolationWeights* weights,
                                            unsigned int node,
-                                           vtkIdType& cell ) const
+                                           vtkIdType& cell,
+                                           bool ignoreGhostCells ) const
 {
     const celltree::node& n = Tree->nodes[node];
 
@@ -597,7 +598,7 @@ void avtCellLocatorBIH::FindCellRecursive( const double pos[3],
 
         for( ; begin!=end; ++begin )
         {
-            if( TestCell( *begin, pos, weights ) )
+            if( TestCell( *begin, pos, weights, ignoreGhostCells ) )
             {
                 cell = *begin;
                 return;
@@ -618,37 +619,38 @@ void avtCellLocatorBIH::FindCellRecursive( const double pos[3],
             if( n.lmax()-p < p-n.rmin() )
             {
                 // go left first
-                FindCellRecursive( pos, weights, left, cell );
+                FindCellRecursive( pos, weights, left, cell, ignoreGhostCells );
 
                 if( cell < 0 )
-                    FindCellRecursive( pos, weights, left+1, cell );
+                    FindCellRecursive( pos, weights, left+1, cell, ignoreGhostCells );
             }
             else
             {
                 // go right first
-                FindCellRecursive( pos, weights, left+1, cell );
+                FindCellRecursive( pos, weights, left+1, cell, ignoreGhostCells );
 
                 if( cell < 0 )
-                    FindCellRecursive( pos, weights, left, cell );
+                    FindCellRecursive( pos, weights, left, cell, ignoreGhostCells );
             }
        }
        else if( l )
-           FindCellRecursive( pos, weights, left, cell );
+           FindCellRecursive( pos, weights, left, cell, ignoreGhostCells );
        else if( r )
-           FindCellRecursive( pos, weights, left+1, cell );
+           FindCellRecursive( pos, weights, left+1, cell, ignoreGhostCells );
     }
 }
 
 // ---------------------------------------------------------------------------
 
 vtkIdType avtCellLocatorBIH::FindCell( const double pos[3],
-                                       avtInterpolationWeights* weights ) const
+                                       avtInterpolationWeights* weights,
+                                       bool ignoreGhostCells ) const
 {
     if( Tree == 0 )
         return -1;
 
     vtkIdType cell = -1;
-    FindCellRecursive( pos, weights, 0, cell );
+    FindCellRecursive( pos, weights, 0, cell, ignoreGhostCells );
 
     return cell;
 }

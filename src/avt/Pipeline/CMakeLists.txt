@@ -45,6 +45,9 @@
 #   Brad Whitlock, Mon Dec 13 16:13:43 PST 2010
 #   I added avtNamedSelectionExtension.
 #
+#   Hank Childs, Tue Mar 13 12:59:07 PDT 2012
+#   Move avtDatasetOnDemandFilter to Filters directory.
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -143,7 +146,6 @@ AbstractFilters/avtDataObjectToDatasetFilter.C
 AbstractFilters/avtDataObjectToImageFilter.C
 AbstractFilters/avtDataObjectToSamplePointsFilter.C
 AbstractFilters/avtDataTreeIterator.C
-AbstractFilters/avtDatasetOnDemandFilter.C
 AbstractFilters/avtDatasetToDataObjectFilter.C
 AbstractFilters/avtDatasetToDatasetFilter.C
 AbstractFilters/avtDatasetToImageFilter.C

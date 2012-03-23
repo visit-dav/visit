@@ -115,6 +115,10 @@ class DSCommData;
 //   Added a new communication pattern, RestoreSequenceAssembleUniformly and
 //   renamed RestoreIntegralCurveSequence to RestoreIntegralCurveSequenceAssembleOnCurrentProcessor
 //
+//   Hank Childs, Fri Mar 16 19:07:39 PDT 2012
+//   Add methods for specifying which domains the receiving MPI task should
+//   focus on.
+//
 // ****************************************************************************
 
 class avtParICAlgorithm : public avtICAlgorithm
@@ -142,6 +146,8 @@ class avtParICAlgorithm : public avtICAlgorithm
 
     // Send/Recv Integral curves.
     void                      SendICs(int dst, std::vector<avtIntegralCurve*> &v);
+    void                      SendICs(int dst, std::vector<avtIntegralCurve*> &v,
+                                      std::vector<int> &);
     bool                      RecvICs(std::list<ICCommData> &recvICs);
     bool                      RecvICs(std::list<avtIntegralCurve *> &recvICs);
 
@@ -182,6 +188,9 @@ class avtParICAlgorithm : public avtICAlgorithm
 
     bool                      DoSendICs(int dst,
                                         std::vector<avtIntegralCurve*> &);
+    bool                      DoSendICs(int dst,
+                                        std::vector<avtIntegralCurve*> &,
+                                        std::vector<int> &);
     void                      PrepareForSend(int tag, MemStream *buff, std::vector<unsigned char *> &buffList);
     static bool               PacketCompare(const unsigned char *a, const unsigned char *b);
     void                      ProcessReceivedBuffers(std::vector<unsigned char*> &incomingBuffers,

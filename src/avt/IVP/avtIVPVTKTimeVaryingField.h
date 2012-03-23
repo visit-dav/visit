@@ -87,6 +87,10 @@ class vtkDataArray;
 //   Hank Childs, Sun Dec  5 10:18:13 PST 2010
 //   Indicate the velocity is not instantaneous.
 //
+//   Christoph Garth, Tue Mar 6 16:38:00 PDT 2012
+//   Moved ghost data handling into cell locator and changed IsInside()
+//   to only consider non-ghost cells.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
@@ -123,7 +127,6 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
     unsigned int   GetDimension() const;
     void           SetNormalized( bool v );
 
-    virtual bool   HasGhostZones() const;
     virtual void   GetExtents( double extents[6] ) const;
     virtual void   GetTimeRange( double range[2] ) const;
     virtual bool   VelocityIsInstantaneous(void) { return false; };
@@ -143,7 +146,6 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
     std::vector<std::string>         sclDataName;
     vtkDataArray*          sclData[2][256];
     bool                   sclCellBased[256];
-    unsigned char*         ghostPtr;
     double                 t0, t1;
 
     mutable avtVector               lastPos;

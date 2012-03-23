@@ -78,7 +78,7 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     char tmpStr[1000]; 
 
     const char *sourceType_names = "SpecifiedPoint, SpecifiedPointList, SpecifiedLine, SpecifiedCircle, SpecifiedPlane, "
-        "SpecifiedSphere, SpecifiedBox";
+        "SpecifiedSphere, SpecifiedBox, Selection";
     switch (atts->GetSourceType())
     {
       case StreamlineAttributes::SpecifiedPoint:
@@ -107,6 +107,10 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
       case StreamlineAttributes::SpecifiedBox:
           SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedBox  # %s\n", prefix, prefix, sourceType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::Selection:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSelection  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       default:
@@ -435,7 +439,7 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    const char *integrationType_names = "Euler, Leapfrog, DormandPrince, AdamsBashforth, Reserved_4, "
+    const char *integrationType_names = "Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, "
         "M3DC12DIntegrator";
     switch (atts->GetIntegrationType())
     {
@@ -455,8 +459,8 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           SNPRINTF(tmpStr, 1000, "%sintegrationType = %sAdamsBashforth  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
-      case StreamlineAttributes::Reserved_4:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sReserved_4  # %s\n", prefix, prefix, integrationType_names);
+      case StreamlineAttributes::RK4:
+          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sRK4  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case StreamlineAttributes::M3DC12DIntegrator:
@@ -870,6 +874,8 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%sselection = \"%s\"\n", prefix, atts->GetSelection().c_str());
+    str += tmpStr;
     return str;
 }
 
@@ -892,15 +898,15 @@ StreamlineAttributes_SetSourceType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the sourceType in the object.
-    if(ival >= 0 && ival < 7)
+    if(ival >= 0 && ival < 8)
         obj->data->SetSourceType(StreamlineAttributes::SourceType(ival));
     else
     {
         fprintf(stderr, "An invalid sourceType value was given. "
-                        "Valid values are in the range of [0,6]. "
+                        "Valid values are in the range of [0,7]. "
                         "You can also use the following names: "
                         "SpecifiedPoint, SpecifiedPointList, SpecifiedLine, SpecifiedCircle, SpecifiedPlane, "
-                        "SpecifiedSphere, SpecifiedBox.");
+                        "SpecifiedSphere, SpecifiedBox, Selection.");
         return NULL;
     }
 
@@ -2173,7 +2179,7 @@ StreamlineAttributes_SetIntegrationType(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid integrationType value was given. "
                         "Valid values are in the range of [0,5]. "
                         "You can also use the following names: "
-                        "Euler, Leapfrog, DormandPrince, AdamsBashforth, Reserved_4, "
+                        "Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, "
                         "M3DC12DIntegrator.");
         return NULL;
     }
@@ -3924,6 +3930,30 @@ StreamlineAttributes_GetCorrelationDistanceMinDistType(PyObject *self, PyObject 
     return retval;
 }
 
+/*static*/ PyObject *
+StreamlineAttributes_SetSelection(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the selection in the object.
+    obj->data->SetSelection(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetSelection(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetSelection().c_str());
+    return retval;
+}
+
 
 
 PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
@@ -4136,6 +4166,8 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetCorrelationDistanceMinDistBBox", StreamlineAttributes_GetCorrelationDistanceMinDistBBox, METH_VARARGS},
     {"SetCorrelationDistanceMinDistType", StreamlineAttributes_SetCorrelationDistanceMinDistType, METH_VARARGS},
     {"GetCorrelationDistanceMinDistType", StreamlineAttributes_GetCorrelationDistanceMinDistType, METH_VARARGS},
+    {"SetSelection", StreamlineAttributes_SetSelection, METH_VARARGS},
+    {"GetSelection", StreamlineAttributes_GetSelection, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -4180,6 +4212,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(StreamlineAttributes::SpecifiedSphere));
     if(strcmp(name, "SpecifiedBox") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::SpecifiedBox));
+    if(strcmp(name, "Selection") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Selection));
 
     if(strcmp(name, "pointSource") == 0)
         return StreamlineAttributes_GetPointSource(self, NULL);
@@ -4301,8 +4335,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(StreamlineAttributes::DormandPrince));
     if(strcmp(name, "AdamsBashforth") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::AdamsBashforth));
-    if(strcmp(name, "Reserved_4") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::Reserved_4));
+    if(strcmp(name, "RK4") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::RK4));
     if(strcmp(name, "M3DC12DIntegrator") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::M3DC12DIntegrator));
 
@@ -4528,6 +4562,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "FractionOfBBox") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::FractionOfBBox));
 
+    if(strcmp(name, "selection") == 0)
+        return StreamlineAttributes_GetSelection(self, NULL);
 
     return Py_FindMethod(PyStreamlineAttributes_methods, self, name);
 }
@@ -4750,6 +4786,8 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetCorrelationDistanceMinDistBBox(self, tuple);
     else if(strcmp(name, "correlationDistanceMinDistType") == 0)
         obj = StreamlineAttributes_SetCorrelationDistanceMinDistType(self, tuple);
+    else if(strcmp(name, "selection") == 0)
+        obj = StreamlineAttributes_SetSelection(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

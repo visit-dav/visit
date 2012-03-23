@@ -319,6 +319,9 @@ bool
 avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
                                    const char *varname)
 {
+    if (*ds == NULL || *(ds->GetDataTree()) == NULL)
+        return false;
+
     if (varname == NULL)
     {
         varname = ds->GetInfo().GetAttributes().GetVariableName().c_str();

@@ -74,6 +74,10 @@ class     vtkDataSet;
 //    subsequent searches can use this as a guess rather than traversing
 //    the interval tree.
 //
+//    Hank Childs, Wed Mar 14 08:47:56 PDT 2012
+//    Add argument to PerformCMFE to enable a mode where the algorithm runs
+//    in serial only.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtPosCMFEAlgorithm
@@ -82,7 +86,7 @@ class EXPRESSION_API avtPosCMFEAlgorithm
     static avtDataTree_p     PerformCMFE(avtDataTree_p, avtDataTree_p,
                                          const std::string &,
                                          const std::string &,
-                                         const std::string &);
+                                         const std::string &, bool);
     class SpatialPartition;
 
     class DesiredPoints

@@ -139,11 +139,6 @@ public:
         return true;
     }
 
-    virtual bool         HasGhostZones() const
-    {
-        return field0->HasGhostZones() && field1->HasGhostZones();
-    }
-
     virtual void         GetExtents(double *extents) const
     {
         // This should not happen. 

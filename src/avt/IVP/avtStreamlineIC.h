@@ -61,6 +61,10 @@
 //    Add avtIVPField argument to CheckForTermination.  Also add data members
 //    to help determine if a warning should be issued.
 //
+//   David Camp, Wed Mar  7 10:43:07 PST 2012
+//   Added a Serialize flag to the arguments. This is to support the restore
+//   ICs code.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamlineIC : public avtStateRecorderIntegralCurve
@@ -77,8 +81,8 @@ public:
     avtStreamlineIC();
     virtual ~avtStreamlineIC();
 
-    virtual void  Serialize(MemStream::Mode mode, MemStream &buff, 
-                                avtIVPSolver *solver);
+    virtual void    Serialize(MemStream::Mode mode, MemStream &buff, 
+                              avtIVPSolver *solver, SerializeFlags serializeFlags);
     virtual bool    UseFixedTerminationTime(void) { return doTime; };
     virtual double  FixedTerminationTime(void)    { return maxTime; };
 

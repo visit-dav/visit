@@ -801,7 +801,9 @@ avtOpenGLStreamlineRenderer::DrawAsRibbons(vtkPolyData *data)
             double sinTheta = sin(theta);
             for (int j = 0; j < 3; j++)
                 normal[j] = cosTheta*normal[j] + sinTheta*biNormal[j];
-            
+            normal[0] = 1;
+            normal[1] = 0;
+            normal[2] = 0;
             normals->SetTuple(i,normal);
         }
         

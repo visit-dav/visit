@@ -361,6 +361,9 @@ avtIVPAdamsBashforth::OnExitDomain()
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//    Hank Childs, Mon Mar 12 10:26:33 PDT 2012
+//    Integrate fix from Christoph Garth.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -374,15 +377,15 @@ avtIVPAdamsBashforth::RK4Step(const avtIVPField* field,
     return( result );
   f[0] *= h;
 
-  if( (result = (*field)(t, yCur + f[0] * 0.5, f[1])) != avtIVPSolverResult::OK )
+  if( (result = (*field)(t+0.5*h, yCur + f[0] * 0.5, f[1])) != avtIVPSolverResult::OK )
     return( result );
   f[1] *= h;
 
-  if( (result = (*field)(t, yCur + f[1] * 0.5, f[2])) != avtIVPSolverResult::OK )
+  if( (result = (*field)(t+0.5*h, yCur + f[1] * 0.5, f[2])) != avtIVPSolverResult::OK )
     return( result );
   f[2] *= h;
 
-  if( (result = (*field)(t, yCur + f[2],       f[3])) != avtIVPSolverResult::OK )
+  if( (result = (*field)(t+h, yCur + f[2],       f[3])) != avtIVPSolverResult::OK )
     return( result );
   f[3] *= h;
 

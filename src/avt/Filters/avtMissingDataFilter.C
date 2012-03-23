@@ -432,6 +432,9 @@ avtMissingDataFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //   Added canDoCollectiveCommunication flag to detect and handle when we
 //   are streaming.
 //   
+//   Hank Childs, Wed Mar 14 17:30:28 PDT 2012
+//   Don't always do collective communication.
+//
 // ****************************************************************************
 
 void
@@ -503,13 +506,16 @@ avtMissingDataFilter::PostExecute(void)
 //   Added canDoCollectiveCommunication flag to detect and handle when we
 //   are streaming.
 //   
+//   Hank Childs, Wed Mar 14 17:30:28 PDT 2012
+//   Check to see if we can do collective communication.
+//
 // ****************************************************************************
 
 avtContract_p
 avtMissingDataFilter::ModifyContract(avtContract_p c0)
 {
     canDoCollectiveCommunication = ! c0->DoingOnDemandStreaming();
-    
+
     // Store the contract.
     contract = new avtContract(c0);
 

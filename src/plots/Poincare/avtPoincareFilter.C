@@ -1515,7 +1515,7 @@ avtPoincareFilter::ContinueExecute()
 void
 avtPoincareFilter::UpdateDataObjectInfo(void)
 { 
-    avtStreamlineFilter::UpdateDataObjectInfo();
+    avtDatasetOnDemandFilter::UpdateDataObjectInfo();
 
     avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
     avtDataValidity   &val  = GetOutput()->GetInfo().GetValidity();

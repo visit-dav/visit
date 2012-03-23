@@ -792,7 +792,7 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
     xpt[1] = phi;
     xpt[2] = xin[2];
 
-    el = loc->FindCell( xpt, iw );
+    el = loc->FindCell( xpt, iw, false );
 
     if( el < 0 )
       return -1;

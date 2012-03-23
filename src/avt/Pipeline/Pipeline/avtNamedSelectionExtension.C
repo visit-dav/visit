@@ -224,6 +224,9 @@ avtNamedSelectionExtension::GetSelection(avtDataObject_p dob,
 // Creation:   Fri Oct 28 13:28:51 PDT 2011
 //
 // Modifications:
+//
+//    Dave Pugmire, Thu Mar 15 10:55:22 EDT 2012
+//    Support for location named selections.
 //   
 // ****************************************************************************
 
@@ -233,6 +236,8 @@ avtNamedSelectionExtension::GetIdVariable(const SelectionProperties &props)
     std::string idName;
     if(props.GetIdVariableType() == SelectionProperties::UseZoneIDForID)
         idName = "avtOriginalCellNumbers";
+    else if(props.GetIdVariableType() == SelectionProperties::UseLocationsForID)
+        idName = "";
     else if(props.GetIdVariableType() == SelectionProperties::UseGlobalZoneIDForID)
         idName = "avtGlobalZoneNumbers";
     else if(props.GetIdVariableType() == SelectionProperties::UseVariableForID)
@@ -266,11 +271,14 @@ avtNamedSelectionExtension::GetIdVariable(const SelectionProperties &props)
 //   Brad Whitlock, Fri Oct 28 10:48:34 PDT 2011
 //   I rewrote it.
 //
+//    Dave Pugmire, Thu Mar 15 10:55:22 EDT 2012
+//    Support for location named selections.
+//
 // ****************************************************************************
 
 avtNamedSelection *
 avtNamedSelectionExtension::GetSelectionFromDataset(avtDataset_p ds, 
-    const SelectionProperties &props)
+                                                    const SelectionProperties &props)
 {
     const char *mName = "avtNamedSelectionExtension::GetSelectionFromDataTree: ";
 
@@ -282,63 +290,45 @@ avtNamedSelectionExtension::GetSelectionFromDataset(avtDataset_p ds,
         ns = new avtFloatingPointIdNamedSelection(props.GetName());
     else if(props.GetIdVariableType() == SelectionProperties::UseVariableForID)
         ns = new avtFloatingPointIdNamedSelection(props.GetName());
+    else if(props.GetIdVariableType() == SelectionProperties::UseLocationsForID)
+        ns = new avtLocationsNamedSelection(props.GetName());
     ns->SetIdVariable(GetIdVariable(props));
-    
+
     int nleaves = 0;
     avtDataTree_p tree = ds->GetDataTree();
     vtkDataSet **leaves = tree->GetAllLeaves(nleaves);
     unsigned int maxSize = 0;
+
     for(int pass = 0; pass < 2; ++pass)
     {
-        if(pass == 1)
-        {
-            // Allocate enough ids in the named selection to hold all of the data.
+        // pass 0 calculated size, now allocate space.
+        if (pass == 1)
             ns->Allocate(maxSize);
-        }
-
+            
         for (int i = 0 ; i < nleaves ; i++)
         {
-            if (leaves[i]->GetNumberOfCells() == 0)
-                continue;
-
-            vtkDataArray *arr = leaves[i]->GetCellData()->
-                 GetArray(ns->GetIdVariable().c_str());
-            if(arr == NULL && 
-               leaves[i]->GetNumberOfCells() == leaves[i]->GetNumberOfPoints())
+            if (pass == 0)
             {
-                arr = leaves[i]->GetPointData()->GetArray(ns->GetIdVariable().c_str());
-            }
-
-            if (arr == NULL)
-            {
-                // Write an error to the logs but don't fail out since we have
-                // a collective communication coming up.
-                debug5 << mName
-                       << "This dataset does not have the id variable "
-                       << ns->GetIdVariable() << " so it cannot contribute "
-                          "to the selection." << endl;
-            }
-            else
-            {
-                if (arr->GetVoidPointer(0) == NULL)
+                if (ns->CheckValid(leaves[i]))
+                {
+                    if (ns->GetType() == avtNamedSelection::LOCATIONS)
+                        maxSize += leaves[i]->GetNumberOfPoints();
+                    else
+                        maxSize += leaves[i]->GetNumberOfCells();
+                }
+                else
                 {
                     // Write an error to the logs but don't fail out since we have
                     // a collective communication coming up.
                     debug5 << mName
                            << "This dataset does not have the id variable "
                            << ns->GetIdVariable() << " so it cannot contribute "
-                              "to the selection." << endl;
+                           << "to the selection." << endl;
                 }
-                else
-                {
-                    if(pass == 0)
-                        maxSize += leaves[i]->GetNumberOfCells();
-                    else
-                    {
-                        // Append the data into the named selection.
-                        ns->Append(arr);
-                    }
-                }
+            }
+            else // pass == 1
+            {
+                ns->Append(leaves[i]);
             }
         }
     }

@@ -99,6 +99,10 @@ using std::vector;
 //    Hank Childs, Thu Jan 12 11:24:23 PST 2006
 //    Modify index of default variable.
 //
+//    Hank Childs, Wed Mar 14 08:47:56 PDT 2012
+//    Add a serial only mode.  (This is needed when we do on-demand processing
+//    of pieces when parallelizing over seeds in the PICS filter.)
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -106,7 +110,8 @@ avtPosCMFEAlgorithm::PerformCMFE(avtDataTree_p output_mesh,
                                  avtDataTree_p mesh_to_be_sampled,
                                  const std::string &invar,
                                  const std::string &default_var,
-                                 const std::string &outvar)
+                                 const std::string &outvar,
+                                 bool serialOnly)
 {
     int   i, j;
 
@@ -137,13 +142,19 @@ avtPosCMFEAlgorithm::PerformCMFE(avtDataTree_p output_mesh,
                          ->GetNumberOfComponents();
         }
     }
-    centering = UnifyMaximumValue(centering);
+    if (!serialOnly)
+        centering = UnifyMaximumValue(centering);
     if (centering == 0)
     {
+        if (serialOnly && sample_list.datasets.size() == 0)
+        {
+            return new avtDataTree();
+        }
         EXCEPTION2(ExpressionException, outvar, "Could not do database comparison, "
                        "because the secondary database had no data.");
     }
-    nComp = UnifyMaximumValue(nComp);
+    if (!serialOnly)
+        nComp = UnifyMaximumValue(nComp);
     if (nComp == 0)
     {
         EXCEPTION2(ExpressionException, outvar, "Could not do database comparison, "
@@ -174,29 +185,32 @@ avtPosCMFEAlgorithm::PerformCMFE(avtDataTree_p output_mesh,
         dp.AddDataset(output_list.datasets[i]);
 
 #ifdef PARALLEL
-    //
-    // There is no guarantee that the "dp" and "flg" overlap spatially.  It's
-    // likely that the parts of the "flg" mesh that the points in "dp" are
-    // interested in are located on different processors.  So we do a large
-    // communication phase to get all of the points on the right processors.
-    //
-    int t3 = visitTimer->StartTimer();
     SpatialPartition spat_part;
     double bounds[6];
     std::vector<avtDataTree_p> tree_list;
-    tree_list.push_back(output_mesh);
-    tree_list.push_back(mesh_to_be_sampled);
-    avtDatasetExaminer::GetSpatialExtents(tree_list, bounds);
-    UnifyMinMax(bounds, 6);
-
-    // Need to "finalize" in pre-partitioned form so that the spatial
-    // partitioner can access their data.
-    dp.Finalize();
-
-    spat_part.CreatePartition(dp, flg, bounds);
-    dp.RelocatePointsUsingPartition(spat_part);
-    flg.RelocateDataUsingPartition(spat_part);
-    visitTimer->StopTimer(t3, "Spatial re-distribution");
+    if (! serialOnly)
+    {
+        //
+        // There is no guarantee that the "dp" and "flg" overlap spatially.  It's
+        // likely that the parts of the "flg" mesh that the points in "dp" are
+        // interested in are located on different processors.  So we do a large
+        // communication phase to get all of the points on the right processors.
+        //
+        int t3 = visitTimer->StartTimer();
+        tree_list.push_back(output_mesh);
+        tree_list.push_back(mesh_to_be_sampled);
+        avtDatasetExaminer::GetSpatialExtents(tree_list, bounds);
+        UnifyMinMax(bounds, 6);
+    
+        // Need to "finalize" in pre-partitioned form so that the spatial
+        // partitioner can access their data.
+        dp.Finalize();
+    
+        spat_part.CreatePartition(dp, flg, bounds);
+        dp.RelocatePointsUsingPartition(spat_part);
+        flg.RelocateDataUsingPartition(spat_part);
+        visitTimer->StopTimer(t3, "Spatial re-distribution");
+    }
 #endif
     flg.Finalize();
     dp.Finalize();
@@ -227,9 +241,12 @@ avtPosCMFEAlgorithm::PerformCMFE(avtDataTree_p output_mesh,
     // get the correct values back to this processor so that we can set
     // up the output variable array.
     //
-    int t4 = visitTimer->StartTimer();
-    dp.UnRelocatePoints(spat_part);
-    visitTimer->StopTimer(t4, "Collecting sample points back");
+    if (!serialOnly)
+    {
+        int t4 = visitTimer->StartTimer();
+        dp.UnRelocatePoints(spat_part);
+        visitTimer->StopTimer(t4, "Collecting sample points back");
+    }
 #endif
 
     //
@@ -493,6 +510,9 @@ avtPosCMFEAlgorithm::DesiredPoints::AddDataset(vtkDataSet *ds)
 //    Hank Childs, Sat Mar 18 09:42:29 PST 2006
 //    Add support for rectilinear grids.
 //
+//    Hank Childs/David Camp, Tue Mar 13 06:55:36 PDT 2012
+//    Fix crash when there are no data sets.
+//
 // ****************************************************************************
 
 void
@@ -530,7 +550,8 @@ avtPosCMFEAlgorithm::DesiredPoints::Finalize(void)
                                * rgrid_pts_size[3*i+2];
 
     ds_start = new int[num_datasets];
-    ds_start[0] = 0;
+    if (num_datasets > 0)
+        ds_start[0] = 0;
     for (i = 1 ; i < num_datasets ; i++)
         ds_start[i] = ds_start[i-1] + ds_size[i-1];
     delete [] ds_size;

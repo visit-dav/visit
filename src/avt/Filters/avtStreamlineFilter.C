@@ -89,6 +89,7 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <avtStateRecorderIntegralCurve.h>
 #include <avtStreamlineIC.h>
 #include <avtVector.h>
+#include <avtNamedSelectionManager.h>
 
 #include <DebugStream.h>
 #include <MemStream.h>
@@ -211,6 +212,7 @@ avtStreamlineFilter::avtStreamlineFilter() : seedVelocity(0,0,0)
     randomSeed = 0;
     fill = false;
     useBBox = false;
+    sourceSelection = "";
 
     storeVelocitiesForLighting = false;
     issueWarningForMaxStepsTermination = true;
@@ -403,6 +405,10 @@ avtStreamlineFilter::SetTermination(int maxSteps_, bool doDistance_,
 //    Create an avtStreamline (not an avtStateRecorderIntegralCurve) and
 //    put the termination criteria into the signature.
 //
+//    Hank Childs, Fri Mar  9 16:50:48 PST 2012
+//    Handle maximum elapsed time better for pathlines that specify start 
+//    times.
+//
 // ****************************************************************************
 
 avtIntegralCurve *
@@ -415,8 +421,22 @@ avtStreamlineFilter::CreateIntegralCurve( const avtIVPSolver* model,
 {
     unsigned char attr = GenerateAttributeFields();
 
+    double t = maxTime;
+    if (doPathlines)
+    {
+        if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
+            t = seedTime0-maxTime;
+        else
+            t = seedTime0+maxTime;
+    }
+    else
+    {
+        if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
+            t = -maxTime;
+    }
+
     avtStateRecorderIntegralCurve *rv = 
-        new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, maxTime,
+        new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, t,
                             attr, model, dir, t_start, p_start, v_start, ID);
 
     return rv;
@@ -796,6 +816,21 @@ avtStreamlineFilter::SetPointListSource(const std::vector<double> &ptList)
     listOfPoints = ptList;
 }
 
+
+void
+avtStreamlineFilter::SetSelectionSource(std::string nm,
+                                        int stride,
+                                        bool random, int seed, int numPts)
+
+{
+    sourceType = STREAMLINE_SOURCE_SELECTION;
+    sourceSelection = nm;
+    sampleDensity[0] = stride;
+    numSamplePoints = numPts;
+    randomSamples = random;
+    randomSeed = seed;
+}
+
 // ****************************************************************************
 // Method: avtStreamlineFilter::SeedInfoString
 //
@@ -1051,6 +1086,8 @@ avtStreamlineFilter::GetInitialLocations(void)
         GenerateSeedPointsFromCircle(seedPts);
     else if(sourceType == STREAMLINE_SOURCE_POINT_LIST)
         GenerateSeedPointsFromPointList(seedPts);
+    else if (sourceType == STREAMLINE_SOURCE_SELECTION)
+        GenerateSeedPointsFromSelection(seedPts);
 
     //Check for 2D input.
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
@@ -1598,6 +1635,7 @@ avtStreamlineFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &pts
                    "are incorrectly specified.  The number of values must be a "
                    "multiple of 3 (X, Y, Z).");
     }
+    
     int npts = listOfPoints.size() / 3;
     for (int i = 0 ; i < npts ; i++)
     {
@@ -1605,6 +1643,32 @@ avtStreamlineFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &pts
         pts.push_back(p);
     }
 }
+
+void
+avtStreamlineFilter::GenerateSeedPointsFromSelection(std::vector<avtVector> &pts)
+{
+    avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
+    
+    avtNamedSelection *sel = nsm->GetNamedSelection(sourceSelection.c_str());
+    if (sel == NULL)
+        return;
+    
+    std::vector<avtVector> allPts;
+    sel->GetMatchingLocations(allPts);
+    if (randomSamples)
+    {
+        random_shuffle(allPts.begin(), allPts.end());
+        for (int i = 0; i < numSamplePoints; i++)
+            pts.push_back(allPts[i]);
+    }
+    else
+    {
+        int npts = allPts.size();
+        for (int i = 0 ; i < npts ; i+= sampleDensity[0])
+            pts.push_back(allPts[i]);
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::ModifyContract

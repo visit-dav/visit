@@ -89,6 +89,9 @@ class     avtDatabase;
 //    Hank Childs, Thu Aug 26 23:36:03 PDT 2010
 //    Add data members for extents calculations.
 //
+//    Hank Chids, Tue Mar 13 08:26:09 PDT 2012
+//    Add method "OnlyRequiresSpatiallyOverlappingData".
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
@@ -128,6 +131,7 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     std::vector<std::string>  varnames;
     std::vector<std::string>  varExtentsList;
     bool                      calculateMeshExtents;
+    bool                      initialSILHasData;
 
     virtual void              PreExecute(void);
     virtual void              Execute(void);
@@ -139,6 +143,11 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     virtual bool              UseIdenticalSIL(void) { return false; };
     virtual bool              HasDefaultVariable(void) { return false; };
     int                       GetTimestate(ref_ptr<avtDatabase>);
+
+    // We can reduce how much data is loaded if we know that we only
+    // need the spatially overlapping data.
+    virtual bool              OnlyRequiresSpatiallyOverlappingData()
+                                            { return false; };
 };
 
 
