@@ -437,7 +437,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
 
     clean->Delete();
 
-    /*
+/*
     if (1)
     {
         char f[51];
@@ -461,7 +461,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
         fflush(fp);
         fclose(fp);
     }
-    */
+ */
 }
 
 // ****************************************************************************

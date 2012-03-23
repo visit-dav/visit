@@ -54,7 +54,8 @@ public:
     ~avtCellLocatorRect();
 
     vtkIdType FindCell( const double pos[3], 
-                        avtInterpolationWeights* iw ) const;
+                        avtInterpolationWeights* iw,
+                        bool ignoreGhostCells ) const;
 
 protected:
 

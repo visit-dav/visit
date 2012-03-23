@@ -219,6 +219,12 @@ avtSymmEvalExpression::ProcessArguments(ArgsExpr *args,
 //  Programmer: Hank Childs
 //  Creation:   January 21, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Mar 14 08:47:56 PDT 2012
+//    Add new argument to function call indicating whether this is a serial-
+//    only execution.  (It isn't.)
+//
 // ****************************************************************************
 
 void
@@ -235,8 +241,10 @@ avtSymmEvalExpression::Execute(void)
                       "must take the form: <var> <default-var> [parameters]");
     }
 
+    bool serialOnly = false;
     avtDataTree_p output = avtPosCMFEAlgorithm::PerformCMFE(in1, in2,
-                                 varnames[0], varnames[1], outputVariableName);
+                                 varnames[0], varnames[1], outputVariableName,
+                                 serialOnly);
     SetOutputDataTree(output);
 }
 

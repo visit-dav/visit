@@ -134,7 +134,6 @@ class IVP_API avtIVPField
 
     virtual void         GetTimeRange( double range[2] ) const = 0;
     virtual void         GetExtents( double  extents[6] ) const = 0;
-    virtual bool         HasGhostZones() const = 0;
     virtual bool         VelocityIsInstantaneous(void) { return true; };
 
     virtual void         SetOrder( unsigned int val ) { order = val; };

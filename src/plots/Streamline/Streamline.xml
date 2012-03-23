@@ -31,6 +31,7 @@
         SpecifiedPlane
         SpecifiedSphere
         SpecifiedBox
+        Selection
       </Enum>
       <Enum name="ColoringMethod">
         Solid
@@ -80,7 +81,7 @@
         Leapfrog
         DormandPrince
         AdamsBashforth
-        Reserved_4
+        RK4
         M3DC12DIntegrator
       </Enum>
       <Enum name="OpacityType">
@@ -243,8 +244,8 @@
       <Field name="fieldType" label="Field" type="enum" subtype="FieldType">
         Default
       </Field>
-      <Field name="fieldConstant" label="Constant" type="double" subtype="FieldConstant" enabler="fieldType:FlashField">
-        1.0
+      <Field name="fieldConstant" label="Constant" type="double" enabler="fieldType:FlashField">
+        1.000000
       </Field>
       <Field name="velocitySource" label="Starting velocity" type="doubleArray" length="3" enabler="fieldType:FlashField">
         0.000000
@@ -451,6 +452,8 @@
       </Field>
       <Field name="correlationDistanceMinDistType" label="correlationDistanceMinDistType" type="enum" subtype="SizeType">
         FractionOfBBox
+      </Field>
+      <Field name="selection" label="selection" type="string">
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

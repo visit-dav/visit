@@ -51,9 +51,6 @@
 #include <vtkGenericCell.h>
 #include <DebugStream.h>
 
-//const unsigned char avtIVPVTKField::ghostMask = (1<<ZONE_NOT_APPLICABLE_TO_PROBLEM) | (1<<ZONE_EXTERIOR_TO_PROBLEM);
-const unsigned char avtIVPVTKField::ghostMask = (1<<5) | (1<<4);
-
 // ****************************************************************************
 //  Method: avtIVPVTKField constructor
 //
@@ -86,11 +83,6 @@ avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator )
         EXCEPTION1( ImproperUseException, "avtIVPVTKField: Can't locate vectors to interpolate." );
     }
 
-    // Cache a raw pointer to the ghost zone flags
-    vtkUnsignedCharArray* ghostData = 
-        vtkUnsignedCharArray::SafeDownCast( ds->GetCellData()->GetArray( "avtGhostZones" ) );
-    ghostPtr = ghostData ? ghostData->GetPointer(0) : NULL;
-
     lastCell = -1;
     lastPos.x = lastPos.y = lastPos.z =
         std::numeric_limits<double>::quiet_NaN();
@@ -118,28 +110,6 @@ avtIVPVTKField::~avtIVPVTKField()
         ds->Delete();
     if( loc )
        loc->ReleaseDataSet();
-}
-
-// ****************************************************************************
-//  Method: avtIVPVTKField::HasGhostZones
-//
-//  Purpose:
-//      Determine if this vector field has ghost zones.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 8, 2009
-//
-//  Modifications:
-//
-//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
-//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField.
-//
-// ****************************************************************************
-
-bool
-avtIVPVTKField::HasGhostZones() const
-{
-    return ghostPtr != NULL; 
 }
 
 // ****************************************************************************
@@ -180,6 +150,10 @@ avtIVPVTKField::GetExtents( double extents[6] ) const
 //   Dave Pugmire, Mon Feb  7 13:46:56 EST 2011
 //   Fix ghost mask for ghost cell integration.
 //
+//   Christoph Garth, Tue Mar 6 16:38:00 PDT 2012
+//   Moved ghost data handling into cell locator and changed IsInside()
+//   to only consider non-ghost cells.
+//
 // ****************************************************************************
 
 bool
@@ -189,14 +163,8 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
     {
         lastPos  = pos;
         
-        if( -1 == (lastCell = loc->FindCell( &pos.x, &lastWeights )) )
+        if( -1 == (lastCell = loc->FindCell( &pos.x, &lastWeights, false )) )
             return false;
-
-        if( ghostPtr && ghostPtr[lastCell] & ghostMask)
-        {
-            lastCell = -1;
-            return false;
-        }
     }       
 
     return lastCell != -1;
@@ -473,7 +441,8 @@ avtIVPVTKField::SetScalarVariable(unsigned char index, const std::string& name)
 //  Method: avtIVPVTKField::IsInside
 //
 //  Purpose:
-//      Determines if a point is inside a field.
+//      Determines if a point is inside a field, excluding any 
+//      ghost regions.
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
@@ -489,12 +458,15 @@ avtIVPVTKField::SetScalarVariable(unsigned char index, const std::string& name)
 //    Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
 //    Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField.
 //
+//    Christoph Garth, Tue Mar 6, 16:22:00 PDT 2012
+//    Explicitly exclude ghost cells.
+//    
 // ****************************************************************************
 
 bool
 avtIVPVTKField::IsInside( const double& t, const avtVector &pt ) const
 {
-    return FindCell( t, pt );
+    return loc->FindCell( &pt.x, NULL, true ) > 0;
 }
 
 // ****************************************************************************

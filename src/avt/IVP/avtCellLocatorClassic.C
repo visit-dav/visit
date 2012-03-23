@@ -253,7 +253,8 @@ double Distance2ToBounds( const double x[3], double bounds[6] )
 
 
 vtkIdType avtCellLocatorClassic::FindCell( const double pos[3],
-                                           avtInterpolationWeights* weights ) const
+                                           avtInterpolationWeights* weights,
+                                           bool ignoreGhostCells ) const
 {
     int ijk[3];
 
@@ -281,7 +282,7 @@ vtkIdType avtCellLocatorClassic::FindCell( const double pos[3],
     {
         vtkIdType id = leafids->GetId( j );
 
-        if( TestCell( id, pos, weights ) )
+        if( TestCell( id, pos, weights, ignoreGhostCells ) )
             return id;
     }
 

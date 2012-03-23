@@ -45,6 +45,7 @@
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <DebugStream.h>
 #include <VisItException.h>
@@ -130,6 +131,11 @@ avtCellLocator::SetDataSet(vtkDataSet *ds)
             }
         }
     }
+
+    ghostPtr = NULL;
+
+    if( vtkUnsignedCharArray* gd = vtkUnsignedCharArray::SafeDownCast( ds->GetCellData()->GetArray( "avtGhostZones" ) ) )
+        ghostPtr = gd->GetPointer(0);
 }
 
 //----------------------------------------------------------------------------
@@ -168,6 +174,8 @@ avtCellLocator::ReleaseDataSet()
 
         fCoordPtr = NULL;
         dCoordPtr = NULL;
+        
+        ghostPtr = NULL;
     }
 }
 
@@ -203,8 +211,13 @@ avtCellLocator::Destruct(void *p)
 //----------------------------------------------------------------------------
 
 bool avtCellLocator::TestCell( vtkIdType cellid, const double pos[3],
-                               avtInterpolationWeights* weights ) const
+                               avtInterpolationWeights* weights,
+                               bool ignoreGhostCells ) const
 {
+    // ignore ghost cells if indicated
+    if( ignoreGhostCells && ghostPtr && ghostPtr[cellid] )
+        return false;
+        
     // check if we can take a fast path
     switch( dataSet->GetCellType( cellid ) )
     {

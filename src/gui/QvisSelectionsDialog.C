@@ -65,6 +65,9 @@
 //   Brad Whitlock, Sat Nov  5 02:42:38 PDT 2011
 //   Let the user pick different id types for the selection.
 //
+//   Dave Pugmire, Thu Mar 15 11:19:33 EDT 2012
+//   Add location named selections.
+//
 // ****************************************************************************
 
 QvisSelectionsDialog::QvisSelectionsDialog(
@@ -135,9 +138,13 @@ QvisSelectionsDialog::QvisSelectionsDialog(
     QRadioButton *b1 = new QRadioButton(tr("Global cell numbers"), central);
     bg2->addButton(b1, 1);
     iLayout->addWidget(b1, 0, 1);
-    QRadioButton *b2 = new QRadioButton(tr("Variable"), central);
+    QRadioButton *b2 = new QRadioButton(tr("Locations"), central);
     bg2->addButton(b2, 2);
     iLayout->addWidget(b2, 0, 2);
+
+    QRadioButton *b3 = new QRadioButton(tr("Variable"), central);
+    bg2->addButton(b3, 3);
+    iLayout->addWidget(b3, 0, 3);
     b0->setChecked(true);
     connect(bg2, SIGNAL(buttonClicked(int)),
             this, SLOT(idVariableTypeChanged(int)));
@@ -147,8 +154,8 @@ QvisSelectionsDialog::QvisSelectionsDialog(
     idVariableButton->setEnabled(false);
     connect(idVariableButton, SIGNAL(activated(const QString &)),
             this, SLOT(idVariableChanged(const QString &)));
-    iLayout->addWidget(idVariableButton, 0, 3);
-    gLayout->addWidget(idGroup, row, 0, 1, 3);
+    iLayout->addWidget(idVariableButton, 0, 4);
+    gLayout->addWidget(idGroup, row, 0, 1, 4);
     ++row;
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox(
@@ -307,6 +314,9 @@ QvisSelectionsDialog::idVariableChanged(const QString &var)
 // Creation:   Mon Nov  7 14:23:24 PST 2011
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Mar 15 11:19:33 EDT 2012
+//   Add location named selections.
 //   
 // ****************************************************************************
 
@@ -318,6 +328,8 @@ QvisSelectionsDialog::idVariableTypeChanged(int val)
     else if(val == 1)
        idType = UseGlobalZoneIDForID;
     else if(val == 2)
+        idType = UseLocationsForID;
+    else if(val == 3)
        idType = UseVariableForID;
 
     idVariableButton->setEnabled(val == 2);

@@ -410,6 +410,9 @@ avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
 //  rank exit the execute loop we will hang in the LoadNextTimeSlice()
 //  on all of the other ranks that did not exit the execute loop.
 //
+//  Hank Childs, Fri Mar  9 16:49:06 PST 2012
+//  Add support for reverse pathlines.
+//
 // ****************************************************************************
 
 bool
@@ -419,14 +422,15 @@ avtSerialICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
     list<avtIntegralCurve *>::const_iterator it;
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
-        if ((*it)->domain.domain != -1 && (*it)->domain.timeStep > curTimeSlice)
+        if ((*it)->domain.domain != -1 && (*it)->domain.timeStep != curTimeSlice)
         {
             val = 1;
             break;
         }
     }
 
-    SumIntAcrossAllProcessors(val);
+    // Serial algorithm ... they don't need to be synched up.
+    //SumIntAcrossAllProcessors(val);
 
     return val > 0;
 }

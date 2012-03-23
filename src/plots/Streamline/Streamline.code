@@ -212,6 +212,9 @@ Definition:
 //   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
 //   Add vary tube radius by variable.
 //
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
+//
 // ****************************************************************************
 
 #define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
@@ -373,6 +376,17 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
             for (size_t i = 0 ; i < pointList.size() ; i++)
                 if (pointList[i] != obj.pointList[i])
                     return true;
+    }
+    if (sourceType == Selection)
+    {
+        if (selection != obj.selection ||
+            randomSamples != obj.randomSamples ||
+            (!randomSamples && (sampleDensity0 != obj.sampleDensity0)) ||
+            (randomSamples && (randomSeed != obj.randomSeed ||
+                               numberOfRandomSamples != obj.numberOfRandomSamples)))
+        {
+            return true;
+        }
     }
 
     return false;

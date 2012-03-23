@@ -51,6 +51,7 @@
 
 class     avtLookupTable;
 class     avtShiftCenteringFilter;
+class     avtGhostZoneFilter;
 class     avtStreamlinePolyDataFilter;
 class     avtVariableLegend;
 class     avtVariableMapper;
@@ -109,6 +110,7 @@ class avtStreamlinePlot : public avtLineDataPlot
     avtLegend_p                 varLegendRefPtr;
     avtStreamlinePolyDataFilter *streamlineFilter;
     avtShiftCenteringFilter    *shiftCenteringFilter;
+    avtGhostZoneFilter         *removeGhostZonesFilter;
     avtLookupTable             *avtLUT;
     avtStreamlineRenderer_p     renderer;
 

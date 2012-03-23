@@ -61,6 +61,8 @@
 #include <QvisOpacitySlider.h>
 #include <QListWidget>
 #include <QFileDialog>
+#include <SelectionList.h>
+#include <SelectionProperties.h>
 
 #include <stdio.h>
 
@@ -84,6 +86,9 @@ TurnOff(QWidget *w0, QWidget *w1=NULL);
 //
 // Modifications:
 //   
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
+//
 // ****************************************************************************
 
 QvisStreamlinePlotWindow::QvisStreamlinePlotWindow(const int type,
@@ -95,6 +100,7 @@ QvisStreamlinePlotWindow::QvisStreamlinePlotWindow(const int type,
 {
     plotType = type;
     streamAtts = subj;
+    selectionList = GetViewerState()->GetSelectionList();
 }
 
 
@@ -216,6 +222,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Add support for disabling warnings for stiffness and critical points.
 //   Also add description of tolerances.
 //
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
+//
 // ****************************************************************************
 
 void
@@ -253,6 +262,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     sourceType->addItem(tr("Plane"));
     sourceType->addItem(tr("Sphere"));
     sourceType->addItem(tr("Box"));
+    sourceType->addItem(tr("Selection"));
     connect(sourceType, SIGNAL(activated(int)),
             this, SLOT(sourceTypeChanged(int)));
     sourceLayout->addWidget(sourceType, 0, 1, 1, 2);
@@ -402,6 +412,17 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     geometryLayout->addWidget(boxExtentsLabel[2], gRow, 0);
     geometryLayout->addWidget(boxExtents[2], gRow, 1);
     gRow++;
+
+    selectionsLabel = new QLabel(tr("Selection"), sourceGroup);
+    selections = new QComboBox(sourceGroup);
+
+    connect(selections, SIGNAL(activated(int)),
+            this, SLOT(selectionsChanged(int)));
+
+    geometryLayout->addWidget(selectionsLabel, gRow, 0);
+    geometryLayout->addWidget(selections, gRow, 1);
+    gRow++;
+
 
     //Sampling options.
     samplingGroup = new QGroupBox(sourceGroup);
@@ -573,7 +594,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationType->addItem(tr("Leapfrog (Single-step)"));
     integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
-    integrationType->addItem(tr("Unused"));
+    integrationType->addItem(tr("Runge-Kutta 4 (Single-step)"));
     integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
@@ -1422,6 +1443,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 // 
 //   Hank Childs, Sun Dec  5 09:52:44 PST 2010
 //   Add support for disabling warnings for stiffness and critical points.
+//
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
 //
 // ****************************************************************************
 
@@ -2354,6 +2378,25 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 correlationDistanceMinDistEdit->setText(temp);
             }
             break;
+
+          case StreamlineAttributes::ID_selection:
+            selections->blockSignals(true);
+            std::string nm = streamAtts->GetSelection();
+            selections->setCurrentIndex(0);
+            if (nm != "")
+            {
+                for (int i = 0; i < selectionList->GetNumSelections(); i++)
+                {
+                    const SelectionProperties &sel = selectionList->GetSelections(i);
+                    if (sel.GetName() == nm)
+                    {
+                        selections->setCurrentIndex(i);
+                        break;
+                    }
+                }
+            }
+            selections->blockSignals(false);
+            break;
         }
     }
 }
@@ -2400,7 +2443,11 @@ QvisStreamlinePlotWindow::TurnOffSourceAttributes()
         TurnOff(sampleDensity[i], sampleDensityLabel[i]);
         TurnOff(sampleDistance[i], sampleDistanceLabel[i]);
     }
+
+    TurnOff(selectionsLabel);
+    TurnOff(selections);
     TurnOff(samplingGroup);
+
 }
 
 // ****************************************************************************
@@ -2423,6 +2470,9 @@ QvisStreamlinePlotWindow::TurnOffSourceAttributes()
 //
 //   Dave Pugmire, Wed Nov 10 09:21:17 EST 2010
 //   Allow box sampling min to be 1.
+//
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
 //
 // ****************************************************************************
 
@@ -2583,6 +2633,26 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
                 sampleDensity[i]->setMinimum(1);
         }
     }
+    else if (streamAtts->GetSourceType() == StreamlineAttributes::Selection)
+    {
+        TurnOn(selectionsLabel);
+        TurnOn(selections);
+        showSampling = true;
+        enableFill = false;
+
+        if (streamAtts->GetRandomSamples())
+        {
+          TurnOn(randomSeed, randomSeedLabel);
+          TurnOn(numberOfRandomSamples, numberOfRandomSamplesLabel);
+        }
+        else
+        {
+            TurnOn(sampleDensity[0], sampleDensityLabel[0]);
+            sampleDensityLabel[0]->setText(tr("Sampling stride:"));
+            sampleDensity[0]->setMinimum(1);
+        }
+
+    }
 
     if (showSampling)
     {
@@ -2594,9 +2664,9 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
 
         if (enableFill)
         {
-          TurnOn(fillLabel);
-          TurnOn(fillButtons[0]);
-          TurnOn(fillButtons[1]);
+            TurnOn(fillLabel);
+            TurnOn(fillButtons[0]);
+            TurnOn(fillButtons[1]);
         }
     }
 }
@@ -2681,6 +2751,7 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
     {
     case StreamlineAttributes::Euler:
     case StreamlineAttributes::Leapfrog:
+    case StreamlineAttributes::RK4:
         maxStepLength->show();
         maxStepLengthLabel->show();
       break;
@@ -2810,6 +2881,9 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
 // 
 //   Hank Childs, Sun Dec  5 09:52:44 PST 2010
 //   Add support for disabling warnings for stiffness and critical points.
+//
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
 //
 // ****************************************************************************
 
@@ -3515,6 +3589,10 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetCorrelationDistanceMinDistBBox(streamAtts->GetCorrelationDistanceMinDistBBox());
         }
     }
+    if (which_widget == StreamlineAttributes::ID_selection || doAll)
+    {
+        int val = selections->currentIndex();
+    }
 }
 
 
@@ -3570,6 +3648,24 @@ QvisStreamlinePlotWindow::apply()
 }
 
 
+
+void
+QvisStreamlinePlotWindow::show()
+{
+    QvisPostableWindowObserver::show();
+
+    selections->clear();
+    for (int i = 0; i < selectionList->GetNumSelections(); i++)
+    {
+        const SelectionProperties &sel = selectionList->GetSelections(i);
+        selections->addItem(tr(sel.GetName().c_str()));
+    }
+}
+
+
+
+
+
 // ****************************************************************************
 // Method: QvisStreamlinePlotWindow::makeDefault
 //
@@ -3623,6 +3719,19 @@ QvisStreamlinePlotWindow::sourceTypeChanged(int val)
 }
 
 void
+QvisStreamlinePlotWindow::selectionsChanged(int val)
+{
+    const SelectionProperties &sel = selectionList->GetSelections(val);
+    std::string nm = sel.GetName();
+    
+    if(nm != streamAtts->GetSelection())
+    {
+        streamAtts->SetSelection(nm);
+        Apply();
+    }
+}
+
+void
 QvisStreamlinePlotWindow::directionTypeChanged(int val)
  {
     if(val != streamAtts->GetStreamlineDirection())
@@ -3652,10 +3761,7 @@ QvisStreamlinePlotWindow::fieldConstantProccessText()
 void
 QvisStreamlinePlotWindow::integrationTypeChanged(int val)
 {
-    if(val == 4) // Unused 
-        Apply();
-    
-    else if(val != streamAtts->GetIntegrationType())
+    if(val != streamAtts->GetIntegrationType())
     {
         streamAtts->SetIntegrationType(StreamlineAttributes::IntegrationType(val));
         Apply();

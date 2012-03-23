@@ -519,7 +519,7 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 avtIVPSolver::Result 
 avtIVPDopri5::Step(avtIVPField* field, double t_max,
                    avtIVPStep* ivpstep) 
-{
+{    
     const double direction = sign( 1.0, t_max - t );
 
     // compute maximum stepsize

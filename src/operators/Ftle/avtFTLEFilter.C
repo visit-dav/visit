@@ -66,6 +66,12 @@
 //  Serves as integration curve that evaluates the end of integration
 //  step and stores the last position.
 //
+//  Modifications:
+//
+//   David Camp, Wed Mar  7 10:43:07 PST 2012
+//   Added a Serialize flag to the arguments. This is to support the restore
+//   ICs code.
+//
 // ****************************************************************************
 
 class avtFTLEFilterIC : public avtIntegralCurve
@@ -157,9 +163,9 @@ public:
         }
     }
 
-    virtual void Serialize(MemStream::Mode mode, MemStream &buff, avtIVPSolver *solver)
+    virtual void Serialize(MemStream::Mode mode, MemStream &buff, avtIVPSolver *solver, SerializeFlags serializeFlags)
     {
-        avtIntegralCurve::Serialize(mode,buff,solver);
+        avtIntegralCurve::Serialize(mode,buff,solver,serializeFlags);
         buff.io(mode, numStep);
         buff.io(mode, maxSteps);
         buff.io(mode, maxTime);

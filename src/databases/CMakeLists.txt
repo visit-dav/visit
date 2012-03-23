@@ -324,6 +324,7 @@ IF (NOT WIN32)
     SET(OPTIONAL_DATABASE_PLUGINS
         Hex
         Rect
+        PICS_Tester
         VLI
     )
 ENDIF (NOT WIN32)

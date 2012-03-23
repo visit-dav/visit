@@ -41,6 +41,7 @@
 
 #include <pipeline_exports.h>
 #include <avtContract.h>
+#include <avtVector.h>
 
 #include <set>
 #include <vector>
@@ -50,7 +51,7 @@
 #include <vtkDataArray.h>
 
 class     avtDataSelection;
-
+class     vtkDataSet;
 
 typedef struct { int d; int z; } IntPair;
 class PairCompare {
@@ -89,6 +90,10 @@ class PairCompare {
 //    Brad Whitlock, Mon Nov  7 13:27:09 PST 2011
 //    Lots of changes. Add Allocate, Append, Globalize, GetMatchingIds, etc.
 //
+//    Dave Pugmire, Thu Mar 15 10:55:22 EDT 2012
+//    Support for location named selections. Added GetMatchingLocations,
+//    GetMatchingIds, GetIDArray, CheckValid, changed signature for Append.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelection
@@ -100,7 +105,8 @@ class PIPELINE_API avtNamedSelection
     typedef enum
     {
         ZONE_ID            = 0,
-        FLOAT_ID          /* 1 */
+        FLOAT_ID,         /* 1 */
+        LOCATIONS         /* 2 */
     } SELECTION_TYPE;
 
     const std::string  &GetName(void) { return name; };
@@ -119,13 +125,17 @@ class PIPELINE_API avtNamedSelection
     virtual std::string CreateConditionString(void) { return ""; };
 
     virtual void        Allocate(size_t) = 0;
-    virtual void        Append(vtkDataArray *arr) = 0;
+    virtual void        Append(vtkDataSet *ds) = 0;
+    virtual bool        CheckValid(vtkDataSet *ds);
 
     virtual void        Globalize() = 0;
-    virtual void        GetMatchingIds(vtkDataArray *, std::vector<vtkIdType> &) = 0;
+    virtual void        GetMatchingIds(vtkDataSet *, std::vector<vtkIdType> &) = 0;
+    virtual void        GetMatchingLocations(std::vector<avtVector> &);
 
     static int          MaximumSelectionSize();
   protected:
+    vtkDataArray *      GetIDArray(vtkDataSet *ds);
+
     std::string         name;
     std::string         idVar;
   private:
@@ -151,10 +161,10 @@ class PIPELINE_API avtZoneIdNamedSelection : public avtNamedSelection
     virtual avtContract_p ModifyContract(avtContract_p c0) const;
 
     virtual void  Allocate(size_t);
-    virtual void  Append(vtkDataArray *arr);
+    virtual void  Append(vtkDataSet *ds);
 
     virtual void  Globalize();
-    virtual void  GetMatchingIds(vtkDataArray *, std::vector<vtkIdType> &);
+    virtual void  GetMatchingIds(vtkDataSet *, std::vector<vtkIdType> &);
 
     void SetIdentifiers(int nvals, const int *doms, const int *zones);
   protected:
@@ -183,14 +193,40 @@ class PIPELINE_API avtFloatingPointIdNamedSelection : public avtNamedSelection
     virtual std::string       CreateConditionString(void);
 
     virtual void  Allocate(size_t);
-    virtual void  Append(vtkDataArray *arr);
+    virtual void  Append(vtkDataSet *ds);
 
     virtual void  Globalize();
-    virtual void  GetMatchingIds(vtkDataArray *, std::vector<vtkIdType> &);
+    virtual void  GetMatchingIds(vtkDataSet *, std::vector<vtkIdType> &);
 
     void SetIdentifiers(const std::vector<double> &);
   protected:
     std::vector<double>  ids;
+};
+
+class PIPELINE_API avtLocationsNamedSelection : public avtNamedSelection
+{
+  public:
+                  avtLocationsNamedSelection(const std::string &);
+    virtual      ~avtLocationsNamedSelection();
+    
+    virtual void  Read(const std::string &);
+    virtual void  Write(const std::string &);
+    virtual int   GetSize(void) { return locations.size(); };
+    virtual SELECTION_TYPE    GetType(void) { return LOCATIONS; };
+
+    virtual avtContract_p ModifyContract(avtContract_p c0) const;
+
+    virtual void  Allocate(size_t);
+    virtual void  Append(vtkDataSet *ds);
+    virtual bool  CheckValid(vtkDataSet *ds);
+
+    virtual void  Globalize();
+    virtual void  GetMatchingIds(vtkDataSet *, std::vector<vtkIdType> &);
+    virtual void  GetMatchingLocations(std::vector<avtVector> &);
+
+  protected:
+    
+    std::vector<avtVector> locations;
 };
 
 

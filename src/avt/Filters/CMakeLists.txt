@@ -57,6 +57,9 @@
 #   Eric Brugger, Tue Oct 25 13:55:27 PDT 2011
 #   Add avtMultiresFilter.
 #
+#   Hank Childs, Tue Mar 13 12:59:07 PDT 2012
+#   Move avtDatasetOnDemandFilter from Pipeline/AbstractFilters directory.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -67,6 +70,7 @@ avtContourFilter.C
 avtCoordSystemConvert.C
 avtCurveConstructorFilter.C
 avtCustomTransform.C
+avtDatasetOnDemandFilter.C
 avtDisplaceFilter.C
 avtFacelistFilter.C
 avtFeatureEdgesFilter.C
@@ -88,6 +92,8 @@ avtNamedSelectionFilter.C
 avtParDomICAlgorithm.C
 avtParICAlgorithm.C
 avtPICSFilter.C
+avtPODICAlgorithm.C
+avtPOSBalanceICAlgorithm.C
 avtPointToGlyphFilter.C
 avtRayCompositer.C
 avtRayTracer.C

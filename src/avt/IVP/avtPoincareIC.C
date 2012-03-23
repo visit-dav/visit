@@ -232,14 +232,18 @@ avtPoincareIC::IntersectPlane(const avtVector &p0, const avtVector &p1)
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
 //
+//   David Camp, Wed Mar  7 10:43:07 PST 2012
+//   Added a Serialize flag to the arguments. This is to support the restore
+//   ICs code.
+//
 // ****************************************************************************
 
 void
 avtPoincareIC::Serialize(MemStream::Mode mode, MemStream &buff, 
-                           avtIVPSolver *solver)
+                         avtIVPSolver *solver, SerializeFlags serializeFlags)
 {
     // Have the base class serialize its part
-    avtStateRecorderIntegralCurve::Serialize(mode, buff, solver);
+    avtStateRecorderIntegralCurve::Serialize(mode, buff, solver, serializeFlags);
 
     buff.io(mode, numIntersections);
 }

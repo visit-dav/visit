@@ -54,7 +54,12 @@ using namespace std;
 #include <visitstream.h>
 #include <VisItException.h>
 #include <InvalidVariableException.h>
-
+#include <vtkDataSet.h>
+#include <vtkCellData.h>
+#include <vtkPointData.h>
+#include <vtkVisItCellLocator.h>
+#include <vtkGenericCell.h>
+#include <DebugStream.h>
 
 // ****************************************************************************
 //  Method: avtNamedSelection constructor
@@ -142,6 +147,67 @@ int
 avtNamedSelection::MaximumSelectionSize()
 {
     return 50000000;
+}
+
+// ****************************************************************************
+// Method:  avtNamedSelection::CheckValid
+//
+// Purpose: Validate that a selection can be done on this dataset.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+bool
+avtNamedSelection::CheckValid(vtkDataSet *ds)
+{
+    return GetIDArray(ds) != NULL;
+}
+
+// ****************************************************************************
+// Method:  avtNamedSelection::GetIDArray
+//
+// Purpose: Pick off ID array from dataset, or NULL if not found.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtNamedSelection::GetIDArray(vtkDataSet *ds)
+{
+    vtkDataArray *arr = NULL;
+    
+    arr = ds->GetCellData()->GetArray(GetIdVariable().c_str());
+    if(arr == NULL && ds->GetNumberOfCells() == ds->GetNumberOfPoints())
+        arr = ds->GetPointData()->GetArray(GetIdVariable().c_str());
+    
+    if (arr == NULL)
+        return NULL;
+    else if (arr->GetVoidPointer(0) == NULL)
+        return NULL;
+
+    return arr;
+}
+
+// ****************************************************************************
+// Method:  avtNamedSelection::GetMatchingLocations
+//
+// Purpose:
+//   
+// Programmer:  Dave Pugmire
+// Creation:    March 14, 2012
+//
+// ****************************************************************************
+
+void
+avtNamedSelection::GetMatchingLocations(std::vector<avtVector> &)
+{
+    EXCEPTION1(VisItException, "Locations not supported");
 }
 
 // ****************************************************************************
@@ -349,12 +415,21 @@ avtZoneIdNamedSelection::GetDomainList(std::vector<int> &domains) const
 //    Brad Whitlock, Thu Oct 27 16:07:38 PDT 2011
 //    I rewrote it to use vtkDataArray.
 //
+//    Dave Pugmire, Thu Mar 15 10:55:22 EDT 2012
+//    Pass in vtkDataSet and use GetIDArray to get array.
+//
 // ****************************************************************************
 
 void
-avtZoneIdNamedSelection::GetMatchingIds(vtkDataArray *ocn,
-    std::vector<vtkIdType> &cellids)
+avtZoneIdNamedSelection::GetMatchingIds(vtkDataSet *ds,
+                                        std::vector<vtkIdType> &cellids)
 {
+    vtkDataArray *idData = GetIDArray(ds);
+    if (idData == NULL)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
     if (lookupSet.size() == 0)
     {
         for (size_t i = 0 ; i < domId.size() ; i++)
@@ -366,9 +441,9 @@ avtZoneIdNamedSelection::GetMatchingIds(vtkDataArray *ocn,
         }
     }
 
-    vtkIdType nvals = ocn->GetNumberOfTuples();
-    unsigned int *ptr = (unsigned int *)ocn->GetVoidPointer(0);
-    if(ptr == NULL || ocn->GetNumberOfComponents() != 2)
+    vtkIdType nvals = idData->GetNumberOfTuples();
+    unsigned int *ptr = (unsigned int *)idData->GetVoidPointer(0);
+    if(ptr == NULL || idData->GetNumberOfComponents() != 2)
     {
         EXCEPTION0(ImproperUseException);
     }
@@ -487,12 +562,19 @@ avtZoneIdNamedSelection::Allocate(size_t nvals)
 // Creation:   Mon Nov  7 13:43:32 PST 2011
 //
 // Modifications:
+//
+//    Dave Pugmire, Thu Mar 15 10:55:22 EDT 2012
+//    Pass in vtkDataSet and use GetIDArray to get array.
 //   
 // ****************************************************************************
 
 void
-avtZoneIdNamedSelection::Append(vtkDataArray *arr)
+avtZoneIdNamedSelection::Append(vtkDataSet *ds)
 {
+    vtkDataArray *arr = GetIDArray(ds);
+    if (arr == NULL)
+        return;
+
     vtkIdType nvals = arr->GetNumberOfTuples();
     unsigned int *ptr = (unsigned int *)arr->GetVoidPointer(0);
 
@@ -778,23 +860,32 @@ avtFloatingPointIdNamedSelection::CreateConditionString(void)
 // Creation:   Thu Oct 27 16:22:59 PDT 2011
 //
 // Modifications:
+//
+//    Dave Pugmire, Thu Mar 15 10:55:22 EDT 2012
+//    Pass in vtkDataSet and use GetIDArray to get array.
 //   
 // ****************************************************************************
 
 void
-avtFloatingPointIdNamedSelection::GetMatchingIds(vtkDataArray *var,
-    std::vector<vtkIdType> &cellids)
+avtFloatingPointIdNamedSelection::GetMatchingIds(vtkDataSet *ds,
+                                                 std::vector<vtkIdType> &cellids)
 {
+    vtkDataArray *idData = GetIDArray(ds);
+    if (idData == NULL)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
     // Convert ids to a set so lookups will be faster.
     std::set<double> lookupSet;
     for (size_t i = 0 ; i < ids.size() ; i++)
         lookupSet.insert(ids[i]);
 
-    vtkIdType nvals = var->GetNumberOfTuples();
+    vtkIdType nvals = idData->GetNumberOfTuples();
     std::set<double>::const_iterator it;
     for (vtkIdType cellid = 0 ; cellid < nvals ; cellid++)
     {
-        it = lookupSet.find(var->GetTuple1(cellid));
+        it = lookupSet.find(idData->GetTuple1(cellid));
         if (it != lookupSet.end())
             cellids.push_back(cellid);
     }
@@ -889,17 +980,24 @@ avtFloatingPointIdNamedSelection::Allocate(size_t nvals)
 // Creation:   Mon Nov  7 13:46:01 PST 2011
 //
 // Modifications:
+//
+//    Dave Pugmire, Thu Mar 15 10:55:22 EDT 2012
+//    Pass in vtkDataSet and use GetIDArray to get array.
 //   
 // ****************************************************************************
 
 void
-avtFloatingPointIdNamedSelection::Append(vtkDataArray *arr)
+avtFloatingPointIdNamedSelection::Append(vtkDataSet *ds)
 {
-    vtkIdType nvals = arr->GetNumberOfTuples();
+    vtkDataArray *idData = GetIDArray(ds);
+    if (idData == NULL)
+        return;
+
+    vtkIdType nvals = idData->GetNumberOfTuples();
 
     // We have our ids so add them to the selection.
     for (vtkIdType j = 0 ; j < nvals ; j++)
-        ids.push_back(arr->GetTuple1(j));
+        ids.push_back(idData->GetTuple1(j));
 }
 
 // ****************************************************************************
@@ -922,4 +1020,327 @@ void
 avtFloatingPointIdNamedSelection::SetIdentifiers(const std::vector<double> &vals)
 {
     ids = vals;
+}
+
+
+// ****************************************************************************
+// ****************************************************************************
+// ***
+// *** avtLocationsNamedSelection
+// ***
+// ****************************************************************************
+// ****************************************************************************
+
+
+// ****************************************************************************
+// Method:  avtLocationsNamedSelection::avtLocationsNamedSelection
+//
+// Purpose: Locations named selection constructor.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+
+avtLocationsNamedSelection::avtLocationsNamedSelection(const std::string &n) : avtNamedSelection(n)
+{
+}
+
+// ****************************************************************************
+// Method:  avtLocationsNamedSelection::~avtLocationsNamedSelection
+//
+// Purpose: Locations named selection destructor.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+avtLocationsNamedSelection::~avtLocationsNamedSelection()
+{
+}
+
+// ****************************************************************************
+// Method:  avtLocationsNamedSelection::Read
+//
+// Purpose: Restore a locations named selection.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+void
+avtLocationsNamedSelection::Read(const std::string &fname)
+{
+    ifstream ifile(fname.c_str());
+    if (ifile.fail())
+    {
+        EXCEPTION1(VisItException, "Cannot read named selection");
+    }
+
+    int nsType;
+    ifile>>nsType;
+    if (nsType != LOCATIONS)
+    {
+        EXCEPTION1(VisItException, "Internal error reading named selection");
+    }
+
+    int nvals;
+    ifile>>nvals;
+    if (nvals < 0)
+    {
+        EXCEPTION1(VisItException, "Invalid named selection");
+    }
+  
+    locations.resize(nvals);
+    for (int i = 0; i < nvals; i++)
+    {
+        ifile>>locations[i].x;
+        ifile>>locations[i].y;
+        ifile>>locations[i].z;
+    }
+}
+
+// ****************************************************************************
+// Method:  avtLocationsNamedSelection::Write
+//
+// Purpose: Save off a locations named selection.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+void
+avtLocationsNamedSelection::Write(const std::string &fname)
+{
+    ofstream ofile(fname.c_str());
+    ofile<<GetType()<<endl;
+    ofile<<locations.size()<<endl;
+    for (size_t i = 0; i < locations.size(); i++)
+    {
+        ofile<<locations[i].x<<endl;
+        ofile<<locations[i].y<<endl;
+        ofile<<locations[i].z<<endl;
+    }
+}
+
+// ****************************************************************************
+// Method:  avtLocationsNamedSelection::ModifyContract
+//
+// Purpose: Save off a locations named selection.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+avtContract_p
+avtLocationsNamedSelection::ModifyContract(avtContract_p c0) const
+{
+    return c0;
+}
+
+// ****************************************************************************
+// Method:  avtLocationsNamedSelection::Allocate
+//
+// Purpose: Reserve space.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+void
+avtLocationsNamedSelection::Allocate(size_t nvals)
+{
+    locations.clear();
+    locations.reserve(nvals);
+}
+
+// ****************************************************************************
+// Method:  avtLocationsNamedSelection::CheckValid
+//
+// Purpose: Validate that a selection can be done on this dataset.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+bool
+avtLocationsNamedSelection::CheckValid(vtkDataSet *ds)
+{
+    return ds->GetNumberOfPoints() > 0;
+}
+
+// ****************************************************************************
+// Method:  avtLocationsNamedSelection::Append
+//
+// Purpose: Add dataset to the selection.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+void
+avtLocationsNamedSelection::Append(vtkDataSet *ds)
+{
+    vtkIdType nPts = ds->GetNumberOfPoints();
+    double pt[3];
+    for (vtkIdType i = 0; i < nPts; i++)
+    {
+        ds->GetPoint(i, pt);
+        locations.push_back(avtVector(pt[0], pt[1], pt[2]));
+    }
+}
+
+// ****************************************************************************
+// Method:  avtLocationsNamedSelection::GetMatchingIds
+//
+// Purpose: Get cells coresponding to this selection. For locations, this returns
+//          cells that contain the locations.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+void
+avtLocationsNamedSelection::GetMatchingIds(vtkDataSet *ds, std::vector<vtkIdType> &ids)
+{
+    vtkVisItCellLocator *loc = vtkVisItCellLocator::New();
+    loc->SetDataSet(ds);
+    loc->CacheCellBoundsOn();
+    loc->AutomaticOn();
+    loc->BuildLocator();
+
+    double p[3], cp[3], dist;
+    int subId;
+    vtkIdType cellId;
+    
+    vtkGenericCell *cell = vtkGenericCell::New();
+    int nLocs = locations.size();
+    std::map<vtkIdType, int> idMap;
+
+    //Use a map to ensure we don't get duplicate cells.
+    for (int i = 0; i < nLocs; i++)
+    {
+        avtVector pt = locations[i];
+        p[0] = locations[i].x;
+        p[1] = locations[i].y;
+        p[2] = locations[i].z;
+        if (loc->FindClosestPointWithinRadius(p, 1e-8, cp, cell, cellId, subId, dist))
+        {
+            if (idMap.find(cellId) == idMap.end())
+                idMap[cellId] = 1;
+            continue;
+        }
+    }
+    
+    std::map<vtkIdType, int>::const_iterator it;
+    for (it = idMap.begin(); it != idMap.end(); it++)
+        ids.push_back((*it).first);
+    
+    cell->Delete();
+    loc->Delete();
+}
+
+// ****************************************************************************
+// Method:  avtLocationsNamedSelection::Globalize
+//
+// Purpose: Sync selection when running in parallel.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+void
+avtLocationsNamedSelection::Globalize()
+{
+#ifdef PARALLEL
+    int *numPerProcIn = new int[PAR_Size()];
+    int *numPerProc   = new int[PAR_Size()];
+    for (int i = 0 ; i < PAR_Size() ; i++)
+        numPerProcIn[i] = 0;
+    numPerProcIn[PAR_Rank()] = locations.size();
+    SumIntArrayAcrossAllProcessors(numPerProcIn, numPerProc, PAR_Size());
+    
+    int numTotalLocs = 0;
+    for (int i = 0 ; i < PAR_Size() ; i++)
+        numTotalLocs += numPerProc[i];
+    if (numTotalLocs > MaximumSelectionSize())
+    {
+        delete [] numPerProcIn;
+        delete [] numPerProc;
+        EXCEPTION1(VisItException, "You have selected too many locations in your "
+                   "named selection.  Disallowing ... no selection created");
+    }
+
+    int myStart = 0;
+    for (int i = 0; i < PAR_Rank(); i++)
+        myStart += numPerProc[i];
+    delete [] numPerProcIn;
+    delete [] numPerProc;
+
+    int numTotalVals = numTotalLocs*3;
+
+    double *buffer = new double[numTotalVals], *bufferOut = new double[numTotalVals];
+    for (int i = 0; i < numTotalVals; i++)
+        buffer[i] = 0.0;
+    for (int i = 0; i < locations.size(); i++)
+    {
+        buffer[(myStart+i)*3+0] = locations[i].x;
+        buffer[(myStart+i)*3+1] = locations[i].y;
+        buffer[(myStart+i)*3+2] = locations[i].z;
+    }
+
+    SumDoubleArrayAcrossAllProcessors(buffer, bufferOut, numTotalVals);
+    delete [] buffer;
+
+    locations.resize(numTotalLocs);
+    for (int i = 0; i < numTotalLocs; i++)
+    {
+        locations[i].x = bufferOut[(i*3)+0];
+        locations[i].y = bufferOut[(i*3)+1];
+        locations[i].z = bufferOut[(i*3)+2];
+    }
+
+    delete [] bufferOut;
+
+    
+#endif
+}
+
+// ****************************************************************************
+// Method:  avtLocationsNamedSelection::GetMatchingLocations
+//
+// Purpose: Return locations.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 15, 2012
+//
+// ****************************************************************************
+
+void
+avtLocationsNamedSelection::GetMatchingLocations(std::vector<avtVector> &pts)
+{
+    size_t nPts = locations.size();
+    for (int i = 0; i < nPts; i++)
+        pts.push_back(locations[i]);
 }

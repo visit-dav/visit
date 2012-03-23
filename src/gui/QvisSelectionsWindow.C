@@ -1083,6 +1083,9 @@ QvisSelectionsWindow::UpdateMinMaxBins(bool updateMin, bool updateMax,
 //   Brad Whitlock, Mon Nov  7 14:11:28 PST 2011
 //   I added code to set the id type and variable.
 //
+//   Dave Pugmire, Thu Mar 15 11:19:33 EDT 2012
+//   Add location named selections.
+//
 // ****************************************************************************
 
 void
@@ -1158,8 +1161,10 @@ QvisSelectionsWindow::UpdateSelectionProperties()
             idvar = 0;
         else if(selectionProps.GetIdVariableType() == SelectionProperties::UseGlobalZoneIDForID)
             idvar = 1;
-        else if(selectionProps.GetIdVariableType() == SelectionProperties::UseVariableForID)
+        else if(selectionProps.GetIdVariableType() == SelectionProperties::UseLocationsForID)
             idvar = 2;
+        else if(selectionProps.GetIdVariableType() == SelectionProperties::UseVariableForID)
+            idvar = 3;
         idVariableType->blockSignals(true);
         idVariableType->button(idvar)->setChecked(true);
         idVariableType->blockSignals(false);
@@ -1482,6 +1487,8 @@ QvisSelectionsWindow::addSelection()
             p.SetIdVariableType(SelectionProperties::UseZoneIDForID);
         else if(idType == QvisSelectionsDialog::UseGlobalZoneIDForID)
             p.SetIdVariableType(SelectionProperties::UseGlobalZoneIDForID);
+        else if(idType == QvisSelectionsDialog::UseLocationsForID)
+            p.SetIdVariableType(SelectionProperties::UseLocationsForID);
         else if(idType == QvisSelectionsDialog::UseVariableForID)
         {
             if(idVariable.isEmpty())
@@ -2149,6 +2156,8 @@ QvisSelectionsWindow::idVariableTypeChanged(int val)
     else if(val == 1)
        selectionProps.SetIdVariableType(SelectionProperties::UseGlobalZoneIDForID);
     else if(val == 2)
+       selectionProps.SetIdVariableType(SelectionProperties::UseLocationsForID);
+    else if(val == 3)
        selectionProps.SetIdVariableType(SelectionProperties::UseVariableForID);
     idVariableButton->setEnabled(val==2);
 

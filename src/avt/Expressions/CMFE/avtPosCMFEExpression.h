@@ -71,6 +71,9 @@ class     ConstExpr;
 //    optimized in this fashion, so ensure that even if other CMFE's change
 //    to default to true, this one remains false until it can be fixed.
 //
+//    Hank Childs, Tue Mar 13 08:26:09 PDT 2012
+//    Define virtual method OnlyRequiresSpatiallyOverlappingData.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtPosCMFEExpression : public avtCMFEExpression
@@ -89,6 +92,8 @@ class EXPRESSION_API avtPosCMFEExpression : public avtCMFEExpression
     virtual bool              UseIdenticalSIL(void) { return false; };
     virtual bool              HasDefaultVariable(void) { return true; };
     virtual bool              FilterUnderstandsTransformedRectMesh();
+    virtual bool              OnlyRequiresSpatiallyOverlappingData()
+                                          { return true; };
 };
 
 

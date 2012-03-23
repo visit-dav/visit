@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -698,6 +698,10 @@ avtParICAlgorithm::SendAllMsg(vector<int> &msg)
 //   Dave Pugmire, Fri Jan  7 14:19:46 EST 2011
 //   Use MemStream instead of vtk serialization.
 //
+//   David Camp, Wed Mar  7 10:43:07 PST 2012
+//   Added a Serialize flag to the arguments. This is to support the restore
+//   ICs code.
+//
 // ****************************************************************************
 
 bool
@@ -753,7 +757,7 @@ avtParICAlgorithm::RecvAny(vector<MsgCommData> *msgs,
             for (int j = 0; j < num; j++)
             {
                 avtIntegralCurve *ic = picsFilter->CreateIntegralCurve();
-                ic->Serialize(MemStream::READ, *(buffers[i].second), GetSolver());
+                ic->Serialize(MemStream::READ, *(buffers[i].second), GetSolver(), avtIntegralCurve::SERIALIZE_NO_OPT);
                 ICCommData d(sendRank, ic);
                 recvICs->push_back(d);
             }
@@ -814,16 +818,30 @@ avtParICAlgorithm::RecvMsg(vector<MsgCommData> &msgs)
 // Programmer:  Dave Pugmire
 // Creation:    September 10, 2010
 //
+// Modifications:
+//
+//   Hank Childs, Fri Mar 16 19:07:39 PDT 2012
+//   Add arguments for specifying which domains the receiving MPI task should
+//   focus on.
+//
 // ****************************************************************************
 
 void
 avtParICAlgorithm::SendICs(int dst, vector<avtIntegralCurve*> &ics)
 {
+    vector<int> domainIndices;
+    SendICs(dst, ics, domainIndices);
+}
+
+void
+avtParICAlgorithm::SendICs(int dst, vector<avtIntegralCurve*> &ics,
+                           vector<int> &domainIndices)
+{
     int timerHandle = visitTimer->StartTimer();
     for (int i = 0; i < ics.size(); i++)
         ics[i]->PrepareForSend();
 
-    if (DoSendICs(dst, ics))
+    if (DoSendICs(dst, ics, domainIndices))
     {
         for (int i = 0; i < ics.size(); i++)
         {
@@ -839,6 +857,9 @@ avtParICAlgorithm::SendICs(int dst, vector<avtIntegralCurve*> &ics)
                 communicatedICs.push_back(ic);
         }
     }
+
+    for (int i = 0; i < ics.size(); i++)
+        ics[i]->ResetAfterSend();
     
     ICCommCnt.value += ics.size();
     ics.resize(0);
@@ -935,11 +956,28 @@ avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &recvICs)
 //   Fix for unstructured meshes. Need to account for particles that are sent to domains
 //   that based on bounding box, and the particle does not lay in any cells.
 //
+//   David Camp, Wed Mar  7 10:43:07 PST 2012
+//   Added a Serialize flag to the arguments. This is to support the restore
+//   ICs code.
+//
+//   Hank Childs, Fri Mar 16 19:07:39 PDT 2012
+//   Add methods for specifying which domains the receiving MPI task should
+//   focus on.
+//
 // ****************************************************************************
 
 bool
 avtParICAlgorithm::DoSendICs(int dst, 
                              vector<avtIntegralCurve*> &ics)
+{
+    vector<int> domainIndices;
+    return DoSendICs(dst, ics, domainIndices);
+}
+
+bool
+avtParICAlgorithm::DoSendICs(int dst, 
+                             vector<avtIntegralCurve*> &ics,
+                             vector<int> &domainIndices)
 {
     if (dst == rank || ics.empty())
         return false;
@@ -951,7 +989,11 @@ avtParICAlgorithm::DoSendICs(int dst,
     buff->write(num);
     
     for ( int i = 0; i < ics.size(); i++)
-        ics[i]->Serialize(MemStream::WRITE, *buff, GetSolver());
+    {
+        if (ics.size() == domainIndices.size())
+            ics[i]->domain = ics[i]->seedPtDomainList[domainIndices[i]];
+        ics[i]->Serialize(MemStream::WRITE, *buff, GetSolver(), avtIntegralCurve::SERIALIZE_NO_OPT);
+    }
     
     SendData(dst, avtParICAlgorithm::STREAMLINE_TAG, buff);
     

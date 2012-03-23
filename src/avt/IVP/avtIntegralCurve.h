@@ -192,6 +192,10 @@ class IVP_API DomainType
 //   Add virtual methods LessThan (for sorting) and 
 //   PrepareForFinalCommunication.
 //
+//   David Camp, Wed Mar  7 10:43:07 PST 2012
+//   Added a Serialize flag to the arguments. This is to support the restore
+//   ICs code.
+//
 // ****************************************************************************
 
 class IVP_API avtIntegralCurve
@@ -213,6 +217,8 @@ class IVP_API avtIntegralCurve
 
     enum SerializeFlags
     {
+        SERIALIZE_ALL     = -1,
+        SERIALIZE_NO_OPT  = 0,
         SERIALIZE_STEPS   = 1,
         SERIALIZE_INC_SEQ = 2,
     };
@@ -233,9 +239,10 @@ class IVP_API avtIntegralCurve
     void      CurrentLocation(avtVector &end);
 
     virtual void      Serialize(MemStream::Mode mode, MemStream &buff, 
-                                avtIVPSolver *solver);
+                                avtIVPSolver *solver, SerializeFlags serializeFlags);
 
     virtual void      PrepareForSend(void) { ; };
+    virtual void      ResetAfterSend(void) { ; };
 
     virtual bool      SameCurve(avtIntegralCurve *ic)
                                { return id == ic->id; };

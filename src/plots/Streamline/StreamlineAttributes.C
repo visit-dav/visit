@@ -53,20 +53,20 @@
 static const char *SourceType_strings[] = {
 "SpecifiedPoint", "SpecifiedPointList", "SpecifiedLine", 
 "SpecifiedCircle", "SpecifiedPlane", "SpecifiedSphere", 
-"SpecifiedBox"};
+"SpecifiedBox", "Selection"};
 
 std::string
 StreamlineAttributes::SourceType_ToString(StreamlineAttributes::SourceType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 7) index = 0;
+    if(index < 0 || index >= 8) index = 0;
     return SourceType_strings[index];
 }
 
 std::string
 StreamlineAttributes::SourceType_ToString(int t)
 {
-    int index = (t < 0 || t >= 7) ? 0 : t;
+    int index = (t < 0 || t >= 8) ? 0 : t;
     return SourceType_strings[index];
 }
 
@@ -74,7 +74,7 @@ bool
 StreamlineAttributes::SourceType_FromString(const std::string &s, StreamlineAttributes::SourceType &val)
 {
     val = StreamlineAttributes::SpecifiedPoint;
-    for(int i = 0; i < 7; ++i)
+    for(int i = 0; i < 8; ++i)
     {
         if(s == SourceType_strings[i])
         {
@@ -358,7 +358,7 @@ StreamlineAttributes::FieldType_FromString(const std::string &s, StreamlineAttri
 
 static const char *IntegrationType_strings[] = {
 "Euler", "Leapfrog", "DormandPrince", 
-"AdamsBashforth", "Reserved_4", "M3DC12DIntegrator"
+"AdamsBashforth", "RK4", "M3DC12DIntegrator"
 };
 
 std::string
@@ -912,6 +912,7 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     correlationDistanceMinDistAbsolute = obj.correlationDistanceMinDistAbsolute;
     correlationDistanceMinDistBBox = obj.correlationDistanceMinDistBBox;
     correlationDistanceMinDistType = obj.correlationDistanceMinDistType;
+    selection = obj.selection;
 
     StreamlineAttributes::SelectAll();
 }
@@ -1219,7 +1220,8 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (correlationDistanceAngTol == obj.correlationDistanceAngTol) &&
             (correlationDistanceMinDistAbsolute == obj.correlationDistanceMinDistAbsolute) &&
             (correlationDistanceMinDistBBox == obj.correlationDistanceMinDistBBox) &&
-            (correlationDistanceMinDistType == obj.correlationDistanceMinDistType));
+            (correlationDistanceMinDistType == obj.correlationDistanceMinDistType) &&
+            (selection == obj.selection));
 }
 
 // ****************************************************************************
@@ -1580,6 +1582,7 @@ StreamlineAttributes::SelectAll()
     Select(ID_correlationDistanceMinDistAbsolute, (void *)&correlationDistanceMinDistAbsolute);
     Select(ID_correlationDistanceMinDistBBox,     (void *)&correlationDistanceMinDistBBox);
     Select(ID_correlationDistanceMinDistType,     (void *)&correlationDistanceMinDistType);
+    Select(ID_selection,                          (void *)&selection);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2238,6 +2241,12 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("correlationDistanceMinDistType", SizeType_ToString(correlationDistanceMinDistType)));
     }
 
+    if(completeSave || !FieldsEqual(ID_selection, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("selection", selection));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -2280,7 +2289,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 7)
+            if(ival >= 0 && ival < 8)
                 SetSourceType(SourceType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -2762,6 +2771,8 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
                 SetCorrelationDistanceMinDistType(value);
         }
     }
+    if((node = searchNode->GetNode("selection")) != 0)
+        SetSelection(node->AsString());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3513,6 +3524,13 @@ StreamlineAttributes::SetCorrelationDistanceMinDistType(StreamlineAttributes::Si
     Select(ID_correlationDistanceMinDistType, (void *)&correlationDistanceMinDistType);
 }
 
+void
+StreamlineAttributes::SetSelection(const std::string &selection_)
+{
+    selection = selection_;
+    Select(ID_selection, (void *)&selection);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -4231,6 +4249,18 @@ StreamlineAttributes::GetCorrelationDistanceMinDistType() const
     return SizeType(correlationDistanceMinDistType);
 }
 
+const std::string &
+StreamlineAttributes::GetSelection() const
+{
+    return selection;
+}
+
+std::string &
+StreamlineAttributes::GetSelection()
+{
+    return selection;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -4323,6 +4353,12 @@ void
 StreamlineAttributes::SelectVaryTubeRadiusVariable()
 {
     Select(ID_varyTubeRadiusVariable, (void *)&varyTubeRadiusVariable);
+}
+
+void
+StreamlineAttributes::SelectSelection()
+{
+    Select(ID_selection, (void *)&selection);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4453,6 +4489,7 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_correlationDistanceMinDistAbsolute: return "correlationDistanceMinDistAbsolute";
     case ID_correlationDistanceMinDistBBox:     return "correlationDistanceMinDistBBox";
     case ID_correlationDistanceMinDistType:     return "correlationDistanceMinDistType";
+    case ID_selection:                          return "selection";
     default:  return "invalid index";
     }
 }
@@ -4581,6 +4618,7 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_correlationDistanceMinDistAbsolute: return FieldType_double;
     case ID_correlationDistanceMinDistBBox:     return FieldType_double;
     case ID_correlationDistanceMinDistType:     return FieldType_enum;
+    case ID_selection:                          return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -4709,6 +4747,7 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_correlationDistanceMinDistAbsolute: return "double";
     case ID_correlationDistanceMinDistBBox:     return "double";
     case ID_correlationDistanceMinDistType:     return "enum";
+    case ID_selection:                          return "string";
     default:  return "invalid index";
     }
 }
@@ -5300,6 +5339,11 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (correlationDistanceMinDistType == obj.correlationDistanceMinDistType);
         }
         break;
+    case ID_selection:
+        {  // new scope
+        retval = (selection == obj.selection);
+        }
+        break;
     default: retval = false;
     }
 
@@ -5509,6 +5553,17 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
             for (size_t i = 0 ; i < pointList.size() ; i++)
                 if (pointList[i] != obj.pointList[i])
                     return true;
+    }
+    if (sourceType == Selection)
+    {
+        if (selection != obj.selection ||
+            randomSamples != obj.randomSamples ||
+            (!randomSamples && (sampleDensity0 != obj.sampleDensity0)) ||
+            (randomSamples && (randomSeed != obj.randomSeed ||
+                               numberOfRandomSamples != obj.numberOfRandomSamples)))
+        {
+            return true;
+        }
     }
 
     return false;

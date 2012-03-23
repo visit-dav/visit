@@ -53,6 +53,7 @@ avtIntegralCurve.C
 avtIVPAdamsBashforth.C
 avtIVPDopri5.C
 avtIVPEuler.C
+avtIVPRK4.C
 avtIVPLeapfrog.C
 avtIVPSolver.C
 avtIVPM3DC1Field.C

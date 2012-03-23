@@ -72,7 +72,7 @@ class avtICAlgorithm;
 #define STREAMLINE_INTEGRATE_LEAPFROG 1
 #define STREAMLINE_INTEGRATE_DORMAND_PRINCE 2
 #define STREAMLINE_INTEGRATE_ADAMS_BASHFORTH 3
-//#define STREAMLINE_INTEGRATE_UNUSED 4
+#define STREAMLINE_INTEGRATE_RK4 4
 #define STREAMLINE_INTEGRATE_M3D_C1_2D 5
 
 #define STREAMLINE_TERMINATE_DISTANCE 0
@@ -301,6 +301,7 @@ class AVTFILTERS_API avtPICSFilter :
     void                      ComputeDomainToRankMapping();
     bool                      OwnDomain(DomainType &domain);
     void                      Initialize();
+    void                      InitializeTimeInformation(int);
     void                      ComputeRankList(const std::vector<int> &domList,
                                               std::vector<int> &ranks,
                                               std::vector<int> &doms );
@@ -317,8 +318,8 @@ class AVTFILTERS_API avtPICSFilter :
     std::vector<avtIntegralCurve *> _ics;
     int                             restart;
 
-    void                      SaveICs( int timeStep );
-    void                      RestoreICs( std::vector<avtIntegralCurve *> &_ics, int timeStep );
+    void                      SaveICs( std::vector<avtIntegralCurve *> &ics, int timeStep );
+    void                      RestoreICs( std::vector<avtIntegralCurve *> &ics, int timeStep );
     bool                      CheckIfRestart( int &timeStep );
     void                      RestoreICsFilename( int timeStep, char *filename, size_t filenameSize );
 

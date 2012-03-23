@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int StreamlineAttributes_numAdditionalAtts = 104;
+    private static int StreamlineAttributes_numAdditionalAtts = 105;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -72,6 +72,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public final static int SOURCETYPE_SPECIFIEDPLANE = 4;
     public final static int SOURCETYPE_SPECIFIEDSPHERE = 5;
     public final static int SOURCETYPE_SPECIFIEDBOX = 6;
+    public final static int SOURCETYPE_SELECTION = 7;
 
     public final static int COLORINGMETHOD_SOLID = 0;
     public final static int COLORINGMETHOD_COLORBYSPEED = 1;
@@ -113,7 +114,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public final static int INTEGRATIONTYPE_LEAPFROG = 1;
     public final static int INTEGRATIONTYPE_DORMANDPRINCE = 2;
     public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 3;
-    public final static int INTEGRATIONTYPE_RESERVED_4 = 4;
+    public final static int INTEGRATIONTYPE_RK4 = 4;
     public final static int INTEGRATIONTYPE_M3DC12DINTEGRATOR = 5;
 
     public final static int OPACITYTYPE_FULLYOPAQUE = 0;
@@ -286,6 +287,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         correlationDistanceMinDistAbsolute = 1;
         correlationDistanceMinDistBBox = 0.005;
         correlationDistanceMinDistType = SIZETYPE_FRACTIONOFBBOX;
+        selection = new String("");
     }
 
     public StreamlineAttributes(int nMoreFields)
@@ -435,6 +437,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         correlationDistanceMinDistAbsolute = 1;
         correlationDistanceMinDistBBox = 0.005;
         correlationDistanceMinDistType = SIZETYPE_FRACTIONOFBBOX;
+        selection = new String("");
     }
 
     public StreamlineAttributes(StreamlineAttributes obj)
@@ -588,6 +591,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         correlationDistanceMinDistAbsolute = obj.correlationDistanceMinDistAbsolute;
         correlationDistanceMinDistBBox = obj.correlationDistanceMinDistBBox;
         correlationDistanceMinDistType = obj.correlationDistanceMinDistType;
+        selection = new String(obj.selection);
 
         SelectAll();
     }
@@ -764,7 +768,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (correlationDistanceAngTol == obj.correlationDistanceAngTol) &&
                 (correlationDistanceMinDistAbsolute == obj.correlationDistanceMinDistAbsolute) &&
                 (correlationDistanceMinDistBBox == obj.correlationDistanceMinDistBBox) &&
-                (correlationDistanceMinDistType == obj.correlationDistanceMinDistType));
+                (correlationDistanceMinDistType == obj.correlationDistanceMinDistType) &&
+                (selection.equals(obj.selection)));
     }
 
     public String GetName() { return "Streamline"; }
@@ -1476,6 +1481,12 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(103);
     }
 
+    public void SetSelection(String selection_)
+    {
+        selection = selection_;
+        Select(104);
+    }
+
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
     public double[]       GetPointSource() { return pointSource; }
@@ -1581,6 +1592,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public double         GetCorrelationDistanceMinDistAbsolute() { return correlationDistanceMinDistAbsolute; }
     public double         GetCorrelationDistanceMinDistBBox() { return correlationDistanceMinDistBBox; }
     public int            GetCorrelationDistanceMinDistType() { return correlationDistanceMinDistType; }
+    public String         GetSelection() { return selection; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -1793,6 +1805,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(correlationDistanceMinDistBBox);
         if(WriteSelect(103, buf))
             buf.WriteInt(correlationDistanceMinDistType);
+        if(WriteSelect(104, buf))
+            buf.WriteString(selection);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -2112,6 +2126,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         case 103:
             SetCorrelationDistanceMinDistType(buf.ReadInt());
             break;
+        case 104:
+            SetSelection(buf.ReadString());
+            break;
         }
     }
 
@@ -2133,6 +2150,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             str = str + "SOURCETYPE_SPECIFIEDSPHERE";
         if(sourceType == SOURCETYPE_SPECIFIEDBOX)
             str = str + "SOURCETYPE_SPECIFIEDBOX";
+        if(sourceType == SOURCETYPE_SELECTION)
+            str = str + "SOURCETYPE_SELECTION";
         str = str + "\n";
         str = str + doubleArrayToString("pointSource", pointSource, indent) + "\n";
         str = str + doubleArrayToString("lineStart", lineStart, indent) + "\n";
@@ -2218,8 +2237,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             str = str + "INTEGRATIONTYPE_DORMANDPRINCE";
         if(integrationType == INTEGRATIONTYPE_ADAMSBASHFORTH)
             str = str + "INTEGRATIONTYPE_ADAMSBASHFORTH";
-        if(integrationType == INTEGRATIONTYPE_RESERVED_4)
-            str = str + "INTEGRATIONTYPE_RESERVED_4";
+        if(integrationType == INTEGRATIONTYPE_RK4)
+            str = str + "INTEGRATIONTYPE_RK4";
         if(integrationType == INTEGRATIONTYPE_M3DC12DINTEGRATOR)
             str = str + "INTEGRATIONTYPE_M3DC12DINTEGRATOR";
         str = str + "\n";
@@ -2378,6 +2397,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(correlationDistanceMinDistType == SIZETYPE_FRACTIONOFBBOX)
             str = str + "SIZETYPE_FRACTIONOFBBOX";
         str = str + "\n";
+        str = str + stringToString("selection", selection, indent) + "\n";
         return str;
     }
 
@@ -2487,5 +2507,6 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private double         correlationDistanceMinDistAbsolute;
     private double         correlationDistanceMinDistBBox;
     private int            correlationDistanceMinDistType;
+    private String         selection;
 }
 

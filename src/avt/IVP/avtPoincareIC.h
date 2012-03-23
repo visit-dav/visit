@@ -60,6 +60,10 @@
 //    Hank Childs, Sun Dec  5 10:18:13 PST 2010
 //    Add avtIVPField to CheckForTermination.
 //
+//   David Camp, Wed Mar  7 10:43:07 PST 2012
+//   Added a Serialize flag to the arguments. This is to support the restore
+//   ICs code.
+//
 // ****************************************************************************
 
 #ifndef POINCARE_FIELDLINE_PROPERTIES_H
@@ -251,7 +255,7 @@ public:
     virtual ~avtPoincareIC();
 
     virtual void  Serialize(MemStream::Mode mode, MemStream &buff, 
-                                avtIVPSolver *solver);
+                            avtIVPSolver *solver, SerializeFlags serializeFlags);
 
   protected:
     avtPoincareIC( const avtPoincareIC& );

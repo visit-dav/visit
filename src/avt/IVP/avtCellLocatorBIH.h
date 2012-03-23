@@ -57,14 +57,16 @@ public:
     ~avtCellLocatorBIH();
 
     vtkIdType FindCell( const double pos[3], 
-                        avtInterpolationWeights* iw ) const;
+                        avtInterpolationWeights* iw,
+                        bool ignoreGhostCells ) const;
 
 protected:
 
     void FindCellRecursive( const double pos[3], 
                             avtInterpolationWeights* weights,
                             unsigned int node,
-                            vtkIdType& cell ) const;
+                            vtkIdType& cell,
+                            bool ignoreGhostCells ) const;
 
     void Build();
     void Free();

@@ -105,6 +105,9 @@ avtNamedSelectionFilter::~avtNamedSelectionFilter()
 //    Brad Whitlock, Thu Oct 27 15:51:06 PDT 2011
 //    Extend to other selection types.
 //
+//    Dave Pugmire, Thu Mar 15 10:55:22 EDT 2012
+//    Support for location named selections.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -126,24 +129,8 @@ avtNamedSelectionFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     }
     else
     {
-        std::string idName(ns->GetIdVariable());
-        vtkDataArray *idData = in_ds->GetCellData()->GetArray(idName.c_str());
-        if (idData == NULL)
-        {
-            if(in_ds->GetNumberOfCells() == in_ds->GetNumberOfPoints())
-            {
-                idData = in_ds->GetPointData()->GetArray(idName.c_str());
-            }
-
-            if(idData == NULL)
-            {
-                EXCEPTION0(ImproperUseException);
-            }
-        }
-
         std::vector<vtkIdType> ids;
-        ns->GetMatchingIds(idData, ids);
-
+        ns->GetMatchingIds(in_ds, ids);
         rv = SelectedData(in_ds, ids);
     }
 

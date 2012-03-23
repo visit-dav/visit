@@ -710,6 +710,12 @@ avtICAlgorithm::ComputeDomainLoadStatistic()
     
     for (it = picsFilter->domainLoadCount.begin(); it != picsFilter->domainLoadCount.end(); it++)
     {
+        if (it->first >= numDomains)
+        {
+            // This can happen with pathlines ... we aren't even doing the right sort of
+            // counting ... just give up.
+            continue;
+        }
         domLoads[it->first] = it->second;
         totDomainsLoaded += it->second;
         
@@ -884,7 +890,7 @@ avtICAlgorithm::ReportStatistics(ostream &os)
     os<<endl;
     ReportCounters(os, true);
 
-    os<<endl<<"Per Proccess:"<<endl;
+    os<<endl<<"Per Process:"<<endl;
     ReportTimings(os, false);
     ReportCounters(os, false);
     os<<endl;

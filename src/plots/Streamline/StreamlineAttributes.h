@@ -69,7 +69,8 @@ public:
         SpecifiedCircle,
         SpecifiedPlane,
         SpecifiedSphere,
-        SpecifiedBox
+        SpecifiedBox,
+        Selection
     };
     enum ColoringMethod
     {
@@ -127,7 +128,7 @@ public:
         Leapfrog,
         DormandPrince,
         AdamsBashforth,
-        Reserved_4,
+        RK4,
         M3DC12DIntegrator
     };
     enum OpacityType
@@ -205,6 +206,7 @@ public:
     void SelectColoringVariable();
     void SelectOpacityVariable();
     void SelectVaryTubeRadiusVariable();
+    void SelectSelection();
 
     // Property setting methods
     void SetSourceType(SourceType sourceType_);
@@ -311,6 +313,7 @@ public:
     void SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_);
     void SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_);
     void SetCorrelationDistanceMinDistType(SizeType correlationDistanceMinDistType_);
+    void SetSelection(const std::string &selection_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -432,6 +435,8 @@ public:
     double               GetCorrelationDistanceMinDistAbsolute() const;
     double               GetCorrelationDistanceMinDistBBox() const;
     SizeType             GetCorrelationDistanceMinDistType() const;
+    const std::string    &GetSelection() const;
+          std::string    &GetSelection();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -630,6 +635,7 @@ public:
         ID_correlationDistanceMinDistAbsolute,
         ID_correlationDistanceMinDistBBox,
         ID_correlationDistanceMinDistType,
+        ID_selection,
         ID__LAST
     };
 
@@ -738,11 +744,12 @@ private:
     double         correlationDistanceMinDistAbsolute;
     double         correlationDistanceMinDistBBox;
     int            correlationDistanceMinDistType;
+    std::string    selection;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddidDiiiiibbdiibdsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdidsdddi"
+#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddidDiiiiibbdiibdsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdidsdddis"
 
 #endif

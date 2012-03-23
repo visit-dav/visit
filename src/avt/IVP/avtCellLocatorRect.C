@@ -95,7 +95,8 @@ void avtCellLocatorRect::Free()
 // ---------------------------------------------------------------------------
 
 vtkIdType avtCellLocatorRect::FindCell( const double pos[3],
-                                        avtInterpolationWeights* weights ) const
+                                        avtInterpolationWeights* weights,
+                                        bool ignoreGhostCells ) const
 {
 #if 0
 
@@ -152,6 +153,9 @@ vtkIdType avtCellLocatorRect::FindCell( const double pos[3],
     }
 
     vtkIdType cell = (i[2]*(coord[1].size()-1) + i[1])*(coord[0].size()-1) + i[0];
+
+    if( ignoreGhostCells && ghostPtr && ghostPtr[cell] )
+        return -1;
 
     if( weights )
     {

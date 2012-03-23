@@ -43,6 +43,7 @@
 #include <avtStreamlinePlot.h>
 
 #include <avtShiftCenteringFilter.h>
+#include <avtGhostZoneFilter.h>
 #include <avtStreamlinePolyDataFilter.h>
 #include <avtStreamlineRenderer.h>
 #include <avtUserDefinedMapper.h>
@@ -75,6 +76,7 @@ avtStreamlinePlot::avtStreamlinePlot()
     streamlineFilter = new avtStreamlinePolyDataFilter;
 #endif
     shiftCenteringFilter = NULL;
+    removeGhostZonesFilter = NULL;
     avtLUT = new avtLookupTable; 
     renderer = avtStreamlineRenderer::New();
     
@@ -120,6 +122,11 @@ avtStreamlinePlot::~avtStreamlinePlot()
     {
         delete shiftCenteringFilter;
         shiftCenteringFilter = NULL;
+    }
+    if (removeGhostZonesFilter != NULL)
+    {
+        delete removeGhostZonesFilter;
+        removeGhostZonesFilter = NULL;
     }
     if (mapper != NULL)
     {
@@ -227,6 +234,13 @@ avtStreamlinePlot::ApplyOperators(avtDataObject_p input)
         shiftCenteringFilter = new avtShiftCenteringFilter(AVT_NODECENT);
         shiftCenteringFilter->SetInput(input);
         dob = shiftCenteringFilter->GetOutput();
+        
+        if(removeGhostZonesFilter != NULL)
+            delete removeGhostZonesFilter;
+        removeGhostZonesFilter = new avtGhostZoneFilter();
+        removeGhostZonesFilter->GhostDataMustBeRemoved();
+        removeGhostZonesFilter->SetInput(dob);
+        dob = removeGhostZonesFilter->GetOutput();
     }
 
     // Add the streamline filter.
@@ -413,6 +427,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Mon Feb 21 08:19:26 EST 2011
 //   Add color by correlation distance.
 //
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
+//
 // ****************************************************************************
 
 void
@@ -473,6 +490,11 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
                                        atts.GetSampleDensity0(), atts.GetSampleDensity1(), atts.GetSampleDensity2(),
                                        atts.GetFillInterior(),
                                        atts.GetRandomSamples(), atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
+        break;
+      case StreamlineAttributes::Selection:
+        streamlineFilter->SetSelectionSource(atts.GetSelection(),
+                                             atts.GetSampleDensity0(),
+                                             atts.GetRandomSamples(), atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
         break;
     }
 
@@ -736,4 +758,8 @@ avtStreamlinePlot::ReleaseData(void)
 #endif
     if(shiftCenteringFilter != NULL)
         shiftCenteringFilter->ReleaseData();
+    if(removeGhostZonesFilter != NULL)
+        removeGhostZonesFilter->ReleaseData();
 }
+
+

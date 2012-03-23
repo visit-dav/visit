@@ -81,6 +81,10 @@
 //    Hank Childs, Tue Dec  6 19:01:30 PST 2011
 //    Add methods LessThan and PrepareForFinalCommunication.
 //
+//   David Camp, Wed Mar  7 10:43:07 PST 2012
+//   Added a Serialize flag to the arguments. This is to support the restore
+//   ICs code.
+//
 // ****************************************************************************
 
 class IVP_API avtStateRecorderIntegralCurve : public avtIntegralCurve
@@ -128,9 +132,10 @@ public:
     virtual ~avtStateRecorderIntegralCurve();
 
     virtual void  Serialize(MemStream::Mode mode, MemStream &buff, 
-                                avtIVPSolver *solver);
+                            avtIVPSolver *solver, SerializeFlags serializeFlags);
     virtual void  PrepareForSend(void)
-                           { serializeFlags |= SERIALIZE_INC_SEQ; };
+                           { _serializeFlags = (SerializeFlags)(_serializeFlags | avtIntegralCurve::SERIALIZE_INC_SEQ); };
+    virtual void      ResetAfterSend(void) { _serializeFlags = SERIALIZE_NO_OPT;}
     virtual bool  SameCurve(avtIntegralCurve *ic);
 
     virtual avtIntegralCurve* MergeIntegralCurveSequence(
@@ -141,7 +146,7 @@ public:
                                 const avtIntegralCurve *slB);
     virtual bool LessThan(const avtIntegralCurve *ic) const;
     virtual void PrepareForFinalCommunication(void)
-                     { serializeFlags = avtIntegralCurve::SERIALIZE_STEPS; };
+                     { _serializeFlags = avtIntegralCurve::SERIALIZE_STEPS; };
 
     typedef std::vector<float>::const_iterator iterator;
 
@@ -157,7 +162,7 @@ public:
     size_t    GetSampleStride() const;
 
   public:
-    unsigned long       serializeFlags;
+    SerializeFlags      _serializeFlags;
     long                sequenceCnt;
     unsigned char       historyMask;
 

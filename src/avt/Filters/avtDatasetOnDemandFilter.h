@@ -43,7 +43,7 @@
 #ifndef AVT_DATASET_ON_DEMAND_FILTER_H
 #define AVT_DATASET_ON_DEMAND_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtDatasetToDataObjectFilter.h>
 #include <list>
@@ -147,9 +147,10 @@ struct DomainCacheEntry
 //    David Camp, Tue May  3 06:51:37 PDT 2011
 //    Added virtual function PurgeDomain() to let the PICs filter delete the
 //    cell locator and any other resoures to do this a dataset.
+//
 // **************************************************************************** 
 
-class PIPELINE_API avtDatasetOnDemandFilter : virtual public 
+class AVTFILTERS_API avtDatasetOnDemandFilter : virtual public 
                                                    avtDatasetToDataObjectFilter
 {
   public:
@@ -188,6 +189,7 @@ protected:
     std::list<DomainCacheEntry>  domainQueue;
     int                          maxQueueLength;
     avtContract_p                firstContract;
+    avtContract_p                lastUsedContract;
     bool                         operatingOnDemand;
     int                          purgeDSCount, loadDSCount;
 };

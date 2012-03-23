@@ -87,6 +87,10 @@ class vtkDataArray;
 //   Dave Pugmire, Mon Feb  7 13:46:56 EST 2011
 //   Fix ghost mask for ghost cell integration.
 //
+//   Christoph Garth, Tue Mar 6 16:38:00 PDT 2012
+//   Moved ghost data handling into cell locator and changed IsInside()
+//   to only consider non-ghost cells.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPVTKField: public avtIVPField
@@ -124,7 +128,6 @@ class IVP_API avtIVPVTKField: public avtIVPField
     unsigned int   GetDimension() const;
     void           SetNormalized( bool v );
 
-    virtual bool   HasGhostZones() const;
     virtual void   GetExtents( double extents[6] ) const;
     virtual void   GetTimeRange( double range[2] ) const;
 
@@ -140,7 +143,6 @@ class IVP_API avtIVPVTKField: public avtIVPField
     bool                   velCellBased;
     vtkDataArray*          sclData[256];
     bool                   sclCellBased[256];
-    unsigned char*         ghostPtr;
 
     mutable avtVector               lastPos;
     mutable vtkIdType               lastCell;

@@ -57,6 +57,7 @@ class vtkAppendPolyData;
 #define STREAMLINE_SOURCE_PLANE      4
 #define STREAMLINE_SOURCE_SPHERE     5
 #define STREAMLINE_SOURCE_BOX        6
+#define STREAMLINE_SOURCE_SELECTION  7
 
 #define STREAMLINE_COLOR_SOLID       0
 #define STREAMLINE_COLOR_SPEED       1
@@ -268,6 +269,9 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
                                            int den1, int den2, int den3,
                                            bool fill, bool rand, int seed, int numPts);
     void                      SetPointListSource(const std::vector<double> &);
+    void                      SetSelectionSource(std::string selectionName,
+                                                 int stride,
+                                                 bool random, int seed, int numPts);
 
     void                      SetDisplayMethod(int d);
     void                      SetColoringMethod(int, const std::string &var="");
@@ -324,6 +328,7 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     bool      randomSamples;
     int       randomSeed;
     bool      fill, useBBox;
+    std::string sourceSelection;
     bool      storeVelocitiesForLighting;
 
     bool      issueWarningForMaxStepsTermination;
@@ -342,6 +347,7 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     void                      GenerateSeedPointsFromBox(std::vector<avtVector> &pts);
     void                      GenerateSeedPointsFromCircle(std::vector<avtVector> &pts);
     void                      GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
+    void                      GenerateSeedPointsFromSelection(std::vector<avtVector> &pts);
 
     unsigned char             GenerateAttributeFields() const;
 

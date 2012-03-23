@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+  <Plugin name="Lagrangian" type="operator" label="Lagrangian" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="vector" exprOutType="curve">
+    <Attribute name="LagrangianAttributes" purpose="Attributes for Lagrangian operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="sampleType">
+        Step
+        Time
+        ArcLength
+        Speed
+        Vorticity
+        Variable
+      </Enum>
+      <Field name="seedPoint" label="Seed Point" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="numSteps" label="Number of steps" type="int">
+        1000
+      </Field>
+      <Field name="XAxisSample" label="X Axis Sample" type="enum" subtype="sampleType">
+        Step
+      </Field>
+      <Field name="YAxisSample" label="Y Axis Sample" type="enum" subtype="sampleType">
+        Step
+      </Field>
+      <Field name="variable" label="Variable" type="variablename" enabler="YAxisSample:Variable" vartypes="01000000000">
+      </Field>
+    </Attribute>
+  </Plugin>

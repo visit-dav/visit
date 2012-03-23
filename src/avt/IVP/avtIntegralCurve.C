@@ -155,6 +155,7 @@ avtIntegralCurve::avtIntegralCurve()
     ivp = NULL;
 
     status = STATUS_OK;
+    direction = DIRECTION_FORWARD;
     domain = -1;
     sortKey = 0;
     id = -1;
@@ -234,10 +235,14 @@ avtIntegralCurve::~avtIntegralCurve()
 //   a huge step in time ... so big that it causes the particle to go well
 //   too far in the future.)
 //
+//   Hank Childs, Sat Mar 10 14:10:47 PST 2012
+//   Fix bug with supporting reverse pathlines.
+//
 // ****************************************************************************
 
 void avtIntegralCurve::Advance( avtIVPField* field )
 {
+
     // Catch cases where the start position is outside the
     // domain of field; in this case, mark the curve 
     if( !field->IsInside( ivp->GetCurrentT(), ivp->GetCurrentY() ) )
@@ -285,6 +290,17 @@ void avtIntegralCurve::Advance( avtIVPField* field )
 
             if( result == avtIVPSolverResult::TERMINATE )
                 break;
+
+            // Check if the new position is outside the domain
+            // (or in the domain's ghost data); in this case
+            // finish here and continue in the next domain.
+            if( !field->IsInside( ivp->GetCurrentT(), ivp->GetCurrentY() ) )
+            {
+                if( DebugStream::Level5() )
+                    debug5 << "avtIntegralCurve::Advance(): step ended in ghost data\n";
+                
+                break;
+            }
         }
         else if( result == avtIVPSolverResult::OUTSIDE_DOMAIN )
         {
@@ -514,11 +530,15 @@ avtIntegralCurve::CurrentLocation(avtVector &end)
 //   Hank Childs, Sun Dec  5 11:43:46 PST 2010
 //   Send encounteredNumericalProblems.
 //
+//   David Camp, Wed Mar  7 10:43:07 PST 2012
+//   Added a Serialize flag to the arguments. This is to support the restore
+//   ICs code.
+//
 // ****************************************************************************
 
 void
 avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff, 
-                            avtIVPSolver *solver)
+                            avtIVPSolver *solver, SerializeFlags serializeFlags)
 {
     if( DebugStream::Level5() )
         debug5 << "  avtIntegralCurve::Serialize "
@@ -532,27 +552,30 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, encounteredNumericalProblems);
     buff.io(mode, originatingRank);
     
-    if ( mode == MemStream::WRITE )
+    if (solver)
     {
-        avtIVPState solverState;
+        if ( mode == MemStream::WRITE )
+        {
+            avtIVPState solverState;
 
-        ivp->GetState(solverState);
-        solverState.Serialize(mode, buff);
+            ivp->GetState(solverState);
+            solverState.Serialize(mode, buff);
+        }
+        else
+        {
+            // TODO:
+            //ivp->Serialize( mode, buff );
+
+            avtIVPState solverState;
+            solverState.Serialize(mode, buff);
+
+            if( ivp )
+                delete ivp;
+
+            ivp = solver->Clone();
+            ivp->PutState(solverState);
+        }
     }
-    else
-    {
-        // TODO:
-        //ivp->Serialize( mode, buff );
-
-        avtIVPState solverState;
-        solverState.Serialize(mode, buff);
-
-        if( ivp )
-            delete ivp;
-        
-        ivp = solver->Clone();
-        ivp->PutState(solverState);
-    }    
 
     if( DebugStream::Level5() )
         debug5 << "avtIntegralCurve::Serialize() size is " 

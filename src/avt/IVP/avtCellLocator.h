@@ -89,7 +89,8 @@ class IVP_API avtCellLocator
     void            ReleaseDataSet();
 
     virtual vtkIdType FindCell( const double pos[3], 
-                                avtInterpolationWeights* iw ) const = 0;
+                                avtInterpolationWeights* iw,
+                                bool ignoreGhostCells ) const = 0;
     static void     Destruct(void *);
 
   protected:
@@ -98,7 +99,8 @@ class IVP_API avtCellLocator
                    double pts[][3] ) const;
 
     bool TestCell( vtkIdType id, const double pos[3],
-                   avtInterpolationWeights* iw ) const;
+                   avtInterpolationWeights* iw,
+                   bool ignoreGhostCells ) const;
 
     bool TestTet( vtkIdType id, const double pos[3], 
                   avtInterpolationWeights* iw ) const; 
@@ -117,6 +119,7 @@ class IVP_API avtCellLocator
     bool           normal3D;
     float*         fCoordPtr;
     double*        dCoordPtr;
+    unsigned char* ghostPtr;
 };
 
 typedef ref_ptr<avtCellLocator> avtCellLocator_p;
