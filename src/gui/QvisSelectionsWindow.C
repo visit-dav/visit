@@ -294,9 +294,12 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
     QRadioButton *b1 = new QRadioButton(tr("Global cell numbers"), f2);
     idVariableType->addButton(b1, 1);
     iLayout->addWidget(b1, 0, 1);
-    QRadioButton *b2 = new QRadioButton(tr("Variable"), f2);
+    QRadioButton *b2 = new QRadioButton(tr("Location"), f2);
     idVariableType->addButton(b2, 2);
     iLayout->addWidget(b2, 0, 2);
+    QRadioButton *b3 = new QRadioButton(tr("Variable"), f2);
+    idVariableType->addButton(b3, 3);
+    iLayout->addWidget(b3, 0, 3);
     b0->setChecked(true);
     connect(idVariableType, SIGNAL(buttonClicked(int)),
             this, SLOT(idVariableTypeChanged(int)));
@@ -306,13 +309,13 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
     idVariableButton->setEnabled(false);
     connect(idVariableButton, SIGNAL(activated(const QString &)),
             this, SLOT(idVariableChanged(const QString &)));
-    iLayout->addWidget(idVariableButton, 0, 3);
-    definitionLayout->addWidget(idGroup, row, 0, 1, 4);
+    iLayout->addWidget(idVariableButton, 0, 4);
+    definitionLayout->addWidget(idGroup, row, 0, 1, 5);
     ++row;
 
     QFrame *spacer = new QFrame(f2);
     spacer->setFrameStyle(QFrame::HLine | QFrame::Raised);
-    definitionLayout->addWidget(spacer, row,0, 1,4);
+    definitionLayout->addWidget(spacer, row,0, 1,5);
     ++row;
 
     cqControls = new QGroupBox(f2);
@@ -323,7 +326,7 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
 
 
     QVBoxLayout *vLayout = new QVBoxLayout(cqControls);
-    definitionLayout->addWidget(cqControls, row,0,1,4);
+    definitionLayout->addWidget(cqControls, row,0,1,5);
     definitionLayout->setRowStretch(row, 10);
     ++row;
 
@@ -336,13 +339,13 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
     automaticallyApply = new QCheckBox(tr("Automatically apply updated selections"), f2);
     connect(automaticallyApply, SIGNAL(toggled(bool)),
             this, SLOT(automaticallyApplyChanged(bool)));
-    definitionLayout->addWidget(automaticallyApply, row,0,1,2);
+    definitionLayout->addWidget(automaticallyApply, row,0,1,3);
 
 
     updateSelectionButton = new QPushButton(tr("Update Selection"), f2);
     connect(updateSelectionButton, SIGNAL(pressed()),
             this, SLOT(updateSelection()));
-    definitionLayout->addWidget(updateSelectionButton, row,3);
+    definitionLayout->addWidget(updateSelectionButton, row,4);
     ++row;
 
     return f2;
@@ -2152,14 +2155,16 @@ void
 QvisSelectionsWindow::idVariableTypeChanged(int val)
 {
     if(val == 0)
-       selectionProps.SetIdVariableType(SelectionProperties::UseZoneIDForID);
+        selectionProps.SetIdVariableType(SelectionProperties::UseZoneIDForID);
     else if(val == 1)
-       selectionProps.SetIdVariableType(SelectionProperties::UseGlobalZoneIDForID);
+        selectionProps.SetIdVariableType(SelectionProperties::UseGlobalZoneIDForID);
     else if(val == 2)
-       selectionProps.SetIdVariableType(SelectionProperties::UseLocationsForID);
+        selectionProps.SetIdVariableType(SelectionProperties::UseLocationsForID);
     else if(val == 3)
-       selectionProps.SetIdVariableType(SelectionProperties::UseVariableForID);
-    idVariableButton->setEnabled(val==2);
+        selectionProps.SetIdVariableType(SelectionProperties::UseVariableForID);
+
+    idVariableButton->setEnabled(
+        selectionProps.GetIdVariableType() == SelectionProperties::UseVariableForID);
 
     Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, DONT_ALLOW_CACHING);
 }

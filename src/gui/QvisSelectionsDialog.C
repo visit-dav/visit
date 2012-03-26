@@ -332,5 +332,5 @@ QvisSelectionsDialog::idVariableTypeChanged(int val)
     else if(val == 3)
        idType = UseVariableForID;
 
-    idVariableButton->setEnabled(val == 2);
+    idVariableButton->setEnabled(idType == UseVariableForID);
 }
