@@ -23,6 +23,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state 
 #    behavior when an operator is added.
 #
+#    Hank Childs, Mon Mar 26 12:00:23 PDT 2012
+#    Add test for Subset plot + material selection
+#
 # ----------------------------------------------------------------------------
 
 
@@ -90,5 +93,16 @@ SetOperatorOptions(iso_atts)
 DrawPlots()
 ResetView()
 Test("subset_07")
+
+RemoveLastOperator()
+s = SILRestriction()
+mats = s.SetsInCategory("materials")
+s.TurnOffSet(mats[0])
+s.TurnOffSet(mats[1])
+SetPlotSILRestriction(s)
+Test("subset_08")
+
+ChangeActivePlotsVar("patches")
+Test("subset_09")
 
 Exit()
