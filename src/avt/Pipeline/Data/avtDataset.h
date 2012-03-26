@@ -142,6 +142,11 @@ class   avtWebpage;
 //    Add options to RenumberDomainIDs and CalculateSpatialIntervalTree
 //    to limit the calculations to the current processor only.
 //
+//    Dave Pugmire, Mon Mar 26 13:50:09 EDT 2012
+//    Add avtExtremeValueAnalysisFilter
+//
+
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -160,6 +165,9 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtTimeIteratorExpression;
     friend                   class avtXRayImageQuery;
     friend                   class avtResampleExpression;
+#ifdef HAVE_LIB_R
+    friend                   class  avtExtremeValueAnalysisFilter;
+#endif
 
   public:
                              avtDataset(avtDataObjectSource *);
