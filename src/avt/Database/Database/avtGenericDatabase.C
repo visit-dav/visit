@@ -3613,6 +3613,10 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Eric Brugger, Tue May 17 10:56:46 PDT 2011
 //    I had the routine return NULL if the dataset didn't have any cells.
 //
+//    Hank Childs, Mon Mar 26 11:31:46 PDT 2012
+//    Fix problem with subset plot with a material removed (labels weren't
+//    being passed back correctly).
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -3880,28 +3884,42 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         avtSubsetType sT = GetMetaData(ts)->DetermineSubsetType(var);
         if (sT == AVT_DOMAIN_SUBSET || sT == AVT_UNKNOWN_SUBSET)
         {
-            //
-            // Create a new label which is the domain number.
-            // We are doing a material-selected domain-subset plot,
-            // or a material-selected non-subset plot. 
-            //
-            int domOrigin  =  GetMetaData(ts)->GetMesh(meshname)->blockOrigin;
-            sprintf(label, "%d", dom + domOrigin);
             for (int d = 0; d < numOutput; d++)
             {
-                labelStrings.push_back(label);
+                // If a single label is passed in, it is probably right.
+                // Otherwise, make one up with our best guess.
+                if (labels.size() == 1) 
+                    labelStrings.push_back(labels[0]);
+                else
+                {
+                    //
+                    // Create a new label which is the domain number.
+                    // We are doing a material-selected domain-subset plot,
+                    // or a material-selected non-subset plot. 
+                    //
+                    int domOrigin  =  GetMetaData(ts)->GetMesh(meshname)->blockOrigin;
+                    sprintf(label, "%d", dom + domOrigin);
+                    labelStrings.push_back(label);
+                }
             }
         }
         else if (sT == AVT_GROUP_SUBSET)
         {
-            //
-            // Create a new label which is the group number.
-            //
-            int gID  =  GetMetaData(ts)->GetMesh(meshname)->groupIds[dom];
-            sprintf(label, "%d", gID);
             for (int d = 0; d < numOutput; d++)
             {
-                labelStrings.push_back(label);
+                // If a single label is passed in, it is probably right.
+                // Otherwise, make one up with our best guess.
+                if (labels.size() == 1) 
+                    labelStrings.push_back(labels[0]);
+                else
+                {
+                    //
+                    // Create a new label which is the group number.
+                    //
+                    int gID  =  GetMetaData(ts)->GetMesh(meshname)->groupIds[dom];
+                    sprintf(label, "%d", gID);
+                    labelStrings.push_back(label);
+                }
             }
         }
     }
