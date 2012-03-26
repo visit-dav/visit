@@ -3886,9 +3886,9 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         {
             for (int d = 0; d < numOutput; d++)
             {
-                // If a single label is passed in, it is probably right.
+                // If labels were sent in, they are all identical ... use the first one
                 // Otherwise, make one up with our best guess.
-                if (labels.size() == 1) 
+                if (labels.size() > 0)
                     labelStrings.push_back(labels[0]);
                 else
                 {
@@ -3907,9 +3907,9 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         {
             for (int d = 0; d < numOutput; d++)
             {
-                // If a single label is passed in, it is probably right.
+                // If labels were sent in, they are all identical ... use the first one
                 // Otherwise, make one up with our best guess.
-                if (labels.size() == 1) 
+                if (labels.size() > 0)
                     labelStrings.push_back(labels[0]);
                 else
                 {
