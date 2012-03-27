@@ -832,13 +832,14 @@ SetOperatorOptionsAction::Execute()
       {
         windowMgr->GetWindow(i)->GetPlotList()->
           SetPlotOperatorAtts(oper, windowMgr->GetWindow(i)==window,
-                              applyOperatorToAllPlots);
+                              applyToAllWindows, applyOperatorToAllPlots);
       }
     }
     else // Just the active window
     {
       window->GetPlotList()->
-        SetPlotOperatorAtts(oper, true, applyOperatorToAllPlots);
+        SetPlotOperatorAtts(oper, true,
+                            applyToAllWindows, applyOperatorToAllPlots);
     }
 }
 
