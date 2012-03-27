@@ -47,6 +47,7 @@ class QTabWidget;
 class QGroupBox;
 class QLabel;
 class QCheckBox;
+class QComboBox;
 class QLineEdit;
 class QSpinBox;
 class QVBox;
@@ -94,6 +95,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void meshGeometryChanged(int val);
     void arrayConfigurationChanged(int val);
     void boundaryChanged(int val);
+    void instanceIdChanged(int val);
     void nArraysProcessText();
     void nChannelsProcessText();
     void toroidalArrayAngleProcessText();
@@ -178,6 +180,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QButtonGroup *arrayConfigurationButtonGroup;
     QWidget      *boundary;
     QButtonGroup *boundaryButtonGroup;
+    QComboBox *instanceId;
     QLineEdit *nArrays;
     QLineEdit *nDChannels;
     QLineEdit *nPChannels;

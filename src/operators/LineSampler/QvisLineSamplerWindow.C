@@ -54,6 +54,7 @@
 #include <QTabWidget>
 #include <QGroupBox>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
@@ -231,6 +232,26 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(wallListTextChanged(QString)));
 
 
+    mainLayout->addWidget( new QLabel(tr("Set the instance when applying to multiple \nplots in a single window. I.e. if you want to\ncompare different samplings, set the instance\nto A for the first, and B for the second. These\nsettings will allow the attributes to be\npropagated to other windows."), central), 4, 0, 2, 2);
+
+    QWidget *instance = new QWidget(central);
+    QHBoxLayout *instanceLayout = new QHBoxLayout(instance);
+    instanceLayout->setMargin(0);
+    instanceLayout->setSpacing(10);
+    mainLayout->addWidget(instance, 6,0);
+
+    instanceLayout->addWidget( new QLabel(tr("Instance"), central));
+    instanceId = new QComboBox(central);
+    instanceId->setMaximumWidth(50);
+    instanceId->addItem(tr("A"));
+    instanceId->addItem(tr("B"));
+    instanceId->addItem(tr("C"));
+    instanceId->addItem(tr("D"));
+    instanceId->addItem(tr("E"));
+    connect(instanceId, SIGNAL(activated(int)),
+            this, SLOT(instanceIdChanged(int)));
+    instanceLayout->addWidget(instanceId);
+  
     // ----------------------------------------------------------------------
     // Geometry tab
     // ----------------------------------------------------------------------
@@ -1089,6 +1110,13 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             wallList->setEnabled((int)atts->GetBoundary()==1);
 
             break;
+
+        case LineSamplerAttributes::ID_instanceId:
+            instanceId->blockSignals(true);
+            instanceId->setCurrentIndex(atts->GetInstanceId());
+            instanceId->blockSignals(false);
+            break;
+
           case LineSamplerAttributes::ID_nArrays:
             nArrays->setText(IntToQString(atts->GetNArrays()));
             break;
@@ -1915,6 +1943,17 @@ QvisLineSamplerWindow::boundaryChanged(int val)
         Apply();
     }
 }
+
+
+void
+QvisLineSamplerWindow::instanceIdChanged(int val)
+ {
+    if(val != atts->GetInstanceId())
+    {
+        atts->SetInstanceId(val);
+        Apply();
+    }
+}   
 
 
 void

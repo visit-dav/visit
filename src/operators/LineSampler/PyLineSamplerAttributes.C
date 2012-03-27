@@ -125,6 +125,8 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%sinstanceId = %d\n", prefix, atts->GetInstanceId());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%snArrays = %d\n", prefix, atts->GetNArrays());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%storoidalArrayAngle = %g\n", prefix, atts->GetToroidalArrayAngle());
@@ -561,6 +563,30 @@ LineSamplerAttributes_GetBoundary(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetBoundary()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetInstanceId(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the instanceId in the object.
+    obj->data->SetInstanceId((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetInstanceId(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetInstanceId()));
     return retval;
 }
 
@@ -1942,6 +1968,8 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetArrayConfiguration", LineSamplerAttributes_GetArrayConfiguration, METH_VARARGS},
     {"SetBoundary", LineSamplerAttributes_SetBoundary, METH_VARARGS},
     {"GetBoundary", LineSamplerAttributes_GetBoundary, METH_VARARGS},
+    {"SetInstanceId", LineSamplerAttributes_SetInstanceId, METH_VARARGS},
+    {"GetInstanceId", LineSamplerAttributes_GetInstanceId, METH_VARARGS},
     {"SetNArrays", LineSamplerAttributes_SetNArrays, METH_VARARGS},
     {"GetNArrays", LineSamplerAttributes_GetNArrays, METH_VARARGS},
     {"SetToroidalArrayAngle", LineSamplerAttributes_SetToroidalArrayAngle, METH_VARARGS},
@@ -2089,6 +2117,8 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Wall") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Wall));
 
+    if(strcmp(name, "instanceId") == 0)
+        return LineSamplerAttributes_GetInstanceId(self, NULL);
     if(strcmp(name, "nArrays") == 0)
         return LineSamplerAttributes_GetNArrays(self, NULL);
     if(strcmp(name, "toroidalArrayAngle") == 0)
@@ -2279,6 +2309,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetArrayConfiguration(self, tuple);
     else if(strcmp(name, "boundary") == 0)
         obj = LineSamplerAttributes_SetBoundary(self, tuple);
+    else if(strcmp(name, "instanceId") == 0)
+        obj = LineSamplerAttributes_SetInstanceId(self, tuple);
     else if(strcmp(name, "nArrays") == 0)
         obj = LineSamplerAttributes_SetNArrays(self, tuple);
     else if(strcmp(name, "toroidalArrayAngle") == 0)

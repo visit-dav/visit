@@ -177,6 +177,12 @@ LineSamplerViewerPluginInfo::GetClientAtts(AttributeSubject *atts,
 
   if( applyToAll )
   {
+    // Allow the user to set the instance (up to 5 are allowed). Only
+    // apply to all if the instances match otherwise skip it.
+    if( (*(LineSamplerAttributes *)atts).GetInstanceId() !=
+        (*clientAtts).GetInstanceId() )
+      return;
+
     // If needed save off the old values so they are not changed.
     if( (*(LineSamplerAttributes *)atts).GetDonotApplyToAll() )
     {

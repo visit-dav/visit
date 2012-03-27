@@ -80,6 +80,9 @@
       <Field name="boundary" label="Boundary" type="enum" subtype="Boundary">
         Data
       </Field>
+      <Field name="instanceId" label="Instance ID" type="int">
+        0
+      </Field>
       <Field name="nArrays" label="Number of arrays" type="int">
         1
       </Field>
