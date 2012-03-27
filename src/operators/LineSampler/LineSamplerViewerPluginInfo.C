@@ -170,11 +170,6 @@ LineSamplerViewerPluginInfo::GetClientAtts(AttributeSubject *atts,
 {
   LineSamplerAttributes aTmp = *clientAtts;
 
-  if( aTmp.GetViewGeometry() == 0 )
-  {
-    LineSamplerAttributes *ttmp = 0;
-  }
-
   if( applyToAll )
   {
     // Allow the user to set the instance (up to 5 are allowed). Only
