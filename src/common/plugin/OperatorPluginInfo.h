@@ -177,6 +177,10 @@ class PLUGIN_API ViewerOperatorPluginInfo : public virtual CommonOperatorPluginI
     virtual AttributeSubject *GetDefaultAtts() = 0;
     virtual void SetClientAtts(AttributeSubject *atts) = 0;
     virtual void GetClientAtts(AttributeSubject *atts) = 0;
+    virtual void GetClientAtts(AttributeSubject *atts, const bool applyToAll)
+    {
+      GetClientAtts(atts);
+    };
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,

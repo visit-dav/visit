@@ -19,6 +19,12 @@
     <Field name="applyOperator" label="applyOperator" type="bool">
       true
     </Field>
+    <Field name="applySelection" label="applySelection" type="bool">
+      true
+    </Field>
+    <Field name="applyWindow" label="applyWindow" type="bool">
+      false
+    </Field>
     <Field name="executing" label="executing" type="bool">
       false
     </Field>
@@ -56,9 +62,6 @@
       false
     </Field>
     <Field name="saveCrashRecoveryFile" label="Save a crash recovert file" type="bool">
-      true
-    </Field>
-    <Field name="applySelection" label="applySelection" type="bool">
       true
     </Field>
     <Field name="ignoreExtentsFromDbs" label="ignoreExtentsFromDbs" type="bool">

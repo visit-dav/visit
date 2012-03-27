@@ -112,6 +112,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void viewGeometryChanged(int val);
     void displayTimeChanged(int val);
     void viewDimensionChanged(int val);
+    void donotApplyToAllChanged(bool val);
     void heightPlotScaleProcessText();
     void channelPlotOffsetProcessText();
     void arrayPlotOffsetProcessText();
@@ -209,6 +210,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QCheckBox *flipToroidalAngle;
     QWidget      *viewDimension;
     QButtonGroup *viewDimensionButtonGroup;
+    QCheckBox    *donotApplyToAll;
     QWidget      *viewGeometry;
     QButtonGroup *viewGeometryButtonGroup;
     QWidget      *displayTime;

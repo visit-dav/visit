@@ -159,7 +159,57 @@ LineSamplerViewerPluginInfo::SetClientAtts(AttributeSubject *atts)
 void
 LineSamplerViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 {
+  std::cerr << __FILE__ << "  " << __LINE__ << "  " << "SHOULD NOT BE CALLED" << std::endl;
+
+//    *(LineSamplerAttributes *)atts = *clientAtts;
+}
+
+void
+LineSamplerViewerPluginInfo::GetClientAtts(AttributeSubject *atts,
+                                           const bool applyToAll)
+{
+  LineSamplerAttributes aTmp = *clientAtts;
+
+  if( aTmp.GetViewGeometry() == 0 )
+  {
+    LineSamplerAttributes *ttmp = 0;
+  }
+
+  if( applyToAll )
+  {
+    // If needed save off the old values so they are not changed.
+    if( (*(LineSamplerAttributes *)atts).GetDonotApplyToAll() )
+    {
+      LineSamplerAttributes::ViewDimension oldViewDim =
+        (*(LineSamplerAttributes *)atts).GetViewDimension();
+
+      LineSamplerAttributes::ViewDimension newViewDim =
+        (*clientAtts).GetViewDimension();
+
+      if( newViewDim != oldViewDim )
+      {
+//         QString msg = tr("You are attemping to change the 'View dimension' "
+//                       " while both the 'Apply operators to all plots' and "
+//                       "'Do not apply to all' are checked. This is a "
+//                       "conflict as such the 'View dimension' will not be "
+//                       "changed.").arg();
+//        Warning(msg);
+      }
+
+      *(LineSamplerAttributes *)atts = *clientAtts;
+
+      (*(LineSamplerAttributes *)atts).SetViewDimension( oldViewDim );
+    }
+    else // No restriction on the apply operation.
+    {
+      *(LineSamplerAttributes *)atts = *clientAtts;
+    }
+  }
+  else // Not applying to all
+  {
     *(LineSamplerAttributes *)atts = *clientAtts;
+  }
+
 }
 
 // ****************************************************************************
@@ -227,4 +277,3 @@ LineSamplerViewerPluginInfo::XPMIconData() const
 {
     return LineSampler_xpm;
 }
-

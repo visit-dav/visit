@@ -144,7 +144,8 @@ class VIEWER_API ViewerOperator : public ViewerBase
 
     void SetPlot(ViewerPlot *p);
     void SetClientAttsFromOperator();
-    void SetOperatorAttsFromClient();
+    void SetOperatorAttsFromClient(const bool activePlot,
+                                   const bool applyToAll);
     bool SetOperatorAtts(const AttributeSubject *toolAtts);
     const AttributeSubject *GetOperatorAtts() const;
 

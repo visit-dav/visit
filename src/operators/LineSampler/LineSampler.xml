@@ -144,6 +144,9 @@
       <Field name="viewDimension" label="View dimension" type="enum" subtype="ViewDimension">
         Three
       </Field>
+      <Field name="donotApplyToAll" label="Donot apply to all" type="bool">
+        True
+      </Field>
       <Field name="heightPlotScale" label="1D plot height scale" type="double">
         1.000000
       </Field>

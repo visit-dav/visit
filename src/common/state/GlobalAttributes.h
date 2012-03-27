@@ -97,6 +97,8 @@ public:
     void SetAutoUpdateFlag(bool autoUpdateFlag_);
     void SetReplacePlots(bool replacePlots_);
     void SetApplyOperator(bool applyOperator_);
+    void SetApplySelection(bool applySelection_);
+    void SetApplyWindow(bool applyWindow_);
     void SetExecuting(bool executing_);
     void SetWindowLayout(int windowLayout_);
     void SetMakeDefaultConfirm(bool makeDefaultConfirm_);
@@ -110,7 +112,6 @@ public:
     void SetNewPlotsInheritSILRestriction(bool newPlotsInheritSILRestriction_);
     void SetUserDirForSessionFiles(bool userDirForSessionFiles_);
     void SetSaveCrashRecoveryFile(bool saveCrashRecoveryFile_);
-    void SetApplySelection(bool applySelection_);
     void SetIgnoreExtentsFromDbs(bool ignoreExtentsFromDbs_);
     void SetExpandNewPlots(bool expandNewPlots_);
 
@@ -124,6 +125,8 @@ public:
     bool               GetAutoUpdateFlag() const;
     bool               GetReplacePlots() const;
     bool               GetApplyOperator() const;
+    bool               GetApplySelection() const;
+    bool               GetApplyWindow() const;
     bool               GetExecuting() const;
     int                GetWindowLayout() const;
     bool               GetMakeDefaultConfirm() const;
@@ -137,7 +140,6 @@ public:
     bool               GetNewPlotsInheritSILRestriction() const;
     bool               GetUserDirForSessionFiles() const;
     bool               GetSaveCrashRecoveryFile() const;
-    bool               GetApplySelection() const;
     bool               GetIgnoreExtentsFromDbs() const;
     bool               GetExpandNewPlots() const;
 
@@ -162,6 +164,8 @@ public:
         ID_autoUpdateFlag,
         ID_replacePlots,
         ID_applyOperator,
+        ID_applySelection,
+        ID_applyWindow,
         ID_executing,
         ID_windowLayout,
         ID_makeDefaultConfirm,
@@ -175,7 +179,6 @@ public:
         ID_newPlotsInheritSILRestriction,
         ID_userDirForSessionFiles,
         ID_saveCrashRecoveryFile,
-        ID_applySelection,
         ID_ignoreExtentsFromDbs,
         ID_expandNewPlots,
         ID__LAST
@@ -189,6 +192,8 @@ private:
     bool         autoUpdateFlag;
     bool         replacePlots;
     bool         applyOperator;
+    bool         applySelection;
+    bool         applyWindow;
     bool         executing;
     int          windowLayout;
     bool         makeDefaultConfirm;
@@ -202,7 +207,6 @@ private:
     bool         newPlotsInheritSILRestriction;
     bool         userDirForSessionFiles;
     bool         saveCrashRecoveryFile;
-    bool         applySelection;
     bool         ignoreExtentsFromDbs;
     bool         expandNewPlots;
 
@@ -210,6 +214,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbibbbbbbbbbbbbbb"
+#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbbbibbbbbbbbbbbbb"
 
 #endif

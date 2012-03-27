@@ -83,11 +83,11 @@ ViewerOperator::ViewerOperator(const int type_,
     ViewerOperatorPluginInfo *viewerPluginInfo_,
     ViewerPlot *plot_, const bool fromDefault) : ViewerBase(0)
 {
-    type              = type_;
-    viewerPluginInfo  = viewerPluginInfo_;
-    operatorAtts      = viewerPluginInfo->AllocAttributes();
-    needsRecalculation= true;
-    plot              = plot_;
+    type               = type_;
+    viewerPluginInfo   = viewerPluginInfo_;
+    operatorAtts       = viewerPluginInfo->AllocAttributes();
+    needsRecalculation = true;
+    plot               = plot_;
 
     viewerPluginInfo->InitializeOperatorAtts(operatorAtts, plot, fromDefault);
 }
@@ -247,19 +247,23 @@ ViewerOperator::SetClientAttsFromOperator()
 // ****************************************************************************
 
 void
-ViewerOperator::SetOperatorAttsFromClient()
+ViewerOperator::SetOperatorAttsFromClient(const bool activePlot,
+                                          const bool applyToAll)
 {
     //
     // Check to see if we need to recalculate when we're done
     //
-    needsRecalculation = (!operatorAtts->EqualTo(
-                                           viewerPluginInfo->GetClientAtts()));
+    needsRecalculation =
+      (!operatorAtts->EqualTo( viewerPluginInfo->GetClientAtts() ));
 
     //
     // Copy the operator attributes to the client attributes and notify the
     // client.
     //
-    viewerPluginInfo->GetClientAtts(operatorAtts);
+    viewerPluginInfo->GetClientAtts(operatorAtts, applyToAll);
+
+    if( activePlot )
+      viewerPluginInfo->SetClientAtts(operatorAtts);      
 }
 
 // ****************************************************************************

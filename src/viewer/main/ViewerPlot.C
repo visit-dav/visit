@@ -2593,7 +2593,9 @@ ViewerPlot::RemoveAllOperators()
 // ****************************************************************************
 
 void
-ViewerPlot::SetOperatorAttsFromClient(const int type)
+ViewerPlot::SetOperatorAttsFromClient(const int type,
+                                      const bool actviePlot,
+                                      const bool applyToAll)
 {
     //
     // If there are no operators return.
@@ -2628,7 +2630,8 @@ ViewerPlot::SetOperatorAttsFromClient(const int type)
     {
         // The active operator was of the type that we're trying to
         // set so set the operator attributes for the active operator.
-        operators[activeOperatorIndex]->SetOperatorAttsFromClient();
+        operators[activeOperatorIndex]->
+          SetOperatorAttsFromClient(actviePlot, applyToAll);
         changed |= operators[activeOperatorIndex]->NeedsRecalculation();
     }
     else if(nInstances > 1)
@@ -2650,7 +2653,8 @@ ViewerPlot::SetOperatorAttsFromClient(const int type)
         // There's only 1 instance of the operator that we're trying
         // to set and it is not the active operator. Oh well. Just set
         // the operator attributes anyway.
-        operators[firstIndex]->SetOperatorAttsFromClient();
+        operators[firstIndex]->
+          SetOperatorAttsFromClient(actviePlot, applyToAll);
         changed |= operators[firstIndex]->NeedsRecalculation();
     }
 

@@ -922,6 +922,12 @@ QvisLineSamplerWindow::CreateWindowContents()
     mainLayout->addWidget(viewDimension,0,1);
 
 
+    donotApplyToAll = new QCheckBox(tr("Do not apply to all"), central);
+    connect(donotApplyToAll, SIGNAL(toggled(bool)),
+            this, SLOT(donotApplyToAllChanged(bool)));
+    mainLayout->addWidget(donotApplyToAll, 0,3);
+
+
     // Create the oneDPlot group box.
     oneDPlotGroup = new QGroupBox(viewTab);
     oneDPlotGroup->setTitle(tr("1D plot viewing parameters"));
@@ -1185,7 +1191,7 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             channelListFlipToroidalAngle->blockSignals(true);
             channelListFlipToroidalAngle->setChecked(atts->GetFlipToroidalAngle());
             channelListFlipToroidalAngle->blockSignals(false);
-            break;            break;
+            break;
           case LineSamplerAttributes::ID_viewGeometry:
             viewGeometryButtonGroup->blockSignals(true);
             if(viewGeometryButtonGroup->button((int)atts->GetViewGeometry()) != 0)
@@ -1205,6 +1211,12 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             viewDimensionButtonGroup->blockSignals(false);
 
             oneDPlotGroup->setEnabled( (int)atts->GetViewDimension() == 0 );
+            break;
+          case LineSamplerAttributes::ID_donotApplyToAll:
+            donotApplyToAll->blockSignals(true);
+            donotApplyToAll->setChecked(atts->GetDonotApplyToAll());
+            donotApplyToAll->blockSignals(false);
+
             break;
           case LineSamplerAttributes::ID_heightPlotScale:
             heightPlotScale->setText(DoubleToQString(atts->GetHeightPlotScale()));
@@ -2093,6 +2105,14 @@ QvisLineSamplerWindow::viewDimensionChanged(int val)
         atts->SetViewDimension(LineSamplerAttributes::ViewDimension(val));
         Apply();
     }
+}
+
+
+void
+QvisLineSamplerWindow::donotApplyToAllChanged(bool val)
+{
+    atts->SetDonotApplyToAll(val);
+    Apply();
 }
 
 

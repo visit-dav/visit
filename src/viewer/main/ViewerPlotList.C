@@ -4506,7 +4506,9 @@ ViewerPlotList::SetPlotAtts(const int plotType)
 // ****************************************************************************
 
 void
-ViewerPlotList::SetPlotOperatorAtts(const int operatorType, bool applyToAll)
+ViewerPlotList::SetPlotOperatorAtts(const int operatorType,
+                                    bool activeWindow,
+                                    bool applyToAll)
 {
     //
     // Loop through the list setting the plot operator attributes from the
@@ -4514,9 +4516,12 @@ ViewerPlotList::SetPlotOperatorAtts(const int operatorType, bool applyToAll)
     //
     for (int i = 0; i < nPlots; i++)
     {
-        if (plots[i].active || applyToAll)
-        {
-            plots[i].plot->SetOperatorAttsFromClient(operatorType);
+      if (plots[i].active || applyToAll)
+      {
+          plots[i].plot->
+            SetOperatorAttsFromClient(operatorType,
+                                      activeWindow && plots[i].active,
+                                      applyToAll);
         }
     }
 

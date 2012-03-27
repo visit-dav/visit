@@ -5695,8 +5695,8 @@ ViewerSubject::ResetOperatorOptions()
     // Perform the rpc.
     //
     ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    bool apply = wM->GetClientAtts()->GetApplyOperator();
-    wM->GetActiveWindow()->GetPlotList()->SetPlotOperatorAtts(oper, apply);
+    bool applyToAll = wM->GetClientAtts()->GetApplyOperator();
+    wM->GetActiveWindow()->GetPlotList()->SetPlotOperatorAtts(oper, applyToAll);
 }
 
 // ****************************************************************************
