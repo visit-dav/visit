@@ -216,7 +216,6 @@ void
 avtRExtremesFilter::PreExecute()
 {
     avtDatasetToDatasetFilter::PreExecute();
-    avtCallback::ResetTimeout(0);
 }
 
 // ****************************************************************************
@@ -231,7 +230,6 @@ void
 avtRExtremesFilter::PostExecute()
 {
     avtDatasetToDatasetFilter::PostExecute();
-    avtCallback::ResetTimeout(5*60);
 }
 
 // ****************************************************************************
@@ -286,6 +284,8 @@ avtRExtremesFilter::Execute()
 void
 avtRExtremesFilter::CreateFinalOutput()
 {
+    avtCallback::ResetTimeout(0);
+
     debug1<<"avtRExtremesFilter::CreateFinalOutput()"<<endl;
     
     //Unify maxima
@@ -435,4 +435,5 @@ avtRExtremesFilter::CreateFinalOutput()
         SetOutputDataTree(new avtDataTree());
 
     delete [] result;
+    avtCallback::ResetTimeout(5*60);
 }
