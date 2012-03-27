@@ -185,9 +185,11 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
     : avtMTMDFileFormat(fname)
 {
 
+#ifdef MILI_VERSION
     if ( !miliLoadMessageDisplayed ) {
          printf("\nUsing MDG Visit Mili Plugin. Visit Version %s / Mili Version %s (%s)\n\n\n", VISIT_VERSION, MILI_VERSION, DATE_VERSION );
     }
+#endif
 
     LoadMiliInfo(fname);
  
