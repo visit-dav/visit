@@ -621,6 +621,7 @@ void LineSamplerAttributes::Init()
     meshGeometry = Toroidal;
     arrayConfiguration = Geometry;
     boundary = Data;
+    instanceId = 0;
     nArrays = 1;
     toroidalArrayAngle = 5;
     nChannels = 5;
@@ -699,6 +700,7 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
     meshGeometry = obj.meshGeometry;
     arrayConfiguration = obj.arrayConfiguration;
     boundary = obj.boundary;
+    instanceId = obj.instanceId;
     nArrays = obj.nArrays;
     toroidalArrayAngle = obj.toroidalArrayAngle;
     nChannels = obj.nChannels;
@@ -915,6 +917,7 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
     return ((meshGeometry == obj.meshGeometry) &&
             (arrayConfiguration == obj.arrayConfiguration) &&
             (boundary == obj.boundary) &&
+            (instanceId == obj.instanceId) &&
             (nArrays == obj.nArrays) &&
             (toroidalArrayAngle == obj.toroidalArrayAngle) &&
             (nChannels == obj.nChannels) &&
@@ -1109,6 +1112,7 @@ LineSamplerAttributes::SelectAll()
     Select(ID_meshGeometry,                  (void *)&meshGeometry);
     Select(ID_arrayConfiguration,            (void *)&arrayConfiguration);
     Select(ID_boundary,                      (void *)&boundary);
+    Select(ID_instanceId,                    (void *)&instanceId);
     Select(ID_nArrays,                       (void *)&nArrays);
     Select(ID_toroidalArrayAngle,            (void *)&toroidalArrayAngle);
     Select(ID_nChannels,                     (void *)&nChannels);
@@ -1205,6 +1209,12 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("boundary", Boundary_ToString(boundary)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_instanceId, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("instanceId", instanceId));
     }
 
     if(completeSave || !FieldsEqual(ID_nArrays, &defaultObject))
@@ -1579,6 +1589,8 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
                 SetBoundary(value);
         }
     }
+    if((node = searchNode->GetNode("instanceId")) != 0)
+        SetInstanceId(node->AsInt());
     if((node = searchNode->GetNode("nArrays")) != 0)
         SetNArrays(node->AsInt());
     if((node = searchNode->GetNode("toroidalArrayAngle")) != 0)
@@ -1868,6 +1880,13 @@ LineSamplerAttributes::SetBoundary(LineSamplerAttributes::Boundary boundary_)
 {
     boundary = boundary_;
     Select(ID_boundary, (void *)&boundary);
+}
+
+void
+LineSamplerAttributes::SetInstanceId(int instanceId_)
+{
+    instanceId = instanceId_;
+    Select(ID_instanceId, (void *)&instanceId);
 }
 
 void
@@ -2231,6 +2250,12 @@ LineSamplerAttributes::GetBoundary() const
 }
 
 int
+LineSamplerAttributes::GetInstanceId() const
+{
+    return instanceId;
+}
+
+int
 LineSamplerAttributes::GetNArrays() const
 {
     return nArrays;
@@ -2585,6 +2610,7 @@ LineSamplerAttributes::GetFieldName(int index) const
     case ID_meshGeometry:                  return "meshGeometry";
     case ID_arrayConfiguration:            return "arrayConfiguration";
     case ID_boundary:                      return "boundary";
+    case ID_instanceId:                    return "instanceId";
     case ID_nArrays:                       return "nArrays";
     case ID_toroidalArrayAngle:            return "toroidalArrayAngle";
     case ID_nChannels:                     return "nChannels";
@@ -2660,6 +2686,7 @@ LineSamplerAttributes::GetFieldType(int index) const
     case ID_meshGeometry:                  return FieldType_enum;
     case ID_arrayConfiguration:            return FieldType_enum;
     case ID_boundary:                      return FieldType_enum;
+    case ID_instanceId:                    return FieldType_int;
     case ID_nArrays:                       return FieldType_int;
     case ID_toroidalArrayAngle:            return FieldType_double;
     case ID_nChannels:                     return FieldType_int;
@@ -2735,6 +2762,7 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
     case ID_meshGeometry:                  return "enum";
     case ID_arrayConfiguration:            return "enum";
     case ID_boundary:                      return "enum";
+    case ID_instanceId:                    return "int";
     case ID_nArrays:                       return "int";
     case ID_toroidalArrayAngle:            return "double";
     case ID_nChannels:                     return "int";
@@ -2822,6 +2850,11 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_boundary:
         {  // new scope
         retval = (boundary == obj.boundary);
+        }
+        break;
+    case ID_instanceId:
+        {  // new scope
+        retval = (instanceId == obj.instanceId);
         }
         break;
     case ID_nArrays:

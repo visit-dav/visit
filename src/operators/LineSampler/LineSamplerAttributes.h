@@ -177,6 +177,7 @@ public:
     void SetMeshGeometry(MeshGeometry meshGeometry_);
     void SetArrayConfiguration(ArrayConfiguration arrayConfiguration_);
     void SetBoundary(Boundary boundary_);
+    void SetInstanceId(int instanceId_);
     void SetNArrays(int nArrays_);
     void SetToroidalArrayAngle(double toroidalArrayAngle_);
     void SetNChannels(int nChannels_);
@@ -230,6 +231,7 @@ public:
     MeshGeometry       GetMeshGeometry() const;
     ArrayConfiguration GetArrayConfiguration() const;
     Boundary           GetBoundary() const;
+    int                GetInstanceId() const;
     int                GetNArrays() const;
     double             GetToroidalArrayAngle() const;
     int                GetNChannels() const;
@@ -375,6 +377,7 @@ public:
         ID_meshGeometry = 0,
         ID_arrayConfiguration,
         ID_boundary,
+        ID_instanceId,
         ID_nArrays,
         ID_toroidalArrayAngle,
         ID_nChannels,
@@ -430,6 +433,7 @@ private:
     int          meshGeometry;
     int          arrayConfiguration;
     int          boundary;
+    int          instanceId;
     int          nArrays;
     double       toroidalArrayAngle;
     int          nChannels;
@@ -483,6 +487,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LINESAMPLERATTRIBUTES_TMFS "iiiidiiiddidDiddddddbiibdddiiddiddddiiidddiiiid*d*idd"
+#define LINESAMPLERATTRIBUTES_TMFS "iiiiidiiiddidDiddddddbiibdddiiddiddddiiidddiiiid*d*idd"
 
 #endif
