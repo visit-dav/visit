@@ -420,7 +420,9 @@ public:
     void SetErrorFlagAllPlots(bool errorFlag);
     void SetPlotVar(const std::string &variable);
     void SetPlotAtts(const int plotType);
-    void SetPlotOperatorAtts(const int operatorType, bool applyToAll = false);
+    void SetPlotOperatorAtts(const int operatorType,
+                             bool activeWindow = false,
+                             bool applyToAll = false);
     void ReplaceDatabase(const EngineKey &ek, const std::string &database,
                          int timeState, bool setTimeState, bool onlyReplaceSame,
                          bool onlyReplaceActive);

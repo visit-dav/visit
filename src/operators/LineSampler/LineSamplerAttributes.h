@@ -197,6 +197,7 @@ public:
     void SetFlipToroidalAngle(bool flipToroidalAngle_);
     void SetViewGeometry(ViewGeometry viewGeometry_);
     void SetViewDimension(ViewDimension viewDimension_);
+    void SetDonotApplyToAll(bool donotApplyToAll_);
     void SetHeightPlotScale(double heightPlotScale_);
     void SetChannelPlotOffset(double channelPlotOffset_);
     void SetArrayPlotOffset(double arrayPlotOffset_);
@@ -250,6 +251,7 @@ public:
     bool               GetFlipToroidalAngle() const;
     ViewGeometry       GetViewGeometry() const;
     ViewDimension      GetViewDimension() const;
+    bool               GetDonotApplyToAll() const;
     double             GetHeightPlotScale() const;
     double             GetChannelPlotOffset() const;
     double             GetArrayPlotOffset() const;
@@ -393,6 +395,7 @@ public:
         ID_flipToroidalAngle,
         ID_viewGeometry,
         ID_viewDimension,
+        ID_donotApplyToAll,
         ID_heightPlotScale,
         ID_channelPlotOffset,
         ID_arrayPlotOffset,
@@ -447,6 +450,7 @@ private:
     bool         flipToroidalAngle;
     int          viewGeometry;
     int          viewDimension;
+    bool         donotApplyToAll;
     double       heightPlotScale;
     double       channelPlotOffset;
     double       arrayPlotOffset;
@@ -479,6 +483,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LINESAMPLERATTRIBUTES_TMFS "iiiidiiiddidDiddddddbiidddiiddiddddiiidddiiiid*d*idd"
+#define LINESAMPLERATTRIBUTES_TMFS "iiiidiiiddidDiddddddbiibdddiiddiddddiiidddiiiid*d*idd"
 
 #endif

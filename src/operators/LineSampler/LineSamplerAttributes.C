@@ -643,6 +643,7 @@ void LineSamplerAttributes::Init()
     flipToroidalAngle = false;
     viewGeometry = Surfaces;
     viewDimension = Three;
+    donotApplyToAll = true;
     heightPlotScale = 1;
     channelPlotOffset = 0;
     arrayPlotOffset = 0;
@@ -721,6 +722,7 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
     flipToroidalAngle = obj.flipToroidalAngle;
     viewGeometry = obj.viewGeometry;
     viewDimension = obj.viewDimension;
+    donotApplyToAll = obj.donotApplyToAll;
     heightPlotScale = obj.heightPlotScale;
     channelPlotOffset = obj.channelPlotOffset;
     arrayPlotOffset = obj.arrayPlotOffset;
@@ -933,6 +935,7 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
             (flipToroidalAngle == obj.flipToroidalAngle) &&
             (viewGeometry == obj.viewGeometry) &&
             (viewDimension == obj.viewDimension) &&
+            (donotApplyToAll == obj.donotApplyToAll) &&
             (heightPlotScale == obj.heightPlotScale) &&
             (channelPlotOffset == obj.channelPlotOffset) &&
             (arrayPlotOffset == obj.arrayPlotOffset) &&
@@ -1126,6 +1129,7 @@ LineSamplerAttributes::SelectAll()
     Select(ID_flipToroidalAngle,             (void *)&flipToroidalAngle);
     Select(ID_viewGeometry,                  (void *)&viewGeometry);
     Select(ID_viewDimension,                 (void *)&viewDimension);
+    Select(ID_donotApplyToAll,               (void *)&donotApplyToAll);
     Select(ID_heightPlotScale,               (void *)&heightPlotScale);
     Select(ID_channelPlotOffset,             (void *)&channelPlotOffset);
     Select(ID_arrayPlotOffset,               (void *)&arrayPlotOffset);
@@ -1321,6 +1325,12 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("viewDimension", ViewDimension_ToString(viewDimension)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_donotApplyToAll, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("donotApplyToAll", donotApplyToAll));
     }
 
     if(completeSave || !FieldsEqual(ID_heightPlotScale, &defaultObject))
@@ -1679,6 +1689,8 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
                 SetViewDimension(value);
         }
     }
+    if((node = searchNode->GetNode("donotApplyToAll")) != 0)
+        SetDonotApplyToAll(node->AsBool());
     if((node = searchNode->GetNode("heightPlotScale")) != 0)
         SetHeightPlotScale(node->AsDouble());
     if((node = searchNode->GetNode("channelPlotOffset")) != 0)
@@ -1998,6 +2010,13 @@ LineSamplerAttributes::SetViewDimension(LineSamplerAttributes::ViewDimension vie
 {
     viewDimension = viewDimension_;
     Select(ID_viewDimension, (void *)&viewDimension);
+}
+
+void
+LineSamplerAttributes::SetDonotApplyToAll(bool donotApplyToAll_)
+{
+    donotApplyToAll = donotApplyToAll_;
+    Select(ID_donotApplyToAll, (void *)&donotApplyToAll);
 }
 
 void
@@ -2337,6 +2356,12 @@ LineSamplerAttributes::GetViewDimension() const
     return ViewDimension(viewDimension);
 }
 
+bool
+LineSamplerAttributes::GetDonotApplyToAll() const
+{
+    return donotApplyToAll;
+}
+
 double
 LineSamplerAttributes::GetHeightPlotScale() const
 {
@@ -2580,6 +2605,7 @@ LineSamplerAttributes::GetFieldName(int index) const
     case ID_flipToroidalAngle:             return "flipToroidalAngle";
     case ID_viewGeometry:                  return "viewGeometry";
     case ID_viewDimension:                 return "viewDimension";
+    case ID_donotApplyToAll:               return "donotApplyToAll";
     case ID_heightPlotScale:               return "heightPlotScale";
     case ID_channelPlotOffset:             return "channelPlotOffset";
     case ID_arrayPlotOffset:               return "arrayPlotOffset";
@@ -2654,6 +2680,7 @@ LineSamplerAttributes::GetFieldType(int index) const
     case ID_flipToroidalAngle:             return FieldType_bool;
     case ID_viewGeometry:                  return FieldType_enum;
     case ID_viewDimension:                 return FieldType_enum;
+    case ID_donotApplyToAll:               return FieldType_bool;
     case ID_heightPlotScale:               return FieldType_double;
     case ID_channelPlotOffset:             return FieldType_double;
     case ID_arrayPlotOffset:               return FieldType_double;
@@ -2728,6 +2755,7 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
     case ID_flipToroidalAngle:             return "bool";
     case ID_viewGeometry:                  return "enum";
     case ID_viewDimension:                 return "enum";
+    case ID_donotApplyToAll:               return "bool";
     case ID_heightPlotScale:               return "double";
     case ID_channelPlotOffset:             return "double";
     case ID_arrayPlotOffset:               return "double";
@@ -2899,6 +2927,11 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_viewDimension:
         {  // new scope
         retval = (viewDimension == obj.viewDimension);
+        }
+        break;
+    case ID_donotApplyToAll:
+        {  // new scope
+        retval = (donotApplyToAll == obj.donotApplyToAll);
         }
         break;
     case ID_heightPlotScale:

@@ -259,6 +259,11 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
           break;
     }
 
+    if(atts->GetDonotApplyToAll())
+        SNPRINTF(tmpStr, 1000, "%sdonotApplyToAll = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sdonotApplyToAll = 0\n", prefix);
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sheightPlotScale = %g\n", prefix, atts->GetHeightPlotScale());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%schannelPlotOffset = %g\n", prefix, atts->GetChannelPlotOffset());
@@ -1115,6 +1120,30 @@ LineSamplerAttributes_GetViewDimension(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LineSamplerAttributes_SetDonotApplyToAll(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the donotApplyToAll in the object.
+    obj->data->SetDonotApplyToAll(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetDonotApplyToAll(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetDonotApplyToAll()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 LineSamplerAttributes_SetHeightPlotScale(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
@@ -1953,6 +1982,8 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetViewGeometry", LineSamplerAttributes_GetViewGeometry, METH_VARARGS},
     {"SetViewDimension", LineSamplerAttributes_SetViewDimension, METH_VARARGS},
     {"GetViewDimension", LineSamplerAttributes_GetViewDimension, METH_VARARGS},
+    {"SetDonotApplyToAll", LineSamplerAttributes_SetDonotApplyToAll, METH_VARARGS},
+    {"GetDonotApplyToAll", LineSamplerAttributes_GetDonotApplyToAll, METH_VARARGS},
     {"SetHeightPlotScale", LineSamplerAttributes_SetHeightPlotScale, METH_VARARGS},
     {"GetHeightPlotScale", LineSamplerAttributes_GetHeightPlotScale, METH_VARARGS},
     {"SetChannelPlotOffset", LineSamplerAttributes_SetChannelPlotOffset, METH_VARARGS},
@@ -2129,6 +2160,8 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Three") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Three));
 
+    if(strcmp(name, "donotApplyToAll") == 0)
+        return LineSamplerAttributes_GetDonotApplyToAll(self, NULL);
     if(strcmp(name, "heightPlotScale") == 0)
         return LineSamplerAttributes_GetHeightPlotScale(self, NULL);
     if(strcmp(name, "channelPlotOffset") == 0)
@@ -2286,6 +2319,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetViewGeometry(self, tuple);
     else if(strcmp(name, "viewDimension") == 0)
         obj = LineSamplerAttributes_SetViewDimension(self, tuple);
+    else if(strcmp(name, "donotApplyToAll") == 0)
+        obj = LineSamplerAttributes_SetDonotApplyToAll(self, tuple);
     else if(strcmp(name, "heightPlotScale") == 0)
         obj = LineSamplerAttributes_SetHeightPlotScale(self, tuple);
     else if(strcmp(name, "channelPlotOffset") == 0)

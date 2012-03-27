@@ -415,7 +415,9 @@ class VIEWER_API ViewerPlot : public ViewerBase
     bool RemoveOperator(const int operatorIndex);
     void RemoveLastOperator();
     void RemoveAllOperators();
-    void SetOperatorAttsFromClient(const int type);
+     void SetOperatorAttsFromClient(const int type,
+                                   const bool activePlot,
+                                   const bool applyToAll);
     int  GetNOperators() const;
     ViewerOperator *GetOperator(const int i) const;
     void SetActiveOperatorIndex(int index);

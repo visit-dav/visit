@@ -235,8 +235,22 @@ AddOperatorAction::Execute(int)
         //
         // Add the operator to the window's plot list.
         //
-        bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-        window->GetPlotList()->AddOperator(type, applyToAll, fromDefault);
+        bool applyToAllWindows = windowMgr->GetClientAtts()->GetApplyWindow();
+        bool applyOperatorToAllPlots = windowMgr->GetClientAtts()->GetApplyOperator();
+
+        if( applyToAllWindows )
+        {
+          for( unsigned int i=0; i<windowMgr->GetNumWindows(); ++i )
+          {
+            windowMgr->GetWindow(i)->GetPlotList()->
+              AddOperator(type, applyOperatorToAllPlots, fromDefault);
+          }
+        }
+        else // Just the active window
+        {
+          window->GetPlotList()->
+            AddOperator(type, applyOperatorToAllPlots, fromDefault);
+        }
     }
 }
 
@@ -370,9 +384,22 @@ PromoteOperatorAction::~PromoteOperatorAction()
 void
 PromoteOperatorAction::Execute()
 {
-    bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetPlotList()->PromoteOperator(
-        args.GetOperatorType(), applyToAll);
+    bool applyToAllWindows = windowMgr->GetClientAtts()->GetApplyWindow();
+    bool applyOperatorToAllPlots = windowMgr->GetClientAtts()->GetApplyOperator();
+
+    if( applyToAllWindows )
+    {
+      for( unsigned int i=0; i<windowMgr->GetNumWindows(); ++i )
+      {
+        windowMgr->GetWindow(i)->GetPlotList()->
+          PromoteOperator(args.GetOperatorType(), applyOperatorToAllPlots);
+      }
+    }
+    else // Just the active window
+    {
+      window->GetPlotList()->
+        PromoteOperator(args.GetOperatorType(), applyOperatorToAllPlots);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -433,9 +460,22 @@ DemoteOperatorAction::~DemoteOperatorAction()
 void
 DemoteOperatorAction::Execute()
 {
-    bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetPlotList()->DemoteOperator(
-        args.GetOperatorType(), applyToAll);
+    bool applyToAllWindows = windowMgr->GetClientAtts()->GetApplyWindow();
+    bool applyOperatorToAllPlots = windowMgr->GetClientAtts()->GetApplyOperator();
+
+    if( applyToAllWindows )
+    {
+      for( unsigned int i=0; i<windowMgr->GetNumWindows(); ++i )
+      {
+        windowMgr->GetWindow(i)->GetPlotList()->
+          DemoteOperator(args.GetOperatorType(), applyOperatorToAllPlots);
+      }
+    }
+    else // Just the active window
+    {
+      window->GetPlotList()->
+        DemoteOperator(args.GetOperatorType(), applyOperatorToAllPlots);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -496,9 +536,22 @@ RemoveOperatorAction::~RemoveOperatorAction()
 void
 RemoveOperatorAction::Execute()
 {
-    bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetPlotList()->RemoveOperator(
-        args.GetOperatorType(), applyToAll);
+    bool applyToAllWindows = windowMgr->GetClientAtts()->GetApplyWindow();
+    bool applyOperatorToAllPlots = windowMgr->GetClientAtts()->GetApplyOperator();
+
+    if( applyToAllWindows )
+    {
+      for( unsigned int i=0; i<windowMgr->GetNumWindows(); ++i )
+      {
+        windowMgr->GetWindow(i)->GetPlotList()->
+          RemoveOperator(args.GetOperatorType(), applyOperatorToAllPlots);
+      }
+    }
+    else // Just the active window
+    {
+      window->GetPlotList()->
+        RemoveOperator(args.GetOperatorType(), applyOperatorToAllPlots);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -561,8 +614,22 @@ RemoveLastOperatorAction::~RemoveLastOperatorAction()
 void
 RemoveLastOperatorAction::Execute()
 {
-    bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetPlotList()->RemoveLastOperator(applyToAll);
+    bool applyToAllWindows = windowMgr->GetClientAtts()->GetApplyWindow();
+    bool applyOperatorToAllPlots = windowMgr->GetClientAtts()->GetApplyOperator();
+
+    if( applyToAllWindows )
+    {
+      for( unsigned int i=0; i<windowMgr->GetNumWindows(); ++i )
+      {
+        windowMgr->GetWindow(i)->GetPlotList()->
+          RemoveLastOperator(applyOperatorToAllPlots);
+      }
+    }
+    else // Just the active window
+    {
+      window->GetPlotList()->
+        RemoveLastOperator(applyOperatorToAllPlots);
+    }
 }
 
 // ****************************************************************************
@@ -649,8 +716,22 @@ RemoveAllOperatorsAction::~RemoveAllOperatorsAction()
 void
 RemoveAllOperatorsAction::Execute()
 {
-    bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetPlotList()->RemoveAllOperators(applyToAll);
+    bool applyToAllWindows = windowMgr->GetClientAtts()->GetApplyWindow();
+    bool applyOperatorToAllPlots = windowMgr->GetClientAtts()->GetApplyOperator();
+
+    if( applyToAllWindows )
+    {
+      for( unsigned int i=0; i<windowMgr->GetNumWindows(); ++i )
+      {
+        windowMgr->GetWindow(i)->GetPlotList()->
+          RemoveAllOperators(applyOperatorToAllPlots);
+      }
+    }
+    else // Just the active window
+    {
+      window->GetPlotList()->
+        RemoveAllOperators(applyOperatorToAllPlots);
+    }
 }
 
 // ****************************************************************************
@@ -742,8 +823,23 @@ SetOperatorOptionsAction::Execute()
     // Set the operator attributes.
     //
     int  oper = args.GetOperatorType();
-    bool apply = windowMgr->GetClientAtts()->GetApplyOperator();
-    window->GetPlotList()->SetPlotOperatorAtts(oper, apply);
+    bool applyToAllWindows = windowMgr->GetClientAtts()->GetApplyWindow();
+    bool applyOperatorToAllPlots = windowMgr->GetClientAtts()->GetApplyOperator();
+    
+    if( applyToAllWindows )
+    {
+      for( unsigned int i=0; i<windowMgr->GetNumWindows(); ++i )
+      {
+        windowMgr->GetWindow(i)->GetPlotList()->
+          SetPlotOperatorAtts(oper, windowMgr->GetWindow(i)==window,
+                              applyOperatorToAllPlots);
+      }
+    }
+    else // Just the active window
+    {
+      window->GetPlotList()->
+        SetPlotOperatorAtts(oper, true, applyOperatorToAllPlots);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1363,7 +1459,20 @@ DrawPlotsAction::~DrawPlotsAction()
 void
 DrawPlotsAction::Execute()
 {
-    window->GetPlotList()->RealizePlots(args.GetBoolFlag());
+    bool applyToAllWindows = windowMgr->GetClientAtts()->GetApplyWindow();
+    
+    if( applyToAllWindows )
+    {
+      for( unsigned int i=0; i<windowMgr->GetNumWindows(); ++i )
+      {
+        windowMgr->GetWindow(i)->GetPlotList()->
+          RealizePlots(args.GetBoolFlag());
+      }
+    }
+    else // Just the active window
+    {
+      window->GetPlotList()->RealizePlots(args.GetBoolFlag());
+    }
 }
 
 // ****************************************************************************
@@ -1637,8 +1746,25 @@ SetActivePlotsAction::Execute()
     const intVector &activeOperators = args.GetActiveOperatorIds();
     const intVector &expandedPlots   = args.GetExpandedPlotIds();
     bool moreThanPlotsValid          = args.GetBoolFlag();
-    window->GetPlotList()->SetActivePlots(activePlots,
-        activeOperators, expandedPlots, moreThanPlotsValid);
+
+    bool applyToAllWindows = windowMgr->GetClientAtts()->GetApplyWindow();
+    
+    if( applyToAllWindows )
+    {
+      for( unsigned int i=0; i<windowMgr->GetNumWindows(); ++i )
+      {
+        windowMgr->GetWindow(i)->GetPlotList()->
+          SetActivePlots(activePlots,
+                         activeOperators, expandedPlots, moreThanPlotsValid);
+      }
+    }
+    else // Just the active window
+    {
+      window->GetPlotList()->
+        SetActivePlots(activePlots,
+                       activeOperators, expandedPlots, moreThanPlotsValid);
+    }
+
     if (window->GetInteractionMode() == ZONE_PICK || 
         window->GetInteractionMode() == NODE_PICK) 
        ViewerQueryManager::Instance()->ActivePlotsChanged(); 
@@ -1788,8 +1914,21 @@ SetPlotSILRestrictionAction::Execute()
     // Tell the plot list set the current SIL restriction for the
     // selected plots.
     //
-    bool apply = windowMgr->GetClientAtts()->GetApplySelection();
-    window->GetPlotList()->SetPlotSILRestriction(apply);
+    bool applyToAllWindows = windowMgr->GetClientAtts()->GetApplyWindow();
+    bool applySelectionToAllPlots = windowMgr->GetClientAtts()->GetApplySelection();
+    
+    if( applyToAllWindows )
+    {
+      for( unsigned int i=0; i<windowMgr->GetNumWindows(); ++i )
+      {
+        windowMgr->GetWindow(i)->GetPlotList()->
+          SetPlotSILRestriction(applySelectionToAllPlots);
+      }
+    }
+    else // Just the active window
+    {
+      window->GetPlotList()->SetPlotSILRestriction(applySelectionToAllPlots);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1851,6 +1990,8 @@ void
 SetPlotOptionsAction::Execute()
 {
     window->GetPlotList()->SetPlotAtts(args.GetPlotType());
+
+    // ARS loop here 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2571,5 +2712,3 @@ SetPlotOrderToLastAction::Enabled() const
 {
     return true;
 }
-
-

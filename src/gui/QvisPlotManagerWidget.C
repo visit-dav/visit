@@ -57,6 +57,8 @@
 #include <QWidget>
 #include <QToolBar>
 #include <QToolButton>
+#include <QButtonGroup>
+#include <QRadioButton>
 
 #include <GetMetaDataException.h>
 
@@ -364,6 +366,27 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
             this, SLOT(makeThisPlotLast()));
 
     topLayout->addWidget(plotListBox);
+
+    applyWindow = new QWidget(this);
+    topLayout->addWidget(applyWindow);
+
+    QHBoxLayout *applyWindowLayout = new QHBoxLayout(applyWindow);
+    applyWindowLayout->setMargin(0);
+    applyWindowLayout->setSpacing(10);
+
+    applyWindowLabel = new QLabel(tr("Apply to"), applyWindow);
+    applyWindowLayout->addWidget(applyWindowLabel,0,0);
+
+
+    applyWindowButtonGroup= new QButtonGroup(applyWindow);
+    applyWindowActiveRadioButton = new QRadioButton(tr("Active Window"), applyWindow);
+    applyWindowButtonGroup->addButton(applyWindowActiveRadioButton,0);
+    applyWindowLayout->addWidget(applyWindowActiveRadioButton);
+    applyWindowAllRadioButton = new QRadioButton(tr("All Windows"), applyWindow);
+    applyWindowButtonGroup->addButton(applyWindowAllRadioButton,1);
+    applyWindowLayout->addWidget(applyWindowAllRadioButton);
+    connect(applyWindowButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(applyWindowChanged(int)));
 
     applyOperatorCheckBox = new QCheckBox(tr("Apply operators to all plots"), this);
     connect(applyOperatorCheckBox, SIGNAL(toggled(bool)),
@@ -892,6 +915,11 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
         {
             UpdatePlotList();
         }
+
+        applyWindowButtonGroup->blockSignals(true);
+        if(applyWindowButtonGroup->button((int)globalAtts->GetApplyWindow()) != 0)
+          applyWindowButtonGroup->button((int)globalAtts->GetApplyWindow())->setChecked(true);
+        applyWindowButtonGroup->blockSignals(false);
 
         applyOperatorCheckBox->blockSignals(true);
         applyOperatorCheckBox->setChecked(globalAtts->GetApplyOperator());
@@ -2922,6 +2950,27 @@ QvisPlotManagerWidget::setActivePlot()
             GetViewerMethods()->SetActivePlots(newPlotSelection);
         }
     }
+}
+
+// ****************************************************************************
+// Method:  QvisPlotManagerWidget::applyWindowChanged
+//
+// Purpose:
+//   callback when "apply window to all plots" is toggled
+//
+// Arguments:
+//   val        the new state
+//
+// Programmer:  Allen Sanderson
+// Creation:    March 26, 2012
+//
+// ****************************************************************************
+void
+QvisPlotManagerWidget::applyWindowChanged(int val)
+{
+    globalAtts->SetApplyWindow(bool(val));
+    SetUpdate(false);
+    globalAtts->Notify();
 }
 
 // ****************************************************************************

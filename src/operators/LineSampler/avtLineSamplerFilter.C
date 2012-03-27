@@ -127,7 +127,7 @@ avtLineSamplerFilter::Create()
 void
 avtLineSamplerFilter::SetAtts(const AttributeGroup *a)
 {
-    atts = *(const LineSamplerAttributes*)a;
+  atts = *(const LineSamplerAttributes*)a;
 }
 
 
