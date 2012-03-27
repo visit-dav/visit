@@ -422,7 +422,8 @@ public:
     void SetPlotAtts(const int plotType);
     void SetPlotOperatorAtts(const int operatorType,
                              bool activeWindow = false,
-                             bool applyToAll = false);
+                             bool applyToAllWindows = false,
+                             bool applyToAllPlots = false);
     void ReplaceDatabase(const EngineKey &ek, const std::string &database,
                          int timeState, bool setTimeState, bool onlyReplaceSame,
                          bool onlyReplaceActive);
