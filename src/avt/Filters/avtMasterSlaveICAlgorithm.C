@@ -2394,7 +2394,7 @@ avtSlaveICAlgorithm::RunAlgorithm()
             activeICs.pop_front();
             debug1<<"Integrate "<<s->domain<<".....";
             AdvectParticle(s);
-            if (s->status == avtIntegralCurve::STATUS_FINISHED)
+            if (s->status != avtIntegralCurve::STATUS_OK)
             {
                 terminatedICs.push_back(s);
                 numTerminated++;

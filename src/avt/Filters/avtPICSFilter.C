@@ -324,11 +324,21 @@ avtPICSFilter::ComputeRankList(const vector<int> &domList,
 //   Fix problem where the time slice will change, but the change is not 
 //   properly communicated to the calling function.
 //
+//   Hank Childs, Wed Mar 28 08:36:34 PDT 2012
+//   Add support for terminated particles.
+//
 // ****************************************************************************
 
 void
 avtPICSFilter::SetDomain(avtIntegralCurve *ic)
 {
+    if (ic->status == avtIntegralCurve::STATUS_TERMINATED)
+    {
+        ic->domain.domain = -1;
+        ic->domain.timeStep = -1;
+        return;
+    }
+
     ic->seedPtDomainList.clear();
 
     double t = ic->CurrentTime();

@@ -131,6 +131,11 @@ avtPODICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
 // Programmer:  Dave Pugmire
 // Creation:    March 21, 2012
 //
+// Modifications:
+//
+//   Hank Childs, Wed Mar 28 08:36:34 PDT 2012
+//   Add support for terminated particle status.
+//
 // ****************************************************************************
 
 bool
@@ -140,7 +145,12 @@ avtPODICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
     list<avtIntegralCurve *>::const_iterator it;
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
+        bool itsDone = false;
         if ((*it)->domain.domain != -1 && (*it)->domain.timeStep != curTimeSlice)
+            itsDone = true;
+        if ((*it)->status == avtIntegralCurve::STATUS_TERMINATED)
+            itsDone = true;
+        if (! itsDone)
         {
             val = 1;
             break;
@@ -230,6 +240,11 @@ avtPODICAlgorithm::PreRunAlgorithm()
 // Programmer:  Dave Pugmire
 // Creation:    March 21, 2012
 //
+// Modifications:
+//
+//   Hank Childs, Wed Mar 28 08:36:34 PDT 2012
+//   Add support for terminated particle status.
+//
 // ****************************************************************************
 
 void
@@ -263,7 +278,7 @@ avtPODICAlgorithm::RunAlgorithm()
             }
            
             AdvectParticle(s);
-            if (s->status == avtIntegralCurve::STATUS_FINISHED)
+            if (s->status != avtIntegralCurve::STATUS_OK)
                 terminatedICs.push_back(s);
             else
                 HandleOOBICs(s);

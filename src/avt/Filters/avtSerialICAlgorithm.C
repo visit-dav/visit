@@ -413,6 +413,9 @@ avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
 //  Hank Childs, Fri Mar  9 16:49:06 PST 2012
 //  Add support for reverse pathlines.
 //
+//  Hank Childs, Wed Mar 28 08:36:34 PDT 2012
+//  Add support for terminated particles.
+//
 // ****************************************************************************
 
 bool
@@ -422,7 +425,12 @@ avtSerialICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
     list<avtIntegralCurve *>::const_iterator it;
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
+        bool itsDone = false;
         if ((*it)->domain.domain != -1 && (*it)->domain.timeStep != curTimeSlice)
+            itsDone = true;
+        if ((*it)->status == avtIntegralCurve::STATUS_TERMINATED)
+            itsDone = true;
+        if (! itsDone)
         {
             val = 1;
             break;

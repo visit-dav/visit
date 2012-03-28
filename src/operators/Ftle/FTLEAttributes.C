@@ -106,6 +106,7 @@ void FTLEAttributes::Init()
     EndPosition[0] = 1;
     EndPosition[1] = 1;
     EndPosition[2] = 1;
+    steadyState = false;
 
     FTLEAttributes::SelectAll();
 }
@@ -143,6 +144,7 @@ void FTLEAttributes::Copy(const FTLEAttributes &obj)
     EndPosition[1] = obj.EndPosition[1];
     EndPosition[2] = obj.EndPosition[2];
 
+    steadyState = obj.steadyState;
 
     FTLEAttributes::SelectAll();
 }
@@ -321,7 +323,8 @@ FTLEAttributes::operator == (const FTLEAttributes &obj) const
             (UseDataSetStart == obj.UseDataSetStart) &&
             StartPosition_equal &&
             (UseDataSetEnd == obj.UseDataSetEnd) &&
-            EndPosition_equal);
+            EndPosition_equal &&
+            (steadyState == obj.steadyState));
 }
 
 // ****************************************************************************
@@ -472,6 +475,7 @@ FTLEAttributes::SelectAll()
     Select(ID_StartPosition,   (void *)StartPosition, 3);
     Select(ID_UseDataSetEnd,   (void *)&UseDataSetEnd);
     Select(ID_EndPosition,     (void *)EndPosition, 3);
+    Select(ID_steadyState,     (void *)&steadyState);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -546,6 +550,12 @@ FTLEAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("EndPosition", EndPosition, 3));
     }
 
+    if(completeSave || !FieldsEqual(ID_steadyState, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("steadyState", steadyState));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -610,6 +620,8 @@ FTLEAttributes::SetFromNode(DataNode *parentNode)
         SetUseDataSetEnd(node->AsBool());
     if((node = searchNode->GetNode("EndPosition")) != 0)
         SetEndPosition(node->AsDoubleArray());
+    if((node = searchNode->GetNode("steadyState")) != 0)
+        SetSteadyState(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -669,6 +681,13 @@ FTLEAttributes::SetEndPosition(const double *EndPosition_)
     EndPosition[1] = EndPosition_[1];
     EndPosition[2] = EndPosition_[2];
     Select(ID_EndPosition, (void *)EndPosition, 3);
+}
+
+void
+FTLEAttributes::SetSteadyState(bool steadyState_)
+{
+    steadyState = steadyState_;
+    Select(ID_steadyState, (void *)&steadyState);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -735,6 +754,12 @@ FTLEAttributes::GetEndPosition()
     return EndPosition;
 }
 
+bool
+FTLEAttributes::GetSteadyState() const
+{
+    return steadyState;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -788,6 +813,7 @@ FTLEAttributes::GetFieldName(int index) const
     case ID_StartPosition:   return "StartPosition";
     case ID_UseDataSetEnd:   return "UseDataSetEnd";
     case ID_EndPosition:     return "EndPosition";
+    case ID_steadyState:     return "steadyState";
     default:  return "invalid index";
     }
 }
@@ -819,6 +845,7 @@ FTLEAttributes::GetFieldType(int index) const
     case ID_StartPosition:   return FieldType_doubleArray;
     case ID_UseDataSetEnd:   return FieldType_bool;
     case ID_EndPosition:     return FieldType_doubleArray;
+    case ID_steadyState:     return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -850,6 +877,7 @@ FTLEAttributes::GetFieldTypeName(int index) const
     case ID_StartPosition:   return "doubleArray";
     case ID_UseDataSetEnd:   return "bool";
     case ID_EndPosition:     return "doubleArray";
+    case ID_steadyState:     return "bool";
     default:  return "invalid index";
     }
 }
@@ -924,6 +952,11 @@ FTLEAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             EndPosition_equal = (EndPosition[i] == obj.EndPosition[i]);
 
         retval = EndPosition_equal;
+        }
+        break;
+    case ID_steadyState:
+        {  // new scope
+        retval = (steadyState == obj.steadyState);
         }
         break;
     default: retval = false;

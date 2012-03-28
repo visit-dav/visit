@@ -93,6 +93,7 @@ class QvisFTLEWindow : public QvisOperatorWindow
     void StartPositionProcessText();
     void UseDatasetEndChanged(bool val);
     void EndPositionProcessText();
+    void steadyStateChanged(bool val);
   private:
     QLineEdit *integrationTime;
     QWidget      *regionType;
@@ -102,6 +103,7 @@ class QvisFTLEWindow : public QvisOperatorWindow
     QLineEdit *StartPosition;
     QCheckBox *UseDatasetEnd;
     QLineEdit *EndPosition;
+    QCheckBox *steadyState;
     QLabel *integrationTimeLabel;
     QLabel *regionTypeLabel;
     QLabel *ResolutionLabel;
