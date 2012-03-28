@@ -1,8 +1,11 @@
 <?xml version="1.0"?>
-  <Plugin name="LineSampler" type="operator" label="LineSampler" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="LineSampler.xpm" category="Slicing">
+  <Plugin name="LineSampler" type="operator" label="LineSampler"
+          version="1.0" enabled="false" mdspecificcode="false"
+          engspecificcode="false" onlyengine="false" noengine="false"
+          iconFile="LineSampler.xpm" category="Slicing">
     <Files components="W">
     </Files>
-    <Attribute name="LineSamplerAttributes" purpose="This class contains attributes for the line sampler operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="LineSamplerAttributes" purpose="This class contains attributes for the line sampler operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LineSampler.code">
       <Enum name="MeshGeometry">
         Cartesian
         Cylindrical
@@ -236,5 +239,9 @@
       <Field name="channelListToroidalAngle" label="Toroidal angle" type="double">
         0.000000
       </Field>
+      <Function name="LineSamplerViewerPluginInfo::GetClientAtts1" user="false" member="true">
+      </Function>
+      <Function name="LineSamplerViewerPluginInfo::GetClientAtts2" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>
