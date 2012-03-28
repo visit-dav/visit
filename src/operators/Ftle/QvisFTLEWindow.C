@@ -135,8 +135,13 @@ QvisFTLEWindow::CreateWindowContents()
             this, SLOT(integrationTimeProcessText()));
     mainLayout->addWidget(integrationTime, 0,1);
 
+    steadyState = new QCheckBox(tr("Treat velocity as steady state"), central);
+    connect(steadyState, SIGNAL(toggled(bool)),
+            this, SLOT(steadyStateChanged(bool)));
+    mainLayout->addWidget(steadyState, 1,0);
+
     regionTypeLabel = new QLabel(tr("Where to evaluate FTLE"), central);
-    mainLayout->addWidget(regionTypeLabel,1,0);
+    mainLayout->addWidget(regionTypeLabel,2,0);
     regionType = new QWidget(central);
     regionTypeButtonGroup= new QButtonGroup(regionType);
     //QHBoxLayout *regionTypeLayout = new QHBoxLayout(regionType);
@@ -145,13 +150,13 @@ QvisFTLEWindow::CreateWindowContents()
     QRadioButton *regionTypeRegionNativeResolutionOfMesh = new QRadioButton(tr("At the native resolution of the mesh"), regionType);
     regionTypeButtonGroup->addButton(regionTypeRegionNativeResolutionOfMesh,0);
     //regionTypeLayout->addWidget(regionTypeRegionNativeResolutionOfMesh);
-    mainLayout->addWidget(regionTypeRegionNativeResolutionOfMesh, 1,1);
+    mainLayout->addWidget(regionTypeRegionNativeResolutionOfMesh, 2,1);
     QRadioButton *regionTypeRegionRegularGrid = new QRadioButton(tr("On a regular grid"), regionType);
     regionTypeButtonGroup->addButton(regionTypeRegionRegularGrid,1);
     //regionTypeLayout->addWidget(regionTypeRegionRegularGrid);
     connect(regionTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(regionTypeChanged(int)));
-    mainLayout->addWidget(regionTypeRegionRegularGrid, 2,1);
+    mainLayout->addWidget(regionTypeRegionRegularGrid, 3,1);
 
     QGroupBox *regularGridBox = new QGroupBox(central);
     regularGridBox->setTitle(tr("Regular Grid"));
@@ -308,6 +313,11 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
           case FTLEAttributes::ID_EndPosition:
             EndPosition->setText(DoublesToQString(atts->GetEndPosition(), 3));
             break;
+          case FTLEAttributes::ID_steadyState:
+            steadyState->blockSignals(true);
+            steadyState->setChecked(atts->GetSteadyState());
+            steadyState->blockSignals(false);
+            break;
         }
     }
 }
@@ -452,6 +462,15 @@ void
 QvisFTLEWindow::EndPositionProcessText()
 {
     GetCurrentValues(FTLEAttributes::ID_EndPosition);
+    Apply();
+}
+
+
+void
+QvisFTLEWindow::steadyStateChanged(bool val)
+{
+    atts->SetSteadyState(val);
+    SetUpdate(false);
     Apply();
 }
 

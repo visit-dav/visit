@@ -151,6 +151,11 @@ PyFTLEAttributes_ToString(const FTLEAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    if(atts->GetSteadyState())
+        SNPRINTF(tmpStr, 1000, "%ssteadyState = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%ssteadyState = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -430,6 +435,30 @@ FTLEAttributes_GetEndPosition(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+FTLEAttributes_SetSteadyState(PyObject *self, PyObject *args)
+{
+    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the steadyState in the object.
+    obj->data->SetSteadyState(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+FTLEAttributes_GetSteadyState(PyObject *self, PyObject *args)
+{
+    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetSteadyState()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyFTLEAttributes_methods[FTLEATTRIBUTES_NMETH] = {
@@ -448,6 +477,8 @@ PyMethodDef PyFTLEAttributes_methods[FTLEATTRIBUTES_NMETH] = {
     {"GetUseDataSetEnd", FTLEAttributes_GetUseDataSetEnd, METH_VARARGS},
     {"SetEndPosition", FTLEAttributes_SetEndPosition, METH_VARARGS},
     {"GetEndPosition", FTLEAttributes_GetEndPosition, METH_VARARGS},
+    {"SetSteadyState", FTLEAttributes_SetSteadyState, METH_VARARGS},
+    {"GetSteadyState", FTLEAttributes_GetSteadyState, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -495,6 +526,8 @@ PyFTLEAttributes_getattr(PyObject *self, char *name)
         return FTLEAttributes_GetUseDataSetEnd(self, NULL);
     if(strcmp(name, "EndPosition") == 0)
         return FTLEAttributes_GetEndPosition(self, NULL);
+    if(strcmp(name, "steadyState") == 0)
+        return FTLEAttributes_GetSteadyState(self, NULL);
 
     return Py_FindMethod(PyFTLEAttributes_methods, self, name);
 }
@@ -523,6 +556,8 @@ PyFTLEAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = FTLEAttributes_SetUseDataSetEnd(self, tuple);
     else if(strcmp(name, "EndPosition") == 0)
         obj = FTLEAttributes_SetEndPosition(self, tuple);
+    else if(strcmp(name, "steadyState") == 0)
+        obj = FTLEAttributes_SetSteadyState(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class FTLEAttributes extends AttributeSubject implements Plugin
 {
-    private static int FTLEAttributes_numAdditionalAtts = 7;
+    private static int FTLEAttributes_numAdditionalAtts = 8;
 
     // Enum values
     public final static int REGION_NATIVERESOLUTIONOFMESH = 0;
@@ -73,8 +73,9 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         integrationTime = 1;
         regionType = REGION_REGULARGRID;
         Resolution = new int[3];
-    for (int i = 0; i < 3; ++i)
-        Resolution[i] = 0;
+        Resolution[0] = 10;
+        Resolution[1] = 10;
+        Resolution[2] = 10;
         UseDataSetStart = true;
         StartPosition = new double[3];
         StartPosition[0] = 0;
@@ -85,6 +86,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         EndPosition[0] = 1;
         EndPosition[1] = 1;
         EndPosition[2] = 1;
+        steadyState = false;
     }
 
     public FTLEAttributes(int nMoreFields)
@@ -94,8 +96,9 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         integrationTime = 1;
         regionType = REGION_REGULARGRID;
         Resolution = new int[3];
-    for (int i = 0; i < 3; ++i)
-        Resolution[i] = 0;
+        Resolution[0] = 10;
+        Resolution[1] = 10;
+        Resolution[2] = 10;
         UseDataSetStart = true;
         StartPosition = new double[3];
         StartPosition[0] = 0;
@@ -106,6 +109,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         EndPosition[0] = 1;
         EndPosition[1] = 1;
         EndPosition[2] = 1;
+        steadyState = false;
     }
 
     public FTLEAttributes(FTLEAttributes obj)
@@ -133,6 +137,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         EndPosition[1] = obj.EndPosition[1];
         EndPosition[2] = obj.EndPosition[2];
 
+        steadyState = obj.steadyState;
 
         SelectAll();
     }
@@ -173,7 +178,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
                 (UseDataSetStart == obj.UseDataSetStart) &&
                 StartPosition_equal &&
                 (UseDataSetEnd == obj.UseDataSetEnd) &&
-                EndPosition_equal);
+                EndPosition_equal &&
+                (steadyState == obj.steadyState));
     }
 
     public String GetName() { return "FTLE"; }
@@ -252,6 +258,12 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         Select(6);
     }
 
+    public void SetSteadyState(boolean steadyState_)
+    {
+        steadyState = steadyState_;
+        Select(7);
+    }
+
     // Property getting methods
     public double   GetIntegrationTime() { return integrationTime; }
     public int      GetRegionType() { return regionType; }
@@ -260,6 +272,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     public double[] GetStartPosition() { return StartPosition; }
     public boolean  GetUseDataSetEnd() { return UseDataSetEnd; }
     public double[] GetEndPosition() { return EndPosition; }
+    public boolean  GetSteadyState() { return steadyState; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -278,6 +291,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(UseDataSetEnd);
         if(WriteSelect(6, buf))
             buf.WriteDoubleArray(EndPosition);
+        if(WriteSelect(7, buf))
+            buf.WriteBool(steadyState);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -305,6 +320,9 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         case 6:
             SetEndPosition(buf.ReadDoubleArray());
             break;
+        case 7:
+            SetSteadyState(buf.ReadBool());
+            break;
         }
     }
 
@@ -323,6 +341,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         str = str + doubleArrayToString("StartPosition", StartPosition, indent) + "\n";
         str = str + boolToString("UseDataSetEnd", UseDataSetEnd, indent) + "\n";
         str = str + doubleArrayToString("EndPosition", EndPosition, indent) + "\n";
+        str = str + boolToString("steadyState", steadyState, indent) + "\n";
         return str;
     }
 
@@ -335,5 +354,6 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     private double[] StartPosition;
     private boolean  UseDataSetEnd;
     private double[] EndPosition;
+    private boolean  steadyState;
 }
 

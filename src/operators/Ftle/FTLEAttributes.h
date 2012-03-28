@@ -103,6 +103,7 @@ public:
     void SetStartPosition(const double *StartPosition_);
     void SetUseDataSetEnd(bool UseDataSetEnd_);
     void SetEndPosition(const double *EndPosition_);
+    void SetSteadyState(bool steadyState_);
 
     // Property getting methods
     double       GetIntegrationTime() const;
@@ -115,6 +116,7 @@ public:
     bool         GetUseDataSetEnd() const;
     const double *GetEndPosition() const;
           double *GetEndPosition();
+    bool         GetSteadyState() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -143,6 +145,7 @@ public:
         ID_StartPosition,
         ID_UseDataSetEnd,
         ID_EndPosition,
+        ID_steadyState,
         ID__LAST
     };
 
@@ -154,11 +157,12 @@ private:
     double StartPosition[3];
     bool   UseDataSetEnd;
     double EndPosition[3];
+    bool   steadyState;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define FTLEATTRIBUTES_TMFS "diIbDbD"
+#define FTLEATTRIBUTES_TMFS "diIbDbDb"
 
 #endif
