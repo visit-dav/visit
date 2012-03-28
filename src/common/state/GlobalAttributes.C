@@ -587,6 +587,12 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("replacePlots", replacePlots));
     }
 
+    if(completeSave || !FieldsEqual(ID_applyWindow, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("applyWindow", applyWindow));
+    }
+
     if(completeSave || !FieldsEqual(ID_applyOperator, &defaultObject))
     {
         addToParent = true;
@@ -773,6 +779,8 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetAutoUpdateFlag(node->AsBool());
     if((node = searchNode->GetNode("replacePlots")) != 0)
         SetReplacePlots(node->AsBool());
+    if((node = searchNode->GetNode("applyWindow")) != 0)
+        SetApplyWindow(node->AsBool());
     if((node = searchNode->GetNode("applyOperator")) != 0)
         SetApplyOperator(node->AsBool());
     if((node = searchNode->GetNode("windowLayout")) != 0)
