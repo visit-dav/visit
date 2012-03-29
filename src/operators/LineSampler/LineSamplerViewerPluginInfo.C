@@ -183,6 +183,7 @@ LineSamplerViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 
 void
 LineSamplerViewerPluginInfo::GetClientAtts(AttributeSubject *atts,
+                                           const bool activeOperator,
                                            const bool applyToAll)
 {
   LineSamplerAttributes aTmp = *clientAtts;
@@ -204,11 +205,20 @@ LineSamplerViewerPluginInfo::GetClientAtts(AttributeSubject *atts,
       LineSamplerAttributes::ViewDimension newViewDim =
         (*clientAtts).GetViewDimension();
 
-      if( newViewDim != oldViewDim )
+      LineSamplerAttributes::ViewGeometry oldViewGeom =
+        (*(LineSamplerAttributes *)atts).GetViewGeometry();
+
+      LineSamplerAttributes::ViewGeometry newViewGeom =
+        (*clientAtts).GetViewGeometry();
+
+      if( activeOperator && 
+          (newViewDim != oldViewDim ||
+           newViewGeom != oldViewGeom) )
       {
         ViewerBase vb;
 
         QString msg("You are attemping to change the 'View dimension' "
+                    "or the 'View geometry' "
                     "while the 'Apply to all windows' and/or the "
                     "'Apply operators to all plots' and the "
                     "'Do not apply to all' are all checked. This setting "
@@ -221,6 +231,7 @@ LineSamplerViewerPluginInfo::GetClientAtts(AttributeSubject *atts,
       *(LineSamplerAttributes *)atts = *clientAtts;
 
       (*(LineSamplerAttributes *)atts).SetViewDimension( oldViewDim );
+      (*(LineSamplerAttributes *)atts).SetViewGeometry( oldViewGeom );
     }
     else // No restriction on the apply operation.
     {
@@ -299,4 +310,3 @@ LineSamplerViewerPluginInfo::XPMIconData() const
 {
     return LineSampler_xpm;
 }
-

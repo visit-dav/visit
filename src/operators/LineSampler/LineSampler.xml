@@ -241,7 +241,7 @@
       </Field>
       <Function name="LineSamplerViewerPluginInfo::GetClientAtts1" user="false" member="true">
       </Function>
-      <Function name="LineSamplerViewerPluginInfo::GetClientAtts2" user="false" member="true">
+      <Function name="LineSamplerViewerPluginInfo::GetClientAtts3" user="false" member="true">
       </Function>
     </Attribute>
   </Plugin>
