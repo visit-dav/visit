@@ -260,7 +260,7 @@ ViewerOperator::SetOperatorAttsFromClient(const bool activePlot,
     // Copy the operator attributes to the client attributes and notify the
     // client.
     //
-    viewerPluginInfo->GetClientAtts(operatorAtts, applyToAll);
+    viewerPluginInfo->GetClientAtts(operatorAtts, activePlot, applyToAll);
 
     if( activePlot )
       viewerPluginInfo->SetClientAtts(operatorAtts);      
