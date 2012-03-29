@@ -232,7 +232,7 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(wallListTextChanged(QString)));
 
 
-    mainLayout->addWidget( new QLabel(tr("Set the instance when applying to multiple \nplots in a single window. I.e. if you want to\ncompare different samplings, set the instance\nto A for the first, and B for the second. These\nsettings will allow the attributes to be\npropagated to other windows."), central), 4, 0, 2, 2);
+    mainLayout->addWidget( new QLabel(tr("Set the instance when applying to multiple \nplots in a single window. I.e. if you want to\ncompare different samplings, set the instance\nto A for the first, and B for the second. These\nsettings will allow the attributes to be\npropagated to plots in other windows when\nusing the \"Apply to all windows\" option."), central), 4, 0, 2, 2);
 
     QWidget *instance = new QWidget(central);
     QHBoxLayout *instanceLayout = new QHBoxLayout(instance);
@@ -776,7 +776,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     toroidalIntegrationLabel = new QLabel(tr("Toroidal"), central);
     integrationLayout->addWidget(toroidalIntegrationLabel,1,0);
     toroidalIntegration = new QWidget(central);
-    toroidalIntegrationButtonGroup= new QButtonGroup(toroidalIntegration);
+    toroidalIntegrationButtonGroup = new QButtonGroup(toroidalIntegration);
 
     toroidalIntegrationNone =
       new QRadioButton(tr("None"), toroidalIntegration);
@@ -788,9 +788,10 @@ QvisLineSamplerWindow::CreateWindowContents()
     toroidalIntegrationButtonGroup->addButton(toroidalIntegrationTime,1);
     integrationLayout->addWidget(toroidalIntegrationTime,1,2);
 
-//     toroidalIntegrationSummation = new QRadioButton(tr("Integrate toroidally"), toroidalIntegration);
-//     toroidalIntegrationButtonGroup->addButton(toroidalIntegrationSummation,1);
-//     integrationLayout->addWidget(toroidalIntegrationSummation,1,2);
+    toroidalIntegrationSummation =
+      new QRadioButton(tr("Integrate toroidally"), toroidalIntegration);
+    toroidalIntegrationButtonGroup->addButton(toroidalIntegrationSummation,2);
+    integrationLayout->addWidget(toroidalIntegrationSummation,1,3);
 
     connect(toroidalIntegrationButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(toroidalIntegrationChanged(int)));
@@ -1312,11 +1313,12 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             toroidalIntegrationButtonGroup->blockSignals(false);
             toroidalGroup->setEnabled( (int)atts->GetToroidalIntegration() == 1 );
 
-            displayTimeLabel->setEnabled( (int)atts->GetTimeSampling()==1 &&
-                                          (int)atts->GetToroidalIntegration()==0);
+            displayTimeLabel->
+              setEnabled( (int)atts->GetTimeSampling()==1 &&
+                          (int)atts->GetToroidalIntegration()!=1);
 
             displayTime->setEnabled( (int)atts->GetTimeSampling()==1 &&
-                                     (int)atts->GetToroidalIntegration()==0);
+                                     (int)atts->GetToroidalIntegration()!=1);
             break;
           case LineSamplerAttributes::ID_toroidalAngleSampling:
             toroidalAngleSamplingButtonGroup->blockSignals(true);
