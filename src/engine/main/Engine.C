@@ -2247,6 +2247,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
 //    Hank Childs, Fri Apr 24 07:30:48 CDT 2009
 //    Also print out timeout statement to cerr if in parallel.
 //
+//    Hank Childs, Thu Mar 29 08:54:08 PDT 2012
+//    Print out alarm handler output whether we are in parallel or serial.
+//
 // ****************************************************************************
 
 void
@@ -2255,31 +2258,22 @@ Engine::AlarmHandler(int signal)
     Engine *e = Engine::Instance();
     if (e->overrideTimeoutEnabled == true)
     {
-        if (PAR_Size() > 1)
-        {
-            cerr << PAR_Rank() << ": ENGINE exited due to an inactivity timeout of "
-                << e->overrideTimeoutMins << " minutes.  Timeout was set through a callback. (Alarm received)" << endl;
-        }
+        cerr << PAR_Rank() << ": ENGINE exited due to an inactivity timeout of "
+             << e->overrideTimeoutMins << " minutes.  Timeout was set through a callback. (Alarm received)" << endl;
         debug1 << "ENGINE exited due to an inactivity timeout of "
             << e->overrideTimeoutMins << " minutes.  Timeout was set through a callback. (Alarm received)" << endl;
     } else
     {
         if (e->idleTimeoutEnabled == true)
         {
-            if (PAR_Size() > 1)
-            {
-                cerr << PAR_Rank() << ": ENGINE exited due to an idle inactivity timeout of "
-                    << e->idleTimeoutMins << " minutes. (Alarm received)" << endl;
-            }
+            cerr << PAR_Rank() << ": ENGINE exited due to an idle inactivity timeout of "
+                 << e->idleTimeoutMins << " minutes. (Alarm received)" << endl;
             debug1 << "ENGINE exited due to an idle inactivity timeout of "
                 << e->idleTimeoutMins << " minutes. (Alarm received)" << endl;
         } else
         {
-            if (PAR_Size() > 1)
-            {
-                cerr << PAR_Rank() << ": ENGINE exited due to an execution timeout of "
-                    << e->executionTimeoutMins << " minutes. (Alarm received)" << endl;
-            }
+            cerr << PAR_Rank() << ": ENGINE exited due to an execution timeout of "
+                 << e->executionTimeoutMins << " minutes. (Alarm received)" << endl;
             debug1 << "ENGINE exited due to an execution timeout of "
                 << e->executionTimeoutMins << " minutes. (Alarm received)" << endl;
         }
