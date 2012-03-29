@@ -471,7 +471,7 @@ class InfoGeneratorPlugin : public Plugin
             h << "    virtual AttributeSubject *GetDefaultAtts();" << endl;
             h << "    virtual void SetClientAtts(AttributeSubject *atts);" << endl;
             h << "    virtual void GetClientAtts(AttributeSubject *atts);" << endl;
-            h << "    virtual void GetClientAtts(AttributeSubject *atts, const bool);" << endl;
+            h << "    virtual void GetClientAtts(AttributeSubject *atts, const bool, const bool);" << endl;
             h << endl;
             h << "    virtual void InitializeOperatorAtts(AttributeSubject *atts," << endl;
             h << "                                        const ViewerPlot *plot," << endl;
@@ -1743,7 +1743,7 @@ class InfoGeneratorPlugin : public Plugin
         }
         c << endl;
         funcName = name + "ViewerPluginInfo::GetClientAtts";
-        if(!ReplaceBuiltin(c, funcName + "2"))
+        if(!ReplaceBuiltin(c, funcName + "3"))
         {
             c << "// ****************************************************************************" << endl;
             c << "//  Method: "<<funcName<< endl;
@@ -1760,7 +1760,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "// ****************************************************************************" << endl;
             c << endl;
             c << "void" << endl;
-            c << funcName<<"(AttributeSubject *atts, const bool)" << endl;
+            c << funcName<<"(AttributeSubject *atts, const bool, const bool)" << endl;
             c << "{" << endl;
             c << "    GetClientAtts(atts);" << endl;
             c << "}" << endl;
