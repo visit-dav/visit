@@ -107,6 +107,27 @@ avtPythonQuery::~avtPythonQuery()
 }
 
 // ****************************************************************************
+//  Method: avtPythonQuery::SetInputParams
+//
+//  Purpose: Allows this query to read input parameters set by user.
+//
+//  Arguments:
+//    params    MapNode containing input.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   March 30, 2012
+//
+// ****************************************************************************
+
+void
+avtPythonQuery::SetInputParams(const MapNode &params)
+{
+    SetVariableNames(params.GetEntry("vars")->AsStringVector());
+    SetPythonArgs(params.GetEntry("args")->AsString());
+    SetPythonScript(params.GetEntry("source")->AsString());
+}
+
+// ****************************************************************************
 //  Method: avtPythonExpression::CleanUp
 //
 //  Purpose:

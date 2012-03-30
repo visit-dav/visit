@@ -11099,6 +11099,9 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
 //  Kathleen Biagas, Tue Jul 19 12:00:04 PDT 2011
 //  Pass args to viewer via MapNode.
 //
+//  Cyrus Harrison, Fri Mar 30 13:51:24 PDT 2012
+//  Convert python query filter to use new query params infrastructure.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -11125,6 +11128,9 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     stringVector vars;
+    std::string  args_pickled  = "";
+    std::string  script_source = "";
+
     // if vars were passed in, add them to the variable list
     if(py_vars_tuple != NULL)
     {
@@ -11143,20 +11149,16 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
                             "PythonQuery: Failed to pickle passed 'args' value.");
             return NULL;
         }
-        char *res_str = PyString_AS_STRING(res);
-        vars.push_back(res_str);
-    }
-    else
-    {
-        // if there were no args, use blank string as a place holder.
-        vars.push_back("");
+        args_pickled = std::string(PyString_AS_STRING(res));
+        // decref b/c we created a new python string
+        Py_DECREF(res);
     }
 
     if(source_text != NULL)
     {
         debug5 << "Using passed source text as Python Query script" << endl;
-        // add the source as the last variable
-        vars.push_back(source_text);
+        // use the passed source
+        script_source = std::string(source_text);
     }
     else if(source_file != NULL)
     {
@@ -11172,16 +11174,16 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
             PyErr_SetString(VisItError, err_msg.str().c_str());
             return NULL;
         }
-        std::string py_script((std::istreambuf_iterator<char>(ifs)),
-                          std::istreambuf_iterator<char>());
-        vars.push_back(py_script);
+        script_source = std::string((std::istreambuf_iterator<char>(ifs)),
+                                     std::istreambuf_iterator<char>());
     }
 
     MUTEX_LOCK();
         MapNode params;
         params["query_name"] = std::string("Python");
-        if (!vars.empty())
-            params["vars"] = vars;
+        params["vars"]       = vars;
+        params["args"]       = args_pickled;
+        params["source"]     = script_source;
         GetViewerMethods()->Query(params);
     MUTEX_UNLOCK();
 
