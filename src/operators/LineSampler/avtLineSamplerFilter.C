@@ -187,7 +187,9 @@ avtLineSamplerFilter::InitializeTimeLoop(void)
     // If doing the current time step set the bounds to be the
     // currentTime.
 
-    if( atts.GetTimeSampling() == LineSamplerAttributes::CurrentTimeStep || 
+    if( atts.GetTimeSampling() == LineSamplerAttributes::CurrentTimeStep ||
+        // For two and three plots just show the geometry for the
+        // current time frame regardless of what the user is sampling.
         atts.GetViewDimension() == LineSamplerAttributes::Two ||
         atts.GetViewDimension() == LineSamplerAttributes::Three )
     {
@@ -206,16 +208,28 @@ avtLineSamplerFilter::InitializeTimeLoop(void)
       if( atts.GetTimeStepStart() < 0 )
       {
         std::string msg(GetType());
-        msg = msg + ": Start index/Number of slices must be positive.";
+        msg = msg + ": The Start index/Number of slices must be positive.";
+
+        avtCallback::IssueWarning(msg.c_str());
         EXCEPTION1(ImproperUseException, msg);
       }
 
       if( atts.GetTimeStepStop() < 0 )
       {
         std::string msg(GetType());
-        msg = msg + ": Stop index/Number of slices must be positive.";
+        msg = msg + ": The Stop index/Number of slices must be positive.";
+        avtCallback::IssueWarning(msg.c_str());
         EXCEPTION1(ImproperUseException, msg);
       }
+
+      if( atts.GetTimeStepStart() > atts.GetTimeStepStop() )
+      {
+        std::string msg(GetType());
+        msg = msg + ": The Start time must be smaller than the stop time.";
+        avtCallback::IssueWarning(msg.c_str());
+        EXCEPTION1(ImproperUseException, msg);
+      }
+
 
       SetStartFrame( atts.GetTimeStepStart() );
       SetEndFrame( atts.GetTimeStepStop() );
@@ -231,6 +245,21 @@ avtLineSamplerFilter::InitializeTimeLoop(void)
         atts.GetToroidalIntegration() ==
         LineSamplerAttributes::IntegrateToroidally )
     {
+      if( atts.GetToroidalAngleStart() >= atts.GetToroidalAngleStop() )
+      {
+        std::string msg(GetType());
+        msg = msg + ": The Start angle must be smaller than the Stop angle.";
+        avtCallback::IssueWarning(msg.c_str());
+        EXCEPTION1(ImproperUseException, msg);
+      }
+
+      if( atts.GetToroidalAngleStop() - atts.GetToroidalAngleStart() > 360 )
+      {
+        std::string msg(GetType());
+        msg = msg + ": The total toroidal angle sampling is greater than 360 degrees.";
+        avtCallback::IssueWarning(msg.c_str());
+      }
+
       if( atts.GetToroidalAngleSampling() ==
           LineSamplerAttributes::ToroidalAngleAbsoluteSampling )
         cachedAngle = 0;
