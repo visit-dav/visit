@@ -1311,7 +1311,8 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             if(toroidalIntegrationButtonGroup->button((int)atts->GetToroidalIntegration()) != 0)
                 toroidalIntegrationButtonGroup->button((int)atts->GetToroidalIntegration())->setChecked(true);
             toroidalIntegrationButtonGroup->blockSignals(false);
-            toroidalGroup->setEnabled( (int)atts->GetToroidalIntegration() == 1 );
+            toroidalGroup->setEnabled( (int)atts->GetToroidalIntegration() == 1 ||
+                                       (int)atts->GetToroidalIntegration() == 2 );
 
             displayTimeLabel->
               setEnabled( (int)atts->GetTimeSampling()==1 &&
