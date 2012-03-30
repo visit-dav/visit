@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -2582,17 +2582,21 @@ Variant::Read(Connection &conn)
 // Modifications:
 //   Kathleen Biagas, Thu Sep  1 11:19:23 PDT 2011
 //   Fix typo (two FLOAT_VECTOR_TYPES if statements).
-//   
+//
 //   Kathleen Biagas, Tue Sep  6 14:06:24 PDT 2011
 //   Fix formatting of vectors, strings should be surrounded by quotes.
+//
+//   Cyrus Harrison, Fri Mar 30 13:17:52 PDT 2012
+//   Don't use sprintf for the String or String Vector cases.
+//   The 5000 character buffer may be too small & lead to a crash.
 //
 // ****************************************************************************
 
 string &
 Variant::ConvertToString()
 {
-    tmp.clear();  
-    char retval[5000]; 
+    tmp.clear();
+    char retval[5000];
     if (dataType == BOOL_TYPE)
     {
         sprintf(retval, "%s", AsBool() ? "true" : "false");
@@ -2630,8 +2634,7 @@ Variant::ConvertToString()
     }
     else if (dataType == STRING_TYPE)
     {
-        sprintf(retval, "\"%s\"", AsString().c_str());
-        tmp = string(retval);
+        tmp = tmp = "\"" + AsString() + "\"";
     }
     else if (dataType == BOOL_VECTOR_TYPE)
     {
@@ -2732,8 +2735,7 @@ Variant::ConvertToString()
         {
             if (i != 0)
                 tmp += ", ";
-            sprintf(retval,"\"%s\"",vec[i].c_str());
-            tmp += retval;
+            tmp += "\"" + vec[i] + "\"";
         }
         tmp += ")";
     }
