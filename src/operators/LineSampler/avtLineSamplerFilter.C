@@ -410,8 +410,6 @@ avtLineSamplerFilter::Execute()
     std::vector< double > ToroidalIntegrationSum;
     float nSamples = 0;
 
-    std::cerr << startAngle << "  " << stopAngle << std::endl;
-
     // Embed the sample toroidally as time in an outer loop.
     for( cachedAngle=startAngle;
          cachedAngle<stopAngle;
