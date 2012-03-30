@@ -1565,9 +1565,23 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
       // To do so set the location in memory where each cordinate
       // componenet will be stored.
-      int srcMins[1] = {mins[0]};
-      int srcMaxs[1] = {numNodes};
-      int srcStrides[1] = {strides[0]};
+
+      int srcMins[1];
+      int srcMaxs[1];
+      int srcStrides[1];
+
+      if( haveDataSelections )
+      {
+        srcMins[0] = mins[0];
+        srcMaxs[0] = numNodes;
+        srcStrides[0] = strides[0];
+      }
+      else
+      {
+        srcMins[0] = 0;
+        srcMaxs[0] = numNodes;
+        srcStrides[0] = 1;
+      }
 
       int destSize[1] = {numNodes*3};
       int destMins[1] = {0};
