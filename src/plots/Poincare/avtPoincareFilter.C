@@ -439,11 +439,11 @@ avtPoincareFilter::ContinueExecute()
 
             (properties.type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
              properties.type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
-             properties.type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS &&
-             properties.type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS &&
+             properties.type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS ||
+             properties.type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS ) &&
              properties.analysisState == FieldlineProperties::ADD_O_POINTS &&
 
-            !(poincare_ic->properties.OPoints.empty()) )
+             !(poincare_ic->properties.OPoints.empty()) )
         {
           // Change the state of the properties to complete now that
           // the seed point has been stripped off.
