@@ -10,7 +10,7 @@
 # Usage
 #    visit-install [-c anag | anl | llnl_open | llnl_open_rz | llnl_open_cz |
 #                      llnl_closed | nersc | ornl | princeton | sandia | 
-#                      tacc | umich | nics]
+#                      tacc | umich | nics | lsu]
 #                  [-g group] [-gw] [-l] [-dmg] [-beta | -private]
 #                  version platform directory
 #
@@ -298,6 +298,9 @@
 #    I corrected some errors with the changes I made to add host
 #    profiles for unity, whitney and redsky-s.
 #
+#    Brad Whitlock, Fri Mar 30 10:04:31 PDT 2012
+#    Add LSU host profiles.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -363,7 +366,7 @@ while [ "$option_found" = "true" ]; do
 done
 
 if [ "$#" != "3" ]; then
-   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_open_rz | llnl_open_cz | llnl_closed | nersc | ornl | princeton | sandia | sandia_closed | tacc | umich | nics]"
+   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_open_rz | llnl_open_cz | llnl_closed | nersc | ornl | princeton | sandia | sandia_closed | tacc | umich | nics | lsu]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -490,8 +493,9 @@ while [ "$config" = "prompt" ]; do
    echo "   13) TACC network"
    echo "   14) U of Michigan Center for Advanced Computing network"
    echo "   15) NICS at University of Tennessee at Knoxville"
+   echo "   16) Lousiana State University network"
    echo ""
-   echo "Enter (1-14):"
+   echo "Enter (1-16):"
 
    read config
    case "$config" in
@@ -540,6 +544,9 @@ while [ "$config" = "prompt" ]; do
       15)
          config=nics
          ;;
+      16)
+         config=lsu
+         ;;
       *)
          config=prompt
          ;;
@@ -576,11 +583,13 @@ case "$config" in
    umich)
       ;;
    nics)
+      ;; 
+   lsu)
       ;;
    *)
       echo "Illegal configuration option, choices are none, anag, anl,"
       echo "llnl_open, llnl_open_cz, llnl_open_rz, llnl_closed, nersc, ornl, "
-      echo "princeton, sandia, sandia_closed, tacc, umich, and nics."
+      echo "princeton, sandia, sandia_closed, tacc, umich, nics, and lsu."
       exit 4
       ;;
 esac
@@ -766,6 +775,8 @@ elif [ "$config" = "anag" ]; then
    ln -s visit-config-anag.ini    "$dir"/$version+/.visit/config
    ln -s visit-guiconfig-anag.ini "$dir"/$version+/.visit/guiconfig
    ln -s visit-visitrc-anag.ini   "$dir"/$version+/.visit/visitrc
+elif [ "$config" = "lsu" ]; then
+   cp "$dir"/$version+/.visit/allhosts/host_lsu_philip.xml "$dir"/$version+/.visit/hosts/
 fi
 
 # Do the bank fixup
