@@ -327,6 +327,9 @@ avtQueryFactory::Instance()
 //    Cyrus Harrison, Mon Sep 19 10:49:37 PDT 2011
 //    Use case insensitive match for query names.
 //
+//    Cyrus Harrison, Fri Mar 30 13:51:24 PDT 2012
+//    Convert python query filter to use new query params infrastructure.
+//
 // ****************************************************************************
 
 avtDataObjectQuery *
@@ -639,20 +642,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (CaseInsenstiveEqual(qname,"Python"))
     {
 #ifdef VISIT_PYTHON_FILTERS
-        avtPythonQuery *py_query = new avtPythonQuery();
-        const stringVector &args = qa->GetVariables();
-        int nargs = args.size();
-        stringVector vars;
-
-        for(int i= 0; i < nargs -2;i++)
-            vars.push_back(args[i]);
-
-        // set variable names
-        py_query->SetVariableNames(vars);
-        // python script is passed in as the last variable
-        py_query->SetPythonArgs(args[nargs-2]);
-        py_query->SetPythonScript(args[nargs-1]);
-        query = py_query;
+        query = new avtPythonQuery();
 #else
            EXCEPTION1(VisItException,
                       "Cannot execute Python Filter Query because "

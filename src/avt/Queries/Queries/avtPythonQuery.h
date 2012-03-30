@@ -69,7 +69,10 @@ class avtPythonFilterEnvironment;
 //   Added SetPythonArgs()
 //
 //   Cyrus Harrison, Wed Jan 12 11:32:42 PST 2011
-//   Added queryType & qyeryDescription members.
+//   Added queryType & queryDescription members.
+//
+//   Cyrus Harrison, Fri Mar 30 13:51:24 PDT 2012
+//   Convert python query filter to use new query params infrastructure.
 //
 // ****************************************************************************
 
@@ -80,7 +83,7 @@ class QUERY_API avtPythonQuery :  public avtDataObjectQuery,
                                 avtPythonQuery();
     virtual                    ~avtPythonQuery();
     void                        CleanUp();
-
+    virtual void                SetInputParams(const MapNode &);
     void                        SetPythonScript(const std::string &py_script);
     void                        SetPythonArgs(const std::string &py_args);
 
