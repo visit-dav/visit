@@ -678,6 +678,9 @@ avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
 //   Hank Childs, Fri Mar  9 16:49:06 PST 2012
 //   Add support for reverse pathlines.
 //
+//   Hank Childs, Sun Apr  1 10:32:00 PDT 2012
+//   Fix recently introduced error with bad logic about what has been terminated.
+//
 // ****************************************************************************
 
 bool
@@ -688,7 +691,7 @@ avtParDomICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
         bool itsDone = false;
-        if ((*it)->domain.domain != -1 && (*it)->domain.timeStep != curTimeSlice
+        if ((*it)->domain.domain == -1 || (*it)->domain.timeStep == curTimeSlice)
 )
             itsDone = true;
         if ((*it)->status == avtIntegralCurve::STATUS_TERMINATED)
