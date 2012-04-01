@@ -353,7 +353,7 @@ avtLineSamplerFilter::Execute()
 
     lastTimeAxisValue = timeAxisValue;
 
-    double startAngle, stopAngle, deltaAngle;
+    double startAngle = 0, stopAngle = 1, deltaAngle = 1;
 
     if( atts.GetToroidalIntegration() ==
         LineSamplerAttributes::ToroidalTimeSample ||
