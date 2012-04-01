@@ -205,6 +205,9 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
 //    missing step if termination occurred somewhere outside this loop.
 //    Props to Christoph Garth for eyeballing this.
 //
+//    Hank Childs, Sun Apr  1 10:35:48 PDT 2012
+//    Change status to use new TERMINATED designation.
+//
 // ****************************************************************************
 
 void
@@ -222,7 +225,7 @@ avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step,
 
     if (CheckForTermination(step, field))
     {
-        status = STATUS_FINISHED;
+        status = STATUS_TERMINATED;
     }
 
     // This must be called after CheckForTermination, because 
