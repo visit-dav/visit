@@ -3131,22 +3131,6 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         }
       }
 
-      else if( nPuncturesNeeded == 0 )
-      {
-        if( detectIslandCenters )
-        {
-          findIslandCenters( poloidal_puncture_pts, toroidalWinding, nnodes,
-                             islandCenters );
-          
-          if( islandCenters.empty() )
-            analysisState = FieldlineProperties::COMPLETED;
-          else
-            analysisState = FieldlineProperties::ADD_O_POINTS;
-        }
-        else
-          analysisState = FieldlineProperties::COMPLETED;
-      }
-
       // Check to see if the fieldline is periodic. I.e. on a rational
       // surface.  If within "delta" of the distance the fieldline is
       // probably on a rational surface.
@@ -3166,6 +3150,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     }
 
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
+
+    if( nPuncturesNeeded == 0 )
+      analysisState = FieldlineProperties::COMPLETED;
+
 
     // Surface or island so check for the ambiguous axis case. To date
     // we have seen ambiguous axis in 1,1 surfaces and islands and in
@@ -3304,6 +3292,31 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       {
         toroidalWindingP = toroidalWinding;
         poloidalWindingP = poloidalWinding;
+      }
+
+      if( detectIslandCenters )
+      {
+        if(type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
+           type == FieldlineProperties::ISLAND_SECONDARY_CHAIN )
+          findIslandCenters( poloidal_puncture_pts,
+                             islands,
+                             toroidalWinding,
+                             nnodes,
+                             poloidal_puncture_pts.size(),
+                             islandCenters );
+        else if( type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS ||
+                 type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
+          findIslandCenters( poloidal_puncture_pts,
+                             islands,
+                             islands * windingGroupOffset, //offset
+                             toroidalWindingP,             //nnodes
+                             islands * toroidalWindingP,   //modulo
+                             islandCenters );
+          
+        if( islandCenters.empty() )
+          analysisState = FieldlineProperties::COMPLETED;
+        else
+          analysisState = FieldlineProperties::ADD_O_POINTS;
       }
     }
     else
@@ -5137,15 +5150,23 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
 
 void
 FieldlineLib::findIslandCenters( std::vector< Point > &puncturePts,
-                                 unsigned int toroidalWinding,
+                                 unsigned int islands,
+                                 unsigned int offset,
                                  unsigned int nnodes,
+                                 unsigned int moduloValue,
                                  std::vector< Point > &centers )
 {
 #ifdef STRAIGHTLINE_SKELETON
 
   // Loop through each toroidial group
-  for( unsigned int i=0; i<toroidalWinding; ++i ) 
+  for( unsigned int i=0; i<islands; ++i ) 
   {
+
+      std::cerr << "Island " << islands << "  ";
+      std::cerr << "offset " << offset << "  ";
+      std::cerr << "nnodes " << nnodes << "  ";
+      std::cerr << "moduloValue " << moduloValue << "  ";
+
     if( verboseFlag )
       std::cerr << "Island " << i << "  ";
 
@@ -5155,11 +5176,14 @@ FieldlineLib::findIslandCenters( std::vector< Point > &puncturePts,
     bool selfIntersect = false;
 
     // Loop through each point in toroidial group
+
     for( unsigned int j=i, jc=0;
-         j<puncturePts.size() && jc<nnodes;
-         j+=toroidalWinding, ++jc )
+         jc<nnodes;
+         j+=offset, ++jc )
     {
-      tmp_points.push_back( puncturePts[j] );
+      std::cerr << "hull points  " << jc << "  " << j%moduloValue << std::endl;
+     
+      tmp_points.push_back( puncturePts[j%moduloValue] );
     }
 
     // Points for the convex hull check
