@@ -309,6 +309,8 @@ inline std::ostream& operator<<( std::ostream& out,
         return out << "OVERRIDE";
     case FieldlineProperties::ADDING_POINTS:
         return out << "ADDING_POINTS";
+    case FieldlineProperties::ADD_O_POINTS:
+        return out << "ADD_O_POINTS";
     case FieldlineProperties::COMPLETED:
         return out << "COMPLETED";
     case FieldlineProperties::TERMINATED:
