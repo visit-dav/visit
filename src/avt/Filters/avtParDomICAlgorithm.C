@@ -681,6 +681,9 @@ avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
 //   Hank Childs, Sun Apr  1 10:32:00 PDT 2012
 //   Fix recently introduced error with bad logic about what has been terminated.
 //
+//   Cyrus Harrison, Mon Apr  2 15:49:11 PDT 2012
+//   Fixed a typo (removed extra paren from next line)
+//
 // ****************************************************************************
 
 bool
@@ -692,7 +695,6 @@ avtParDomICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
     {
         bool itsDone = false;
         if ((*it)->domain.domain == -1 || (*it)->domain.timeStep == curTimeSlice)
-)
             itsDone = true;
         if ((*it)->status == avtIntegralCurve::STATUS_TERMINATED)
             itsDone = true;
