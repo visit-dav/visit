@@ -450,10 +450,16 @@ avtPoincareFilter::ContinueExecute()
           poincare_ic->properties.analysisState =
             FieldlineProperties::COMPLETED;
 
+          std::cerr << "Have island seed  " << properties.OPoints[0]
+                    << std::endl;
+
           if( properties.iteration < OPointMaxIterations )
           {
             std::vector<avtIntegralCurve *> new_ics;
             avtVector vec(0,0,0);
+
+            std::cerr << "Adding island seed  " << properties.OPoints[0]
+                      << std::endl;
 
             AddSeedPoint( properties.OPoints[0], vec, new_ics );
           
@@ -469,8 +475,7 @@ avtPoincareFilter::ContinueExecute()
               seed_poincare_ic->properties.analysisState =
                 FieldlineProperties::UNKNOWN_STATE;
               
-              seed_poincare_ic->properties.source =
-                FieldlineProperties::ISLAND_PRIMARY_CHAIN;
+              seed_poincare_ic->properties.source = properties.type;
               
               seed_poincare_ic->properties.iteration = properties.iteration + 1;
             }
@@ -480,7 +485,10 @@ avtPoincareFilter::ContinueExecute()
 
           // The source was an island_chain which meant the seed was
           // an intermediate seed so delete it.
-          if( properties.source == FieldlineProperties::ISLAND_PRIMARY_CHAIN )
+          if( properties.source == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
+              properties.source == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
+              properties.source == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS ||
+              properties.source == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
           {
             std::cerr << "Deleting old O Point seed "
                       << poincare_ic->id << std::endl;
@@ -2013,8 +2021,9 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                       << toroidalResonance << "," << poloidalResonance << "  ";
           
           else if( type == FieldlineProperties::ISLAND_SECONDARY_CHAIN )
-            std::cerr << islands << " islands around "
-                      << islandGroups << " islandGroups with resonances: "
+            std::cerr << islands << " islands total ("
+                      << islandGroups << " islandGroups with "
+                      << islands/islandGroups << " islands each) with resonances: "
                       << toroidalResonance << "," << poloidalResonance << "  ";
 
           else if( type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS )
@@ -2057,9 +2066,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             poloidalWinding = islands * poloidalWindingP;
             windingGroupOffset = islands * windingGroupOffset;
             islands = 0;
-            
-            if( toroidalWinding != poloidalWinding )
-              nnodes = islands;
         }
 
         else if( type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
@@ -2068,9 +2074,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             poloidalWinding = poloidalWindingP;
             windingGroupOffset = islands * windingGroupOffset;
             islands = 0;
-
-            if( toroidalWinding != poloidalWinding )
-              nnodes = islands;
         }
         else if( toroidalWinding == poloidalWinding )
         {
@@ -2343,7 +2346,9 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         for( unsigned int p=0; p<planes.size(); p++ ) 
         {
             if( type == FieldlineProperties::UNKNOWN_TYPE ||
-                type == FieldlineProperties::CHAOTIC )
+                type == FieldlineProperties::CHAOTIC ||
+                type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS ||
+                type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
               nnodes = puncturePts[p][0].size();
 
             else if( type == FieldlineProperties::FLUX_SURFACE )
@@ -3148,6 +3153,10 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
     {
       if( modulo && islands )
       {
+        std::cerr << __LINE__ << "  "
+                  << std::endl;
+
+
         unsigned int nSegments = nnodes;
         
         Vector intra = nodes[0][0][0] - nodes[0][0][nSegments];
@@ -3272,14 +3281,14 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
             // Loop through each toroidial group
             for( unsigned int j=0; j<toroidalWindings; ++j ) 
             {
-                //Create groups that represent the toroidial groups.
+              //Create groups that represent the toroidial groups.
               vtkPoints *points = vtkPoints::New();
               vtkCellArray *cells = vtkCellArray::New();
               vtkFloatArray *scalars = vtkFloatArray::New();
             
               cells->InsertNextCell(nodes[p][j].size()+(offset?1:0));
               scalars->Allocate    (nodes[p][j].size()+(offset?1:0));
-            
+
               if( color == DATA_WindingGroupOrder )
                 color_value = j;
             
@@ -3299,7 +3308,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
                     color_value = i;
                   else if( color == DATA_WindingPointOrderModulo )
                     color_value = i % nnodes;
-                
+
                   scalars->InsertTuple1(i, color_value);
               }
 

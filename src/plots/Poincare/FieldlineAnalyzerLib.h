@@ -372,8 +372,10 @@ public:
                         FieldlineProperties &fi );
 
   void findIslandCenters( std::vector< Point > &puncturePts,
-                          unsigned int toroialWinding,
+                          unsigned int islands,
+                          unsigned int offset,
                           unsigned int nnodes,
+                          unsigned int moduloValue,
                           std::vector< Point > &centers );
 
   unsigned int
