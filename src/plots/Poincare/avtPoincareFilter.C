@@ -3153,10 +3153,6 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
     {
       if( modulo && islands )
       {
-        std::cerr << __LINE__ << "  "
-                  << std::endl;
-
-
         unsigned int nSegments = nnodes;
         
         Vector intra = nodes[0][0][0] - nodes[0][0][nSegments];
