@@ -59,9 +59,10 @@
 // ***************************************************************************
 // Modifications:
 //  I. R. Corey - May 10, 2011: Modified to build standalone from Visit.
-//
-//     Compile Line: /usr/bin/c++ -I/usr/apps/mdg/include -L/usr/apps/mdg/lib -g -c MakeMili.C
-//     Link Line:    /usr/bin/c++ MakeMili.o -L/usr/apps/mdg/lib -lmili -o mdgmakemili  
+//     Compile Line: /usr/bin/c++ -I/usr/apps/mdg/include -L/usr/apps/mdg/lib
+//                   -g -c MakeMili.C
+//     Link Line:    /usr/bin/c++ MakeMili.o -L/usr/apps/mdg/lib -lmili 
+//                   -o mdgmakemili  
 //
 //  I. R. Corey - June 11, 2011: Added ability to update number of states.
 // ***************************************************************************
@@ -309,7 +310,7 @@ int GetNumDomains()
             else
             {
             if (isdigit(f[rootLen]) && isdigit(f[rootLen + 1])
-                                     && isdigit(f[rootLen + 2]))
+                                    && isdigit(f[rootLen + 2]))
             {
                 int hundred = f[rootLen] - '0';
                 int ten = f[rootLen + 1] - '0';
@@ -550,7 +551,7 @@ void ReadDomain(int dom, MiliInfo &mi)
                           i<strlen(sv.long_name);
                           i++ )
                           if (sv.long_name[i]==' ' )
-                                sv.long_name[i]='_';
+                              sv.long_name[i]='_';
 
                      mi.varDescr[mesh_id].push_back(string(sv.long_name));
 
@@ -1111,12 +1112,12 @@ void GetGlobalData( MiliInfo &mi )
         for (int j = 0;
              j < substates;
              j++) {
-              Subrecord sr;
+             Subrecord sr;
              rval = mc_get_subrec_def(dbid, i, j, &sr);
              for (int k = 0; 
                   k < sr.qty_svars;
                   k++) {
-                   State_variable sv;
+                  State_variable sv;
                   mc_get_svar_def(dbid, sr.svar_names[k], &sv);
                   for (int i=0;
                        i<strlen(sv.long_name);
@@ -1124,7 +1125,7 @@ void GetGlobalData( MiliInfo &mi )
                        if (sv.long_name[i]==' ' )
                            sv.long_name[i]='_';
 
-                    mi.varDescr[mesh_id].push_back(string(sv.long_name));
+                  mi.varDescr[mesh_id].push_back(string(sv.long_name));
               }
           }
       }
@@ -1193,7 +1194,7 @@ char *readMiliFileLine(ifstream &in, const char *commentSymbol, const char *kw,
                  commentFound=true;
                  int charMatch=0;
                  for (int i=0;
-                        i<maxLen;
+                      i<maxLen;
                       i++) {
                  if (field1[i]!=commentSymbol[i]) {
                      commentFound=false;
@@ -1281,7 +1282,7 @@ void loadMiliFile(char *filename, MiliInfo &mi)
    char nameC[256], descrC[256];
 
    char path[512], dummy[512], *oneLine;
-   bool eof, lineReturned;
+   bool eof, lineReturned=false;
 
    in.open(filename, ios::in);
    oneLine = readMiliFileLine(in, "*", "Path:", 0, &lineReturned, &eof);
@@ -1289,6 +1290,7 @@ void loadMiliFile(char *filename, MiliInfo &mi)
    if (lineReturned) {
        newFormat=true;
        sscanf(oneLine,"%*s %s", path);
+       free(oneLine);
    }
    else {
        in.clear();
@@ -1297,20 +1299,27 @@ void loadMiliFile(char *filename, MiliInfo &mi)
    }
    if ( newFormat ) {
         oneLine = readMiliFileLine(in, "*", "Domains:", 0, &lineReturned, &eof);
-        sscanf(oneLine,"%*s %d", &mi.ndomains);    // Num Domains
-        free(oneLine);
+        if ( lineReturned ) {
+             sscanf(oneLine,"%*s %d", &mi.ndomains);    // Num Domains
+             free(oneLine);
+        }
 
         oneLine = readMiliFileLine(in, "*", "Timesteps:", 0, &lineReturned, &eof);
-        sscanf(oneLine,"%*s %d", &mi.ntimesteps); // Num Timesteps
-        free(oneLine);
+        if ( lineReturned ) {
+             sscanf(oneLine,"%*s %d", &mi.ntimesteps); // Num Timesteps
+             free(oneLine);
+        }
 
         oneLine = readMiliFileLine(in, "*", "Dimensions:", 0, &lineReturned, &eof);
-        sscanf(oneLine,"%*s %d", &mi.dimensions); // Num Dimensions
-        free(oneLine);
-
+        if ( lineReturned ) {
+             sscanf(oneLine,"%*s %d", &mi.dimensions); // Num Dimensions
+             free(oneLine);
+        }
         oneLine = readMiliFileLine(in, "*", "Number_of_Meshes:", 0, &lineReturned, &eof);
-        sscanf(oneLine,"%*s %d", &mi.numMeshes); // Num Meshes
-        free(oneLine);
+        if ( lineReturned ) {
+             sscanf(oneLine,"%*s %d", &mi.numMeshes); // Num Meshes
+             free(oneLine);
+        }
    }
    else {
         in >> mi.ndomains >> mi.ntimesteps >>  mi.dimensions >> mi.numMeshes;
@@ -1333,24 +1342,30 @@ void loadMiliFile(char *filename, MiliInfo &mi)
 
          if ( newFormat ) {
               oneLine = readMiliFileLine(in, "*", "Mesh:", 0, &lineReturned, &eof);
-              free(oneLine);
+              if ( lineReturned )
+                   free(oneLine);
 
               oneLine = readMiliFileLine(in, "*", "Number_of_Materials:", 0, &lineReturned, &eof);
-              sscanf(oneLine,"%*s %d", &mi.numMats[meshid]); // Num Mats
-              free(oneLine);
+              if ( lineReturned ) {
+                   sscanf(oneLine,"%*s %d", &mi.numMats[meshid]); // Num Mats
+                   mi.highestMaterial[meshid] = mi.numMats[meshid]-1;
+                   free(oneLine);
+              }
 
               oneLine = readMiliFileLine(in, "*", "Number_of_Variables:", 0, &lineReturned, &eof);
-              sscanf(oneLine,"%*s %d", &mi.numVars[meshid]); // Num Vars
-              free(oneLine);
+              if ( lineReturned ) {
+                   sscanf(oneLine,"%*s %d", &mi.numVars[meshid]); // Num Vars
+                   free(oneLine);
+              }
 
               for ( varid=0; 
                     varid<mi.numVars[meshid];
                     varid++ ) {
                     oneLine = readMiliFileLine(in, "*", "", 0, &lineReturned, &eof);
 
-                    // Replace spaces in var names with special character so
-                    // we can parse as a single name.
-                    if ( strlen(oneLine)>=10)
+                    // Replace spaces in var names with special character so we can parse as a
+                    // single name.
+                    if ( strlen(oneLine)>10 )
                          for ( int i=10;
                                i<strlen(oneLine)-1;
                                i++ ) if ( oneLine[i]==' ' && oneLine[i-1]!=' ' && oneLine[i+1]!=' ' )
@@ -1380,7 +1395,7 @@ void loadMiliFile(char *filename, MiliInfo &mi)
               }
          }
          else {
-              in >> mi.numMats[meshid] >> mi.numVars[meshid];  // Num Mats + Num Var        
+              in >> mi.numMats[meshid] >> mi.numVars[meshid];  // Num Mats + Num Var    
               for ( varid=0; 
                     varid<mi.numVars[meshid];
                     varid++ ) {
@@ -1398,8 +1413,9 @@ void loadMiliFile(char *filename, MiliInfo &mi)
    if (!dynapartFile) {
        oneLine = readMiliFileLine(in, "*", "", 0, &lineReturned, &eof);
        if (lineReturned) {
-           dynapartFile = new char[strlen(oneLine)];
+           dynapartFile = new char[strlen(oneLine)+2];
            strcpy(dynapartFile, oneLine);
+           free(oneLine);
        }
    }
 
@@ -1437,7 +1453,7 @@ int main(int argc, char* argv[])
     char * argument = NULL;
     int argi;
 
-    printf("\nRunning Makemili Version %s. Created on: %s", VERSION_STRING, DATE_STRING);
+    printf("\nRunning Makemili Version %s. Created on: %s\n", VERSION_STRING, DATE_STRING);
 
     for (argi = 1; 
          argi < argc; 
@@ -1498,7 +1514,7 @@ int main(int argc, char* argv[])
     if (myRank == 0)
     {
         ndomains = GetNumDomains();
-        cout << "General: \n----------------------\n";
+        cout << "\nGeneral: \n----------------------\n";
         cout << "Root: " << root << " \tPath: " << currentPath << endl;
         if (dynapartFile)
             cout << "DynaPart file option: " << dynapartFile << endl;
@@ -1602,12 +1618,12 @@ int main(int argc, char* argv[])
          out.open( infoFilename, ios::out );
          PrintInfo(out, compiledInfo, false, true); 
 
-          if (dynapartFile)
+         if (dynapartFile)
              out << dynapartFile << endl;
 
          out.close();
 
-         PrintInfo(cout, compiledInfo, false, true);            
+         PrintInfo(cout, compiledInfo, false, true);     
          if (dynapartFile)
              cout << "DynaPart file: " << dynapartFile << endl;
          cout << "File " << infoFilename << " successfully written." << endl; 
