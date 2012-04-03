@@ -12,22 +12,6 @@ SET(VISITHOME /usr/gapps/visit/thirdparty_shared)
 SET(VISITARCH linux-x86_64_gcc-4.1)
 
 ##
-## VTK
-##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
-
-##
-## Specify the Qt4 binary dir. 
-## (qmake us used to locate & setup Qt4 dependencies)
-##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.6.1/${VISITARCH}/bin)
-
-##
-## Specify the location of the python.
-##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
-
-##
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
@@ -37,12 +21,29 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden")
 
 ##############################################################
 ##
-## Database reader plugin support libraries
+## The HDF4, HDF5 and NetCDF libraries must be first so that
+## their libdeps are defined for any plugins that need them.
 ##
 ## For libraries with LIBDEP settings, order matters.
 ## Libraries with LIBDEP settings that depend on other
 ## Library's LIBDEP settings must come after them.
 ##############################################################
+##
+##
+## Specify the location of the python.
+##
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr/gapps/visit/thirdparty_shared/python/2.6.4/linux-x86_64_gcc-4.1)
+
+##
+## VTK
+##
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk-womesa/5.8.0/${VISITARCH})
+
+##
+## Specify the Qt4 binary dir.
+## (qmake is used to locate & setup Qt4 dependencies)
+##
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
 
 ##
 ## AdvIO
