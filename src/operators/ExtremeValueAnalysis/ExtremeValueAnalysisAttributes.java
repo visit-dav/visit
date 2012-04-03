@@ -65,26 +65,34 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
     public final static int COMPUTEMAXES_MONTHLY = 0;
     public final static int COMPUTEMAXES_YEARLY = 1;
 
-    public final static int DISPLAYVALUES_A = 0;
-    public final static int DISPLAYVALUES_B = 1;
-    public final static int DISPLAYVALUES_C = 2;
-    public final static int DISPLAYVALUES_D = 3;
+    public final static int MONTH_JANUARY = 0;
+    public final static int MONTH_FEBRUARY = 1;
+    public final static int MONTH_MARCH = 2;
+    public final static int MONTH_APRIL = 3;
+    public final static int MONTH_MAY = 4;
+    public final static int MONTH_JUNE = 5;
+    public final static int MONTH_JULY = 6;
+    public final static int MONTH_AUGUST = 7;
+    public final static int MONTH_SEPTEMBER = 8;
+    public final static int MONTH_OCTOBER = 9;
+    public final static int MONTH_NOVEMBER = 10;
+    public final static int MONTH_DECEMBER = 11;
 
 
     public ExtremeValueAnalysisAttributes()
     {
         super(ExtremeValueAnalysisAttributes_numAdditionalAtts);
 
-        computeMaxes = COMPUTEMAXES_MONTHLY;
-        DisplayValue = DISPLAYVALUES_A;
+        computeMaxes = COMPUTEMAXES_YEARLY;
+        DisplayMonth = MONTH_JANUARY;
     }
 
     public ExtremeValueAnalysisAttributes(int nMoreFields)
     {
         super(ExtremeValueAnalysisAttributes_numAdditionalAtts + nMoreFields);
 
-        computeMaxes = COMPUTEMAXES_MONTHLY;
-        DisplayValue = DISPLAYVALUES_A;
+        computeMaxes = COMPUTEMAXES_YEARLY;
+        DisplayMonth = MONTH_JANUARY;
     }
 
     public ExtremeValueAnalysisAttributes(ExtremeValueAnalysisAttributes obj)
@@ -92,7 +100,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         super(ExtremeValueAnalysisAttributes_numAdditionalAtts);
 
         computeMaxes = obj.computeMaxes;
-        DisplayValue = obj.DisplayValue;
+        DisplayMonth = obj.DisplayMonth;
 
         SelectAll();
     }
@@ -111,7 +119,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
     {
         // Create the return value
         return ((computeMaxes == obj.computeMaxes) &&
-                (DisplayValue == obj.DisplayValue));
+                (DisplayMonth == obj.DisplayMonth));
     }
 
     public String GetName() { return "ExtremeValueAnalysis"; }
@@ -124,15 +132,15 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         Select(0);
     }
 
-    public void SetDisplayValue(int DisplayValue_)
+    public void SetDisplayMonth(int DisplayMonth_)
     {
-        DisplayValue = DisplayValue_;
+        DisplayMonth = DisplayMonth_;
         Select(1);
     }
 
     // Property getting methods
     public int GetComputeMaxes() { return computeMaxes; }
-    public int GetDisplayValue() { return DisplayValue; }
+    public int GetDisplayMonth() { return DisplayMonth; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -140,7 +148,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         if(WriteSelect(0, buf))
             buf.WriteInt(computeMaxes);
         if(WriteSelect(1, buf))
-            buf.WriteInt(DisplayValue);
+            buf.WriteInt(DisplayMonth);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -151,7 +159,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
             SetComputeMaxes(buf.ReadInt());
             break;
         case 1:
-            SetDisplayValue(buf.ReadInt());
+            SetDisplayMonth(buf.ReadInt());
             break;
         }
     }
@@ -165,15 +173,31 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         if(computeMaxes == COMPUTEMAXES_YEARLY)
             str = str + "COMPUTEMAXES_YEARLY";
         str = str + "\n";
-        str = str + indent + "DisplayValue = ";
-        if(DisplayValue == DISPLAYVALUES_A)
-            str = str + "DISPLAYVALUES_A";
-        if(DisplayValue == DISPLAYVALUES_B)
-            str = str + "DISPLAYVALUES_B";
-        if(DisplayValue == DISPLAYVALUES_C)
-            str = str + "DISPLAYVALUES_C";
-        if(DisplayValue == DISPLAYVALUES_D)
-            str = str + "DISPLAYVALUES_D";
+        str = str + indent + "DisplayMonth = ";
+        if(DisplayMonth == MONTH_JANUARY)
+            str = str + "MONTH_JANUARY";
+        if(DisplayMonth == MONTH_FEBRUARY)
+            str = str + "MONTH_FEBRUARY";
+        if(DisplayMonth == MONTH_MARCH)
+            str = str + "MONTH_MARCH";
+        if(DisplayMonth == MONTH_APRIL)
+            str = str + "MONTH_APRIL";
+        if(DisplayMonth == MONTH_MAY)
+            str = str + "MONTH_MAY";
+        if(DisplayMonth == MONTH_JUNE)
+            str = str + "MONTH_JUNE";
+        if(DisplayMonth == MONTH_JULY)
+            str = str + "MONTH_JULY";
+        if(DisplayMonth == MONTH_AUGUST)
+            str = str + "MONTH_AUGUST";
+        if(DisplayMonth == MONTH_SEPTEMBER)
+            str = str + "MONTH_SEPTEMBER";
+        if(DisplayMonth == MONTH_OCTOBER)
+            str = str + "MONTH_OCTOBER";
+        if(DisplayMonth == MONTH_NOVEMBER)
+            str = str + "MONTH_NOVEMBER";
+        if(DisplayMonth == MONTH_DECEMBER)
+            str = str + "MONTH_DECEMBER";
         str = str + "\n";
         return str;
     }
@@ -181,6 +205,6 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
 
     // Attributes
     private int computeMaxes;
-    private int DisplayValue;
+    private int DisplayMonth;
 }
 

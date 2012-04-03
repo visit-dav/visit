@@ -74,6 +74,7 @@ class ExtremeValueAnalysisCommonPluginInfo : public virtual CommonOperatorPlugin
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
 };
 
 class ExtremeValueAnalysisGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual ExtremeValueAnalysisCommonPluginInfo
@@ -92,6 +93,7 @@ class ExtremeValueAnalysisViewerPluginInfo : public virtual ViewerOperatorPlugin
     virtual AttributeSubject *GetDefaultAtts();
     virtual void SetClientAtts(AttributeSubject *atts);
     virtual void GetClientAtts(AttributeSubject *atts);
+    virtual void GetClientAtts(AttributeSubject *atts, const bool, const bool);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,

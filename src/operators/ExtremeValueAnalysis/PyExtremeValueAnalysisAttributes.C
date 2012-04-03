@@ -91,23 +91,57 @@ PyExtremeValueAnalysisAttributes_ToString(const ExtremeValueAnalysisAttributes *
           break;
     }
 
-    const char *DisplayValue_names = "A, B, C, D";
-    switch (atts->GetDisplayValue())
+    const char *DisplayMonth_names = "January, February, March, April, May, "
+        "June, July, August, September, "
+        "October, November, December";
+    switch (atts->GetDisplayMonth())
     {
-      case ExtremeValueAnalysisAttributes::A:
-          SNPRINTF(tmpStr, 1000, "%sDisplayValue = %sA  # %s\n", prefix, prefix, DisplayValue_names);
+      case ExtremeValueAnalysisAttributes::January:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sJanuary  # %s\n", prefix, prefix, DisplayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::B:
-          SNPRINTF(tmpStr, 1000, "%sDisplayValue = %sB  # %s\n", prefix, prefix, DisplayValue_names);
+      case ExtremeValueAnalysisAttributes::February:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sFebruary  # %s\n", prefix, prefix, DisplayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::C:
-          SNPRINTF(tmpStr, 1000, "%sDisplayValue = %sC  # %s\n", prefix, prefix, DisplayValue_names);
+      case ExtremeValueAnalysisAttributes::March:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sMarch  # %s\n", prefix, prefix, DisplayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::D:
-          SNPRINTF(tmpStr, 1000, "%sDisplayValue = %sD  # %s\n", prefix, prefix, DisplayValue_names);
+      case ExtremeValueAnalysisAttributes::April:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sApril  # %s\n", prefix, prefix, DisplayMonth_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::May:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sMay  # %s\n", prefix, prefix, DisplayMonth_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::June:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sJune  # %s\n", prefix, prefix, DisplayMonth_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::July:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sJuly  # %s\n", prefix, prefix, DisplayMonth_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::August:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sAugust  # %s\n", prefix, prefix, DisplayMonth_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::September:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sSeptember  # %s\n", prefix, prefix, DisplayMonth_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::October:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sOctober  # %s\n", prefix, prefix, DisplayMonth_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::November:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sNovember  # %s\n", prefix, prefix, DisplayMonth_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::December:
+          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sDecember  # %s\n", prefix, prefix, DisplayMonth_names);
           str += tmpStr;
           break;
       default:
@@ -160,7 +194,7 @@ ExtremeValueAnalysisAttributes_GetComputeMaxes(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ExtremeValueAnalysisAttributes_SetDisplayValue(PyObject *self, PyObject *args)
+ExtremeValueAnalysisAttributes_SetDisplayMonth(PyObject *self, PyObject *args)
 {
     ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
 
@@ -168,15 +202,17 @@ ExtremeValueAnalysisAttributes_SetDisplayValue(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the DisplayValue in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetDisplayValue(ExtremeValueAnalysisAttributes::DisplayValues(ival));
+    // Set the DisplayMonth in the object.
+    if(ival >= 0 && ival < 12)
+        obj->data->SetDisplayMonth(ExtremeValueAnalysisAttributes::Month(ival));
     else
     {
-        fprintf(stderr, "An invalid DisplayValue value was given. "
-                        "Valid values are in the range of [0,3]. "
+        fprintf(stderr, "An invalid DisplayMonth value was given. "
+                        "Valid values are in the range of [0,11]. "
                         "You can also use the following names: "
-                        "A, B, C, D.");
+                        "January, February, March, April, May, "
+                        "June, July, August, September, "
+                        "October, November, December.");
         return NULL;
     }
 
@@ -185,10 +221,10 @@ ExtremeValueAnalysisAttributes_SetDisplayValue(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ExtremeValueAnalysisAttributes_GetDisplayValue(PyObject *self, PyObject *args)
+ExtremeValueAnalysisAttributes_GetDisplayMonth(PyObject *self, PyObject *args)
 {
     ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplayValue()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplayMonth()));
     return retval;
 }
 
@@ -198,8 +234,8 @@ PyMethodDef PyExtremeValueAnalysisAttributes_methods[EXTREMEVALUEANALYSISATTRIBU
     {"Notify", ExtremeValueAnalysisAttributes_Notify, METH_VARARGS},
     {"SetComputeMaxes", ExtremeValueAnalysisAttributes_SetComputeMaxes, METH_VARARGS},
     {"GetComputeMaxes", ExtremeValueAnalysisAttributes_GetComputeMaxes, METH_VARARGS},
-    {"SetDisplayValue", ExtremeValueAnalysisAttributes_SetDisplayValue, METH_VARARGS},
-    {"GetDisplayValue", ExtremeValueAnalysisAttributes_GetDisplayValue, METH_VARARGS},
+    {"SetDisplayMonth", ExtremeValueAnalysisAttributes_SetDisplayMonth, METH_VARARGS},
+    {"GetDisplayMonth", ExtremeValueAnalysisAttributes_GetDisplayMonth, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -235,16 +271,32 @@ PyExtremeValueAnalysisAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "YEARLY") == 0)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::YEARLY));
 
-    if(strcmp(name, "DisplayValue") == 0)
-        return ExtremeValueAnalysisAttributes_GetDisplayValue(self, NULL);
-    if(strcmp(name, "A") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::A));
-    if(strcmp(name, "B") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::B));
-    if(strcmp(name, "C") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::C));
-    if(strcmp(name, "D") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::D));
+    if(strcmp(name, "DisplayMonth") == 0)
+        return ExtremeValueAnalysisAttributes_GetDisplayMonth(self, NULL);
+    if(strcmp(name, "January") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::January));
+    if(strcmp(name, "February") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::February));
+    if(strcmp(name, "March") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::March));
+    if(strcmp(name, "April") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::April));
+    if(strcmp(name, "May") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::May));
+    if(strcmp(name, "June") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::June));
+    if(strcmp(name, "July") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::July));
+    if(strcmp(name, "August") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::August));
+    if(strcmp(name, "September") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::September));
+    if(strcmp(name, "October") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::October));
+    if(strcmp(name, "November") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::November));
+    if(strcmp(name, "December") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::December));
 
 
     return Py_FindMethod(PyExtremeValueAnalysisAttributes_methods, self, name);
@@ -262,8 +314,8 @@ PyExtremeValueAnalysisAttributes_setattr(PyObject *self, char *name, PyObject *a
 
     if(strcmp(name, "computeMaxes") == 0)
         obj = ExtremeValueAnalysisAttributes_SetComputeMaxes(self, tuple);
-    else if(strcmp(name, "DisplayValue") == 0)
-        obj = ExtremeValueAnalysisAttributes_SetDisplayValue(self, tuple);
+    else if(strcmp(name, "DisplayMonth") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetDisplayMonth(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

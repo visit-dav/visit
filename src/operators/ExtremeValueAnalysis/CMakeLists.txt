@@ -21,7 +21,6 @@ ${COMMON_SOURCES}
 SET(LIBG_MOC_SOURCES
 QvisExtremeValueAnalysisWindow.h
 )
-QT_WRAP_CPP(GExtremeValueAnalysisOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
 SET(LIBV_SOURCES
 ExtremeValueAnalysisViewerPluginInfo.C
@@ -31,6 +30,7 @@ ${COMMON_SOURCES}
 SET(LIBE_SOURCES
 ExtremeValueAnalysisEnginePluginInfo.C
 avtExtremeValueAnalysisFilter.C
+avtRExtremesFilter.C
 ${COMMON_SOURCES}
 )
 
@@ -92,6 +92,7 @@ TARGET_LINK_LIBRARIES(IExtremeValueAnalysisOperator visitcommon)
 SET(INSTALLTARGETS IExtremeValueAnalysisOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    QT_WRAP_CPP(GExtremeValueAnalysisOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GExtremeValueAnalysisOperator ${LIBG_SOURCES})
     TARGET_LINK_LIBRARIES(GExtremeValueAnalysisOperator visitcommon gui )
 
