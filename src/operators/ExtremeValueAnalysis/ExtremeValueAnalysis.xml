@@ -1,21 +1,29 @@
 <?xml version="1.0"?>
-  <Plugin name="ExtremeValueAnalysis" type="operator" label="ExtremeValueAnalysis" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false">
+  <Plugin name="ExtremeValueAnalysis" type="operator" label="ExtremeValueAnalysis" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="scalar" exprOutType="scalar">
     <Attribute name="ExtremeValueAnalysisAttributes" purpose="Attributes for ExtremeValueAnalysis operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Enum name="ComputeMaxes">
         MONTHLY
         YEARLY
       </Enum>
-      <Enum name="DisplayValues">
-        A
-        B
-        C
-        D
+      <Enum name="Month">
+        January
+        February
+        March
+        April
+        May
+        June
+        July
+        August
+        September
+        October
+        November
+        December
       </Enum>
       <Field name="computeMaxes" label="compute Maxes" type="enum" subtype="ComputeMaxes">
-        MONTHLY
+        YEARLY
       </Field>
-      <Field name="DisplayValue" label="Display Value" type="enum" subtype="DisplayValues">
-        A
+      <Field name="DisplayMonth" label="Display Month" type="enum" subtype="Month" enabler="computeMaxes:MONTHLY">
+        January
       </Field>
     </Attribute>
   </Plugin>

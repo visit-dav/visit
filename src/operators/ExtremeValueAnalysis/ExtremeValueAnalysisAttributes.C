@@ -77,37 +77,40 @@ ExtremeValueAnalysisAttributes::ComputeMaxes_FromString(const std::string &s, Ex
 }
 
 //
-// Enum conversion methods for ExtremeValueAnalysisAttributes::DisplayValues
+// Enum conversion methods for ExtremeValueAnalysisAttributes::Month
 //
 
-static const char *DisplayValues_strings[] = {
-"A", "B", "C", 
-"D"};
+static const char *Month_strings[] = {
+"January", "February", "March", 
+"April", "May", "June", 
+"July", "August", "September", 
+"October", "November", "December"
+};
 
 std::string
-ExtremeValueAnalysisAttributes::DisplayValues_ToString(ExtremeValueAnalysisAttributes::DisplayValues t)
+ExtremeValueAnalysisAttributes::Month_ToString(ExtremeValueAnalysisAttributes::Month t)
 {
     int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
-    return DisplayValues_strings[index];
+    if(index < 0 || index >= 12) index = 0;
+    return Month_strings[index];
 }
 
 std::string
-ExtremeValueAnalysisAttributes::DisplayValues_ToString(int t)
+ExtremeValueAnalysisAttributes::Month_ToString(int t)
 {
-    int index = (t < 0 || t >= 4) ? 0 : t;
-    return DisplayValues_strings[index];
+    int index = (t < 0 || t >= 12) ? 0 : t;
+    return Month_strings[index];
 }
 
 bool
-ExtremeValueAnalysisAttributes::DisplayValues_FromString(const std::string &s, ExtremeValueAnalysisAttributes::DisplayValues &val)
+ExtremeValueAnalysisAttributes::Month_FromString(const std::string &s, ExtremeValueAnalysisAttributes::Month &val)
 {
-    val = ExtremeValueAnalysisAttributes::A;
-    for(int i = 0; i < 4; ++i)
+    val = ExtremeValueAnalysisAttributes::January;
+    for(int i = 0; i < 12; ++i)
     {
-        if(s == DisplayValues_strings[i])
+        if(s == Month_strings[i])
         {
-            val = (DisplayValues)i;
+            val = (Month)i;
             return true;
         }
     }
@@ -131,8 +134,8 @@ ExtremeValueAnalysisAttributes::DisplayValues_FromString(const std::string &s, E
 
 void ExtremeValueAnalysisAttributes::Init()
 {
-    computeMaxes = MONTHLY;
-    DisplayValue = A;
+    computeMaxes = YEARLY;
+    DisplayMonth = January;
 
     ExtremeValueAnalysisAttributes::SelectAll();
 }
@@ -155,7 +158,7 @@ void ExtremeValueAnalysisAttributes::Init()
 void ExtremeValueAnalysisAttributes::Copy(const ExtremeValueAnalysisAttributes &obj)
 {
     computeMaxes = obj.computeMaxes;
-    DisplayValue = obj.DisplayValue;
+    DisplayMonth = obj.DisplayMonth;
 
     ExtremeValueAnalysisAttributes::SelectAll();
 }
@@ -314,7 +317,7 @@ ExtremeValueAnalysisAttributes::operator == (const ExtremeValueAnalysisAttribute
 {
     // Create the return value
     return ((computeMaxes == obj.computeMaxes) &&
-            (DisplayValue == obj.DisplayValue));
+            (DisplayMonth == obj.DisplayMonth));
 }
 
 // ****************************************************************************
@@ -459,7 +462,7 @@ void
 ExtremeValueAnalysisAttributes::SelectAll()
 {
     Select(ID_computeMaxes, (void *)&computeMaxes);
-    Select(ID_DisplayValue, (void *)&DisplayValue);
+    Select(ID_DisplayMonth, (void *)&DisplayMonth);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -498,10 +501,10 @@ ExtremeValueAnalysisAttributes::CreateNode(DataNode *parentNode, bool completeSa
         node->AddNode(new DataNode("computeMaxes", ComputeMaxes_ToString(computeMaxes)));
     }
 
-    if(completeSave || !FieldsEqual(ID_DisplayValue, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_DisplayMonth, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("DisplayValue", DisplayValues_ToString(DisplayValue)));
+        node->AddNode(new DataNode("DisplayMonth", Month_ToString(DisplayMonth)));
     }
 
 
@@ -556,20 +559,20 @@ ExtremeValueAnalysisAttributes::SetFromNode(DataNode *parentNode)
                 SetComputeMaxes(value);
         }
     }
-    if((node = searchNode->GetNode("DisplayValue")) != 0)
+    if((node = searchNode->GetNode("DisplayMonth")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
-                SetDisplayValue(DisplayValues(ival));
+            if(ival >= 0 && ival < 12)
+                SetDisplayMonth(Month(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            DisplayValues value;
-            if(DisplayValues_FromString(node->AsString(), value))
-                SetDisplayValue(value);
+            Month value;
+            if(Month_FromString(node->AsString(), value))
+                SetDisplayMonth(value);
         }
     }
 }
@@ -586,10 +589,10 @@ ExtremeValueAnalysisAttributes::SetComputeMaxes(ExtremeValueAnalysisAttributes::
 }
 
 void
-ExtremeValueAnalysisAttributes::SetDisplayValue(ExtremeValueAnalysisAttributes::DisplayValues DisplayValue_)
+ExtremeValueAnalysisAttributes::SetDisplayMonth(ExtremeValueAnalysisAttributes::Month DisplayMonth_)
 {
-    DisplayValue = DisplayValue_;
-    Select(ID_DisplayValue, (void *)&DisplayValue);
+    DisplayMonth = DisplayMonth_;
+    Select(ID_DisplayMonth, (void *)&DisplayMonth);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -602,10 +605,10 @@ ExtremeValueAnalysisAttributes::GetComputeMaxes() const
     return ComputeMaxes(computeMaxes);
 }
 
-ExtremeValueAnalysisAttributes::DisplayValues
-ExtremeValueAnalysisAttributes::GetDisplayValue() const
+ExtremeValueAnalysisAttributes::Month
+ExtremeValueAnalysisAttributes::GetDisplayMonth() const
 {
-    return DisplayValues(DisplayValue);
+    return Month(DisplayMonth);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -633,7 +636,7 @@ ExtremeValueAnalysisAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_computeMaxes: return "computeMaxes";
-    case ID_DisplayValue: return "DisplayValue";
+    case ID_DisplayMonth: return "DisplayMonth";
     default:  return "invalid index";
     }
 }
@@ -659,7 +662,7 @@ ExtremeValueAnalysisAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_computeMaxes: return FieldType_enum;
-    case ID_DisplayValue: return FieldType_enum;
+    case ID_DisplayMonth: return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -685,7 +688,7 @@ ExtremeValueAnalysisAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_computeMaxes: return "enum";
-    case ID_DisplayValue: return "enum";
+    case ID_DisplayMonth: return "enum";
     default:  return "invalid index";
     }
 }
@@ -717,9 +720,9 @@ ExtremeValueAnalysisAttributes::FieldsEqual(int index_, const AttributeGroup *rh
         retval = (computeMaxes == obj.computeMaxes);
         }
         break;
-    case ID_DisplayValue:
+    case ID_DisplayMonth:
         {  // new scope
-        retval = (DisplayValue == obj.DisplayValue);
+        retval = (DisplayMonth == obj.DisplayMonth);
         }
         break;
     default: retval = false;

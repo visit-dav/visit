@@ -65,12 +65,20 @@ public:
         MONTHLY,
         YEARLY
     };
-    enum DisplayValues
+    enum Month
     {
-        A,
-        B,
-        C,
-        D
+        January,
+        February,
+        March,
+        April,
+        May,
+        June,
+        July,
+        August,
+        September,
+        October,
+        November,
+        December
     };
 
     // These constructors are for objects of this class
@@ -101,11 +109,11 @@ public:
 
     // Property setting methods
     void SetComputeMaxes(ComputeMaxes computeMaxes_);
-    void SetDisplayValue(DisplayValues DisplayValue_);
+    void SetDisplayMonth(Month DisplayMonth_);
 
     // Property getting methods
     ComputeMaxes GetComputeMaxes() const;
-    DisplayValues GetDisplayValue() const;
+    Month GetDisplayMonth() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -117,10 +125,10 @@ public:
 protected:
     static std::string ComputeMaxes_ToString(int);
 public:
-    static std::string DisplayValues_ToString(DisplayValues);
-    static bool DisplayValues_FromString(const std::string &, DisplayValues &);
+    static std::string Month_ToString(Month);
+    static bool Month_FromString(const std::string &, Month &);
 protected:
-    static std::string DisplayValues_ToString(int);
+    static std::string Month_ToString(int);
 public:
 
     // Keyframing methods
@@ -133,13 +141,13 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_computeMaxes = 0,
-        ID_DisplayValue,
+        ID_DisplayMonth,
         ID__LAST
     };
 
 private:
     int computeMaxes;
-    int DisplayValue;
+    int DisplayMonth;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

@@ -54,6 +54,7 @@
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
+#include <QComboBox>
 
 #include <stdio.h>
 #include <string>
@@ -127,46 +128,43 @@ QvisExtremeValueAnalysisWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    computeMaxesLabel = new QLabel(tr("compute Maxes"), central);
+    computeMaxesLabel = new QLabel(tr("Compute Maxes:"), central);
     mainLayout->addWidget(computeMaxesLabel,0,0);
     computeMaxes = new QWidget(central);
     computeMaxesButtonGroup= new QButtonGroup(computeMaxes);
     QHBoxLayout *computeMaxesLayout = new QHBoxLayout(computeMaxes);
     computeMaxesLayout->setMargin(0);
     computeMaxesLayout->setSpacing(10);
-    QRadioButton *computeMaxesComputeMaxesMONTHLY = new QRadioButton(tr("MONTHLY"), computeMaxes);
+    QRadioButton *computeMaxesComputeMaxesMONTHLY = new QRadioButton(tr("Monthly"), computeMaxes);
     computeMaxesButtonGroup->addButton(computeMaxesComputeMaxesMONTHLY,0);
     computeMaxesLayout->addWidget(computeMaxesComputeMaxesMONTHLY);
-    QRadioButton *computeMaxesComputeMaxesYEARLY = new QRadioButton(tr("YEARLY"), computeMaxes);
+    QRadioButton *computeMaxesComputeMaxesYEARLY = new QRadioButton(tr("Annually"), computeMaxes);
     computeMaxesButtonGroup->addButton(computeMaxesComputeMaxesYEARLY,1);
     computeMaxesLayout->addWidget(computeMaxesComputeMaxesYEARLY);
     connect(computeMaxesButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(computeMaxesChanged(int)));
     mainLayout->addWidget(computeMaxes, 0,1);
 
-    DisplayValueLabel = new QLabel(tr("Display Value"), central);
-    mainLayout->addWidget(DisplayValueLabel,1,0);
-    DisplayValue = new QWidget(central);
-    DisplayValueButtonGroup= new QButtonGroup(DisplayValue);
-    QHBoxLayout *DisplayValueLayout = new QHBoxLayout(DisplayValue);
-    DisplayValueLayout->setMargin(0);
-    DisplayValueLayout->setSpacing(10);
-    QRadioButton *DisplayValueDisplayValuesA = new QRadioButton(tr("A"), DisplayValue);
-    DisplayValueButtonGroup->addButton(DisplayValueDisplayValuesA,0);
-    DisplayValueLayout->addWidget(DisplayValueDisplayValuesA);
-    QRadioButton *DisplayValueDisplayValuesB = new QRadioButton(tr("B"), DisplayValue);
-    DisplayValueButtonGroup->addButton(DisplayValueDisplayValuesB,1);
-    DisplayValueLayout->addWidget(DisplayValueDisplayValuesB);
-    QRadioButton *DisplayValueDisplayValuesC = new QRadioButton(tr("C"), DisplayValue);
-    DisplayValueButtonGroup->addButton(DisplayValueDisplayValuesC,2);
-    DisplayValueLayout->addWidget(DisplayValueDisplayValuesC);
-    QRadioButton *DisplayValueDisplayValuesD = new QRadioButton(tr("D"), DisplayValue);
-    DisplayValueButtonGroup->addButton(DisplayValueDisplayValuesD,3);
-    DisplayValueLayout->addWidget(DisplayValueDisplayValuesD);
-    connect(DisplayValueButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(DisplayValueChanged(int)));
-    mainLayout->addWidget(DisplayValue, 1,1);
+    DisplayMonthLabel = new QLabel(tr("Display Month"), central);
+    mainLayout->addWidget(DisplayMonthLabel,1,0);
 
+    displayMonthType = new QComboBox(central);
+    displayMonthType->addItem(tr("January"));
+    displayMonthType->addItem(tr("February"));
+    displayMonthType->addItem(tr("March"));
+    displayMonthType->addItem(tr("April"));
+    displayMonthType->addItem(tr("May"));
+    displayMonthType->addItem(tr("June"));
+    displayMonthType->addItem(tr("July"));
+    displayMonthType->addItem(tr("August"));
+    displayMonthType->addItem(tr("September"));
+    displayMonthType->addItem(tr("October"));
+    displayMonthType->addItem(tr("November"));
+    displayMonthType->addItem(tr("December"));
+
+    mainLayout->addWidget(displayMonthType, 1,1);
+    connect(displayMonthType, SIGNAL(activated(int)),
+            this, SLOT(DisplayMonthChanged(int)));
 }
 
 
@@ -202,16 +200,27 @@ QvisExtremeValueAnalysisWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case ExtremeValueAnalysisAttributes::ID_computeMaxes:
+            if (atts->GetComputeMaxes() == ExtremeValueAnalysisAttributes::MONTHLY)
+            {
+                displayMonthType->setEnabled(true);
+                if(DisplayMonthLabel)
+                    DisplayMonthLabel->setEnabled(true);
+            }
+            else
+            {
+                displayMonthType->setEnabled(false);
+                if(DisplayMonthLabel)
+                    DisplayMonthLabel->setEnabled(false);
+            }
             computeMaxesButtonGroup->blockSignals(true);
             if(computeMaxesButtonGroup->button((int)atts->GetComputeMaxes()) != 0)
                 computeMaxesButtonGroup->button((int)atts->GetComputeMaxes())->setChecked(true);
             computeMaxesButtonGroup->blockSignals(false);
             break;
-          case ExtremeValueAnalysisAttributes::ID_DisplayValue:
-            DisplayValueButtonGroup->blockSignals(true);
-            if(DisplayValueButtonGroup->button((int)atts->GetDisplayValue()) != 0)
-                DisplayValueButtonGroup->button((int)atts->GetDisplayValue())->setChecked(true);
-            DisplayValueButtonGroup->blockSignals(false);
+          case ExtremeValueAnalysisAttributes::ID_DisplayMonth:
+            displayMonthType->blockSignals(true);
+            displayMonthType->setCurrentIndex((int)atts->GetDisplayMonth());
+            displayMonthType->blockSignals(false);
             break;
         }
     }
@@ -250,21 +259,19 @@ QvisExtremeValueAnalysisWindow::computeMaxesChanged(int val)
     if(val != atts->GetComputeMaxes())
     {
         atts->SetComputeMaxes(ExtremeValueAnalysisAttributes::ComputeMaxes(val));
-        SetUpdate(false);
         Apply();
     }
 }
 
 
 void
-QvisExtremeValueAnalysisWindow::DisplayValueChanged(int val)
+QvisExtremeValueAnalysisWindow::DisplayMonthChanged(int val)
 {
-    if(val != atts->GetDisplayValue())
+    if(val != atts->GetDisplayMonth())
     {
-        atts->SetDisplayValue(ExtremeValueAnalysisAttributes::DisplayValues(val));
+        atts->SetDisplayMonth(ExtremeValueAnalysisAttributes::Month(val));
         SetUpdate(false);
         Apply();
     }
 }
-
 
