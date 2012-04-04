@@ -435,65 +435,98 @@ avtPoincareFilter::ContinueExecute()
 #ifdef STRAIGHTLINE_SKELETON
 
         // For Island Chains add in the O Points.
-        if( showOPoints &&
-
-            (properties.type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
-             properties.type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
-             properties.type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS ||
-             properties.type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS ) &&
-             properties.analysisState == FieldlineProperties::ADD_O_POINTS &&
-
-             !(poincare_ic->properties.OPoints.empty()) )
+        if( showOPoints )
         {
-          // Change the state of the properties to complete now that
-          // the seed point has been stripped off.
-          poincare_ic->properties.analysisState =
-            FieldlineProperties::COMPLETED;
-
-          std::cerr << "Have island seed  " << properties.OPoints[0]
-                    << std::endl;
-
-          if( properties.iteration < OPointMaxIterations )
+          if( properties.type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
+              properties.type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
+              properties.type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
+              properties.type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
           {
-            std::vector<avtIntegralCurve *> new_ics;
-            avtVector vec(0,0,0);
-
-            std::cerr << "Adding island seed  " << properties.OPoints[0]
-                      << std::endl;
-
-            AddSeedPoint( properties.OPoints[0], vec, new_ics );
-          
-            for( unsigned int j=0; j<new_ics.size(); ++j )
+            // Are O Points present?
+            if( properties.analysisState == FieldlineProperties::ADD_O_POINTS &&
+                !(poincare_ic->properties.OPoints.empty()) )
             {
-              std::cerr << "New island seed ids " << new_ics[j]->id << "  ";
+              // Change the state of the properties to complete now that
+              // the seed point has been stripped off.
+              poincare_ic->properties.analysisState =
+                FieldlineProperties::COMPLETED;
 
-              avtPoincareIC * seed_poincare_ic = (avtPoincareIC *) new_ics[j];
+              if(verboseFlag )
+                std::cerr << "Have island seed  " << properties.OPoints[0]
+                          << std::endl;
+            
+              if( properties.iteration < OPointMaxIterations )
+              {
+                std::vector<avtIntegralCurve *> new_ics;
+                avtVector vec(0,0,0);
+              
+                if(verboseFlag )
+                  std::cerr << "Adding island seed  " << properties.OPoints[0]
+                            << std::endl;
+              
+                AddSeedPoint( properties.OPoints[0], vec, new_ics );
+              
+                for( unsigned int j=0; j<new_ics.size(); ++j )
+                {
+                  if(verboseFlag )
+                    std::cerr << "New island seed ids " << new_ics[j]->id << "  ";
 
-              // Transfer and update properties.
-              seed_poincare_ic->properties = properties;
+                  avtPoincareIC* seed_poincare_ic = (avtPoincareIC *) new_ics[j];
+
+                  // Transfer and update properties.
+                  seed_poincare_ic->properties = properties;
               
-              seed_poincare_ic->properties.analysisState =
-                FieldlineProperties::UNKNOWN_STATE;
+                  seed_poincare_ic->properties.analysisState =
+                    FieldlineProperties::UNKNOWN_STATE;
               
-              seed_poincare_ic->properties.source = properties.type;
+                  seed_poincare_ic->properties.source = properties.type;
               
-              seed_poincare_ic->properties.iteration = properties.iteration + 1;
+                  seed_poincare_ic->properties.iteration = properties.iteration + 1;
+                }
+
+                if(verboseFlag )
+                  std::cerr << std::endl;
+
+                // The source was an island_chain which meant the seed was
+                // an intermediate seed so delete it.
+
+                // Note only delete the seed if another seed replaces
+                // it. If past the maximum iterations the seed will
+                // not be deleted.
+                if( properties.source == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
+                    properties.source == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
+                    properties.source == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
+                    properties.source == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
+                {
+                  if(verboseFlag )
+                    std::cerr << "Deleting old O Point seed that spanwned a new seed "
+                              << poincare_ic->id << std::endl;
+                
+                  ids_to_delete.push_back( poincare_ic->id );
+                }
+              }
             }
-
-            std::cerr << std::endl;
           }
 
-          // The source was an island_chain which meant the seed was
-          // an intermediate seed so delete it.
-          if( properties.source == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
-              properties.source == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
-              properties.source == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS ||
-              properties.source == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
+          // Not an O or X point check to see if the source was from
+          // an island chain. If so delete.
+          else if( properties.type != FieldlineProperties::O_POINT &&
+                   properties.type != FieldlineProperties::X_POINT )
           {
-            std::cerr << "Deleting old O Point seed "
-                      << poincare_ic->id << std::endl;
-            
-            ids_to_delete.push_back( poincare_ic->id );
+            // The source was an island_chain which meant the seed was
+            // an intermediate seed that did make it into an O Point
+            // so delete it.
+            if( properties.source == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
+                properties.source == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
+                properties.source == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
+                properties.source == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
+            {
+              if(verboseFlag )
+                std::cerr << "Deleting old O Point seed that resulted in a surface "
+                          << poincare_ic->id << std::endl;
+              
+              ids_to_delete.push_back( poincare_ic->id );
+            }
           }
         }
 #endif
@@ -2015,6 +2048,12 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
           
           else if( type == FieldlineProperties::FLUX_SURFACE )
             std::cerr << "flux surface  ";
+
+          else if( type == FieldlineProperties::O_POINT )
+            std::cerr << "O Point  ";
+          
+          else if( type == FieldlineProperties::X_POINT )
+            std::cerr << "X Point  ";
           
           else if( type == FieldlineProperties::ISLAND_PRIMARY_CHAIN )
             std::cerr << islands << " island chain with resonances: "
@@ -2026,18 +2065,18 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                       << islands/islandGroups << " islands each) with resonances: "
                       << toroidalResonance << "," << poloidalResonance << "  ";
 
-          else if( type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS )
+          else if( type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS )
           {
-            std::cerr << islands << " island chain with an ambiguous axis: "
+            std::cerr << islands << " island chain with a secondary axis: "
                       << toroidalWindingP << "," << poloidalWindingP << " ("
                       << (float) toroidalWindingP / (float) poloidalWindingP << ")  ";
           }
-          else if( type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
+          else if( type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
           {
             std::cerr << islands << " islands around "
                       << islandGroups << " islandGroups with resonances: "
                       << toroidalResonance << "," << poloidalResonance << "  ";
-            std::cerr << islands << " with an ambiguous axis: "
+            std::cerr << islands << " with a secondary axis: "
                       << toroidalWindingP << "," << poloidalWindingP << " ("
                       << (float) toroidalWindingP / (float) poloidalWindingP << ")  ";
           }
@@ -2053,14 +2092,14 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
           
           if( (type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
                type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
-               type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS ||
-               type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS) &&
+               type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
+               type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS) &&
               toroidalWinding != poloidalWinding &&
               islands != toroidalWinding )
             std::cerr << "WARNING - The island count does not match the toroidalWinding count" << std::endl;
         }
         
-        if( type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS )
+        if( type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS )
         {
             toroidalWinding = islands * toroidalWindingP;
             poloidalWinding = islands * poloidalWindingP;
@@ -2068,7 +2107,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             islands = 0;
         }
 
-        else if( type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
+        else if( type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
         {
             toroidalWinding = toroidalWindingP;
             poloidalWinding = poloidalWindingP;
@@ -2347,8 +2386,8 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         {
             if( type == FieldlineProperties::UNKNOWN_TYPE ||
                 type == FieldlineProperties::CHAOTIC ||
-                type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS ||
-                type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
+                type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
+                type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
               nnodes = puncturePts[p][0].size();
 
             else if( type == FieldlineProperties::FLUX_SURFACE )
@@ -2366,6 +2405,23 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                                        toroidalWinding, poloidalWinding,
                                        windingGroupOffset, islands );
             }
+            else if( type == FieldlineProperties::O_POINT ||
+                     type == FieldlineProperties::X_POINT )
+            {
+              if( overlaps != 0 )
+              {
+                // Loop through each island.
+                for( unsigned int j=0; j<toroidalWinding; j++ )
+                {
+                  // Erase all of the overlapping points.
+                  puncturePts[p][j].erase( puncturePts[p][j].begin()+nnodes,
+                                           puncturePts[p][j].end() );
+                  
+                  // Close the island if it is complete
+                  puncturePts[p][j].push_back( puncturePts[p][j][0] );
+                }
+              }
+            }
             else if( type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
                      type == FieldlineProperties::ISLAND_SECONDARY_CHAIN )
             {
@@ -2374,7 +2430,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                 if( properties.analysisState == FieldlineProperties::COMPLETED ||
                     properties.analysisState == FieldlineProperties::TERMINATED )
                 {
-
                   // Loop through each island.
                   for( unsigned int j=0; j<toroidalWinding; j++ )
                   {
@@ -2399,12 +2454,11 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                 }
               }
             }
-            else if( type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS ||
-                     type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
+            else if( type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
+                     type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
             {
               if( overlaps != 0 )
               {
-
                 if( showLines )
                   nnodes = 2;
 
@@ -2461,7 +2515,9 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         if( !showIslands ||
             (showIslands &&
              (type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
-              type == FieldlineProperties::ISLAND_SECONDARY_CHAIN)) )
+              type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
+              type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
+              type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS)) )
         {
             double color_value;
 
@@ -2494,18 +2550,18 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             }
             else if( dataValue == DATA_SafetyFactorQ_NotP )
             {
-              if( type != FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS )
+              if( type != FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS )
                 color_value = (double) toroidalWinding / (double) poloidalWinding;
-              else if( type != FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
+              else if( type != FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
                 color_value = (double) toroidalResonance / (double) poloidalWinding;
               else
                 continue;
             }
             else if( dataValue == DATA_SafetyFactorP_NotQ )
             {
-              if( type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS )
+              if( type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS )
                 color_value = (double) toroidalWinding / (double) poloidalWindingP;
-              else if( type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
+              else if( type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
                 color_value = (double) toroidalResonance / (double) poloidalWindingP;
               else
                 continue;
@@ -2545,62 +2601,48 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                 showLines  = tmpLines;
                 showPoints = tmpPoints;
               }
+              else if( type == FieldlineProperties::O_POINT ||
+                       type == FieldlineProperties::X_POINT )
+              {
+                bool tmpLines  = showLines;
+                bool tmpPoints = showPoints;
+
+                if( overlaps != 0 )
+                {
+                  showLines  = false;
+                  showPoints = true;
+                }
+
+                drawIrrationalCurve( dt, puncturePts, nnodes, islands,
+                                     windingGroupOffset,
+                                     dataValue, color_value, 0, 0 );
+
+                showLines  = tmpLines;
+                showPoints = tmpPoints;
+              }
               else if( type == FieldlineProperties::RATIONAL )
               {
                 drawRationalCurve( dt, puncturePts, nnodes, islands,
                                    windingGroupOffset,
                                    dataValue, color_value );
               }
-              else if( 0 && type == FieldlineProperties::ISLAND_SECONDARY_CHAIN )
-              {
-                drawIrrationalCurve( dt, puncturePts, nnodes, islands,
-                                     windingGroupOffset,
-                                     dataValue, color_value,
-                                     false,
-                                     true );
-              }
               else if( type & FieldlineProperties::IRRATIONAL )
               {
-                bool tmpLines  = showLines;
-                bool tmpPoints = showPoints;
-
-//                 if( toroidalWinding == 16 && poloidalWinding == 3 )
-//                 {
-//                std::cerr << puncturePts[0][0][0].x << "  "
-//                          << puncturePts[0][0][0].y << "  "
-//                          << puncturePts[0][0][0].z << std::endl;
-
-//                std::cerr << nnodes << std::endl;
-
-//                for( unsigned int i=0; i<toroidalWinding; i++ )
-//                {
-//                  std::cerr <<  puncturePts[0][i].size() << "  ";
-//                }
-
-//                std::cerr << std::endl;
-
-//                   showLines  = false;
-//                   showPoints = true;
-//                 }
-
                 drawIrrationalCurve( dt, puncturePts, nnodes, islands,
                                      windingGroupOffset,
                                      dataValue, color_value,
                                      overlaps ? true : false,
                                      dataValue == DATA_WindingPointOrderModulo );
-
-                showLines  = tmpLines;
-                showPoints = tmpPoints;
               }
 
-              if( showOPoints &&
-                  (type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
-                   type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
-                   type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS ||
-                   type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS) )
-              {
-                drawPoints( dt, OPoints );
-              }
+//               if( showOPoints &&
+//                   (type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
+//                    type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
+//                    type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
+//                    type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS) )
+//               {
+//                 drawPoints( dt, OPoints );
+//               }
             }
             else
             {

@@ -106,20 +106,18 @@ enum FieldlineType { UNKNOWN_TYPE  = 0,
                      ORIGINAL_SEED = 1,
 
                      PERIODIC = 10,
-                     RATIONAL = 11,
-                     O_POINT  = 12,
-                     X_POINT  = 13,
+                     RATIONAL = 10,
+                     O_POINT  = 11,
+                     X_POINT  = 12,
                      
                      QUASI_PERIODIC = 20,
                      IRRATIONAL     = 20,
                      FLUX_SURFACE   = 21,
                      ISLAND_PRIMARY_CHAIN = 22,
-
                      ISLAND_SECONDARY_CHAIN = 23,
-                     ISLAND_AMBIGUOUS_AXIS = 24,
                      
-                     ISLAND_PRIMARY_AMBIGUOUS_AXIS = 24,
-                     ISLAND_SECONDARY_AMBIGUOUS_AXIS = 25,
+                     ISLAND_PRIMARY_SECONDARY_AXIS = 24,
+                     ISLAND_SECONDARY_SECONDARY_AXIS = 25,
 
                      CHAOTIC = 30 };
   
@@ -185,11 +183,11 @@ public:
   double safetyFactor;
 
 
-  // Base reduced number of windings
+  // Base number of windings
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;
 
-  // Ambiguous axis number of transits
+  // Secondary axis number of transits
   unsigned int toroidalWindingP;
   unsigned int poloidalWindingP;
 

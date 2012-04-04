@@ -111,9 +111,9 @@ enum FieldlineType { UNKNOWN_TYPE  = 0,
                      ORIGINAL_SEED = 1,
 
                      PERIODIC = 10,
-                     RATIONAL = 11,
-                     O_POINT  = 12,
-                     X_POINT  = 13,
+                     RATIONAL = 10,
+                     O_POINT  = 11,
+                     X_POINT  = 12,
                      
                      QUASI_PERIODIC = 20,
                      IRRATIONAL     = 20,
@@ -122,8 +122,8 @@ enum FieldlineType { UNKNOWN_TYPE  = 0,
                      ISLAND_PRIMARY_CHAIN = 22,
                      ISLAND_SECONDARY_CHAIN = 23,
 
-                     ISLAND_PRIMARY_AMBIGUOUS_AXIS = 24,
-                     ISLAND_SECONDARY_AMBIGUOUS_AXIS = 25,
+                     ISLAND_PRIMARY_SECONDARY_AXIS = 24,
+                     ISLAND_SECONDARY_SECONDARY_AXIS = 25,
                      
                      CHAOTIC = 30 };
   
@@ -187,11 +187,11 @@ public:
 
   double safetyFactor;
 
-  // Base reduced number of windings
+  // Base number of transits
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;
 
-  // Ambiguous axis number of transits
+  // Secondary axis number of transits
   unsigned int toroidalWindingP;
   unsigned int poloidalWindingP;
 
@@ -315,6 +315,37 @@ inline std::ostream& operator<<( std::ostream& out,
         return out << "COMPLETED";
     case FieldlineProperties::TERMINATED:
         return out << "TERMINATED";
+    default:
+        return out << "UNKNOWN";
+    }
+}
+
+
+inline std::ostream& operator<<( std::ostream& out, 
+                                  FieldlineProperties::FieldlineType type )
+{
+    switch( type )
+    {
+    case FieldlineProperties::UNKNOWN_TYPE:
+        return out << "UNKNOWN_TYPE";
+    case FieldlineProperties::RATIONAL:
+        return out << "RATIONAL";
+    case FieldlineProperties::O_POINT:
+        return out << "O_POINT";
+    case FieldlineProperties::X_POINT:
+        return out << "X_POINT";
+    case FieldlineProperties::FLUX_SURFACE:
+        return out << "FLUX_SURFACE";
+    case FieldlineProperties::ISLAND_PRIMARY_CHAIN:
+        return out << "ISLAND_PRIMARY_CHAIN";
+    case FieldlineProperties::ISLAND_SECONDARY_CHAIN:
+        return out << "ISLAND_SECONDARY_CHAIN";
+    case FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS:
+        return out << "ISLAND_PRIMARY_SECONDARY_AXIS";
+    case FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS:
+        return out << "ISLAND_SECONDARY_SECONDARY_AXIS";
+    case FieldlineProperties::CHAOTIC:
+        return out << "CHAOTIC";
     default:
         return out << "UNKNOWN";
     }
