@@ -120,6 +120,10 @@ exec perl -x $0 ${1+"$@"};
 #    Set VISITPLUGINVERSION environment variable so we'll know even in 
 #    development versions, the version to use for private plugins.
 #
+#    Cyrus Harrison, Wed Apr  4 12:33:33 PDT 2012
+#    Use a stricter grep check for VISIT_VERSION when trying to set
+#    VISITPLUGINVERSION for out-of-source builds.
+#
 ###############################################################################
 
 
@@ -364,7 +368,7 @@ if (-d "$visitdir/exe")
     elsif(-e "$visitdir/include/visit-config.h")
     {
         # Out of source build
-        chomp( $verline = `fgrep VISIT_VERSION $visitdir/include/visit-config.h`);
+        chomp( $verline = `fgrep 'VISIT_VERSION \"' $visitdir/include/visit-config.h`);
         if($verline ne "")
         {
             $verline =~ s/^.*\"(.*)\".*$/$1/;
