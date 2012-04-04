@@ -3155,8 +3155,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       analysisState = FieldlineProperties::COMPLETED;
 
 
-    // Surface or island so check for the ambiguous axis case. To date
-    // we have seen ambiguous axis in 1,1 surfaces and islands and in
+    // Surface or island so check for the secondary axis case. To date
+    // we have seen secondary axis in 1,1 surfaces and islands and in
     // higher order islands. But no in higher order surfaces.
     if( analysisState == FieldlineProperties::COMPLETED &&
         //        toroidalWinding == poloidalWinding &&
@@ -3164,7 +3164,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
          type == FieldlineProperties::ISLAND_SECONDARY_CHAIN) )
     {
       // QUESTION - is it possible to have secondary islands within
-      // the 1,1 that have an ambiguous axis. YES
+      // the 1,1 that have an secondary axis. YES
 
       if( toroidalWinding == poloidalWinding )
       {
@@ -3179,8 +3179,9 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       }
 
       if( verboseFlag )
-        std::cerr << "Checking for an ambiguous axis " << toroidalWindingP
-                  << std::endl; 
+        std::cerr
+          << "Checking for a secondary axis using a base toroidal winding of "
+          << toroidalWindingP << std::endl; 
       
       std::vector< std::pair< Point, unsigned int > > hullPts;
       
@@ -3277,10 +3278,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 //        nnodes = 1;
 
         if(type == FieldlineProperties::ISLAND_PRIMARY_CHAIN)
-          type = FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS;
+          type = FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS;
         
         else if(type == FieldlineProperties::ISLAND_SECONDARY_CHAIN)
-          type = FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS;
+          type = FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS;
         
         if( verboseFlag )
           std::cerr << "Secondary poloidal rotation  "
@@ -3304,8 +3305,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
                              nnodes,
                              poloidal_puncture_pts.size(),
                              islandCenters );
-        else if( type == FieldlineProperties::ISLAND_PRIMARY_AMBIGUOUS_AXIS ||
-                 type == FieldlineProperties::ISLAND_SECONDARY_AMBIGUOUS_AXIS )
+        else if( type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
+                 type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
           findIslandCenters( poloidal_puncture_pts,
                              islands,
                              islands * windingGroupOffset, //offset
