@@ -738,6 +738,9 @@ $0 = shift @ARGV;
 #    I corrected a typo with my changes to support Unity and Whitney at
 #    Sandia.
 #
+#    Brad Whitlock, Fri Mar 30 10:02:36 PDT 2012
+#    Remove purple and Q machine hacks. Add LSU's "philip" machine.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1648,49 +1651,6 @@ if ($ssh_tunneling && !$remotehost_set)
 }
 
 # ----
-#  HACK for LANL's Q machine:
-#
-#  If we're on LANL's Q machine, then we need to make sure BSUB is in our
-#  path and that libstdc++ and libmpi are in our library path.
-# ----
-if ($host =~ /^q\d+$/ || $host =~ /^qfe\d$/)
-{
-    # These are the DISCOM pipes to White from Q.  Four per login node;
-    # choose one at random.
-    $interface = int(rand(4)+1);
-    $remotehost = "172.16.$interface.1"    if ($remotehost =~ /^white128/);
-    $remotehost = "172.16.$interface.5"    if ($remotehost =~ /^white129/);
-    $remotehost = "172.16.$interface.9"    if ($remotehost =~ /^white269/);
-    $remotehost = "172.16.$interface.13"   if ($remotehost =~ /^white432/);
-
-    if ($ENV{PATH} eq "")
-    {
-        $ENV{PATH} = "/lsf/bin";
-    }
-    else
-    {
-        $ENV{PATH} = join ':' , ("$ENV{PATH}","/lsf/bin");
-    }
-    if ($ENV{LD_LIBRARY_PATH} eq "")
-    {
-        $ENV{LD_LIBRARY_PATH} = join ':' ,
-                             ("/usr/local/packages/gcc-3.2.3/lib",
-                              "/usr/local/opt/Compaq_MPI_64_2.6_r6/lib",
-                              "/usr/local/opt/Compaq_MPI_64_2.6_r6/shlib",
-                              "/lsfdir/Q_CD/4.2/alpha5-rms/lib");
-    }
-    else
-    {
-        $ENV{LD_LIBRARY_PATH} = join ':' ,
-                             ("$ENV{LD_LIBRARY_PATH}",
-                              "/usr/local/packages/gcc-3.2.3/lib",
-                              "/usr/local/opt/Compaq_MPI_64_2.6_r6/lib",
-                              "/usr/local/opt/Compaq_MPI_64_2.6_r6/shlib",
-                              "/lsfdir/Q_CD/4.2/alpha5-rms/lib");
-    }
-}
-
-# ----
 #  HACK for Sandia's redrose machine:
 #
 #  If we're on Sandia's redrose machine, then we need to make sure that 
@@ -1967,16 +1927,6 @@ if ($host =~ /^graph\d+$/)
 }
 
 # ----
-# HACK for up and purple @ LLNL
-#
-# ----
-if ( $host =~ /^up\d+$/ or $host =~ /^purple\d+$/)
-{
-    $ENV{LD_LIBRARY_PATH} = "/usr/lpp/ppe.poe/lib";
-    $ENV{LIBPATH} = "/usr/lpp/ppe.poe/lib";
-}
-
-# ----
 # HACK for Eureka @ Argonne
 # ----
 $IsRunningOnEureka_ANL = 0;
@@ -2048,6 +1998,24 @@ $IsRunningOnRedskySandia = 0;
 if ( $host =~ /^redsky-login\d+$/ )
 {
     $IsRunningOnRedskySandia = 1;
+}
+
+# ----
+# HACK for LSU Philip machine:
+# ----
+if ( $host =~ /^philip\d+$/ )
+{
+    if ($ENV{LD_LIBRARY_PATH} eq "")
+    {
+        $ENV{LD_LIBRARY_PATH} = join ':' ,
+                             ("/usr/local/compilers/GNU/gcc-4.3.2/lib64");
+    }
+    else
+    {
+        $ENV{LD_LIBRARY_PATH} = join ':' ,
+                             ("$ENV{LD_LIBRARY_PATH}",
+                              "/usr/local/compilers/GNU/gcc-4.3.2/lib64");
+    }
 }
 
 #  We stripped off the "port" argument above, so put it back here. Put it
