@@ -22,7 +22,7 @@ ON_XDMF="off"
 
 function bv_xdmf_depends_on
 {
-return ""
+echo "cmake vtk hdf5"
 }
 
 function bv_xdmf_info
@@ -31,6 +31,8 @@ export XDMF_FILE=${XDMF_FILE:-"Xdmf-2.1.1.tar.gz"}
 export XDMF_VERSION=${XDMF_VERSION:-"2.1.1"}
 export XDMF_COMPATIBILITY_VERSION=${XDMF_COMPATIBILITY_VERSION:-"2.1.1"}
 export XDMF_BUILD_DIR=${XDMF_BUILD_DIR:-"Xdmf"}
+export XDMF_MD5_CHECKSUM="09e2afd3a1b7b3e7d650b860212a95d1"
+export XDMF_SHA256_CHECKSUM=""
 }
 
 function bv_xdmf_print
@@ -194,6 +196,23 @@ function build_xdmf
 
     cd "$START_DIR"
     info "Done with Xdmf"
+    return 0
+}
+
+function bv_xdmf_is_enabled
+{
+    if [[ $DO_XDMF == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_xdmf_is_installed
+{
+    check_if_installed "Xdmf" $XDMF_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

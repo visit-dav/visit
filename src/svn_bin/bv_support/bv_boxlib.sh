@@ -18,7 +18,7 @@ ON_BOXLIB="off"
 
 function bv_boxlib_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_boxlib_info
@@ -28,6 +28,8 @@ export BOXLIB_FILE=${BOXLIB_FILE:-"ccse-${BOXLIB_VERSION}.tar.gz"}
 export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"0.1.8"}
 export BOXLIB_URL=${BOXLIB_URL:-"https://ccse.lbl.gov/Software/tarfiles/"}
 export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"ccse-${BOXLIB_VERSION}/Src/C_BaseLib"}
+export BOXLIB_MD5_CHECKSUM="6be7df17d539d7ef21d59321b0c63d9d"
+export BOXLIB_SHA256_CHECKSUM=""
 }
 
 function bv_boxlib_print
@@ -191,6 +193,23 @@ function build_boxlib
 
     cd "$START_DIR"
     info "Done with BoxLib"
+    return 0
+}
+
+function bv_boxlib_is_enabled
+{
+    if [[ $DO_BOXLIB == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_boxlib_is_installed
+{
+    check_if_installed "boxlib" $BOXLIB_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

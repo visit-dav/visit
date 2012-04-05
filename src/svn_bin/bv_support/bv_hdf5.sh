@@ -18,7 +18,7 @@ ON_HDF5="off"
 
 function bv_hdf5_depends_on
 {
-return ""
+echo "szip"
 }
 
 function bv_hdf5_info
@@ -29,6 +29,8 @@ export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION:-"1.8"}
 export HDF5_BUILD_DIR=${HDF5_BUILD_DIR:-"hdf5-${HDF5_VERSION}"}
 # Note: Versions of HDF5 1.6.5 and earlier DO NOT have last path component
 export HDF5_URL=${HDF5_URL:-"http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-${HDF5_VERSION}/src"}
+export HDF5_MD5_CHECKSUM="37711d4bcb72997e93d495f97c76c33a"
+export HDF5_SHA256_CHECKSUM=""
 }
 
 function bv_hdf5_print
@@ -186,6 +188,23 @@ function build_hdf5
     fi
     cd "$START_DIR"
     info "Done with HDF5"
+    return 0
+}
+
+function bv_hdf5_is_enabled
+{
+    if [[ $DO_HDF5 == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_hdf5_is_installed
+{
+    check_if_installed "hdf5" $HDF5_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

@@ -18,7 +18,7 @@ ON_FASTBIT="off"
 
 function bv_fastbit_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_fastbit_info
@@ -28,6 +28,8 @@ export FASTBIT_FILE=${FASTBIT_FILE:-"fastbit-ibis${FASTBIT_VERSION}.tar.gz"}
 # Note: last 3-digit field in URL changes with version.
 export FASTBIT_URL=${FASTBIT_URL:-"https://codeforge.lbl.gov/frs/download.php/208"}
 export FASTBIT_BUILD_DIR=${FASTBIT_BUILD_DIR:-"fastbit-ibis${FASTBIT_VERSION}"}
+export FASTBIT_MD5_CHECKSUM="380de470b856ecaf19d296aab6406811"
+export FASTBIT_SHA256_CHECKSUM=""
 }
 
 function bv_fastbit_print
@@ -150,6 +152,23 @@ function build_fastbit
     fi
     cd "$START_DIR"
     echo "Done with FastBit"
+    return 0
+}
+
+function bv_fastbit_is_enabled
+{
+    if [[ $DO_FASTBIT == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_fastbit_is_installed
+{
+    check_if_installed "fastbit" $FASTBIT_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

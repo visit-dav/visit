@@ -197,7 +197,7 @@ fi
 export MAKE=${MAKE:-"make"}
 export THIRD_PARTY_PATH=${THIRD_PARTY_PATH:-"./visit"}
 export GROUP=${GROUP:-"visit"}
-export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
+#export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
 export SVNREVISION=${SVNREVISION:-"HEAD"}
 # Created a temporary value because the user can override most of 
 # the components, which for the GUI happens at a later time.
@@ -241,12 +241,8 @@ done
 export DO_HOSTCONF="yes"
 export ON_HOSTCONF="on"
 
-export ON_ALLIO="off"
-
 export DO_DEBUG="no"
 export ON_DEBUG="off"
-export DO_REQUIRED_THIRD_PARTY="yes"
-export ON_THIRD_PARTY="on"
 export DO_GROUP="no"
 export ON_GROUP="off"
 export DO_LOG="no"
@@ -293,8 +289,6 @@ export USE_VISIBILITY_HIDDEN="no"
 export VISIT_INSTALL_PREFIX=""
 export VISIT_BUILD_MODE="Release"
 DOWNLOAD_ONLY="no"
-
-export VTK_INSTALL_DIR="vtk"
 
 if [[ "$OPSYS" == "Darwin" ]]; then
     export DO_MESA="yes"
@@ -369,7 +363,8 @@ DLG_WIDTH_WIDE="80"
 WRITE_UNIFIED_FILE=""
 VISIT_INSTALLATION_BUILD_DIR=""
 VISIT_DRY_RUN=0
-BUILD_VISIT_WITH_VERSION="trunk"
+DO_SUPER_BUILD="no"
+DO_MANGLED_LIBRARIES="no"
 }
 
 
@@ -443,6 +438,289 @@ function strip_quotes
     echo "${str}"
 }
 
+function bv_enable_group 
+{
+    local name=${1/--}
+    local match=0
+
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
+    do
+        #replace | with space
+        group_flag=${grouplibs_name[$bv_i]}
+        group_flag=${group_flag//\|/ }
+        for group in `echo $group_flag`;
+        do
+            if [[ "$group" == "$name" ]]; then
+                echo "executing group $name"
+                match=1
+                for group_dep in `echo ${grouplibs_deps[$bv_i]}`;
+                do
+                    if [[ "$group_dep" == no-* ]]; then
+                        group_dep=${group_dep/no-}
+                        #info "disabling $group_dep"
+                        initializeFunc="bv_${group_dep}_disable"
+                        $initializeFunc
+                    else
+                        #info "enabling $group_dep"
+                        initializeFunc="bv_${group_dep}_enable"
+                        $initializeFunc
+                    fi
+                done
+            fi
+        done
+    done
+
+    return $match
+}
+
+function enable_dependent_libraries
+{
+    local depends_on=""
+
+    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    do
+        $"bv_${reqlibs[$bv_i]}_is_enabled"
+
+        #if not enabled then skip
+        if [[ $? == 0 ]]; then
+            continue
+        fi
+
+        #enabled library, check dependencies..
+        depends_on=$("bv_${reqlibs[$bv_i]}_depends_on")
+
+        #replace commas with spaces if there are any..
+        depends_on=${depends_on//,/ }
+
+        for depend_lib in `echo $depends_on`;
+        do
+            $"bv_${depend_lib}_is_enabled"
+            if [[ $? == 0 ]]; then
+                echo "library ${depend_lib} was not set but another library depends on it, enabling it"
+                $"bv_${depend_lib}_enable"
+            fi
+        done
+    done
+
+    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
+    do
+        $"bv_${optlibs[$bv_i]}_is_enabled"
+
+        #if not enabled then skip
+        if [[ $? == 0 ]]; then
+            continue
+        fi
+
+        #enabled library, check dependencies..
+        depends_on=$("bv_${optlibs[$bv_i]}_depends_on")
+
+        #replace commas with spaces if there are any..
+        depends_on=${depends_on//,/ }
+
+        for depend_lib in `echo $depends_on`;
+        do
+            $"bv_${depend_lib}_is_enabled"
+            if [[ $? == 0 ]]; then
+                echo "library ${depend_lib} was not set but another library depends on it, enabling it"
+                $"bv_${depend_lib}_enable"
+            fi
+        done
+    done
+}
+
+#TODO: enable this feature and remove this from ensure..
+function initialize_module_variables
+{
+    info "initializing module variables"
+    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    do
+        declare -F "bv_${reqlibs[$bv_i]}_initialize_vars" &>/dev/null 
+        
+        if [[ $? == 0 ]]; then
+            info "initialize module variables for ${reqlibs[$bv_i]}"
+            $"bv_${reqlibs[$bv_i]}_initialize_vars"
+        fi
+    done
+
+    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
+    do
+        declare -F "bv_${optlibs[$bv_i]}_initialize_vars" &>/dev/null
+        
+        if [[ $? == 0 ]]; then
+            info "initialize module variables for ${optlibs[$bv_i]}"
+            $"bv_${optlibs[$bv_i]}_initialize_vars"
+        fi
+    done
+}
+
+
+function build_library
+{
+    local build_lib=$1
+    local depends_on=""
+
+    #check if library is already installed..
+    $"bv_${build_lib}_is_installed"
+    
+    if [[ $? == 1 ]]; then
+        info "$build_lib is already installed, skipping"
+        return
+    fi    
+
+    #Make sure that the recursive enable feature is working properly
+    $"bv_${build_lib}_is_enabled"
+    
+    if [[ $? == 0 ]]; then
+        error "$build_lib was disabled, but seems that another library requires it "
+    fi
+
+    depends_on=$("bv_${build_lib}_depends_on")
+    
+    if [[ $depends_on != "" ]]; then
+        info "library $build_lib depends on $depends_on"
+    fi
+
+    #replace commas with spaces if there are any..
+    depends_on=${depends_on//,/ }
+    
+    for depend_lib in `echo $depends_on`;
+    do
+        build_library $depend_lib
+    done
+    
+    #build ..
+    $"bv_${build_lib}_build"
+}
+
+function build_libraries_serial
+{
+    info "building required libraries"
+    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    do
+        $"bv_${reqlibs[$bv_i]}_is_enabled"
+     
+        if [[ $? == 0 ]]; then
+            continue
+        fi
+
+        $"bv_${reqlibs[$bv_i]}_is_installed"
+
+        if [[ $? == 0 ]]; then
+            cd "$START_DIR"
+            build_library ${reqlibs[$bv_i]}
+        else
+            info "${reqlibs[$bv_i]} already installed, skipping"
+        fi
+    done
+
+    info "building optional libraries"
+    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
+    do
+        $"bv_${optlibs[$bv_i]}_is_enabled"
+    
+        if [[ $? == 0 ]]; then
+            continue
+        fi
+
+        $"bv_${optlibs[$bv_i]}_is_installed"
+
+        if [[ $? == 0 ]]; then
+            cd "$START_DIR"
+            build_library ${optlibs[$bv_i]}
+        else
+            info "${optlibs[$bv_i]} already installed, skipping"
+        fi  
+    done
+}
+
+function build_libraries_parallel
+{
+    #launch all non dependent libraries in parallel..
+    info "building parallel required libraries"
+    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    do
+        $"bv_${reqlibs[$bv_i]}_is_enabled"
+     
+        if [[ $? == 0 ]]; then
+            continue
+        fi
+
+        $"bv_${reqlibs[$bv_i]}_is_installed"
+        if [[ $? == 0 ]]; then
+        
+            depends_on=$("bv_${reqlibs[$bv_i]}_depends_on")
+            if [[ "$depends_on" == "" ]]; then
+                (cd "$START_DIR" && build_library ${reqlibs[$bv_i]}) &
+            fi
+        else
+            info "${reqlibs[$bv_i]} already installed, skipping"
+        fi
+    done
+
+    wait
+
+    #load the serial ones..
+    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    do
+        $"bv_${reqlibs[$bv_i]}_is_enabled"
+
+        if [[ $? == 0 ]]; then
+            continue
+        fi
+
+        $"bv_${reqlibs[$bv_i]}_is_installed"
+
+        if [[ $? == 0 ]]; then
+            cd "$START_DIR"
+            build_library ${reqlibs[$bv_i]}
+        else
+            info "${reqlibs[$bv_i]} already installed, skipping"
+        fi
+    done
+
+    info "building parallel optional libraries"
+    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
+    do
+        $"bv_${optlibs[$bv_i]}_is_enabled"
+    
+        if [[ $? == 0 ]]; then
+            continue
+        fi
+        $"bv_${optlibs[$bv_i]}_is_installed"
+        if [[ $? == 0 ]]; then
+
+            depends_on=$("bv_${optlibs[$bv_i]}_depends_on")
+            if [[ "$depends_on" == "" ]]; then
+                (cd "$START_DIR" && build_library ${optlibs[$bv_i]}) &
+            fi
+        else
+            info "${optlibs[$bv_i]} already installed, skipping"
+        fi  
+    done
+
+    wait
+
+    #load serial
+    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
+    do
+        $"bv_${optlibs[$bv_i]}_is_enabled"
+
+        if [[ $? == 0 ]]; then
+            continue
+        fi
+
+        $"bv_${optlibs[$bv_i]}_is_installed"
+
+        if [[ $? == 0 ]]; then
+            cd "$START_DIR"
+            build_library ${optlibs[$bv_i]}
+        else
+            info "${optlibs[$bv_i]} already installed, skipping"
+        fi
+    done
+
+} 
+
 # *************************************************************************** #
 #                       Section 2, building VisIt                             #
 # --------------------------------------------------------------------------- #
@@ -451,41 +729,7 @@ function strip_quotes
 # *************************************************************************** #
 function run_build_visit()
 {
-# Fix the arguments: cram quoted strings into a single argument.
 declare -a arguments
-quoting="" # temp buffer for concatenating quoted args
-state=0    # 0 is the default state, for grabbing std arguments.
-           # 1 is for when we've seen a quote, and are currently "cramming"
-for arg in "$@" ; do
-    arguments[${#arguments[@]}]="$arg"
-
-    #case $state in
-    #    0)
-    #        if $(starts_with_quote "$arg") ; then
-    #            state=1
-    #            quoting="${arg}"
-    #        else
-    #            state=0
-    #            tval="${arg}"
-    #            arguments[${#arguments[@]}]="$tval"
-    #        fi
-    #        ;;
-    #    1)
-    #        if $(starts_with_quote "$arg") ; then
-    #            state=0
-    #            arguments="${quoting}"
-    #        elif $(ends_with_quote "$arg") ; then
-    #            quoting="${quoting} ${arg}"
-    #            tval="${quoting}"
-    #            arguments[${#arguments[@]}]="$tval"
-    #            state=0
-    #        else
-    #            quoting="${quoting} ${arg}"
-    #        fi
-    #        ;;
-    #    *) error "invalid state.";;
-    #esac
-done
 
 # Will be set if the next argument is an argument to an argument (I swear that
 # makes sense).  Make sure to unset it after pulling the argument!
@@ -498,28 +742,22 @@ deprecated=""
 # variable in those cases, and test it when we finish parsing.
 next_action=""
 
-#handle dbio and allio first since they affect multiple libraries..
-for arg in "${arguments[@]}" ; do
-    case $arg in
-        --all-io) DO_ALLIO="yes";;
-        --dbio-only) DO_DBIO_ONLY="yes";;
-    esac
+#handle groups first since they affect multiple libraries..
+for arg in "$@" ; 
+do
+    bv_enable_group "$arg"
+    #not part of a group, add to argument list..
+    if [[ $? == 0 ]]; then
+        xmlp_licenseMatch "$arg"
+        #suppress licenses as well..
+        if [[ $? == 0 ]]; then
+            arguments[${#arguments[*]}]="$arg"
+        fi
+    fi
 done
 
-#
-# As a temporary convenience, for a dbio-only build, we turn on almost all
-# of the 3rd party I/O libs used by database plugins.
-#
-if [[ "$DO_DBIO_ONLY" == "yes" || "$DO_ALLIO" == "yes" ]]; then
-    for (( i=0; i<${#iolibs[*]}; ++i ))
-    do
-        initializeFunc="bv_${iolibs[$i]}_enable"
-        $initializeFunc
-    done
-fi
-
-    
 for arg in "${arguments[@]}" ; do
+
     # Was the last option something that took an argument?
     if test -n "$next_arg" ; then
         # Yep.  Which option was it?
@@ -527,7 +765,6 @@ for arg in "${arguments[@]}" ; do
             extra_commandline_arg) $EXTRA_COMMANDLINE_ARG_CALL "$arg";;
             installation-build-dir) VISIT_INSTALLATION_BUILD_DIR="$arg";;
             write-unified-file) WRITE_UNIFIED_FILE="$arg";;
-            build-with-version) BUILD_VISIT_WITH_VERSION="$arg";;
             append-cflags) C_OPT_FLAGS="${C_OPT_FLAGS} ${arg}";;
             append-cxxflags) CXX_OPT_FLAGS="${CXX_OPT_FLAGS} ${arg}";;
             arch) VISITARCH="${arg}";;
@@ -553,34 +790,35 @@ for arg in "${arguments[@]}" ; do
     fi
 
     if [[ ${#arg} -gt 2 ]] ; then #has --
-       resolve_arg=${arg:2} #remove --
-       declare -F "bv_${resolve_arg}_enable" &>/dev/null
-       if [[ $? == 0 ]] ; then 
-           echo "enabling ${resolve_arg}"
-           initializeFunc="bv_${resolve_arg}_enable"
-           $initializeFunc
-           continue
-       elif [[ ${#resolve_arg} -gt 3 ]] ; then #in case it is --no-
-           resolve_arg_no_opt=${resolve_arg:3}
-           #disable library if it does not exist..
-           declare -F "bv_${resolve_arg_no_opt}_disable" &>/dev/null
-           if [[ $? == 0 ]] ; then
-               echo "disabling ${resolve_arg_no_opt}"
-               initializeFunc="bv_${resolve_arg_no_opt}_disable"
-               $initializeFunc
-               #if disabling icet, prevent it as well
-               if [[ ${resolve_arg_no_opt} == "icet" ]]; then
-                   echo "preventing icet from starting"
-                   PREVENT_ICET="yes"
-               fi
-               continue
+
+        #one module at a time
+        resolve_arg=${arg:2} #remove --
+        declare -F "bv_${resolve_arg}_enable" &>/dev/null
+
+        if [[ $? == 0 ]] ; then 
+            #echo "enabling ${resolve_arg}"
+            initializeFunc="bv_${resolve_arg}_enable"
+            $initializeFunc
+            continue
+        elif [[ ${#resolve_arg} -gt 3 ]] ; then #in case it is --no-
+            resolve_arg_no_opt=${resolve_arg:3}
+            #disable library if it does not exist..
+            declare -F "bv_${resolve_arg_no_opt}_disable" &>/dev/null
+            if [[ $? == 0 ]] ; then
+                #echo "disabling ${resolve_arg_no_opt}"
+                initializeFunc="bv_${resolve_arg_no_opt}_disable"
+                $initializeFunc
+                #if disabling icet, prevent it as well
+                if [[ ${resolve_arg_no_opt} == "icet" ]]; then
+                    echo "preventing icet from starting"
+                    PREVENT_ICET="yes"
+                fi
+                continue
            fi
-       fi
-    fi
-
-    #checking to see if additional command line arguments were requested
-    if [[ ${#arg} -gt 2 ]] ; then #possibly has --
-
+        fi
+        
+        #command line arguments created by modules
+        #checking to see if additional command line arguments were requested
         resolve_arg=${arg:2} #remove --
         local match=0
         for (( bv_i=0; bv_i<${#extra_commandline_args[*]}; bv_i += 5 ))
@@ -599,12 +837,13 @@ for arg in "${arguments[@]}" ; do
                   next_arg="extra_commandline_arg"
                   EXTRA_COMMANDLINE_ARG_CALL="$fp"
                 fi 
-                match="1"
+                match=1
                 break;
             fi
         done
+
         #found a match in the modules..
-        if [[ $match == "1" ]]; then
+        if [[ $match -eq 1 ]]; then
            continue
         fi
     fi
@@ -613,10 +852,9 @@ for arg in "${arguments[@]}" ; do
     case $arg in
         --installation-build-dir) next_arg="installation-build-dir";;
         --write-unified-file) next_arg="write-unified-file";;
-        --build-with-version) next_arg="build-with-version";;
+        --parallel-build) DO_SUPER_BUILD="yes";;
+        --mangle-libraries) DO_MANGLED_LIBRARIES="yes";;
         --dry-run) VISIT_DRY_RUN=1;;
-        --all-io) continue;; #do nothing now..
-        --dbio-only) continue;; #do nothing now..
         --arch) next_arg="arch";;
         --build-mode) next_arg="build-mode";;
         --cflag) next_arg="append-cflags";;
@@ -636,7 +874,6 @@ for arg in "${arguments[@]}" ; do
         -h|--help) next_action="help";;
         --java) DO_JAVA="yes"; ON_JAVA="on";;
         --makeflags) next_arg="makeflags";;
-        --no-thirdparty) DO_REQUIRED_THIRD_PARTY="no"; ON_THIRD_PARTY="off";;
         --no-hostconf) DO_HOSTCONF="no"; ON_HOSTCONF="off";;
         --parallel) parallel="yes"; DO_ICET="yes"; ON_ICET="on"; DO_MESA="yes"; ON_MESA="on"; ON_parallel="on";;
         --prefix) next_arg="prefix";;
@@ -782,7 +1019,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
     fi
 fi
 if [[ "$GRAPHICAL" == "yes" ]] ; then
-    $DLG --backtitle "$DLG_BACKTITLE" \
+    result=$($DLG --backtitle "$DLG_BACKTITLE" \
     --title "Build options" \
     --checklist \
 "Welcome to the VisIt $VISIT_VERSION build process.\n\n"\
@@ -793,8 +1030,8 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
 "Note that you can build a parallel version of VisIt by "\
 "specifying the location of your MPI installation when prompted.\n\n"\
 "Select the build options:" 0 0 0 \
-           "Optional"    "select optional 3rd party libraries"  $ON_OPTIONAL\
-           "AdvDownload" "use libs that cannot be downloaded from web"  $ON_OPTIONAL2\
+           "Groups"    "select 3rd party and advanced build"  $ON_OPTIONAL\
+           "Custom"    "select custom flags provided by each module"  $ON_OPTIONAL2\
            "SVN"        "get sources from SVN server"     $ON_SVN\
            "Tarball"    "specify VisIt tarball name"      $ON_USE_VISIT_FILE\
            "Parallel"   "specify parallel build flags"    $ON_parallel\
@@ -803,11 +1040,12 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
            "Fortran"    "enable fortran in third party libraries"  $ON_FORTRAN\
            "SLIVR"      "enable SLIVR volume rendering library"  $ON_SLIVR\
            "EnvVars"     "specify build environment var values"   $ON_verify\
-           "Advanced"   "display advanced options"        $ON_MORE  2> tmp$$
+           "Advanced"   "display advanced options"        $ON_MORE  3>&1 1>&2 2>&3)
     retval=$?
 
     # Remove the extra quoting, new dialog has --single-quoted
-    choice="$(cat tmp$$ | sed 's/\"//g' )"
+    choice="$(echo $result | sed 's/\"//g' )"
+
     case $retval in
       0)
         DO_OPTIONAL="no"
@@ -824,17 +1062,17 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
         for OPTION in $choice
         do
             case $OPTION in
-              Optional)
+              Groups)
                  DO_OPTIONAL="yes";;
-              AdvDownload)
+              Custom)
                  DO_OPTIONAL2="yes";;
               SVN)
                  DO_SVN="yes";DO_SVN_ANON="yes";export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
               Tarball)
-                 $DLG --backtitle "$DLG_BACKTITLE" \
+                 result=$($DLG --backtitle "$DLG_BACKTITLE" \
                     --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_FILE" 2> tmp$$
-                 VISIT_FILE="$(cat tmp$$)"
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_FILE" 3>&1 1>&2 2>&3)
+                 VISIT_FILE="$(echo $result)"
                  USE_VISIT_FILE="yes";;
               Parallel)
                  parallel="yes"; DO_ICET="yes"; ON_ICET="on"; DO_MESA="yes"; ON_MESA="on";;
@@ -862,146 +1100,141 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
         warn "Unexpected return code: $retval";;
     esac
 fi
-if [[ -e "tmp$$" ]] ; then
-    rm tmp$$
-fi
 
 if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
-    add_checklist_vars=""
-    for (( i=0; i < ${#iolibs[*]}; ++i ))
-    do
-        initializeFunc="bv_${iolibs[$i]}_graphical"
 
-        output_str="$($initializeFunc)"
-        add_checklist_vars=${add_checklist_vars}" "${output_str}
+    local add_checklist_vars=""
+
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
+    do
+        name="${grouplibs_name[$bv_i]}"
+        comment="${grouplibs_comment[$bv_i]}"
+        output_str="$name \"$comment\" 0 \"  Customize($name)\" \"Customize selection of $name\" 0"    
+        add_checklist_vars="$add_checklist_vars ${output_str}"
     done
 
-    for (( i=0; i < ${#noniolibs[*]}; ++i ))
-    do
-        initializeFunc="bv_${noniolibs[$i]}_graphical"
-        output_str="$($initializeFunc)"
-        add_checklist_vars=${add_checklist_vars}" "${output_str}
-    done
+    #calling whiptail directly is having issues delimiting by space , so hacking around it
+    result=$(echo "$DLG --backtitle \"Group options\" --title \"Groups provided by build_visit\" --checklist \"select\" 0 0 0 $add_checklist_vars 3>&1 1>&2 2>&3 || echo \"Cancelled Operation\"" | awk '{system($0)}')
 
-
-    $DLG --backtitle "$DLG_BACKTITLE" --title "Select 3rd party libraries" --checklist "Select the optional 3rd party libraries to be built and installed:" 0 0 0 $add_checklist_vars 2> tmp$$
-    retval=$?
+    if [[ $result == "Cancelled Operation" ]]; then
+        warn "Operation was cancelled, exiting"
+        exit 1
+    fi
 
     # Remove the extra quoting, new dialog has --single-quoted
-    choice="$(cat tmp$$ | sed 's/\"//g' )"
-    case $retval in
-      0)
-        #disable all..
-        for (( bv_i=0; bv_i < ${#iolibs[*]}; ++bv_i ))
-        do
-          initializeFunc="bv_${iolibs[$bv_i]}_disable"
-          $initializeFunc
-        done
-        
-        for (( bv_i=0; bv_i < ${#noniolibs[*]}; ++bv_i ))
-        do
-          initializeFunc="bv_${noniolibs[$bv_i]}_disable"
-          $initializeFunc
-        done
-        
+    choice="$(echo $result | sed 's/\"//g' )"
     for OPTION in $choice
+    do
+        #if customize operation
+        if [[ "$OPTION" != Customize* ]]; then 
+            #execute the entire group..
+            bv_enable_group "$OPTION"
+            continue
+        fi
+        
+        #allow modification of predefined groups
+        add_checklist_vars=""
+
+        for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
         do
-            #lower case
-            lower_option=`echo $OPTION | tr '[A-Z]' '[a-z]'`        
-        declare -F "bv_${lower_option}_enable" &>/dev/null
-            if [[ $? == 0 ]] ; then 
-                initializeFunc="bv_${lower_option}_enable"
-                $initializeFunc
-            fi    
+            name="${grouplibs_name[$bv_i]}"
+            #dialog and whiptail treat parantheses differently
+            if [[ "Customize($name)" == "$OPTION" || "Customize\\($name\\)" == "$OPTION" ]]; then 
+                echo "Customizing $name"
+                comment="${grouplibs_comment[$bv_i]}"
+
+                for group_dep in `echo ${grouplibs_deps[$bv_i]}`
+                do
+                    output_str="${group_dep} \"Enable/Disable $group_dep library\" 1"
+                    add_checklist_vars="$add_checklist_vars ${output_str}"
+                done
+                result=$(echo "$DLG --backtitle \"$comment\" \
+                                    --title \"Custom options for $name\" \
+                                    --checklist \"select\" 0 0 0 $add_checklist_vars \
+                                    3>&1 1>&2 2>&3 || echo \"Cancelled Operation\"" \
+                                    | awk '{system($0)}')
+
+                if [[ $result == "Cancelled Operation" ]]; then
+                    echo "Operation was cancelled"
+                    exit 1
+                fi
+                choice_custom="$(echo $result | sed 's/\"//g' )"
+                for OPTION_CUSTOM in $choice_custom
+                do
+                    #initialize all the ones
+                    if [[ "$OPTION_CUSTOM" == no-* ]]; then
+                        OPTION_CUSTOM=${OPTION_CUSTOM/no-}
+                        #echo "disabling $OPTION_CUSTOM"
+                        initializeFunc="bv_${OPTION_CUSTOM}_disable"
+                        $initalizeFunc
+                    else
+                        #echo "enable $OPTION_CUSTOM"
+                        initializeFunc="bv_${OPTION_CUSTOM}_enable"
+                        $initializeFunc
+                    fi
+                done
+            fi
         done
-        ;;
-      1)
-        warn "Cancel pressed."
-        exit 1;;
-      255)
-        warn "ESC pressed.";;
-      *)
-        warn "Unexpected return code: $retval";;
-    esac
-fi
-if [[ -e "tmp$$" ]] ; then
-    rm tmp$$
+    done
 fi
 
-#TODO: Update Optional2
 if [[ "$DO_OPTIONAL2" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
-    add_checklist_vars=""
-    for (( bv_i=0; bv_i < ${#advancedlibs[*]}; ++bv_i ))
+
+    local needsRerun=1
+
+    while [[ $needsRerun == 1 ]];
     do
-        initializeFunc="bv_${advancedlibs[$bv_i]}_graphical"
-        output_str="$($initializeFunc)"
-        add_checklist_vars=${add_checklist_vars}" "${output_str}
-    done
-    $DLG --backtitle "$DLG_BACKTITLE" \
-    --title "Select 3rd party libraries" \
-    --checklist \
-"Third party libs build_visit can't download "\
-"(you must download these prior to running build_visit):" 0 0 0  \
-           "AdvIO"    "$ADVIO_VERSION    $ADVIO_FILE"      $ON_ADVIO \
-           "MDSplus"  "$MDSPLUS_VERSION  $MDSPLUS_FILE"    $ON_MDSPLUS \
-           "Mili"     "$MILI_VERSION $MILI_FILE"      $ON_MILI \
-           "TCMALLOC" "$TCMALLOC_VERSION   $TCMALLOC_FILE"      $ON_TCMALLOC \
-            2> tmp$$
-    retval=$?
-    # Remove the extra quoting, new dialog has --single-quoted
-    choice="$(cat tmp$$ | sed 's/\"//g' )"
-    case $retval in
-      0)
-        DO_ADVIO="no"
-        DO_MDSPLUS="no"
-        DO_MILI="no"
-        DO_TCMALLOC="no"
+        needsRerun=0
+        local add_checklist_vars=""
+        for (( bv_i=0; bv_i<${#extra_commandline_args[*]}; bv_i += 5 ))
+        do
+            local module_name=${extra_commandline_args[$bv_i]} 
+            local command=${extra_commandline_args[$bv_i+1]} 
+            #local args=${extra_commandline_args[$bv_i+2]} 
+            local comment=${extra_commandline_args[$bv_i+3]} 
+            output_str="\"$command\" \"$comment ($module_name)\" 0"    
+            add_checklist_vars="$add_checklist_vars ${output_str}"
+        done
+
+        #calling whiptail directly is having issues delimiting by space , so hacking around it
+        result=$(echo "$DLG --backtitle \"Custom options\" --title \"d by build_visit\" --checklist \"select\" 0 0 0 $add_checklist_vars 3>&1 1>&2 2>&3 || echo \"Cancelled Operation\"" | awk '{system($0)}')
+
+        if [[ $result == "Cancelled Operation" ]]; then
+            warn "Operation was cancelled, skipping"
+            break
+        fi
+
+        # Remove the extra quoting, new dialog has --single-quoted
+        choice="$(echo $result | sed 's/\"//g' )"
         for OPTION in $choice
         do
-            case $OPTION in
-              AdvIO)
-                 DO_ADVIO="yes";;
-              MDSplus)
-                 DO_MDSPLUS="yes";;
-              Mili)
-                 DO_MILI="yes";;
-              TCMALLOC)
-                 DO_TCMALLOC="yes";;
-            esac
+            for (( bv_i=0; bv_i<${#extra_commandline_args[*]}; bv_i += 5 ))
+            do
+                local module_name=${extra_commandline_args[$bv_i]} 
+                local command=${extra_commandline_args[$bv_i+1]} 
+                local args=${extra_commandline_args[$bv_i+2]} 
+                local comment=${extra_commandline_args[$bv_i+3]} 
+                local fp=${extra_commandline_args[$bv_i+4]} 
+                if [[ "$command" == "$OPTION" ]]; then
+                    if [[ $args -ne 0 ]]; then
+                        result=$($DLG --backtitle "$DLG_BACKTITLE" \
+                            --inputbox \
+                            "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "" 3>&1 1>&2 2>&3)
+                        retval=$?
+                        if [[ $retval == 0 ]]; then
+                            echo "executing $command"
+                            $fp "$result"
+                        else
+                            needsRerun=1
+                        fi
+                    else
+                        $fp
+                    fi
+                fi
+            done
         done
-        ;;
-      1)
-        warn "Cancel pressed."
-        exit 1;;
-      255)
-        warn "ESC pressed.";;
-      *)
-        warn "Unexpected return code: $retval";;
-    esac
-fi
-if [[ -e "tmp$$" ]] ; then
-    rm tmp$$
-fi
-
-## At this point we are after the command line and the visual selection
-#dry run, don't execute anything just run the enabled stuff..
-if [[ $VISIT_DRY_RUN -eq 1 ]]; then
-    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
-    do
-        initializeFunc="bv_${reqlibs[$bv_i]}_dry_run"
-        $initializeFunc
     done
-
-    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-    do
-        initializeFunc="bv_${optlibs[$bv_i]}_dry_run"
-        $initializeFunc
-    done
-
-    bv_visit_dry_run
-    exit 0
-fi 
-        
+fi
 
 # make all VisIt related builds in its own directory..
 if [[ $VISIT_INSTALLATION_BUILD_DIR != "" ]] ; then
@@ -1018,9 +1251,8 @@ if [[ $VISIT_INSTALLATION_BUILD_DIR != "" ]] ; then
     cd $VISIT_INSTALLATION_BUILD_DIR
 fi
 
-
 #
-# See if the used needs to modify some variables
+# See if the user needs to modify some variables
 #
 check_more_options
 if [[ $? != 0 ]] ; then
@@ -1043,7 +1275,6 @@ if [[ $? != 0 ]] ; then
    error "Stopping build because of bad variable option setting error."
 fi
 
-
 if [[ $VISITARCH == "" ]] ; then
     export VISITARCH=${ARCH}_${C_COMPILER}
     if [[ "$CXX_COMPILER" == "g++" ]] ; then
@@ -1053,8 +1284,85 @@ if [[ $VISITARCH == "" ]] ; then
        fi
     fi
 fi
+if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
+    DO_CMAKE="yes"
+fi
+
+#
+# Save stdout as stream 3, redirect stdout and stderr to the log file.
+# After this maks sure to use the info/warn/error functions to display 
+# messages to the user
+#
+
+if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+    exec 3>&1 >> ${LOG_FILE} 2>&1
+    REDIRECT_ACTIVE="yes"
+else
+    exec 2>&1
+fi
+
+#
+# Log build_visit invocation w/ arguments & the start time.
+# Especially helpful if there are multiple starts dumped into the
+# same log.
+#
+LINES="------------------------------------------------------------" 
+log $LINES
+log $0 $@
+log "Started:" $(date)
+log $LINES
+
+if [[ "$DO_SVN" == "yes" ]] ; then
+    check_svn_client
+    if [[ $? != 0 ]]; then
+        error "Fatal Error: SVN mode selected, but svn client is not available."
+    fi
+fi
+
+#enabling any dependent libraries, handles both dependers and dependees..
+#TODO: handle them seperately
+info "enabling any dependent libraries"
+enable_dependent_libraries
+
+## At this point we are after the command line and the visual selection
+#dry run, don't execute anything just run the enabled stuff..
+#happens before any downloads have taken place..
+if [[ $VISIT_DRY_RUN -eq 1 ]]; then
+    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    do
+        initializeFunc="bv_${reqlibs[$bv_i]}_dry_run"
+        $initializeFunc
+    done
+
+    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
+    do
+        initializeFunc="bv_${optlibs[$bv_i]}_dry_run"
+        $initializeFunc
+    done
+
+    bv_visit_dry_run
+    exit 0
+fi
+
+#
+# Now make sure that we have everything we need to build VisIt, so we can bail
+# out early if we are headed for failure.
+#
+check_files
+if [[ $? != 0 ]] ; then
+   error "Stopping build because necessary files aren't available."
+fi
+
+#
+# Exit if we were told to only download the files.
+#
+if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
+    info "Successfully downloaded the specified files."
+    exit 0
+fi
 
 START_DIR="$PWD"
+
 if [[ "$DOWNLOAD_ONLY" == "no" ]] ; then
    if [[ ! -d "$THIRD_PARTY_PATH" ]] ; then
       if [[ "$THIRD_PARTY_PATH" == "./visit" ]] ; then
@@ -1099,48 +1407,10 @@ if [[ "$DOWNLOAD_ONLY" == "no" ]] ; then
    fi
 fi
 export VISITDIR=${VISITDIR:-$(pwd)}
-
-
-if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
-    if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
-        #disable all non dbio libraries
-        for (( bv_i=0; bv_i<${#nodbiolibs[*]}; ++bv_i ))
-        do
-            initializeFunc="bv_${nodbiolibs[$bv_i]}_disable"
-            $initializeFunc
-        done
-    fi
-    if [[ "$DO_ENGINE_ONLY" == "yes" || "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]] ; then
-        #disable all non server libraries
-        for (( bv_i=0; bv_i<${#noserverlibs[*]}; ++bv_i ))
-        do
-            initializeFunc="bv_${noserverlibs[$bv_i]}_disable"
-            $initializeFunc
-        done
-    fi
-fi
-
-if [[ "$DO_REQUIRED_THIRD_PARTY" == "no" ]] ; then
-    for (( bv_i=0; bv_i<${#thirdpartylibs[*]}; ++bv_i ))
-    do
-        # check force
-        forceFunc="bv_${thirdpartylibs[$bv_i]}_force"
-        $forceFunc
-        if [[ $? != 0 ]] ; then
-            disableFunc="bv_${thirdpartylibs[$bv_i]}_disable"
-            $disableFunc
-        fi
-    done
-fi
-
-if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
-    DO_CMAKE="yes"
-fi
-
-
 cd "$START_DIR"
 
-
+#initialize module variables, since all of VisIt's variables should be set by now..
+initialize_module_variables
 #
 # Later we will build Qt.  We are going to bypass their licensing agreement,
 # so echo it here.
@@ -1160,73 +1430,16 @@ if [[ "$USE_SYSTEM_QT" != "yes" && "$DO_QT" == "yes" ]]; then
     fi
 fi
 
-#
-# Save stdout as stream 3, redirect stdout and stderr to the log file.
-# After this maks sure to use the info/warn/error functions to display 
-# messages to the user
-#
+if [[ $DO_MANGLED_LIBRARIES == "yes" ]]; then
+    info "Mangling libraries while building"
+    info "Any libraries that support mangling will do so"
+fi
 
-if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
-    exec 3>&1 >> ${LOG_FILE} 2>&1
-    REDIRECT_ACTIVE="yes"
+if [[ "$DO_SUPER_BUILD" == "yes" ]]; then
+    build_libraries_parallel
 else
-    exec 2>&1
+    build_libraries_serial
 fi
-
-#
-# Log build_visit invocation w/ arguments & the start time.
-# Especially helpful if there are multiple starts dumped into the
-# same log.
-#
-LINES="------------------------------------------------------------" 
-log $LINES
-log $0 $@
-log "Started:" $(date)
-log $LINES
-
-if [[ "$DO_SVN" == "yes" ]] ; then
-    check_svn_client
-    if [[ $? != 0 ]]; then
-        error "Fatal Error: SVN mode selected, but svn client is not available."
-    fi
-fi
-
-#
-# Now make sure that we have everything we need to build VisIt, so we can bail
-# out early if we are headed for failure.
-#
-check_files
-if [[ $? != 0 ]] ; then
-   error "Stopping build because necessary files aren't available."
-fi
-
-#
-# Exit if we were told to only download the files.
-#
-if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
-    info "Successfully downloaded the specified files."
-    exit 0
-fi
-
-#
-# We are now ready to build.
-#
-
-echo "building required libraries"
-for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
-do
-    cd "$START_DIR"
-    initializeFunc="bv_${reqlibs[$bv_i]}_build"
-    $initializeFunc
-done
-
-echo "building optional libraries"
-for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-do
-    cd "$START_DIR"
-    initializeFunc="bv_${optlibs[$bv_i]}_build"
-    $initializeFunc
-done
 
 #
 # Create the host.conf file

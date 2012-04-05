@@ -20,7 +20,7 @@ ON_HDF4="off"
 
 function bv_hdf4_depends_on
 {
-return ""
+echo "szip"
 }
 
 function bv_hdf4_info
@@ -30,6 +30,8 @@ export HDF4_VERSION=${HDF4_VERSION:-"4.2.5"}
 export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION:-"4.2"}
 export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"hdf-4.2.5"}
 export HDF4_URL=${HDF4_URL:-"http://www.hdfgroup.org/ftp/HDF/HDF_Current/src"}
+export HDF4_MD5_CHECKSUM="7241a34b722d29d8561da0947c06069f"
+export HDF4_SHA256_CHECKSUM=""
 }
 
 function bv_hdf4_print
@@ -1426,6 +1428,23 @@ function build_hdf4
     fi
     cd "$START_DIR"
     info "Done with HDF4"
+    return 0
+}
+
+function bv_hdf4_is_enabled
+{
+    if [[ $DO_HDF4 == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_hdf4_is_installed
+{
+    check_if_installed "hdf4" $HDF4_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

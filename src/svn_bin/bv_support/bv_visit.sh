@@ -26,7 +26,7 @@ function bv_visit_disable
 #add any dependency with comma separation
 function bv_visit_depends_on
 {
-    return ""
+    echo ""
 }
 
 #add information about how to get library..
@@ -181,12 +181,50 @@ function build_visit
     # Set up the config-site file, which gives configure the information it
     # needs about the third party libraries.
     #
+    local VISIT_DIR="${VISIT_FILE%.tar*}/src"
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        cd src
-    else
-        VISIT_DIR=${VISIT_FILE%.tar*}/src
-        cd "${VISIT_DIR}"
+        VISIT_DIR="src" 
     fi
+    
+    if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
+        mangle_libraries "$VISIT_DIR" "mangled_$VISIT_DIR"
+    
+        if [[ $? == 0 ]]; then
+            #TODO: fix and remove this
+            #modify cmake to find library
+            cd "mangled_$VISIT_DIR"
+            mangle_file "$CMAKE_ROOT"/Modules/FindVTK.cmake CMake/FindMTK.cmake
+patch -p0 <<\EOF
+*** CMake/FindVisItMTK_tmp.cmake    2012-02-29 18:56:18.770322939 -0800
+--- CMake/FindVisItMTK.cmake    2012-02-29 19:11:10.950323153 -0800
+***************
+*** 72,78 ****
+  SET(MTK_DIR ${VISIT_MTK_DIR}/lib)
+  
+  MESSAGE(STATUS "Checking for MTK in ${MTK_DIR}")
+! INCLUDE(${CMAKE_ROOT}/Modules/FindMTK.cmake)
+  
+  # Set the VisIt mangled mesa off of the MTK mangled mesa variable.
+  IF("${MTK_USE_MANGLED_MESA}" STREQUAL "ON")
+--- 72,78 ----
+  SET(MTK_DIR ${VISIT_MTK_DIR}/lib)
+  
+  MESSAGE(STATUS "Checking for MTK in ${MTK_DIR}")
+! INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMTK.cmake)
+  
+  # Set the VisIt mangled mesa off of the MTK mangled mesa variable.
+  IF("${MTK_USE_MANGLED_MESA}" STREQUAL "ON")
+EOF
+            cd ..
+            [[ $VISIT_DIR != "src" ]] && cd ..
+            cp -R $VISIT_DIR/bin/shaders "mangled_${VISIT_DIR}/bin/shaders"
+            VISIT_DIR="mangled_$VISIT_DIR"
+        else
+            error "Mangling VisIt failed"
+            exit 0
+        fi
+    fi
+    cd $VISIT_DIR
     cp $START_DIR/$(hostname).cmake config-site
 
     #
@@ -231,7 +269,7 @@ function build_visit
     CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     rm -f CMakeCache.txt
-    issue_command ${CMAKE_BIN} ${FEATURES} . 
+    issue_command "${CMAKE_BIN}" ${FEATURES} . 
     if [[ $? != 0 ]] ; then
        echo "VisIt configure failed.  Giving up"
        return 1
@@ -354,6 +392,19 @@ function build_visit
     fi
 }
 
+function bv_visit_is_enabled
+{
+    if [[ $DO_VISIT == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_visit_is_installed
+{
+    #always return false?
+    return 0
+}
 
 #the build command..
 function bv_visit_build

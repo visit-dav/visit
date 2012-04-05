@@ -18,7 +18,7 @@ ON_ITAPS="off"
 
 function bv_itaps_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_itaps_print
@@ -34,6 +34,7 @@ function bv_itaps_print
   printf "%s%s\n" "ITAPS_MOAB_FILE=" "${ITAPS_MOAB_FILE}"
   printf "%s%s\n" "ITAPS_MOAB_VERSION=" "${ITAPS_MOAB_VERSION}"
   printf "%s%s\n" "ITAPS_MOAB_BUILD_DIR=" "${ITAPS_MOAB_BUILD_DIR}"
+
 }
 
 function bv_itaps_print_usage
@@ -109,6 +110,8 @@ export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION:-"0.6.3"}
 export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE:-"GRUMMP-${ITAPS_GRUMMP_VERSION}.tar.gz"}
 export ITAPS_GRUMMP_URL=${ITAPS_GRUMMP_URL:-https://redmine.scorec.rpi.edu/anonsvn/itaps/software/tags/1.2/release_distros}
 export ITAPS_GRUMMP_BUILD_DIR=${ITAPS_GRUMMP_BUILD_DIR:-"${ITAPS_GRUMMP_FILE%.tar*}"}
+export ITAPS_MD5_CHECKSUM=""
+export ITAPS_SHA256_CHECKSUM=""
 }
 
 function bv_itaps_ensure
@@ -513,6 +516,24 @@ function build_itaps_grummp
     fi
     cd "$START_DIR"
     info "Done with ITAPS_GRUMMP"
+    return 0
+}
+
+function bv_itaps_is_enabled
+{
+    if [[ $DO_ITAPS == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_itaps_is_installed
+{
+    #TODO: check other versions if necessary
+    check_if_installed "itaps/$ITAPS_VERSION/MOAB" $ITAPS_MOAB_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

@@ -18,7 +18,7 @@ ON_ADVIO="off"
 
 function bv_advio_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_advio_info
@@ -27,6 +27,8 @@ export ADVIO_FILE=${ADVIO_FILE:-"AdvIO-1.2.tar.gz"}
 export ADVIO_VERSION=${ADVIO_VERSION:-"1.2"}
 export ADVIO_COMPATIBILITY_VERSION=${ADVIO_COMPATIBILITY_VERSION:-"1.2"}
 export ADVIO_BUILD_DIR=${ADVIO_BUILD_DIR:-AdvIO-1.2}
+export ADVIO_MD5_CHECKSUM="db6def939a2d5dd4d3d6203ba5d3ec7e"
+export ADVIO_SHA256_CHECKSUM=""
 }
 
 function bv_advio_print
@@ -144,6 +146,23 @@ function build_advio
 
     cd "$START_DIR"
     info "Done with AdvIO"
+    return 0
+}
+
+function bv_advio_is_enabled
+{
+    if [[ $DO_ADVIO == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_advio_is_installed
+{
+    check_if_installed "AdvIO" $ADVIO_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

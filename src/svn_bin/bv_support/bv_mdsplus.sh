@@ -18,7 +18,7 @@ ON_MDSPLUS="off"
 
 function bv_mdsplus_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_mdsplus_info
@@ -27,6 +27,8 @@ export MDSPLUS_VERSION=${MDSPLUS_VERSION:-"2.2"}
 export MDSPLUS_FILE=${MDSPLUS_FILE:-"mdsplus-${MDSPLUS_VERSION}-4.tar.gz"}
 export MDSPLUS_COMPATIBILITY_VERSION=${MDSPLUS_COMPATIBILITY_VERSION:-"2.2"}
 export MDSPLUS_BUILD_DIR=${MDSPLUS_BUILD_DIR:-"mdsplus-${MDSPLUS_VERSION}"}
+export MDSPLUS_MD5_CHECKSUM=""
+export MDSPLUS_SHA256_CHECKSUM=""
 }
 
 function bv_mdsplus_print
@@ -143,6 +145,23 @@ function build_mdsplus
     fi
     cd "$START_DIR"
     info "Done with MDSplus"
+    return 0
+}
+
+function bv_mdsplus_is_enabled
+{
+    if [[ $DO_MDSPLUS == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_mdsplus_is_installed
+{
+    check_if_installed "mdsplus" $MDSPLUS_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

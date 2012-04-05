@@ -18,7 +18,7 @@ ON_TCMALLOC="off"
 
 function bv_tcmalloc_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_tcmalloc_info
@@ -27,6 +27,8 @@ export TCMALLOC_FILE=${TCMALLOC_FILE:-"google-perftools-0.97.tar.gz"}
 export TCMALLOC_VERSION=${TCMALLOC_VERSION:-"0.97"}
 export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION:-"0.97"}
 export TCMALLOC_BUILD_DIR=${TCMALLOC_BUILD_DIR:-"google-perftools-0.97"}
+export TCMALLOC_MD5_CHECKSUM="5168bdca5557bc5630a866f132f8f7c1"
+export TCMALLOC_SHA256_CHECKSUM=""
 }
 
 function bv_tcmalloc_print
@@ -133,6 +135,22 @@ function build_tcmalloc
     return 0
 }
 
+function bv_tcmalloc_is_enabled
+{
+    if [[ $DO_TCMALLOC == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_tcmalloc_is_installed
+{
+    check_if_installed "google-perftools"
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
 
 function bv_tcmalloc_build
 {

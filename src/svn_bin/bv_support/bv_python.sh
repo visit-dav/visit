@@ -4,8 +4,9 @@ export DO_PYTHON="yes"
 export ON_PYTHON="on"
 export FORCE_PYTHON="no"
 export USE_SYSTEM_PYTHON="no"
-export VISIT_PYTHON_DIR=""
+export VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-""}
 add_extra_commandline_args "python" "system-python" 0 "Using system python"
+add_extra_commandline_args "python" "alt-python-dir" 1 "Using alternate python directory"
 }
 
 function bv_python_enable
@@ -32,7 +33,10 @@ function bv_python_force
 
 function bv_python_system_python
 {
-  info "Using system python"
+  echo "Using system python"
+   TEST=`which python-config`
+   [ $? != 0 ] && error "System Python not found"
+
   bv_python_enable
   USE_SYSTEM_PYTHON="yes"
   PYTHON_BUILD_DIR=`python-config --prefix`
@@ -41,11 +45,54 @@ function bv_python_system_python
   PYTHON_COMPATIBILITY_VERSION=${PYTHON_VERSION%.*}
   PYTHON_FILE=""
   VISIT_PYTHON_DIR=`python-config --prefix`
+
+  ########################
+  PYTHON_INCLUDE_PATH=`python-config --includes`
+  #remove -I from first include
+  PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH:2}"
+  #remove any extra includes
+  PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH%%-I*}"
+  PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/lib"
+  PYTHON_LIBRARY=`python-config --libs`
+  #remove all other libraries except for python..
+  PYTHON_LIBRARY="${PYTHON_LIBRARY##-l*-l}"
+
 }
+
+function bv_python_alt_python_dir
+{
+  info "Using alternate python directory"
+
+  [ ! -e "$1/bin/python-config" ] && error "Python not found in $1"
+
+  bv_python_enable
+  USE_SYSTEM_PYTHON="yes"
+  PYTHON_ALT_DIR="$1"
+  PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python-config"
+  PYTHON_BUILD_DIR=`"$PYTHON_COMMAND" --prefix`
+  PYTHON_VER=`"$PYTHON_COMMAND" --version 2>&1`
+  PYTHON_VERSION=${PYTHON_VER#"Python "}
+  PYTHON_COMPATIBILITY_VERSION=${PYTHON_VERSION%.*}
+  PYTHON_FILE=""
+  VISIT_PYTHON_DIR=`"$PYTHON_COMMAND" --prefix`
+  
+  ########################
+  PYTHON_INCLUDE_PATH=`"$PYTHON_COMMAND" --includes`
+  #remove -I from first include
+  PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH:2}"
+  #remove any extra includes
+  PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH%%-I*}"
+  PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/lib"
+  PYTHON_LIBRARY=`"$PYTHON_COMMAND" --libs`
+  #remove all other libraries except for python..
+  PYTHON_LIBRARY="${PYTHON_LIBRARY##-l*-l}"
+  echo $PYTHON_BUILD_DIR $PYTHON_VERSION $VISIT_PYTHON_DIR
+}
+
 
 function bv_python_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_python_info
@@ -62,6 +109,8 @@ export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.6"}
 
 export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-1.5.2.tar.gz"}
 export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
+export PYTHON_MD5_CHECKSUM="17dcac33e4f3adb69a57c2607b6de246"
+export PYTHON_SHA256_CHECKSUM=""
 }
 
 function bv_python_print
@@ -85,18 +134,6 @@ echo "## Specify the location of the python." >> $HOSTCONF
 echo "##" >> $HOSTCONF
 
 if [[ "$USE_SYSTEM_PYTHON" == "yes" ]]; then
-    local PYTHON_INCLUDE_PATH=`python-config --includes`
-
-    #remove -I from first include
-    PYTHON_INCLUDE_PATH=${PYTHON_INCLUDE_PATH:2}
-    #remove any extra includes
-    PYTHON_INCLUDE_PATH=${PYTHON_INCLUDE_PATH%%-I*}
-
-    local PYTHON_LIBRARY_DIR=${VISIT_PYTHON_DIR}/lib
-    local PYTHON_LIBRARY=`python-config --libs`
-
-    #remove all other libraries except for python..
-    PYTHON_LIBRARY=${PYTHON_LIBRARY##-l*-l}
 
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.a"
@@ -108,7 +145,7 @@ if [[ "$USE_SYSTEM_PYTHON" == "yes" ]]; then
         fi
     fi
 
-    #echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
     #incase the PYTHON_DIR does not find the include and library set it manually...
     echo "VISIT_OPTION_DEFAULT(PYTHON_INCLUDE_PATH $PYTHON_INCLUDE_PATH)" >> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY ${PYTHON_LIBRARY_DIR}/${PYTHON_LIBRARY})" >> $HOSTCONF
@@ -119,7 +156,7 @@ fi
 echo >> $HOSTCONF
 }
 
-function bv_python_ensure
+function bv_python_initialize_vars
 {
     if [[ "$USE_SYSTEM_PYTHON" == "no" ]]; then
     
@@ -127,7 +164,12 @@ function bv_python_ensure
         #when they build..
         #this is for when python is being built and system python was not selected..
         export VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-"$VISITDIR/python/${PYTHON_VERSION}/${VISITARCH}"}
+    fi
+}
 
+function bv_python_ensure
+{
+    if [[ "$USE_SYSTEM_PYTHON" == "no" ]]; then
         if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
             if [[ "$DO_PYTHON" == "yes" || "$DO_VTK" == "yes" ]] ; then
                 ensure_built_or_ready "python" $PYTHON_VERSION $PYTHON_BUILD_DIR $PYTHON_FILE
@@ -429,6 +471,26 @@ function build_pyparsing
     fi
 
     info "Done with pyparsing."
+    return 0
+}
+
+function bv_python_is_enabled
+{
+    if [[ $DO_PYTHON == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_python_is_installed
+{
+    if [[ $USE_SYSTEM_PYTHON == "yes" ]]; then
+        return 1
+    fi
+    check_if_installed "python" $PYTHON_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

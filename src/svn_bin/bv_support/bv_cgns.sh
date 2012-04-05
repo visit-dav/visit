@@ -18,7 +18,7 @@ ON_CGNS="off"
 
 function bv_cgns_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_cgns_info
@@ -27,6 +27,9 @@ export CGNS_FILE=${CGNS_FILE:-"cgns-3.0.8-Source.tar.gz"}
 export CGNS_VERSION=${CGNS_VERSION:-"3.0.8"}
 export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"3.0"}
 export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"cgns-3.0.8-Source/src"}
+export CGNS_MD5_CHECKSUM="812a9a49c98ef32b7cae9954808d6f3e"
+export CGNS_SHA256_CHECKSUM=""
+
 }
 
 function bv_cgns_print
@@ -195,6 +198,23 @@ function build_cgns
     fi
     cd "$START_DIR"
     info "Done with CGNS"
+    return 0
+}
+
+function bv_cgns_is_enabled
+{
+    if [[ $DO_CGNS == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_cgns_is_installed
+{
+    check_if_installed "cgns" $CGNS_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

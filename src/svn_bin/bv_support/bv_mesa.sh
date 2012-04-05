@@ -18,7 +18,7 @@ ON_MESA="off"
 
 function bv_mesa_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_mesa_info
@@ -27,6 +27,8 @@ export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
 export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
 export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
 export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2/"
+export MESA_MD5_CHECKSUM="c89b63d253605ed40e8ac370d25a833c"
+export MESA_SHA256_CHECKSUM=""
 }
 
 function bv_mesa_print
@@ -806,6 +808,23 @@ function build_mesa
     fi
     cd "$START_DIR"
     info "Done with Mesa"
+    return 0
+}
+
+function bv_mesa_is_enabled
+{
+    if [[ $DO_MESA == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_mesa_is_installed
+{
+    check_if_installed "mesa" $MESA_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

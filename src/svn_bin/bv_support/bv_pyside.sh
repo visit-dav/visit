@@ -20,7 +20,7 @@ ON_PYSIDE="off"
 
 function bv_pyside_depends_on
 {
-return "qt"
+echo "qt"
 }
 
 function bv_pyside_info
@@ -28,6 +28,8 @@ function bv_pyside_info
 export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-combined-1.0.7.tar.gz"}
 export PYSIDE_VERSION=${PYSIDE_VERSION:-"1.0.7"}
 export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"${PYSIDE_FILE%.tar*}"}
+export PYSIDE_MD5_CHECKSUM="ebc8f4c479d36772e5a34e3be6402972"
+export PYSIDE_SHA256_CHECKSUM=""
 }
 
 function bv_pyside_print
@@ -193,6 +195,23 @@ function build_pyside
     ln -s $VISIT_PYSIDE_DIR/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide $PYTHON_DIR/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide
     info "Done with PySide"
 
+    return 0
+}
+
+function bv_pyside_is_enabled
+{
+    if [[ $DO_PYSIDE == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_pyside_is_installed
+{
+    check_if_installed "pyside" $PYSIDE_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 
