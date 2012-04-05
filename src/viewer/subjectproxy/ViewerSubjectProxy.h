@@ -16,7 +16,7 @@
 
 #include <SyncAttributes.h>
 #include <SocketConnection.h>
-
+#include <SILRestrictionAttributes.h>
 #include <QCloseEvent>
 #include <QList>
 #include <cstddef>
@@ -44,6 +44,11 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
         {
             //does this logic because visitModule calls NeedsRead once
             //before entering loop and expects to get false..
+            #ifdef _WIN32
+            Sleep(1);
+            #else
+            usleep(1000);
+            #endif
             static int val = 0;
             if(val < 1)
             {
@@ -84,6 +89,10 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
     PlotPluginManager* cli_plotplugin;
     OperatorPluginManager* cli_operatorplugin;
 
+    // Used to store the sil restriction in avt format.
+    avtSILRestriction_p        internalSILRestriction;
+
+
     std::string host;
     TestConnection* testconn;
 
@@ -115,6 +124,13 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
     virtual void Create(const char *, int *argc = 0, char ***argv = 0){}
     virtual void LoadPlugins();
     virtual void InitializePlugins(PluginManager::PluginCategory t, const char *pluginDir);
+
+    //SIL support
+    virtual avtSILRestriction_p GetPlotSILRestriction();
+    virtual avtSILRestriction_p GetPlotSILRestriction() const;
+    virtual void SetPlotSILRestriction(avtSILRestriction_p newRestriction);
+    virtual void SetPlotSILRestriction();
+    virtual void Update(Subject *subj);
 
 public:
 

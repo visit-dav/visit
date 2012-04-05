@@ -339,3 +339,83 @@ ViewerSubjectProxy::~ViewerSubjectProxy()
     delete cli_plotplugin;
     delete cli_operatorplugin;
 }
+
+
+//SIL functions
+avtSILRestriction_p 
+ViewerSubjectProxy::GetPlotSILRestriction()
+{ 
+    return internalSILRestriction; 
+}
+
+avtSILRestriction_p 
+ViewerSubjectProxy::GetPlotSILRestriction() const
+{ 
+    return new avtSILRestriction(internalSILRestriction);
+}
+
+void 
+ViewerSubjectProxy::SetPlotSILRestriction(avtSILRestriction_p newRestriction)
+{
+    // Copy the new SIL restriction into the internal SIL restriction object.
+    internalSILRestriction = newRestriction;
+
+    SILRestrictionAttributes *newSRA =internalSILRestriction->MakeAttributes();
+    if(newSRA)
+    {
+        // Copy the attribute representation of the SIL restriction into the
+        // silRestrictionAtts object and send notify observers. Note that
+        // SetUpdate is set to false so the proxy's Update method is NOT called
+        SILRestrictionAttributes *silRestrictionAtts =
+            gstate->GetSILRestrictionAttributes();
+        *silRestrictionAtts = *newSRA;
+        SetUpdate(false);
+        silRestrictionAtts->Notify();
+
+        // Now that the new SIL restriction attributes have been sent to the
+        // viewer, send the RPC that tells the viewer to apply them.
+        gmethods->SetPlotSILRestriction();
+
+        // Delete the new SRA since we're done with it.
+        delete newSRA;
+    }
+}
+
+void 
+ViewerSubjectProxy::SetPlotSILRestriction()
+{
+    SILRestrictionAttributes *newSRA =internalSILRestriction->MakeAttributes();
+    if(newSRA)
+    {
+        // Copy the attribute representation of the SIL restriction into the
+        // silRestrictionAtts object and send notify observers. Note that
+        // SetUpdate is set to false so the proxy's Update method is NOT called
+        SILRestrictionAttributes *silRestrictionAtts =
+            gstate->GetSILRestrictionAttributes();
+        *silRestrictionAtts = *newSRA;
+        SetUpdate(false);
+        silRestrictionAtts->Notify();
+
+        // Now that the new SIL restriction attributes have been sent to the
+        // viewer, send the RPC that tells the viewer to apply them.
+        gmethods->SetPlotSILRestriction();
+
+        // Delete the new SRA since we're done with it.
+        delete newSRA;
+    }
+}
+
+void
+ViewerSubjectProxy::Update(Subject *subj)
+{
+    // If the SIL restriction attributes have changed, update the internal
+    // SIL restriction object internalSILRestriction. This is done so the
+    // internalSILRestriction is available to the client and we have to
+    // make the conversion far less often.
+    if(subj == gstate->GetSILRestrictionAttributes())
+    {
+        internalSILRestriction = new avtSILRestriction(
+            *gstate->GetSILRestrictionAttributes());
+    }
+}
+
