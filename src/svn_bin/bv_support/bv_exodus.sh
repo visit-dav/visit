@@ -20,7 +20,7 @@ ON_EXODUS="off"
 
 function bv_exodus_depends_on
 {
-return ""
+echo "netcdf"
 }
 
 function bv_exodus_info
@@ -29,6 +29,8 @@ export EXODUS_FILE=${EXODUS_FILE:-"exodusii-4.98.tar.gz"}
 export EXODUS_VERSION=${EXODUS_VERSION:-"4.98"}
 export EXODUS_COMPATIBILITY_VERSION=${EXODUS_COMPATIBILITY_VERSION:-"4.0"}
 export EXODUS_BUILD_DIR=${EXODUS_BUILD_DIR:-"exodusii-4.98"}
+export EXODUS_MD5_CHECKSUM="4480e641d6ada58f5d8ecb7172e76791"
+export EXODUS_SHA256_CHECKSUM=""
 }
 
 function bv_exodus_print
@@ -170,6 +172,23 @@ function build_exodus
     fi
     cd "$START_DIR"
     info "Done with Exodus"
+    return 0
+}
+
+function bv_exodus_is_enabled
+{
+    if [[ $DO_EXODUS == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_exodus_is_installed
+{
+    check_if_installed "exodus" $EXODUS_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

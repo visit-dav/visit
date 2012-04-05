@@ -3,6 +3,10 @@ function bv_cmake_initialize
     export DO_CMAKE="yes"
     export ON_CMAKE="on"
     export FORCE_CMAKE="no"
+    export USE_SYSTEM_CMAKE="no"
+    add_extra_commandline_args "cmake" "system-cmake" 0 "Use cmake found on system"
+    add_extra_commandline_args "cmake" "alt-cmake-dir" 1 "Use cmake found in alternative directory"
+    add_extra_commandline_args "cmake" "cmake-bin-dir" 1 "Use cmake found in alternative directory"
 }
 
 function bv_cmake_enable
@@ -21,7 +25,7 @@ FORCE_CMAKE="no"
 
 function bv_cmake_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_cmake_force
@@ -32,11 +36,84 @@ function bv_cmake_force
   return 1;
 }
 
+function bv_cmake_system_cmake
+{
+   echo "using system cmake"
+
+   TEST=`which cmake`
+   [ $? != 0 ] && error "System CMake not found"
+
+   bv_cmake_enable
+
+   USE_SYSTEM_CMAKE="yes"
+
+   CMAKE_VERSION=`cmake --version`
+   CMAKE_VERSION=${CMAKE_VERSION/cmake version }
+   CMAKE_BUILD_DIR=`cmake --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g`
+   CMAKE_BUILD_DIR=`echo $CMAKE_BUILD_DIR`
+   CMAKE_FILE=""
+   CMAKE_INSTALL=$CMAKE_BUILD_DIR/bin
+   CMAKE_COMMAND="$CMAKE_BUILD_DIR/bin/cmake"
+   CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g` 
+   CMAKE_ROOT=`echo "$CMAKE_ROOT"`
+
+   echo $CMAKE_VERSION "--> $CMAKE_BUILD_DIR" "--> $CMAKE_INSTALL" "--> $CMAKE_ROOT"
+}
+
+function bv_cmake_alt_cmake_dir
+{
+    CMAKE_ALT_DIR="$1"
+    echo "Using cmake from alternative directory $1"
+
+    [ ! -e "$CMAKE_ALT_DIR/bin/cmake" ] && error "cmake was not found in directory: $1/bin"
+
+    bv_cmake_enable
+    USE_SYSTEM_CMAKE="yes"
+
+    CMAKE_COMMAND="$CMAKE_ALT_DIR/bin/cmake"
+    CMAKE_VERSION=`"$CMAKE_COMMAND" --version`
+    CMAKE_VERSION=${CMAKE_VERSION/cmake version } 
+    CMAKE_BUILD_DIR=`"$CMAKE_COMMAND" --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g`
+    CMAKE_FILE=""
+    CMAKE_INSTALL="$CMAKE_BUILD_DIR/bin"
+    CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g` 
+    CMAKE_ROOT=`echo $CMAKE_ROOT` 
+
+    
+    echo "$CMAKE_VERSION $CMAKE_BUILD_DIR $CMAKE_INSTALL $CMAKE_ROOT"
+}
+
+function bv_cmake_cmake_bin_dir
+{
+    CMAKE_BIN_DIR="$1"
+    echo "Using cmake from bin directory $1"
+
+    [ ! -e "$CMAKE_BIN_DIR/cmake" ] && error "cmake was not found in directory: $1/"
+
+    bv_cmake_enable
+    USE_SYSTEM_CMAKE="yes"
+
+    CMAKE_COMMAND="$CMAKE_BIN_DIR/cmake"
+    CMAKE_VERSION=`"$CMAKE_COMMAND" --version`
+    CMAKE_VERSION=${CMAKE_VERSION/cmake version }
+    CMAKE_BUILD_DIR=`"$CMAKE_COMMAND" --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g` 
+    CMAKE_BUILD_DIR=`echo $CMAKE_BUILD_DIR`
+    CMAKE_FILE=""
+    CMAKE_INSTALL="$CMAKE_BIN_DIR" #$CMAKE_BUILD_DIR/bin
+    CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g`
+    CMAKE_ROOT=`echo $CMAKE_ROOT`
+
+    echo "$CMAKE_VERSION $CMAKE_BUILD_DIR $CMAKE_INSTALL $CMAKE_ROOT"
+}
+
+
 function bv_cmake_info
 {
 export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.3.tar.gz"}
 export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.3"}
 export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.3"}
+export CMAKE_MD5_CHECKSUM="a76a44b93acf5e3badda9de111385921"
+export CMAKE_SHA256_CHECKSUM=""
 }
 
 function bv_cmake_print
@@ -49,6 +126,8 @@ function bv_cmake_print
 function bv_cmake_print_usage
 {
 printf "%-15s %s [%s]\n" "--cmake"   "Build CMake" "built by default unless --no-thirdparty flag is used"
+printf "%-15s %s [%s]\n" "--system-cmake"   "Use CMake" "Use system cmake"
+printf "%-15s %s [%s]\n" "--alt-cmake-dir"  "Use CMake" "Use cmake from alternative directory"
 }
 
 function bv_cmake_host_profile
@@ -56,9 +135,22 @@ function bv_cmake_host_profile
 #nothing to be done for cmake in cmake host profile..
 echo "##" >> $HOSTCONF
 }
+
+function bv_cmake_initialize_vars
+{
+    if [[ "$CMAKE_INSTALL" == "" && "$USE_SYSTEM_CMAKE" != "yes" ]]; then 
+        if [[ "$DO_CMAKE" == "yes" || "$DO_VTK" == "yes" ]] ; then
+            #initialize variables where cmake should exist..
+            CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/${VISITARCH}/bin"}
+            CMAKE_ROOT=${CMAKE_ROOT:-"$VISITDIR/cmake/${CMAKE_VERSION}/${VISITARCH}/share/cmake-${CMAKE_VERSION%.*}"}
+        fi
+    fi
+
+}
+
 function bv_cmake_ensure
 {
-    if [[ "$CMAKE_INSTALL" == "" ]]; then 
+    if [[ "$USE_SYSTEM_CMAKE" != "yes" ]]; then 
         if [[ "$DO_CMAKE" == "yes" || "$DO_VTK" == "yes" ]] ; then
             ensure_built_or_ready "cmake"  $CMAKE_VERSION  $CMAKE_BUILD_DIR  $CMAKE_FILE
             if [[ $? != 0 ]] ; then
@@ -198,13 +290,34 @@ function build_cmake
     info "Done with CMake"
 }
 
+function bv_cmake_is_enabled
+{
+    if [[ $DO_CMAKE == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_cmake_is_installed
+{
+    if [[ "$USE_SYSTEM_CMAKE" == "yes" ]]; then
+        return 1
+    fi
+
+    check_if_installed "cmake" $CMAKE_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
 function bv_cmake_build
 {
 #
 # Build CMake
 #
 cd "$START_DIR"
-if [[ "$DO_CMAKE" == "yes" ]]; then
+if [[ "$DO_CMAKE" == "yes" && "$USE_SYSTEM_CMAKE" == "no" ]]; then
     check_if_installed "cmake" $CMAKE_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping CMake build.  CMake is already installed."

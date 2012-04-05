@@ -18,7 +18,7 @@ ON_CCMIO="off"
 
 function bv_ccmio_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_ccmio_info
@@ -27,6 +27,9 @@ export CCMIO_FILE=${CCMIO_FILE:-"libccmio-2.6.1.tar.gz"}
 export CCMIO_VERSION=${CCMIO_VERSION:-"2.6.1"}
 export CCMIO_COMPATIBILITY_VERSION=${CCMIO_COMPATIBILITY_VERSION:-"2.0"}
 export CCMIO_BUILD_DIR=${CCMIO_BUILD_DIR:-"libccmio-2.6.1"}
+export CCMIO_MD5_CHECKSUM="f81fbdfb960b1a4f3bcc7feee491efe4"
+export CCMIO_SHA256_CHECKSUM=""
+
 }
 
 function bv_ccmio_print
@@ -387,6 +390,22 @@ function build_ccmio
     return 0
 }
 
+function bv_ccmio_is_enabled
+{
+    if [[ $DO_CCMIO == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_ccmio_is_installed
+{
+    check_if_installed "ccmio" $CCMIO_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
 
 function bv_ccmio_build
 {

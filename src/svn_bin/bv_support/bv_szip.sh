@@ -18,7 +18,7 @@ ON_SZIP="off"
 
 function bv_szip_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_szip_info
@@ -27,6 +27,8 @@ export SZIP_FILE=${SZIP_FILE:-"szip-2.1.tar.gz"}
 export SZIP_VERSION=${SZIP_VERSION:-"2.1"}
 export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION:-"2.0"}
 export SZIP_BUILD_DIR=${SZIP_BUILD_DIR:-"szip-2.1"}
+export SZIP_MD5_CHECKSUM="9cc9125a58b905a4148e4e2fda3fabc6"
+export SZIP_SHA256_CHECKSUM=""
 }
 
 function bv_szip_print
@@ -173,6 +175,23 @@ function build_szip
     fi
     cd "$START_DIR"
     info "Done with SZIP"
+    return 0
+}
+
+function bv_szip_is_enabled
+{
+    if [[ $DO_SZIP == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_szip_is_installed
+{
+    check_if_installed "szip" $SZIP_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

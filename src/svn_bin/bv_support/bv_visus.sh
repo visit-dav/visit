@@ -18,7 +18,7 @@ ON_VISUS="off"
 
 function bv_visus_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_visus_info
@@ -27,6 +27,9 @@ export VISUS_FILE=${VISUS_FILE:-"visus_26Feb07.tar.gz"}
 export VISUS_VERSION=${VISUS_VERSION:-"1.0.0"}
 export VISUS_COMPATIBILITY_VERSION=${VISUS_COMPATIBILITY_VERSION:-"1.0"}
 export VISUS_BUILD_DIR=${VISUS_BUILD_DIR:-"visus"}
+export VISUS_MD5_CHECKSUM=""
+export VISUS_SHA256_CHECKSUM=""
+
 }
 
 function bv_visus_print
@@ -79,6 +82,20 @@ function bv_visus_dry_run
   if [[ "$DO_VISUS" == "yes" ]] ; then
     echo "Dry run option not set for visus."
   fi
+}
+
+function bv_visus_is_enabled
+{
+    return 0
+}
+
+function bv_visus_is_installed
+{
+    check_if_installed "visus" $VISUS_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
 }
 
 function bv_visus_build

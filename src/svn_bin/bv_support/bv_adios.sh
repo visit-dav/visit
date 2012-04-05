@@ -21,7 +21,7 @@ ON_ADIOS="off"
 
 function bv_adios_depends_on
 {
-return "mxml"
+echo "mxml"
 }
 
 function bv_adios_info
@@ -30,6 +30,8 @@ export ADIOS_FILE=${ADIOS_FILE:-"adios-1.3.tar.gz"}
 export ADIOS_VERSION=${ADIOS_VERSION:-"1.3"}
 export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.3"}
 export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.3"}
+export ADIOS_MD5_CHECKSUM="5eb937491eac015966dc6c6146fe5876"
+export ADIOS_SHA256_CHECKSUM=""
 }
 
 function bv_adios_print
@@ -155,6 +157,22 @@ function build_ADIOS
     return 0
 }
 
+function bv_adios_is_enabled
+{
+    if [[ $DO_ADIOS == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_adios_is_installed
+{
+    check_if_installed "ADIOS" $ADIOS_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
 
 function bv_adios_build
 {

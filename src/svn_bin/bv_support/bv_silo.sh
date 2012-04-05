@@ -18,7 +18,17 @@ ON_SILO="off"
 
 function bv_silo_depends_on
 {
-return ""
+    local depends_on=""
+
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        depends_on="hdf5"    
+    fi
+    
+    if [[ "$DO_SZIP" == "yes" ]] ; then
+        depends_on="$depends_on szip"    
+    fi
+
+    echo $depends_on
 }
 
 function bv_silo_info
@@ -28,6 +38,8 @@ export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
 export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.8"}
 export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
 export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
+export SILO_MD5_CHECKSUM="9831cf1dfa8d0689a06c2c54c5c65aaf"
+export SILO_SHA256_CHECKSUM=""
 }
 
 function bv_silo_print
@@ -246,6 +258,23 @@ function build_silo
     fi
     cd "$START_DIR"
     info "Done with Silo"
+    return 0
+}
+
+function bv_silo_is_enabled
+{
+    if [[ $DO_SILO == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_silo_is_installed
+{
+    check_if_installed "silo" $SILO_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

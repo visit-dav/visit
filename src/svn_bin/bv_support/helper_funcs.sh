@@ -1,3 +1,5 @@
+export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
+
 # *************************************************************************** #
 # Function: errorFunc                                                         #
 #                                                                             #
@@ -93,8 +95,8 @@ function error
 
 function issue_command
 {
-    echo $@
-    $@
+    echo "$@"
+    "$@"
     return $?
 }
 
@@ -141,6 +143,44 @@ function add_extra_commandline_args
   extra_commandline_args[${#extra_commandline_args[*]}]="$enable_func"
 }
 
+
+function verify_required_module_exists
+{
+    local reqlib=$1
+    #check if required functions exist..
+    declare -F "bv_${reqlib}_enable" &>/dev/null || errorFunc "${reqlib} enable not found"
+    declare -F "bv_${reqlib}_disable" &>/dev/null || errorFunc "${reqlib} disable not found"
+    declare -F "bv_${reqlib}_initialize" &>/dev/null || errorFunc "${reqlib} initialize not found"
+    declare -F "bv_${reqlib}_info" &>/dev/null || errorFunc "${reqlib} info not found"
+    declare -F "bv_${reqlib}_ensure" &>/dev/null || errorFunc "${reqlib} ensure not found"
+    declare -F "bv_${reqlib}_build" &>/dev/null || errorFunc "${reqlib} build not found"
+    declare -F "bv_${reqlib}_depends_on" &>/dev/null || errorFunc "${reqlib} depends_on not found"
+    declare -F "bv_${reqlib}_print" &>/dev/null || errorFunc "${reqlib} print not found"
+    declare -F "bv_${reqlib}_print_usage" &>/dev/null || errorFunc "${reqlib} print_usage not found"
+    declare -F "bv_${reqlib}_dry_run" &>/dev/null || errorFunc "${reqlib} dry_run not found"
+    declare -F "bv_${reqlib}_is_installed" &>/dev/null || errorFunc "${reqlib} is_installed not found"
+    declare -F "bv_${reqlib}_is_enabled" &>/dev/null || errorFunc "${reqlib} is_enabled not found"
+}
+
+
+function verify_optional_module_exists
+{
+    local optlib=$1
+    declare -F "bv_${optlib}_enable" &>/dev/null || errorFunc "${optlib} enable not found"
+    declare -F "bv_${optlib}_disable" &>/dev/null || errorFunc "${optlib} disable not found"
+    declare -F "bv_${optlib}_initialize" &>/dev/null || errorFunc "${optlib} info not found"
+    declare -F "bv_${optlib}_info" &>/dev/null || errorFunc "${optlib} info not found"
+    declare -F "bv_${optlib}_ensure" &>/dev/null || errorFunc "${optlib} ensure not found"
+    declare -F "bv_${optlib}_build" &>/dev/null || errorFunc "${optlib} build not found"
+    declare -F "bv_${optlib}_depends_on" &>/dev/null || errorFunc "${optlib} depends_on not found"
+    declare -F "bv_${optlib}_print" &>/dev/null || errorFunc "${optlib} print not found"
+    declare -F "bv_${optlib}_print_usage" &>/dev/null || errorFunc "${optlib} print_usage not found"
+    declare -F "bv_${optlib}_host_profile" &>/dev/null || errorFunc "${optlib} host_profile not found"
+    declare -F "bv_${optlib}_graphical" &>/dev/null || errorFunc "${optlib} graphical not found"
+    declare -F "bv_${optlib}_dry_run" &>/dev/null || errorFunc "${optlib} dry_run not found"
+    declare -F "bv_${optlib}_is_installed" &>/dev/null || errorFunc "${optlib} is_installed not found"
+    declare -F "bv_${optlib}_is_enabled" &>/dev/null || errorFunc "${optlib} is_enabled not found"
+}
 
 # *************************************************************************** #
 # Function: info_box                                                          #
@@ -255,6 +295,93 @@ function uncompress_untar
         esac
     fi
 }
+
+# *************************************************************************** #
+# Function: verify_checksum                                                   #
+#                                                                             #
+# Purpose: Verify the checksum of given file                                  #
+#                                                                             #
+# verify_md5_checksum: checks md5                                             #
+# verify_sha_checksum: checks sha (256,512)                                   #
+# Programmer: Hari Krishnan                                                   #
+# *************************************************************************** #
+
+function verify_md5_checksum
+{
+    checksum=$1
+    dfile=$2
+
+    tmp=`which md5sum`
+    if [[ $? != 0 ]]; then
+        info "could not find md5sum, disabling check"
+        return 0
+    fi
+    tmp=`md5sum $dfile | awk '{print $1}'`
+    if [[ $tmp == ${checksum} ]]; then
+        info "verified"
+        return 0
+    fi
+
+    info "md5sum failed: looking for $checksum got $tmp"
+    return 1
+}
+
+function verify_sha_checksum
+{
+    checksum_algo=$1
+    checksum=$2
+    dfile=$3
+
+    tmp=`which shasum`
+    if [[ $? != 0 ]]; then
+        info "could not find shasum, disabling check"
+        return 0
+    fi
+
+    tmp=`shasum -a $checksum_algo $dfile`
+    if [[ $? == 0 ]]; then
+        tmp=`echo $tmp| awk '{print $1}'`
+        if [[ $tmp == $checksum ]]; then
+            info "verified"
+            return 0
+        else
+            info "shasum -a $checksum_algo failed: looking for $checksum got $tmp"
+            return 1
+        fi
+    fi
+
+    info "shasum does not support $checksum_algo, check disabled"
+    return 0
+}
+
+function verify_checksum
+{
+    checksum_type=$1
+    checksum=$2
+    dfile=$3
+
+    info "verifying type $checksum_type, checksum $checksum for $dfile . . ."
+
+    if [[ "$checksum_type" == "MD5" ]]; then
+        verify_md5_checksum $checksum $dfile
+        return $?
+    fi
+
+    if [[ $checksum_type = "SHA256" ]]; then
+        verify_sha_checksum 256 $checksum $dfile
+        return $?
+    fi
+
+    if [[ $checksum_type = "SHA512" ]]; then
+        verify_sha_checksum 512 $checksum $dfile
+        return $?
+    fi
+
+    #since this is an optional check, all cases should pass if it gets here..
+    info "checksum string not MD5, SHA256, or SHA512, check disabled"
+    return 0
+}
+
 
 # *************************************************************************** #
 # Function: download_file                                                     #
@@ -553,6 +680,7 @@ function ensure_built_or_ready
 #          -1 on failure                                                      #
 #           0 for success without untar                                       #
 #           1 for success with untar                                          #
+#           2 for failure with checksum                                       #
 #                                                                             #
 # Programmer: Cyrus Harrison                                                  #
 # Date: Thu Nov 13 09:28:26 PST 2008                                          #
@@ -563,11 +691,21 @@ function prepare_build_dir
     BUILD_DIR=$1
     SRC_FILE=$2
     
+    #optional
+    CHECKSUM_TYPE=$3
+    CHECKSUM_VALUE=$4
+
     untarred_src=0
     if [[ -d ${BUILD_DIR} ]] ; then
        info "Found ${BUILD_DIR} . . ."
        untarred_src=0
     elif [[ -f ${SRC_FILE} ]] ; then
+       if [[ $CHECKSUM != "" && $CHECKSUM_TYPE != "" ]]; then
+            verify_checksum $CHECKSUM_TYPE $CHECKSUM ${SRC_FILE}
+            if [[ $? != 0 ]]; then
+                return 2
+            fi
+       fi
        info "Unzipping/Untarring ${SRC_FILE} . . ."
        uncompress_untar ${SRC_FILE}
        untarred_src=1
@@ -678,7 +816,7 @@ function check_more_options
     # Override variable settings dialog
     #
     if [[ "$DO_MORE" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
-        $DLG --backtitle "$DLG_BACKTITLE" \
+        result=$($DLG --backtitle "$DLG_BACKTITLE" \
         --title "More build options" \
         --checklist \
 "Version: specify version of VisIt to download and build\n"\
@@ -693,17 +831,16 @@ function check_more_options
 "Select build and installed options:" 0 0 0 \
            "Version"   "specify VisIt version [$VISIT_VERSION]" $ON_VERSION \
            "Build"     "enable building VisIt"                  $ON_VISIT \
-           "Required"  "enable required 3rd party libraries"    $ON_THIRD_PARTY\
            "Logging"   "disable logging to file"                $ON_LOG \
            "Symbol"    "enable debug compiling"                 $ON_DEBUG \
            "Group"     "specify group name for install"         $ON_GROUP \
            "HostConf"  "create host.conf file"                  $ON_HOSTCONF \
            "Path"      "specify library path [$THIRD_PARTY_PATH]" $ON_PATH \
-           "Trace"     "enable SHELL debugging"      $ON_VERBOSE 2> tmp$$
+           "Trace"     "enable SHELL debugging"      $ON_VERBOSE 3>&1 1>&2 2>&3)
         retval=$?
 
     # Remove the extra quoting, new dialog has --single-quoted
-        choice="$(cat tmp$$ | sed 's/"//g' )"
+        choice="$(echo $result | sed 's/"//g' )"
         case $retval in
           0)
             DO_VERSION="no"
@@ -719,33 +856,31 @@ function check_more_options
             do
                 case $OPTION in
                   Version)
-                     $DLG --backtitle "$DLG_BACKTITLE" \
+                     result=$($DLG --backtitle "$DLG_BACKTITLE" \
                         --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_VERSION" 2> tmp$$
-                     VISIT_VERSION="$(cat tmp$$)"
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_VERSION"   3>&1 1>&2 2>&3) 
+                     VISIT_VERSION="$result"
                      VISIT_FILE="visit${VISIT_VERSION}.tar.gz"
                      DO_VERSION="yes";;
                   Build)
                      DO_VISIT="yes";;
-                  Required)
-                     DO_REQUIRED_THIRD_PARTY="yes";;
                   Logging)
                      DO_LOG="yes";;
                   Symbol)
                      DO_DEBUG="yes";;
                   Group)
-                     $DLG --backtitle "$DLG_BACKTITLE" \
+                     result=$($DLG --backtitle "$DLG_BACKTITLE" \
                         --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$GROUP" 2> tmp$$
-                     GROUP="$(cat tmp$$)"
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$GROUP" 3>&1 1>&2 2>&3)
+                     GROUP="$result"
                      DO_GROUP="yes";;
                   HostConf)
                       DO_HOSTCONF="yes";;
                   Path)
-                     $DLG --backtitle "$DLG_BACKTITLE" \
+                     result=$($DLG --backtitle "$DLG_BACKTITLE" \
                         --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$THIRD_PARTY_PATH" 2> tmp$$
-                     THIRD_PARTY_PATH="$(cat tmp$$)"
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$THIRD_PARTY_PATH" 3>&1 1>&2 2>&3)
+                     THIRD_PARTY_PATH="$result"
                      DO_PATH="yes";;
                   Trace)
                      DO_VERBOSE="yes";;
@@ -761,10 +896,6 @@ function check_more_options
             warn "Unexpected return code: $retval";;
         esac
     fi
-    if [[ -e "tmp$$" ]] ; then
-        rm tmp$$
-    fi
-
     return 0
 }
 
@@ -893,10 +1024,10 @@ function check_parallel
                 15 $DLG_WIDTH
                 if [[ $? == 1 ]] ; then
                     tryagain=1
-                    $DLG --backtitle "$DLG_BACKTITLE" \
+                    result=$($DLG --backtitle "$DLG_BACKTITLE" \
                     --nocancel --inputbox \
-"Enter CPPFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_CPPFLAGS" 2> tmp$$
-                    PAR_CPPFLAGS="$(cat tmp$$)"
+"Enter CPPFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_CPPFLAGS" 3>&1 1>&2 2>&3) 
+                    PAR_CPPFLAGS="$result"
                 else
                     tryagain=0
                 fi
@@ -912,10 +1043,10 @@ function check_parallel
 "The LDFLAGS for MPI are:\n\n$PAR_LDFLAGS\n\nDo these look right?" 15 $DLG_WIDTH
                 if [[ $? == 1 ]] ; then
                     tryagain=1
-                    $DLG --backtitle "$DLG_BACKTITLE" \
+                    result=$($DLG --backtitle "$DLG_BACKTITLE" \
                     --nocancel --inputbox \
-"Enter LDFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_LDFLAGS" 2> tmp$$
-                    PAR_LDFLAGS="$(cat tmp$$)"
+"Enter LDFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_LDFLAGS"  3>&1 1>&2 2>&3) 
+                    PAR_LDFLAGS="$result"
                 else
                     tryagain=0
                 fi
@@ -959,6 +1090,17 @@ function check_parallel
 # This function will display variables and optionally allow changing          #
 # *************************************************************************** #
 
+function check_variables_dialog
+{
+    local var="$1"
+    local input="$2"
+
+    result=$($DLG --backtitle "$DLG_BACKTITLE" \
+                           --nocancel --inputbox \
+"Enter $var value:" 0 $DLG_WIDTH_WIDE "$input"  3>&1 1>&2 2>&3)
+    echo "$result"
+}
+
 function check_variables
 {
 
@@ -966,7 +1108,7 @@ function check_variables
     #
     if [[ "$verify" == "yes" ]] ; then
         if [[ "$GRAPHICAL" == "yes" ]] ; then
-            $DLG --backtitle "$DLG_BACKTITLE" \
+            result=$($DLG --backtitle "$DLG_BACKTITLE" \
             --title "Variable settings" \
             --checklist \
 "These variables use these system dependent defaults, but can be overridden "\
@@ -990,91 +1132,32 @@ function check_variables
            "FC_COMPILER"      "$FC_COMPILER"       "off" \
            "FCFLAGS"          "$FCFLAGS"       "off" \
            "VISITARCH"        "$VISITARCHTMP"      "off" \
-           "REVISION"         "$SVNREVISION"       "off" 2> tmp$$
+           "REVISION"         "$SVNREVISION"       "off"   3>&1 1>&2 2>&3) 
            retval=$?
 
            # Remove the extra quoting, new dialog has --single-quoted
-           choice="$(cat tmp$$ | sed 's/"//g' )"
+           choice="$(echo $result | sed 's/"//g' )"
+           tmp_var=0
            case $retval in
              0)
                for OPTION in $choice
                do
-                   case $OPTION in
-                     OPSYS)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$OPSYS" 2> tmp$$
-                        OPSYS="$(cat tmp$$)"
-                        ;;
-                     ARCH)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$ARCH" 2> tmp$$
-                        ARCH="$(cat tmp$$)"
-                        ;;
-                     C_COMPILER)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$C_COMPILER" 2> tmp$$
-                        C_COMPILER="$(cat tmp$$)"
-                        ;;
-                     CXX_COMPILER)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CXX_COMPILER" 2> tmp$$
-                        CXX_COMPILER="$(cat tmp$$)"
-                        ;;
-                     CFLAGS)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CFLAGS" 2> tmp$$
-                        CFLAGS="$(cat tmp$$)"
-                        ;;
-                     CXXFLAGS)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CXXFLAGS" 2> tmp$$
-                        CXXFLAGS="$(cat tmp$$)"
-                        ;;
-                     C_OPT_FLAGS)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$C_OPT_FLAGS" 2> tmp$$
-                        C_OPT_FLAGS="$(cat tmp$$)"
-                        ;;
-                     CXX_OPT_FLAGS)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CXX_OPT_FLAGS" 2> tmp$$
-                        CXX_OPT_FLAGS="$(cat tmp$$)"
-                        ;;
-                     FC_COMPILER)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$FC_COMPILER" 2> tmp$$
-                        FC_COMPILER="$(cat tmp$$)"
-                        ;;
-                     FCFLAGS)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$FCFLAGS" 2> tmp$$
-                        FCFLAGS="$(cat tmp$$)"
-                        ;;
-                     VISITARCH)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISITARCHTMP" 2> tmp$$
-                        VISITARCH="$(cat tmp$$)"
-                        ;;
-                     REVISION)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$SVNREVISION" 2> tmp$$
-                        SVNREVISION="$(cat tmp$$)"
+
+                   #this code uses the name to get and set the option value
+                   #please use this convention, otherwise you will have to create
+                   #exception as the ones below..
+                   [[ $OPTION == "VISITARCH" ]] && OPTION="VISITARCHTMP"
+                   [[ $OPTION == "REVISION" ]] && OPTION="SVNREVISION"
+
+                   eval "tmp_var=\"\$$OPTION\""
+                   tmp_var=$(check_variables_dialog $OPTION "$tmp_var")
+                   eval "$OPTION=\"$tmp_var\""
+
+                   if [[ $OPTION == "SVNREVISION" ]]; then
+                        echo "Revision set to $SVNREVISION"
                         DO_SVN="yes"
                         DO_REVISION="yes"
-                        ;;
-                   esac
+                   fi
                done
                ;;
              1)
@@ -1085,9 +1168,6 @@ function check_variables
              *)
                warn "Unexpected return code: $retval";;
            esac
-       fi
-       if [[ -e "tmp$$" ]] ; then
-           rm tmp$$
        fi
     fi
 
@@ -1206,32 +1286,6 @@ function build_hostconf
     echo \
 "##############################################################" >> $HOSTCONF
 
-#
-# Although the code below originally ordered things alphabetically by library
-# name, that is NOT appropriate due to ordering dependency of LIBDEP processing.
-#
-#hdf4
-#hdf5    
-#netcdf    
-#advio    
-#boxlib
-#ccmio
-#cfitsio    
-#cgns 
-#exodus    
-#fastbit    
-#gdal    
-#h5part   
-#mdsplus
-#mili
-#szip
-#silo 
-#visus
-#xdmf   
-#tcmalloc
-#icet
-#itaps
-
     for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
     do
         initialize="bv_${reqlibs[$bv_i]}_host_profile"
@@ -1263,7 +1317,8 @@ function build_hostconf
     return 0
 }
 
-printvariables () {
+function printvariables  
+{
   printf "The following is a list of user settable environment variables\n"
   printf "\n"
   printf "%s%s\n" "OPSYS=" "${OPSYS}"
@@ -1303,7 +1358,8 @@ printvariables () {
   done
 }
 
-usage () {
+function usage  
+{
   printf "Usage: %s [options]\n" $0
   printf "A download attempt will be made for all files which do not exist."
   printf "\n\n"
@@ -1311,8 +1367,6 @@ usage () {
   printf "\tThese are used to enable or disable specific functionality.  They do not take option values.\n\n"
   printf "%-15s %s [%s]\n" "--dry-run"  "Dry run of the presented options" "false"
   printf "%-15s %s [%s]\n" "--build-mode" "VisIt build mode (Debug or Release)" "$VISIT_BUILD_MODE"
-  printf "%-15s %s [%s]\n" "--build-with-version"  "install using build_visit of a different version of VisIt (experimental)" "$VISIT_VERSION"
-  printf "%-15s %s [%s]\n" "--all-io"  "Build all available I/O libraries" "$DO_ALLIO"
   printf "%-15s %s [%s]\n" "--console" "Do not use dialog ('graphical') interface" "!$GRAPHICAL"
   printf "%-15s %s [%s]\n" "--dbio-only" "Disables EVERYTHING but I/O." "$DO_DBIO_ONLY"
   printf "%-15s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
@@ -1323,7 +1377,6 @@ usage () {
   printf "%-15s %s [%s]\n" "-h" "Display this help message." "false"
   printf "%-15s %s [%s]\n" "--help" "Display this help message." "false"
   printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
-  printf "%-15s %s [%s]\n" "--no-thirdparty" "Do not build required 3rd party libraries" "$ON_THIRD_PARTY"
   printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$ON_HOSTCONF"
   printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
   printf "%-15s %s [%s]\n" "--prefix" "The directory to which VisIt should be installed once it is built" "$VISIT_INSTALL_PREFIX"
@@ -1334,6 +1387,13 @@ usage () {
   printf "%-15s %s [%s]\n" "--static" "Build using static linking" "$DO_STATIC_BUILD"
   printf "%-15s %s [%s]\n" "--stdout" "Write build log to stdout" "$LOG_FILE"
   
+  for (( bv_i=0; bv_i<${#grouplibs_comment[*]}; ++bv_i ))
+  do
+        name=${grouplibs_name[$bv_i]}
+        comment=${grouplibs_comment[$bv_i]}
+        printf "%-15s %s [%s]\n" "--$name" "$comment" ""
+  done
+
   bv_visit_print_usage
 
   for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
@@ -1381,3 +1441,79 @@ usage () {
   printf "%s <%s> %s [%s]\n" "--version" "version" "The VisIt version to build" "$VISIT_VERSION"
 }
 
+
+#TODO: pass these two variables from command line..
+mangle_src="VTK"
+mangle_dest="MTK"
+uc_mangled_src=`echo $mangle_src | tr '[a-z]' '[A-Z]'`
+uc_mangled_dest=`echo $mangle_dest | tr '[a-z]' '[A-Z]'`
+lc_mangled_src=`echo $mangle_src | tr '[A-Z]' '[a-z]'`
+lc_mangled_dest=`echo $mangle_dest | tr '[A-Z]' '[a-z]'`
+
+function mangle_file
+{
+    local input_file="$1"
+    local output_file="$2"
+
+    cat "$input_file" | sed -e s/${lc_mangled_src}/${lc_mangled_dest}/g -e s/${uc_mangled_src}/${uc_mangled_dest}/g > "$output_file"
+    
+    #chmod --reference=$input_file $output_file
+    if [[ -r "$input_file" ]]; then
+        chmod u+r "$output_file"
+    fi
+    if [[ -w "$input_file" ]]; then
+        chmod u+r "$output_file"
+    fi
+    if [[ -x "$input_file" ]]; then
+        chmod u+x "$output_file"
+    fi
+}
+
+function mangle_libraries
+{
+    local input_dir="$1"
+    local mangled_dir="$2"
+
+    if [[ ! -d "$input_dir" ]]; then
+        info "Input directory $input_dir does not exist"
+        return 1
+    fi
+
+    if [[ -d "$mangled_dir" ]]; then
+        info "Found pre-existing mangled directory $mangled_dir, removing"
+        rm -fR "$mangled_dir"
+    fi
+
+    info "mangling $input_dir $mangled_dir"
+    #get all files from directory..
+    local args=`find "${input_dir}" -name "*"`
+    local i=0
+    for i in `echo $args`
+    do
+        #replace all occurrences of $mangled_src with mangled_dest
+        newpath=${i/${input_dir}/}
+        newpath=${newpath//${uc_mangled_src}/${uc_mangled_dest}}
+        newpath=${newpath//${lc_mangled_src}/${lc_mangled_dest}}
+        mangled_path="${mangled_dir}/${newpath}"
+        newdir=`dirname "${mangled_path}"`
+    
+        #create new dir
+        mkdir -p "$newdir"
+        #cat old file replace ${mangled_src} with ${mangled_dest}
+        if [[ ! -d $i ]]; then
+            mangle_file "$i" "${mangled_path}" 
+        else
+            #chmod --reference=$i $newdir
+            if [[ -r "$i" ]]; then
+                chmod u+r "$newdir"
+            fi
+            if [[ -w "$i" ]]; then
+                chmod u+r "$newdir"
+            fi
+            if [[ -x "$i" ]]; then
+                chmod u+x "$newdir"
+            fi
+        fi
+    done
+    return 0
+}

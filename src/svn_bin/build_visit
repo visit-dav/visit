@@ -36,17 +36,34 @@
 #   information to the script.
 #
 
-
-
 # To create your own modular file these 7 functions need to be implemented..
 #filename: bv_<module>.sh
 #bv_<module>_initialize : Initialize any variables you may want to export
 #bv_<module>_enable : Enables the module 
 #bv_<module>_disable : Disables the module
 #bv_<module>_info : Where to get the module, the version, etc...
-#bv_<module>_ensure : Ensure the module has been downloaded and extracted properly
+#bv_<module>_ensure : Ensure the module has been downloaded and extracted properly. Set and check variables here..
 #bv_<module>_depends_on : What other modules does this module depend on. Example "adios" returns string "mxml"
 #bv_<module>_build : build the module
+
+#order of execution
+#1. bv_<module>_initialize anything to intialize the module
+#2. bv_<module>_info runs to setup download locations,directories,etc..
+#3. bv_<module>_[enable|disable] runs next to enable or disable the module
+#4. bv_<module>_ensure runs to ensure module is setup properly and variables are initialized
+#5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
+#6. bv_<module>_build builds the module
+
+#state = "disabled", "enabled", "installed"
+declare -a reqlibs
+declare -a reqlibs_state
+declare -a optlibs
+declare -a optlibs_state
+declare -a grouplibs_name
+declare -a grouplibs_deps
+declare -a grouplibs_comment
+declare -a grouplibs_enabled
+
 
 INITIAL_PWD=$PWD
 
@@ -55,68 +72,75 @@ bv_PATH=`dirname $0`
 
 bv_PREFIX=$bv_PATH/bv_support/
 
-if [ ! -d $bv_PREFIX ]; then 
-    #check current directory
-    bv_PREFIX=$PWD/bv_support/
-
+function configure_support_files
+{
     if [ ! -d $bv_PREFIX ]; then 
+        #check current directory
+        bv_PREFIX=$PWD/bv_support/
 
-        for choice in `echo "curl wget svn"`
-        do
-            echo "Trying to fetch support files using: $choice"
+        if [ ! -d $bv_PREFIX ]; then 
 
-            #if choice successful then exit, else try next..
-            webaddr="http://portal.nersc.gov/svn/visit/trunk/src/svn_bin/bv_support/"
-            tmp_choice=`which $choice`
+            for choice in `echo "curl wget svn"`
+            do
+                echo "Trying to fetch support files using: $choice"
 
-            if [ $? != 0 ]; then
-                continue
-            fi
-            if [[ $choice == "curl" ]]; then
-                tmp_curl=`curl -s ${webaddr}/|grep sh|grep li|sed s/.*bv_/bv_/g | sed -e s/\.sh.*/\.sh/g | sed -e s/.*href\=\"//g;`
+                #if choice successful then exit, else try next..
+                webaddr="http://portal.nersc.gov/svn/visit/trunk/src/svn_bin/bv_support/"
+                tmp_choice=`which $choice`
 
-                if [ $? != 0 ]; then 
+                if [ $? != 0 ]; then
                     continue
                 fi
+                if [[ $choice == "curl" ]]; then
+                    tmp_curl=`curl -s ${webaddr}/|grep sh|grep li|sed s/.*bv_/bv_/g | sed -e s/\.sh.*/\.sh/g | sed -e s/.*href\=\"//g;`
 
-                mkdir -p bv_support_tmp
-                is_successful=1
-                #fetch each file..
-                for curl_files in `echo $tmp_curl`
-                do 
-                    curl -s ${webaddr}/${curl_files} -o bv_support_tmp/$curl_files 
-                    if [ $? != 0 ]; then
-                        is_successful=0
-                        break
+                    if [ $? != 0 ]; then 
+                        continue
                     fi
-                done
 
-                #if not successful cleanup and try next option..
-                if [ $is_successful == 0 ]; then 
-                    rm -fR bv_support_tmp
+                    mkdir -p bv_support_tmp
+                    is_successful=1
+                    #fetch each file..
+                    for curl_files in `echo $tmp_curl`
+                    do 
+                        curl -s ${webaddr}/${curl_files} -o bv_support_tmp/$curl_files 
+                        if [ $? != 0 ]; then
+                            is_successful=0
+                            break
+                        fi
+                    done
+
+                    #if not successful cleanup and try next option..
+                    if [ $is_successful == 0 ]; then 
+                        rm -fR bv_support_tmp
+                    else
+                        mv bv_support_tmp bv_support
+                    fi
+                elif [[ $choice == "wget" ]]; then
+                    wget -r -nH --cut-dirs=5 --no-parent --reject="index.html" -q ${webaddr}
                 else
-                    mv bv_support_tmp bv_support
+                    svn co ${webaddr} bv_support
                 fi
-            elif [[ $choice == "wget" ]]; then
-               wget -r -nH --cut-dirs=5 --no-parent --reject="index.html" -q ${webaddr}
-            else
-               svn co ${webaddr} bv_support
-            fi
 
-            if [ ! -d $bv_PREFIX ]; then
-                echo "$choice failed to retrieve support files"
-            else
-                echo "Success. downloaded support, continuing"
-                break
-            fi
-        done
-    fi
+                if [ ! -d $bv_PREFIX ]; then
+                    echo "$choice failed to retrieve support files"
+                else
+                    echo "Success. downloaded support, continuing"
+                    break
+                fi
+            done
+        fi
 
-    if [ ! -d $bv_PREFIX ]; then
-        echo "Failed to detect or fetch support files, please contact visit-users mailing list with error. Quitting..."
-        exit 2
+        if [ ! -d $bv_PREFIX ]; then
+            echo "Failed to detect or fetch support files, please contact visit-users mailing list with error. Quitting..."
+            exit 2
+        fi
     fi
-fi
+}
+
+
+#configure the support files if needed..
+configure_support_files
 
 #import initialize and run functions..
 . $bv_PREFIX/bv_main.sh
@@ -128,152 +152,67 @@ fi
 . $bv_PREFIX/bv_visit.sh
 
 #These options can be read from a file..
+. $bv_PREFIX/bv_xml_parser.sh
+
+#read in the module file..
+readXmlModuleFile $bv_PREFIX/modules.xml
+
+if [[ $? == 0 ]] ; then
+    echo "Module file not read in properly"
+    exit 1
+fi
+
+defaultLicense=$(xmlp_get_license "$@")
+info "Selected $defaultLicense license."
+
+#read in contents for this license
+parseXmlModuleContents $defaultLicense
+
 
 #import functions that that install required visit libraries
-reqlibs[0]="cmake"
-reqlibs[1]="python"
-reqlibs[2]="mesa"
-reqlibs[3]="vtk"
-reqlibs[4]="qt"
-
-
 for (( i = 0; i < ${#reqlibs[*]}; ++i ))
 do
     . "${bv_PREFIX}/bv_${reqlibs[$i]}.sh" 
-    
-    #check if required functions exist..
-    declare -F "bv_${reqlibs[$i]}_enable" &>/dev/null || errorFunc "${reqlibs[$i]} enable not found"
-    declare -F "bv_${reqlibs[$i]}_disable" &>/dev/null || errorFunc "${reqlibs[$i]} disable not found"
-    declare -F "bv_${reqlibs[$i]}_initialize" &>/dev/null || errorFunc "${reqlibs[$i]} initialize not found"
-    declare -F "bv_${reqlibs[$i]}_info" &>/dev/null || errorFunc "${reqlibs[$i]} info not found"
-    declare -F "bv_${reqlibs[$i]}_ensure" &>/dev/null || errorFunc "${reqlibs[$i]} ensure not found"
-    declare -F "bv_${reqlibs[$i]}_build" &>/dev/null || errorFunc "${reqlibs[$i]} build not found"
-    declare -F "bv_${reqlibs[$i]}_depends_on" &>/dev/null || errorFunc "${reqlibs[$i]} depends_on not found"
-    declare -F "bv_${reqlibs[$i]}_print" &>/dev/null || errorFunc "${reqlibs[$i]} print not found"
-    declare -F "bv_${reqlibs[$i]}_print_usage" &>/dev/null || errorFunc "${reqlibs[$i]} print_usage not found"
-    declare -F "bv_${reqlibs[$i]}_dry_run" &>/dev/null || errorFunc "${reqlibs[$i]} dry_run not found"
+    verify_required_module_exists ${reqlibs[$i]}
 done
 
 
 #import functions that support optional visit dependencies
-bsd_optlibs[0]="szip"
-bsd_optlibs[1]="hdf5"
-bsd_optlibs[2]="mili"
-bsd_optlibs[3]="icet"
-bsd_optlibs[4]="hdf4"
-bsd_optlibs[5]="netcdf"
-bsd_optlibs[6]="cgns"
-bsd_optlibs[7]="gdal"
-bsd_optlibs[8]="exodus"
-bsd_optlibs[9]="tcmalloc"
-bsd_optlibs[10]="boxlib"
-bsd_optlibs[11]="cfitsio"
-bsd_optlibs[12]="mdsplus"
-bsd_optlibs[13]="h5part"
-bsd_optlibs[14]="fastbit"
-bsd_optlibs[15]="ccmio"
-bsd_optlibs[16]="silo"
-bsd_optlibs[17]="itaps"
-bsd_optlibs[18]="advio"
-bsd_optlibs[19]="xdmf"
-bsd_optlibs[20]="mxml"
-bsd_optlibs[21]="adios"
-bsd_optlibs[22]="visus"
-bsd_optlibs[23]="pyside"
-
-gpl_optlibs[0]="netcdf"
-gpl_optlibs[1]="R"
+#import functions that that install required visit libraries
+for (( i = 0; i < ${#optlibs[*]}; ++i ))
+do
+    . "${bv_PREFIX}/bv_${optlibs[$i]}.sh"
+    verify_optional_module_exists ${optlibs[$i]}
+done
 
 ###################### Grouping libraries
 # The arrays listed below help group VisIt's set of libraries.
 # For example: --all-io uses the iolibs array to determine which modules to enable
-
-#for thirdparty option..
-thirdpartylibs[0]="qt"
-thirdpartylibs[1]="cmake"
-thirdpartylibs[2]="vtk"
-thirdpartylibs[3]="python"
-
-#turn off non dbio
-nodbiolibs[0]="mesa"
-nodbiolibs[1]="qt"
-nodbiolibs[2]="python"
-
-# turn off non engine/server
-noserverlibs[0]="qt"
-
-#all the io libraries
-bsd_iolibs[0]="adios"
-bsd_iolibs[1]="advio"
-bsd_iolibs[2]="boxlib"
-bsd_iolibs[3]="ccmio"
-bsd_iolibs[4]="cfitsio"
-bsd_iolibs[5]="cgns"
-bsd_iolibs[6]="exodus"
-bsd_iolibs[7]="fastbit"
-bsd_iolibs[8]="gdal"
-bsd_iolibs[9]="h5part"
-bsd_iolibs[10]="hdf4"
-bsd_iolibs[11]="hdf5"
-bsd_iolibs[12]="itaps"
-bsd_iolibs[13]="mxml"
-bsd_iolibs[14]="netcdf"
-bsd_iolibs[15]="silo"
-bsd_iolibs[16]="szip"
-bsd_iolibs[17]="xdmf"
-
-gpl_iolibs[0]="netcdf"
-gpl_iolibs[1]="R"
-
-#all the optional non io libraries
-noniolibs[0]="icet"
-noniolibs[1]="mesa"
-
-#
-# Releasibility of these libs is not yet understood
-#
-advancedlibs[0]="mili"
-advancedlibs[1]="visus"
-advancedlibs[2]="mdsplus"
-advancedlibs[3]="tcmalloc"
-advancedlibs[4]="icet"
-
-
-optlibs=(${bsd_optlibs[*]})
-iolibs=(${bsd_iolibs[*]})
-for arg in $@ ; do
-    case $arg in "--gpl" )
-        optlibs=(${gpl_optlibs[*]})
-        iolibs=(${gpl_iolibs[*]})
-        ;;
-    esac
-done
-
-echo "optlibs= ${optlibs[*]}"
-echo "iolibs= ${iolibs[*]}"
-
-#import functions that that install required visit libraries
-for (( i = 0; i < ${#optlibs[*]}; ++i ))
+#options = no change, enable, disable
+for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
 do
-    echo "${bv_PREFIX}/bv_${optlibs[$i]}.sh"
+    group_name=${grouplibs_name[$bv_i]}
 
-    . "${bv_PREFIX}/bv_${optlibs[$i]}.sh"
-  
-    declare -F "bv_${optlibs[$i]}_enable" &>/dev/null || errorFunc "${optlibs[$i]} enable not found"
-    declare -F "bv_${optlibs[$i]}_disable" &>/dev/null || errorFunc "${optlibs[$i]} disable not found"
-    declare -F "bv_${optlibs[$i]}_initialize" &>/dev/null || errorFunc "${optlibs[$i]} info not found"
-    declare -F "bv_${optlibs[$i]}_info" &>/dev/null || errorFunc "${optlibs[$i]} info not found" 
-    declare -F "bv_${optlibs[$i]}_ensure" &>/dev/null || errorFunc "${optlibs[$i]} ensure not found"
-    declare -F "bv_${optlibs[$i]}_build" &>/dev/null || errorFunc "${optlibs[$i]} build not found"  
-    declare -F "bv_${optlibs[$i]}_depends_on" &>/dev/null || errorFunc "${optlibs[$i]} depends_on not found"  
-    declare -F "bv_${optlibs[$i]}_print" &>/dev/null || errorFunc "${optlibs[$i]} print not found" 
-    declare -F "bv_${optlibs[$i]}_print_usage" &>/dev/null || errorFunc "${optlibs[$i]} print_usage not found" 
-    declare -F "bv_${optlibs[$i]}_host_profile" &>/dev/null || errorFunc "${optlibs[$i]} host_profile not found" 
-    declare -F "bv_${optlibs[$i]}_graphical" &>/dev/null || errorFunc "${optlibs[$i]} graphical not found" 
-    declare -F "bv_${optlibs[$i]}_dry_run" &>/dev/null || errorFunc "${optlibs[$i]} dry_run not found"
+    for group_dep in `echo ${grouplibs_deps[$bv_i]}`;
+    do
+        #echo "checking $group_name and $group_dep"
+        if [[ "$group_dep" == no-* ]]; then
+            group_dep=${group_dep/no-}
+        fi
+        declare -F "bv_${group_dep}_enable" &>/dev/null
+
+        if [[ $? != 0 ]] ; then
+            error "library ${group_dep} in ${group_name} not valid"
+        fi
+
+        declare -F "bv_${group_dep}_disable" &>/dev/null
+
+        if [[ $? != 0 ]] ; then
+            error "library ${group_dep} in ${group_name} not valid"
+        fi
+    done
+
 done
-
-
 
 function bv_write_unified_file
 {
@@ -290,53 +229,38 @@ function bv_write_unified_file
     cd $INITIAL_PWD
 
     echo "#!/bin/bash" > $OUTPUT_bv_FILE
+    echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
+    echo "declare -a optlibs" >> $OUTPUT_bv_FILE
+    echo "declare -a grouplibs_name" >> $OUTPUT_bv_FILE
+    echo "declare -a grouplibs_deps" >> $OUTPUT_bv_FILE
+    echo "declare -a grouplibs_comment" >> $OUTPUT_bv_FILE
+    echo "declare -a grouplibs_enabled" >> $OUTPUT_bv_FILE
+
     cat $bv_PREFIX/bv_main.sh >> $OUTPUT_bv_FILE
     cat $bv_PREFIX/helper_funcs.sh >> $OUTPUT_bv_FILE
+    cat ${bv_PREFIX}/bv_xml_parser.sh >> $OUTPUT_bv_FILE
     cat ${bv_PREFIX}/bv_visit.sh >> $OUTPUT_bv_FILE
 
-    for (( i = 0; i < ${#reqlibs[*]}; ++i ))
+    for (( i = 0; i < ${#xmlp_alllibs[*]}; ++i ))
     do
-        echo "reqlibs[$i]=\"${reqlibs[$i]}\"" >> $OUTPUT_bv_FILE
-        cat "${bv_PREFIX}/bv_${reqlibs[$i]}.sh" >> $OUTPUT_bv_FILE
+        cat "${bv_PREFIX}/bv_${xmlp_alllibs[$i]}.sh" >> $OUTPUT_bv_FILE
     done
 
-    #write out all modules
-    for (( i = 0; i < ${#optlibs[*]}; ++i ))
+    for (( i = 0; i < ${#xmlp_filecontents[*]}; ++i ))
     do
-        echo "optlibs[$i]=\"${optlibs[$i]}\"" >> $OUTPUT_bv_FILE
-        cat "${bv_PREFIX}/bv_${optlibs[$i]}.sh" >> $OUTPUT_bv_FILE
+        echo "xmlp_filecontents[$i]=\"${xmlp_filecontents[$i]//\"/\\\"}\"" >> $OUTPUT_bv_FILE
     done
 
-    #write out all grouped variables..
-    for (( i = 0; i < ${#thirdpartylibs[*]}; ++i ))
+    for (( i = 0; i < ${#xmlp_licenses[*]}; ++i ))
     do
-        echo "thirdpartylibs[$i]=\"${thirdpartylibs[$i]}\"" >> $OUTPUT_bv_FILE
+        echo "xmlp_licenses[$i]=\"${xmlp_licenses[$i]//\|/\\\|}\"" >> $OUTPUT_bv_FILE
+        echo "xmlp_licenses_range[$i]=\"${xmlp_licenses_range[$i]}\"" >> $OUTPUT_bv_FILE
     done
 
-    for (( i = 0; i < ${#nodbiolibs[*]}; ++i ))
-    do
-        echo "nodbiolibs[$i]=\"${nodbiolibs[$i]}\"" >> $OUTPUT_bv_FILE
-    done
+    echo "defaultLicense=\$(xmlp_get_license \"\$@\")"  >> $OUTPUT_bv_FILE
+    echo "info \"Selected \$defaultLicense license.\"" >> $OUTPUT_bv_FILE
 
-    for (( i = 0; i < ${#noserverlibs[*]}; ++i ))
-    do
-        echo "noserverlibs[$i]=\"${noserverlibs[$i]}\"" >> $OUTPUT_bv_FILE
-    done
-
-    for (( i = 0; i < ${#iolibs[*]}; ++i ))
-    do
-        echo "iolibs[$i]=\"${iolibs[$i]}\"" >> $OUTPUT_bv_FILE
-    done
-
-    for (( i = 0; i < ${#noniolibs[*]}; ++i ))
-    do
-        echo "noniolibs[$i]=\"${noniolibs[$i]}\"" >> $OUTPUT_bv_FILE
-    done
-
-    for (( i = 0; i < ${#advancedlibs[*]}; ++i ))
-    do
-        echo "advancedlibs[$i]=\"${advancedlibs[$i]}\"" >> $OUTPUT_bv_FILE
-    done
+    echo "parseXmlModuleContents \$defaultLicense"  >> $OUTPUT_bv_FILE
 
     echo "function bv_write_unified_file" >> $OUTPUT_bv_FILE
     echo "{" >> $OUTPUT_bv_FILE

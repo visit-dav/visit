@@ -18,7 +18,7 @@ ON_ICET="off"
 
 function bv_icet_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_icet_info
@@ -27,6 +27,8 @@ export ICET_FILE=${ICET_FILE:-"IceT-1-0-0.tar.gz"}
 export ICET_VERSION=${ICET_VERSION:-"1.0.0"}
 export ICET_COMPATIBILITY_VERSION=${ICET_COMPATIBILITY_VERSION:-"1.0.0"}
 export ICET_BUILD_DIR=${ICET_BUILD_DIR:-"IceT-1-0-0"}
+export ICET_MD5_CHECKSUM="90a93507b8fdc88f46b9a8d7ed651c6c"
+export ICET_SHA256_CHECKSUM=""
 }
 
 function bv_icet_print
@@ -278,6 +280,23 @@ function build_icet
 
     cd "$START_DIR"
     echo "Done with Ice-T"
+    return 0
+}
+
+function bv_icet_is_enabled
+{
+    if [[ $DO_ICET == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_icet_is_installed
+{
+    check_if_installed "icet" $ICET_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

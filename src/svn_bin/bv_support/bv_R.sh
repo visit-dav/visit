@@ -8,7 +8,6 @@ function bv_R_enable
 {
 DO_R="yes"
 ON_R="on"
-VTK_INSTALL_DIR="vtk-R"
 }
 
 function bv_R_disable
@@ -19,7 +18,7 @@ ON_R="off"
 
 function bv_R_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_R_info
@@ -28,6 +27,8 @@ export R_FILE=${R_FILE:-"R-2.13.2.tar.gz"}
 export R_VERSION=${R_VERSION:-"2.13.2"}
 export R_COMPATIBILITY_VERSION=${R_COMPATIBILITY_VERSION:-"2.13.2"}
 export R_BUILD_DIR=${R_BUILD_DIR:-"R-2.13.2"}
+export R_MD5_CHECKSUM="fbad74f6415385f86425d0f3968dd684"
+export R_SHA256_CHECKSUM=""
 }
 
 function bv_R_print
@@ -103,14 +104,20 @@ function build_R
     #
     info "Configuring R . . ."
     cd $R_BUILD_DIR || error "Can't cd to R build dir."
+
+    R_INSTALL_DIR="$VISITDIR/R/$R_VERSION/$VISITARCH"
     info "Invoking command to configure R"
-    env LIBnn=lib ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-        CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        --without-readline --enable-R-shlib --without-recommended-packages \
-        --prefix="$VISITDIR/R/$R_VERSION/$VISITARCH"
-    if [[ $? != 0 ]] ; then
-       warn "R configure failed.  Giving up"
-       return 1
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        bash ./configure CFLAGS="-std=gnu99 -g -O2" CXXFLAGS="-std=gnu99 -g -O2" --x-includes=/usr/X11/include/ --x-libraries=/usr/X11/lib/  --prefix="$R_INSTALL_DIR" --disable-R-framework --without-recommended-packages --enable-R-shlib --without-readline
+    else
+        env LIBnn=lib ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
+            CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+            --without-readline --enable-R-shlib --without-recommended-packages \
+            --prefix="$R_INSTALL_DIR"
+        if [[ $? != 0 ]] ; then
+            warn "R configure failed.  Giving up"
+            return 1
+        fi
     fi
 
     #
@@ -121,23 +128,47 @@ function build_R
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        warn "R build failed.  Giving up"
-       return 1
+       exit 1
     fi
 
     info "Installing R . . ."
-    $MAKE $MAKE_OPT_FLAGS install
+    #$MAKE $MAKE_OPT_FLAGS install
+    $MAKE -j1 install
     if [[ $? != 0 ]] ; then
        warn "R install failed.  Giving up"
-       return 1
+       exit 1
     fi
 
-    info "Installing R . . ."
-    $MAKE $MAKE_OPT_FLAGS install
+    info "Installing package ismev . . ."
+    $R_INSTALL_DIR/bin/R -e "r = getOption(\"repos\"); r[\"CRAN\"] = \"http://cran.us.r-project.org\"; options(repos = r); rm(r); install.packages(\"ismev\")"
 
     #
     # TODO, install name tool for OSX
     #
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
+        INSTALLNAMEPATH="$VISITDIR/R/${R_VERSION}/$VISITARCH/lib/R/lib"
+        R_LIB_NAMES="libR libRblas libRlapack"
 
+        for i in $R_LIB_NAMES
+        do
+            install_name_tool -id \
+                $INSTALLNAMEPATH/$i.$SO_EXT \
+                $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/$i.$SO_EXT
+        done
+
+        #
+        # Next change the dependent libraries names and paths
+        for i in $R_LIB_NAMES
+        do
+            for j in $R_LIB_NAMES
+            do
+                install_name_tool -change \
+                    $j.$SO_EXT \
+                    $INSTALLNAMEPATH/$j.$SO_EXT \
+                    $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/$i.$SO_EXT
+            done
+        done
+    fi
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/R"
        chgrp -R ${GROUP} "$VISITDIR/R"
@@ -146,6 +177,22 @@ function build_R
     return 0
 }
 
+function bv_R_is_enabled
+{
+    if [[ $DO_R == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_R_is_installed
+{
+    check_if_installed "R" $R_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
 
 function bv_R_build
 {

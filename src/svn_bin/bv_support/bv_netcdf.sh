@@ -18,7 +18,14 @@ ON_NETCDF="off"
 
 function bv_netcdf_depends_on
 {
-return ""
+    local depends_on=""
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        depends_on="hdf5"        
+        if [[ "$DO_SZIP" == "yes" ]] ; then
+            depends_on="${depends_on} szip"        
+        fi
+    fi
+    echo ${depends_on}
 }
 
 function bv_netcdf_info
@@ -27,6 +34,8 @@ export NETCDF_VERSION=${NETCDF_VERSION-"4.1.1"}
 export NETCDF_FILE=${NETCDF_FILE-"netcdf-${NETCDF_VERSION}.tar.gz"}
 export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"4.1"}
 export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR-"netcdf-4.1.1"}
+export NETCDF_MD5_CHECKSUM="79c5ff14c80d5e18dd8f1fceeae1c8e1"
+export NETCDF_SHA256_CHECKSUM=""
 }
 
 function bv_netcdf_print
@@ -302,6 +311,23 @@ function build_netcdf
     fi
     cd "$START_DIR"
     info "Done with NetCDF"
+    return 0
+}
+
+function bv_netcdf_is_enabled
+{
+    if [[ $DO_NETCDF == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_netcdf_is_installed
+{
+    check_if_installed "netcdf" $NETCDF_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

@@ -18,7 +18,7 @@ ON_CFITSIO="off"
 
 function bv_cfitsio_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_cfitsio_info
@@ -27,6 +27,8 @@ export CFITSIO_FILE=${CFITSIO_FILE:-"cfitsio3006.tar.gz"}
 export CFITSIO_VERSION=${CFITSIO_VERSION:-"3006"}
 export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION:-"3.0"}
 export CFITSIO_BUILD_DIR=${CFITSIO_BUILD_DIR:-"cfitsio"}
+export CFITSIO_MD5_CHECKSUM="4aacb54dcf833c8075d1f6515ba069ca"
+export CFITSIO_SHA256_CHECKSUM=""
 }
 
 function bv_cfitsio_print
@@ -163,6 +165,23 @@ function build_cfitsio
     fi
     cd "$START_DIR"
     info "Done with CFITSIO"
+    return 0
+}
+
+function bv_cfitsio_is_enabled
+{
+    if [[ $DO_CFITSIO == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_cfitsio_is_installed
+{
+    check_if_installed "cfitsio" $CFITSIO_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

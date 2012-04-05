@@ -44,10 +44,10 @@ function bv_${output}_disable
     ON_${uppercase_out}=\"off\"
 }
 
-#add any dependency with comma separation
+#add any dependency with comma separation, both dependers and dependees
 function bv_${output}_depends_on
 {
-    return \"\"
+    echo \"\"
 }
 
 #add information about how to get library..
@@ -96,7 +96,7 @@ function bv_${output}_host_profile
 #prepare the module and check whether it is built or is ready to be built.
 function bv_${output}_ensure_built_or_ready
 {
-    if [[ \"$DO_${uppercase_out}\" == \"yes\" ]] ; then
+    if [[ \"\$DO_${uppercase_out}\" == \"yes\" ]] ; then
         ensure_built_or_ready \"${uppercase_out}\" \$${uppercase_out}_VERSION \$${uppercase_out}_BUILD_DIR \$${uppercase_out}_FILE
         if [[ \$? != 0 ]] ; then
             ANY_ERRORS=\"yes\"
@@ -113,16 +113,33 @@ function bv_${output}_dry_run
    echo \"${output} has no build commands set\"
 }
 
-function bv_${output}
+function build_${output}
 {
     echo \"Build the module\"
+}
+
+function bv_${output}_is_enabled
+{
+    if [[ \$DO_${uppercase_out} == \"yes\" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_${output}_is_installed
+{
+    check_if_installed \"${output}\" \$${uppercase_out}_VERSION
+    if [[ \$? == 0 ]] ; then
+        return 1
+    fi
+    return 0
 }
 
 #the build command..
 function bv_${output}_build
 {
 
-    if [[ \"$DO_${uppercase_out}\" == \"yes\" ]] ; then
+    if [[ \"\$DO_${uppercase_out}\" == \"yes\" ]] ; then
         check_if_installed \"${uppercase_out}\" ${uppercase_out}_VERSION
         if [[ \$? == 0 ]] ; then
             info \"Skipping ${uppercase_out} build.  ${uppercase_out} is already installed.\"

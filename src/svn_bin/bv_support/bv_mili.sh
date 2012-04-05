@@ -18,7 +18,7 @@ ON_MILI="off"
 
 function bv_mili_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_mili_info
@@ -27,14 +27,16 @@ export MILI_FILE=${MILI_FILE:-"Mili-111.tar.gz"}
 export MILI_VERSION=${MILI_VERSION:-"1.11.1"}
 export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"1.11.1"}
 export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
+export MILI_MD5_CHECKSUM=""
+export MILI_SHA256_CHECKSUM=""
 }
 
 function bv_mili_print
 {
-printf "%s%s\n" "MILI_FILE=" "${MILI_FILE}"
-printf "%s%s\n" "MILI_VERSION=" "${MILI_VERSION}"
-printf "%s%s\n" "MILI_COMPATIBILITY_VERSION=" "${MILI_COMPATIBILITY_VERSION}"
-printf "%s%s\n" "MILI_BUILD_DIR=" "${MILI_BUILD_DIR}"
+  printf "%s%s\n" "MILI_FILE=" "${MILI_FILE}"
+  printf "%s%s\n" "MILI_VERSION=" "${MILI_VERSION}"
+  printf "%s%s\n" "MILI_COMPATIBILITY_VERSION=" "${MILI_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "MILI_BUILD_DIR=" "${MILI_BUILD_DIR}"
 }
 
 function bv_mili_print_usage
@@ -333,6 +335,23 @@ function build_mili
     fi
     cd "$START_DIR"
     info "Done with Mili"
+    return 0
+}
+
+function bv_mili_is_enabled
+{
+    if [[ $DO_MILI == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_mili_is_installed
+{
+    check_if_installed "mili" $MILI_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

@@ -18,7 +18,7 @@ ON_MXML="off"
 
 function bv_mxml_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_mxml_info
@@ -27,6 +27,8 @@ export MXML_FILE=${MXML_FILE:-"mxml-2.6.tar.gz"}
 export MXML_VERSION=${MXML_VERSION:-"2.6"}
 export MXML_COMPATIBILITY_VERSION=${MXML_COMPATIBILITY_VERSION:-"2.6"}
 export MXML_BUILD_DIR=${MXML_BUILD_DIR:-"mxml-2.6"}
+export MXML_MD5_CHECKSUM="68977789ae64985dddbd1a1a1652642e"
+export MXML_SHA256_CHECKSUM=""
 }
 
 function bv_mxml_print
@@ -127,10 +129,36 @@ function build_mxml
     return 0
 }
 
+function bv_mxml_is_enabled
+{
+    if [[ $DO_MXML == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_mxml_is_installed
+{
+    check_if_installed "mxml" $MXML_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
 function bv_mxml_build
 {
     if [[ "$DO_MXML" == "yes" ]] ; then
-        echo "MXML build currently handled by ADIOS.."
+        check_if_installed "mxml" $MXML_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping build of MXML"
+        else
+            build_mxml
+            if [[ $? != 0 ]] ; then
+                 error "Unable to build or install mxml.  Bailing out."
+            fi
+            info "Done building mxml"
+        fi
     fi
 }
 

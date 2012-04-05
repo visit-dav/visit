@@ -18,7 +18,7 @@ ON_GDAL="off"
 
 function bv_gdal_depends_on
 {
-return ""
+echo ""
 }
 
 function bv_gdal_info
@@ -27,6 +27,8 @@ export GDAL_FILE=${GDAL_FILE:-"gdal-1.7.1.tar.gz"}
 export GDAL_VERSION=${GDAL_VERSION:-"1.7.1"}
 export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"1.7"}
 export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-1.7.1"}
+export GDAL_MD5_CHECKSUM="5a90be385613730cc12fcf3f59b89de6"
+export GDAL_SHA256_CHECKSUM=""
 }
 
 function bv_gdal_print
@@ -238,6 +240,23 @@ function build_gdal
     fi
     cd "$START_DIR"
     info "Done with GDAL"
+    return 0
+}
+
+function bv_gdal_is_enabled
+{
+    if [[ $DO_GDAL == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_gdal_is_installed
+{
+    check_if_installed "gdal" $GDAL_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 

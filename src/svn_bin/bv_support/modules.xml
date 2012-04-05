@@ -1,0 +1,173 @@
+<modules>
+    <license name="bsd|mit|lgpl">
+        <!-- required libraries -->
+        <required>
+            <lib name="cmake"/> <!-- cmake is here -->
+            <lib name="python"/> 
+            <lib name="mesa"/>
+            <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="mesa"/> -->
+            <lib name="qt"/>
+        </required>
+
+        <!-- optional libraries -->
+        <optional>
+            <lib name="szip"/>
+            <lib name="hdf5"/>
+            <lib name="mili"/>
+            <lib name="icet"/>
+            <lib name="hdf4"/>
+            <lib name="netcdf"/>
+            <lib name="cgns"/>
+            <lib name="gdal"/>
+            <lib name="exodus"/>
+            <lib name="tcmalloc"/>
+            <lib name="boxlib"/>
+            <lib name="cfitsio"/>
+            <lib name="mdsplus"/>
+            <lib name="h5part"/>
+            <lib name="fastbit"/>
+            <lib name="ccmio"/>
+            <lib name="silo"/>
+            <lib name="itaps"/>
+            <lib name="advio"/>
+            <lib name="xdmf"/>
+            <lib name="mxml"/>
+            <lib name="adios"/>
+            <lib name="visus"/>
+            <lib name="pyside"/>
+        </optional>
+
+        <!-- thirdparty flag -->
+        <group name="no-thirdparty" comment="Do not build required 3rd party libraries">
+            <lib name="no-qt" />
+            <lib name="no-cmake"/>
+            <lib name="no-vtk"/>
+            <lib name="no-python"/>
+        </group>
+
+        <!-- all io libraries -->
+        <group name="all-io" comment="Build all available I/O libraries">
+            <lib name="adios"/>
+            <lib name="advio"/>
+            <lib name="boxlib"/>
+            <lib name="ccmio"/>
+            <lib name="cfitsio"/>
+            <lib name="cgns"/>
+            <lib name="exodus"/>
+            <lib name="fastbit"/>
+            <lib name="gdal"/>
+            <lib name="h5part"/>
+            <lib name="hdf4"/>
+            <lib name="hdf5"/>
+            <lib name="itaps"/>
+            <lib name="mxml"/>
+            <lib name="netcdf"/>
+            <lib name="silo"/>
+            <lib name="szip"/>
+            <lib name="xdmf"/>
+        </group>
+
+        <!-- dbio-only-->
+        <group name="dbio-only" comment="Disables EVERYTHING but I/O.">
+            <lib name="adios"/>
+            <lib name="advio"/>
+            <lib name="boxlib"/>
+            <lib name="ccmio"/>
+            <lib name="cfitsio"/>
+            <lib name="cgns"/>
+            <lib name="exodus"/>
+            <lib name="fastbit"/>
+            <lib name="gdal"/>
+            <lib name="h5part"/>
+            <lib name="hdf4"/>
+            <lib name="hdf5"/>
+            <lib name="itaps"/>
+            <lib name="mxml"/>
+            <lib name="netcdf"/>
+            <lib name="silo"/>
+            <lib name="szip"/>
+            <lib name="xdmf"/>
+            <lib name="no-mesa"/>
+            <lib name="no-qt"/>
+            <lib name="no-python"/>
+        </group>
+
+        <!--
+            #all the optional non io libraries
+        -->
+        <group name="nonio" comment="Build non I/O libraries">
+            <lib name="icet"/>
+            <lib name="mesa"/>
+        </group>
+
+        <!--
+        # Releasibility of these libs is not yet understood
+        -->
+        <group name="advanced" comment="Must be manually downloaded">
+            <lib name="mili"/>
+            <lib name="visus"/>
+            <lib name="mdsplus"/>
+            <lib name="tcmalloc"/>
+        </group>
+    </license>
+
+    <!-- modules needed by gpl license -->
+    <license name="gpl">
+        <!--
+        <add-license name="lpgl" />Q
+        -->
+        <!-- required libraries -->
+        <required>
+            <lib name="cmake"/>
+            <lib name="python"/>
+            <lib name="mesa"/>
+            <lib name="R"/>
+            <lib name="vtk"/>
+            <lib name="qt"/>
+        </required>
+
+        <!-- optional libraries -->
+        <optional>
+            <lib name="netcdf"/>
+            <lib name="hdf5"/>
+            <lib name="icet"/>
+        </optional>
+
+        <!-- thirdparty flag -->
+        <group name="no-thirdparty" comment="Do not build required 3rd party libraries">
+            <lib name="no-qt" />
+            <lib name="no-cmake"/>
+            <lib name="no-vtk"/>
+            <lib name="no-python"/>
+        </group>
+
+        <!-- nodbio flag -->
+        <group name="dbio-only" comment="Disables EVERYTHING but I/O.">
+            <lib name="netcdf"/>
+            <lib name="hdf5"/>
+            <lib name="no-mesa"/>
+            <lib name="no-qt"/>
+            <lib name="no-python"/>
+        </group>
+
+        <!-- all io libraries -->
+        <group name="all-io" comment="Build all available I/O libraries">
+            <lib name="netcdf"/>
+            <lib name="hdf5"/>
+        </group>
+        <!-- #all the optional non io libraries -->
+        <group name="nonio" comment="Build non I/O libraries">
+            <lib name="icet"/>
+            <lib name="mesa"/>
+        </group>
+        
+        <!-- you have to mangle both vtk and visit, otherwise the
+             build_visit will fail -->
+        <!--
+        <group name="mangled" comment="Use mangled VTK to build VisIt">
+            <custom-flag lib="vtk" flag="mangled"/>
+            <custom-flag lib="visit" flag="mangled"/>
+        </group>
+        -->
+    </license>
+</modules>
