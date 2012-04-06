@@ -83,7 +83,6 @@
 // Until we see nothing weird in the output.
 #define DEBUG_PRINT
 
-#ifdef DEBUG_PRINT
 template <class T>
 void
 print_array(ostream &os, const char *name, const T *data, int nElems,
@@ -172,7 +171,6 @@ print_multi_dim_array(ostream &os, const char *name, const T *data, int ndims,
     }
     os << "}" << endl;
 }
-#endif
 
 // ****************************************************************************
 // Method: PF3DFileFormat::CreateInterface
@@ -1642,11 +1640,7 @@ PF3DFileFormat::GetVariableIndex(const std::string &name) const
 // ****************************************************************************
 
 #ifdef DEBUG_PRINT
-#ifdef VISIT_STATIC
-ostream &operator << (ostream &os, bowinfo binf);
-#else
-ostream &
-operator << (ostream &os, bowinfo binf)
+ostream &operator << (ostream &os, bowinfo binf)
 {
     os << "bowinfo = {" << endl;
     os << "\tversion = " << binf->version << endl;
@@ -1683,7 +1677,6 @@ operator << (ostream &os, bowinfo binf)
 
     return os;
 }
-#endif
 #endif
 
 // ****************************************************************************
