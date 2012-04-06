@@ -1344,23 +1344,6 @@ if [[ $VISIT_DRY_RUN -eq 1 ]]; then
     exit 0
 fi
 
-#
-# Now make sure that we have everything we need to build VisIt, so we can bail
-# out early if we are headed for failure.
-#
-check_files
-if [[ $? != 0 ]] ; then
-   error "Stopping build because necessary files aren't available."
-fi
-
-#
-# Exit if we were told to only download the files.
-#
-if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
-    info "Successfully downloaded the specified files."
-    exit 0
-fi
-
 START_DIR="$PWD"
 
 if [[ "$DOWNLOAD_ONLY" == "no" ]] ; then
@@ -1408,6 +1391,23 @@ if [[ "$DOWNLOAD_ONLY" == "no" ]] ; then
 fi
 export VISITDIR=${VISITDIR:-$(pwd)}
 cd "$START_DIR"
+
+#
+# Now make sure that we have everything we need to build VisIt, so we can bail
+# out early if we are headed for failure.
+#
+check_files
+if [[ $? != 0 ]] ; then
+   error "Stopping build because necessary files aren't available."
+fi
+
+#
+# Exit if we were told to only download the files.
+#
+if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
+    info "Successfully downloaded the specified files."
+    exit 0
+fi
 
 #initialize module variables, since all of VisIt's variables should be set by now..
 initialize_module_variables
