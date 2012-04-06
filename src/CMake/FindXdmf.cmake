@@ -41,6 +41,10 @@
 #   Mark C. Miller, Fri Jul 30 22:06:06 PDT 2010
 #   Removed logic setting XDMF_DIR (that is done to SET_UP_THIRD_PARTY)
 #   as well as FIND_PACKAGE (also done by SET_UP_THIRD_PARTY).
+#
+#   Brad Whitlock, Fri Apr  6 11:00:10 PDT 2012
+#   Also look for vtklibxml2 if we're building statically.
+#
 #****************************************************************************/
 
 # Use the XDMF_DIR hint from the config-site .cmake file 
@@ -48,4 +52,8 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(XDMF lib include Xdmf)
+IF(VISIT_STATIC)
+    SET_UP_THIRD_PARTY(XDMF lib include Xdmf vtklibxml2)
+ELSE(VISIT_STATIC)
+    SET_UP_THIRD_PARTY(XDMF lib include Xdmf)
+ENDIF(VISIT_STATIC)
