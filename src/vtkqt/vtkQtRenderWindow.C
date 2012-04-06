@@ -34,12 +34,15 @@
 //   an alpha channel. This fixes transparency on my Linux box. Maybe certain
 //   systems don't have alpha channel defaulted to enabled.
 //
+//   Brad Whitlock, Fri Apr  6 11:39:00 PDT 2012
+//   Add path for stereo initialization.
+//
 // ****************************************************************************
 
 class VTKQT_API vtkQtRenderWindowPrivate
 {
 public:
-    vtkQtRenderWindowPrivate(vtkQtRenderWindow *w)
+    vtkQtRenderWindowPrivate(vtkQtRenderWindow *w, bool stereo)
     {
         resizeEventCallback = NULL;
         resizeEventData = NULL;
@@ -51,7 +54,10 @@ public:
         showEventCallbackData = NULL;
 
         // Create the VTK widget and force our custom render window into it.
-        gl = new QVTKWidget2(QGLFormat(QGL::DepthBuffer | QGL::AlphaChannel), w);
+        if(stereo)
+            gl = new QVTKWidget2(QGLFormat(QGL::DepthBuffer | QGL::AlphaChannel | QGL::StereoBuffers), w);
+        else
+            gl = new QVTKWidget2(QGLFormat(QGL::DepthBuffer | QGL::AlphaChannel), w);
         if (!gl->format().alpha())
             qWarning("Could not get alpha channel; results will be suboptimal");
     }
@@ -75,7 +81,18 @@ public:
 
 vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMainWindow(parent, f)
 {
-    d = new vtkQtRenderWindowPrivate(this);
+    d = new vtkQtRenderWindowPrivate(this, false);
+    setIconSize(QSize(20,20));
+
+    setAnimated(false);
+
+    setWindowFlags(f);
+    setCentralWidget(d->gl);
+}
+
+vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFlags f) : QMainWindow(parent, f)
+{
+    d = new vtkQtRenderWindowPrivate(this, stereo);
     setIconSize(QSize(20,20));
 
     setAnimated(false);
@@ -94,6 +111,12 @@ vtkQtRenderWindow *
 vtkQtRenderWindow::New()
 {
     return new vtkQtRenderWindow();
+}
+
+vtkQtRenderWindow *
+vtkQtRenderWindow::New(bool stereo)
+{
+    return new vtkQtRenderWindow(stereo);
 }
 
 void
