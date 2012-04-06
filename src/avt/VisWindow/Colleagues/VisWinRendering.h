@@ -214,6 +214,9 @@ class VisWindowColleagueProxy;
 //    Brad Whitlock, Fri Oct 14 16:30:34 PDT 2011
 //    Add mapper creation methods.
 //
+//    Brad Whitlock, Fri Apr  6 11:44:27 PDT 2012
+//    Add GetStereoEnabled method.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -327,6 +330,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     static void              SetStereoEnabled()
                                  { stereoEnabled = true; };
+    static bool              GetStereoEnabled()
+                                 { return stereoEnabled; }
 
     int                      GetScalableThreshold() const;
     bool                     SetScalableRendering(bool mode);

@@ -60,6 +60,10 @@ bool                QtVisWindow::ownsAllWindows = false;
 //    Jeremy Meredith, Tue Jul 17 16:35:37 EDT 2007
 //    Added fullscreen support.
 //
+//    Brad Whitlock, Fri Apr  6 11:43:24 PDT 2012
+//    Pass stereo flag to vtkQtRenderWindow constructor so we can create it
+//    with the right stereo flags set on the GL context.
+//
 // ****************************************************************************
 
 QtVisWindow::QtVisWindow(bool fullScreenMode) : VisWindow(false)
@@ -72,7 +76,7 @@ QtVisWindow::QtVisWindow(bool fullScreenMode) : VisWindow(false)
         owns = ownsAllWindows; //false;
     }
     else
-        renWin = vtkQtRenderWindow::New();
+        renWin = vtkQtRenderWindow::New(VisWinRendering::GetStereoEnabled());
     VisWinRenderingWithWindow *ren =
         new VisWinRenderingWithWindow(renWin, owns, colleagueProxy);
     ren->SetFullScreenMode(fullScreenMode);
