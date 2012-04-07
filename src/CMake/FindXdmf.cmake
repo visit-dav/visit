@@ -45,6 +45,9 @@
 #   Brad Whitlock, Fri Apr  6 11:00:10 PDT 2012
 #   Also look for vtklibxml2 if we're building statically.
 #
+#   Cyrus Harrison, Fri Apr  6 11:00:10 PDT 2012
+#   Static build: Only look for vtklibxml2 on OSX.
+#
 #****************************************************************************/
 
 # Use the XDMF_DIR hint from the config-site .cmake file 
@@ -52,8 +55,8 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF(VISIT_STATIC)
+IF(APPLE AND VISIT_STATIC)
     SET_UP_THIRD_PARTY(XDMF lib include Xdmf vtklibxml2)
-ELSE(VISIT_STATIC)
+ELSE(APPLE AND VISIT_STATIC)
     SET_UP_THIRD_PARTY(XDMF lib include Xdmf)
-ENDIF(VISIT_STATIC)
+ENDIF(APPLE AND VISIT_STATIC)
