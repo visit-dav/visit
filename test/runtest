@@ -306,6 +306,10 @@
 #
 #    Cyrus Harrison, Fri Jan 13 13:31:07 PST 2012
 #    Added hooks for beta report generation.
+#
+#    Cyrus Harrison, Fri Apr  6 17:49:29 PDT 2012
+#    Use explicit call to python for beta report gen.
+#
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -757,7 +761,7 @@ touch log summary
 touch html/index.html
 now=`date`
 
-visit_test_reports.py index open "$modes" "$now" "$purify"
+python visit_test_reports.py index open "$modes" "$now" "$purify"
 
 
 echo "<html><head><title>VisIt Regression Results ( $modes ) - $now</title></head>" >> html/index.html
@@ -1049,7 +1053,7 @@ while test $testIndex -lt $testCount; do
         fi
     fi
 
-    visit_test_reports.py index add "$category" "$base" "$name" "$error" "$runtime" "$limitSeconds"
+    python visit_test_reports.py index add "$category" "$base" "$name" "$error" "$runtime" "$limitSeconds"
 
     #
     # Do something with the error result:
@@ -1344,7 +1348,7 @@ fi
 echo "</table>"   >> html/index.html
 echo "</html>"    >> html/index.html
 
-visit_test_reports.py index close
+python visit_test_reports.py index close
 
 #
 #  copy the files to the visit public html directory
