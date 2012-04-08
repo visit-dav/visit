@@ -61,7 +61,7 @@ function bv_python_system_python
 
 function bv_python_alt_python_dir
 {
-  info "Using alternate python directory"
+  echo "Using alternate python directory"
 
   [ ! -e "$1/bin/python-config" ] && error "Python not found in $1"
 
@@ -69,8 +69,9 @@ function bv_python_alt_python_dir
   USE_SYSTEM_PYTHON="yes"
   PYTHON_ALT_DIR="$1"
   PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python-config"
+  PYTHON_PYVER_COMMAND="$PYTHON_ALT_DIR/bin/python"
   PYTHON_BUILD_DIR=`"$PYTHON_COMMAND" --prefix`
-  PYTHON_VER=`"$PYTHON_COMMAND" --version 2>&1`
+  PYTHON_VER=`"$PYTHON_PYVER_COMMAND" --version 2>&1`
   PYTHON_VERSION=${PYTHON_VER#"Python "}
   PYTHON_COMPATIBILITY_VERSION=${PYTHON_VERSION%.*}
   PYTHON_FILE=""
