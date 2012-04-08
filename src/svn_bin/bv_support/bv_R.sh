@@ -108,7 +108,12 @@ function build_R
     R_INSTALL_DIR="$VISITDIR/R/$R_VERSION/$VISITARCH"
     info "Invoking command to configure R"
     if [[ "$OPSYS" == "Darwin" ]]; then
-        bash ./configure CFLAGS="-std=gnu99 -g -O2" CXXFLAGS="-std=gnu99 -g -O2" --x-includes=/usr/X11/include/ --x-libraries=/usr/X11/lib/  --prefix="$R_INSTALL_DIR" --disable-R-framework --without-recommended-packages --enable-R-shlib --without-readline
+        RFLAG_ARCH=`uname -m`
+        RFLAG="32"
+        if [[ "$RFLAG_ARCH" == "x86_64" ]]; then
+            RFLAG="64"
+        fi
+        ./configure FFLAGS="-m$RFLAG" CFLAGS="-std=gnu99 -g -O2" CXXFLAGS="-std=gnu99 -g -O2" --without-jpeglib --disable-R-framework --enable-R-shlib --disable-openmp --without-cairo --without-ICU --without-libpng --without-system-xz --without-recommended-packages --without-aqua --without-tcltk --without-readline --prefix="$R_INSTALL_DIR"
     else
         env LIBnn=lib ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
             CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
