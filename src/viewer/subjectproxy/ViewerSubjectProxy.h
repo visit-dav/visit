@@ -45,7 +45,7 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
             //does this logic because visitModule calls NeedsRead once
             //before entering loop and expects to get false..
             #ifdef _WIN32
-            Sleep(1);
+            //Sleep(1);
             #else
             usleep(1000);
             #endif
