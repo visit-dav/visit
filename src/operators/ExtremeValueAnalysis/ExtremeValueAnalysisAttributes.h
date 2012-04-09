@@ -106,14 +106,18 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectRCodeDir();
 
     // Property setting methods
     void SetComputeMaxes(ComputeMaxes computeMaxes_);
     void SetDisplayMonth(Month DisplayMonth_);
+    void SetRCodeDir(const std::string &RCodeDir_);
 
     // Property getting methods
-    ComputeMaxes GetComputeMaxes() const;
-    Month GetDisplayMonth() const;
+    ComputeMaxes      GetComputeMaxes() const;
+    Month             GetDisplayMonth() const;
+    const std::string &GetRCodeDir() const;
+          std::string &GetRCodeDir();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -142,17 +146,19 @@ public:
     enum {
         ID_computeMaxes = 0,
         ID_DisplayMonth,
+        ID_RCodeDir,
         ID__LAST
     };
 
 private:
-    int computeMaxes;
-    int DisplayMonth;
+    int         computeMaxes;
+    int         DisplayMonth;
+    std::string RCodeDir;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define EXTREMEVALUEANALYSISATTRIBUTES_TMFS "ii"
+#define EXTREMEVALUEANALYSISATTRIBUTES_TMFS "iis"
 
 #endif

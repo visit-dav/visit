@@ -148,6 +148,8 @@ PyExtremeValueAnalysisAttributes_ToString(const ExtremeValueAnalysisAttributes *
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%sRCodeDir = \"%s\"\n", prefix, atts->GetRCodeDir().c_str());
+    str += tmpStr;
     return str;
 }
 
@@ -228,6 +230,30 @@ ExtremeValueAnalysisAttributes_GetDisplayMonth(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetRCodeDir(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the RCodeDir in the object.
+    obj->data->SetRCodeDir(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetRCodeDir(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetRCodeDir().c_str());
+    return retval;
+}
+
 
 
 PyMethodDef PyExtremeValueAnalysisAttributes_methods[EXTREMEVALUEANALYSISATTRIBUTES_NMETH] = {
@@ -236,6 +262,8 @@ PyMethodDef PyExtremeValueAnalysisAttributes_methods[EXTREMEVALUEANALYSISATTRIBU
     {"GetComputeMaxes", ExtremeValueAnalysisAttributes_GetComputeMaxes, METH_VARARGS},
     {"SetDisplayMonth", ExtremeValueAnalysisAttributes_SetDisplayMonth, METH_VARARGS},
     {"GetDisplayMonth", ExtremeValueAnalysisAttributes_GetDisplayMonth, METH_VARARGS},
+    {"SetRCodeDir", ExtremeValueAnalysisAttributes_SetRCodeDir, METH_VARARGS},
+    {"GetRCodeDir", ExtremeValueAnalysisAttributes_GetRCodeDir, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -298,6 +326,8 @@ PyExtremeValueAnalysisAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "December") == 0)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::December));
 
+    if(strcmp(name, "RCodeDir") == 0)
+        return ExtremeValueAnalysisAttributes_GetRCodeDir(self, NULL);
 
     return Py_FindMethod(PyExtremeValueAnalysisAttributes_methods, self, name);
 }
@@ -316,6 +346,8 @@ PyExtremeValueAnalysisAttributes_setattr(PyObject *self, char *name, PyObject *a
         obj = ExtremeValueAnalysisAttributes_SetComputeMaxes(self, tuple);
     else if(strcmp(name, "DisplayMonth") == 0)
         obj = ExtremeValueAnalysisAttributes_SetDisplayMonth(self, tuple);
+    else if(strcmp(name, "RCodeDir") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetRCodeDir(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

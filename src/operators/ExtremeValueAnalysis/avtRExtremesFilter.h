@@ -32,6 +32,7 @@ class AVTFILTERS_API avtRExtremesFilter : virtual public avtDatasetToDatasetFilt
 
     ComputeMaxMethod computeMaxes;
     int monthDisplay;
+    std::string codeDir;
     
   protected:
     void                    Initialize();

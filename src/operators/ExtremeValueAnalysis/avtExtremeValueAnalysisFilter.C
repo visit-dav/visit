@@ -158,9 +158,7 @@ avtExtremeValueAnalysisFilter::Execute()
     }
     else if (atts.GetComputeMaxes() == ExtremeValueAnalysisAttributes::YEARLY)
         f->computeMaxes = avtRExtremesFilter::YEARLY;
-
-    int nleaves;
-    vtkDataSet **leaves = GetInputDataTree()->GetAllLeaves(nleaves);
+    f->codeDir = atts.GetRCodeDir();
 
     f->SetInput(GetInput());
     
@@ -169,25 +167,6 @@ avtExtremeValueAnalysisFilter::Execute()
     dob->Update(spec);
     avtDataTree_p tree = f->GetTypedOutput()->GetDataTree();
     SetOutputDataTree(tree);
-
-    /*
-    int nleaves;
-    vtkDataSet **leaves = GetInputDataTree()->GetAllLeaves(nleaves);
-    
-    vtkDataSet *inDS = leaves[0];
-    vtkDataSet *outDS = (vtkDataSet *)(inDS->NewInstance());
-    outDS->CopyStructure(inDS);
-    int numTuples = inDS->GetPointData()->GetScalars()->GetNumberOfTuples();
-    vtkFloatArray *outVar = vtkFloatArray::New();
-    outVar->SetNumberOfComponents(1);
-    outVar->SetNumberOfTuples(numTuples);
-
-    for (int i = 0; i < numTuples; i++)
-        outVar->SetValue(i, i);
-    outDS->GetPointData()->SetScalars(outVar);
-
-    SetOutputDataTree(new avtDataTree(outDS, 0));
-    */
 }
 
 

@@ -165,6 +165,14 @@ QvisExtremeValueAnalysisWindow::CreateWindowContents()
     mainLayout->addWidget(displayMonthType, 1,1);
     connect(displayMonthType, SIGNAL(activated(int)),
             this, SLOT(DisplayMonthChanged(int)));
+
+    RCodeDirLabel = new QLabel(tr("R Code Directory"), central);
+    mainLayout->addWidget(RCodeDirLabel,2,0);
+    RCodeDir = new QLineEdit(central);
+    connect(RCodeDir, SIGNAL(returnPressed()),
+            this, SLOT(RCodeDirProcessText()));
+    mainLayout->addWidget(RCodeDir, 2,1);
+
 }
 
 
@@ -222,6 +230,11 @@ QvisExtremeValueAnalysisWindow::UpdateWindow(bool doAll)
             displayMonthType->setCurrentIndex((int)atts->GetDisplayMonth());
             displayMonthType->blockSignals(false);
             break;
+            
+          case ExtremeValueAnalysisAttributes::ID_RCodeDir:
+            RCodeDir->setText(QString(atts->GetRCodeDir().c_str()));
+            break;
+
         }
     }
 }
@@ -245,6 +258,21 @@ QvisExtremeValueAnalysisWindow::UpdateWindow(bool doAll)
 void
 QvisExtremeValueAnalysisWindow::GetCurrentValues(int which_widget)
 {
+    bool doAll = (which_widget == -1);
+
+    // Do RCodeDir
+    if(which_widget == ExtremeValueAnalysisAttributes::ID_RCodeDir || doAll)
+    {
+        QString temp = RCodeDir->displayText();
+        if(!temp.isEmpty())
+            atts->SetRCodeDir(temp.toStdString());
+        else
+        {
+            ResettingError(tr("R Code Directory"),
+                QString(atts->GetRCodeDir().c_str()));
+            atts->SetRCodeDir(atts->GetRCodeDir());
+        }
+    }
 }
 
 
@@ -274,4 +302,12 @@ QvisExtremeValueAnalysisWindow::DisplayMonthChanged(int val)
         Apply();
     }
 }
+
+void
+QvisExtremeValueAnalysisWindow::RCodeDirProcessText()
+{
+    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_RCodeDir);
+    Apply();
+}
+
 

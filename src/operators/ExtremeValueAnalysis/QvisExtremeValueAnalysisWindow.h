@@ -89,12 +89,15 @@ class QvisExtremeValueAnalysisWindow : public QvisOperatorWindow
   private slots:
     void computeMaxesChanged(int val);
     void DisplayMonthChanged(int val);
+    void RCodeDirProcessText();
   private:
     QWidget      *computeMaxes;
     QButtonGroup *computeMaxesButtonGroup;
     QComboBox    *displayMonthType;
+    QLineEdit *RCodeDir;
     QLabel *computeMaxesLabel;
     QLabel *DisplayMonthLabel;
+    QLabel *RCodeDirLabel;
 
     ExtremeValueAnalysisAttributes *atts;
 };
