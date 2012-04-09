@@ -17,12 +17,6 @@
 
 using namespace std;
 
-
-string loadRCode =
-    "source('/apps/visit/trunk/src/operators/ExtremeValueAnalysis/rCode/auxil.r')\n"     \
-    "source('/apps/visit/trunk/src/operators/ExtremeValueAnalysis/rCode/gev.fit2.r')\n"  \
-    "source('/apps/visit/trunk/src/operators/ExtremeValueAnalysis/rCode/gevVisit.r')\n";
-
 // ****************************************************************************
 // Method:  avtRExtremesFilter::avtRExtremesFilter
 //
@@ -291,7 +285,8 @@ void
 avtRExtremesFilter::CreateFinalOutput()
 {
     avtCallback::ResetTimeout(0);
-
+    cout<<"loop...."<<endl;
+    
     debug1<<"avtRExtremesFilter::CreateFinalOutput()"<<endl;
     
     //Unify maxima
@@ -352,7 +347,6 @@ avtRExtremesFilter::CreateFinalOutput()
         {
             sprintf(cmd,
                     "output=gevFit(inData,'monthly', %d, %d)\n"\
-                    "save.image(file='tmp.RData')\n"           \
                     "result = output$returnValue[%d,]\n",
                     numYears, (i1-i0), monthDisplay+1);
         }
@@ -364,7 +358,16 @@ avtRExtremesFilter::CreateFinalOutput()
                     numYears, (i1-i0));
         }
         
-        string command = loadRCode + cmd;
+        string command;
+        char fileLoad[1024];
+        sprintf(fileLoad, "source('%s/auxil.r')\n", codeDir.c_str());
+        command += fileLoad;
+        sprintf(fileLoad, "source('%s/gev.fit2.r')\n", codeDir.c_str());
+        command += fileLoad;
+        sprintf(fileLoad, "source('%s/gevVisit.r')\n", codeDir.c_str());
+        command += fileLoad;
+        
+        command += cmd;
         cout<<command<<endl;
         RI->EvalRscript(command.c_str());
         

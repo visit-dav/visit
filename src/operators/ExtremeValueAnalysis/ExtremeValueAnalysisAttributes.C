@@ -136,6 +136,7 @@ void ExtremeValueAnalysisAttributes::Init()
 {
     computeMaxes = YEARLY;
     DisplayMonth = January;
+    RCodeDir = "./";
 
     ExtremeValueAnalysisAttributes::SelectAll();
 }
@@ -159,6 +160,7 @@ void ExtremeValueAnalysisAttributes::Copy(const ExtremeValueAnalysisAttributes &
 {
     computeMaxes = obj.computeMaxes;
     DisplayMonth = obj.DisplayMonth;
+    RCodeDir = obj.RCodeDir;
 
     ExtremeValueAnalysisAttributes::SelectAll();
 }
@@ -317,7 +319,8 @@ ExtremeValueAnalysisAttributes::operator == (const ExtremeValueAnalysisAttribute
 {
     // Create the return value
     return ((computeMaxes == obj.computeMaxes) &&
-            (DisplayMonth == obj.DisplayMonth));
+            (DisplayMonth == obj.DisplayMonth) &&
+            (RCodeDir == obj.RCodeDir));
 }
 
 // ****************************************************************************
@@ -463,6 +466,7 @@ ExtremeValueAnalysisAttributes::SelectAll()
 {
     Select(ID_computeMaxes, (void *)&computeMaxes);
     Select(ID_DisplayMonth, (void *)&DisplayMonth);
+    Select(ID_RCodeDir,     (void *)&RCodeDir);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -505,6 +509,12 @@ ExtremeValueAnalysisAttributes::CreateNode(DataNode *parentNode, bool completeSa
     {
         addToParent = true;
         node->AddNode(new DataNode("DisplayMonth", Month_ToString(DisplayMonth)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_RCodeDir, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("RCodeDir", RCodeDir));
     }
 
 
@@ -575,6 +585,8 @@ ExtremeValueAnalysisAttributes::SetFromNode(DataNode *parentNode)
                 SetDisplayMonth(value);
         }
     }
+    if((node = searchNode->GetNode("RCodeDir")) != 0)
+        SetRCodeDir(node->AsString());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -595,6 +607,13 @@ ExtremeValueAnalysisAttributes::SetDisplayMonth(ExtremeValueAnalysisAttributes::
     Select(ID_DisplayMonth, (void *)&DisplayMonth);
 }
 
+void
+ExtremeValueAnalysisAttributes::SetRCodeDir(const std::string &RCodeDir_)
+{
+    RCodeDir = RCodeDir_;
+    Select(ID_RCodeDir, (void *)&RCodeDir);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -609,6 +628,28 @@ ExtremeValueAnalysisAttributes::Month
 ExtremeValueAnalysisAttributes::GetDisplayMonth() const
 {
     return Month(DisplayMonth);
+}
+
+const std::string &
+ExtremeValueAnalysisAttributes::GetRCodeDir() const
+{
+    return RCodeDir;
+}
+
+std::string &
+ExtremeValueAnalysisAttributes::GetRCodeDir()
+{
+    return RCodeDir;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+ExtremeValueAnalysisAttributes::SelectRCodeDir()
+{
+    Select(ID_RCodeDir, (void *)&RCodeDir);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -637,6 +678,7 @@ ExtremeValueAnalysisAttributes::GetFieldName(int index) const
     {
     case ID_computeMaxes: return "computeMaxes";
     case ID_DisplayMonth: return "DisplayMonth";
+    case ID_RCodeDir:     return "RCodeDir";
     default:  return "invalid index";
     }
 }
@@ -663,6 +705,7 @@ ExtremeValueAnalysisAttributes::GetFieldType(int index) const
     {
     case ID_computeMaxes: return FieldType_enum;
     case ID_DisplayMonth: return FieldType_enum;
+    case ID_RCodeDir:     return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -689,6 +732,7 @@ ExtremeValueAnalysisAttributes::GetFieldTypeName(int index) const
     {
     case ID_computeMaxes: return "enum";
     case ID_DisplayMonth: return "enum";
+    case ID_RCodeDir:     return "string";
     default:  return "invalid index";
     }
 }
@@ -723,6 +767,11 @@ ExtremeValueAnalysisAttributes::FieldsEqual(int index_, const AttributeGroup *rh
     case ID_DisplayMonth:
         {  // new scope
         retval = (DisplayMonth == obj.DisplayMonth);
+        }
+        break;
+    case ID_RCodeDir:
+        {  // new scope
+        retval = (RCodeDir == obj.RCodeDir);
         }
         break;
     default: retval = false;

@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ExtremeValueAnalysisAttributes extends AttributeSubject implements Plugin
 {
-    private static int ExtremeValueAnalysisAttributes_numAdditionalAtts = 2;
+    private static int ExtremeValueAnalysisAttributes_numAdditionalAtts = 3;
 
     // Enum values
     public final static int COMPUTEMAXES_MONTHLY = 0;
@@ -85,6 +85,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
 
         computeMaxes = COMPUTEMAXES_YEARLY;
         DisplayMonth = MONTH_JANUARY;
+        RCodeDir = new String("./");
     }
 
     public ExtremeValueAnalysisAttributes(int nMoreFields)
@@ -93,6 +94,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
 
         computeMaxes = COMPUTEMAXES_YEARLY;
         DisplayMonth = MONTH_JANUARY;
+        RCodeDir = new String("./");
     }
 
     public ExtremeValueAnalysisAttributes(ExtremeValueAnalysisAttributes obj)
@@ -101,6 +103,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
 
         computeMaxes = obj.computeMaxes;
         DisplayMonth = obj.DisplayMonth;
+        RCodeDir = new String(obj.RCodeDir);
 
         SelectAll();
     }
@@ -119,7 +122,8 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
     {
         // Create the return value
         return ((computeMaxes == obj.computeMaxes) &&
-                (DisplayMonth == obj.DisplayMonth));
+                (DisplayMonth == obj.DisplayMonth) &&
+                (RCodeDir.equals(obj.RCodeDir)));
     }
 
     public String GetName() { return "ExtremeValueAnalysis"; }
@@ -138,9 +142,16 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         Select(1);
     }
 
+    public void SetRCodeDir(String RCodeDir_)
+    {
+        RCodeDir = RCodeDir_;
+        Select(2);
+    }
+
     // Property getting methods
-    public int GetComputeMaxes() { return computeMaxes; }
-    public int GetDisplayMonth() { return DisplayMonth; }
+    public int    GetComputeMaxes() { return computeMaxes; }
+    public int    GetDisplayMonth() { return DisplayMonth; }
+    public String GetRCodeDir() { return RCodeDir; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -149,6 +160,8 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
             buf.WriteInt(computeMaxes);
         if(WriteSelect(1, buf))
             buf.WriteInt(DisplayMonth);
+        if(WriteSelect(2, buf))
+            buf.WriteString(RCodeDir);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -160,6 +173,9 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
             break;
         case 1:
             SetDisplayMonth(buf.ReadInt());
+            break;
+        case 2:
+            SetRCodeDir(buf.ReadString());
             break;
         }
     }
@@ -199,12 +215,14 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         if(DisplayMonth == MONTH_DECEMBER)
             str = str + "MONTH_DECEMBER";
         str = str + "\n";
+        str = str + stringToString("RCodeDir", RCodeDir, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private int computeMaxes;
-    private int DisplayMonth;
+    private int    computeMaxes;
+    private int    DisplayMonth;
+    private String RCodeDir;
 }
 
