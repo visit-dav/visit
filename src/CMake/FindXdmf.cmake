@@ -48,6 +48,10 @@
 #   Cyrus Harrison, Fri Apr  6 11:00:10 PDT 2012
 #   Static build: Only look for vtklibxml2 on OSX.
 #
+#   Cyrus Harrison, Tue Apr 10 13:07:08 PDT 2012
+#   Revert to standard setup. Build_visit now handles vtk deps correctly
+#   in the generated config-site.
+#
 #****************************************************************************/
 
 # Use the XDMF_DIR hint from the config-site .cmake file 
@@ -55,8 +59,5 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF(APPLE AND VISIT_STATIC)
-    SET_UP_THIRD_PARTY(XDMF lib include Xdmf vtklibxml2)
-ELSE(APPLE AND VISIT_STATIC)
-    SET_UP_THIRD_PARTY(XDMF lib include Xdmf)
-ENDIF(APPLE AND VISIT_STATIC)
+SET_UP_THIRD_PARTY(XDMF lib include Xdmf)
+
