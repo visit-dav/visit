@@ -336,11 +336,15 @@ avtMTMDFileFormatInterface::GetFilename(int ts)
 //    Don't uniformly declare all times as inaccurate if they are out of 
 //    sequence.
 //
+//    Hank Childs, Tue Apr 10 15:12:01 PDT 2012
+//    Make use of argument for whether we should force reading of all
+//    cycles and times.
+//
 // ****************************************************************************
 
 void
 avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
-    int timeState, bool)
+    int timeState, bool forceReadAllCyclesTimes)
 {
     int i;
 
@@ -371,6 +375,10 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         chunks[i]->SetTimeSliceOffset(offset);
         offset += tsPerGroup[i];
     }
+    if (forceReadAllCyclesTimes)
+        chunks[tsGroup]->SetReadAllCyclesAndTimes(true);
+    else
+        chunks[tsGroup]->SetReadAllCyclesAndTimes(false);
     chunks[tsGroup]->SetDatabaseMetaData(md, localTS);
     for (i = 0 ; i < nTimestepGroups ; i++)
         if (i != tsGroup)

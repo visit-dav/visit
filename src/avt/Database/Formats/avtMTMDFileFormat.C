@@ -69,6 +69,9 @@ using     std::vector;
 //    Hank Childs, Sun May  9 18:47:06 CDT 2010
 //    Initialize time slice offset.
 //
+//    Hank Childs, Tue Apr 10 15:12:58 PDT 2012
+//    Initialize read all cycles and times.
+//
 // ****************************************************************************
 
 avtMTMDFileFormat::avtMTMDFileFormat(const char *name)
@@ -76,6 +79,7 @@ avtMTMDFileFormat::avtMTMDFileFormat(const char *name)
     filename = new char[strlen(name)+1];
     strcpy(filename, name);
     timeSliceOffset = 0;
+    readAllCyclesAndTimes = false;
 }
 
 

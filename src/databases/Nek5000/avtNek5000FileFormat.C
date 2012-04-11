@@ -1127,6 +1127,9 @@ avtNek5000FileFormat::FreeUpResources(void)
 //    Hank Childs, Mon Feb 28 10:02:55 PST 2011
 //    Re-enable connectivity.
 //
+//    Hank Childs, Tue Apr 10 15:48:35 PDT 2012
+//    Read all times and cycles if that is part of the request.
+//
 // ****************************************************************************
 
 void
@@ -1171,6 +1174,17 @@ avtNek5000FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*ti
         void_ref_ptr vr = void_ref_ptr(db, avtNekDomainBoundaries::Destruct);
         cache->CacheVoidRef("any_mesh",
                        AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
+    }
+
+    if (readAllCyclesAndTimes)
+    {
+        int tmpstep = curTimestep;
+        for(int i = 0; i < iNumTimesteps; ++i)
+        {
+            curTimestep = i;
+            UpdateCyclesAndTimes();
+        }
+        curTimestep = tmpstep;
     }
 }
 
