@@ -736,7 +736,7 @@ avtPICSFilter::LoadNextTimeSlice()
     }
 
     // Reset the timeout for the next iteration.
-    avtCallback::ResetTimeout(60*5);
+    avtCallback::ResetTimeout(60*60);
     
     if (integrationDirection == VTK_INTEGRATE_BACKWARD)
         curTimeSlice--;
@@ -1248,6 +1248,9 @@ avtPICSFilter::CheckOnDemandViability(void)
 //   Hank Childs, Fri Mar 16 19:00:26 PDT 2012
 //   Switch to Dave's new PODIC and change default algorithm to POS.
 //
+//   Hank Childs, Tue Apr 10 19:39:37 PDT 2012
+//   Increase timeout when the number of particles is high.
+//
 // ****************************************************************************
 
 void
@@ -1295,6 +1298,13 @@ avtPICSFilter::Execute(void)
     {
         GetIntegralCurvesFromInitialSeeds(_ics);
         icAlgo->Initialize(_ics);
+    }
+
+    if (_ics.size() > 10000)
+    {
+        // Lots of particles ... a timeout is more than likely the wrong
+        // thing to do, so set it really high.
+        avtCallback::ResetTimeout(60*1200);
     }
 
     if (doPathlines)
