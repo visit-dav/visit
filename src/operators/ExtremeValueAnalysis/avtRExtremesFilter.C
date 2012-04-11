@@ -279,13 +279,17 @@ avtRExtremesFilter::Execute()
 // Programmer:  Dave Pugmire
 // Creation:    February  7, 2012
 //
+// Modifications:
+//
+//   Dave Pugmire, Wed Apr 11 17:07:26 EDT 2012
+//   Remove the processing of locations in rounds. No longer needed.
+//
 // ****************************************************************************
 
 void
 avtRExtremesFilter::CreateFinalOutput()
 {
     avtCallback::ResetTimeout(0);
-    cout<<"loop...."<<endl;
     
     debug1<<"avtRExtremesFilter::CreateFinalOutput()"<<endl;
     
@@ -303,91 +307,69 @@ avtRExtremesFilter::CreateFinalOutput()
 #endif
 
     //Run R code.
-    int numPerRound = 1024;
-    int numVals = idxN-idx0, numIters;
-    if (numVals == numPerRound)
-        numIters = 1;
-    else
-        numIters = numVals/numPerRound + 1;
-
+    int numVals = idxN-idx0;
     float *result = new float[numTuples];
     for (int i = 0; i < numTuples; i++)
         result[i] = 0.0f;
 
     vtkRInterface *RI = vtkRInterface::New();
+    vtkDoubleArray *inData = vtkDoubleArray::New();
+    inData->SetNumberOfComponents(1);
+    inData->SetNumberOfTuples((idxN-idx0)*values.size());
+    int idx = 0, N = idxN-idx0;
 
+    for (int i = 0; i < N; i++)
+        for (int d = 0; d < values.size(); d++)
+        {
+            double v = scalingVal * values[d][idx0+i];
+            inData->SetValue(idx, v);
+            idx++;
+        }
+    RI->AssignVTKDataArrayToRVariable(inData, "inData");
 
-    //idx0 = 640-128;
-    int i0 = idx0, i1 = idx0+numPerRound;
-    for (int ni = 0; ni < numIters; ni++)
+    cout<<"inData : "<<inData->GetNumberOfTuples()<<" : "<<inData->GetNumberOfComponents()<<endl;
+    cout<<"I have "<<idx0<<" "<<idxN<<endl;
+
+    char cmd[512];
+    if (computeMaxes == avtRExtremesFilter::MONTHLY)
     {
-        if (i1 > idxN)
-            i1 = idxN;
-        //cout<<"R iteration: "<<ni<<" of "<<numIters<<" Is= "<<i0<<" "<<i1<<endl;
-        
-        vtkDoubleArray *inData = vtkDoubleArray::New();
-        inData->SetNumberOfComponents(1);
-        inData->SetNumberOfTuples((i1-i0)*values.size());
-        int idx = 0, N=i1-i0;
-
-        for (int i = 0; i < N; i++)
-            for (int d = 0; d < values.size(); d++)
-            {
-                double v = scalingVal * values[d][i0+i];
-                inData->SetValue(idx, v);
-                idx++;
-            }
-        RI->AssignVTKDataArrayToRVariable(inData, "inData");
-
-        cout<<"inData : "<<inData->GetNumberOfTuples()<<" : "<<inData->GetNumberOfComponents()<<endl;
-        cout<<"I have "<<i0<<" "<<i1<<endl;
-
-        char cmd[512];
-        if (computeMaxes == avtRExtremesFilter::MONTHLY)
-        {
-            sprintf(cmd,
-                    "output=gevFit(inData,'monthly', %d, %d)\n"\
-                    "result = output$returnValue[%d,]\n",
-                    numYears, (i1-i0), monthDisplay+1);
-        }
-        else if (computeMaxes == avtRExtremesFilter::YEARLY)
-        {
-            sprintf(cmd,
-                    "output=gevFit(inData,'annual', %d, %d)\n"\
-                    "result = output$returnValue\n",
-                    numYears, (i1-i0));
-        }
-        
-        string command;
-        char fileLoad[1024];
-        sprintf(fileLoad, "source('%s/auxil.r')\n", codeDir.c_str());
-        command += fileLoad;
-        sprintf(fileLoad, "source('%s/gev.fit2.r')\n", codeDir.c_str());
-        command += fileLoad;
-        sprintf(fileLoad, "source('%s/gevVisit.r')\n", codeDir.c_str());
-        command += fileLoad;
-        
-        command += cmd;
-        cout<<command<<endl;
-        RI->EvalRscript(command.c_str());
-        
-        vtkDoubleArray *output = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("result"));
-        //output->Print(cout);
-        //cout<<"OUTPUT: "<<output->GetNumberOfTuples()<<" : "<<output->GetNumberOfComponents()<<endl;
-
-        int j = 0;
-        idx = i0;
-        for (int i = i0; i < i1; i++, j++, idx++)
-        {
-            result[idx] = (float)output->GetComponent(0, j);
-        }
-    
-        //output->Delete(); //Looks like RI will release this??
-        inData->Delete();
-
-        i0 = i1;
-        i1 = i1+numPerRound;
+        sprintf(cmd,
+                "output=gevFit(inData,'monthly', %d, %d)\n"     \
+                "result = output$returnValue[%d,]\n",
+                numYears, (idxN-idx0), monthDisplay+1);
     }
+    else if (computeMaxes == avtRExtremesFilter::YEARLY)
+    {
+        sprintf(cmd,
+                "output=gevFit(inData,'annual', %d, %d)\n"      \
+                "result = output$returnValue\n",
+                numYears, (idxN-idx0));
+    }
+        
+    string command;
+    char fileLoad[1024];
+    sprintf(fileLoad, "source('%s/auxil.r')\n", codeDir.c_str());
+    command += fileLoad;
+    sprintf(fileLoad, "source('%s/gev.fit2.r')\n", codeDir.c_str());
+    command += fileLoad;
+    sprintf(fileLoad, "source('%s/gevVisit.r')\n", codeDir.c_str());
+    command += fileLoad;
+        
+    command += cmd;
+    cout<<command<<endl;
+    RI->EvalRscript(command.c_str());
+        
+    vtkDoubleArray *output = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("result"));
+
+    int j = 0;
+    idx = idx0;
+    for (int i = idx0; i < idxN; i++, j++, idx++)
+    {
+        result[idx] = (float)output->GetComponent(0, j);
+    }
+    
+    //output->Delete(); //Looks like RI will release this??
+    inData->Delete();
     RI->Delete();
 
 #ifdef PARALLEL
