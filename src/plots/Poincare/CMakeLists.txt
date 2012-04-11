@@ -34,7 +34,8 @@ avtPoincarePlot.C
 avtPoincareFilter.C
 FieldlineAnalyzerLib.C
 RationalSurfaceLib.C
-#skelet.cpp
+skelet.C
+dir_graph.C
 ${COMMON_SOURCES}
 )
 
