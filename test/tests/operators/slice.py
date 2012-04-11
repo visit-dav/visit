@@ -73,6 +73,7 @@
 
 OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
+TestSection("Slice through a point")
 # Test 1 -- a slice through a point
 AddPlot("Pseudocolor", "d")
 AddOperator("Slice")
@@ -99,6 +100,7 @@ SetView3D(view)
 
 Test("ops_Slice01")
 
+TestSection("Slice through a zone")
 # Test 2 -- A slice through a zone.  Add an onion peel of that zone to show
 # that the slice is in the right spot.
 atts.originType = atts.Zone
@@ -127,7 +129,7 @@ SetOperatorOptions(atts)
 Test("ops_Slice03")
 
 # Now repeat the three tests with a filled boundary plot.
-
+TestSection("Slice FilledBoundary plot")
 DeleteActivePlots()
 
 AddPlot("FilledBoundary", "mat1")
@@ -154,6 +156,7 @@ SetOperatorOptions(atts)
 Test("ops_Slice06")
 
 # Slice a mesh plot.
+TestSection("Slice Mesh plot")
 DeleteActivePlots()
 
 AddPlot("Mesh", "quadmesh3d")
@@ -291,6 +294,7 @@ Test("ops_Slice18")
 
 DeleteAllPlots()
 
+TestSection("Slice point mesh")
 # Test that we can slice point meshes.  The points must be exactly on the
 # plane (or at least within some tolerance).  To guarantee the point positions,
 # take a 2D plot and put it into 3D.  Then slice it.
@@ -319,6 +323,7 @@ DeleteAllPlots()
 ActivateDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
 # Test 1 -- a slice through a point
+TestSection("Slice through a point")
 AddPlot("Pseudocolor", "d")
 AddOperator("Slice")
 atts.originType = atts.Percent
@@ -499,5 +504,67 @@ AddOperator("Slice")
 DrawPlots()
 ResetView()
 Test("ops_Slice35")
+DeleteAllPlots()
+
+TestSection("Slice polyhedral cells")
+OpenDatabase("../data/EnSight_test_data/small.case")
+DefineScalarExpression("zid", "zoneid(mesh)")
+DefineScalarExpression("nid", "nodeid(mesh)")
+AddPlot("Pseudocolor", "zid")
+DrawPlots()
+v = GetView3D()
+v.viewNormal = (-0.597184, 0.364571, 0.714464)
+v.focus = (1, 1.75, 1)
+v.viewUp = (0.222007, 0.931066, -0.289533)
+v.viewAngle = 30
+v.parallelScale = 4.58939
+v.nearPlane = -9.17878
+v.farPlane = 9.17878
+v.imagePan = (-0.0112992, 0.0560752)
+v.imageZoom = 1.77156
+v.perspective = 1
+v.eyeAngle = 2
+v.centerOfRotationSet = 0
+v.centerOfRotation = (1, 1.75, 1)
+v.axis3DScaleFlag = 0
+v.axis3DScales = (1, 1, 1)
+v.shear = (0, 0, 1)
+SetView3D(v)
+Test("ops_Slice36")
+
+AddOperator("Slice")
+s = SliceAttributes()
+s.originType = s.Percent  # Point, Intercept, Percent, Zone, Node
+s.originPoint = (0, 0, 0)
+s.originIntercept = 0
+s.originPercent = 50
+s.originZone = 0
+s.originNode = 0
+s.normal = (0, 0, 1)
+s.axisType = s.XAxis  # XAxis, YAxis, ZAxis, Arbitrary, ThetaPhi
+s.upAxis = (0, 1, 0)
+s.project2d = 0
+s.interactive = 1
+s.flip = 0
+s.originZoneDomain = 0
+s.originNodeDomain = 0
+s.meshName = "mesh"
+s.theta = 0
+s.phi = 90
+SetOperatorOptions(s)
+DrawPlots()
+Test("ops_Slice37")
+
+ChangeActivePlotsVar("nid")
+Test("ops_Slice38")
+
+ChangeActivePlotsVar("zid")
+s.axisType = s.ZAxis
+SetOperatorOptions(s)
+DrawPlots()
+Test("ops_Slice39")
+
+ChangeActivePlotsVar("nid")
+Test("ops_Slice40")
 
 Exit()
