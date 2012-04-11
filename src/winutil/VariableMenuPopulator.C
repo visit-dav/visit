@@ -340,6 +340,7 @@ VariableMenuPopulator::ClearGroupingInfo()
 //    Subset menu was being populated with entries that were defined
 //    on meshes whose hideFromGUI flag  was true. I added logic to
 //    prevent that.
+//
 // ****************************************************************************
 
 bool
@@ -763,6 +764,10 @@ VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
 //   Hank Childs, Thu Dec 30 12:51:28 PST 2010
 //   Add created expressions support for scalars, vectors, and tensors.
 //
+//   Hank Childs, Tue Apr 10 17:01:01 PDT 2012
+//   Give operator plugins the existing expressions as well so they can
+//   work on those too.
+//
 // ****************************************************************************
 
 void
@@ -774,11 +779,13 @@ VariableMenuPopulator::GetOperatorCreatedExpressions(ExpressionList &newExpressi
 
     // Iterate over the meshes in the metadata and add operator-created expressions
     // for each relevant mesh.
+    avtDatabaseMetaData md2 = *md;
+    md2.GetExprList() = newExpressionList;
     for(int j = 0; j < oPM->GetNEnabledPlugins(); j++)
     {
         std::string id(oPM->GetEnabledID(j));
         CommonOperatorPluginInfo *ComInfo = oPM->GetCommonPluginInfo(id);
-        ExpressionList *fromOperators = ComInfo->GetCreatedExpressions(md);
+        ExpressionList *fromOperators = ComInfo->GetCreatedExpressions(&md2);
         if(fromOperators != NULL)
         {
             for(int k = 0; k < fromOperators->GetNumExpressions(); k++)

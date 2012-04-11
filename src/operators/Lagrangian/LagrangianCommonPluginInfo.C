@@ -136,6 +136,22 @@ LagrangianCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
     for (i = 0 ; i < oldEL.GetNumExpressions() ; i++)
     {
         const Expression &e = oldEL.GetExpressions(i);
+        if (e.GetType() == Expression::VectorMeshVar)
+        {
+            {
+                if (e.GetFromOperator())
+                    continue; // weird ordering behavior otherwise
+                Expression e2;
+                sprintf(name, "operators/Lagrangian/%s", e.GetName().c_str());
+                e2.SetName(name);
+                e2.SetType(Expression::CurveMeshVar);
+                e2.SetFromOperator(true);
+                e2.SetOperatorName("Lagrangian");
+                sprintf(defn, "cell_constant(%s, 0.)", e.GetName().c_str());
+                e2.SetDefinition(defn);
+                el->AddExpressions(e2);
+            }
+        }
     }
     return el;
 }

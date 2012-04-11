@@ -987,6 +987,8 @@ class InfoGeneratorPlugin : public Plugin
         for (size_t j = 0 ; j < outtypes.size() ; j++)
         {
             c << "            {" << endl;
+            c << "                if (e.GetFromOperator())" << endl;
+            c << "                    continue; // weird ordering behavior otherwise" << endl;
             c << "                Expression e2;" << endl;
             c << "                sprintf(name, \"operators/" << opName << "/\%s\", e.GetName().c_str());" << endl;
             c << "                e2.SetName(name);" << endl;
@@ -1381,6 +1383,10 @@ class InfoGeneratorPlugin : public Plugin
                 c << "        const Expression &e = oldEL.GetExpressions(i);" << endl;
                 if (doScalar)
                     AddExpressionFromExpr(c, name, outExprTypes, QString("ScalarMeshVar"));
+                if (doVector)
+                    AddExpressionFromExpr(c, name, outExprTypes, QString("VectorMeshVar"));
+                if (doTensor || doSymmTensor)
+                    AddExpressionFromExpr(c, name, outExprTypes, QString("TensorMeshVar"));
                 c << "    }" << endl;
                 c << "    return el;" << endl;
                 c << "}" << endl;

@@ -2535,6 +2535,9 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    SIL if the material restrictions for the new plot and matched plot are
 //    the same.
 //
+//    Hank Childs, Tue Apr 10 21:46:32 PDT 2012
+//    Make sure variable-creating-operators get the full list of expressions.
+//
 // ****************************************************************************
 
 int
@@ -2675,12 +2678,16 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     // If a plot of an operator variable is added, let's find the operator
     // and add it to the execution pipeline
     OperatorPluginManager *oPM = GetOperatorPluginManager();
+
+    const avtDatabaseMetaData *md = newPlot->GetMetaData();
+    avtDatabaseMetaData md2 = *md;
+    md2.SetExprList(*(ParsingExprList::Instance()->GetList()));
     for (int j = 0; j < oPM->GetNEnabledPlugins(); j++)
     {
         std::string id = oPM->GetEnabledID(j);
         CommonOperatorPluginInfo *info = oPM->GetCommonPluginInfo(id);
-        const avtDatabaseMetaData *md = newPlot->GetMetaData();
-        ExpressionList *exprs = info->GetCreatedExpressions(md);
+
+        ExpressionList *exprs = info->GetCreatedExpressions(&md2);
         if (exprs == NULL)
             continue;
         for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)

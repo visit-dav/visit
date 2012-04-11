@@ -44,7 +44,7 @@
 #include <FTLEAttributes.h>
 
 #include <visit-config.h>
-extern "C" OP_EXPORT const char *FTLEVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(FTLE,OP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
