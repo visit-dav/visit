@@ -415,7 +415,7 @@ avtRExtremesFilter::CreateFinalOutput()
         if (nodeCenteredData)
             outDS->GetPointData()->SetScalars(outVar);
         else
-            outDS->GetPointData()->SetVectors(outVar);
+            outDS->GetPointData()->SetScalars(outVar);
         
         outVar->Delete();
 
