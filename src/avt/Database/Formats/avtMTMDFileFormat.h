@@ -90,6 +90,10 @@ class     avtIOInformation;
 //
 //    Mark C. Miller, Fri Oct 29 09:58:43 PDT 2010
 //    Moved implementation of SetDatabaseMetaData to the .C file.
+//
+//    Hank Childs, Tue Apr 10 15:12:58 PDT 2012
+//    Add method SetReadAllCyclesAndTimes.
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTMDFileFormat : public avtFileFormat
@@ -118,9 +122,15 @@ class DATABASE_API avtMTMDFileFormat : public avtFileFormat
 
     void                   SetTimeSliceOffset(int ts) { timeSliceOffset = ts; };
 
+    void                   SetReadAllCyclesAndTimes(bool b) 
+                                             { readAllCyclesAndTimes = b; };
+    bool                   GetReadAllCyclesAndTimes(void)
+                                             { return readAllCyclesAndTimes; };
+
   protected:
     char                  *filename;
     int                    timeSliceOffset;
+    bool                   readAllCyclesAndTimes;
 
     // The second of these should really be pure virtual and the first
     // non-existant. However, both are just virtual to maintain 
