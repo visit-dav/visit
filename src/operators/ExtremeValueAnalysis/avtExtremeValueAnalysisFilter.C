@@ -146,6 +146,7 @@ avtExtremeValueAnalysisFilter::Equivalent(const AttributeGroup *a)
 //  Creation:   Tue Apr 3 09:21:07 PDT 2012
 //
 //  Modifications:
+//
 //   Dave Pugmire, Wed Apr 11 14:53:44 EDT 2012
 //   Name the output scalar coming out of avtRExtremesFilter
 //
