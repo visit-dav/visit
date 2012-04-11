@@ -427,6 +427,8 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     const char *gradvar = atts.GetOpacityVariable().c_str();
     if (strcmp(gradvar, "default") == 0)
         gradvar = primaryVariable;
+    // This name is explicitly sent to the avtGradientExpression in
+    // the avtVolumePlot.
     SNPRINTF(gradName, 128, "_%s_gradient", gradvar);
     
     for (int i = 0 ; i < vl.nvars ; i++)
@@ -830,6 +832,12 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    If we want to create an expression with name 'X' and 'X' is already
 //    an expression in the list, then delete 'X' before adding the new one.
 //
+//    Hank Childs, Tue Apr 10 19:39:37 PDT 2012
+//    Remove request to EEF for gradient ... the avtVolumePlot explicitly
+//    generates the gradient right as part of the rendering transformation.
+//    This improves support for operator variables and also reduces
+//    computation when the data set is downsampled.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -903,55 +911,6 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         newcontract = new avtContract(contract, nds);
         primaryVariable = new char[strlen(exprName)+1];
         strcpy(primaryVariable, exprName);
-    }
-
-    if (atts.GetLightingFlag())
-    {
-        char exprName[128];
-        const char *gradvar = atts.GetOpacityVariable().c_str();
-        if (strcmp(gradvar, "default") == 0)
-            gradvar = primaryVariable;
-
-        SNPRINTF(exprName, 128, "_%s_gradient", gradvar);
-        char exprDef[512];
-        ExpressionList *elist = ParsingExprList::Instance()->GetList();
-        if (atts.GetSmoothData())
-        {
-            SNPRINTF(exprDef, 512, "gradient(recenter(<%s>, \"nodal\"), \"fast\")", gradvar);
-            for (int i=0; i < elist->GetNumExpressions(); ++i)
-            {
-                if ((*elist)[i].GetName() == exprName)
-                {
-                    debug3 << "Removed expression '" << exprName << "' from expression list to recalculate gradient" << endl;
-                    elist->RemoveExpressions(i);
-                    break;
-                }
-            }
-        }
-        else
-        {
-            SNPRINTF(exprDef, 512, "gradient(<%s>, \"fast\")", gradvar);
-            for (int i=0; i < elist->GetNumExpressions(); ++i)
-            {
-                if ((*elist)[i].GetName() == exprName)
-                {
-                    debug3 << "Removed expression '" << exprName << "' from expression list to recalculate gradient" << endl;
-                    elist->RemoveExpressions(i);
-                    break;
-                }
-            }
-        }
-
-        Expression *e = new Expression();
-        e->SetName(exprName);
-        e->SetDefinition(exprDef); 
-        e->SetType(Expression::VectorMeshVar);
-        elist->AddExpressions(*e);
-        delete e;
-        ds = newcontract->GetDataRequest();
-        avtDataRequest_p nds = new avtDataRequest(ds);
-        nds->AddSecondaryVariable(exprName);
-        newcontract = new avtContract(newcontract, nds);
     }
 
     newcontract->NoStreaming();
