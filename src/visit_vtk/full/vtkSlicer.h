@@ -55,7 +55,7 @@ protected:
   void StructuredGridExecute();
   void UnstructuredGridExecute();
   void GeneralExecute();
-  void SliceDataset(vtkDataSet *, vtkPolyData *);
+  void SliceDataset(vtkDataSet *, vtkPolyData *, bool);
   
   int *CellList;
   int  CellListSize;

@@ -343,6 +343,9 @@ vtkVisItContourFilter::RectilinearGridExecute(vtkDataSet *input,
 //   Brad Whitlock, Thu Aug 12 14:45:24 PST 2004
 //   Added float casts to the pow() arguments so it builds on MSVC7.Net.
 //
+//   Brad Whitlock, Wed Apr 11 11:37:18 PDT 2012
+//   When we can't contour a cell, insert faces too for polyhedral cells.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 int 
@@ -478,7 +481,15 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
                 stuff_I_cant_contour->GetCellData()->
                                        CopyAllocate(ug->GetCellData(), nCells);
 
-            stuff_I_cant_contour->InsertNextCell(cellType, npts, pts);
+            if(cellType == VTK_POLYHEDRON)
+            {
+                vtkIdType nFaces, *facePtIds;
+                ug->GetFaceStream(cellId, nFaces, facePtIds);
+                stuff_I_cant_contour->InsertNextCell(cellType, npts, pts, 
+                     nFaces, facePtIds);
+            }
+            else
+                stuff_I_cant_contour->InsertNextCell(cellType, npts, pts);
             stuff_I_cant_contour->GetCellData()->
                             CopyData(ug->GetCellData(), cellId, numIcantContour);
             numIcantContour++;

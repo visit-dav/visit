@@ -19,7 +19,7 @@
 
 #include <vtkAppendPolyData.h>
 #include <vtkCellData.h>
-#include <vtkVisItCutter.h>
+#include <vtkCutter.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkObjectFactory.h>
@@ -31,6 +31,8 @@
 #include <vtkSurfaceFromVolume.h>
 #include <vtkTriangulationTables.h>
 #include <vtkUnstructuredGrid.h>
+
+#include <vtkVisItCutter.h>
 
 #include <math.h>
 #include <vector>
@@ -297,6 +299,9 @@ void vtkSlicer::RectilinearGridExecute(void)
 //    Brad Whitlock, Thu Aug 12 14:51:27 PST 2004
 //    Added float casts to the pow() arguments so it builds on MSVC7.Net.
 //
+//    Brad Whitlock, Wed Apr 11 11:37:18 PDT 2012
+//    When we can't slice a cell, insert faces too for polyhedral cells.
+//
 // ****************************************************************************
 
 void vtkSlicer::UnstructuredGridExecute(void)
@@ -465,7 +470,15 @@ void vtkSlicer::UnstructuredGridExecute(void)
                                        CopyAllocate(ug->GetCellData(), nCells);
             }
 
-            stuff_I_cant_slice->InsertNextCell(cellType, npts, pts);
+            if(cellType == VTK_POLYHEDRON)
+            {
+                vtkIdType nFaces, *facePtIds;
+                ug->GetFaceStream(cellId, nFaces, facePtIds);
+                stuff_I_cant_slice->InsertNextCell(cellType, npts, pts, 
+                    nFaces, facePtIds);
+            }
+            else
+                stuff_I_cant_slice->InsertNextCell(cellType, npts, pts);
             stuff_I_cant_slice->GetCellData()->
                             CopyData(ug->GetCellData(), cellId, numIcantSlice);
             numIcantSlice++;
@@ -479,7 +492,7 @@ void vtkSlicer::UnstructuredGridExecute(void)
         if (numIcantSlice > 0)
         {
             vtkPolyData *not_from_zoo  = vtkPolyData::New();
-            SliceDataset(stuff_I_cant_slice, not_from_zoo);
+            SliceDataset(stuff_I_cant_slice, not_from_zoo, true);
             appender->AddInput(not_from_zoo);
             not_from_zoo->Delete();
         }
@@ -511,7 +524,7 @@ void vtkSlicer::UnstructuredGridExecute(void)
 
 void vtkSlicer::GeneralExecute(void)
 {
-    SliceDataset(GetInput(), GetOutput());
+    SliceDataset(GetInput(), GetOutput(), false);
 }
 
 // ****************************************************************************
@@ -519,21 +532,40 @@ void vtkSlicer::GeneralExecute(void)
 //    Kathleen Bonnell, Wed Apr 27 18:47:18 PDT 2005
 //    Use vtkVisItCutter, which has modifications to correctly handle CellData. 
 //
+//    Brad Whitlock, Wed Apr 11 11:34:16 PDT 2012
+//    Use vtkCutter when we're taking this path so we can slice general VTK
+//    datasets containing cells that vtkVisItCutter can't slice.
+//
 // ****************************************************************************
-void vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd)
+
+void vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd,
+    bool useVTKFilter)
 {
-    vtkVisItCutter *cutter = vtkVisItCutter::New();
     vtkPlane  *plane  = vtkPlane::New();
     plane->SetOrigin(Origin[0], Origin[1], Origin[2]);
     plane->SetNormal(Normal[0], Normal[1], Normal[2]);
-    cutter->SetCutFunction(plane);
 
-    cutter->SetInput(in_ds);
-    cutter->Update();
+    if(useVTKFilter)
+    {
+        vtkCutter *cutter = vtkCutter::New();
+        cutter->SetCutFunction(plane);
+        cutter->SetInput(in_ds);
+        cutter->Update();
 
-    out_pd->ShallowCopy(cutter->GetOutput());
-    
-    cutter->Delete();
+        out_pd->ShallowCopy(cutter->GetOutput());
+        cutter->Delete();
+    }
+    else
+    {
+        vtkVisItCutter *cutter = vtkVisItCutter::New();
+        cutter->SetCutFunction(plane);
+        cutter->SetInput(in_ds);
+        cutter->Update();
+
+        out_pd->ShallowCopy(cutter->GetOutput());
+        cutter->Delete();
+    }
+
     plane->Delete();
 }
 
