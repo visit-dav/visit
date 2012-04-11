@@ -48,6 +48,7 @@
 
 #ifdef STRAIGHTLINE_SKELETON
 #include "skelet.h"
+#include "dir_graph.h"
 #endif
 
 #define SIGN(x) ((x) < 0.0 ? (int) -1 : (int) 1)
@@ -5182,7 +5183,10 @@ FieldlineLib::findIslandCenters( std::vector< Point > &puncturePts,
          jc<nnodes;
          j+=offset, ++jc )
     {
-      std::cerr << "hull points  " << jc << "  " << j%moduloValue << std::endl;
+      if( verboseFlag )
+        std::cerr << "hull points  " << jc << "  " << j%moduloValue << "  " 
+                  <<  puncturePts[j%moduloValue]
+                  << std::endl;
      
       tmp_points.push_back( puncturePts[j%moduloValue] );
     }
@@ -5199,7 +5203,8 @@ FieldlineLib::findIslandCenters( std::vector< Point > &puncturePts,
                                 tmp_points[k], tmp_points[k+1] ) )
         {
           if( verboseFlag )
-            std::cerr << " self intersects  " << j << "  " << k << std::endl;
+            std::cerr << " hull self intersects  "
+                      << j << "  " << k << std::endl;
           
           // Self intersection found so skip this island.
           selfIntersect = true;
@@ -5236,260 +5241,376 @@ FieldlineLib::findIslandCenters( std::vector< Point > &puncturePts,
       std::cerr << " Skeleton check ";
       
     Skeleton::Skeleton s (Skeleton::makeSkeleton (pointVec));
+
+
+    if( 1 )
+    {
+      // Convert the skeleton to a graph
+      DIR_Graph *skl_graph = new DIR_Graph(0, 0);
+      skl_graph->convert_SKL_to_graph (s);
       
-    // Delete all of the hull points.
-    list<Skeleton::SkeletonLine>::iterator SL = s.begin();
-    list<Skeleton::SkeletonLine>::iterator deleteSL;
-      
-    // Remove all of the points on the boundary while getting
-    // the cord length of the remaining interior segments.
-      
+      // Compute the approximate center 
+      Skeleton::Point center = skl_graph->get_centroid();
+
+      std::cerr << "O Point " << center << std::endl;
+      centers.push_back( Point( center.x, 0, center.y ) );
+    }
+    else
+    {
     double cordLength = 0;
-    
+    int nEndpoints = 0;
+
+    std::list<Skeleton::SkeletonLine>::iterator SL;
+
     std::map< int, int > indexCount;
     std::map< int, int >::iterator ic;
 
-    if( verboseFlag )
-      std::cerr << " cordLength ";
+    int startIndex, endIndex;
 
-    while ( SL != s.end() )
+    // It is possible to get more than 2 end points. As such, loop
+    // through leaving at least half the segmetns while naively
+    // pruning the shortest end point segments in hopes that a valid
+    // skeleton remains.
+    int cc = 0;
+
+    while( cc < s.size() / 2 )
     {
-      if( (*SL).lower.vertex->ID < pointVec.size() ||
-          (*SL).higher.vertex->ID < pointVec.size() ) 
+      SL = s.begin();
+ 
+      cordLength = 0;
+      nEndpoints = 0;
+
+      indexCount.clear();
+     
+      // Remove all of the points on the boundary while counting the
+      // number of time each point is used.
+      while ( SL != s.end() )
       {
-        // Boundary point so delete it.
-        deleteSL = SL;
-        ++SL;
-        s.erase( deleteSL );
-      }
-      else
-      {
-        // Running cord length.
-        cordLength += sqrt( ((*SL).higher.vertex->point.x-
-                             (*SL).lower.vertex->point.x) *
-                            ((*SL).higher.vertex->point.x-
-                             (*SL).lower.vertex->point.x) +
-                            
-                            ((*SL).higher.vertex->point.y -
-                             (*SL).lower.vertex->point.y) * 
-                            ((*SL).higher.vertex->point.y -
-                             (*SL).lower.vertex->point.y) );
+        // Delete all of the hull points only happens on the first
+        // iteration.
+        if( (*SL).lower.vertex->ID < pointVec.size() ||
+            (*SL).higher.vertex->ID < pointVec.size() ) 
+        {
+          // Boundary point so delete it.
+          std::list<Skeleton::SkeletonLine>::iterator deleteSL = SL;
+          ++SL;
+          s.erase( deleteSL );
+        }
+        else
+        {
+          // Count the number of times each end point is
+          // used. Hopefully each is used twice with the exception of
+          // the skeleton end points.
         
-        // Count the number of times each end point is used
+          // Lower end point
+          int index = (*SL).lower.vertex->ID;
+        
+          ic = indexCount.find( index );
+        
+          if( ic == indexCount.end() )
+            indexCount.insert( std::pair<int, int>( index,1) );
+          else (*ic).second++;
+        
+          // Higher end point
+          index = (*SL).higher.vertex->ID;
+        
+          ic = indexCount.find( index );
+        
+          if( ic == indexCount.end() )
+            indexCount.insert( std::pair<int, int>( index,1) );
+          else (*ic).second++;
+        
+          ++SL;
+        }
+      }                   
+        
+      // Loop through a second time and find the end segment that has
+      // the smallest length while getting the cord length of the
+      // remaining interior segments
+      std::list<Skeleton::SkeletonLine>::iterator minSL;
+            
+      double minCordLength = 1.0e12;
+    
+      SL = s.begin();
+
+      while ( SL != s.end() )
+      {
+        double tmp = sqrt( ((*SL).higher.vertex->point.x-
+                            (*SL).lower.vertex->point.x) *
+                           ((*SL).higher.vertex->point.x-
+                            (*SL).lower.vertex->point.x) +
+                           
+                           ((*SL).higher.vertex->point.y -
+                            (*SL).lower.vertex->point.y) * 
+                           ((*SL).higher.vertex->point.y -
+                            (*SL).lower.vertex->point.y) );
+
+        ic = indexCount.find( (*SL).lower.vertex->ID );
+        
+        if( verboseFlag )
+          std::cerr << (*SL).lower.vertex->ID << " ("
+                    << (*ic).second << ")  ";
+        
+        ic = indexCount.find( (*SL).higher.vertex->ID );
+
+        if( verboseFlag )
+          std::cerr << (*SL).higher.vertex->ID << " ("
+                    << (*ic).second << ")   "
+                    <<(*SL).lower.vertex->point << "  "
+                    << (*SL).higher.vertex->point << "  "
+                    << tmp
+                    << std::endl;
+
+        // Running cord length.
+        cordLength += tmp;
         
         // Lower end point
         int index = (*SL).lower.vertex->ID;
         
         ic = indexCount.find( index );
         
-        if( ic == indexCount.end() )
-          indexCount.insert( std::pair<int, int>( index,1) );
-        else (*ic).second++;
-        
+        if( (*ic).second == 1 )
+        {
+          if( minCordLength > tmp )
+          {
+            minCordLength = tmp;
+            minSL = SL;
+          }
+        }
+
         // Higher end point
         index = (*SL).higher.vertex->ID;
         
         ic = indexCount.find( index );
         
-        if( ic == indexCount.end() )
-          indexCount.insert( std::pair<int, int>( index,1) );
-        else (*ic).second++;
+        if( (*ic).second == 1 )
+        {
+          if( minCordLength > tmp )
+          {
+            minCordLength = tmp;
+            minSL = SL;
+          }
+        }
         
         ++SL;
       }
-    }                   
-        
 
-    int startIndex, endIndex;
-    int cc = 0;
-    ic = indexCount.begin();
-    
-    while( ic != indexCount.end() )
-    {
-      // Find the end points that are used but once. 
-      // There should only be two.
-      if( (*ic).second == 1 )
-      {
-        if( cc == 1 )
-          startIndex = (*ic).first;
-        else if( cc == 0 )
-          endIndex = (*ic).first;
-        
-        ++cc;
-      }
+
+      // Loop through the counts and determine if there are two end
+      // points which describe the skeleton.
+      ic = indexCount.begin();
       
-      if( (*ic).second > 2 )
+      while( ic != indexCount.end() )
+      {
+        // Find the end points that are used but once. 
+        // There should only be two but if not we can try trimming.
+        if( (*ic).second == 1 )
+        {
+          if( nEndpoints == 1 )
+            startIndex = (*ic).first;
+          else if( nEndpoints == 0 )
+            endIndex = (*ic).first;
+          
+          ++nEndpoints;
+        }
+
+        ++ic;
+      }
+
+      if( nEndpoints < 2 )
       {
         if( verboseFlag )
-          std::cerr << "double segment ??? " << (*ic).first << std::endl;
+          std::cerr << "Not enough end points " << nEndpoints << std::endl;
+        continue;
+      }
+      else if( nEndpoints > 2 )
+      {
+        if( verboseFlag )
+          std::cerr << "Too many end points " << nEndpoints << "  "
+                    << "removing the smallest segment "
+                    << (*minSL).lower.vertex->ID << "  "
+                    << (*minSL).higher.vertex->ID << "  "
+                    << std::endl;
         
-        SL = s.begin();
+        s.erase( minSL );
+      }
+      else //if( nEndpoints == 2 )
+      {
+        break;
+      }
+
+      ++cc;
+    }
+
+    // Have two end points now check for and remove double segments.
+    if( nEndpoints == 2 )
+    {
+      ic = indexCount.begin();
+    
+      while( ic != indexCount.end() )
+      {
+        if( (*ic).second > 2 )
+        {
+           if( verboseFlag )
+             std::cerr << "double segment ??? " << (*ic).first << std::endl;
         
-        while( SL != s.end() &&
+          SL = s.begin();
+        
+          while( SL != s.end() &&
                (*SL).lower.vertex->ID != (*ic).first &&
                (*SL).higher.vertex->ID != (*ic).first )
           SL++;
         
+          // Have an index so process
+          if( SL != s.end() )
+          {
+            // Remove double segments;
+            if( (*SL).lower.vertex->ID == (*ic).first &&
+                (*indexCount.find( (*SL).higher.vertex->ID )).second > 2 )
+            {
+              if( verboseFlag )
+                std::cerr << "removing double segment ??? "
+                          << (*ic).first << "  "
+                          << (*indexCount.find( (*SL).higher.vertex->ID )).first
+                          << std::endl;
+
+              (*ic).second--;
+              (*indexCount.find( (*SL).higher.vertex->ID )).second--;
+              
+              s.erase( SL );
+            }
+          
+            // Remove double segments;
+            if( (*SL).higher.vertex->ID == (*ic).first &&
+                (*indexCount.find( (*SL).lower.vertex->ID )).second > 2 )
+            {
+              if( verboseFlag )
+                std::cerr << "removing double segment ??? "
+                          << (*ic).first << "  "
+                          << (*indexCount.find( (*SL).lower.vertex->ID )).first
+                          << std::endl;
+              
+              (*ic).second--;
+              (*indexCount.find( (*SL).lower.vertex->ID )).second--;
+              
+              s.erase( SL );
+            }
+          }                    
+        }
+      
+        ++ic;
+      }
+    
+      if( verboseFlag )
+        std::cerr << "Island " << i << " New skeleton "
+                  << "start index " << startIndex
+                  << "  end index " << endIndex
+                  << std::endl;
+      
+      double currentCord = 0;
+
+      int nextIndex = startIndex;
+
+      unsigned int nlines = 0;
+
+      // Loop through all of the segments which are described
+      // as set of paired points.
+      while ( s.begin() != s.end() )
+      {
+        // Index of the first point.
+        SL = s.begin();
+
+        while( SL != s.end() &&
+               (*SL).lower.vertex->ID != nextIndex &&
+               (*SL).higher.vertex->ID != nextIndex )
+          SL++;
+                    
         // Have an index so process
         if( SL != s.end() )
         {
-          // Remove double segments;
-          if( (*SL).lower.vertex->ID == (*ic).first &&
-              (*indexCount.find( (*SL).higher.vertex->ID )).second > 2 )
-          { 
-            if( verboseFlag )
-              std::cerr << "removing double segment ??? " << (*ic).first << "  "
-                   << (*indexCount.find( (*SL).higher.vertex->ID )).first
-                   << std::endl;
+//      std::cerr << "Island " << j
+//                << " Line segment " << nlines++
+//                << " index " << nextIndex;
+
+          int lastIndex = nextIndex;
+
+          // Index of the leading point.
+          if( (*SL).lower.vertex->ID == nextIndex )
+            nextIndex = (*SL).higher.vertex->ID;
+          else // if( (*SL).higher.vertex->ID == startIndex )
+            nextIndex = (*SL).lower.vertex->ID;
             
-            (*ic).second--;
-            (*indexCount.find( (*SL).higher.vertex->ID )).second--;
-            
-            s.erase( SL );
-          }
-          
-          // Remove double segments;
-          if( (*SL).higher.vertex->ID == (*ic).first &&
-              
-              (*indexCount.find( (*SL).lower.vertex->ID )).second > 2 )
-          {
-            if( verboseFlag )
-              std::cerr << "removing double segment ??? " << (*ic).first << "  "
-                   << (*indexCount.find( (*SL).lower.vertex->ID )).first
-                   << std::endl;
-            
-            
-            (*ic).second--;
-            (*indexCount.find( (*SL).lower.vertex->ID )).second--;
-            
-            s.erase( SL );
-          }
-        }                    
-      }
-      
-      ++ic;
-    }
-    
-    if( cc < 2 )
-    {
-      if( verboseFlag )
-        std::cerr << "Not enough start points " << cc << std::endl;
-      continue;
-    }
-    
-    else if( cc > 2 )
-    {
-      if( verboseFlag )
-        std::cerr << "Too many start points " << cc << std::endl;
-      continue;
-    }
+//      std::cerr << " index " << nextIndex
+//                << std::endl;
 
-    if( verboseFlag )
-      std::cerr << "Island " << i << " New skeleton "
-           << "start index " << startIndex
-           << "  end index " << endIndex
-           << std::endl;
-        
-    double currentCord = 0;
-
-    int nextIndex = startIndex;
-
-    unsigned int nlines = 0;
-
-    // Loop through all of the lines which are described
-    // as set of paired points.
-    while ( s.begin() != s.end() )
-    {
-      // Index of the first point.
-      SL = s.begin();
-
-      while( SL != s.end() &&
-             (*SL).lower.vertex->ID != nextIndex &&
-             (*SL).higher.vertex->ID != nextIndex )
-        SL++;
-                    
-      // Have an index so process
-      if( SL != s.end() )
-      {
-        //          std::cerr << "Island " << j
-        //               << " Line segment " << nlines++
-        //               << " index " << nextIndex;
-
-        int lastIndex = nextIndex;
-
-        // Index of the leading point.
-        if( (*SL).lower.vertex->ID == nextIndex )
-          nextIndex = (*SL).higher.vertex->ID;
-        else // if( (*SL).higher.vertex->ID == startIndex )
-          nextIndex = (*SL).lower.vertex->ID;
-            
-        //          std::cerr << " index " << nextIndex
-        //               << std::endl;
-
-        double localCord = sqrt( ((*SL).higher.vertex->point.x-
-                                  (*SL).lower.vertex->point.x) *
-                                 ((*SL).higher.vertex->point.x-
-                                  (*SL).lower.vertex->point.x) +
+          double localCord = sqrt( ((*SL).higher.vertex->point.x-
+                                    (*SL).lower.vertex->point.x) *
+                                   ((*SL).higher.vertex->point.x-
+                                    (*SL).lower.vertex->point.x) +
                                      
-                                 ((*SL).higher.vertex->point.y -
-                                  (*SL).lower.vertex->point.y) * 
-                                 ((*SL).higher.vertex->point.y -
-                                  (*SL).lower.vertex->point.y) );
+                                   ((*SL).higher.vertex->point.y -
+                                    (*SL).lower.vertex->point.y) * 
+                                   ((*SL).higher.vertex->point.y -
+                                    (*SL).lower.vertex->point.y) );
 
-        // Check to see if the segment spans the mid cord.
-        if( currentCord < cordLength/2 &&
-            cordLength/2.0 <= currentCord + localCord )
-        {
-          double t = (cordLength/2.0 - currentCord) / localCord;
-
-          Point center;
-
-          // Already updated the nextIndex so use the lastIndex
-          // for figuring out the closest to the cordlength center.
-          if( (*SL).lower.vertex->ID == lastIndex )
+          // Check to see if the segment spans the mid cord.
+          if( currentCord < cordLength/2 &&
+              cordLength/2.0 <= currentCord + localCord )
           {
-            center.x = (*SL).lower.vertex->point.x + t *
-              ((*SL).higher.vertex->point.x-(*SL).lower.vertex->point.x);
-            center.y = 0;
-            center.z = (*SL).lower.vertex->point.y + t *
-              ((*SL).higher.vertex->point.y-(*SL).lower.vertex->point.y);
-          }
+            double t = (cordLength/2.0 - currentCord) / localCord;
 
-          else //if( (*SL).higher.vertex->ID == lastIndex )
-          {
-            center.x = (*SL).higher.vertex->point.x + t *
-              ((*SL).lower.vertex->point.x-(*SL).higher.vertex->point.x);
-            center.y = 0;
-            center.z = (*SL).higher.vertex->point.y + t *
-              ((*SL).lower.vertex->point.y-(*SL).higher.vertex->point.y);
-          }
+            Point center;
+
+            // Already updated the nextIndex so use the lastIndex
+            // for figuring out the closest to the cordlength center.
+            if( (*SL).lower.vertex->ID == lastIndex )
+            {
+              center.x = (*SL).lower.vertex->point.x + t *
+                ((*SL).higher.vertex->point.x-(*SL).lower.vertex->point.x);
+              center.y = 0;
+              center.z = (*SL).lower.vertex->point.y + t *
+                ((*SL).higher.vertex->point.y-(*SL).lower.vertex->point.y);
+            }
+
+            else //if( (*SL).higher.vertex->ID == lastIndex )
+            {
+              center.x = (*SL).higher.vertex->point.x + t *
+                ((*SL).lower.vertex->point.x-(*SL).higher.vertex->point.x);
+              center.y = 0;
+              center.z = (*SL).higher.vertex->point.y + t *
+                ((*SL).lower.vertex->point.y-(*SL).higher.vertex->point.y);
+            }
           
-          std::cerr << "O Point " << center << std::endl;
-          centers.push_back( center );
+            std::cerr << "O Point " << center << std::endl;
+            centers.push_back( center );
+          }
+        
+          // Update the running cord length so that the mid cord is
+          // not calculated again.
+          currentCord += localCord;
+        
+          // Remove this point from the list so that it is
+          // not touched again.
+          std::list<Skeleton::SkeletonLine>::iterator deleteSL = SL;
+          ++SL;
+          s.erase( deleteSL );
         }
-        
-        // Update the running cord length so that the mid cord is
-        // not calculated again.
-        currentCord += localCord;
-        
-        // Remove this point from the list so that it is
-        // not touched again.
-        deleteSL = SL;
-        ++SL;
-        s.erase( deleteSL );
-      }
-      else
-      {
-        if( nextIndex != endIndex )
+        else if( nextIndex != endIndex )
         {
-          if( verboseFlag )
-            std::cerr << "Did not find end index  "
-                 << nextIndex << "  " <<  endIndex
-                 << std::endl;
-          
+//      if( verboseFlag )
+//        std::cerr << "Did not find end index  "
+//                  << nextIndex << "  " <<  endIndex
+//                  << std::endl;
+
           break;
         }
       }
+    }
+    else
+    {
+        if( verboseFlag )
+          std::cerr << "Dispite trimming too many end points." << std::endl;
+    }
     }
   }
 #endif
