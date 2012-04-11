@@ -120,6 +120,9 @@ QvisFTLEWindow::~QvisFTLEWindow()
 //
 // Modifications:
 //   
+//   Hank Childs, Wed Apr 11 10:24:28 PDT 2012
+//   Add buttons for steady/unstead and forwards/backwards.
+//
 // ****************************************************************************
 
 void
@@ -135,13 +138,42 @@ QvisFTLEWindow::CreateWindowContents()
             this, SLOT(integrationTimeProcessText()));
     mainLayout->addWidget(integrationTime, 0,1);
 
-    steadyState = new QCheckBox(tr("Treat velocity as steady state"), central);
-    connect(steadyState, SIGNAL(toggled(bool)),
-            this, SLOT(steadyStateChanged(bool)));
-    mainLayout->addWidget(steadyState, 1,0);
+    QLabel *directionLabel = new QLabel(tr("FTLE Direction"), central);
+    mainLayout->addWidget(directionLabel,1,0);
+    direction = new QWidget(central);
+    directionButtonGroup= new QButtonGroup(direction);
+    QHBoxLayout *directionLayout = new QHBoxLayout(direction);
+    directionLayout->setMargin(0);
+    directionLayout->setSpacing(10);
+    QRadioButton *directionDirectionForward = new QRadioButton(tr("Forward"), direction);
+    directionButtonGroup->addButton(directionDirectionForward,0);
+    directionLayout->addWidget(directionDirectionForward);
+    QRadioButton *directionDirectionBackward = new QRadioButton(tr("Backward"), direction);
+    directionButtonGroup->addButton(directionDirectionBackward,1);
+    directionLayout->addWidget(directionDirectionBackward);
+    connect(directionButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(directionChanged(int)));
+    mainLayout->addWidget(direction, 1,1);
+
+    QLabel *flowTypeLabel = new QLabel(tr("Treat flow as: "), central);
+    mainLayout->addWidget(flowTypeLabel,2,0);
+    flowType = new QWidget(central);
+    flowTypeButtonGroup= new QButtonGroup(flowType);
+    QHBoxLayout *flowTypeLayout = new QHBoxLayout(flowType);
+    flowTypeLayout->setMargin(0);
+    flowTypeLayout->setSpacing(10);
+    QRadioButton *flowTypeFlowTypeUnsteady = new QRadioButton(tr("Unsteady state"), flowType);
+    flowTypeButtonGroup->addButton(flowTypeFlowTypeUnsteady,0);
+    flowTypeLayout->addWidget(flowTypeFlowTypeUnsteady);
+    QRadioButton *flowTypeFlowTypeSteady = new QRadioButton(tr("Steady state"), flowType);
+    flowTypeButtonGroup->addButton(flowTypeFlowTypeSteady,1);
+    flowTypeLayout->addWidget(flowTypeFlowTypeSteady);
+    connect(flowTypeButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(flowTypeChanged(int)));
+    mainLayout->addWidget(flowType, 2,1);
 
     regionTypeLabel = new QLabel(tr("Where to evaluate FTLE"), central);
-    mainLayout->addWidget(regionTypeLabel,2,0);
+    mainLayout->addWidget(regionTypeLabel,3,0);
     regionType = new QWidget(central);
     regionTypeButtonGroup= new QButtonGroup(regionType);
     //QHBoxLayout *regionTypeLayout = new QHBoxLayout(regionType);
@@ -150,13 +182,13 @@ QvisFTLEWindow::CreateWindowContents()
     QRadioButton *regionTypeRegionNativeResolutionOfMesh = new QRadioButton(tr("At the native resolution of the mesh"), regionType);
     regionTypeButtonGroup->addButton(regionTypeRegionNativeResolutionOfMesh,0);
     //regionTypeLayout->addWidget(regionTypeRegionNativeResolutionOfMesh);
-    mainLayout->addWidget(regionTypeRegionNativeResolutionOfMesh, 2,1);
+    mainLayout->addWidget(regionTypeRegionNativeResolutionOfMesh, 3,1);
     QRadioButton *regionTypeRegionRegularGrid = new QRadioButton(tr("On a regular grid"), regionType);
     regionTypeButtonGroup->addButton(regionTypeRegionRegularGrid,1);
     //regionTypeLayout->addWidget(regionTypeRegionRegularGrid);
     connect(regionTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(regionTypeChanged(int)));
-    mainLayout->addWidget(regionTypeRegionRegularGrid, 3,1);
+    mainLayout->addWidget(regionTypeRegionRegularGrid, 4,1);
 
     QGroupBox *regularGridBox = new QGroupBox(central);
     regularGridBox->setTitle(tr("Regular Grid"));
@@ -209,6 +241,9 @@ QvisFTLEWindow::CreateWindowContents()
 //
 // Modifications:
 //   
+//   Hank Childs, Wed Apr 11 10:24:28 PDT 2012
+//   Add support for steady/unstead and forwards/backwards.
+//
 // ****************************************************************************
 
 void
@@ -313,10 +348,17 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
           case FTLEAttributes::ID_EndPosition:
             EndPosition->setText(DoublesToQString(atts->GetEndPosition(), 3));
             break;
-          case FTLEAttributes::ID_steadyState:
-            steadyState->blockSignals(true);
-            steadyState->setChecked(atts->GetSteadyState());
-            steadyState->blockSignals(false);
+          case FTLEAttributes::ID_direction:
+            directionButtonGroup->blockSignals(true);
+            if(directionButtonGroup->button((int)atts->GetDirection()) != 0)
+                directionButtonGroup->button((int)atts->GetDirection())->setChecked(true);
+            directionButtonGroup->blockSignals(false);
+            break;
+          case FTLEAttributes::ID_flowType:
+            flowTypeButtonGroup->blockSignals(true);
+            if(flowTypeButtonGroup->button((int)atts->GetFlowType()) != 0)
+                flowTypeButtonGroup->button((int)atts->GetFlowType())->setChecked(true);
+            flowTypeButtonGroup->blockSignals(false);
             break;
         }
     }
@@ -467,11 +509,26 @@ QvisFTLEWindow::EndPositionProcessText()
 
 
 void
-QvisFTLEWindow::steadyStateChanged(bool val)
+QvisFTLEWindow::directionChanged(int val)
 {
-    atts->SetSteadyState(val);
-    SetUpdate(false);
-    Apply();
+    if(val != atts->GetDirection())
+    {
+        atts->SetDirection(FTLEAttributes::Direction(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisFTLEWindow::flowTypeChanged(int val)
+{
+    if(val != atts->GetFlowType())
+    {
+        atts->SetFlowType(FTLEAttributes::FlowType(val));
+        SetUpdate(false);
+        Apply();
+    }
 }
 
 

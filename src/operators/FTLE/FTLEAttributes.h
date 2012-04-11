@@ -65,6 +65,16 @@ public:
         NativeResolutionOfMesh,
         RegularGrid
     };
+    enum Direction
+    {
+        Forward,
+        Backward
+    };
+    enum FlowType
+    {
+        Unsteady,
+        Steady
+    };
 
     // These constructors are for objects of this class
     FTLEAttributes();
@@ -103,7 +113,8 @@ public:
     void SetStartPosition(const double *StartPosition_);
     void SetUseDataSetEnd(bool UseDataSetEnd_);
     void SetEndPosition(const double *EndPosition_);
-    void SetSteadyState(bool steadyState_);
+    void SetDirection(Direction direction_);
+    void SetFlowType(FlowType flowType_);
 
     // Property getting methods
     double       GetIntegrationTime() const;
@@ -116,7 +127,8 @@ public:
     bool         GetUseDataSetEnd() const;
     const double *GetEndPosition() const;
           double *GetEndPosition();
-    bool         GetSteadyState() const;
+    Direction    GetDirection() const;
+    FlowType     GetFlowType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -127,6 +139,16 @@ public:
     static bool Region_FromString(const std::string &, Region &);
 protected:
     static std::string Region_ToString(int);
+public:
+    static std::string Direction_ToString(Direction);
+    static bool Direction_FromString(const std::string &, Direction &);
+protected:
+    static std::string Direction_ToString(int);
+public:
+    static std::string FlowType_ToString(FlowType);
+    static bool FlowType_FromString(const std::string &, FlowType &);
+protected:
+    static std::string FlowType_ToString(int);
 public:
 
     // Keyframing methods
@@ -145,7 +167,8 @@ public:
         ID_StartPosition,
         ID_UseDataSetEnd,
         ID_EndPosition,
-        ID_steadyState,
+        ID_direction,
+        ID_flowType,
         ID__LAST
     };
 
@@ -157,12 +180,13 @@ private:
     double StartPosition[3];
     bool   UseDataSetEnd;
     double EndPosition[3];
-    bool   steadyState;
+    int    direction;
+    int    flowType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define FTLEATTRIBUTES_TMFS "diIbDbDb"
+#define FTLEATTRIBUTES_TMFS "diIbDbDii"
 
 #endif

@@ -5,6 +5,14 @@
         NativeResolutionOfMesh
         RegularGrid
       </Enum>
+      <Enum name="Direction">
+        Forward
+        Backward
+      </Enum>
+      <Enum name="FlowType">
+        Unsteady
+        Steady
+      </Enum>
       <Field name="integrationTime" label="Integration Time" type="double">
         1.000000
       </Field>
@@ -32,8 +40,11 @@
         1.000000
         1.000000
       </Field>
-      <Field name="steadyState" label="Treat velocity as steady state" type="bool">
-        false
+      <Field name="direction" label="Direction" type="enum" subtype="Direction">
+        Forward
+      </Field>
+      <Field name="flowType" label="FlowType" type="enum" subtype="FlowType">
+        Unsteady
       </Field>
     </Attribute>
   </Plugin>

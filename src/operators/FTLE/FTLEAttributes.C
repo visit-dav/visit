@@ -76,6 +76,80 @@ FTLEAttributes::Region_FromString(const std::string &s, FTLEAttributes::Region &
     return false;
 }
 
+//
+// Enum conversion methods for FTLEAttributes::Direction
+//
+
+static const char *Direction_strings[] = {
+"Forward", "Backward"};
+
+std::string
+FTLEAttributes::Direction_ToString(FTLEAttributes::Direction t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return Direction_strings[index];
+}
+
+std::string
+FTLEAttributes::Direction_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return Direction_strings[index];
+}
+
+bool
+FTLEAttributes::Direction_FromString(const std::string &s, FTLEAttributes::Direction &val)
+{
+    val = FTLEAttributes::Forward;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == Direction_strings[i])
+        {
+            val = (Direction)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for FTLEAttributes::FlowType
+//
+
+static const char *FlowType_strings[] = {
+"Unsteady", "Steady"};
+
+std::string
+FTLEAttributes::FlowType_ToString(FTLEAttributes::FlowType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return FlowType_strings[index];
+}
+
+std::string
+FTLEAttributes::FlowType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return FlowType_strings[index];
+}
+
+bool
+FTLEAttributes::FlowType_FromString(const std::string &s, FTLEAttributes::FlowType &val)
+{
+    val = FTLEAttributes::Unsteady;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == FlowType_strings[i])
+        {
+            val = (FlowType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: FTLEAttributes::FTLEAttributes
 //
@@ -106,7 +180,8 @@ void FTLEAttributes::Init()
     EndPosition[0] = 1;
     EndPosition[1] = 1;
     EndPosition[2] = 1;
-    steadyState = false;
+    direction = Forward;
+    flowType = Unsteady;
 
     FTLEAttributes::SelectAll();
 }
@@ -144,7 +219,8 @@ void FTLEAttributes::Copy(const FTLEAttributes &obj)
     EndPosition[1] = obj.EndPosition[1];
     EndPosition[2] = obj.EndPosition[2];
 
-    steadyState = obj.steadyState;
+    direction = obj.direction;
+    flowType = obj.flowType;
 
     FTLEAttributes::SelectAll();
 }
@@ -324,7 +400,8 @@ FTLEAttributes::operator == (const FTLEAttributes &obj) const
             StartPosition_equal &&
             (UseDataSetEnd == obj.UseDataSetEnd) &&
             EndPosition_equal &&
-            (steadyState == obj.steadyState));
+            (direction == obj.direction) &&
+            (flowType == obj.flowType));
 }
 
 // ****************************************************************************
@@ -475,7 +552,8 @@ FTLEAttributes::SelectAll()
     Select(ID_StartPosition,   (void *)StartPosition, 3);
     Select(ID_UseDataSetEnd,   (void *)&UseDataSetEnd);
     Select(ID_EndPosition,     (void *)EndPosition, 3);
-    Select(ID_steadyState,     (void *)&steadyState);
+    Select(ID_direction,       (void *)&direction);
+    Select(ID_flowType,        (void *)&flowType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -550,10 +628,16 @@ FTLEAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("EndPosition", EndPosition, 3));
     }
 
-    if(completeSave || !FieldsEqual(ID_steadyState, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_direction, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("steadyState", steadyState));
+        node->AddNode(new DataNode("direction", Direction_ToString(direction)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_flowType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("flowType", FlowType_ToString(flowType)));
     }
 
 
@@ -620,8 +704,38 @@ FTLEAttributes::SetFromNode(DataNode *parentNode)
         SetUseDataSetEnd(node->AsBool());
     if((node = searchNode->GetNode("EndPosition")) != 0)
         SetEndPosition(node->AsDoubleArray());
-    if((node = searchNode->GetNode("steadyState")) != 0)
-        SetSteadyState(node->AsBool());
+    if((node = searchNode->GetNode("direction")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetDirection(Direction(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            Direction value;
+            if(Direction_FromString(node->AsString(), value))
+                SetDirection(value);
+        }
+    }
+    if((node = searchNode->GetNode("flowType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetFlowType(FlowType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            FlowType value;
+            if(FlowType_FromString(node->AsString(), value))
+                SetFlowType(value);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -684,10 +798,17 @@ FTLEAttributes::SetEndPosition(const double *EndPosition_)
 }
 
 void
-FTLEAttributes::SetSteadyState(bool steadyState_)
+FTLEAttributes::SetDirection(FTLEAttributes::Direction direction_)
 {
-    steadyState = steadyState_;
-    Select(ID_steadyState, (void *)&steadyState);
+    direction = direction_;
+    Select(ID_direction, (void *)&direction);
+}
+
+void
+FTLEAttributes::SetFlowType(FTLEAttributes::FlowType flowType_)
+{
+    flowType = flowType_;
+    Select(ID_flowType, (void *)&flowType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -754,10 +875,16 @@ FTLEAttributes::GetEndPosition()
     return EndPosition;
 }
 
-bool
-FTLEAttributes::GetSteadyState() const
+FTLEAttributes::Direction
+FTLEAttributes::GetDirection() const
 {
-    return steadyState;
+    return Direction(direction);
+}
+
+FTLEAttributes::FlowType
+FTLEAttributes::GetFlowType() const
+{
+    return FlowType(flowType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -813,7 +940,8 @@ FTLEAttributes::GetFieldName(int index) const
     case ID_StartPosition:   return "StartPosition";
     case ID_UseDataSetEnd:   return "UseDataSetEnd";
     case ID_EndPosition:     return "EndPosition";
-    case ID_steadyState:     return "steadyState";
+    case ID_direction:       return "direction";
+    case ID_flowType:        return "flowType";
     default:  return "invalid index";
     }
 }
@@ -845,7 +973,8 @@ FTLEAttributes::GetFieldType(int index) const
     case ID_StartPosition:   return FieldType_doubleArray;
     case ID_UseDataSetEnd:   return FieldType_bool;
     case ID_EndPosition:     return FieldType_doubleArray;
-    case ID_steadyState:     return FieldType_bool;
+    case ID_direction:       return FieldType_enum;
+    case ID_flowType:        return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -877,7 +1006,8 @@ FTLEAttributes::GetFieldTypeName(int index) const
     case ID_StartPosition:   return "doubleArray";
     case ID_UseDataSetEnd:   return "bool";
     case ID_EndPosition:     return "doubleArray";
-    case ID_steadyState:     return "bool";
+    case ID_direction:       return "enum";
+    case ID_flowType:        return "enum";
     default:  return "invalid index";
     }
 }
@@ -954,9 +1084,14 @@ FTLEAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = EndPosition_equal;
         }
         break;
-    case ID_steadyState:
+    case ID_direction:
         {  // new scope
-        retval = (steadyState == obj.steadyState);
+        retval = (direction == obj.direction);
+        }
+        break;
+    case ID_flowType:
+        {  // new scope
+        retval = (flowType == obj.flowType);
         }
         break;
     default: retval = false;

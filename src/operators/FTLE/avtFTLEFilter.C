@@ -49,6 +49,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
+#include <vtkStreamer.h>
 #include <InvalidVariableException.h>
 #include <limits>
 #include <cmath>
@@ -271,6 +272,9 @@ avtFilter *
 //    Hank Childs, Tue Mar 27 16:24:13 PDT 2012
 //    Don't do pathlines if steady state is indicated.
 //
+//    Hank Childs, Wed Apr 11 11:35:16 PDT 2012
+//    Add reverse flow.
+//
 // ****************************************************************************
 
 void
@@ -278,10 +282,19 @@ avtFTLEFilter::SetAtts(const AttributeGroup *a)
 {
     atts = *(const FTLEAttributes*)a;
 
-    if (atts.GetSteadyState())
-        SetPathlines(false,false,0,0);
-    else
+    if (atts.GetFlowType() == FTLEAttributes::Unsteady)
         SetPathlines(true,false,0,0);
+    else
+        SetPathlines(false,false,0,0);
+
+    if (atts.GetDirection() == FTLEAttributes::Forward)
+    {
+        SetIntegrationDirection(VTK_INTEGRATE_FORWARD);
+    }
+    else
+    {
+        SetIntegrationDirection(VTK_INTEGRATE_BACKWARD);
+    }
 }
 
 
@@ -1282,20 +1295,24 @@ avtFTLEFilter::UpdateDataObjectInfo(void)
 //    Hank Childs, Wed Mar 28 08:36:34 PDT 2012
 //    Add steady state.
 //
+//    Hank Childs, Wed Apr 11 11:35:16 PDT 2012
+//    Add reverse flow.
+//
 // ****************************************************************************
 
 std::string
 avtFTLEFilter::CreateResampledCacheString(void)
 {
     double integrationTime = atts.GetIntegrationTime();
-    const char *steadyStateString = (atts.GetSteadyState() ? "yes" : "no");
+    const char *flowTypeString = (atts.GetFlowType() == FTLEAttributes::Unsteady ? "unsteady" : "steady");
+    const char *directionString = (atts.GetDirection() == FTLEAttributes::Forward ? "forward" : "backward");
     char str[1024];
-    sprintf(str, "FTLE_OF_%s_BOUNDS_%f_%f_%f_%f_%f_%f_RESOLUTION_%d_%d_%d_INTEGRATION_%f_timeindex_%d_STEADY_STATE_%s",
+    sprintf(str, "FTLE_OF_%s_BOUNDS_%f_%f_%f_%f_%f_%f_RESOLUTION_%d_%d_%d_INTEGRATION_%f_timeindex_%d_FLOW_TYPE_%s_DIRECTION_%s",
                  outVarName.c_str(), 
                  global_bounds[0], global_bounds[1], global_bounds[2], 
                  global_bounds[3], global_bounds[4], global_bounds[5], 
                  global_resolution[0], global_resolution[1], global_resolution[2],
-                 integrationTime, timeState, steadyStateString);
+                 integrationTime, timeState, flowTypeString, directionString);
     return std::string(str);
 }
 
@@ -1315,19 +1332,23 @@ avtFTLEFilter::CreateResampledCacheString(void)
 //    Hank Childs, Wed Mar 28 08:36:34 PDT 2012
 //    Add steady state.
 //
+//    Hank Childs, Wed Apr 11 11:35:16 PDT 2012
+//    Add reverse flow.
+//
 // ****************************************************************************
 
 std::string
 avtFTLEFilter::CreateNativeResolutionCacheString(void)
 {
     double integrationTime = atts.GetIntegrationTime();
-    const char *steadyStateString = (atts.GetSteadyState() ? "yes" : "no");
+    const char *flowTypeString = (atts.GetFlowType() == FTLEAttributes::Unsteady ? "unsteady" : "steady");
+    const char *directionString = (atts.GetDirection() == FTLEAttributes::Forward ? "forward" : "backward");
     char str[1024];
-    sprintf(str, "FTLE_OF_%s_BOUNDS_%f_%f_%f_%f_%f_%f_INTEGRATION_%f_timeindex_%d_STEADY_STATE_%s",
+    sprintf(str, "FTLE_OF_%s_BOUNDS_%f_%f_%f_%f_%f_%f_INTEGRATION_%f_timeindex_%d_FLOW_TYPE_%s_DIRECTION_%s",
                  outVarName.c_str(), 
                  global_bounds[0], global_bounds[1], global_bounds[2], 
                  global_bounds[3], global_bounds[4], global_bounds[5], 
-                 integrationTime, timeState, steadyStateString);
+                 integrationTime, timeState, flowTypeString, directionString);
     return std::string(str);
 }
 

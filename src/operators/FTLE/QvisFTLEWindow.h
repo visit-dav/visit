@@ -69,6 +69,9 @@ class QvisVariableButton;
 //
 // Modifications:
 //   
+//   Hank Childs, Wed Apr 11 10:24:28 PDT 2012
+//   Add buttons for steady/unstead and forwards/backwards.
+//
 // ****************************************************************************
 
 class QvisFTLEWindow : public QvisOperatorWindow
@@ -88,22 +91,26 @@ class QvisFTLEWindow : public QvisOperatorWindow
   private slots:
     void integrationTimeProcessText();
     void regionTypeChanged(int val);
+    void flowTypeChanged(int val);
+    void directionChanged(int val);
     void ResolutionProcessText();
     void UseDataSetStartChanged(bool val);
     void StartPositionProcessText();
     void UseDatasetEndChanged(bool val);
     void EndPositionProcessText();
-    void steadyStateChanged(bool val);
   private:
     QLineEdit *integrationTime;
     QWidget      *regionType;
     QButtonGroup *regionTypeButtonGroup;
+    QWidget      *flowType;
+    QButtonGroup *flowTypeButtonGroup;
+    QWidget      *direction;
+    QButtonGroup *directionButtonGroup;
     QLineEdit *Resolution;
     QCheckBox *UseDataSetStart;
     QLineEdit *StartPosition;
     QCheckBox *UseDatasetEnd;
     QLineEdit *EndPosition;
-    QCheckBox *steadyState;
     QLabel *integrationTimeLabel;
     QLabel *regionTypeLabel;
     QLabel *ResolutionLabel;

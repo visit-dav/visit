@@ -151,11 +151,36 @@ PyFTLEAttributes_ToString(const FTLEAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    if(atts->GetSteadyState())
-        SNPRINTF(tmpStr, 1000, "%ssteadyState = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%ssteadyState = 0\n", prefix);
-    str += tmpStr;
+    const char *direction_names = "Forward, Backward";
+    switch (atts->GetDirection())
+    {
+      case FTLEAttributes::Forward:
+          SNPRINTF(tmpStr, 1000, "%sdirection = %sForward  # %s\n", prefix, prefix, direction_names);
+          str += tmpStr;
+          break;
+      case FTLEAttributes::Backward:
+          SNPRINTF(tmpStr, 1000, "%sdirection = %sBackward  # %s\n", prefix, prefix, direction_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *flowType_names = "Unsteady, Steady";
+    switch (atts->GetFlowType())
+    {
+      case FTLEAttributes::Unsteady:
+          SNPRINTF(tmpStr, 1000, "%sflowType = %sUnsteady  # %s\n", prefix, prefix, flowType_names);
+          str += tmpStr;
+          break;
+      case FTLEAttributes::Steady:
+          SNPRINTF(tmpStr, 1000, "%sflowType = %sSteady  # %s\n", prefix, prefix, flowType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -436,7 +461,7 @@ FTLEAttributes_GetEndPosition(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-FTLEAttributes_SetSteadyState(PyObject *self, PyObject *args)
+FTLEAttributes_SetDirection(PyObject *self, PyObject *args)
 {
     FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
 
@@ -444,18 +469,60 @@ FTLEAttributes_SetSteadyState(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the steadyState in the object.
-    obj->data->SetSteadyState(ival != 0);
+    // Set the direction in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetDirection(FTLEAttributes::Direction(ival));
+    else
+    {
+        fprintf(stderr, "An invalid direction value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Forward, Backward.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-FTLEAttributes_GetSteadyState(PyObject *self, PyObject *args)
+FTLEAttributes_GetDirection(PyObject *self, PyObject *args)
 {
     FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetSteadyState()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDirection()));
+    return retval;
+}
+
+/*static*/ PyObject *
+FTLEAttributes_SetFlowType(PyObject *self, PyObject *args)
+{
+    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the flowType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetFlowType(FTLEAttributes::FlowType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid flowType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Unsteady, Steady.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+FTLEAttributes_GetFlowType(PyObject *self, PyObject *args)
+{
+    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetFlowType()));
     return retval;
 }
 
@@ -477,8 +544,10 @@ PyMethodDef PyFTLEAttributes_methods[FTLEATTRIBUTES_NMETH] = {
     {"GetUseDataSetEnd", FTLEAttributes_GetUseDataSetEnd, METH_VARARGS},
     {"SetEndPosition", FTLEAttributes_SetEndPosition, METH_VARARGS},
     {"GetEndPosition", FTLEAttributes_GetEndPosition, METH_VARARGS},
-    {"SetSteadyState", FTLEAttributes_SetSteadyState, METH_VARARGS},
-    {"GetSteadyState", FTLEAttributes_GetSteadyState, METH_VARARGS},
+    {"SetDirection", FTLEAttributes_SetDirection, METH_VARARGS},
+    {"GetDirection", FTLEAttributes_GetDirection, METH_VARARGS},
+    {"SetFlowType", FTLEAttributes_SetFlowType, METH_VARARGS},
+    {"GetFlowType", FTLEAttributes_GetFlowType, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -526,8 +595,20 @@ PyFTLEAttributes_getattr(PyObject *self, char *name)
         return FTLEAttributes_GetUseDataSetEnd(self, NULL);
     if(strcmp(name, "EndPosition") == 0)
         return FTLEAttributes_GetEndPosition(self, NULL);
-    if(strcmp(name, "steadyState") == 0)
-        return FTLEAttributes_GetSteadyState(self, NULL);
+    if(strcmp(name, "direction") == 0)
+        return FTLEAttributes_GetDirection(self, NULL);
+    if(strcmp(name, "Forward") == 0)
+        return PyInt_FromLong(long(FTLEAttributes::Forward));
+    if(strcmp(name, "Backward") == 0)
+        return PyInt_FromLong(long(FTLEAttributes::Backward));
+
+    if(strcmp(name, "flowType") == 0)
+        return FTLEAttributes_GetFlowType(self, NULL);
+    if(strcmp(name, "Unsteady") == 0)
+        return PyInt_FromLong(long(FTLEAttributes::Unsteady));
+    if(strcmp(name, "Steady") == 0)
+        return PyInt_FromLong(long(FTLEAttributes::Steady));
+
 
     return Py_FindMethod(PyFTLEAttributes_methods, self, name);
 }
@@ -556,8 +637,10 @@ PyFTLEAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = FTLEAttributes_SetUseDataSetEnd(self, tuple);
     else if(strcmp(name, "EndPosition") == 0)
         obj = FTLEAttributes_SetEndPosition(self, tuple);
-    else if(strcmp(name, "steadyState") == 0)
-        obj = FTLEAttributes_SetSteadyState(self, tuple);
+    else if(strcmp(name, "direction") == 0)
+        obj = FTLEAttributes_SetDirection(self, tuple);
+    else if(strcmp(name, "flowType") == 0)
+        obj = FTLEAttributes_SetFlowType(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

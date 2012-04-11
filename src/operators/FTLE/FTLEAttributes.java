@@ -59,11 +59,17 @@ import llnl.visit.Plugin;
 
 public class FTLEAttributes extends AttributeSubject implements Plugin
 {
-    private static int FTLEAttributes_numAdditionalAtts = 8;
+    private static int FTLEAttributes_numAdditionalAtts = 9;
 
     // Enum values
     public final static int REGION_NATIVERESOLUTIONOFMESH = 0;
     public final static int REGION_REGULARGRID = 1;
+
+    public final static int DIRECTION_FORWARD = 0;
+    public final static int DIRECTION_BACKWARD = 1;
+
+    public final static int FLOWTYPE_UNSTEADY = 0;
+    public final static int FLOWTYPE_STEADY = 1;
 
 
     public FTLEAttributes()
@@ -86,7 +92,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         EndPosition[0] = 1;
         EndPosition[1] = 1;
         EndPosition[2] = 1;
-        steadyState = false;
+        direction = DIRECTION_FORWARD;
+        flowType = FLOWTYPE_UNSTEADY;
     }
 
     public FTLEAttributes(int nMoreFields)
@@ -109,7 +116,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         EndPosition[0] = 1;
         EndPosition[1] = 1;
         EndPosition[2] = 1;
-        steadyState = false;
+        direction = DIRECTION_FORWARD;
+        flowType = FLOWTYPE_UNSTEADY;
     }
 
     public FTLEAttributes(FTLEAttributes obj)
@@ -137,7 +145,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         EndPosition[1] = obj.EndPosition[1];
         EndPosition[2] = obj.EndPosition[2];
 
-        steadyState = obj.steadyState;
+        direction = obj.direction;
+        flowType = obj.flowType;
 
         SelectAll();
     }
@@ -179,7 +188,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
                 StartPosition_equal &&
                 (UseDataSetEnd == obj.UseDataSetEnd) &&
                 EndPosition_equal &&
-                (steadyState == obj.steadyState));
+                (direction == obj.direction) &&
+                (flowType == obj.flowType));
     }
 
     public String GetName() { return "FTLE"; }
@@ -258,10 +268,16 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         Select(6);
     }
 
-    public void SetSteadyState(boolean steadyState_)
+    public void SetDirection(int direction_)
     {
-        steadyState = steadyState_;
+        direction = direction_;
         Select(7);
+    }
+
+    public void SetFlowType(int flowType_)
+    {
+        flowType = flowType_;
+        Select(8);
     }
 
     // Property getting methods
@@ -272,7 +288,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     public double[] GetStartPosition() { return StartPosition; }
     public boolean  GetUseDataSetEnd() { return UseDataSetEnd; }
     public double[] GetEndPosition() { return EndPosition; }
-    public boolean  GetSteadyState() { return steadyState; }
+    public int      GetDirection() { return direction; }
+    public int      GetFlowType() { return flowType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -292,7 +309,9 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(6, buf))
             buf.WriteDoubleArray(EndPosition);
         if(WriteSelect(7, buf))
-            buf.WriteBool(steadyState);
+            buf.WriteInt(direction);
+        if(WriteSelect(8, buf))
+            buf.WriteInt(flowType);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -321,7 +340,10 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
             SetEndPosition(buf.ReadDoubleArray());
             break;
         case 7:
-            SetSteadyState(buf.ReadBool());
+            SetDirection(buf.ReadInt());
+            break;
+        case 8:
+            SetFlowType(buf.ReadInt());
             break;
         }
     }
@@ -341,7 +363,18 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         str = str + doubleArrayToString("StartPosition", StartPosition, indent) + "\n";
         str = str + boolToString("UseDataSetEnd", UseDataSetEnd, indent) + "\n";
         str = str + doubleArrayToString("EndPosition", EndPosition, indent) + "\n";
-        str = str + boolToString("steadyState", steadyState, indent) + "\n";
+        str = str + indent + "direction = ";
+        if(direction == DIRECTION_FORWARD)
+            str = str + "DIRECTION_FORWARD";
+        if(direction == DIRECTION_BACKWARD)
+            str = str + "DIRECTION_BACKWARD";
+        str = str + "\n";
+        str = str + indent + "flowType = ";
+        if(flowType == FLOWTYPE_UNSTEADY)
+            str = str + "FLOWTYPE_UNSTEADY";
+        if(flowType == FLOWTYPE_STEADY)
+            str = str + "FLOWTYPE_STEADY";
+        str = str + "\n";
         return str;
     }
 
@@ -354,6 +387,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     private double[] StartPosition;
     private boolean  UseDataSetEnd;
     private double[] EndPosition;
-    private boolean  steadyState;
+    private int      direction;
+    private int      flowType;
 }
 
