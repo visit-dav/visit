@@ -877,7 +877,7 @@ SET(GLEW_FOUND 1)
 ADD_DEFINITIONS(-DHAVE_LIBGLEW)
 SET(GLEW_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/glew/glew/include)
 SET(GLEW_LIBRARY_DIR ${VISIT_SOURCE_DIR}/lib)
-SET(GLEW_LIB GLEW)
+SET(GLEW_LIB visitGLEW)
 
 # Set up the tuvok library if it was enabled.
 IF(VISIT_TUVOK)
