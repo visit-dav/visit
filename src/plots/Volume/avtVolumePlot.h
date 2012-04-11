@@ -55,6 +55,7 @@
 class WindowAttributes;
 
 class avtCompactTreeFilter;
+class avtGradientExpression;
 class avtLookupTable;
 class avtShiftCenteringFilter;
 class avtUserDefinedMapper;
@@ -148,6 +149,7 @@ avtVolumePlot : public avtVolumeDataPlot
     VolumeAttributes                atts;
     avtLowerResolutionVolumeFilter *volumeFilter;
     avtVolumeFilter                *volumeImageFilter;
+    avtGradientExpression          *gradientFilter;
     avtResampleFilter              *resampleFilter;
     avtShiftCenteringFilter        *shiftCentering;
     avtCompactTreeFilter           *compactTree;
