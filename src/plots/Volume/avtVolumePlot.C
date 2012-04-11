@@ -108,6 +108,7 @@ avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
 {
     volumeFilter = NULL;
     volumeImageFilter = NULL;
+    gradientFilter = NULL;
     resampleFilter = NULL;
     shiftCentering = NULL;
     compactTree = NULL;
@@ -172,6 +173,8 @@ avtVolumePlot::~avtVolumePlot()
         delete volumeFilter;
     if (volumeImageFilter != NULL)
         delete volumeImageFilter;
+    if (gradientFilter != NULL)
+        delete gradientFilter;
     if (resampleFilter != NULL)
         delete resampleFilter;
     if (compactTree != NULL)
@@ -575,6 +578,11 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         delete volumeFilter;
         volumeFilter = NULL;
     }
+    if (gradientFilter != NULL)
+    {
+        delete gradientFilter;
+        gradientFilter = NULL;
+    }
     if (volumeImageFilter != NULL)
     {
         delete volumeImageFilter;
@@ -595,28 +603,41 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
     {
 #ifdef ENGINE
-        char gradName[128];
-        const char *gradvar = atts.GetOpacityVariable().c_str();
-        if (strcmp(gradvar, "default") == 0)
-            gradvar = varname;
-        // The avtVolumeFilter uses this exact name downstream.
-        SNPRINTF(gradName, 128, "_%s_gradient", gradvar);
+        if (atts.GetLightingFlag())
+        {
+            char gradName[128], gradName2[128];
+            const char *gradvar = atts.GetOpacityVariable().c_str();
+            if (strcmp(gradvar, "default") == 0)
+            {
+                if (atts.GetScaling() == VolumeAttributes::Log || 
+                    atts.GetScaling() == VolumeAttributes::Skew)
+                {
+                    SNPRINTF(gradName2, 128, "_expr_%s", varname);
+                    gradvar = gradName2;
+                }
+                else
+                    gradvar = varname;
+            }
+            // The avtVolumeFilter uses this exact name downstream.
+            SNPRINTF(gradName, 128, "_%s_gradient", gradvar);
 
-        avtGradientExpression *gradientFilter = new avtGradientExpression();
-        gradientFilter->SetInput(input);
-        gradientFilter->SetAlgorithm(FAST);
-        gradientFilter->SetOutputVariableName(gradName);
-        gradientFilter->AddInputVariableName(gradvar);
+            gradientFilter = new avtGradientExpression();
+            gradientFilter->SetInput(input);
+            gradientFilter->SetAlgorithm(FAST);
+            gradientFilter->SetOutputVariableName(gradName);
+            gradientFilter->AddInputVariableName(gradvar);
 
-        // prevent this intermediate object from getting cleared out, so
-        // it is still there when we want to render.
-        gradientFilter->GetOutput()->SetTransientStatus(false);
+            // prevent this intermediate object from getting cleared out, so
+            // it is still there when we want to render.
+            gradientFilter->GetOutput()->SetTransientStatus(false);
+            dob = gradientFilter->GetOutput();
+        }
+#endif
 
         volumeImageFilter = new avtVolumeFilter();
         volumeImageFilter->SetAttributes(atts);
-        volumeImageFilter->SetInput(gradientFilter->GetOutput());
+        volumeImageFilter->SetInput(dob);
         dob = volumeImageFilter->GetOutput();
-#endif
     }
     else
     {

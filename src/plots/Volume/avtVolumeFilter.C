@@ -838,6 +838,10 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    This improves support for operator variables and also reduces
 //    computation when the data set is downsampled.
 //
+//    Hank Childs, Wed Apr 11 06:31:36 PDT 2012
+//    Simplify setup of log/skew variables for ease of reference in rest of
+//    volume plot.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -853,6 +857,10 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     avtDataRequest_p ds = contract->GetDataRequest();
     const char *var = ds->GetVariable();
 
+    bool setupExpr = false;
+    char exprDef[128];
+    std::string exprName = (std::string)"_expr_" + (std::string)var;
+
     if (atts.GetScaling() == VolumeAttributes::Linear)
     {
         newcontract = contract;
@@ -861,8 +869,7 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     }
     else if (atts.GetScaling() == VolumeAttributes::Log)
     {
-        std::string exprName = (std::string)"log_" + (std::string)var;
-        char exprDef[128];
+        setupExpr = true;
         if (atts.GetUseColorVarMin())
         {
             char m[16];
@@ -873,15 +880,7 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         {
             SNPRINTF(exprDef, 128, "log10(%s)", var);
         }
-        ExpressionList *elist = ParsingExprList::Instance()->GetList();
-        Expression *e = new Expression();
-        e->SetName(exprName.c_str());
-        e->SetDefinition(exprDef); 
-        e->SetType(Expression::ScalarMeshVar);
-        elist->AddExpressions(*e);
-        delete e;
-        avtDataRequest_p nds = new 
-          avtDataRequest(exprName.c_str(),
+        avtDataRequest_p nds = new avtDataRequest(exprName.c_str(),
                                ds->GetTimestep(), ds->GetRestriction());
         nds->AddSecondaryVariable(var);
         newcontract = new avtContract(contract, nds);
@@ -890,27 +889,43 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     }
     else // VolumeAttributes::Skew)
     {
-        char exprName[128];
-        SNPRINTF(exprName, 128, "%s_skewedby_%f", var, 
-                 atts.GetSkewFactor()); 
-        char exprDef[128];
+        setupExpr = true;
         SNPRINTF(exprDef, 128, "var_skew(%s, %f)", var, 
                  atts.GetSkewFactor());
-        ExpressionList *elist = ParsingExprList::Instance()->GetList();
+        avtDataRequest_p nds = 
+            new avtDataRequest(exprName.c_str(),
+                               ds->GetTimestep(), ds->GetRestriction());
+        nds->AddSecondaryVariable(var);
+        newcontract = new avtContract(contract, nds);
+        primaryVariable = new char[strlen(exprName.c_str())+1];
+        strcpy(primaryVariable, exprName.c_str());
+    }
 
-        Expression *e = new Expression();
-        e->SetName(exprName);
+    if (setupExpr)
+    {
+        ExpressionList *elist = ParsingExprList::Instance()->GetList();
+        Expression *e = NULL;
+        for (int i = 0 ; i < elist->GetNumExpressions() ; i++)
+        {
+            if (elist->GetExpressions(i).GetName() == exprName)
+            {
+                e = &(elist->GetExpressions(i));
+                break;
+            }
+        }
+        bool shouldDelete = false;
+        if (e == NULL)
+        {
+            e = new Expression();
+            shouldDelete = true;
+        }
+
+        e->SetName(exprName.c_str());
         e->SetDefinition(exprDef); 
         e->SetType(Expression::ScalarMeshVar);
         elist->AddExpressions(*e);
-        delete e;
-        avtDataRequest_p nds = 
-            new avtDataRequest(exprName,
-                ds->GetTimestep(), ds->GetRestriction());
-        nds->AddSecondaryVariable(var);
-        newcontract = new avtContract(contract, nds);
-        primaryVariable = new char[strlen(exprName)+1];
-        strcpy(primaryVariable, exprName);
+        if (shouldDelete)
+            delete e;
     }
 
     newcontract->NoStreaming();
