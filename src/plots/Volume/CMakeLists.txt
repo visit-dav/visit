@@ -111,6 +111,8 @@ ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty
 ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty/boost
 ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok
 ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok
+${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
+${VISIT_INCLUDE_DIR}/avt/Expressions/General
 )
 
 
@@ -150,13 +152,13 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EVolumePlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtplotter_ser avtpipeline_ser ${TUVOK_LIB} ${SLIVR_LIB} ${GLEW_LIB} ${OPENGL_gl_LIBRARY} )
+TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtplotter_ser avtpipeline_ser ${TUVOK_LIB} ${SLIVR_LIB} ${GLEW_LIB} ${OPENGL_gl_LIBRARY} avtexpressions_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_ser)
 ADD_TARGET_DEFINITIONS(EVolumePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVolumePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtplotter_par avtpipeline_par ${TUVOK_LIB} ${SLIVR_LIB} ${GLEW_LIB} ${OPENGL_gl_LIBRARY} )
+    TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtplotter_par avtpipeline_par ${TUVOK_LIB} ${SLIVR_LIB} ${GLEW_LIB} ${OPENGL_gl_LIBRARY} avtexpressions_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_par)
     ADD_TARGET_DEFINITIONS(EVolumePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

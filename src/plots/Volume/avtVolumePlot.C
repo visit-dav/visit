@@ -47,6 +47,7 @@
 
 #include <avtCallback.h>
 #include <avtCompactTreeFilter.h>
+#include <avtGradientExpression.h>
 #include <avtVolumeRenderer.h>
 #include <avtLookupTable.h>
 #include <avtResampleFilter.h>
@@ -556,6 +557,11 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
 //    Brad Whitlock, Tue Jan 31 11:22:01 PST 2012
 //    Add compact tree filter for non-resampling case.
 //
+//    Hank Childs, Tue Apr 10 17:03:40 PDT 2012
+//    Create gradient as part of the volume plot (instead of cueing EEF to
+//    do it).  This will allow for the volume plot to work on variables
+//    that are created mid-pipeline.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -588,10 +594,29 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     if (atts.GetRendererType() == VolumeAttributes::RayCasting ||
         atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
     {
+#ifdef ENGINE
+        char gradName[128];
+        const char *gradvar = atts.GetOpacityVariable().c_str();
+        if (strcmp(gradvar, "default") == 0)
+            gradvar = varname;
+        // The avtVolumeFilter uses this exact name downstream.
+        SNPRINTF(gradName, 128, "_%s_gradient", gradvar);
+
+        avtGradientExpression *gradientFilter = new avtGradientExpression();
+        gradientFilter->SetInput(input);
+        gradientFilter->SetAlgorithm(FAST);
+        gradientFilter->SetOutputVariableName(gradName);
+        gradientFilter->AddInputVariableName(gradvar);
+
+        // prevent this intermediate object from getting cleared out, so
+        // it is still there when we want to render.
+        gradientFilter->GetOutput()->SetTransientStatus(false);
+
         volumeImageFilter = new avtVolumeFilter();
         volumeImageFilter->SetAttributes(atts);
-        volumeImageFilter->SetInput(input);
+        volumeImageFilter->SetInput(gradientFilter->GetOutput());
         dob = volumeImageFilter->GetOutput();
+#endif
     }
     else
     {

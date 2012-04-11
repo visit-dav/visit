@@ -130,6 +130,9 @@ avtSIMODataTreeIterator::~avtSIMODataTreeIterator()
 //    Hank Childs, Wed May  9 16:57:25 PDT 2007
 //    Make sure that output tree is not NULL, since that causes heartache.
 //
+//    Hank Childs, Tue Apr 10 17:26:52 PDT 2012
+//    Check for NULL input trees.
+//
 // ****************************************************************************
 
 void
@@ -139,8 +142,20 @@ avtSIMODataTreeIterator::Execute(void)
     // This will walk through the data domains in a data tree.
     //
     avtDataTree_p tree    = GetInputDataTree();
-    totalNodes = tree->GetNumberOfLeaves();
-    avtDataTree_p newTree = Execute(tree);
+    avtDataTree_p newTree;
+    if (*tree != NULL)
+    {
+        totalNodes = tree->GetNumberOfLeaves();
+        newTree = Execute(tree);
+    }
+    else
+    {
+        // This can happen when a filter serves up an empty data tree.
+        // It can also happen when we claim memory from intermediate
+        // data objects and then go back to execute them.
+        debug1 << "Unusual situation: NULL input tree to SIMO iterator.  Likely "
+               << "that an exception occurred previously." << endl;
+    }
 
     if (*newTree == NULL)
     {
