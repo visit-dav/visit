@@ -1635,12 +1635,6 @@ avtMiliFileFormat::RestrictVarToFreeNodes(vtkFloatArray *src, int ts) const
 // ****************************************************************************
 
 vtkDataArray *
-avtMiliFileFormat::GetVar(const char *name)
-{
-  int i=0;  
-}
-
-vtkDataArray *
 avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
 {
     bool isParamArray=false;
