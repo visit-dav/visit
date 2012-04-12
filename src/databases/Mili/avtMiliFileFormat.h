@@ -119,7 +119,6 @@ class avtMiliFileFormat : public avtMTMDFileFormat
  
     virtual vtkDataSet   *GetMesh(int, int, const char *);
     virtual vtkDataArray *GetVar(int, int, const char *);
-    virtual vtkDataArray *GetVar(const char *);
     virtual vtkDataArray *GetVectorVar(int, int, const char *);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
