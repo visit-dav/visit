@@ -48,6 +48,7 @@
 
 class QLabel;
 class QSpinBox;
+class PlotList;
 
 // ****************************************************************************
 // Class: QvisTimeQueryOptionsWidget
@@ -59,6 +60,8 @@ class QSpinBox;
 // Creation:   August 1, 2011
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr 11 19:10:38 PDT 2012
+//    Removed GetDatabaseNStates, added UpdateState.
 //
 // ****************************************************************************
 
@@ -72,6 +75,7 @@ class GUI_API QvisTimeQueryOptionsWidget : public QGroupBox, public GUIBase
 
     bool GetTimeQueryOptions(MapNode &options);
 
+    void UpdateState(PlotList *plotList);
 
     virtual void setCheckable(bool val);
  
@@ -81,7 +85,6 @@ class GUI_API QvisTimeQueryOptionsWidget : public QGroupBox, public GUIBase
 
   private:
     void         CreateWindowContents();
-    int          GetDatabaseNStates();
     void         SetMax(const int val);
 
     QLabel      *msgLabel;

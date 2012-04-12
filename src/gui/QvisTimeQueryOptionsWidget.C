@@ -44,11 +44,13 @@
 #include <QSpinBox>
 #include <QVBoxLayout>
 
+
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
-#include <ViewerProxy.h>
+#include <Plot.h>
+#include <PlotList.h>
+#include <ViewerState.h>
 #include <WindowInformation.h>
-
 
 // ****************************************************************************
 // Method: QvisTimeQueryOptionsWidget::QvisTimeQueryOptionsWidget
@@ -183,6 +185,7 @@ QvisTimeQueryOptionsWidget::CreateWindowContents()
 
 QvisTimeQueryOptionsWidget::~QvisTimeQueryOptionsWidget()
 {
+    ;
 }
 
 
@@ -240,12 +243,7 @@ QvisTimeQueryOptionsWidget::setCheckable(bool val)
 void
 QvisTimeQueryOptionsWidget::setEnabled(bool val)
 {
-    int nStates = GetDatabaseNStates();
-    QGroupBox::setEnabled(val && nStates > 1);
-    if (isEnabled())
-    {
-        SetMax(nStates -1);
-    }
+    QGroupBox::setEnabled(val);
 }
 
 
@@ -267,7 +265,6 @@ void
 QvisTimeQueryOptionsWidget::show()
 {
     QGroupBox::show();
-    SetMax(GetDatabaseNStates() -1);
 }
 
 
@@ -327,38 +324,39 @@ QvisTimeQueryOptionsWidget::GetTimeQueryOptions(MapNode &options)
     return true;
 }
 
-
 // ****************************************************************************
-// Method: QvisTimeQueryOptionsWidget::GetDatabaseNStates()
+// Method: QvisTimeQueryOptionsWidget::GetTimeQueryOptions
 //
 // Purpose: 
-//   Gets number of states in active database.
+//   Updates enabledState and maxTime based on currently selected plot.
 //
 // Programmer: Kathleen Biagas 
-// Creation:   August 1, 2011 
+// Creation:   April 11, 2012
 //
 // Modifications:
-//   Kathleen Biagas, Wed Jan 25 15:56:29 MST 2012
-//   Retrieve number of states from active time slider if available, instead
-//   of active source.
-//
+//   
 // ****************************************************************************
 
-int
-QvisTimeQueryOptionsWidget::GetDatabaseNStates()
+void
+QvisTimeQueryOptionsWidget::UpdateState(PlotList *plotList)
 {
-    WindowInformation *wi = GetViewerState()->GetWindowInformation();
-    DatabaseCorrelationList *correlations = 
-        GetViewerState()->GetDatabaseCorrelationList();
-
-    // Get the number of states for the active time slider.
-    int  ats = wi->GetActiveTimeSlider();
-    int nStates = (ats == -1) ? 0 : 1;
-    if(ats != -1)
+    if (!plotList)
+        return;
+    int nStates = 1;
+    int selectedPlot = plotList->FirstSelectedIndex();
+    if (selectedPlot >= 0)
     {
-        DatabaseCorrelation c = correlations->GetCorrelations(ats);
-        nStates = c.GetNumStates();
+        const std::string &dbName = 
+            plotList->GetPlots(selectedPlot).GetDatabaseName();
+        WindowInformation *wi = GetViewerState()->GetWindowInformation();
+        DatabaseCorrelationList *correlations = 
+            GetViewerState()->GetDatabaseCorrelationList();
+
+        DatabaseCorrelation *c = correlations->FindCorrelation(dbName);
+        if (c)
+            nStates = c->GetNumStates();
     }
-    return nStates;
+    SetMax(nStates -1 ); 
+    setEnabled(plotList->GetNumPlots() > 0  && nStates > 1);
 }
 

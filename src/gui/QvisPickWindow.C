@@ -853,12 +853,15 @@ QvisPickWindow::UpdateAll(bool doAll)
 //    Kathleen Biagas, Wed Jan 25 15:51:52 MST 2012
 //    Set enabled state of redoPickButton.
 //   
+//    Kathleen Biagas, Wed Apr 11 19:16:26 PDT 2012
+//    Call UpdateState on timeOpts instead of setEnabled.
+//
 // ****************************************************************************
 
 void
 QvisPickWindow::UpdateTimeOptions()
 {
-    timeOpts->setEnabled(plotList->GetNumPlots() > 0);
+    timeOpts->UpdateState(plotList);
     preserveCoord->setEnabled(timeOpts->isEnabled() && timeOpts->isChecked());
     timeCurveType->setEnabled(timeOpts->isEnabled() && timeOpts->isChecked());
     redoPickButton->setEnabled(timeOpts->isEnabled() && timeOpts->isChecked());
