@@ -670,15 +670,15 @@ QvisQueryWindow::UpdateQueryButton()
 // Creation:   April 1, 2004 
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Wed Apr 11 19:14:07 PDT 2012
+//    Call UpdateState on timeQueryOptions, instead of setEnabled.
+//
 // ****************************************************************************
 
 void
 QvisQueryWindow::UpdateTimeQueryOptions()
 {
-    bool val = (queries->GetNames().size() > 0) &&
-               (plotList->GetNumPlots() > 0);
-    timeQueryOptions->setEnabled(val);
+    timeQueryOptions->UpdateState(plotList);
 }
 
 // ****************************************************************************
