@@ -508,6 +508,9 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
 //    Hank Childs, Fri Dec 16 15:10:28 PST 2011
 //    Fix problem with communication across refinement levels.
 //
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -516,6 +519,7 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
                                                        bool     isPointData,
                                                        int      ncomp)
 {
+    int timer_CommunicateGhost = visitTimer->StartTimer();
 #ifdef PARALLEL
     MPI_Datatype mpi_datatype = GetMPIDataType<T>();
 
@@ -649,6 +653,7 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
     delete [] recvcount;
     delete [] tmp_ptr;
 #endif
+    visitTimer->StopTimer(timer_CommunicateGhost, "Ghost Zone Generation phase 3: Communicate");
 }
 
 // ****************************************************************************
@@ -1654,6 +1659,9 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Cache domain2proc.
 //
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
@@ -1662,10 +1670,13 @@ avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
 {
     if (domain2proc.size() == 0)
     {
+        int timer_InitializeGhost = visitTimer->StartTimer();
         domain2proc = CreateDomainToProcessorMap(domainNum);
         CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in float version)");
     }
 
+    int timer_PackData = visitTimer->StartTimer();
     vector<vtkDataArray*> out(scalars.size(), NULL);
 
     //
@@ -1677,9 +1688,11 @@ avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
         float *oldvals = (float*)scalars[d]->GetVoidPointer(0);
         bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
     }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in float version)");
 
     bhf_float->CommunicateBoundaryData(domain2proc, vals, isPointData);
 
+    int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < scalars.size(); d++)
     {
         Boundary *bi = &boundary[domainNum[d]];
@@ -1704,6 +1717,7 @@ avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
         // Set the remaining unset ones (reduced connectivity, etc.)
         bhf_float->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
     }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in float version)");
 
     bhf_float->FreeBoundaryData(vals);
 
@@ -1733,6 +1747,9 @@ avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Cache domain2proc.
 //
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
@@ -1741,10 +1758,13 @@ avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
 {
     if (domain2proc.size() == 0)
     {
+        int timer_InitializeGhost = visitTimer->StartTimer();
         domain2proc = CreateDomainToProcessorMap(domainNum);
         CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in int version)");
     }
 
+    int timer_PackData = visitTimer->StartTimer();
     vector<vtkDataArray*> out(scalars.size(), NULL);
 
     //
@@ -1756,9 +1776,11 @@ avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
         int *oldvals = (int*)scalars[d]->GetVoidPointer(0);
         bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
     }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in int version)");
 
     bhf_int->CommunicateBoundaryData(domain2proc, vals, isPointData);
 
+    int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < scalars.size(); d++)
     {
         Boundary *bi = &boundary[domainNum[d]];
@@ -1783,6 +1805,7 @@ avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
         // Set the remaining unset ones (reduced connectivity, etc.)
         bhf_int->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
     }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in int version)");
 
     bhf_int->FreeBoundaryData(vals);
 
@@ -1812,6 +1835,9 @@ avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Cache domain2proc.
 //
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
@@ -1820,10 +1846,13 @@ avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
 {
     if (domain2proc.size() == 0)
     {
+        int timer_InitializeGhost = visitTimer->StartTimer();
         domain2proc = CreateDomainToProcessorMap(domainNum);
         CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in uchar version)");
     }
 
+    int timer_PackData = visitTimer->StartTimer();
     vector<vtkDataArray*> out(scalars.size(), NULL);
 
     //
@@ -1835,9 +1864,11 @@ avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
         unsigned char *oldvals = (unsigned char*)scalars[d]->GetVoidPointer(0);
         bhf_uchar->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
     }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in uchar version)");
 
     bhf_uchar->CommunicateBoundaryData(domain2proc, vals, isPointData);
 
+    int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < scalars.size(); d++)
     {
         Boundary *bi = &boundary[domainNum[d]];
@@ -1862,6 +1893,7 @@ avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
         // Set the remaining unset ones (reduced connectivity, etc.)
         bhf_uchar->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
     }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in uchar version)");
 
     bhf_uchar->FreeBoundaryData(vals);
 
@@ -1906,6 +1938,9 @@ avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Cache domain2proc.
 //
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
@@ -1914,10 +1949,13 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
 {
     if (domain2proc.size() == 0)
     {
+        int timer_InitializeGhost = visitTimer->StartTimer();
         domain2proc = CreateDomainToProcessorMap(domainNum);
         CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in floatvec version)");
     }
 
+    int timer_PackData = visitTimer->StartTimer();
     vector<vtkDataArray*> out(vectors.size(), NULL);
 
     //
@@ -1931,9 +1969,11 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
         float *oldvals = (float*)vectors[d]->GetVoidPointer(0);
         bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
     }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in floatvec version)");
 
     bhf_float->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
 
+    int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < vectors.size(); d++)
     {
         // Create the new VTK objects
@@ -1957,6 +1997,7 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
         // Set the remaining unset ones (reduced connectivity, etc.)
         bhf_float->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
     }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in floatvec version)");
 
     bhf_float->FreeBoundaryData(vals);
 
@@ -1996,6 +2037,9 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Cache domain2proc.
 //
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
@@ -2004,10 +2048,13 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 {
     if (domain2proc.size() == 0)
     {
+        int timer_InitializeGhost = visitTimer->StartTimer();
         domain2proc = CreateDomainToProcessorMap(domainNum);
         CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in intvec version)");
     }
 
+    int timer_PackData = visitTimer->StartTimer();
     vector<vtkDataArray*> out(vectors.size(), NULL);
 
     //
@@ -2021,9 +2068,11 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
         int *oldvals = (int*)vectors[d]->GetVoidPointer(0);
         bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
     }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in intvec version)");
 
     bhf_int->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
 
+    int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < vectors.size(); d++)
     {
         // Create the new VTK objects
@@ -2047,6 +2096,7 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
         // Set the remaining unset ones (reduced connectivity, etc.)
         bhf_int->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
     }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in intvec version)");
 
     bhf_int->FreeBoundaryData(vals);
 
@@ -2083,6 +2133,9 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //    Hank Childs, Fri Jun  9 14:18:11 PDT 2006
 //    Remove unused variable.
 //
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
 // ****************************************************************************
 vector<avtMaterial*>
 avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
@@ -2090,10 +2143,13 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
 {
     if (domain2proc.size() == 0)
     {
+        int timer_InitializeGhost = visitTimer->StartTimer();
         domain2proc = CreateDomainToProcessorMap(domainNum);
         CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in mat version)");
     }
 
+    int timer_PackData = visitTimer->StartTimer();
     vector<avtMaterial*> out(mats.size(), NULL);
 
     //
@@ -2118,10 +2174,12 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
         bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], mats[d]->GetMixVF(),
                               mixvf, mixmat, mixzone, mixlen[domainNum[d]]);
     }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in mat version)");
 
     bhf_int->CommunicateBoundaryData(domain2proc, matlist, false);
     bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvf, mixmat, mixzone, mixlen);
 
+    int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < mats.size(); d++)
     {
         avtMaterial *oldmat = mats[d];
@@ -2189,6 +2247,7 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
         delete[] newmixzone;
         delete[] newmixnext;
     }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in mat version)");
 
     bhf_int->FreeBoundaryData(matlist);
     bhf_float->FreeBoundaryData(mixvf);
@@ -2237,6 +2296,10 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
 // ****************************************************************************
 vector<avtMixedVariable*>
 avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
@@ -2245,10 +2308,13 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
 {
     if (domain2proc.size() == 0)
     {
+        int timer_InitializeGhost = visitTimer->StartTimer();
         domain2proc = CreateDomainToProcessorMap(domainNum);
         CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in mixvar version)");
     }
 
+    int timer_PackData = visitTimer->StartTimer();
     vector<avtMixedVariable*> out(mats.size(), NULL);
 
     //
@@ -2312,10 +2378,12 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
         bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], oldmixvals,
                               mixvals, NULL, mixzone, mixlen[domainNum[d]]);
     }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in mixvar version)");
 
     bhf_int->CommunicateBoundaryData(domain2proc, matlist, false);
     bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvals, NULL, mixzone, mixlen);
 
+    int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < mats.size(); d++)
     {
         avtMaterial *oldmat    = mats[d];
@@ -2359,6 +2427,7 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
         delete[] newmatlist;
         delete[] newmixvals;
     }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in mixvar version)");
 
     bhf_int->FreeBoundaryData(matlist);
     bhf_float->FreeBoundaryData(mixvals);
@@ -2631,6 +2700,9 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Cache domain2proc.
 //
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
 // ****************************************************************************
 vector<vtkDataSet*>
 avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
@@ -2638,10 +2710,13 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 {
     if (domain2proc.size() == 0)
     {
+        int timer_InitializeGhost = visitTimer->StartTimer();
         domain2proc = CreateDomainToProcessorMap(domainNum);
         CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in curvmesh version)");
     }
 
+    int timer_PackData = visitTimer->StartTimer();
     vector<vtkDataSet*> out(meshes.size(), NULL);
 
     //
@@ -2654,9 +2729,11 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
         float *oldcoord = (float*)mesh->GetPoints()->GetVoidPointer(0);
         bhf_float->FillBoundaryData(domainNum[d], oldcoord, coord, true, 3);
     }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in curvmesh version)");
 
     bhf_float->CommunicateBoundaryData(domain2proc, coord, true, 3);
 
+    int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < meshes.size(); d++)
     {
         if (meshes[d]->GetDataObjectType() != VTK_STRUCTURED_GRID)
@@ -2694,6 +2771,7 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 
         out[d] = outm;
     }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in curvmesh version)");
  
     bhf_float->FreeBoundaryData(coord);
 
@@ -2741,6 +2819,9 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //    Hank Childs, Thu Sep 29 15:20:29 PDT 2011
 //    Add support for communicating pre-existing ghost zone data.
 //
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
@@ -2751,8 +2832,10 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 
     if (domain2proc.size() == 0)
     {
+        int timer_InitializeGhost = visitTimer->StartTimer();
         domain2proc = CreateDomainToProcessorMap(domainNum);
         CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in rectmesh version)");
     }
 
     bool doGhost = true;
@@ -2767,12 +2850,14 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
     unsigned char ***ghosts = NULL;
     if (doGhost)
     {
+        int timer_PackData = visitTimer->StartTimer();
         ghosts = bhf_uchar->InitializeBoundaryData();
         for (d = 0 ; d < meshes.size() ; d++)
         {
             unsigned char *g = (unsigned char*)meshes[d]->GetCellData()->GetArray("avtGhostZones")->GetVoidPointer(0);
             bhf_uchar->FillBoundaryData(domainNum[d], g, ghosts, false, 1);
         }
+        visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in rectmesh version)");
         bhf_uchar->CommunicateBoundaryData(domain2proc, ghosts, false, 1);
     }
 
@@ -2781,6 +2866,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
     //
     // Create the matching arrays for the given meshes
     //
+    int timer_UnpackData = visitTimer->StartTimer();
     for (d = 0; d < meshes.size(); d++)
     {
         if (meshes[d]->GetDataObjectType() != VTK_RECTILINEAR_GRID)
@@ -2900,6 +2986,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 
         out[d] = outm;
     }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in rectmesh version)");
 
     return out;
 }
