@@ -241,12 +241,12 @@ IF(VISIT_STATIC)
 
     VISIT_INSTALL_TARGETS(cli)
 ELSE(VISIT_STATIC)
+
+
     # Create the visitmodule
     PYTHON_ADD_MODULE(visitmodule
-        ${COMMON_SOURCES}
-    )
-    SET_TARGET_PROPERTIES(visitmodule PROPERTIES PREFIX "")
-    TARGET_LINK_LIBRARIES(visitmodule 
+                      ${COMMON_SOURCES})
+    TARGET_LINK_LIBRARIES(visitmodule
         viewerproxy
         viewerrpc
         avtdbatts
@@ -254,23 +254,23 @@ ELSE(VISIT_STATIC)
         visitpy
         ${PYTHON_LIBRARIES}
     )
+
+    SET_TARGET_PROPERTIES(visitmodule PROPERTIES
+                                      LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
+
     IF(NOT APPLE)
         SET_TARGET_PROPERTIES(visitmodule PROPERTIES INSTALL_RPATH "$ORIGIN")
     ENDIF(NOT APPLE)
 
-    # Create the front end visit module
-    PYTHON_ADD_MODULE(visitfrontend
-        visitmodule/visitfrontend.c
-    )
-    SET_TARGET_PROPERTIES(visitfrontend PROPERTIES PREFIX "" OUTPUT_NAME visit)
-    TARGET_LINK_LIBRARIES(visitfrontend
-        ${PYTHON_LIBRARIES}
-    )
-    IF(NOT APPLE)
-        SET_TARGET_PROPERTIES(visitfrontend PROPERTIES INSTALL_RPATH "$ORIGIN")
-    ENDIF(NOT APPLE)
-    VISIT_INSTALL_TARGETS(visitfrontend visitpy cli visitmodule)
+
+    VISIT_INSTALL_TARGETS(visitpy cli)
+    VISIT_INSTALL_TARGETS_RELATIVE(site-packages/visit visitmodule)
 ENDIF(VISIT_STATIC)
+
+#
+# For distutils setup of the pure python parts of the visit module
+#
+ADD_SUBDIRECTORY(visitmodule)
 
 IF(VISIT_PYTHON_FILTERS)
     ADD_SUBDIRECTORY(pyavt)

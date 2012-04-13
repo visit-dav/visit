@@ -12,9 +12,22 @@
 
 class PySideViewer
 {
-    ViewerSubjectProxy* cliproxy;
+    static PySideViewer *_instance;
+    ViewerSubjectProxy  *cliproxy;
 
 public:
+
+    static PySideViewer* instance(int& argc,char** argv)
+    {
+        if (PySideViewer::_instance == NULL)
+            PySideViewer::_instance = new PySideViewer(argc,argv);
+        return PySideViewer::_instance;
+    }
+
+    static PySideViewer* instance()
+    {
+        return PySideViewer::_instance;
+    }
 
     //Default constructor should not be used for anything other than testing..
     PySideViewer()
@@ -65,12 +78,12 @@ public:
     }
 
     ~PySideViewer(){}
-    
+
     QMainWindow* GetRenderWindow(int i)
     {
         return (QMainWindow*) cliproxy->GetRenderWindow(i);
     }
-    
+
     QList<int> GetRenderWindowIDs()
     {
         return cliproxy->GetRenderWindowIDs();

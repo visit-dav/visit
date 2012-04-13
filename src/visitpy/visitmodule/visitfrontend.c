@@ -38,7 +38,7 @@
 
 #include <Python.h>
 
-/*#define DEBUG_PRINT*/
+#define DEBUG_PRINT
 #ifdef DEBUG_PRINT
 #include <stdio.h>
 #endif

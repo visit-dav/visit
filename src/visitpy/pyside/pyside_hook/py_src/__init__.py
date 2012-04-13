@@ -1,4 +1,4 @@
-#*****************************************************************************
+###############################################################################
 #
 # Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
@@ -34,29 +34,17 @@
 # OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 # DAMAGE.
 #
+###############################################################################
+# file: __init__.py
+# Purpose: Main init for the pyside_visithook module.
+#
+# Programmer: Cyrus Harrison
+# Creation: Tue Apr  3 13:40:18 PDT
+#
+#
 # Modifications:
-#  Cyrus Harrison, Wed Mar 10 11:05:26 PST 2010
-#  Use CMAKE_LIBRARY_OUTPUT_DIRECTORY instead of LIBRARY_OUTPUT_DIRECTORY.
 #
-#  Cyrus Harrison, Wed Apr 11 14:21:57 PDT 2012
-#  Use new cmake commands for distutils setup.
 #
-#****************************************************************************/
-
-
-# deps for pyavt
-SET(pyavt_sources py_src/__init__.py
-                  py_src/filters.py
-                  py_src/templates/__init__.py
-                  py_src/templates/advanced_expression.py
-                  py_src/templates/advanced_query.py
-                  py_src/templates/simple_expression.py
-                  py_src/templates/simple_query.py)
-
-PYTHON_ADD_DISTUTILS_SETUP(pyavt_py_setup
-                           site-packages/
-                           setup.py
-                           ${pyavt_sources})
-
-
-
+###############################################################################
+from pyside_visithook import *
+from misc import *

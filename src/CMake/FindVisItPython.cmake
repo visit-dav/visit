@@ -75,6 +75,9 @@
 #   Cyrus Harrison, Mon Oct  3 15:55:53 PDT 2011
 #   Exclude install of PySide module (FindPySide.cmake handles this)
 #
+#   Cyrus Harrison, Mon Oct  3 15:55:53 PDT 2011
+#   Add detection the PYTHON_EXECUTABLE, and ADD_PYTHON_DISTUTILS_SETUP
+#   command.
 #
 #****************************************************************************/
 
@@ -135,6 +138,14 @@ FOREACH(_CURRENT_VERSION 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
     NO_CMAKE_PATH
     NO_SYSTEM_ENVIRONMENT_PATH)
 
+  FIND_PROGRAM(PYTHON_EXECUTABLE
+               NAMES python2.7 python2.6 python2.5 python
+               PATHS
+               ${PYTHON_DIR}
+               [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]
+              )
+
+
   SET(PYTHON_FRAMEWORK_INCLUDES)
   IF(Python_FRAMEWORKS AND NOT PYTHON_INCLUDE_PATH)
     FOREACH(dir ${Python_FRAMEWORKS})
@@ -188,6 +199,7 @@ MARK_AS_ADVANCED(
   PYTHON_DEBUG_LIBRARY
   PYTHON_LIBRARY
   PYTHON_INCLUDE_PATH
+  PYTHON_EXECUTABLE
 )
 
 # Python Should be built and installed as a Framework on OSX
@@ -246,9 +258,11 @@ FUNCTION(PYTHON_ADD_MODULE _NAME )
 
     SET_PROPERTY(GLOBAL  APPEND  PROPERTY  PY_MODULES_LIST ${_NAME})
     ADD_LIBRARY(${_NAME} ${PY_MODULE_TYPE} ${ARGN})
+    SET_TARGET_PROPERTIES(${_NAME} PROPERTIES PREFIX "")
     IF (WIN32)
         SET_TARGET_PROPERTIES(${_NAME} PROPERTIES SUFFIX ".pyd")
     ENDIF(WIN32)
+
 #    TARGET_LINK_LIBRARIES(${_NAME} ${PYTHON_LIBRARIES})
 
   ENDIF(PYTHON_ENABLE_MODULE_${_NAME})
@@ -302,6 +316,52 @@ extern \"C\" {
   EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_filenameTmp}" "${_filename}" OUTPUT_QUIET ERROR_QUIET)
 
 ENDFUNCTION(PYTHON_WRITE_MODULES_HEADER)
+
+#
+# Function that calls a distutils based setup python script
+# and installs a python module.
+#
+
+FUNCTION(PYTHON_ADD_DISTUTILS_SETUP target_name dest_dir setup_file)
+MESSAGE(STATUS "Configuring python distutils setup: ${target_name}")
+add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/build
+                   COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
+                   build
+                   --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
+                   install
+                   --install-purelib=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}
+                   DEPENDS  ${setup_file} ${ARGN}
+                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_custom_target(${target_name} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/build)
+
+# also use distutils for the install ...
+INSTALL(CODE
+        "
+        EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
+                                build   --build-base=${CMAKE_CURRENT_BINARY_DIR}/build_install
+                                install --install-purelib=\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
+                         OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT)
+        MESSAGE(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
+        ")
+
+
+ENDFUNCTION(PYTHON_ADD_DISTUTILS_SETUP)
+
+FUNCTION(PYTHON_ADD_HYBRID_MODULE target_name dest_dir setup_file py_sources)
+    MESSAGE(STATUS "Configuring hybrid python module: ${target_name}")
+    PYTHON_ADD_DISTUTILS_SETUP("${target_name}_py_setup"
+                               ${dest_dir}
+                               ${setup_file}
+                               ${py_sources})
+    PYTHON_ADD_MODULE(${target_name} ${ARGN})
+    SET_TARGET_PROPERTIES(${target_name} PROPERTIES
+                                         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}/${target_name}/)
+    ADD_DEPENDENCIES(${target_name} "${target_name}_py_setup")
+    VISIT_INSTALL_TARGETS_RELATIVE(${dest_dir}/${target_name} ${target_name})
+
+ENDFUNCTION(PYTHON_ADD_HYBRID_MODULE)
 
 
 # Deal with install targets
