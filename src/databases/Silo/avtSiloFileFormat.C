@@ -5296,6 +5296,10 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
 //    Hank Childs, Wed Jun  1 10:41:59 PDT 2005
 //    The block numbers is gmap[0], not gmap[1].  gmap[1] is the domain number.
 //
+//    Cyrus Harrison, Tue Mar 13 11:39:15 PDT 2012
+//    At Gary Kerbel's request, skip periodic boundary boundaries identified
+//    by the 12th entry of the neighbor array.
+//
 // ****************************************************************************
 
 void
@@ -5327,7 +5331,7 @@ avtSiloFileFormat::FindGmapConnectivity(DBfile *dbfile, int &ndomains,
                  groupIds[i] = 0;
              }
              needGroupInfo = false;
-         }   
+         }
          else
          {
              needGroupInfo = false;  // What else to do?!?
@@ -5375,25 +5379,54 @@ avtSiloFileFormat::FindGmapConnectivity(DBfile *dbfile, int &ndomains,
     {
         if (lneighbors > 0)
         {
+            int nactual_neighbors = 0;
             neighbors = new int[lneighbors];
             int index = 0;
             for (int j = 0 ; j < ndomains ; j++)
             {
-                for (int k = 0 ; k < nneighbors[j] ; k++)
+                int n_all_neighbors = nneighbors[j];
+                for (int k = 0 ; k < n_all_neighbors; k++)
                 {
                     char neighborname[256];
                     sprintf(neighborname, "gmap%d/neighbor%d",j,k);
                     int neighbor_info[512];  // We only want 11, but it can
-                                             // be as big as 400. 
+                                             // be as big as 400.
+                    // clear the 12th entry
+                    // for some codes, non-zero @ neighbor_info[11]
+                    // indicates a periodic boundary condition that we should
+                    // not include as a neighbor
+                    neighbor_info[11] = 0;
                     DBReadVar(dbfile, neighborname, neighbor_info);
-                    for (int l = 0 ; l < 11 ; l++)
+                    if(neighbor_info[11] == 0)
                     {
-                        neighbors[index+l] = neighbor_info[l];
+                        memcpy(&neighbors[index],neighbor_info,11*sizeof(int));
+                        index += 11;
+                        nactual_neighbors+=1;
                     }
-                    index += 11;
+                    else
+                    {
+                        // remove periodic boundary conditions
+                        // from neighbor count
+                        nneighbors[j] += -1;
+                    }
                 }
             }
+            //
+            // this can happen if we excluded periodic boundaries
+            //
+            // we already alloced neighbors, simply adjust lneighbors
+            // at this point reclaming the small amount of extra memory
+            // for these neighbors, seems like too much work.
+            if(nactual_neighbors *11 != lneighbors)
+            {
+                int *nei_tmp = new int[nactual_neighbors *11];
+                memcpy(nei_tmp,neighbors,nactual_neighbors *11*sizeof(int));
+                delete [] neighbors;
+                neighbors = nei_tmp;
+                lneighbors = nactual_neighbors *11;
+            }
         }
+
     }
 }
 
