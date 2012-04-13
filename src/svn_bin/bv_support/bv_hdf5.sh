@@ -115,13 +115,13 @@ function build_hdf5
     cf_darwin=""
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-        if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
-            cf_darwin="--disable-shared --enable-static"
-        else
-            cf_darwin="--enable-shared --disable-static"
-        fi
     else
         export LD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+    fi
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+            cf_build_type="--disable-shared --enable-static"
+        else
+            cf_build_type="--enable-shared --disable-static"
     fi
     cf_szip=""
     if test "x${DO_SZIP}" = "xyes"; then
@@ -148,7 +148,7 @@ function build_hdf5
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH\" \
-        ${cf_szip} ${cf_darwin}"
+        ${cf_szip} ${cf_build_type}"
     if [[ $? != 0 ]] ; then
        warn "HDF5 configure failed.  Giving up"
        return 1
