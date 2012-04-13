@@ -151,7 +151,7 @@ avtPythonFilterEnvironment::Initialize()
         return false;
 #else
     // import pyavt.mpistub as mpicom
-    if(!pyi->RunScript("import mpistub as mpicom\n"))
+    if(!pyi->RunScript("import mpicom.mpistub as mpicom\n"))
         return false;
 #endif
     return true;

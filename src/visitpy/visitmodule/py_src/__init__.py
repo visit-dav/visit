@@ -1,4 +1,4 @@
-#*****************************************************************************
+###############################################################################
 #
 # Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
@@ -34,19 +34,40 @@
 # OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 # DAMAGE.
 #
+###############################################################################
+# file: __init__.py
+# Purpose: Main init for the pyside_visithook module.
+#
+# Programmer: Cyrus Harrison
+# Creation: Tue Apr  3 13:40:18 PDT
+#
+#
 # Modifications:
 #
-#*****************************************************************************
+#
+###############################################################################
 
-set(vhook_sources ${CMAKE_CURRENT_BINARY_DIR}/pyside_visithook/pysidehook_wrapper.cpp
-                  ${CMAKE_CURRENT_BINARY_DIR}/pyside_visithook/pyside_visithook_module_wrapper.cpp)
-set(vhook_include_paths ${QT_INCLUDE_DIR} ${QT_QTCORE_INCLUDE_DIR})
-set(vhook_link_libs ${QT_QTCORE_LIBRARY})
+#
+# note: the frontend is responsible for loading the actual visit module
+#
+from frontend import *
+from evalfuncs import *
 
-PYSIDE_ADD_MODULE(pyside_visithook 
-                  vhook_sources 
-                  vhook_include_paths 
-                  vhook_link_libs 
-                  global.h typesystem.xml)
+try:
+    import pyside_hook
+    import pyside_viewer
+    import pyside_support
+except ImportError:
+    pass
 
-VISIT_INSTALL_TARGETS(pyside_visithook)
+
+
+
+
+
+
+
+
+
+
+

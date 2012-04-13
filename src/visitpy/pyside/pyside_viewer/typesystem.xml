@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<typesystem package="pyside_pysideviewer">
+<typesystem package="pyside_viewer">
     <load-typesystem name="typesystem_core.xml" generate="no"/>
     <load-typesystem name="typesystem_gui.xml" generate="no"/>
     <load-typesystem name="typesystem_opengl.xml" generate="no"/>
@@ -23,13 +23,22 @@
     <modify-function signature="PySideViewer(int&amp;,char**)" access="private" />
     <add-function signature="PySideViewer(PySequence)">
     <inject-code>
-      int QApplicationArgCount;
+      int    QApplicationArgCount;
       char** QApplicationArgValues;
       Shiboken::sequenceToArgcArgv(%1, &amp;QApplicationArgCount, &amp;QApplicationArgValues, "PySideApp");
       cptr = new PySideViewer(QApplicationArgCount,QApplicationArgValues);
     </inject-code>
     </add-function>
-    
+    <modify-function signature="instance(int&amp;,char**)" access="private" />
+    <add-function signature="instance(PySequence)" return-type="PySideViewer *">
+    <inject-code>
+        int    QApplicationArgCount;
+        char** QApplicationArgValues;
+        Shiboken::sequenceToArgcArgv(%1, &amp;QApplicationArgCount, &amp;QApplicationArgValues, "PySideApp");
+        PySideViewer *cppResult = PySideViewer::instance(QApplicationArgCount,QApplicationArgValues);
+        pyResult = Shiboken::Converter&lt; ::PySideViewer * &gt;::toPython(cppResult);
+    </inject-code>
+    </add-function>
     </object-type>
 </typesystem>
 

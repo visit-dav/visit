@@ -273,6 +273,9 @@ QvisPythonFilterEditor::loadScript(const QString &py_script)
 //    to getSaveFileName (eg don't present user with a place to save a file if 
 //    they cannot save there!)
 //
+//   Cyrus Harrison, Wed Apr 11 15:03:17 PDT 2012
+//   Add other common python filter extentsions (vpe & vpq)
+//
 // ****************************************************************************
 
 void
@@ -294,7 +297,7 @@ QvisPythonFilterEditor::cmdSaveClick()
     QString default_file = useDir + "/" + QString("visit_filter.py");
 
     // Get the name of the file that the user saved.
-    QString filter(tr("Python Script File") +  QString(" (*.py);;")
+    QString filter(tr("Python Script File") +  QString("  (*.py,*vpe,*vpq);;")
                    + tr("All Files") + QString(" (*)"));
 
     QString res = QFileDialog::getSaveFileName(this,
@@ -319,6 +322,9 @@ QvisPythonFilterEditor::cmdSaveClick()
 //   Added 'All Files' to the filter, to support scripts without a '.py'
 //   extension.
 //
+//   Cyrus Harrison, Wed Apr 11 15:03:17 PDT 2012
+//   Add other common python filter extentsions (vpe & vpq)
+//
 // ****************************************************************************
 
 void
@@ -326,7 +332,7 @@ QvisPythonFilterEditor::loadMenuEvent(QAction *action)
 {
     if(action == loadFile)
     {
-        QString filter(tr("Python Script File") +  QString(" (*.py);;")
+        QString filter(tr("Python Script File") +  QString(" (*.py,*vpe,*vpq);;")
                        + tr("All Files") + QString(" (*)"));
         QString res = QFileDialog::getOpenFileName(this,
                                                    tr("Load Python Filter"),
@@ -345,7 +351,7 @@ QvisPythonFilterEditor::loadMenuEvent(QAction *action)
 // Method: QvisPythonFilterEditor::templateDirectory
 //
 // Purpose:
-//   Provides the path to the filter template directory. 
+//   Provides the path to the filter template directory.
 //
 // Programmer: Cyrus Harrison
 // Creation:   Thu Feb 11 09:35:54 PST 2010
@@ -353,6 +359,9 @@ QvisPythonFilterEditor::loadMenuEvent(QAction *action)
 // Modifications:
 //   Kathleen Bonnell, Wed Mar 24 16:28:37 MST 2010
 //   Retrieve VISITARCHHOME via GetVisItArchitectureDirectory.
+//
+//   Cyrus Harrison, Wed Apr 11 15:03:17 PDT 2012
+//   Update to reflect change loc of templates.
 //
 // ****************************************************************************
 
@@ -365,7 +374,9 @@ QvisPythonFilterEditor::templateDirectory()
            + QString(VISIT_SLASH_CHAR)
            + QString("site-packages")
            + QString(VISIT_SLASH_CHAR)
-           + QString("pyavt-templates")
+           + QString("pyavt")
+           + QString(VISIT_SLASH_CHAR)
+           + QString("templates")
            + QString(VISIT_SLASH_CHAR);
 
     return res;

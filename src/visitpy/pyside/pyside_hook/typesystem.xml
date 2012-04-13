@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<typesystem package="pyside_visithook">
+<typesystem package="pyside_hook">
 
   <inject-code class="native" position="beginning">
 

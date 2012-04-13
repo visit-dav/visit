@@ -673,17 +673,99 @@ VISIT_INSTALLED_VERSION_ARCHIVES
 VISIT_INSTALLED_VERSION_INCLUDE
 )
 
-MACRO(VISIT_INSTALL_TARGETS)
+# MACRO(VISIT_INSTALL_TARGETS)
+#     IF(VISIT_STATIC)
+#         # Skip installation of static libraries when we build statically
+#         FOREACH(T ${ARGN})
+#             GET_TARGET_PROPERTY(pType ${T} TYPE)
+#             IF(NOT ${pType} STREQUAL "STATIC_LIBRARY")
+#                 INSTALL(TARGETS ${T}
+#                     RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+#                     BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+#                     LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+#                     ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
+#                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+#                                 GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+#                                 WORLD_READ             WORLD_EXECUTE
+#                     CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+#                 )
+#             ENDIF(NOT ${pType} STREQUAL "STATIC_LIBRARY")
+#         ENDFOREACH(T)
+#     ELSE(VISIT_STATIC)
+#         INSTALL(TARGETS ${ARGN}
+#             RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+#             BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+#             LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+#             ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
+#             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+#                         GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+#                         WORLD_READ             WORLD_EXECUTE
+#             CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+#         )
+#         IF(APPLE)
+#             FOREACH(target ${ARGN})
+#                 GET_TARGET_PROPERTY(type ${target} TYPE)
+#                 IF(${type} STREQUAL "SHARED_LIBRARY")
+#                     # This turns out to be a better way to get the 
+#                     # base filename of the output target.
+#                     GET_TARGET_PROPERTY(filename ${target} LOCATION)
+#                     GET_FILENAME_COMPONENT(filename ${filename} NAME)
+#                     INSTALL(CODE 
+#                         "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+#                              COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${filename}\"
+#                              OUTPUT_VARIABLE OSXOUT)
+#                          MESSAGE(STATUS \"\${OSXOUT}\")
+#                         ")
+#                 ELSEIF(${type} STREQUAL "MODULE_LIBRARY")
+#                     # This turns out to be a better way to get the 
+#                     # base filename of the output target.
+#                     GET_TARGET_PROPERTY(filename ${target} LOCATION)
+#                     GET_FILENAME_COMPONENT(filename ${filename} NAME)
+#                     INSTALL(CODE 
+#                         "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+#                              COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${filename}\"
+#                              OUTPUT_VARIABLE OSXOUT)
+#                          MESSAGE(STATUS \"\${OSXOUT}\")
+#                         ")                
+#                 ELSEIF(${type} STREQUAL "EXECUTABLE")
+#                     GET_TARGET_PROPERTY(filename ${target} OUTPUT_NAME)
+#                     IF(filename STREQUAL "filename-NOTFOUND")
+#                         SET(filename ${target})
+#                     ENDIF(filename STREQUAL "filename-NOTFOUND")
+#                     GET_TARGET_PROPERTY(bundle ${target} MACOSX_BUNDLE)
+#                     IF(${bundle} STREQUAL "ON")
+#                         INSTALL(CODE 
+#                             "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+#                                 COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -bundle \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}\" ${filename}
+#                                 OUTPUT_VARIABLE OSXOUT)
+#                              MESSAGE(STATUS \"\${OSXOUT}\")
+#                             ")
+#                     ELSE(${bundle} STREQUAL "ON")
+#                         INSTALL(CODE 
+#                             "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+#                                 COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -exe \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}/${filename}\"
+#                                 OUTPUT_VARIABLE OSXOUT)
+#                              MESSAGE(STATUS \"\${OSXOUT}\")
+#                             ")
+#                     ENDIF(${bundle} STREQUAL "ON")
+#                 ENDIF(${type} STREQUAL "SHARED_LIBRARY")
+#             ENDFOREACH(target)
+#         ENDIF(APPLE)
+#     ENDIF(VISIT_STATIC)
+# ENDMACRO(VISIT_INSTALL_TARGETS)
+
+
+MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
     IF(VISIT_STATIC)
         # Skip installation of static libraries when we build statically
         FOREACH(T ${ARGN})
             GET_TARGET_PROPERTY(pType ${T} TYPE)
             IF(NOT ${pType} STREQUAL "STATIC_LIBRARY")
                 INSTALL(TARGETS ${T}
-                    RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-                    BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-                    LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                    ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
+                    RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
+                    BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
+                    LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
+                    ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}/${dest_dir}
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                                 GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                                 WORLD_READ             WORLD_EXECUTE
@@ -693,10 +775,10 @@ MACRO(VISIT_INSTALL_TARGETS)
         ENDFOREACH(T)
     ELSE(VISIT_STATIC)
         INSTALL(TARGETS ${ARGN}
-            RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-            BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-            LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-            ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
+            RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
+            BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
+            LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
+            ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}/${dest_dir}
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                         GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                         WORLD_READ             WORLD_EXECUTE
@@ -706,13 +788,13 @@ MACRO(VISIT_INSTALL_TARGETS)
             FOREACH(target ${ARGN})
                 GET_TARGET_PROPERTY(type ${target} TYPE)
                 IF(${type} STREQUAL "SHARED_LIBRARY")
-                    # This turns out to be a better way to get the 
+                    # This turns out to be a better way to get the
                     # base filename of the output target.
                     GET_TARGET_PROPERTY(filename ${target} LOCATION)
                     GET_FILENAME_COMPONENT(filename ${filename} NAME)
                     INSTALL(CODE 
                         "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                             COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${filename}\"
+                             COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}/${filename}\"
                              OUTPUT_VARIABLE OSXOUT)
                          MESSAGE(STATUS \"\${OSXOUT}\")
                         ")
@@ -723,7 +805,7 @@ MACRO(VISIT_INSTALL_TARGETS)
                     GET_FILENAME_COMPONENT(filename ${filename} NAME)
                     INSTALL(CODE 
                         "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                             COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${filename}\"
+                             COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}/${filename}\"
                              OUTPUT_VARIABLE OSXOUT)
                          MESSAGE(STATUS \"\${OSXOUT}\")
                         ")                
@@ -736,14 +818,14 @@ MACRO(VISIT_INSTALL_TARGETS)
                     IF(${bundle} STREQUAL "ON")
                         INSTALL(CODE 
                             "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -bundle \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}\" ${filename}
+                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -bundle \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}\" ${filename}
                                 OUTPUT_VARIABLE OSXOUT)
                              MESSAGE(STATUS \"\${OSXOUT}\")
                             ")
                     ELSE(${bundle} STREQUAL "ON")
                         INSTALL(CODE 
                             "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -exe \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}/${filename}\"
+                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -exe \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}//${dest_dir}${filename}\"
                                 OUTPUT_VARIABLE OSXOUT)
                              MESSAGE(STATUS \"\${OSXOUT}\")
                             ")
@@ -752,6 +834,10 @@ MACRO(VISIT_INSTALL_TARGETS)
             ENDFOREACH(target)
         ENDIF(APPLE)
     ENDIF(VISIT_STATIC)
+ENDMACRO(VISIT_INSTALL_TARGETS_RELATIVE)
+
+MACRO(VISIT_INSTALL_TARGETS)
+    VISIT_INSTALL_TARGETS_RELATIVE("" ${ARGN})
 ENDMACRO(VISIT_INSTALL_TARGETS)
 
 # Install the headers for directories that we need in order to build plugins

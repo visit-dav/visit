@@ -35,28 +35,20 @@
 # DAMAGE.
 #
 # Modifications:
-#  Cyrus Harrison, Wed Mar 10 11:05:26 PST 2010
-#  Use CMAKE_LIBRARY_OUTPUT_DIRECTORY instead of LIBRARY_OUTPUT_DIRECTORY.
 #
-#  Cyrus Harrison, Wed Apr 11 14:21:57 PDT 2012
-#  Use new cmake commands for distutils setup.
-#
-#****************************************************************************/
+#*****************************************************************************
 
+set(pyside_hook_sources "")
+set(pyside_hook_gen_sources ${CMAKE_CURRENT_BINARY_DIR}/pyside_hook/pysidehook_wrapper.cpp
+                            ${CMAKE_CURRENT_BINARY_DIR}/pyside_hook/pyside_hook_module_wrapper.cpp)
+set(pyside_hook_include_paths ${QT_INCLUDE_DIR} ${QT_QTCORE_INCLUDE_DIR})
+set(pyside_hook_link_libs ${QT_QTCORE_LIBRARY})
 
-# deps for pyavt
-SET(pyavt_sources py_src/__init__.py
-                  py_src/filters.py
-                  py_src/templates/__init__.py
-                  py_src/templates/advanced_expression.py
-                  py_src/templates/advanced_query.py
-                  py_src/templates/simple_expression.py
-                  py_src/templates/simple_query.py)
-
-PYTHON_ADD_DISTUTILS_SETUP(pyavt_py_setup
-                           site-packages/
-                           setup.py
-                           ${pyavt_sources})
-
-
+PYSIDE_ADD_MODULE(pyside_hook
+                  site-packages/visit
+                  pyside_hook_sources
+                  pyside_hook_gen_sources
+                  pyside_hook_include_paths
+                  pyside_hook_link_libs
+                  global.h typesystem.xml)
 
