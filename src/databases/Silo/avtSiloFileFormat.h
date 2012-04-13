@@ -346,9 +346,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     // to support block structured nodelist convention
     std::map<int, std::vector<int> > nlBlockToWindowsMap;
-    std::vector<std::vector<int> >   pascalsTriangleMap;
     int                             numNodeLists;
-    int                             maxAnnotIntLists;
+    int                             numAnnotIntLists;
 
     DBfile               *GetFile(int);
     DBfile               *OpenFile(int, bool skipGlobalInfo = false);

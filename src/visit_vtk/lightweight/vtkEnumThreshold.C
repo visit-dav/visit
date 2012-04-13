@@ -14,6 +14,7 @@
 =========================================================================*/
 #include "vtkEnumThreshold.h"
 
+#include "vtkBitArray.h"
 #include "vtkCell.h"
 #include "vtkCellData.h"
 #include "vtkIdList.h"
@@ -21,12 +22,12 @@
 #include "vtkInformationVector.h"
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
-#include "vtkUnstructuredGrid.h"
-#include "vtkStructuredGrid.h"
-#include "vtkRectilinearGrid.h"
 #include "vtkPolyData.h"
-#include "vtkUniformGrid.h"
+#include "vtkRectilinearGrid.h"
+#include "vtkStructuredGrid.h"
 #include "vtkStructuredPoints.h"
+#include "vtkUniformGrid.h"
+#include "vtkUnstructuredGrid.h"
 #include "vtkVertex.h"
 
 #include "BJHash.h"
@@ -136,10 +137,12 @@ vtkEnumThreshold::vtkEnumThreshold()
     returnEmptyIfAllCellsKept = false;
     allCellsKeptInLastRequestData = false;
     selectedEnumMask = 0; 
+    selectedEnumMaskBitArray = 0;
 }
 
 vtkEnumThreshold::~vtkEnumThreshold()
 {
+    if (selectedEnumMaskBitArray) selectedEnumMaskBitArray->Delete();
 }
 
 // Need for argument to qsort
@@ -629,11 +632,40 @@ bool vtkEnumThreshold::HasValuesInEnumerationMap(double val)
 //    Added alwaysExclude and alwaysInclude values
 int vtkEnumThreshold::EvaluateComponents( vtkDataArray *scalars, vtkIdType id )
 {
-    int numComp = scalars->GetNumberOfComponents();
+    // Handle ByBitMask enum mode with vtkBitArray specially
+    if (enumMode == ByBitMask && scalars->GetDataType() == VTK_BIT)
+    {
+        vtkBitArray *bscalars = vtkBitArray::SafeDownCast(scalars);
 
-    double val = scalars->GetComponent(id, 0);
+        // vtkBitArray's GetPointer method won't work if the number of
+        // components is not a multiple of sizeof(unsigned char). Only 
+        // do this test once though for cell id zero.
+        if (id==0 && bscalars->GetNumberOfComponents()%sizeof(unsigned char)) 
+        {
+            vtkDebugMacro(<< "number of components for vtkBitArray "
+                << bscalars->GetNumberOfComponents() <<
+                " should be an even multiple of " << sizeof(unsigned char));
+            return 0;
+        }
+
+        // I think its strange we need to multiple 'id' here by num-comps
+        // in order for vtkBitArray::GetPointer to return a pointer to the
+        // correct set of unsigned chars. But, this method is not really too
+        // well defined for vtkBitArray in any case. For example, what happens
+        // if num-comps is NOT an even multiple of sizeof(unsigned char).
+        const int bpuc = sizeof(unsigned char)*8;
+        const unsigned char *bit_tuple = bscalars->GetPointer(id*bscalars->GetNumberOfComponents());
+        const unsigned char *mask_tuple = selectedEnumMaskBitArray->GetPointer(0);
+        for (int i = 0; i < bscalars->GetNumberOfComponents()/bpuc; i++)
+        {
+            if (bit_tuple[i] & mask_tuple[i]) return 1;
+        }
+        return 0;
+    }
 
     int keepCell = false;
+    double val = scalars->GetComponent(id, 0);
+
     if      (alwaysExcludeMin <= val && val <= alwaysExcludeMax)
         keepCell = false;
     else if (alwaysIncludeMin <= val && val <= alwaysIncludeMax)
@@ -735,15 +767,29 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
             }
 
             //
-            // Build the enumeration map (and enum mask for ByBitMask mode)
+            // Build the enumeration map (and enum mask & bitarray for ByBitMask mode)
+            // We use a tiny vtkBitArray to manage the selection mask to ensure indexing
+            // logic remains consistent with the scalar variable.
             //
+            const int bpuc = sizeof(unsigned char)*8;
             selectedEnumMask = 0;
+            if (selectedEnumMaskBitArray) selectedEnumMaskBitArray->Delete();
+            selectedEnumMaskBitArray = vtkBitArray::New();
+            selectedEnumMaskBitArray->SetNumberOfComponents(((enumerationRanges.size()/2+bpuc-1)/bpuc)*bpuc);
+            selectedEnumMaskBitArray->SetNumberOfTuples(1);
+            memset(selectedEnumMaskBitArray->GetVoidPointer(0), 0,
+                   selectedEnumMaskBitArray->GetSize()/bpuc);
+
             for (size_t i=0; i<enumerationRanges.size(); i += 2)
             {
                 if (sel[i/2])
                 {
                     if (enumMode == ByBitMask)
-                        selectedEnumMask |= (((unsigned long long)1)<<(i/2));
+                    {
+                        if ((i/2) < sizeof(unsigned long long)*8)
+                            selectedEnumMask |= (((unsigned long long)1)<<(i/2));
+                        selectedEnumMaskBitArray->SetComponent(0, i/2, 1);
+                    }
                     else
                         enumerationMap[int(enumerationRanges[i]-minEnumerationValue)] = 1;
                 }

@@ -71,6 +71,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtDatasetCollection.h>
 #include <avtParallel.h>
+#include <avtScalarMetaData.h>
 #include <avtSourceFromDatabase.h>
 #include <avtTransformManager.h>
 
@@ -618,7 +619,7 @@ BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
 }
 
 // ****************************************************************************
-//  Function: IsInternalAVTArray 
+//  Function: ShouldIgnoreVariableForConversions
 //
 //  Purpose: Filter certain internal AVT arrays that should not undergo
 //  conversion 
@@ -626,13 +627,32 @@ BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
 //  Programmer: Mark C. Miller 
 //  Creation:   December 5, 2006 
 //
+//    Mark C. Miller, Fri Apr 13 10:32:47 PDT 2012
+//    Renamed to serve as a more generalized filter for ignoring variables
+//    for various reasons.
 // ****************************************************************************
 static bool
-IsInternalAVTArray(vtkDataArray *da)
+ShouldIgnoreVariableForConversions(vtkDataArray *da,
+    const avtDatabaseMetaData *const md,
+    const avtDataRequest_p &dataRequest)
 {
-    if (strncmp(da->GetName(), "avt", 3) == 0)
-        return true;
-    return false;
+    bool ignoreIt = false;
+
+    if (!ignoreIt && strncmp(da->GetName(), "avt", 3) == 0)
+        ignoreIt = true;
+
+    if (!ignoreIt && da->GetDataType() == VTK_BIT)
+    {
+        const avtScalarMetaData *smd = md->GetScalar(da->GetName());
+        if (smd && smd->GetEnumerationType() == avtScalarMetaData::ByBitMask)
+            ignoreIt = true;
+    }
+
+    if (ignoreIt)
+        debug4 << "Ignoring variable/array \"" << da->GetName()
+               << "\" for type conversions" << endl;
+
+    return ignoreIt;
 }
 
 // ****************************************************************************
@@ -800,7 +820,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         for (i = 0; i < cd->GetNumberOfArrays(); i++)
         {
             vtkDataArray *da = cd->GetArray(i);
-            if (!IsInternalAVTArray(da) && 
+            if (!ShouldIgnoreVariableForConversions(da, md, dataRequest) && 
                 (!IsAdmissibleDataType(admissibleDataTypes, da->GetDataType()) ||
                  (!needNativePrecision && PrecisionInBytes(da) > sizeof(float))))
             {
@@ -843,7 +863,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             else if (pass == 1)
             {
                 debug1 << "avtTransformManager: Passing along array \"" << da->GetName() << "\"" << endl;
-                if (IsInternalAVTArray(da))
+                if (ShouldIgnoreVariableForConversions(da, md, dataRequest))
                     rv->GetCellData()->AddArray(da);
                 else
                 {
@@ -866,7 +886,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         for (i = 0; i < pd->GetNumberOfArrays(); i++)
         {
             vtkDataArray *da = pd->GetArray(i);
-            if (!IsInternalAVTArray(da) &&
+            if (!ShouldIgnoreVariableForConversions(da, md, dataRequest) &&
                 (!IsAdmissibleDataType(admissibleDataTypes, da->GetDataType()) ||
                  (!needNativePrecision && PrecisionInBytes(da) > sizeof(float))))
             {
@@ -914,7 +934,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             else if (pass == 1)
             {
                 debug1 << "avtTransformManager: Passing along array \"" << da->GetName() << "\"" << endl;
-                if (IsInternalAVTArray(da))
+                if (ShouldIgnoreVariableForConversions(da, md, dataRequest))
                     rv->GetPointData()->AddArray(da);
                 else
                 {
