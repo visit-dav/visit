@@ -214,6 +214,9 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Brad Whitlock, Wed Jan  4 16:42:43 PST 2012
 //    Added flag for how to handle missing data.
 //
+//    Mark C. Miller, Fri Apr 13 10:41:35 PDT 2012
+//    I const qualified a couple of methods preventing use of this class
+//    in a const setting.
 // ****************************************************************************
 
 class PIPELINE_API avtDataRequest
@@ -234,9 +237,9 @@ class PIPELINE_API avtDataRequest
     avtDataRequest        &operator=(const avtDataRequest &);
     bool                         operator==(const avtDataRequest &);
 
-    int                          GetTimestep(void)     { return timestep; };
+    int                          GetTimestep(void) const { return timestep; };
     void                         SetTimestep(int t)     { timestep = t; };
-    const char                  *GetVariable(void)     { return variable; };
+    const char                  *GetVariable(void) const { return variable; };
     avtSILSpecification         &GetSIL(void)          { return sil; };
     avtSILRestriction_p          GetRestriction(void);
 

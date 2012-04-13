@@ -55,6 +55,7 @@
 #include <vector>
 
 class vtkDataArray;
+class vtkBitArray;
 
 class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
 {
@@ -122,7 +123,9 @@ class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
     std::vector<int>       enumerationValues;
     unsigned char         *enumerationMap;
 
-    unsigned long long selectedEnumMask;
+    /* Two different ways of handling bit-masking */
+    unsigned long long     selectedEnumMask;
+    vtkBitArray           *selectedEnumMaskBitArray; 
 
     int                            pascalsTriangleN;
     int                            pascalsTriangleR;

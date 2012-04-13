@@ -49,6 +49,7 @@
 
 #include <float.h>
 
+#include <vtkBitArray.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCellType.h>
@@ -264,6 +265,9 @@ static const int maxCoincidentNodelists = 12;
 //
 //    Mark C. Miller, Wed Jul 21 12:18:17 PDT 2010
 //    Added logic to ignore force single behavior for older versions of Silo.
+//
+//    Mark C. Miller, Thu Apr 12 23:06:24 PDT 2012
+//    Changed maxAnnotIntLists to numAnnotIntLists.
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -275,7 +279,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     //
     dontForceSingle = 0;
     numNodeLists = 0;
-    maxAnnotIntLists = 0;
+    numAnnotIntLists = 0;
     tocIndex = 0; 
     ignoreSpatialExtentsAAN = Auto;
     ignoreDataExtentsAAN = Auto;
@@ -1004,6 +1008,8 @@ avtSiloFileFormat::CloseFile(int f)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Thu Apr 12 23:07:11 PDT 2012
+//    Removed pascalsTriangleMap class member.
 // ****************************************************************************
 
 void
@@ -1029,7 +1035,6 @@ avtSiloFileFormat::FreeUpResources(void)
     multispecCache.Clear();
 
     nlBlockToWindowsMap.clear();
-    pascalsTriangleMap.clear();
 
     map<string, map<int, vector<int>* > >::iterator it1;
     map<int, vector<int>* >::iterator it2;
@@ -4272,6 +4277,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 //    Cyrus Harrison, Thu Sep 23 11:02:22 PDT 2010
 //    Added missing broadcast for 'haveAMRGroupInfo'.
 //
+//    Mark C. Miller, Thu Apr 12 23:07:36 PDT 2012
+//    Removed calls to build NChooseRMaps supporting nodelists.
 // ****************************************************************************
 void
 avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
@@ -4325,11 +4332,6 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     BroadcastInt(numNodeLists);
     if (numNodeLists > 0)
     {
-        //
-        // Build the NChooseR map
-        //
-        avtScalarMetaData::BuildEnumNChooseRMap(numNodeLists, maxCoincidentNodelists, pascalsTriangleMap);
-
         int nlMapSize = nlBlockToWindowsMap.size();
         BroadcastInt(nlMapSize);
         if (rank == 0)
@@ -4352,9 +4354,7 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
             }
         }
     }
-    BroadcastInt(maxAnnotIntLists);
-    if (maxAnnotIntLists > 0)
-        avtScalarMetaData::BuildEnumNChooseRMap(maxAnnotIntLists, maxCoincidentNodelists, pascalsTriangleMap);
+    BroadcastInt(numAnnotIntLists);
 
     //
     // Broadcast Group Info
@@ -5691,53 +5691,6 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname,
 }
 
 // ****************************************************************************
-//  Function: UpdateNodelistEntry
-//
-//  Purpose: Re-factorization of code used to paint a single value into a
-//           nodelist 'variable' 
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   December 19, 2008 
-//
-// ****************************************************************************
-static void
-UpdateNodelistEntry(float *ptr, int nodeId, int val, float uval,
-    int numLists, const vector<vector<int> > &pascalsTriangleMap)
-{
-#ifdef USE_BIT_MASK_FOR_NODELIST_ENUMS
-    if (ptr[nodeId] == uval)
-    {
-        // If the value at this node is uninitialized, set it to val
-        ptr[nodeId] = 1<<val;
-    }
-    else
-    {
-        int curval = int(ptr[nodeId]);
-        curval |= (1<<val);
-        ptr[nodeId] = curval;
-    }
-#else
-    if (ptr[nodeId] == uval)
-    {
-        // If the value at this node is uninitialized, set it to val
-        ptr[nodeId] = (float) val;
-    }
-    else
-    {
-        // Otherwise, we've already got a value at this node.
-        // We need to obtain a new value that represents all
-        // the sets this node is already in plus the new one
-        // we're adding. Use avtScalarMetaData helper method
-        // to do it.
-        double curval = ptr[nodeId];
-        avtScalarMetaData::UpdateValByInsertingDigit(&curval,
-            numLists, maxCoincidentNodelists, pascalsTriangleMap, val);
-        ptr[nodeId] = float(curval);
-    }
-#endif
-}
-
-// ****************************************************************************
 //  Method: avtSiloFileFormat::GetNodelistsVar
 //
 //  Purpose: Return scalar variable representing (enumerated scalar) nodelists 
@@ -5762,6 +5715,10 @@ UpdateNodelistEntry(float *ptr, int nodeId, int val, float uval,
 //    Mark C. Miller, Tue Mar  3 19:33:23 PST 2009
 //    Added logic to get blockNum from groupInfo before attempting to use
 //    special vtk array.
+// 
+//    Mark C. Miller, Thu Apr 12 23:08:49 PDT 2012
+//    Replaced vtkFloatArray with vtkBitArray and support of arbitrarily
+//    large numbers of nodelists
 // ****************************************************************************
 
 vtkDataArray *
@@ -5852,13 +5809,13 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     group_max_idx[2] = base_index[2] + dims[2] - 1;
 
     //
-    // Initialize the return variable array with exlude value
+    // Initialize the return variable array
     //
-    nlvar = vtkFloatArray::New();
+    const int bpuc = sizeof(unsigned char)*8;
+    nlvar = vtkBitArray::New();
+    nlvar->SetNumberOfComponents(((numNodeLists+bpuc-1)/bpuc)*bpuc);
     nlvar->SetNumberOfTuples(dims[0]*dims[1]*(dims[2]?dims[2]:1));
-    float *ptr = (float *) nlvar->GetVoidPointer(0);
-    for (i = 0; i < dims[0]*dims[1]*(dims[2]?dims[2]:1); i++)
-        ptr[i] = -1.0; // always exclude value 
+    memset(nlvar->GetVoidPointer(0), 0, nlvar->GetSize()/bpuc);
 
     //
     // Iterate over all nodesets for this block, finding those that have
@@ -5908,8 +5865,7 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
             for (int yi = isec[2]; yi <= isec[3]; yi++)
             {
                 for (int xi = isec[0]; xi <= isec[1]; xi++)
-                    UpdateNodelistEntry(ptr, zi*nxy + yi*dims[0] + xi,
-                        val, -1.0, numNodeLists, pascalsTriangleMap);
+                    nlvar->SetComponent(zi*nxy + yi*dims[0] + xi, val, 1);
             }
         }
     }
@@ -6003,13 +5959,16 @@ compare_ev_pair(const void *a, const void *b)
 //    Mark C. Miller, Fri Mar 20 11:10:04 PDT 2009
 //    Added comment regarding effect of compare_node_ids on negative valued
 //    node ids (-1) of 3-node faces.
+//
+//    Mark C. Miller, Thu Apr 12 23:10:07 PDT 2012
+//    Replaced float* arg with vtiBitArray and changed calls to manipulate the
+//    float* array with calls to SetComponents of the vtkBitArray. This enables
+//    the code to support an arbitrary number of nodelists.
 // ****************************************************************************
 
 static void
-PaintNodesForAnnotIntFacelist(float *ptr,
-    const vector<ev_pair_t> &elemidv, DBucdmesh *um,
-    int maxAnnotIntLists,
-    const vector<vector<int> > &pascalsTriangleMap)
+PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
+    const vector<ev_pair_t> &elemidv, DBucdmesh *um)
 {
     DBzonelist *zl = um->zones;
 
@@ -6113,10 +6072,8 @@ PaintNodesForAnnotIntFacelist(float *ptr,
                         //
                         if (edgeIdx == elemidv[elemIdx].id)
                         {
-                            UpdateNodelistEntry(ptr, edge[i][0], elemidv[elemIdx].val,
-                                -1.0, maxAnnotIntLists, pascalsTriangleMap);
-                            UpdateNodelistEntry(ptr, edge[i][1], elemidv[elemIdx].val,
-                                -1.0, maxAnnotIntLists, pascalsTriangleMap);
+                            nlvar->SetComponent(edge[i][0], elemidv[elemIdx].val, 1);
+                            nlvar->SetComponent(edge[i][1], elemidv[elemIdx].val, 1);
                             elemIdx++;
 
                             //
@@ -6325,18 +6282,14 @@ PaintNodesForAnnotIntFacelist(float *ptr,
                         //
                         if (faceIdx == elemidv[elemIdx].id)
                         {
-                            UpdateNodelistEntry(ptr, face[i][0], elemidv[elemIdx].val,
-                                -1.0, maxAnnotIntLists, pascalsTriangleMap);
-                            UpdateNodelistEntry(ptr, face[i][1], elemidv[elemIdx].val,
-                                -1.0, maxAnnotIntLists, pascalsTriangleMap);
-                            UpdateNodelistEntry(ptr, face[i][2], elemidv[elemIdx].val,
-                                -1.0, maxAnnotIntLists, pascalsTriangleMap);
+                            nlvar->SetComponent(face[i][0], elemidv[elemIdx].val, 1);
+                            nlvar->SetComponent(face[i][1], elemidv[elemIdx].val, 1);
+                            nlvar->SetComponent(face[i][2], elemidv[elemIdx].val, 1);
                             // The compare_node_ids comparison method used to sort the nodes
                             // of the face in the call to qsort, above, is designed to cause
                             // all -1 valued nodes to wind up at the end of the sorted list.
                             if (face[i][3] != -1)
-                                UpdateNodelistEntry(ptr, face[i][3], elemidv[elemIdx].val,
-                                    -1.0, maxAnnotIntLists, pascalsTriangleMap);
+                                nlvar->SetComponent(face[i][3], elemidv[elemIdx].val, 1);
                             elemIdx++;
 
                             //
@@ -6373,13 +6326,15 @@ PaintNodesForAnnotIntFacelist(float *ptr,
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Thu Apr 12 23:12:08 PDT 2012
+//    Replaced vtkFloatArray with vtkBitArray to support arbitrary number
+//    of nodelists.
 // ****************************************************************************
 
 vtkDataArray *
 avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
 {
     int i;
-    vtkDataArray *nlvar = 0;
     string meshName = metadata->MeshForVar(listsname);
 
     //
@@ -6399,14 +6354,14 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
     debug5 << "Generating " << listsname << " variable for domain " << domain << endl;
 
     //
-    // Initialize the return variable array with exlude value
+    // Initialize the return variable array
     //
+    const int bpuc = sizeof(unsigned char)*8;
     int npts = ds->GetNumberOfPoints();
-    nlvar = vtkFloatArray::New();
+    vtkBitArray *nlvar = vtkBitArray::New();
+    nlvar->SetNumberOfComponents(((numAnnotIntLists+bpuc-1)/bpuc)*bpuc);
     nlvar->SetNumberOfTuples(npts);
-    float *ptr = (float *) nlvar->GetVoidPointer(0);
-    for (i = 0; i < npts; i++)
-        ptr[i] = -1.0; // always exclude value 
+    memset(nlvar->GetVoidPointer(0), 0, nlvar->GetSize()/bpuc);
 
     //
     // Try to get the ANNOTATION_INT object. In theory, this could fail on a
@@ -6475,8 +6430,7 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
     if (listsname == "AnnotInt_Nodelists")
     {
         for (i = 0; i < elemidv.size(); i++)
-            UpdateNodelistEntry(ptr, elemidv[i].id, elemidv[i].val,
-                -1.0, maxAnnotIntLists, pascalsTriangleMap);
+            nlvar->SetComponent(elemidv[i].id, elemidv[i].val, 1);
     }
     else
     {
@@ -6519,8 +6473,7 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
         // method we're calling is written to assume that.
         //
         qsort(&elemidv[0], elemidv.size(), sizeof(ev_pair_t), compare_ev_pair);
-        PaintNodesForAnnotIntFacelist(ptr, elemidv, um, maxAnnotIntLists,
-            pascalsTriangleMap);
+        PaintNodesForAnnotIntFacelist(nlvar, elemidv, um);
 
         DBFreeUcdmesh(um);
     }
@@ -15122,6 +15075,9 @@ AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd)
 //    As per Cyrus' recommendation, forced it to work only if mesh name
 //    is specifically 'hydro_mesh' but left all other logic (which supports
 //    perhaps multiple meshes) in place.
+//
+//    Mark C. Miller, Thu Apr 12 23:14:21 PDT 2012
+//    Replaced use of NChooseR enumeration mode with ByBitMap.
 // ****************************************************************************
 void
 avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
@@ -15140,15 +15096,6 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
     // meshes.
     avtScalarMetaData *smd = new avtScalarMetaData("Nodelists",
                                      meshname, AVT_NODECENT);
-
-#ifdef USE_BIT_MASK_FOR_NODELIST_ENUMS
-    smd->SetEnumerationType(avtScalarMetaData::ByBitMask);
-#else
-    smd->SetEnumerationType(avtScalarMetaData::ByNChooseR);
-    smd->SetEnumNChooseRN(numNodeLists);
-    smd->SetEnumNChooseRMaxR(maxCoincidentNodelists);
-#endif
-    smd->hideFromGUI = true;
 
     int i;
     nlBlockToWindowsMap.clear();
@@ -15189,15 +15136,11 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
         }
     }
 
-    // record the always exclude value as blocknum=-1
-    smd->SetEnumAlwaysExcludeValue(-1.0);
+    smd->SetEnumerationType(avtScalarMetaData::ByBitMask);
     smd->SetEnumPartialCellMode(avtScalarMetaData::Dissect);
-    md->Add(smd);
+    smd->hideFromGUI = true;
 
-    //
-    // Build the pascal triangle map for updating nodelist variable values
-    //
-    avtScalarMetaData::BuildEnumNChooseRMap(numNodeLists, maxCoincidentNodelists, pascalsTriangleMap);
+    md->Add(smd);
 }
 
 // ****************************************************************************
@@ -15232,10 +15175,12 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Thu Apr 12 23:15:08 PDT 2012
+//    Replaced NChooseR enumeration mode with ByBitMap
 // ****************************************************************************
 void
-avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
-    string meshname, avtSiloMultiMeshCacheEntry *obj)
+avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile,
+    avtDatabaseMetaData *md, string meshname, avtSiloMultiMeshCacheEntry *obj)
 {
     //
     // This is expensive as it will wind up iterating over all subfiles.
@@ -15322,32 +15267,19 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMe
         }
 
         if (pass == 0)
-            maxAnnotIntLists = smd->enumNames.size();
+            numAnnotIntLists = smd->enumNames.size();
         else
         {
-            if (smd->enumNames.size() > maxAnnotIntLists)
-                maxAnnotIntLists = smd->enumNames.size();
+            if (smd->enumNames.size() > numAnnotIntLists)
+                numAnnotIntLists = smd->enumNames.size();
         }
 
-#ifdef USE_BIT_MASK_FOR_NODELIST_ENUMS
         smd->SetEnumerationType(avtScalarMetaData::ByBitMask);
-#else
-        smd->SetEnumerationType(avtScalarMetaData::ByNChooseR);
-        smd->SetEnumNChooseRN(maxAnnotIntLists);
-        smd->SetEnumNChooseRMaxR(maxCoincidentNodelists);
-#endif
-        smd->hideFromGUI = true;
-        
-        // record the always exclude value as -1
-        smd->SetEnumAlwaysExcludeValue(-1.0);
         smd->SetEnumPartialCellMode(avtScalarMetaData::Dissect);
+        smd->hideFromGUI = true;
+
         md->Add(smd);
     }
-
-    //
-    // Build the pascal triangle map for updating nodelist variable values
-    //
-    avtScalarMetaData::BuildEnumNChooseRMap(maxAnnotIntLists, maxCoincidentNodelists, pascalsTriangleMap);
 }
 
 // ****************************************************************************
