@@ -60,7 +60,8 @@ class SkipEggInfo(install_egg_info):
 setup (name = 'pyavt',
        description = 'pyavt',
        package_dir = {'pyavt':'py_src'},
-       packages=['pyavt','pyavt.templates'],
+       packages=['pyavt'],
+       package_data= { "pyavt": ["templates/*.py"]},
        cmdclass={'install_egg_info': SkipEggInfo})
 
 
