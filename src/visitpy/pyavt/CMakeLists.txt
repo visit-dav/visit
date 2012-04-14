@@ -47,7 +47,6 @@
 # deps for pyavt
 SET(pyavt_sources py_src/__init__.py
                   py_src/filters.py
-                  py_src/templates/__init__.py
                   py_src/templates/advanced_expression.py
                   py_src/templates/advanced_query.py
                   py_src/templates/simple_expression.py
