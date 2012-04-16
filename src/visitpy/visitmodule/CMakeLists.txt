@@ -40,7 +40,7 @@
 
 
 PYTHON_ADD_DISTUTILS_SETUP(visitmodule_py_setup
-                           site-packages/
+                           site-packages
                            setup.py
                            py_src/__init__.py
                            py_src/frontend.py

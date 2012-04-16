@@ -53,7 +53,7 @@ SET(pyavt_sources py_src/__init__.py
                   py_src/templates/simple_query.py)
 
 PYTHON_ADD_DISTUTILS_SETUP(pyavt_py_setup
-                           site-packages/
+                           site-packages
                            setup.py
                            ${pyavt_sources})
 
