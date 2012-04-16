@@ -75,9 +75,12 @@
 #   Cyrus Harrison, Mon Oct  3 15:55:53 PDT 2011
 #   Exclude install of PySide module (FindPySide.cmake handles this)
 #
-#   Cyrus Harrison, Mon Oct  3 15:55:53 PDT 2011
+#   Cyrus Harrison, Mon Apr 16 14:20:20 PDT 2012
 #   Add detection the PYTHON_EXECUTABLE, and ADD_PYTHON_DISTUTILS_SETUP
 #   command.
+#
+#   Cyrus Harrison, Mon Apr 16 14:20:20 PDT 2012
+#   Fix problem with PYTHON_EXECUTABLE detection.
 #
 #****************************************************************************/
 
@@ -141,9 +144,13 @@ FOREACH(_CURRENT_VERSION 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
   FIND_PROGRAM(PYTHON_EXECUTABLE
                NAMES python2.7 python2.6 python2.5 python
                PATHS
+               ${PYTHON_DIR}/bin
                ${PYTHON_DIR}
                [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_CURRENT_VERSION}\\InstallPath]
-              )
+               NO_DEFAULT_PATH
+               NO_CMAKE_ENVIRONMENT_PATH
+               NO_CMAKE_PATH
+               NO_SYSTEM_ENVIRONMENT_PATH)
 
 
   SET(PYTHON_FRAMEWORK_INCLUDES)
