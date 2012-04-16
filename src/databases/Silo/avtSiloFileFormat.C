@@ -162,10 +162,6 @@ static void BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm
 static int MultiMatHasAllMatInfo(const DBmultimat *const mm);
 static vtkDataArray *CreateDataArray(int silotype, void *data, int numvals);
 
-
-// the maximum number of nodelists any given single node can be in
-static const int maxCoincidentNodelists = 12;
-
 // ****************************************************************************
 //  Class: avtSiloFileFormat
 //
