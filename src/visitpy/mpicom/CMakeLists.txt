@@ -60,7 +60,7 @@ IF(VISIT_PARALLEL)
 
     # Create the mpicom
     PYTHON_ADD_HYBRID_MODULE(mpicom
-                             site-packages/
+                             site-packages
                              setup.py
                              "${MPICOM_PY_SOURCES}"
                              ${MPICOM_SOURCES})
@@ -90,7 +90,7 @@ IF(VISIT_PARALLEL)
 ELSE(VISIT_PARALLEL)
     # we still need to build the module w/ the mpi stub
     PYTHON_ADD_DISTUTILS_SETUP(mpicom_py_setup
-                               site-packages/
+                               site-packages
                                setup.py
                                ${MPICOM_PY_SOURCES})
 # add to main target?
