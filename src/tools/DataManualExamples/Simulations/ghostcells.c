@@ -153,12 +153,15 @@ ucdmesh_2d_dtor(ucdmesh_2d *m)
 
 typedef struct
 {
-    int     par_rank;
-    int     par_size;
-    int     cycle;
-    double  time;
-    int     runMode;
-    int     done;
+#ifdef PARALLEL
+    MPI_Comm        par_comm;
+#endif
+    int             par_rank;
+    int             par_size;
+    int             cycle;
+    double          time;
+    int             runMode;
+    int             done;
 
     rectmesh_2d     blankRectMesh;
     curvmesh_2d     blankCurvMesh;
@@ -643,31 +646,34 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 
 /* CHANGE 1 */
 #ifdef PARALLEL
-static int visit_broadcast_int_callback(int *value, int sender)
+static int visit_broadcast_int_callback(int *value, int sender, void *cbdata)
 {
-    return MPI_Bcast(value, 1, MPI_INT, sender, MPI_COMM_WORLD);
+    simulation_data *sim = (simulation_data *)cbdata;
+    return MPI_Bcast(value, 1, MPI_INT, sender, sim->par_comm);
 }
 
-static int visit_broadcast_string_callback(char *str, int len, int sender)
+static int visit_broadcast_string_callback(char *str, int len, int sender, void *cbdata)
 {
-    return MPI_Bcast(str, len, MPI_CHAR, sender, MPI_COMM_WORLD);
+    simulation_data *sim = (simulation_data *)cbdata;
+    return MPI_Bcast(str, len, MPI_CHAR, sender, sim->par_comm);
 }
 #endif
 
 
 /* Helper function for ProcessVisItCommand */
-static void BroadcastSlaveCommand(int *command)
+static void BroadcastSlaveCommand(int *command, simulation_data *sim)
 {
 #ifdef PARALLEL
-    MPI_Bcast(command, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(command, 1, MPI_INT, 0, sim->par_comm);
 #endif
 }
 
 /* Callback involved in command communication. */
-void SlaveProcessCallback(void)
+void SlaveProcessCallback(void *cbdata)
 {
-   int command = VISIT_COMMAND_PROCESS;
-   BroadcastSlaveCommand(&command);
+    simulation_data *sim = (simulation_data *)cbdata;
+    int command = VISIT_COMMAND_PROCESS;
+    BroadcastSlaveCommand(&command, sim);
 }
 
 /* Process commands from viewer on all processors. */
@@ -681,13 +687,13 @@ int ProcessVisItCommand(simulation_data *sim)
         if (success == VISIT_OKAY)
         {
             command = VISIT_COMMAND_SUCCESS;
-            BroadcastSlaveCommand(&command);
+            BroadcastSlaveCommand(&command, sim);
             return 1;
         }
         else
         {
             command = VISIT_COMMAND_FAILURE;
-            BroadcastSlaveCommand(&command);
+            BroadcastSlaveCommand(&command, sim);
             return 0;
         }
     }
@@ -698,7 +704,7 @@ int ProcessVisItCommand(simulation_data *sim)
          * instruction to the non-rank 0 processes. */
         while (1)
         {
-            BroadcastSlaveCommand(&command);
+            BroadcastSlaveCommand(&command, sim);
             switch (command)
             {
             case VISIT_COMMAND_PROCESS:
@@ -733,7 +739,7 @@ ProcessConsoleCommand(simulation_data *sim)
 
 #ifdef PARALLEL
     /* Broadcast the command to all processors. */
-    MPI_Bcast(cmd, 1000, MPI_CHAR, 0, MPI_COMM_WORLD);
+    MPI_Bcast(cmd, 1000, MPI_CHAR, 0, sim->par_comm);
 #endif
 
     if(strcmp(cmd, "quit") == 0)
@@ -786,7 +792,7 @@ void mainloop(simulation_data *sim)
         }
 #ifdef PARALLEL
         /* Broadcast the return value of VisItDetectInput to all procs. */
-        MPI_Bcast(&visitstate, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&visitstate, 1, MPI_INT, 0, sim->par_comm);
 #endif
         /* Do different things depending on the output from VisItDetectInput. */
         switch(visitstate)
@@ -801,7 +807,7 @@ void mainloop(simulation_data *sim)
             {
                 fprintf(stderr, "VisIt connected\n");
                 VisItSetCommandCallback(ControlCommandCallback, (void*)sim);
-                VisItSetSlaveProcessCallback(SlaveProcessCallback);
+                VisItSetSlaveProcessCallback2(SlaveProcessCallback, (void*)sim);
 
                 VisItSetGetMetaData(SimGetMetaData, (void*)sim);
                 VisItSetGetMesh(SimGetMesh, (void*)sim);
@@ -870,8 +876,13 @@ int main(int argc, char **argv)
 #ifdef PARALLEL
     /* Initialize MPI */
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank (MPI_COMM_WORLD, &sim.par_rank);
-    MPI_Comm_size (MPI_COMM_WORLD, &sim.par_size);
+
+    /* Create a new communicator. */
+    if (MPI_Comm_dup(MPI_COMM_WORLD, &sim.par_comm) != MPI_SUCCESS)
+        sim.par_comm = MPI_COMM_WORLD;
+
+    MPI_Comm_rank (sim.par_comm, &sim.par_rank);
+    MPI_Comm_size (sim.par_comm, &sim.par_size);
 #endif
 
     /* Initialize environment variables. */
@@ -879,11 +890,17 @@ int main(int argc, char **argv)
 
 #ifdef PARALLEL
     /* Install callback functions for global communication. */
-    VisItSetBroadcastIntFunction(visit_broadcast_int_callback);
-    VisItSetBroadcastStringFunction(visit_broadcast_string_callback);
+    VisItSetBroadcastIntFunction2(visit_broadcast_int_callback, (void*)&sim);
+    VisItSetBroadcastStringFunction2(visit_broadcast_string_callback, (void*)&sim);
+
     /* Tell libsim whether the simulation is parallel. */
     VisItSetParallel(sim.par_size > 1);
     VisItSetParallelRank(sim.par_rank);
+
+    /* Tell libsim which communicator to use. You must pass the address of
+     * an MPI_Comm object.
+     */
+    VisItSetMPICommunicator((void *)&sim.par_comm);
 #endif
 
     /* Only read the environment on rank 0. This could happen before MPI_Init if

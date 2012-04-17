@@ -54,6 +54,8 @@ extern "C" {
 //  Creation:    Fri Feb 13 16:06:04 PST 2009
 //
 //  Modifications:
+//    Brad Whitlock, Fri Aug 26 09:52:11 PDT 2011
+//    I added simv2_set_mpicomm.
 //
 // ****************************************************************************
 
@@ -69,6 +71,7 @@ SIMV2_API void    simv2_set_slave_process_callback(void(*)());
 SIMV2_API void    simv2_set_command_callback(void*,void(*)(const char*,const char*,void*),void*);
 SIMV2_API int     simv2_save_window(void*, const char *, int, int, int);
 SIMV2_API void    simv2_debug_logs(int level, const char *msg);
+SIMV2_API int     simv2_set_mpicomm(void *);
 
 #ifdef __cplusplus
 }

@@ -152,7 +152,7 @@ PAR_Init (int &argc, char **&argv)
     if (we_initialized_MPI)
         MPI_Init (&argc, &argv);
 
-    // duplicate the communicator
+    // duplicate the world communicator
     if (MPI_Comm_dup(MPI_COMM_WORLD, &VISIT_MPI_COMM_OBJ) != MPI_SUCCESS)
         VISIT_MPI_COMM_OBJ = MPI_COMM_WORLD;
     VISIT_MPI_COMM_PTR = (void*) &VISIT_MPI_COMM_OBJ;
@@ -183,6 +183,54 @@ PAR_Init (int &argc, char **&argv)
 #endif
 }
 
+// ****************************************************************************
+// Function: PAR_SetComm
+//
+// Purpose: 
+//   Set the communicator for VisIt to use.
+//
+// Arguments:
+//   newcomm : The new communicator.
+//
+// Returns:    True on success; false on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 26 10:03:19 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+PAR_SetComm(void *newcomm)
+{
+#ifdef PARALLEL
+    if(newcomm == NULL)
+    {
+        // switch back to the dup'd world communicator.
+        VISIT_MPI_COMM_PTR = (void*) &VISIT_MPI_COMM_OBJ;
+    }
+    else
+    {
+// Test that it is actually a comm?
+
+        // Use the communicator that was passed in.
+        VISIT_MPI_COMM_PTR = newcomm;
+    }
+
+    //
+    // Find the current process rank and the size of the process pool.
+    //
+    MPI_Comm_rank (VISIT_MPI_COMM, &par_rank);
+    MPI_Comm_size (VISIT_MPI_COMM, &par_size);
+
+    return true;
+#else
+    return false;
+#endif
+}
 
 // ****************************************************************************
 //  Function: PAR_Rank

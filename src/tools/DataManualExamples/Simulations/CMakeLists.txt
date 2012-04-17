@@ -46,7 +46,7 @@
 #   are exposed to exceptions on newer Linux versions.
 #
 #   Brad Whitlock, Thu Aug 11 16:05:07 PDT 2011
-#   Added ghostzones example.
+#   Added ghostcells example.
 #
 #   Brad Whitlock, Wed Feb  1 11:06:20 PST 2012
 #   Added domainbounds example.
@@ -212,6 +212,7 @@ ADD_SIMV2_SIMULATION(domainbounds domainbounds.c)
 ADD_PARALLEL_SIMV2_SIMULATION(domainbounds_par domainbounds.c)
 
 ADD_SIMV2_SIMULATION(ghostcells ghostcells.c)
+ADD_PARALLEL_SIMV2_SIMULATION(ghostcells_par ghostcells.c)
 
 ADD_SIMV2_SIMULATION(interleave interleave.c)
 

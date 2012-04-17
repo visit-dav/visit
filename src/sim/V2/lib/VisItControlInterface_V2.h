@@ -82,7 +82,35 @@ extern "C" {
  *             }
  *
  * ****************************************************************************/
+/* DEPRECATED */
 void  VisItSetBroadcastIntFunction(int (*)(int *, int));
+
+/******************************************************************************
+ * Function: VisItSetBroadcastIntFunction2
+ *
+ * Purpose: 
+ *   This function installs a callback function that allows libsim to broadcast
+ *   an integer from the root process to slave processes.
+ *
+ * Arguments: A pointer to a callback function with prototype:
+ *            int func(int *, int, void *);
+ *
+ * Returns:    None
+ *
+ * Note:       All processors must call this function and install a callback
+ *             function after initializing MPI. The callback function must be
+ *             installed prior to VisItDetectInput.
+ *
+ *             Sample callback function:
+ *             static int visit_broadcast_int_callback(int *value, int sender,
+ *                                                     void *ptr)
+ *             {
+ *                 simdata_t *sim = (simdata_t *)ptr;
+ *                 return MPI_Bcast(value, 1, MPI_INT, sender, sim->communicator);
+ *             }
+ *
+ * ****************************************************************************/
+void  VisItSetBroadcastIntFunction2(int (*)(int *, int, void *), void *);
 
 /******************************************************************************
  * Function: VisItSetBroadcastStringFunction
@@ -107,7 +135,35 @@ void  VisItSetBroadcastIntFunction(int (*)(int *, int));
  *             }      
  *
  * ****************************************************************************/
+/* DEPRECATED */
 void  VisItSetBroadcastStringFunction(int (*)(char *, int, int));
+
+/******************************************************************************
+ * Function: VisItSetBroadcastStringFunction2
+ *
+ * Purpose: 
+ *   This function installs a callback function that allows libsim to broadcast
+ *   a character string from the root process to slave processes.
+ *
+ * Arguments: A pointer to a callback function with prototype:
+ *            int func(char *, int, int, void *);
+ *
+ * Returns:    None
+ *
+ * Note:       All processors must call this function and install a callback
+ *             function after initializing MPI. The callback function must be
+ *             installed prior to VisItDetectInput.
+ *
+ *             Sample callback function:
+ *             static int visit_broadcast_string_callback(char *str, int len,
+ *                                                        int sender, void *ptr)
+ *             {
+ *                 simdata_t *sim = (simdata_t *)ptr;
+ *                 return MPI_Bcast(str, len, MPI_CHAR, sender, sim->communicator);
+ *             }      
+ *
+ * ****************************************************************************/
+void  VisItSetBroadcastStringFunction2(int (*)(char *, int, int, void *), void *);
 
 /******************************************************************************
  * Function: VisItSetParallel
@@ -441,6 +497,35 @@ int VisItReadConsole(int maxlen, char *buffer);
 void  VisItSetSlaveProcessCallback(void(*)(void));
 
 /******************************************************************************
+ * Function: VisItSetSlaveProcessCallback2
+ *
+ * Purpose: 
+ *   Set the callback function used to inform slave processes that they should
+ *   call VisItProcessEngineCommand. The provided callback function is used 
+ *   internally in libsim
+ *   
+ *
+ * Arguments:  A pointer to a function with prototype: void func(void *);
+ *             A pointer to some callback function data.
+ *
+ * Returns:    None
+ *
+ * Note:       The slave process callback is required for a parallel simulation.
+ *             This function should be called when VisItAttemptToCompleteConnection
+ *             returns successfully.
+ *
+ *             MPI simulations may define the callback like this:
+ *                 void slave_process_callback(void *ptr)
+ *                 {
+ *                     int command = 0;
+ *                     simdata_t *sim = (simdata_t *)ptr;
+ *                     MPI_BCast(&command, 1, MPI_INT, 0, sim->communicator);
+ *                 }
+ *
+ * ****************************************************************************/
+void  VisItSetSlaveProcessCallback2(void(*)(void *), void *);
+
+/******************************************************************************
  * Function: VisItSetCommandCallback
  *
  * Purpose: 
@@ -695,6 +780,24 @@ void  VisItCloseTraceFile(void);
  * ****************************************************************************/
 int VisItSaveWindow(const char *filename, int width, int height, int format);
 
+/******************************************************************************
+ * Function: VisItSetMPICommunicator
+ *
+ * Purpose: 
+ *   This function sets the communicator that VisIt should use for parallel 
+ *   operations. Note that you may want to temporarily install a communicator
+ *   for vis operations and then revert to the default communicator for when
+ *   VisIt needs to communicate commands to other processes.
+ *
+ * Arguments:
+ *   mpicom : A pointer to the communicator that we should use.
+ * 
+ * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
+ *
+ * Note:      Passing NULL lets VisIt revert to its copy of MPI_COMM_WORLD.
+ *
+ * ****************************************************************************/
+int VisItSetMPICommunicator(void *mpicom);
 
 /******************************************************************************
 *******************************************************************************
