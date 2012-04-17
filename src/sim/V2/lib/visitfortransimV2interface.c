@@ -182,6 +182,7 @@ f_visit_internal_commandcallback(const char *cmd, const char *stringdata, void *
 #define F_VISITPROCESSENGINECOMMAND F77_ID(visitprocessenginecommand_,visitprocessenginecommand,VISITPROCESSENGINECOMMAND)
 #define F_VISITSAVEWINDOW           F77_ID(visitsavewindow_,visitsavewindow,VISITSAVEWINDOW)
 #define F_VISITSETDIRECTORY         F77_ID(visitsetdirectory_,visitsetdirectory,VISITSETDIRECTORY)
+#define F_VISITSETMPICOMMUNICATOR   F77_ID(visitsetmpicommunicator_,visitsetmpicommunicator,VISITSETMPICOMMUNICATOR)
 #define F_VISITSETOPTIONS           F77_ID(visitsetoptions_,visitsetoptions,VISITSETOPTIONS)
 #define F_VISITSETPARALLEL          F77_ID(visitsetparallel_,visitsetparallel,VISITSETPARALLEL)
 #define F_VISITSETPARALLELRANK      F77_ID(visitsetparallelrank_,visitsetparallelrank,VISITSETPARALLELRANK)
@@ -218,6 +219,31 @@ F_VISITSETDIRECTORY(VISIT_F77STRING dir, int *ldir)
     FREE(f_dir);
 
     return VISIT_OKAY;
+}
+
+/******************************************************************************
+ * Function: F_VISITSETMPICOMMUNICATOR
+ *
+ * Purpose:   Allows FORTRAN to set the MPI communicator.
+ *
+ * Arguments:
+ *   comm : An int representing the communicator. Really the address of the
+ *          communicator.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Thu Mar 11 11:17:51 PST 2010
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITSETMPICOMMUNICATOR(int *comm)
+{
+    int ret = VISIT_ERROR;
+    if(comm != NULL)
+        ret = VisItSetMPICommunicator((void *)comm);
+    return ret;
 }
 
 /******************************************************************************

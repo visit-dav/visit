@@ -36,6 +36,9 @@
 !   William T. Jones, Fri Jan 20 17:28:03 EST 2012
 !   Added functions to set/get ghost nodes on meshes.
 !
+!   Brad Whitlock, Mon Apr 16 16:18:08 PDT 2012
+!   Added visitsetmpicommunicator.
+!
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 !... Commonly useful declarations
@@ -405,6 +408,10 @@
 ! visitsetdirectory(string dir, int ldir)
       external visitsetdirectory
       integer  visitsetdirectory
+
+! visitsetmpicommunicator(int comm)
+      external visitsetmpicommunicator
+      integer  visitsetmpicommunicator
 
 ! visitsetoptions(string opt, int lopt)
       external visitsetoptions

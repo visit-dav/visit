@@ -131,6 +131,7 @@ typedef struct
     void  (*set_command_callback)(void*,void(*)(const char*,const char*,void*),void*);
     int   (*save_window)(void*,const char *, int, int, int);
     void  (*debug_logs)(int,const char *);
+    int   (*set_mpicomm)(void *);
 } control_callback_t;
 
 #define STRUCT_MEMBER(F, FR, FA)  void (*set_##F)(FR (*) FA, void*);
@@ -175,7 +176,13 @@ static int         engineSocket = VISIT_INVALID_SOCKET;
 #endif
 
 static int       (*BroadcastInt_internal)(int *value, int sender) = NULL;
+static int       (*BroadcastInt_internal2)(int *value, int sender, void *) = NULL;
+static void       *BroadcastInt_internal2_data = NULL;
+
 static int       (*BroadcastString_internal)(char *str, int len, int sender) = NULL;
+static int       (*BroadcastString_internal2)(char *str, int len, int sender, void *) = NULL;
+static void       *BroadcastString_internal2_data = NULL;
+
 static char       *visit_directory = NULL;
 static char       *visit_options = NULL;
 static void       *engine = NULL;
@@ -196,7 +203,9 @@ static int           visit_sync_id = 1;
 static void        (*visit_command_callback)(const char*,const char*,void*) = NULL;
 static void         *visit_command_callback_data = NULL;
 static void        (*visit_slave_process_callback)(void) = NULL;
-
+static void        (*visit_slave_process_callback2)(void *) = NULL;
+static void         *visit_slave_process_callback2_data = NULL;
+static void         *visit_communicator = NULL;
 
 /*******************************************************************************
  *******************************************************************************
@@ -800,6 +809,8 @@ static int SendStringOverSocket(char *buffer, VISIT_SOCKET desc)
 * Author: Brad Whitlock, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*   Brad Whitlock, Tue Apr 17 10:33:00 PDT 2012
+*   Add support for a callback with data.
 *
 *******************************************************************************/
 
@@ -817,7 +828,9 @@ BroadcastInt(int *value, int sender)
         LIBSIM_API_ENTER1(BroadcastInt, "sender=%d", sender);
     }
 
-    if(BroadcastInt_internal != NULL)
+    if(BroadcastInt_internal2 != NULL)
+        retval = (*BroadcastInt_internal2)(value, sender, BroadcastInt_internal2_data);
+    else if(BroadcastInt_internal != NULL)
         retval = (*BroadcastInt_internal)(value, sender);
     else
     {
@@ -838,8 +851,11 @@ BroadcastInt(int *value, int sender)
 * Author: Brad Whitlock, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*   Brad Whitlock, Tue Apr 17 10:33:00 PDT 2012
+*   Add support for a callback with data.
 *
 *******************************************************************************/
+
 static int
 BroadcastString(char *str, int len, int sender)
 {
@@ -855,7 +871,9 @@ BroadcastString(char *str, int len, int sender)
         LIBSIM_API_ENTER2(BroadcastString, "len=%d, sender=%d", len, sender);
     }
 
-    if(BroadcastString_internal != NULL)
+    if(BroadcastString_internal2 != NULL)
+        retval = (*BroadcastString_internal2)(str, len, sender, BroadcastString_internal2_data);
+    else if(BroadcastString_internal != NULL)
         retval = (*BroadcastString_internal)(str, len, sender);
     else
     {
@@ -1022,6 +1040,9 @@ static int GetConnectionParameters(VISIT_SOCKET desc)
 *   Brad Whitlock, Fri Jul 25 14:33:37 PDT 2008
 *   Trace information.
 *
+*   Brad Whitlock, Fri Aug 26 10:38:11 PDT 2011
+*   Set the communicator that the engine will use.
+*
 *******************************************************************************/
 
 static int CreateEngineAndConnectToViewer(void)
@@ -1048,6 +1069,11 @@ static int CreateEngineAndConnectToViewer(void)
                          "visit_initialize failed. return %d",
                          FALSE);
         return FALSE;
+    }
+
+    if(visit_communicator != NULL)
+    {
+        VisItSetMPICommunicator(visit_communicator);
     }
 
     LIBSIM_MESSAGE_STRINGLIST("Calling visit_connectviewer: argv",
@@ -1590,6 +1616,9 @@ static void CloseVisItLibrary(void)
 *   I moved the code to load libraries into helper functions to separate out
 *   some Windows-only logic.
 *
+*   Brad Whitlock, Fri Aug 26 09:48:22 PDT 2011
+*   Initialize set communicator function.
+*
 *   Brad Whitlock, Mon Oct 24 09:43:36 PDT 2011
 *   Add case for static builds where we just access the function that we want
 *   instead of opening it dynamically.
@@ -1655,6 +1684,7 @@ static int LoadVisItLibrary(void)
     CONTROL_DLSYM(set_command_callback,       void,   (void*,void (*)(const char*,const char*,void*),void*));
     CONTROL_DLSYM(save_window,                int,    (void*,const char *,int,int,int));
     CONTROL_DLSYM(debug_logs,                 void,   (int,const char *));
+    CONTROL_DLSYM(set_mpicomm,                int,    (void *));
 
     /* Get the data functions from the library. */
     DECLARE_DATA_CALLBACKS(DATA_DLSYM)
@@ -1684,12 +1714,30 @@ static int LoadVisItLibrary(void)
 *   Brad Whitlock, Fri Jul 25 15:33:27 PDT 2008
 *   Trace information.
 *
+*   Brad Whitlock, Tue Apr 17 10:41:41 PDT 2012
+*   Set version2 pointers to NULL.
+*
 *******************************************************************************/
 void  VisItSetBroadcastIntFunction(int (*bi)(int *, int))
 {
-   LIBSIM_API_ENTER1(VisItSetBroadcastIntFunction, "func=%p", (void*)bi);
-   BroadcastInt_internal = bi;
-   LIBSIM_API_LEAVE(VisItSetBroadcastIntFunction);
+    LIBSIM_API_ENTER1(VisItSetBroadcastIntFunction, "func=%p", (void*)bi);
+    BroadcastInt_internal = bi;
+
+    BroadcastInt_internal2 = NULL;
+    BroadcastInt_internal2_data = NULL;
+
+    LIBSIM_API_LEAVE(VisItSetBroadcastIntFunction);
+}
+
+void  VisItSetBroadcastIntFunction2(int (*bi)(int *, int, void *), void *bidata)
+{
+    LIBSIM_API_ENTER1(VisItSetBroadcastIntFunction2, "func=%p", (void*)bi);
+    BroadcastInt_internal = NULL;
+
+    BroadcastInt_internal2 = bi;
+    BroadcastInt_internal2_data = bidata;
+
+    LIBSIM_API_LEAVE(VisItSetBroadcastIntFunction2);
 }
 
 /*******************************************************************************
@@ -1704,12 +1752,30 @@ void  VisItSetBroadcastIntFunction(int (*bi)(int *, int))
 *  Brad Whitlock, Fri Jul 25 15:33:37 PDT 2008
 *  Trace information.
 *
+*  Brad Whitlock, Tue Apr 17 10:41:41 PDT 2012
+*  Set version2 pointers to NULL.
+*
 *******************************************************************************/
 void  VisItSetBroadcastStringFunction(int (*bs)(char *, int, int))
 {
-   LIBSIM_API_ENTER1(VisItSetBroadcastStringFunction, "func=%p", (void*)bs);
-   BroadcastString_internal = bs;
-   LIBSIM_API_LEAVE(VisItSetBroadcastStringFunction);
+    LIBSIM_API_ENTER1(VisItSetBroadcastStringFunction, "func=%p", (void*)bs);
+    BroadcastString_internal = bs;
+
+    BroadcastString_internal2 = NULL;
+    BroadcastString_internal2_data = NULL;
+
+    LIBSIM_API_LEAVE(VisItSetBroadcastStringFunction);
+}
+
+void  VisItSetBroadcastStringFunction2(int (*bs)(char *, int, int, void *), void *bsdata)
+{
+    LIBSIM_API_ENTER1(VisItSetBroadcastStringFunction2, "func=%p", (void*)bs);
+    BroadcastString_internal = NULL;
+
+    BroadcastString_internal2 = bs;
+    BroadcastString_internal2_data = bsdata;
+
+    LIBSIM_API_LEAVE(VisItSetBroadcastStringFunction2);
 }
 
 /*******************************************************************************
@@ -1929,8 +1995,11 @@ int VisItSetupEnvironment(void)
 *         Lawrence Livermore National Laboratory
 *
 * Modifications:
+*  Brad Whitlock, Tue Apr 17 10:35:33 PDT 2012
+*  Add test for 2nd broadcast callback.
 *
 *******************************************************************************/
+
 int VisItSetupEnvironment2(char *env)
 {
 #ifdef _WIN32
@@ -1976,7 +2045,9 @@ int VisItSetupEnvironment2(char *env)
    }
 
    /* Determine whether we can broadcast strings */
-   canBroadcast = isParallel && (BroadcastString_internal != NULL);
+   canBroadcast = isParallel && 
+                 (BroadcastString_internal != NULL ||
+                  BroadcastString_internal2 != NULL);
 
    /* Determine whether we must read the environment. */
    if(canBroadcast)
@@ -2832,9 +2903,46 @@ void VisItSetSlaveProcessCallback(void (*spic)(void))
     if(callbacks != NULL && callbacks->control.set_slave_process_callback)
     {
         visit_slave_process_callback = spic;
+        visit_slave_process_callback2 = NULL;
+        visit_slave_process_callback2_data = NULL;
         (*callbacks->control.set_slave_process_callback)(spic);
     }
     LIBSIM_API_LEAVE(VisItSetSlaveProcessCallback);
+}
+
+/*******************************************************************************
+*
+* Name: VisItSetSlaveProcessCallback2
+*
+* Purpose: Set the callback to inform slave processes that they should
+*          call VisItProcessEngineCommand. This version lets us pass callback
+*          function data.
+*
+* Author: Brad Whitlock, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
+*
+*******************************************************************************/
+
+static void
+visit_slave_process_callback2_thunk(void)
+{
+    if(visit_slave_process_callback2 != NULL)
+        (*visit_slave_process_callback2)(visit_slave_process_callback2_data);
+}
+
+void VisItSetSlaveProcessCallback2(void (*spic)(void *), void *spicdata)
+{
+    LIBSIM_API_ENTER1(VisItSetSlaveProcessCallback2, "spic=%p", (void*)spic);
+    LIBSIM_MESSAGE("Calling visit_set_slave_process_callback");
+    if(callbacks != NULL && callbacks->control.set_slave_process_callback)
+    {
+        visit_slave_process_callback = NULL;
+        visit_slave_process_callback2 = spic;
+        visit_slave_process_callback2_data = spicdata;
+        (*callbacks->control.set_slave_process_callback)(visit_slave_process_callback2_thunk);
+    }
+    LIBSIM_API_LEAVE(VisItSetSlaveProcessCallback2);
 }
 
 /*******************************************************************************
@@ -3204,6 +3312,9 @@ DECLARE_DATA_CALLBACKS(VISIT_SET_CALLBACK_BODY)
 *   our own int-based slave process callback to ensure that we're broadcasting
 *   ints since the sim's slave process callback can do whatever it wants.
 *
+*   Brad Whitlock, Tue Apr 17 11:05:08 PDT 2012
+*   Account for different style slave process callback.
+*
 ******************************************************************************/
 
 static void
@@ -3227,6 +3338,8 @@ VisItSynchronize(void)
     int syncing = 1;
     int visitstate = 0, err = 0;
     void (*sim_spc)(void) = visit_slave_process_callback;
+    void (*sim_spc2)(void*) = visit_slave_process_callback2;
+    void *sim_spc2data = visit_slave_process_callback2_data;
 
     LIBSIM_API_ENTER(VisItSynchronize);
 
@@ -3281,7 +3394,10 @@ VisItSynchronize(void)
     } while(syncing && err == 0);
 
     /* Restore the sim's slave process callback. */
-    VisItSetSlaveProcessCallback(sim_spc);
+    if(sim_spc != NULL)
+        VisItSetSlaveProcessCallback(sim_spc);
+    else
+        VisItSetSlaveProcessCallback2(sim_spc2, sim_spc2data);
 
     LIBSIM_API_LEAVE(VisItSynchronize);
     return (err==0) ? VISIT_OKAY : VISIT_ERROR;
@@ -3339,6 +3455,31 @@ VISIT_DEBUG_FUNCTION(2)
 VISIT_DEBUG_FUNCTION(3)
 VISIT_DEBUG_FUNCTION(4)
 VISIT_DEBUG_FUNCTION(5)
+
+/******************************************************************************
+*
+* Name: VisItSetMPICommunicator
+*
+* Purpose: Let the user set the MPI communicator that VisIt will use.
+*
+* Programmer: Brad Whitlock
+* Date:       Fri Aug 26 09:47:53 PDT 2011
+*
+* Modifications:
+*
+******************************************************************************/
+
+int
+VisItSetMPICommunicator(void *comm)
+{
+    int retval = VISIT_OKAY;
+    LIBSIM_API_ENTER(VisItSetMPICommunicator);
+    visit_communicator = comm;
+    if(engine && callbacks != NULL && callbacks->control.set_mpicomm != NULL)
+        retval = (*callbacks->control.set_mpicomm)(comm);
+    LIBSIM_API_LEAVE(VisItSetMPICommunicator);
+    return retval;
+}
 
 /***************************************************************************/
 int

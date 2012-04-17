@@ -44,6 +44,7 @@
 #include <LoadBalancer.h>
 #ifdef PARALLEL
 #include <MPIXfer.h>
+#include <avtParallel.h>
 #endif
 #include <TimingsManager.h>
 #include <VisItException.h>
@@ -259,4 +260,14 @@ simv2_debug_logs(int level, const char *msg)
         debug4 << msg;
     else if(level == 5)
         debug5 << msg;
+}
+
+int
+simv2_set_mpicomm(void *comm)
+{
+#ifdef PARALLEL
+    return PAR_SetComm(comm) ? VISIT_OKAY : VISIT_ERROR;
+#else
+    return VISIT_ERROR;
+#endif
 }
