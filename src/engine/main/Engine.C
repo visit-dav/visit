@@ -340,6 +340,9 @@ protected:
 //    Brad Whitlock, Mon Oct 10 11:22:45 PDT 2011
 //    Added enginePropertiesRPC.
 //
+//   Dave Pugmire, Wed Apr 18 09:05:40 EDT 2012
+//   Add alarmEnabled flag. Setting alarm(0) is not disabling the alarm.
+//
 // ****************************************************************************
 
 Engine::Engine() : viewerArgs()
@@ -403,6 +406,7 @@ Engine::Engine() : viewerArgs()
     nDisplays = 0;
     renderingDisplay = NULL;
     launchXServers = false;
+    alarmEnabled = true;
 }
 
 // ****************************************************************************
@@ -2250,12 +2254,18 @@ Engine::ProcessCommandLine(int argc, char **argv)
 //    Hank Childs, Thu Mar 29 08:54:08 PDT 2012
 //    Print out alarm handler output whether we are in parallel or serial.
 //
+//   Dave Pugmire, Wed Apr 18 09:05:40 EDT 2012
+//   Add alarmEnabled flag. Setting alarm(0) is not disabling the alarm.
+//
 // ****************************************************************************
 
 void
 Engine::AlarmHandler(int signal)
 {
     Engine *e = Engine::Instance();
+    if (!e->alarmEnabled)
+        return;
+    
     if (e->overrideTimeoutEnabled == true)
     {
         cerr << PAR_Rank() << ": ENGINE exited due to an inactivity timeout of "
@@ -3453,6 +3463,7 @@ Engine::EngineWarningCallback(void *data, const char *msg)
 void
 Engine::ResetTimeout(int timeout)
 {
+    alarmEnabled = (timeout > 0);
 #if !defined(_WIN32)
     alarm(timeout);
 #endif    

@@ -223,6 +223,9 @@ class Xfer;
 //    Brad Whitlock, Mon Nov 28 16:27:21 PST 2011
 //    I added LaunchRPC.
 //
+//   Dave Pugmire, Wed Apr 18 09:05:40 EDT 2012
+//   Add alarmEnabled flag. Setting alarm(0) is not disabling the alarm.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API Engine
@@ -415,6 +418,7 @@ class ENGINE_MAIN_API Engine
     size_t                    nDisplays;
     VisItDisplay             *renderingDisplay;
     bool                      launchXServers;
+    bool                      alarmEnabled;
 };
 
 #endif
