@@ -99,6 +99,7 @@ ENDIF (NOT WIN32)
 IF(VISIT_PYTHON_FILTERS)
 # We need to be able to locate the vtk python wrapper lib at run time.
 # Place symlinks to its components in lib/site-packages/
+    MESSAGE(STATUS "Adding VTK Python wrappers to lib/site-packages/")
     IF (NOT WIN32)
         ## MESSAGE("${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
         FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
@@ -108,12 +109,18 @@ IF(VISIT_PYTHON_FILTERS)
     FOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
         GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
         GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
+        MESSAGE(STATUS "Symlinking ${ITM_ABS} to ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}")
         IF (NOT WIN32)
             EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
-                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE})
+                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
+                                    RESULT_VARIABLE VTK_MODULE_SYM_RM)
             EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
                                     ${ITM_ABS}
-                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE})
+                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
+                                    RESULT_VARIABLE VTK_MODULE_SYM_CREATE)
+            IF(NOT "${VTK_MODULE_SYM_CREATE}" STREQUAL "0")
+                MESSAGE(WARNING "Failed to create VTK Python module symlink in lib/site-packages/ for ${ITM_ABS}")
+            ENDIF(NOT "${VTK_MODULE_SYM_CREATE}" STREQUAL "0")
         ELSE (NOT WIN32)
             FILE(COPY ${ITM_ABS}
                  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/site-packages
