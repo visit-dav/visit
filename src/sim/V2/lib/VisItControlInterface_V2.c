@@ -1292,6 +1292,11 @@ static VISIT_SOCKET AcceptConnection(void)
 *   Brad Whitlock, Mon Jan 17 18:31:23 PST 2011
 *   I added a Windows implementation.
 *
+*   Brad Whitlock, Wed Apr 18 13:16:24 PDT 2012
+*   I added Jean's fix for determining the home directory. We now use the
+*   HOME environment variable if it exists and then we back up to the old 
+*   method.
+*
 *******************************************************************************/
 static const char *GetHomeDirectory(void)
 {
@@ -1325,14 +1330,19 @@ static const char *GetHomeDirectory(void)
 
     return returnpath;
 #else
-    struct passwd *users_passwd_entry = NULL;
+    const char *home = NULL;
 
     LIBSIM_API_ENTER(GetHomeDirectory);
-    users_passwd_entry = getpwuid(getuid());
-    LIBSIM_API_LEAVE1(GetHomeDirectory, "homedir=%s", 
-                     users_passwd_entry->pw_dir);
+    home = getenv("HOME");
+    if(home == NULL)
+    {
+        struct passwd *users_passwd_entry = NULL;
+        users_passwd_entry = getpwuid(getuid());
+        home = users_passwd_entry->pw_dir;
+    }
+    LIBSIM_API_LEAVE1(GetHomeDirectory, "homedir=%s", home);
 
-    return users_passwd_entry->pw_dir;
+    return home;
 #endif
 }
 
