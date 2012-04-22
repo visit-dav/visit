@@ -1,1 +1,1 @@
-The average value of curvature is -1.9714
+The average value of curvature is -1.97135
