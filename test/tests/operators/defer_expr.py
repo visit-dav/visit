@@ -35,6 +35,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Brad Whitlock, Wed Apr 18 15:40:47 PDT 2012
+#    Make vectors constant color for test 8.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -139,7 +142,7 @@ DrawPlots()
 Test("defer_expr_06")
 
 DeleteAllPlots()
-DefineVectorExpression("normals", "surface_normal(mesh1)")
+DefineVectorExpression("normals", "cell_surface_normal(mesh1)")
 AddPlot("Vector", "normals")
 v = VectorAttributes()
 v.origOnly = 0
@@ -148,6 +151,8 @@ v.max = 1.5
 v.minFlag = 1
 v.maxFlag = 1
 v.colorTableName = "hot"
+v.useStride = 0
+v.stride = 1
 SetPlotOptions(v)
 
 AddOperator("ExternalSurface")
@@ -166,7 +171,8 @@ SetPlotOptions(c)
 AddPlot("Vector", "normals")
 v = VectorAttributes()
 v.origOnly = 0
-v.colorTableName = "hot"
+v.colorByMag = 0
+v.vectorColor = (255,255,0,255)
 SetPlotOptions(v)
 AddOperator("Isosurface")
 i = IsosurfaceAttributes()
@@ -221,7 +227,7 @@ SetOperatorOptions(r)
 Test("defer_expr_12")
 
 DeleteAllPlots()
-DefineVectorExpression("sn", "recenter(-surface_normal(mesh1))")
+DefineVectorExpression("sn", "recenter(-cell_surface_normal(mesh1))")
 AddPlot("Vector", "sn")
 v = VectorAttributes()
 v.origOnly = 0

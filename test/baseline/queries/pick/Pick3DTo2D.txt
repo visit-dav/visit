@@ -33,7 +33,7 @@ u:  <nodal>
 
 C:  globe.silo
 mesh1 
-Point: <-0.629468, -3.97431, 4.07401>
+Point: <-0.629469, -3.97431, 4.07401>
 Zone:  554
 Incident Nodes:  797  798  789  788  851  852  843  842  
 u:  <nodal> 
@@ -97,7 +97,7 @@ u:  <nodal>
 
 G:  globe.silo
 mesh1 
-Point: <-0.629468, -3.97431, 4.07401>
+Point: <-0.629469, -3.97431, 4.07401>
 Zone:  554
 Incident Nodes:  797  798  789  788  851  852  843  842  
 u:  <nodal> 
