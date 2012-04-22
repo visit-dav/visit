@@ -51,6 +51,7 @@
 
 
 class vtkCellData;
+class vtkDataArray;
 class vtkPointData;
 class vtkPolyData;
 class vtkUnstructuredGrid;
@@ -89,27 +90,56 @@ class vtkUnstructuredGrid;
 //    Jeremy Meredith, Thu Oct 28 10:26:45 EDT 2010
 //    Added external visibility macro to nested classes.
 //
+//    Brad Whitlock, Thu Mar 22 14:01:17 PDT 2012
+//    Adapted the code to use vtkIdType. Added double coordinate support.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkVolumeFromVolume : public vtkDataSetFromVolume
 {
-protected:
+public:
+struct CentroidPointEntry
+{
+    vtkIdType     nPts;
+    vtkIdType     ptIds[8];
+};
+
+class VISIT_VTK_API CentroidPointList
+{
+  public:
+                   CentroidPointList();
+    virtual       ~CentroidPointList();
+ 
+    vtkIdType            AddPoint(vtkIdType, const vtkIdType*);
+ 
+    vtkIdType            GetTotalNumberOfPoints(void) const;
+    vtkIdType            GetNumberOfLists(void) const;
+    vtkIdType            GetList(vtkIdType, const CentroidPointEntry *&) const;
+ 
+  protected:
+    CentroidPointEntry   **list;
+    vtkIdType              currentList;
+    vtkIdType              currentPoint;
+    vtkIdType              listSize;
+    vtkIdType              pointsPerList;
+};
+
 class ShapeList
 {
   public:
-                   ShapeList(int size);
+                   ShapeList(vtkIdType size);
     virtual       ~ShapeList();
     virtual int    GetVTKType(void) const = 0;
     int            GetShapeSize(void) const { return shapeSize; };
-    int            GetTotalNumberOfShapes(void) const;
-    int            GetNumberOfLists(void) const;
-    int            GetList(int, const int *&) const;
+    vtkIdType      GetTotalNumberOfShapes(void) const;
+    vtkIdType      GetNumberOfLists(void) const;
+    vtkIdType      GetList(vtkIdType, const vtkIdType *&) const;
   protected:
-    int          **list;
-    int            currentList;
-    int            currentShape;
-    int            listSize;
-    int            shapesPerList;
+    vtkIdType    **list;
+    vtkIdType      currentList;
+    vtkIdType      currentShape;
+    vtkIdType      listSize;
+    vtkIdType      shapesPerList;
     int            shapeSize;
 };
 
@@ -119,7 +149,7 @@ class VISIT_VTK_API  HexList : public ShapeList
                    HexList();
     virtual       ~HexList();
     virtual int    GetVTKType(void) const { return VTK_HEXAHEDRON; };
-    void           AddHex(int, int, int, int, int, int, int, int, int);
+    void           AddHex(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
 class VISIT_VTK_API WedgeList : public ShapeList
@@ -128,7 +158,7 @@ class VISIT_VTK_API WedgeList : public ShapeList
                    WedgeList();
     virtual       ~WedgeList();
     virtual int    GetVTKType(void) const { return VTK_WEDGE; };
-    void           AddWedge(int, int, int, int, int, int, int);
+    void           AddWedge(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
 class VISIT_VTK_API PyramidList : public ShapeList
@@ -137,7 +167,7 @@ class VISIT_VTK_API PyramidList : public ShapeList
                    PyramidList();
     virtual       ~PyramidList();
     virtual int    GetVTKType(void) const { return VTK_PYRAMID; };
-    void           AddPyramid(int, int, int, int, int, int);
+    void           AddPyramid(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
 class VISIT_VTK_API TetList : public ShapeList
@@ -146,7 +176,7 @@ class VISIT_VTK_API TetList : public ShapeList
                    TetList();
     virtual       ~TetList();
     virtual int    GetVTKType(void) const { return VTK_TETRA; };
-    void           AddTet(int, int, int, int, int);
+    void           AddTet(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
 class VISIT_VTK_API QuadList : public ShapeList
@@ -155,7 +185,7 @@ class VISIT_VTK_API QuadList : public ShapeList
                    QuadList();
     virtual       ~QuadList();
     virtual int    GetVTKType(void) const { return VTK_QUAD; };
-    void           AddQuad(int, int, int, int, int);
+    void           AddQuad(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
 class VISIT_VTK_API TriList : public ShapeList
@@ -164,7 +194,7 @@ class VISIT_VTK_API TriList : public ShapeList
                    TriList();
     virtual       ~TriList();
     virtual int    GetVTKType(void) const { return VTK_TRIANGLE; };
-    void           AddTri(int, int, int, int);
+    void           AddTri(vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
 class VISIT_VTK_API LineList : public ShapeList
@@ -173,7 +203,7 @@ class VISIT_VTK_API LineList : public ShapeList
                    LineList();
     virtual       ~LineList();
     virtual int    GetVTKType(void) const { return VTK_LINE; };
-    void           AddLine(int, int, int);
+    void           AddLine(vtkIdType, vtkIdType, vtkIdType);
 };
 
 class VISIT_VTK_API VertexList : public ShapeList
@@ -182,77 +212,39 @@ class VISIT_VTK_API VertexList : public ShapeList
                    VertexList();
     virtual       ~VertexList();
     virtual int    GetVTKType(void) const { return VTK_VERTEX; };
-    void           AddVertex(int, int);
+    void           AddVertex(vtkIdType, vtkIdType);
 };
-
-struct CentroidPointEntry
-{
-    int     nPts;
-    int     ptIds[8];
-};
-
-
-class VISIT_VTK_API CentroidPointList
-{
-  public:
-                   CentroidPointList();
-    virtual       ~CentroidPointList();
- 
-    int            AddPoint(int, int*);
- 
-    int            GetTotalNumberOfPoints(void) const;
-    int            GetNumberOfLists(void) const;
-    int            GetList(int, const CentroidPointEntry *&) const;
- 
-  protected:
-    CentroidPointEntry   **list;
-    int                    currentList;
-    int                    currentPoint;
-    int                    listSize;
-    int                    pointsPerList;
-};
-
-typedef struct
-{
-   bool   hasPtsList;
-   float *pts_ptr;
-   int   *dims;
-   float *X;
-   float *Y;
-   float *Z;
-} CommonPointsStructure;
-
 
   public:
-                      vtkVolumeFromVolume(int nPts, int ptSizeGuess);
+                      vtkVolumeFromVolume(vtkIdType nPts, vtkIdType ptSizeGuess);
     virtual          ~vtkVolumeFromVolume() { ; };
 
     void              ConstructDataSet(vtkPointData *, vtkCellData *,
-                                       vtkUnstructuredGrid *, float *);
+                                       vtkUnstructuredGrid *, vtkPoints *);
     void              ConstructDataSet(vtkPointData *, vtkCellData *,
-                                       vtkUnstructuredGrid *, int *, float *,
-                                       float *,float *);
+                                       vtkUnstructuredGrid *, const int *, vtkDataArray *,
+                                       vtkDataArray *,vtkDataArray *);
 
-    int            AddCentroidPoint(int n, int *p)
+    int            AddCentroidPoint(vtkIdType n, const vtkIdType *p)
                         { return -1 - centroid_list.AddPoint(n, p); }
 
-    void           AddHex(int z, int v0, int v1, int v2, int v3,
-                          int v4, int v5, int v6, int v7)
+    void           AddHex(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3,
+                          vtkIdType v4, vtkIdType v5, vtkIdType v6, vtkIdType v7)
                         { hexes.AddHex(z, v0, v1, v2, v3, v4, v5, v6, v7); }
         
-    void           AddWedge(int z,int v0,int v1,int v2,int v3,int v4,int v5)
+    void           AddWedge(vtkIdType z,vtkIdType v0,vtkIdType v1,vtkIdType v2,vtkIdType v3,vtkIdType v4,vtkIdType v5)
                         { wedges.AddWedge(z, v0, v1, v2, v3, v4, v5); }
-    void           AddPyramid(int z, int v0, int v1, int v2, int v3, int v4)
+    void           AddPyramid(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3, vtkIdType v4)
                         { pyramids.AddPyramid(z, v0, v1, v2, v3, v4); }
-    void           AddTet(int z, int v0, int v1, int v2, int v3)
+    void           AddTet(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3)
                         { tets.AddTet(z, v0, v1, v2, v3); }
-    void           AddQuad(int z, int v0, int v1, int v2, int v3)
+    void           AddQuad(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3)
                         { quads.AddQuad(z, v0, v1, v2, v3); }
-    void           AddTri(int z, int v0, int v1, int v2)
+    void           AddTri(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2)
                         { tris.AddTri(z, v0, v1, v2); }
-    void           AddLine(int z, int v0, int v1)
+    void           AddLine(vtkIdType z, vtkIdType v0, vtkIdType v1)
                         { lines.AddLine(z, v0, v1); }
-    void           AddVertex(int z, int v0)
+    void           AddVertex(vtkIdType z, vtkIdType v0)
                         { vertices.AddVertex(z, v0); }
 
   protected:
@@ -268,10 +260,6 @@ typedef struct
 
     ShapeList         *shapes[8];
     const int          nshapes;
-
-    void               ConstructDataSet(vtkPointData *, vtkCellData *,
-                                        vtkUnstructuredGrid *, 
-                                        CommonPointsStructure &);
 };
 
 

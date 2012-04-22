@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtZoneTypeExpression.h                            //
+//                        avtZoneTypeExpression.h                            //
 // ************************************************************************* //
 
 #ifndef AVT_ZONETYPE_FILTER_H
@@ -46,9 +46,6 @@
 #include <avtSingleInputExpressionFilter.h>
 
 class     vtkDataArray;
-class     ArgsExpr;
-class     ExprPipelineState;
-class     ConstExpr;
 
 // ****************************************************************************
 //  Class: avtZoneTypeExpression

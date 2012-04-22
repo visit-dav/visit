@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ********************************************************************** //
-//                             avtSinExpression.C                             //
+//                             avtSinExpression.C                         //
 // ********************************************************************** //
 
 #include <avtSinExpression.h>
@@ -113,7 +113,7 @@ avtSinExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int j = 0 ; j < ncomponents ; j++)
         {
-            float val = in->GetComponent(i, j);
+            double val = in->GetComponent(i, j);
             out->SetComponent(i, j, sin(val));
         }
     }

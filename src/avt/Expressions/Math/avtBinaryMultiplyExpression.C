@@ -129,11 +129,11 @@ avtBinaryMultiplyExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
 
     if ((in1ncomps == 9) && (in2ncomps == 9))
     {
-        float vals[9];
+        double vals[9];
         for (int i = 0 ; i < ntuples ; i++)
         {
-            int tup1 = (var1IsSingleton ? 0 : i);
-            int tup2 = (var2IsSingleton ? 0 : i);
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
             vals[0] = in1->GetComponent(tup1, 0) * in2->GetComponent(tup2, 0) + 
                       in1->GetComponent(tup1, 1) * in2->GetComponent(tup2, 3) + 
                       in1->GetComponent(tup1, 2) * in2->GetComponent(tup2, 6); 
@@ -166,11 +166,11 @@ avtBinaryMultiplyExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else if ((in1ncomps == 3) && (in2ncomps == 9))
     {
-        float vals[3];
+        double vals[3];
         for (int i = 0 ; i < ntuples ; i++)
         {
-            int tup1 = (var1IsSingleton ? 0 : i);
-            int tup2 = (var2IsSingleton ? 0 : i);
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
             vals[0] = in1->GetComponent(tup1, 0) * in2->GetComponent(tup2, 0) + 
                       in1->GetComponent(tup1, 1) * in2->GetComponent(tup2, 3) + 
                       in1->GetComponent(tup1, 2) * in2->GetComponent(tup2, 6); 
@@ -185,11 +185,11 @@ avtBinaryMultiplyExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else if ((in1ncomps == 9) && (in2ncomps == 3))
     {
-        float vals[3];
+        double vals[3];
         for (int i = 0 ; i < ntuples ; i++)
         {
-            int tup1 = (var1IsSingleton ? 0 : i);
-            int tup2 = (var2IsSingleton ? 0 : i);
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
             vals[0] = in1->GetComponent(tup1, 0) * in2->GetComponent(tup2, 0) + 
                       in1->GetComponent(tup1, 1) * in2->GetComponent(tup2, 1) + 
                       in1->GetComponent(tup1, 2) * in2->GetComponent(tup2, 2); 
@@ -206,13 +206,13 @@ avtBinaryMultiplyExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float dot = 0.;
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
+            double dot = 0.;
             for (int j = 0 ; j < in1ncomps ; j++)
             {
-                int tup1 = (var1IsSingleton ? 0 : i);
-                int tup2 = (var2IsSingleton ? 0 : i);
-                float val1 = in1->GetComponent(tup1, j);
-                float val2 = in2->GetComponent(tup2, j);
+                double val1 = in1->GetComponent(tup1, j);
+                double val2 = in2->GetComponent(tup2, j);
                 dot += val1*val2;
             }
             out->SetTuple1(i, dot);
@@ -222,12 +222,12 @@ avtBinaryMultiplyExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            int tup2 = (var2IsSingleton ? 0 : i);
-            float val2 = in2->GetTuple1(tup2);
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
+            double val2 = in2->GetTuple1(tup2);
             for (int j = 0 ; j < in1ncomps ; j++)
             {
-                int tup1 = (var1IsSingleton ? 0 : i);
-                float val1 = in1->GetComponent(tup1, j);
+                double val1 = in1->GetComponent(tup1, j);
                 out->SetComponent(i, j, val1 * val2);
             }
         }
@@ -236,12 +236,12 @@ avtBinaryMultiplyExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            int tup1 = (var1IsSingleton ? 0 : i);
-            float val1 = in1->GetTuple1(tup1);
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
+            double val1 = in1->GetTuple1(tup1);
             for (int j = 0 ; j < in2ncomps ; j++)
             {
-                int tup2 = (var2IsSingleton ? 0 : i);
-                float val2 = in2->GetComponent(tup2, j);
+                double val2 = in2->GetComponent(tup2, j);
                 out->SetComponent(i, j, val1 * val2);
             }
         }

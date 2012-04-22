@@ -37,14 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtDegreeExpression.C                             //
+//                         avtDegreeExpression.C                             //
 // ************************************************************************* //
 
 #include <avtDegreeExpression.h>
 
 #include <vtkCell.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 
 #include <DebugStream.h>
 
@@ -105,15 +105,13 @@ avtDegreeExpression::~avtDegreeExpression()
 vtkDataArray *
 avtDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int  i, j;
-
     //
     // Set up an array that we can do bookkeepping in.  Entry i will be the
     // number of cells incident to point i.
     //
-    int nPoints = in_ds->GetNumberOfPoints();
+    vtkIdType nPoints = in_ds->GetNumberOfPoints();
     int *degree = new int[nPoints];
-    for (i = 0 ; i < nPoints ; i++)
+    for (vtkIdType i = 0 ; i < nPoints ; i++)
     {
         degree[i] = 0;
     }
@@ -123,14 +121,14 @@ avtDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
     // incident to.  Reflect that in our counts of how many cells each point
     // is incident to (ie the degree).
     //
-    int nCells = in_ds->GetNumberOfCells();
-    for (i = 0 ; i < nCells ; i++)
+    vtkIdType nCells = in_ds->GetNumberOfCells();
+    for (vtkIdType i = 0 ; i < nCells ; i++)
     {
         vtkCell *cell = in_ds->GetCell(i);
-        int numPointsForThisCell = cell->GetNumberOfPoints();
-        for (j = 0 ; j < numPointsForThisCell ; j++)
+        vtkIdType numPointsForThisCell = cell->GetNumberOfPoints();
+        for (vtkIdType j = 0 ; j < numPointsForThisCell ; j++)
         {
-            int id = cell->GetPointId(j);
+            vtkIdType id = cell->GetPointId(j);
             if (id >= 0 && id < nPoints)
             {
                 degree[id]++;
@@ -141,12 +139,11 @@ avtDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
     //
     // Set up a VTK variable reflecting the degrees we have calculated.
     //
-    vtkFloatArray *dv = vtkFloatArray::New();
+    vtkIntArray *dv = vtkIntArray::New();
     dv->SetNumberOfTuples(nPoints);
-    for (i = 0 ; i < nPoints ; i++)
+    for (vtkIdType i = 0 ; i < nPoints ; i++)
     {
-        float f = (float) degree[i];
-        dv->SetTuple(i, &f);
+        dv->SetValue(i, degree[i]);
     }
     delete [] degree;
 

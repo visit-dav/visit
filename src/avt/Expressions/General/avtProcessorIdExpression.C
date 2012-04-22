@@ -37,13 +37,13 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtProcessorIdExpression.C                          //
+//                       avtProcessorIdExpression.C                          //
 // ************************************************************************* //
 
 #include <avtProcessorIdExpression.h>
 
+#include <vtkIntArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 
 #include <avtParallel.h>
 
@@ -105,13 +105,13 @@ vtkDataArray *
 avtProcessorIdExpression::DeriveVariable(vtkDataSet *in_ds)
 {
     int procId = PAR_Rank();
-    int npts   = in_ds->GetNumberOfPoints();
+    vtkIdType npts   = in_ds->GetNumberOfPoints();
 
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkIntArray *rv = vtkIntArray::New();
     rv->SetNumberOfTuples(npts);
-    for (int i = 0 ; i < npts ; i++)
+    for (vtkIdType i = 0 ; i < npts ; ++i)
     {
-        rv->SetTuple1(i, procId);
+        rv->SetValue(i, procId);
     }
 
     return rv;

@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtBinaryMathExpression.C                         //
+//                         avtBinaryMathExpression.C                         //
 // ************************************************************************* //
 
 #include <avtBinaryMathExpression.h>
@@ -218,7 +218,7 @@ avtBinaryMathExpression::DeriveVariable(vtkDataSet *in_ds)
         nvals = data2->GetNumberOfTuples();
          
 
-    vtkDataArray *dv = CreateArray(data1);
+    vtkDataArray *dv = CreateArray(data1, data2);
     dv->SetNumberOfComponents(ncomps);
     dv->SetNumberOfTuples(nvals);
 
@@ -244,6 +244,54 @@ avtBinaryMathExpression::DeriveVariable(vtkDataSet *in_ds)
     return dv;
 }
 
+// ****************************************************************************
+// Method: PrecisionScore
+//
+// Purpose: 
+//   Assign a "score" to the precision of VTK types so we can come up with
+//   a winner when comparing 2 types.
+//
+// Arguments:
+//   dt : The VTK data type.
+//
+// Returns:    A score for the input data type.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 18 14:00:14 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static int
+PrecisionScore(int dt)
+{
+    // Assign a score to an input precision so we can compare the precisions 
+    // of the input data arrays to see which wins. This helps us return the 
+    // "higher" type so operations like (int,double) would return double.
+    int score = 0;
+    switch(dt)
+    {
+    default:
+    case VTK_VOID:           score = 0; break;
+    case VTK_BIT:            score = 1; break;
+    case VTK_CHAR:           score = 2; break;
+    case VTK_UNSIGNED_CHAR:  score = 2; break;
+    case VTK_SHORT:          score = 3; break;
+    case VTK_UNSIGNED_SHORT: score = 3; break;
+    case VTK_INT:            score = 4; break;
+    case VTK_UNSIGNED_INT:   score = 4; break;
+    case VTK_LONG:           score = 5; break;
+    case VTK_UNSIGNED_LONG:  score = 5; break;
+    case VTK_FLOAT:          score = 6; break;
+    case VTK_DOUBLE:         score = 7; break;
+    case VTK_ID_TYPE:        score = 5; break;
+    case VTK_SIGNED_CHAR:    score = 2; break;
+    }
+    return score;
+}
 
 // ****************************************************************************
 //  Method: avtBinaryMathExpression::CreateArray
@@ -256,12 +304,27 @@ avtBinaryMathExpression::DeriveVariable(vtkDataSet *in_ds)
 //  Programmer: Hank Childs
 //  Creation:   August 20, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Wed Apr 18 14:01:10 PDT 2012
+//    Score the input types so we promote to the best one. This helps us when
+//    we get inputs like (int, double), in which case we'd want to promote to
+//    double.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtBinaryMathExpression::CreateArray(vtkDataArray *in1)
+avtBinaryMathExpression::CreateArray(vtkDataArray *in1, vtkDataArray *in2)
 {
-    return in1->NewInstance();
+    if(in1->GetDataType() == in2->GetDataType())
+        return in1->NewInstance();
+
+    int s1 = PrecisionScore(in1->GetDataType());
+    int s2 = PrecisionScore(in2->GetDataType());
+
+    if(s1 >= s2)
+        return in1->NewInstance();
+
+    return in2->NewInstance();
 }
 
 

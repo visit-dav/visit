@@ -82,15 +82,15 @@ avtEdgeLength::avtEdgeLength()
 vtkDataArray *
 avtEdgeLength::DeriveVariable(vtkDataSet *in_ds)
 {
-    vtkFloatArray *arr = vtkFloatArray::New();
-    int ncells = in_ds->GetNumberOfCells();
+    vtkDataArray *arr = CreateArrayFromMesh(in_ds);
+    vtkIdType ncells = in_ds->GetNumberOfCells();
     arr->SetNumberOfTuples(ncells);
 
-    for (int i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         vtkCell *cell = in_ds->GetCell(i);
-        float vol = (float) GetEdgeLength(cell);
-        arr->SetTuple(i, &vol);
+        double vol = GetEdgeLength(cell);
+        arr->SetTuple1(i, vol);
     }
 
     return arr;
@@ -125,8 +125,6 @@ avtEdgeLength::DeriveVariable(vtkDataSet *in_ds)
 double
 avtEdgeLength::GetEdgeLength(vtkCell *cell)
 {
-    int  i;
-
     int celltype = cell->GetCellType();
     if (celltype == VTK_VERTEX)
         return 0.;
@@ -153,7 +151,7 @@ avtEdgeLength::GetEdgeLength(vtkCell *cell)
     double rv = +FLT_MAX;
     if (!takeMin)
         rv = -FLT_MAX;
-    for (i = 0 ; i < nEdges ; i++)
+    for (int i = 0 ; i < nEdges ; i++)
     {
         vtkCell *edge = cell->GetEdge(i);
         vtkPoints *pts = edge->GetPoints();

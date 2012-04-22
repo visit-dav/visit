@@ -65,9 +65,9 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
     {
         super(ThreeSliceAttributes_numAdditionalAtts);
 
-        x = 0f;
-        y = 0f;
-        z = 0f;
+        x = 0;
+        y = 0;
+        z = 0;
         interactive = true;
     }
 
@@ -75,9 +75,9 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
     {
         super(ThreeSliceAttributes_numAdditionalAtts + nMoreFields);
 
-        x = 0f;
-        y = 0f;
-        z = 0f;
+        x = 0;
+        y = 0;
+        z = 0;
         interactive = true;
     }
 
@@ -116,19 +116,19 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
-    public void SetX(float x_)
+    public void SetX(double x_)
     {
         x = x_;
         Select(0);
     }
 
-    public void SetY(float y_)
+    public void SetY(double y_)
     {
         y = y_;
         Select(1);
     }
 
-    public void SetZ(float z_)
+    public void SetZ(double z_)
     {
         z = z_;
         Select(2);
@@ -141,20 +141,20 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
     }
 
     // Property getting methods
-    public float   GetX() { return x; }
-    public float   GetY() { return y; }
-    public float   GetZ() { return z; }
+    public double  GetX() { return x; }
+    public double  GetY() { return y; }
+    public double  GetZ() { return z; }
     public boolean GetInteractive() { return interactive; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteFloat(x);
+            buf.WriteDouble(x);
         if(WriteSelect(1, buf))
-            buf.WriteFloat(y);
+            buf.WriteDouble(y);
         if(WriteSelect(2, buf))
-            buf.WriteFloat(z);
+            buf.WriteDouble(z);
         if(WriteSelect(3, buf))
             buf.WriteBool(interactive);
     }
@@ -164,13 +164,13 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
         switch(index)
         {
         case 0:
-            SetX(buf.ReadFloat());
+            SetX(buf.ReadDouble());
             break;
         case 1:
-            SetY(buf.ReadFloat());
+            SetY(buf.ReadDouble());
             break;
         case 2:
-            SetZ(buf.ReadFloat());
+            SetZ(buf.ReadDouble());
             break;
         case 3:
             SetInteractive(buf.ReadBool());
@@ -181,18 +181,18 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
-        str = str + floatToString("x", x, indent) + "\n";
-        str = str + floatToString("y", y, indent) + "\n";
-        str = str + floatToString("z", z, indent) + "\n";
+        str = str + doubleToString("x", x, indent) + "\n";
+        str = str + doubleToString("y", y, indent) + "\n";
+        str = str + doubleToString("z", z, indent) + "\n";
         str = str + boolToString("interactive", interactive, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private float   x;
-    private float   y;
-    private float   z;
+    private double  x;
+    private double  y;
+    private double  z;
     private boolean interactive;
 }
 

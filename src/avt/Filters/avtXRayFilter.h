@@ -81,6 +81,9 @@
 //    and the number of pixels processed in a pass was divisible by the
 //    number of processors.
 //
+//    Kathleen Biagas, Thu Mar 29 07:48:13 PDT 2012
+//    Templatized some methods, for double-precision support.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
@@ -100,11 +103,11 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                        { absVarName = abs;
                                          emisVarName = emis; };
 
-    void                            SetImageProperties(float *pos,
-                                                       float  theta,
-                                                       float  phi,
-                                                       float  dx,
-                                                       float  dy,
+    void                            SetImageProperties(double *pos,
+                                                       double  theta,
+                                                       double  phi,
+                                                       double  dx,
+                                                       double  dy,
                                                        int    nx,
                                                        int    ny);
     void                            SetDivideEmisByAbsorb(bool);
@@ -143,7 +146,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     int                             iFragment;
     int                             nImageFragments;
     int                            *imageFragmentSizes;
-    float                         **imageFragments;
+    vtkDataArray                  **imageFragments;
 
     int                             actualPixelsPerIteration;
     int                             pixelsForFirstPass;
@@ -158,30 +161,42 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
 
-    virtual void                    CartesianExecute(vtkDataSet *, int &,
-                                        std::vector<double>&, std::vector<int>&,
-                                        float **&);
-    virtual void                    CylindricalExecute(vtkDataSet *, int &,
-                                        std::vector<double>&, std::vector<int>&,
-                                        float **&);
-
   private:
+    template <typename T>
     void                            ImageStripExecute(int, vtkDataSet **,
-                                        int &, int *&, double *&, float **&);
+                                        int, int);
+    template <typename T>
+    void                            CartesianExecute(vtkDataSet *, int &,
+                                        std::vector<double>&, std::vector<int>&,
+                                        T **&);
+    template <typename T>
+    void                            CylindricalExecute(vtkDataSet *, int &,
+                                        std::vector<double>&, std::vector<int>&,
+                                        T **&);
 
+
+    template <typename T>
     void                            RedistributeLines(int, int *,
-                                        std::vector<double> *, std::vector<int> *,
-                                        int,  float ***, int &, int *&,
-                                        double *&, float **&);
+                                        std::vector<double> *, 
+                                        std::vector<int> *,
+                                        int,  T ***, int &, int *&,
+                                        double *&, T **&);
 
     void                            CalculateLines(void);
 
     void                            CheckDataSets(int, vtkDataSet **);
 
+    template <typename T>
     void                            IntegrateLines(int, int, int *, double *,
-                                        float *, float *);
-    float                          *CollectImages(int, int, int*, float **);
+                                        T *, T *);
+    template <typename T>
+    void                            CollectImages(int, vtkDataArray *);
+    void                            FillImageArray(int iBin,  
+                                                   vtkDataArray *&imageArray);
 
+
+    // how cell data will be stored for use internally
+    int                             cellDataType;
 };
 
 

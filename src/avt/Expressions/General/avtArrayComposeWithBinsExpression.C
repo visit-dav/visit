@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                       avtArrayComposeWithBinsExpression.C                     //
+//                   avtArrayComposeWithBinsExpression.C                     //
 // ************************************************************************* //
 
 #include <avtArrayComposeWithBinsExpression.h>
@@ -54,10 +54,6 @@
 #include <ExprToken.h>
 #include <avtExprNode.h>
 
-#include <avtCallback.h>
-#include <avtMaterial.h>
-#include <avtMetaData.h>
-#include <avtSpecies.h>
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -119,16 +115,14 @@ avtArrayComposeWithBinsExpression::~avtArrayComposeWithBinsExpression()
 vtkDataArray *
 avtArrayComposeWithBinsExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i, j;
-
     if (varnames.size() == 0)
         EXCEPTION0(ImproperUseException);
 
-    int nvars = varnames.size();
+    size_t nvars = varnames.size();
     vtkDataArray **vars = new vtkDataArray*[nvars];
     avtCentering  *centering = new avtCentering[nvars];
 
-    for (i = 0 ; i < nvars ; i++)
+    for (size_t i = 0 ; i < nvars ; i++)
     {
         vars[i] = in_ds->GetPointData()->GetArray(varnames[i]);
         centering[i] = AVT_NODECENT;
@@ -139,7 +133,8 @@ avtArrayComposeWithBinsExpression::DeriveVariable(vtkDataSet *in_ds)
         }
     }
 
-    for (i = 0 ; i < nvars ; i++)
+    int outType = VTK_FLOAT;
+    for (size_t i = 0 ; i < nvars ; i++)
     {
         if (vars[i] == NULL)
             EXCEPTION2(ExpressionException, outputVariableName, 
@@ -151,14 +146,16 @@ avtArrayComposeWithBinsExpression::DeriveVariable(vtkDataSet *in_ds)
             EXCEPTION2(ExpressionException, outputVariableName,
                   "Cannot create array because: the centering of the "
                   "variables does not agree.");
+        if (vars[i]->GetDataType() == VTK_DOUBLE)
+            outType = VTK_DOUBLE;
     }
 
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkDataArray *rv = vtkDataArray::CreateDataArray(outType);
     rv->SetNumberOfComponents(nvars);
-    int nvals = vars[0]->GetNumberOfTuples();
+    vtkIdType nvals = vars[0]->GetNumberOfTuples();
     rv->SetNumberOfTuples(nvals);
-    for (i = 0 ; i < nvals ; i++)
-        for (j = 0 ; j < nvars ; j++)
+    for (vtkIdType i = 0 ; i < nvals ; i++)
+        for (size_t j = 0 ; j < nvars ; j++)
             rv->SetComponent(i, j, vars[j]->GetTuple1(i));
 
     delete [] vars;
@@ -198,18 +195,20 @@ avtArrayComposeWithBinsExpression::ProcessArguments(ArgsExpr *args,
     ExprParseTreeNode *listTree = listarg->GetExpr();
     if (listTree->GetTypeName() != "List")
     {
-        debug1 << "avtArrayComposeWithBinsExpression: second arg is not a list: "
-               << listTree->GetTypeName() << endl;
-        EXCEPTION2(ExpressionException, outputVariableName, "the last argument to array_compose_"
-                    "with_bins must be a list");
+        debug1 << "avtArrayComposeWithBinsExpression: second arg is not a "
+               << "list: " << listTree->GetTypeName() << endl;
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "the last argument to array_compose_"
+                   "with_bins must be a list");
     }
 
     ListExpr *list = dynamic_cast<ListExpr*>(listTree);
     std::vector<ListElemExpr*> *elems = list->GetElems();
     binRanges.resize(elems->size());
-    if (elems->size() != nvars+1)
+    if ((int)elems->size() != nvars+1)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "the list for array_compose_with_bins"
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "the list for array_compose_with_bins"
                    " must have one more number than there are variables. "
                    " For two variables (V1 and V2), there should be a list of"
                    " size 3: [L0, L1, L2].  V1's bin goes from L0 to L1, "
@@ -219,8 +218,9 @@ avtArrayComposeWithBinsExpression::ProcessArguments(ArgsExpr *args,
     {
         if ((*elems)[i]->GetEnd())
         {
-            EXCEPTION2(ExpressionException, outputVariableName, "the list for array_compose_with"
-                        "_bins expression cannot contain ranges.");
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                       "the list for array_compose_with"
+                       "_bins expression cannot contain ranges.");
         }
 
         ExprNode *item = (*elems)[i]->GetItem();
@@ -236,8 +236,9 @@ avtArrayComposeWithBinsExpression::ProcessArguments(ArgsExpr *args,
         }
         else 
         {
-            EXCEPTION2(ExpressionException, outputVariableName, "the list for the array_compose"
-                          "_with_bins expression may contain only numbers.");
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                       "the list for the array_compose"
+                       "_with_bins expression may contain only numbers.");
         }
     }
 

@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtPerformColorTableLookupExpression.h                             //
+//               avtPerformColorTableLookupExpression.h                      //
 // ************************************************************************* //
 
 #ifndef AVT_PERFORMCOLORTABLELOOKUP_FILTER_H

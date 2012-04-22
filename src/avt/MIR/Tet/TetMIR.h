@@ -215,6 +215,8 @@ class MIR_API TetMIR : public MIR
     int                                     nrealclean;
     int                                     nrealmixed;
 
+    int                                     coordsListType;
+
     QuadraticHash<ReconstructedCoord,int>  *coordsHash;
     std::vector<ReconstructedCoord>         coordsList;
     std::vector<ReconstructedZone>          zonesList;

@@ -47,9 +47,9 @@
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetRemoveGhostCells.h>
-#include <vtkFloatArray.h>
 #include <vtkGeometryFilter.h>
 #include <vtkIntArray.h>
 #include <vtkPoints.h>
@@ -152,19 +152,17 @@ avtRevolvedSurfaceArea::PreExecute(void)
 vtkDataArray *
 avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
 {
-    int   i;
-
     //
     // Create a copy of the input with each zone's id number.  This will be 
     // used to match up the line segments with the zones they came from later.
     //
     vtkDataSet *tmp_ds = in_ds->NewInstance();
     tmp_ds->ShallowCopy(in_ds);
-    int n_orig_cells = tmp_ds->GetNumberOfCells();
+    vtkIdType n_orig_cells = tmp_ds->GetNumberOfCells();
     vtkIntArray *iarray = vtkIntArray::New();
     iarray->SetName("_rsa_ncells");
     iarray->SetNumberOfTuples(n_orig_cells);
-    for (i = 0 ; i < n_orig_cells ; i++)
+    for (vtkIdType i = 0 ; i < n_orig_cells ; i++)
         iarray->SetValue(i, i);
     tmp_ds->GetCellData()->AddArray(iarray);
     iarray->Delete();
@@ -230,21 +228,21 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     // zones that aren't on the exterior contribute 0 surface area) and then
     // add in the contributions from the zones on the exterior.
     //
-    vtkFloatArray *arr = vtkFloatArray::New();
+    vtkDataArray *arr = CreateArrayFromMesh(in_ds);
     arr->SetNumberOfTuples(n_orig_cells);
-    for (i = 0 ; i < n_orig_cells ; i++)
-        arr->SetValue(i, 0.);
+    for (vtkIdType i = 0 ; i < n_orig_cells ; i++)
+        arr->SetTuple1(i, 0.);
 
-    int ncells = pd_1d_nogz->GetNumberOfCells();
+    vtkIdType ncells = pd_1d_nogz->GetNumberOfCells();
     vtkIntArray *orig_cells = (vtkIntArray *)
                             pd_1d_nogz->GetCellData()->GetArray("_rsa_ncells");
-    for (i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         vtkCell *cell = pd_1d_nogz->GetCell(i);
-        float area = (float) GetCellArea(cell);
+        double area = GetCellArea(cell);
         int orig_cell = orig_cells->GetValue(i);
-        float orig_area = arr->GetTuple1(orig_cell);
-        float new_area = area + orig_area;
+        double orig_area = arr->GetTuple1(orig_cell);
+        double new_area = area + orig_area;
         arr->SetTuple1(orig_cell, new_area);
     }
 

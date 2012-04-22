@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtSpecMFExpression.C                           //
+//                           avtSpecMFExpression.C                           //
 // ************************************************************************* //
 
 #include <avtSpecMFExpression.h>
@@ -46,7 +46,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkUnsignedIntArray.h>
 
 #include <ExprToken.h>
@@ -142,9 +142,7 @@ avtSpecMFExpression::PreExecute(void)
 vtkDataArray *
 avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i, j;
-
-    int ncells = in_ds->GetNumberOfCells();
+    vtkIdType ncells = in_ds->GetNumberOfCells();
 
     //
     // The 'currentDomainsIndex' is a data member of the base class that is
@@ -169,22 +167,12 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
             debug1 << "Could not find a material object." << endl;
         else
             debug1 << "Could not find a species object." << endl;
-        vtkFloatArray *dummy = vtkFloatArray::New();
+        vtkDoubleArray *dummy = vtkDoubleArray::New();
         dummy->SetNumberOfTuples(ncells);
-        for (i = 0 ; i < ncells ; i++)
+        for (vtkIdType i = 0 ; i < ncells ; i++)
             dummy->SetTuple1(i, 0.);
         return dummy;
     }
-
-    //
-    // Note that we are setting up mf_for_orig_cells based on the number of
-    // zones in the original dataset -- this may or may not be the number
-    // of cells in the input, depending on whether or not we did MIR.
-    //
-    vtkFloatArray *mf_for_orig_cells = vtkFloatArray::New();
-    mf_for_orig_cells = vtkFloatArray::New();
-    int norigcells = mat->GetNZones();
-    mf_for_orig_cells->SetNumberOfTuples(norigcells);
 
     //
     // Try to match up the materials in the avtMaterial object with the
@@ -192,7 +180,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
     //
     int selectedMat = -1;
     int nmats = mat->GetNMaterials();
-    for (i = 0 ; i < nmats ; i++)
+    for (int i = 0 ; i < nmats ; i++)
     {
         std::string currentMat = mat->GetMaterials()[i];
         if (matNames.size() > 0)
@@ -234,7 +222,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
                     "\nList of valid materials is: ", 
                     matIndices[0]);
         char *tmp = warningString + strlen(warningString);
-        for (j = 0 ; j < all_mats.size() ; j++)
+        for (size_t j = 0 ; j < all_mats.size() ; j++)
         {
             if (j < (all_mats.size()-1))
                 sprintf(tmp, "\"%s\", ", all_mats[j].c_str());
@@ -245,9 +233,9 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
         avtCallback::IssueWarning(warningString);
 
         // Return a null array
-        vtkFloatArray *dummy = vtkFloatArray::New();
+        vtkDoubleArray *dummy = vtkDoubleArray::New();
         dummy->SetNumberOfTuples(ncells);
-        for (i = 0 ; i < ncells ; i++)
+        for (vtkIdType i = 0 ; i < ncells ; i++)
             dummy->SetTuple1(i, 0.);
         return dummy;
     }
@@ -261,10 +249,10 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
     std::vector<bool>  useSpec(nspecs, false);
     std::vector<bool>  matchedSpecName(specNames.size(), false);
     std::vector<bool>  matchedSpecIndex(specIndices.size(), false);
-    for (i = 0 ; i < nspecs ; i++)
+    for (int i = 0 ; i < nspecs ; i++)
     {
         std::string currentSpec = spec->GetSpecies()[selectedMat][i];
-        for (j = 0 ; j < specNames.size() ; j++)
+        for (size_t j = 0 ; j < specNames.size() ; j++)
         {
             if (currentSpec == specNames[j])
             {
@@ -272,7 +260,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
                 matchedSpecName[j] = true;
             }
         }
-        for (j = 0 ; j < specIndices.size() ; j++)
+        for (size_t j = 0 ; j < specIndices.size() ; j++)
         {
             char tmp[256];
             sprintf(tmp, "%d", specIndices[j]);
@@ -292,14 +280,14 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
     // Make sure that we found every species requested.  If not, issue
     // a warning.
     //
-    for (i = 0 ; i < specNames.size() ; i++)
+    for (size_t i = 0 ; i < specNames.size() ; i++)
     {
         if (!matchedSpecName[i])
         {
             const std::vector<std::string> &all_specs = 
                                                spec->GetSpecies()[selectedMat];
             bool matched = false;
-            for (j = 0 ; j < all_specs.size() ; j++)
+            for (size_t j = 0 ; j < all_specs.size() ; j++)
             {
                 if (specNames[i] == all_specs[j])
                 {
@@ -317,7 +305,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
                               "List of valid species for the given material is: ", 
                               specNames[i].c_str());
                     char *tmp = warningString + strlen(warningString);
-                    for (j = 0 ; j < all_specs.size() ; j++)
+                    for (size_t j = 0 ; j < all_specs.size() ; j++)
                     {
                         if (j < (all_specs.size()-1))
                             sprintf(tmp, "\"%s\", ", all_specs[j].c_str());
@@ -331,7 +319,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
             }
         }
     }
-    for (i = 0 ; i < specIndices.size() ; i++)
+    for (size_t i = 0 ; i < specIndices.size() ; i++)
     {
         char tmp[256];
         sprintf(tmp, "%d", specIndices[i]);
@@ -342,7 +330,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
             const std::vector<std::string> &all_specs = 
                                                spec->GetSpecies()[selectedMat];
             bool matched = false;
-            for (j = 0 ; j < all_specs.size() ; j++)
+            for (size_t j = 0 ; j < all_specs.size() ; j++)
             {
                 if (specname == all_specs[j])
                 {
@@ -360,7 +348,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
                               "List of valid species for the given material is: ", 
                               specname.c_str());
                     char *tmp = warningString + strlen(warningString);
-                    for (j = 0 ; j < all_specs.size() ; j++)
+                    for (size_t j = 0 ; j < all_specs.size() ; j++)
                     {
                         if (j < (all_specs.size()-1))
                             sprintf(tmp, "\"%s\", ", all_specs[j].c_str());
@@ -374,6 +362,17 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
             }
         }
     }
+
+
+    //
+    // Note that we are setting up mf_for_orig_cells based on the number of
+    // zones in the original dataset -- this may or may not be the number
+    // of cells in the input, depending on whether or not we did MIR.
+    //
+    vtkDoubleArray *mf_for_orig_cells = vtkDoubleArray::New();
+    int norigcells = mat->GetNZones();
+    mf_for_orig_cells->SetNumberOfTuples(norigcells);
+
     
     //
     // Walk through the material data structure and calculate the volume
@@ -386,7 +385,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
     const int *speclist = spec->GetSpeclist();
     const int *mixspeclist = spec->GetMixSpeclist();
     const float *specmf = spec->GetSpecMF();
-    for (i = 0 ; i < norigcells ; i++)
+    for (int i = 0 ; i < norigcells ; i++)
     {
         float weight = 1.0;
 
@@ -425,7 +424,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
         }
         else
         {
-            for (j=0; j<nspecs; j++)
+            for (int j=0; j<nspecs; j++)
             {
                 if (useSpec[j])
                     mf += specmf[specIndex + j - 1];
@@ -437,7 +436,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
 
     bool zonesMatchMaterialObject = GetInput()->GetInfo().GetValidity().
                                             GetZonesPreserved();
-    vtkFloatArray *rv = NULL;
+    vtkDoubleArray *rv = NULL;
     if (zonesMatchMaterialObject)
     {
         //
@@ -458,7 +457,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
         // original cells have been modified -- most likely by MIR.  Use
         // their original indexing to determine the volume fractions.
         //
-        rv = vtkFloatArray::New();
+        rv = vtkDoubleArray::New();
         rv->SetNumberOfTuples(ncells);
 
         vtkUnsignedIntArray *ids = (vtkUnsignedIntArray *)
@@ -467,9 +466,9 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
         {
             EXCEPTION0(ImproperUseException);
         }
-        int ncomps = ids->GetNumberOfComponents();
+        vtkIdType  ncomps = ids->GetNumberOfComponents();
         unsigned int *ptr = ids->GetPointer(0);
-        for (i = 0 ; i < ncells ; i++)
+        for (vtkIdType i = 0 ; i < ncells ; i++)
         {
              //
              // The id's are poorly arranged.  There may be one or two
@@ -534,7 +533,8 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     int nargs = arguments->size();
     if (nargs == 0)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFExpression: No arguments given.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "avtSpecMFExpression: No arguments given.");
     }
     // Tell the first argument to create its filters.
     ArgExpr *firstarg = (*arguments)[0];
@@ -551,7 +551,8 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     // See if there are other arguments.
     if (nargs > 4)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFExpression only expects three "
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "avtSpecMFExpression only expects three "
                    "or four arguments.  To specify more than one species,"
                    " , use a list (e.g. [1,4,5:9].");
     }
@@ -562,8 +563,11 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     std::string secondtype = secondTree->GetTypeName();
     if (secondtype != "IntegerConst" && secondtype != "StringConst")
     {
-        debug5 << "avtSpecMFExpression: Second argument is not a string or integer constant: " << secondtype.c_str() << endl;
-        EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFExpression: Second argument is not a string or integer constant.");
+        debug5 << "avtSpecMFExpression: Second argument is not a string or "
+               << "integer constant: " << secondtype.c_str() << endl;
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "avtSpecMFExpression: Second argument is not a string or "
+                   "integer constant.");
     }
 
     // It's a single constant.
@@ -573,10 +577,15 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     ArgExpr *thirdarg = (*arguments)[2];
     ExprParseTreeNode *thirdTree = thirdarg->GetExpr();
     std::string thirdtype = thirdTree->GetTypeName();
-    if ((thirdtype != "IntegerConst") && (thirdtype != "StringConst") && (thirdtype != "List"))
+    if ((thirdtype != "IntegerConst") && 
+        (thirdtype != "StringConst") && 
+        (thirdtype != "List"))
     {
-        debug5 << "avtSpecMFExpression: Third argument is not a string/int constant or a list: " << thirdtype.c_str() << endl;
-        EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFExpression: Third argument is not a string/int constant or a list.");
+        debug5 << "avtSpecMFExpression: Third argument is not a string/int "
+               << "constant or a list: " << thirdtype.c_str() << endl;
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "avtSpecMFExpression: Third argument is not a string/int "
+                   "constant or a list.");
     }
 
     if (thirdtype == "IntegerConst" || thirdtype == "StringConst")
@@ -589,7 +598,7 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
         // It's a list.  Process all of them.
         ListExpr *list = dynamic_cast<ListExpr*>(thirdTree);
         std::vector<ListElemExpr*> *elems = list->GetElems();
-        for(int i=0;i<elems->size();i++)
+        for(size_t i=0;i<elems->size();i++)
         {
             if ((*elems)[i]->GetEnd())
             {
@@ -602,8 +611,8 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                     endExpr->GetTypeName() != "IntegerConst" ||
                     (skipExpr && skipExpr->GetTypeName() != "IntegerConst"))
                 {
-                    EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFExpression: "
-                               "Range must contain integers.");
+                    EXCEPTION2(ExpressionException, outputVariableName, 
+                        "avtSpecMFExpression: Range must contain integers.");
                 }
 
                 int beg  = dynamic_cast<IntegerConstExpr*>(begExpr)->GetValue();
@@ -613,7 +622,8 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 
                 if (skip <= 0 || beg > end)
                 {
-                    EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFExpression: "
+                    EXCEPTION2(ExpressionException, outputVariableName, 
+                               "avtSpecMFExpression: "
                                "Range must be of the form beg:end[:skip].");
                 }
 
@@ -629,8 +639,9 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                     debug5 << "avtSpecMFExpression: List element is not an "
                               "integer constant, a string constant, "
                               "or a list: " << type.c_str() << endl;
-                    EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFExpression: "
-                               "List element is not a string/int constant or a list.");
+                    EXCEPTION2(ExpressionException, outputVariableName, 
+                               "avtSpecMFExpression: List element is not a "
+                               "string/int constant or a list.");
                 }
 
                 AddSpecies(dynamic_cast<ConstExpr*>(item));
@@ -648,7 +659,9 @@ avtSpecMFExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
         std::string fourthtype = fourthTree->GetTypeName();
         if ((fourthtype != "BooleanConst"))
         {
-            EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFExpression: Fourth argument is not a constant boolean (true, false).");
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                       "avtSpecMFExpression: Fourth argument is not a "
+                       "constant boolean (true, false).");
         }
         weightByVF = dynamic_cast<BooleanConstExpr*>(fourthTree)->GetValue();
     }

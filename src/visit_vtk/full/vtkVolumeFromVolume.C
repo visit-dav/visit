@@ -52,7 +52,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 
-using std::vector;
+#include <vtkAccessors.h>
 
 // ****************************************************************************
 //  Method: vtkVolumeFromVolume constructor
@@ -72,7 +72,7 @@ using std::vector;
 //
 // ****************************************************************************
 
-vtkVolumeFromVolume::vtkVolumeFromVolume(int nPts, int ptSizeGuess)
+vtkVolumeFromVolume::vtkVolumeFromVolume(vtkIdType nPts, vtkIdType ptSizeGuess)
     : vtkDataSetFromVolume(nPts, ptSizeGuess), nshapes(8)
 {
     shapes[0] = &tets;
@@ -92,7 +92,7 @@ vtkVolumeFromVolume::CentroidPointList::CentroidPointList()
  
     list = new CentroidPointEntry*[listSize];
     list[0] = new CentroidPointEntry[pointsPerList];
-    for (int i = 1 ; i < listSize ; i++)
+    for (vtkIdType i = 1 ; i < listSize ; i++)
         list[i] = NULL;
  
     currentList = 0;
@@ -102,7 +102,7 @@ vtkVolumeFromVolume::CentroidPointList::CentroidPointList()
  
 vtkVolumeFromVolume::CentroidPointList::~CentroidPointList()
 {
-    for (int i = 0 ; i < listSize ; i++)
+    for (vtkIdType i = 0 ; i < listSize ; i++)
     {
         if (list[i] != NULL)
             delete [] list[i];
@@ -113,8 +113,8 @@ vtkVolumeFromVolume::CentroidPointList::~CentroidPointList()
 }
 
 
-int
-vtkVolumeFromVolume::CentroidPointList::GetList(int listId,
+vtkIdType
+vtkVolumeFromVolume::CentroidPointList::GetList(vtkIdType listId,
                                     const CentroidPointEntry *&outlist) const
 {
     if (listId < 0 || listId > currentList)
@@ -128,18 +128,18 @@ vtkVolumeFromVolume::CentroidPointList::GetList(int listId,
 }
  
  
-int
+vtkIdType
 vtkVolumeFromVolume::CentroidPointList::GetNumberOfLists(void) const
 {
     return currentList+1;
 }
  
  
-int
+vtkIdType
 vtkVolumeFromVolume::CentroidPointList::GetTotalNumberOfPoints(void) const
 {
-    int numFullLists = currentList;  // actually currentList-1+1
-    int numExtra = currentPoint;  // again, currentPoint-1+1
+    vtkIdType numFullLists = currentList;  // actually currentList-1+1
+    vtkIdType numExtra = currentPoint;  // again, currentPoint-1+1
  
     return numFullLists*pointsPerList + numExtra;
 }
@@ -153,17 +153,17 @@ vtkVolumeFromVolume::CentroidPointList::GetTotalNumberOfPoints(void) const
 //    Fixed test for resizing list.  You really do need the +1.
 //    Initialized new entries.
 //
-int
-vtkVolumeFromVolume::CentroidPointList::AddPoint(int npts, int *pts)
+vtkIdType
+vtkVolumeFromVolume::CentroidPointList::AddPoint(vtkIdType npts, const vtkIdType *pts)
 {
     if (currentPoint >= pointsPerList)
     {
         if ((currentList+1) >= listSize)
         {
             CentroidPointEntry **tmpList = new CentroidPointEntry*[2*listSize];
-            for (int i = 0 ; i < listSize ; i++)
+            for (vtkIdType i = 0 ; i < listSize ; i++)
                 tmpList[i] = list[i];
-            for (int i = listSize ; i < listSize*2 ; i++)
+            for (vtkIdType i = listSize ; i < listSize*2 ; i++)
                 tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
@@ -176,7 +176,7 @@ vtkVolumeFromVolume::CentroidPointList::AddPoint(int npts, int *pts)
     }
  
     list[currentList][currentPoint].nPts = npts;
-    for (int i = 0 ; i < npts ; i++)
+    for (vtkIdType i = 0 ; i < npts ; i++)
     {
         list[currentList][currentPoint].ptIds[i] = pts[i];
     }
@@ -186,15 +186,15 @@ vtkVolumeFromVolume::CentroidPointList::AddPoint(int npts, int *pts)
 }
 
 
-vtkVolumeFromVolume::ShapeList::ShapeList(int size)
+vtkVolumeFromVolume::ShapeList::ShapeList(vtkIdType size)
 {
     shapeSize = size;
     listSize = 4096;
     shapesPerList = 1024;
  
-    list = new int*[listSize];
-    list[0] = new int[(shapeSize+1)*shapesPerList];
-    for (int i = 1 ; i < listSize ; i++)
+    list = new vtkIdType*[listSize];
+    list[0] = new vtkIdType[(shapeSize+1)*shapesPerList];
+    for (vtkIdType i = 1 ; i < listSize ; i++)
         list[i] = NULL;
  
     currentList = 0;
@@ -204,7 +204,7 @@ vtkVolumeFromVolume::ShapeList::ShapeList(int size)
  
 vtkVolumeFromVolume::ShapeList::~ShapeList()
 {
-    for (int i = 0 ; i < listSize ; i++)
+    for (vtkIdType i = 0 ; i < listSize ; i++)
     {
         if (list[i] != NULL)
             delete [] list[i];
@@ -215,8 +215,8 @@ vtkVolumeFromVolume::ShapeList::~ShapeList()
 }
  
  
-int
-vtkVolumeFromVolume::ShapeList::GetList(int listId, const int *&outlist)
+vtkIdType
+vtkVolumeFromVolume::ShapeList::GetList(vtkIdType listId, const vtkIdType *&outlist)
     const
 {
     if (listId < 0 || listId > currentList)
@@ -230,18 +230,18 @@ vtkVolumeFromVolume::ShapeList::GetList(int listId, const int *&outlist)
 }
  
  
-int
+vtkIdType
 vtkVolumeFromVolume::ShapeList::GetNumberOfLists(void) const
 {
     return currentList+1;
 }
 
 
-int
+vtkIdType
 vtkVolumeFromVolume::ShapeList::GetTotalNumberOfShapes(void) const
 {
-    int numFullLists = currentList;  // actually currentList-1+1
-    int numExtra = currentShape;  // again, currentShape-1+1
+    vtkIdType numFullLists = currentList;  // actually currentList-1+1
+    vtkIdType numExtra = currentShape;  // again, currentShape-1+1
  
     return numFullLists*shapesPerList + numExtra;
 }
@@ -272,18 +272,18 @@ vtkVolumeFromVolume::HexList::~HexList()
 // ****************************************************************************
 
 void
-vtkVolumeFromVolume::HexList::AddHex(int cellId,
-                                     int v1, int v2, int v3, int v4,
-                                     int v5, int v6, int v7, int v8)
+vtkVolumeFromVolume::HexList::AddHex(vtkIdType cellId,
+    vtkIdType v1, vtkIdType v2, vtkIdType v3, vtkIdType v4,
+    vtkIdType v5, vtkIdType v6, vtkIdType v7, vtkIdType v8)
 {
     if (currentShape >= shapesPerList)
     {
         if ((currentList+1) >= listSize)
         {
-            int **tmpList = new int*[2*listSize];
-            for (int i = 0 ; i < listSize ; i++)
+            vtkIdType **tmpList = new vtkIdType*[2*listSize];
+            for (vtkIdType i = 0 ; i < listSize ; i++)
                 tmpList[i] = list[i];
-            for (int i = listSize ; i < listSize*2 ; i++)
+            for (vtkIdType i = listSize ; i < listSize*2 ; i++)
                 tmpList[i] = NULL;
 
             listSize *= 2;
@@ -292,11 +292,11 @@ vtkVolumeFromVolume::HexList::AddHex(int cellId,
         }
  
         currentList++;
-        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        list[currentList] = new vtkIdType[(shapeSize+1)*shapesPerList];
         currentShape = 0;
     }
  
-    int idx = (shapeSize+1)*currentShape;
+    vtkIdType idx = (shapeSize+1)*currentShape;
     list[currentList][idx+0] = cellId;
     list[currentList][idx+1] = v1;
     list[currentList][idx+2] = v2;
@@ -335,18 +335,18 @@ vtkVolumeFromVolume::WedgeList::~WedgeList()
 // ****************************************************************************
 
 void
-vtkVolumeFromVolume::WedgeList::AddWedge(int cellId,
-                                         int v1, int v2, int v3,
-                                         int v4, int v5, int v6)
+vtkVolumeFromVolume::WedgeList::AddWedge(vtkIdType cellId,
+    vtkIdType v1, vtkIdType v2, vtkIdType v3,
+    vtkIdType v4, vtkIdType v5, vtkIdType v6)
 {
     if (currentShape >= shapesPerList)
     {
         if ((currentList+1) >= listSize)
         {
-            int **tmpList = new int*[2*listSize];
-            for (int i = 0 ; i < listSize ; i++)
+            vtkIdType **tmpList = new vtkIdType*[2*listSize];
+            for (vtkIdType i = 0 ; i < listSize ; i++)
                 tmpList[i] = list[i];
-            for (int i = listSize ; i < listSize*2 ; i++)
+            for (vtkIdType i = listSize ; i < listSize*2 ; i++)
                 tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
@@ -354,11 +354,11 @@ vtkVolumeFromVolume::WedgeList::AddWedge(int cellId,
         }
  
         currentList++;
-        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        list[currentList] = new vtkIdType[(shapeSize+1)*shapesPerList];
         currentShape = 0;
     }
  
-    int idx = (shapeSize+1)*currentShape;
+    vtkIdType idx = (shapeSize+1)*currentShape;
     list[currentList][idx+0] = cellId;
     list[currentList][idx+1] = v1;
     list[currentList][idx+2] = v2;
@@ -395,17 +395,17 @@ vtkVolumeFromVolume::PyramidList::~PyramidList()
 // ****************************************************************************
 
 void
-vtkVolumeFromVolume::PyramidList::AddPyramid(int cellId, int v1, int v2,
-                                             int v3, int v4, int v5)
+vtkVolumeFromVolume::PyramidList::AddPyramid(vtkIdType cellId,
+    vtkIdType v1, vtkIdType v2, vtkIdType v3, vtkIdType v4, vtkIdType v5)
 {
     if (currentShape >= shapesPerList)
     {
         if ((currentList+1) >= listSize)
         {
-            int **tmpList = new int*[2*listSize];
-            for (int i = 0 ; i < listSize ; i++)
+            vtkIdType **tmpList = new vtkIdType*[2*listSize];
+            for (vtkIdType i = 0 ; i < listSize ; i++)
                 tmpList[i] = list[i];
-            for (int i = listSize ; i < listSize*2 ; i++)
+            for (vtkIdType i = listSize ; i < listSize*2 ; i++)
                 tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
@@ -413,11 +413,11 @@ vtkVolumeFromVolume::PyramidList::AddPyramid(int cellId, int v1, int v2,
         }
  
         currentList++;
-        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        list[currentList] = new vtkIdType[(shapeSize+1)*shapesPerList];
         currentShape = 0;
     }
  
-    int idx = (shapeSize+1)*currentShape;
+    vtkIdType idx = (shapeSize+1)*currentShape;
     list[currentList][idx+0] = cellId;
     list[currentList][idx+1] = v1;
     list[currentList][idx+2] = v2;
@@ -453,16 +453,17 @@ vtkVolumeFromVolume::TetList::~TetList()
 // ****************************************************************************
 
 void
-vtkVolumeFromVolume::TetList::AddTet(int cellId, int v1,int v2,int v3,int v4)
+vtkVolumeFromVolume::TetList::AddTet(vtkIdType cellId,
+    vtkIdType v1,vtkIdType v2,vtkIdType v3,vtkIdType v4)
 {
     if (currentShape >= shapesPerList)
     {
         if ((currentList+1) >= listSize)
         {
-            int **tmpList = new int*[2*listSize];
-            for (int i = 0 ; i < listSize ; i++)
+            vtkIdType **tmpList = new vtkIdType*[2*listSize];
+            for (vtkIdType i = 0 ; i < listSize ; i++)
                 tmpList[i] = list[i];
-            for (int i = listSize ; i < listSize*2 ; i++)
+            for (vtkIdType i = listSize ; i < listSize*2 ; i++)
                 tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
@@ -470,11 +471,11 @@ vtkVolumeFromVolume::TetList::AddTet(int cellId, int v1,int v2,int v3,int v4)
         }
  
         currentList++;
-        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        list[currentList] = new vtkIdType[(shapeSize+1)*shapesPerList];
         currentShape = 0;
     }
  
-    int idx = (shapeSize+1)*currentShape;
+    vtkIdType idx = (shapeSize+1)*currentShape;
     list[currentList][idx+0] = cellId;
     list[currentList][idx+1] = v1;
     list[currentList][idx+2] = v2;
@@ -509,16 +510,17 @@ vtkVolumeFromVolume::QuadList::~QuadList()
 // ****************************************************************************
 
 void
-vtkVolumeFromVolume::QuadList::AddQuad(int cellId, int v1,int v2,int v3,int v4)
+vtkVolumeFromVolume::QuadList::AddQuad(vtkIdType cellId,
+    vtkIdType v1,vtkIdType v2,vtkIdType v3,vtkIdType v4)
 {
     if (currentShape >= shapesPerList)
     {
         if ((currentList+1) >= listSize)
         {
-            int **tmpList = new int*[2*listSize];
-            for (int i = 0 ; i < listSize ; i++)
+            vtkIdType **tmpList = new vtkIdType*[2*listSize];
+            for (vtkIdType i = 0 ; i < listSize ; i++)
                 tmpList[i] = list[i];
-            for (int i = listSize ; i < listSize*2 ; i++)
+            for (vtkIdType i = listSize ; i < listSize*2 ; i++)
                 tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
@@ -526,11 +528,11 @@ vtkVolumeFromVolume::QuadList::AddQuad(int cellId, int v1,int v2,int v3,int v4)
         }
  
         currentList++;
-        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        list[currentList] = new vtkIdType[(shapeSize+1)*shapesPerList];
         currentShape = 0;
     }
  
-    int idx = (shapeSize+1)*currentShape;
+    vtkIdType idx = (shapeSize+1)*currentShape;
     list[currentList][idx+0] = cellId;
     list[currentList][idx+1] = v1;
     list[currentList][idx+2] = v2;
@@ -565,16 +567,17 @@ vtkVolumeFromVolume::TriList::~TriList()
 // ****************************************************************************
 
 void
-vtkVolumeFromVolume::TriList::AddTri(int cellId, int v1,int v2,int v3)
+vtkVolumeFromVolume::TriList::AddTri(vtkIdType cellId,
+    vtkIdType v1,vtkIdType v2,vtkIdType v3)
 {
     if (currentShape >= shapesPerList)
     {
         if ((currentList+1) >= listSize)
         {
-            int **tmpList = new int*[2*listSize];
-            for (int i = 0 ; i < listSize ; i++)
+            vtkIdType **tmpList = new vtkIdType*[2*listSize];
+            for (vtkIdType i = 0 ; i < listSize ; i++)
                 tmpList[i] = list[i];
-            for (int i = listSize ; i < listSize*2 ; i++)
+            for (vtkIdType i = listSize ; i < listSize*2 ; i++)
                 tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
@@ -582,11 +585,11 @@ vtkVolumeFromVolume::TriList::AddTri(int cellId, int v1,int v2,int v3)
         }
  
         currentList++;
-        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        list[currentList] = new vtkIdType[(shapeSize+1)*shapesPerList];
         currentShape = 0;
     }
  
-    int idx = (shapeSize+1)*currentShape;
+    vtkIdType idx = (shapeSize+1)*currentShape;
     list[currentList][idx+0] = cellId;
     list[currentList][idx+1] = v1;
     list[currentList][idx+2] = v2;
@@ -614,16 +617,17 @@ vtkVolumeFromVolume::LineList::~LineList()
 //    Initialized new entries.
 //
 void
-vtkVolumeFromVolume::LineList::AddLine(int cellId, int v1,int v2)
+vtkVolumeFromVolume::LineList::AddLine(vtkIdType cellId,
+    vtkIdType v1,vtkIdType v2)
 {
     if (currentShape >= shapesPerList)
     {
         if ((currentList+1) >= listSize)
         {
-            int **tmpList = new int*[2*listSize];
-            for (int i = 0 ; i < listSize ; i++)
+            vtkIdType **tmpList = new vtkIdType*[2*listSize];
+            for (vtkIdType i = 0 ; i < listSize ; i++)
                 tmpList[i] = list[i];
-            for (int i = listSize ; i < listSize*2 ; i++)
+            for (vtkIdType i = listSize ; i < listSize*2 ; i++)
                 tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
@@ -631,11 +635,11 @@ vtkVolumeFromVolume::LineList::AddLine(int cellId, int v1,int v2)
         }
  
         currentList++;
-        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        list[currentList] = new vtkIdType[(shapeSize+1)*shapesPerList];
         currentShape = 0;
     }
  
-    int idx = (shapeSize+1)*currentShape;
+    vtkIdType idx = (shapeSize+1)*currentShape;
     list[currentList][idx+0] = cellId;
     list[currentList][idx+1] = v1;
     list[currentList][idx+2] = v2;
@@ -662,16 +666,16 @@ vtkVolumeFromVolume::VertexList::~VertexList()
 //    Initialized new entries.
 //
 void
-vtkVolumeFromVolume::VertexList::AddVertex(int cellId, int v1)
+vtkVolumeFromVolume::VertexList::AddVertex(vtkIdType cellId, vtkIdType v1)
 {
     if (currentShape >= shapesPerList)
     {
         if ((currentList+1) >= listSize)
         {
-            int **tmpList = new int*[2*listSize];
-            for (int i = 0 ; i < listSize ; i++)
+            vtkIdType **tmpList = new vtkIdType*[2*listSize];
+            for (vtkIdType i = 0 ; i < listSize ; i++)
                 tmpList[i] = list[i];
-            for (int i = listSize ; i < listSize*2 ; i++)
+            for (vtkIdType i = listSize ; i < listSize*2 ; i++)
                 tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
@@ -679,68 +683,18 @@ vtkVolumeFromVolume::VertexList::AddVertex(int cellId, int v1)
         }
  
         currentList++;
-        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        list[currentList] = new vtkIdType[(shapeSize+1)*shapesPerList];
         currentShape = 0;
     }
  
-    int idx = (shapeSize+1)*currentShape;
+    vtkIdType idx = (shapeSize+1)*currentShape;
     list[currentList][idx+0] = cellId;
     list[currentList][idx+1] = v1;
     currentShape++;
 }
 
-
 // ****************************************************************************
-//  Modifications:
-//    Jeremy Meredith, Mon Feb 16 19:11:34 PST 2004
-//    Added polygonal cell support.
-//
-//    Hank Childs, Thu Oct 21 07:52:31 PDT 2004
-//    Instead of duplicating code, just call a common function.
-//    (Moved whole routine to new ConstructDataSet method with 
-//     CommonPointsStructure in signature).
-//
-// ****************************************************************************
-void
-vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
-                                      vtkUnstructuredGrid *output,
-                                      float *pts_ptr)
-{
-    CommonPointsStructure cps;
-    cps.hasPtsList = true;
-    cps.pts_ptr = pts_ptr;
-    ConstructDataSet(inPD, inCD, output, cps);
-}
-
-
-// ****************************************************************************
-//  Modifications:
-//    Jeremy Meredith, Mon Feb 16 19:11:34 PST 2004
-//    Added polygonal cell support.
-//
-//    Hank Childs, Thu Oct 21 07:52:31 PDT 2004
-//    Instead of duplicating code, just call a common function.
-//    (Moved whole routine to new ConstructDataSet method with 
-//     CommonPointsStructure in signature).
-//
-// ****************************************************************************
-void
-vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
-                                      vtkUnstructuredGrid *output,
-                                      int *dims, float *X, float *Y, float *Z)
-{
-    CommonPointsStructure cps;
-    cps.hasPtsList = false;
-    cps.dims = dims;
-    cps.X = X;
-    cps.Y = Y;
-    cps.Z = Z;
-    ConstructDataSet(inPD, inCD, output, cps);
-}
-
-
-// ****************************************************************************
-//  Method: vtkVolumeFromVolume::ConstructDataSet
+//  Method: ConstructDataSetHelper
 //
 //  Purpose:
 //      Constructs the output dataset.
@@ -777,16 +731,21 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
 //    
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //    Undid above change 
-//    
+//
+//    Brad Whitlock, Thu Mar 22 14:11:31 PDT 2012
+//    I turned the method into a template helper function.
+//
 // ****************************************************************************
 
+template <typename PointGetter>
 void
-vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
-                                      vtkUnstructuredGrid *output,
-                                      CommonPointsStructure &cps)
+ConstructDataSetHelper(vtkPointData *inPD, vtkCellData *inCD, vtkUnstructuredGrid *output,
+    int dataType, vtkIdType numPrevPts, 
+    vtkVolumeFromVolume::ShapeList *shapes[8], int nshapes,
+    vtkVolumeFromVolume::PointList &pt_list,
+    vtkVolumeFromVolume::CentroidPointList &centroid_list,
+    const PointGetter &pointGetter)
 {
-    int   i, j, k, l;
-
     vtkPointData *outPD = output->GetPointData();
     vtkCellData  *outCD = output->GetCellData();
 
@@ -799,21 +758,21 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     // that are used with the output.  Determine which points those are here.
     //
     int *ptLookup = new int[numPrevPts];
-    for (i = 0 ; i < numPrevPts ; i++)
+    for (vtkIdType i = 0 ; i < numPrevPts ; i++)
         ptLookup[i] = -1;
     int numUsed = 0;
-    for (i = 0 ; i < nshapes ; i++)
+    for (int i = 0 ; i < nshapes ; i++)
     {
-        int nlists = shapes[i]->GetNumberOfLists();
+        vtkIdType nlists = shapes[i]->GetNumberOfLists();
         int npts_per_shape = shapes[i]->GetShapeSize();
-        for (j = 0 ; j < nlists ; j++)
+        for (vtkIdType j = 0 ; j < nlists ; j++)
         {
-            const int *list;
-            int listSize = shapes[i]->GetList(j, list);
-            for (k = 0 ; k < listSize ; k++)
+            const vtkIdType *list;
+            vtkIdType listSize = shapes[i]->GetList(j, list);
+            for (vtkIdType k = 0 ; k < listSize ; k++)
             {
                 list++; // skip the cell id entry
-                for (l = 0 ; l < npts_per_shape ; l++)
+                for (vtkIdType l = 0 ; l < npts_per_shape ; l++)
                 {
                     int pt = *list;
                     list++;
@@ -828,9 +787,9 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     //
     // Set up the output points and its point data.
     //
-    vtkPoints *outPts = vtkPoints::New();
-    int centroidStart = numUsed + pt_list.GetTotalNumberOfPoints();
-    int nOutPts = centroidStart + centroid_list.GetTotalNumberOfPoints();
+    vtkPoints *outPts = vtkPoints::New(dataType);
+    vtkIdType centroidStart = numUsed + pt_list.GetTotalNumberOfPoints();
+    vtkIdType nOutPts = centroidStart + centroid_list.GetTotalNumberOfPoints();
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inPD, nOutPts);
     if (origNodes != NULL)
@@ -845,75 +804,41 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     // Copy over all the points from the input that are actually used in the
     // output.
     //
-    for (i = 0 ; i < numPrevPts ; i++)
+    for (vtkIdType i = 0 ; i < numPrevPts ; i++)
     {
         if (ptLookup[i] == -1)
             continue;
 
-        if (cps.hasPtsList)
-            outPts->SetPoint(ptLookup[i], cps.pts_ptr + 3*i);
-        else
-        {
-            int I = i % cps.dims[0];
-            int J = (i / cps.dims[0]) % cps.dims[1];
-            int K = i / (cps.dims[0]*cps.dims[1]);
-            outPts->SetPoint(ptLookup[i], cps.X[I], cps.Y[J], cps.Z[K]);
-        }
+        double pt[3];
+        pointGetter.GetPoint(i, pt);
+        outPts->SetPoint(ptLookup[i], pt);
 
         outPD->CopyData(inPD, i, ptLookup[i]);
         if (newOrigNodes)
             newOrigNodes->SetTuple(ptLookup[i], origNodes->GetTuple(i));
     }
-    int ptIdx = numUsed;
+    vtkIdType ptIdx = numUsed;
 
     //
     // Now construct all the points that are along edges and new and add 
     // them to the points list.
     //
-    int nLists = pt_list.GetNumberOfLists();
-    for (i = 0 ; i < nLists ; i++)
+    vtkIdType nLists = pt_list.GetNumberOfLists();
+    for (vtkIdType i = 0 ; i < nLists ; i++)
     {
-        const PointEntry *pe_list = NULL;
-        int nPts = pt_list.GetList(i, pe_list);
-        for (j = 0 ; j < nPts ; j++)
+        const vtkVolumeFromVolume::PointEntry *pe_list = NULL;
+        vtkIdType nPts = pt_list.GetList(i, pe_list);
+        for (vtkIdType j = 0 ; j < nPts ; j++)
         {
-            const PointEntry &pe = pe_list[j];
-            float pt[3];
-            int idx1 = pe.ptIds[0];
-            int idx2 = pe.ptIds[1];
+            const vtkVolumeFromVolume::PointEntry &pe = pe_list[j];
+            double pt[3], pt1[3], pt2[3];
 
-            // Construct the original points -- this will depend on whether
-            // or not we started with a rectilinear grid or a point set.
-            float *pt1 = NULL;
-            float *pt2 = NULL;
-            float pt1_storage[3];
-            float pt2_storage[3];
-            if (cps.hasPtsList)
-            {
-                pt1 = cps.pts_ptr + 3*idx1;
-                pt2 = cps.pts_ptr + 3*idx2;
-            }
-            else
-            {
-                pt1 = pt1_storage;
-                pt2 = pt2_storage;
-                int I = idx1 % cps.dims[0];
-                int J = (idx1 / cps.dims[0]) % cps.dims[1];
-                int K = idx1 / (cps.dims[0]*cps.dims[1]);
-                pt1[0] = cps.X[I];
-                pt1[1] = cps.Y[J];
-                pt1[2] = cps.Z[K];
-                I = idx2 % cps.dims[0];
-                J = (idx2 / cps.dims[0]) % cps.dims[1];
-                K = idx2 / (cps.dims[0]*cps.dims[1]);
-                pt2[0] = cps.X[I];
-                pt2[1] = cps.Y[J];
-                pt2[2] = cps.Z[K];
-            }
+            pointGetter.GetPoint(pe.ptIds[0], pt1);
+            pointGetter.GetPoint(pe.ptIds[1], pt2);
 
             // Now that we have the original points, calculate the new one.
-            float p  = pe.percent;
-            float bp = 1. - p;
+            double p  = pe.percent;
+            double bp = 1. - p;
             pt[0] = pt1[0]*p + pt2[0]*bp;
             pt[1] = pt1[1]*p + pt2[1]*bp;
             pt[2] = pt1[2]*p + pt2[2]*bp;
@@ -921,7 +846,7 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
             outPD->InterpolateEdge(inPD, ptIdx, pe.ptIds[0], pe.ptIds[1], bp);
             if (newOrigNodes)
             {
-                int id = (bp <= 0.5 ? pe.ptIds[0] : pe.ptIds[1]);
+                vtkIdType id = (bp <= 0.5 ? pe.ptIds[0] : pe.ptIds[1]);
                 newOrigNodes->SetTuple(ptIdx, origNodes->GetTuple(id));
             }
             ptIdx++;
@@ -933,22 +858,22 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     //
     nLists = centroid_list.GetNumberOfLists();
     vtkIdList *idList = vtkIdList::New();
-    for (i = 0 ; i < nLists ; i++)
+    for (vtkIdType i = 0 ; i < nLists ; i++)
     {
-        const CentroidPointEntry *ce_list = NULL;
-        int nPts = centroid_list.GetList(i, ce_list);
-        for (j = 0 ; j < nPts ; j++)
+        const vtkVolumeFromVolume::CentroidPointEntry *ce_list = NULL;
+        vtkIdType nPts = centroid_list.GetList(i, ce_list);
+        for (vtkIdType j = 0 ; j < nPts ; j++)
         {
-            const CentroidPointEntry &ce = ce_list[j];
+            const vtkVolumeFromVolume::CentroidPointEntry &ce = ce_list[j];
             idList->SetNumberOfIds(ce.nPts);
             double pts[8][3];
             double weights[8];
-            float pt[3] = {0., 0., 0.};
-            float weight_factor = 1. / ce.nPts;
+            double pt[3] = {0., 0., 0.};
+            double weight_factor = 1. / ce.nPts;
             for (int k = 0 ; k < ce.nPts ; k++)
             {
                 weights[k] = 1.0 * weight_factor;
-                int id = 0;
+                vtkIdType id = 0;
                 if (ce.ptIds[k] < 0)
                     id = centroidStart-1 - ce.ptIds[k];
                 else if (ce.ptIds[k] >= numPrevPts)
@@ -996,14 +921,14 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     //
     // Now set up the shapes and the cell data.
     //
-    int cellId = 0;
-    int nlists;
+    vtkIdType cellId = 0;
+    vtkIdType nlists;
 
-    int ncells = 0;
-    int conn_size = 0;
-    for (i = 0 ; i < nshapes ; i++)
+    vtkIdType ncells = 0;
+    vtkIdType conn_size = 0;
+    for (int i = 0 ; i < nshapes ; i++)
     {
-        int ns = shapes[i]->GetTotalNumberOfShapes();
+        vtkIdType ns = shapes[i]->GetTotalNumberOfShapes();
         ncells += ns;
         conn_size += (shapes[i]->GetShapeSize()+1)*ns;
     }
@@ -1023,20 +948,20 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     vtkIdType *cl = cellLocations->GetPointer(0);
 
     vtkIdType ids[1024]; // 8 (for hex) should be max, but...
-    int current_index = 0;
-    for (i = 0 ; i < nshapes ; i++)
+    vtkIdType current_index = 0;
+    for (int i = 0 ; i < nshapes ; i++)
     {
-        const int *list;
+        const vtkIdType *list;
         nlists = shapes[i]->GetNumberOfLists();
         int shapesize = shapes[i]->GetShapeSize();
         int vtk_type = shapes[i]->GetVTKType();
-        for (j = 0 ; j < nlists ; j++)
+        for (vtkIdType j = 0 ; j < nlists ; j++)
         {
             int listSize = shapes[i]->GetList(j, list);
-            for (k = 0 ; k < listSize ; k++)
+            for (vtkIdType k = 0 ; k < listSize ; k++)
             {
                 outCD->CopyData(inCD, list[0], cellId);
-                for (l = 0 ; l < shapesize ; l++)
+                for (int l = 0 ; l < shapesize ; l++)
                 {
                     if (list[l+1] < 0)
                         ids[l] = centroidStart-1 - list[l+1];
@@ -1049,7 +974,7 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                 *nl++ = shapesize;
                 *cl++ = current_index;
                 *ct++ = vtk_type;
-                for (l = 0 ; l < shapesize ; l++)
+                for (int l = 0 ; l < shapesize ; l++)
                     *nl++ = ids[l];
                 current_index += shapesize+1;
                 //output->InsertNextCell(vtk_type, shapesize, ids);
@@ -1070,16 +995,79 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     delete [] ptLookup;
 }
 
-
-inline void GetPoint(float *pt, const float *X, const float *Y,
-                     const float *Z, const int *dims, const int &index)
+// ****************************************************************************
+//  Modifications:
+//    Jeremy Meredith, Mon Feb 16 19:11:34 PST 2004
+//    Added polygonal cell support.
+//
+//    Hank Childs, Thu Oct 21 07:52:31 PDT 2004
+//    Instead of duplicating code, just call a common function.
+//    (Moved whole routine to new ConstructDataSet method with 
+//     CommonPointsStructure in signature).
+//
+//    Brad Whitlock, Thu Mar 22 12:36:10 PDT 2012
+//    Call ConstructDataSetHelper.
+//
+// ****************************************************************************
+void
+vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
+                                      vtkUnstructuredGrid *output,
+                                      vtkPoints *pts)
 {
-    int cellI = index % dims[0];
-    int cellJ = (index/dims[0]) % dims[1];
-    int cellK = index/(dims[0]*dims[1]);
-    pt[0] = X[cellI];
-    pt[1] = Y[cellJ];
-    pt[2] = Z[cellK];
+    if(pts->GetDataType() == VTK_FLOAT)
+        ConstructDataSetHelper(inPD, inCD, output, VTK_FLOAT, this->numPrevPts,
+                               this->shapes, this->nshapes, 
+                               this->pt_list, this->centroid_list,
+                               vtkPointAccessor<float>(pts));
+    else if(pts->GetDataType() == VTK_DOUBLE)
+        ConstructDataSetHelper(inPD, inCD, output, VTK_DOUBLE, this->numPrevPts,
+                               this->shapes, this->nshapes, 
+                               this->pt_list, this->centroid_list, 
+                               vtkPointAccessor<double>(pts));
+    else
+        ConstructDataSetHelper(inPD, inCD, output, VTK_FLOAT, this->numPrevPts,
+                               this->shapes, this->nshapes,
+                               this->pt_list, this->centroid_list, 
+                               vtkGeneralPointAccessor(pts));
 }
 
 
+// ****************************************************************************
+//  Modifications:
+//    Jeremy Meredith, Mon Feb 16 19:11:34 PST 2004
+//    Added polygonal cell support.
+//
+//    Hank Childs, Thu Oct 21 07:52:31 PDT 2004
+//    Instead of duplicating code, just call a common function.
+//    (Moved whole routine to new ConstructDataSet method with 
+//     CommonPointsStructure in signature).
+//
+//    Brad Whitlock, Thu Mar 22 12:36:10 PDT 2012
+//    Call ConstructDataSetHelper.
+//
+// ****************************************************************************
+void
+vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
+                                      vtkUnstructuredGrid *output,
+                                      const int *dims, vtkDataArray *X, vtkDataArray *Y, vtkDataArray *Z)
+{
+    int tx = X->GetDataType();
+    int ty = Y->GetDataType();
+    int tz = Z->GetDataType();
+    bool same = tx == ty && ty == tz;
+    if(same && tx == VTK_FLOAT)
+        ConstructDataSetHelper(inPD, inCD, output, VTK_FLOAT, this->numPrevPts,
+                               this->shapes, this->nshapes, 
+                               this->pt_list, this->centroid_list, 
+                               vtkRectPointAccessor<float>(dims, X, Y, Z));
+    else if(same && tx == VTK_DOUBLE)
+        ConstructDataSetHelper(inPD, inCD, output, VTK_DOUBLE, this->numPrevPts, 
+                               this->shapes, this->nshapes, 
+                               this->pt_list, this->centroid_list, 
+                               vtkRectPointAccessor<double>(dims, X, Y, Z));
+    else
+        ConstructDataSetHelper(inPD, inCD, output, VTK_FLOAT, this->numPrevPts,
+                               this->shapes, this->nshapes, 
+                               this->pt_list, this->centroid_list, 
+                               vtkGeneralRectPointAccessor(dims, X, Y, Z));
+}

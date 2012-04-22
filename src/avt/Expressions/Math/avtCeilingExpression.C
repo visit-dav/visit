@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtCeilingExpression.C                            //
+//                             avtCeilingExpression.C                        //
 // ************************************************************************* //
 
 #include <avtCeilingExpression.h>
@@ -104,13 +104,13 @@ avtCeilingExpression::~avtCeilingExpression()
  
 void
 avtCeilingExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                 int ncomponents, int ntuples)
+                                  int ncomponents, int ntuples)
 {
     for (int i = 0 ; i < ntuples ; i++)
     {
         for (int j = 0 ; j < ncomponents ; j++)
         {
-            float val = in->GetComponent(i, j);
+            double val = in->GetComponent(i, j);
             out->SetComponent(i, j, ceil(val));
         }
     }

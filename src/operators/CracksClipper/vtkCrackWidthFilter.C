@@ -228,7 +228,7 @@ vtkCrackWidthFilter::Execute()
   vtkDataSet *output = GetOutput();
   output->DeepCopy(input);
 
-  int numCells = input->GetNumberOfCells();
+  vtkIdType numCells = input->GetNumberOfCells();
 
   // Prepare the arrays
   vtkFloatArray *crack1Width = vtkFloatArray::New();
@@ -275,7 +275,7 @@ vtkCrackWidthFilter::Execute()
   double delta, cw, zVol, *dir, *maxCW;
   int crackOrder[3]; 
 
-  for (int cellId = 0; cellId < numCells; cellId++)
+  for (vtkIdType cellId = 0; cellId < numCells; cellId++)
     {
     double center[3] = {VTK_LARGE_FLOAT, VTK_LARGE_FLOAT, VTK_LARGE_FLOAT};
     double delta1 = strain->GetComponent(cellId, 0);
@@ -392,7 +392,7 @@ vtkCrackWidthFilter::Execute()
 // ***************************************************************************
 
 double
-vtkCrackWidthFilter::CrackWidthForCell(vtkCell *cell, int cellId, 
+vtkCrackWidthFilter::CrackWidthForCell(vtkCell *cell, vtkIdType cellId, 
   const double *center, const double delta, const double *dir, 
   const double zVol, const double L1L2)
 {

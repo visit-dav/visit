@@ -67,11 +67,15 @@ class vtkRectilinearGrid;
 //    Tom Fogal, Tue Sep 27 12:25:55 MDT 2011
 //    Add API for keeping track of static VTK objects.
 //
+//    Brad Whitlock, Wed Mar 21 12:01:11 PDT 2012
+//    I added NewPoints.
+//
 // ****************************************************************************
 
 namespace vtkVisItUtility
 {
     VISIT_VTK_LIGHT_API vtkPoints  *GetPoints(vtkDataSet *);
+    VISIT_VTK_LIGHT_API vtkPoints  *NewPoints(vtkDataSet *);
     VISIT_VTK_LIGHT_API void        GetLogicalIndices(vtkDataSet *, const bool, 
                                                 const int, int [3], 
                                                 const bool = false,

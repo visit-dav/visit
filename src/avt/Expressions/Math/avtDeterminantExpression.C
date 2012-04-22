@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtDeterminantExpression.C                          //
+//                           avtDeterminantExpression.C                      //
 // ************************************************************************* //
 
 #include <avtDeterminantExpression.h>
@@ -109,7 +109,7 @@ avtDeterminantExpression::~avtDeterminantExpression()
  
 void
 avtDeterminantExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                          int ncomponents, int ntuples)
+                                      int ncomponents, int ntuples)
 {
     if (ncomponents == 9)
     {

@@ -43,12 +43,8 @@
 #include "avtVMetricShape.h"
 
 #include <vtkCellType.h>
-#include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 
 #include <verdict.h>
-
-#include <DebugStream.h>
 
 // ****************************************************************************
 //  Method: avtVMetricShape::Metric

@@ -91,8 +91,8 @@ protected:
 
     void PopulateBinsWithCellLabels3D();
     void PopulateBinsWithNodeLabels3D();
-    void PopulateBinsHelper(const unsigned char *, const char *, const float *,
-                            int, int);
+    void PopulateBinsHelper(const unsigned char *, const char *, const double *,
+                            vtkIdType, int);
     void ClearZBuffer();
     void InitializeZBuffer(bool, bool);
 
@@ -100,12 +100,13 @@ protected:
     void BeginSize2D(int);
     void EndSize2D();
 
-    float *TransformPoints(const float *inputPoints,
+    template <typename T>
+    double *TransformPoints(T inputPoints,
                            const unsigned char *quantizedNormalIndices,
                            int nPoints);
 
-    float                  x_scale;
-    float                  y_scale;
+    double                 x_scale;
+    double                 y_scale;
     int                    characterDisplayListIndices[256];
     bool                   characterDisplayListsCreated;
 

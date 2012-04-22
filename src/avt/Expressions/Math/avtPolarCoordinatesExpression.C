@@ -37,15 +37,15 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtPolarCoordinatesExpression.C                       //
+//                     avtPolarCoordinatesExpression.C                       //
 // ************************************************************************* //
 
 #include <avtPolarCoordinatesExpression.h>
 
 #include <math.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 
 
 // ****************************************************************************
@@ -110,24 +110,24 @@ avtPolarCoordinatesExpression::~avtPolarCoordinatesExpression()
 vtkDataArray *
 avtPolarCoordinatesExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int npts = in_ds->GetNumberOfPoints();
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkIdType npts = in_ds->GetNumberOfPoints();
+    vtkDataArray *rv = CreateArrayFromMesh(in_ds);
     rv->SetNumberOfComponents(3);
     rv->SetNumberOfTuples(npts);
     bool in3D = 
             (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3);
-    for (int i = 0 ; i < npts ; i++)
+    for (vtkIdType i = 0 ; i < npts ; i++)
     {
         double pt[3];
         in_ds->GetPoint(i, pt);
         
-        float r = sqrt(pt[0]*pt[0] + pt[1]*pt[1] + pt[2]*pt[2]);
+        double r = sqrt(pt[0]*pt[0] + pt[1]*pt[1] + pt[2]*pt[2]);
         rv->SetComponent(i, 0, r);
 
-        float theta = atan2(pt[1], pt[0]);
+        double theta = atan2(pt[1], pt[0]);
         rv->SetComponent(i, 1, theta);
 
-        float phi = 0.;
+        double phi = 0.;
         if (in3D)
             phi = acos(pt[2] / r);
         rv->SetComponent(i, 2, phi);

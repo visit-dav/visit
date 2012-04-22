@@ -28,7 +28,7 @@
 * LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
 * DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
 * DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS vtkIdTypeERRUPTION) HOWEVER
 * CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
 * LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
 * OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
@@ -51,7 +51,9 @@
 
 
 class vtkCellData;
+class vtkDataArray;
 class vtkPointData;
+class vtkPoints;
 class vtkPolyData;
 class vtkUnstructuredGrid;
 
@@ -63,7 +65,7 @@ class vtkUnstructuredGrid;
 //      This is a special type of vtkVolumeFromVolume, where each added
 //      cell belongs to one half of a binary partition of the original
 //      data set.  You specify which half when you add the shape, and
-//      when constructing the data set, tell it the index (into a bit array)
+//      when constructing the data set, tell it the index (vtkIdTypeo a bit array)
 //      corresponding to the current binary partition function.
 //      E.g. on the first pass, you specify bit #0 and "in" cells get the tag
 //      0x0 and "out" cels get the tag 0x1.  On the second pass, you specify
@@ -75,6 +77,8 @@ class vtkUnstructuredGrid;
 //  Creation:   February 26, 2010
 //
 //  Modifications:
+//   Brad Whitlock, Thu Mar 22 15:31:41 PDT 2012
+//   Use vtkIdType. Add double support.
 //
 // ****************************************************************************
 
@@ -84,18 +88,18 @@ class VISIT_VTK_API vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVo
 
 
   public:
-                      vtkBinaryPartitionVolumeFromVolume(int nPts,
-                                                         int ptSizeGuess);
+                      vtkBinaryPartitionVolumeFromVolume(vtkIdType nPts,
+                                                         vtkIdType ptSizeGuess);
     virtual          ~vtkBinaryPartitionVolumeFromVolume() { ; };
 
     void              ConstructDataSet(vtkPointData *, vtkCellData *,
-                                       vtkUnstructuredGrid *, float *,
+                                       vtkUnstructuredGrid *, vtkPoints *,
                                        std::vector<FixedLengthBitField<16> > *oldTags,
                                        std::vector<FixedLengthBitField<16> > *newTags,
                                        int newTagBit);
     void              ConstructDataSet(vtkPointData *, vtkCellData *,
-                                       vtkUnstructuredGrid *, int *,
-                                       float *, float *,float *,
+                                       vtkUnstructuredGrid *, const int *,
+                                       vtkDataArray *, vtkDataArray *, vtkDataArray *,
                                        std::vector<FixedLengthBitField<16> > *oldTags,
                                        std::vector<FixedLengthBitField<16> > *newTags,
                                        int newTagBit);
@@ -103,51 +107,51 @@ class VISIT_VTK_API vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVo
     using vtkVolumeFromVolume::AddCentroidPoint;
     using vtkDataSetFromVolume::AddPoint;
 
-    void           AddHex(int z, int v0, int v1, int v2, int v3,
-                          int v4, int v5, int v6, int v7,
+    void           AddHex(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3,
+                          vtkIdType v4, vtkIdType v5, vtkIdType v6, vtkIdType v7,
                           bool inOut)
     {
         vtkVolumeFromVolume::AddHex(z, v0, v1, v2, v3, v4, v5, v6, v7);
         hexTags.push_back(inOut ? 1 : 0);
     }
         
-    void           AddWedge(int z,int v0,int v1,int v2,int v3,int v4,int v5,
+    void           AddWedge(vtkIdType z,vtkIdType v0,vtkIdType v1,vtkIdType v2,vtkIdType v3,vtkIdType v4,vtkIdType v5,
                             bool inOut)
     {
         vtkVolumeFromVolume::AddWedge(z, v0, v1, v2, v3, v4, v5);
         wedgeTags.push_back(inOut ? 1 : 0);
     }
-    void           AddPyramid(int z, int v0, int v1, int v2, int v3, int v4,
+    void           AddPyramid(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3, vtkIdType v4,
                               bool inOut)
     {
         vtkVolumeFromVolume::AddPyramid(z, v0, v1, v2, v3, v4); 
         pyramidTags.push_back(inOut ? 1 : 0);
     }
-    void           AddTet(int z, int v0, int v1, int v2, int v3,
+    void           AddTet(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3,
                           bool inOut)
     {
         vtkVolumeFromVolume::AddTet(z, v0, v1, v2, v3);
         tetTags.push_back(inOut ? 1 : 0);
     }
-    void           AddQuad(int z, int v0, int v1, int v2, int v3,
+    void           AddQuad(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3,
                            bool inOut)
     {
         vtkVolumeFromVolume::AddQuad(z, v0, v1, v2, v3);
         quadTags.push_back(inOut ? 1 : 0);
     }
-    void           AddTri(int z, int v0, int v1, int v2,
+    void           AddTri(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2,
                           bool inOut)
     {
         vtkVolumeFromVolume::AddTri(z, v0, v1, v2);
         triTags.push_back(inOut ? 1 : 0);
     }
-    void           AddLine(int z, int v0, int v1,
+    void           AddLine(vtkIdType z, vtkIdType v0, vtkIdType v1,
                            bool inOut)
     {
         vtkVolumeFromVolume::AddLine(z, v0, v1);
         lineTags.push_back(inOut ? 1 : 0);
     }
-    void           AddVertex(int z, int v0,
+    void           AddVertex(vtkIdType z, vtkIdType v0,
                              bool inOut)
     {
         vtkVolumeFromVolume::AddVertex(z, v0);
@@ -155,22 +159,19 @@ class VISIT_VTK_API vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVo
     }
 
   protected:
-    std::vector<int>   hexTags;
-    std::vector<int>   wedgeTags;
-    std::vector<int>   pyramidTags;
-    std::vector<int>   tetTags;
-    std::vector<int>   quadTags;
-    std::vector<int>   triTags;
-    std::vector<int>   lineTags;
-    std::vector<int>   vertexTags;
-    std::vector<int>  *shapeTags[8];
+    std::vector<vtkIdType>   hexTags;
+    std::vector<vtkIdType>   wedgeTags;
+    std::vector<vtkIdType>   pyramidTags;
+    std::vector<vtkIdType>   tetTags;
+    std::vector<vtkIdType>   quadTags;
+    std::vector<vtkIdType>   triTags;
+    std::vector<vtkIdType>   lineTags;
+    std::vector<vtkIdType>   vertexTags;
+    std::vector<vtkIdType>  *shapeTags[8];
 
-    void               ConstructDataSet(vtkPointData *, vtkCellData *,
-                                        vtkUnstructuredGrid *, 
-                                        vtkVolumeFromVolume::CommonPointsStructure &,
-                                        std::vector<FixedLengthBitField<16> > *oldTags,
-                                        std::vector<FixedLengthBitField<16> > *newTags,
-                                        int newTagBit);
+    void               ComputeTags(std::vector<FixedLengthBitField<16> > *oldTags,
+                                   std::vector<FixedLengthBitField<16> > *newTags,
+                                   int newTagBit);
 };
 
 

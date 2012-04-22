@@ -45,8 +45,8 @@
 #include <float.h>
 
 #include <vtkCell.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkPoints.h>
 
 #include <avtCallback.h>
@@ -116,15 +116,15 @@ avtSideVolume::PreExecute(void)
 vtkDataArray *
 avtSideVolume::DeriveVariable(vtkDataSet *in_ds)
 {
-    vtkFloatArray *arr = vtkFloatArray::New();
-    int ncells = in_ds->GetNumberOfCells();
+    vtkDataArray *arr = CreateArrayFromMesh(in_ds);
+    vtkIdType ncells = in_ds->GetNumberOfCells();
     arr->SetNumberOfTuples(ncells);
 
-    for (int i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         vtkCell *cell = in_ds->GetCell(i);
-        float vol = (float) GetZoneVolume(cell);
-        arr->SetTuple(i, &vol);
+        double vol = GetZoneVolume(cell);
+        arr->SetTuple1(i, vol);
     }
 
     return arr;
@@ -158,8 +158,6 @@ avtSideVolume::DeriveVariable(vtkDataSet *in_ds)
 double
 avtSideVolume::GetZoneVolume(vtkCell *cell)
 {
-    int  i, j;
-
     if (cell->GetCellDimension() != 3)
     {
         if (!haveIssuedWarning)
@@ -180,21 +178,22 @@ avtSideVolume::GetZoneVolume(vtkCell *cell)
     //
     int nFaces = cell->GetNumberOfFaces();
     double *face_cent = new double[3*nFaces];
-    for (i = 0 ; i < nFaces ; i++)
+    for (int i = 0 ; i < nFaces ; i++)
     {
         vtkCell *face = cell->GetFace(i);
         face_cent[3*i]   = 0.;
         face_cent[3*i+1] = 0.;
         face_cent[3*i+2] = 0.;
         vtkPoints *pts = face->GetPoints();
-        float *pts_ptr = (float *) pts->GetVoidPointer(0);
         int npts = face->GetNumberOfPoints();
-        for (j = 0 ; j < npts ; j++)
+        for (int j = 0 ; j < npts ; j++) 
         {
-            face_cent[3*i]   += pts_ptr[3*j];
-            face_cent[3*i+1] += pts_ptr[3*j+1];
-            face_cent[3*i+2] += pts_ptr[3*j+2];
+            double *pts_ptr = pts->GetPoint(j);
+            face_cent[3*i]   += pts_ptr[0];
+            face_cent[3*i+1] += pts_ptr[1];
+            face_cent[3*i+2] += pts_ptr[2];
         }
+
         if (npts != 0)
         {
             face_cent[3*i]   /= npts;
@@ -207,7 +206,7 @@ avtSideVolume::GetZoneVolume(vtkCell *cell)
     // Now we can calculate the zone center from the face center.
     //
     double zone_cent[3] = { 0., 0., 0. };
-    for (i = 0 ; i < nFaces ; i++)
+    for (int i = 0 ; i < nFaces ; i++)
     {
         zone_cent[0] += face_cent[3*i];
         zone_cent[1] += face_cent[3*i+1];
@@ -230,33 +229,34 @@ avtSideVolume::GetZoneVolume(vtkCell *cell)
     double rv = +FLT_MAX;
     if (!takeMin)
         rv = -FLT_MAX;
-    for (i = 0 ; i < nFaces ; i++)
+    for (int i = 0 ; i < nFaces ; i++)
     {
         vtkCell *face = cell->GetFace(i);
         vtkPoints *pts = face->GetPoints();
-        float *pts_ptr = (float *) pts->GetVoidPointer(0);
         int npts = face->GetNumberOfPoints();
-        for (j = 0 ; j < npts ; j++)
+        for (int j = 0 ; j < npts ; j++)
         {
             int id2 = j;
             int id1 = (j+1) % npts;
+            double *pt1 = pts->GetPoint(id1);
+            double *pt2 = pts->GetPoint(id2);
 
             //
             // If we represent the tetrahedron as three edge vectors, a, b,
             // and c, the volume is 1/6*|dot(a,cross(b,c))|.
             //
             double a[3];
-            a[0] = pts_ptr[3*id2] - pts_ptr[3*id1];
-            a[1] = pts_ptr[3*id2+1] - pts_ptr[3*id1+1];
-            a[2] = pts_ptr[3*id2+2] - pts_ptr[3*id1+2];
+            a[0] = pt2[0] - pt1[0];
+            a[1] = pt2[1] - pt1[1];
+            a[2] = pt2[2] - pt1[2];
             double b[3];
-            b[0] = face_cent[3*i]   - pts_ptr[3*id1];
-            b[1] = face_cent[3*i+1] - pts_ptr[3*id1+1];
-            b[2] = face_cent[3*i+2] - pts_ptr[3*id1+2];
+            b[0] = face_cent[3*i]   - pt1[0];
+            b[1] = face_cent[3*i+1] - pt1[1];
+            b[2] = face_cent[3*i+2] - pt1[2];
             double c[3];
-            c[0] = zone_cent[0] - pts_ptr[3*id1];
-            c[1] = zone_cent[1] - pts_ptr[3*id1+1];
-            c[2] = zone_cent[2] - pts_ptr[3*id1+2];
+            c[0] = zone_cent[0] - pt1[0];
+            c[1] = zone_cent[1] - pt1[1];
+            c[2] = zone_cent[2] - pt1[2];
 
             double cross[3];
             cross[0] = b[1]*c[2] - b[2]*c[1];

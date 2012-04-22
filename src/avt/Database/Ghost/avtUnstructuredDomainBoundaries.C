@@ -79,6 +79,7 @@ namespace
     template <>        MPI_Datatype GetMPIDataType<int>()    { return MPI_INT;  }
     template <>        MPI_Datatype GetMPIDataType<char>()   { return MPI_CHAR; }
     template <>        MPI_Datatype GetMPIDataType<float>()  { return MPI_FLOAT;}
+    template <>        MPI_Datatype GetMPIDataType<double>() { return MPI_DOUBLE;}
 
     template <>        MPI_Datatype GetMPIDataType<unsigned int>()
                        { return MPI_UNSIGNED; }
@@ -92,25 +93,12 @@ namespace
 // Use the preprocessor to help ensure that the right template ExchangeData
 // function is instantiated.
 //
-#if defined(_MSC_VER) && (_MSC_VER <= 1200) 
-// MSVC 6
-static float         hack_float;
-static char          hack_char;
-static unsigned char hack_unsigned_char;
-static int           hack_int;
-static unsigned int  hack_unsigned_int;
-#define ExchangeData_float(A,B,C)         ExchangeData(A,B,C,hack_float);
-#define ExchangeData_char(A,B,C)          ExchangeData(A,B,C,hack_char);
-#define ExchangeData_unsigned_char(A,B,C) ExchangeData(A,B,C,hack_unsigned_char);
-#define ExchangeData_int(A,B,C)           ExchangeData(A,B,C,hack_int);
-#define ExchangeData_unsigned_int(A,B,C)  ExchangeData(A,B,C,hack_unsigned_int);
-#else
 #define ExchangeData_float         ExchangeData<float>
+#define ExchangeData_double        ExchangeData<double>
 #define ExchangeData_char          ExchangeData<char>
 #define ExchangeData_unsigned_char ExchangeData<unsigned char>
 #define ExchangeData_int           ExchangeData<int>
 #define ExchangeData_unsigned_int  ExchangeData<unsigned int>
-#endif
 
 
 // ****************************************************************************
@@ -599,6 +587,9 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
 //    depending on the platform to work around a problem with templates
 //    using the MSVC6.0 compiler on Windows.
 //
+//    Brad Whitlock, Sun Apr 22 10:36:38 PDT 2012
+//    Double support.
+//
 // ****************************************************************************
 
 vector<vtkDataArray*>
@@ -626,6 +617,8 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
             return ExchangeData_char(domainNum, isPointData, scalars);
         case VTK_FLOAT:
             return ExchangeData_float(domainNum, isPointData, scalars);
+        case VTK_DOUBLE:
+            return ExchangeData_double(domainNum, isPointData, scalars);
         case VTK_UNSIGNED_CHAR:
             return ExchangeData_unsigned_char(domainNum, isPointData, scalars);
         case VTK_UNSIGNED_INT:
@@ -673,6 +666,32 @@ avtUnstructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
     return ExchangeData_float(domainNum, isPointData, vectors);
 }
 
+// ****************************************************************************
+//  Method:  avtUnstructuredDomainBoundaries::ExchangeDoubleVector
+//
+//  Purpose:
+//    Exchange the ghost zone information for some vectors,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    vectors      an array of vectors
+//
+//  Programmer:  Akira Haddox
+//  Creation:    August 11, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vector<vtkDataArray*>
+avtUnstructuredDomainBoundaries::ExchangeDoubleVector(vector<int>      domainNum,
+                                              bool                  isPointData,
+                                              vector<vtkDataArray*> vectors)
+{
+    return ExchangeData_double(domainNum, isPointData, vectors);
+}
 
 // ****************************************************************************
 //  Method:  avtUnstructuredDomainBoundaries::ExchangeIntVector
@@ -1282,101 +1301,26 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
 //    Hank Childs, Wed Feb 14 15:48:00 PST 2007
 //    Fix bug where last entry in the array was being overwritten.
 //
+//    Brad Whitlock, Sun Apr 22 10:38:45 PDT 2012
+//    Remove MSVC 6 code.
+//
 // ****************************************************************************
 
-template <class T>
+template <typename T>
 vector<vtkDataArray*>
 avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
                                               bool                isPointData,
-                                              vector<vtkDataArray*> &data
-#if defined(_MSC_VER) && (_MSC_VER <= 1200)
-                                              , T signature
-#endif
-                                             )
+                                              vector<vtkDataArray*> &data)
 {
     // Gather the needed information
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
     T ***gainedData;
     int **nGainedTuples;
 
-#if defined(_MSC_VER) && (_MSC_VER <= 1200)
-//
-// This code is an "inline" copy of the CommunicateDataInformation method
-// without the various parallel ifdefs. The MSVC 6.0 compiler refused to
-// instantiate CommunicateDataInformation so I inlined it.
-//
-    // Get the processor rank
-    int rank = 0;
-    int nComponents = 0;
-    if (data.size())
-        nComponents = data[0]->GetNumberOfComponents();
-
-    gainedData = new T**[nTotalDomains];
-    nGainedTuples = new int*[nTotalDomains];
-
-    int sendDom;
-    for (sendDom = 0; sendDom < nTotalDomains; ++sendDom)
-    {
-        gainedData[sendDom] = new T*[nTotalDomains];
-        nGainedTuples[sendDom] = new int[nTotalDomains];
-
-        int recvDom;
-        for (recvDom = 0; recvDom < nTotalDomains; ++recvDom)
-        {
-            gainedData[sendDom][recvDom] = NULL;
-            nGainedTuples[sendDom][recvDom] = 0;
-
-            // Cases where no computation is required.
-            if (sendDom == recvDom)
-                continue;
-            if (domain2proc[sendDom] == -1 || domain2proc[recvDom] == -1)
-                continue;
-
-            // If this process owns both of the domains, it's an internal
-            // calculation: no communication needed
-            if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
-            {
-                int i;
-                for (i = 0; i < domainNum.size(); ++i)
-                    if (domainNum[i] == sendDom)
-                        break;
-
-                int index = GetGivenIndex(sendDom, recvDom);
-
-                // If no domain boundary, then there's no work to do.
-                if (index < 0)
-                    continue;
-
-                vector<int> &mapRef = isPointData ? givenPoints[index] 
-                                                  : givenCells[index];
-                
-                int nTuples = mapRef.size();
-                nGainedTuples[sendDom][recvDom] = nTuples;
-
-                gainedData[sendDom][recvDom] = new T[nTuples * nComponents];
-                
-                T * origPtr = (T*)(data[i]->GetVoidPointer(0));
-                T * dataPtr = gainedData[sendDom][recvDom];
-
-                for (i = 0; i < nTuples; ++i)
-                {
-                    T *ptr = origPtr + mapRef[i] * nComponents;
-                    int j;
-                    for (j = 0; j < nComponents; ++j)
-                    {
-                        *(dataPtr++) = *(ptr++);
-                    }
-                }
-            } 
-        }
-    }
-
-    nComponents = 0;
-#else
     CommunicateDataInformation<T> (domain2proc, domainNum, data, isPointData,
                                    gainedData, nGainedTuples);
     int nComponents = 0;
-#endif
+
     vector<vtkDataArray*> out(data.size(), NULL);
     if (data.size())
         nComponents = data[0]->GetNumberOfComponents();

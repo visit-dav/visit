@@ -56,6 +56,24 @@
 
 #include <DebugStream.h>
 
+
+// some definitions for what the polydata has in it
+#define OGL_SAWR_NORMALS            0x01
+#define OGL_SAWR_COLORS             0x02
+#define OGL_SAWR_TCOORDS            0x04
+#define OGL_SAWR_CELL_COLORS        0x08
+#define OGL_SAWR_CELL_NORMALS       0x10
+#define OGL_SAWR_POINT_TYPE_FLOAT   0x20
+#define OGL_SAWR_POINT_TYPE_DOUBLE  0x40
+#define OGL_SAWR_NORMAL_TYPE_FLOAT  0x80
+#define OGL_SAWR_NORMAL_TYPE_DOUBLE 0x100
+#define OGL_SAWR_TCOORD_TYPE_FLOAT  0x200
+#define OGL_SAWR_TCOORD_TYPE_DOUBLE 0x400
+#define OGL_SAWR_TCOORD_1D          0x800
+#define OGL_SAWR_OPAQUE_COLORS      0x1000
+#define OGL_SAWR_USE_FIELD_DATA     0x2000
+
+
 avtOpenGLSurfaceAndWireframeRenderer::avtOpenGLSurfaceAndWireframeRenderer()
 {
   // Must be in the C file to work as a Windows DLL.
@@ -248,3073 +266,1397 @@ BeginPolyTriangleOrQuad(GLenum aGlFunction, GLenum &previousGlFunction,
 }
 
 
-// ****************************************************************************
-//  Method:  Draw01 
-//
-//  Purpose:
-//    Draw with no normals, colors or textures. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework. 
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named>  
-//    p             The vertices of the primitives.
-//    <not_named>
-//    <not_named>
-//    <not_named>
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
+//-----------------------------------------
 
-static void 
-Draw01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *)
+#define vtkDrawPointsMacro(ptype,ntype,glVertFuncs,glInitFuncs) \
+{ \
+  vtkIdType nPts; unsigned short count = 0; \
+  ptype *points = static_cast<ptype *>(voidPoints);     \
+  glInitFuncs \
+  glBegin(GL_POINTS); \
+  while (ptIds < endPtIds) \
+    { \
+    nPts = *ptIds; \
+    ++ptIds; \
+    while (nPts > 0) \
+      { \
+      glVertFuncs \
+      ++ptIds; \
+      --nPts; \
+      } \
+    if (++count == 10000) \
+      { \
+      cellNum += 10000; \
+      count = 0; \
+      } \
+    } \
+  cellNum += count; \
+  glEnd(); \
+}
+
+
+
+#define vtkDrawPrimsMacro(ptype,ntype,prim,glVertFuncs,glInitFuncs) \
+{ \
+  vtkIdType nPts; unsigned short count = 0; \
+  ptype *points = static_cast<ptype *>(voidPoints);    \
+  glInitFuncs \
+  while (ptIds < endPtIds) \
+    { \
+    nPts = *ptIds; \
+    ++ptIds; \
+    glBegin(prim); \
+    while (nPts > 0) \
+      { \
+      glVertFuncs \
+      ++ptIds; \
+      --nPts; \
+      } \
+    glEnd(); \
+    if (++count == 10000) \
+      { \
+      cellNum += 10000; \
+      count = 0; \
+      } \
+    } \
+  cellNum += count; \
+}
+
+
+#define vtkDrawPolysMacro(ptype,ntype,ttype,prim,glVertFuncs,glCellFuncs,glInitFuncs) \
+{ \
+  vtkIdType nPts; unsigned short count = 0; \
+  ptype *points = static_cast<ptype *>(voidPoints);    \
+  GLenum previousGlFunction=GL_INVALID_VALUE; \
+  glInitFuncs \
+while (ptIds < endPtIds) \
+    { \
+    nPts = *ptIds; \
+    ++ptIds; \
+    BeginPolyTriangleOrQuad( prim, previousGlFunction, nPts ); \
+    glCellFuncs \
+    while (nPts > 0) \
+      { \
+      glVertFuncs \
+      ++ptIds; \
+      --nPts; \
+      } \
+    if (++count == 10000) \
+      { \
+      cellNum += 10000; \
+      count = 0; \
+      } \
+    if ((previousGlFunction != GL_TRIANGLES)  \
+        && (previousGlFunction != GL_QUADS)   \
+        && (previousGlFunction != GL_POINTS)) \
+      {  \
+      glEnd(); \
+      } \
+    } \
+  cellNum += count; \
+  if ((previousGlFunction == GL_TRIANGLES)  \
+      || (previousGlFunction == GL_QUADS)   \
+      || (previousGlFunction == GL_POINTS)) \
+    { \
+    glEnd(); \
+    } \
+}
+
+
+#define vtkDrawPolysMacro4Tri(ptype,ntype,ttype,prim,glVertFuncs,glCellFuncs,glInitFuncs) \
+{ \
+  vtkIdType nPts; unsigned short count = 0; \
+  ptype *points = static_cast<ptype *>(voidPoints);     \
+  GLenum previousGlFunction=GL_INVALID_VALUE; \
+  glInitFuncs \
+  \
+  double quad_center[3] = {0, 0, 0}; \
+  double quad_center_col[4] = {0, 0, 0, 0}; \
+  double quad_points[4][3]; \
+  double quad_points_col[4][4]; \
+  double dist_center[4] = {0, 0, 0, 0}; \
+  \
+  while (ptIds < endPtIds) \
+    { \
+    nPts = *ptIds; \
+  ++ptIds; \
+  /* If we don't want to draw a QUAD (ex : a triangle nPts = 3) */ \
+  if (nPts != 4) { \
+  /* Classic method */ \
+    BeginPolyTriangleOrQuad( prim, previousGlFunction, nPts ); \
+    glCellFuncs \
+    while (nPts > 0) \
+    { \
+    glVertFuncs \
+    ++ptIds; \
+    --nPts; \
+    } \
+  } \
+  /* If we want to draw a QUAD */ \
+  else { \
+  /* We launch glBegin(GL_TRIANGLES) mode in order to draw 4 triangles */ \
+    BeginPolyTriangleOrQuad( prim, previousGlFunction, 3 ); \
+    glCellFuncs \
+  /* We keep pointer on the first point of the first triangle */ \
+  /* ptIdsFirstPtQuad will be used for center calculation and for 2nd point of 4th triangle */ \
+    vtkIdType *ptIdsFirstPtQuad; \
+    ptIdsFirstPtQuad = ptIds; \
+  /* QUAD Center calculation */ \
+  /* We save the 4 QUAD points and their color */ \
+    GLfloat *vpt; \
+    GLubyte *vcol; \
+    for (int i=0; i<4; i++) { \
+      /* Position : */ \
+      vpt = points + 3**ptIds; \
+      quad_points[i][0] = vpt[0]; \
+      quad_points[i][1] = vpt[1]; \
+      quad_points[i][2] = vpt[2]; \
+      /* Color : */ \
+      vcol = colors + 4**ptIds; \
+      quad_points_col[i][0] = vcol[0]; \
+      quad_points_col[i][1] = vcol[1]; \
+      quad_points_col[i][2] = vcol[2]; \
+      quad_points_col[i][3] = vcol[3]; \
+      ++ptIds; \
+    } \
+  /* Actual calculation of QUAD center with the 4 summits */ \
+    quad_center[0] = (quad_points[0][0] + quad_points[1][0] + quad_points[2][0] + quad_points[3][0])/4; \
+    quad_center[1] = (quad_points[0][1] + quad_points[1][1] + quad_points[2][1] + quad_points[3][1])/4; \
+    quad_center[2] = (quad_points[0][2] + quad_points[1][2] + quad_points[2][2] + quad_points[3][2])/4; \
+  /* Color center calculation  (Interpolation on each component of RGB vector) */ \
+  /* Calculation of distances between center and summits */ \
+    for (int i=0; i<4; i++) { \
+      dist_center[i] = sqrt((quad_points[i][0] - quad_center[0])*(quad_points[i][0] - quad_center[0]) + \
+                (quad_points[i][1] - quad_center[1])*(quad_points[i][1] - quad_center[1]) + \
+                (quad_points[i][2] - quad_center[2])*(quad_points[i][2] - quad_center[2])); \
+    } \
+  /* Color interpolation (3 for RGB and 1 for Alpha transparency) */ \
+    for (int i=0; i<4; i++) { \
+      quad_center_col[i] = ((dist_center[3]*quad_points_col[1][i] + dist_center[1]*quad_points_col[3][i])/(dist_center[1] + dist_center[3]) + \
+                (dist_center[2]*quad_points_col[0][i] + dist_center[0]*quad_points_col[2][i])/(dist_center[2] + dist_center[0]) \
+                )/2; \
+    } \
+  /* We take pointer on the first QUAD point */ \
+    ptIds = ptIdsFirstPtQuad; \
+  /* Actual drawing of 4 triangles */ \
+    for (int i=0; i<4; i++) { \
+      /* 1st point */ \
+      glVertFuncs \
+      ++ptIds; \
+      /* 2nd point */ \
+      if (i >= 3) { /* If it is the last triangle */ \
+        /* this 2nd point = the 1st point of 1st triangle */ \
+        glColor3ubv(colors + 4**ptIdsFirstPtQuad); \
+        glVertex3fv(static_cast<float*>(points) + 3**ptIdsFirstPtQuad); \
+      } \
+      else { \
+        /* Else 2nd point = next point */ \
+        glVertFuncs \
+      } \
+      /* 3rd point */ \
+      glColor4f(quad_center_col[0],quad_center_col[1],quad_center_col[2],quad_center_col[3]); \
+      glVertex3f(quad_center[0],quad_center[1],quad_center[2]); \
+    } \
+  } /* End of if (nPts == 4) */ \
+    if (++count == 10000) \
+      { \
+      cellNum += 10000; \
+      count = 0; \
+      } \
+    if ((previousGlFunction != GL_TRIANGLES)  \
+        && (previousGlFunction != GL_QUADS)   \
+        && (previousGlFunction != GL_POINTS)) \
+      {  \
+      glEnd(); \
+      } \
+    } \
+  cellNum += count; \
+  if ((previousGlFunction == GL_TRIANGLES)  \
+      || (previousGlFunction == GL_QUADS)   \
+      || (previousGlFunction == GL_POINTS)) \
+    { \
+    glEnd(); \
+    } \
+}
+
+
+#define vtkDrawPolysMacro4TriTex(ptype,ntype,ttype,prim,glVertFuncs,glCellFuncs,glInitFuncs) \
+{ \
+  vtkIdType nPts; unsigned short count = 0; \
+  ptype *points = static_cast<ptype *>(voidPoints);     \
+  GLenum previousGlFunction=GL_INVALID_VALUE; \
+  glInitFuncs \
+  \
+double quad_center[3] = {0, 0, 0}; \
+double quad_center_tex = 0; \
+double quad_points[4][3]; \
+double quad_points_tex[4]; \
+double dist_center[4] = {0, 0, 0, 0}; \
+  \
+while (ptIds < endPtIds) \
+    { \
+    nPts = *ptIds; \
+  ++ptIds; \
+  /* If we don't want to draw a QUAD (ex : a triangle nPts = 3) */ \
+  if (nPts != 4) { \
+  /* Classic method */ \
+    BeginPolyTriangleOrQuad( prim, previousGlFunction, nPts ); \
+    glCellFuncs \
+    while (nPts > 0) \
+    { \
+    glVertFuncs \
+    ++ptIds; \
+    --nPts; \
+    } \
+  } \
+  /* If we want to draw a QUAD */ \
+  else { \
+    /* We launch glBegin(GL_TRIANGLES) mode in order to draw 4 triangles */ \
+    BeginPolyTriangleOrQuad( prim, previousGlFunction, 3 ); \
+    glCellFuncs \
+    /* We keep pointer on the first point of the first triangle */ \
+    /* ptIdsFirstPtQuad will be used for center calculation and for 2nd point of 4th triangle */ \
+    vtkIdType *ptIdsFirstPtQuad; \
+    ptIdsFirstPtQuad = ptIds; \
+  /* QUAD Center calculation */ \
+  /* We save the 4 QUAD points and their texture value */ \
+    GLfloat *vpt; \
+    GLfloat *vtex; \
+    for (int i=0; i<4; i++) { \
+      /* Position : */ \
+      vpt = points + 3**ptIds; \
+      quad_points[i][0] = vpt[0]; \
+      quad_points[i][1] = vpt[1]; \
+      quad_points[i][2] = vpt[2]; \
+      /* Texture : */ \
+      vtex = tcoords + *ptIds; \
+      quad_points_tex[i] = vtex[0]; \
+      ++ptIds; \
+    } \
+  /* Actual calculation of QUAD center with the 4 summits */ \
+    quad_center[0] = (quad_points[0][0] + quad_points[1][0] + quad_points[2][0] + quad_points[3][0])/4; \
+    quad_center[1] = (quad_points[0][1] + quad_points[1][1] + quad_points[2][1] + quad_points[3][1])/4; \
+    quad_center[2] = (quad_points[0][2] + quad_points[1][2] + quad_points[2][2] + quad_points[3][2])/4; \
+  /* Texture center calculation  (Interpolation on each component of RGB vector) */ \
+  /* Calculation of distances between center and summits */ \
+    for (int i=0; i<4; i++) { \
+      dist_center[i] = sqrt((quad_points[i][0] - quad_center[0])*(quad_points[i][0] - quad_center[0]) + \
+                (quad_points[i][1] - quad_center[1])*(quad_points[i][1] - quad_center[1]) + \
+                (quad_points[i][2] - quad_center[2])*(quad_points[i][2] - quad_center[2])); \
+    } \
+  /* Texture interpolation */ \
+    quad_center_tex = ((dist_center[3]*quad_points_tex[1] + dist_center[1]*quad_points_tex[3])/(dist_center[1] + dist_center[3]) + \
+              (dist_center[2]*quad_points_tex[0] + dist_center[0]*quad_points_tex[2])/(dist_center[2] + dist_center[0]) \
+              )/2; \
+  /* We take pointer on the first QUAD point */ \
+    ptIds = ptIdsFirstPtQuad; \
+  /* Actual drawing of 4 triangles */ \
+    for (int i=0; i<4; i++) { \
+      /* 1st point */ \
+      glVertFuncs \
+      ++ptIds; \
+      /* 2nd point */ \
+      if (i >= 3) { /* If it is the last triangle */ \
+        /* this 2nd point = the 1st point of 1st triangle */ \
+        glTexCoord1fv(tcoords + *ptIdsFirstPtQuad); \
+        glVertex3fv(points + 3**ptIdsFirstPtQuad); \
+      } \
+      else { \
+        /* Else 2nd point = next point */ \
+        glVertFuncs \
+      } \
+      /* 3rd point */ \
+      glTexCoord1f(quad_center_tex); \
+      glVertex3f(quad_center[0],quad_center[1],quad_center[2]); \
+    } \
+  } /* End of if (nPts == 4) */ \
+    if (++count == 10000) \
+      { \
+      cellNum += 10000; \
+      count = 0; \
+      } \
+    if ((previousGlFunction != GL_TRIANGLES)  \
+        && (previousGlFunction != GL_QUADS)   \
+        && (previousGlFunction != GL_POINTS)) \
+      {  \
+      glEnd(); \
+      } \
+    } \
+  cellNum += count; \
+  if ((previousGlFunction == GL_TRIANGLES)  \
+      || (previousGlFunction == GL_QUADS)   \
+      || (previousGlFunction == GL_POINTS)) \
+    { \
+    glEnd(); \
+    } \
+}
+
+
+#define vtkDrawStripLinesMacro(ptype,ntype,ttype,prim,glVertFuncs,glCellFuncs,glInitFuncs) \
+{ \
+  vtkIdType nPts; \
+  ptype *points = static_cast<ptype *>(voidPoints);     \
+  vtkIdType *savedPtIds = ptIds; \
+  glInitFuncs \
+  while (ptIds < endPtIds) \
+    { \
+    glBegin(prim); \
+    nPts = *ptIds; \
+    ++ptIds; \
+    glCellFuncs \
+    while (nPts > 0) \
+      { \
+      glVertFuncs \
+      ptIds += 2; \
+      nPts -= 2; \
+      } \
+    glEnd(); \
+    ptIds += nPts; /* nPts could be 0 or -1 here */ \
+    } \
+  ptIds = savedPtIds; \
+  while (ptIds < endPtIds) \
+    { \
+    glBegin(prim); \
+    nPts = *ptIds; \
+    ++ptIds; \
+    glCellFuncs \
+    ++ptIds; \
+    --nPts; \
+    while (nPts > 0) \
+      { \
+      glVertFuncs \
+      ptIds += 2; \
+      nPts -= 2; \
+      } \
+    glEnd(); \
+    ptIds += nPts; /* nPts could be 0 or -1 here */ \
+    } \
+}
+
+
+void
+avtOpenGLSurfaceAndWireframeRenderer::GenericDrawPoints(
+    int idx,
+    vtkPoints *p, 
+    vtkDataArray *n,
+    vtkUnsignedCharArray *c,
+    vtkDataArray *t,
+    vtkIdType &cellNum,
+    vtkCellArray *ca)
 {
-    int i, j; 
-    vtkIdType npts = 0; 
-
-    const float *vertices = (float*)p->GetVoidPointer(0);
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    for (i = 0; i < nCells; i++)
+    vtkIdType *pts = 0;
+    vtkIdType npts = 0;
+    glBegin(GL_POINTS);
+    for (ca->InitTraversal(); ca->GetNextCell(npts,pts); )
     { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-
-        for (j = 0; j < npts; j++, ids++) 
+        for (int j = 0; j < npts; j++) 
         {
-            glVertex3fv(vertices + 3*(*ids));
+            if (c)
+            {
+                if (idx & OGL_SAWR_CELL_COLORS)
+                {
+                    glColor4ubv(c->GetPointer(cellNum << 2));
+                }
+                else
+                {
+                    glColor4ubv(c->GetPointer(pts[j]<< 2));
+                }
+            }
+            if (t)
+            {
+                if (idx & OGL_SAWR_TCOORD_1D)
+                {
+                    glTexCoord1dv(t->GetTuple(pts[j]));
+                }
+                else
+                {
+                    glTexCoord2dv(t->GetTuple(pts[j]));
+                }
+            }
+            if (n)
+            {
+                if (idx & OGL_SAWR_CELL_NORMALS)
+                {
+                    glNormal3dv(n->GetTuple(cellNum));
+                }
+                else
+                {
+                    glNormal3dv(n->GetTuple(pts[j]));
+                }
+            }
+            glVertex3dv(p->GetPoint(pts[j]));
         }
-
-        if ((previousGlFunction != GL_TRIANGLES)  
-            && (previousGlFunction != GL_QUADS)  
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
+        ++cellNum;
     }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
+    glEnd();
 }
 
-
-// ****************************************************************************
-//  Method:  DrawN013
-//
-//  Purpose:
-//    Draw with vertex normals.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named>  
-//    p             The vertices of the primitives.
-//    n             The vertex normals.
-//    <not_named>
-//    <not_named>
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-         vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *)
+void
+avtOpenGLSurfaceAndWireframeRenderer::DrawPoints(
+    int idx,
+    vtkPoints *p, 
+    vtkDataArray *n,
+    vtkUnsignedCharArray *c,
+    vtkDataArray *t,
+    vtkIdType &cellNum,
+    vtkCellArray *ca)
 {
-    int i, j;
-    vtkIdType npts = 0;
-
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const float *normals  = (float*)n->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
- 
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++)
+    void *voidPoints = p->GetVoidPointer(0);
+    void *voidNormals = 0;
+    unsigned char *colors = 0;
+    if (ca->GetNumberOfCells() == 0)
     {
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glNormal3fv(normals  + 3*(*ids));
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
+        return;
     }
-
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
+    if (n)
     {
-        glEnd();
+        voidNormals = n->GetVoidPointer(0);
     }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawCN013
-//
-//  Purpose:
-//    Draw with cell normals. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of current cell number.
-//    p             The vertices of the primitives.
-//    n             The cell normals.
-//    <not_named>
-//    <not_named>
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
-          vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *)
-{
-    int i, j;
-    vtkIdType npts = 0;
+    if (c)
+    {
+        colors = c->GetPointer(0);
+    }
   
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const float *normals  = (float*)n->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
+    vtkIdType *ptIds = ca->GetPointer();
+    vtkIdType *endPtIds = ptIds + ca->GetNumberOfConnectivityEntries();
     
-        glNormal3fv(normals + 3*cellNum);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
+    // draw all the elements, use fast path if available
+    switch (idx)
     {
-        glEnd();
+        case OGL_SAWR_POINT_TYPE_FLOAT:
+            vtkDrawPointsMacro(float, float, glVertex3fv(points + 3**ptIds);,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_DOUBLE:
+            vtkDrawPointsMacro(double,float, glVertex3dv(points + 3**ptIds);,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT|OGL_SAWR_NORMAL_TYPE_FLOAT|OGL_SAWR_NORMALS:
+            vtkDrawPointsMacro(float, float, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_COLORS:
+            vtkDrawPointsMacro(float, float, 
+                               glColor4ubv(colors + 4**ptIds);
+                               glVertex3fv(points + 3**ptIds);,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_COLORS | OGL_SAWR_OPAQUE_COLORS:
+            vtkDrawPointsMacro(float, float, 
+                               glColor3ubv(colors + 4**ptIds);
+                               glVertex3fv(points + 3**ptIds);,;);      
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT |
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS:
+            vtkDrawPointsMacro(float, float, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glColor4ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT |
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS | OGL_SAWR_OPAQUE_COLORS:
+            vtkDrawPointsMacro(float, float, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glColor3ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        default:
+            GenericDrawPoints(idx, p, n, c, t, cellNum, ca);
+            break;
     }
 }
 
 
-// ****************************************************************************
-//  Method:  DrawS01
-//
-//  Purpose:
-//    Draw with vertex colors. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named>   
-//    p             The vertices of the primitives.
-//    <not_named>   
-//    c             The colors for the vertices.
-//    <not_named>
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawS01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *)
+void
+avtOpenGLSurfaceAndWireframeRenderer::GenericDrawLines(
+    int idx,
+    vtkPoints *p, 
+    vtkDataArray *n,
+    vtkUnsignedCharArray *c,
+    vtkDataArray *t,
+    vtkIdType &cellNum,
+    vtkCellArray *ca)
 {
-    int i, j;
+    vtkIdType *pts = 0;
     vtkIdType npts = 0;
- 
-    const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    for (i = 0; i < nCells; i++)
+    for (ca->InitTraversal(); ca->GetNextCell(npts,pts); )
     { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glColor4ubv(colors   + 4*(*ids));
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
- 
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawNS013
-//
-//  Purpose:
-//    Draw with vertex normals and vertex colors.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named>   Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    n             The normals for the vertices.
-//    c             The colors for the  vertices.
-//    <not_named>             
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawNS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-          vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *)
-{
-    int i, j;
-    vtkIdType npts = 0;
-
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const float *normals  = (float*)n->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-    const unsigned char *colors = c->GetPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glColor4ubv(colors   + 4*(*ids));
-            glNormal3fv(normals  + 3*(*ids));
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawCNS013
-//
-//  Purpose:
-//    Draw with cell normals and vertex colors.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    n             The normals for the cells.
-//    c             The colors for the  vertices.
-//    <not_named>             
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
-           vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *)
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const float *normals  = (float*)n->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-    const unsigned char *colors = c->GetPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        glNormal3fv(normals + 3*cellNum);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glColor4ubv(colors   + 4*(*ids));
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawT01
-//
-//  Purpose:
-//    Draw with textures.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    <not_named> 
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawT01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-        vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *t)
-{
-    int i, j;
-    vtkIdType npts = 0;
- 
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const float *vertices = (float*)p->GetVoidPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawNT013
-//
-//  Purpose:
-//    Draw with vertex normals and textures.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    n             The normals for the vertices.
-//    <not_named> 
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawNT013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-          vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *t)
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const float *textures = (float*)t->GetVoidPointer(0);
-    const float *normals  = (float*)n->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
- 
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glTexCoord2fv(textures + 2*(*ids));
-            glNormal3fv(normals    + 3*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawCNT013
-//
-//  Purpose:
-//    Draw tih cell normals and textures.  
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    n             The normals for the cells.
-//    <not_named> 
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCNT013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
-           vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *t)
-{
-    int i, j; 
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const float *normals  = (float*)n->GetVoidPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        glNormal3fv(normals + 3*cellNum);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawST01
-//
-//  Purpose:
-//    Draw with vertex colors and textures.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the vertices.
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glColor4ubv(colors     + 4*(*ids));
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawNST013 
-//
-//  Purpose:
-//    Draw with vertex normals, vertex colors and textures.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    n             The normals for the vertices.
-//    c             The colors for the vertices.
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-           vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0);
-    const float *normals  = (float*)n->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glColor4ubv(colors     + 4*(*ids));
-            glTexCoord2fv(textures + 2*(*ids));
-            glNormal3fv(normals    + 3*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-// ****************************************************************************
-//  Method:  DrawCNST013 
-//
-//  Purpose:
-//    Draw with cell normals, vertex colors and textures.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    n             The normals for the cells.
-//    c             The colors for the vertices.
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
-            vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *normals  = (float*)n->GetVoidPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-
-    for (i = 0; i < nCells; i++, cellNum++)
-    {
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        glNormal3fv(normals + 3*cellNum);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glColor4ubv(colors     + 4*(*ids));
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawCS01 
-//
-//  Purpose:
-//    Draw with cell colors.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the cells.
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCS01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
-         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *)
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0); 
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-        glColor4ubv(colors + 4*cellNum);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawNCS013 
-//
-//  Purpose:
-//    Draw with vertex normals and cell colors.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    n             The normals for the vertices.
-//    c             The colors for the cells.
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
-           vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *)
-           
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *normals  = (float*)n->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0); 
-
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        glColor4ubv(colors + 4*cellNum);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glNormal3fv(normals  + 3*(*ids));
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawCNCS013 
-//
-//  Purpose:
-//    Draw with cell normals and cell scalars.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    n             The normals for the cells.
-//    c             The colors for the cells.
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
-            vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *)
-            
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-    
-    const unsigned char *colors = c->GetPointer(0);
-    const float *normals  = (float*)n->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        glColor4ubv(colors  + 4*cellNum);
-        glNormal3fv(normals + 3*cellNum);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawCST01 
-//
-//  Purpose:
-//    Draw with cell colors and textures. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the cells.
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
-          vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
-          
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-
-        glColor4ubv(colors + 4*cellNum);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawNCST013
-//
-//  Purpose:
-//    Draw with vertex normals, cell colors and textures.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    n             The normals for the vertices.
-//    c             The colors for the cells.
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
-            vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
-            
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0);
-    const float *normals  = (float*)n->GetVoidPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0);
-  
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-
-        glColor4ubv(colors + 4*cellNum);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glTexCoord2fv(textures + 2*(*ids));
-            glNormal3fv(normals    + 3*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawCNCST013
-//
-//  Purpose:
-//    Draw with cell normals, cell scalars and textures.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    n             The normals for the cells.
-//    c             The colors for the cells.
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum,
-             vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
-             
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *normals  = (float*)n->GetVoidPointer(0); 
-    const float *textures = (float*)t->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        glColor4ubv(colors  + 4*cellNum);
-        glNormal3fv(normals + 3*cellNum);
-      
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  Draw3
-//
-//  Purpose:
-//    Draw with no colors or textures.  Normals are computed.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    <not_named> 
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-Draw3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-      vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *)
-      
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-          glEnd();
-        }
-
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawS3
-//
-//  Purpose:
-//    Draw with vertex colors.  Normals are computed.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the vertices.
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-       vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glColor4ubv(colors   + 4*(*ids));
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawT3
-//
-//  Purpose:
-//    Draw with textures.  Normals are computed. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    <not_named> 
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawT3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *t) 
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const float *textures = (float*)t->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawST3
-//
-//  Purpose:
-//    Draw with vertex colors and textures.  Normals are computed. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the vertices.
-//    t             The texture coordinates.
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t) 
-{
-    int i, j; 
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glColor4ubv(colors     + 4*(*ids));
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES)
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawCS3
-//
-//  Purpose:
-//    Draw with cell colors.  Normals are computed.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the cells.
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
-        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
-{
-    int i, j; 
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        glColor4ubv(colors + 4*cellNum);
-
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES)
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawCST3
-//
-//  Purpose:
-//    Draw with cell colors and textures.  Normals are computed. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the cells.
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
-         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
-{
-    int i, j; 
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        glColor4ubv(colors + 4*cellNum);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-  
-// ****************************************************************************
-//  Method:  Draw2
-//
-//  Purpose:
-//    Draw triStrips with no colors or textures. Normals are computed.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    <not_named> 
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-Draw2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-      vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *) 
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawS2
-//
-//  Purpose:
-//    Draw triStrips with vertex colors.  Normals are computed.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the vertices.
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-       vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *)
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glColor4ubv(colors   + 4*(*ids));
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawT2
-//
-//  Purpose:
-//    Draw triStrips with textures.  Normals are computed. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    <not_named> 
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawT2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *t)
-{
-    int i, j;
-    vtkIdType npts;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const float *textures = (float*)t->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawST2
-//
-//  Purpose:
-//    Draw triStrips with vertex colors and textures.  Normals are computed. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the vertices.
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p,
-        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glColor4ubv(colors     + 4*(*ids));
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawCS2
-//
-//  Purpose:
-//    Draw triStrips with cell colors.  Normals are computed. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the 
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, idx, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
-        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
-{
-    int i, j; 
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        glColor4ubv(colors + 4*cellNum);
-    
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glVertex3fv(vertices + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawCST2
-//
-//  Purpose:
-//    Draw triStrips with cell colors and textures.  Normals are computed. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    aGlFunction   Which GL function is to be used for drawing. 
-//    cellNum       Keeps track of the current cell number.
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the 
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, idx, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawCST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
-         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
-{
-    int i, j;
-    vtkIdType npts = 0;
-  
-    GLenum previousGlFunction=GL_INVALID_VALUE;
-
-    const unsigned char *colors = c->GetPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
- 
-    for (i = 0; i < nCells; i++, cellNum++)
-    { 
-        npts = *ids++;
-        BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-    
-        glColor4ubv(colors + 4*cellNum);
-
-        for (j = 0; j < npts; j++, ids++) 
-        {
-            glTexCoord2fv(textures + 2*(*ids));
-            glVertex3fv(vertices   + 3*(*ids));
-        }
-
-        if ((previousGlFunction != GL_TRIANGLES) 
-            && (previousGlFunction != GL_QUADS)
-            && (previousGlFunction != GL_POINTS))
-        {
-            glEnd();
-        }
-
-    }
-    if ((previousGlFunction == GL_TRIANGLES)
-        || (previousGlFunction == GL_QUADS)
-        || (previousGlFunction == GL_POINTS))
-    {
-        glEnd();
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawW
-//
-//  Purpose:
-//    Draw wireframe with no colors or textures. Normals are computed.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    <not_named> 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    <not_named> 
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, idx, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
-      vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *) 
-{
-    int i, j;
-    vtkIdType npts = 0;
-
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    vtkIdType *l1, *l2; 
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        l1 = ids;
-        l2 = ids + 1;
-        // draw first line
         glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2, l1 +=2) 
+        for (int j = 0; j < npts; j++) 
         {
-            glVertex3fv(vertices + 3*(*l1));
+            if (c)
+            {
+                if (idx & OGL_SAWR_CELL_COLORS)
+                {
+                    glColor4ubv(c->GetPointer(cellNum << 2));
+                }
+                else
+                {
+                    glColor4ubv(c->GetPointer(pts[j] << 2));
+                }
+            }
+            if (t)
+            {
+                if (idx & OGL_SAWR_TCOORD_1D)
+                {
+                    glTexCoord1dv(t->GetTuple(pts[j]));
+                }
+                else
+                {
+                    glTexCoord2dv(t->GetTuple(pts[j]));
+                }
+            }
+            if (n)
+            {
+                if (idx & OGL_SAWR_CELL_NORMALS)
+                {
+                    glNormal3dv(n->GetTuple(cellNum));
+                }
+                else
+                {
+                    glNormal3dv(n->GetTuple(pts[j]));
+                }
+            }
+            glVertex3dv(p->GetPoint(pts[j]));
         }
         glEnd();
       
-        // draw second line
-        glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2, l2 += 2) 
-        {
-            glVertex3fv(vertices + 3*(*l2));
-        }
-        glEnd();
-        ids += npts;
+        ++cellNum;
     }
-}
+}  
 
-
-// ****************************************************************************
-//  Method:  DrawNW
-//
-//  Purpose:
-//    Draw wireframe triStrips with vertex normals. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    <not_named> 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    n             The normals for the vertices.
-//    <not_named> 
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawNW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
-       vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *) 
+void
+avtOpenGLSurfaceAndWireframeRenderer::DrawLines(
+    int idx,
+    vtkPoints *p, 
+    vtkDataArray *n,
+    vtkUnsignedCharArray *c,
+    vtkDataArray *t,
+    vtkIdType &cellNum,
+    vtkCellArray *ca)
 {
-    int i, j;
-    vtkIdType npts = 0;
+    void *voidPoints = p->GetVoidPointer(0);
+    void *voidNormals = 0;
+    void *voidTCoords = 0;
+    unsigned char *colors = 0;
+    if (ca->GetNumberOfCells() == 0)
+    {
+        return;
+    }
+    if (n)
+    {
+        voidNormals = n->GetVoidPointer(0);
+    }
+    if (t)
+    {
+        voidTCoords = t->GetVoidPointer(0);
+    }
+    if (c)
+    {
+        colors = c->GetPointer(0);
+    }
+    vtkIdType *ptIds = ca->GetPointer();
+    vtkIdType *endPtIds = ptIds + ca->GetNumberOfConnectivityEntries();
   
-    const float *normals  = (float*)n->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    vtkIdType *l1, *l2;
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        l1 = ids;
-        l2 = ids + 1;
-    
-        // draw first line
-        glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2, l1 += 2) 
-        {
-            glNormal3fv(normals  + 3*(*l1));
-            glVertex3fv(vertices + 3*(*l1));
-        }
-        glEnd();
-    
-        // draw second line
-        glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2, l2 += 2) 
-        {
-            glNormal3fv(normals  + 3*(*l2));
-            glVertex3fv(vertices + 3*(*l2));
-        }
-        glEnd();
-        ids += npts;
+    // draw all the elements, use fast path if available
+    switch (idx)
+    {
+        case OGL_SAWR_POINT_TYPE_FLOAT:
+            vtkDrawPrimsMacro(float, float, GL_LINE_STRIP, 
+                              glVertex3fv(points + 3**ptIds);,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_DOUBLE:
+            vtkDrawPrimsMacro(double, float, GL_LINE_STRIP,
+                              glVertex3dv(points + 3**ptIds);,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT|OGL_SAWR_NORMAL_TYPE_FLOAT|OGL_SAWR_NORMALS:
+            vtkDrawPrimsMacro(float, float, GL_LINE_STRIP,
+                    glNormal3fv(normals + 3**ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    float *normals = static_cast<float *>(voidNormals););
+      
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_COLORS:
+            vtkDrawPrimsMacro(float, float, GL_LINE_STRIP,
+                              glColor4ubv(colors + 4**ptIds);
+                              glVertex3fv(points + 3**ptIds);,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_COLORS | OGL_SAWR_OPAQUE_COLORS:
+            vtkDrawPrimsMacro(float, float, GL_LINE_STRIP,
+                              glColor3ubv(colors + 4**ptIds);
+                              glVertex3fv(points + 3**ptIds);,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS:
+            vtkDrawPrimsMacro(float, float, GL_LINE_STRIP,
+                    glNormal3fv(normals + 3**ptIds);
+                    glColor4ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS  | OGL_SAWR_OPAQUE_COLORS:
+            vtkDrawPrimsMacro(float, float, GL_LINE_STRIP,
+                    glNormal3fv(normals + 3**ptIds);
+                    glColor3ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | 
+             OGL_SAWR_TCOORD_TYPE_FLOAT | OGL_SAWR_TCOORD_1D | OGL_SAWR_TCOORDS:
+            vtkDrawPrimsMacro(float, float, GL_LINE_STRIP, 
+                    glTexCoord1fv(tcoords + *ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    float *tcoords = static_cast<float *>(voidTCoords););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | 
+             OGL_SAWR_NORMAL_TYPE_FLOAT | OGL_SAWR_NORMALS |
+             OGL_SAWR_TCOORD_TYPE_FLOAT | OGL_SAWR_TCOORD_1D | OGL_SAWR_TCOORDS:
+            vtkDrawPrimsMacro(float, float, GL_LINE_STRIP, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glTexCoord1fv(tcoords + *ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    float *tcoords = static_cast<float *>(voidTCoords);
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        default:
+            GenericDrawLines(idx,p, n, c, t, cellNum, ca);
+            break;
     }
 }
 
 
-// ****************************************************************************
-//  Method:  DrawSW
-//
-//  Purpose:
-//    Draw wireframe triStrips with vertex colors.  Normals are computed. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    <not_named> 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the vertices.
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, idx, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
 
-static void 
-DrawSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p,
-       vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
+#define PolyNormal \
+{ double polyNorm[3]; vtkPolygon::ComputeNormal(p,nPts,ptIds,polyNorm); glNormal3dv(polyNorm); }
+
+
+void 
+avtOpenGLSurfaceAndWireframeRenderer::GenericDrawPolygons(
+    int idx,
+    vtkPoints *p, 
+    vtkDataArray *n,
+    vtkUnsignedCharArray *c,
+    vtkDataArray *t,
+    vtkIdType &cellNum,
+    GLenum rep,
+    vtkCellArray *ca)
 {
-    int i, j;
+    vtkIdType *pts = 0;
     vtkIdType npts = 0;
+    double polyNorm[3];
+    for (ca->InitTraversal(); ca->GetNextCell(npts,pts); )
+    { 
+        glBegin(rep);
+        if (!n)
+        { 
+            double polyNorm[3]; 
+            vtkPolygon::ComputeNormal(p,npts,pts,polyNorm); 
+            glNormal3dv(polyNorm);
+        }
+        for (int j = 0; j < npts; j++) 
+        {
+            if (c)
+            {
+                if (idx & OGL_SAWR_CELL_COLORS)
+                {
+                    glColor4ubv(c->GetPointer(cellNum << 2));
+                }
+                else
+                {
+                    glColor4ubv(c->GetPointer(pts[j] << 2));
+                }
+            }
+            if (t)
+            {
+                if (idx & OGL_SAWR_TCOORD_1D)
+                {
+                    glTexCoord1dv(t->GetTuple(pts[j]));
+                }
+                else
+                {
+                    glTexCoord2dv(t->GetTuple(pts[j]));
+                }
+            }
+            if (n)
+            {
+                if (idx & OGL_SAWR_CELL_NORMALS)
+                {
+                    glNormal3dv(n->GetTuple(cellNum));
+                }
+                else
+                {
+                    glNormal3dv(n->GetTuple(pts[j]));
+                }
+            }
+            glVertex3dv(p->GetPoint(pts[j]));
+        }
+        glEnd();
+        ++cellNum;
+    }
+}
+
+void 
+avtOpenGLSurfaceAndWireframeRenderer::DrawPolygons(
+    int idx,
+    vtkPoints *p, 
+    vtkDataArray *n,
+    vtkUnsignedCharArray *c,
+    vtkDataArray *t,
+    vtkIdType &cellNum,
+    GLenum rep,
+    vtkCellArray *ca)
+{
+    void *voidPoints = p->GetVoidPointer(0);
+    void *voidNormals = 0;
+    void *voidTCoords = 0;
+    unsigned char *colors = 0;
+    if (ca->GetNumberOfCells() == 0)
+    {
+        return;
+    }
+    if (n)
+    {
+        voidNormals = n->GetVoidPointer(0);
+    }
+    if (c)
+    {
+        colors = c->GetPointer(0);
+        // if these are cell colors then advance to the first cell
+        if (idx & OGL_SAWR_CELL_COLORS)
+        {
+            colors = colors + cellNum*4;
+        }
+    }
+    if (t)
+    {
+        voidTCoords = t->GetVoidPointer(0);
+    }
+    vtkIdType *ptIds = ca->GetPointer();
+    vtkIdType *endPtIds = ptIds + ca->GetNumberOfConnectivityEntries();
+
+    // draw all the elements, use fast path if available
+    switch (idx)
+    {
+        case OGL_SAWR_POINT_TYPE_FLOAT:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                    glVertex3fv(points + 3**ptIds);, 
+                    PolyNormal,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_DOUBLE:
+            vtkDrawPolysMacro(double, float, float, rep, 
+                    glVertex3dv(points + 3**ptIds);,
+                    PolyNormal,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT|OGL_SAWR_NORMAL_TYPE_FLOAT|OGL_SAWR_NORMALS:
+            vtkDrawPolysMacro(float, float, float, rep,
+                    glNormal3fv(normals + 3**ptIds);
+                    glVertex3fv(points + 3**ptIds);,;,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep,
+                    glColor4ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);, 
+                    PolyNormal,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_COLORS  | OGL_SAWR_OPAQUE_COLORS:
+            vtkDrawPolysMacro4Tri(float, float, float, rep, 
+                    glColor3ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);, 
+                    PolyNormal,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glColor4ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);,;,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS  | OGL_SAWR_OPAQUE_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                    glNormal3fv(normals + 3**ptIds); 
+                    glColor3ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);,;, 
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_TCOORD_TYPE_FLOAT | OGL_SAWR_TCOORD_1D | 
+             OGL_SAWR_TCOORDS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glTexCoord1fv(tcoords + *ptIds);
+                    glVertex3fv(points + 3**ptIds);,;,
+                    float *normals = static_cast<float *>(voidNormals);
+                    float *tcoords = static_cast<float *>(voidTCoords););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_CELL_NORMALS | OGL_SAWR_TCOORD_TYPE_FLOAT | 
+             OGL_SAWR_TCOORD_1D | OGL_SAWR_TCOORDS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                    glTexCoord1fv(tcoords + *ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    glNormal3fv(normals); normals += 3;,
+                    float *tcoords = static_cast<float *>(voidTCoords);
+                    float *normals = static_cast<float *>(voidNormals);
+                    normals += cellNum*3;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | 
+             OGL_SAWR_TCOORD_TYPE_FLOAT | OGL_SAWR_TCOORD_1D | OGL_SAWR_TCOORDS:
+            vtkDrawPolysMacro4TriTex(float, float, float, rep, 
+                    glTexCoord1fv(tcoords + *ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    PolyNormal;,
+                    float *tcoords = static_cast<float *>(voidTCoords););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_TCOORD_TYPE_FLOAT | OGL_SAWR_TCOORDS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glTexCoord2fv(tcoords + 2**ptIds);
+                    glVertex3fv(points + 3**ptIds);,;,
+                    float *normals = static_cast<float *>(voidNormals);
+                    float *tcoords = static_cast<float *>(voidTCoords););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT |
+             OGL_SAWR_CELL_NORMALS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                    glVertex3fv(points + 3**ptIds);, 
+                    glNormal3fv(normals); normals += 3;,
+                    float *normals = static_cast<float *>(voidNormals);
+                    normals += cellNum*3;);
+              break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT |
+             OGL_SAWR_CELL_NORMALS | OGL_SAWR_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                    glColor4ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    glNormal3fv(normals); normals += 3;,
+                    float *normals = static_cast<float *>(voidNormals);
+                    normals += cellNum*3;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT |
+             OGL_SAWR_CELL_NORMALS | OGL_SAWR_COLORS | OGL_SAWR_OPAQUE_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep,
+                    glColor3ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    glNormal3fv(normals); normals += 3;,
+                    float *normals = static_cast<float *>(voidNormals);
+                    normals += cellNum*3;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS | OGL_SAWR_CELL_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    glColor4ubv(colors); colors += 4;,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS  | OGL_SAWR_OPAQUE_COLORS | 
+             OGL_SAWR_CELL_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep,
+                    glNormal3fv(normals + 3**ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    glColor3ubv(colors); colors += 4;,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_CELL_NORMALS | OGL_SAWR_COLORS | OGL_SAWR_CELL_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                    glVertex3fv(points + 3**ptIds);,
+                    glNormal3fv(normals); normals += 3;
+                    glColor4ubv(colors); colors += 4;,
+                    float *normals = static_cast<float *>(voidNormals);
+                    normals += cellNum*3;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_CELL_NORMALS | OGL_SAWR_COLORS  | OGL_SAWR_OPAQUE_COLORS | 
+             OGL_SAWR_CELL_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep,
+                    glVertex3fv(points + 3**ptIds);,
+                    glNormal3fv(normals); normals += 3;
+                    glColor3ubv(colors); colors += 4;,
+                    float *normals = static_cast<float *>(voidNormals);
+                    normals += cellNum*3;);
+            break;
+        default:
+            GenericDrawPolygons(idx, p, n, c, t, cellNum, rep, ca);
+            break;
+    }
+}
+
+// fix refs here
+#define TStripNormal \
+if ( vcount > 2) \
+{ \
+  if (vcount % 2) \
+    { \
+    normIdx[0] = ptIds[-2]; normIdx[1] = ptIds[0]; normIdx[2] = ptIds[-1]; \
+    vtkTriangle::ComputeNormal(p, 3, normIdx, polyNorm); \
+    } \
+  else \
+    { \
+    normIdx[0] = ptIds[-2]; normIdx[1] = ptIds[-1]; normIdx[2] = ptIds[0]; \
+    vtkTriangle::ComputeNormal(p, 3, normIdx, polyNorm); \
+    } \
+  glNormal3dv(polyNorm); \
+} \
+vcount++; 
+
+#define TStripNormalStart \
+  vtkTriangle::ComputeNormal(p, 3, ptIds, polyNorm); \
+  glNormal3dv(polyNorm); int vcount = 0;
+
+
+void 
+avtOpenGLSurfaceAndWireframeRenderer::GenericDrawTStrips(
+    int idx,
+    vtkPoints *p, 
+    vtkDataArray *n,
+    vtkUnsignedCharArray *c,
+    vtkDataArray *t,
+    vtkIdType &cellNum,
+    GLenum rep,
+    vtkCellArray *ca)
+{
+    vtkIdType *ptIds = 0;
+    vtkIdType nPts = 0;
+    double polyNorm[3];
+    vtkIdType normIdx[3];
+    unsigned long coloroffset = cellNum;
+    for (ca->InitTraversal(); ca->GetNextCell(nPts,ptIds); )
+    { 
+        glBegin(rep);
+        vtkTriangle::ComputeNormal(p, 3, ptIds, polyNorm);
+        glNormal3dv(polyNorm);
+        for (int j = 0; j < nPts; j++) 
+        {
+            if (c)
+            {
+                if ( (idx & OGL_SAWR_USE_FIELD_DATA) && j>=2 )
+                {
+                    glColor4ubv(c->GetPointer(coloroffset << 2));
+                    coloroffset++;
+                }
+                else if (idx & OGL_SAWR_CELL_COLORS)
+                {
+                    glColor4ubv(c->GetPointer(cellNum << 2));
+                }
+                else
+                {
+                    glColor4ubv(c->GetPointer(ptIds[j] << 2));
+                }
+            }
+            if (t)
+            {
+                if (idx & OGL_SAWR_TCOORD_1D)
+                {
+                    glTexCoord1dv(t->GetTuple(ptIds[j]));
+                }
+                else
+                {
+                    glTexCoord2dv(t->GetTuple(ptIds[j]));
+                }
+            }
+            if (n)
+            {
+                if (idx & OGL_SAWR_CELL_NORMALS)
+                {
+                    glNormal3dv(n->GetTuple(cellNum));
+                }
+                else
+                {
+                    glNormal3dv(n->GetTuple(ptIds[j]));
+                }
+            }
+            else
+            {
+                if (j >= 2) 
+                { 
+                    if (j % 2) 
+                    { 
+                        normIdx[0] = ptIds[j-2]; normIdx[1] = ptIds[j]; 
+                        normIdx[2] = ptIds[j-1]; 
+                        vtkTriangle::ComputeNormal(p, 3, normIdx, polyNorm); 
+                    } 
+                    else 
+                    { 
+                        normIdx[0] = ptIds[j-2]; normIdx[1] = ptIds[j-1]; 
+                        normIdx[2] = ptIds[j]; 
+                        vtkTriangle::ComputeNormal(p, 3, normIdx, polyNorm); 
+                    } 
+                } 
+                glNormal3dv(polyNorm);
+            }
+            glVertex3dv(p->GetPoint(ptIds[j]));
+        }
+        glEnd();
+
+        ++cellNum;
+    }
+}
+
+
+void
+avtOpenGLSurfaceAndWireframeRenderer::DrawTStrips(
+    int idx,
+    vtkPoints *p, 
+    vtkDataArray *n,
+    vtkUnsignedCharArray *c,
+    vtkDataArray *t,
+    vtkIdType &cellNum,
+    GLenum rep,
+    vtkCellArray *ca)
+{
+    void *voidPoints = p->GetVoidPointer(0);
+    void *voidNormals = 0;
+    void *voidTCoords = 0;
+    unsigned char *colors = 0;
+    double polyNorm[3];
+    vtkIdType normIdx[3];
   
-    const unsigned char *colors = c->GetPointer(0);
-    const float *vertices = (float*)p->GetVoidPointer(0); 
+    if (ca->GetNumberOfCells() == 0)
+    {
+        return;
+    }
+    if (n)
+    {
+        voidNormals = n->GetVoidPointer(0);
+    }
+    if (c)
+    {
+        colors = c->GetPointer(0);
+    }
+    if (t)
+    {
+        voidTCoords = t->GetVoidPointer(0);
+    }
+    vtkIdType *ptIds = ca->GetPointer();
+    vtkIdType *endPtIds = ptIds + ca->GetNumberOfConnectivityEntries();
 
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    vtkIdType *l1, *l2;
- 
-    for (i = 0; i < nCells; i++) 
-    { 
-        npts = *ids++;
-        l1 = ids;
-        l2 = ids + 1;
- 
-        // draw first line
-        glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2, l1 += 2) 
-        {
-            glColor4ubv(colors   + 4*(*l1));
-            glVertex3fv(vertices + 3*(*l1));
-        }
-        glEnd();
-    
-        // draw second line
-        glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2, l2 += 2) 
-        {
-            glColor4ubv(colors   + 4*(*l2));
-            glVertex3fv(vertices + 3*(*l2));
-        }
-        glEnd();
-        ids += npts;
+    // draw all the elements, use fast path if available
+    switch (idx)
+    {
+        case OGL_SAWR_POINT_TYPE_FLOAT:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                        TStripNormal glVertex3fv(points + 3**ptIds);, 
+                        TStripNormalStart,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_DOUBLE:
+            vtkDrawPolysMacro(double, float, float, rep, 
+                        TStripNormal glVertex3dv(points + 3**ptIds);,
+                        TStripNormalStart,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT|OGL_SAWR_NORMAL_TYPE_FLOAT|OGL_SAWR_NORMALS:
+            vtkDrawPolysMacro(float, float, float, rep,
+                        glNormal3fv(normals + 3**ptIds);
+                        glVertex3fv(points + 3**ptIds);,;,
+                        float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                        TStripNormal 
+                        glColor4ubv(colors + (*ptIds << 2));
+                        glVertex3fv(points + 3**ptIds);,
+                        TStripNormalStart,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_COLORS  | OGL_SAWR_OPAQUE_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                        TStripNormal 
+                        glColor3ubv(colors + (*ptIds << 2));
+                        glVertex3fv(points + 3**ptIds);,
+                        TStripNormalStart,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                        glNormal3fv(normals + 3**ptIds);
+                        glColor4ubv(colors + (*ptIds << 2));
+                        glVertex3fv(points + 3**ptIds);,;, 
+                        float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS  | OGL_SAWR_OPAQUE_COLORS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                        glNormal3fv(normals + 3**ptIds);
+                        glColor3ubv(colors + (*ptIds << 2));
+                        glVertex3fv(points + 3**ptIds);,;, 
+                        float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_TCOORD_1D | OGL_SAWR_TCOORD_TYPE_FLOAT | 
+             OGL_SAWR_TCOORDS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                        glNormal3fv(normals + 3**ptIds);
+                        glTexCoord1fv(tcoords + *ptIds);
+                        glVertex3fv(points + 3**ptIds);,;, 
+                        float *normals = static_cast<float *>(voidNormals);
+                        float *tcoords = static_cast<float *>(voidTCoords););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_TCOORD_TYPE_FLOAT | OGL_SAWR_TCOORDS:
+            vtkDrawPolysMacro(float, float, float, rep, 
+                        glNormal3fv(normals + 3**ptIds);
+                        glTexCoord2fv(tcoords + 2**ptIds);
+                        glVertex3fv(points + 3**ptIds);,;, 
+                        float *normals = static_cast<float *>(voidNormals);
+                        float *tcoords = static_cast<float *>(voidTCoords););
+            break;
+        default:
+            GenericDrawTStrips(idx, p, n, c, t, cellNum, rep, ca);
+            break;
     }
 }
 
 
-// ****************************************************************************
-//  Method:  DrawNSW
-//
-//  Purpose:
-//    Draw wireframe trisStrips with vertex normals and vertex colors. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    <not_named> 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    n             The normals for the vertices.
-//    c             The colors for the vertices.
-//    <not_named> 
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawNSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n,
-        vtkUnsignedCharArray *c, vtkDataArray *) 
+void
+avtOpenGLSurfaceAndWireframeRenderer::GenericDrawTStripLines(
+    int idx,
+    vtkPoints *p, 
+    vtkDataArray *n,
+    vtkUnsignedCharArray *c,
+    vtkDataArray *t,
+    vtkIdType &cellNum,
+    GLenum rep,
+    vtkCellArray *ca)
 {
-    int i, j; 
-    vtkIdType npts = 0;
- 
-    const unsigned char *colors = c->GetPointer(0);
-    const float *normals  = (float*)n->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    vtkIdType *l1, *l2;
- 
-    for (i = 0; i < nCells; i++)
+    vtkIdType *ptIds = 0;
+    vtkIdType nPts = 0;
+    unsigned long coloroffset = cellNum;
+    double polyNorm[3];
+    vtkIdType normIdx[3];
+    for (ca->InitTraversal(); ca->GetNextCell(nPts,ptIds); )
     { 
-        npts = *ids++;
-        l1 = ids;
-        l2 = ids + 1;
- 
-        // draw first line
-        glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2, l1 += 2) 
+        glBegin(rep);
+        for (int j = 0; j < nPts; j += 2) 
         {
-            glColor4ubv(colors   + 4*(*l1));
-            glNormal3fv(normals  + 3*(*l1));
-            glVertex3fv(vertices + 3*(*l1));
-        }
-        glEnd();
-    
-        // draw second line
-        glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2, l2 += 2) 
-        {
-            glColor4ubv(colors   + 4*(*l2));
-            glNormal3fv(normals  + 3*(*l2));
-            glVertex3fv(vertices + 3*(*l2));
-        }
-        glEnd();
-        ids += npts; 
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawTW
-//
-//  Purpose:
-//    Draw wireframe triStrips with textures.  Normals are computed. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    <not_named> 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    <not_named> 
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, idx, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *,
-       vtkUnsignedCharArray *, vtkDataArray *t)
-{
-    int i, j; 
-    vtkIdType npts = 0;
- 
-    const float *textures = (float*)t->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    vtkIdType *l1, *l2;
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        l1 = ids;
-        l2 = ids + 1;
-
-        // draw first line
-        glBegin(GL_LINE_STRIP);
-
-        for (j = 0; j < npts; j += 2, l1 += 2) 
-        {
-            glTexCoord2fv(textures + 2*(*l1));
-            glVertex3fv(vertices   + 3*(*l1));
-        }
-        glEnd();
-    
-        // draw second line
-        glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2, l2 += 2) 
-        {
-            glTexCoord2fv(textures + 2*(*l2));
-            glVertex3fv(vertices   + 3*(*l2));
-        }
-        glEnd();
-        ids += npts; 
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawNTW
-//
-//  Purpose:
-//    Draw wireframe triStrips with vertex normals and textures. 
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    <not_named> 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    n             The normals for the vertices.
-//    <not_named> 
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawNTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n,
-        vtkUnsignedCharArray *, vtkDataArray *t)
-{
-    int i, j; 
-    vtkIdType npts = 0;
-  
-    const float *normals  = (float*)n->GetVoidPointer(0); 
-    const float *textures = (float*)t->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    vtkIdType *l1, *l2; 
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        l1 = ids;
-        l2 = ids + 1;
-    
-        glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2, l1+= 2) 
-        {
-            glNormal3fv(normals    + 3*(*l1));
-            glTexCoord2fv(textures + 2*(*l1));
-            glVertex3fv(vertices   + 3*(*l1));
-        }
-        glEnd();
-    
-        // draw second line
-        glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2, l2 += 2) 
-        {
-            glNormal3fv(normals    + 3*(*l2));
-            glTexCoord2fv(textures + 2*(*l2));
-            glVertex3fv(vertices   + 3*(*l2));
-        }
-        glEnd();
-        ids += npts; 
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  DrawSTW
-//
-//  Purpose:
-//    Draw wireframe triStrips with vertex colors and textures. 
-//    Normals are calculated.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    <not_named> 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    <not_named> 
-//    c             The colors for the  vertices.
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, idx, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *,
-        vtkUnsignedCharArray *c, vtkDataArray *t)
-{
-    int i, j; 
-    vtkIdType npts = 0;
-  
-    const unsigned char *colors = c->GetPointer(0);
-    const float *textures = (float*)t->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
-
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    vtkIdType *l1, *l2;
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        l1 = ids;
-        l2 = ids + 1;
- 
-        // draw first line
-        glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2, l1 += 2) 
-        {
-            glColor4ubv(colors     + 4*(*l1));
-            glTexCoord2fv(textures + 2*(*l1));
-            glVertex3fv(vertices   + 3*(*l1));
+            if (c)
+            {
+                if ( (idx & OGL_SAWR_USE_FIELD_DATA) && j >= 2)
+                {
+                    glColor4ubv(c->GetPointer((coloroffset+j) << 2));
+                }
+                else if (idx & OGL_SAWR_CELL_COLORS)
+                {
+                    glColor4ubv(c->GetPointer(cellNum << 2));
+                }
+                else
+                {
+                    glColor4ubv(c->GetPointer(ptIds[j] << 2));
+                }
+            }
+            if (t)
+            {
+                if (idx & OGL_SAWR_TCOORD_1D)
+                {
+                    glTexCoord1dv(t->GetTuple(ptIds[j]));
+                }
+                else
+                {
+                    glTexCoord2dv(t->GetTuple(ptIds[j]));
+                }
+            }
+            if (n)
+            {
+                if (idx & OGL_SAWR_CELL_NORMALS)
+                {
+                    glNormal3dv(n->GetTuple(cellNum));
+                }
+                else
+                {
+                    glNormal3dv(n->GetTuple(ptIds[j]));
+                }
+            }
+            else
+            {
+                if ( j == 0 )
+                {
+                    vtkTriangle::ComputeNormal(p, 3, ptIds, polyNorm);
+                }
+                else
+                {
+                    normIdx[0] = ptIds[j-2]; normIdx[1] = ptIds[j-1]; 
+                    normIdx[2] = ptIds[j]; 
+                    vtkTriangle::ComputeNormal(p, 3, normIdx, polyNorm);
+                }
+                glNormal3dv(polyNorm);
+            }
+            glVertex3dv(p->GetPoint(ptIds[j]));
         }
         glEnd();
       
-        // draw second line
-        glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2, l2 += 2) 
+        glBegin(rep);
+        for (int j = 1; j < nPts; j += 2) 
         {
-            glColor4ubv(colors     + 4*(*l2));
-            glTexCoord2fv(textures + 2*(*l2));
-            glVertex3fv(vertices   + 3*(*l2));
+            if (c)
+            {
+                if ( (idx & OGL_SAWR_USE_FIELD_DATA) && j >= 2)
+                {
+                    glColor4ubv(c->GetPointer((coloroffset+j) << 2));
+                }
+                else if (idx & OGL_SAWR_CELL_COLORS)
+                {
+                    glColor4ubv(c->GetPointer(cellNum << 2));
+                }
+                else
+                {
+                    glColor4ubv(c->GetPointer(ptIds[j] << 2));
+                }
+            }
+            if (t)
+            {
+                if (idx & OGL_SAWR_TCOORD_1D)
+                {
+                    glTexCoord1dv(t->GetTuple(ptIds[j]));
+                }
+                else
+                {
+                    glTexCoord2dv(t->GetTuple(ptIds[j]));
+                }
+            }
+            if (n)
+            {
+                if (idx & OGL_SAWR_CELL_NORMALS)
+                {
+                    glNormal3dv(n->GetTuple(cellNum));
+                }
+                else
+                {
+                    glNormal3dv(n->GetTuple(ptIds[j]));
+                }
+            }
+            else
+            {
+                if (j == 1)
+                {
+                    vtkTriangle::ComputeNormal(p, 3, ptIds, polyNorm);
+                }
+                else
+                {
+                    normIdx[0] = ptIds[j-2]; normIdx[1] = ptIds[j]; 
+                    normIdx[2] = ptIds[j-1]; 
+                    vtkTriangle::ComputeNormal(p, 3, normIdx, polyNorm);
+                }
+                glNormal3dv(polyNorm);
+            }
+            glVertex3dv(p->GetPoint(ptIds[j]));
         }
         glEnd();
-        ids += npts; 
+
+        ++cellNum;
+        coloroffset += (nPts >= 2)? (nPts - 2) : 0;
     }
 }
 
 
-// ****************************************************************************
-//  Method:  DrawNSTW
-//
-//  Purpose:
-//    Draw wireframe triStrips with vertex normals, vertex colors,
-//    and textures.
-//    
-//  Notes:  
-//    This routine was taken mostly from vtkOpenGLPolyDataMapper,
-//    with a few modifications for workability within this framework.
-//
-//  Arguments:  
-//    aPrim         A cell-array of the geometric primitives to be drawn.
-//    <not_named> 
-//    <not_named> 
-//    p             The vertices of the primitives.
-//    n             The normals for the vertices.
-//    c             The colors for the  vertices.
-//    t             The texture coordinates.
-//   
-//  Programmer:  Kathleen Bonnell  (thanks to Kitware)
-//  Creation:    August 16, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 15:08:16 PST 2001
-//    Use vtkIdType for pts, npts, use vtkUnsignedCharArray for colors, to
-//    match VTK 4.0 API.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkNormals and vtkTCoords have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr 23 19:25:33 PDT 2002
-//    Made function static.
-//
-// ****************************************************************************
-
-static void 
-DrawNSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n,
-         vtkUnsignedCharArray *c, vtkDataArray *t)
+void 
+avtOpenGLSurfaceAndWireframeRenderer::DrawTStripLines(
+    int idx,
+    vtkPoints *p, 
+    vtkDataArray *n,
+    vtkUnsignedCharArray *c,
+    vtkDataArray *t,
+    vtkIdType &cellNum,
+    GLenum rep,
+    vtkCellArray *ca)
 {
-    int i, j; 
-    vtkIdType npts = 0;
+    void *voidPoints = p->GetVoidPointer(0);
+    void *voidNormals = 0;
+    void *voidTCoords = 0;
+    unsigned char *colors = 0;
+    double polyNorm[3];
+    vtkIdType normIdx[3];
   
-    const unsigned char *colors = c->GetPointer(0);
-    const float *normals  = (float*)n->GetVoidPointer(0); 
-    const float *textures = (float*)t->GetVoidPointer(0); 
-    const float *vertices = (float*)p->GetVoidPointer(0); 
+    if (n)
+    {
+        voidNormals = n->GetVoidPointer(0);
+    }
+    if (c)
+    {
+        colors = c->GetPointer(0);
+    }
+    if (t)
+    {
+        voidTCoords = t->GetVoidPointer(0);
+    }
+    vtkIdType *ptIds = ca->GetPointer();
+    vtkIdType *endPtIds = ptIds + ca->GetNumberOfConnectivityEntries();
 
-    int nCells = aPrim->GetNumberOfCells();
-    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-    vtkIdType *l1, *l2;
- 
-    for (i = 0; i < nCells; i++)
-    { 
-        npts = *ids++;
-        l1 = ids;
-        l2 = ids +1;
- 
-        // draw first line
-        glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2, l1 += 2) 
-        {
-            glColor4ubv(colors     + 4*(*l1));
-            glNormal3fv(normals    + 3*(*l1));
-            glTexCoord2fv(textures + 2*(*l1));
-            glVertex3fv(vertices   + 3*(*l1));
-        }
-        glEnd();
-    
-        // draw second line
-        glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2, l2 += 2) 
-        {
-            glColor4ubv(colors     + 4*(*l2));
-            glNormal3fv(normals    + 3*(*l2));
-            glTexCoord2fv(textures + 2*(*l2));
-            glVertex3fv(vertices   + 3*(*l2));
-        }
-        glEnd();
-        ids += npts;        
+    // draw all the elements, use fast path if available
+    switch (idx)
+    {
+        case OGL_SAWR_POINT_TYPE_FLOAT:
+            vtkDrawStripLinesMacro(float, float, float, rep, 
+                    TStripNormal; glVertex3fv(points + 3**ptIds);, 
+                    TStripNormalStart,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_DOUBLE:
+            vtkDrawStripLinesMacro(double, float, float, rep, 
+                    TStripNormal glVertex3dv(points + 3**ptIds);, 
+                    TStripNormalStart,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT|OGL_SAWR_NORMAL_TYPE_FLOAT|OGL_SAWR_NORMALS:
+            vtkDrawStripLinesMacro(float, float, float, rep, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glVertex3fv(points + 3**ptIds);,;,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_COLORS:
+            vtkDrawStripLinesMacro(float, float, float, rep, 
+                    TStripNormal;
+                    glColor4ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);,
+                    TStripNormalStart,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_COLORS | OGL_SAWR_OPAQUE_COLORS:
+            vtkDrawStripLinesMacro(float, float, float, rep, 
+                    TStripNormal;
+                    glColor3ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);, 
+                    TStripNormalStart,;);
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS:
+            vtkDrawStripLinesMacro(float, float, float, rep, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glColor4ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);,;,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_COLORS | OGL_SAWR_OPAQUE_COLORS:
+            vtkDrawStripLinesMacro(float, float, float, rep, 
+                    glNormal3fv(normals + 3**ptIds); 
+                    glColor3ubv(colors + 4**ptIds);
+                    glVertex3fv(points + 3**ptIds);,;,
+                    float *normals = static_cast<float *>(voidNormals););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_TCOORD_TYPE_FLOAT | OGL_SAWR_TCOORD_1D | 
+             OGL_SAWR_TCOORDS:
+            vtkDrawStripLinesMacro(float, float, float, rep, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glTexCoord1fv(tcoords + *ptIds);
+                    glVertex3fv(points + 3**ptIds);,;,
+                    float *normals = static_cast<float *>(voidNormals);
+                    float *tcoords = static_cast<float *>(voidTCoords););
+            break;
+        case OGL_SAWR_POINT_TYPE_FLOAT | OGL_SAWR_NORMAL_TYPE_FLOAT | 
+             OGL_SAWR_NORMALS | OGL_SAWR_TCOORD_TYPE_FLOAT | OGL_SAWR_TCOORDS:
+            vtkDrawStripLinesMacro(float, float, float, rep, 
+                    glNormal3fv(normals + 3**ptIds);
+                    glTexCoord2fv(tcoords + 2**ptIds);
+                    glVertex3fv(points + 3**ptIds);,;,
+                    float *normals = static_cast<float *>(voidNormals);
+                    float *tcoords = static_cast<float *>(voidTCoords););
+            break;
+        default:
+            GenericDrawTStripLines(idx, p, n, c, t, cellNum, rep, ca);
+            break;
     }
 }
 
@@ -3605,7 +1947,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
 
         if (surfaceModified[inputNum] || (surfaceListId[inputNum] == 0))
         {
-            if (surfaceListId[inputNum] != 0)
+            if (surfaceListId[inputNum])
             {
                 glDeleteLists(surfaceListId[inputNum], 1);
             }
@@ -3656,13 +1998,16 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
 //    Tom Fogal, Fri Jan 28 14:42:57 MST 2011
 //    Typing fixes (vtkIdType).
 //
+//    Kathleen Biagas, Thu Mar 15 16:30:48 PDT 2012
+//    Follow vtk 5.8's vtkOpenGLPolyDataMapper, Draw methods have been
+//    consolidatd and make use of macro's that support multiple data types.
+//
 // ****************************************************************************
 
 void 
 avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
 {
     int rep;
-    GLenum glFunction[4], aGlFunction;
     vtkPoints *p;
     vtkCellArray *aPrim;
     vtkUnsignedCharArray *c=NULL;
@@ -3676,35 +2021,6 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     // get the representation (e.g., surface / wireframe / points)
     rep = prop->GetRepresentation();
 
-    switch (rep) 
-    {
-        case VTK_POINTS:
-             glFunction[0]  = GL_POINTS;
-             glFunction[1]  = GL_POINTS;
-             glFunction[2]  = GL_POINTS;
-             glFunction[3]  = GL_POINTS;
-             break;
-        case VTK_WIREFRAME:
-             glFunction[0] = GL_POINTS;
-             glFunction[1] = GL_LINE_STRIP;
-             glFunction[2] = GL_LINE_STRIP;
-             glFunction[3] = GL_LINE_LOOP;
-             break;
-        case VTK_SURFACE:
-             glFunction[0] = GL_POINTS;
-             glFunction[1] = GL_LINE_STRIP;
-             glFunction[2] = GL_TRIANGLE_STRIP;
-             glFunction[3] = GL_POLYGON;
-             break;
-        default: 
-             debug5 << "Bad representation sent\n";
-             glFunction[0] = GL_POINTS;
-             glFunction[1] = GL_LINE_STRIP;
-             glFunction[2] = GL_TRIANGLE_STRIP;
-             glFunction[3] = GL_POLYGON;
-             break;
-    }
-
     // and draw the display list
     p = input->GetPoints();
   
@@ -3712,22 +2028,24 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     if (this->Colors && scalarVisibility)
     {
         c = this->Colors;
+#if 1
         if (!input->GetPointData()->GetScalars() &&
              input->GetCellData()->GetScalars())
         {
             cellScalars = 1;
         }
-    }
-    
-    t = input->GetPointData()->GetTCoords();
-    if (t) 
-    {
-        tDim = t->GetNumberOfComponents();
-        if (tDim != 2)
+#else
+        // VTK 5.8 vtkOpenGLPolyDataMapper new logc, not sure if we should
+        // use it.
+        if ( (this->ScalarMode == VTK_SCALAR_MODE_USE_CELL_DATA ||
+              this->ScalarMode == VTK_SCALAR_MODE_USE_CELL_FIELD_DATA ||
+              this->ScalarMode == VTK_SCALAR_MODE_USE_FIELD_DATA ||
+              !input->GetPointData()->GetScalars() )
+             && this->ScalarMode != VTK_SCALAR_MODE_USE_POINT_FIELD_DATA)
         {
-            debug5 << "Currently only 2d textures are supported.\n";
-            t = NULL;
+            cellScalars = 1;
         }
+#endif
     }
 
     n = input->GetPointData()->GetNormals();
@@ -3737,174 +2055,111 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     }
   
     cellNormals = 0;
-    if (input->GetCellData()->GetNormals())
+    if (n == 0 && input->GetCellData()->GetNormals())
     {
         cellNormals = 1;
         n = input->GetCellData()->GetNormals();
     }
-
+    
+    t = input->GetPointData()->GetTCoords();
+    if (t) 
+    {
+        tDim = t->GetNumberOfComponents();
+        if (tDim > 2)
+        {
+            debug5 << "Currently only 1d and 2d textures are supported.\n";
+            t = NULL;
+        }
+    }
  
     //
     //  Create an index that helps determine which drawing function to use.
     //
-    int idx;
+    unsigned long idx = 0;
     if (n && !cellNormals)
     {
-        idx = 1;
-    }
-    else
-    {
-        idx = 0;
+        idx |= OGL_SAWR_NORMALS;
     }
     if (c)
     {
-        idx += 2;
-    }
-    if (t)
-    {
-        idx += 4;
+        idx |= OGL_SAWR_COLORS;
     }
     if (cellScalars)
     {
-        idx += 8;
+        idx |= OGL_SAWR_CELL_COLORS;
     }
     if (cellNormals)
     {
-        idx += 16;
+        idx |= OGL_SAWR_CELL_NORMALS;
     }
 
-    // how do we draw points
-    void (*draw0)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
-                  vtkUnsignedCharArray *, vtkDataArray *);
-    switch (idx) 
+    // store the types in the index
+    if (p->GetDataType() == VTK_FLOAT)
     {
-        case  0: draw0 = Draw01;       break;
-        case  1: draw0 = DrawN013;     break;
-        case  2: draw0 = DrawS01;      break;
-        case  3: draw0 = DrawNS013;    break;
-        case  4: draw0 = DrawT01;      break;
-        case  5: draw0 = DrawNT013;    break;
-        case  6: draw0 = DrawST01;     break;
-        case  7: draw0 = DrawNST013;   break;
-        case 10: draw0 = DrawCS01;     break;
-        case 11: draw0 = DrawNCS013;   break;
-        case 14: draw0 = DrawCST01;    break;
-        case 15: draw0 = DrawNCST013;  break;
-        case 16: draw0 = DrawCN013;    break;
-        case 18: draw0 = DrawCNS013;   break;
-        case 20: draw0 = DrawCNT013;   break;
-        case 22: draw0 = DrawCNST013;  break;
-        case 26: draw0 = DrawCNCS013;  break;
-        case 30: draw0 = DrawCNCST013; break;
+        idx |= OGL_SAWR_POINT_TYPE_FLOAT;
+    }
+    else if (p->GetDataType() == VTK_DOUBLE)
+    {
+        idx |= OGL_SAWR_POINT_TYPE_DOUBLE;
     }
 
-    // how do we draw lines
-    void (*draw1)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
-                  vtkUnsignedCharArray *, vtkDataArray *);
-    switch (idx) 
+    if (n)
     {
-        case  0: draw1 = Draw01;       break; 
-        case  1: draw1 = DrawN013;     break; 
-        case  2: draw1 = DrawS01;      break; 
-        case  3: draw1 = DrawNS013;    break; 
-        case  4: draw1 = DrawT01;      break; 
-        case  5: draw1 = DrawNT013;    break; 
-        case  6: draw1 = DrawST01;     break; 
-        case  7: draw1 = DrawNST013;   break; 
-        case 10: draw1 = DrawCS01;     break; 
-        case 11: draw1 = DrawNCS013;   break; 
-        case 14: draw1 = DrawCST01;    break; 
-        case 15: draw1 = DrawNCST013;  break; 
-        case 16: draw1 = DrawCN013;    break; 
-        case 18: draw1 = DrawCNS013;   break; 
-        case 20: draw1 = DrawCNT013;   break; 
-        case 22: draw1 = DrawCNST013;  break; 
-        case 26: draw1 = DrawCNCS013;  break; 
-        case 30: draw1 = DrawCNCST013; break; 
+        if (n->GetDataType() == VTK_FLOAT)
+        {
+            idx |= OGL_SAWR_NORMAL_TYPE_FLOAT;
+        }
+        else if (n->GetDataType() == VTK_DOUBLE)
+        {
+            idx |= OGL_SAWR_NORMAL_TYPE_DOUBLE;
+        }
     }
 
-    // how do we draw tstrips
-    void (*draw2)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
-                  vtkUnsignedCharArray *, vtkDataArray *);
-    void (*draw2W)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
-                   vtkUnsignedCharArray *, vtkDataArray *);
-    switch (idx) 
-    {
-        case  0: draw2 = Draw2;       break;
-        case  1: draw2 = DrawN013;    break;
-        case  2: draw2 = DrawS2;      break;
-        case  3: draw2 = DrawNS013;   break;
-        case  4: draw2 = DrawT2;      break;
-        case  5: draw2 = DrawNT013;   break;
-        case  6: draw2 = DrawST2;     break;
-        case  7: draw2 = DrawNST013;  break;
-        case 10: draw2 = DrawCS2;     break;
-        case 11: draw2 = DrawNCS013;  break;
-        case 14: draw2 = DrawCST2;    break;
-        case 15: draw2 = DrawNCST013; break;
-        case 16: draw2 = Draw2;       break;
-        case 18: draw2 = DrawS2;      break;
-        case 20: draw2 = DrawT2;      break;
-        case 22: draw2 = DrawST2;     break;
-        case 26: draw2 = DrawCS2;     break;
-        case 30: draw2 = DrawCST2;    break;
-    }
-    switch (idx)
-    {
-        case  0: draw2W = DrawW;    break;
-        case  1: draw2W = DrawNW;   break;
-        case  2: draw2W = DrawSW;   break;
-        case  3: draw2W = DrawNSW;  break;
-        case  4: draw2W = DrawTW;   break;
-        case  5: draw2W = DrawNTW;  break;
-        case  6: draw2W = DrawSTW;  break;
-        case  7: draw2W = DrawNSTW; break;
-        case 10: draw2W = DrawW;    break;
-        case 11: draw2W = DrawNW;   break;
-        case 14: draw2W = DrawTW;   break;
-        case 15: draw2W = DrawNTW;  break;
-        case 16: draw2W = DrawW;    break;
-        case 18: draw2W = DrawSW;   break;
-        case 20: draw2W = DrawTW;   break;
-        case 22: draw2W = DrawSTW;  break;
-        case 26: draw2W = DrawW;    break;
-        case 30: draw2W = DrawTW;   break;
-    }
-  
-    // how do we draw polys
-    void (*draw3)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
-                   vtkUnsignedCharArray *, vtkDataArray *);
-    switch (idx) 
-    {
-        case  0: draw3 = Draw3;        break;
-        case  1: draw3 = DrawN013;     break;
-        case  2: draw3 = DrawS3;       break;
-        case  3: draw3 = DrawNS013;    break;
-        case  4: draw3 = DrawT3;       break;
-        case  5: draw3 = DrawNT013;    break;
-        case  6: draw3 = DrawST3;      break;
-        case  7: draw3 = DrawNST013;   break;
-        case 10: draw3 = DrawCS3;      break;
-        case 11: draw3 = DrawNCS013;   break;
-        case 14: draw3 = DrawCST3;     break;
-        case 15: draw3 = DrawNCST013;  break;
-        case 16: draw3 = DrawCN013;    break;
-        case 18: draw3 = DrawCNS013;   break;
-        case 20: draw3 = DrawCNT013;   break;
-        case 22: draw3 = DrawCNST013;  break;
-        case 26: draw3 = DrawCNCS013;  break;
-        case 30: draw3 = DrawCNCST013; break;
-    }
 
+#if 0
+    // VTK 5.8 new logic, may want to incoorporate.
+
+    // Set the texture if we are going to use texture
+    // for coloring with a point attribute.
+    // fixme ... make the existance of the coordinate array the signal.
+    if (this->InterpolateScalarsBeforeMapping && this->ColorCoordinates &&
+        ! (idx & OGL_SAWR_CELL_COLORS))
+    {
+        t = this->ColorCoordinates;
+    }
+#endif
+
+    if (t)
+    {
+        idx |= OGL_SAWR_TCOORDS;
+        if (t->GetDataType() == VTK_FLOAT)
+        {
+            idx |= OGL_SAWR_TCOORD_TYPE_FLOAT;
+        }
+        else if (t->GetDataType() == VTK_DOUBLE)
+        {
+            idx |= OGL_SAWR_TCOORD_TYPE_DOUBLE;
+        }
+        if (t->GetNumberOfComponents() == 1)
+        {
+            idx |= OGL_SAWR_TCOORD_1D;
+        }
+        // Not 1D assumes 2D texture coordinates.
+    }
+ 
     if (resolveTopology) 
     {
 #ifdef GL_VERSION_1_1
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(1.,1.);
+#if 0
+        // new vtk feature?? should we incorporate?
+        double f, u;
+        this->GetResolveCoincidentTopologyPolygonOffsetParameters(f,u);
+        glPolygonOffset(f,u);
+#endif      
 #endif      
     }
-
-    // do verts
 
     // For verts or lines that have no normals, disable shading.
     // This will fall back on the color set in the glColor4fv() 
@@ -3915,11 +2170,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
         glDisable(GL_LIGHTING);
     }
   
+    // do verts
     if (drawSurfaceVerts)
     {
-        aPrim = input->GetVerts();
-        aGlFunction = glFunction[0];
-        draw0(aPrim, aGlFunction, cellNum, p, n, c, t);
+        DrawPoints(idx,p,n,c,t,cellNum,input->GetVerts());
     }
   
     // do lines
@@ -3927,9 +2181,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     // draw all the elements
     if (drawSurfaceLines)
     {
-        aPrim = input->GetLines();
-        aGlFunction = glFunction[1];
-        draw1(aPrim, aGlFunction, cellNum, p, n, c, t);
+        if (rep == VTK_POINTS)
+            DrawPoints(idx,p,n,c,t,cellNum,input->GetLines());
+        else 
+            DrawLines(idx,p,n,c,t,cellNum,input->GetLines());
     }
   
     // reset the lighting if we turned it off
@@ -3943,25 +2198,39 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     {
         glDisable(GL_LIGHTING);
     }
-  
+ 
+    // VTK does polys first??? should we switch to same? 
     // do tstrips
     if (drawSurfaceStrips)
     {
-        aPrim = input->GetStrips();
-        aGlFunction = glFunction[2];
-        draw2(aPrim, aGlFunction, cellNum, p, n, c, t);
-        if (rep == VTK_WIREFRAME)   
+        if (rep == VTK_POINTS)
         {
-            draw2W(aPrim, aGlFunction, cellNum, p, n, c, t);
+            DrawPoints(idx,p,n,c,t,cellNum,input->GetStrips());
+        }
+        else if (rep == VTK_WIREFRAME)
+        {
+            vtkIdType oldCellNum = cellNum;
+            DrawTStrips(idx,p,n,c,t,cellNum, 
+                        GL_LINE_STRIP, input->GetStrips());
+            DrawTStripLines(idx,p,n,c,t,oldCellNum, 
+                        GL_LINE_STRIP, input->GetStrips());
+        }
+        else 
+        {
+            DrawTStrips(idx,p,n,c,t,cellNum,
+                        GL_TRIANGLE_STRIP, input->GetStrips());
         }
     }
 
     // do polys
     if (drawSurfacePolys)
     {
-        aPrim = input->GetPolys();
-        aGlFunction = glFunction[3];
-        draw3(aPrim, aGlFunction, cellNum, p, n, c, t);
+        if (rep == VTK_POINTS)
+            DrawPoints(idx,p,n,c,t,cellNum,input->GetPolys());
+        else if (rep == VTK_WIREFRAME)
+            DrawPolygons(idx,p,n,c,t,cellNum, GL_LINE_LOOP, input->GetPolys());
+        else 
+            DrawPolygons(idx,p,n,c,t,cellNum, GL_POLYGON, input->GetPolys());
     }
 
     // enable lighting again if necessary
@@ -3976,7 +2245,6 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
         glDisable(GL_POLYGON_OFFSET_FILL);
 #endif
     }
-
 }
 
 
@@ -4101,7 +2369,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
     
         if (edgesModified[inputNum] || (edgesListId[inputNum] == 0))
         {
-            if (edgesListId[inputNum] != 0)
+            if (edgesListId[inputNum])
             {
                 glDeleteLists(edgesListId[inputNum], 1);
             }
@@ -4185,49 +2453,27 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 //    Tom Fogal, Fri Jan 28 14:42:57 MST 2011
 //    Typing fixes (vtkIdType).
 //
+//    Kathleen Biagas, Thu Mar 15 16:30:48 PDT 2012
+//    Follow vtk 5.8's vtkOpenGLPolyDataMapper, Draw methods have been
+//    consolidatd and make use of macro's that support multiple data types.
+//
 // ****************************************************************************
 
 void
 avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
 {
-    GLenum aGlFunction, glFunction[4];
+    int rep;
     vtkPoints *p;
-    vtkCellArray *aPrim;
     vtkDataArray *n;
+    vtkUnsignedCharArray *c = NULL;
     vtkDataArray *t;
     int tDim;
     vtkIdType cellNum = 0;
     int cellNormals = 0;
 
-    switch (prop->GetRepresentation()) 
-    {
-        case VTK_POINTS:
-             glFunction[0]  = GL_POINTS;
-             glFunction[1]  = GL_POINTS;
-             glFunction[2]  = GL_POINTS;
-             glFunction[3]  = GL_POINTS;
-             break;
-        case VTK_WIREFRAME:
-             glFunction[0] = GL_POINTS;
-             glFunction[1] = GL_LINE_STRIP;
-             glFunction[2] = GL_LINE_STRIP;
-             glFunction[3] = GL_LINE_LOOP;
-             break;
-        case VTK_SURFACE:
-             glFunction[0] = GL_POINTS;
-             glFunction[1] = GL_LINE_STRIP;
-             glFunction[2] = GL_LINE_STRIP;
-             glFunction[3] = GL_LINE_LOOP;
-             break;
-        default: 
-             debug5 << "Bad representation sent\n";
-             glFunction[0] = GL_POINTS;
-             glFunction[1] = GL_LINE_STRIP;
-             glFunction[2] = GL_LINE_STRIP;
-             glFunction[3] = GL_LINE_LOOP;
-             break;
-    }
-  
+    // get the representation (e.g., surface / wireframe / points)
+    rep = prop->GetRepresentation();
+
     p = input->GetPoints();
   
     double edgeColor[4];
@@ -4239,9 +2485,9 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     if (t) 
     {
         tDim = t->GetNumberOfComponents();
-        if (tDim != 2)
+        if (tDim  > 2)
         {
-            debug5 << "Currently only 2d textures are supported.\n";
+            debug5 << "Currently only 1d and 2d textures are supported.\n";
             t = NULL;
         }
     }
@@ -4264,82 +2510,31 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     // for consistency, we are using the same increments 
     // for idx as DrawSurface(),
     // 
-    int idx;
+    unsigned long idx = 0;
     if (n && !cellNormals)
     {
-        idx = 1;
-    }
-    else
-    {
-        idx = 0;
+        idx |= OGL_SAWR_NORMALS;
     }
     if (t)
     {
-        idx += 4;
+        idx |= OGL_SAWR_TCOORDS;
+        if (t->GetDataType() == VTK_FLOAT)
+        {
+            idx |= OGL_SAWR_TCOORD_TYPE_FLOAT;
+        }
+        else if (t->GetDataType() == VTK_DOUBLE)
+        {
+            idx |= OGL_SAWR_TCOORD_TYPE_DOUBLE;
+        }
+        if (tDim == 1)
+        {
+            idx |= OGL_SAWR_TCOORD_1D;
+        }
+        // Not 1D assumes 2D texture coordinates.
     }
     if (cellNormals)
     {
-        idx += 16;
-    }
-
-    // how do we draw points
-    void (*draw0)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
-                  vtkUnsignedCharArray *, vtkDataArray *) = NULL;
-
-    switch (idx)
-    {
-        case 0: draw0 = Draw01;     break;
-        case 4: draw0 = DrawT01;    break;
-    }
-
-    // how do we draw lines
-    void (*draw1)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
-                  vtkUnsignedCharArray *, vtkDataArray *);
-    switch (idx) 
-    {
-        case  0: draw1 = Draw01;     break; 
-        case  1: draw1 = DrawN013;   break; 
-        case  4: draw1 = DrawT01;    break; 
-        case  5: draw1 = DrawNT013;  break; 
-        case 16: draw1 = DrawCN013;  break; 
-        case 20: draw1 = DrawCNT013; break; 
-    }
-
-    // how do we draw tstrips
-    void (*draw2)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
-                  vtkUnsignedCharArray *, vtkDataArray *);
-    void (*draw2W)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
-                   vtkUnsignedCharArray *, vtkDataArray *);
-    switch (idx) 
-    {
-        case  0: draw2 = Draw2; break;
-        case  1: draw2 = DrawN013; break;
-        case  4: draw2 = DrawT2; break;
-        case  5: draw2 = DrawNT013; break;
-        case 16: draw2 = Draw2; break;
-        case 20: draw2 = DrawT2; break;
-    }
-    switch (idx)
-    {
-        case  0: draw2W = DrawW; break;
-        case  1: draw2W = DrawNW; break;
-        case  4: draw2W = DrawTW; break;
-        case  5: draw2W = DrawNTW; break;
-        case 16: draw2W = DrawW; break;
-        case 20: draw2W = DrawTW; break;
-    }
-  
-    // how do we draw polys
-    void (*draw3)(vtkCellArray *, GLenum, vtkIdType &, vtkPoints *, vtkDataArray *,
-                  vtkUnsignedCharArray *, vtkDataArray *);
-    switch (idx) 
-    {
-        case  0: draw3 = Draw3; break;
-        case  1: draw3 = DrawN013; break;
-        case  4: draw3 = DrawT3; break;
-        case  5: draw3 = DrawNT013; break;
-        case 16: draw3 = DrawCN013; break;
-        case 20: draw3 = DrawCNT013; break;
+        idx |= OGL_SAWR_CELL_NORMALS;
     }
 
     glDisable(GL_LIGHTING);
@@ -4347,45 +2542,54 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     // draw all the points
     if (drawEdgeVerts)
     {
-        aPrim = input->GetVerts();
-        aGlFunction = glFunction[0]; 
-  
-        draw0(aPrim, aGlFunction, cellNum, p, n, NULL, t);
+        DrawPoints(idx,p,n,c,t,cellNum, input->GetVerts());
     }
   
     // draw all the elements
     if (drawEdgeLines)
     {
-        aPrim = input->GetLines();
-        aGlFunction = glFunction[1]; 
-  
-        draw1(aPrim, aGlFunction, cellNum, p, n, NULL, t); 
+        if (rep == VTK_POINTS)
+        {
+            DrawPoints(idx,p,n,c,t,cellNum, input->GetLines());
+        }
+        else
+        {
+            DrawLines(idx,p,n,c,t,cellNum, input->GetLines());
+        }
     }
   
         
     // do tstrips
-    // Kat's note:  Not certain both of these draw methods are necesssary
-    // here.  Pulled from the normal Draw method.  draw2 and draw2W
-    // compute normals differently.
     if (drawEdgeStrips)
     {
-        aPrim = input->GetStrips();
-        aGlFunction = glFunction[2]; 
-
-        draw2(aPrim, aGlFunction, cellNum, p, n, NULL, t);
-        if (prop->GetRepresentation() == VTK_WIREFRAME)   
+        if (rep == VTK_POINTS)
         {
-            draw2W(aPrim, aGlFunction, cellNum, p, n, NULL, t);
+            DrawPoints(idx,p,n,c,t,cellNum,input->GetStrips());
+        }
+        else if (rep == VTK_WIREFRAME)
+        {
+            vtkIdType oldCellNum = cellNum;
+            DrawTStrips(idx,p,n,c,t,cellNum, 
+                        GL_LINE_STRIP, input->GetStrips());
+            DrawTStripLines(idx,p,n,c,t,oldCellNum, 
+                        GL_LINE_STRIP, input->GetStrips());
+        }
+        else 
+        {
+            DrawTStrips(idx,p,n,c,t,cellNum,
+                        GL_TRIANGLE_STRIP, input->GetStrips());
         }
     }
 
     // do polys
     if (drawEdgePolys)
     {
-        aPrim = input->GetPolys();
-        aGlFunction = glFunction[3]; 
-
-        draw3(aPrim, aGlFunction, cellNum, p, n, NULL, t);
+        if (rep == VTK_POINTS)
+            DrawPoints(idx,p,n,c,t,cellNum,input->GetPolys());
+        else if (rep == VTK_WIREFRAME)
+            DrawPolygons(idx,p,n,c,t,cellNum, GL_LINE_LOOP, input->GetPolys());
+        else 
+            DrawPolygons(idx,p,n,c,t,cellNum, GL_POLYGON, input->GetPolys());
     }
 
     glEnable(GL_LIGHTING);

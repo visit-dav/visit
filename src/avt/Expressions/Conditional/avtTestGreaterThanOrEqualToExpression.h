@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                       avtTestGreaterThanOrEqualToExpression.h                 //
+//                   avtTestGreaterThanOrEqualToExpression.h                 //
 // ************************************************************************* //
 
 #ifndef AVT_TEST_GREATER_THAN_OR_EQUAL_TO_FILTER_H

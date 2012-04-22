@@ -37,13 +37,15 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtMeshCoordinateExpression.C                       //
+//                       avtMeshCoordinateExpression.C                       //
 // ************************************************************************* //
 
 #include <avtMeshCoordinateExpression.h>
 
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
 
 
@@ -108,38 +110,80 @@ avtMeshCoordinateExpression::~avtMeshCoordinateExpression()
 //      Hank Childs, Fri Mar 31 08:49:06 PST 2006
 //      Add special handling for rectilinear grids.
 //
+//      Kathleen Biagas, Thu Apr  5 16:01:50 PDT 2012
+//      Support for double precision coordinates. Fast path for vtkPointSet
+//      types (StructuredGrid, UnstructuredGrid, PolyData).
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtMeshCoordinateExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int npts = in_ds->GetNumberOfPoints();
+    vtkDataArray *rv = NULL;
 
-    vtkFloatArray *rv = vtkFloatArray::New();
-    rv->SetNumberOfComponents(3);
-    rv->SetNumberOfTuples(npts);
+    int dsType = in_ds->GetDataObjectType();
 
-    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    if (dsType == VTK_RECTILINEAR_GRID)
     {
         vtkRectilinearGrid *rg = (vtkRectilinearGrid *) in_ds;
         int dims[3];
         rg->GetDimensions(dims);
-        float *X = (float *) rg->GetXCoordinates()->GetVoidPointer(0);
-        float *Y = (float *) rg->GetYCoordinates()->GetVoidPointer(0);
-        float *Z = (float *) rg->GetZCoordinates()->GetVoidPointer(0);
-        float *ptr = rv->GetPointer(0);
-        for (int k = 0 ; k < dims[2] ; k++)
-            for (int j = 0 ; j < dims[1] ; j++)
-                for (int i = 0 ; i < dims[0] ; i++)
-                {
-                    *ptr++ = X[i];
-                    *ptr++ = Y[j];
-                    *ptr++ = Z[k];
-                }
+        vtkDataArray *X = rg->GetXCoordinates();
+        vtkDataArray *Y = rg->GetYCoordinates();
+        vtkDataArray *Z = rg->GetZCoordinates();
+
+        int npts = dims[0]*dims[1]*dims[2];    
+
+#define EXTRACT_COORDS(dtype) \
+{ \
+    dtype *x   = (dtype*)X->GetVoidPointer(0); \
+    dtype *y   = (dtype*)Y->GetVoidPointer(0); \
+    dtype *z   = (dtype*)Z->GetVoidPointer(0); \
+    dtype *c   = (dtype*)rv->GetVoidPointer(0); \
+    for (int k = 0 ; k < dims[2] ; k++) \
+        for (int j = 0 ; j < dims[1] ; j++) \
+            for (int i = 0 ; i < dims[0] ; i++) \
+            { \
+                *c++ = x[i]; \
+                *c++ = y[j]; \
+                *c++ = z[k]; \
+            } \
+}
+
+         int xt = X->GetDataType();
+         int yt = Y->GetDataType();
+         int zt = Z->GetDataType();
+         bool same = xt == yt && yt == zt;
+         if (same && xt == VTK_FLOAT)
+         {
+             rv = vtkFloatArray::New();
+             rv->SetNumberOfComponents(3);
+             rv->SetNumberOfTuples(dims[0]*dims[1]*dims[2]);
+             EXTRACT_COORDS(float);
+         }
+         else // if (same && xt == VTK_DOUBLE)
+         {
+             rv = vtkDoubleArray::New();
+             rv->SetNumberOfComponents(3);
+             rv->SetNumberOfTuples(dims[0]*dims[1]*dims[2]);
+             EXTRACT_COORDS(double);
+         }
+    }
+    else if (dsType == VTK_STRUCTURED_GRID ||
+             dsType == VTK_UNSTRUCTURED_GRID ||
+             dsType == VTK_POLY_DATA)
+    {
+        vtkPoints *pts = vtkPointSet::SafeDownCast(in_ds)->GetPoints();
+        rv = pts->GetData();
+        rv->Register(NULL);
     }
     else
     {
-        for (int i = 0 ; i < npts ; i++)
+        rv = vtkDoubleArray::New();
+        vtkIdType npts = in_ds->GetNumberOfPoints();
+        rv->SetNumberOfComponents(3);
+        rv->SetNumberOfTuples(npts);
+        for (vtkIdType i = 0 ; i < npts ; i++)
         {
             double pt[3];
             in_ds->GetPoint(i, pt);

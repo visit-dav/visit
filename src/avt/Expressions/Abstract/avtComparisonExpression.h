@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtComparisonExpression.h                           //
+//                           avtComparisonExpression.h                       //
 // ************************************************************************* //
 
 #ifndef AVT_COMPARISON_FILTER_H
@@ -72,8 +72,8 @@ class avtComparisonExpression : public avtBinaryMathExpression
     virtual               ~avtComparisonExpression();
 
   protected:
-    virtual int            GetNumberOfComponentsInOutput() { return 1; };
-    virtual vtkDataArray  *CreateArray(vtkDataArray *)
+    virtual int            GetNumberOfComponentsInOutput(int, int) { return 1; };
+    virtual vtkDataArray  *CreateArray(vtkDataArray *, vtkDataArray*)
                                 { return vtkUnsignedCharArray::New(); };
 };
 

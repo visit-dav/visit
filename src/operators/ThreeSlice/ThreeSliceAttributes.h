@@ -87,16 +87,16 @@ public:
     virtual void SelectAll();
 
     // Property setting methods
-    void SetX(float x_);
-    void SetY(float y_);
-    void SetZ(float z_);
+    void SetX(double x_);
+    void SetY(double y_);
+    void SetZ(double z_);
     void SetInteractive(bool interactive_);
 
     // Property getting methods
-    float GetX() const;
-    float GetY() const;
-    float GetZ() const;
-    bool  GetInteractive() const;
+    double GetX() const;
+    double GetY() const;
+    double GetZ() const;
+    bool   GetInteractive() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -120,15 +120,15 @@ public:
     };
 
 private:
-    float x;
-    float y;
-    float z;
-    bool  interactive;
+    double x;
+    double y;
+    double z;
+    bool   interactive;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define THREESLICEATTRIBUTES_TMFS "fffb"
+#define THREESLICEATTRIBUTES_TMFS "dddb"
 
 #endif

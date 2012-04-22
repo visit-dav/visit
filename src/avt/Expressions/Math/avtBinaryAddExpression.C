@@ -126,12 +126,12 @@ avtBinaryAddExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
             for (int j = 0 ; j < in1ncomps ; j++)
             {
-                int tup1 = (var1IsSingleton ? 0 : i);
-                int tup2 = (var2IsSingleton ? 0 : i);
-                float val1 = in1->GetComponent(tup1, j);
-                float val2 = in2->GetComponent(tup2, j);
+                double val1 = in1->GetComponent(tup1, j);
+                double val2 = in2->GetComponent(tup2, j);
                 out->SetComponent(i, j, val1 + val2);
             }
         }
@@ -140,12 +140,12 @@ avtBinaryAddExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            int tup2 = (var2IsSingleton ? 0 : i);
-            float val2 = in2->GetTuple1(tup2);
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
+            double val2 = in2->GetTuple1(tup2);
             for (int j = 0 ; j < in1ncomps ; j++)
             {
-                int tup1 = (var1IsSingleton ? 0 : i);
-                float val1 = in1->GetComponent(tup1, j);
+                double val1 = in1->GetComponent(tup1, j);
                 out->SetComponent(i, j, val1 + val2);
             }
         }
@@ -154,12 +154,12 @@ avtBinaryAddExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            int tup1 = (var1IsSingleton ? 0 : i);
-            float val1 = in1->GetTuple1(tup1);
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
+            double val1 = in1->GetTuple1(tup1);
             for (int j = 0 ; j < in2ncomps ; j++)
             {
-                int tup2 = (var2IsSingleton ? 0 : i);
-                float val2 = in2->GetComponent(tup2, j);
+                double val2 = in2->GetComponent(tup2, j);
                 out->SetComponent(i, j, val1 + val2);
             }
         }
@@ -192,6 +192,7 @@ avtBinaryAddExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
 //  Creation:    March 18, 2009
 //
 // ****************************************************************************
+
 avtVarType
 avtBinaryAddExpression::GetVariableType()
 {

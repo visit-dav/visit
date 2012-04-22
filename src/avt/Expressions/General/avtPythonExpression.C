@@ -545,8 +545,8 @@ avtPythonExpression::Execute()
                      "Unable to obtain result sequences.");
 
 
-    int n_r_dsets  = PySequence_Size(py_r_dsets);
-    int n_r_domids = PySequence_Size(py_r_domids);
+    // int n_r_dsets  = PySequence_Size(py_r_dsets);
+    // int n_r_domids = PySequence_Size(py_r_domids);
 
     // check that the lists are the correct size?
 

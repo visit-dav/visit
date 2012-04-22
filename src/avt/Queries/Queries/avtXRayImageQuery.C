@@ -94,13 +94,13 @@ avtXRayImageQuery::avtXRayImageQuery():
     absVarName("absorbtivity"),
     emisVarName("emissivity")
 {
-    origin[0] = 0.0f;
-    origin[1] = 0.0f;
-    origin[2] = 0.0f;
-    theta  = 0.0f;
-    phi    = 0.0f;
-    width  = 1.0f;
-    height = 1.0f;
+    origin[0] = 0.0;
+    origin[1] = 0.0;
+    origin[2] = 0.0;
+    theta  = 0.0;
+    phi    = 0.0;
+    width  = 1.0;
+    height = 1.0;
     nx     = 200;
     ny     = 200;
     numPixels = nx * ny;
@@ -242,17 +242,17 @@ avtXRayImageQuery::SetVariableNames(const stringVector &names)
 void
 avtXRayImageQuery::SetOrigin(const doubleVector &_origin)
 {
-    origin[0] = (float)_origin[0];
-    origin[1] = (float)_origin[1];
-    origin[2] = (float)_origin[2];
+    origin[0] = _origin[0];
+    origin[1] = _origin[1];
+    origin[2] = _origin[2];
 }
 
 void
 avtXRayImageQuery::SetOrigin(const intVector &_origin)
 {
-    origin[0] = (float)_origin[0];
-    origin[1] = (float)_origin[1];
-    origin[2] = (float)_origin[2];
+    origin[0] = (double)_origin[0];
+    origin[1] = (double)_origin[1];
+    origin[2] = (double)_origin[2];
 }
 
 
@@ -569,20 +569,31 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         // Write out the image.
         //
+        vtkDataArray *image;
         if (outputType >= 0 && outputType <=3)
         {
             for (int i = 0; i < nLeaves; i++)
             {
-                float *image = (float *) leaves[i]->GetPointData()->GetArray("Image")->GetVoidPointer(0);
-                WriteImage(i, numPixels, image);
+                image = leaves[i]->GetPointData()->GetArray("Image");
+                if (image->GetDataType() == VTK_FLOAT)
+                   WriteImage(i, numPixels, (float*) image->GetVoidPointer(0));
+                else if (image->GetDataType() == VTK_DOUBLE)
+                   WriteImage(i, numPixels, (double*) image->GetVoidPointer(0));
+                else if (image->GetDataType() == VTK_INT)
+                   WriteImage(i, numPixels, (int*) image->GetVoidPointer(0));
             }
         }
         else if (outputType == 4)
         {
             for (int i = 0; i < nLeaves; i++)
             {
-                float *image = (float *) leaves[i]->GetPointData()->GetArray("Image")->GetVoidPointer(0);
-                WriteFloats(i, numPixels, image);
+                image = leaves[i]->GetPointData()->GetArray("Image");
+                if (image->GetDataType() == VTK_FLOAT)
+                   WriteFloats(i, numPixels, (float*)image->GetVoidPointer(0));
+                else if (image->GetDataType() == VTK_DOUBLE)
+                   WriteFloats(i, numPixels, (double*)image->GetVoidPointer(0));
+                else if (image->GetDataType() == VTK_INT)
+                   WriteFloats(i, numPixels, (int*)image->GetVoidPointer(0));
             }
         }
 
@@ -640,14 +651,15 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 //
 // ****************************************************************************
 
+template <typename T>
 void
-avtXRayImageQuery::WriteImage(int iImage, int nPixels, float *fbuf)
+avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
 {
     //
     // Determine the range of the data excluding values less than zero.
     //
-    float minVal = FLT_MAX;
-    float maxVal = -FLT_MAX;
+    double minVal = FLT_MAX;
+    double maxVal = -FLT_MAX;
     for (int i = 0; i < nPixels; i++)
     {
         if (fbuf[i] > 0.)
@@ -656,7 +668,7 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, float *fbuf)
             maxVal = fbuf[i] > maxVal ?  fbuf[i] : maxVal;
         }
     }
-    float range = maxVal - minVal;
+    double range = maxVal - minVal;
     
     vtkImageData *image = vtkImageData::New();
     image->SetWholeExtent(0, nx-1, 0, ny-1, 0, 0);
@@ -741,14 +753,14 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, float *fbuf)
 //    image in chunks to avtXRayFilter.
 //
 // ****************************************************************************
-
+template <typename T>
 void
-avtXRayImageQuery::WriteFloats(int iImage, int nPixels, float *fbuf)
+avtXRayImageQuery::WriteFloats(int iImage, int nPixels, T *fbuf)
 {
     char fileName[24];
     sprintf(fileName, "output%02d.bof", iImage);
     FILE *file = fopen(fileName, "w");
-    fwrite(fbuf, sizeof(float), nPixels, file);
+    fwrite(fbuf, sizeof(T), nPixels, file);
     fclose(file);
 }
 

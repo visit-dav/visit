@@ -114,6 +114,9 @@ avtConditionalExpression::~avtConditionalExpression()
 //    Test to make sure input data arrays have the same number of tuples and
 //    issue an error message if this happens. 
 //
+//    Kathleen Biagas, Wed Apr 4 08:39:02 PDT 2012 
+//    Support other data types besides uchar and float. 
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -198,12 +201,13 @@ avtConditionalExpression::DeriveVariable(vtkDataSet *in_ds)
     dv->SetNumberOfComponents(data2->GetNumberOfComponents());
     dv->SetNumberOfTuples(nvals);
 
-    if (data1->GetDataType() == VTK_FLOAT)
+    if (data1->GetDataType() == VTK_UNSIGNED_CHAR)
     {
+        vtkUnsignedCharArray *uca = (vtkUnsignedCharArray *) data1;
         for (int i = 0 ; i < nvals ; i++)
         {
-            float val = data1->GetTuple1(i);
-            if (val != 0.)
+            unsigned char val = uca->GetValue(i);
+            if (val != '\0')
             {
                 dv->SetTuple(i, data2->GetTuple(i));
             }
@@ -213,13 +217,12 @@ avtConditionalExpression::DeriveVariable(vtkDataSet *in_ds)
             }
         }
     }
-    else if (data1->GetDataType() == VTK_UNSIGNED_CHAR)
+    else  
     {
-        vtkUnsignedCharArray *uca = (vtkUnsignedCharArray *) data1;
         for (int i = 0 ; i < nvals ; i++)
         {
-            unsigned char val = uca->GetValue(i);
-            if (val != '\0')
+            double val = data1->GetTuple1(i);
+            if (val != 0.)
             {
                 dv->SetTuple(i, data2->GetTuple(i));
             }

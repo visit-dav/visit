@@ -256,8 +256,6 @@ avtContourFilter::~avtContourFilter()
 avtContract_p
 avtContourFilter::ModifyContract(avtContract_p in_contract)
 {
-    int  i, j;
-
     avtContract_p contract = new avtContract(in_contract);
 
     const char *varname = NULL;
@@ -352,7 +350,7 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
     // and take the union of those lists as we go.
     //
     vector<bool> useList;
-    for (i = 0 ; i < isoValues.size(); i++)
+    for (size_t i = 0 ; i < isoValues.size(); i++)
     {
         //
         // The interval tree solves linear equations.  A contour is the linear
@@ -368,7 +366,7 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
         // list just has the domains for one contour.  Union this with
         // our running list.
         //
-        for (j = 0 ; j < list.size() ; j++)
+        for (size_t j = 0 ; j < list.size() ; j++)
         {
             //
             // Make sure our array is big enough.
@@ -388,7 +386,7 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
     // interface.
     //
     vector<int> list;
-    for (i = 0 ; i < useList.size() ; i++)
+    for (size_t i = 0 ; i < useList.size() ; i++)
         if (useList[i])
             list.push_back(i);
 
@@ -480,7 +478,7 @@ avtContourFilter::PreExecute(void)
 
     debug5 << "About to execute contour filter.  " << isoValues.size()
            << " isovalues are: ";
-    for (int i = 0 ; i < isoValues.size() ; i++)
+    for (size_t i = 0 ; i < isoValues.size() ; i++)
     {
         debug5 << isoValues[i] << ", ";
     }
@@ -613,7 +611,6 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 {
     int tt1 = visitTimer->StartTimer();
 
-    int   i;
     char *contourVar = (activeVariable != NULL ? activeVariable 
                                                : pipelineVariable);
     if (isoValues.empty())
@@ -651,12 +648,12 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         cd2pd->SetInput(new_in_ds);
         cd2pd->GetExecutive()->SetOutputData(0, toBeContoured);
         cd2pd->Update();
-        for (i = 0 ; i < in_ds->GetPointData()->GetNumberOfArrays() ; i++)
+        for (int i = 0 ; i < in_ds->GetPointData()->GetNumberOfArrays() ; i++)
         {
             vtkDataArray *arr = in_ds->GetPointData()->GetArray(i);
             toBeContoured->GetPointData()->AddArray(arr);
         }
-        for (i = 0 ; i < in_ds->GetCellData()->GetNumberOfArrays() ; i++)
+        for (int i = 0 ; i < in_ds->GetCellData()->GetNumberOfArrays() ; i++)
         {
             vtkDataArray *arr = in_ds->GetCellData()->GetArray(i);
             if (strcmp(arr->GetName(), contourVar) != 0)
@@ -717,9 +714,9 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     vtkDataSet **out_ds = new vtkDataSet*[isoValues.size()];
     cf->SetInput(toBeContoured);
     vtkPolyData *output = cf->GetOutput();
-    for (i = 0 ; i < isoValues.size() ; i++)
+    for (size_t i = 0 ; i < isoValues.size() ; i++)
     {
-        std::vector<int> list;
+        std::vector<vtkIdType> list;
         if (useScalarTree)
         {
             int id1 = visitTimer->StartTimer();
@@ -728,10 +725,10 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         }
         int id2 = visitTimer->StartTimer();
         cf->SetIsovalue(isoValues[i]);
-        int *list2 = NULL;
+        vtkIdType *list2 = NULL;
         if (useScalarTree)
         {
-            int emptylist[1] = { 0 };
+            vtkIdType emptylist[1] = { 0 };
             if (list.size() <= 0)
                 list2 = emptylist;
             else
@@ -769,7 +766,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     //
     // Clean up memory.
     //
-    for (i = 0; i < isoValues.size(); i++)
+    for (size_t i = 0; i < isoValues.size(); i++)
     {
         if (out_ds[i] != NULL) 
         {
@@ -1133,7 +1130,7 @@ avtContourFilter::CreateLabels()
         isoLabels.clear();
     }
 
-    for (int i = 0; i < isoValues.size(); i++)
+    for (size_t i = 0; i < isoValues.size(); i++)
     {
         sprintf(temp, "%g", isoValues[i]);
         isoLabels.push_back(temp);

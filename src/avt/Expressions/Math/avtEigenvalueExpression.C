@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtEigenvalueExpression.C                          //
+//                            avtEigenvalueExpression.C                      //
 // ************************************************************************* //
 
 #include <avtEigenvalueExpression.h>
@@ -104,7 +104,7 @@ avtEigenvalueExpression::~avtEigenvalueExpression()
  
 void
 avtEigenvalueExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                 int ncomponents, int ntuples)
+                                     int ncomponents, int ntuples)
 {
     if (ncomponents == 9)
     {

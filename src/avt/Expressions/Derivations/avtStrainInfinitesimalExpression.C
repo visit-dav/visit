@@ -37,26 +37,18 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtStrainInfinitesimalExpression.C                  //
+//                       avtStrainInfinitesimalExpression.C                  //
 // ************************************************************************* //
 
 #include <avtStrainInfinitesimalExpression.h>
-#include <vtkVisItUtility.h>
 #include <math.h>
 
-#include <vtkCellData.h>
+#include <vtkCellType.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkIdList.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkFloatArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkPointSet.h>
-#include <vtkCell.h>
-#include <vtkCellType.h>
 #include <vtkPointData.h>
-#include <vtkPointLocator.h>
-
-#include <vtkMath.h>
 
 #include <ExpressionException.h>
 
@@ -99,6 +91,10 @@ avtStrainInfinitesimalExpression::~avtStrainInfinitesimalExpression()
 //  Programmer: Thomas R. Treadway
 //  Creation:   Wed Nov 15 12:57:36 PST 2006
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 4 12:03:10 PDT 2012
+//    Set output's data type to same as input.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -126,7 +122,6 @@ avtStrainInfinitesimalExpression::DeriveVariable(vtkDataSet *in_ds)
                    "only operates on unstructured grids.");
     }
     vtkUnstructuredGrid *in_usg = vtkUnstructuredGrid::SafeDownCast(in_ds);
-//  vtkVisItUtility::WriteDataSet(in_ds, varnames[0]);
     int nCells = in_usg->GetNumberOfCells();
     vtkDataArray *coord_data = in_ds->GetPointData()->GetArray(varnames[1]);
     if (coord_data == NULL) 
@@ -139,7 +134,7 @@ avtStrainInfinitesimalExpression::DeriveVariable(vtkDataSet *in_ds)
     unsigned char *ghost =
         (unsigned char *) (ghost_data ? ghost_data->GetVoidPointer(0) : 0);
     vtkIdList *pointIds = vtkIdList::New();
-    vtkFloatArray *out = vtkFloatArray::New();
+    vtkDataArray *out = coord_data->NewInstance();
     out->SetNumberOfComponents(9);
     out->SetNumberOfTuples(nCells);
     nTensors = 0;

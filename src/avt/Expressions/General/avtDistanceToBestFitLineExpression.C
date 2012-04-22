@@ -186,7 +186,9 @@ avtDistanceToBestFitLineExpression::Execute(void)
 // Creation:   Fri Nov 18 16:18:09 PST 2005
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Wed Apr 4 12:10:10 PDT 2012
+//   Change float to double.
+//
 // ****************************************************************************
 
 void
@@ -199,8 +201,8 @@ avtDistanceToBestFitLineExpression::DoOperation(vtkDataArray *in1,
         sums[N_SUM] += double(ntuples);
         for(vtkIdType i = 0; i < ntuples; ++i)
         {
-            float x = in1->GetTuple1(i);
-            float y = in2->GetTuple1(i);
+            double x = in1->GetTuple1(i);
+            double y = in2->GetTuple1(i);
 
             sums[X_SUM] += double(x);
             sums[Y_SUM] += double(y);
@@ -219,7 +221,7 @@ avtDistanceToBestFitLineExpression::DoOperation(vtkDataArray *in1,
             double xLine = sums[X_SUM] / sums[N_SUM];
             for(vtkIdType i = 0; i < ntuples; ++i)
             {
-                float x = in1->GetTuple1(i);
+                double x = in1->GetTuple1(i);
                 out->SetTuple1(i, x - xLine);
             }
         }
@@ -232,9 +234,9 @@ avtDistanceToBestFitLineExpression::DoOperation(vtkDataArray *in1,
             {
                 for(vtkIdType i = 0; i < ntuples; ++i)
                 {
-                    float x = in1->GetTuple1(i);
-                    float y = in2->GetTuple1(i);
-                    float yLine = m * x + b;
+                    double x = in1->GetTuple1(i);
+                    double y = in2->GetTuple1(i);
+                    double yLine = m * x + b;
                     out->SetTuple1(i, y - yLine);
                 }
             }
@@ -242,8 +244,8 @@ avtDistanceToBestFitLineExpression::DoOperation(vtkDataArray *in1,
             {
                 for(vtkIdType i = 0; i < ntuples; ++i)
                 {
-                    float x0 = in1->GetTuple1(i);
-                    float y0 = in2->GetTuple1(i);
+                    double x0 = in1->GetTuple1(i);
+                    double y0 = in2->GetTuple1(i);
                     
                     // We know line eq. Y = MX + B
                     // Reorganized: ax + by + c = 0 where a=M, b=-1, c=B
@@ -254,7 +256,7 @@ avtDistanceToBestFitLineExpression::DoOperation(vtkDataArray *in1,
                     // Subst a,b,c
                     //   |M*x0 -1*y0 + B| / sqrt(M^2 + 1)
 
-                    float d = fabs(m * x0 - y0 + b) / sqrt(m*m + 1);
+                    double d = fabs(m * x0 - y0 + b) / sqrt(m*m + 1);
                     out->SetTuple1(i, d);
                 }
             }

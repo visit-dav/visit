@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
   <Plugin name="ThreeSlice" type="operator" label="ThreeSlice" version="1.0" iconFile="ThreeSlice.xpm" category="Slicing">
     <Attribute name="ThreeSliceAttributes" purpose="This class contains attributes for the threeslice operator." persistent="true" codefile="ThreeSliceAttributes.code">
-      <Field name="x" label="x" type="float">
+      <Field name="x" label="x" type="double">
         0.000000
       </Field>
-      <Field name="y" label="y" type="float">
+      <Field name="y" label="y" type="double">
         0.000000
       </Field>
-      <Field name="z" label="z" type="float">
+      <Field name="z" label="z" type="double">
         0.000000
       </Field>
       <Field name="interactive" label="Interactive" type="bool">

@@ -37,21 +37,23 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtResradExpression.C                           //
+//                           avtResradExpression.C                           //
 // ************************************************************************* //
 
 #include <avtResradExpression.h>
 
 #include <vtkDataArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 
 #include <avtCallback.h>
 
 #include <ExpressionException.h>
 
-
-static bool varres(float *var, float *newvar, int nxvar, int nyvar, 
-                   int reflflag, float dx, float dy, float resrad);
+template <typename T>
+static bool varres(T *var, T *newvar, int nxvar, int nyvar, 
+                   int reflflag, double dx, double dy, double resrad);
 
 
 // ****************************************************************************
@@ -137,19 +139,13 @@ void
 avtResradExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                 vtkDataArray *out, int ncomponents,int ntuples)
 {
-    int  i;
-
-    float *var = (float *) in1->GetVoidPointer(0);
-    float radius = in2->GetTuple1(0);  // Assuming constant.
-    float *newvar = (float *) out->GetVoidPointer(0);
-
     //
     // There are so many ways to go wrong, initialize the array assuming we
     // will return with an error condition.
     //
-    int nvals = out->GetNumberOfTuples();
-    for (i = 0 ; i < nvals ; i++)
-         newvar[i] = var[i];
+    vtkIdType nvals = out->GetNumberOfTuples();
+    for (vtkIdType i = 0 ; i < nvals ; i++)
+         out->SetTuple1(i, in1->GetTuple1(i));
 
     if (cur_mesh->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
@@ -176,19 +172,19 @@ avtResradExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
         return;
     }
 
-    float *X = (float *) rgrid->GetXCoordinates()->GetVoidPointer(0);
-    float *Y = (float *) rgrid->GetYCoordinates()->GetVoidPointer(0);
+    vtkDataArray *X = rgrid->GetXCoordinates();
+    vtkDataArray *Y = rgrid->GetYCoordinates();
 
     bool hasEqualSpacing = true;
-    float dx = X[1] - X[0];
-    float fudge = dx/1000.;
-    for (i = 1 ; i < dims[0]-1 ; i++)
-        if (fabs((X[i+1] - X[i]) - dx) > fudge)
+    double dx = X->GetTuple1(1) - X->GetTuple1(0);
+    double fudge = dx/1000.;
+    for (int i = 1 ; i < dims[0]-1 ; i++)
+        if (fabs((X->GetTuple1(i+1) - X->GetTuple1(i)) - dx) > fudge)
             hasEqualSpacing = false;
-    float dy = Y[1] - Y[0];
+    double dy = Y->GetTuple1(1) - Y->GetTuple1(0);
     fudge = dy/1000.;
-    for (i = 1 ; i < dims[1]-1 ; i++)
-        if (fabs((Y[i+1] - Y[i]) - dy) > fudge)
+    for (int i = 1 ; i < dims[1]-1 ; i++)
+        if (fabs((Y->GetTuple1(i+1) - Y->GetTuple1(i)) - dy) > fudge)
             hasEqualSpacing = false;
 
     if (!hasEqualSpacing)
@@ -209,7 +205,23 @@ avtResradExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
         nX--;
         nY--;
     }
-    if (!varres(var, newvar, nX, nY, 1, dx, dy, radius))
+
+    double radius = in2->GetTuple1(0);  // Assuming constant.
+    bool good = false;
+    if (in1->GetDataType() == VTK_FLOAT)
+    {
+        good = varres<float>(vtkFloatArray::SafeDownCast(in1)->GetPointer(0), 
+                             vtkFloatArray::SafeDownCast(out)->GetPointer(0),
+                             nX, nY, 1, dx, dy, radius);
+    }
+    else if (in1->GetDataType() == VTK_DOUBLE)
+    {
+        good = varres<double>(vtkDoubleArray::SafeDownCast(in1)->GetPointer(0), 
+                              vtkDoubleArray::SafeDownCast(out)->GetPointer(0),
+                              nX, nY, 1, dx, dy, radius);
+    }
+
+    if (!good)
     {
         if (!haveIssuedWarning)
         {
@@ -244,7 +256,7 @@ avtResradExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
 #define MAX(a,b) ((a > b) ? a : b)
 #endif
 
-static float     res[(NRES+NRES+1)*(NRES+NRES+1)];
+static double    res[(NRES+NRES+1)*(NRES+NRES+1)];
 static int       kx [NPG], jy [NPG];
 
 
@@ -317,22 +329,22 @@ randf(double rmin, double rmax)
  *     needed since we aren't using rand any more.
  *
  **********************************************************************/
-
+template <typename T>
 bool
-varres (float *var, float *newvar, int nxvar, int nyvar, int reflflag,
-        float dx, float dy, float resrad)
+varres (T *var, T *newvar, int nxvar, int nyvar, int reflflag,
+        double dx, double dy, double resrad)
 {
      int       i, j, jj, jm, j2, k, kk, k1, k2;
      int       jext, kext;
      int       nresp1;
-     float     fnresp1;
-     float     rr, phi, x, y, avg;
+     double    fnresp1;
+     double    rr, phi, x, y, avg;
      int       ngroup;
-     float     randnum;
-     float     pnormi;
-     float     rr2;
+     double    randnum;
+     double    pnormi;
+     double    rr2;
 
-     pnormi = 1. / (float) (NGPS * NPG);
+     pnormi = 1. / (double) (NGPS * NPG);
      rr2    = resrad * resrad;
 
      for (i = 0; i < nxvar * nyvar; i++)

@@ -44,6 +44,7 @@
 
 #include <avtMeshLogFilter.h>
 #include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkPoints.h>
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
@@ -68,6 +69,102 @@ avtMeshLogFilter::avtMeshLogFilter()
     useInvLogY = false;
 }
 
+// ****************************************************************************
+//  Templated scaling functions.
+//
+//  Notes:
+//     Methods modify the data in place.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   March 22, 2012 
+//
+// ****************************************************************************
+
+#define SMALL 1e-100
+
+template <typename T>
+void
+avtMeshLogFilter_ScaleVal_log(T &v)
+{
+    v = (T) log10(fabs(v) + SMALL);
+}
+
+template <typename T>
+void
+avtMeshLogFilter_ScaleVal_invlog(T &v)
+{
+    v = (T) pow(10., (double) v);
+}
+
+template <typename T>
+void
+avtMeshLogFilter_ScaleVal(T &v, bool invLog)
+{
+    if (invLog)
+        avtMeshLogFilter_ScaleVal_invlog<T>(v);
+    else
+        avtMeshLogFilter_ScaleVal_log<T>(v);
+}
+
+template <typename T> 
+void 
+avtMeshLogFilter_ScaleValues(T *a, vtkIdType n, bool inv, 
+                              vtkIdType start, vtkIdType stride)
+{
+    if (inv)
+    {
+        for (vtkIdType i = start; i < n; i+=stride)
+            avtMeshLogFilter_ScaleVal_invlog<T>(a[i]);
+    }
+    else 
+    {
+        for (vtkIdType i = start; i < n; i+=stride)
+            avtMeshLogFilter_ScaleVal_log<T>(a[i]);
+    }
+}
+
+
+void
+avtMeshLogFilter_ScaleValuesHelper(vtkDataArray *a, bool inv, 
+                                   int start = 0, int stride = 1)
+{
+    if (a->GetDataType() == VTK_FLOAT)
+    {
+        vtkIdType size = a->GetDataSize();
+        avtMeshLogFilter_ScaleValues<float>(
+            (float*)((vtkFloatArray*)a)->GetVoidPointer(0),
+            size, inv, start, stride);
+    }
+    else if (a->GetDataType() == VTK_DOUBLE)
+    {
+        vtkIdType size = a->GetDataSize();
+        avtMeshLogFilter_ScaleValues<double>(
+            (double*)((vtkDoubleArray*)a)->GetVoidPointer(0),
+            size, inv, start, stride);
+    }
+    else // Generic, GetComponent method
+    {
+        if (inv)
+        {
+            for (vtkIdType i = 0; i < a->GetNumberOfTuples(); ++i)
+            {
+                double v = a->GetComponent(i, start);
+                avtMeshLogFilter_ScaleVal_invlog(v);
+                a->SetComponent(i, start, v);
+            }
+        }
+        else 
+        {
+            for (vtkIdType i = 0; i < a->GetNumberOfTuples(); ++i)
+            {
+                double v = a->GetComponent(i, start);
+                avtMeshLogFilter_ScaleVal_log(v);
+                a->SetComponent(i, start, v);
+            }
+        }
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtMeshLogFilter::Execute
@@ -76,6 +173,10 @@ avtMeshLogFilter::avtMeshLogFilter()
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   March 6, 2007 
+//
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 23 18:34:01 MST 2012
+//    Use new templated methods for scaling. 
 //
 // ****************************************************************************
 
@@ -92,37 +193,26 @@ avtMeshLogFilter::ExecuteData(vtkDataSet *ds, int, std::string)
     {
         if (xScaleMode == LOG)
         {
-            vtkDataArray *xc = ((vtkRectilinearGrid*)rv)->GetXCoordinates();
-            float *x = (float*)((vtkFloatArray*)xc)->GetVoidPointer(0);
-            for (int i = 0; i < xc->GetNumberOfTuples(); i++)
-                ScaleVal(x[i], useInvLogX);
-            ((vtkRectilinearGrid*)rv)->SetXCoordinates(xc);
+            avtMeshLogFilter_ScaleValuesHelper(
+                ((vtkRectilinearGrid*)rv)->GetXCoordinates(), useInvLogX);
         }
         if (yScaleMode == LOG)
         {
-            vtkDataArray *yc = ((vtkRectilinearGrid*)rv)->GetYCoordinates();
-            float *y = (float*)((vtkFloatArray*)yc)->GetVoidPointer(0);
-            for (int i = 0; i < yc->GetNumberOfTuples(); i++)
-                ScaleVal(y[i], useInvLogY);
-            ((vtkRectilinearGrid*)rv)->SetYCoordinates(yc);
+            avtMeshLogFilter_ScaleValuesHelper(
+                ((vtkRectilinearGrid*)rv)->GetYCoordinates(), useInvLogY);
         }
     }
     else 
     {
-        vtkDataArray *points = ((vtkPointSet*)ds)->GetPoints()->GetData();
-        float *pts = (float*)((vtkFloatArray*)points)->GetVoidPointer(0);
-        for (int i = 0; i < points->GetNumberOfTuples()*3; i+=3)
+        vtkDataArray *points = ((vtkPointSet*)rv)->GetPoints()->GetData();
+        if (xScaleMode == LOG)
         {
-            if (xScaleMode == LOG)
-            {
-                ScaleVal(pts[i], useInvLogX);
-            }
-            if (yScaleMode == LOG)
-            {
-                ScaleVal(pts[i+1], useInvLogY);
-            }
-        } 
-        ((vtkPointSet*)rv)->GetPoints()->SetData(points);
+            avtMeshLogFilter_ScaleValuesHelper(points, useInvLogX, 0, 3); 
+        }
+        if (yScaleMode == LOG)
+        {
+            avtMeshLogFilter_ScaleValuesHelper(points, useInvLogY, 1, 3); 
+        }
     }
     ManageMemory(rv);
     return rv;
@@ -141,6 +231,9 @@ avtMeshLogFilter::ExecuteData(vtkDataSet *ds, int, std::string)
 //
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
+//
+//    Kathleen Biagas, Fri Mar 23 18:34:01 MST 2012
+//    Use new templated methods for scaling. 
 //
 // ****************************************************************************
 
@@ -163,13 +256,13 @@ avtMeshLogFilter::PostExecute()
         inAtts.GetOriginalSpatialExtents()->CopyTo(se);
         if (xScaleMode == LOG)
         {
-            ScaleVal(se[0], useInvLogX);
-            ScaleVal(se[1], useInvLogX);
+            avtMeshLogFilter_ScaleVal(se[0], useInvLogX);
+            avtMeshLogFilter_ScaleVal(se[1], useInvLogX);
         }
         if (yScaleMode == LOG)
         {
-            ScaleVal(se[2], useInvLogY);
-            ScaleVal(se[3], useInvLogY);
+            avtMeshLogFilter_ScaleVal(se[2], useInvLogY);
+            avtMeshLogFilter_ScaleVal(se[3], useInvLogY);
         }
         outAtts.GetOriginalSpatialExtents()->Set(se);
     }
@@ -178,13 +271,13 @@ avtMeshLogFilter::PostExecute()
         inAtts.GetThisProcsOriginalSpatialExtents()->CopyTo(se);
         if (xScaleMode == LOG)
         {
-            ScaleVal(se[0], useInvLogX);
-            ScaleVal(se[1], useInvLogX);
+            avtMeshLogFilter_ScaleVal(se[0], useInvLogX);
+            avtMeshLogFilter_ScaleVal(se[1], useInvLogX);
         }
         if (yScaleMode == LOG)
         {
-            ScaleVal(se[2], useInvLogY);
-            ScaleVal(se[3], useInvLogY);
+            avtMeshLogFilter_ScaleVal(se[2], useInvLogY);
+            avtMeshLogFilter_ScaleVal(se[3], useInvLogY);
         }
         outAtts.GetThisProcsOriginalSpatialExtents()->Set(se);
     }
@@ -210,69 +303,5 @@ avtMeshLogFilter::UpdateDataObjectInfo(void)
 }
 
 
-#define SMALL 1e-100
 
-void
-avtMeshLogFilter::ScaleVal(float &v, bool invLog)
-{
-    if (invLog)
-        return ScaleVal_invlog(v);
-    else 
-        return ScaleVal_log(v);
-}
-
-void
-avtMeshLogFilter::ScaleVal(double &v, bool invLog)
-{
-    if (invLog)
-        return ScaleVal_invlog(v);
-    else 
-        return ScaleVal_log(v);
-}
-
-
-// ****************************************************************************
-//  Modifications:
-//
-//    Hank Childs, Tue Oct 16 16:16:34 PDT 2007
-//    Remove fabs call.
-//
-// ****************************************************************************
-
-void
-avtMeshLogFilter::ScaleVal_log(float &v)
-{
-    v = log10(fabs(v) + SMALL);
-}
-
-void
-avtMeshLogFilter::ScaleVal_log(double &v)
-{
-    v = log10(fabs(v) + SMALL);
-}
-
-
-// ****************************************************************************
-//  Modifications:
-//
-//    Hank Childs, Tue Oct 16 16:16:34 PDT 2007
-//    Remove fabs call.
-//
-//    Hank Childs, Wed Oct 17 16:04:19 PDT 2007
-//    Make sure both arguments to pow are doubles.  Otherwise, this causes 
-//    an ambiguity that xlc can't handle.
-//
-// ****************************************************************************
-
-void
-avtMeshLogFilter::ScaleVal_invlog(float &v)
-{
-    v = pow(10., (double) v);
-}
-
-void
-avtMeshLogFilter::ScaleVal_invlog(double &v)
-{
-    v = pow(10., v);
-}
 

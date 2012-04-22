@@ -82,9 +82,32 @@ class VISIT_VTK_API vtkVisItSplitter
     virtual void SetNewTagBitField(std::vector<FixedLengthBitField<16> > *);
     virtual void SetNewTagBit(int);
 
-    void SetCellList(int *, int);
+    void SetCellList(const vtkIdType *, vtkIdType);
     virtual void SetUpClipFunction(int) { ; };
 
+    struct FilterState
+    {
+        FilterState();
+       ~FilterState();
+        void SetCellList(const vtkIdType *, vtkIdType);
+        void SetClipFunction(vtkImplicitFunction *func);
+        void SetClipScalars(vtkDataArray *, double);
+
+        const vtkIdType     *CellList;
+        vtkIdType            CellListSize;
+  
+        vtkImplicitFunction *clipFunction;
+        vtkDataArray        *scalarArrayAsVTK;
+        double               scalarCutoff;
+
+        bool                 removeWholeCells;
+        bool                 insideOut;
+        bool                 useZeroCrossings;
+
+        int                  newTagBit;
+        std::vector<FixedLengthBitField<16> > *newTags;
+        std::vector<FixedLengthBitField<16> > *oldTags;
+    };
 
   protected:
     vtkVisItSplitter();
@@ -92,21 +115,9 @@ class VISIT_VTK_API vtkVisItSplitter
 
     void Execute();
 
-    int *CellList;
-    int  CellListSize;
   private:
-    bool   removeWholeCells;
-    bool   insideOut;
-    vtkImplicitFunction *clipFunction;
-    bool   iOwnData;
-    float *scalarArray;
-    vtkDataArray *scalarArrayAsVTK;
-    float  scalarCutoff;
-    bool   scalarFlip;
-    bool   useZeroCrossings;
-    std::vector<FixedLengthBitField<16> > *oldTags;
-    std::vector<FixedLengthBitField<16> > *newTags;
-    int    newTagBit;
+     // Contains the state for the filter.
+    FilterState state;
 
     vtkVisItSplitter(const vtkVisItSplitter&);  // Not implemented.
     void operator=(const vtkVisItSplitter&);  // Not implemented.

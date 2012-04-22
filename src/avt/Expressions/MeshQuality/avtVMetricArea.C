@@ -43,13 +43,11 @@
 #include "avtVMetricArea.h"
 
 #include <vtkCellType.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 
 #include <verdict.h>
-
-#include <DebugStream.h>
 
 
 // ****************************************************************************
@@ -132,8 +130,6 @@ avtVMetricArea::OperateDirectlyOnMesh(vtkDataSet *ds)
 void
 avtVMetricArea::MetricForWholeMesh(vtkDataSet *ds, vtkDataArray *rv)
 {
-    int  i, j;
-
     if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
         EXCEPTION0(ImproperUseException);
 
@@ -142,18 +138,18 @@ avtVMetricArea::MetricForWholeMesh(vtkDataSet *ds, vtkDataArray *rv)
     vtkDataArray *Y = rg->GetYCoordinates();
     int dims[3];
     rg->GetDimensions(dims);
-    float *Xdist = new float[dims[0]-1];
-    for (i = 0 ; i < dims[0]-1 ; i++)
+    double *Xdist = new double[dims[0]-1];
+    for (int i = 0 ; i < dims[0]-1 ; i++)
         Xdist[i] = X->GetTuple1(i+1) - X->GetTuple1(i);
-    float *Ydist = new float[dims[1]-1];
-    for (i = 0 ; i < dims[1]-1 ; i++)
+    double *Ydist = new double[dims[1]-1];
+    for (int i = 0 ; i < dims[1]-1 ; i++)
         Ydist[i] = Y->GetTuple1(i+1) - Y->GetTuple1(i);
 
-    for (j = 0 ; j < dims[1]-1 ; j++)
-        for (i = 0 ; i < dims[0]-1 ; i++)
+    for (int j = 0 ; j < dims[1]-1 ; j++)
+        for (int i = 0 ; i < dims[0]-1 ; i++)
         {
             int idx = j*(dims[0]-1) + i;
-            float area = Xdist[i]*Ydist[j];
+            double area = Xdist[i]*Ydist[j];
             rv->SetTuple1(idx, area);
         }
 

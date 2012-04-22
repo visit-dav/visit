@@ -120,17 +120,21 @@ avtMedianFilterExpression::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   August 19, 2005
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 4 12:36:10 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
-static float
-FindMedian(float *list, int nlist)
+static double
+FindMedian(double *list, int nlist)
 {
     int half = nlist/2;
     if (nlist % 2 == 0)
         half--;
 
-    float cantBeSmallerThan = -FLT_MAX;
-    float cantBeBiggerThan = +FLT_MAX;
+    double cantBeSmallerThan = -DBL_MAX;
+    double cantBeBiggerThan = +DBL_MAX;
     for (int i = 0 ; i < nlist ; i++)
     {
         if (list[i] <= cantBeSmallerThan)
@@ -199,6 +203,9 @@ FindMedian(float *list, int nlist)
 //    Hank Childs, Fri Jun  9 14:34:50 PDT 2006
 //    Remove unused variable.
 //
+//    Kathleen Biagas, Wed Apr 4 12:36:10 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
@@ -240,7 +247,7 @@ avtMedianFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
         dims[2] -= 1;
     }
 
-    float all_vals[27];
+    double all_vals[27];
     int   numSamps = 0;
 
     if (dims[2] <= 1)
@@ -264,7 +271,7 @@ avtMedianFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
                         numSamps++;
                     }
                 }
-                float median = FindMedian(all_vals, numSamps);
+                double median = FindMedian(all_vals, numSamps);
                 out->SetTuple1(idx, median);
             }
         }
@@ -297,7 +304,7 @@ avtMedianFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
                             }
                         }
                     }
-                    float median = FindMedian(all_vals, numSamps);
+                    double median = FindMedian(all_vals, numSamps);
                     out->SetTuple1(idx, median);
                 }
             }

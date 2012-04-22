@@ -270,7 +270,6 @@ avtCurveExpression::ProcessArguments(ArgsExpr *args,
     for (int i = 1; i < nargs; ++i)
     {
         expression_arguments.push_back((*arguments)[i]->GetText());
-        ExprParseTreeNode *n = (*arguments)[i]->GetExpr();
         avtExprNode *expr_node = dynamic_cast<avtExprNode*>
             ((*arguments)[i]->GetExpr());
         if (expr_node == NULL)

@@ -112,8 +112,7 @@ avtVectorCrossProductExpression::~avtVectorCrossProductExpression()
 
 void
 avtVectorCrossProductExpression::DoOperation(vtkDataArray *in1,
-                                vtkDataArray *in2, vtkDataArray *out,
-                                int ncomponents, int ntuples)
+    vtkDataArray *in2, vtkDataArray *out, int ncomponents, int ntuples)
 {
     int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
     if ((ndims == 3 && ncomponents != 3) || (ndims < 3 && ncomponents != 1))
@@ -124,12 +123,12 @@ avtVectorCrossProductExpression::DoOperation(vtkDataArray *in1,
 
     for (int i = 0 ; i < ntuples ; i++)
     {
-        float a1 = in1->GetComponent(i, 0);
-        float a2 = in1->GetComponent(i, 1);
-        float a3 = in1->GetComponent(i, 2);
-        float b1 = in2->GetComponent(i, 0);
-        float b2 = in2->GetComponent(i, 1);
-        float b3 = in2->GetComponent(i, 2);
+        double a1 = in1->GetComponent(i, 0);
+        double a2 = in1->GetComponent(i, 1);
+        double a3 = in1->GetComponent(i, 2);
+        double b1 = in2->GetComponent(i, 0);
+        double b2 = in2->GetComponent(i, 1);
+        double b3 = in2->GetComponent(i, 2);
 
         if (ndims == 3)
         {

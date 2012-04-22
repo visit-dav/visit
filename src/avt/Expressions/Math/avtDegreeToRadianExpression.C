@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtDegreeToRadianExpression.C                        //
+//                          avtDegreeToRadianExpression.C                    //
 // ************************************************************************* //
 
 #include <avtDegreeToRadianExpression.h>
@@ -109,13 +109,13 @@ avtDegreeToRadianExpression::~avtDegreeToRadianExpression()
 
 void
 avtDegreeToRadianExpression::DoOperation(vtkDataArray *in, vtkDataArray *out, 
-                                     int ncomponents, int ntuples)
+                                         int ncomponents, int ntuples)
 {
     for (int i = 0 ; i < ntuples ; i++)
     {
         for (int j = 0 ; j < ncomponents ; j++)
         {
-            float val = in->GetComponent(i, j);
+            double val = in->GetComponent(i, j);
             out->SetComponent(i, j, val*((2.*M_PI)/360.));
         }
     }

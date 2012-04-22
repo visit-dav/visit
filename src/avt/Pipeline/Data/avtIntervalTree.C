@@ -315,7 +315,7 @@ avtIntervalTree::GetExtents(double *extents) const
 // ****************************************************************************
 
 void
-avtIntervalTree::AddElement(int element, double *d)
+avtIntervalTree::AddElement(int element, const double *d)
 {
     //
     // Sanity Check

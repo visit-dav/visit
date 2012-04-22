@@ -210,8 +210,8 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 
     slicer->SetOrigin(x,y,z);
 
-    int * cellList[3];
-    int nCells[3];
+    vtkIdType *cellList[3];
+    vtkIdType nCells[3];
 
     cellList[0] = cellList[1] = cellList[2] = NULL;
     
@@ -224,7 +224,6 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     {
         vtkRectilinearGrid *rg = (vtkRectilinearGrid *) in_ds;
         
-        int start;
         int dims[3];
         rg->GetDimensions(dims);
         // Subtract one to get the cell dimensions from the point dimensions.
@@ -232,7 +231,7 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         --(dims[1]);
         --(dims[2]);
 
-        int i, j;
+        int j;
         int ijk[3];
         double xyz[3];
         double pcoords[3];
@@ -249,7 +248,7 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         // towards the dataset. 
         //
         
-        for (i = 0; i < 3; ++i)
+        for (int i = 0; i < 3; ++i)
         {
             double epsilon = (bounds[2 * i + 1] - bounds[i * 2]) 
                                 / (16.0 * dims[i]);
@@ -268,10 +267,10 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
             //   Cells are stored contiguously from 'start'.
             //
 
-            start = ijk[2] * dims[0] * dims[1];
+            vtkIdType start = ijk[2] * dims[0] * dims[1];
             nCells[0] = dims[0] * dims[1];
-            cellList[0] = new int[nCells[0]];
-            for (i = 0; i < nCells[0]; ++i)
+            cellList[0] = new vtkIdType[nCells[0]];
+            for (vtkIdType i = 0; i < nCells[0]; ++i)
                 cellList[0][i] = start + i;
         }
 
@@ -283,10 +282,10 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
             //   strips are offset by dims[0] * dims[1].
             //
             
-            start = ijk[1] * dims[0];
+            vtkIdType start = ijk[1] * dims[0];
             nCells[1] = dims[0] * dims[2];
-            cellList[1] = new int[nCells[1]];
-            for (i = 0; i < nCells[1]; )
+            cellList[1] = new vtkIdType[nCells[1]];
+            for (vtkIdType i = 0; i < nCells[1]; )
             {
                 for (j = 0; j < dims[0]; ++j)
                 {
@@ -304,10 +303,10 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
             //   Cells are stored from start offset by dims[0]
             //
 
-            start = ijk[0];
+            vtkIdType start = ijk[0];
             nCells[2] = dims[1] * dims[2];
-            cellList[2] = new int[nCells[2]];
-            for (i = 0; i < nCells[2]; ++i)
+            cellList[2] = new vtkIdType[nCells[2]];
+            for (vtkIdType i = 0; i < nCells[2]; ++i)
                 cellList[2][i] = start + (i * dims[0]);
         }
     }
@@ -326,8 +325,7 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 
     vtkPolyData *out_ds[3];
     out_ds[0] = out_ds[1] = out_ds[2] = NULL;
-    int i;
-    for (i = 0; i < 3; ++i)
+    for (int i = 0; i < 3; ++i)
     {
         if (!doPlane[i])
         {
@@ -368,7 +366,7 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     //
     // Clean up memory.
     //
-    for (i = 0; i < 3; ++i)
+    for (int i = 0; i < 3; ++i)
     {
         if (out_ds[i])
         {

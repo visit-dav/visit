@@ -46,7 +46,7 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkGeometryFilter.h>
 #include <vtkIntArray.h>
 
@@ -501,7 +501,7 @@ avtLabelRenderer::Set3D(bool val)
 // ****************************************************************************
 
 void
-avtLabelRenderer::SetExtents(const float *ext)
+avtLabelRenderer::SetExtents(const double *ext)
 {
     spatialExtents[0] = ext[0];
     spatialExtents[1] = ext[1];
@@ -594,10 +594,10 @@ avtLabelRenderer::SetRendererAction(int a)
 //   
 // ****************************************************************************
 
-vtkFloatArray *
+vtkDoubleArray *
 avtLabelRenderer::GetCellCenterArray()
 {
-    vtkFloatArray *cellCenters = 0;
+    vtkDoubleArray *cellCenters = 0;
     //
     // Look for the cell center array that the label filter calculated.
     //
@@ -606,12 +606,12 @@ avtLabelRenderer::GetCellCenterArray()
     {
         debug3 << "The avtLabelRenderer was not able to find the LabelFilterCellCenters array!" << endl;
     }
-    else if(!data->IsA("vtkFloatArray"))
+    else if(!data->IsA("vtkDoubleArray"))
     {
-        debug3 << "The avtLabelRenderer found the LabelFilterCellCenters array but it was not a vtkFloatArray.!" << endl;
+        debug3 << "The avtLabelRenderer found the LabelFilterCellCenters array but it was not a vtkDoubleArray.!" << endl;
     }
     else
-        cellCenters = (vtkFloatArray *)data;
+        cellCenters = (vtkDoubleArray *)data;
 
     return cellCenters;
 }
@@ -782,7 +782,7 @@ avtLabelRenderer::ClearLabelCaches()
 // ****************************************************************************
 
 bool
-avtLabelRenderer::AllowLabelInBin(const float *screenPoint, 
+avtLabelRenderer::AllowLabelInBin(const double *screenPoint, 
     const char *labelString, int t)
 {
     bool retval = false;
@@ -819,33 +819,6 @@ avtLabelRenderer::AllowLabelInBin(const float *screenPoint,
     }
 
     return retval;
-}
-
-// ****************************************************************************
-// Method: avtLabelRenderer::DepthTestPoint
-//
-// Purpose: 
-//   Returns whether or not the point is visible according to the Z buffer.
-//
-// Arguments:
-//   screenPoint : The point to test for its Z. The point is in normalized
-//                 device coords.
-//
-// Returns:    True if the point is allowed closer than the Z buffer value.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Aug 8 09:12:22 PDT 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-avtLabelRenderer::DepthTestPoint(float screenPoint[3]) const
-{
-    return true;
 }
 
 // ****************************************************************************

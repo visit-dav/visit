@@ -49,7 +49,7 @@
 #include <vtkCellDataToPointData.h>
 #include <vtkCellDerivatives.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkIdList.h>
 #include <vtkPointData.h>
 #include <vtkPointDataToCellData.h>
@@ -330,13 +330,12 @@ avtGradientExpression::DeriveVariable(vtkDataSet *in_ds)
 {
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
-        int nPoints = in_ds->GetNumberOfPoints();
-        vtkDataArray *results = vtkFloatArray::New();
+        vtkIdType nPoints = in_ds->GetNumberOfPoints();
+        vtkDataArray *results = CreateArrayFromMesh(in_ds);
         results->SetNumberOfComponents(3);
         results->SetNumberOfTuples(nPoints);        
-        float *ptr = (float *) results->GetVoidPointer(0);
-        for (int i = 0 ; i < 3*nPoints ; i++)
-            ptr[i] = 0.;
+        for (vtkIdType i = 0 ; i < nPoints ; i++)
+            results->SetTuple3(i, 0., 0., 0);
         return results;
     }
 
@@ -389,17 +388,16 @@ avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
                 avtCallback::IssueWarning("You can only do logical gradients "
                                           "on structured grids.");
             haveIssuedWarning = true;
-            int nvals = 0;
+            vtkIdType nvals = 0;
             if (in_ds->GetPointData()->GetScalars() != NULL)
                 nvals = in_ds->GetNumberOfPoints();
             else
                 nvals = in_ds->GetNumberOfCells();
-            vtkFloatArray *rv = vtkFloatArray::New();
+            vtkDataArray *rv = CreateArrayFromMesh(in_ds);
             rv->SetNumberOfComponents(3);
             rv->SetNumberOfTuples(nvals);
-            float vals[3] = { 0., 0., 0. };
             for (int i = 0 ; i < nvals ; i++)
-                rv->SetTuple(i, vals);
+                rv->SetTuple3(i, 0., 0., 0);
             return rv;
         }
 
@@ -414,17 +412,16 @@ avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
                 avtCallback::IssueWarning("You can only do nzqh gradients "
                                           "on structured grids.");
             haveIssuedWarning = true;
-            int nvals = 0;
+            vtkIdType nvals = 0;
             if (in_ds->GetPointData()->GetScalars() != NULL)
                 nvals = in_ds->GetNumberOfPoints();
             else
                 nvals = in_ds->GetNumberOfCells();
-            vtkFloatArray *rv = vtkFloatArray::New();
+            vtkDataArray *rv = CreateArrayFromMesh(in_ds);
             rv->SetNumberOfComponents(3);
             rv->SetNumberOfTuples(nvals);
-            float vals[3] = { 0., 0., 0. };
-            for (int i = 0 ; i < nvals ; i++)
-                rv->SetTuple(i, vals);
+            for (vtkIdType i = 0 ; i < nvals ; i++)
+                rv->SetTuple3(i, 0., 0., 0);
             return rv;
         }
 
@@ -446,8 +443,8 @@ avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
     {
         if (!(in_ds->GetCellData()->GetScalars()))
         {
-            EXCEPTION2(ExpressionException, outputVariableName, "the scalar variable could not"
-                                            " be found.");
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                       "the scalar variable could not be found.");
         }
 
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
@@ -460,19 +457,19 @@ avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
         cd2pd->Delete();
     }
     
-    int nPoints = in_ds->GetNumberOfPoints();
+    vtkIdType nPoints = in_ds->GetNumberOfPoints();
 
-    vtkDataArray *results = vtkFloatArray::New();
+    vtkDataArray *results = CreateArrayFromMesh(in_ds);
     results->SetNumberOfComponents(3);
     results->SetNumberOfTuples(nPoints);        
     
-    for (int nodeId = 0 ; nodeId < nPoints; nodeId++)
+    for (vtkIdType nodeId = 0 ; nodeId < nPoints; nodeId++)
     {
-        float xDELTA=1e6, yDELTA=1e6, zDELTA=1e6;
+        double xDELTA=1e6, yDELTA=1e6, zDELTA=1e6;
        
         double nodeCoords[3]; 
         in_ds->GetPoint(nodeId, nodeCoords);
-        float  nodeValue  = scalarValues->GetComponent(nodeId, 0);
+        double  nodeValue  = scalarValues->GetComponent(nodeId, 0);
         
         vtkIdList *neighborCellIds = vtkIdList::New();
         vtkIdList *myNodeId = vtkIdList::New();
@@ -484,10 +481,10 @@ avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
 
         myNodeId->Delete();
 
-        int nCells=neighborCellIds->GetNumberOfIds();
+        vtkIdType nCells=neighborCellIds->GetNumberOfIds();
 
         // Find appropriate deltas
-        for (int ci = 0 ; ci < nCells ; ci++)
+        for (vtkIdType ci = 0 ; ci < nCells ; ci++)
         {
             double *bounds = in_ds->GetCell(neighborCellIds->GetId(ci))
                                                                  ->GetBounds();
@@ -505,7 +502,7 @@ avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
             }
         }
         
-        float xComponent, yComponent, zComponent;
+        double xComponent, yComponent, zComponent;
         
         xComponent=EvaluateComponent(nodeCoords[0],nodeCoords[1],nodeCoords[2],
                 xDELTA, 0, 0, nodeValue, in_ds, scalarValues, neighborCellIds);
@@ -617,12 +614,12 @@ avtGradientExpression::IsPointVariable(void)
 // ****************************************************************************
 
 
-float avtGradientExpression::EvaluateComponent(float x, float y, float z,
-            float dx, float dy, float dz, float value, vtkDataSet *in_ds,
+double avtGradientExpression::EvaluateComponent(double x, double y, double z,
+            double dx, double dy, double dz, double value, vtkDataSet *in_ds,
             vtkDataArray *scalarValues, vtkIdList *neighborCells)
 {
     int deltaMultiplier = 2;
-    float upper;
+    double upper;
     bool  success = true;
 
     upper = EvaluateValue(x+dx, y+dy, z+dz, in_ds, scalarValues, neighborCells,
@@ -633,7 +630,7 @@ float avtGradientExpression::EvaluateComponent(float x, float y, float z,
         --deltaMultiplier;
     }
 
-    float lower;
+    double lower;
     success = true;
     lower = EvaluateValue(x-dx, y-dy, z-dz, in_ds, scalarValues, neighborCells,
                           success);
@@ -676,7 +673,7 @@ float avtGradientExpression::EvaluateComponent(float x, float y, float z,
 // ****************************************************************************
 
 
-float avtGradientExpression::EvaluateValue(float x, float y, float z, 
+double avtGradientExpression::EvaluateValue(double x, double y, double z, 
                                vtkDataSet *in_ds, vtkDataArray *scalarValues,
                                vtkIdList *neighborCells, bool &success)
 {
@@ -689,7 +686,7 @@ float avtGradientExpression::EvaluateValue(float x, float y, float z,
 
     double *abnormalWeights = NULL; // In case of more than 8 points
     
-    int cellId;
+    vtkIdType cellId;
     vtkCell *c;
     for (cellId = 0 ; cellId < neighborCells->GetNumberOfIds() ; cellId++)
     {
@@ -724,18 +721,18 @@ float avtGradientExpression::EvaluateValue(float x, float y, float z,
     double value = 0.;
     if (abnormalWeights)
     {
-        for (int k=0 ; k < c->GetNumberOfPoints() ; k++)
+        for (vtkIdType k=0 ; k < c->GetNumberOfPoints() ; k++)
         {
-            int pt = c->GetPointId(k);
+            vtkIdType pt = c->GetPointId(k);
             value += abnormalWeights[k] * scalarValues->GetComponent(pt,0);
         }
         delete [] abnormalWeights;
     }
     else
     {
-        for (int k = 0 ; k < c->GetNumberOfPoints() ; k++)
+        for (vtkIdType k = 0 ; k < c->GetNumberOfPoints() ; k++)
         {
-            int pt = c->GetPointId(k);
+            vtkIdType pt = c->GetPointId(k);
             value += weights[k] * scalarValues->GetComponent(pt, 0);
         }
     }
@@ -765,56 +762,37 @@ float avtGradientExpression::EvaluateValue(float x, float y, float z,
 //
 // ****************************************************************************
 
-vtkDataArray *
-avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg, 
-                                           const char *outputVariableName)
-{
-    int i, j, k;
 
-    vtkDataArray *xc = rg->GetXCoordinates();
-    vtkDataArray *yc = rg->GetYCoordinates();
-    vtkDataArray *zc = rg->GetZCoordinates();
-    float *x = (float *) xc->GetVoidPointer(0);
-    float *y = (float *) yc->GetVoidPointer(0);
-    float *z = (float *) zc->GetVoidPointer(0);
+template <typename XT, typename YT, typename ZT, typename OT>
+void
+avtGradientExpression_CalcRectGrad(bool isNodal, int dims[3], XT *x,
+    YT *y, ZT *z, OT *in, OT *out)
+{
     bool deleteX = false;
     bool deleteY = false;
     bool deleteZ = false;
-
-    int dims[3];
-    rg->GetDimensions(dims);
-    bool isNodal = true;
-    vtkDataArray *s = rg->GetPointData()->GetScalars();
-    if (s == NULL)
+    if (!isNodal)
     {
-         s = rg->GetCellData()->GetScalars();
-         if (s == NULL)
-         {
-             EXCEPTION2(ExpressionException, outputVariableName, "the scalar variable could not"
-                                             " be found.");
-         }
-
-         isNodal = false;
          dims[0] -= 1;
          dims[1] -= 1;
          dims[2] -= 1;
 
-         float *x_new = new float[dims[0]];
-         for (i = 0 ; i < dims[0] ; i++)
+         XT *x_new = new XT[dims[0]];
+         for (int i = 0 ; i < dims[0] ; i++)
              x_new[i] = (x[i] + x[i+1]) / 2.;
          x = x_new;
 
          deleteX = true;
-         float *y_new = new float[dims[1]];
-         for (i = 0 ; i < dims[1] ; i++)
+         YT *y_new = new YT[dims[1]];
+         for (int i = 0 ; i < dims[1] ; i++)
              y_new[i] = (y[i] + y[i+1]) / 2.;
          y = y_new;
          deleteY = true;
 
          if (dims[2] > 1)
          {
-             float *z_new = new float[dims[2]];
-             for (i = 0 ; i < dims[2] ; i++)
+             ZT *z_new = new ZT[dims[2]];
+             for (int i = 0 ; i < dims[2] ; i++)
                  z_new[i] = (z[i] + z[i+1]) / 2.;
              z = z_new;
              deleteZ = true;
@@ -827,34 +805,27 @@ avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg,
     // comes to performance.  Since we will be dividing by the same things 
     // repeatedly, calculate them once and then re-use them.
     //
-    float *x_div = new float[dims[0]];
+    XT *x_div = new XT[dims[0]];
     x_div[0] = 1. / (x[1] - x[0]);
     x_div[dims[0]-1] = 1. / (x[dims[0]-1] - x[dims[0]-2]);
-    for (i = 1 ; i < dims[0]-1 ; i++)
+    for (int i = 1 ; i < dims[0]-1 ; i++)
         x_div[i] = 1. / (x[i+1] - x[i-1]);
 
-    float *y_div = new float[dims[1]];
+    YT *y_div = new YT[dims[1]];
     y_div[0] = 1. / (y[1] - y[0]);
     y_div[dims[1]-1] = 1. / (y[dims[1]-1] - y[dims[1]-2]);
-    for (i = 1 ; i < dims[1]-1 ; i++)
+    for (int i = 1 ; i < dims[1]-1 ; i++)
         y_div[i] = 1. / (y[i+1] - y[i-1]);
 
-    float *z_div = NULL;
+    ZT *z_div = NULL;
     if (dims[2] > 1)
     {
-        z_div = new float[dims[2]];
+        z_div = new ZT[dims[2]];
         z_div[0] = 1. / (z[1] - z[0]);
         z_div[dims[2]-1] = 1. / (z[dims[2]-1] - z[dims[2]-2]);
-        for (i = 1 ; i < dims[2]-1 ; i++)
+        for (int i = 1 ; i < dims[2]-1 ; i++)
             z_div[i] = 1. / (z[i+1] - z[i-1]);
     }
-
-    vtkDataArray *out_array = s->NewInstance();
-    out_array->SetNumberOfComponents(3);
-    out_array->SetNumberOfTuples(s->GetNumberOfTuples());
-
-    float *in  = (float *) s->GetVoidPointer(0);
-    float *out = (float *) out_array->GetVoidPointer(0);
 
     const int dims0 = dims[0];
     const int dims1 = dims[1];
@@ -864,9 +835,9 @@ avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg,
     const int kskip = dims0*dims1;
     if (dims2 <= 1)
     {
-        for (j = 0 ; j < dims1 ; j++)
+        for (int j = 0 ; j < dims1 ; j++)
         {
-            for (i = 0 ; i < dims0 ; i++)
+            for (int i = 0 ; i < dims0 ; i++)
             {
                 int index     = j*jskip + i*iskip;
                 int vec_index = 3*index;
@@ -892,11 +863,11 @@ avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg,
     }
     else
     {
-        for (k = 0 ; k < dims2 ; k++)
+        for (int k = 0 ; k < dims2 ; k++)
         {
-            for (j = 0 ; j < dims1 ; j++)
+            for (int j = 0 ; j < dims1 ; j++)
             {
-                for (i = 0 ; i < dims0 ; i++)
+                for (int i = 0 ; i < dims0 ; i++)
                 {
                     int index     = k*kskip + j*jskip + i*iskip;
                     int vec_index = 3*index;
@@ -939,6 +910,96 @@ avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg,
     delete [] y_div;
     if (z_div != NULL)
         delete [] z_div;
+}
+
+vtkDataArray *
+avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg, 
+                                           const char *outputVariableName)
+{
+    bool isNodal = true;
+    vtkDataArray *s = rg->GetPointData()->GetScalars();
+    if (s == NULL)
+    {
+         s = rg->GetCellData()->GetScalars();
+         if (s == NULL)
+         {
+             EXCEPTION2(ExpressionException, outputVariableName, 
+                        "the scalar variable could not be found.");
+         }
+
+         isNodal = false;
+    }
+    vtkDataArray *out_array = s->NewInstance();
+    out_array->SetNumberOfComponents(3);
+    out_array->SetNumberOfTuples(s->GetNumberOfTuples());
+
+    vtkDataArray *xc = rg->GetXCoordinates();
+    vtkDataArray *yc = rg->GetYCoordinates();
+    vtkDataArray *zc = rg->GetZCoordinates();
+
+    int xt = xc->GetDataType();
+    int yt = yc->GetDataType();
+    int zt = zc->GetDataType();
+    int ot = s->GetDataType();
+
+    int dims[3];
+    rg->GetDimensions(dims);
+
+#define typeOUT(xtype, ytype, ztype) \
+{ \
+    if (ot == VTK_DOUBLE) \
+    { \
+        avtGradientExpression_CalcRectGrad(isNodal, dims,  \
+            (xtype*) xc->GetVoidPointer(0), \
+            (ytype*) yc->GetVoidPointer(0), \
+            (ztype*) zc->GetVoidPointer(0), \
+            (double*) s->GetVoidPointer(0), \
+            (double*) out_array->GetVoidPointer(0)); \
+    } \
+    else \
+    { \
+        avtGradientExpression_CalcRectGrad(isNodal, dims,  \
+            (xtype*) xc->GetVoidPointer(0), \
+            (ytype*) yc->GetVoidPointer(0), \
+            (ztype*) zc->GetVoidPointer(0), \
+            (float*) s->GetVoidPointer(0), \
+            (float*) out_array->GetVoidPointer(0)); \
+    } \
+}
+
+#define typeZ(xtype, ytype) \
+{ \
+    if (zt == VTK_DOUBLE) \
+    { \
+        typeOUT(xtype, ytype, double); \
+    } \
+    else \
+    { \
+        typeOUT(xtype, ytype, float); \
+    } \
+}
+
+#define typeY(xtype) \
+{ \
+    if (yt == VTK_DOUBLE) \
+    { \
+        typeZ(xtype, double); \
+    } \
+    else \
+    { \
+        typeZ(xtype, float); \
+    } \
+}
+
+     if (xt == VTK_DOUBLE)
+     {
+         typeY(double);
+     }
+     else
+     {
+         typeY(float);
+     }
+
 
     return out_array;
 }
@@ -1281,7 +1342,7 @@ avtGradientExpression::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds,
     int ncells = in_ds->GetNumberOfCells();
 
     // create the result dataset
-    vtkFloatArray *res_vec= vtkFloatArray::New();
+    vtkDoubleArray *res_vec= vtkDoubleArray::New();
     res_vec->SetNumberOfComponents(3);
     res_vec->SetNumberOfTuples(ncells);
 
@@ -1581,26 +1642,24 @@ vtkDataArray *
 avtGradientExpression::FastGradient(vtkDataSet *in_ds,
                                     const char *outputVariableName)
 {
-    int  i;
-
     vtkDataArray *arr = in_ds->GetPointData()->GetScalars();
     if (arr == NULL)
         // Only point-centered supported in this method (at this time)
         return NULL;
 
     bool allHexes = true;
-    int ncells = in_ds->GetNumberOfCells();
-    for (i = 0 ; i < ncells ; i++)
+    vtkIdType ncells = in_ds->GetNumberOfCells();
+    for (vtkIdType i = 0 ; i < ncells ; i++)
         if (in_ds->GetCellType(i) != VTK_HEXAHEDRON)
             allHexes = false;
     if (!allHexes)
         return NULL;
 
-    vtkFloatArray *cellGrad = vtkFloatArray::New();
+    vtkDoubleArray *cellGrad = vtkDoubleArray::New();
     cellGrad->SetNumberOfComponents(3);
     cellGrad->SetNumberOfTuples(ncells);
     cellGrad->SetName("tmpGrad");
-    for (i = 0; i < ncells; i++)
+    for (vtkIdType i = 0; i < ncells; i++)
     {
         double grad[3];
         CalculateNodalToZonalHexGrad(in_ds,arr,i,grad);

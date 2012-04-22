@@ -429,7 +429,12 @@ class PIPELINE_API avtDataRequest
                                      { needNativePrecision = nnp; }
 
     void                         UpdateAdmissibleDataTypes(
-                                     std::vector<int> admissibleTypes);
+                                     const std::vector<int> &admissibleTypes);
+    void                         UpdateAdmissibleDataTypes(int dt1);
+    void                         UpdateAdmissibleDataTypes(int dt1, int dt2);
+    void                         UpdateAdmissibleDataTypes(int dt1, int dt2, int dt3);
+    static std::vector<int>      AllAdmissibleDataTypes();
+
     bool                         IsAdmissibleDataType(int dataType) const;
     std::vector<int>             GetAdmissibleDataTypes() const;
     void                         InitAdmissibleDataTypes();

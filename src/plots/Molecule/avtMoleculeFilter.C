@@ -111,32 +111,35 @@ avtMoleculeFilter::~avtMoleculeFilter()
 //    vertex cells.  This means we cannot look at cell data when looking
 //    for atom arrays.  Also, account for model number directory prefix.
 //
+//    Brad Whitlock, Fri Apr 20 16:17:08 PDT 2012
+//    Support non-float arrays.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtMoleculeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    int natoms = in_ds->GetNumberOfPoints();
+    vtkIdType natoms = in_ds->GetNumberOfPoints();
     vtkDataArray *primary = in_ds->GetPointData()->GetScalars();
-    if (primary && !primary->IsA("vtkFloatArray"))
+    if (!primary)
     {
-        debug4<<"avtMoleculeFilter::ExecuteData: primary var wasn't a float\n";
+        debug4<<"avtMoleculeFilter::ExecuteData: primary was NULL\n";
         return  in_ds;
     }
 
     if (natoms>0 && primary)
     {
         name = primary->GetName();
-        float *scalar = (float*)primary->GetVoidPointer(0);
 
         bool integral_type = true;
         int minval =  INT_MAX;
         int maxval = -INT_MAX;
-        int i;
+        vtkIdType i;
         for (i=0; i<natoms; i++)
         {
-            int iscalar = int(scalar[i]);
-            if (scalar[i] != float(iscalar))
+            double scalar = primary->GetTuple1(i);
+            int iscalar = int(scalar);
+            if (scalar != double(iscalar))
             {
                 integral_type = false;
                 break;
@@ -160,7 +163,8 @@ avtMoleculeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
             for (i=0; i<natoms; i++)
             {
-                hasval[int(scalar[i])] = true;
+                int scalar = static_cast<int>(primary->GetTuple1(i));
+                hasval[scalar] = true;
             }
 
             for (i=0; i<=maxval; i++)

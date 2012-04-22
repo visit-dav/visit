@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                     avtPrincipalDeviatoricTensorExpression.C                  //
+//                 avtPrincipalDeviatoricTensorExpression.C                  //
 // ************************************************************************* //
 
 #include <avtPrincipalDeviatoricTensorExpression.h>

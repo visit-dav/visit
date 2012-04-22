@@ -82,15 +82,15 @@ avtCornerAngle::avtCornerAngle()
 vtkDataArray *
 avtCornerAngle::DeriveVariable(vtkDataSet *in_ds)
 {
-    vtkFloatArray *arr = vtkFloatArray::New();
-    int ncells = in_ds->GetNumberOfCells();
+    vtkDataArray *arr = CreateArrayFromMesh(in_ds);
+    vtkIdType ncells = in_ds->GetNumberOfCells();
     arr->SetNumberOfTuples(ncells);
 
-    for (int i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         vtkCell *cell = in_ds->GetCell(i);
-        float vol = (float) GetCornerAngle(cell);
-        arr->SetTuple(i, &vol);
+        double vol = GetCornerAngle(cell);
+        arr->SetTuple1(i, vol);
     }
 
     return arr;
@@ -117,8 +117,6 @@ avtCornerAngle::DeriveVariable(vtkDataSet *in_ds)
 double
 avtCornerAngle::GetCornerAngle(vtkCell *cell)
 {
-    int  i, j;
-
     int celltype = cell->GetCellType();
     if (celltype == VTK_VERTEX || celltype == VTK_LINE)
         return 0.;
@@ -126,22 +124,22 @@ avtCornerAngle::GetCornerAngle(vtkCell *cell)
     //
     // Calculate the value of each edge and then return the minimum or maximum.
     //
-    int nPts = cell->GetNumberOfPoints();
+    vtkIdType nPts = cell->GetNumberOfPoints();
     int nEdges = cell->GetNumberOfEdges();
     double rv = +FLT_MAX;
     if (!takeMin)
         rv = -FLT_MAX;
 
-    for (i = 0 ; i < nPts ; i++)
+    for (vtkIdType i = 0 ; i < nPts ; i++)
     {
-        int ID = cell->GetPointId(i);
+        vtkIdType ID = cell->GetPointId(i);
         double ptV[3];
         cell->GetPoints()->GetPoint(i, ptV);
         double A[4][3];
 
         // Identify the edges adjacent to this vertex.
         int numEdges = 0;
-        for (j = 0 ; j < nEdges ; j++)
+        for (int j = 0 ; j < nEdges ; j++)
         {
             vtkCell *edge = cell->GetEdge(j);
             int match = -1;

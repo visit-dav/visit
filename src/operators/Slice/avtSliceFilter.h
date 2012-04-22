@@ -43,9 +43,10 @@
 #ifndef AVT_SLICE_FILTER_H
 #define AVT_SLICE_FILTER_H
 
-
 #include <avtPluginDataTreeIterator.h>
 #include <SliceAttributes.h>
+
+#include <vtkType.h>
 
 class vtkDataSet;
 class vtkRectilinearGrid;
@@ -126,6 +127,9 @@ class avtPointAttribute;
 //    Brad Whitlock, Wed Jan 23 15:55:37 PST 2008
 //    Added doTransformVectors.
 //
+//    Brad Whitlock, Tue Mar 13 14:42:27 PDT 2012
+//    Replace float with double.
+//
 // ****************************************************************************
 
 class avtSliceFilter : public avtPluginDataTreeIterator
@@ -146,14 +150,14 @@ class avtSliceFilter : public avtPluginDataTreeIterator
 
   protected:
     SliceAttributes               atts;
-    float                         D;
+    double                        D;
     double                        cachedOrigin[3];
     double                        cachedNormal[3];
     bool                          doTransformVectors;
 
     vtkSlicer                    *slicer;
     vtkTransformFilter           *transform;
-    int                          *celllist;
+    vtkIdType                    *celllist;
     vtkMatrix4x4                 *invTrans;
     vtkMatrix4x4                 *origTrans;
 

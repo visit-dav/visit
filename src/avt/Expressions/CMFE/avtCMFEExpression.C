@@ -470,7 +470,7 @@ avtCMFEExpression::Execute()
     spec->SetCalculateMeshExtents(calculateMeshExtents);
     spec->SetCalculateVariableExtentsList(varExtentsList);
     spec->SetReplicateSingleDomainOnAllProcessors(replicateSingleDomainOnAllProcessors);
-    for (int i = 0 ; i < dataSels.size() ; i++)
+    for (size_t i = 0 ; i < dataSels.size() ; i++)
         spec->GetDataRequest()->AddDataSelectionRefPtr(dataSels[i]);
 
     avtExpressionEvaluatorFilter *eef = new avtExpressionEvaluatorFilter;
@@ -606,12 +606,12 @@ avtCMFEExpression::GetTimestate(ref_ptr<avtDatabase> dbp)
             int c = (isDelta ? md->GetCycles()[firstDBTime] + cycle : cycle);
             int closest      = 0;
             int closest_dist = abs(c-md->GetCycles()[0]);
-            for (int i = 0 ; i < md->GetCycles().size() ; i++)
+            for (size_t i = 0 ; i < md->GetCycles().size() ; i++)
             {
                 int dist = abs(c-md->GetCycles()[i]);
                 if (dist < closest_dist)
                 {
-                    closest      = i;
+                    closest      = static_cast<int>(i);
                     closest_dist = dist;
                 }
             }
@@ -630,15 +630,15 @@ avtCMFEExpression::GetTimestate(ref_ptr<avtDatabase> dbp)
         }
         else
         {
-            float c = (isDelta ? md->GetTimes()[firstDBTime] + dtime : dtime);
-            int   closest      = 0;
-            float closest_dist = fabs(c-md->GetTimes()[0]);
-            for (int i = 0 ; i < md->GetTimes().size() ; i++)
+            double c = (isDelta ? md->GetTimes()[firstDBTime] + dtime : dtime);
+            int    closest      = 0;
+            double closest_dist = fabs(c-md->GetTimes()[0]);
+            for (size_t i = 0 ; i < md->GetTimes().size() ; i++)
             {
-                float dist = fabs(c-md->GetTimes()[i]);
+                double dist = fabs(c-md->GetTimes()[i]);
                 if (dist < closest_dist)
                 {
-                    closest      = i;
+                    closest      = static_cast<int>(i);
                     closest_dist = dist;
                 }
             }

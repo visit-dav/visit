@@ -1201,29 +1201,28 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             // dummy up a dataset that has point data, but appears to have cell
             // data (by replicating a lot of points).
             //
-            int   i, j;
 
             //
             // Start off by replicating the connectivity.  This will speculate
             // on a point list that we will build later.
             //
             prepDS->Allocate(pd);
-            int ncells = pd->GetNumberOfCells();
+            vtkIdType ncells = pd->GetNumberOfCells();
             vtkIdType  *cellPts = NULL;
             vtkIdType   myCellPts[100];
             vtkIdType   npts = 0;
-            vector<int> ptIds;
-            vector<int> cellIds;
+            vector<vtkIdType> ptIds;
+            vector<vtkIdType> cellIds;
             pd->BuildCells();
-            int count = 0;
-            for (i = 0 ; i < ncells ; i++)
+            vtkIdType count = 0;
+            for (vtkIdType i = 0 ; i < ncells ; i++)
             {
                 pd->GetCellPoints(i, npts, cellPts);
                 if (cellPts == NULL || npts == 0)
                 {
                     continue;
                 }
-                for (j = 0 ; j < npts ; j++)
+                for (vtkIdType j = 0 ; j < npts ; j++)
                 {
                     ptIds.push_back(cellPts[j]);
                     cellIds.push_back(i);
@@ -1240,7 +1239,7 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             vtkPoints *pts = vtkPoints::New();
             vtkPoints *in_pts = pd->GetPoints();
             pts->SetNumberOfPoints(count);
-            for (i = 0 ; i < count ; i++)
+            for (vtkIdType i = 0 ; i < count ; i++)
             {
                 double pt[3];
                 in_pts->GetPoint(ptIds[i], pt);
@@ -1261,7 +1260,7 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             double opacity = actor->GetProperty()->GetOpacity();
             unsigned char *buff = 
               (unsigned char *) mapper->MapScalars(opacity)->GetVoidPointer(0);
-            for (i = 0 ; i < count ; i++)
+            for (vtkIdType i = 0 ; i < count ; i++)
             {
                 ptr[4*i]   = buff[4*cellIds[i]];
                 ptr[4*i+1] = buff[4*cellIds[i]+1];
@@ -1273,18 +1272,30 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             vtkDataArray *cell_normals = pd->GetCellData()->GetNormals();
             if (cell_normals != NULL)
             {
-                const float *cn = (float *) cell_normals->GetVoidPointer(0);
-                vtkFloatArray *newNormals;
-                newNormals = vtkFloatArray::New();
-                newNormals->SetNumberOfComponents(3);
-                newNormals->SetNumberOfTuples(count);
-                newNormals->SetName("Normals");
-                float *newNormalPtr = (float*)newNormals->GetVoidPointer(0);
-                for (i = 0 ; i < count ; i++)
+                vtkDataArray *newNormals = NULL;
+                if(cell_normals->GetDataType() == VTK_FLOAT)
                 {
-                    newNormalPtr[i*3+0] = cn[cellIds[i]*3];
-                    newNormalPtr[i*3+1] = cn[cellIds[i]*3+1];
-                    newNormalPtr[i*3+2] = cn[cellIds[i]*3+2];
+                    const float *cn = (float *) cell_normals->GetVoidPointer(0);
+                    newNormals = vtkFloatArray::New();
+                    newNormals->SetNumberOfComponents(3);
+                    newNormals->SetNumberOfTuples(count);
+                    newNormals->SetName("Normals");
+                    float *newNormalPtr = (float*)newNormals->GetVoidPointer(0);
+                    for (vtkIdType i = 0 ; i < count ; i++)
+                    {
+                        *newNormalPtr++ = cn[cellIds[i]*3];
+                        *newNormalPtr++ = cn[cellIds[i]*3+1];
+                        *newNormalPtr++ = cn[cellIds[i]*3+2];
+                    }
+                }
+                else
+                {
+                    newNormals = cell_normals->NewInstance();
+                    newNormals->SetNumberOfComponents(3);
+                    newNormals->SetNumberOfTuples(count);
+                    newNormals->SetName("Normals");
+                    for (vtkIdType i = 0 ; i < count ; i++)
+                        newNormals->SetTuple(i, cell_normals->GetTuple(cellIds[i]));
                 }
                 prepDS->GetPointData()->SetNormals(newNormals);
                 newNormals->Delete();

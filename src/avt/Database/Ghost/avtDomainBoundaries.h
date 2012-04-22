@@ -91,6 +91,9 @@ class avtMaterial;
 //    Hank Childs, Thu Feb 14 17:12:38 PST 2008
 //    Add virtual method "CanOnlyCreateGhostNodes".
 //
+//    Brad Whitlock, Sun Apr 22 10:32:28 PDT 2012
+//    Added ExchangeDoubleVector.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDomainBoundaries
@@ -107,6 +110,10 @@ class DATABASE_API avtDomainBoundaries
                                                std::vector<vtkDataArray*> scalars) =0;
 
     virtual std::vector<vtkDataArray*>     ExchangeFloatVector(std::vector<int> domainNum,
+                                               bool                   isPointData,
+                                               std::vector<vtkDataArray*>  vectors) =0;
+
+    virtual std::vector<vtkDataArray*>     ExchangeDoubleVector(std::vector<int> domainNum,
                                                bool                   isPointData,
                                                std::vector<vtkDataArray*>  vectors) =0;
 

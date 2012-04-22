@@ -37,15 +37,16 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtNeighborEvaluatorExpression.h                       //
+//                    avtNeighborEvaluatorExpression.h                       //
 // ************************************************************************* //
 
 #ifndef AVT_NEIGHBOR_EVALUATOR_FILTER_H
 #define AVT_NEIGHBOR_EVALUATOR_FILTER_H
 
-
 #include <avtSingleInputExpressionFilter.h>
+#include <vtkType.h>
 
+class vtkDataArray;
 
 // ****************************************************************************
 //  Class: avtNeighborEvaluatorExpression
@@ -82,24 +83,25 @@ class EXPRESSION_API avtNeighborEvaluatorExpression
                                          { evaluationType = t; };
 
     virtual const char       *GetType(void)   
-                                    { return "avtNeighborEvaluatorExpression"; };
+                                  { return "avtNeighborEvaluatorExpression"; };
     virtual const char       *GetDescription(void)
-                                    { return "Calculating neighbors values"; };
+                                  { return "Calculating neighbors values"; };
     virtual void              PreExecute(void);
 
   protected:
     EvaluationType            evaluationType;
-    float                    *buff;
-    int                      *nEntries;
     bool                      haveIssuedWarning;
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual avtContract_p
                               ModifyContract(avtContract_p);
 
-    void                      InitializeEvaluation(int, float *);
-    void                      EvaluateNeighbor(int, float);
-    void                      FinalizeEvaluation(int);
+    template <class Accessor>
+    void                     DeriveVariableT(vtkDataSet *, bool, 
+                                 vtkDataArray *, vtkDataArray *&);
+    template <class Accessor>
+    void                     EvaluateNeighbor(vtkIdType, int *, double, 
+                                 vtkDataArray *&);
 };
 
 

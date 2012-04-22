@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                      avtPerMaterialValueExpression.C                          //
+//                  avtPerMaterialValueExpression.C                          //
 // ************************************************************************* //
 
 #include <avtPerMaterialValueExpression.h>
@@ -154,8 +154,7 @@ avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds)
     // avtMixedVariable entry.
    
     // get input array
-    vtkFloatArray *val_array = NULL;
-    val_array = (vtkFloatArray *)in_ds->GetCellData()->GetArray(activeVariable);
+    vtkDataArray *val_array = in_ds->GetCellData()->GetArray(activeVariable);
 
     if(val_array == NULL) // check for error on input
     {
@@ -190,7 +189,7 @@ avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds)
               " and mixedvar objects ?  " << doPostGhost <<endl;
 
     // prepare result array
-    vtkFloatArray *res = vtkFloatArray::New();
+    vtkDataArray *res = val_array->NewInstance();
     res->SetNumberOfTuples(ncells);
 
     // Request ghost adjusted values if required. 
@@ -199,7 +198,7 @@ avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds)
                                                        doPostGhost);
     if(mat == NULL ) // error
     {
-       EXCEPTION2(ExpressionException, outputVariableName,                         
+       EXCEPTION2(ExpressionException, outputVariableName,
                    "could not obtaing valid material object.");
     }
     
@@ -348,14 +347,13 @@ avtPerMaterialValueExpression::ProcessArguments(ArgsExpr *args,
     }
     else
     {
-        debug5 << "avtPerMaterialValueExpression: Second argument is not a valid "
-                  "material id (integer) or name (string): " 
-                << type.c_str() << endl;
+        debug5 << "avtPerMaterialValueExpression: Second argument is not a "
+               << "valid material id (integer) or name (string): " 
+               << type.c_str() << endl;
         EXCEPTION2(ExpressionException, outputVariableName, 
           "avtPerMaterialValueExpression: Second argument is not a material "
           "number (integer) or name (string).");
     }
-
 }
 
 

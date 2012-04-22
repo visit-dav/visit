@@ -212,9 +212,10 @@ class MIR_API ZooMIR : public MIR
 
   protected:
     int                                     origNPoints;
-    std::vector<float>                      origXCoords;
-    std::vector<float>                      origYCoords;
-    std::vector<float>                      origZCoords;
+    int                                     origCoordType;
+    std::vector<double>                     origXCoords;
+    std::vector<double>                     origYCoords;
+    std::vector<double>                     origZCoords;
     VisItArray<ReconstructedCoord>          coordsList;
     VisItArray<ReconstructedZone>           zonesList;
     VisItArray<vtkIdType>                   indexList;

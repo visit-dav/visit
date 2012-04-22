@@ -43,7 +43,7 @@
 #ifndef VTK_DATASET_FROM_VOLUME_H
 #define VTK_DATASET_FROM_VOLUME_H
 #include <visit_vtk_light_exports.h>
-
+#include <vtkType.h>
 #include <vector>
 
 
@@ -71,15 +71,18 @@ class vtkPoints;
 //    Refactored from vtkSurfaceFromVolume.  Allowed points based on
 //    original cell points.
 //
+//    Brad Whitlock, Wed Mar 14 13:49:57 PDT 2012
+//    Adapted the code to use vtkIdType.
+//
 // ****************************************************************************
 
 class VISIT_VTK_LIGHT_API vtkDataSetFromVolume
 {
-  protected:
+public:
 struct PointEntry
 {
-   int     ptIds[2];
-   float   percent;
+   vtkIdType ptIds[2];
+   float     percent;
 };
 
 
@@ -89,20 +92,21 @@ class VISIT_VTK_LIGHT_API PointList
                    PointList();
     virtual       ~PointList();
  
-    int            AddPoint(int, int, float);
+    vtkIdType      AddPoint(vtkIdType, vtkIdType, float);
  
-    int            GetTotalNumberOfPoints(void) const;
-    int            GetNumberOfLists(void) const;
-    int            GetList(int, const PointEntry *&) const;
+    vtkIdType      GetTotalNumberOfPoints(void) const;
+    vtkIdType      GetNumberOfLists(void) const;
+    int            GetList(vtkIdType, const PointEntry *&) const;
  
   protected:
     PointEntry   **list;
-    int            currentList;
-    int            currentPoint;
-    int            listSize;
-    int            pointsPerList;
+    vtkIdType      currentList;
+    vtkIdType      currentPoint;
+    vtkIdType      listSize;
+    vtkIdType      pointsPerList;
 };
 
+protected:
 
 class VISIT_VTK_LIGHT_API EdgeHashEntry
 {
@@ -110,16 +114,16 @@ class VISIT_VTK_LIGHT_API EdgeHashEntry
                     EdgeHashEntry();
     virtual        ~EdgeHashEntry() {;};
  
-    void            SetInfo(int, int, int);
-    bool            IsMatch(int i1, int i2)
+    void            SetInfo(vtkIdType, vtkIdType, vtkIdType);
+    bool            IsMatch(vtkIdType i1, vtkIdType i2)
                            { return (i1 == id1 && i2 == id2 ? true : false); };
-    int             GetPointId(void) { return ptId; };
+    vtkIdType       GetPointId(void) { return ptId; };
     EdgeHashEntry  *GetNext(void) { return next; };
     void            SetNext(EdgeHashEntry *n) { next = n; };
  
   protected:
-    int             id1, id2;
-    int             ptId;
+    vtkIdType       id1, id2;
+    vtkIdType       ptId;
     EdgeHashEntry  *next;
  
 };
@@ -170,7 +174,7 @@ class VISIT_VTK_LIGHT_API EdgeHashTable
                       EdgeHashTable(int, PointList &);
     virtual          ~EdgeHashTable();
  
-    int               AddPoint(int, int, float);
+    vtkIdType         AddPoint(vtkIdType, vtkIdType, float);
     PointList        &GetPointList(void);
  
   protected:
@@ -179,22 +183,22 @@ class VISIT_VTK_LIGHT_API EdgeHashTable
     EdgeHashEntryMemoryManager      emm;
     PointList                      &pointlist;
  
-    int               GetKey(int, int);
+    vtkIdType         GetKey(vtkIdType, vtkIdType);
 };
 
 
   public:
-                      vtkDataSetFromVolume(int ptSizeGuess);
-                      vtkDataSetFromVolume(int nPts, int ptSizeGuess);
+                      vtkDataSetFromVolume(vtkIdType ptSizeGuess);
+                      vtkDataSetFromVolume(vtkIdType nPts, vtkIdType ptSizeGuess);
     virtual          ~vtkDataSetFromVolume() { ; };
 
-    int               AddPoint(int p1, int p2, float percent)
+    vtkIdType         AddPoint(vtkIdType p1, vtkIdType p2, float percent)
                          { return numPrevPts + edges.AddPoint(p1,p2,percent); }
 
   protected:
     PointList         pt_list;
     EdgeHashTable     edges;
-    int               numPrevPts;
+    vtkIdType         numPrevPts;
 };
 
 

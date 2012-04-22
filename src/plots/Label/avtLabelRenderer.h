@@ -50,7 +50,7 @@
 #include <string>
 
 class vtkDataArray;
-class vtkFloatArray;
+class vtkDoubleArray;
 class vtkMatrix4x4;
 class vtkPoints;
 class vtkPolyData;
@@ -109,7 +109,7 @@ public:
     void                    SetVariable(const char *);
     void                    SetTreatAsASCII(bool);
     void                    Set3D(bool val);
-    void                    SetExtents(const float *ext);
+    void                    SetExtents(const double *ext);
     void                    SetGlobalLabel(const std::string &L);
     void                    SetUseGlobalLabel(bool val);
     void                    SetRendererAction(int);
@@ -134,10 +134,9 @@ protected:
     void ClearLabelCaches();
 
     void ResetLabelBins();
-    bool AllowLabelInBin(const float *vert, const char *labelString, int t);
-    bool DepthTestPoint(float screenPoint[3]) const;
+    bool AllowLabelInBin(const double *vert, const char *labelString, int t);
 
-    vtkFloatArray *GetCellCenterArray();
+    vtkDoubleArray *GetCellCenterArray();
 
     LabelAttributes        atts;
     int                    MAX_LABEL_SIZE;
@@ -151,7 +150,7 @@ protected:
     vtkIdType              cellOrigin;
     vtkIdType              nodeOrigin;
     double                 fgColor[4];
-    float                  spatialExtents[6];
+    double                 spatialExtents[6];
     std::string            globalLabel;
     bool                   useGlobalLabel;
     int                    rendererAction;

@@ -105,9 +105,9 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetOutputType(const std::string &type);
 
   protected:
-    float                     origin[3];
-    float                     theta, phi;
-    float                     width, height;
+    double                    origin[3];
+    double                    theta, phi;
+    double                    width, height;
     int                       nx, ny;
     bool                      divideEmisByAbsorb;
     int                       outputType;
@@ -124,8 +124,10 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
   private:
     virtual void              Execute(avtDataTree_p);
 
-    void                      WriteImage(int, int, float*);
-    void                      WriteFloats(int, int, float*);
+    template <typename T>
+    void                      WriteImage(int, int, T*);
+    template <typename T>
+    void                      WriteFloats(int, int, T*);
 };
 
 

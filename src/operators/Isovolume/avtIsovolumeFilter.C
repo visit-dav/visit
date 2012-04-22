@@ -51,6 +51,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellDataToPointData.h>
 
+#include <avtAccessor.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 
@@ -238,6 +239,39 @@ avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
     return out_ds;
 }
 
+// ****************************************************************************
+// Method: IsovolumeMinMax
+//
+// Purpose: 
+//   Determine the min and max for the input data array using an accessor.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sun Apr 22 01:21:24 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename Accessor>
+inline void IsovolumeMinMax(double &min, double &max, Accessor access)
+{
+    min = +FLT_MAX;
+    max = -FLT_MAX;
+    access.InitTraversal();
+    while(access.Iterating())
+    {
+        double value = access.GetTuple1();
+        min = (min < value ? min : value);
+        max = (max > value ? max : value);
+        ++access;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtIsovolumeFilter::ExecuteData
@@ -280,6 +314,9 @@ avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
 //    There was an assumption that after processing the data, it would be
 //    in unstructured grid form, which is not true.  Add a check here. ['5640]
 //
+//    Brad Whitlock, Sun Apr 22 01:21:10 PDT 2012
+//    I added double support.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -288,29 +325,22 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     //
     // Start off by calculating the range of the dataset.
     //
-    float *vals = NULL;
-    int nvals = 0;
+    vtkDataArray *vals = NULL;
     if (in_ds->GetPointData()->GetScalars() != NULL)
-    {
-        vals = (float *) in_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
-        nvals = in_ds->GetNumberOfPoints();
-    }
+        vals = in_ds->GetPointData()->GetScalars();
     else if (in_ds->GetCellData()->GetScalars() != NULL)
-    {
-        vals = (float *) in_ds->GetCellData()->GetScalars()->GetVoidPointer(0);
-        nvals = in_ds->GetNumberOfCells();
-    }
+        vals = in_ds->GetCellData()->GetScalars();
 
     if (vals == NULL)
         return in_ds;
 
-    float min = +FLT_MAX;
-    float max = -FLT_MAX;
-    for (int i = 0 ; i < nvals ; i++)
-    {
-        min = (min < vals[i] ? min : vals[i]);
-        max = (max > vals[i] ? max : vals[i]);
-    }
+    double min, max;
+    if(vals->GetDataType() == VTK_FLOAT)
+        IsovolumeMinMax(min, max, avtDirectAccessor<float>(vals));
+    else if(vals->GetDataType() == VTK_DOUBLE)
+        IsovolumeMinMax(min, max, avtDirectAccessor<double>(vals));
+    else
+        IsovolumeMinMax(min, max, avtTupleAccessor(vals));
 
     //
     // Check to see if our range is below the min or above the max.  If so,

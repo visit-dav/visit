@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                   avtPrincipalDeviatoricTensorExpression.h                    //
+//               avtPrincipalDeviatoricTensorExpression.h                    //
 // ************************************************************************* //
 
 #ifndef AVT_PRINCIPAL_DEVIATORIC_TENSOR_FILTER_H

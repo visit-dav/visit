@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtZoneTypeExpression.C                           //
+//                         avtZoneTypeExpression.C                           //
 // ************************************************************************* //
 
 #include <avtZoneTypeExpression.h>
@@ -45,7 +45,7 @@
 #include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 
 // ****************************************************************************
 //  Method: avtZoneTypeExpression constructor
@@ -107,35 +107,33 @@ avtZoneTypeExpression::~avtZoneTypeExpression()
 vtkDataArray *
 avtZoneTypeExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i;
+    vtkIdType ncells = in_ds->GetNumberOfCells();
 
-    int ncells = in_ds->GetNumberOfCells();
-
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkIntArray *rv = vtkIntArray::New();
     rv->SetNumberOfTuples(ncells);
-    for (i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
-        float val = (float) '?';
+        int val = (int) '?';
         switch (in_ds->GetCellType(i))
         {
             // 2D cell types, lower case letters
-            case VTK_EMPTY_CELL:     val = (float) 'e'; break;
-            case VTK_VERTEX:         val = (float) 'v'; break;
-            case VTK_POLY_VERTEX:    val = (float) 'w'; break;
-            case VTK_LINE:           val = (float) 'l'; break;
-            case VTK_POLY_LINE:      val = (float) 'm'; break;
-            case VTK_TRIANGLE:       val = (float) 't'; break;
-            case VTK_TRIANGLE_STRIP: val = (float) 's'; break;
-            case VTK_POLYGON:        val = (float) 'p'; break;
-            case VTK_PIXEL:          val = (float) 'x'; break;
-            case VTK_QUAD:           val = (float) 'q'; break;
+            case VTK_EMPTY_CELL:     val = (int) 'e'; break;
+            case VTK_VERTEX:         val = (int) 'v'; break;
+            case VTK_POLY_VERTEX:    val = (int) 'w'; break;
+            case VTK_LINE:           val = (int) 'l'; break;
+            case VTK_POLY_LINE:      val = (int) 'm'; break;
+            case VTK_TRIANGLE:       val = (int) 't'; break;
+            case VTK_TRIANGLE_STRIP: val = (int) 's'; break;
+            case VTK_POLYGON:        val = (int) 'p'; break;
+            case VTK_PIXEL:          val = (int) 'x'; break;
+            case VTK_QUAD:           val = (int) 'q'; break;
 
             // 3D cell types, upper case letters
-            case VTK_TETRA:          val = (float) 'T'; break;
-            case VTK_VOXEL:          val = (float) 'V'; break;
-            case VTK_HEXAHEDRON:     val = (float) 'H'; break;
-            case VTK_WEDGE:          val = (float) 'W'; break;
-            case VTK_PYRAMID:        val = (float) 'P'; break;
+            case VTK_TETRA:          val = (int) 'T'; break;
+            case VTK_VOXEL:          val = (int) 'V'; break;
+            case VTK_HEXAHEDRON:     val = (int) 'H'; break;
+            case VTK_WEDGE:          val = (int) 'W'; break;
+            case VTK_PYRAMID:        val = (int) 'P'; break;
         }            
 
         rv->SetTuple1(i, val);

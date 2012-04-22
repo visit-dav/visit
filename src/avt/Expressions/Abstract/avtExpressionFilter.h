@@ -121,6 +121,9 @@ class     ExprNode;
 //    Hank Childs, Thu Aug 26 16:36:30 PDT 2010
 //    Add data member for whether or not to calculate the extents.
 //
+//    Kathleen Biagas, Thu Apr 5 10:07:43 PDT 2012
+//    Added CreateArrayFromMesh.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -138,9 +141,11 @@ class EXPRESSION_API avtExpressionFilter : virtual public
 
     virtual void             ProcessArguments(ArgsExpr *, ExprPipelineState *);
     virtual int              NumVariableArguments() = 0;
-    static vtkDataArray    *Recenter(vtkDataSet*, vtkDataArray*,
+    static vtkDataArray     *Recenter(vtkDataSet*, vtkDataArray*,
                                      avtCentering, std::string name,
                                      avtCentering targCent = AVT_UNKNOWN_CENT);
+
+    static vtkDataArray     *CreateArrayFromMesh(vtkDataSet*);
 
     const char              *GetOutputVariableName() 
                                  { return outputVariableName; }

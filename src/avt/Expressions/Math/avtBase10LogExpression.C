@@ -124,13 +124,13 @@ avtBase10LogExpression::~avtBase10LogExpression()
 
 void
 avtBase10LogExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                int ncomponents, int ntuples)
+                                    int ncomponents, int ntuples)
 {
     for (int i = 0 ; i < ntuples ; i++)
     {
         for (int j = 0 ; j < ncomponents ; j++)
         {
-            float f = in->GetComponent(i, j);
+            double f = in->GetComponent(i, j);
             if (f <= 0)
             {
                 if (useDefaultOnError)

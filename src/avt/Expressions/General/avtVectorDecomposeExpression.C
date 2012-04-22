@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtVectorDecomposeExpression.C                        //
+//                     avtVectorDecomposeExpression.C                        //
 // ************************************************************************* //
 
 #include <avtVectorDecomposeExpression.h>
@@ -188,8 +188,9 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds)
     }
     if (arr == NULL)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "When creating an expression, VisIt "
-                          "was not able to locate a necessary variable.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "When creating an expression, VisIt "
+                   "was not able to locate a necessary variable.");
     }
 
     //
@@ -198,7 +199,7 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds)
     // symmetric on non-symmetric tensor.  Based on the dimensionality of the
     // dataset, the output could be a scalar or it could be a vector.
     //
-    int ntuples = arr->GetNumberOfTuples();
+    vtkIdType ntuples = arr->GetNumberOfTuples();
     vtkDataArray *rv = arr->NewInstance();
 
     bool twoDVector =
@@ -208,16 +209,16 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds)
     {
         if ((which_comp > 1) || (which_comp < 0))
         {
-            EXCEPTION2(ExpressionException, outputVariableName, "The only valid indices for "
-                         "2D vectors are 0 and 1.");
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                       "The only valid indices for 2D vectors are 0 and 1.");
         }
         if (arr->GetNumberOfComponents() == 3)
         {
             rv->SetNumberOfComponents(1);
             rv->SetNumberOfTuples(ntuples);
-            for (int i = 0 ; i < ntuples ; i++)
+            for (vtkIdType i = 0 ; i < ntuples ; i++)
             {
-                float val = arr->GetComponent(i, which_comp);
+                double val = arr->GetComponent(i, which_comp);
                 rv->SetTuple1(i, val);
             }
         }
@@ -229,25 +230,25 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds)
             //
             rv->SetNumberOfComponents(3);
             rv->SetNumberOfTuples(ntuples);
-            for (int i = 0 ; i < ntuples ; i++)
+            for (vtkIdType i = 0 ; i < ntuples ; i++)
             {
-                float val1 = arr->GetComponent(i, 3*which_comp);
-                float val2 = arr->GetComponent(i, 3*which_comp+1);
+                double val1 = arr->GetComponent(i, 3*which_comp);
+                double val2 = arr->GetComponent(i, 3*which_comp+1);
                 rv->SetTuple3(i, val1, val2, 0.);
             }
         }
         else
         {
-            EXCEPTION2(ExpressionException, outputVariableName, "You can only decompose vectors "
-                        "and tensors.");
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                       "You can only decompose vectors and tensors.");
         }
     }
     else
     {
         if ((which_comp > 2) || (which_comp < 0))
         {
-            EXCEPTION2(ExpressionException, outputVariableName, "The only valid indices for "
-                        "3D vectors are 0, 1, and 2");
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                      "The only valid indices for 3D vectors are 0, 1, and 2");
         }
         if (arr->GetNumberOfComponents() == 3)
         {
@@ -256,9 +257,9 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds)
             //
             rv->SetNumberOfComponents(1);
             rv->SetNumberOfTuples(ntuples);
-            for (int i = 0 ; i < ntuples ; i++)
+            for (vtkIdType i = 0 ; i < ntuples ; i++)
             {
-                float val = arr->GetComponent(i, which_comp);
+                double val = arr->GetComponent(i, which_comp);
                 rv->SetTuple1(i, val);
             }
         }
@@ -269,18 +270,18 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds)
             //
             rv->SetNumberOfComponents(3);
             rv->SetNumberOfTuples(ntuples);
-            for (int i = 0 ; i < ntuples ; i++)
+            for (vtkIdType i = 0 ; i < ntuples ; i++)
             {
-                float val1 = arr->GetComponent(i, 3*which_comp);
-                float val2 = arr->GetComponent(i, 3*which_comp+1);
-                float val3 = arr->GetComponent(i, 3*which_comp+2);
+                double val1 = arr->GetComponent(i, 3*which_comp);
+                double val2 = arr->GetComponent(i, 3*which_comp+1);
+                double val3 = arr->GetComponent(i, 3*which_comp+2);
                 rv->SetTuple3(i, val1, val2, val3);
             }
         }
         else
         {
-            EXCEPTION2(ExpressionException, outputVariableName, "You can only decompose vectors "
-                        "and tensors.");
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                       "You can only decompose vectors and tensors.");
         }
     }
 

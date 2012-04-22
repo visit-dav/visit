@@ -120,7 +120,8 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds)
 
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "The Surface normal expression "
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "The Surface normal expression "
                    "can only be calculated on surfaces.  Use the External"
                    "Surface operator to generate the external surface of "
                    "this object.  You must also use the DeferExpression "
@@ -150,7 +151,8 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds)
     
     if (arr == NULL)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "An internal error occurred where "
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "An internal error occurred where "
                    "the surface normals could not be calculated.  Please "
                    "contact a VisIt developer.");
     }
@@ -198,24 +200,21 @@ avtSurfaceNormalExpression::RectilinearDeriveVariable(vtkRectilinearGrid *rgrid)
         EXCEPTION2(ExpressionException, outputVariableName, "Can not determine "
                    "surface normals for lines and vertices.");
     }
-    vtkFloatArray *n = vtkFloatArray::New();
+    vtkDataArray *n = CreateArrayFromMesh(rgrid);
     n->SetNumberOfComponents(3);
-    int ntuples = (isPoint ? rgrid->GetNumberOfPoints() 
+    vtkIdType ntuples = (isPoint ? rgrid->GetNumberOfPoints() 
                            : rgrid->GetNumberOfCells());
     n->SetNumberOfTuples(ntuples);
-    float norm[3] = { 0, 0, 0 };
+    double norm[3] = { 0, 0, 0 };
     if (doX)  
         norm[0] = 1.0;
     if (doY)  
         norm[1] = 1.0;
     if (doZ)  
         norm[2] = 1.0;
-    float *ptr = n->GetPointer(0);
-    for (int i = 0 ; i < ntuples ; i++)
+    for (vtkIdType i = 0 ; i < ntuples ; i++)
     {
-        *ptr++ = norm[0];
-        *ptr++ = norm[1];
-        *ptr++ = norm[2];
+        n->SetTuple(i, norm);
     }
 
     return n;

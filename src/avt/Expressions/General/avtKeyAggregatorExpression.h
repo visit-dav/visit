@@ -49,7 +49,7 @@
 #include <vector>
 
 class vtkDataArray;
-class vtkFloatArray;
+class vtkDoubleArray;
 
 // ****************************************************************************
 //  Class: avtKeyAggregatorExpression
@@ -94,14 +94,14 @@ class EXPRESSION_API avtKeyAggregatorExpression : public avtExpressionFilter
   private:
     int                       FindMaxKey(std::vector<vtkDataArray*> &key_arrays);
 
-    void                      Aggregate(std::vector<vtkDataArray*>   &key_arrays,
+    void                      Aggregate(std::vector<vtkDataArray*> &key_arrays,
                                         std::vector<vtkDataArray*> &val_arrays,
                                         int num_keys, int num_val_comps,
-                                        std::vector<float> &key_results);
+                                        std::vector<double> &key_results);
 
-    vtkFloatArray            *CreateResultArray(vtkDataArray *keys,
-                                                std::vector<float> &key_results,
-                                                int num_val_comps);
+    vtkDoubleArray            *CreateResultArray(vtkDataArray *keys,
+                                              std::vector<double> &key_results,
+                                              int num_val_comps);
 
     std::vector<std::string>  inputVarNames;
 };

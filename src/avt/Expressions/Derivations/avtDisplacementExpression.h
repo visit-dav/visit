@@ -37,13 +37,12 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtDisplacementExpression.h                         //
+//                       avtDisplacementExpression.h                         //
 // ************************************************************************* //
 
 #ifndef AVT_DISPLACEMENT_FILTER_H
 #define AVT_DISPLACEMENT_FILTER_H
 
-#include <vtkDoubleArray.h>
 #include <avtMultipleInputExpressionFilter.h>
 
 // ****************************************************************************

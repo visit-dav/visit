@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtNMatsExpression.h                             //
+//                          avtNMatsExpression.h                             //
 // ************************************************************************* //
 
 #ifndef AVT_NMATS_FILTER_H
@@ -46,9 +46,6 @@
 #include <avtSingleInputExpressionFilter.h>
 
 class     vtkDataArray;
-class     ArgsExpr;
-class     ExprPipelineState;
-class     ConstExpr;
 
 // ****************************************************************************
 //  Class: avtNMatsExpression

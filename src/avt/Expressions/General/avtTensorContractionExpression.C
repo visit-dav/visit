@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtTensorContractionExpression.C                      //
+//                     avtTensorContractionExpression.C                      //
 // ************************************************************************* //
 
 #include <avtTensorContractionExpression.h>
@@ -45,7 +45,6 @@
 #include <math.h>
 
 #include <vtkDataArray.h>
-#include <vtkMath.h>
 
 #include <ExpressionException.h>
 
@@ -103,7 +102,6 @@ avtTensorContractionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
 {
     if (ncomps == 9)
     {
-
         for (int i = 0 ; i < ntuples ; i++)
         {
             double ctract = 0.0;
@@ -124,7 +122,8 @@ avtTensorContractionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     }
     else
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "Cannot determine tensor type");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Cannot determine tensor type");
     }
 }
 

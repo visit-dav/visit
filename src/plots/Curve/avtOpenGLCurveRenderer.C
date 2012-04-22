@@ -199,6 +199,10 @@ avtOpenGLCurveRenderer::RenderCurves()
 //  Programmer: Hank Childs
 //  Creation:   July 15, 2010
 //
+//  Modifications:
+//    Brad Whitlock, Fri Apr 20 16:19:17 PDT 2012
+//    Support non-float coordinates.
+//
 // ****************************************************************************
 
 void
@@ -206,10 +210,12 @@ avtOpenGLCurveRenderer::RenderBall(void)
 {
     double ix = 0.;
     double iy = 0.;
-    const float *ptr = (const float *)input->GetPoints()->GetVoidPointer(0);
-    int npts = input->GetPoints()->GetNumberOfPoints();
-    for(int i = 0; i < npts-1 ; i++)
+    vtkIdType npts = input->GetPoints()->GetNumberOfPoints();
+    for(vtkIdType i = 0; i < npts-1 ; i++)
     {
+        double ptr[6];
+        input->GetPoints()->GetPoint(i, ptr);
+        input->GetPoints()->GetPoint(i+1, ptr+3);
         if (ptr[0] <= atts.GetTimeForTimeCue() && atts.GetTimeForTimeCue() <= ptr[3])
         {
             double lastX = ptr[0];
@@ -219,12 +225,11 @@ avtOpenGLCurveRenderer::RenderBall(void)
             ix = atts.GetTimeForTimeCue();
             iy = (ix-lastX)/(curX-lastX)*(curY-lastY) + lastY;
         }
-        ptr += 3;
     }
 
-    int bin_x_n,        bin_y_n;
-    float bin_x_size,   bin_y_size;
-    float bin_x_offset, bin_y_offset;
+    int    bin_x_n,      bin_y_n;
+    double bin_x_size,   bin_y_size;
+    double bin_x_offset, bin_y_offset;
     GetAspect(bin_x_n, bin_x_size, bin_x_offset,
               bin_y_n, bin_y_size, bin_y_offset);
 
@@ -235,11 +240,11 @@ avtOpenGLCurveRenderer::RenderBall(void)
 
     int symbolNVerts = 100;
     glBegin(GL_TRIANGLE_FAN);
-    float pt[3];
+    double pt[3];
     pt[0] = ix;
     pt[1] = iy;
     pt[2] = 0.;
-    glVertex3fv(pt);
+    glVertex3dv(pt);
     double REDUCE_SCALE = atts.GetTimeCueBallSize();
     for(int i = 0; i < symbolNVerts-1; ++i)
     {
@@ -248,7 +253,7 @@ avtOpenGLCurveRenderer::RenderBall(void)
         pt[0] = ix + cos(angle) * REDUCE_SCALE * bin_x_size / 2.;
         pt[1] = iy + sin(angle) * REDUCE_SCALE * bin_y_size / 2.;
         pt[2] = 0.;                
-        glVertex3fv(pt);
+        glVertex3dv(pt);
     }
     glEnd();
 }
@@ -263,21 +268,26 @@ avtOpenGLCurveRenderer::RenderBall(void)
 //  Programmer: Hank Childs
 //  Creation:   July 15, 2010
 //
+//  Modifications:
+//    Brad Whitlock, Fri Apr 20 16:31:19 PDT 2012
+//    Support double coordinates.
+//
 // ****************************************************************************
 
 void
 avtOpenGLCurveRenderer::RenderLine(void)
 {
-    float max = -1e+30;
-    float min = +1e+30;
-    const float *ptr = (const float *)input->GetPoints()->GetVoidPointer(0);
-    int npts = input->GetPoints()->GetNumberOfPoints();
-    for(int i = 0; i < npts ; i++)
+    double max = -1e+30;
+    double min = +1e+30;
+    vtkIdType npts = input->GetPoints()->GetNumberOfPoints();
+    for(vtkIdType i = 0; i < npts ; i++)
     {
-         max = (max > ptr[3*i+1] ? max : ptr[3*i+1]);
-         min = (min < ptr[3*i+1] ? min : ptr[3*i+1]);
+        double pt[3];
+        input->GetPoints()->GetPoint(i, pt);
+        max = (max > pt[1] ? max : pt[1]);
+        min = (min < pt[1] ? min : pt[1]);
     }
-    float diff = max-min;
+    double diff = max-min;
     max += diff;
     min -= diff;
     glLineWidth(LineWidth2Int(Int2LineWidth(atts.GetLineTimeCueWidth())));
@@ -285,10 +295,10 @@ avtOpenGLCurveRenderer::RenderLine(void)
     curveColor.SetAlpha(255);
     glColor4ubv(curveColor.GetColor());
     glBegin(GL_LINES);
-    float pt[3] = { atts.GetTimeForTimeCue(), min, 0 };
-    glVertex3fv(pt);
-    float pt2[3] = { atts.GetTimeForTimeCue(), max, 0 };
-    glVertex3fv(pt2);
+    double pt[3] = { atts.GetTimeForTimeCue(), min, 0. };
+    glVertex3dv(pt);
+    double pt2[3] = { atts.GetTimeForTimeCue(), max, 0. };
+    glVertex3dv(pt2);
     glEnd();
 }
 
@@ -305,6 +315,9 @@ avtOpenGLCurveRenderer::RenderLine(void)
 // Modifications:
 //    Kathleen Bonnell, Fri Aug 13 13:28:39 PDT 2010
 //    Moved drawing of points to DrawCurveAsSymbols.
+//
+//    Brad Whitlock, Fri Apr 20 16:37:28 PDT 2012
+//    Convert to GetPoint so we can use different coordinate precisions.
 //
 // ****************************************************************************
 
@@ -335,32 +348,32 @@ avtOpenGLCurveRenderer::DrawCurveAsLines()
 
     // Draw the curve.
     glBegin(GL_LINE_STRIP);
-    const float *pt = (const float *)input->GetPoints()->GetVoidPointer(0);
     bool lastWasGood = false;
-    int npts = input->GetPoints()->GetNumberOfPoints();
-    for(int i = 0; i < npts ; i++)
+    vtkIdType npts = input->GetPoints()->GetNumberOfPoints();
+    for(vtkIdType i = 0; i < npts ; i++)
     {
+        double pt[3];
+        input->GetPoints()->GetPoint(i, pt);
+
         if (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() < pt[0])
         {
             if (lastWasGood)
             {
-                float p2[3];
-                double lastX = pt[-3];
-                double curX = pt[0];
-                double lastY = pt[-2];
-                double curY = pt[1];
+                double prev[3];
+                input->GetPoints()->GetPoint(i-1, prev);
+
+                double p2[3];
                 p2[0] = atts.GetTimeForTimeCue();
-                p2[1] = (p2[0]-lastX)/(curX-lastX)*(curY-lastY) + lastY;
+                p2[1] = (p2[0]-prev[0])/(pt[0]-prev[0])*(pt[1]-prev[1]) + prev[1];
                 p2[2] = 0.;
-                glVertex3fv(p2);
+                glVertex3dv(p2);
             }
-            pt += 3;
+            input->GetPoints()->GetPoint(i+1, pt);
             lastWasGood = false;
             continue;
         }
         lastWasGood = true;
-        glVertex3fv(pt);
-        pt += 3;
+        glVertex3dv(pt);
     }
     glEnd();
 
@@ -381,8 +394,8 @@ avtOpenGLCurveRenderer::DrawCurveAsLines()
 // ****************************************************************************
 
 void 
-avtOpenGLCurveRenderer::GetAspect(int &bin_x_n, float &bin_x_size, float &bin_x_offset,
-                                  int &bin_y_n, float &bin_y_size, float &bin_y_offset)
+avtOpenGLCurveRenderer::GetAspect(int &bin_x_n, double &bin_x_size, double &bin_x_offset,
+                                  int &bin_y_n, double &bin_y_size, double &bin_y_offset)
 {
     //
     // Figure out the world coordinates of the window that is being displayed.
@@ -408,7 +421,7 @@ avtOpenGLCurveRenderer::GetAspect(int &bin_x_n, float &bin_x_size, float &bin_x_
     double win_dy = upperright[1] - lowerleft[1];
 
     int n_bins = atts.GetSymbolDensity() > 10 ? atts.GetSymbolDensity() : 10;
-    float bin_size;
+    double bin_size;
     if(win_dy > win_dx)
         bin_size = win_dy / n_bins;
     else
@@ -446,9 +459,9 @@ avtOpenGLCurveRenderer::GetAspect(int &bin_x_n, float &bin_x_size, float &bin_x_
 void
 avtOpenGLCurveRenderer::DrawCurveAsSymbols()
 {
-    int bin_x_n,        bin_y_n;
-    float bin_x_size,   bin_y_size;
-    float bin_x_offset, bin_y_offset;
+    int bin_x_n,         bin_y_n;
+    double bin_x_size,   bin_y_size;
+    double bin_x_offset, bin_y_offset;
     GetAspect(bin_x_n, bin_x_size, bin_x_offset,
               bin_y_n, bin_y_size, bin_y_offset);
 
@@ -460,34 +473,34 @@ avtOpenGLCurveRenderer::DrawCurveAsSymbols()
     glBegin(GL_LINES);
     for(int i = 0; i < bin_x_n; ++i)
     {
-        float v0[3], v1[3];
-        v0[0] = bin_x_offset + float(i) * bin_x_size;
+        double v0[3], v1[3];
+        v0[0] = bin_x_offset + double(i) * bin_x_size;
         v0[1] = bin_y_offset;
         v0[2] = 0.;
 
-        v1[0] = bin_x_offset + float(i) * bin_x_size;
+        v1[0] = bin_x_offset + double(i) * bin_x_size;
         v1[1] = bin_y_offset + win_dy;
         v1[2] = 0.;
 
-        glVertex3fv(v0);
-        glVertex3fv(v1);
+        glVertex3dv(v0);
+        glVertex3dv(v1);
     }
     glEnd();
 
     glBegin(GL_LINES);
     for(int i = 0; i < bin_y_n; ++i)
     {
-        float v0[3], v1[3];
+        double v0[3], v1[3];
         v0[0] = bin_x_offset;
-        v0[1] = bin_y_offset + float(i) * bin_y_size;
+        v0[1] = bin_y_offset + double(i) * bin_y_size;
         v0[2] = 0.;
 
         v1[0] = bin_x_offset + win_dx;
-        v1[1] = bin_y_offset + float(i) * bin_y_size;
+        v1[1] = bin_y_offset + double(i) * bin_y_size;
         v1[2] = 0.;
 
-        glVertex3fv(v0);
-        glVertex3fv(v1);
+        glVertex3dv(v0);
+        glVertex3dv(v1);
     }
     glEnd();
 #endif
@@ -502,7 +515,7 @@ avtOpenGLCurveRenderer::DrawCurveAsSymbols()
 #define REDUCE_SCALE 0.8
 #define MAX_SYMBOL_VERTS 25
 
-    float symbolPoints[MAX_SYMBOL_VERTS][2];
+    double symbolPoints[MAX_SYMBOL_VERTS][2];
     int symbolNVerts;
     if (atts.GetSymbol() == CurveAttributes::Point)
     {
@@ -592,11 +605,13 @@ avtOpenGLCurveRenderer::DrawCurveAsSymbols()
     // static case
     if (atts.GetPointFillMode() == CurveAttributes::Static)
     {
-        const float *pts = (const float *)input->GetPoints()->GetVoidPointer(0);
-        int stride = atts.GetPointStride();
-        int nPts = input->GetPoints()->GetNumberOfPoints();
-        for(int i = 0; i < nPts-1; i+=stride)
+        vtkIdType stride = atts.GetPointStride();
+        vtkIdType nPts = input->GetPoints()->GetNumberOfPoints();
+        double pts[3] = {0., 0., 0.};
+        for(vtkIdType i = 0; i < nPts-1; i+=stride)
         {
+            input->GetPoints()->GetPoint(i, pts);
+
             if (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() < pts[0])
                 continue;
 
@@ -605,20 +620,18 @@ avtOpenGLCurveRenderer::DrawCurveAsSymbols()
 
             for(int j = 0; j < symbolNVerts; ++j)
             {
-                float pt[3];
+                double pt[3];
                 pt[0] = pts[0] + symbolPoints[j][0];
                 pt[1] = pts[1] + symbolPoints[j][1];
-                pt[2] = 0.;                
-                glVertex3fv(pt);
+                pt[2] = 0.;
+                glVertex3dv(pt);
             }
 
             if(atts.GetSymbol() == CurveAttributes::Circle)
                 glEnd();
-
-            pts += 3*stride;
         }
         // add the last point.
-        pts = (const float*)input->GetPoints()->GetVoidPointer((nPts-1)*3);
+        input->GetPoints()->GetPoint(nPts-1, pts);
         if (!atts.GetDoCropTimeCue() || 
            (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() >= pts[0]))
         {
@@ -626,26 +639,26 @@ avtOpenGLCurveRenderer::DrawCurveAsSymbols()
                 glBegin(GL_TRIANGLE_FAN);
             for(int j = 0; j < symbolNVerts; ++j)
             {
-                float pt[3];
+                double pt[3];
                 pt[0] = pts[0] + symbolPoints[j][0];
                 pt[1] = pts[1] + symbolPoints[j][1];
-                pt[2] = 0.;                
-                glVertex3fv(pt);
+                pt[2] = 0.;
+                glVertex3dv(pt);
             }
 
             if(atts.GetSymbol() == CurveAttributes::Circle)
                 glEnd();
-    
         }
     }
     else
     {
         // Now iterate over the line segments and draw the symbols on them.
-        for(int i = 1; i < input->GetPoints()->GetNumberOfPoints(); ++i)
+        for(vtkIdType i = 1; i < input->GetPoints()->GetNumberOfPoints(); ++i)
         {
-            const float *pt = (const float *)input->GetPoints()->GetVoidPointer(0);
-            const float *A = pt + (i-1) * 3;
-            const float *B = pt + i * 3;
+            double A[3], B[3];
+            input->GetPoints()->GetPoint(i-1, A);
+            input->GetPoints()->GetPoint(i,   B);
+
             // Determine the grid cells that contain the points.
             int x0 = int((A[0] - bin_x_offset) / bin_x_size);
             int y0 = int((A[1] - bin_y_offset) / bin_y_size);
@@ -690,23 +703,23 @@ avtOpenGLCurveRenderer::DrawCurveAsSymbols()
             // put symbols.
             for(int pindex = 0; pindex < cells_in_line; ++pindex)
             {
-                float t = (cells_in_line == 1) ? 0. : (float(pindex) / float(cells_in_line-1));
+                double t = (cells_in_line == 1) ? 0. : (double(pindex) / double(cells_in_line-1));
 
-                float ix = (1.-t)*A[0] + t*B[0];
+                double ix = (1.-t)*A[0] + t*B[0];
                 if (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() < ix)
                     continue;
-                float iy = (1.-t)*A[1] + t*B[1];
+                double iy = (1.-t)*A[1] + t*B[1];
 
                 if(atts.GetSymbol() == CurveAttributes::Circle)
                     glBegin(GL_TRIANGLE_FAN);
 
                 for(int j = 0; j < symbolNVerts; ++j)
                 {
-                    float pt[3];
+                    double pt[3];
                     pt[0] = ix + symbolPoints[j][0];
                     pt[1] = iy + symbolPoints[j][1];
                     pt[2] = 0.;                
-                    glVertex3fv(pt);
+                    glVertex3dv(pt);
                 }
 
                 if(atts.GetSymbol() == CurveAttributes::Circle)

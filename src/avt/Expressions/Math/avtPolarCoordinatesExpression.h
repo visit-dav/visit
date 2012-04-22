@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtPolarCoordinatesExpression.h                       //
+//                     avtPolarCoordinatesExpression.h                       //
 // ************************************************************************* //
 
 #ifndef AVT_POLAR_COORDINATES_FILTER_H
@@ -47,12 +47,6 @@
 #include <avtSingleInputExpressionFilter.h>
 
 
-class     vtkCell;
-class     vtkCellDataToPointData;
-class     vtkDataArray;
-class     vtkDataSet;
-class     vtkIdList;
-class     vtkScalarData;
 
 
 // ****************************************************************************

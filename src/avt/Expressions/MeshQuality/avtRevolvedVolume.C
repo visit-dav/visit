@@ -44,8 +44,8 @@
 
 #include <float.h>
 #include <vtkCell.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkPoints.h>
 
 #include <avtCallback.h>
@@ -122,15 +122,15 @@ avtRevolvedVolume::PreExecute(void)
 vtkDataArray *
 avtRevolvedVolume::DeriveVariable(vtkDataSet *in_ds)
 {
-    vtkFloatArray *arr = vtkFloatArray::New();
-    int ncells = in_ds->GetNumberOfCells();
+    vtkDataArray *arr = CreateArrayFromMesh(in_ds);
+    vtkIdType ncells = in_ds->GetNumberOfCells();
     arr->SetNumberOfTuples(ncells);
 
-    for (int i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         vtkCell *cell = in_ds->GetCell(i);
-        float vol = (float) GetZoneVolume(cell);
-        arr->SetTuple(i, &vol);
+        double vol = GetZoneVolume(cell);
+        arr->SetTuple1(i, vol);
     }
 
     return arr;
@@ -361,7 +361,6 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
 double
 avtRevolvedVolume::GetTriangleVolume2(double x[3], double y[3])
 {
-    int     i, j;
     double   cone01, cone02, cone12;
     double   slope01, slope02, slope12;
     double   volume;
@@ -465,9 +464,9 @@ avtRevolvedVolume::GetTriangleVolume2(double x[3], double y[3])
     // Sort the points so that they are ordered by x-coordinate.  This will
     // make things much easier later.
     // 
-    for (i = 0 ; i < 2 ; i++)
+    for (int i = 0 ; i < 2 ; i++)
     {
-        for (j = i + 1 ; j < 3 ; j++)
+        for (int j = i + 1 ; j < 3 ; j++)
         {
             if (x[j] < x[i])
             {

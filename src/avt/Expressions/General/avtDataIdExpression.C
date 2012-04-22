@@ -37,14 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtDataIdExpression.C                            //
+//                          avtDataIdExpression.C                            //
 // ************************************************************************* //
 
 #include <avtDataIdExpression.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
 
 #include <avtCallback.h>
@@ -127,13 +127,13 @@ avtDataIdExpression::PreExecute(void)
 vtkDataArray *
 avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int nvals = 0;
+    vtkIdType nvals = 0;
     if (doZoneIds)
         nvals = in_ds->GetNumberOfCells();
     else
         nvals = in_ds->GetNumberOfPoints();
 
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkIntArray *rv = vtkIntArray::New();
     rv->SetNumberOfTuples(nvals);
 
     vtkDataArray *arr = NULL;
@@ -148,8 +148,8 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds)
 
     if (arr == NULL)
     {
-        for (int i = 0 ; i < nvals ; i++)
-            rv->SetTuple1(i, i);
+        for (vtkIdType i = 0 ; i < nvals ; i++)
+            rv->SetValue(i, (int)i);
         char standard_msg[1024] = "VisIt was not able to create the requested"
                 " ids.  Please see a VisIt developer.";
         char globalmsg[1024] = "VisIt was not able to create global ids, most "
@@ -164,14 +164,14 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds)
         return rv;
     }
 
-    for (int i = 0 ; i < nvals ; i++)
+    for (vtkIdType i = 0 ; i < nvals ; i++)
     {
         if (arr->GetNumberOfComponents() == 2)
             // When there are two components, they are typically packed as 
             // <dom, id>.  We will want the second one.
-            rv->SetTuple1(i, arr->GetComponent(i, 1));
+            rv->SetValue(i, (int)arr->GetComponent(i, 1));
         else
-            rv->SetTuple1(i, arr->GetComponent(i, 0));
+            rv->SetValue(i, (int)arr->GetComponent(i, 0));
     }
 
     return rv;

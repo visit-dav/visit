@@ -200,12 +200,12 @@ avtResampleExpression::Execute()
     for (int i = 0; i < nLeaves; i++)
     {
         vtkDataSet *ds = leaves[i];
+        vtkDataArray *oldVar = ds->GetPointData()->GetArray(inputVarname.c_str());
 
-        vtkFloatArray *newVar = vtkFloatArray::New();
-        vtkFloatArray *oldVar = (vtkFloatArray *)ds->GetPointData()->GetArray(inputVarname.c_str());
+        vtkDataArray *newVar = oldVar->NewInstance();
         newVar->SetNumberOfComponents(oldVar->GetNumberOfComponents());
         newVar->SetNumberOfTuples(oldVar->GetNumberOfTuples());
-        for (int j = 0; j < newVar->GetNumberOfTuples(); j++)
+        for (vtkIdType j = 0; j < newVar->GetNumberOfTuples(); j++)
             newVar->SetTuple(j, oldVar->GetTuple(j));
         newVar->SetName(outputVarname.c_str());
         
@@ -217,7 +217,6 @@ avtResampleExpression::Execute()
             newTree = new avtDataTree(ds, i);
         else
             newTree->Merge(new avtDataTree(ds, i));
-
     }
     
     delete [] leaves;

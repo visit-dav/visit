@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//             avtPerformColorTableLookupExpression.C                            //
+//             avtPerformColorTableLookupExpression.C                        //
 // ************************************************************************* //
 
 #include <avtPerformColorTableLookupExpression.h>
@@ -254,13 +254,13 @@ avtPerformColorTableLookupExpression::ProcessArguments(ArgsExpr *args,
 // ****************************************************************************
 
 void
-avtPerformColorTableLookupExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                             int ncomponents, int ntuples)
+avtPerformColorTableLookupExpression::DoOperation(vtkDataArray *in, 
+    vtkDataArray *out, int ncomponents, int ntuples)
 {
     // Ensure we are dealing with scalar data
     if (ncomponents != 1)
         EXCEPTION2(ExpressionException, outputVariableName,
-                   "PerformColorTableLookup() Expected scalar mesh variable.\n");
+                 "PerformColorTableLookup() Expected scalar mesh variable.\n");
  
     // Get color table
     avtLookupTable avtLUT;
@@ -276,26 +276,32 @@ avtPerformColorTableLookupExpression::DoOperation(vtkDataArray *in, vtkDataArray
             break;
         case Skew:
             avtLUT.SetSkewFactor(mSkew);
-            std::cout << "avtLUT.SetSkewFactor("<<mSkew<<")"<<std::endl;
             vtkLUT = avtLUT.GetSkewLookupTable();
-            std::cout << (dynamic_cast<vtkSkewLookupTable*>(vtkLUT)->GetSkewFactor()) << std::endl;
+            break;
+        default: 
+            vtkLUT = avtLUT.GetLookupTable();
             break;
     }
 
     // Set value range
     vtkLUT->SetRange(mExtents[0], mExtents[1]);
-    if (mLUTMapping == Skew) 
-        std::cout << dynamic_cast<vtkSkewLookupTable*>(vtkLUT)->GetSkewFactor()
-                   << std::endl;
 
     // Perform lookup for each scalar in the data set
     for (int i = 0 ; i < ntuples ; i++)
     {
         unsigned char *col;
-        // FIXME: Hack. Something strange is happening here. MapValue is virtual and should automatically call
-        // the method of the correct subclass of vtkLookupTable. However, this does not seem to work for
-        // vtkSkewLookupTable. For vtkLogLookupTable it works fine, though. As a workaround, we manually check
-        // whether we are dealing with "Skew" lookup and cast vtkLookupTable manually to vtkSkewLookupTable if
+        // Added KSB 4-6-2012.  Actually, MapValue is NOT virtual, that is
+        // why it must be cast manually in order to use the right method.
+        // The reason things work correctly with Log, is that 
+        // vtkLogLookupTable is simply a shell for avtkLookupTable with
+        // log scaling turned on.
+        //
+        // FIXME: Hack. Something strange is happening here. MapValue is 
+        // virtual and should automatically call the method of the correct 
+        // subclass of vtkLookupTable. However, this does not seem to work for
+        // vtkSkewLookupTable. For vtkLogLookupTable it works fine, though. As 
+        // a workaround, we manually check  whether we are dealing with "Skew" 
+        // lookup and cast vtkLookupTable manually to vtkSkewLookupTable if
         // necessary. 
         if (mLUTMapping == Skew)
             col = dynamic_cast<vtkSkewLookupTable*>(vtkLUT)->MapValue(in->GetTuple1(i));

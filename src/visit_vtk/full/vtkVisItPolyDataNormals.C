@@ -200,7 +200,7 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     output->GetFieldData()->ShallowCopy(input->GetFieldData());
 
     // Allocate and copy the output points; there will be no extras
-    vtkPoints *outPts = vtkPoints::New();
+    vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());
     outPts->SetNumberOfPoints(nPoints);
     outPD->CopyAllocate(inPD,nPoints);
     int ptIdx = 0;
@@ -679,7 +679,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
 
     // Create the output points array
     int nOutPts = normalList.GetTotalNumberOfEntries();
-    vtkPoints *outPts = vtkPoints::New();
+    vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inPD,nOutPts);
 

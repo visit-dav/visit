@@ -414,6 +414,10 @@ avtFilter::ModifyContractAndDoBookkeeping(avtContract_p contract)
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added code to set admissible types to float
 //
+//    Brad Whitlock, Fri Apr 20 14:47:48 PDT 2012
+//    Let double through too. Gradually, we'll let them all through here and 
+//    limit the individual filters that can't handle it.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -424,6 +428,7 @@ avtFilter::ModifyContract(avtContract_p contract)
     //
     vector<int> dataTypes;
     dataTypes.push_back(VTK_FLOAT);
+    dataTypes.push_back(VTK_DOUBLE);
     contract->GetDataRequest()->UpdateAdmissibleDataTypes(dataTypes);
 
     return contract;

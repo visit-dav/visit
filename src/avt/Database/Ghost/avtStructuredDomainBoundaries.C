@@ -46,6 +46,7 @@
 
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
@@ -83,6 +84,7 @@ using   std::sort;
 template <class T> MPI_Datatype GetMPIDataType();
 template <>        MPI_Datatype GetMPIDataType<int>()    { return MPI_INT;  }
 template <>        MPI_Datatype GetMPIDataType<float>()  { return MPI_FLOAT;}
+template <>        MPI_Datatype GetMPIDataType<double>() { return MPI_DOUBLE;}
 template <>        MPI_Datatype GetMPIDataType<unsigned char>()  { return MPI_UNSIGNED_CHAR;}
 #endif
 
@@ -1392,6 +1394,9 @@ BoundaryHelperFunctions<T>::FakeNonexistentBoundaryData(int  d1,
 //    Hank Childs, Fri Nov 14 10:49:42 PST 2008
 //    Initialize new data members for efficient calculation of AMR boundaries.
 //
+//    Brad Whitlock, Sun Apr 22 08:51:25 PDT 2012
+//    Create double helpers.
+//
 // ****************************************************************************
 
 avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
@@ -1399,6 +1404,7 @@ avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
 {
     bhf_int   = new BoundaryHelperFunctions<int>(this);
     bhf_float = new BoundaryHelperFunctions<float>(this);
+    bhf_double = new BoundaryHelperFunctions<double>(this);
     bhf_uchar = new BoundaryHelperFunctions<unsigned char>(this);
     shouldComputeNeighborsFromExtents = canComputeNeighborsFromExtents; 
     haveCalculatedBoundaries = false;
@@ -1420,6 +1426,7 @@ avtStructuredDomainBoundaries::~avtStructuredDomainBoundaries()
 {
     delete bhf_int;
     delete bhf_float;
+    delete bhf_double;
     delete bhf_uchar;
 }
 
@@ -1590,6 +1597,10 @@ avtStructuredDomainBoundaries::Finish(int domain)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Brad Whitlock, Sun Apr 22 08:52:14 PDT 2012
+//    Double support.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
@@ -1611,6 +1622,9 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
     {
       case VTK_FLOAT:
         return ExchangeFloatScalar(domainNum, isPointData, scalars);
+        break;
+      case VTK_DOUBLE:
+        return ExchangeDoubleScalar(domainNum, isPointData, scalars);
         break;
       case VTK_INT:
       case VTK_UNSIGNED_INT:
@@ -1724,6 +1738,85 @@ avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
     return out;
 }
 
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeDoubleScalar
+//
+//  Purpose:
+//    Exchange the ghost zone information for some scalars,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    scalars      an array of scalars
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Sun Apr 22 08:53:31 PDT 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeDoubleScalar(vector<int>     domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in float version)");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<vtkDataArray*> out(scalars.size(), NULL);
+
+    //
+    // Create the matching arrays for the given scalars
+    //
+    double ***vals = bhf_double->InitializeBoundaryData();
+    for (size_t d = 0; d < scalars.size(); d++)
+    {
+        double *oldvals = (double*)scalars[d]->GetVoidPointer(0);
+        bhf_double->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in double version)");
+
+    bhf_double->CommunicateBoundaryData(domain2proc, vals, isPointData);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < scalars.size(); d++)
+    {
+        Boundary *bi = &boundary[domainNum[d]];
+
+        // Create the new VTK objects
+        out[d] = vtkDoubleArray::New(); 
+        out[d]->SetName(scalars[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(bi->newnpts);
+        else
+            out[d]->SetNumberOfTuples(bi->newncells);
+
+        double *oldvals = (double*)scalars[d]->GetVoidPointer(0);
+        double *newvals = (double*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_double->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
+
+        // Match the unknown ones
+        bhf_double->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_double->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in double version)");
+
+    bhf_double->FreeBoundaryData(vals);
+
+    return out;
+}
 
 // ****************************************************************************
 //  Method:  avtStructuredDomainBoundaries::ExchangeIntScalar
@@ -2004,6 +2097,85 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
     return out;
 }
 
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeDoubleVector
+//
+//  Purpose:
+//    Exchange the ghost zone information for some vectors,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    vectors      an array of vectors
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeDoubleVector(vector<int>      domainNum,
+                                              bool                  isPointData,
+                                              vector<vtkDataArray*> vectors)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in doublevec version)");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<vtkDataArray*> out(vectors.size(), NULL);
+
+    //
+    // Create the matching arrays for the given vectors
+    //
+    double ***vals = bhf_double->InitializeBoundaryData();
+
+    int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents() :-1);
+    for (size_t d = 0; d < vectors.size(); d++)
+    {
+        double *oldvals = (double*)vectors[d]->GetVoidPointer(0);
+        bhf_double->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in doublevec version)");
+
+    bhf_double->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < vectors.size(); d++)
+    {
+        // Create the new VTK objects
+        out[d] = vtkDoubleArray::New(); 
+        out[d]->SetNumberOfComponents(nComp); 
+        out[d]->SetName(vectors[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newnpts);
+        else
+            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newncells);
+
+        double *oldvals = (double*)vectors[d]->GetVoidPointer(0);
+        double *newvals = (double*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_double->CopyOldValues(domainNum[d], oldvals, newvals, isPointData, nComp);
+
+        // Match the unknown ones
+        bhf_double->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData, nComp);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_double->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in doublevec version)");
+
+    bhf_double->FreeBoundaryData(vals);
+
+    return out;
+}
 
 // ****************************************************************************
 //  Method:  avtStructuredDomainBoundaries::ExchangeIntVector
@@ -2703,6 +2875,9 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
 //    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
 //    Added timings for each phase of ghost zone communication.
 //
+//    Brad Whitlock, Sun Apr 22 09:04:09 PDT 2012
+//    Support double coordinates, moving the guts into a template function.
+//
 // ****************************************************************************
 vector<vtkDataSet*>
 avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
@@ -2716,22 +2891,62 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
         visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in curvmesh version)");
     }
 
-    int timer_PackData = visitTimer->StartTimer();
+    int vtktype = VTK_FLOAT;
+    if(!meshes.empty())
+    {
+        vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[0]);
+        vtktype = mesh->GetPoints()->GetDataType();
+    }
+
     vector<vtkDataSet*> out(meshes.size(), NULL);
+    if(vtktype == VTK_FLOAT)
+        ExchangeMesh(bhf_float, VTK_FLOAT, domainNum, meshes, out);
+    else if(vtktype == VTK_DOUBLE)
+        ExchangeMesh(bhf_double, VTK_DOUBLE, domainNum, meshes, out);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method:  avtCurvilinearDomainBoundaries::ExchangeMesh
+//
+//  Purpose:
+//    Exchange the ghost zone information for some meshes,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    mesh         an array of meshes
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Brad Whitlock, Sun Apr 22 09:37:32 PDT 2012
+//    I templated this function so we can support double.
+//
+// ****************************************************************************
+
+template <typename Helper>
+void
+avtCurvilinearDomainBoundaries::ExchangeMesh(Helper *bhf, int vtktype,
+    vector<int> domainNum, vector<vtkDataSet*> meshes, vector<vtkDataSet *> &out)
+{
+    int timer_PackData = visitTimer->StartTimer();
 
     //
     // Create the matching arrays for the given meshes
     //
-    float ***coord = bhf_float->InitializeBoundaryData();
+    typename Helper::Storage ***coord = bhf->InitializeBoundaryData();
     for (size_t d = 0; d < meshes.size(); d++)
     {
         vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[d]);
-        float *oldcoord = (float*)mesh->GetPoints()->GetVoidPointer(0);
-        bhf_float->FillBoundaryData(domainNum[d], oldcoord, coord, true, 3);
+        typename Helper::Storage *oldcoord = (typename Helper::Storage*)mesh->GetPoints()->GetVoidPointer(0);
+        bhf->FillBoundaryData(domainNum[d], oldcoord, coord, true, 3);
     }
     visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in curvmesh version)");
 
-    bhf_float->CommunicateBoundaryData(domain2proc, coord, true, 3);
+    bhf->CommunicateBoundaryData(domain2proc, coord, true, 3);
 
     int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < meshes.size(); d++)
@@ -2749,23 +2964,23 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 
         // Create the VTK objects
         vtkStructuredGrid    *outm  = vtkStructuredGrid::New(); 
-        vtkPoints            *outp  = vtkPoints::New();
+        vtkPoints            *outp  = vtkPoints::New(vtktype);
         outm->SetPoints(outp);
         outp->Delete();
         outm->SetDimensions(bi->newndims);
         outp->SetNumberOfPoints(bi->newnpts);
 
-        float *oldcoord = (float *)mesh->GetPoints()->GetVoidPointer(0);
-        float *newcoord = (float *)outp->GetVoidPointer(0);
+        typename Helper::Storage *oldcoord = (typename Helper::Storage *)mesh->GetPoints()->GetVoidPointer(0);
+        typename Helper::Storage *newcoord = (typename Helper::Storage *)outp->GetVoidPointer(0);
 
         // Set the known ones
-        bhf_float->CopyOldValues(d1, oldcoord, newcoord, true, 3);
+        bhf->CopyOldValues(d1, oldcoord, newcoord, true, 3);
 
         // Match the unknown ones
-        bhf_float->SetNewBoundaryData(d1, coord, newcoord, true, 3);
+        bhf->SetNewBoundaryData(d1, coord, newcoord, true, 3);
 
         // Set the remaining unset ones (reduced connectivity, etc.)
-        bhf_float->FakeNonexistentBoundaryData(d1, newcoord, true, 3);
+        bhf->FakeNonexistentBoundaryData(d1, newcoord, true, 3);
 
         CreateGhostZones(outm, mesh, bi);
 
@@ -2773,9 +2988,7 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
     }
     visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in curvmesh version)");
  
-    bhf_float->FreeBoundaryData(coord);
-
-    return out;
+    bhf->FreeBoundaryData(coord);
 }
 
 // ****************************************************************************
@@ -2821,6 +3034,9 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //
 //    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
 //    Added timings for each phase of ghost zone communication.
+//
+//    Brad Whitlock, Sun Apr 22 09:55:30 PDT 2012
+//    Added support for double coordinates.
 //
 // ****************************************************************************
 
@@ -2877,31 +3093,36 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
         }
 
         vtkRectilinearGrid *mesh = (vtkRectilinearGrid*)(meshes[d]);
-
+        vtkDataArray *oldx = mesh->GetXCoordinates();
+        vtkDataArray *oldy = mesh->GetYCoordinates();
+        vtkDataArray *oldz = mesh->GetZCoordinates();
         int d1 = domainNum[d];
         Boundary *bi = &boundary[d1];
 
-        vtkRectilinearGrid    *outm  = vtkRectilinearGrid::New(); 
-        vtkFloatArray         *x     = vtkFloatArray::New();
-        vtkFloatArray         *y     = vtkFloatArray::New();
-        vtkFloatArray         *z     = vtkFloatArray::New();
-        outm->SetXCoordinates(x);
-        outm->SetYCoordinates(y);
-        outm->SetZCoordinates(z);
-        x->Delete();
-        y->Delete();
-        z->Delete();
+        vtkRectilinearGrid   *outm  = vtkRectilinearGrid::New(); 
+        vtkDataArray         *newx, *newy, *newz;
+        if(oldx->GetDataType() == VTK_DOUBLE)
+        {
+            newx = vtkDoubleArray::New();
+            newy = vtkDoubleArray::New();
+            newz = vtkDoubleArray::New();
+        }
+        else
+        {
+            newx = vtkFloatArray::New();
+            newy = vtkFloatArray::New();
+            newz = vtkFloatArray::New();
+        }
+        outm->SetXCoordinates(newx);
+        outm->SetYCoordinates(newy);
+        outm->SetZCoordinates(newz);
+        newx->Delete();
+        newy->Delete();
+        newz->Delete();
         outm->SetDimensions(bi->newndims);
-        x->SetNumberOfTuples(bi->newndims[0]);
-        y->SetNumberOfTuples(bi->newndims[1]);
-        z->SetNumberOfTuples(bi->newndims[2]);
-
-        float *oldx = (float *)mesh->GetXCoordinates()->GetVoidPointer(0);
-        float *oldy = (float *)mesh->GetYCoordinates()->GetVoidPointer(0);
-        float *oldz = (float *)mesh->GetZCoordinates()->GetVoidPointer(0);
-        float *newx = (float *)x->GetVoidPointer(0);
-        float *newy = (float *)y->GetVoidPointer(0);
-        float *newz = (float *)z->GetVoidPointer(0);
+        newx->SetNumberOfTuples(bi->newndims[0]);
+        newy->SetNumberOfTuples(bi->newndims[1]);
+        newz->SetNumberOfTuples(bi->newndims[2]);
      
         int  i;
         for (i = 0 ; i < bi->newndims[0] ; i++)
@@ -2909,16 +3130,16 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
             int id = i+bi->newnextents[0];
             if (id < bi->oldnextents[0])
             {
-                float last_dist = (oldx[1] - oldx[0]);
+                double last_dist = (oldx->GetTuple1(1) - oldx->GetTuple1(0));
                 int   num_off = (bi->oldnextents[0]-id);
-                newx[i] = oldx[0] - last_dist*num_off;
+                newx->SetTuple1(i, oldx->GetTuple1(0) - last_dist*num_off);
             }
             else if (id > bi->oldnextents[1])
             {
-                float last_dist = (oldx[bi->oldndims[0]-1] - 
-                                   oldx[bi->oldndims[0]-2]);
+                double last_dist = (oldx->GetTuple1(bi->oldndims[0]-1) - 
+                                    oldx->GetTuple1(bi->oldndims[0]-2));
                 int   num_off = (id - bi->oldnextents[1]);
-                newx[i] = oldx[bi->oldndims[0]-1] + last_dist*num_off;
+                newx->SetTuple1(i, oldx->GetTuple1(bi->oldndims[0]-1) + last_dist*num_off);
             }
             else
             {
@@ -2926,7 +3147,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
                 int newindex = bi->NewPointIndex(id, 0, 0);
                 int oldI = oldindex % bi->oldndims[0];
                 int newI = newindex % bi->newndims[0];
-                newx[newI] = oldx[oldI];
+                newx->SetTuple1(newI, oldx->GetTuple1(oldI));
             }
         }
         for (i = 0 ; i < bi->newndims[1] ; i++)
@@ -2934,16 +3155,16 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
             int id = i+bi->newnextents[2];
             if (id < bi->oldnextents[2])
             {
-                float last_dist = (oldy[1] - oldy[0]);
+                double last_dist = (oldy->GetTuple1(1) - oldy->GetTuple1(0));
                 int   num_off = (bi->oldnextents[2]-id);
-                newy[i] = oldy[0] - last_dist*num_off;
+                newy->SetTuple1(i, oldy->GetTuple1(0) - last_dist*num_off);
             }
             else if (id > bi->oldnextents[3])
             {
-                float last_dist = (oldy[bi->oldndims[1]-1] - 
-                                   oldy[bi->oldndims[1]-2]);
+                double last_dist = (oldy->GetTuple1(bi->oldndims[1]-1) - 
+                                    oldy->GetTuple1(bi->oldndims[1]-2));
                 int   num_off = (id - bi->oldnextents[3]);
-                newy[i] = oldy[bi->oldndims[1]-1] + last_dist*num_off;
+                newy->SetTuple1(i, oldy->GetTuple1(bi->oldndims[1]-1) + last_dist*num_off);
             }
             else
             {
@@ -2951,7 +3172,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
                 int newindex = bi->NewPointIndex(0, id, 0);
                 int oldJ = (oldindex/bi->oldndims[0]) % bi->oldndims[1];
                 int newJ = (newindex/bi->newndims[0]) % bi->newndims[1];
-                newy[newJ] = oldy[oldJ];
+                newy->SetTuple1(newJ, oldy->GetTuple1(oldJ));
             }
         }
         for (i = 0 ; i < bi->newndims[2] ; i++)
@@ -2959,16 +3180,16 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
             int id = i+bi->newnextents[4];
             if (id < bi->oldnextents[4])
             {
-                float last_dist = (oldz[1] - oldz[0]);
+                double last_dist = (oldz->GetTuple1(1) - oldz->GetTuple1(0));
                 int   num_off = (bi->oldnextents[4]-id);
-                newz[i] = oldz[0] - last_dist*num_off;
+                newz->SetTuple1(i, oldz->GetTuple1(0) - last_dist*num_off);
             }
             else if (id > bi->oldnextents[5])
             {
-                float last_dist = (oldz[bi->oldndims[2]-1] - 
-                                   oldz[bi->oldndims[2]-2]);
+                double last_dist = (oldz->GetTuple1(bi->oldndims[2]-1) - 
+                                    oldz->GetTuple1(bi->oldndims[2]-2));
                 int   num_off = (id - bi->oldnextents[5]);
-                newz[i] = oldz[bi->oldndims[2]-1] + last_dist*num_off;
+                newz->SetTuple1(i, oldz->GetTuple1(bi->oldndims[2]-1) + last_dist*num_off);
             }
             else
             {
@@ -2978,7 +3199,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
                          % bi->oldndims[2];
                 int newK = (newindex/(bi->newndims[0]*bi->newndims[1])) 
                          % bi->newndims[2];
-                newz[newK] = oldz[oldK];
+                newz->SetTuple1(newK, oldz->GetTuple1(oldK));
             }
         }
 

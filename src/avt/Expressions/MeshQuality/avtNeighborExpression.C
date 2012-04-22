@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtNeighborExpression.C                             //
+//                       avtNeighborExpression.C                             //
 // ************************************************************************* //
 
 #include <avtNeighborExpression.h>
@@ -46,8 +46,8 @@
 #include <float.h>
 
 #include <vtkCellArray.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPointLocator.h>
 #include <vtkPolyData.h>
@@ -127,7 +127,7 @@ avtNeighborExpression::ExecuteData(vtkDataSet *in_ds, int, std::string)
         EXCEPTION0(ImproperUseException);
     }
  
-    int nPoints = pts->GetNumberOfPoints();
+    vtkIdType nPoints = pts->GetNumberOfPoints();
 
     // A neighbor filter would require the existance of neighbors
     if (nPoints < 2)
@@ -137,12 +137,12 @@ avtNeighborExpression::ExecuteData(vtkDataSet *in_ds, int, std::string)
     // let's allocate for our needs
     vtkPolyData *results = vtkPolyData::New();
     vtkCellArray *verts = vtkCellArray::New();
-    vtkFloatArray *data = vtkFloatArray::New();
+    vtkDataArray *data = CreateArrayFromMesh(in_ds);
 
     results->SetPoints(pts);
 
     data->SetNumberOfComponents(1);
-    data->SetNumberOfValues(nPoints);
+    data->SetNumberOfTuples(nPoints);
 
     double bounds[6];
     in_ds->GetBounds(bounds);
@@ -171,12 +171,12 @@ avtNeighborExpression::ExecuteData(vtkDataSet *in_ds, int, std::string)
         double nearCoords[3];
         pts->GetPoint(closeId->GetId(1), nearCoords);
 
-        float distance = (coords[0]-nearCoords[0])*(coords[0]-nearCoords[0]) +
+        double distance = (coords[0]-nearCoords[0])*(coords[0]-nearCoords[0]) +
                          (coords[1]-nearCoords[1])*(coords[1]-nearCoords[1]) +  
                          (coords[2]-nearCoords[2])*(coords[2]-nearCoords[2]);
         distance=sqrt(distance);
 
-        data->SetValue(id, distance);
+        data->SetTuple1(id, distance);
         closeId->Delete();
     }
  

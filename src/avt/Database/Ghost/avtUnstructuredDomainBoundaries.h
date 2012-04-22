@@ -118,6 +118,10 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                          bool                   isPointData,
                                          std::vector<vtkDataArray*>  vectors);
 
+    virtual std::vector<vtkDataArray*>     ExchangeDoubleVector(std::vector<int> domainNum,
+                                         bool                   isPointData,
+                                         std::vector<vtkDataArray*>  vectors);
+
     virtual std::vector<vtkDataArray*>     ExchangeIntVector(std::vector<int>  domainNum,
                                          bool                  isPointData,
                                          std::vector<vtkDataArray*> vectors);
@@ -163,12 +167,7 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
     template <class T>
     std::vector<vtkDataArray*>        ExchangeData(std::vector<int> &domainNum,
                                               bool isPointData,
-                                              std::vector<vtkDataArray*> &data
-#if defined(_MSC_VER) && (_MSC_VER <= 1200)
-    // Extra argument to help the compiler instantiate the right function.
-                                              , T signature
-#endif
-                                             );
+                                              std::vector<vtkDataArray*> &data);
     // Communication methods
     std::vector<int>     CreateDomainToProcessorMap(const std::vector<int> &domainNum);
 

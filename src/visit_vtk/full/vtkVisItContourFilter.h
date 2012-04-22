@@ -38,13 +38,13 @@ public:
 
   // Description:
   // Set/Get isovalue.
-  vtkSetMacro(Isovalue,float);
-  vtkGetMacro(Isovalue,float);
+  vtkSetMacro(Isovalue,double);
+  vtkGetMacro(Isovalue,double);
   
   // Description:
   // Specify a cell list to cut against.  This allows outside modules to 
   // perform optimizations on which cells are cut.
-  void SetCellList(int *, int);
+  void SetCellList(const vtkIdType *, vtkIdType);
 
 protected:
   vtkVisItContourFilter();
@@ -61,12 +61,12 @@ protected:
   int GeneralExecute(vtkDataSet *, vtkPolyData*);
   int ContourDataset(vtkDataSet *, vtkPolyData *);
   
-  float Isovalue;
+  double Isovalue;
 
-  int *CellList;
-  int  CellListSize;
+  const vtkIdType *CellList;
+  vtkIdType  CellListSize;
 
-  float *GetPointScalars(vtkDataSet*);
+  vtkDataArray *GetPointScalars(vtkDataSet*);
   
 private:
   vtkVisItContourFilter(const vtkVisItContourFilter&);  // Not implemented.

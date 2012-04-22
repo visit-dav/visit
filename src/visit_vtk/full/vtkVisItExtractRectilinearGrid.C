@@ -241,6 +241,9 @@ int vtkVisItExtractRectilinearGrid::RequestInformation(
 //   structured grid getting index selected and also facelisted.  Also pass
 //   through field data.
 //
+//   Brad Whitlock, Tue Mar 20 10:41:45 PDT 2012
+//   Create double coordinates of the input coordinates were double.
+//
 //----------------------------------------------------------------------------
 int vtkVisItExtractRectilinearGrid::RequestData(
   vtkInformation *,
@@ -333,14 +336,14 @@ int vtkVisItExtractRectilinearGrid::RequestData(
 
   // Setup the new "geometry"
   vtkDataArray *inCoords;
-  vtkFloatArray *outCoords;
+  vtkDataArray *outCoords;
   // X
   inCoords = input->GetXCoordinates();
   if (inCoords->GetNumberOfComponents() > 1)
     {
     vtkWarningMacro("Multiple componenet axis coordinate.");
     }
-  outCoords = vtkFloatArray::New();
+  outCoords = inCoords->NewInstance();
   outCoords->Allocate(uExt[1]-uExt[0]+1);
   outCoords->Allocate(uExt[1]-uExt[0]+1);
   outCoords->SetNumberOfTuples(uExt[1]-uExt[0]+1);
@@ -351,7 +354,7 @@ int vtkVisItExtractRectilinearGrid::RequestData(
       { // This handles the IncludeBoundaryOn condition.
       kIn = voi[1];
       }
-    outCoords->SetValue(k-uExt[0], inCoords->GetComponent(kIn-inExt[0], 0));
+    outCoords->SetTuple1(k-uExt[0], inCoords->GetComponent(kIn-inExt[0], 0));
     }
   output->SetXCoordinates(outCoords);
   outCoords->Delete();
@@ -362,7 +365,7 @@ int vtkVisItExtractRectilinearGrid::RequestData(
     {
     vtkWarningMacro("Multiple componenet axis coordinate.");
     }
-  outCoords = vtkFloatArray::New();
+  outCoords = inCoords->NewInstance();
   outCoords->Allocate(uExt[3]-uExt[2]+1);
   outCoords->SetNumberOfTuples(uExt[3]-uExt[2]+1);
   for ( k=uExt[2]; k <= uExt[3]; ++k)
@@ -372,7 +375,7 @@ int vtkVisItExtractRectilinearGrid::RequestData(
       { // This handles the IncludeBoundaryOn condition.
       kIn = voi[3];
       }
-    outCoords->SetValue(k-uExt[2], inCoords->GetComponent(kIn-inExt[2], 0));
+    outCoords->SetTuple1(k-uExt[2], inCoords->GetComponent(kIn-inExt[2], 0));
     }
   output->SetYCoordinates(outCoords);
   outCoords->Delete();
@@ -382,7 +385,7 @@ int vtkVisItExtractRectilinearGrid::RequestData(
     {
     vtkWarningMacro("Multiple componenet axis coordinate.");
     }
-  outCoords = vtkFloatArray::New();
+  outCoords = inCoords->NewInstance();
   outCoords->Allocate(uExt[5]-uExt[4]+1);
   outCoords->SetNumberOfTuples(uExt[5]-uExt[4]+1);
   for ( k=uExt[4]; k <= uExt[5]; ++k)
@@ -392,7 +395,7 @@ int vtkVisItExtractRectilinearGrid::RequestData(
       { // This handles the IncludeBoundaryOn condition.
       kIn = voi[5];
       }
-    outCoords->SetValue(k-uExt[4], inCoords->GetComponent(kIn-inExt[4], 0));
+    outCoords->SetTuple1(k-uExt[4], inCoords->GetComponent(kIn-inExt[4], 0));
     }
   output->SetZCoordinates(outCoords);
   outCoords->Delete();

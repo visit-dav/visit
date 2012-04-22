@@ -104,14 +104,14 @@ avtEvalPlaneExpression::TransformData(avtDataObject_p input)
     // So the reflection would be a translation along (A,B,C) by a distance
     // of 2*DIST.  So set up a matrix that reflects this.
     //
-    float A = inputParameters[0];
-    float B = inputParameters[1];
-    float C = inputParameters[2];
+    double A = inputParameters[0];
+    double B = inputParameters[1];
+    double C = inputParameters[2];
 
     //
     // Start off by normalizing the plane.
     //
-    float mag = sqrt(A*A + B*B + C*C);
+    double mag = sqrt(A*A + B*B + C*C);
     if (mag == 0.)
     {
         EXCEPTION2(ExpressionException, outputVariableName, "The plane has a degenerate normal.");
@@ -120,10 +120,10 @@ avtEvalPlaneExpression::TransformData(avtDataObject_p input)
     B /= mag;
     C /= mag;
 
-    float Ox = inputParameters[3];
-    float Oy = inputParameters[4];
-    float Oz = inputParameters[5];
-    float D = -(A*Ox + B*Oy + C*Oz);
+    double Ox = inputParameters[3];
+    double Oy = inputParameters[4];
+    double Oz = inputParameters[5];
+    double D = -(A*Ox + B*Oy + C*Oz);
 
     vtkMatrix4x4 *mat = vtkMatrix4x4::New();
     mat->SetElement(0, 0, -2*A*A + 1);

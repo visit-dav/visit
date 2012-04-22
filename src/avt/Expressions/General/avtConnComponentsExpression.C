@@ -43,7 +43,6 @@
 
 #include <math.h>
 
-#include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 #include <avtExprNode.h>
 #include <avtExpressionEvaluatorFilter.h>
@@ -60,7 +59,6 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkIntArray.h>
-#include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridRelevantPointsFilter.h>
@@ -71,8 +69,6 @@
 #include <sstream>
 #include <DebugStream.h>
 #include <ExpressionException.h>
-#include <ImproperUseException.h>
-#include <InvalidVariableException.h>
 #include <TimingsManager.h>
 #include <Utility.h>
 
@@ -433,16 +429,17 @@ avtConnComponentsExpression::Execute()
     num_comps = num_local_comps;
 
     std::ostringstream oss;
-    oss << "Connected Components Labeling of " << nsets << " local datasets (" << num_local_cells << " cells, " << num_comps << " comps)";
+    oss << "Connected Components Labeling of " << nsets << " local datasets (" 
+        << num_local_cells << " cells, " << num_comps << " comps)";
     visitTimer->StopTimer(t_local_lbl,oss.str());
 
 #ifdef PARALLEL
 
     //
-    // At this point each processor has resolved the labels across all local datasets.
-    // Components on each processor are labeled 0 <-> (number of local comps - 1). 
-    // In the parallel case we need to ensure that every component has a unique label
-    // so we first perform a global label shift.
+    // At this point each processor has resolved the labels across all local 
+    // datasets.  Components on each processor are labeled 0 <-> (number of 
+    // local comps - 1).  In the parallel case we need to ensure that every 
+    // component has a unique label so we first perform a global label shift.
     //
 
     // Globally shift labels to make sure they are unique
@@ -499,6 +496,8 @@ avtConnComponentsExpression::Execute()
 
     visitTimer->StopTimer(t_full,"Full Connected Components Labeling");
 }
+
+
 // ****************************************************************************
 //  Method: avtConnComponentsExpression::CheckForProperGhostZones
 //
@@ -2776,8 +2775,6 @@ PartitionBoundary::GetBoundaryForRegion(int region, double *bbox)
 void
 PartitionBoundary::SetNumberOfPointsForRegion(int region, int ncells)
 {
-    int nregions = GetNumberOfRegions();
-
     numCells[region] += ncells;
 }
 

@@ -35,10 +35,10 @@ vtkStandardNewMacro(vtkVisItScalarTree);
 
 vtkVisItScalarTree::vtkVisItScalarTree()
 {
-    DataSet = NULL;
-    MaxLevel = 20;
-    BranchingFactor = 3;
-    tree = NULL;
+    this->DataSet = NULL;
+    this->MaxLevel = 20;
+    this->BranchingFactor = 3;
+    this->tree = NULL;
 }
 
 // ****************************************************************************
@@ -51,18 +51,18 @@ vtkVisItScalarTree::vtkVisItScalarTree()
 
 vtkVisItScalarTree::~vtkVisItScalarTree()
 {
-    if (tree)
-        delete[] tree;
-    if (DataSet != NULL)
-        DataSet->UnRegister(this);
+    if (this->tree)
+        delete[] this->tree;
+    if (this->DataSet != NULL)
+        this->DataSet->UnRegister(this);
 }
 
 void
 vtkVisItScalarTree::Initialize()
 {
-    if (tree)
-        delete[] tree;
-    tree = NULL;
+    if (this->tree)
+        delete[] this->tree;
+    this->tree = NULL;
 }
 
 // ***************************************************************************
@@ -80,35 +80,40 @@ vtkVisItScalarTree::Initialize()
 //   Fix additional memory issues.  Tree created in slightly different manner
 //   now.
 //
+//   Brad Whitlock, Tue Mar 13 13:55:36 PDT 2012
+//   Added double implementation. Changed int to vtkIdType.
+//
 // ***************************************************************************
 
 void
 vtkVisItScalarTree::BuildTree()
 {
-    if (!DataSet)
+    if (!this->DataSet)
     {
         vtkErrorMacro( << "No data to build tree with");
         return;
     }
 
-    nCells = DataSet->GetNumberOfCells();
-    if (nCells < 1)
+    this->nCells = this->DataSet->GetNumberOfCells();
+    if (this->nCells < 1)
     {
         vtkErrorMacro( << "No data to build tree with");
         return;
     }
 
-    if (!DataSet->GetPointData()->GetScalars())
+    if (!this->DataSet->GetPointData()->GetScalars())
     {
         vtkErrorMacro( << "No scalar data to build tree with");
         return;
     }
 
-    if ( tree != NULL && BuildTime > MTime && BuildTime > DataSet->GetMTime() )
+    if ( this->tree != NULL && BuildTime > MTime && BuildTime > DataSet->GetMTime() )
         return;
     
-    float *scalars = (float *)(DataSet->GetPointData()->GetScalars()
-                                    ->GetVoidPointer(0));
+    vtkDataArray *scalars = this->DataSet->GetPointData()->GetScalars();
+    float *fscalars = (float *)scalars->GetVoidPointer(0);
+    double *dscalars = (double *)scalars->GetVoidPointer(0);
+    int stype = scalars->GetDataType();
 
     //
     // Information for speeding up rectilinear and structured grids.
@@ -141,57 +146,57 @@ vtkVisItScalarTree::BuildTree()
     cell_dims[0] = pt_dims[0] - 1;
     cell_dims[1] = pt_dims[1] - 1;
     cell_dims[2] = pt_dims[2] - 1;
-    int strideY = cell_dims[0];
-    int strideZ = cell_dims[0]*cell_dims[1];
-    int ptstrideY = pt_dims[0];
-    int ptstrideZ = pt_dims[0]*pt_dims[1];
-    const int X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
-    const int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
-    const int Z_val[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
+    vtkIdType strideY = cell_dims[0];
+    vtkIdType strideZ = cell_dims[0]*cell_dims[1];
+    vtkIdType ptstrideY = pt_dims[0];
+    vtkIdType ptstrideZ = pt_dims[0]*pt_dims[1];
+    const vtkIdType X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
+    const vtkIdType Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
+    const vtkIdType Z_val[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
 
-    if (tree)
-        delete[] tree;
+    if (this->tree)
+        delete[] this->tree;
     
-    int numLeafs = (int)ceil(double (nCells) / BranchingFactor);
-    int count = 1;
-    for (levels = 0; count < numLeafs ; ++levels)
+    vtkIdType numLeafs = (vtkIdType)ceil(double (nCells) / BranchingFactor);
+    vtkIdType count = 1;
+    for (this->levels = 0; count < numLeafs ; ++this->levels)
     {
-        count *= BranchingFactor;
+        count *= this->BranchingFactor;
     }
    
     // If levels is too high, adjust appropriately.
-    if (levels > MaxLevel)
+    if (this->levels > this->MaxLevel)
     {
-        levels = MaxLevel;
-        bucketSize = (int)ceil(double (nCells) /
+        this->levels = this->MaxLevel;
+        this->bucketSize = (vtkIdType)ceil(double (nCells) /
                      pow((double)BranchingFactor, levels));
     }
     else
-        bucketSize = BranchingFactor;
+        this->bucketSize = BranchingFactor;
     
     // Size of a full tree is a geometric series: (b^(n+1)-1) / (b-1)
-    treeSize = (int)((pow((double)BranchingFactor, levels + 1) - 1)
+    this->treeSize = (vtkIdType)((pow((double)BranchingFactor, levels + 1) - 1)
                         / (BranchingFactor - 1));
 
-    tree = new ScalarRange[treeSize];
+    this->tree = new ScalarRange[this->treeSize];
 
     //
     // First, fill up the leaves of the tree.
     //
-    leafOffset = treeSize - (int)pow((double)BranchingFactor, levels);
+    this->leafOffset = this->treeSize - (vtkIdType)pow((double)this->BranchingFactor, this->levels);
     vtkIdList *lst = vtkIdList::New();
-    for (int t = 0 ; t < treeSize ; t++)
+    for (vtkIdType t = 0 ; t < this->treeSize ; t++)
     {
-        ScalarRange &leaf = tree[t];
+        ScalarRange &leaf = this->tree[t];
         leaf.min = VTK_LARGE_FLOAT;
         leaf.max = -VTK_LARGE_FLOAT;
     }
 
     // Now find the min/max for each bucket.
-    for (int cellId = 0 ; cellId < nCells ; cellId++)
+    for (vtkIdType cellId = 0 ; cellId < this->nCells ; cellId++)
     {
         vtkIdType*pts;
-        int npts;
+        vtkIdType npts;
         vtkIdType arr8[8];
         
         // Get the points
@@ -199,11 +204,10 @@ vtkVisItScalarTree::BuildTree()
         {
             if (structured2D)
             {
-                int cellI = cellId % cell_dims[0];
-                int cellJ = cellId / strideY;
+                vtkIdType cellI = cellId % cell_dims[0];
+                vtkIdType cellJ = cellId / strideY;
 
-                int j;
-                for (j = 0 ; j < 4 ; ++j)
+                for (vtkIdType j = 0 ; j < 4 ; ++j)
                 {
                     arr8[j] = (cellI + X_val[j]) +
                               (cellJ + Y_val[j]) * ptstrideY; 
@@ -214,11 +218,11 @@ vtkVisItScalarTree::BuildTree()
             }
             else
             {
-                int cellI = cellId % cell_dims[0];
-                int cellJ = (cellId/strideY) % cell_dims[1];
-                int cellK = (cellId/strideZ);
-                int j;
-                for (j = 0 ; j < 8 ; ++j)
+                vtkIdType cellI = cellId % cell_dims[0];
+                vtkIdType cellJ = (cellId/strideY) % cell_dims[1];
+                vtkIdType cellK = (cellId/strideZ);
+
+                for (vtkIdType j = 0 ; j < 8 ; ++j)
                 {
                     arr8[j] = (cellI + X_val[j]) +
                               (cellJ + Y_val[j])*ptstrideY 
@@ -235,14 +239,39 @@ vtkVisItScalarTree::BuildTree()
             pts = lst->GetPointer(0);
         }
             
-        ScalarRange &leaf = tree[leafOffset + (cellId / bucketSize)];
-        for (int p = 0; p < npts; ++p)
+        ScalarRange &leaf = this->tree[this->leafOffset + (cellId / this->bucketSize)];
+        if(stype == VTK_FLOAT)
         {
-            float val = scalars[pts[p]];
-            if (val < leaf.min)
-                leaf.min = val;
-            if (val > leaf.max)
-                leaf.max = val;
+            for (vtkIdType p = 0; p < npts; ++p)
+            {
+                double val = fscalars[pts[p]];
+                if (val < leaf.min)
+                    leaf.min = val;
+                if (val > leaf.max)
+                    leaf.max = val;
+            }
+        }
+        else if(stype == VTK_DOUBLE)
+        {
+            for (vtkIdType p = 0; p < npts; ++p)
+            {
+                double val = dscalars[pts[p]];
+                if (val < leaf.min)
+                    leaf.min = val;
+                if (val > leaf.max)
+                    leaf.max = val;
+            }
+        }
+        else
+        {
+            for (vtkIdType p = 0; p < npts; ++p)
+            {
+                double val = scalars->GetTuple1(pts[p]);
+                if (val < leaf.min)
+                    leaf.min = val;
+                if (val > leaf.max)
+                    leaf.max = val;
+            }
         }
     }
     lst->Delete();
@@ -251,30 +280,28 @@ vtkVisItScalarTree::BuildTree()
     //
     // Now propagate up the changes to the branches of the tree.
     //
-    int lev;
-    for (lev = levels - 1; lev >= 0; --lev)
+    for (vtkIdType lev = this->levels - 1; lev >= 0; --lev)
     {
         //
         // The first index of each level is ((b ^ lev) - 1) / (b - 1)
         //
-        int offset;
-        offset = (int)((pow((double)BranchingFactor, lev) - 1) /
-                 (BranchingFactor - 1));
+        vtkIdType offset;
+        offset = (vtkIdType)((pow((double)this->BranchingFactor, lev) - 1) /
+                 (this->BranchingFactor - 1));
 
-        int len = (int)pow((double)BranchingFactor, lev);
+        vtkIdType len = (vtkIdType)pow((double)this->BranchingFactor, lev);
 
 
-        int cRow;
-        cRow = (int)((pow((double)BranchingFactor, lev + 1) - 1)
-                         / (BranchingFactor - 1));
+        vtkIdType cRow;
+        cRow = (vtkIdType)((pow((double)this->BranchingFactor, lev + 1) - 1)
+                         / (this->BranchingFactor - 1));
         
-        int i;
-        for (i = 0; i < len; ++i)
+        for (vtkIdType i = 0; i < len; ++i)
         {
-            ScalarRange *parent = &tree[offset + i];
-            for (int j = 0 ; j < BranchingFactor ; j++)
+            ScalarRange *parent = &(this->tree[offset + i]);
+            for (vtkIdType j = 0 ; j < this->BranchingFactor ; j++)
             {
-                ScalarRange *child = &(tree[cRow + i * BranchingFactor + j]);
+                const ScalarRange *child = &(this->tree[cRow + i * this->BranchingFactor + j]);
                 if (child->min < parent->min)
                     parent->min = child->min;
                 if (child->max > parent->max)
@@ -287,37 +314,35 @@ vtkVisItScalarTree::BuildTree()
 }
 
 void
-vtkVisItScalarTree::GetCellList(float scalarValue, std::vector<int> &v)
+vtkVisItScalarTree::GetCellList(double scalarValue, std::vector<vtkIdType> &v)
 {
     BuildTree();
     
-    if (!tree)
+    if (!this->tree)
         return;
     
-    searchValue = scalarValue;
-    if (searchValue >= tree->min && searchValue <= tree->max)
+    this->searchValue = scalarValue;
+    if (this->searchValue >= this->tree->min && this->searchValue <= this->tree->max)
         RecursiveSearch(v, 0, 0); 
 }
 
 void
-vtkVisItScalarTree::RecursiveSearch(std::vector<int> &v, int index, int lev)
+vtkVisItScalarTree::RecursiveSearch(std::vector<vtkIdType> &v, vtkIdType index, vtkIdType lev)
 {
     // Reached a leaf node
-    if (lev == levels)
+    if (lev == this->levels)
     {
-        int cId = (index - leafOffset) * bucketSize;
-        int i;
-        for (i = 0; i < bucketSize && cId < nCells; ++i)
+        vtkIdType cId = (index - this->leafOffset) * this->bucketSize;
+        for (vtkIdType i = 0; i < this->bucketSize && cId < this->nCells; ++i)
             v.push_back(cId++); 
         return;
     }
 
-    int childIndex = index * BranchingFactor + 1;
-    int i;
-    for (i = 0; i < BranchingFactor; ++i)
+    vtkIdType childIndex = index * this->BranchingFactor + 1;
+    for (vtkIdType i = 0; i < this->BranchingFactor; ++i)
     {
-        int ix = childIndex + i;
-        if (searchValue >= tree[ix].min && searchValue <= tree[ix].max)
+        vtkIdType ix = childIndex + i;
+        if (this->searchValue >= this->tree[ix].min && this->searchValue <= this->tree[ix].max)
             RecursiveSearch(v, ix, lev + 1);
     }
 }

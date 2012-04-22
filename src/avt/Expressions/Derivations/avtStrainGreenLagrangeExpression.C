@@ -37,26 +37,18 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtStrainGreenLagrangeExpression.C                  //
+//                       avtStrainGreenLagrangeExpression.C                  //
 // ************************************************************************* //
 
 #include <avtStrainGreenLagrangeExpression.h>
-#include <vtkVisItUtility.h>
 #include <math.h>
 
-#include <vtkCellData.h>
+#include <vtkCellType.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkFloatArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkPointSet.h>
-#include <vtkCell.h>
-#include <vtkCellType.h>
+#include <vtkIdList.h>
 #include <vtkPointData.h>
-#include <vtkPointLocator.h>
-
-#include <vtkMath.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <ExpressionException.h>
 
@@ -97,6 +89,10 @@ avtStrainGreenLagrangeExpression::~avtStrainGreenLagrangeExpression()
 //  Programmer: Thomas R. Treadway
 //  Creation:   Tue Nov 14 17:31:42 PST 2006
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 4 12:02:10 PDT 2012
+//    Set output's data type to same as input.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -125,7 +121,6 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds)
                    "The strain expression only operates on unstructured grids.");
     }
     vtkUnstructuredGrid *in_usg = vtkUnstructuredGrid::SafeDownCast(in_ds);
-//  vtkVisItUtility::WriteDataSet(in_ds, varnames[0]);
     int nCells = in_usg->GetNumberOfCells();
     vtkDataArray *coord_data = in_ds->GetPointData()->GetArray(varnames[1]);
     if (coord_data == NULL)
@@ -138,7 +133,7 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds)
     unsigned char *ghost = 
         (unsigned char *) (ghost_data ? ghost_data->GetVoidPointer(0) : 0);
     vtkIdList *pointIds = vtkIdList::New();
-    vtkFloatArray *out = vtkFloatArray::New();
+    vtkDataArray *out = coord_data->NewInstance();
     out->SetNumberOfComponents(9);
     out->SetNumberOfTuples(nCells);
     for (j = 0; j < 9; j++) 
@@ -244,6 +239,8 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds)
     }
     return out;
 }
+
+
 // ****************************************************************************
 //  Method: avtStrainGreenLagrangeExpression::GetVariableDimension
 //

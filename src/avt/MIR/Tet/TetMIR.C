@@ -127,7 +127,7 @@ static void ExtractCellVFs(int, int, const vtkIdType *, int, int, float *,
                            vector<float>*,
                            vector<float>*,
                            vector<float>*);
-static void SetUpCoords(vtkDataSet *, vector<TetMIR::ReconstructedCoord> &);
+static void SetUpCoords(vtkDataSet *, vector<TetMIR::ReconstructedCoord> &, int &);
 static void AddFaces(int, const vtkIdType *, FaceHash *, int, int=0, int* =NULL, float* =NULL);
 static void AddEdges(int, const vtkIdType *, EdgeHash *, int, int=0, int* =NULL, float* =NULL);
 static void AddNodes(int, const vtkIdType *, NodeList *, int, int=0, int* =NULL, float* =NULL);
@@ -231,7 +231,8 @@ TetMIR::TetMIR()
 {
     mesh   = NULL;
     outPts = NULL;
-    coordsHash = NULL;
+    coordsHash = NULL; 
+    coordsListType = VTK_FLOAT;
 }
 
 // ****************************************************************************
@@ -441,7 +442,7 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 
     // extract coordinate arrays
     int timerHandle1 = visitTimer->StartTimer();
-    SetUpCoords(mesh, coordsList);
+    SetUpCoords(mesh, coordsList, coordsListType);
     visitTimer->StopTimer(timerHandle1, "MIR: Copying coordinate list");
 
     // create the faces' zonecnt/vf list
@@ -725,7 +726,7 @@ TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 
     // extract coordinate arrays
     int timerHandle1 = visitTimer->StartTimer();
-    SetUpCoords(mesh, coordsList);
+    SetUpCoords(mesh, coordsList, coordsListType);
     visitTimer->StopTimer(timerHandle1, "MIR: Copying coordinate list");
 
     // create the edges' zonecnt/vf list
@@ -893,7 +894,7 @@ TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
     }
 
     // extract coords
-    SetUpCoords(mesh, coordsList);
+    SetUpCoords(mesh, coordsList, coordsListType);
 
     // extract cells
     int        nCells  = conn.ncells;
@@ -1029,14 +1030,33 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
     int npoints = coordsList.size();
     if (outPts == NULL)
     {
-        outPts = vtkPoints::New();
+        outPts = vtkPoints::New(coordsListType);
         outPts->SetNumberOfPoints(npoints);
-        float *pts_buff = (float *) outPts->GetVoidPointer(0);
-        for (int i=0; i<npoints; i++)
+        if(coordsListType == VTK_FLOAT)
         {
-            pts_buff[3*i+0] = coordsList[i].x;
-            pts_buff[3*i+1] = coordsList[i].y;
-            pts_buff[3*i+2] = coordsList[i].z;
+            float *pts_buff = (float *) outPts->GetVoidPointer(0);
+            for (int i=0; i<npoints; i++)
+            {
+                *pts_buff++ = static_cast<float>(coordsList[i].x);
+                *pts_buff++ = static_cast<float>(coordsList[i].y);
+                *pts_buff++ = static_cast<float>(coordsList[i].z);
+            }
+        }
+        else if(coordsListType == VTK_DOUBLE)
+        {
+            double *pts_buff = (double *) outPts->GetVoidPointer(0);
+            for (int i=0; i<npoints; i++)
+            {
+                *pts_buff++ = coordsList[i].x;
+                *pts_buff++ = coordsList[i].y;
+                *pts_buff++ = coordsList[i].z;
+            }
+        }
+        else
+        {
+            outPts->Delete();
+            rv->Delete();
+            EXCEPTION0(ImproperUseException);
         }
     }
     rv->SetPoints(outPts);
@@ -1238,9 +1258,9 @@ TetMIR::IndexTetNode(Tet::Node &node, int c, int npts, const vtkIdType *c_ptr,
     for (w=0; w<npts; w++)
     {
         int id = c_ptr[w];
-        coord.x += float(double(coordsList[id].x) * double(coord.weight[w]));
-        coord.y += float(double(coordsList[id].y) * double(coord.weight[w]));
-        coord.z += float(double(coordsList[id].z) * double(coord.weight[w]));
+        coord.x += (double(coordsList[id].x) * double(coord.weight[w]));
+        coord.y += (double(coordsList[id].y) * double(coord.weight[w]));
+        coord.z += (double(coordsList[id].z) * double(coord.weight[w]));
     }
 
     // find the old index or create a new one
@@ -1320,8 +1340,8 @@ TetMIR::IndexTriNode(Tri::Node &node, int c, int npts, const vtkIdType *c_ptr,
     for (w=0; w<npts; w++)
     {
         int id = c_ptr[w];
-        coord.x += float(double(coordsList[id].x) * double(coord.weight[w]));
-        coord.y += float(double(coordsList[id].y) * double(coord.weight[w]));
+        coord.x += (double(coordsList[id].x) * double(coord.weight[w]));
+        coord.y += (double(coordsList[id].y) * double(coord.weight[w]));
     }
 
     // find the old index or create a new one
@@ -3248,10 +3268,15 @@ ExtractCellVFs(int c, int nPts, const vtkIdType *ids, int celltype, int nmat,
 //  Programmer: Hank Childs
 //  Creation:   October 5, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Apr 11 21:18:46 PDT 2012
+//    Double coordinates.
+// 
 // ****************************************************************************
 
 void
-SetUpCoords(vtkDataSet *mesh, vector<TetMIR::ReconstructedCoord> &coordsList)
+SetUpCoords(vtkDataSet *mesh, vector<TetMIR::ReconstructedCoord> &coordsList,
+    int &coordsListType)
 {
     int nPoints = mesh->GetNumberOfPoints();
     int i, j, k;
@@ -3264,21 +3289,21 @@ SetUpCoords(vtkDataSet *mesh, vector<TetMIR::ReconstructedCoord> &coordsList)
         vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) mesh;
         vtkDataArray *xc = rgrid->GetXCoordinates();
         int nx = xc->GetNumberOfTuples();
-        float *x = new float[nx];
+        double *x = new double[nx];
         for (i = 0 ; i < nx ; i++)
         {
             x[i] = xc->GetTuple1(i);
         }
         vtkDataArray *yc = rgrid->GetYCoordinates();
         int ny = yc->GetNumberOfTuples();
-        float *y = new float[ny];
+        double *y = new double[ny];
         for (i = 0 ; i < ny ; i++)
         {
             y[i] = yc->GetTuple1(i);
         }
         vtkDataArray *zc = rgrid->GetZCoordinates();
         int nz = zc->GetNumberOfTuples();
-        float *z = new float[nz];
+        double *z = new double[nz];
         for (i = 0 ; i < nz ; i++)
         {
             z[i] = zc->GetTuple1(i);
@@ -3303,18 +3328,39 @@ SetUpCoords(vtkDataSet *mesh, vector<TetMIR::ReconstructedCoord> &coordsList)
         delete [] x;
         delete [] y;
         delete [] z;
+        coordsListType = rgrid->GetXCoordinates()->GetDataType();
     }
     else
     {
         vtkPointSet *ps = (vtkPointSet *) mesh;
-        float *ptr = (float *) ps->GetPoints()->GetVoidPointer(0);
-        for (int n=0; n<nPoints; n++)
+        coordsListType = ps->GetPoints()->GetDataType();
+        if(coordsListType == VTK_FLOAT)
         {
-            TetMIR::ReconstructedCoord &c = coordsList[n];
-            c.orignode = n;
-            c.x = *ptr++;
-            c.y = *ptr++;
-            c.z = *ptr++;
+            const float *ptr = (const float *) ps->GetPoints()->GetVoidPointer(0);
+            for (int n=0; n<nPoints; n++)
+            {
+                TetMIR::ReconstructedCoord &c = coordsList[n];
+                c.orignode = n;
+                c.x = static_cast<double>(*ptr++);
+                c.y = static_cast<double>(*ptr++);
+                c.z = static_cast<double>(*ptr++);
+            }
+        }
+        else if(coordsListType == VTK_DOUBLE)
+        {
+            const double *ptr = (const double *) ps->GetPoints()->GetVoidPointer(0);
+            for (int n=0; n<nPoints; n++)
+            {
+                TetMIR::ReconstructedCoord &c = coordsList[n];
+                c.orignode = n;
+                c.x = *ptr++;
+                c.y = *ptr++;
+                c.z = *ptr++;
+            }
+        }
+        else
+        {
+            EXCEPTION0(ImproperUseException);
         }
     }
 }
