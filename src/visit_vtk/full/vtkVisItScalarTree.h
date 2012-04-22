@@ -49,13 +49,13 @@ public:
   // children per tree node. Smaller values (minimum is 2) mean deeper
   // trees and more memory overhead. Larger values mean shallower
   // trees, less memory usage, but worse performance.
-  vtkSetClampMacro(BranchingFactor,int,2,VTK_LARGE_INTEGER);
-  vtkGetMacro(BranchingFactor,int);
+  vtkSetClampMacro(BranchingFactor,vtkIdType,2,VTK_LARGE_INTEGER);
+  vtkGetMacro(BranchingFactor,vtkIdType);
 
   // Description:
   // Set the maximum allowable level for the tree. 
-  vtkSetClampMacro(MaxLevel,int,1,VTK_LARGE_INTEGER);
-  vtkGetMacro(MaxLevel,int);
+  vtkSetClampMacro(MaxLevel,vtkIdType,1,VTK_LARGE_INTEGER);
+  vtkGetMacro(MaxLevel,vtkIdType);
 
   // Description:
   // Construct the scalar tree from the dataset provided.
@@ -69,7 +69,7 @@ public:
   // Description:
   // Fill a vector of cells that may contain a particular scalar
   // value. Automatically calls BuildTree.
-  void GetCellList(float scalarValue, std::vector<int> &v);
+  void GetCellList(double scalarValue, std::vector<vtkIdType> &v);
 
   // Description:
   // Free the allocated tree structure.
@@ -86,28 +86,28 @@ protected:
   vtkVisItScalarTree(const vtkVisItScalarTree&);  // Not implemented.
   void operator=(const vtkVisItScalarTree&); // Not implemented.
 
-  void RecursiveSearch(std::vector<int> &v, int index, int lev);
+  void RecursiveSearch(std::vector<vtkIdType> &v, vtkIdType index, vtkIdType lev);
 
   vtkTimeStamp BuildTime;
   
   vtkDataSet *DataSet;
-  int levels;
-  int bucketSize;
-  int nCells;
-  int leafOffset;
+  vtkIdType levels;
+  vtkIdType bucketSize;
+  vtkIdType nCells;
+  vtkIdType leafOffset;
 
-  int MaxLevel;
-  int BranchingFactor;
+  vtkIdType MaxLevel;
+  vtkIdType BranchingFactor;
 
   struct ScalarRange
   {
-      float min, max;
+      double min, max;
   };
   
   ScalarRange *tree;
-  int treeSize;
+  vtkIdType treeSize;
 
-  float searchValue;
+  double searchValue;
 };
 
 

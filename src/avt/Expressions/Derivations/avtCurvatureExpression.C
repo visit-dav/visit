@@ -42,13 +42,10 @@
 
 #include <avtCurvatureExpression.h>
 
-#include <vtkCellData.h>
 #include <vtkCurvatures.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
-#include <vtkRectilinearGrid.h>
 
 #include <ExpressionException.h>
 
@@ -107,6 +104,10 @@ avtCurvatureExpression::~avtCurvatureExpression()
 //    Jeremy Meredith, Thu Aug  7 14:33:06 EDT 2008
 //    Removed unused var.
 //
+//    Kathleen Biagas, Wed Apr 4 11:41:11 PDT 2012 
+//    Return the array created by vtkCurvatures, rather than converting it
+//    to float. 
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -137,24 +138,11 @@ avtCurvatureExpression::DeriveVariable(vtkDataSet *in_ds)
     vtkPolyData *out = curvatures->GetOutput();
     vtkDataArray *curvature = out->GetPointData()->GetArray(
                                doGauss ? "Gauss_Curvature" : "Mean_Curvature");
-    vtkFloatArray *flt_curvature = vtkFloatArray::New();
-    int npts = pd->GetNumberOfPoints();
-    flt_curvature->SetNumberOfTuples(npts);
-    if (curvature == NULL)
-    {
-        for (int i = 0 ; i < npts ; i++)
-            flt_curvature->SetTuple1(i, 0.);
-    }
-    else
-    {
-        for (int i = 0 ; i < npts ; i++)
-            flt_curvature->SetTuple1(i, curvature->GetTuple1(i));
-    }
-
+    curvature->Register(NULL);
     curvatures->Delete();
 
     // Calling function will clean up memory.
-    return flt_curvature;
+    return curvature;
 }
 
 

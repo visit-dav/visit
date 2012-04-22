@@ -50,14 +50,6 @@
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 
-#include <avtExtents.h>
-#include <avtExpressionFilter.h>
-#include <avtCommonDataFunctions.h>
-
-#include <avtExprNode.h>
-
-#include <DebugStream.h>
-#include <ExpressionException.h>
 #include <vtkVisItUtility.h>
 
 
@@ -115,7 +107,7 @@ avtCurveDomainExpression::ExecuteData(vtkDataSet *in_ds, int index,
     vtkDataArray *yval = in_ds->GetPointData()->GetArray(varnames[0]);
     vtkDataArray *xval = in_ds->GetPointData()->GetArray(varnames[1]);
 
-    int npts = xval->GetNumberOfTuples();
+    vtkIdType npts = xval->GetNumberOfTuples();
     vtkRectilinearGrid *rv = vtkVisItUtility::Create1DRGrid(npts, xval->GetDataType());
 
     vtkDataArray *newX = rv->GetXCoordinates();
@@ -125,7 +117,7 @@ avtCurveDomainExpression::ExecuteData(vtkDataSet *in_ds, int index,
     rv->GetPointData()->SetScalars(newY);
     newY->Delete();
 
-    for (int i = 0; i < npts; ++i)
+    for (vtkIdType i = 0; i < npts; ++i)
     {
         newX->SetTuple1(i, xval->GetTuple1(i));
         newY->SetTuple1(i, yval->GetTuple1(i));

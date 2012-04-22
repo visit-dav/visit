@@ -44,6 +44,7 @@
 #include <vtkCamera.h>
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
@@ -368,6 +369,9 @@ avtOpenGLLabelRenderer::ClearCharacterDisplayLists()
 //   SR mode label plots to work right, I corrected their value
 //   when calling glTranslate.
 //
+//   Brad Whitlock, Sat Apr 21 22:10:01 PDT 2012
+//   Switch to double.
+//
 // ****************************************************************************
 
 void
@@ -383,16 +387,16 @@ avtOpenGLLabelRenderer::DrawLabel(const double *screenPoint, const char *label)
     // but we need -1..1 (due to the glOrtho call in DrawLabels3D).
     // Avoid going all the way to -1 or 1 because these values are
     // how we identify "background" during compositing.
-    glTranslatef(screenPoint[0], screenPoint[1], .999-1.998*screenPoint[2]);
+    glTranslated(screenPoint[0], screenPoint[1], .999-1.998*screenPoint[2]);
 
     // Scale the text
-    glScalef(x_scale, y_scale, 1);    
+    glScaled(x_scale, y_scale, 1);    
 
     //
     // Compute the width of the label. Cache this??
     //
     int li = 0;
-    float width = 0;
+    double width = 0;
     const char *cptr = label;
     for(cptr = label; *cptr != '\0' && *cptr != '\n' && li < MAX_LABEL_SIZE;
         ++cptr, ++li)
@@ -401,21 +405,21 @@ avtOpenGLLabelRenderer::DrawLabel(const double *screenPoint, const char *label)
         width += arial_triangle_spacing[cIndex];
     }
 
-    float dx = 0.f;
-    float dy = -0.3f;
-    float off_y = (maxLabelRows > 1) ? (float(maxLabelRows) * 0.3f) : 0.f;
+    double dx = 0.;
+    double dy = -0.3;
+    double off_y = (maxLabelRows > 1) ? (double(maxLabelRows) * 0.3) : 0.;
 
     if(atts.GetHorizontalJustification() == LabelAttributes::HCenter)
-        dx = -width * 0.5f;
+        dx = -width * 0.5;
     else if(atts.GetHorizontalJustification() == LabelAttributes::Right)
         dx = -width;
 
     if(atts.GetVerticalJustification() == LabelAttributes::Top)
-        dy -= 0.5f;
+        dy -= 0.5;
     else if(atts.GetVerticalJustification() == LabelAttributes::Bottom)
-        dy += 0.5f;
+        dy += 0.5;
 
-    glTranslatef(dx, dy + off_y, 0);
+    glTranslated(dx, dy + off_y, 0);
 
     double total_translate = 0.;
     li = 0;
@@ -424,7 +428,7 @@ avtOpenGLLabelRenderer::DrawLabel(const double *screenPoint, const char *label)
         unsigned int cIndex = (unsigned int)(*cptr);
         if (cIndex == '\n')
         {
-            glTranslatef(-total_translate, 3*dy, 0);
+            glTranslated(-total_translate, 3*dy, 0);
             total_translate = 0.;
         }
         else
@@ -828,7 +832,7 @@ avtOpenGLLabelRenderer::DrawLabels2D()
 void
 avtOpenGLLabelRenderer::BeginSize2D(int index)
 {
-    float h = atts.GetTextHeight1();
+    double h = atts.GetTextHeight1();
 
     if(atts.GetVarType() == LabelAttributes::LABEL_VT_MESH && index == 0)
         h = atts.GetTextHeight2();
@@ -853,8 +857,8 @@ avtOpenGLLabelRenderer::BeginSize2D(int index)
     VTKRen->ViewportToNormalizedViewport(pt2[0], pt2[1]);
     VTKRen->NormalizedViewportToView(pt2[0], pt2[1], pt2[2]);
     VTKRen->ViewToWorld(pt2[0], pt2[1], pt2[2]);
-    float charWidth  = pt2[0] - pt1[0];
-    float charHeight = pt2[1] - pt1[1];
+    double charWidth  = pt2[0] - pt1[0];
+    double charHeight = pt2[1] - pt1[1];
     x_scale = charWidth;
     y_scale = charHeight;
 
@@ -939,7 +943,7 @@ avtOpenGLLabelRenderer::DrawAllLabels2D(bool drawNodeLabels, bool drawCellLabels
     //
     // Draw all the cell labels.
     //
-    vtkFloatArray *cellCenters = GetCellCenterArray();
+    vtkDoubleArray *cellCenters = GetCellCenterArray();
     if(drawCellLabels && cellCenters != 0)
     {
         const char *labelPtr = cellLabelsCacheMap[input];
@@ -987,6 +991,9 @@ avtOpenGLLabelRenderer::DrawAllLabels2D(bool drawNodeLabels, bool drawCellLabels
 //    I changed a char array to bool and removed the use of memset to avoid
 //    a problem where labels would not show up on versions built with xlC.
 //
+//    Brad Whitlock, Sat Apr 21 21:40:29 PDT 2012
+//    Favor double instead of float.
+//
 // ****************************************************************************
 
 void
@@ -1032,7 +1039,7 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
     //
     const double base = 2.;
     double bin_x_size, bin_y_size;
-    float textScale = atts.GetTextHeight1() / 0.02;
+    double textScale = atts.GetTextHeight1() / 0.02;
     if (win_aspect >= 1.0)
     {
         // The X axis is the long axis of the view window.
@@ -1061,8 +1068,8 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
     // Compute the offset to the first cell and the number of cells in
     // each dimension.
     //
-    float minMeshX = spatialExtents[0];
-    float minMeshY = spatialExtents[2];
+    double minMeshX = spatialExtents[0];
+    double minMeshY = spatialExtents[2];
     double bin_x_offset = floor ((lowerleft[0] - minMeshX) / bin_x_size) *
                     bin_x_size + minMeshX;
     double bin_y_offset = floor ((lowerleft[1] - minMeshY) / bin_y_size) *
@@ -1129,8 +1136,8 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
             // Which cell does the label fall within?
             //
             const double *labelVert = p->GetPoint(i);
-            float label_x = labelVert[0];
-            float label_y = labelVert[1];
+            double label_x = labelVert[0];
+            double label_y = labelVert[1];
             int bin_i = int((label_x - bin_x_offset) / bin_x_size);
             if (bin_i < 0 || bin_i >= bin_x_n)
                 continue; /*out of bounds*/
@@ -1158,7 +1165,7 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
     //
     // Iterate through the cell labels and draw them if they fit into bins.
     //
-    vtkFloatArray *cellCenters = GetCellCenterArray();
+    vtkDoubleArray *cellCenters = GetCellCenterArray();
     if(drawCellLabels && cellCenters != 0)
     {
         const char *labelPtr = cellLabelsCacheMap[input];
@@ -1171,8 +1178,8 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
             // Which bin does the label fall within?
             //
             const double *labelVert = cellCenters->GetTuple3(i);
-            float label_x = labelVert[0];
-            float label_y = labelVert[1];
+            double label_x = labelVert[0];
+            double label_y = labelVert[1];
             int bin_i = int((label_x - bin_x_offset) / bin_x_size);
             if (bin_i < 0 || bin_i >= bin_x_n)
                 continue; /*out of bounds*/
@@ -1229,29 +1236,33 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
 //   the problem with point locations and zooming since our new matrix is
 //   derived from information available in OpenGL instead of VTK.
 //
+//   Brad Whitlock, Fri Apr 20 15:27:39 PDT 2012
+//   Make arg1 template.
+//
 // ****************************************************************************
 
-float *
-avtOpenGLLabelRenderer::TransformPoints(const float *inputPoints,
+template <typename T>
+double *
+avtOpenGLLabelRenderer::TransformPoints(T inputPoints,
     const unsigned char *quantizedNormalIndices, int nPoints)
 {
-     float *xformedpts = new float[3 * nPoints];
+     double *xformedpts = new double[3 * nPoints];
 
-     float *destPoints = xformedpts;
-     const float *pts = inputPoints;
+     double *destPoints = xformedpts;
+     T pts = inputPoints;
      if(quantizedNormalIndices == 0)
      {
          //
          // We don't have information about the point to see whether it is
          // visible so we transform all points.
          //
+         double p1[4] = {0.,0.,0.,1.}; // set homogenous to 1.0
+         double p2[4] = {0.,0.,0.,1.};
          for (int j = 0; j < nPoints; ++j)
          {
-             double p1[4] = {0,0,0,1}; // set homogenous to 1.0
              p1[0] = *pts++;
              p1[1] = *pts++;
              p1[2] = *pts++;
-             double p2[4];
 
              matrix_mul_point(p2, pointXForm, p1);
              if (p2[3] != 0)
@@ -1267,15 +1278,15 @@ avtOpenGLLabelRenderer::TransformPoints(const float *inputPoints,
          // Here we have a bunch of quantized normals and if the normal
          // points away from the camera then we won't transform the point
          // since it would be wasteful.
+         double p1[4] = {0.,0.,0.,1.}; // set homogenous to 1.0
+         double p2[4] = {0.,0.,0.,1.};
          for (int j = 0; j < nPoints; ++j)
          {
              if(visiblePoint[quantizedNormalIndices[j]])
              {
-                 double p1[4] = {0,0,0,1}; // set homogenous to 1.0
                  p1[0] = *pts++;
                  p1[1] = *pts++;
                  p1[2] = *pts++;
-                 double p2[4];
 
                  matrix_mul_point(p2, pointXForm, p1);
                  if (p2[3] != 0)
@@ -1288,9 +1299,9 @@ avtOpenGLLabelRenderer::TransformPoints(const float *inputPoints,
              else
              {
                  // Store the origin for the point
-                 *destPoints++ = 0.f;
-                 *destPoints++ = 0.f;
-                 *destPoints++ = 0.f;
+                 *destPoints++ = 0.;
+                 *destPoints++ = 0.;
+                 *destPoints++ = 0.;
                  pts += 3;
              }
          }
@@ -1313,12 +1324,15 @@ avtOpenGLLabelRenderer::TransformPoints(const float *inputPoints,
 //   Brad Whitlock, Thu Dec 13 15:46:37 PST 2007
 //   Pass the type of the label in (whether it's for a node or zone).
 //
+//   Brad Whitlock, Sat Apr 21 21:32:21 PDT 2012
+//   Pass points as doubles.
+//
 // ****************************************************************************
 
 void
 avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
     quantizedNormalIndices, const char *currentLabel,
-    const float *transformedPoint, int n, int t)
+    const double *transformedPoint, vtkIdType n, int t)
 {
     if(zBufferMode == ZBUFFER_USE_PROVIDED)
     {
@@ -1327,12 +1341,12 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
             //
             // Here we only allow visible points in the bins.
             //
-            for(int i = 0; i < n; ++i)
+            for(vtkIdType i = 0; i < n; ++i)
             {
                 if(visiblePoint[quantizedNormalIndices[i]])
                 {
-                    int sx = int(float(zBufferWidth) * transformedPoint[0]);
-                    int sy = int(float(zBufferHeight) * transformedPoint[1]);
+                    int sx = int(double(zBufferWidth) * transformedPoint[0]);
+                    int sy = int(double(zBufferHeight) * transformedPoint[1]);
                     if(sx >= 0 && sx < zBufferWidth &&
                        sy >= 0 && sy < zBufferHeight &&
                        transformedPoint[2] <= zBuffer[sy * zBufferWidth + sx]+zTolerance)
@@ -1349,10 +1363,10 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
             //
             // Here we only allow visible points in the bins.
             //
-            for(int i = 0; i < n; ++i)
+            for(vtkIdType i = 0; i < n; ++i)
             {
-                int sx = int(float(zBufferWidth) * transformedPoint[0]);
-                int sy = int(float(zBufferHeight) * transformedPoint[1]);
+                int sx = int(double(zBufferWidth) * transformedPoint[0]);
+                int sy = int(double(zBufferHeight) * transformedPoint[1]);
                 if(sx >= 0 && sx < zBufferWidth &&
                    sy >= 0 && sy < zBufferHeight &&
                   transformedPoint[2] <= zBuffer[sy * zBufferWidth + sx]+zTolerance)
@@ -1371,16 +1385,16 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
             //
             // Here we only allow visible points in the bins.
             //
-            for(int i = 0; i < n; ++i)
+            for(vtkIdType i = 0; i < n; ++i)
             {
                 if(visiblePoint[quantizedNormalIndices[i]])
                 {
-                    int sx = int(float(zBufferWidth) * transformedPoint[0]);
-                    int sy = int(float(zBufferHeight) * transformedPoint[1]);
+                    int sx = int(double(zBufferWidth) * transformedPoint[0]);
+                    int sy = int(double(zBufferHeight) * transformedPoint[1]);
                     if(sx >= 0 && sx < zBufferWidth &&
                        sy >= 0 && sy < zBufferHeight)
                     {
-                        float Z = 0.;
+                        float Z = 0.f;
                         glReadPixels(sx, sy, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, 
                                      (GLvoid*)&Z);
                         if(transformedPoint[2] <= Z+zTolerance)
@@ -1396,14 +1410,14 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
             //
             // Here we only allow visible points in the bins.
             //
-            for(int i = 0; i < n; ++i)
+            for(vtkIdType i = 0; i < n; ++i)
             {
-                int sx = int(float(zBufferWidth) * transformedPoint[0]);
-                int sy = int(float(zBufferHeight) * transformedPoint[1]);
+                int sx = int(double(zBufferWidth) * transformedPoint[0]);
+                int sy = int(double(zBufferHeight) * transformedPoint[1]);
                 if(sx >= 0 && sx < zBufferWidth &&
                    sy >= 0 && sy < zBufferHeight)
                 {
-                    float Z = 0.;
+                    float Z = 0.f;
                     glReadPixels(sx, sy, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, 
                                  (GLvoid*)&Z);
                     if(transformedPoint[2] <= Z+zTolerance)
@@ -1421,7 +1435,7 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
             //
             // Here we only allow visible points in the bins.
             //
-            for(int i = 0; i < n; ++i)
+            for(vtkIdType i = 0; i < n; ++i)
             {
                 if(visiblePoint[quantizedNormalIndices[i]])
                     AllowLabelInBin(transformedPoint, currentLabel, t);
@@ -1434,7 +1448,7 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
             //
             // Here we only allow visible points in the bins.
             //
-            for(int i = 0; i < n; ++i)
+            for(vtkIdType i = 0; i < n; ++i)
             {
                 AllowLabelInBin(transformedPoint, currentLabel, t);
                 transformedPoint += 3;
@@ -1467,26 +1481,18 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
 //    Pass 0 to PopulateBinsHelper to indicate that we're inserting
 //    node labels.
 //
+//    Brad Whitlock, Sat Apr 21 21:32:44 PDT 2012
+//    Support double coordinates.
+//
 // ****************************************************************************
 
 void
 avtOpenGLLabelRenderer::PopulateBinsWithNodeLabels3D()
 {
+    const char *mName = "avtOpenGLLabelRenderer::PopulateBinsWithNodeLabels3D: ";
     vtkPoints *inputPoints = input->GetPoints();
 
-    if(!inputPoints->GetData()->IsA("vtkFloatArray"))
-    {
-        debug4 << "The points array is not vtkFloatArray!" << endl;
-        return;
-    }
-
     int total = visitTimer->StartTimer();
-
-    //
-    // Get the dataset's input points.
-    //
-    vtkFloatArray *fa = (vtkFloatArray *)inputPoints->GetData();
-    const float *pts = (const float *)fa->GetVoidPointer(0);
 
     //
     // See if the dataset has quantized node normals. If so, use them to
@@ -1505,17 +1511,37 @@ avtOpenGLLabelRenderer::PopulateBinsWithNodeLabels3D()
     //
     // Transform the points that face the camera.
     //
-    int stageTimer = visitTimer->StartTimer();
-    float *xformedPoints = TransformPoints(pts, quantizedNormalIndices,
-        inputPoints->GetNumberOfPoints());
-    visitTimer->StopTimer(stageTimer, "Transforming points");
+    double *xformedPoints = NULL;
+    if(inputPoints->GetDataType() == VTK_DOUBLE)
+    {
+        debug4 << mName << "TransformPoints with doubles" << endl;
+        int stageTimer = visitTimer->StartTimer();
+        xformedPoints = TransformPoints((const double *)inputPoints->GetVoidPointer(0),
+                                        quantizedNormalIndices,
+                                        inputPoints->GetNumberOfPoints());
+        visitTimer->StopTimer(stageTimer, "Transforming points");
+    }
+    else if(inputPoints->GetDataType() == VTK_FLOAT)
+    {
+        debug4 << mName << "TransformPoints with floats" << endl;
+        int stageTimer = visitTimer->StartTimer();
+        xformedPoints = TransformPoints((const float *)inputPoints->GetVoidPointer(0),
+                                        quantizedNormalIndices,
+                                        inputPoints->GetNumberOfPoints());
+        visitTimer->StopTimer(stageTimer, "Transforming points");
+    }
+    else
+    {
+        debug4 << mName << "TransformPoints not supported type" << endl;
+        return;
+    }
 
     //
     // Here we use the label cache.
     //
-    stageTimer = visitTimer->StartTimer();
-    int n = fa->GetNumberOfTuples();
-    float *transformedPoint = xformedPoints;
+    int stageTimer = visitTimer->StartTimer();
+    vtkIdType n = inputPoints->GetNumberOfPoints();
+    double *transformedPoint = xformedPoints;
     const char *currentLabel = nodeLabelsCacheMap[input];
     PopulateBinsHelper(quantizedNormalIndices, currentLabel, transformedPoint,
                        n, 0);
@@ -1549,6 +1575,9 @@ avtOpenGLLabelRenderer::PopulateBinsWithNodeLabels3D()
 //    Pass 1 to PopulateBinsHelper to indicate that we're inserting
 //    cell labels.
 //
+//    Brad Whitlock, Sat Apr 21 21:37:47 PDT 2012
+//    Change cell centers to double.
+//
 // ****************************************************************************
 
 void
@@ -1557,10 +1586,10 @@ avtOpenGLLabelRenderer::PopulateBinsWithCellLabels3D()
     //
     // Get the cell centers.
     //
-    vtkFloatArray *cellCenters = GetCellCenterArray();
+    vtkDoubleArray *cellCenters = GetCellCenterArray();
     if(cellCenters == 0)
         return;
-    const float *pts = (const float *)cellCenters->GetVoidPointer(0);
+    const double *pts = (const double *)cellCenters->GetVoidPointer(0);
 
     int total = visitTimer->StartTimer();
 
@@ -1582,7 +1611,7 @@ avtOpenGLLabelRenderer::PopulateBinsWithCellLabels3D()
     // Transform the points that face the camera.
     //
     int stageTimer = visitTimer->StartTimer();
-    float *xformedPoints = TransformPoints(pts, quantizedNormalIndices,
+    double *xformedPoints = TransformPoints(pts, quantizedNormalIndices,
         input->GetNumberOfCells());
     visitTimer->StopTimer(stageTimer, "Transforming points");
 
@@ -1590,8 +1619,8 @@ avtOpenGLLabelRenderer::PopulateBinsWithCellLabels3D()
     // Here we use the label cache.
     //
     stageTimer = visitTimer->StartTimer();
-    float *transformedPoint = xformedPoints;
-    int n = cellCenters->GetNumberOfTuples();
+    double *transformedPoint = xformedPoints;
+    vtkIdType n = cellCenters->GetNumberOfTuples();
     const char *currentLabel = cellLabelsCacheMap[input];
     PopulateBinsHelper(quantizedNormalIndices, currentLabel, transformedPoint,
                        n, 1);
@@ -1671,8 +1700,8 @@ avtOpenGLLabelRenderer::DrawLabels3D()
     debug4 << mName << "notSubsetOrMaterial = " << (notSubsetOrMaterial?"true":"false") << endl;
 
     // Select the text scale.
-    float node_x_scale, node_y_scale;
-    float cell_x_scale, cell_y_scale;
+    double node_x_scale, node_y_scale;
+    double cell_x_scale, cell_y_scale;
     if(atts.GetVarType() == LabelAttributes::LABEL_VT_MESH)
     {
         node_x_scale = atts.GetTextHeight2();
@@ -1744,6 +1773,8 @@ avtOpenGLLabelRenderer::DrawLabels3D()
 
     if(atts.GetRestrictNumberOfLabels())
     {
+        debug4 << mName << "Restricting number of labels" << endl;
+
         // 
         // Reset the label bins so we have to repopulate them with the labels,
         // taking into account the current view.
@@ -1792,6 +1823,7 @@ avtOpenGLLabelRenderer::DrawLabels3D()
         y_scale = node_y_scale;
         SetColor(0);
         int i;
+        debug4 << mName << "Drawing node labels" << endl;
         for(i = 0; i < n; ++i, ++info)
         {
             if(info->label != 0 && info->type == 0)
@@ -1805,6 +1837,7 @@ avtOpenGLLabelRenderer::DrawLabels3D()
         y_scale = cell_y_scale;
         SetColor(1);
         info = labelBins;
+        debug4 << mName << "Drawing cell labels" << endl;
         for(i = 0; i < n; ++i, ++info)
         {
             if(info->label != 0 && info->type == 1)
@@ -1815,6 +1848,8 @@ avtOpenGLLabelRenderer::DrawLabels3D()
     }
     else
     {
+        debug4 << mName << "Drawing all labels" << endl;
+
         //
         // Draw the labels without doing any kind of reduction.
         //
@@ -1824,6 +1859,7 @@ avtOpenGLLabelRenderer::DrawLabels3D()
             // The variable must have been a scalar, vector, tensor, etc.
             if(haveNodeData)
             {
+                debug4 << mName << "    Drawing all node labels" << endl;
                 x_scale = node_x_scale;
                 y_scale = node_y_scale;
                 SetColor(0);
@@ -1832,6 +1868,7 @@ avtOpenGLLabelRenderer::DrawLabels3D()
 
             if(haveCellData)
             {
+                debug4 << mName << "    Drawing all cell labels" << endl;
                 x_scale = cell_x_scale;
                 y_scale = cell_y_scale;
                 SetColor(1);
@@ -1843,6 +1880,7 @@ avtOpenGLLabelRenderer::DrawLabels3D()
             // The variable must have been a mesh, subset, or material.
             if(notSubsetOrMaterial && atts.GetShowNodes())
             {
+                debug4 << mName << "    Drawing all node# labels" << endl;
                 x_scale = node_x_scale;
                 y_scale = node_y_scale;
                 SetColor(0);
@@ -1851,6 +1889,7 @@ avtOpenGLLabelRenderer::DrawLabels3D()
 
             if(!notSubsetOrMaterial || atts.GetShowCells())
             {
+                debug4 << mName << "    Drawing all cell# labels" << endl;
                 x_scale = cell_x_scale;
                 y_scale = cell_y_scale;
                 SetColor(1);
@@ -1914,7 +1953,11 @@ avtOpenGLLabelRenderer::ClearZBuffer()
 // Modifications:
 //   Tom Fogal, Mon Aug  2 11:34:52 MDT 2010
 //   Replaced Mesa compile-time check with a runtime check.
-//   
+//
+//   Brad Whitlock, Sat Apr 21 22:51:33 PDT 2012
+//   Change the zTolerance calculation to match the updated method in the 
+//   mesh renderer.
+//
 // ****************************************************************************
 
 void
@@ -2010,23 +2053,10 @@ avtOpenGLLabelRenderer::InitializeZBuffer(bool haveNodeData,
                 visitTimer->StopTimer(getZ, "Reading back Z-buffer");
             }
         }
- 
-        //
-        // Set zTolerance using the projection matrix. We have to do this
-        // to make the depth testing play well with mesh plots, and wireframe
-        // surface plots, which shift the plot in Z to ensure that the lines
-        // are drawn in front of surface primitives.
-        //
-        // Examine the current projection matrix to compute a zShift 
-        // see documentation for glFrustum for what C, D and r are
-        //
-        float pmatrix[16];
-        glGetFloatv(GL_PROJECTION_MATRIX, pmatrix);
-        double C = pmatrix[10];
-        double D = pmatrix[14];
-        double r = (C-1.)/(C+1.);
-        double farPlane = D * (1.-r)/2.;
-        double nearPlane = farPlane / r;
+
+        // This code matches the code from avtOpenGLSurfaceAndWireframeRenderer.C
+        double farPlane = view.farPlane;
+        double nearPlane = view.nearPlane;
 
         // compute a shift based upon total range in Z
         double zShift1 = (farPlane - nearPlane) / 1.0e+4;
@@ -2035,9 +2065,10 @@ avtOpenGLLabelRenderer::InitializeZBuffer(bool haveNodeData,
         double zShift2 = nearPlane / 2.0;
 
         // use whatever shift is smaller
-        double ZT = double(zShift1 < zShift2 ? zShift1 : zShift2);
+        double zShift = zShift1 < zShift2 ? zShift1 : zShift2;
+
         // Multiply it by a little so the labels win over the lines.
-        zTolerance = float(ZT * 1.001);
+        zTolerance = float(zShift * 1.001);
     }
 
     if(zBufferMode == ZBUFFER_DONT_USE)
@@ -2101,7 +2132,7 @@ avtOpenGLLabelRenderer::DrawAllCellLabels3D()
     //
     // Look for the cell center array that the label filter calculated.
     //
-    vtkFloatArray *cellCenters = GetCellCenterArray();
+    vtkDoubleArray *cellCenters = GetCellCenterArray();
     if(cellCenters == 0)
         return;
 
@@ -2134,14 +2165,14 @@ avtOpenGLLabelRenderer::DrawAllCellLabels3D()
     // Use the provided z buffer to determine help determine whether a label
     // should be plotted.
     //
-#define ZBUFFER_PREDICATE_START float pix = 0.;\
+#define ZBUFFER_PREDICATE_START \
                           double sx = vprime[0];\
                           double sy = vprime[1];\
                           VTKRen->NormalizedDisplayToDisplay(sx, sy);\
                           int isx = int(sx);\
                           int isy = int(sy);\
-                          if(sx >= 0 && sx < zBufferWidth &&\
-                             sy >= 0 && sy < zBufferHeight &&\
+                          if(isx >= 0 && isx < zBufferWidth &&\
+                             isy >= 0 && isy < zBufferHeight &&\
                              vprime[2] <= zBuffer[isy*zBufferWidth+isx]+zTolerance)\
                           {
 #define ZBUFFER_PREDICATE_END }
@@ -2172,10 +2203,10 @@ avtOpenGLLabelRenderer::DrawAllCellLabels3D()
                           VTKRen->NormalizedDisplayToDisplay(sx, sy);\
                           int isx = int(sx);\
                           int isy = int(sy);\
-                          if(sx >= 0 && sx < zBufferWidth &&\
-                             sy >= 0 && sy < zBufferHeight)\
+                          if(isx >= 0 && isx < zBufferWidth &&\
+                             isy >= 0 && isy < zBufferHeight)\
                           {\
-                              glReadPixels(int(sx), int(sy), 1, 1,\
+                              glReadPixels(isx, isy, 1, 1,\
                                            GL_DEPTH_COMPONENT, GL_FLOAT,\
                                            (GLvoid*)&Z);\
                               if(vprime[2] <= Z+zTolerance)\
@@ -2253,6 +2284,7 @@ avtOpenGLLabelRenderer::DrawAllCellLabels3D()
 void
 avtOpenGLLabelRenderer::DrawAllNodeLabels3D()
 {
+    const char *mName = "avtOpenGLLabelRenderer::DrawAllNodeLabels3D: ";
     char *labelString = 0;
     char *&nodeLabelsCache     = nodeLabelsCacheMap[input];
     int    nodeLabelsCacheSize = nodeLabelsCacheSizeMap[input];
@@ -2283,18 +2315,19 @@ avtOpenGLLabelRenderer::DrawAllNodeLabels3D()
     //
     if(zBufferMode == ZBUFFER_USE_PROVIDED)
     {
-    //
-    // Use the provided z buffer to determine help determine whether a label
-    // should be plotted.
-    //
-#define ZBUFFER_PREDICATE_START float pix = 0.;\
+        debug4 << mName << "zBufferMode=ZBUFFER_USE_PROVIDED" << endl;
+        //
+        // Use the provided z buffer to determine help determine whether a label
+        // should be plotted.
+        //
+#define ZBUFFER_PREDICATE_START \
                           double sx = vprime[0];\
                           double sy = vprime[1];\
                           VTKRen->NormalizedDisplayToDisplay(sx, sy);\
                           int isx = int(sx);\
                           int isy = int(sy);\
-                          if(sx >= 0 && sx < zBufferWidth &&\
-                             sy >= 0 && sy < zBufferHeight &&\
+                          if(isx >= 0 && isx < zBufferWidth &&\
+                             isy >= 0 && isy < zBufferHeight &&\
                              vprime[2] <= zBuffer[isy*zBufferWidth+isx]+zTolerance)\
                           {
 #define ZBUFFER_PREDICATE_END }
@@ -2316,20 +2349,21 @@ avtOpenGLLabelRenderer::DrawAllNodeLabels3D()
     }
     else if(zBufferMode == ZBUFFER_QUERY)
     {
-    //
-    // Query the zbuffer one pixel at a time to avoid having to read it
-    // all at once.
-    //
+        debug4 << mName << "zBufferMode=ZBUFFER_QUERY" << endl;
+        //
+        // Query the zbuffer one pixel at a time to avoid having to read it
+        // all at once.
+        //
 #define ZBUFFER_PREDICATE_START float Z = 0.;\
                           double sx = vprime[0];\
                           double sy = vprime[1];\
                           VTKRen->NormalizedDisplayToDisplay(sx, sy);\
                           int isx = int(sx);\
                           int isy = int(sy);\
-                          if(sx >= 0 && sx < zBufferWidth &&\
-                             sy >= 0 && sy < zBufferHeight)\
+                          if(isx >= 0 && isx < zBufferWidth &&\
+                             isy >= 0 && isy < zBufferHeight)\
                           {\
-                              glReadPixels(int(sx), int(sy), 1, 1,\
+                              glReadPixels(isx, isy, 1, 1,\
                                            GL_DEPTH_COMPONENT, GL_FLOAT,\
                                            (GLvoid*)&Z);\
                               if(vprime[2] <= Z+zTolerance)\
@@ -2353,19 +2387,22 @@ avtOpenGLLabelRenderer::DrawAllNodeLabels3D()
     }
     else
     {
-    //
-    // Don't use the z buffer at all.
-    //
+        debug4 << mName << "zBufferMode=ZBUFFER_DONT_USE" << endl;
+        //
+        // Don't use the z buffer at all.
+        //
 #define ZBUFFER_PREDICATE_START
 #define ZBUFFER_PREDICATE_END
         if(quantizedNormalIndices == 0)
         {
+            debug4 << mName << "No quantized normals" << endl;
 #define VISIBLE_POINT_PREDICATE
 #include <NodeLabels_body.C>
 #undef VISIBLE_POINT_PREDICATE
         }
         else
         {
+            debug4 << mName << "Using quantized normals" << endl;
 #define VISIBLE_POINT_PREDICATE if(visiblePoint[quantizedNormalIndices[id]])
 #include <NodeLabels_body.C>
 #undef VISIBLE_POINT_PREDICATE

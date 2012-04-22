@@ -104,12 +104,12 @@ ThreeSliceAttributes_SetX(PyObject *self, PyObject *args)
 {
     ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the x in the object.
-    obj->data->SetX(fval);
+    obj->data->SetX(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -119,7 +119,7 @@ ThreeSliceAttributes_SetX(PyObject *self, PyObject *args)
 ThreeSliceAttributes_GetX(PyObject *self, PyObject *args)
 {
     ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetX()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetX());
     return retval;
 }
 
@@ -128,12 +128,12 @@ ThreeSliceAttributes_SetY(PyObject *self, PyObject *args)
 {
     ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the y in the object.
-    obj->data->SetY(fval);
+    obj->data->SetY(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -143,7 +143,7 @@ ThreeSliceAttributes_SetY(PyObject *self, PyObject *args)
 ThreeSliceAttributes_GetY(PyObject *self, PyObject *args)
 {
     ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetY()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetY());
     return retval;
 }
 
@@ -152,12 +152,12 @@ ThreeSliceAttributes_SetZ(PyObject *self, PyObject *args)
 {
     ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the z in the object.
-    obj->data->SetZ(fval);
+    obj->data->SetZ(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -167,7 +167,7 @@ ThreeSliceAttributes_SetZ(PyObject *self, PyObject *args)
 ThreeSliceAttributes_GetZ(PyObject *self, PyObject *args)
 {
     ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetZ()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetZ());
     return retval;
 }
 

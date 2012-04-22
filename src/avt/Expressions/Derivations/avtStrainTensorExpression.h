@@ -37,13 +37,12 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtStrainTensorExpression.h                         //
+//                       avtStrainTensorExpression.h                         //
 // ************************************************************************* //
 
 #ifndef AVT_STRAIN_TENSOR_FILTER_H
 #define AVT_STRAIN_TENSOR_FILTER_H
 
-#include <vtkDoubleArray.h>
 #include <avtMultipleInputExpressionFilter.h>
 
 

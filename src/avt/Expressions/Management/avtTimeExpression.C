@@ -44,7 +44,7 @@
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkUnsignedCharArray.h>
 
 
@@ -114,17 +114,17 @@ void
 avtTimeExpression::DoOperation(vtkDataArray *, vtkDataArray *out,
                                int ncomponents, int ntuples)
 {
-    float val;
+    double val;
     switch (mode)
     {
       case MODE_TIME:
-        val = (float) GetInput()->GetInfo().GetAttributes().GetTime();
+        val = (double) GetInput()->GetInfo().GetAttributes().GetTime();
         break;
       case MODE_CYCLE:
-        val = (float) GetInput()->GetInfo().GetAttributes().GetCycle();
+        val = (double) GetInput()->GetInfo().GetAttributes().GetCycle();
         break;
       case MODE_INDEX:
-        val = (float)(GetInput()->GetContractFromPreviousExecution()->GetDataRequest()->GetTimestep());
+        val = (double)(GetInput()->GetContractFromPreviousExecution()->GetDataRequest()->GetTimestep());
         break;
     }
     for (int i = 0 ; i < ntuples ; i++)
@@ -140,7 +140,7 @@ avtTimeExpression::DoOperation(vtkDataArray *, vtkDataArray *out,
 //      return uchar arrays.  The motivation for this is that most uchar arrays
 //      come from the conditional expression (if), which uses a uchar as the
 //      conditional, but really wants floats as the then- and else- variables.
-//      (ie if(gt(X, 2.), 1., 0.) -- the constant 1. should be a float
+//      (ie if(gt(X, 2.), 1., 0.) -- the constant 1. should be a double
 //      (or whatever X is, not a uchar).
 //
 //  Programmer: Hank Childs
@@ -153,7 +153,7 @@ avtTimeExpression::CreateArray(vtkDataArray *in)
 {
     if (in->GetDataType() == VTK_UNSIGNED_CHAR)
     {
-        return vtkFloatArray::New();
+        return vtkDoubleArray::New();
     }
 
     return in->NewInstance();

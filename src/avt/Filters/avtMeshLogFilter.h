@@ -88,12 +88,6 @@ class AVTFILTERS_API avtMeshLogFilter : public avtDataTreeIterator
     virtual void          UpdateDataObjectInfo(void);
 
   private:
-    void                  ScaleVal(float &v, bool invLog);
-    void                  ScaleVal(double &v, bool invLog);
-    void                  ScaleVal_log(float &v);
-    void                  ScaleVal_log(double &v);
-    void                  ScaleVal_invlog(float &v);
-    void                  ScaleVal_invlog(double &v);
 };
 
 

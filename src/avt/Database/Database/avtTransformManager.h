@@ -96,6 +96,10 @@ class avtSourceFromDatabase;
 //    Mark C. Miller, Mon Nov  9 10:40:34 PST 2009
 //    Changed interface to main transform method to operate on a single
 //    dataset instead of a dataset collection.
+//
+//    Brad Whitlock, Sun Apr 22 00:01:35 PDT 2012
+//    I added some methods that test for excess precision.
+//
 // ****************************************************************************
 
 class DATABASE_API avtTransformManager
@@ -118,6 +122,11 @@ class DATABASE_API avtTransformManager
     void                       ClearTimestep(int ts) { cache.ClearTimestep(ts); };
 
   private:
+    bool                       CoordinatesHaveExcessPrecision(vtkDataSet *ds,
+                                                              bool needNativePrecision) const;
+    bool                       DataHasExcessPrecision(vtkDataArray *da, 
+                                                      bool needNativePrecision) const;
+
     vtkDataSet                *NativeToFloat(const avtDatabaseMetaData *const md,
                                              const avtDataRequest_p &spec,
                                              vtkDataSet *ds, int dom);

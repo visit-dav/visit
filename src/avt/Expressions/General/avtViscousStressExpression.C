@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtViscousStressExpression.C                          //
+//                     avtViscousStressExpression.C                          //
 // ************************************************************************* //
 
 #include <avtViscousStressExpression.h>
@@ -48,9 +48,7 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkIdList.h>
-#include <vtkMath.h>
 #include <vtkPointData.h>
 
 #include <ExpressionException.h>
@@ -116,8 +114,9 @@ avtViscousStressExpression::DeriveVariable(vtkDataSet *in_ds)
 
         if(topo_dim != 2)
         {
-          EXCEPTION2(ExpressionException, outputVariableName, "The viscous stress expression "
-                   "currently only supports 2D datasets.");
+          EXCEPTION2(ExpressionException, outputVariableName, 
+                     "The viscous stress expression "
+                     "currently only supports 2D datasets.");
         }
     }
 
@@ -137,24 +136,24 @@ avtViscousStressExpression::DeriveVariable(vtkDataSet *in_ds)
 
     if( vel == NULL || vel->GetNumberOfComponents() != 3 )
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "The viscous stress expression "
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "The viscous stress expression "
                    "was not passed a valid velocity vector.");
     }
 
     // get number of cells
-    int ncells = in_ds->GetNumberOfCells();
+    vtkIdType ncells = in_ds->GetNumberOfCells();
 
     // create the result dataset
-    vtkFloatArray *res_tensor = vtkFloatArray::New();
+    vtkDataArray *res_tensor = vel->NewInstance();
     res_tensor->SetNumberOfComponents(9);
     res_tensor->SetNumberOfTuples(ncells);
 
-    // loop index and tensor values
-    int i=0;
+    // tensor values
     double res_vals[9];
 
     // calculate tensor for each cell
-    for( i = 0; i < ncells; i++)
+    for( vtkIdType i = 0; i < ncells; i++)
     {
         if(topo_dim == 2)
         {CalculateVStress2D(in_ds,vel,i,rz_mesh,res_vals);}
@@ -191,8 +190,6 @@ avtViscousStressExpression::CalculateVStress2D(vtkDataSet *ds,
                                            bool rz_mesh,
                                            double *vstress)
 {
-    // loop index
-    int i;
     // point locs and velocities
     double px[4], py[4], vx[4], vy[4];
     // gradient terms
@@ -221,15 +218,15 @@ avtViscousStressExpression::CalculateVStress2D(vtkDataSet *ds,
     vtkCell   *cell = ds->GetCell(idx);
     vtkIdList *cids = cell->GetPointIds();
 
-    int ids[4];
+    vtkIdType ids[4];
     // get ids that match the gradient template
     ids[3] = cids->GetId(0);
     ids[0] = cids->GetId(1);
     ids[1] = cids->GetId(2);
     ids[2] = cids->GetId(3);
 
-    int id = 0;
-    for( i = 0; i< 4; i++)
+    vtkIdType id = 0;
+    for( vtkIdType i = 0; i< 4; i++)
     {
         id = ids[i];
         pt_val = ds->GetPoint(id);

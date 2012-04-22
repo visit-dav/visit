@@ -194,8 +194,8 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                              "have a different number of cells for domain %d."
                              " The cell counts are %d and %d.",
                              in1->GetDataRepresentation().GetDomain(),
-                             in_ds1->GetNumberOfCells(),
-                             in_ds2->GetNumberOfCells());
+                             static_cast<int>(in_ds1->GetNumberOfCells()),
+                             static_cast<int>(in_ds2->GetNumberOfCells()));
             }
             else
             {
@@ -208,8 +208,8 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                              " have been removed (and the simulation is "
                              "Eulerian).",
                              in1->GetDataRepresentation().GetDomain(),
-                             in_ds1->GetNumberOfCells(), 
-                             in_ds2->GetNumberOfCells());
+                             static_cast<int>(in_ds1->GetNumberOfCells()), 
+                             static_cast<int>(in_ds2->GetNumberOfCells()));
             }
             EXCEPTION1(InvalidMergeException, msg);
         }
@@ -223,8 +223,8 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                              "have a different number of points for domain %d."
                              "  The point counts are %d and %d.", 
                          in1->GetDataRepresentation().GetDomain(),
-                         in_ds1->GetNumberOfPoints(), 
-                         in_ds2->GetNumberOfPoints());
+                         static_cast<int>(in_ds1->GetNumberOfPoints()), 
+                         static_cast<int>(in_ds2->GetNumberOfPoints()));
             }
             else
             {
@@ -237,8 +237,8 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                              " have been removed (and the simulation is "
                              "Eulerian).",
                          in1->GetDataRepresentation().GetDomain(),
-                         in_ds1->GetNumberOfPoints(), 
-                         in_ds2->GetNumberOfPoints());
+                         static_cast<int>(in_ds1->GetNumberOfPoints()), 
+                         static_cast<int>(in_ds2->GetNumberOfPoints()));
             }
             EXCEPTION1(InvalidMergeException, msg);
         }

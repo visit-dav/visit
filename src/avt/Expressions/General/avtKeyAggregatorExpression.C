@@ -43,29 +43,14 @@
 
 #include <math.h>
 
-#include <avtExprNode.h>
 #include <avtParallel.h>
 
-#include <vtkCell.h>
 #include <vtkCellData.h>
-#include <vtkCellType.h>
-
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
-
-#include <vtkPointData.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkUnstructuredGridRelevantPointsFilter.h>
-#include <vtkUnstructuredGridWriter.h>
-#include <vtkUnstructuredGridReader.h>
-#include <vtkVisItUtility.h>
+#include <vtkDoubleArray.h>
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
-#include <ImproperUseException.h>
-#include <InvalidVariableException.h>
-#include <TimingsManager.h>
 #include <Utility.h>
 
 #ifdef PARALLEL
@@ -289,7 +274,7 @@ avtKeyAggregatorExpression::Execute()
 
     debug2 << "avtKeyAggregatorExpression:: # of keys = " << num_keys << endl;
 
-    vector<float> key_results;
+    vector<double> key_results;
     Aggregate(key_arrays,val_arrays,num_keys,num_val_comps,key_results);
 
     // update progress
@@ -298,13 +283,13 @@ avtKeyAggregatorExpression::Execute()
 
 #ifdef PARALLEL
     // Sum key'd results across all processors
-    // NOTE: even though this code would compile & work fine for the serial case,
-    // it contains an extra copy we don't want to execute.
+    // NOTE: even though this code would compile & work fine for the serial 
+    // case, it contains an extra copy we don't want to execute.
     int result_len = num_keys*num_val_comps;
-    vector<float> sum_results(result_len);
-    SumFloatArrayAcrossAllProcessors(&key_results[0],&sum_results[0],result_len);
+    vector<double> sum_results(result_len);
+    SumDoubleArrayAcrossAllProcessors(&key_results[0],&sum_results[0],result_len);
     // copy s
-    memcpy(&key_results[0],&sum_results[0],result_len * sizeof(float));
+    memcpy(&key_results[0],&sum_results[0],result_len * sizeof(double));
 #endif 
 
     // array to hold output sets
@@ -312,13 +297,13 @@ avtKeyAggregatorExpression::Execute()
 
     // vectors to hold result sets and aggregate value
     vector<vtkDataSet*>  result_sets(nsets);
-    vector<vtkFloatArray*> result_arrays(nsets);
+    vector<vtkDataArray*> result_arrays(nsets);
 
     // prepare output arrays
     for(int i = 0; i < nsets ; i++)
     {
         // create result array for this data set.
-        vtkFloatArray *res_array = CreateResultArray(key_arrays[i],
+        vtkDoubleArray *res_array = CreateResultArray(key_arrays[i],
                                                      key_results,
                                                      num_val_comps);
         // create a shallow copy of the current data set to add to output
@@ -391,19 +376,19 @@ int
 avtKeyAggregatorExpression::FindMaxKey(vector<vtkDataArray*> &key_arrays)
 {
     // get the # of data sets we need to scan.
-    int nsets = key_arrays.size();
+    size_t nsets = key_arrays.size();
 
     // init our result
     int result = 0;
 
     // over all data sets
-    for(int i=0; i < nsets; i++)
+    for(size_t i=0; i < nsets; i++)
     {
         // get the current key array
         vtkDataArray *keys = key_arrays[i];
         // get the number of cells in the current key array
-        int ncells = keys->GetNumberOfTuples();
-        for(int j=0; j < ncells; j++)
+        vtkIdType ncells = keys->GetNumberOfTuples();
+        for(vtkIdType j=0; j < ncells; j++)
         {
            // compare current cell's key with max
            int key = (int)keys->GetTuple1(j);
@@ -441,16 +426,16 @@ avtKeyAggregatorExpression::Aggregate(vector<vtkDataArray*> &key_arrays,
                                       vector<vtkDataArray*> &val_arrays,
                                       int num_keys,
                                       int num_val_comps,
-                                      vector<float> &key_results)
+                                      vector<double> &key_results)
 {
     // get the # of data sets we are dealing with.
-    int nsets = key_arrays.size();
+    size_t nsets = key_arrays.size();
 
     // prepare key results array
-    key_results = vector<float>(num_keys * num_val_comps,0.0f);
+    key_results = vector<double>(num_keys * num_val_comps,0.0);
 
     // loop over input data sets.
-    for(int i=0; i < nsets; i++)
+    for(size_t i=0; i < nsets; i++)
     {
         // get the keys & values arrays for the 
         // current data set.
@@ -458,16 +443,16 @@ avtKeyAggregatorExpression::Aggregate(vector<vtkDataArray*> &key_arrays,
         vtkDataArray *vals = val_arrays[i];
 
         // get the # of cells to scan
-        int ncells = keys->GetNumberOfTuples();
+        vtkIdType ncells = keys->GetNumberOfTuples();
 
-        for(int j=0; j < ncells; j++)
+        for(vtkIdType j=0; j < ncells; j++)
         {
             // get this cell's key
             int   key = (int)keys->GetTuple1(j);
 
             // get this cell's values
             double *val_tuple = vals->GetTuple(j);
-            float  *res_tuple = &key_results[key * num_val_comps];
+            double  *res_tuple = &key_results[key * num_val_comps];
             for(int k=0;k < num_val_comps; k++)
                 res_tuple[k] += val_tuple[k];
         }
@@ -497,15 +482,15 @@ avtKeyAggregatorExpression::Aggregate(vector<vtkDataArray*> &key_arrays,
 //
 // ****************************************************************************
 
-vtkFloatArray *
+vtkDoubleArray *
 avtKeyAggregatorExpression::CreateResultArray(vtkDataArray  *key_array,
-                                              vector<float> &key_results,
+                                              vector<double> &key_results,
                                               int num_val_comps)
 {
     // get the # of cells
-    int ncells = key_array->GetNumberOfTuples();
+    vtkIdType ncells = key_array->GetNumberOfTuples();
     // create the result array
-    vtkFloatArray *res_array = vtkFloatArray::New();
+    vtkDoubleArray *res_array = vtkDoubleArray::New();
     // set name of the result variable
     res_array->SetName(outputVariableName);
     // set the proper # of components
@@ -514,12 +499,12 @@ avtKeyAggregatorExpression::CreateResultArray(vtkDataArray  *key_array,
     res_array->SetNumberOfTuples(ncells);
 
     // loop over cells.
-    for(int i=0;i<ncells;i++)
+    for(vtkIdType i=0;i<ncells;i++)
     {
         // get the key for this cell
         int key = (int)key_array->GetTuple1(i);
         // get pointer to tuple data for this key
-        float *key_tuple_ptr = &key_results[key * num_val_comps];
+        double *key_tuple_ptr = &key_results[key * num_val_comps];
         // set its result to the key's aggregate value.
         res_array->SetTupleValue(i,key_tuple_ptr);
     }

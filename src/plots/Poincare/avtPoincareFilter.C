@@ -3516,6 +3516,8 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
 //  Creation:   Wed Feb 25 09:52:11 EST 2009
 //
 //  Modifications:
+//    Brad Whitlock, Fri Apr 20 16:03:09 PDT 2012
+//    Use SetPoint so we can have multiple point precisions.
 //
 // ****************************************************************************
 
@@ -3548,8 +3550,6 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
     points->SetNumberOfPoints(dims[0]*dims[1]);
     scalars->Allocate(dims[0]*dims[1]);
     
-    float *points_ptr = (float *) points->GetVoidPointer(0);
-
     // Determine if the winding group order matches the point
     // ordering. This is only needed when building surfaces.
     Vector intra = nodes[0][   0][1] - nodes[0][0][0];
@@ -3593,9 +3593,9 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
             {
                 unsigned int n1 = jj * dims[0] + i;
 
-                points_ptr[n1*3+0] = nodes[p][k][i].x;
-                points_ptr[n1*3+1] = nodes[p][k][i].y;
-                points_ptr[n1*3+2] = nodes[p][k][i].z;
+                points->SetPoint(n1, nodes[p][k][i].x,
+                                     nodes[p][k][i].y,
+                                     nodes[p][k][i].z);
 
                 if( color == DATA_PointOrder )
                     color_value = (i*toroidalWindings+j)*nplanes + p;
@@ -3625,10 +3625,9 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
             unsigned int i = nnodes;
 
             unsigned int n1 = jj * dims[0] + i;
-            
-            points_ptr[n1*3+0] = nodes[p][k][0].x;
-            points_ptr[n1*3+1] = nodes[p][k][0].y;
-            points_ptr[n1*3+2] = nodes[p][k][0].z;
+            points->SetPoint(n1, nodes[p][k][0].x,
+                                 nodes[p][k][0].y,
+                                 nodes[p][k][0].z);
             
             if( color == DATA_PointOrder )
               color_value = (i*toroidalWindings+j)*nplanes + p;
@@ -3690,10 +3689,10 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
         ii = i;
 
         unsigned int n1 = jj * dims[0] + ii;
-        
-        points_ptr[n1*3+0] = nodes[p][k][i].x;
-        points_ptr[n1*3+1] = nodes[p][k][i].y;
-        points_ptr[n1*3+2] = nodes[p][k][i].z;
+
+        points->SetPoint(n1, nodes[p][k][i].x,
+                             nodes[p][k][i].y,
+                             nodes[p][k][i].z);
 
         if( color == DATA_PointOrder )
             color_value = (i*toroidalWindings+j)*nplanes + p;
@@ -3713,10 +3712,10 @@ avtPoincareFilter::drawSurface( avtDataTree *dt,
 
     unsigned int i = nnodes;
     unsigned int n1 = jj * dims[0] + i;
-    
-    points_ptr[n1*3+0] = nodes[p][k][0].x;
-    points_ptr[n1*3+1] = nodes[p][k][0].y;
-    points_ptr[n1*3+2] = nodes[p][k][0].z;
+
+    points->SetPoint(n1, nodes[p][k][0].x,
+                         nodes[p][k][0].y,
+                         nodes[p][k][0].z);
     
     if( color == DATA_PointOrder )
       color_value = (i*toroidalWindings+j)*nplanes + p;

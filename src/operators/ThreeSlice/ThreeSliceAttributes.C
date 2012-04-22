@@ -508,11 +508,11 @@ ThreeSliceAttributes::SetFromNode(DataNode *parentNode)
 
     DataNode *node;
     if((node = searchNode->GetNode("x")) != 0)
-        SetX(node->AsFloat());
+        SetX(node->AsDouble());
     if((node = searchNode->GetNode("y")) != 0)
-        SetY(node->AsFloat());
+        SetY(node->AsDouble());
     if((node = searchNode->GetNode("z")) != 0)
-        SetZ(node->AsFloat());
+        SetZ(node->AsDouble());
     if((node = searchNode->GetNode("interactive")) != 0)
         SetInteractive(node->AsBool());
 }
@@ -522,21 +522,21 @@ ThreeSliceAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-ThreeSliceAttributes::SetX(float x_)
+ThreeSliceAttributes::SetX(double x_)
 {
     x = x_;
     Select(ID_x, (void *)&x);
 }
 
 void
-ThreeSliceAttributes::SetY(float y_)
+ThreeSliceAttributes::SetY(double y_)
 {
     y = y_;
     Select(ID_y, (void *)&y);
 }
 
 void
-ThreeSliceAttributes::SetZ(float z_)
+ThreeSliceAttributes::SetZ(double z_)
 {
     z = z_;
     Select(ID_z, (void *)&z);
@@ -553,19 +553,19 @@ ThreeSliceAttributes::SetInteractive(bool interactive_)
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
-float
+double
 ThreeSliceAttributes::GetX() const
 {
     return x;
 }
 
-float
+double
 ThreeSliceAttributes::GetY() const
 {
     return y;
 }
 
-float
+double
 ThreeSliceAttributes::GetZ() const
 {
     return z;
@@ -629,9 +629,9 @@ ThreeSliceAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_x:           return FieldType_float;
-    case ID_y:           return FieldType_float;
-    case ID_z:           return FieldType_float;
+    case ID_x:           return FieldType_double;
+    case ID_y:           return FieldType_double;
+    case ID_z:           return FieldType_double;
     case ID_interactive: return FieldType_bool;
     default:  return FieldType_unknown;
     }
@@ -657,9 +657,9 @@ ThreeSliceAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_x:           return "float";
-    case ID_y:           return "float";
-    case ID_z:           return "float";
+    case ID_x:           return "double";
+    case ID_y:           return "double";
+    case ID_z:           return "double";
     case ID_interactive: return "bool";
     default:  return "invalid index";
     }

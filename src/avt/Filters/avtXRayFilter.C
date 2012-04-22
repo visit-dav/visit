@@ -71,6 +71,7 @@
 #include <vtkVisItCellLocator.h>
 #include <vtkVisItUtility.h>
 
+#include <avtAccessor.h>
 #include <avtCallback.h>
 #include <avtDatasetExaminer.h>
 #include <avtIntervalTree.h>
@@ -371,8 +372,8 @@ avtXRayFilter::UpdateDataObjectInfo(void)
 // ****************************************************************************
 
 void
-avtXRayFilter::SetImageProperties(float *pos, float  theta, float  phi,
-    float  dx, float  dy, int nx, int ny)
+avtXRayFilter::SetImageProperties(double *pos, double  theta, double  phi,
+    double  dx, double  dy, int nx, int ny)
 {
     double cosT = cos(theta);
     double sinT = sin(theta);
@@ -453,6 +454,10 @@ avtXRayFilter::SetDivideEmisByAbsorb(bool flag)
 //    and the number of pixels processed in a pass was divisible by the
 //    number of processors.
 //
+//    Kathleen Biagas, Thu Mar 29 07:48:13 PDT 2012
+//    Moved some code to ImageStripExecute, call a templatized version of the
+//    method for double-precision support.
+//
 // ****************************************************************************
 
 void
@@ -492,7 +497,7 @@ avtXRayFilter::Execute(void)
     iFragment = 0;
     nImageFragments = numPasses;
     imageFragmentSizes = new int[nImageFragments];
-    imageFragments = new float*[nImageFragments];
+    imageFragments = new vtkDataArray *[nImageFragments];
 
     //
     // Get the input data tree to obtain the data sets.
@@ -529,23 +534,10 @@ avtXRayFilter::Execute(void)
 
         imageFragmentSizes[iPass] = pixelsForThisProc;
 
-        int nPts, *lineIds;
-        double *dists;
-        float **cellData;
-        ImageStripExecute(totalNodes, dataSets, nPts, lineIds, dists, cellData);
-
-        int pixelOffset = (iPass == (numPasses - 1)) ?
-            PAR_Rank() * pixelsForLastPassFirstProc :
-            PAR_Rank() * pixelsForFirstPassFirstProc;
-
-        IntegrateLines(pixelOffset, nPts, lineIds, dists,
-            cellData[0], cellData[1]);
-
-        delete [] lineIds;
-        delete [] dists;
-        delete [] cellData[0];
-        delete [] cellData[1];
-        delete [] cellData;
+        if (cellDataType == VTK_FLOAT)
+            ImageStripExecute<float>(totalNodes, dataSets, iPass, numPasses);
+        else // if (cellDataType == VTK_DOUBLE)
+            ImageStripExecute<double>(totalNodes, dataSets, iPass, numPasses);
 
         int extraMsg = 100;
         int totalProg = numPasses * extraMsg;
@@ -564,8 +556,15 @@ avtXRayFilter::Execute(void)
         // Collect the images.
         //
         t1 = visitTimer->StartTimer();
-        float *image = CollectImages(0, nImageFragments, imageFragmentSizes,
-            imageFragments);
+        vtkDataArray *image = NULL;
+        if (cellDataType == VTK_DOUBLE)
+        {
+            CollectImages<double>(0, image);
+        }
+        else
+        {
+            CollectImages<float>(0, image);
+        }
         visitTimer->StopTimer(t1, "avtXRayImageQuery::CollectImages");
 
         //
@@ -573,7 +572,7 @@ avtXRayFilter::Execute(void)
         // unified one.
         //
         for (int i = 0; i < nImageFragments; i++)
-            delete [] imageFragments[i];
+            imageFragments[i]->Delete();
         if (PAR_Rank() == 0)
             nImageFragments = 1;
         else
@@ -592,22 +591,9 @@ avtXRayFilter::Execute(void)
 
         for (int iBin = 0; iBin < numBins; iBin++)
         {
-            vtkFloatArray *imageArray = vtkFloatArray::New();
+            vtkDataArray *imageArray;
+            FillImageArray(iBin, imageArray);
             imageArray->SetName("Image");
-            imageArray->SetNumberOfComponents(1);
-            imageArray->SetNumberOfTuples(imageSize[0]*imageSize[1]);
-            float *ibuf = imageArray->GetPointer(0);
-
-            for (int i = 0; i < nImageFragments; i++)
-            {
-                float *currentImageFragment = imageFragments[i];
-                for (int j = 0; j < imageFragmentSizes[i]; j++)
-                {
-                    *ibuf = currentImageFragment[j*numBins+iBin];
-                    ibuf++;
-                }
-            }
-
             vtkDataSet *outDataSet = vtkPolyData::New();
             outDataSet->GetPointData()->AddArray(imageArray);
             outDataSet->GetPointData()->CopyFieldOn("Image");
@@ -639,7 +625,7 @@ avtXRayFilter::Execute(void)
     // Clean up temporary arrays.
     //
     for (int i = 0; i < nImageFragments; i++)
-        delete [] imageFragments[i];
+        imageFragments[i]->Delete();
     delete [] imageFragmentSizes;
     delete [] imageFragments;
 
@@ -657,11 +643,17 @@ avtXRayFilter::Execute(void)
 //  Programmer: Eric Brugger
 //  Creation:   December 28, 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Mar 29 07:48:13 PDT 2012
+//    Templatized this method, moved a bit of code out of Execute to here,
+//    for double-precision support.
+//
 // ****************************************************************************
 
+template <typename T>
 void
 avtXRayFilter::ImageStripExecute(int nDataSets, vtkDataSet **dataSets,
-    int &nPts, int *&outLineIds, double *&outDists, float **&outCellData)
+    int iPass, int numPasses)
 {
     //
     // Calculate the lines for this image strip.
@@ -674,7 +666,7 @@ avtXRayFilter::ImageStripExecute(int nDataSets, vtkDataSet **dataSets,
     int *nLinesPerDataset = new int[nDataSets];
     vector<double> *dists = new vector<double>[nDataSets];
     vector<int> *lineIds = new vector<int>[nDataSets];
-    float ***cellData = new float**[nDataSets];
+    T ***cellData = new T**[nDataSets];
 
     int t1 = visitTimer->StartTimer();
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
@@ -683,6 +675,7 @@ avtXRayFilter::ImageStripExecute(int nDataSets, vtkDataSet **dataSets,
             CylindricalExecute(dataSets[currentNode],
                 nLinesPerDataset[currentNode], dists[currentNode],
                 lineIds[currentNode], cellData[currentNode]);
+        visitTimer->StopTimer(t1, "avtXRayFilter::CylindricalExecute");
     }
     else
     {
@@ -690,8 +683,8 @@ avtXRayFilter::ImageStripExecute(int nDataSets, vtkDataSet **dataSets,
             CartesianExecute(dataSets[currentNode],
                 nLinesPerDataset[currentNode], dists[currentNode],
                 lineIds[currentNode], cellData[currentNode]);
+        visitTimer->StopTimer(t1, "avtXRayFilter::CartesianExecute");
     }
-    visitTimer->StopTimer(t1, "avtXRayFilter::CartesianExecute");
 
     //
     // Redistribute the line segments to processors that own them.
@@ -704,9 +697,21 @@ avtXRayFilter::ImageStripExecute(int nDataSets, vtkDataSet **dataSets,
         nComponentsPerCellArray = dataSets[0]->GetCellData()->
             GetArray(absVarName.c_str())->GetNumberOfComponents();
     }
+  
+    int nPts;
+    int *outLineIds;
+    double *outDists;
+    T **outCellData;
     RedistributeLines(nDataSets, nLinesPerDataset, dists, lineIds,
         nComponentsPerCellArray, cellData, nPts, outLineIds, outDists,
         outCellData);
+
+    int pixelOffset = (iPass == (numPasses - 1)) ?
+        PAR_Rank() * pixelsForLastPassFirstProc :
+        PAR_Rank() * pixelsForFirstPassFirstProc;
+
+    IntegrateLines(pixelOffset, nPts, outLineIds, outDists,
+        outCellData[0], outCellData[1]);
 
     visitTimer->StopTimer(t1, "avtXRayFilter::RedistributeLines");
 
@@ -718,15 +723,21 @@ avtXRayFilter::ImageStripExecute(int nDataSets, vtkDataSet **dataSets,
     delete [] lineIds;
     for (int i = 0; i < nDataSets; i++)
     {
-        float **cellDataI = cellData[i];
+        T **cellDataI = cellData[i];
         for (int j = 0; j < 2; j++)
         {
-            float *vals = cellDataI[j];
+            T *vals = cellDataI[j];
             delete [] vals;
         }
         delete [] cellData[i];
     }
     delete [] cellData;
+
+    delete [] outDists;
+    delete [] outLineIds;
+    delete [] outCellData[0];
+    delete [] outCellData[1];
+    delete [] outCellData;
 }
 
 
@@ -830,11 +841,63 @@ avtXRayFilter::PostExecute(void)
 //    of line segments representing the intersections of a collection of lines
 //    with the cells in the dataset.
 //
+//    Kathleen Biagas, Thu Mar 29 07:48:13 PDT 2012
+//    Templatized this method, for double-precision support.  Added macros for
+//    retrieving cell points based on data type. (Fast paths for float/double).
+//
 // ****************************************************************************
 
+#define avtXRayFilter_GetCellPointsTypeMacro(ptype, n) \
+{ \
+    ptype *pts = static_cast<ptype *>(points->GetVoidPointer(0)); \
+    for (int i = 0; i < 3; ++i) \
+    { \
+        p0[i]=pts[ids[0]*3+i]; \
+        p1[i]=pts[ids[1]*3+i]; \
+        p2[i]=pts[ids[2]*3+i]; \
+        p3[i]=pts[ids[3]*3+i]; \
+        if (n > 4) \
+            p4[i]=pts[ids[4]*3+i]; \
+        if (n > 5) \
+            p5[i]=pts[ids[5]*3+i]; \
+        if (n > 6) \
+            p6[i]=pts[ids[6]*3+i]; \
+        if (n > 7) \
+            p7[i]=pts[ids[7]*3+i]; \
+    } \
+}
+
+#define avtXRayFilter_GetCellPointsMacro(n) \
+{ \
+    if (points->GetDataType() == VTK_FLOAT) \
+    { \
+        avtXRayFilter_GetCellPointsTypeMacro(float, n); \
+    } \
+    else  if (points->GetDataType() == VTK_DOUBLE) \
+    { \
+        avtXRayFilter_GetCellPointsTypeMacro(double, n); \
+    } \
+    else \
+    { \
+        points->GetPoint(ids[0], p0); \
+        points->GetPoint(ids[1], p1); \
+        points->GetPoint(ids[2], p2); \
+        points->GetPoint(ids[3], p3); \
+        if (n > 4) \
+            points->GetPoint(ids[4], p4); \
+        if (n > 5) \
+            points->GetPoint(ids[5], p5); \
+        if (n > 6) \
+            points->GetPoint(ids[6], p6); \
+        if (n > 7) \
+            points->GetPoint(ids[7], p7); \
+    } \
+}
+
+template <typename T>
 void
 avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
-    vector<double> &dist, vector<int> &line_id, float **&cellData)
+    vector<double> &dist, vector<int> &line_id, T **&cellData)
 {
     int  i, j;
 
@@ -849,9 +912,9 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
         nLinesPerDataset = 0;
 
         int nCellArrays = ds->GetCellData()->GetNumberOfArrays();
-        cellData = new float*[nCellArrays];
+        cellData = new T*[nCellArrays];
         for (int i = 0; i < nCellArrays; i++)
-            cellData[i] = new float[0];
+            cellData[i] = new T[0];
 
         return;
     }
@@ -873,6 +936,14 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
     // Loop over the lines.
     //
     vector<int> cells_matched;
+    double p0[3]={0., 0., 0.};
+    double p1[3]={0., 0., 0.};
+    double p2[3]={0., 0., 0.};
+    double p3[3]={0., 0., 0.};
+    double p4[3]={0., 0., 0.};
+    double p5[3]={0., 0., 0.};
+    double p6[3]={0., 0., 0.};
+    double p7[3]={0., 0., 0.};
 
     if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
@@ -886,8 +957,6 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
         zdims[0] = ndims[0] - 1;
         zdims[1] = ndims[1] - 1;
         zdims[2] = ndims[2] - 1;
-
-        float *pts = (float *) points->GetVoidPointer(0);
 
         int nx = ndims[0];
         int ny = ndims[1];
@@ -947,15 +1016,8 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 ids[5] = idx + 1;
                 ids[6] = idx + 1 + nx;
                 ids[7] = idx + nx;
-        
-                double p0[3]={pts[ids[0]*3],pts[ids[0]*3+1],pts[ids[0]*3+2]};
-                double p1[3]={pts[ids[1]*3],pts[ids[1]*3+1],pts[ids[1]*3+2]};
-                double p2[3]={pts[ids[2]*3],pts[ids[2]*3+1],pts[ids[2]*3+2]};
-                double p3[3]={pts[ids[3]*3],pts[ids[3]*3+1],pts[ids[3]*3+2]};
-                double p4[3]={pts[ids[4]*3],pts[ids[4]*3+1],pts[ids[4]*3+2]};
-                double p5[3]={pts[ids[5]*3],pts[ids[5]*3+1],pts[ids[5]*3+2]};
-                double p6[3]={pts[ids[6]*3],pts[ids[6]*3+1],pts[ids[6]*3+2]};
-                double p7[3]={pts[ids[7]*3],pts[ids[7]*3+1],pts[ids[7]*3+2]};
+       
+                avtXRayFilter_GetCellPointsMacro(8); 
 
                 double t;
                 int nInter = 0;
@@ -988,8 +1050,6 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
     {
         vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
         vtkPoints *points = ugrid->GetPoints();
-
-        float *pts = (float *) points->GetVoidPointer(0);
 
         vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
         vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
@@ -1040,14 +1100,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 vtkIdType *ids = &(nl[cl[iCell]+1]);
                 if (ct[iCell] == VTK_HEXAHEDRON)
                 {
-                    double p0[3]={pts[ids[0]*3],pts[ids[0]*3+1],pts[ids[0]*3+2]};
-                    double p1[3]={pts[ids[1]*3],pts[ids[1]*3+1],pts[ids[1]*3+2]};
-                    double p2[3]={pts[ids[2]*3],pts[ids[2]*3+1],pts[ids[2]*3+2]};
-                    double p3[3]={pts[ids[3]*3],pts[ids[3]*3+1],pts[ids[3]*3+2]};
-                    double p4[3]={pts[ids[4]*3],pts[ids[4]*3+1],pts[ids[4]*3+2]};
-                    double p5[3]={pts[ids[5]*3],pts[ids[5]*3+1],pts[ids[5]*3+2]};
-                    double p6[3]={pts[ids[6]*3],pts[ids[6]*3+1],pts[ids[6]*3+2]};
-                    double p7[3]={pts[ids[7]*3],pts[ids[7]*3+1],pts[ids[7]*3+2]};
+                    avtXRayFilter_GetCellPointsMacro(8); 
 
                     if (IntersectLineWithQuad(p0, p1, p2, p3, pt1, dir, t))
                         inter[nInter++] = t;
@@ -1064,12 +1117,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 }
                 else if (ct[iCell] == VTK_WEDGE)
                 {
-                    double p0[3]={pts[ids[0]*3],pts[ids[0]*3+1],pts[ids[0]*3+2]};
-                    double p1[3]={pts[ids[1]*3],pts[ids[1]*3+1],pts[ids[1]*3+2]};
-                    double p2[3]={pts[ids[2]*3],pts[ids[2]*3+1],pts[ids[2]*3+2]};
-                    double p3[3]={pts[ids[3]*3],pts[ids[3]*3+1],pts[ids[3]*3+2]};
-                    double p4[3]={pts[ids[4]*3],pts[ids[4]*3+1],pts[ids[4]*3+2]};
-                    double p5[3]={pts[ids[5]*3],pts[ids[5]*3+1],pts[ids[5]*3+2]};
+                    avtXRayFilter_GetCellPointsMacro(6); 
 
                     if (IntersectLineWithTri(p0, p1, p2, pt1, dir, t))
                         inter[nInter++] = t;
@@ -1084,11 +1132,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 }
                 else if (ct[iCell] == VTK_PYRAMID)
                 {
-                    double p0[3]={pts[ids[0]*3],pts[ids[0]*3+1],pts[ids[0]*3+2]};
-                    double p1[3]={pts[ids[1]*3],pts[ids[1]*3+1],pts[ids[1]*3+2]};
-                    double p2[3]={pts[ids[2]*3],pts[ids[2]*3+1],pts[ids[2]*3+2]};
-                    double p3[3]={pts[ids[3]*3],pts[ids[3]*3+1],pts[ids[3]*3+2]};
-                    double p4[3]={pts[ids[4]*3],pts[ids[4]*3+1],pts[ids[4]*3+2]};
+                    avtXRayFilter_GetCellPointsMacro(5); 
 
                     if (IntersectLineWithQuad(p0, p1, p2, p3, pt1, dir, t))
                         inter[nInter++] = t;
@@ -1103,10 +1147,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 }
                 else if (ct[iCell] == VTK_TETRA)
                 {
-                    double p0[3]={pts[ids[0]*3],pts[ids[0]*3+1],pts[ids[0]*3+2]};
-                    double p1[3]={pts[ids[1]*3],pts[ids[1]*3+1],pts[ids[1]*3+2]};
-                    double p2[3]={pts[ids[2]*3],pts[ids[2]*3+1],pts[ids[2]*3+2]};
-                    double p3[3]={pts[ids[3]*3],pts[ids[3]*3+1],pts[ids[3]*3+2]};
+                    avtXRayFilter_GetCellPointsMacro(4); 
 
                     if (IntersectLineWithTri(p0, p1, p2, pt1, dir, t))
                         inter[nInter++] = t;
@@ -1299,27 +1340,37 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
     vtkDataArray *da2=ds->GetCellData()->GetArray(emisVarName.c_str());
     dataArrays[0] = da1;
     dataArrays[1] = da2;
-    cellData = new float*[2];
+    cellData = new T*[2];
+    
     for (int i = 0; i < 2; i++)
     {
         vtkDataArray *da=dataArrays[i];
         int nComponents = da->GetNumberOfComponents();
         int nTuples = da->GetNumberOfTuples();
 
+        T *outVals = new T[cells_matched.size()*nComponents];
         if (da->GetDataType() == VTK_FLOAT)
         {
             float *inVals = vtkFloatArray::SafeDownCast(da)->GetPointer(0);
-            float *outVals = new float[cells_matched.size()*nComponents];
             int ndx = 0;
             for (int j = 0; j < cells_matched.size(); j++)
                 for (int k = 0; k < nComponents; k++)
-                    outVals[ndx++] = inVals[cells_matched[j]*nComponents+k];
-
-            cellData[i] = outVals;
+                    outVals[ndx++] = (T)inVals[cells_matched[j]*nComponents+k];
         }
+        else // if (da->GetDataType() == VTK_DOUBLE)
+        {
+            double *inVals = vtkDoubleArray::SafeDownCast(da)->GetPointer(0);
+            int ndx = 0;
+            for (int j = 0; j < cells_matched.size(); j++)
+                for (int k = 0; k < nComponents; k++)
+                    outVals[ndx++] = (T)inVals[cells_matched[j]*nComponents+k];
+        }
+        cellData[i] = outVals;
     }
     visitTimer->StopTimer(t1, "avtXRayFilter::CopyCellData");
 }
+
+
 
 
 // ****************************************************************************
@@ -1340,11 +1391,15 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 //    of line segments representing the intersections of a collection of lines
 //    with the cells in the dataset.
 //
+//    Kathleen Biagas, Thu Mar 29 07:48:13 PDT 2012
+//    Templatized this method, for double-precision support.
+//
 // ****************************************************************************
 
+template <typename T>
 void
 avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
-    vector<double> &dist, vector<int> &line_id, float **&cellData)
+    vector<double> &dist, vector<int> &line_id, T **&cellData)
 {
     int  i, j;
 
@@ -1464,24 +1519,31 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
     vtkDataArray *da2=ds->GetCellData()->GetArray(emisVarName.c_str());
     dataArrays[0] = da1;
     dataArrays[1] = da2;
-    cellData = new float*[2];
+    cellData = new T*[2];
     for (int i = 0; i < 2; i++)
     {
         vtkDataArray *da=dataArrays[i];
         int nComponents = da->GetNumberOfComponents();
         int nTuples = da->GetNumberOfTuples();
+        T *outVals = new T[cells_matched.size()*nComponents];
 
         if (da->GetDataType() == VTK_FLOAT)
         {
             float *inVals = vtkFloatArray::SafeDownCast(da)->GetPointer(0);
-            float *outVals = new float[cells_matched.size()*nComponents];
             int ndx = 0;
             for (int j = 0; j < cells_matched.size(); j++)
                 for (int k = 0; k < nComponents; k++)
-                    outVals[ndx++] = inVals[cells_matched[j]*nComponents+k];
-
-            cellData[i] = outVals;
+                    outVals[ndx++] = (T)inVals[cells_matched[j]*nComponents+k];
         }
+        else //  (da->GetDataType() == VTK_DOUBLE)
+        {
+            double *inVals = vtkDoubleArray::SafeDownCast(da)->GetPointer(0);
+            int ndx = 0;
+            for (int j = 0; j < cells_matched.size(); j++)
+                for (int k = 0; k < nComponents; k++)
+                    outVals[ndx++] = (T)inVals[cells_matched[j]*nComponents+k];
+        }
+        cellData[i] = outVals;
     }
 }
 
@@ -1520,13 +1582,17 @@ AssignToProc(int val, int linesPerProc)
 //    and the number of pixels processed in a pass was divisible by the
 //    number of processors.
 //
+//    Kathleen Biagas, Thu Mar 29 07:48:13 PDT 2012
+//    Templatized this method, for double-precision support.
+//
 // ****************************************************************************
 
+template <typename T>
 void 
 avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     vector<double> *dists, vector<int> *line_ids,
-    int nComponentsPerCellArray, float ***cellData,
-    int &nPts, int *&outLineIds, double *&outDists, float **&outCellData)
+    int nComponentsPerCellArray, T ***cellData,
+    int &nPts, int *&outLineIds, double *&outDists, T **&outCellData)
 {
 #ifdef PARALLEL
     //
@@ -1555,9 +1621,9 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     //
     int *sendLineIds = new int[nLinesSend];
     double *sendDists = new double[2*nLinesSend];
-    float **sendCellData = new float*[2];
+    T **sendCellData = new T*[2];
     for (int i = 0; i < 2; i++)
-        sendCellData[i] = new float[nComponentsPerCellArray*nLinesSend];
+        sendCellData[i] = new T[nComponentsPerCellArray*nLinesSend];
     
     //
     // Fill the send buffers.
@@ -1571,7 +1637,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     {
         vector<int> inLineIds = line_ids[i];
         vector<double> inDists = dists[i];
-        float **inCellData = cellData[i];
+        T **inCellData = cellData[i];
         for (int j = 0; j < nLinesPerDataset[i]; j++)
         {
             int iProc = AssignToProc(inLineIds[j], linesForThisPassFirstProc);
@@ -1581,8 +1647,8 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
             sendDists[iOffset*2+1] = inDists[j*2+1];
             for (int k = 0; k < 2; k++)
             {
-                float *inVar = inCellData[k];
-                float *sendVar = sendCellData[k];
+                T *inVar = inCellData[k];
+                T *sendVar = sendCellData[k];
                 int nComps = nComponentsPerCellArray;
                 for (int l = 0; l < nComps; l++)
                     sendVar[iOffset*nComps+l] = inVar[j*nComps+l];
@@ -1624,12 +1690,12 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     for (int i = 0; i < nLinesRecv*2; i++)
         outDists[i] = 0.;
 
-    outCellData = new float*[2];
-    outCellData[0] = new float[nLinesRecv*nComponentsPerCellArrayRecv];
-    outCellData[1] = new float[nLinesRecv*nComponentsPerCellArrayRecv];
+    outCellData = new T*[2];
+    outCellData[0] = new T[nLinesRecv*nComponentsPerCellArrayRecv];
+    outCellData[1] = new T[nLinesRecv*nComponentsPerCellArrayRecv];
     for (int j = 0; j < 2; j++)
     {
-        float *buf = outCellData[j];
+        T *buf = outCellData[j];
         for (int i = 0; i < nLinesRecv*nComponentsPerCellArrayRecv; i++)
             buf[i] = 0.;
     }
@@ -1706,9 +1772,18 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
         // Exchange the cell data.
         //
 
-        MPI_Alltoallv(sendCellData[i], sendCounts, sendOffsets, MPI_FLOAT,
-                      outCellData[i], recvCounts, recvOffsets, MPI_FLOAT,
-                      VISIT_MPI_COMM);
+        if (cellDataType == VTK_FLOAT)
+        {
+            MPI_Alltoallv(sendCellData[i], sendCounts, sendOffsets, MPI_FLOAT,
+                          outCellData[i], recvCounts, recvOffsets, MPI_FLOAT,
+                          VISIT_MPI_COMM);
+        }
+        else // if (cellDataType == VTK_DOUBLE)
+        {
+            MPI_Alltoallv(sendCellData[i], sendCounts, sendOffsets, MPI_DOUBLE,
+                          outCellData[i], recvCounts, recvOffsets, MPI_DOUBLE,
+                          VISIT_MPI_COMM);
+        }
 
         //
         // Restore the send and receive counts.
@@ -1748,9 +1823,9 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 
     outDists = new double[nLinesTotal*2];
 
-    outCellData = new float*[2];
-    outCellData[0] = new float[nLinesTotal*nComponentsPerCellArray];
-    outCellData[1] = new float[nLinesTotal*nComponentsPerCellArray];
+    outCellData = new T*[2];
+    outCellData[0] = new T[nLinesTotal*nComponentsPerCellArray];
+    outCellData[1] = new T[nLinesTotal*nComponentsPerCellArray];
 
     int iLines = 0;
     int iPoints = 0;
@@ -1768,12 +1843,12 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
             outDists[iPoints++] = inDists[j*2+1];
         }
 
-        float **inCellData = cellData[i];
+        T **inCellData = cellData[i];
         for (int j = 0; j < 2; j++)
         {
             int iCell = iCellStart[j];
-            float *inVar = inCellData[j];
-            float *outVar = outCellData[j];
+            T *inVar = inCellData[j];
+            T *outVar = outCellData[j];
             for (int k = 0; k < nLinesPerDataset[i]*nComponentsPerCellArray; k++)
                 outVar[iCell++] = inVar[k];
             iCellStart[j] = iCell;
@@ -1909,6 +1984,7 @@ void
 avtXRayFilter::CheckDataSets(int nDataSets, vtkDataSet **dataSets)
 {
     int numBins;
+    cellDataType = -1;
     for (int i = 0; i < nDataSets; i++)
     {
         vtkDataArray *abs  = dataSets[i]->GetCellData()->GetArray(absVarName.c_str());
@@ -1964,13 +2040,24 @@ avtXRayFilter::CheckDataSets(int nDataSets, vtkDataSet **dataSets)
             }
         }
 
-        if (abs->GetDataType() != VTK_FLOAT ||
-            emis->GetDataType() != VTK_FLOAT)
+        if ((abs->GetDataType() != VTK_FLOAT &&
+             abs->GetDataType() != VTK_DOUBLE) ||
+            (emis->GetDataType() != VTK_FLOAT &&
+             emis->GetDataType() != VTK_DOUBLE))
         {
             EXCEPTION1(VisItException, "The absorption and emission must "
                                        "be float data.");
         }
+        if (abs->GetDataType() == VTK_DOUBLE ||
+            emis->GetDataType() == VTK_DOUBLE) 
+            cellDataType = VTK_DOUBLE;
+        else
+            cellDataType = VTK_FLOAT;
     }
+
+    // Currently ony VTK_FLOAT and VTK_DOUBLE are supported, so this
+    // works.  If all data types are allowed, this would not work.
+    cellDataType = UnifyMaximumValue(cellDataType);
 }
 
 
@@ -2080,11 +2167,15 @@ SortSegments(int nLines, int *lineId, double *dists)
 //    of line segments representing the intersections of a collection of lines
 //    with the cells in the dataset.
 //
+//    Kathleen Biagas, Thu Mar 29 07:48:13 PDT 2012
+//    Templatized this method, for double-precision support.
+//
 // ****************************************************************************
 
+template <typename T>
 void
 avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
-    double *dist, float *absorbtivity, float *emissivity)
+    double *dist, T *absorbtivity, T *emissivity)
 {
     //
     // Determine the order to do the compositing.
@@ -2104,15 +2195,28 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     }
 
     int prevLineId = -1;
+    if (cellDataType == VTK_FLOAT)
+        imageFragments[iFragment] = vtkFloatArray::New();
+    else
+        imageFragments[iFragment] = vtkDoubleArray::New();
 
-    imageFragments[iFragment] = new float[imageFragmentSizes[iFragment]*numBins];
-    float *currentImageFragment = imageFragments[iFragment];
-    for (int j = 0; j < imageFragmentSizes[iFragment]*numBins; j++)
-        currentImageFragment[j] = 0.;
+    imageFragments[iFragment]->SetNumberOfTuples(imageFragmentSizes[iFragment]*numBins);
+
+
+    avtDirectAccessor<T> currentImageFragment(imageFragments[iFragment]);
+    //float *currentImageFragment = imageFragments[iFragment];
+    while (currentImageFragment.Iterating())
+    {
+        currentImageFragment.SetTuple1( 0.);
+        currentImageFragment++;
+    }
+
+
     iFragment++;
 
     for (int i = 0; i < nPts; i++)
     {
+
         int iPt = segmentOrder[i];
 
         if (lineId[iPt] != prevLineId)
@@ -2120,8 +2224,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
             if (prevLineId != -1)
             {
                 for (int j = 0; j < numBins; j++)
-                    currentImageFragment[(prevLineId-pixelOffset)*numBins+j] =
-                        radBins[j];
+                    currentImageFragment.SetTuple1((prevLineId-pixelOffset)*numBins+j, radBins[j]);
             }
 
             for (int j = 0; j < numBins; j++)
@@ -2132,8 +2235,8 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
         }
 
         double segLength = dist[iPt*2+1] - dist[iPt*2];
-        float *a = &(absorbtivity[iPt*numBins]);
-        float *e = &(emissivity[iPt*numBins]);
+        T *a = &(absorbtivity[iPt*numBins]);
+        T *e = &(emissivity[iPt*numBins]);
 
         if (divideEmisByAbsorb)
         {
@@ -2156,8 +2259,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     if (prevLineId != -1)
     {
         for (int j = 0; j < numBins; j++)
-            currentImageFragment[(prevLineId-pixelOffset)*numBins+j] =
-                radBins[j];
+            currentImageFragment.SetTuple1((prevLineId-pixelOffset)*numBins+j, radBins[j]);
     }
 
     delete [] segmentOrder;
@@ -2185,9 +2287,9 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 //
 // ****************************************************************************
 
-float *
-avtXRayFilter::CollectImages(int root, int nImageFragments,
-    int *imageFragmentSizes, float **imageFragments)
+template <typename T>
+void
+avtXRayFilter::CollectImages(int root, vtkDataArray *image)
 {
 #ifdef PARALLEL
     int nProcs = PAR_Size();
@@ -2199,13 +2301,14 @@ avtXRayFilter::CollectImages(int root, int nImageFragments,
     for (int i = 0; i < nImageFragments; i++)
         sendCount += imageFragmentSizes[i]*numBins;
 
-    float *sendBuf = new float[sendCount];
+    T *sendBuf = new T[sendCount];
     for (int i = 0, ndx = 0; i < nImageFragments; i++)
     {
-        float *currentImageFragment = imageFragments[i];
-        for (int j = 0; j < imageFragmentSizes[i]*numBins; j++)
+        avtDirectAccessor<T> currentImageFragment(imageFragments[i]);
+        while (currentImageFragment.Iterating())
         {
-            sendBuf[ndx] = currentImageFragment[j];
+            sendBuf[ndx] = currentImageFragment.GetTuple1();
+            currentImageFragment++;
             ndx++;
         }
     }
@@ -2229,38 +2332,50 @@ avtXRayFilter::CollectImages(int root, int nImageFragments,
         pixelsForLastPassLastProc) * numBins;
     displs[nProcs-1] = displs[nProcs-1-1] + recvCounts[nProcs-1-1];
 
-    float *recvBuf = NULL;
+    T *recvBuf = NULL;
     if (PAR_Rank() == 0)
     {
-        recvBuf = new float[numPixels * numBins];
+        recvBuf = new T[numPixels * numBins];
     }
 
-    MPI_Gatherv(sendBuf, sendCount, MPI_FLOAT, recvBuf, recvCounts,
-        displs, MPI_FLOAT, root, VISIT_MPI_COMM);
+    if (cellDataType == VTK_FLOAT)
+    {
+        MPI_Gatherv(sendBuf, sendCount, MPI_FLOAT, recvBuf, recvCounts,
+            displs, MPI_FLOAT, root, VISIT_MPI_COMM);
+    }
+    else // if (cellDataType == VTK_DOUBLE)
+    {
+        MPI_Gatherv(sendBuf, sendCount, MPI_DOUBLE, recvBuf, recvCounts,
+            displs, MPI_DOUBLE, root, VISIT_MPI_COMM);
+    }
 
     if (PAR_Rank() == 0)
     {
         //
         // Reorganize the receive buffer in the correct order.
         //
-        float *image = new float[numPixels * numBins];
-        int ii = 0;
+        if (cellDataType == VTK_FLOAT)
+            image = vtkFloatArray::New();
+        else
+            image = vtkDoubleArray::New();
+        image->SetNumberOfTuples(numPixels * numBins);
+        avtDirectAccessor<T> imageA(image);
         for (int i = 0; i < nImageFragments-1; i++)
         {
             for (int j = 0; j < nProcs-1; j++)
             {
                 for (int k = 0; k < pixelsForFirstPassFirstProc*numBins; k++)
                 {
-                    image[ii] = recvBuf[displs[j]];
-                    ii++;
+                    imageA.SetTuple1(recvBuf[displs[j]]);
+                    imageA++;
                     displs[j]++;
                 }
             }
             int j = nProcs - 1;
             for (int k = 0; k < pixelsForFirstPassLastProc*numBins; k++)
             {
-                image[ii] = recvBuf[displs[j]];
-                ii++;
+                imageA.SetTuple1(recvBuf[displs[j]]);
+                imageA++;
                 displs[j]++;
             }
         }
@@ -2269,29 +2384,27 @@ avtXRayFilter::CollectImages(int root, int nImageFragments,
         {
             for (int k = 0; k < pixelsForLastPassFirstProc*numBins; k++)
             {
-                image[ii] = recvBuf[displs[j]];
-                ii++;
+                imageA.SetTuple1(recvBuf[displs[j]]);
+                imageA++;
                 displs[j]++;
             }
         }
         int j = nProcs - 1;
         for (int k = 0; k < pixelsForLastPassLastProc*numBins; k++)
         {
-            image[ii] = recvBuf[displs[j]];
-            ii++;
+            imageA.SetTuple1(recvBuf[displs[j]]);
+            imageA++;
             displs[j]++;
         }
 
         delete [] recvBuf;
-
-        return image;
     }
     else
     {
-        return 0;
+        image = NULL ;
     }
 #else
-    return 0;
+    image = NULL;
 #endif
 }
 
@@ -2504,4 +2617,41 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
     }
 
     return 0;
+}
+
+template <class Accessor>
+void
+FillImageArray_Impl(int iBin, int nB, int nIF, int *sizes, vtkDataArray **iF, vtkDataArray *&iA)
+{
+    Accessor ibuf(iA);
+    ibuf.InitTraversal();
+    for (int i = 0; i < nIF; ++i)
+    {
+        Accessor currentImageFragment(iF[i]);
+        for (int j = 0; j < sizes[i]; j++)
+        {
+            ibuf.SetTuple1(currentImageFragment.GetTuple1(j*nB+iBin));
+            ibuf++;
+        }
+    }
+    
+}
+
+void
+avtXRayFilter::FillImageArray(int iBin,  vtkDataArray *&imageArray)
+{
+    if (cellDataType == VTK_FLOAT)
+    {
+        imageArray = vtkFloatArray::New();
+        imageArray->SetNumberOfTuples(imageSize[0]*imageSize[1]);
+        FillImageArray_Impl<avtDirectAccessor<float> >(iBin, numBins, 
+            nImageFragments, imageFragmentSizes, imageFragments, imageArray);
+    }
+    else // if (cellDataType == VTK_DOUBLE)
+    {
+        imageArray = vtkDoubleArray::New();
+        imageArray->SetNumberOfTuples(imageSize[0]*imageSize[1]);
+        FillImageArray_Impl<avtDirectAccessor<double> >(iBin, numBins,
+            nImageFragments, imageFragmentSizes, imageFragments, imageArray);
+    }
 }

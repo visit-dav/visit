@@ -42,9 +42,8 @@
 
 #include <avtLocalizedCompactnessExpression.h>
 
-#include <vtkCellData.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 
@@ -105,6 +104,10 @@ avtLocalizedCompactnessExpression::~avtLocalizedCompactnessExpression()
 //    Hank Childs, Fri Sep 15 16:55:45 PDT 2006
 //    Add support for XY meshes (as opposed to RZ meshes).
 //
+//    Kathleen Biagas, Wed Apr 4 11:56:10 PDT 2012
+//    Set output array's data type to same as input array. Use double for 
+//    calculations throughout.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -143,14 +146,14 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
     }
 
     int nOut = dims[0]*dims[1]*dims[2];
-    vtkFloatArray *arr = vtkFloatArray::New();
+    vtkDataArray *arr = var->NewInstance();
     arr->SetNumberOfTuples(nOut);
 
     vtkDataArray *xd = rgrid->GetXCoordinates();
     vtkDataArray *yd = rgrid->GetYCoordinates();
     vtkDataArray *zd = rgrid->GetZCoordinates();
 
-    float radius = 0.1;
+    double radius = 0.1;
     if (dims[2] <= 1)
     {
         for (i = 0 ; i < dims[0] ; i++)
@@ -160,18 +163,18 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
                 // For each point (i, j), find the bounding box in terms of
                 // logical dimensions for the radius.
                 int iMin = -1, iMax = -1;
-                float x = xd->GetTuple1(i);
+                double x = xd->GetTuple1(i);
                 for (ii = 0 ; ii < dims[0]; ii++)
                 {
                     if (iMin < 0)
                     {
-                        float x2 = xd->GetTuple1(ii);
+                        double x2 = xd->GetTuple1(ii);
                         if (x2 > x-radius)
                             iMin = ii;
                     }
                     if (iMax < 0)
                     {
-                        float x2 = xd->GetTuple1(ii);
+                        double x2 = xd->GetTuple1(ii);
                         if (x2 > x+radius)
                             iMax = ii;
                     }
@@ -179,18 +182,18 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
                 iMin = (iMin < 0 ? 0 : iMin);
                 iMax = (iMax < 0 ? dims[0] : iMax);
                 int jMin = -1, jMax = -1;
-                float y = yd->GetTuple1(j);
+                double y = yd->GetTuple1(j);
                 for (jj = 0 ; jj < dims[1]; jj++)
                 {
                     if (jMin < 0)
                     {
-                        float y2 = yd->GetTuple1(jj);
+                        double y2 = yd->GetTuple1(jj);
                         if (y2 > y-radius)
                             jMin = jj;
                     }
                     if (jMax < 0)
                     {
-                        float y2 = yd->GetTuple1(jj);
+                        double y2 = yd->GetTuple1(jj);
                         if (y2 > y+radius)
                             jMax = jj;
                     }
@@ -200,14 +203,14 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
 
                 // Now that we have found the neighborhood, iterate over
                 // that neighborhood.
-                float totalWeight = 0.;
-                float weightInside = 0.;
+                double totalWeight = 0.;
+                double weightInside = 0.;
                 for (ii = iMin ; ii < iMax ; ii++)
                     for (jj = jMin ; jj < jMax ; jj++)
                     {
-                        float x2 = xd->GetTuple1(ii);
-                        float y2 = yd->GetTuple1(jj);
-                        float rad_squared = (x2-x)*(x2-x) + (y2-y)*(y2-y);
+                        double x2 = xd->GetTuple1(ii);
+                        double y2 = yd->GetTuple1(jj);
+                        double rad_squared = (x2-x)*(x2-x) + (y2-y)*(y2-y);
                         if (rad_squared > radius*radius)
                             continue;
                         totalWeight += (isRZ ? y2 : 1.);
@@ -216,7 +219,7 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
                             weightInside += (isRZ ? y2 : 1.);
                     }
                 int idx = j*dims[0] + i;
-                float compactness = weightInside / totalWeight;
+                double compactness = weightInside / totalWeight;
                 arr->SetTuple1(idx, compactness);
             }
         }
@@ -232,18 +235,18 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
                     // For each point (i,j,k),find the bounding box in terms of
                     // logical dimensions for the radius.
                     int iMin = -1, iMax = -1;
-                    float x = xd->GetTuple1(i);
+                    double x = xd->GetTuple1(i);
                     for (ii = 0 ; ii < dims[0]; ii++)
                     {
                         if (iMin < 0)
                         {
-                            float x2 = xd->GetTuple1(ii);
+                            double x2 = xd->GetTuple1(ii);
                             if (x2 > x-radius)
                                 iMin = ii;
                         }
                         if (iMax < 0)
                         {
-                            float x2 = xd->GetTuple1(ii);
+                            double x2 = xd->GetTuple1(ii);
                             if (x2 > x+radius)
                                 iMax = ii;
                         }
@@ -251,18 +254,18 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
                     iMin = (iMin < 0 ? 0 : iMin);
                     iMax = (iMax < 0 ? dims[0] : iMax);
                     int jMin = -1, jMax = -1;
-                    float y = yd->GetTuple1(j);
+                    double y = yd->GetTuple1(j);
                     for (jj = 0 ; jj < dims[1]; jj++)
                     {
                         if (jMin < 0)
                         {
-                            float y2 = yd->GetTuple1(jj);
+                            double y2 = yd->GetTuple1(jj);
                             if (y2 > y-radius)
                                 jMin = jj;
                         }
                         if (jMax < 0)
                         {
-                            float y2 = yd->GetTuple1(jj);
+                            double y2 = yd->GetTuple1(jj);
                             if (y2 > y+radius)
                                 jMax = jj;
                         }
@@ -270,18 +273,18 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
                     jMin = (jMin < 0 ? 0 : jMin);
                     jMax = (jMax < 0 ? dims[1] : jMax);
                     int kMin = -1, kMax = -1;
-                    float z = zd->GetTuple1(k);
+                    double z = zd->GetTuple1(k);
                     for (kk = 0 ; kk < dims[2]; kk++)
                     {
                         if (kMin < 0)
                         {
-                            float z2 = zd->GetTuple1(kk);
+                            double z2 = zd->GetTuple1(kk);
                             if (z2 > z-radius)
                                 kMin = kk;
                         }
                         if (kMax < 0)
                         {
-                            float z2 = zd->GetTuple1(kk);
+                            double z2 = zd->GetTuple1(kk);
                             if (z2 > z+radius)
                                 kMax = kk;
                         }
@@ -291,16 +294,16 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
 
                     // Now that we have found the neighborhood, iterate over
                     // that neighborhood.
-                    float totalWeight = 0.;
-                    float weightInside = 0.;
+                    double totalWeight = 0.;
+                    double weightInside = 0.;
                     for (ii = iMin ; ii < iMax ; ii++)
                         for (jj = jMin ; jj < jMax ; jj++)
                             for (kk = kMin ; kk < kMax ; kk++)
                             {
-                                float x2 = xd->GetTuple1(ii);
-                                float y2 = yd->GetTuple1(jj);
-                                float z2 = zd->GetTuple1(kk);
-                                float rad_squared = (x2-x)*(x2-x) 
+                                double x2 = xd->GetTuple1(ii);
+                                double y2 = yd->GetTuple1(jj);
+                                double z2 = zd->GetTuple1(kk);
+                                double rad_squared = (x2-x)*(x2-x) 
                                                + (y2-y)*(y2-y) + (z2-z)*(z2-z);
                                 if (rad_squared > radius*radius)
                                     continue;
@@ -310,7 +313,7 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
                                     weightInside += 1;
                             }
                     int idx = k*dims[0]*dims[1] + j*dims[0] + i;
-                    float compactness = weightInside / totalWeight;
+                    double compactness = weightInside / totalWeight;
                     arr->SetTuple1(idx, compactness);
                 }
             }

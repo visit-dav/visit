@@ -78,6 +78,9 @@ class     vtkDataArray;
 //      Added support for rectilinear grids with an inherent transform.
 //      Binary math filters can handle these with no modifications.
 //
+//      Kathleen Biagas, Thu Apr 5 08:55:32 PDT 2012
+//      Added second array to CreateArray method.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtBinaryMathExpression 
@@ -93,7 +96,7 @@ class EXPRESSION_API avtBinaryMathExpression
 
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
-    virtual vtkDataArray     *CreateArray(vtkDataArray *);
+    virtual vtkDataArray     *CreateArray(vtkDataArray *, vtkDataArray *);
     virtual void              DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                           vtkDataArray *out, int, int) = 0;
     virtual int               GetNumberOfComponentsInOutput(int ncompsIn1,

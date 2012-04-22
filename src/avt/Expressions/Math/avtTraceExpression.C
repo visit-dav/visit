@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtTraceExpression.C                            //
+//                               avtTraceExpression.C                        //
 // ************************************************************************* //
 
 #include <avtTraceExpression.h>
@@ -109,9 +109,9 @@ avtTraceExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float val1 = in->GetComponent(i, 0);
-            float val2 = in->GetComponent(i, 4);
-            float val3 = in->GetComponent(i, 8);
+            double val1 = in->GetComponent(i, 0);
+            double val2 = in->GetComponent(i, 4);
+            double val3 = in->GetComponent(i, 8);
             out->SetTuple1(i, val1+val2+val3);
         }
     }

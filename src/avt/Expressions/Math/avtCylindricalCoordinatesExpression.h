@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                      avtCylindricalCoordinatesExpression.h                    //
+//                  avtCylindricalCoordinatesExpression.h                    //
 // ************************************************************************* //
 
 #ifndef AVT_CYLINDRICAL_COORDINATES_FILTER_H
@@ -46,13 +46,6 @@
 
 #include <avtSingleInputExpressionFilter.h>
 
-
-class     vtkCell;
-class     vtkCellDataToPointData;
-class     vtkDataArray;
-class     vtkDataSet;
-class     vtkIdList;
-class     vtkScalarData;
 
 
 // ****************************************************************************

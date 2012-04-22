@@ -46,9 +46,6 @@
 #include <avtSingleInputExpressionFilter.h>
 
 class     vtkDataArray;
-class     ArgsExpr;
-class     ExprPipelineState;
-class     ConstExpr;
 
 // ****************************************************************************
 //  Class: avtDominantMaterialExpression

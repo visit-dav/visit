@@ -46,7 +46,13 @@
 #include <plotter_exports.h>
 
 #include <avtSurfaceAndWireframeRenderer.h>
+#include <avtGLEWInitializer.h> // needed for GLenum
+#include <vtkType.h>  // for vtkIdType
 
+class vtkCellArray;
+class vtkDataArray;
+class vtkPoints;
+class vtkUnsignedCharArray;
 
 // ****************************************************************************
 //  Class: avtOpenGLSurfaceAndWireframeRenderer
@@ -69,6 +75,10 @@
 //    Kathleen Bonnell, Tue Aug 26 13:54:32 PDT 2003 
 //    Added ReleaseGraphicsResources. 
 //    
+//    Kathleen Biagas, Thu Mar 15 16:29:22 PDT 2012
+//    Added DrawXXX and GenericDrawXXX methods, they provide support for 
+//    multiple data types (float, double, etc).
+//
 // ****************************************************************************
 
 class PLOTTER_API avtOpenGLSurfaceAndWireframeRenderer 
@@ -86,9 +96,42 @@ class PLOTTER_API avtOpenGLSurfaceAndWireframeRenderer
     virtual void              ReleaseGraphicsResources();
 
    private:
-    void                      SetupGraphicsLibrary2();
-    void                      DrawEdges2();
-    void                      DrawSurface2();
+    void    SetupGraphicsLibrary2();
+    void    DrawEdges2();
+    void    DrawSurface2();
+
+    void    DrawPoints(int idx, vtkPoints *p, vtkDataArray *n,
+                       vtkUnsignedCharArray *c, vtkDataArray *t,
+                       vtkIdType &cellNum, vtkCellArray *ca);
+    void    DrawLines(int idx, vtkPoints *p, vtkDataArray *n,
+                      vtkUnsignedCharArray *c, vtkDataArray *t,
+                      vtkIdType &cellNum, vtkCellArray *ca);
+    void    DrawPolygons(int idx, vtkPoints *p, vtkDataArray *n,
+                         vtkUnsignedCharArray *c, vtkDataArray *t,
+                         vtkIdType &cellNum, GLenum rep, vtkCellArray *ca);
+    void    DrawTStrips(int idx, vtkPoints *p, vtkDataArray *n,
+                        vtkUnsignedCharArray *c, vtkDataArray *t,
+                        vtkIdType &cellNum, GLenum rep, vtkCellArray *ca);
+    void    DrawTStripLines(int idx, vtkPoints *p, vtkDataArray *n,
+                            vtkUnsignedCharArray *c, vtkDataArray *t,
+                            vtkIdType &cellNum, GLenum rep, vtkCellArray *ca);
+
+    // non fast-track versions (use GetTuple() calls)
+    void    GenericDrawPoints(int idx, vtkPoints *p, vtkDataArray *n,
+                       vtkUnsignedCharArray *c, vtkDataArray *t,
+                       vtkIdType &cellNum, vtkCellArray *ca);
+    void    GenericDrawLines(int idx, vtkPoints *p, vtkDataArray *n,
+                      vtkUnsignedCharArray *c, vtkDataArray *t,
+                      vtkIdType &cellNum, vtkCellArray *ca);
+    void    GenericDrawPolygons(int idx, vtkPoints *p,vtkDataArray *n,
+                         vtkUnsignedCharArray *c, vtkDataArray *t,
+                         vtkIdType &cellNum, GLenum rep, vtkCellArray *ca);
+    void    GenericDrawTStrips(int idx, vtkPoints *p, vtkDataArray *n,
+                        vtkUnsignedCharArray *c, vtkDataArray *t,
+                        vtkIdType &cellNum, GLenum rep, vtkCellArray *ca);
+    void    GenericDrawTStripLines(int idx, vtkPoints *p, vtkDataArray *n,
+                            vtkUnsignedCharArray *c, vtkDataArray *t,
+                            vtkIdType &cellNum, GLenum rep, vtkCellArray *ca);
 
     std::vector<int>          surfaceListId;
     std::vector<int>          edgesListId;

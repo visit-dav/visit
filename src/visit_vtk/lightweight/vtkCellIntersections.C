@@ -603,7 +603,6 @@ vtkCellIntersections::QuadIntersectWithLine(vtkQuad *cell, double p1[3],
   // no matter where the diagonal). In this case use the point ids as 
   // a tie breaker to insure unique triangulation across the quad.
   //
-  double dist = VTK_DOUBLE_MAX;
   int i, intersection = 0;
 
   for (int diagCase = 0; diagCase < 4; diagCase++)

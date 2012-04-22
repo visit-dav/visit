@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtArrayDecomposeExpression.C                          //
+//                    avtArrayDecomposeExpression.C                          //
 // ************************************************************************* //
 
 #include <avtArrayDecomposeExpression.h>
@@ -47,17 +47,11 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkPointData.h>
-#include <vtkUnsignedIntArray.h>
 
 #include <ExprToken.h>
 #include <avtExprNode.h>
 
-#include <avtCallback.h>
-#include <avtMaterial.h>
-#include <avtMetaData.h>
-#include <avtSpecies.h>
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -127,10 +121,9 @@ avtArrayDecomposeExpression::~avtArrayDecomposeExpression()
 vtkDataArray *
 avtArrayDecomposeExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i;
-
     if (activeVariable == NULL)
-        EXCEPTION2(ExpressionException, outputVariableName, "Asked to decompose an array, but did "
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Asked to decompose an array, but did "
                    "specify which variable to decompose");
 
     vtkDataArray *data = in_ds->GetPointData()->GetArray(activeVariable);
@@ -138,16 +131,17 @@ avtArrayDecomposeExpression::DeriveVariable(vtkDataSet *in_ds)
         data = in_ds->GetCellData()->GetArray(activeVariable);
 
     if (data == NULL)
-        EXCEPTION2(ExpressionException, outputVariableName, "Unable to locate variable to "
-                                        "decompose");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Unable to locate variable to decompose");
 
     if (index < 0 || index >= data->GetNumberOfComponents())
-        EXCEPTION2(ExpressionException, outputVariableName, "Index into array is not valid.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Index into array is not valid.");
 
-    vtkFloatArray *rv = vtkFloatArray::New();
-    int nvals = data->GetNumberOfTuples();
+    vtkDataArray *rv = data->NewInstance();
+    vtkIdType nvals = data->GetNumberOfTuples();
     rv->SetNumberOfTuples(nvals);
-    for (i = 0 ; i < nvals ; i++)
+    for (vtkIdType i = 0 ; i < nvals ; ++i)
         rv->SetTuple1(i, data->GetComponent(i, index));
 
     return rv;

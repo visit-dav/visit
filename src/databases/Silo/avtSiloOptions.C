@@ -93,7 +93,7 @@ GetSiloReadOptions(void)
     rv->SetEnumStrings(SILO_RDOPT_IGNORE_SEXTS, ignoreOpts);
     rv->SetEnum(SILO_RDOPT_IGNORE_DEXTS, 3); // Undef 
     rv->SetEnumStrings(SILO_RDOPT_IGNORE_DEXTS, ignoreOpts);
-    rv->SetBool(SILO_RDOPT_FORCE_SINGLE, true);
+    rv->SetBool(SILO_RDOPT_FORCE_SINGLE, false);
     rv->SetBool(SILO_RDOPT_SEARCH_ANNOTINT, false);
 
     // Specify obsolete options and their default values

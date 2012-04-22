@@ -40,6 +40,7 @@
 #include <vtkAppendFilter.h>
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkIdList.h>
 #include <vtkImplicitFunction.h>
 #include <vtkObjectFactory.h>
 #include <vtkPlane.h>
@@ -50,6 +51,8 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkBinaryPartitionVolumeFromVolume.h>
+
+#include <vtkAccessors.h>
 
 #include <ImproperUseException.h>
 
@@ -77,9 +80,13 @@ vtkStandardNewMacro(vtkVisItSplitter);
 //  Programmer: Mark C. Miller
 //  Creation:   December 3, 2006 
 //
+// Modifications:
+//   Brad Whitlock, Fri Mar 23 17:13:49 PDT 2012
+//   Pass in points.
+//
 static void
-AdjustPercentToZeroCrossing(const float *const pts, int ptId1, int ptId2,
-    vtkImplicitFunction *func, float *percent)
+AdjustPercentToZeroCrossing(double p0[3], double p1[3], 
+    vtkImplicitFunction *func, double *percent)
 {
     if (func == 0)
         return;
@@ -108,8 +115,6 @@ AdjustPercentToZeroCrossing(const float *const pts, int ptId1, int ptId2,
     // When t==0, p(t)==p0 and when t==1, p(t)==p1. So, along
     // the edge between the points p0 and p1, 0<=t<=1
     //
-    const float *const p0 = pts + 3*ptId1;
-    const float *const p1 = pts + 3*ptId2;
 
     // origin of "ray" to intersect against the quadric surface
     double x0 = p0[0];
@@ -176,6 +181,79 @@ AdjustPercentToZeroCrossing(const float *const pts, int ptId1, int ptId2,
         *percent = 1.0-t;
 }
 
+vtkVisItSplitter::FilterState::FilterState()
+{ 
+    this->CellList = NULL;
+    this->CellListSize = 0;
+
+    this->clipFunction = NULL;
+    this->scalarArrayAsVTK = NULL;
+    this->scalarCutoff = 0.;
+
+    this->removeWholeCells = false;
+    this->insideOut = false;
+    this->useZeroCrossings = false;
+
+    this->oldTags = NULL;
+    this->newTags = NULL;
+    this->newTagBit = 0;
+}
+
+vtkVisItSplitter::FilterState::~FilterState()
+{
+    if (this->clipFunction != NULL)
+        this->clipFunction->Delete();
+
+    if (this->scalarArrayAsVTK != NULL)
+        this->scalarArrayAsVTK->Delete();
+}
+
+void
+vtkVisItSplitter::FilterState::SetCellList(const vtkIdType *cl, vtkIdType size)
+{
+    this->CellList = cl;
+    this->CellListSize = size;
+}
+
+void
+vtkVisItSplitter::FilterState::SetClipFunction(vtkImplicitFunction *func)
+{
+    // Set the clip function
+    this->clipFunction = func;
+    this->clipFunction->Register(NULL);
+
+    // Clear the scalar array so we know to use the clip function
+    if (scalarArrayAsVTK != NULL)
+    {
+        scalarArrayAsVTK->Delete();
+        scalarArrayAsVTK = NULL;
+    }
+}
+
+void
+vtkVisItSplitter::FilterState::SetClipScalars(vtkDataArray *array, double cutoff)
+{
+    // Clear the clip function so we know to use scalars
+    if (this->clipFunction != NULL)
+    {
+        this->clipFunction->Delete();
+        this->clipFunction = NULL;
+    }
+
+    if (scalarArrayAsVTK != NULL)
+    {
+        scalarArrayAsVTK->Delete();
+        scalarArrayAsVTK = NULL;
+    }
+
+    // Set the scalar array
+    scalarArrayAsVTK = array;
+    scalarArrayAsVTK->Register(NULL);
+
+    // Set the cutoff
+    scalarCutoff     = cutoff;
+}
+
 // ****************************************************************************
 //  Constructor:  vtkVisItSplitter::vtkVisItSplitter
 //
@@ -186,19 +264,9 @@ AdjustPercentToZeroCrossing(const float *const pts, int ptId1, int ptId2,
 //
 // ****************************************************************************
 
-vtkVisItSplitter::vtkVisItSplitter()
+vtkVisItSplitter::vtkVisItSplitter() : vtkDataSetToUnstructuredGridFilter(),
+    state()
 {
-    CellList = NULL;
-    CellListSize = 0;
-    insideOut = false;
-    clipFunction = NULL;
-    removeWholeCells = false;
-    useZeroCrossings = false;
-    scalarArrayAsVTK = NULL;
-    iOwnData = false;
-    oldTags = NULL;
-    newTags = NULL;
-    newTagBit = 0;
 }
 
 // ****************************************************************************
@@ -212,48 +280,39 @@ vtkVisItSplitter::vtkVisItSplitter()
 // ****************************************************************************
 vtkVisItSplitter::~vtkVisItSplitter()
 {
-    if (iOwnData)
-        delete [] scalarArray;
-    if (scalarArrayAsVTK != NULL)
-        scalarArrayAsVTK->Delete();
 }
 
 void
 vtkVisItSplitter::SetUseZeroCrossings(bool use)
 {
-    if (use && clipFunction && 
-        (strcmp(clipFunction->GetClassName(), "vtkQuadric") != 0))
+    if (use && state.clipFunction && 
+        (strcmp(state.clipFunction->GetClassName(), "vtkQuadric") != 0))
     {
         vtkErrorMacro("UseZeroCrossings set to true allowed only with "
                       "vtkQuadric implicit functions");
         return;
     }
 
-    useZeroCrossings = use;
+    state.useZeroCrossings = use;
 }
 
 void
-vtkVisItSplitter::SetCellList(int *cl, int size)
+vtkVisItSplitter::SetCellList(const vtkIdType *cl, vtkIdType size)
 {
-    CellList = cl;
-    CellListSize = size;
+    state.SetCellList(cl, size);
 }
 
 void
 vtkVisItSplitter::SetClipFunction(vtkImplicitFunction *func)
 {
-    if (useZeroCrossings && (strcmp(func->GetClassName(), "vtkQuadric") != 0))
+    if (state.useZeroCrossings && (strcmp(func->GetClassName(), "vtkQuadric") != 0))
     {
         vtkErrorMacro("Only vtkQuadric implicit functions "
                       "allowed with UseZeroCrossings set to true");
         return;
     }
 
-    // Set the clip function
-    clipFunction = func;
-
-    // Clear the scalar array so we know to use the clip function
-    scalarArray = NULL;
+    state.SetClipFunction(func);
 }
 
 // ****************************************************************************
@@ -273,72 +332,42 @@ vtkVisItSplitter::SetClipFunction(vtkImplicitFunction *func)
 //
 //  Modifications:
 //   Jeremy Meredith, Fri Feb 26 13:31:31 EST 2010
-//   Initial creation, copied from vtkVisItClipper.
+//   Initial creation, copied from vtkVisItSplitter.
+//
+//    Brad Whitlock, Tue Mar 27 11:51:35 PDT 2012
+//    Move to FilterState.
 //
 // ****************************************************************************
 
 void
 vtkVisItSplitter::SetClipScalars(vtkDataArray *array, float cutoff)
 {
-    if (iOwnData)
-    {
-        delete [] scalarArray;
-        iOwnData = false;
-    }
-    if (scalarArrayAsVTK != NULL)
-    {
-        scalarArrayAsVTK->Delete();
-        scalarArrayAsVTK = NULL;
-    }
-
-    // Clear the clip function so we know to use scalars
-    clipFunction = NULL;
-
-    // Set the scalar array
-    scalarArrayAsVTK = array;
-    scalarArrayAsVTK->Register(NULL);
-    if (array->GetDataType() == VTK_FLOAT)
-    {
-        scalarArray = (float *) array->GetVoidPointer(0);
-    }
-    else
-    {
-        iOwnData = true;
-        int nTuples = array->GetNumberOfTuples();
-        scalarArray = new float[nTuples];
-        for (int i = 0 ; i < nTuples ; i++)
-        {
-            scalarArray[i] = array->GetTuple1(i);
-        }
-    }
-
-    // Set the cutoff
-    scalarCutoff     = cutoff;
+    state.SetClipScalars(array, cutoff);
 }
 
 void
 vtkVisItSplitter::SetInsideOut(bool io)
 {
-    insideOut = io;
+    state.insideOut = io;
 }
 
 
 void
 vtkVisItSplitter::SetOldTagBitField(std::vector<FixedLengthBitField<16> > *tags)
 {
-    oldTags = tags;
+    state.oldTags = tags;
 }
 
 void
 vtkVisItSplitter::SetNewTagBitField(std::vector<FixedLengthBitField<16> > *tags)
 {
-    newTags = tags;
+    state.newTags = tags;
 }
 
 void
 vtkVisItSplitter::SetNewTagBit(int bit)
 {
-    newTagBit = bit;
+    state.newTagBit = bit;
 }
 
 // ****************************************************************************
@@ -358,8 +387,286 @@ vtkVisItSplitter::SetNewTagBit(int bit)
 void
 vtkVisItSplitter::SetRemoveWholeCells(bool rwc)
 {
-    removeWholeCells = rwc;
+    state.removeWholeCells = rwc;
 }
+
+// ****************************************************************************
+// Class: CellPointsGetter
+//
+// Purpose:
+//   Provides a GetCellPoints method for structured meshes.
+//
+// Notes:      This class is separated out so it can be used for both the
+//             Structured and Rectilinear bridge classes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 29 14:35:21 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class CellPointsGetter
+{
+public:
+    CellPointsGetter()
+    {
+        int d[] = {1,1,1};
+        Initialize(d);
+    }
+
+    CellPointsGetter(const int  *dims)
+    {
+        Initialize(dims);
+    }
+
+    void Initialize(const int *dims)
+    {
+        pt_dims[0] = dims[0];
+        pt_dims[1] = dims[1];
+        pt_dims[2] = dims[2];
+        cell_dims[0] = (pt_dims[0]>1) ? (pt_dims[0]-1) : pt_dims[0];
+        cell_dims[1] = (pt_dims[1]>1) ? (pt_dims[1]-1) : pt_dims[1];
+        cell_dims[2] = (pt_dims[2]>1) ? (pt_dims[2]-1) : pt_dims[2];
+        strideY = cell_dims[0];
+        strideZ = cell_dims[0]*cell_dims[1];
+        ptstrideY = pt_dims[0];
+        ptstrideZ = pt_dims[0]*pt_dims[1];
+
+        cellType = (dims[2] <= 1) ? VTK_QUAD : VTK_HEXAHEDRON;
+        nCellPts = (dims[2] <= 1) ? 4 : 8;
+    }
+
+    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
+    {
+        const int X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
+        const int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
+        const int Z_val[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
+        vtkIdType cellI = cellId % cell_dims[0];
+        vtkIdType cellJ = (cellId/strideY) % cell_dims[1];
+        vtkIdType cellK = (cellId/strideZ);
+        for (int j = 0; j<nCellPts; j++)
+        {
+            ids[j] = (cellI + X_val[j]) +
+                     (cellJ + Y_val[j])*ptstrideY +
+                     (cellK + Z_val[j])*ptstrideZ;
+        }
+        nCellPoints = nCellPts;
+        return ids;
+    }
+
+    inline const int *GetDimensions() const { return pt_dims; }
+    inline int GetCellType(vtkIdType) const { return cellType; }
+private:
+    vtkIdType   ids[8];
+
+    int         pt_dims[3];
+    vtkIdType   cell_dims[3];
+    vtkIdType   strideY, strideZ;
+    vtkIdType   ptstrideY, ptstrideZ;
+    vtkIdType   nCellPts;
+    int         cellType;
+};
+
+// ****************************************************************************
+// Class: SplitterBridge
+//
+// Purpose:
+//   This class is bridge that provides methods to access cells and points for
+//   classes that use vtkPoints for their points.
+//
+// Notes:      The class is templated on PointGetter so we can access point
+//             data directly as memory or using GetPoints calls.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 26 13:38:48 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename PointGetter>
+class SplitterBridge
+{
+public:
+    SplitterBridge(vtkPointSet *d) : points(d->GetPoints()), ds(d)
+    {
+    }
+
+    inline vtkIdType GetNumberOfCells()  { return ds->GetNumberOfCells(); }
+    inline vtkIdType GetNumberOfPoints() { return ds->GetNumberOfPoints(); }
+    inline vtkCellData *GetCellData()    { return ds->GetCellData(); }
+    inline vtkPointData *GetPointData()  { return ds->GetPointData(); }
+
+    inline void GetPoint(vtkIdType index, double pt[3]) const
+    {
+        points.GetPoint(index, pt);
+    }
+
+    void ConstructDataSet(vtkBinaryPartitionVolumeFromVolume &vfv,
+                          vtkUnstructuredGrid *output,
+                          std::vector<FixedLengthBitField<16> > *oldTags,
+                          std::vector<FixedLengthBitField<16> > *newTags,
+                          int                  newTagBit)
+    {
+        vfv.ConstructDataSet(GetPointData(), GetCellData(),
+                             output, ds->GetPoints(),
+                             oldTags, newTags, newTagBit);
+    }
+private:
+    PointGetter  points;
+    vtkPointSet *ds;
+};
+
+//
+// These subclasses are necessary because GetCellPoints is not implemented in vtkPointSet.
+//
+template <typename PointGetter>
+class SplitterBridgePolyData : public SplitterBridge<PointGetter>
+{
+public:
+    SplitterBridgePolyData(vtkPolyData *d) : SplitterBridge<PointGetter>(d)
+    {
+        pd = d;
+    }
+
+    inline int GetCellType(vtkIdType cellId) const
+    {
+        return pd->GetCellType(cellId);
+    }
+
+    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+    {
+        vtkIdType *cellPts = NULL;
+        pd->GetCellPoints(cellId, nCellPts, cellPts);
+        return cellPts;
+    }
+private:
+    vtkPolyData *pd;
+};
+
+template <typename PointGetter>
+class SplitterBridgeUnstructuredGrid : public SplitterBridge<PointGetter>
+{
+public:
+    SplitterBridgeUnstructuredGrid(vtkUnstructuredGrid *d) : SplitterBridge<PointGetter>(d)
+    {
+        ug = d;
+    }
+
+    inline int GetCellType(vtkIdType cellId) const
+    {
+        return ug->GetCellType(cellId);
+    }
+
+    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+    {
+        vtkIdType *cellPts = NULL;
+        ug->GetCellPoints(cellId, nCellPts, cellPts);
+        return cellPts;
+    }
+private:
+    vtkUnstructuredGrid *ug;
+};
+
+template <typename PointGetter>
+class SplitterBridgeStructuredGrid : public SplitterBridge<PointGetter>
+{
+public:
+    SplitterBridgeStructuredGrid(vtkStructuredGrid *d) : SplitterBridge<PointGetter>(d)
+    {
+        sg = d;
+        int dims[3];
+        sg->GetDimensions(dims);
+        cellPoints.Initialize(dims);
+    }
+
+    inline int GetCellType(vtkIdType cellId) const
+    {
+        return cellPoints.GetCellType(cellId);
+    }
+
+    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPts)
+    {
+        return cellPoints.GetCellPoints(cellId, nCellPts);
+    }
+private:
+    vtkStructuredGrid *sg;
+    CellPointsGetter   cellPoints;
+};
+
+// ****************************************************************************
+// Class: SplitterBridgeRectilinearGrid
+//
+// Purpose:
+//   This class is bridge that provides methods to access cells and points for
+//   rectilinear grids.
+//
+// Notes:      The class is templated on PointGetter so we can access point
+//             data directly as memory or using GetTuple1 calls.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 26 13:38:48 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename PointGetter>
+class SplitterBridgeRectilinearGrid
+{
+public:
+    SplitterBridgeRectilinearGrid(vtkRectilinearGrid *rg, const int *dims, 
+        vtkDataArray *Xc, vtkDataArray *Yc, vtkDataArray *Zc) : 
+        points(dims, Xc, Yc, Zc), cellPoints(dims), ds(rg), X(Xc), Y(Yc), Z(Zc)
+    {
+    }
+
+    inline vtkIdType GetNumberOfCells()  { return ds->GetNumberOfCells(); }
+    inline vtkIdType GetNumberOfPoints() { return ds->GetNumberOfPoints(); }
+    inline vtkCellData *GetCellData()    { return ds->GetCellData(); }
+    inline vtkPointData *GetPointData()  { return ds->GetPointData(); }
+
+    inline int GetCellType(vtkIdType cellId) const
+    {
+        return cellPoints.GetCellType(cellId);
+    }
+
+    inline vtkIdType *GetCellPoints(vtkIdType cellId, vtkIdType &nCellPoints)
+    {
+        return cellPoints.GetCellPoints(cellId, nCellPoints);
+    }
+
+
+    inline void GetPoint(vtkIdType index, double pt[3]) const
+    {
+        points.GetPoint(index, pt);
+    }
+
+    inline void GetPoint(vtkIdType i, vtkIdType j, vtkIdType k, double pt[3]) const
+    {
+        points.GetPoint(i, j, k, pt);
+    }
+
+    void ConstructDataSet(vtkBinaryPartitionVolumeFromVolume &vfv,
+                          vtkUnstructuredGrid *output,
+                          std::vector<FixedLengthBitField<16> > *oldTags,
+                          std::vector<FixedLengthBitField<16> > *newTags,
+                          int                  newTagBit)
+    {
+        vfv.ConstructDataSet(GetPointData(), GetCellData(),
+                             output, cellPoints.GetDimensions(),
+                             X, Y, Z,
+                             oldTags, newTags, 
+                             newTagBit);
+    }
+private:
+    PointGetter      points;
+    CellPointsGetter cellPoints;
+
+    vtkRectilinearGrid *ds;
+    vtkDataArray *X, *Y, *Z;
+};
 
 // ****************************************************************************
 //  Method:  vtkVisItSplitter::Execute
@@ -375,170 +682,41 @@ vtkVisItSplitter::SetRemoveWholeCells(bool rwc)
 //
 //  Modifications:
 //    Jeremy Meredith, Fri Feb 26 13:31:31 EST 2010
-//    Initial creation, copied from vtkVisItClipper and modified to
+//    Initial creation, copied from vtkVisItSplitter and modified to
 //    merely split+tag output, not remove cells.
 //
+//    Brad Whitlock, Thu Mar 29 12:40:29 PDT 2012
+//    I templated this code on Bridge and ScalarAccess so we can pass in 
+//    different bridges to access various mesh types.
+//
 // ****************************************************************************
+
+template <typename Bridge, typename ScalarAccess>
 void
-vtkVisItSplitter::Execute()
+vtkVisItSplitter_Algorithm(Bridge bridge, ScalarAccess scalar,
+    vtkVisItSplitter::FilterState &state,
+    vtkUnstructuredGrid *output)
 {
-    vtkDataSet *ds = GetInput();
+    int th1 = visitTimer->StartTimer();
+    vtkIdType nCells = bridge.GetNumberOfCells();
 
-    int do_type = ds->GetDataObjectType();
-    vtkRectilinearGrid   *rg = NULL;
-    vtkStructuredGrid    *sg = NULL;
-    vtkUnstructuredGrid  *ug = NULL;
-    vtkPolyData          *pg = NULL;
-
-    // coordinate arrays for any mesh type
-    float      *X       = NULL;
-    float      *Y       = NULL;
-    float      *Z       = NULL;
-    float      *pts_ptr = NULL;
-
-    // dimensions for structured grids
-    int pt_dims[3];
-    int cell_dims[3];
-    int strideY;
-    int strideZ;
-    int ptstrideY;
-    int ptstrideZ;
-
-    // indices to convert structured grid cells to hexahedron/quadrilateral
-    const int X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
-    const int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
-    const int Z_val[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
-
-    // Set general input/output data
-    int                  nCells = ds->GetNumberOfCells();
-    vtkCellData         *inCD   = ds->GetCellData();
-    vtkPointData        *inPD   = ds->GetPointData();
-    vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
-
-    bool twoD = false;
-    if (do_type == VTK_RECTILINEAR_GRID || do_type == VTK_STRUCTURED_GRID)
-    {
-        if (do_type == VTK_RECTILINEAR_GRID)
-        {
-            rg = (vtkRectilinearGrid*)ds;
-            rg->GetDimensions(pt_dims);
-            X = (float* ) rg->GetXCoordinates()->GetVoidPointer(0);
-            Y = (float* ) rg->GetYCoordinates()->GetVoidPointer(0);
-            Z = (float* ) rg->GetZCoordinates()->GetVoidPointer(0);
-        }
-        else // do_type == VTK_STRUCTURED_GRID
-        {
-            sg = (vtkStructuredGrid*)ds;
-            sg->GetDimensions(pt_dims);
-            pts_ptr = (float*)sg->GetPoints()->GetVoidPointer(0);
-        }
-
-        twoD = (pt_dims[2] <= 1);
-        cell_dims[0] = pt_dims[0]-1;
-        cell_dims[1] = pt_dims[1]-1;
-        cell_dims[2] = pt_dims[2]-1;
-        strideY = cell_dims[0];
-        strideZ = cell_dims[0]*cell_dims[1];
-        ptstrideY = pt_dims[0];
-        ptstrideZ = pt_dims[0]*pt_dims[1];
-    }
-    else if (do_type == VTK_UNSTRUCTURED_GRID)
-    {
-        ug = (vtkUnstructuredGrid*)ds;
-        pts_ptr = (float*)ug->GetPoints()->GetVoidPointer(0);
-    }
-    else if (do_type == VTK_POLY_DATA)
-    {
-        pg = (vtkPolyData*)ds;
-        pts_ptr = (float*)pg->GetPoints()->GetVoidPointer(0);
-    }
-    else
-    {
-        debug1 << "vtkVisItSplitter: Can't operate on this dataset.\n";
-    }
-
-    int ptSizeGuess = (CellList == NULL
+    vtkIdType ptSizeGuess = (state.CellList == NULL
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
-                         : CellListSize*5 + 100);
+                         : state.CellListSize*5 + 100);
 
-    if (clipFunction)
-    {
-        int th = visitTimer->StartTimer();
-        int npts = ds->GetNumberOfPoints();
-        scalarArray = new float[npts];
-        scalarCutoff = 0;
-        if (pts_ptr)
-        {
-            for (int i=0; i<npts; i++)
-            {
-                float *pt =  pts_ptr + 3*i;
-                scalarArray[i] = 
-                   -clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
-            }
-        }
-        else
-        {
-            int ctr = 0;
-            for (int k=0; k<pt_dims[2]; k++)
-            {
-                for (int j=0; j<pt_dims[1]; j++)
-                {
-                    for (int i=0; i<pt_dims[0]; i++)
-                    {
-                        scalarArray[ctr++] = 
-                           -clipFunction->EvaluateFunction(X[i],Y[j],Z[k]);
-                        //cerr << "i="<<i<<" j="<<j<<" k="<<k<<" val="<<scalarArray[ctr-1]<<endl;
-                    }
-                }
-            }
-        }
-        visitTimer->StopTimer(th, "Calculating clipfunction values");
-    }
-
-    vtkBinaryPartitionVolumeFromVolume vfv(ds->GetNumberOfPoints(),
+    vtkBinaryPartitionVolumeFromVolume vfv(bridge.GetNumberOfPoints(),
                                            ptSizeGuess);
 
     const int max_pts = 8;
-    int cellType = twoD ? VTK_QUAD : VTK_HEXAHEDRON; // constant for struct grd
-    vtkIdType nCellPts = twoD ? 4 : 8;                     // constant for struct grd
-    vtkIdType cellPtsStruct[8];
-    vtkIdType *cellPts = cellPtsStruct; // for struct grd, we'll fill it
 
-    int th1 = visitTimer->StartTimer();
-    int nToProcess = (CellList != NULL ? CellListSize : nCells);
-    for (int i = 0 ; i < nToProcess ; i++)
+    vtkIdType nToProcess = (state.CellList != NULL ? state.CellListSize : nCells);
+    for (vtkIdType i = 0 ; i < nToProcess ; i++)
     {
         // Get the cell details
-        vtkIdType cellId = (CellList != NULL ? CellList[i] : i);
-        int cellI = -1;
-        int cellJ = -1;
-        int cellK = -1;
-        if (ug)
-        {
-            cellType = ug->GetCellType(cellId);
-            ug->GetCellPoints(cellId, nCellPts, cellPts);
-            // don't need cellI/J/K
-        }
-        else if (pg)
-        {
-            cellType = pg->GetCellType(cellId);
-            pg->GetCellPoints(cellId, nCellPts, cellPts);
-            // don't need cellI/J/K
-        }
-        else // structured grid
-        {
-            // cellType already set
-            // nCellPts already set
-            cellI = cellId % cell_dims[0];
-            cellJ = (cellId/strideY) % cell_dims[1];
-            cellK = (cellId/strideZ);
-            for (int j = 0; j<nCellPts; j++)
-            {
-                cellPts[j] = (cellI + X_val[j]) +
-                             (cellJ + Y_val[j])*ptstrideY +
-                             (cellK + Z_val[j])*ptstrideZ;
-            }
-        }
+        vtkIdType cellId = (state.CellList != NULL ? state.CellList[i] : i);
+        int cellType = bridge.GetCellType(cellId);
+        vtkIdType nCellPts = 0;
+        vtkIdType *cellPts = bridge.GetCellPoints(cellId, nCellPts);
 
         // If it's something we can't clip, skip this output
         switch (cellType)
@@ -562,11 +740,10 @@ vtkVisItSplitter::Execute()
 
         // fill the dist functions and calculate lookup case
         int lookup_case = 0;
-        float dist[max_pts];
+        double dist[max_pts];
         for (int j = nCellPts-1 ; j >= 0 ; j--)
         {
-            float val = scalarArray[cellPts[j]];
-            dist[j] = scalarCutoff - val;
+            dist[j] = state.scalarCutoff - scalar.GetTuple1(cellPts[j]);
 
             if (dist[j] >= 0)
                 lookup_case++;
@@ -574,7 +751,7 @@ vtkVisItSplitter::Execute()
                 lookup_case *= 2;
         }
 
-        if (removeWholeCells && lookup_case != 0)
+        if (state.removeWholeCells && lookup_case != 0)
             lookup_case = ((1 << nCellPts) - 1);
 
         unsigned char  *splitCase = NULL;
@@ -700,10 +877,10 @@ vtkVisItSplitter::Execute()
                                "the ClipCases.");
                 }
 
-                bool out = ((!insideOut && color == COLOR0) ||
-                            ( insideOut && color == COLOR1));
+                bool out = ((!state.insideOut && color == COLOR0) ||
+                            ( state.insideOut && color == COLOR1));
 
-                int shape[8];
+                vtkIdType shape[8];
                 for (int p = 0 ; p < npts ; p++)
                 {
                     unsigned char pt = *splitCase++;
@@ -724,42 +901,27 @@ vtkVisItSplitter::Execute()
                             pt2 = pt1;
                             pt1 = tmp;
                         }
-                        float dir = dist[pt2] - dist[pt1];
-                        float amt = 0. - dist[pt1];
-                        float percent = 1. - (amt / dir);
+                        double dir = dist[pt2] - dist[pt1];
+                        double amt = 0. - dist[pt1];
+                        double percent = 1. - (amt / dir);
 
                         // We may have physically (though not logically)
                         // degenerate cells if percent==0 or percent==1.
                         // We could pretty easily and mostly safely clamp
                         // percent to the range [1e-4, 1. - 1e-4] here.
-                        int ptId1 = cellPts[pt1];
-                        int ptId2 = cellPts[pt2];
+                        vtkIdType ptId1 = cellPts[pt1];
+                        vtkIdType ptId2 = cellPts[pt2];
 
                         // deal with exact zero crossings if requested
-                        if (clipFunction && useZeroCrossings)
+                        if (state.clipFunction != NULL && state.useZeroCrossings)
                         {
-                            if (pts_ptr)
-                            {
-                                AdjustPercentToZeroCrossing(pts_ptr,
-                                                            ptId1, ptId2,
-                                                            clipFunction,
-                                                            &percent);
-                            }
-                            else
-                            {
-                                // fake a little points array for rgrids
-                                float pt[6];
-                                pt[0] = X[cellI + X_val[pt1]];
-                                pt[1] = Y[cellJ + Y_val[pt1]];
-                                pt[2] = Z[cellK + Z_val[pt1]];
-                                pt[3] = X[cellI + X_val[pt2]];
-                                pt[4] = Y[cellJ + Y_val[pt2]];
-                                pt[5] = Z[cellK + Z_val[pt2]];
-                                AdjustPercentToZeroCrossing(pt,
-                                                            0, 1,
-                                                            clipFunction,
-                                                            &percent);
-                            }
+                            double p0[3], p1[3];
+                            bridge.GetPoint(ptId1, p0);
+                            bridge.GetPoint(ptId2, p1);
+
+                            AdjustPercentToZeroCrossing(p0, p1,
+                                                        state.clipFunction,
+                                                        &percent);
                         }
                                 
                         shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
@@ -822,24 +984,295 @@ vtkVisItSplitter::Execute()
             }
         }
     }
-    visitTimer->StopTimer(th1, "Performing clipping");
+    visitTimer->StopTimer(th1, "Performing splitting");
 
-    if (clipFunction)
-    {
-        delete[] scalarArray;
-        scalarArray = NULL;
-    }
-
+    //
+    // Construct the output data set.
+    //
     int th2 = visitTimer->StartTimer();
-    if (pts_ptr)
-        vfv.ConstructDataSet(inPD, inCD, output, pts_ptr,
-                             oldTags, newTags, newTagBit);
-    else
-        vfv.ConstructDataSet(inPD, inCD, output, pt_dims,X,Y,Z,
-                             oldTags, newTags, newTagBit);
+    bridge.ConstructDataSet(vfv, output, state.oldTags, state.newTags, state.newTagBit);
     visitTimer->StopTimer(th2, "VFV Constructing data set");
 }
 
+// ****************************************************************************
+// Method: vtkVisItSplitter_RectExecute
+//
+// Purpose: 
+//   Execute the clipping algorithm to different data via a bridge thet lets
+//   us deal with different mesh types and coordinate precisions. This function
+//   sets up structured meshes specially.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       Same
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 26 13:52:27 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename Bridge>
+void
+vtkVisItSplitter_RectExecute(Bridge bridge, const int *pt_dims,
+    vtkVisItSplitter::FilterState &state,
+    vtkUnstructuredGrid *output)
+{
+    if(state.clipFunction != NULL)
+    {
+        int t1 = visitTimer->StartTimer();
+        double *scalar = new double[bridge.GetNumberOfPoints()];
+        vtkIdType id = 0;
+        for (vtkIdType k=0; k<pt_dims[2]; k++)
+        {
+            for (vtkIdType j=0; j<pt_dims[1]; j++)
+            {
+                for (vtkIdType i=0; i<pt_dims[0]; i++, id++)
+                {
+                    double pt[3];
+                    bridge.GetPoint(i,j,k,pt);
+                    scalar[id] = -state.clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
+                }
+            }
+        }
+        visitTimer->StopTimer(t1, "Evaluate clip function");
+
+        vtkVisItSplitter_Algorithm(bridge, vtkAccessor<double>(scalar),
+                                   state, output);
+        delete [] scalar;
+    }
+    else if(state.scalarArrayAsVTK != NULL)
+    {
+        int dt = state.scalarArrayAsVTK->GetDataType();
+        if(dt == VTK_FLOAT)
+            vtkVisItSplitter_Algorithm(bridge, vtkAccessor<float>(state.scalarArrayAsVTK),
+                                       state, output);
+        else if(dt == VTK_DOUBLE)
+            vtkVisItSplitter_Algorithm(bridge, vtkAccessor<double>(state.scalarArrayAsVTK),
+                                       state, output);
+        else
+            vtkVisItSplitter_Algorithm(bridge, vtkGeneralAccessor(state.scalarArrayAsVTK),
+                                       state, output);
+    }
+}
+
+// ****************************************************************************
+// Method: vtkVisItSplitter_Execute
+//
+// Purpose: 
+//   Execute the clipping algorithm to different data via a bridge thet lets
+//   us deal with different mesh types and coordinate precisions. This function
+//   sets up unstructured meshes specially.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       Same as structured except that point traversal is 0..N.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 26 13:52:27 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+template <typename Bridge>
+void
+vtkVisItSplitter_Execute(Bridge bridge,
+    vtkVisItSplitter::FilterState &state,
+    vtkUnstructuredGrid *output)
+{
+    if(state.clipFunction != NULL)
+    {
+        int t1 = visitTimer->StartTimer();
+        vtkIdType nPts = bridge.GetNumberOfPoints();
+        double *scalar = new double[nPts];
+        for (vtkIdType i=0; i < nPts; i++)
+        {
+            double pt[3];
+            bridge.GetPoint(i, pt);
+            scalar[i] = -state.clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
+        }
+        visitTimer->StopTimer(t1, "Evaluate clip function");
+
+        vtkVisItSplitter_Algorithm(bridge, vtkAccessor<double>(scalar), 
+                                   state, output);
+        delete [] scalar;
+    }
+    else if(state.scalarArrayAsVTK != NULL)
+    {
+        int dt = state.scalarArrayAsVTK->GetDataType();
+        if(dt == VTK_FLOAT)
+            vtkVisItSplitter_Algorithm(bridge, vtkAccessor<float>(state.scalarArrayAsVTK),
+                                       state, output);
+        else if(dt == VTK_DOUBLE)
+            vtkVisItSplitter_Algorithm(bridge, vtkAccessor<double>(state.scalarArrayAsVTK),
+                                       state, output);
+        else
+            vtkVisItSplitter_Algorithm(bridge, vtkGeneralAccessor(state.scalarArrayAsVTK),
+                                       state, output);
+    }
+}
+
+// ****************************************************************************
+//  Method:  vtkVisItSplitter::Execute
+//
+//  Purpose:
+//    Main execution method.  
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 24, 2010
+//
+//  Modifications:
+//    Jeremy Meredith, Wed Feb 24 10:18:33 EST 2010
+//    Initial creation: unified the old rectilinear, structured, unstructured,
+//    and polydata execution functions into this single function.
+//
+//    Jeremy Meredith, Thu Feb 25 11:08:03 EST 2010
+//    Don't forget to exit early if we have a dataset we can't understand.
+//
+//    Jeremy Meredith, Thu Feb 25 15:14:28 EST 2010
+//    Allowing clipFunction usage to precalculate (most) values.  This
+//    saves a good chunk of time in this mode since we were re-calculating
+//    these values a number of times.
+//
+//    Brad Whitlock, Mon Mar 26 13:26:44 PDT 2012
+//    Massive refactor to support float/double values and coordinates.
+//
+// ****************************************************************************
+
+void
+vtkVisItSplitter::Execute()
+{
+    vtkDataSet *ds = GetInput();
+
+    int do_type = ds->GetDataObjectType();
+
+    // Set general input/output data
+    vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
+    int t0 = visitTimer->StartTimer();
+    if (do_type == VTK_RECTILINEAR_GRID || do_type == VTK_STRUCTURED_GRID)
+    {
+        int pt_dims[3] = {0,0,0};
+        if (do_type == VTK_RECTILINEAR_GRID)
+        {
+            vtkRectilinearGrid *rg = (vtkRectilinearGrid*)ds;
+            rg->GetDimensions(pt_dims);
+
+            vtkDataArray *X = rg->GetXCoordinates();
+            vtkDataArray *Y = rg->GetYCoordinates();
+            vtkDataArray *Z = rg->GetZCoordinates();
+            int tx = X->GetDataType();
+            int ty = Y->GetDataType();
+            int tz = Z->GetDataType();
+            bool same = (tx == ty) && (ty == tz);
+            if(same && tx == VTK_FLOAT)
+            {
+                SplitterBridgeRectilinearGrid<vtkRectPointAccessor<float> > bridge(rg, pt_dims, X, Y, Z);
+                vtkVisItSplitter_RectExecute(bridge, pt_dims, 
+                    this->state, output);
+            }
+            else if(same && tx == VTK_DOUBLE)
+            {
+                SplitterBridgeRectilinearGrid<vtkRectPointAccessor<double> > bridge(rg, pt_dims, X, Y, Z);
+                vtkVisItSplitter_RectExecute(bridge, pt_dims, 
+                    this->state, output);
+            }
+            else
+            {
+                SplitterBridgeRectilinearGrid<vtkGeneralRectPointAccessor> bridge(rg, pt_dims, X, Y, Z);
+                vtkVisItSplitter_RectExecute(bridge, pt_dims, 
+                    this->state, output);
+            }
+        }
+        else // do_type == VTK_STRUCTURED_GRID
+        {
+            vtkStructuredGrid *sg = (vtkStructuredGrid*)ds;
+            sg->GetDimensions(pt_dims);
+            if(sg->GetPoints()->GetDataType() == VTK_FLOAT)
+            {
+                SplitterBridgeStructuredGrid<vtkPointAccessor<float> > bridge(sg);
+                vtkVisItSplitter_Execute(bridge,  
+                    this->state, output);
+            }
+            else if(sg->GetPoints()->GetDataType() == VTK_FLOAT)
+            {
+                SplitterBridgeStructuredGrid<vtkPointAccessor<double> > bridge(sg);
+                vtkVisItSplitter_Execute(bridge,  
+                    this->state, output);
+            }
+/* This case probably does not happen...
+            else
+            {
+                SplitterBridge<vtkGeneralPointAccessor> bridge(sg);
+                vtkVisItSplitter_Execute(bridge, 
+                    this->state, output);
+            }
+*/
+        }
+    }
+    else if (do_type == VTK_UNSTRUCTURED_GRID)
+    {
+        vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *)ds;
+
+        if(ug->GetPoints()->GetDataType() == VTK_FLOAT)
+        {
+            SplitterBridgeUnstructuredGrid<vtkPointAccessor<float> > bridge(ug);
+            vtkVisItSplitter_Execute(bridge,
+                this->state, output);
+        }
+        else if(ug->GetPoints()->GetDataType() == VTK_DOUBLE)
+        {
+            SplitterBridgeUnstructuredGrid<vtkPointAccessor<double> > bridge(ug);
+            vtkVisItSplitter_Execute(bridge,
+                this->state, output);
+        }
+/* This case probably does not happen...
+        else
+        {
+            SplitterBridgeUnstructuredGrid<vtkGeneralPointAccessor> bridge(ug);
+            vtkVisItSplitter_UnstructuredExecute(bridge, 
+                this->state, output);
+        }
+*/
+    }
+    else if (do_type == VTK_POLY_DATA)
+    {
+        vtkPolyData *pd = (vtkPolyData *)ds;
+
+        if(pd->GetPoints()->GetDataType() == VTK_FLOAT)
+        {
+            SplitterBridgePolyData<vtkPointAccessor<float> > bridge(pd);
+            vtkVisItSplitter_Execute(bridge,
+                this->state, output);
+        }
+        else if(pd->GetPoints()->GetDataType() == VTK_DOUBLE)
+        {
+            SplitterBridgePolyData<vtkPointAccessor<double> > bridge(pd);
+            vtkVisItSplitter_Execute(bridge,
+                this->state, output);
+        }
+/* This case probably does not happen...
+        else
+        {
+            SplitterBridgePolyData<vtkGeneralPointAccessor> bridge(pd);
+            vtkVisItSplitter_Execute(bridge, 
+                this->state, output);
+        }
+*/
+    }
+    else
+    {
+        debug1 << "vtkVisItSplitter: Can't operate on this dataset.\n";
+    }
+    visitTimer->StopTimer(t0, "Splitter");
+}
 
 void vtkVisItSplitter::PrintSelf(ostream& os, vtkIndent indent)
 {

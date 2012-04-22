@@ -44,7 +44,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 
 #include <avtMaterial.h>
 #include <avtMetaData.h>
@@ -108,9 +108,7 @@ avtDominantMaterialExpression::~avtDominantMaterialExpression()
 vtkDataArray *
 avtDominantMaterialExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i;
-
-    int ncells = in_ds->GetNumberOfCells();
+    vtkIdType ncells = in_ds->GetNumberOfCells();
 
     //
     // The 'currentDomainsIndex' is a data member of the base class that is
@@ -126,10 +124,10 @@ avtDominantMaterialExpression::DeriveVariable(vtkDataSet *in_ds)
 
     std::vector<std::string> matnames = mat->GetMaterials();
     std::vector<int> matnums(matnames.size());
-    for (i = 0 ; i < matnames.size() ; i++)
+    for (size_t i = 0 ; i < matnames.size() ; i++)
         matnums[i] = atoi(matnames[i].c_str());
 
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkIntArray *rv = vtkIntArray::New();
     rv->SetNumberOfTuples(ncells);
 
     vtkDataArray *zn =in_ds->GetCellData()->GetArray("avtOriginalCellNumbers");
@@ -139,8 +137,8 @@ avtDominantMaterialExpression::DeriveVariable(vtkDataSet *in_ds)
                << endl;
         return NULL;
     }
-    int *ptr = (int *) zn->GetVoidPointer(0);
-    int entry_size = zn->GetNumberOfComponents();
+    unsigned int *ptr = (unsigned int *) zn->GetVoidPointer(0);
+    vtkIdType entry_size = zn->GetNumberOfComponents();
     int offset = entry_size-1;
 
     //
@@ -151,13 +149,13 @@ avtDominantMaterialExpression::DeriveVariable(vtkDataSet *in_ds)
     const int *mix_next = mat->GetMixNext();
     const float *mix_vf = mat->GetMixVF();
     const int *mix_mat  = mat->GetMixMat();
-    for (i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         int dom_mat = 0;
         bool shouldSkip = false;
         if (entry_size == 2)
         {
-            if (ptr[entry_size*i + 0] != currentDomainsIndex)
+            if ((int)ptr[entry_size*i + 0] != currentDomainsIndex)
             {
                 dom_mat = 0;
                 shouldSkip = true;
@@ -196,7 +194,7 @@ avtDominantMaterialExpression::DeriveVariable(vtkDataSet *in_ds)
                 }
             }
         }
-        rv->SetTuple1(i, (float) dom_mat);
+        rv->SetValue(i, dom_mat);
     }
 
     return rv;

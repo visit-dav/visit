@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtConstantFunctionExpression.C                        //
+//                    avtConstantFunctionExpression.C                        //
 // ************************************************************************* //
 
 #include <avtConstantFunctionExpression.h>
@@ -115,11 +115,12 @@ avtConstantFunctionExpression::~avtConstantFunctionExpression()
 vtkDataArray *
 avtConstantFunctionExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int nvals = nodal ? in_ds->GetNumberOfPoints() : in_ds->GetNumberOfCells();
+    vtkIdType nvals = nodal ? in_ds->GetNumberOfPoints() : 
+                      in_ds->GetNumberOfCells();
 
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfTuples(nvals);
-    for (int i = 0 ; i < nvals ; i++)
+    for (vtkIdType i = 0 ; i < nvals ; i++)
     {
         rv->SetTuple1(i, value);
     }

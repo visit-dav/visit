@@ -47,13 +47,6 @@
 #include <avtSingleInputExpressionFilter.h>
 
 
-class     vtkCell;
-class     vtkCellDataToPointData;
-class     vtkDataArray;
-class     vtkDataSet;
-class     vtkIdList;
-class     vtkScalarData;
-class     ExprNode;
 
 // ****************************************************************************
 //  Class: avtCylindricalRadiusExpression
@@ -91,7 +84,7 @@ class EXPRESSION_API avtCylindricalRadiusExpression
     virtual int               GetVariableDimension() { return 1; }
 
   private:
-            double            axisVector[3];
+    double                    axisVector[3];
     
 };
 

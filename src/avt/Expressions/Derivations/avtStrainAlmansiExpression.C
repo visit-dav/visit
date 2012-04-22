@@ -37,26 +37,18 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtStrainAlmansiExpression.C                        //
+//                       avtStrainAlmansiExpression.C                        //
 // ************************************************************************* //
 
 #include <avtStrainAlmansiExpression.h>
-#include <vtkVisItUtility.h>
 #include <math.h>
 
-#include <vtkCellData.h>
+#include <vtkCellType.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkFloatArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkPointSet.h>
-#include <vtkCell.h>
-#include <vtkCellType.h>
+#include <vtkIdList.h>
 #include <vtkPointData.h>
-#include <vtkPointLocator.h>
-
-#include <vtkMath.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <ExpressionException.h>
 
@@ -96,6 +88,10 @@ avtStrainAlmansiExpression::~avtStrainAlmansiExpression()
 //
 //  Programmer: Thomas R. Treadway
 //  Creation:   Wed Nov 15 12:57:36 PST 2006
+//
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 12 12:00:10 PDT 2012
+//    Set output array's data type to same as input's.
 //
 // ****************************************************************************
 
@@ -137,7 +133,7 @@ avtStrainAlmansiExpression::DeriveVariable(vtkDataSet *in_ds)
     unsigned char *ghost =
         (unsigned char *) (ghost_data ? ghost_data->GetVoidPointer(0) : 0);
     vtkIdList *pointIds = vtkIdList::New();
-    vtkFloatArray *out = vtkFloatArray::New();
+    vtkDataArray *out = coord_data->NewInstance();
     out->SetNumberOfComponents(9);
     out->SetNumberOfTuples(nCells);
     for (j = 0; j < 9; j++) 
@@ -243,6 +239,8 @@ avtStrainAlmansiExpression::DeriveVariable(vtkDataSet *in_ds)
     }
     return out;
 }
+
+
 // ****************************************************************************
 //  Method: avtStrainAlmansiExpression::GetVariableDimension
 //

@@ -145,11 +145,12 @@ class EXPRESSION_API avtGradientExpression : public avtSingleInputExpressionFilt
                                                            vtkDataArray *,
                                                            int ,
                                                            double *);
-    static float              EvaluateComponent(float, float, float, float,
-                                                float, float, float,
+    static double             EvaluateComponent(double, double, double, double,
+                                                double, double, double,
                                                 vtkDataSet *, vtkDataArray *,
                                                 vtkIdList *);
-    static float              EvaluateValue(float, float, float, vtkDataSet *,
+    static double             EvaluateValue(double, double, double, 
+                                            vtkDataSet *,
                                             vtkDataArray *,vtkIdList *,bool &);
 };
 

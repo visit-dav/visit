@@ -37,14 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtNodeDegreeExpression.C                         //
+//                         avtNodeDegreeExpression.C                         //
 // ************************************************************************* //
 
 #include <avtNodeDegreeExpression.h>
 
 #include <vtkCell.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -107,7 +107,7 @@ avtNodeDegreeExpression::~avtNodeDegreeExpression()
 inline int
 VIntFind(const std::vector<int>&v, int val)
 {
-    for (int i = 0; i < v.size(); i++)
+    for (size_t i = 0; i < v.size(); i++)
         if (v[i] == val)
             return i;
     return -1;
@@ -173,8 +173,7 @@ void GlobalPointAssign2(vtkCell *cell, int adj[], int _a, int _b)
 vtkDataArray *
 avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int i,localId;
-    int nPoints = in_ds->GetNumberOfPoints();
+    vtkIdType nPoints = in_ds->GetNumberOfPoints();
     
     // This is our connectivity list. It says that point P is connected to
     // the points in connectivity[P]. A point is not connected to itself.
@@ -182,14 +181,14 @@ avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
     // But first we have to construct the list.
     std::vector<std::vector<int> > connectivity(nPoints); 
 
-    int nCells = in_ds->GetNumberOfCells();
-    for (i = 0 ; i < nCells ; i++)
+    vtkIdType nCells = in_ds->GetNumberOfCells();
+    for (vtkIdType i = 0 ; i < nCells ; i++)
     {
         vtkCell *cell = in_ds->GetCell(i);
-        int numPointsForThisCell = cell->GetNumberOfPoints();
-        for (localId = 0 ; localId < numPointsForThisCell ; localId++)
+        vtkIdType numPointsForThisCell = cell->GetNumberOfPoints();
+        for (int localId = 0 ; localId < numPointsForThisCell ; localId++)
         {
-            int id = cell->GetPointId(localId);
+            vtkIdType id = cell->GetPointId(localId);
 
             // Most nodes have 3 adjacent nodes in that cell.
             // One pryamid node has 4, and is treated as a special case.
@@ -314,10 +313,9 @@ avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
     // Set up a VTK variable reflecting the NodeDegrees we calculated, which
     // is found by taking the length of the connectivity lists.
     //
-    vtkFloatArray *dv = vtkFloatArray::New();
-    dv->SetNumberOfComponents(1);
+    vtkIntArray *dv = vtkIntArray::New();
     dv->SetNumberOfValues(nPoints);
-    for(i = 0 ; i < nPoints ; i++)
+    for(vtkIdType i = 0 ; i < nPoints ; i++)
     {
         dv->SetValue(i, connectivity[i].size());
     }

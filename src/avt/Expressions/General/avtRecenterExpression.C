@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtRecenterExpression.C                          //
+//                          avtRecenterExpression.C                          //
 // ************************************************************************* //
 
 #include <avtRecenterExpression.h>
@@ -202,7 +202,8 @@ avtRecenterExpression::DeriveVariable(vtkDataSet *in_ds)
 {
     if (activeVariable == NULL)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "Asked to recenter, but did not "
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Asked to recenter, but did not "
                    "specify which variable to recenter");
     }
 
@@ -239,8 +240,8 @@ avtRecenterExpression::DeriveVariable(vtkDataSet *in_ds)
         rv = Recenter(in_ds, pt_data, AVT_NODECENT, outputVariableName, target);
     else
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "Was not able to locate variable to "
-                   "recenter.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Was not able to locate variable to recenter.");
     }
 
     return rv;

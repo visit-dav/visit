@@ -47,8 +47,8 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedIntArray.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 
@@ -124,7 +124,6 @@ avtApplyMapExpression::~avtApplyMapExpression()
 vtkDataArray *
 avtApplyMapExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i;
     ostringstream oss;
 
     if (varnames.size() == 0)
@@ -145,14 +144,17 @@ avtApplyMapExpression::DeriveVariable(vtkDataSet *in_ds)
 
     if(mapType == 0) // numeric map
     {
-        vtkFloatArray *rv = vtkFloatArray::New();
-        int nvals = var->GetNumberOfTuples();
+        vtkDataArray *rv;
+        if (var->GetDataType() == VTK_DOUBLE)
+            rv = vtkDoubleArray::New();
+        else
+            rv = vtkFloatArray::New();
+        vtkIdType nvals = var->GetNumberOfTuples();
         rv->SetNumberOfComponents(1);
         rv->SetNumberOfTuples(nvals);
-
         double val = 0.0;
 
-        for (i = 0 ; i < nvals ; i++)
+        for (vtkIdType i = 0 ; i < nvals ; i++)
         {
             val = var->GetTuple1(i);
 
@@ -170,14 +172,14 @@ avtApplyMapExpression::DeriveVariable(vtkDataSet *in_ds)
     else if(mapType == 1) // string map
     {
         vtkUnsignedCharArray *rv = vtkUnsignedCharArray::New();
-        int nvals = var->GetNumberOfTuples();
+        vtkIdType nvals = var->GetNumberOfTuples();
         // set the # of components to max string length + 1
         rv->SetNumberOfComponents(maxStringLength+1);
         rv->SetNumberOfTuples(nvals);
         double val = 0.0;
 
         unsigned char *ptr = rv->GetPointer(0); 
-        for (i = 0 ; i < nvals ; i++)
+        for (vtkIdType i = 0 ; i < nvals ; i++)
         {
             val = var->GetTuple1(i);
             map<double,string>::iterator itr = stringMap.find(val);
@@ -374,7 +376,7 @@ void
 avtApplyMapExpression::BuildMap(ListExpr *to_list,
                                 const vector<double> &from_vals)
 {
-    int from_size = from_vals.size();
+    size_t from_size = from_vals.size();
     vector<double> numeric_vals;
     vector<string> string_vals;
     maxStringLength = 0;
@@ -387,7 +389,7 @@ avtApplyMapExpression::BuildMap(ListExpr *to_list,
             ThrowError("map function 'from' and 'to' arrays must "
                        "contain the same # of elements.");
 
-        for(unsigned int i=0; i < from_size; i++)
+        for(size_t i=0; i < from_size; i++)
             numericMap[from_vals[i]] = numeric_vals[i];
     }
     else if(to_list->ExtractStringElements(string_vals))
@@ -498,6 +500,4 @@ avtApplyMapExpression::ThrowError(const string &msg)
                      "  map(value,[FROM list],[TO list])\n"
                      "  map(value,[FROM list],[TO list],default)\n");
 }
-
-
 

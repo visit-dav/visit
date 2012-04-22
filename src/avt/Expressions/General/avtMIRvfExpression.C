@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtMIRvfExpression.C                            //
+//                           avtMIRvfExpression.C                            //
 // ************************************************************************* //
 
 #include <avtMIRvfExpression.h>
@@ -45,8 +45,8 @@
 #include <math.h>
 
 #include <vtkCellData.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 
 #include <avtExprNode.h>
@@ -59,7 +59,6 @@
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
-#include <ImproperUseException.h>
 
 #include <string>
 #include <vector>
@@ -139,35 +138,34 @@ avtMIRvfExpression::PreExecute(void)
 vtkDataArray *
 avtMIRvfExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i;
-
     vtkDataArray *volume = in_ds->GetCellData()->GetArray(volume_name.c_str());
     vtkDataArray *zoneid = in_ds->GetCellData()->GetArray(zoneid_name.c_str());
     if (volume == NULL || zoneid == NULL)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "The arguments to MIR VF were not "
-                      "created properly.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                    "The arguments to MIR VF were not created properly.");
     }
     vtkIntArray *matnum = (vtkIntArray *)
                            in_ds->GetCellData()->GetArray("avtSubsets");
     if (matnum == NULL)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "MIR VF not able to locate materials");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "MIR VF not able to locate materials");
     }
 
     //
     // Determine the biggest zone id.
     //
-    int ncells = in_ds->GetNumberOfCells();
+    vtkIdType ncells = in_ds->GetNumberOfCells();
     int biggest_zone = -1;
-    for (i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         int z = (int) zoneid->GetTuple1(i);
         biggest_zone = (z > biggest_zone ? z : biggest_zone);
     }
-    float *total_vol = new float[biggest_zone+1];
-    float *mat_vol   = new float[biggest_zone+1];
-    for (i = 0 ; i < biggest_zone+1 ; i++)
+    double *total_vol = new double[biggest_zone+1];
+    double *mat_vol   = new double[biggest_zone+1];
+    for (int i = 0 ; i < biggest_zone+1 ; i++)
     {
         total_vol[i] = 0.;
         mat_vol[i]   = 0.;
@@ -182,10 +180,10 @@ avtMIRvfExpression::DeriveVariable(vtkDataSet *in_ds)
     // 
     std::vector<bool> useMat;
     GetMaterialList(useMat);
-    for (i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         int z = (int) zoneid->GetTuple1(i);
-        float vol = volume->GetTuple1(i);
+        double vol = volume->GetTuple1(i);
         int mat = matnum->GetValue(i);
         total_vol[z] += vol;
         if (useMat[mat])
@@ -197,9 +195,9 @@ avtMIRvfExpression::DeriveVariable(vtkDataSet *in_ds)
     // for each whole zone, we can calculate the volume fraction and then
     // assign that volume fraction to each subzone.
     //
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkDataArray *rv = volume->NewInstance();
     rv->SetNumberOfTuples(ncells);
-    for (i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         int z = (int) zoneid->GetTuple1(i);
         if (total_vol[z] != 0.)  // should always be non-zero, but who knows?
@@ -245,7 +243,10 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat)
     avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
                                                   currentTimeState);
     if (mat == NULL)
-        EXCEPTION2(ExpressionException, outputVariableName, "Unable to match up material names.");
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Unable to match up material names.");
+    }
 
     //
     // Try to match up the materials in the avtMaterial object with the
@@ -325,7 +326,7 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat)
             }
         }
     }
-    for (i = 0 ; i < matIndices.size() ; i++)
+    for (size_t i = 0 ; i < matIndices.size() ; i++)
     {
         char tmp[256];
         sprintf(tmp, "%d", matIndices[i]);
@@ -396,7 +397,8 @@ avtMIRvfExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     int nargs = arguments->size();
     if (nargs != 4)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "avtMIRvfExpression: Incorrect # of "
+        EXCEPTION2(ExpressionException, outputVariableName, 
+             "avtMIRvfExpression: Incorrect # of "
              "arguments.  (mat-name, zone-id, volume, material list)."
              "To specify more than one material, use a list (e.g. [1,4,5:9].");
     }
@@ -423,8 +425,11 @@ avtMIRvfExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     std::string type = fourthTree->GetTypeName();
     if ((type != "IntegerConst") && (type != "StringConst") && (type != "List"))
     {
-        debug5 << "avtMIRvfExpression: Second argument is not a constant or a list: " << type.c_str() << endl;
-        EXCEPTION2(ExpressionException, outputVariableName, "avtMIRvfExpression: Second argument is not a constant or a list.");
+        debug5 << "avtMIRvfExpression: Second argument is not a constant or a "
+               << "list: " << type.c_str() << endl;
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "avtMIRvfExpression: Second argument is not a constant or a"
+                   " list.");
     }
 
     if (type == "IntegerConst" || type == "StringConst")
@@ -450,18 +455,20 @@ avtMIRvfExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                     endExpr->GetTypeName() != "IntegerConst" ||
                     (skipExpr && skipExpr->GetTypeName() != "IntegerConst"))
                 {
-                    EXCEPTION2(ExpressionException, outputVariableName, "avtMIRvfExpression: "
+                    EXCEPTION2(ExpressionException, outputVariableName, 
+                               "avtMIRvfExpression: "
                                "Range must contain integers.");
                 }
 
                 int beg  = dynamic_cast<IntegerConstExpr*>(begExpr)->GetValue();
                 int end  = dynamic_cast<IntegerConstExpr*>(endExpr)->GetValue();
                 int skip = !skipExpr ? 1 : 
-                           dynamic_cast<IntegerConstExpr*>(skipExpr)->GetValue();
+                          dynamic_cast<IntegerConstExpr*>(skipExpr)->GetValue();
 
                 if (skip <= 0 || beg > end)
                 {
-                    EXCEPTION2(ExpressionException, outputVariableName, "avtMIRvfExpression: "
+                    EXCEPTION2(ExpressionException, outputVariableName, 
+                               "avtMIRvfExpression: "
                                "Range must be of the form beg:end[:skip].");
                 }
 
@@ -477,7 +484,8 @@ avtMIRvfExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                     debug5 << "avtMIRvfExpression: List element is not an "
                               "integer constant, a string constant, "
                               "or a list: " << type.c_str() << endl;
-                    EXCEPTION2(ExpressionException, outputVariableName, "avtMIRvfExpression: "
+                    EXCEPTION2(ExpressionException, outputVariableName, 
+                               "avtMIRvfExpression: "
                                "List element is not a int/string constant "
                                "or a list.");
                 }

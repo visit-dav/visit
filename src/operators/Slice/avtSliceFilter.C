@@ -46,8 +46,8 @@
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
+#include <vtkDoubleArray.h>
 #include <vtkExecutive.h>
-#include <vtkFloatArray.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
 #include <vtkMatrixToLinearTransform.h>
@@ -80,11 +80,13 @@
 using     std::vector;
 
 
-static bool   PlaneIntersectsCube(float plane[4], float bounds[6]);
-static void   FindCells(float *x, float *y, float *z, int nx, int ny, int nz,
-                        int *clist, int clistlen, int &ncells, float *plane, 
-                        int dim, int ax, int ay, int az, int onx, int ony,
-                        int onz);
+static bool   PlaneIntersectsCube(double plane[4], double bounds[6]);
+static void   FindCells(double *x, double *y, double *z,
+                        int nx, int ny, int nz,
+                        vtkIdType *clist, vtkIdType clistlen, vtkIdType &ncells,
+                        double *plane, int dim, 
+                        int ax, int ay, int az, 
+                        int onx, int ony, int onz);
 static void   ProjectExtentsCallback(const double *in, double *out,
                                      void *args);
 
@@ -1399,7 +1401,6 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
     rg->GetDimensions(pt_dims);
 
     // Make the coordinates easily accessible.
-    int           nCells = rg->GetNumberOfCells();
     double  *X = new double[pt_dims[0]];
     for (i = 0 ; i < pt_dims[0] ; i++)
         X[i] = rg->GetXCoordinates()->GetTuple1(i);
@@ -1463,7 +1464,7 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
         // Determine where the origin intersects our slice.
         //
         int iOffset = -1;
-        float percent = 0.;
+        double percent = 0.;
         for (i = 0 ; i < pt_dims[0]-1 ; i++)
         {
             if (X[i] <= cachedOrigin[0] && cachedOrigin[0] <= X[i+1])
@@ -1523,7 +1524,6 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
         }
 
         output->SetDimensions(new_dims);
-        int nnewpts = new_dims[0]*new_dims[1]*new_dims[2];
         int nnewcells = 1;
         nnewcells *= (new_dims[0] > 1 ? new_dims[0]-1 : 1);
         nnewcells *= (new_dims[1] > 1 ? new_dims[1]-1 : 1);
@@ -1566,7 +1566,7 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
         // Determine where the origin intersects our slice.
         //
         int jOffset = -1;
-        float percent = 0.;
+        double percent = 0.;
         for (i = 0 ; i < pt_dims[1]-1 ; i++)
         {
             if (Y[i] <= cachedOrigin[1] && cachedOrigin[1] <= Y[i+1])
@@ -1626,7 +1626,6 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
         }
 
         output->SetDimensions(new_dims);
-        int nnewpts = new_dims[0]*new_dims[1]*new_dims[2];
         int nnewcells = 1;
         nnewcells *= (new_dims[0] > 1 ? new_dims[0]-1 : 1);
         nnewcells *= (new_dims[1] > 1 ? new_dims[1]-1 : 1);
@@ -1669,7 +1668,7 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
         // Determine where the origin intersects our slice.
         //
         int kOffset = -1;
-        float percent = 0.;
+        double percent = 0.;
         for (i = 0 ; i < pt_dims[2]-1 ; i++)
         {
             if (Z[i] <= cachedOrigin[2] && cachedOrigin[2] <= Z[i+1])
@@ -1729,7 +1728,6 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
         }
 
         output->SetDimensions(new_dims);
-        int nnewpts = new_dims[0]*new_dims[1]*new_dims[2];
         int nnewcells = 1;
         nnewcells *= (new_dims[0] > 1 ? new_dims[0]-1 : 1);
         nnewcells *= (new_dims[1] > 1 ? new_dims[1]-1 : 1);
@@ -2201,17 +2199,17 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
     //
     // Set up a one cell-ed rectilinear grid based on the bounding box.
     //
-    vtkFloatArray *x = vtkFloatArray::New();
+    vtkDoubleArray *x = vtkDoubleArray::New();
     x->SetNumberOfTuples(2);
     x->SetComponent(0, 0, b[0]);
     x->SetComponent(1, 0, b[1]);
 
-    vtkFloatArray *y = vtkFloatArray::New();
+    vtkDoubleArray *y = vtkDoubleArray::New();
     y->SetNumberOfTuples(2);
     y->SetComponent(0, 0, b[2]);
     y->SetComponent(1, 0, b[3]);
 
-    vtkFloatArray *z = vtkFloatArray::New();
+    vtkDoubleArray *z = vtkDoubleArray::New();
     z->SetNumberOfTuples(2);
     z->SetComponent(0, 0, b[4]);
     z->SetComponent(1, 0, b[5]);
@@ -2235,7 +2233,7 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
     // extents are.
     //
     vtkPolyData *pd = (vtkPolyData *) transform->GetOutput();
-    float minmax[4] = { +FLT_MAX, -FLT_MAX, +FLT_MAX, -FLT_MAX };
+    double minmax[4] = { +FLT_MAX, -FLT_MAX, +FLT_MAX, -FLT_MAX };
     for (int i = 0 ; i < pd->GetNumberOfCells() ; i++)
     {
         vtkCell *cell = pd->GetCell(i);
@@ -2374,6 +2372,9 @@ avtSliceFilter::SetPlaneOrientation(double *b)
 //    Change the upper limit for number of cells, and pass it along
 //    down the line so we don't walk off the end of the array.
 //
+//    Brad Whitlock, Tue Mar 13 14:37:38 PDT 2012
+//    Change float to double and int to vtkIdType.
+//
 // ****************************************************************************
 
 void
@@ -2384,7 +2385,7 @@ avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
 
     vtkDataArray *xc = rgrid->GetXCoordinates();
     int nx = xc->GetNumberOfTuples();
-    float *x = new float[nx];
+    double *x = new double[nx];
     for (i = 0 ; i < nx ; i++)
     {
         x[i] = xc->GetTuple1(i);
@@ -2392,7 +2393,7 @@ avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
 
     vtkDataArray *yc = rgrid->GetYCoordinates();
     int ny = yc->GetNumberOfTuples();
-    float *y = new float[ny];
+    double *y = new double[ny];
     for (i = 0 ; i < ny ; i++)
     {
         y[i] = yc->GetTuple1(i);
@@ -2400,7 +2401,7 @@ avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
 
     vtkDataArray *zc = rgrid->GetZCoordinates();
     int nz = zc->GetNumberOfTuples();
-    float *z = new float[nz];
+    double *z = new double[nz];
     for (i = 0 ; i < nz ; i++)
     {
         z[i] = zc->GetTuple1(i);
@@ -2411,16 +2412,16 @@ avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
     //
     if (celllist != NULL)
         delete [] celllist;
-    int totalcells = 2*(nx*ny + nx*nz + ny*nz);
-    celllist   = new int[totalcells];
+    vtkIdType totalcells = 2*(nx*ny + nx*nz + ny*nz);
+    celllist   = new vtkIdType[totalcells];
 
-    float plane[4];
+    double plane[4];
     plane[0] = cachedNormal[0];
     plane[1] = cachedNormal[1];
     plane[2] = cachedNormal[2];
     plane[3] = D;
 
-    int numcells = 0;
+    vtkIdType numcells = 0;
     FindCells(x, y, z, nx-1, ny-1, nz-1, celllist, totalcells,
               numcells, plane, 0, 0, 0, 0,
               nx-1,ny-1,nz-1);
@@ -2473,11 +2474,14 @@ avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
 //   degenerate cases, so don't worry about trying to grow the array or
 //   make it more prominent: just log it in the debug logs, and don't crash.
 //
+//   Brad Whitlock, Tue Mar 13 14:37:38 PDT 2012
+//   Change float to double and int to vtkIdType.
+//   
 // ****************************************************************************
 
 void
-FindCells(float *x, float *y, float *z, int nx, int ny, int nz, int *clist, 
-          int clistlen, int &ncells, float *plane, int dim,
+FindCells(double *x, double *y, double *z, int nx, int ny, int nz, vtkIdType *clist, 
+          vtkIdType clistlen, vtkIdType &ncells, double *plane, int dim,
           int ax, int ay, int az, int onx, int ony, int onz)
 {
     if (nx <= 0 || ny <= 0 || nz <= 0)
@@ -2485,7 +2489,7 @@ FindCells(float *x, float *y, float *z, int nx, int ny, int nz, int *clist,
         return;
     }
 
-    float bounds[6];
+    double bounds[6];
     bounds[0] = x[0];
     bounds[1] = x[nx];
     bounds[2] = y[0];
@@ -2502,7 +2506,7 @@ FindCells(float *x, float *y, float *z, int nx, int ny, int nz, int *clist,
         //
         // Here is the base case -- see if this one cell intersects the plane.
         //
-        int cell = az*onx*ony + ay*onx + ax;
+        vtkIdType cell = az*onx*ony + ay*onx + ax;
         if (ncells >= clistlen)
         {
             static bool showed_error = false;
@@ -2576,16 +2580,16 @@ FindCells(float *x, float *y, float *z, int nx, int ny, int nz, int *clist,
 // ****************************************************************************
 
 bool
-PlaneIntersectsCube(float plane[4], float bounds[6])
+PlaneIntersectsCube(double plane[4], double bounds[6])
 {
     bool has_low_point  = false;
     bool has_high_point = false;
     for (int i = 0 ; i < 8 ; i++)
     {
-        float x = (i&1 ? bounds[1] : bounds[0]);
-        float y = (i&2 ? bounds[3] : bounds[2]);
-        float z = (i&4 ? bounds[5] : bounds[4]);
-        float val = plane[3] - plane[0]*x - plane[1]*y - plane[2]*z;
+        double x = (i&1 ? bounds[1] : bounds[0]);
+        double y = (i&2 ? bounds[3] : bounds[2]);
+        double z = (i&4 ? bounds[5] : bounds[4]);
+        double val = plane[3] - plane[0]*x - plane[1]*y - plane[2]*z;
 
         if (val == 0.)  // If we are on the plane, intersect
             return true;

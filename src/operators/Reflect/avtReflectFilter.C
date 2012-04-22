@@ -883,6 +883,9 @@ avtReflectFilter::ReflectDataArray(vtkDataArray *coords, double val)
 //    Hank Childs, Fri Aug 27 15:25:22 PDT 2004
 //    Rename ghost data arrays.
 //
+//    Brad Whitlock, Wed Apr 11 23:29:56 PDT 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -892,7 +895,7 @@ avtReflectFilter::ReflectPointSet(vtkPointSet *ds, int dim)
     out->ShallowCopy(ds);
 
     vtkPoints *inPts  = ds->GetPoints();
-    vtkPoints *outPts = vtkPoints::New();
+    vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());
     int nPts = inPts->GetNumberOfPoints();
     outPts->SetNumberOfPoints(nPts);
 
@@ -958,6 +961,9 @@ avtReflectFilter::ReflectPointSet(vtkPointSet *ds, int dim)
 //    This will make it be a continuous field (and one that particles
 //    won't advect through!).
 //
+//    Brad Whitlock, Wed Apr 11 23:28:52 PDT 2012
+//    Switch to Get/SetComponent.
+//
 // ****************************************************************************
 
 static void
@@ -979,8 +985,6 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
         vtkDataArray *da = pd->GetArray(i);
         if (da->GetNumberOfComponents() == 3)
         {
-            if (da->GetDataType() != VTK_FLOAT)
-                continue;
             pt_vectors.push_back(da);
         }
     }
@@ -994,18 +998,14 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
         da->DeepCopy(pt_vectors[i]);
         da->SetName(pt_vectors[i]->GetName());
         const int ntups = da->GetNumberOfTuples();
-        float *ptr = (float *) da->GetVoidPointer(0);
         for (j = 0 ; j < ntups ; j++)
         {
             if (dim & 1)
-                *ptr *= -1.;
-            ptr++;
+                da->SetComponent(j, 0, -da->GetComponent(j, 0));
             if (dim & 2)
-                *ptr *= -1.;
-            ptr++;
+                da->SetComponent(j, 1, -da->GetComponent(j, 1));
             if (dim & 4)
-                *ptr *= -1.;
-            ptr++;
+                da->SetComponent(j, 2, -da->GetComponent(j, 2));
         }
         new_pt_vectors.push_back(da);
     }
@@ -1052,11 +1052,7 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
     {
         vtkDataArray *da = cd->GetArray(i);
         if (da->GetNumberOfComponents() == 3)
-        {
-            if (da->GetDataType() != VTK_FLOAT)
-                continue;
             cell_vectors.push_back(da);
-        }
     }
     
     // Now reverse the orientation of the vectors based on the axis of
@@ -1068,18 +1064,14 @@ ReflectVectorData(vtkDataSet *ds, int dim, bool zeroOutVelocitiesOnBoundary)
         da->DeepCopy(cell_vectors[i]);
         da->SetName(cell_vectors[i]->GetName());
         const int ntups = da->GetNumberOfTuples();
-        float *ptr = (float *) da->GetVoidPointer(0);
         for (j = 0 ; j < ntups ; j++)
         {
             if (dim & 1)
-                *ptr *= -1.;
-            ptr++;
+                da->SetComponent(j, 0, -da->GetComponent(j, 0));
             if (dim & 2)
-                *ptr *= -1.;
-            ptr++;
+                da->SetComponent(j, 1, -da->GetComponent(j, 1));
             if (dim & 4)
-                *ptr *= -1.;
-            ptr++;
+                da->SetComponent(j, 2, -da->GetComponent(j, 2));
         }
         new_cell_vectors.push_back(da);
     }

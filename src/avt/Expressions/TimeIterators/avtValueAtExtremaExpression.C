@@ -99,30 +99,26 @@ avtValueAtExtremaExpression::ExecuteDataset(std::vector<vtkDataArray *> &inVars,
     bool exVarIsConstant   = (ex_var->GetNumberOfTuples()==1);
     bool valueVarIsConstant= (value_var != NULL && value_var->GetNumberOfTuples()==1);
 
-    // Going the ptr arithmetic route, because I'm having buggy behavior with
-    // Get/SetTup requiring double * and I cannot use GetSetTuple1.
-    float *out_var_ptr = (float *) outVar->GetVoidPointer(0);
-
-    int nvars = outVar->GetNumberOfTuples();
-    for (int i = 0 ; i < nvars ; i++)
+    vtkIdType nvars = outVar->GetNumberOfTuples();
+    for (vtkIdType i = 0 ; i < nvars ; i++)
     {
         int exVarIndex   = (exVarIsConstant ? 0 : i);
         int valueVarIndex= (valueVarIsConstant ? 0 : i);
         bool reset = false;
         if (ts == 0)
         {
-            out_var_ptr[2*i]   = (atMaximum ? -FLT_MAX : FLT_MAX);
-            reset = true; // set out_var_ptr[2*i+1] below
+            outVar->SetComponent(i, 0, (atMaximum ? -FLT_MAX : FLT_MAX));
+            reset = true; // set outVar(i,1) below
         }
 
         if (atMaximum)
         {
-            if (ex_var->GetTuple1(exVarIndex) > out_var_ptr[2*i])
+            if (ex_var->GetTuple1(exVarIndex) > outVar->GetComponent(i, 0))
                 reset = true;
         }
         else
         {
-            if (ex_var->GetTuple1(exVarIndex) < out_var_ptr[2*i])
+            if (ex_var->GetTuple1(exVarIndex) < outVar->GetComponent(i, 0))
                 reset = true;
         }
               
@@ -144,8 +140,8 @@ avtValueAtExtremaExpression::ExecuteDataset(std::vector<vtkDataArray *> &inVars,
                 val = value_var->GetTuple1(valueVarIndex);
                 break;
             }
-            out_var_ptr[2*i+0] = ex_var->GetTuple1(exVarIndex);
-            out_var_ptr[2*i+1] = val;
+            outVar->SetComponent(i, 0, ex_var->GetTuple1(exVarIndex));
+            outVar->SetComponent(i, 1, val);
         }
     }
 }
@@ -168,15 +164,11 @@ avtValueAtExtremaExpression::ExecuteDataset(std::vector<vtkDataArray *> &inVars,
 vtkDataArray *
 avtValueAtExtremaExpression::ConvertIntermediateArrayToFinalArray(vtkDataArray *d)
 {
-    // Going the ptr arithmetic route, because I'm having buggy behavior with
-    // Get/SetTup requiring double * and I cannot use GetSetTuple1.
-    float *d_ptr = (float *) d->GetVoidPointer(0);
-
     vtkDataArray *rv = d->NewInstance();
     rv->SetNumberOfTuples(d->GetNumberOfTuples());
-    for (int i = 0 ; i < d->GetNumberOfTuples() ; i++)
+    for (vtkIdType i = 0 ; i < d->GetNumberOfTuples() ; i++)
     {
-        rv->SetTuple1(i, d_ptr[2*i+1]);
+        rv->SetTuple1(i, d->GetComponent(i,1));
     }
 
     rv->SetName(d->GetName());

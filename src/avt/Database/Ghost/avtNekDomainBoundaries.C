@@ -992,6 +992,14 @@ avtNekDomainBoundaries::ExchangeFloatVector(vector<int> domainNum,
     EXCEPTION0(ImproperUseException);
 }
 
+vector<vtkDataArray*>     
+avtNekDomainBoundaries::ExchangeDoubleVector(vector<int> domainNum,
+                                            bool                   isPointData,
+                                            vector<vtkDataArray*>  vectors)
+{
+    EXCEPTION0(ImproperUseException);
+}
+
 
 vector<vtkDataArray*>     
 avtNekDomainBoundaries::ExchangeIntVector(vector<int>  domainNum,

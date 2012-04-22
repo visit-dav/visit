@@ -37,13 +37,12 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtStrainTensorExpression.C                         //
+//                       avtStrainTensorExpression.C                         //
 // ************************************************************************* //
 
 #include <avtStrainTensorExpression.h>
 
 #include <vtkDataArray.h>
-#include <vtkMath.h>
 
 #include <ExpressionException.h>
 
@@ -123,7 +122,6 @@ avtStrainTensorExpression::HexPartialDerivative
     {   
         EXCEPTION2(ExpressionException, outputVariableName,
                 "HexPartialDerivative, Element is degenerate! Result is invalid!");
-        detJacob = 1.0;
     }
     
     /* Develop inverse of mapping. */                         

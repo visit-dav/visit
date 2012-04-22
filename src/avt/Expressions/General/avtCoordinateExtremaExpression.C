@@ -112,14 +112,19 @@ avtCoordinateExtremaExpression::~avtCoordinateExtremaExpression()
 //  Programmer:   Hank Childs
 //  Creation:     June 28, 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Apr  5 13:13:21 PDT 2012
+//    Create output array with same data type as input coordinates, use 
+//    vtkIdType for values returned by vtk classes.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtCoordinateExtremaExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int ncells = in_ds->GetNumberOfCells();
+    vtkIdType ncells = in_ds->GetNumberOfCells();
 
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkDataArray *rv = CreateArrayFromMesh(in_ds);
     rv->SetNumberOfComponents(1);
     rv->SetNumberOfTuples(ncells);
     if (coordinateType == CT_X || 
@@ -133,7 +138,7 @@ avtCoordinateExtremaExpression::DeriveVariable(vtkDataSet *in_ds)
             dim = 1;
         else if (coordinateType == CT_Z)
             dim = 2;
-        for (int i = 0 ; i < ncells ; i++)
+        for (vtkIdType i = 0 ; i < ncells ; i++)
         {
             double bbox[6];
             in_ds->GetCellBounds(i, bbox);
@@ -146,7 +151,7 @@ avtCoordinateExtremaExpression::DeriveVariable(vtkDataSet *in_ds)
         coordinateType == CT_Phi)
     {
         vtkIdList *ptIds = vtkIdList::New();
-        for (int i = 0 ; i < ncells ; i++)
+        for (vtkIdType i = 0 ; i < ncells ; i++)
         {
             double mostExtreme;
             if (coordinateType == CT_Radius)
@@ -157,8 +162,8 @@ avtCoordinateExtremaExpression::DeriveVariable(vtkDataSet *in_ds)
                 mostExtreme = (getMinimum ? 10 : 0.);
 
             in_ds->GetCellPoints(i, ptIds);
-            int nIds = ptIds->GetNumberOfIds();
-            for (int j = 0 ; j < nIds ; j++)
+            vtkIdType nIds = ptIds->GetNumberOfIds();
+            for (vtkIdType j = 0 ; j < nIds ; j++)
             {
                 double pt[3];
                 in_ds->GetPoint(ptIds->GetId(j), pt);

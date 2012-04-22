@@ -893,31 +893,31 @@ Zoom2D::ZoomCamera(void)
     }
     else
     {
-        float win1[4], win2[4], win3[4], win4[4];
+        double win1[4], win2[4], win3[4], win4[4];
 
         // window created by rubber band
         win1[0] = leftX;
         win1[1] = rightX;
         win1[2] = bottomY;
         win1[3] = topY;
-        float win1_w = win1[1] - win1[0];
-        float win1_h = win1[3] - win1[2];
+        double win1_w = win1[1] - win1[0];
+        double win1_h = win1[3] - win1[2];
 
         // the current window 
         win2[0] = newView2D.window[0];
         win2[1] = newView2D.window[1];
         win2[2] = newView2D.window[2];
         win2[3] = newView2D.window[3];
-        float win2_w = win2[1] - win2[0];
-        float win2_h = win2[3] - win2[2];
+        double win2_w = win2[1] - win2[0];
+        double win2_h = win2[3] - win2[2];
 
-        float scaleX = win1_w / win2_w;
-        float scaleY = win1_h / win2_h;
+        double scaleX = win1_w / win2_w;
+        double scaleY = win1_h / win2_h;
 
         if (scaleY < scaleX)
         {
-            float midX = (win2[0] + win2[1]) / 2.;
-            float halfw = (win2_h) * (win1_w / win1_h) / 2.;
+            double midX = (win2[0] + win2[1]) / 2.;
+            double halfw = (win2_h) * (win1_w / win1_h) / 2.;
             win3[0] = midX - halfw;
             win3[1] = midX + halfw;
             win3[2] = win2[2];
@@ -925,24 +925,24 @@ Zoom2D::ZoomCamera(void)
         }
         else 
         {
-            float midY = (win2[2] + win2[3]) /2.;
-            float halfh = (win2_w) * (win1_h / win1_w) / 2.;
+            double midY = (win2[2] + win2[3]) /2.;
+            double halfh = (win2_w) * (win1_h / win1_w) / 2.;
             win3[0] = win2[0];
             win3[1] = win2[1]; 
             win3[2] = midY - halfh;
             win3[3] = midY + halfh;
         }
 
-        float win3_w = (win3[1] - win3[0]);
-        float win3_h = (win3[3] - win3[2]);
+        double win3_w = (win3[1] - win3[0]);
+        double win3_h = (win3[3] - win3[2]);
 
         win4[0] = ((win1[0] - win2[0]) / win2_w) * win3_w + win3[0];
         win4[1] = ((win1[1] - win2[0]) / win2_w) * win3_w + win3[0];
         win4[2] = ((win1[2] - win2[2]) / win2_h) * win3_h + win3[2];
         win4[3] = ((win1[3] - win2[2]) / win2_h) * win3_h + win3[2];
 
-        float win4_w = (win4[1] - win4[0]);
-        float win4_h = (win4[3] - win4[2]);
+        double win4_w = (win4[1] - win4[0]);
+        double win4_h = (win4[3] - win4[2]);
 
         newView2D.window[0] = (win3[0] - win4[0]) * win3_w / win4_w + win3[0];
         newView2D.window[1] = (win3[1] - win4[0]) * win3_w / win4_w + win3[0];

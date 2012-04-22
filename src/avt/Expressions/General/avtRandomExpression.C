@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtRandomExpression.C                            //
+//                          avtRandomExpression.C                            //
 // ************************************************************************* //
 
 #include <ExprToken.h>
@@ -48,8 +48,8 @@
 
 #include <math.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 
 
 // ****************************************************************************
@@ -115,11 +115,11 @@ avtRandomExpression::DeriveVariable(vtkDataSet *in_ds)
 {
     srand(currentDomainsIndex);
 
-    int npts   = in_ds->GetNumberOfPoints();
+    vtkIdType npts   = in_ds->GetNumberOfPoints();
 
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkDataArray *rv = CreateArrayFromMesh(in_ds);
     rv->SetNumberOfTuples(npts);
-    for (int i = 0 ; i < npts ; i++)
+    for (vtkIdType i = 0 ; i < npts ; i++)
     {
         rv->SetTuple1(i, (rand() % 1024) / 1024.);
     }
@@ -160,7 +160,8 @@ avtRandomExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     int nargs = arguments->size();
     if (nargs == 0)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "avtRandomExpression: No arguments given.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "avtRandomExpression: No arguments given.");
     }
 
     // Tell the first argument to create its filters.
@@ -182,8 +183,8 @@ avtRandomExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     {
         debug5 << "avtRandomExpression: Second argument is not a constant: "
                << secondTree->GetTypeName().c_str() << endl;
-        EXCEPTION2(ExpressionException, outputVariableName, "avtRandomExpression: Second argument is "
-                   "not an integer constant.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "avtRandomExpression: Second argument is not an integer constant.");
     }
 
     // Get its value
@@ -194,6 +195,7 @@ avtRandomExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     // See if there are other arguments.
     if (nargs > 2)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "avtRandomExpression: Too many arguments.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "avtRandomExpression: Too many arguments.");
     }
 }

@@ -177,14 +177,12 @@ avtVerdictExpression::~avtVerdictExpression()
 vtkDataArray *
 avtVerdictExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int i, j;
-
-    int nCells = in_ds->GetNumberOfCells();
+    vtkIdType nCells = in_ds->GetNumberOfCells();
 
     //
     // Set up a VTK variable reflecting the results we have calculated.
     //
-    vtkFloatArray *dv = vtkFloatArray::New();
+    vtkDataArray *dv = CreateArrayFromMesh(in_ds);
     dv->SetNumberOfTuples(nCells);
 
     //
@@ -199,23 +197,23 @@ avtVerdictExpression::DeriveVariable(vtkDataSet *in_ds)
     {
         const int MAXPOINTS = 100;
         double coordinates[MAXPOINTS][3];
-        for (i = 0; i < nCells; i++)    
+        for (vtkIdType i = 0; i < nCells; i++)    
         {
-            vtkCell *cell = in_ds->GetCell((vtkIdType)i);
+            vtkCell *cell = in_ds->GetCell(i);
             
-            int numPointsForThisCell = cell->GetNumberOfPoints();
+            vtkIdType numPointsForThisCell = cell->GetNumberOfPoints();
             // Grab a pointer to the cell's points' underlying data array
             vtkDataArray *pointData = cell->GetPoints()->GetData();
     
             int cellType = cell->GetCellType();
             if (cellType == VTK_POLYGON)
             {
-                float total = 0.;
+                double total = 0.;
                 if (SummationValidForOddShapes())
                 {
                     int numTris = numPointsForThisCell-2;
                     pointData->GetTuple(0,coordinates[0]);
-                    for (j = 0 ; j < numTris ; j++)
+                    for (int j = 0 ; j < numTris ; j++)
                     {
                         pointData->GetTuple(j+1,coordinates[1]);
                         pointData->GetTuple(j+2,coordinates[2]);
@@ -246,7 +244,7 @@ avtVerdictExpression::DeriveVariable(vtkDataSet *in_ds)
             // anyway it would be nice to get the coordinate data without
             // copying (to cut down on unneeded copying). However, this might 
             // be infeasible since Verdict expects doubles, and vtk 
-            //(potentially) uses floats.
+            // (potentially) uses floats.
             //
             
             if (pointData->GetNumberOfComponents() != 3)
@@ -255,7 +253,7 @@ avtVerdictExpression::DeriveVariable(vtkDataSet *in_ds)
             }
     
             // Fortunately, Verdict will convert to a double[3] for us
-            for (j = 0; j < numPointsForThisCell; j++)
+            for (int j = 0; j < numPointsForThisCell; j++)
             {
                 coordinates[j][2] = 0; // In case of 2d coordinates
                 pointData->GetTuple(j,coordinates[j]);
@@ -282,7 +280,7 @@ avtVerdictExpression::DeriveVariable(vtkDataSet *in_ds)
                 // Leave points 9-20 in place; they are ignored.
             }
     
-            float result = Metric(coordinates, cellType);
+            double result = Metric(coordinates, cellType);
             dv->SetTuple1(i, result);
         }
     }
@@ -405,19 +403,18 @@ void SumSize(avtDataRepresentation &adr, void *, bool &)
 {
 #ifdef HAVE_VERDICT
     vtkDataSet *in_ds = adr.GetDataVTK();
-    int i, j;
 
-    int nCells = in_ds->GetNumberOfCells();
+    vtkIdType nCells = in_ds->GetNumberOfCells();
 
     double *results = new double[nCells];
 
     const int MAXPOINTS = 100;
     double coordinates[MAXPOINTS][3];
-    for (i = 0; i < nCells; i++)    
+    for (vtkIdType i = 0; i < nCells; i++)    
     {
         vtkCell *cell = in_ds->GetCell(i);
         
-        int numPointsForThisCell = cell->GetNumberOfPoints();
+        vtkIdType numPointsForThisCell = cell->GetNumberOfPoints();
         // Grab a pointer to the cell's points' underlying data array
         vtkDataArray *pointData = cell->GetPoints()->GetData();
 
@@ -427,7 +424,7 @@ void SumSize(avtDataRepresentation &adr, void *, bool &)
         }
 
         // Fortunately, Verdict will convert to a double[3] for us
-        for (j = 0; j < numPointsForThisCell; j++)
+        for (vtkIdType j = 0; j < numPointsForThisCell; j++)
         {
             coordinates[j][2] = 0; // In case of 2d coordinates
             pointData->GetTuple(j,coordinates[j]);

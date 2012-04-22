@@ -112,7 +112,7 @@ void vtkUnstructuredGridRelevantPointsFilter::Execute()
       }
     }
 
-  vtkPoints *newPts = vtkPoints::New();
+  vtkPoints *newPts = vtkPoints::New(input->GetPoints()->GetDataType());
   newPts->SetNumberOfPoints(numOutPts);
   vtkPointData *inputPD  = input->GetPointData();
   vtkPointData *outputPD = output->GetPointData();

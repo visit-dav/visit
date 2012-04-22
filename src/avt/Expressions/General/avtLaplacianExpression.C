@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtLaplacianExpression.h                        //
+//                           avtLaplacianExpression.C                        //
 // ************************************************************************* //
 
 #include <avtLaplacianExpression.h>
@@ -95,8 +95,8 @@ avtLaplacianExpression::~avtLaplacianExpression()
 // ****************************************************************************
 
 void
-avtLaplacianExpression::GetMacro(std::vector<std::string> &args, std::string &ne,
-                             Expression::ExprType &type)
+avtLaplacianExpression::GetMacro(std::vector<std::string> &args, 
+                                 std::string &ne, Expression::ExprType &type)
 {
     char new_expr[2048];
     int nargs = args.size();
@@ -105,7 +105,8 @@ avtLaplacianExpression::GetMacro(std::vector<std::string> &args, std::string &ne
         avtMeshType mt = GetInput()->GetInfo().GetAttributes().GetMeshType();
         if (mt == AVT_RECTILINEAR_MESH || mt == AVT_AMR_MESH)
         {
-            SNPRINTF(new_expr, 2048, "rectilinear_laplacian(%s)", args[0].c_str());
+            SNPRINTF(new_expr, 2048, "rectilinear_laplacian(%s)", 
+                                     args[0].c_str());
         }
         else
         {
@@ -121,7 +122,8 @@ avtLaplacianExpression::GetMacro(std::vector<std::string> &args, std::string &ne
     }
     else
     {
-        EXCEPTION2(ExpressionException, outputVariableName, " invalid laplacian syntax. "
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                    " invalid laplacian syntax. "
                     "Expected arguments: "
                     "var, gradient_algorithm\n"
                     "[gradient_algorithm is optional]");

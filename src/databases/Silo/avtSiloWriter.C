@@ -1178,6 +1178,48 @@ avtSiloWriter::CloseFile(void)
     }
 }
 
+// ****************************************************************************
+// Method: SeparateCoordinates
+//
+// Purpose: 
+//   Separate a vtkPoints into component arrays that Silo will like.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 11 22:21:56 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename T>
+static void
+SeparateCoordinates(vtkPoints *pts, int dim, int npts, T *coords[3],
+    double mins[3], double maxs[3])
+{
+    const T *vtk_ptr = (const T *) pts->GetVoidPointer(0);
+    for (int i = 0 ; i < dim ; i++)
+    {
+        double dimMin = +DBL_MAX;
+        double dimMax = -DBL_MAX;
+        coords[i] = new T[npts];
+        for (int j = 0 ; j < npts ; j++)
+        {
+            coords[i][j] = vtk_ptr[3*j+i];
+            if (coords[i][j] < dimMin)
+                dimMin = coords[i][j];
+            if (coords[i][j] > dimMax)
+                dimMax = coords[i][j];
+        }
+        mins[i] = dimMin;
+        maxs[i] = dimMax;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtSiloWriter::WriteUnstructuredMesh
@@ -1220,6 +1262,9 @@ avtSiloWriter::CloseFile(void)
 //    Brad Whitlock, Tue May 19 11:23:06 PDT 2009
 //    Account for ghost zones so they don't get saved out as real zones.
 //
+//    Brad Whitlock, Wed Apr 11 22:21:19 PDT 2012
+//    Double precision coordinates.
+//
 // ****************************************************************************
 
 void
@@ -1235,24 +1280,37 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
     //
     // Construct the coordinates.
     //
-    float *coords[3] = { NULL, NULL, NULL };
+    float  *fcoords[3] = { NULL, NULL, NULL };
+    double *dcoords[3] = { NULL, NULL, NULL };
+    void   *coords[3] = { NULL, NULL, NULL };
+    double mins[3], maxs[3];
     vtkPoints *vtk_pts = ug->GetPoints();
-    float *vtk_ptr = (float *) vtk_pts->GetVoidPointer(0);
-    for (i = 0 ; i < dim ; i++)
+    int coordType;
+    if(vtk_pts->GetDataType() == VTK_FLOAT)
     {
-        double dimMin = +DBL_MAX;
-        double dimMax = -DBL_MAX;
-        coords[i] = new float[npts];
-        for (j = 0 ; j < npts ; j++)
-        {
-            coords[i][j] = vtk_ptr[3*j+i];
-            if (coords[i][j] < dimMin)
-                dimMin = coords[i][j];
-            if (coords[i][j] > dimMax)
-                dimMax = coords[i][j];
-        }
-        spatialMins.push_back(dimMin);
-        spatialMaxs.push_back(dimMax);
+        SeparateCoordinates(vtk_pts, dim, npts, fcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(fcoords[0]);
+        coords[1] = reinterpret_cast<void *>(fcoords[1]);
+        coords[2] = reinterpret_cast<void *>(fcoords[2]);
+        coordType = DB_FLOAT;
+    }
+    else if(vtk_pts->GetDataType() == VTK_DOUBLE)
+    {
+        SeparateCoordinates(vtk_pts, dim, npts, dcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(dcoords[0]);
+        coords[1] = reinterpret_cast<void *>(dcoords[1]);
+        coords[2] = reinterpret_cast<void *>(dcoords[2]);
+        coordType = DB_DOUBLE;
+    }
+    else
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    for(i = 0; i < dim; ++i)
+    {
+        spatialMins.push_back(mins[i]);
+        spatialMaxs.push_back(maxs[i]);
     }
     zoneCounts.push_back(nzones);
 
@@ -1384,7 +1442,7 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
     if (npointcells == nzones && npointcells == npts)
     {
         DBPutPointmesh(dbfile, meshName.c_str(), dim, coords,
-            npts, DB_FLOAT, optlist);
+            npts, coordType, optlist);
     }
     else
     {
@@ -1406,19 +1464,25 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
         // Now write the actual mesh.
         //
         DBPutUcdmesh(dbfile, (char *) meshName.c_str(), dim, NULL, coords, npts,
-                     nzones, "zonelist", NULL, DB_FLOAT, optlist);
+                     nzones, "zonelist", NULL, coordType, optlist);
     }
     EndVar(dbfile, nlevels);
 
     //
     // Free up memory.
     //
-    if (coords[0] != NULL)
-        delete [] coords[0];
-    if (coords[1] != NULL)
-        delete [] coords[1];
-    if (coords[2] != NULL)
-        delete [] coords[2];
+    if (fcoords[0] != NULL)
+        delete [] fcoords[0];
+    if (fcoords[1] != NULL)
+        delete [] fcoords[1];
+    if (fcoords[2] != NULL)
+        delete [] fcoords[2];
+    if (dcoords[0] != NULL)
+        delete [] dcoords[0];
+    if (dcoords[1] != NULL)
+        delete [] dcoords[1];
+    if (dcoords[2] != NULL)
+        delete [] dcoords[2];
 
     WriteUcdvars(dbfile, ug->GetPointData(), ug->GetCellData(),
                  npointcells == nzones, hasGhostZones ? gz : 0);
@@ -1455,6 +1519,9 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
 //    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
 //    Allow for subdirectories.
 //
+//    Brad Whitlock, Wed Apr 11 22:28:13 PDT 2012
+//    Double precision coordinates.
+//
 // ****************************************************************************
 
 void
@@ -1468,25 +1535,38 @@ avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
     //
     // Construct the coordinates.
     //
-    float *coords[3] = { NULL, NULL, NULL };
+    float  *fcoords[3] = { NULL, NULL, NULL };
+    double *dcoords[3] = { NULL, NULL, NULL };
+    void   *coords[3] = { NULL, NULL, NULL };
+    double mins[3], maxs[3];
     vtkPoints *vtk_pts = sg->GetPoints();
-    float *vtk_ptr = (float *) vtk_pts->GetVoidPointer(0);
-    int npts  = sg->GetNumberOfPoints();
-    for (i = 0 ; i < ndims ; i++)
+    int npts = vtk_pts->GetNumberOfPoints();
+    int coordType;
+    if(vtk_pts->GetDataType() == VTK_FLOAT)
     {
-        double dimMin = +DBL_MAX;
-        double dimMax = -DBL_MAX;
-        coords[i] = new float[npts];
-        for (j = 0 ; j < npts ; j++)
-        {
-            coords[i][j] = vtk_ptr[3*j+i];
-            if (coords[i][j] < dimMin)
-                dimMin = coords[i][j];
-            if (coords[i][j] > dimMax)
-                dimMax = coords[i][j];
-        }
-        spatialMins.push_back(dimMin);
-        spatialMaxs.push_back(dimMax);
+        SeparateCoordinates(vtk_pts, ndims, npts, fcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(fcoords[0]);
+        coords[1] = reinterpret_cast<void *>(fcoords[1]);
+        coords[2] = reinterpret_cast<void *>(fcoords[2]);
+        coordType = DB_FLOAT;
+    }
+    else if(vtk_pts->GetDataType() == VTK_DOUBLE)
+    {
+        SeparateCoordinates(vtk_pts, ndims, npts, dcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(dcoords[0]);
+        coords[1] = reinterpret_cast<void *>(dcoords[1]);
+        coords[2] = reinterpret_cast<void *>(dcoords[2]);
+        coordType = DB_DOUBLE;
+    }
+    else
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    for(i = 0; i < ndims; ++i)
+    {
+        spatialMins.push_back(mins[i]);
+        spatialMaxs.push_back(maxs[i]);
     }
 
     int dims[3];
@@ -1503,18 +1583,24 @@ avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
     int nlevels = 0;
     string meshName = BeginVar(dbfile, meshname, nlevels);
     DBPutQuadmesh(dbfile, (char *) meshName.c_str(), NULL, coords, dims, ndims,
-                  DB_FLOAT, DB_NONCOLLINEAR, optlist);
+                  coordType, DB_NONCOLLINEAR, optlist);
     EndVar(dbfile, nlevels);
 
     //
     // Free up memory.
     //
-    if (coords[0] != NULL)
-        delete [] coords[0];
-    if (coords[1] != NULL)
-        delete [] coords[1];
-    if (coords[2] != NULL)
-        delete [] coords[2];
+    if (fcoords[0] != NULL)
+        delete [] fcoords[0];
+    if (fcoords[1] != NULL)
+        delete [] fcoords[1];
+    if (fcoords[2] != NULL)
+        delete [] fcoords[2];
+    if (dcoords[0] != NULL)
+        delete [] dcoords[0];
+    if (dcoords[1] != NULL)
+        delete [] dcoords[1];
+    if (dcoords[2] != NULL)
+        delete [] dcoords[2];
 
     WriteQuadvars(dbfile, sg->GetPointData(), sg->GetCellData(),ndims,dims);
     WriteMaterials(dbfile, sg->GetCellData(), chunk);
@@ -1545,6 +1631,9 @@ avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
 //    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
 //    Allow for subdirectories.
 //
+//    Brad Whitlock, Wed Apr 11 22:30:35 PDT 2012
+//    Write double coordinates.
+//
 // ****************************************************************************
 
 void
@@ -1558,7 +1647,8 @@ avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
     //
     // Construct the coordinates.
     //
-    float *coords[3] = { NULL, NULL, NULL };
+    double *coords[3] = { NULL, NULL, NULL };
+    void  *vcoords[3] = { NULL, NULL, NULL };
     int dims[3];
     rg->GetDimensions(dims);
     vtkDataArray *vtk_coords[3] = { NULL, NULL, NULL };
@@ -1577,7 +1667,7 @@ avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
         double dimMin = +DBL_MAX;
         double dimMax = -DBL_MAX;
         int npts = vtk_coords[i]->GetNumberOfTuples();
-        coords[i] = new float[npts];
+        coords[i] = new double[npts];
         for (j = 0 ; j < npts ; j++)
         {
             coords[i][j] = vtk_coords[i]->GetTuple1(j);
@@ -1588,6 +1678,8 @@ avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
         }
         spatialMins.push_back(dimMin);
         spatialMaxs.push_back(dimMax);
+
+        vcoords[i] = reinterpret_cast<void *>(coords[i]);
     }
 
     int nzones = 1;
@@ -1601,8 +1693,8 @@ avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
     //
     int nlevels = 0;
     string meshName = BeginVar(dbfile, meshname, nlevels);
-    DBPutQuadmesh(dbfile, (char *) meshName.c_str(), NULL, coords, dims, ndims,
-                  DB_FLOAT, DB_COLLINEAR, optlist);
+    DBPutQuadmesh(dbfile, (char *) meshName.c_str(), NULL, vcoords, dims, ndims,
+                  DB_DOUBLE, DB_COLLINEAR, optlist);
     EndVar(dbfile, nlevels);
 
     //
@@ -1661,24 +1753,37 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
     //
     // Construct the coordinates.
     //
-    float *coords[3] = { NULL, NULL, NULL };
+    float  *fcoords[3] = { NULL, NULL, NULL };
+    double *dcoords[3] = { NULL, NULL, NULL };
+    void   *coords[3] = { NULL, NULL, NULL };
+    double mins[3], maxs[3];
     vtkPoints *vtk_pts = pd->GetPoints();
-    float *vtk_ptr = (float *) vtk_pts->GetVoidPointer(0);
-    for (i = 0 ; i < ndims ; i++)
+    int coordType;
+    if(vtk_pts->GetDataType() == VTK_FLOAT)
     {
-        double dimMin = +DBL_MAX;
-        double dimMax = -DBL_MAX;
-        coords[i] = new float[npts];
-        for (j = 0 ; j < npts ; j++)
-        {
-            coords[i][j] = vtk_ptr[3*j+i];
-            if (coords[i][j] < dimMin)
-                dimMin = coords[i][j];
-            if (coords[i][j] > dimMax)
-                dimMax = coords[i][j];
-        }
-        spatialMins.push_back(dimMin);
-        spatialMaxs.push_back(dimMax);
+        SeparateCoordinates(vtk_pts, ndims, npts, fcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(fcoords[0]);
+        coords[1] = reinterpret_cast<void *>(fcoords[1]);
+        coords[2] = reinterpret_cast<void *>(fcoords[2]);
+        coordType = DB_FLOAT;
+    }
+    else if(vtk_pts->GetDataType() == VTK_DOUBLE)
+    {
+        SeparateCoordinates(vtk_pts, ndims, npts, dcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(dcoords[0]);
+        coords[1] = reinterpret_cast<void *>(dcoords[1]);
+        coords[2] = reinterpret_cast<void *>(dcoords[2]);
+        coordType = DB_DOUBLE;
+    }
+    else
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    for(i = 0; i < ndims; ++i)
+    {
+        spatialMins.push_back(mins[i]);
+        spatialMaxs.push_back(maxs[i]);
     }
     zoneCounts.push_back(nzones);
 
@@ -1753,23 +1858,78 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
         // Now write the actual mesh.
         //
         DBPutUcdmesh(dbfile, (char *) meshName.c_str(), ndims, NULL, coords, npts,
-                     nzones, "zonelist", NULL, DB_FLOAT, optlist);
+                     nzones, "zonelist", NULL, coordType, optlist);
     }
     EndVar(dbfile, nlevels);
 
     //
     // Free up memory.
     //
-    if (coords[0] != NULL)
-        delete [] coords[0];
-    if (coords[1] != NULL)
-        delete [] coords[1];
-    if (coords[2] != NULL)
-        delete [] coords[2];
+    if (fcoords[0] != NULL)
+        delete [] fcoords[0];
+    if (fcoords[1] != NULL)
+        delete [] fcoords[1];
+    if (fcoords[2] != NULL)
+        delete [] fcoords[2];
+    if (dcoords[0] != NULL)
+        delete [] dcoords[0];
+    if (dcoords[1] != NULL)
+        delete [] dcoords[1];
+    if (dcoords[2] != NULL)
+        delete [] dcoords[2];
 
     WriteUcdvars(dbfile, pd->GetPointData(), pd->GetCellData(),
         npointcells == nzones, 0);
     WriteMaterials(dbfile, pd->GetCellData(), chunk);
+}
+
+// ****************************************************************************
+// Method: GetSiloType
+//
+// Purpose: 
+//   Return Silo type for data stored in vtkDataArray.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 11 22:38:39 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static const int INVALID_SILO_TYPE = -100;
+
+static int
+GetSiloType(vtkDataArray *arr)
+{
+    int t = arr->GetDataType();
+    int ret = INVALID_SILO_TYPE;
+    switch(t)
+    {
+    case VTK_UNSIGNED_CHAR:
+    case VTK_CHAR:
+        ret = DB_CHAR;
+        break;
+    case VTK_INT:
+        ret = DB_INT;
+        break;
+    case VTK_LONG:
+        ret = DB_LONG;
+        break;
+    case VTK_FLOAT:
+        ret = DB_FLOAT;
+        break;
+    case VTK_DOUBLE:
+        ret = DB_DOUBLE;
+        break;
+    }
+
+    return ret;
 }
 
 // ****************************************************************************
@@ -1794,7 +1954,9 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
 // Creation:   Tue May 19 12:11:41 PDT 2009
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 11 22:43:02 PDT 2012
+//   Use NewInstance to create the output data array.
+//
 // ****************************************************************************
 
 static vtkDataArray *
@@ -1807,7 +1969,11 @@ ReorderUcdvarUsingGhostZones(vtkDataArray *arr, const unsigned char *gz)
     }
 
     // This also converts to float
-    vtkDataArray *retval = vtkFloatArray::New();
+    vtkDataArray *retval = NULL;
+    if(GetSiloType(arr) == INVALID_SILO_TYPE)
+        retval = vtkFloatArray::New();
+    else
+        retval = arr->NewInstance();
     retval->SetNumberOfComponents(arr->GetNumberOfComponents());
     retval->SetNumberOfTuples(arr->GetNumberOfTuples());
     vtkIdType id = 0, dest = 0;
@@ -1895,13 +2061,13 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
              // find min,max in this variable
              double dimMin = +DBL_MAX;
              double dimMax = -DBL_MAX;
-             float *ptr    = (float *) arr->GetVoidPointer(0);
              for (k = 0 ; k < nTuples ; k++)
              {
-                 if (ptr[k] < dimMin)
-                     dimMin = ptr[k];
-                 if (ptr[k] > dimMax)
-                     dimMax = ptr[k];
+                 double val = arr->GetTuple1(k);
+                 if (val < dimMin)
+                     dimMin = val;
+                 if (val > dimMax)
+                     dimMax = val;
              }
              varMins.push_back(dimMin);
              varMaxs.push_back(dimMax);
@@ -1910,28 +2076,27 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
                  DBPutPointvar1(dbfile, (char *) varName.c_str(),
                           (char *) meshName.c_str(),
                           (float *) arr2->GetVoidPointer(0),
-                          nTuples, DB_FLOAT, optlist); 
+                          nTuples, GetSiloType(arr2), optlist); 
              else
                  DBPutUcdvar1(dbfile, (char *) varName.c_str(),
                           (char *) meshName.c_str(),
                           (float *) arr2->GetVoidPointer(0), nTuples, NULL, 0,
-                          DB_FLOAT, centering, optlist);
+                          GetSiloType(arr2), centering, optlist);
          }
          else
          {
-             float **vars     = new float*[ncomps];
-             float *ptr       = (float *) arr2->GetVoidPointer(0);
+             double **vars     = new double*[ncomps];
              char  **varnames = new char*[ncomps];
              for (j = 0 ; j < ncomps ; j++)
              {
                  double dimMin = +DBL_MAX;
                  double dimMax = -DBL_MAX;
-                 vars[j] = new float[nTuples];
+                 vars[j] = new double[nTuples];
                  varnames[j] = new char[1024];
                  sprintf(varnames[j], "%s_comp%d", varName.c_str(), j);
                  for (k = 0 ; k < nTuples ; k++)
                  {
-                     vars[j][k] = ptr[k*ncomps + j];
+                     vars[j][k] = arr2->GetComponent(k, j);
                      if (vars[j][k] < dimMin)
                          dimMin = vars[j][k];
                      if (vars[j][k] > dimMax)
@@ -1944,11 +2109,11 @@ avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
              if (isPointMesh && centering == DB_NODECENT)
                  DBPutPointvar(dbfile, (char *) varName.c_str(),
                           (char *) meshName.c_str(),
-                          ncomps, vars, nTuples, DB_FLOAT, optlist);
+                          ncomps, vars, nTuples, DB_DOUBLE, optlist);
              else
                  DBPutUcdvar(dbfile, (char *) varName.c_str(),
                          (char *) meshName.c_str(),
-                         ncomps, varnames, vars, nTuples, NULL, 0, DB_FLOAT,
+                         ncomps, varnames, vars, nTuples, NULL, 0, DB_DOUBLE,
                          centering, optlist);
 
              for (j = 0 ; j < ncomps ; j++)

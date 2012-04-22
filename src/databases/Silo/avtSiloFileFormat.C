@@ -154,10 +154,10 @@ static void AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd);
 
 static void HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm,
     const char *multimesh_name, avtMeshType *mt, int *num_groups,
-    vector<int> *group_ids, vector<string> *block_names, int dontForceSingle);
+    vector<int> *group_ids, vector<string> *block_names, int);
 static void BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     const char *meshName, int timestate, int type, avtVariableCache *cache,
-    int dontForceSingle);
+    int);
 
 static int MultiMatHasAllMatInfo(const DBmultimat *const mm);
 static vtkDataArray *CreateDataArray(int silotype, void *data, int numvals);
@@ -264,6 +264,10 @@ static vtkDataArray *CreateDataArray(int silotype, void *data, int numvals);
 //
 //    Mark C. Miller, Thu Apr 12 23:06:24 PDT 2012
 //    Changed maxAnnotIntLists to numAnnotIntLists.
+//
+//    Brad Whitlock, Sat Apr 21 23:35:34 PDT 2012
+//    Change to forceSingle so it's easier to understand.
+//
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -273,7 +277,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     //
     // Initialize class variables BEFORE processing read options 
     //
-    dontForceSingle = 0;
+    forceSingle = 0;
     numNodeLists = 0;
     numAnnotIntLists = 0;
     tocIndex = 0; 
@@ -303,7 +307,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     for (int i = 0; rdatts != 0 && i < rdatts->GetNumberOfOptions(); ++i)
     {
         if (rdatts->GetName(i) == SILO_RDOPT_FORCE_SINGLE)
-            dontForceSingle = rdatts->GetBool(SILO_RDOPT_FORCE_SINGLE) ? 0 : 1;
+            forceSingle = rdatts->GetBool(SILO_RDOPT_FORCE_SINGLE) ? 1 : 0;
         else if (rdatts->GetName(i) == SILO_RDOPT_SEARCH_ANNOTINT)
             searchForAnnotInt = rdatts->GetBool(SILO_RDOPT_SEARCH_ANNOTINT);
         else if (rdatts->GetName(i) == SILO_RDOPT_IGNORE_SEXTS)
@@ -330,20 +334,20 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
 #endif
     if (ignoreForceSingle)
     {
-        if (!dontForceSingle)
+        if (forceSingle)
         {
-            debug1 << "Ignoring Don't Force Single setting of 0 (false) which would have...\n"
+            debug1 << "Ignoring Force Single setting of 1 which would have...\n"
                    << "...otherwise caused the Silo library to try to force all datatype'd\n"
                    << "...arrays to float because the old version of the Silo library being\n"
                    << "...used here does NOT correctly honor the force single setting." << endl;
         }
-        dontForceSingle = 1;
+        forceSingle = 0;
     }
 
     //
     // Set any necessary Silo library behavior 
     //
-    DBForceSingle(!dontForceSingle);
+    DBForceSingle(forceSingle);
     
     //
     // If there is ever a problem with Silo, we want it to throw an
@@ -1905,7 +1909,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                     // So far, we've coded only for MRG trees representing AMR hierarchies
                     HandleMrgtreeForMultimesh(dbfile, mm, multimesh_names[i],
                         &mt, &num_amr_groups, &amr_group_ids, &amr_block_names,
-                        dontForceSingle);
+                        forceSingle);
                 }
 #endif
 #endif
@@ -7665,7 +7669,7 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
 
             BuildDomainAuxiliaryInfoForAMRMeshes(dbfile, mm, m, timestep,
                                                  true_type, cache,
-                                                 dontForceSingle);
+                                                 forceSingle);
         }
     }
     else if (type == DB_POINTMESH)
@@ -13671,7 +13675,7 @@ avtSiloFileFormat::CalcSpecies(DBfile *dbfile, const char *specname)
 
     DBForceSingle(1);
     DBmatspecies *silospec = DBGetMatspecies(dbfile, specname);
-    DBForceSingle(!dontForceSingle);
+    DBForceSingle(forceSingle);
 
     if (silospec == NULL)
     {
@@ -15348,7 +15352,7 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile,
 #ifdef SILO_VERSION_GE 
 #if SILO_VERSION_GE(4,6,3)
 static DBgroupelmap * 
-GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int dontForceSingle)
+GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int forceSingle)
 {
     int i,k,q,pass;
     DBgroupelmap *retval = 0;
@@ -15457,7 +15461,7 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int dontForceSingle
         }
     }
 
-    DBForceSingle(!dontForceSingle);
+    DBForceSingle(!forceSingle);
     return retval;
 }
 #endif
@@ -15482,13 +15486,13 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int dontForceSingle
 //    Fix macro compilation problem with old versions of Silo.
 //
 //    Mark C. Miller, Mon Nov  9 10:43:05 PST 2009
-//    Added dontForceSingle arg.
+//    Added forceSingle arg.
 // ****************************************************************************
 
 static void
 HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh_name,
     avtMeshType *mt, int *num_groups, vector<int> *group_ids, vector<string> *block_names,
-    int dontForceSingle)
+    int forceSingle)
 {
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,3)
@@ -15544,7 +15548,7 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
     //
     // Get level grouping information from the levels subtree
     //
-    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode, dontForceSingle);
+    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode, forceSingle);
     *num_groups = lvlgm->num_segments;
     group_ids->resize(mm->nblocks,-1);
     for (i = 0; i < lvlgm->num_segments; i++)
@@ -15703,7 +15707,7 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
 static void
 BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     const char *meshName, int timestate, int db_mesh_type,
-    avtVariableCache *cache, int dontForceSingle)
+    avtVariableCache *cache, int forceSingle)
 {
 #ifdef MDSERVER
 
@@ -15809,7 +15813,7 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     //
     // Get level grouping information from tree
     //
-    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode, dontForceSingle);
+    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode, forceSingle);
     num_levels = lvlgm->num_segments;
     debug5 << "num_levels = " << num_levels << endl;
     vector<int> levelId;
@@ -15841,7 +15845,7 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     //
     // Get Parent/Child maps
     //
-    DBgroupelmap *chldgm = GetCondensedGroupelMap(dbfile, childsNode, dontForceSingle);
+    DBgroupelmap *chldgm = GetCondensedGroupelMap(dbfile, childsNode, forceSingle);
 
     //
     // Read the ratios variable (on the levels) and the parent/child
@@ -15850,7 +15854,7 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     DBForceSingle(0);
     DBmrgvar *ratvar = DBGetMrgvar(dbfile, ratioVarName.c_str());
     DBmrgvar *ijkvar = DBGetMrgvar(dbfile, ijkExtsVarName.c_str());
-    DBForceSingle(!dontForceSingle);
+    DBForceSingle(forceSingle);
 
     //
     // The number of patches can be inferred from the size of the child groupel map.

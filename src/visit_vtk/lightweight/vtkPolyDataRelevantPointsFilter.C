@@ -74,20 +74,21 @@ vtkStandardNewMacro(vtkPolyDataRelevantPointsFilter);
 //    Brad Whitlock, Mon Apr 4 11:34:03 PDT 2005
 //    Added support for cells that have more than 1024 points.
 //
+//    Brad Whitlock, Wed Mar 21 12:29:53 PDT 2012
+//    Support for double coordinates.
+//
 // ****************************************************************************
 
 void vtkPolyDataRelevantPointsFilter::Execute()
 {
-  int   i, j, k;
-
   //
   // Initialize some frequently used values.
   //
   vtkPolyData  *input  = this->GetInput();
   vtkPolyData  *output = this->GetOutput();
-  vtkPoints *inPts  = input->GetPoints();
-  int numPts        = input->GetNumberOfPoints();
-  int numCells      = input->GetNumberOfCells();
+  vtkPoints *inPts     = input->GetPoints();
+  vtkIdType numPts     = input->GetNumberOfPoints();
+  vtkIdType numCells   = input->GetNumberOfCells();
   
   //
   // Sanity checks
@@ -117,7 +118,7 @@ void vtkPolyDataRelevantPointsFilter::Execute()
   int numNewPts = 0;
   int *oldToNew = new int[numPts];
   int *newToOld = new int[numPts];
-  for (i = 0; i < numPts; i++)
+  for (vtkIdType i = 0; i < numPts; i++)
     {
     oldToNew[i] = -1;
     }
@@ -132,14 +133,14 @@ void vtkPolyDataRelevantPointsFilter::Execute()
   // Create a mapping as we go of old points to new points and another one of
   // new points to old points.
   //
-  for (i = 0 ; i < 4 ; i++)
+  for (int i = 0 ; i < 4 ; i++)
     {
-    int ncells = arrays[i]->GetNumberOfCells();
+    vtkIdType ncells = arrays[i]->GetNumberOfCells();
     vtkIdType *ptr = arrays[i]->GetPointer();
-    for (j = 0 ; j < ncells ; j++)
+    for (vtkIdType j = 0 ; j < ncells ; j++)
       {
       int npts = *ptr++;
-      for (k = 0 ; k < npts ; k++)
+      for (int k = 0 ; k < npts ; k++)
         {
         int oldPt = *ptr++;
         if (oldToNew[oldPt] == -1)
@@ -154,10 +155,8 @@ void vtkPolyDataRelevantPointsFilter::Execute()
 
   //
   // Now create a new vtkPoints construct that reflects the mapping we created.
-  // This is a bit ugly (re: pointer arithmetic) in the interest of 
-  // performance.
   //
-  vtkPoints *newPts = vtkPoints::New();
+  vtkPoints *newPts = vtkPoints::New(inPts->GetDataType());
   newPts->SetNumberOfPoints(numNewPts);
   vtkPointData *inputPD = input->GetPointData();
   vtkPointData *outputPD = output->GetPointData();
@@ -166,15 +165,40 @@ void vtkPolyDataRelevantPointsFilter::Execute()
     {
     outputPD->CopyAllocate(inputPD, numNewPts);
     }
-  float *in_ptr = (float *) inPts->GetVoidPointer(0);
-  float *out_ptr = (float *) newPts->GetVoidPointer(0);
-  int out_index = 0;
-  for (i = 0 ; i < numNewPts ; i++)
+  if(inPts->GetDataType() == VTK_FLOAT)
     {
-    int in_index  = 3*newToOld[i];
-    out_ptr[out_index++] = in_ptr[in_index++];
-    out_ptr[out_index++] = in_ptr[in_index++];
-    out_ptr[out_index++] = in_ptr[in_index];
+    const float *in_ptr = (const float *) inPts->GetVoidPointer(0);
+    float *out_ptr = (float *) newPts->GetVoidPointer(0);
+    for (vtkIdType i = 0 ; i < numNewPts ; i++)
+      {
+      const float *src = in_ptr + 3*newToOld[i];
+      *out_ptr++ = src[0];
+      *out_ptr++ = src[1];
+      *out_ptr++ = src[2];
+      }
+    }
+  else if(inPts->GetDataType() == VTK_DOUBLE)
+    {
+    const double *in_ptr = (const double *) inPts->GetVoidPointer(0);
+    double *out_ptr = (double *) newPts->GetVoidPointer(0);
+    for (vtkIdType i = 0 ; i < numNewPts ; i++)
+      {
+      const double *src = in_ptr + 3*newToOld[i];
+      *out_ptr++ = src[0];
+      *out_ptr++ = src[1];
+      *out_ptr++ = src[2];
+      }
+    }
+  else
+    {
+    for (vtkIdType i = 0 ; i < numNewPts ; i++)
+      {
+      newPts->SetPoint(i, inPts->GetPoint(newToOld[i]));
+      }
+    }
+
+  for (vtkIdType i = 0 ; i < numNewPts ; i++)
+    {
     if (havePointVars)
       {
       outputPD->CopyData(inputPD, newToOld[i], i);
@@ -192,7 +216,7 @@ void vtkPolyDataRelevantPointsFilter::Execute()
   vtkIdType *oldPts = NULL;
   vtkIdType nids = 0;
   input->BuildCells();
-  for (i = 0; i < numCells; i++) 
+  for (vtkIdType i = 0; i < numCells; i++) 
     {
     input->GetCellPoints(i, nids, oldPts);
     if(nids > nIdStoreSize)
@@ -202,7 +226,7 @@ void vtkPolyDataRelevantPointsFilter::Execute()
       pts = new vtkIdType[nIdStoreSize];
       }
     int cellType = input->GetCellType(i);
-    for (j = 0; j < nids; j++)
+    for (vtkIdType j = 0; j < nids; j++)
       {
       pts[j] = oldToNew[oldPts[j]];
       }

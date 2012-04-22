@@ -47,7 +47,6 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 
 #include <ExprToken.h>
@@ -111,13 +110,14 @@ avtApplyEnumerationExpression::~avtApplyEnumerationExpression()
 //    Kathleen Bonnell, Tue Jun  3 08:11:22 PDT 2008
 //    Remove unreferenced variable.
 //
+//    Kathleen Biagas, Wed Apr 4 17:41:23 PDT 2012
+//    Create a return array with the same type as the input array.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtApplyEnumerationExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i;
-
     if (varnames.size() == 0)
         EXCEPTION0(ImproperUseException);
 
@@ -131,11 +131,11 @@ avtApplyEnumerationExpression::DeriveVariable(vtkDataSet *in_ds)
         EXCEPTION2(ExpressionException, outputVariableName, 
                "Cannot enumerate scalar because: all inputs must be scalars");
 
-    vtkFloatArray *rv = vtkFloatArray::New();
-    int nvals = var->GetNumberOfTuples();
+    vtkDataArray *rv = var->NewInstance();
+    vtkIdType nvals = var->GetNumberOfTuples();
     rv->SetNumberOfComponents(1);
     rv->SetNumberOfTuples(nvals);
-    for (i = 0 ; i < nvals ; i++)
+    for (vtkIdType i = 0 ; i < nvals ; i++)
     {
         double dval = var->GetTuple1(i);
         int    ival = int(dval);

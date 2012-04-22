@@ -205,6 +205,9 @@ avtParallelCoordinatesFilter::~avtParallelCoordinatesFilter()
 //    Jeremy Meredith, Mon Apr 27 11:12:30 EDT 2009
 //    Added ability to draw focus as color-graduated bins.  Added focus gamma.
 //
+//    Brad Whitlock, Fri Apr 20 16:00:53 PDT 2012
+//    Mark that the filter can only work with float right now.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -386,7 +389,10 @@ avtParallelCoordinatesFilter::ModifyContract(avtContract_p in_contract)
         gotHistogramsFromDB = false;
 
     out_contract->NoStreaming();
-    
+
+    // This filter only supports floats right now.
+    out_contract->GetDataRequest()->UpdateAdmissibleDataTypes(VTK_FLOAT);
+
     visitTimer->StopTimer(timer1, "avtParallelCoordinatesFilter::ModifyContract()");  
 
     return out_contract;

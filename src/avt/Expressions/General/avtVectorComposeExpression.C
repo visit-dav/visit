@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtVectorComposeExpression.C                          //
+//                     avtVectorComposeExpression.C                          //
 // ************************************************************************* //
 
 #include <avtVectorComposeExpression.h>
@@ -159,7 +159,7 @@ avtVectorComposeExpression::GetVariableDimension(void)
 vtkDataArray *
 avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int numinputs = varnames.size();
+    size_t numinputs = varnames.size();
 
     bool twoDVector = 
             (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2);
@@ -211,13 +211,13 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
         }
     }
 
-    int nvals1 = data1->GetNumberOfTuples();
-    int nvals2 = data2->GetNumberOfTuples();
-    int nvals3 = 1;
+    vtkIdType nvals1 = data1->GetNumberOfTuples();
+    vtkIdType nvals2 = data2->GetNumberOfTuples();
+    vtkIdType nvals3 = 1;
     if (numinputs == 3)
         nvals3 = data3->GetNumberOfTuples();
     
-    int nvals = nvals1;
+    vtkIdType nvals = nvals1;
     if (nvals == 1)
         nvals  = nvals2;
     if (nvals == 1 && numinputs == 3)
@@ -237,7 +237,7 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
                 dv->SetNumberOfComponents(3);  // VTK doesn't like 2.
                 dv->SetNumberOfTuples(nvals);
 
-                for (int i = 0 ; i < nvals ; i++)
+                for (vtkIdType i = 0 ; i < nvals ; i++)
                 {
                     double val1 = data1->GetTuple1((nvals1>1 ? i : 0));
                     double val2 = data2->GetTuple1((nvals2>1 ? i : 0));
@@ -253,7 +253,7 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
                 dv->SetNumberOfComponents(9); 
                 dv->SetNumberOfTuples(nvals);
                 
-                for (int i = 0 ; i < nvals ; i++)
+                for (vtkIdType i = 0 ; i < nvals ; i++)
                 {
                     double vals[9];
                     vals[0] = data1->GetComponent((nvals1>1 ? i : 0), 0);
@@ -280,8 +280,9 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
         }
         else if (numinputs == 3)
         {
-            EXCEPTION2(ExpressionException, outputVariableName, "I don't know how to compose "
-                           "3 variables to make a field for a 2D dataset.");
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                       "I don't know how to compose "
+                       "3 variables to make a field for a 2D dataset.");
         }
     }
     else
@@ -298,7 +299,7 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
                 dv->SetNumberOfComponents(3); 
                 dv->SetNumberOfTuples(nvals);
                 
-                for (int i = 0 ; i < nvals ; i++)
+                for (vtkIdType i = 0 ; i < nvals ; i++)
                 {
                     double val1 = data1->GetTuple1((nvals1>1 ? i : 0));
                     double val2 = data2->GetTuple1((nvals2>1 ? i : 0));
@@ -319,7 +320,7 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
                 dv->SetNumberOfComponents(9); 
                 dv->SetNumberOfTuples(nvals);
                 
-                for (int i = 0 ; i < nvals ; i++)
+                for (vtkIdType i = 0 ; i < nvals ; i++)
                 {
                     double entry[9];
                     data1->GetTuple((nvals1>1 ? i : 0), entry);
@@ -330,7 +331,8 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
             }
             else
             {
-                EXCEPTION2(ExpressionException, outputVariableName, "The only interpretation "
+                EXCEPTION2(ExpressionException, outputVariableName, 
+                           "The only interpretation "
                            "VisIt can make of 3 variables for a 3D dataset is "
                            "a vector or a tensor.  But these inputs don't have"
                            " the right number of components to make either.");
@@ -338,7 +340,8 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
         }
         else 
         {
-            EXCEPTION2(ExpressionException, outputVariableName, "You must specify three vectors "
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                        "You must specify three vectors "
                         "to compose a field for a 3D dataset.");
         }
     }

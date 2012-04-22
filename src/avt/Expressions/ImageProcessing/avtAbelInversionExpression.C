@@ -46,7 +46,6 @@
 
 #include <vtkDataArray.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
 
 #include <avtCallback.h>
 

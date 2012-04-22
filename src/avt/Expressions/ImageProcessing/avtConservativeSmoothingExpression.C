@@ -135,11 +135,14 @@ avtConservativeSmoothingExpression::PreExecute(void)
 //    Hank Childs, Fri Jun  9 14:34:50 PDT 2006
 //    Remove unused variable.
 //
+//    Kathleen Biagas, Wed Apr 4 12:34:10 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
-avtConservativeSmoothingExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out, 
-                           int ncomponents,int ntuples)
+avtConservativeSmoothingExpression::DoOperation(vtkDataArray *in1, 
+    vtkDataArray *out, int ncomponents,int ntuples)
 {
     if (cur_mesh->GetDataObjectType() != VTK_RECTILINEAR_GRID &&
         cur_mesh->GetDataObjectType() != VTK_STRUCTURED_GRID)
@@ -183,8 +186,8 @@ avtConservativeSmoothingExpression::DoOperation(vtkDataArray *in1, vtkDataArray 
             for (int j = 0 ; j < dims[1] ; j++)
             {
                 int idx = j*dims[0]+i;
-                float max = -FLT_MAX;
-                float min = +FLT_MAX;
+                double max = -DBL_MAX;
+                double min = +DBL_MAX;
                 for (int ii = i-1 ; ii <= i+1 ; ii++)
                 {
                     if (ii < 0 || ii >= dims[0])
@@ -196,12 +199,12 @@ avtConservativeSmoothingExpression::DoOperation(vtkDataArray *in1, vtkDataArray 
                         if (ii == i && jj == j)
                             continue;
                         int idx2 = jj*dims[0] + ii;
-                        float val = in1->GetTuple1(idx2);
+                        double val = in1->GetTuple1(idx2);
                         max = (val > max ? val : max);
                         min = (val < min ? val : min);
                     }
                 }
-                float val = in1->GetTuple1(idx);
+                double val = in1->GetTuple1(idx);
                 val = (val > max ? max : val);
                 val = (val < min ? min : val);
                 out->SetTuple1(idx, val);
@@ -217,8 +220,8 @@ avtConservativeSmoothingExpression::DoOperation(vtkDataArray *in1, vtkDataArray 
                 for (int k = 0 ; k < dims[2] ; k++)
                 {
                     int idx = k*dims[0]*dims[1] + j*dims[0]+i;
-                    float max = -FLT_MAX;
-                    float min = +FLT_MAX;
+                    double max = -DBL_MAX;
+                    double min = +DBL_MAX;
                     for (int ii = i-1 ; ii <= i+1 ; ii++)
                     {
                         if (ii < 0 || ii >= dims[0])
@@ -234,13 +237,13 @@ avtConservativeSmoothingExpression::DoOperation(vtkDataArray *in1, vtkDataArray 
                                 if (ii == i && jj == j && kk == k)
                                     continue;
                                 int idx2 = kk*dims[1]*dims[0] + jj*dims[0] +ii;
-                                float val = in1->GetTuple1(idx2);
+                                double val = in1->GetTuple1(idx2);
                                 max = (val > max ? val : max);
                                 min = (val < min ? val : min);
                             }
                         }
                     }
-                    float val = in1->GetTuple1(idx);
+                    double val = in1->GetTuple1(idx);
                     val = (val > max ? max : val);
                     val = (val < min ? min : val);
                     out->SetTuple1(idx, val);

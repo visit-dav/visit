@@ -47,6 +47,7 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
@@ -172,6 +173,9 @@ print_array_names(vtkDataSet *inDS)
 //
 //    Brad Whitlock, Mon Apr 4 10:53:28 PDT 2005
 //    Fixed a crash that happened for cells with more than 100 points.
+//
+//    Brad Whitlock, Sat Apr 21 21:34:45 PDT 2012
+//    Change label cell centers from float to double.
 //
 // ****************************************************************************
 
@@ -312,7 +316,7 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         //
         // Allocate enough memory for a cell-centered vector
         //
-        vtkFloatArray *cellCenters = vtkFloatArray::New();
+        vtkDoubleArray *cellCenters = vtkDoubleArray::New();
         cellCenters->SetName("LabelFilterCellCenters");
         cellCenters->SetNumberOfComponents(3);
         cellCenters->SetNumberOfTuples(inDS->GetNumberOfCells());
@@ -383,7 +387,7 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         vtkDataArray *d = outDS->GetCellData()->GetArray("LabelFilterOriginalCellNumbers");
         unsigned int *cellNumbers = (d != 0) ? (unsigned int *)d->GetVoidPointer(0) : 0;
         d = outDS->GetCellData()->GetArray("LabelFilterCellCenters");
-        vtkFloatArray *cellCenters = (vtkFloatArray *)d;
+        vtkDoubleArray *cellCenters = (vtkDoubleArray *)d;
         if(cellNumbers != 0 && cellCenters != 0)
         {
             debug3 << "The geometry seems to be a plane. This "

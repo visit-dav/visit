@@ -37,14 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtNMatsExpression.C                            //
+//                           avtNMatsExpression.C                            //
 // ************************************************************************* //
 
 #include <avtNMatsExpression.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 
 #include <avtMaterial.h>
 #include <avtMetaData.h>
@@ -120,9 +120,7 @@ avtNMatsExpression::~avtNMatsExpression()
 vtkDataArray *
 avtNMatsExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i;
-
-    int ncells = in_ds->GetNumberOfCells();
+    vtkIdType ncells = in_ds->GetNumberOfCells();
 
     //
     // The 'currentDomainsIndex' is a data member of the base class that is
@@ -136,7 +134,7 @@ avtNMatsExpression::DeriveVariable(vtkDataSet *in_ds)
  
     avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
                                                   currentTimeState);
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkIntArray *rv = vtkIntArray::New();
     rv->SetNumberOfTuples(ncells);
 
     vtkDataArray *zn =in_ds->GetCellData()->GetArray("avtOriginalCellNumbers");
@@ -146,9 +144,9 @@ avtNMatsExpression::DeriveVariable(vtkDataSet *in_ds)
                << endl;
         return NULL;
     }
-    int *ptr = (int *) zn->GetVoidPointer(0);
-    int entry_size = zn->GetNumberOfComponents();
-    int offset = entry_size-1;
+    unsigned int *ptr = (unsigned int *) zn->GetVoidPointer(0);
+    vtkIdType entry_size = zn->GetNumberOfComponents();
+    vtkIdType offset = entry_size-1;
 
     //
     // Walk through the material data structure and determine the number of
@@ -156,7 +154,7 @@ avtNMatsExpression::DeriveVariable(vtkDataSet *in_ds)
     //
     const int *matlist = mat->GetMatlist();
     const int *mix_next = mat->GetMixNext();
-    for (i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         int nmats = 0;
         bool shouldSkip = false;
@@ -188,7 +186,7 @@ avtNMatsExpression::DeriveVariable(vtkDataSet *in_ds)
                 }
             }
         }
-        rv->SetTuple1(i, (float) nmats);
+        rv->SetValue(i, nmats);
     }
 
     return rv;

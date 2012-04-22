@@ -385,6 +385,9 @@ void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 //    Brad Whitlock, Wed Oct 26 12:29:40 PDT 2011
 //    Add support for 1D rectilinear (Nx, 1, 1 case) grids as lines.
 //
+//    Brad Whitlock, Mon Mar 19 11:04:09 PDT 2012
+//    Add double coordinate support via macro. Change loops to avoid some branching.
+//
 // ****************************************************************************
 
 int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
@@ -493,176 +496,253 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
      nodeData = false;
      }
 
-   float *X = new float[dims[0]];
-   for (i = 0 ; i < dims[0] ; i++)
-       X[i] = input->GetXCoordinates()->GetTuple1(i);
-   float *Y = new float[dims[1]];
-   for (i = 0 ; i < dims[1] ; i++)
-       Y[i] = input->GetYCoordinates()->GetTuple1(i);
-   float *Z = new float[dims[2]];
-   for (i = 0 ; i < dims[2] ; i++)
-       Z[i] = input->GetZCoordinates()->GetTuple1(i);
+#define vtkOpenGLRectilinearGridMapper_EmitGeometry(T, VERTEXFUNC) \
+   T *X = new T[dims[0]]; \
+   for (i = 0 ; i < dims[0] ; i++) \
+       X[i] = input->GetXCoordinates()->GetTuple1(i); \
+   T *Y = new T[dims[1]]; \
+   for (i = 0 ; i < dims[1] ; i++) \
+       Y[i] = input->GetYCoordinates()->GetTuple1(i); \
+   T *Z = new T[dims[2]]; \
+   for (i = 0 ; i < dims[2] ; i++) \
+       Z[i] = input->GetZCoordinates()->GetTuple1(i); \
+ \
+   bool normalQuadOrder = !flatJ; \
+   if (dims[0] > 1 && X[1] < X[0]) \
+       normalQuadOrder = !normalQuadOrder; \
+   if (dims[1] > 1 && Y[1] < Y[0]) \
+       normalQuadOrder = !normalQuadOrder; \
+   if (dims[2] > 1 && Z[1] < Z[0]) \
+       normalQuadOrder = !normalQuadOrder; \
+   const int normalquadorder[4] = { 0, 1, 3, 2 }; \
+   const int otherquadorder[4] = { 0, 2, 3, 1 }; \
+   const int *quadorder = (normalQuadOrder ? normalquadorder : otherquadorder); \
+ \
+   int slowDim = 0; \
+   int fastDim = 0; \
+   if (flatI) \
+   { \
+       glNormal3f(1., 0., 0.); \
+       fastDim = dims[1]; \
+       slowDim = dims[2]; \
+   } \
+   if (flatJ) \
+   { \
+       glNormal3f(0., 1., 0.); \
+       fastDim = dims[0]; \
+       slowDim = dims[2]; \
+   } \
+   if (flatK) \
+   { \
+       glNormal3f(0., 0., 1.); \
+       fastDim = dims[0]; \
+       slowDim = dims[1]; \
+   } \
+ \
+   const float *texCoords = NULL; \
+   if(this->ColorCoordinates != NULL) \
+       texCoords = (const float *)this->ColorCoordinates->GetVoidPointer(0); \
+ \
+   if(!flatI && flatJ && flatK) \
+   { \
+       /* Draw a curve*/ \
+       glBegin(GL_LINE_STRIP); \
+       if(colors == NULL && texCoords == NULL) \
+       { \
+           for(int i = 0; i < dims[0]; ++i) \
+               VERTEXFUNC(X[i], 0.f, 0.f); \
+       } \
+       else \
+       { \
+           for(int i = 0; i < dims[0]; ++i) \
+           { \
+               if(nodeData) \
+               { \
+                   if(texCoords != NULL) \
+                        glTexCoord1f(texCoords[i]); \
+                   else if(colors != NULL) \
+                        glColor4ubv(colors + 4*i); \
+               } \
+               VERTEXFUNC(X[i], 0.f, 0.f); \
+           } \
+       } \
+       glEnd(); \
+   } \
+   else \
+   { \
+       glBegin(GL_QUADS); \
+       for (int j = 0 ; j < slowDim-1 ; j++) \
+           for (int i = 0 ; i < fastDim-1 ; i++) \
+           { \
+               if (ghost_zones != NULL) \
+                   if (*(ghost_zones++) != '\0') \
+                       continue; \
+               if (ghost_nodes != NULL) \
+               { \
+                   int p0 = j*fastDim+i; \
+                   int p1 = j*fastDim+i+1; \
+                   int p2 = (j+1)*fastDim+i; \
+                   int p3 = (j+1)*fastDim+i+1; \
+                   if (ghost_nodes[p0] && ghost_nodes[p1] && ghost_nodes[p2] \
+                       && ghost_nodes[p3]) \
+                      continue; \
+               } \
+\
+               if (colors == NULL && texCoords == NULL) \
+               { \
+                   if (flatI) \
+                   { \
+                       for (int k = 0 ; k < 4 ; k++) \
+                           VERTEXFUNC(X[0], Y[i + quadorder[k] % 2],  \
+                                      Z[j + quadorder[k]/2]); \
+                   } \
+                   else if (flatJ) \
+                   { \
+                       for (int k = 0 ; k < 4 ; k++) \
+                           VERTEXFUNC(X[i + quadorder[k] % 2], Y[0], \
+                                      Z[j + quadorder[k]/2]); \
+                   } \
+                   else if (flatK) \
+                   { \
+                       for (int k = 0 ; k < 4 ; k++) \
+                           VERTEXFUNC(X[i + quadorder[k] % 2],  \
+                                      Y[j + quadorder[k]/2], Z[0]); \
+                   } \
+               } \
+               else \
+               { \
+                   if (!nodeData) \
+                   { \
+                       int idx = j*(fastDim-1) + i; \
+                       if(texCoords != NULL) \
+                           glTexCoord1f(texCoords[idx]); \
+                       else if(colors != NULL) \
+                           glColor4ubv(colors + 4*idx); \
+                       if (flatI) \
+                       { \
+                           for (int k = 0 ; k < 4 ; k++) \
+                               VERTEXFUNC(X[0], Y[i + quadorder[k] % 2],  \
+                                          Z[j + quadorder[k]/2]); \
+                       } \
+                       else if (flatJ) \
+                       { \
+                           for (int k = 0 ; k < 4 ; k++) \
+                               VERTEXFUNC(X[i + quadorder[k] % 2], Y[0], \
+                                          Z[j + quadorder[k]/2]); \
+                       } \
+                       else if (flatK) \
+                       { \
+                           for (int k = 0 ; k < 4 ; k++) \
+                               VERTEXFUNC(X[i + quadorder[k] % 2],  \
+                                          Y[j + quadorder[k]/2], Z[0]); \
+                       } \
+                   } \
+                   else \
+                   { \
+                        if(texCoords != NULL) \
+                        { \
+                            if (flatI) \
+                            { \
+                                for (int k = 0 ; k < 4 ; k++) \
+                                { \
+                                    int idx = (j + quadorder[k]/2)*fastDim +  \
+                                              (i+(quadorder[k]%2)); \
+                                    glTexCoord1f(texCoords[idx]); \
+                                    VERTEXFUNC(X[0], Y[i + quadorder[k] % 2],  \
+                                               Z[j + quadorder[k]/2]); \
+                                } \
+                            } \
+                            else if (flatJ) \
+                            { \
+                                for (int k = 0 ; k < 4 ; k++) \
+                                { \
+                                    int idx = (j + quadorder[k]/2)*fastDim +  \
+                                              (i+(quadorder[k]%2)); \
+                                    glTexCoord1f(texCoords[idx]); \
+                                    VERTEXFUNC(X[i + quadorder[k] % 2], Y[0], \
+                                               Z[j + quadorder[k]/2]); \
+                                } \
+                            } \
+                            else if (flatK) \
+                            { \
+                                for (int k = 0 ; k < 4 ; k++) \
+                                { \
+                                    int idx = (j + quadorder[k]/2)*fastDim +  \
+                                              (i+(quadorder[k]%2)); \
+                                    glTexCoord1f(texCoords[idx]); \
+                                    VERTEXFUNC(X[i + quadorder[k] % 2],  \
+                                               Y[j + quadorder[k]/2], Z[0]); \
+                                } \
+                           } \
+                       } \
+                       else if(colors != NULL) \
+                       { \
+                            if (flatI) \
+                            { \
+                                for (int k = 0 ; k < 4 ; k++) \
+                                { \
+                                    int idx = (j + quadorder[k]/2)*fastDim +  \
+                                              (i+(quadorder[k]%2)); \
+                                    glColor4ubv(colors + 4*idx); \
+                                    VERTEXFUNC(X[0], Y[i + quadorder[k] % 2],  \
+                                               Z[j + quadorder[k]/2]); \
+                                } \
+                            } \
+                            else if (flatJ) \
+                            { \
+                                for (int k = 0 ; k < 4 ; k++) \
+                                { \
+                                    int idx = (j + quadorder[k]/2)*fastDim +  \
+                                              (i+(quadorder[k]%2)); \
+                                    glColor4ubv(colors + 4*idx); \
+                                    VERTEXFUNC(X[i + quadorder[k] % 2], Y[0], \
+                                               Z[j + quadorder[k]/2]); \
+                                } \
+                            } \
+                            else if (flatK) \
+                            { \
+                                for (int k = 0 ; k < 4 ; k++) \
+                                { \
+                                    int idx = (j + quadorder[k]/2)*fastDim +  \
+                                              (i+(quadorder[k]%2)); \
+                                    glColor4ubv(colors + 4*idx); \
+                                    VERTEXFUNC(X[i + quadorder[k] % 2],  \
+                                               Y[j + quadorder[k]/2], Z[0]); \
+                                } \
+                           } \
+                       } \
+                   } \
+               } \
+\
+               if (this->doingDisplayLists) \
+               { \
+                   this->primsInCurrentList++; \
+                   if (this->primsInCurrentList >= dlSize) \
+                   { \
+                       glEnd(); \
+                       glEndList(); \
+                       this->CurrentList++; \
+                       glNewList(this->CurrentList,GL_COMPILE); \
+                       glBegin(GL_QUADS); \
+                       this->primsInCurrentList = 0; \
+                   } \
+               } \
+           } \
+       glEnd(); \
+   } \
+   delete [] X; \
+   delete [] Y; \
+   delete [] Z;
 
-   bool normalQuadOrder = !flatJ;
-   if (dims[0] > 1 && X[1] < X[0])
-       normalQuadOrder = !normalQuadOrder;
-   if (dims[1] > 1 && Y[1] < Y[0])
-       normalQuadOrder = !normalQuadOrder;
-   if (dims[2] > 1 && Z[1] < Z[0])
-       normalQuadOrder = !normalQuadOrder;
-   int normalquadorder[4] = { 0, 1, 3, 2 };
-   int otherquadorder[4] = { 0, 2, 3, 1 };
-   int *quadorder = (normalQuadOrder ? normalquadorder : otherquadorder);
-
-   int slowDim = 0;
-   int fastDim = 0;
-   if (flatI)
+   if(input->GetXCoordinates()->GetDataType() == VTK_DOUBLE ||
+      input->GetYCoordinates()->GetDataType() == VTK_DOUBLE ||
+      input->GetZCoordinates()->GetDataType() == VTK_DOUBLE)
    {
-       glNormal3f(1., 0., 0.);
-       fastDim = dims[1];
-       slowDim = dims[2];
-   }
-   if (flatJ)
-   {
-       glNormal3f(0., 1., 0.);
-       fastDim = dims[0];
-       slowDim = dims[2];
-   }
-   if (flatK)
-   {
-       glNormal3f(0., 0., 1.);
-       fastDim = dims[0];
-       slowDim = dims[1];
-   }
-
-   const float *texCoords = NULL;
-   if(this->ColorCoordinates != NULL)
-       texCoords = (const float *)this->ColorCoordinates->GetVoidPointer(0);
-
-   if(!flatI && flatJ && flatK)
-   {
-       // Draw a curve
-       glBegin(GL_LINE_STRIP);
-       if(colors == NULL && texCoords == NULL)
-       {
-           for(int i = 0; i < dims[0]; ++i)
-               glVertex3f(X[i], 0.f, 0.f);
-       }
-       else
-       {
-           for(int i = 0; i < dims[0]; ++i)
-           {
-               if(nodeData)
-               {
-                   if(texCoords != NULL)
-                        glTexCoord1f(texCoords[i]);
-                   else if(colors != NULL)
-                        glColor4ubv(colors + 4*i);
-               }
-               glVertex3f(X[i], 0.f, 0.f);
-           }
-       }
-       glEnd();
+       vtkOpenGLRectilinearGridMapper_EmitGeometry(double, glVertex3d);
    }
    else
    {
-   glBegin(GL_QUADS);
-   for (int j = 0 ; j < slowDim-1 ; j++)
-       for (int i = 0 ; i < fastDim-1 ; i++)
-       {
-           if (ghost_zones != NULL)
-               if (*(ghost_zones++) != '\0')
-                   continue;
-           if (ghost_nodes != NULL)
-           {
-               int p0 = j*fastDim+i;
-               int p1 = j*fastDim+i+1;
-               int p2 = (j+1)*fastDim+i;
-               int p3 = (j+1)*fastDim+i+1;
-               if (ghost_nodes[p0] && ghost_nodes[p1] && ghost_nodes[p2]
-                   && ghost_nodes[p3])
-                  continue;
-           }
-
-           if (colors == NULL && texCoords == NULL)
-           {
-               for (int k = 0 ; k < 4 ; k++)
-               {
-                   if (flatI)
-                       glVertex3f(X[0], Y[i + quadorder[k] % 2], 
-                                  Z[j + quadorder[k]/2]);
-                   else if (flatJ)
-                       glVertex3f(X[i + quadorder[k] % 2], Y[0],
-                                  Z[j + quadorder[k]/2]);
-                   else if (flatK)
-                       glVertex3f(X[i + quadorder[k] % 2], 
-                                  Y[j + quadorder[k]/2], Z[0]);
-               }
-           }
-           else
-           {
-               if (!nodeData)
-               {
-                   int idx = j*(fastDim-1) + i;
-
-                   if(texCoords != NULL)
-                       glTexCoord1f(texCoords[idx]);
-                   else if(colors != NULL)
-                       glColor4ubv(colors + 4*idx);
-
-                   for (int k = 0 ; k < 4 ; k++)
-                   {
-                       if (flatI)
-                           glVertex3f(X[0], Y[i + quadorder[k] % 2], 
-                                      Z[j + quadorder[k]/2]);
-                       else if (flatJ)
-                           glVertex3f(X[i + quadorder[k] % 2], Y[0],
-                                      Z[j + quadorder[k]/2]);
-                       else if (flatK)
-                           glVertex3f(X[i + quadorder[k] % 2], 
-                                      Y[j + quadorder[k]/2], Z[0]);
-                   }
-               }
-               else
-               {
-                   for (int k = 0 ; k < 4 ; k++)
-                   {
-                       int idx = (j + quadorder[k]/2)*fastDim + 
-                                 (i+(quadorder[k]%2));
-
-                       if(texCoords != NULL)
-                           glTexCoord1f(texCoords[idx]);
-                       else if(colors != NULL)
-                           glColor4ubv(colors + 4*idx);
-
-                       if (flatI)
-                           glVertex3f(X[0], Y[i + quadorder[k] % 2], 
-                                      Z[j + quadorder[k]/2]);
-                       else if (flatJ)
-                           glVertex3f(X[i + quadorder[k] % 2], Y[0],
-                                      Z[j + quadorder[k]/2]);
-                       else if (flatK)
-                           glVertex3f(X[i + quadorder[k] % 2], 
-                                      Y[j + quadorder[k]/2], Z[0]);
-                   }
-               }
-           }
-
-           if (this->doingDisplayLists)
-           {
-               this->primsInCurrentList++;
-               if (this->primsInCurrentList >= dlSize)
-               {
-                   glEnd();
-                   glEndList();
-                   this->CurrentList++;
-                   glNewList(this->CurrentList,GL_COMPILE);
-                   glBegin(GL_QUADS);
-                   this->primsInCurrentList = 0;
-               }
-           }
-       }
-   glEnd();
+       vtkOpenGLRectilinearGridMapper_EmitGeometry(float, glVertex3f);
    }
 
    if (transform)
@@ -671,10 +751,6 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    glEnable(GL_LIGHTING);
    if (this->doingDisplayLists)
        glEndList();
-
-   delete [] X;
-   delete [] Y;
-   delete [] Z;
 
    return 1;
 }

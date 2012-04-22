@@ -68,13 +68,6 @@
     maxLabelRows = 1;
 
     //
-    // Look for the cell center array that the label filter calculated.
-    //
-    //vtkFloatArray *cellCenters = GetCellCenterArray();
-    //if(cellCenters == 0)
-    //    return;
-
-    //
     // Look for the original cell number array.
     //
     vtkUnsignedIntArray  *originalCells = 0;
@@ -156,16 +149,14 @@
             }
             else
             { // VisIt turned the label into floats!
-                debug3 << "*** WARNING - VisIt turned the Label data into floats. That is not efficient!" << endl;
-                const float *fptr = (const float *)data->GetVoidPointer(0);
+                debug3 << "*** WARNING - VisIt transformed the Label data from unsigned char. That is not efficient!" << endl;
                 char *tempstr = new char[labelLength];
                 memset(tempstr, 0, labelLength);
                 for(vtkIdType id = 0; id < nCells; id += skipIncrement)
                 {
                     // Store the float-ified label in a real string.
                     for(int k = 0; k < labelLength - 1; ++k)
-                        tempstr[k] = (char)*fptr++;
-                    ++fptr;
+                        tempstr[k] = static_cast<char>(data->GetComponent(id, k));
 
                     // Use the label.
                     BEGIN_LABEL
@@ -183,7 +174,7 @@
             {
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
-                    float scalarVal = data->GetTuple1(id);
+                    double scalarVal = data->GetTuple1(id);
                     CREATE_LABEL(labelString, MAX_LABEL_SIZE, atts.GetFormatTemplate().c_str(), scalarVal);
                 END_LABEL
             }
@@ -199,7 +190,6 @@
 
             for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
-                // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
                     double *vectorVal = data->GetTuple2(id);
                     CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp,
@@ -219,7 +209,6 @@
 
             for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
-                // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
                     double *vectorVal = data->GetTuple3(id);
                     CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp,
@@ -246,7 +235,6 @@
             maxLabelRows = 3;
             for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
-                // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
                     double *tensorVal = data->GetTuple9(id);
                     CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp,
@@ -353,7 +341,6 @@ debug3 << "Labelling cells with original cell indices: "
 debug3 << "Labelling cells as 2D structured indices" << endl;
                 for(vtkIdType id = 0; id < nCells; id += skipIncrement)
                 {
-                    // float *vert = cellCenters->GetTuple3(id);
                     BEGIN_LABEL
                         unsigned int realCellId = originalCells->GetValue(id);
                         unsigned int y = (realCellId / xdims) - ybase;
@@ -368,7 +355,6 @@ debug3 << "Labelling cells as 3D structured indices" << endl;
                 unsigned int xydims = xdims * ydims;
                 for(vtkIdType id = 0; id < nCells; id += skipIncrement)
                 {
-                    // float *vert = cellCenters->GetTuple3(id);
                     BEGIN_LABEL
                         unsigned int realCellId = originalCells->GetValue(id);
                         unsigned int z = (realCellId / xydims) - zbase;
@@ -385,7 +371,6 @@ debug3 << "Labelling cells as 3D structured indices" << endl;
 debug3 << "Labelling as indices" << endl;
             for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
-                // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
                     unsigned int realCellId = originalCells->GetValue(id);
                 CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%lld", realCellId + cellOrigin);
@@ -398,7 +383,6 @@ debug3 << "Labelling as indices" << endl;
         debug3 << "avtLabelRenderer: backup case for labelling cells." << endl;
         for(vtkIdType id = 0; id < nCells; id += skipIncrement)
         {
-            // float *vert = cellCenters->GetTuple3(id);
             BEGIN_LABEL
                 CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%lld", id + cellOrigin);
             END_LABEL

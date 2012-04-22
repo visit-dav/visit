@@ -44,7 +44,6 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -129,16 +128,14 @@ avtFindExternalExpression::~avtFindExternalExpression()
 vtkDataArray *
 avtFindExternalExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int  i;
-
     vtkDataSet *new_ds = in_ds->NewInstance();
     new_ds->ShallowCopy(in_ds);
-    int nids = (doCells ? new_ds->GetNumberOfCells()
+    vtkIdType nids = (doCells ? new_ds->GetNumberOfCells()
                         : new_ds->GetNumberOfPoints());
     vtkIntArray *arr = vtkIntArray::New();
     arr->SetNumberOfTuples(nids);
-    for (i = 0 ; i < nids ; i++)
-        arr->SetValue(i, i);
+    for (vtkIdType i = 0 ; i < nids ; i++)
+        arr->SetValue(i, (int)i);
     const char *varname = "_avt_id";
     arr->SetName(varname);
     if (doCells)
@@ -186,20 +183,20 @@ avtFindExternalExpression::DeriveVariable(vtkDataSet *in_ds)
     vtkIntArray *arr3 = (vtkIntArray *) arr2;
 
     bool *haveId = new bool[nids];
-    for (i = 0 ; i < nids ; i++)
+    for (vtkIdType i = 0 ; i < nids ; i++)
         haveId[i] = false;
 
     if (haveArray)
     {
-        int nArr = arr3->GetNumberOfTuples();
-        for (i = 0 ; i < nArr ; i++)
+        vtkIdType nArr = arr3->GetNumberOfTuples();
+        for (vtkIdType i = 0 ; i < nArr ; i++)
             haveId[arr3->GetValue(i)] = true;
     }
 
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkIntArray *rv = vtkIntArray::New();
     rv->SetNumberOfTuples(nids);
-    for (i = 0 ; i < nids ; i++)
-        rv->SetTuple1(i, (haveId[i] ? 1. : 0.));
+    for (vtkIdType i = 0 ; i < nids ; i++)
+        rv->SetTuple1(i, (haveId[i] ? 1 : 0));
 
     delete [] haveId;
     new_ds->Delete();

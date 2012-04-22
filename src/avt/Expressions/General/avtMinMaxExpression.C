@@ -43,9 +43,6 @@
 #include <avtMinMaxExpression.h>
 
 #include <vtkDataArray.h>
-#include <vtkRectilinearGrid.h>
-
-#include <avtCallback.h>
 
 #include <ExpressionException.h>
 
@@ -108,6 +105,9 @@ avtMinMaxExpression::~avtMinMaxExpression()
 //    Hank Childs, Mon Jan 14 18:26:58 PST 2008
 //    Add support for singleton constants.
 //
+//    Kathleen Biagas, Wed Apr 4 12:13:10 PDT 2012
+//    Change float to double.
+//
 // ****************************************************************************
 
 void
@@ -127,8 +127,8 @@ avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             {
                 int tup1 = (var1IsSingleton ? 0 : i);
                 int tup2 = (var2IsSingleton ? 0 : i);
-                float val1 = in1->GetComponent(tup1, j);
-                float val2 = in2->GetComponent(tup2, j);
+                double val1 = in1->GetComponent(tup1, j);
+                double val2 = in2->GetComponent(tup2, j);
                 bool val1Bigger = (val1 > val2);
                 // Circumflex (^) is the exclusive or.
                 // doMin == true  && val1Bigger == true  --> val2
@@ -136,7 +136,7 @@ avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                 // doMin == true  && val1Bigger == false --> val1
                 // doMin == false && val1Bigger == false --> val2
                 //  --> values same, then val2, values different, then val1
-                float outval = (doMin ^ val1Bigger ? val1 : val2);
+                double outval = (doMin ^ val1Bigger ? val1 : val2);
                 out->SetComponent(i, j, outval);
             }
         }

@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtArrayComposeExpression.C                          //
+//                      avtArrayComposeExpression.C                          //
 // ************************************************************************* //
 
 #include <avtArrayComposeExpression.h>
@@ -119,16 +119,14 @@ avtArrayComposeExpression::~avtArrayComposeExpression()
 vtkDataArray *
 avtArrayComposeExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i, j;
-
     if (varnames.size() == 0)
         EXCEPTION0(ImproperUseException);
 
-    int nvars = varnames.size();
+    size_t nvars = varnames.size();
     vtkDataArray **vars = new vtkDataArray*[nvars];
     avtCentering  *centering = new avtCentering[nvars];
 
-    for (i = 0 ; i < nvars ; i++)
+    for (size_t i = 0 ; i < nvars ; i++)
     {
         vars[i] = in_ds->GetPointData()->GetArray(varnames[i]);
         centering[i] = AVT_NODECENT;
@@ -139,7 +137,8 @@ avtArrayComposeExpression::DeriveVariable(vtkDataSet *in_ds)
         }
     }
 
-    for (i = 0 ; i < nvars ; i++)
+    int outType = VTK_FLOAT;
+    for (size_t i = 0 ; i < nvars ; i++)
     {
         if (vars[i] == NULL)
             EXCEPTION2(ExpressionException, outputVariableName,
@@ -151,14 +150,16 @@ avtArrayComposeExpression::DeriveVariable(vtkDataSet *in_ds)
             EXCEPTION2(ExpressionException, outputVariableName,
                   "Cannot create array because: the centering of the "
                   "variables does not agree.");
+        if (vars[i]->GetDataType() == VTK_DOUBLE)
+            outType = VTK_DOUBLE;
     }
 
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkDataArray *rv = vtkDataArray::CreateDataArray(outType);
     rv->SetNumberOfComponents(nvars);
-    int nvals = vars[0]->GetNumberOfTuples();
+    vtkIdType nvals = vars[0]->GetNumberOfTuples();
     rv->SetNumberOfTuples(nvals);
-    for (i = 0 ; i < nvals ; i++)
-        for (j = 0 ; j < nvars ; j++)
+    for (vtkIdType i = 0 ; i < nvals ; i++)
+        for (size_t j = 0 ; j < nvars ; j++)
             rv->SetComponent(i, j, vars[j]->GetTuple1(i));
 
     delete [] vars;

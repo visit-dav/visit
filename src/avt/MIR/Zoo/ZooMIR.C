@@ -83,6 +83,7 @@ ZooMIR::ZooMIR()
     dimension = -1;
     mesh   = NULL;
     outPts = NULL;
+    origCoordType = VTK_FLOAT;
 }
 
 // ****************************************************************************
@@ -509,21 +510,46 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     int npoints = origNPoints + newNPoints;
     if (outPts == NULL)
     {
-        outPts = vtkPoints::New();
+        outPts = vtkPoints::New(origCoordType);
         outPts->SetNumberOfPoints(npoints);
-        float *pts_buff = (float *) outPts->GetVoidPointer(0);
-        int outIndex = 0;
-        for (int i=0; i<origNPoints; i++)
+        if(origCoordType == VTK_FLOAT)
         {
-            pts_buff[outIndex++] = origXCoords[i];
-            pts_buff[outIndex++] = origYCoords[i];
-            pts_buff[outIndex++] = origZCoords[i];
+            float *pts_buff = (float *) outPts->GetVoidPointer(0);
+            int outIndex = 0;
+            for (int i=0; i<origNPoints; i++)
+            {
+                *pts_buff++ = static_cast<float>(origXCoords[i]);
+                *pts_buff++ = static_cast<float>(origYCoords[i]);
+                *pts_buff++ = static_cast<float>(origZCoords[i]);
+            }
+            for (int i=0; i<newNPoints; i++)
+            {
+                *pts_buff++ = static_cast<float>(coordsList[i].x);
+                *pts_buff++ = static_cast<float>(coordsList[i].y);
+                *pts_buff++ = static_cast<float>(coordsList[i].z);
+            }
         }
-        for (int i=0; i<newNPoints; i++)
+        else if(origCoordType == VTK_DOUBLE)
         {
-            pts_buff[outIndex++] = coordsList[i].x;
-            pts_buff[outIndex++] = coordsList[i].y;
-            pts_buff[outIndex++] = coordsList[i].z;
+            double *pts_buff = (double *) outPts->GetVoidPointer(0);
+            for (int i=0; i<origNPoints; i++)
+            {
+                *pts_buff++ = origXCoords[i];
+                *pts_buff++ = origYCoords[i];
+                *pts_buff++ = origZCoords[i];
+            }
+            for (int i=0; i<newNPoints; i++)
+            {
+                *pts_buff++ = coordsList[i].x;
+                *pts_buff++ = coordsList[i].y;
+                *pts_buff++ = coordsList[i].z;
+            }
+        }
+        else
+        {
+            outPts->Delete();
+            rv->Delete();
+            EXCEPTION0(ImproperUseException);
         }
     }
     rv->SetPoints(outPts);
@@ -822,6 +848,10 @@ ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
 //  Programmer: Hank Childs
 //  Creation:   October 5, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Apr 11 21:01:06 PDT 2012
+//    double coordinates.
+//
 // ****************************************************************************
 
 void
@@ -843,21 +873,21 @@ ZooMIR::SetUpCoords()
         vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) mesh;
         vtkDataArray *xc = rgrid->GetXCoordinates();
         int nx = xc->GetNumberOfTuples();
-        float *x = new float[nx];
+        double *x = new double[nx];
         for (i = 0 ; i < nx ; i++)
         {
             x[i] = xc->GetTuple1(i);
         }
         vtkDataArray *yc = rgrid->GetYCoordinates();
         int ny = yc->GetNumberOfTuples();
-        float *y = new float[ny];
+        double *y = new double[ny];
         for (i = 0 ; i < ny ; i++)
         {
             y[i] = yc->GetTuple1(i);
         }
         vtkDataArray *zc = rgrid->GetZCoordinates();
         int nz = zc->GetNumberOfTuples();
-        float *z = new float[nz];
+        double *z = new double[nz];
         for (i = 0 ; i < nz ; i++)
         {
             z[i] = zc->GetTuple1(i);
@@ -880,16 +910,35 @@ ZooMIR::SetUpCoords()
         delete [] x;
         delete [] y;
         delete [] z;
+        origCoordType = rgrid->GetXCoordinates()->GetDataType();
     }
     else
     {
         vtkPointSet *ps = (vtkPointSet *) mesh;
-        float *ptr = (float *) ps->GetPoints()->GetVoidPointer(0);
-        for (int n=0; n<nPoints; n++)
+        origCoordType = ps->GetPoints()->GetDataType();
+        if(origCoordType == VTK_FLOAT)
         {
-            origXCoords[n] = *ptr++;
-            origYCoords[n] = *ptr++;
-            origZCoords[n] = *ptr++;
+            const float *ptr = (float *) ps->GetPoints()->GetVoidPointer(0);
+            for (int n=0; n<nPoints; n++)
+            {
+                origXCoords[n] = static_cast<double>(*ptr++);
+                origYCoords[n] = static_cast<double>(*ptr++);
+                origZCoords[n] = static_cast<double>(*ptr++);
+            }
+        }
+        else if(origCoordType == VTK_DOUBLE)
+        {
+            const double *ptr = (double *) ps->GetPoints()->GetVoidPointer(0);
+            for (int n=0; n<nPoints; n++)
+            {
+                origXCoords[n] = *ptr++;
+                origYCoords[n] = *ptr++;
+                origZCoords[n] = *ptr++;
+            }
+        }
+        else
+        {
+            EXCEPTION0(ImproperUseException);
         }
     }
 

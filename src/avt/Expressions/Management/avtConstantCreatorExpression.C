@@ -37,15 +37,13 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtConstantCreatorExpression.C                    //
+//                         avtConstantCreatorExpression.C                    //
 // ************************************************************************* //
 
 #include <avtConstantCreatorExpression.h>
 
 #include <vtkDataArray.h>
-#include <vtkDataSet.h>
 #include <vtkFloatArray.h>
-#include <vtkUnsignedCharArray.h>
 
 
 // ****************************************************************************
@@ -127,17 +125,19 @@ avtConstantCreatorExpression::DoOperation(vtkDataArray *, vtkDataArray *out,
 //  Programmer: Hank Childs
 //  Creation:   November 3, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Wed Apr 18 13:35:09 PDT 2012
+//    Return float unless the input is double.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtConstantCreatorExpression::CreateArray(vtkDataArray *in)
 {
-    if (in->GetDataType() == VTK_UNSIGNED_CHAR)
-    {
-        return vtkFloatArray::New();
-    }
+    if (in->GetDataType() == VTK_DOUBLE)
+        return in->NewInstance();
 
-    return in->NewInstance();
+    return vtkFloatArray::New();
 }
 
 

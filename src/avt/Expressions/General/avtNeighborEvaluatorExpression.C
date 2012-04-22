@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                       avtNeighborEvaluatorExpression.C                        //
+//                   avtNeighborEvaluatorExpression.C                        //
 // ************************************************************************* //
 
 #include <avtNeighborEvaluatorExpression.h>
@@ -47,12 +47,14 @@
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkIdList.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 
+#include <avtAccessor.h>
 #include <avtCallback.h>
 
 using std::vector;
@@ -69,8 +71,6 @@ using std::vector;
 avtNeighborEvaluatorExpression::avtNeighborEvaluatorExpression()
 {
     evaluationType = BIGGEST_NEIGHBOR;
-    buff = NULL;
-    nEntries = NULL;
 }
 
 
@@ -111,6 +111,237 @@ avtNeighborEvaluatorExpression::PreExecute(void)
 
 
 // ****************************************************************************
+//  Method: avtNeighborEvaluatorExpression::EvaluateNeighbor
+//
+//  Purpose:
+//      Updates our buffer with a neighbor.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 17, 2004
+//
+// ****************************************************************************
+
+template <class Accessor>
+void
+avtNeighborEvaluatorExpression::EvaluateNeighbor(vtkIdType idx, int *nEntries, 
+    double val, vtkDataArray *&resArray)
+{
+    Accessor buff(resArray);
+    if (evaluationType == BIGGEST_NEIGHBOR)
+    {
+        if (nEntries[idx] == 0)
+        {
+            buff.SetTuple1(idx, val);
+            nEntries[idx] = 1;
+        }
+        else
+        {
+            buff.SetTuple1(idx, 
+                (buff.GetTuple1(idx) < val ? val : buff.GetTuple1(idx)));
+        }
+    }
+    else if (evaluationType == SMALLEST_NEIGHBOR)
+    {
+        if (nEntries[idx] == 0)
+        {
+            buff.SetTuple1(idx, val);
+            nEntries[idx] = 1;
+        }
+        else
+            buff.SetTuple1(idx, 
+                (buff.GetTuple1(idx) > val ? val : buff.GetTuple1(idx)));
+    }
+    else if (evaluationType == AVERAGE_NEIGHBOR)
+    {
+        buff.SetTuple1(idx, buff.GetTuple1(idx) + val);
+        nEntries[idx]++;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtNeighborEvaluatorExpression::DeriveVariable
+//
+//  Purpose:
+//      Derives a variable based on the input dataset.
+//
+//  Arguments:
+//      inDS      The input dataset.
+//
+//  Returns:      The derived variable.  The calling class must free this
+//                memory.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 17, 2004
+//
+// ****************************************************************************
+
+
+template <class Accessor>
+void
+avtNeighborEvaluatorExpression::DeriveVariableT(vtkDataSet *in_ds, 
+    bool nodal, vtkDataArray *input, vtkDataArray *&results)
+{
+    vtkIdType nPoints = in_ds->GetNumberOfPoints(); 
+    vtkIdType nCells  = in_ds->GetNumberOfCells(); 
+    vtkIdType nvals   = (nodal ? nPoints : nCells);
+
+    Accessor ptr(input);
+    int dtype = in_ds->GetDataObjectType();
+    bool isStructured = false;
+    int dims[3];
+    if (dtype == VTK_RECTILINEAR_GRID || dtype == VTK_STRUCTURED_GRID)
+    {
+        isStructured = true;
+        if (dtype == VTK_RECTILINEAR_GRID)
+            ((vtkRectilinearGrid *) in_ds)->GetDimensions(dims);
+        else if (dtype == VTK_STRUCTURED_GRID)
+            ((vtkStructuredGrid *) in_ds)->GetDimensions(dims);
+    }
+  
+    // Initialize Evaluation
+    Accessor r_ptr(results);
+    int *nEntries = new int[nvals];
+    for (vtkIdType i = 0 ; i < nvals ; i++)
+    {
+        r_ptr.SetTuple1(i, 0.);
+        nEntries[i] = 0;
+    }
+
+    if (nodal)
+    {
+        if (isStructured)
+        {
+            int i_step = 1;
+            int j_step = dims[0];
+            int k_step = dims[1]*dims[0];
+            for (int i = 0 ; i < dims[0] ; i++)
+                for (int j = 0 ; j < dims[1] ; j++)
+                    for (int k = 0 ; k < dims[2] ; k++)
+                    {
+                        int index = k*k_step + j*j_step + i;
+                        if ((i-1) > 0)
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index-i_step), results);
+                        if ((i+1) < dims[0])
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index+i_step), results);
+                        if ((j-1) > 0)
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index-j_step), results);
+                        if ((j+1) < dims[1])
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index+j_step), results);
+                        if ((k-1) > 0)
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index-k_step), results);
+                        if ((k+1) < dims[2])
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index+k_step), results);
+                    }
+        }
+        else // unstructured or polydata
+        {
+            //
+            // Note: this technique will count some edges multiple times,
+            // which can skew averages.
+            //
+            for (vtkIdType i = 0 ; i < nCells ; i++)
+            {
+                vtkCell *cell = in_ds->GetCell(i);
+                vtkIdType nEdges = cell->GetNumberOfEdges();
+                for (vtkIdType j = 0 ; j < nEdges ; j++)
+                {
+                    vtkCell *edge = cell->GetEdge(j);
+                    vtkIdType id1 = edge->GetPointId(0);
+                    vtkIdType id2 = edge->GetPointId(1);
+                    EvaluateNeighbor<Accessor>(id1, nEntries, 
+                        ptr.GetTuple1(id2), results);
+                    EvaluateNeighbor<Accessor>(id2, nEntries, 
+                        ptr.GetTuple1(id1), results);
+                }
+            }
+        }
+    }
+    else // zonal
+    {
+        if (isStructured)
+        {
+            int rangeX = (dims[0] <= 1 ? 1 : dims[0]-1);
+            int rangeY = (dims[1] <= 1 ? 1 : dims[1]-1);
+            int rangeZ = (dims[2] <= 1 ? 1 : dims[2]-1);
+            int i_step = 1;
+            int j_step = rangeX;
+            int k_step = rangeX*rangeY;
+            for (int i = 0 ; i < rangeX ; i++)
+                for (int j = 0 ; j < rangeY; j++)
+                    for (int k = 0 ; k < rangeZ ; k++)
+                    {
+                        int index = k*k_step + j*j_step + i;
+                        if ((i-1) > 0)
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index-i_step), results);
+                        if ((i+1) < dims[0]-1)
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index+i_step), results);
+                        if ((j-1) > 0)
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index-j_step), results);
+                        if ((j+1) < dims[1]-1)
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index+j_step), results);
+                        if ((k-1) > 0)
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index-k_step), results);
+                        if ((k+1) < dims[2]-1)
+                            EvaluateNeighbor<Accessor>(index, nEntries, 
+                                ptr.GetTuple1(index+k_step), results);
+                    }
+        }
+        else // unstructured or polydata
+        {
+            //
+            // Note: this technique will count some zones multiple times,
+            // which can skew averages.
+            //
+            vtkIdList *cell_ids = vtkIdList::New();
+            for (vtkIdType i = 0 ; i < nCells ; i++)
+            {
+                vtkCell *cell = in_ds->GetCell(i);
+                vtkIdList *pt_ids = cell->GetPointIds();
+                vtkIdType npts = pt_ids->GetNumberOfIds();
+                for (vtkIdType j = 0 ; j < npts ; j++)
+                {
+                    in_ds->GetPointCells(pt_ids->GetId(j), cell_ids);
+                    vtkIdType ncells = cell_ids->GetNumberOfIds();
+                    for (vtkIdType k = 0 ; k < ncells ; k++)
+                    {
+                        vtkIdType cell = cell_ids->GetId(k);
+                        if (cell != i)
+                            EvaluateNeighbor<Accessor>(i, nEntries, 
+                                ptr.GetTuple1(cell), results);
+                    }
+                }
+            }
+            cell_ids->Delete();
+        }
+    }
+
+    // Finalize Evaluation
+    if (evaluationType == AVERAGE_NEIGHBOR)
+    {
+        for (vtkIdType i = 0 ; i < nvals ; i++)
+            if (nEntries[i] > 0)
+                r_ptr.SetTuple1(i, r_ptr.GetTuple1(i) / nEntries[i]);
+    }
+
+    delete [] nEntries;
+}
+
+
+
+
+// ****************************************************************************
 //  Method: avtNeighborEvaluatorExpression::DeriveVariable
 //
 //  Purpose:
@@ -130,10 +361,8 @@ avtNeighborEvaluatorExpression::PreExecute(void)
 vtkDataArray *
 avtNeighborEvaluatorExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int  i, j, k;
-
-    int nPoints = in_ds->GetNumberOfPoints();
-    int nCells  = in_ds->GetNumberOfCells();
+    vtkIdType nPoints = in_ds->GetNumberOfPoints();
+    vtkIdType nCells  = in_ds->GetNumberOfCells();
     bool nodal = true;
     vtkDataArray *input = in_ds->GetPointData()->GetArray(activeVariable); 
     if (input == NULL)
@@ -142,17 +371,15 @@ avtNeighborEvaluatorExpression::DeriveVariable(vtkDataSet *in_ds)
         nodal = false;
     }
 
-    vtkDataArray *results = vtkFloatArray::New();
+    vtkDataArray *results = input->NewInstance();
     results->SetNumberOfComponents(1);
-    int nvals = (nodal ? nPoints : nCells);
+    vtkIdType nvals = (nodal ? nPoints : nCells);
     results->SetNumberOfTuples(nvals);        
-    float *r_ptr = (float *) results->GetVoidPointer(0);
-
     if (input == NULL || input->GetNumberOfComponents() != 1)
     {
         // Don't return uninitialized memory.
-        for (i = 0 ; i < nvals ; i++)
-            r_ptr[i] = 0.;
+        for (vtkIdType i = 0 ; i < nvals ; i++)
+            results->SetTuple1(i, 0.);
          
         if (!haveIssuedWarning)
         {
@@ -165,154 +392,46 @@ avtNeighborEvaluatorExpression::DeriveVariable(vtkDataSet *in_ds)
         return results;
     }
 
-    int dtype = in_ds->GetDataObjectType();
-    bool isStructured = false;
-    int dims[3];
-    if (dtype == VTK_RECTILINEAR_GRID || dtype == VTK_STRUCTURED_GRID)
-    {
-        isStructured = true;
-        if (dtype == VTK_RECTILINEAR_GRID)
-            ((vtkRectilinearGrid *) in_ds)->GetDimensions(dims);
-        else if (dtype == VTK_STRUCTURED_GRID)
-            ((vtkStructuredGrid *) in_ds)->GetDimensions(dims);
-    }
-  
-    InitializeEvaluation(nvals, r_ptr);
-
-    float *ptr = (float *) input->GetVoidPointer(0);
-    if (nodal)
-    {
-        if (isStructured)
-        {
-            int i_step = 1;
-            int j_step = dims[0];
-            int k_step = dims[1]*dims[0];
-            for (i = 0 ; i < dims[0] ; i++)
-                for (j = 0 ; j < dims[1] ; j++)
-                    for (k = 0 ; k < dims[2] ; k++)
-                    {
-                        int index = k*k_step + j*j_step + i;
-                        if ((i-1) > 0)
-                            EvaluateNeighbor(index, ptr[index-i_step]);
-                        if ((i+1) < dims[0])
-                            EvaluateNeighbor(index, ptr[index+i_step]);
-                        if ((j-1) > 0)
-                            EvaluateNeighbor(index, ptr[index-j_step]);
-                        if ((j+1) < dims[1])
-                            EvaluateNeighbor(index, ptr[index+j_step]);
-                        if ((k-1) > 0)
-                            EvaluateNeighbor(index, ptr[index-k_step]);
-                        if ((k+1) < dims[2])
-                            EvaluateNeighbor(index, ptr[index+k_step]);
-                    }
-        }
-        else // unstructured or polydata
-        {
-            //
-            // Note: this technique will count some edges multiple times,
-            // which can skew averages.
-            //
-            for (i = 0 ; i < nCells ; i++)
-            {
-                vtkCell *cell = in_ds->GetCell(i);
-                int nEdges = cell->GetNumberOfEdges();
-                for (j = 0 ; j < nEdges ; j++)
-                {
-                    vtkCell *edge = cell->GetEdge(j);
-                    int id1 = edge->GetPointId(0);
-                    int id2 = edge->GetPointId(1);
-                    EvaluateNeighbor(id1, ptr[id2]);
-                    EvaluateNeighbor(id2, ptr[id1]);
-                }
-            }
-        }
-    }
-    else // zonal
-    {
-        if (isStructured)
-        {
-            int rangeX = (dims[0] <= 1 ? 1 : dims[0]-1);
-            int rangeY = (dims[1] <= 1 ? 1 : dims[1]-1);
-            int rangeZ = (dims[2] <= 1 ? 1 : dims[2]-1);
-            int i_step = 1;
-            int j_step = rangeX;
-            int k_step = rangeX*rangeY;
-            for (i = 0 ; i < rangeX ; i++)
-                for (j = 0 ; j < rangeY; j++)
-                    for (k = 0 ; k < rangeZ ; k++)
-                    {
-                        int index = k*k_step + j*j_step + i;
-                        if ((i-1) > 0)
-                            EvaluateNeighbor(index, ptr[index-i_step]);
-                        if ((i+1) < dims[0]-1)
-                            EvaluateNeighbor(index, ptr[index+i_step]);
-                        if ((j-1) > 0)
-                            EvaluateNeighbor(index, ptr[index-j_step]);
-                        if ((j+1) < dims[1]-1)
-                            EvaluateNeighbor(index, ptr[index+j_step]);
-                        if ((k-1) > 0)
-                            EvaluateNeighbor(index, ptr[index-k_step]);
-                        if ((k+1) < dims[2]-1)
-                            EvaluateNeighbor(index, ptr[index+k_step]);
-                    }
-        }
-        else // unstructured or polydata
-        {
-            //
-            // Note: this technique will count some zones multiple times,
-            // which can skew averages.
-            //
-            vtkIdList *cell_ids = vtkIdList::New();
-            for (i = 0 ; i < nCells ; i++)
-            {
-                vtkCell *cell = in_ds->GetCell(i);
-                vtkIdList *pt_ids = cell->GetPointIds();
-                int npts = pt_ids->GetNumberOfIds();
-                for (j = 0 ; j < npts ; j++)
-                {
-                    in_ds->GetPointCells(pt_ids->GetId(j), cell_ids);
-                    int ncells = cell_ids->GetNumberOfIds();
-                    for (k = 0 ; k < ncells ; k++)
-                    {
-                        int cell = cell_ids->GetId(k);
-                        if (cell != i)
-                            EvaluateNeighbor(i, ptr[cell]);
-                    }
-                }
-            }
-            cell_ids->Delete();
-        }
-    }
-
-    FinalizeEvaluation(nvals);
+    if (input->GetDataType() == VTK_FLOAT)
+        DeriveVariableT<avtDirectAccessor<float> >(in_ds, nodal, 
+            input, results);
+    else if (input->GetDataType() == VTK_DOUBLE)
+        DeriveVariableT<avtDirectAccessor<double> >(in_ds, nodal, 
+            input, results);
+    else 
+        DeriveVariableT<avtTupleAccessor>(in_ds, nodal, 
+            input, results);
 
     return results;
 }
 
 
 // ****************************************************************************
-//  Method: avtNeighborEvaluatorExpression::InitializeEvaluation
+//  Method: avtNeighborEvaluatorExpression::ModifyContract
 //
 //  Purpose:
-//     Initializes arrays needed for evaluation.
-//     
+//      Declares that we need ghost data.
+//
 //  Programmer: Hank Childs
 //  Creation:   September 17, 2004
 //
 // ****************************************************************************
 
-void
-avtNeighborEvaluatorExpression::InitializeEvaluation(int nvals, float *ptr)
+avtContract_p
+avtNeighborEvaluatorExpression::ModifyContract(avtContract_p s)
 {
-    buff = ptr;
-    nEntries = new int[nvals];
-    for (int i = 0 ; i < nvals ; i++)
-    {
-        buff[i] = 0.;
-        nEntries[i] = 0;
-    }
+    avtContract_p spec = new avtContract(s);
+
+    //
+    // We will need the ghost zones so that we can interpolate along domain
+    // boundaries and still get the biggest neighbor.
+    //
+    spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+
+    return spec;
 }
 
+#if 0
 
 // ****************************************************************************
 //  Method: avtNeighborEvaluatorExpression::EvaluateNeighbor
@@ -325,8 +444,10 @@ avtNeighborEvaluatorExpression::InitializeEvaluation(int nvals, float *ptr)
 //
 // ****************************************************************************
 
+template <class Accessor, typename T>
 void
-avtNeighborEvaluatorExpression::EvaluateNeighbor(int idx, float val)
+avtNeighborEvaluatorExpression::EvaluateNeighbor(vtkIdType idx, int *nEntries, 
+    T val, T *buff)
 {
     if (evaluationType == BIGGEST_NEIGHBOR)
     {
@@ -357,27 +478,223 @@ avtNeighborEvaluatorExpression::EvaluateNeighbor(int idx, float val)
 
 
 // ****************************************************************************
-//  Method: avtNeighborEvaluatorExpression::FinalizeEvaluation
+//  Method: avtNeighborEvaluatorExpression::DeriveVariable
 //
 //  Purpose:
-//     Finalizes arrays needed for evaluation.
-//     
+//      Derives a variable based on the input dataset.
+//
+//  Arguments:
+//      inDS      The input dataset.
+//
+//  Returns:      The derived variable.  The calling class must free this
+//                memory.
+//
 //  Programmer: Hank Childs
 //  Creation:   September 17, 2004
 //
 // ****************************************************************************
 
+
+template <typename T>
 void
-avtNeighborEvaluatorExpression::FinalizeEvaluation(int nvals)
+avtNeighborEvaluatorExpression::DeriveVariableT(vtkDataSet *in_ds, 
+    vtkIdType nvals, T *ptr, T *r_ptr)
 {
+    int dtype = in_ds->GetDataObjectType();
+    bool isStructured = false;
+    int dims[3];
+    if (dtype == VTK_RECTILINEAR_GRID || dtype == VTK_STRUCTURED_GRID)
+    {
+        isStructured = true;
+        if (dtype == VTK_RECTILINEAR_GRID)
+            ((vtkRectilinearGrid *) in_ds)->GetDimensions(dims);
+        else if (dtype == VTK_STRUCTURED_GRID)
+            ((vtkStructuredGrid *) in_ds)->GetDimensions(dims);
+    }
+  
+    int nEntries = new int[nvals];
+    for (vtkIdType i = 0 ; i < nvals ; i++)
+    {
+        r_ptr[i] = 0.;
+        nEntries[i] = 0;
+    }
+
+    if (nodal)
+    {
+        if (isStructured)
+        {
+            int i_step = 1;
+            int j_step = dims[0];
+            int k_step = dims[1]*dims[0];
+            for (int i = 0 ; i < dims[0] ; i++)
+                for (int j = 0 ; j < dims[1] ; j++)
+                    for (int k = 0 ; k < dims[2] ; k++)
+                    {
+                        int index = k*k_step + j*j_step + i;
+                        if ((i-1) > 0)
+                            EvaluateNeighbor(index, nEntries, ptr[index-i_step], r_ptr);
+                        if ((i+1) < dims[0])
+                            EvaluateNeighbor(index, nEntries, ptr[index+i_step], r_ptr);
+                        if ((j-1) > 0)
+                            EvaluateNeighbor(index, nEntries, ptr[index-j_step], r_ptr);
+                        if ((j+1) < dims[1])
+                            EvaluateNeighbor(index, nEntries, ptr[index+j_step], r_ptr);
+                        if ((k-1) > 0)
+                            EvaluateNeighbor(index, nEntries, ptr[index-k_step], r_ptr);
+                        if ((k+1) < dims[2])
+                            EvaluateNeighbor(index, nEntries, ptr[index+k_step], r_ptr);
+                    }
+        }
+        else // unstructured or polydata
+        {
+            //
+            // Note: this technique will count some edges multiple times,
+            // which can skew averages.
+            //
+            for (vtkIdType i = 0 ; i < nCells ; i++)
+            {
+                vtkCell *cell = in_ds->GetCell(i);
+                int nEdges = cell->GetNumberOfEdges();
+                for (j = 0 ; j < nEdges ; j++)
+                {
+                    vtkCell *edge = cell->GetEdge(j);
+                    vtkIdType id1 = edge->GetPointId(0);
+                    vtkIdType id2 = edge->GetPointId(1);
+                    EvaluateNeighbor(id1, nEntries, ptr[id2], r_ptr);
+                    EvaluateNeighbor(id2, nEntries, ptr[id1], r_ptr);
+                }
+            }
+        }
+    }
+    else // zonal
+    {
+        if (isStructured)
+        {
+            int rangeX = (dims[0] <= 1 ? 1 : dims[0]-1);
+            int rangeY = (dims[1] <= 1 ? 1 : dims[1]-1);
+            int rangeZ = (dims[2] <= 1 ? 1 : dims[2]-1);
+            int i_step = 1;
+            int j_step = rangeX;
+            int k_step = rangeX*rangeY;
+            for (int i = 0 ; i < rangeX ; i++)
+                for (int j = 0 ; j < rangeY; j++)
+                    for (int k = 0 ; k < rangeZ ; k++)
+                    {
+                        int index = k*k_step + j*j_step + i;
+                        if ((i-1) > 0)
+                            EvaluateNeighbor(index, nEntries, ptr[index-i_step], r_ptr);
+                        if ((i+1) < dims[0]-1)
+                            EvaluateNeighbor(index, nEntries, ptr[index+i_step], r_ptr);
+                        if ((j-1) > 0)
+                            EvaluateNeighbor(index, nEntries, ptr[index-j_step], r_ptr);
+                        if ((j+1) < dims[1]-1)
+                            EvaluateNeighbor(index, nEntries, ptr[index+j_step], r_ptr);
+                        if ((k-1) > 0)
+                            EvaluateNeighbor(index, nEntries, ptr[index-k_step], r_ptr);
+                        if ((k+1) < dims[2]-1)
+                            EvaluateNeighbor(index, nEntries, ptr[index+k_step], r_ptr);
+                    }
+        }
+        else // unstructured or polydata
+        {
+            //
+            // Note: this technique will count some zones multiple times,
+            // which can skew averages.
+            //
+            vtkIdList *cell_ids = vtkIdList::New();
+            for (vtkIdType i = 0 ; i < nCells ; i++)
+            {
+                vtkCell *cell = in_ds->GetCell(i);
+                vtkIdList *pt_ids = cell->GetPointIds();
+                vtkIdType npts = pt_ids->GetNumberOfIds();
+                for (vtkIdType j = 0 ; j < npts ; j++)
+                {
+                    in_ds->GetPointCells(pt_ids->GetId(j), cell_ids);
+                    vtkIdType ncells = cell_ids->GetNumberOfIds();
+                    for (vtkIdType k = 0 ; k < ncells ; k++)
+                    {
+                        vtkIdType cell = cell_ids->GetId(k);
+                        if (cell != i)
+                            EvaluateNeighbor(i, nEntries, ptr[cell], r_ptr);
+                    }
+                }
+            }
+            cell_ids->Delete();
+        }
+    }
+
     if (evaluationType == AVERAGE_NEIGHBOR)
     {
-        for (int i = 0 ; i < nvals ; i++)
+        for (vtkIdType i = 0 ; i < nvals ; i++)
             if (nEntries[i] > 0)
                 buff[i] /= nEntries[i];
     }
 
     delete [] nEntries;
+}
+
+
+
+
+// ****************************************************************************
+//  Method: avtNeighborEvaluatorExpression::DeriveVariable
+//
+//  Purpose:
+//      Derives a variable based on the input dataset.
+//
+//  Arguments:
+//      inDS      The input dataset.
+//
+//  Returns:      The derived variable.  The calling class must free this
+//                memory.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 17, 2004
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtNeighborEvaluatorExpression::DeriveVariable(vtkDataSet *in_ds)
+{
+    vtkIdType nPoints = in_ds->GetNumberOfPoints();
+    vtkIdType nCells  = in_ds->GetNumberOfCells();
+    bool nodal = true;
+    vtkDataArray *input = in_ds->GetPointData()->GetArray(activeVariable); 
+    if (input == NULL)
+    {
+        input = in_ds->GetCellData()->GetArray(activeVariable); 
+        nodal = false;
+    }
+
+    vtkDataArray *results = input->NewInstance();
+    results->SetNumberOfComponents(1);
+    vtkIdType nvals = (nodal ? nPoints : nCells);
+    results->SetNumberOfTuples(nvals);        
+    if (input == NULL || input->GetNumberOfComponents() != 1)
+    {
+        // Don't return uninitialized memory.
+        for (vtkIdType i = 0 ; i < nvals ; i++)
+            results->SetTuple1(i, 0.);
+         
+        if (!haveIssuedWarning)
+        {
+            avtCallback::IssueWarning("The biggest neighbor/smallest neighbor/"
+                                      "average neighbor expression only "
+                                      "operates on scalar quantities.");
+            haveIssuedWarning = true;
+        }
+
+        return results;
+    }
+
+    if (input->GetDataType() == VTK_FLOAT)
+        DeriveVariableT<float>(in_ds, nvals, input->GetVoidPointer(), 
+                               results->GetVoidPointer() );
+    else if (input->GetDataType() == VTK_DOUBLE)
+        DeriveVariableT<double>(in_ds, nvals, input->GetVoidPointer(),
+                                results->GetVoidPointer() );
+
+    return results;
 }
 
 
@@ -407,3 +724,4 @@ avtNeighborEvaluatorExpression::ModifyContract(avtContract_p s)
 }
 
 
+#endif

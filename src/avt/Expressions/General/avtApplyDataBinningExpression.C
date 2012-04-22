@@ -44,10 +44,8 @@
 
 #include <math.h>
 
-#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkPointData.h>
 
 #include <avtExprNode.h>
 #include <ExprToken.h>
@@ -141,8 +139,8 @@ avtApplyDataBinningExpression::ProcessArguments(ArgsExpr *args,
     {
         EXCEPTION2(ExpressionException, outputVariableName,
                    "the syntax for the apply_data_binning "
-                    "expression were incorrect.  Arguments should be: "
-                    "<meshname>, \"databinning_name\"");
+                   "expression were incorrect.  Arguments should be: "
+                   "<meshname>, \"databinning_name\"");
     }
 
     // Tell the first argument to create its filters.
@@ -157,8 +155,8 @@ avtApplyDataBinningExpression::ProcessArguments(ArgsExpr *args,
     {
         EXCEPTION2(ExpressionException, outputVariableName,
                    "the syntax for the apply_data_binning "
-                    "expression were incorrect.  Arguments should be: "
-                    "<meshname>, \"databinning_name\"");
+                   "expression were incorrect.  Arguments should be: "
+                   "<meshname>, \"databinning_name\"");
     }
 
     dbName = dynamic_cast<VarExpr*>(secondTree)->GetVar()->GetFullpath();
@@ -168,18 +166,18 @@ avtApplyDataBinningExpression::ProcessArguments(ArgsExpr *args,
         // do this.
         EXCEPTION2(ExpressionException, outputVariableName,
                    "An internal error occurred when "
-                        "trying to locate the data binning.");
+                   "trying to locate the data binning.");
     }
 
     theDataBinning = getDataBinningCallback(getDataBinningCallbackArgs, dbName.c_str());
     if (theDataBinning == NULL)
     {
         EXCEPTION2(ExpressionException, outputVariableName,
-                   "The data binning name you have specified is "
-                        "not recognized.  VisIt is only aware of the data binning that"
-                        " have been calculated this session.  In addition, if "
-                        "the engine crashes, you must have VisIt regenerate "
-                        "the data binnings again.");
+                   "The data binning name you have specified is not "
+                   "recognized.  VisIt is only aware of the data binning that"
+                   " have been calculated this session.  In addition, if "
+                   "the engine crashes, you must have VisIt regenerate "
+                   "the data binnings again.");
     }
 }
 
@@ -202,7 +200,8 @@ avtApplyDataBinningExpression::ModifyContract(avtContract_p spec)
     if (theDataBinning == NULL)
     {
         // We should have failed before getting to this point...
-        EXCEPTION2(ExpressionException, outputVariableName, "Could not locate the data binning.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Could not locate the data binning.");
     }
 
     avtDataRequest_p ds = spec->GetDataRequest();
@@ -246,17 +245,19 @@ avtApplyDataBinningExpression::DeriveVariable(vtkDataSet *in_ds)
     if (theDataBinning == NULL)
     {
         // We should have failed before getting to this point...
-        EXCEPTION2(ExpressionException, outputVariableName, "Could not locate the data binning.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Could not locate the data binning.");
     }
 
     vtkDataArray *res = theDataBinning->ApplyFunction(in_ds);
 
     if ( res == NULL)
     {
-        // data binning was unsuccessful, this is probably due to a centering problem
+        // data binning was unsuccessful, this is probably due to a 
+        // centering problem
         EXCEPTION2(ExpressionException, outputVariableName,
-                   "Could not apply the data binning. Please check that all variables "
-                   " are valid and have the same centering.");
+                   "Could not apply the data binning. Please check that all "
+                   "variables are valid and have the same centering.");
     }
 
     return res;

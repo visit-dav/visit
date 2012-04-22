@@ -298,7 +298,6 @@ vtkCracksClipper::SetUpClipFunction(int cellId)
 {
   vtkDataSet *input = GetInput();
   vtkCellData *inCD = input->GetCellData();
-  vtkCell *cell = input->GetCell(cellId);
 
   if (this->CrackDir == NULL || 
       this->CrackWidth == NULL || 
@@ -737,7 +736,7 @@ vtkCracksClipper::StructuredGridExecute(void)
           continue;
           }
 
-        int shape[8];
+        vtkIdType shape[8];
         for (int p = 0 ; p < npts ; p++)
           {
           unsigned char pt = *splitCase++;
@@ -831,7 +830,7 @@ vtkCracksClipper::StructuredGridExecute(void)
       } // numOutput
     } // for nToProcess
 
-  vfv.ConstructDataSet(inPD, inCD, output, pts_ptr);
+  vfv.ConstructDataSet(inPD, inCD, output, inPts);
 }
 
 // ****************************************************************************
@@ -1034,7 +1033,7 @@ void vtkCracksClipper::RectilinearGridExecute(void)
           continue;
           }
 
-        int shape[8];
+        vtkIdType shape[8];
         for (int p = 0 ; p < npts ; p++)
           {
           unsigned char pt = *splitCase++;
@@ -1144,7 +1143,8 @@ void vtkCracksClipper::RectilinearGridExecute(void)
       }
     }
 
-  vfv.ConstructDataSet(inPD, inCD, output, pt_dims, X, Y, Z);
+  vfv.ConstructDataSet(inPD, inCD, output, pt_dims, 
+     rg->GetXCoordinates(), rg->GetYCoordinates(), rg->GetZCoordinates());
 }
 
 // ****************************************************************************
@@ -1439,7 +1439,7 @@ void vtkCracksClipper::UnstructuredGridExecute(void)
           else
             interpIDOut = interpIDtmp;
 
-          int shape[8];
+          vtkIdType shape[8];
           for (int p = 0 ; p < npts ; p++)
             {
             unsigned char pt = *splitCase++;
@@ -1553,7 +1553,7 @@ void vtkCracksClipper::UnstructuredGridExecute(void)
     ClipDataset(stuff_I_cant_clip, not_from_zoo);
         
     vtkUnstructuredGrid *just_from_zoo = vtkUnstructuredGrid::New();
-    vfv.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
+    vfv.ConstructDataSet(inPD, inCD, just_from_zoo, inPts);
 
     vtkAppendFilter *appender = vtkAppendFilter::New();
     appender->AddInput(not_from_zoo);
@@ -1568,7 +1568,7 @@ void vtkCracksClipper::UnstructuredGridExecute(void)
       just_from_zoo->Delete();
 
       just_from_zoo = vtkUnstructuredGrid::New();
-      vfvOut.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
+      vfvOut.ConstructDataSet(inPD, inCD, just_from_zoo, inPts);
 
       appender->AddInput(just_from_zoo);
       appender->GetOutput()->Update();
@@ -1585,13 +1585,13 @@ void vtkCracksClipper::UnstructuredGridExecute(void)
     }
   else
     {
-    vfv.ConstructDataSet(inPD, inCD, output, pts_ptr);
+    vfv.ConstructDataSet(inPD, inCD, output, inPts);
     if (this->computeInsideAndOut)
       {
       if (this->otherOutput) 
         this->otherOutput->Delete();
       this->otherOutput = vtkUnstructuredGrid::New();
-      vfvOut.ConstructDataSet(inPD, inCD, this->otherOutput, pts_ptr);
+      vfvOut.ConstructDataSet(inPD, inCD, this->otherOutput, inPts);
       }
     }
 
@@ -1840,7 +1840,7 @@ void vtkCracksClipper::PolyDataExecute(void)
             continue;
             }
 
-          int shape[8];
+          vtkIdType shape[8];
           for (int p = 0 ; p < npts ; p++)
             {
             unsigned char pt = *splitCase++;
@@ -1948,7 +1948,7 @@ void vtkCracksClipper::PolyDataExecute(void)
     ClipDataset(stuff_I_cant_clip, not_from_zoo);
         
     vtkUnstructuredGrid *just_from_zoo = vtkUnstructuredGrid::New();
-    vfv.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
+    vfv.ConstructDataSet(inPD, inCD, just_from_zoo, inPts);
 
     vtkAppendFilter *appender = vtkAppendFilter::New();
     appender->AddInput(not_from_zoo);
@@ -1962,7 +1962,7 @@ void vtkCracksClipper::PolyDataExecute(void)
     }
   else
     {
-    vfv.ConstructDataSet(inPD, inCD, output, pts_ptr);
+    vfv.ConstructDataSet(inPD, inCD, output, inPts);
     }
 
   stuff_I_cant_clip->Delete();

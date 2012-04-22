@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtIdentityExpression.C                         //
+//                               avtIdentityExpression.C                     //
 // ************************************************************************* //
 
 #include <avtIdentityExpression.h>
@@ -109,20 +109,26 @@ avtIdentityExpression::~avtIdentityExpression()
  
 void
 avtIdentityExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                 int ncomponents, int ntuples)
+                                   int ncomponents, int ntuples)
 {
     void *out_ptr = out->GetVoidPointer(0);
 
     if( in == NULL )
     {
-        int numToCopy = out->GetDataTypeSize() * out->GetNumberOfComponents() * out->GetNumberOfTuples();
+        size_t numToCopy = out->GetDataTypeSize() * out->GetNumberOfComponents() * out->GetNumberOfTuples();
         memset(out_ptr, 0, numToCopy);
+    }
+    else if(in->GetDataType() == out->GetDataType())
+    {
+        void *in_ptr = in->GetVoidPointer(0);
+        size_t numToCopy = in->GetDataTypeSize() * in->GetNumberOfComponents() * in->GetNumberOfTuples();
+        memcpy(out_ptr, in_ptr, numToCopy);
     }
     else
     {
-        void *in_ptr = in->GetVoidPointer(0);
-        int numToCopy = in->GetDataTypeSize() * in->GetNumberOfComponents() * in->GetNumberOfTuples();
-        memcpy(out_ptr, in_ptr, numToCopy);
+        for(int i = 0; i < ntuples; ++i)
+            for(int j = 0; j < ncomponents; ++j)
+                out->SetComponent(i, j, in->GetComponent(i, j));
     }
 }
 

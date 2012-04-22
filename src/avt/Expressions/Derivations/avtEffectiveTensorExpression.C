@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtEffectiveTensorExpression.C                      //
+//                       avtEffectiveTensorExpression.C                      //
 // ************************************************************************* //
 
 #include <avtEffectiveTensorExpression.h>
@@ -45,7 +45,6 @@
 #include <math.h>
 
 #include <vtkDataArray.h>
-#include <vtkMath.h>
 
 #include <ExpressionException.h>
 

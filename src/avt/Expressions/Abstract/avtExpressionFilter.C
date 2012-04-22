@@ -53,6 +53,8 @@
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkPointDataToCellData.h>
+#include <vtkPointSet.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
 
 #include <avtExprNode.h>
@@ -146,7 +148,6 @@ avtExpressionFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     std::vector<ArgExpr*>::iterator i;
     for (i=arguments->begin(); i != arguments->end(); i++)
     {
-        ExprParseTreeNode *n = (*i)->GetExpr();
         avtExprNode *expr_node = dynamic_cast<avtExprNode*>((*i)->GetExpr());
         if (expr_node == NULL)
         {
@@ -913,3 +914,43 @@ avtExpressionFilter::GetNumericVal(ExprNode *node, double &val)
     return ok;
 }
 
+// ****************************************************************************
+//  Method: avtExpressionFilter::CreateArrayFromMesh
+//
+//  Purpose:
+//
+//  Arguments:
+//      ds      The mesh the variable lays on.
+//
+//  Returns:    An array with the same data type as the mesh coordinates.
+//      
+//  Programmer: Kathleen Biagas  
+//  Creation:   April 4, 2012 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtExpressionFilter::CreateArrayFromMesh(vtkDataSet *ds)
+{
+    vtkDataArray *rv = NULL;
+    if (ds != NULL)
+    {
+        int meshType = ds->GetDataObjectType();
+        switch(meshType)
+        {
+            case VTK_RECTILINEAR_GRID:
+              rv =  vtkRectilinearGrid::SafeDownCast(ds)->GetXCoordinates()->NewInstance();
+              break;
+            case VTK_STRUCTURED_GRID:
+            case VTK_UNSTRUCTURED_GRID:
+            case VTK_POLY_DATA:
+              rv =  vtkPointSet::SafeDownCast(ds)->GetPoints()->GetData()->NewInstance();
+              break;
+            default:
+              break;
+        }
+    }
+    return rv;
+}

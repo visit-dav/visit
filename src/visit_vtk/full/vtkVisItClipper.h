@@ -80,6 +80,10 @@ class vtkUnstructuredGrid;
 //    for non-traditional cell types (hex-20).  Also add support for data
 //    types beyond floats.
 //
+//    Brad Whitlock, Tue Mar 27 15:30:23 PDT 2012
+//    Group members into FilterState class so it's easier to pass the filter's
+//    state to internal template functions.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkVisItClipper
@@ -99,9 +103,32 @@ class VISIT_VTK_API vtkVisItClipper
     virtual void SetUseZeroCrossings(bool);
     virtual vtkUnstructuredGrid *GetOtherOutput();
 
-    void SetCellList(int *, int);
+    void SetCellList(const vtkIdType *, vtkIdType);
     virtual void SetUpClipFunction(int) { ; };
 
+    struct FilterState
+    {
+        FilterState();
+       ~FilterState();
+        void SetCellList(const vtkIdType *, vtkIdType);
+        void SetClipFunction(vtkImplicitFunction *func);
+        void SetClipScalars(vtkDataArray *, double);
+        void ClipDataset(vtkDataSet *in_ds, vtkUnstructuredGrid *out_ds);
+
+        const vtkIdType     *CellList;
+        vtkIdType            CellListSize;
+  
+        vtkImplicitFunction *clipFunction;
+        vtkDataArray        *scalarArrayAsVTK;
+        double               scalarCutoff;
+
+        vtkUnstructuredGrid *otherOutput;
+
+        bool                 removeWholeCells;
+        bool                 insideOut;
+        bool                 useZeroCrossings;
+        bool                 computeInsideAndOut;
+    };
 
   protected:
     vtkVisItClipper();
@@ -111,21 +138,9 @@ class VISIT_VTK_API vtkVisItClipper
     void GeneralExecute();
     void ClipDataset(vtkDataSet *, vtkUnstructuredGrid *);
 
-    int *CellList;
-    int  CellListSize;
   private:
-    bool   removeWholeCells;
-    bool   insideOut;
-    vtkImplicitFunction *clipFunction;
-    bool   iOwnData;
-    float *scalarArray;
-    vtkDataArray *scalarArrayAsVTK;
-    float  scalarCutoff;
-    bool   scalarFlip;
-    bool   useZeroCrossings;
-    bool   computeInsideAndOut;
-
-    vtkUnstructuredGrid *otherOutput;
+    // Contains the state for the filter.
+    FilterState state;
 
     vtkVisItClipper(const vtkVisItClipper&);  // Not implemented.
     void operator=(const vtkVisItClipper&);  // Not implemented.

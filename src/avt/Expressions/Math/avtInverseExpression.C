@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtInverseExpression.C                          //
+//                               avtInverseExpression.C                      //
 // ************************************************************************* //
 
 #include <avtInverseExpression.h>
@@ -104,7 +104,7 @@ avtInverseExpression::~avtInverseExpression()
  
 void
 avtInverseExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                          int ncomponents, int ntuples)
+                                  int ncomponents, int ntuples)
 {
     if (ncomponents == 9)
     {

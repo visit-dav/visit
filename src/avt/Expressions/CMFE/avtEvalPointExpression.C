@@ -104,17 +104,17 @@ avtEvalPointExpression::TransformData(avtDataObject_p input)
     // Then the final point is (2X0-X, 2Y0-Y, 2Z0-Z).  So set up a transform
     // that does this.
     //
-    float X = inputParameters[0];
-    float Y = inputParameters[1];
-    float Z = inputParameters[2];
+    double X = inputParameters[0];
+    double Y = inputParameters[1];
+    double Z = inputParameters[2];
 
     vtkMatrix4x4 *mat = vtkMatrix4x4::New();
     mat->SetElement(0, 0, -1);
     mat->SetElement(1, 1, -1);
     mat->SetElement(2, 2, -1);
-    mat->SetElement(0, 3, +2*X);
-    mat->SetElement(1, 3, +2*Y);
-    mat->SetElement(2, 3, +2*Z);
+    mat->SetElement(0, 3, +2.*X);
+    mat->SetElement(1, 3, +2.*Y);
+    mat->SetElement(2, 3, +2.*Z);
 
     avtDataset_p ds;
     CopyTo(ds, input);

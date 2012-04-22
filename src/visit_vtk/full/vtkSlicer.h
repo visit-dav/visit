@@ -44,7 +44,7 @@ public:
   // Description:
   // Specify a cell list to cut against.  This allows outside modules to 
   // perform optimizations on which cells are cut.
-  void SetCellList(int *, int);
+  void SetCellList(vtkIdType *, vtkIdType);
 
 protected:
   vtkSlicer();
@@ -57,8 +57,8 @@ protected:
   void GeneralExecute();
   void SliceDataset(vtkDataSet *, vtkPolyData *, bool);
   
-  int *CellList;
-  int  CellListSize;
+  vtkIdType *CellList;
+  vtkIdType  CellListSize;
   double Normal[3];
   double Origin[3];
 private:

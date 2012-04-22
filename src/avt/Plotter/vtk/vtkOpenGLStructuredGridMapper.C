@@ -367,6 +367,9 @@ void vtkOpenGLStructuredGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 //   Brad Whitlock, Wed Aug 10 11:21:09 PDT 2011
 //   I changed how we do 1D texturing.
 //
+//   Brad Whitlock, Sun Apr 22 01:00:33 PDT 2012
+//   Support double coordinates.
+//
 // ****************************************************************************
 
 int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
@@ -459,8 +462,6 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
      nodeData = false;
      }
 
-   float *pts = (float *) input->GetPoints()->GetVoidPointer(0);
-
    const float *texCoords = NULL;
    if(this->ColorCoordinates != NULL)
        texCoords = (const float *)this->ColorCoordinates->GetVoidPointer(0);
@@ -498,104 +499,117 @@ int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    if (normals != NULL)
        n = (float *) normals->GetVoidPointer(0);
 
-   glBegin(GL_QUADS);
-   for (int j = 0 ; j < slowDim-1 ; j++)
-       for (int i = 0 ; i < fastDim-1 ; i++)
-       {
-           if (ghost_zones != NULL)
-               if (*(ghost_zones++) != '\0')
-                   continue;
-           if (ghost_nodes != NULL)
-           {
-               int p0 = j*fastDim+i;
-               int p1 = j*fastDim+i+1;
-               int p2 = (j+1)*fastDim+i;
-               int p3 = (j+1)*fastDim+i+1;
-               if (ghost_nodes[p0] && ghost_nodes[p1] && ghost_nodes[p2]
-                   && ghost_nodes[p3])
-                  continue;
-           }
-
-           if (colors == NULL && texCoords == NULL)
-           {
-               if (n != NULL && cellNormals)
-               {
-                   int idx = j*(fastDim-1) + i;
-                   glNormal3fv(n + 3*idx);
-               }
-               for (int k = 0 ; k < 4 ; k++)
-               {
-                   int I = i + Iorder[k];
-                   int J = j + Jorder[k];
-                   int idx = J*(fastDim) + I;
-                   if (n != NULL && !cellNormals)
-                       glNormal3fv(n + 3*idx);
-                   glVertex3fv(pts + 3*idx);
-               }
-           }
-           else
-           {
-               if (!nodeData)
-               {
-                   int idx = j*(fastDim-1) + i;
-
-                   if(texCoords != NULL)
-                       glTexCoord1f(texCoords[idx]);
-                   else if(colors != NULL)
-                       glColor4ubv(colors + 4*idx);
-
-                   if (n != NULL && cellNormals)
-                       glNormal3fv(n + 3*idx);
-                   for (int k = 0 ; k < 4 ; k++)
-                   {
-                       int I = i + Iorder[k];
-                       int J = j + Jorder[k];
-                       int idx = J*fastDim + I;
-                       if (n != NULL && !cellNormals)
-                           glNormal3fv(n + 3*idx);
-                       glVertex3fv(pts + 3*idx);
-                   }
-               }
-               else
-               {
-                   if (n != NULL && cellNormals)
-                   {
-                       int idx = j*(fastDim-1) + i;
-                       glNormal3fv(n + 3*idx);
-                   }
-                   for (int k = 0 ; k < 4 ; k++)
-                   {
-                       int I = i + Iorder[k];
-                       int J = j + Jorder[k];
-                       int idx = J*fastDim + I;
-
-                       if(texCoords != NULL)
-                           glTexCoord1f(texCoords[idx]);
-                       else if(colors != NULL)
-                            glColor4ubv(colors + 4*idx);
-
-                       if (n != NULL && !cellNormals)
-                           glNormal3fv(n + 3*idx);
-                       glVertex3fv(pts + 3*idx);
-                   }
-               }
-           }
-
-           if (this->doingDisplayLists)
-           {
-               this->primsInCurrentList++;
-               if (this->primsInCurrentList >= dlSize)
-               {
-                   glEnd();
-                   glEndList();
-                   this->CurrentList++;
-                   glNewList(this->CurrentList,GL_COMPILE);
-                   glBegin(GL_QUADS);
-                   this->primsInCurrentList = 0;
-               }
-           }
-       }
+#define vtkOpenGLStructuredGridMapper_EmitGeometry(pts, VERTEXFUNC) \
+   glBegin(GL_QUADS);\
+   for (int j = 0 ; j < slowDim-1 ; j++)\
+       for (int i = 0 ; i < fastDim-1 ; i++)\
+       {\
+           if (ghost_zones != NULL)\
+               if (*(ghost_zones++) != '\0')\
+                   continue;\
+           if (ghost_nodes != NULL)\
+           {\
+               int p0 = j*fastDim+i;\
+               int p1 = j*fastDim+i+1;\
+               int p2 = (j+1)*fastDim+i;\
+               int p3 = (j+1)*fastDim+i+1;\
+               if (ghost_nodes[p0] && ghost_nodes[p1] && ghost_nodes[p2]\
+                   && ghost_nodes[p3])\
+                  continue;\
+           }\
+\
+           if (colors == NULL && texCoords == NULL)\
+           {\
+               if (n != NULL && cellNormals)\
+               {\
+                   int idx = j*(fastDim-1) + i;\
+                   glNormal3fv(n + 3*idx);\
+               }\
+               for (int k = 0 ; k < 4 ; k++)\
+               {\
+                   int I = i + Iorder[k];\
+                   int J = j + Jorder[k];\
+                   int idx = J*(fastDim) + I;\
+                   if (n != NULL && !cellNormals)\
+                       glNormal3fv(n + 3*idx);\
+                   VERTEXFUNC(pts + 3*idx);\
+               }\
+           }\
+           else\
+           {\
+               if (!nodeData)\
+               {\
+                   int idx = j*(fastDim-1) + i;\
+\
+                   if(texCoords != NULL)\
+                       glTexCoord1f(texCoords[idx]);\
+                   else if(colors != NULL)\
+                       glColor4ubv(colors + 4*idx);\
+\
+                   if (n != NULL && cellNormals)\
+                       glNormal3fv(n + 3*idx);\
+                   for (int k = 0 ; k < 4 ; k++)\
+                   {\
+                       int I = i + Iorder[k];\
+                       int J = j + Jorder[k];\
+                       int idx = J*fastDim + I;\
+                       if (n != NULL && !cellNormals)\
+                           glNormal3fv(n + 3*idx);\
+                       VERTEXFUNC(pts + 3*idx);\
+                   }\
+               }\
+               else\
+               {\
+                   if (n != NULL && cellNormals)\
+                   {\
+                       int idx = j*(fastDim-1) + i;\
+                       glNormal3fv(n + 3*idx);\
+                   }\
+                   for (int k = 0 ; k < 4 ; k++)\
+                   {\
+                       int I = i + Iorder[k];\
+                       int J = j + Jorder[k];\
+                       int idx = J*fastDim + I;\
+\
+                       if(texCoords != NULL)\
+                           glTexCoord1f(texCoords[idx]);\
+                       else if(colors != NULL)\
+                           glColor4ubv(colors + 4*idx);\
+\
+                       if (n != NULL && !cellNormals)\
+                           glNormal3fv(n + 3*idx);\
+                       VERTEXFUNC(pts + 3*idx);\
+                   }\
+               }\
+           }\
+\
+           if (this->doingDisplayLists)\
+           {\
+               this->primsInCurrentList++;\
+               if (this->primsInCurrentList >= dlSize)\
+               {\
+                   glEnd();\
+                   glEndList();\
+                   this->CurrentList++;\
+                   glNewList(this->CurrentList,GL_COMPILE);\
+                   glBegin(GL_QUADS);\
+                   this->primsInCurrentList = 0;\
+               }\
+           }\
+       }\
    glEnd();
+
+   if(input->GetPoints()->GetDataType() == VTK_DOUBLE)
+   {
+       double *pts = (double *) input->GetPoints()->GetVoidPointer(0);
+       vtkOpenGLStructuredGridMapper_EmitGeometry(pts, glVertex3dv);
+   }
+   else
+   {
+       float *pts = (float *) input->GetPoints()->GetVoidPointer(0);
+       vtkOpenGLStructuredGridMapper_EmitGeometry(pts, glVertex3fv);
+   }
+
    glEnable(GL_LIGHTING);
    if (this->doingDisplayLists)
        glEndList();

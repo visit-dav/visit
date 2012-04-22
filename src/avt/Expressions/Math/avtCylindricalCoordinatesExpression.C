@@ -37,15 +37,15 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                      avtCylindricalCoordinatesExpression.C                    //
+//                  avtCylindricalCoordinatesExpression.C                    //
 // ************************************************************************* //
 
 #include <avtCylindricalCoordinatesExpression.h>
 
 #include <math.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 
 
 // ****************************************************************************
@@ -105,19 +105,19 @@ avtCylindricalCoordinatesExpression::~avtCylindricalCoordinatesExpression()
 vtkDataArray *
 avtCylindricalCoordinatesExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int npts = in_ds->GetNumberOfPoints();
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkIdType npts = in_ds->GetNumberOfPoints();
+    vtkDataArray *rv = CreateArrayFromMesh(in_ds);
     rv->SetNumberOfComponents(3);
     rv->SetNumberOfTuples(npts);
-    for (int i = 0 ; i < npts ; i++)
+    for (vtkIdType i = 0 ; i < npts ; i++)
     {
         double pt[3];
         in_ds->GetPoint(i, pt);
         
-        float r = sqrt(pt[0]*pt[0] + pt[1]*pt[1]);
+        double r = sqrt(pt[0]*pt[0] + pt[1]*pt[1]);
         rv->SetComponent(i, 0, r);
 
-        float theta = atan2(pt[1], pt[0]);
+        double theta = atan2(pt[1], pt[0]);
         rv->SetComponent(i, 1, theta);
 
         rv->SetComponent(i, 2, pt[2]);

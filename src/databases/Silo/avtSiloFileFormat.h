@@ -302,7 +302,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     enum AANTriState {Always=0, Auto, Never};
     DBfile              **dbfiles;
     int                   tocIndex;
-    int                   dontForceSingle; // used primarily for testing
+    int                   forceSingle;
     int                   siloDriver;
     AANTriState           ignoreSpatialExtentsAAN;
     AANTriState           ignoreDataExtentsAAN;

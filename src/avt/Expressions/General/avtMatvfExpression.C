@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtMatvfExpression.C                            //
+//                           avtMatvfExpression.C                            //
 // ************************************************************************* //
 
 #include <avtMatvfExpression.h>
@@ -46,7 +46,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkUnsignedIntArray.h>
 
 #include <avtExprNode.h>
@@ -216,7 +216,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
     if (mat == NULL)
     {
         debug1 << "Could not find a material object." << endl;
-        vtkFloatArray *dummy = vtkFloatArray::New();
+        vtkDoubleArray *dummy = vtkDoubleArray::New();
         dummy->SetNumberOfTuples(ncells);
         for (i = 0 ; i < ncells ; i++)
             dummy->SetTuple1(i, 0.);
@@ -228,7 +228,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
     // zones in the original dataset -- this may or may not be the number
     // of cells in the input, depending on whether or not we did MIR.
     //
-    vtkFloatArray *vf_for_orig_cells = vtkFloatArray::New();
+    vtkDoubleArray *vf_for_orig_cells = vtkDoubleArray::New();
     int norigcells = mat->GetNZones();
     vf_for_orig_cells->SetNumberOfTuples(norigcells);
 
@@ -364,7 +364,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
     const int *mix_next = mat->GetMixNext();
     for (i = 0 ; i < norigcells ; i++)
     {
-        float vf = 0.;
+        double vf = 0.;
         if (matlist[i] >= 0)
         {
             vf = (useMat[matlist[i]] ? 1. : 0.);
@@ -396,7 +396,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
 
     bool zonesMatchMaterialObject = GetInput()->GetInfo().GetValidity().
                                             GetZonesPreserved();
-    vtkFloatArray *rv = NULL;
+    vtkDoubleArray *rv = NULL;
     if (zonesMatchMaterialObject)
     {
         //
@@ -417,7 +417,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
         // original cells have been modified -- most likely by MIR.  Use
         // their original indexing to determine the volume fractions.
         //
-        rv = vtkFloatArray::New();
+        rv = vtkDoubleArray::New();
         rv->SetNumberOfTuples(ncells);
 
         vtkUnsignedIntArray *ids = (vtkUnsignedIntArray *)

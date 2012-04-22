@@ -65,8 +65,8 @@ using std::vector;
 //
 // ****************************************************************************
 
-vtkBinaryPartitionVolumeFromVolume::vtkBinaryPartitionVolumeFromVolume(int nPts, int ptSizeGuess)
-    : vtkVolumeFromVolume(nPts, ptSizeGuess)
+vtkBinaryPartitionVolumeFromVolume::vtkBinaryPartitionVolumeFromVolume(
+    vtkIdType nPts, vtkIdType ptSizeGuess) : vtkVolumeFromVolume(nPts, ptSizeGuess)
 {
     shapeTags[0] = &tetTags;
     shapeTags[1] = &pyramidTags;
@@ -100,53 +100,44 @@ vtkBinaryPartitionVolumeFromVolume::vtkBinaryPartitionVolumeFromVolume(int nPts,
 //  Creation:   February 26, 2010
 //
 //  Modifications:
-//    
+//    Brad Whitlock, Thu Mar 22 15:29:44 PDT 2012
+//    Call ComputeTags instead of going into generic ConstructDataSet.
+//
 // ****************************************************************************
 
 void
 vtkBinaryPartitionVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                                     vtkUnstructuredGrid *output,
-                                    float *pts_ptr,
+                                    vtkPoints *pts,
                                     vector<FixedLengthBitField<16> > *oldTags,
                                     vector<FixedLengthBitField<16> > *newTags,
                                     int newTagBit)
 {
-    CommonPointsStructure cps;
-    cps.hasPtsList = true;
-    cps.pts_ptr = pts_ptr;
-    ConstructDataSet(inPD, inCD, output, cps, oldTags, newTags, newTagBit);
+    ComputeTags(oldTags, newTags, newTagBit);
+    vtkVolumeFromVolume::ConstructDataSet(inPD, inCD, output, pts);
 }
 
 void
 vtkBinaryPartitionVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                                     vtkUnstructuredGrid *output,
-                                    int *dims, float *X, float *Y, float *Z,
+                                    const int *dims, vtkDataArray *X, vtkDataArray *Y, vtkDataArray *Z,
                                     vector<FixedLengthBitField<16> > *oldTags,
                                     vector<FixedLengthBitField<16> > *newTags,
                                     int newTagBit)
 {
-    CommonPointsStructure cps;
-    cps.hasPtsList = false;
-    cps.dims = dims;
-    cps.X = X;
-    cps.Y = Y;
-    cps.Z = Z;
-    ConstructDataSet(inPD, inCD, output, cps, oldTags, newTags, newTagBit);
+    ComputeTags(oldTags, newTags, newTagBit);
+    vtkVolumeFromVolume::ConstructDataSet(inPD, inCD, output, dims, X, Y, Z);
 }
 
 void
-vtkBinaryPartitionVolumeFromVolume::ConstructDataSet(vtkPointData *inPD,
-     vtkCellData *inCD,
-    vtkUnstructuredGrid *output,
-    CommonPointsStructure &cps,
+vtkBinaryPartitionVolumeFromVolume::ComputeTags(
     vector<FixedLengthBitField<16> > *oldTags,
     vector<FixedLengthBitField<16> > *newTags,
     int newTagBit)
 {
-    int ncells = 0;
+    size_t ncells = 0;
     for (int i = 0 ; i < nshapes ; i++)
         ncells += shapeTags[i]->size();
-
 
     if (newTags)
     {
@@ -157,9 +148,9 @@ vtkBinaryPartitionVolumeFromVolume::ConstructDataSet(vtkPointData *inPD,
     int cellId = 0;
     for (int i = 0 ; i < nshapes ; i++)
     {
-        const int *shapeList;
-        const vector<int> *tagList = shapeTags[i];
-        int nlists = shapes[i]->GetNumberOfLists();
+        const vtkIdType *shapeList;
+        const vector<vtkIdType> *tagList = shapeTags[i];
+        vtkIdType nlists = shapes[i]->GetNumberOfLists();
         int shapesize = shapes[i]->GetShapeSize();
         int indexInShape = 0;
         for (int j = 0 ; j < nlists ; j++)
@@ -183,8 +174,6 @@ vtkBinaryPartitionVolumeFromVolume::ConstructDataSet(vtkPointData *inPD,
             }
         }
     }
-
-    vtkVolumeFromVolume::ConstructDataSet(inPD, inCD, output, cps); 
 }
 
 

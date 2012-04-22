@@ -178,6 +178,8 @@ class BoundaryHelperFunctions
   private:
     avtStructuredDomainBoundaries *sdb;
   public:
+    typedef T Storage;
+
     BoundaryHelperFunctions(avtStructuredDomainBoundaries *sdb_) : sdb(sdb_) { }
 
     T   ***InitializeBoundaryData();
@@ -271,6 +273,9 @@ class BoundaryHelperFunctions
 //    REFINED_ZONE_IN_AMR_GRID to be properly represented in zones that are 
 //    also DUPLICATED_ZONE_INTERNAL_TO_PROBLEM.
 //
+//    Brad Whitlock, Sun Apr 22 09:59:55 PDT 2012
+//    Support for double.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
@@ -309,6 +314,10 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
                                             bool                   isPointData,
                                             std::vector<vtkDataArray*>  vectors);
 
+    virtual std::vector<vtkDataArray*>     ExchangeDoubleVector(std::vector<int> domainNum,
+                                            bool                   isPointData,
+                                            std::vector<vtkDataArray*>  vectors);
+
     virtual std::vector<vtkDataArray*>     ExchangeIntVector(std::vector<int>  domainNum,
                                              bool                  isPointData,
                                              std::vector<vtkDataArray*> vectors);
@@ -331,6 +340,10 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
 
   private:
     virtual std::vector<vtkDataArray*>     ExchangeFloatScalar(std::vector<int> domainNum,
+                                             bool                  isPointData,
+                                             std::vector<vtkDataArray*> scalars);
+
+    virtual std::vector<vtkDataArray*>     ExchangeDoubleScalar(std::vector<int> domainNum,
                                              bool                  isPointData,
                                              std::vector<vtkDataArray*> scalars);
 
@@ -360,9 +373,11 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
 
     friend class BoundaryHelperFunctions<int>;
     friend class BoundaryHelperFunctions<float>;
+    friend class BoundaryHelperFunctions<double>;
     friend class BoundaryHelperFunctions<unsigned char>;
     BoundaryHelperFunctions<int>           *bhf_int;
     BoundaryHelperFunctions<float>         *bhf_float;
+    BoundaryHelperFunctions<double>        *bhf_double;
     BoundaryHelperFunctions<unsigned char> *bhf_uchar;
 
     // helper methods
@@ -386,6 +401,12 @@ class DATABASE_API avtCurvilinearDomainBoundaries
    
     virtual std::vector<vtkDataSet*>    ExchangeMesh(std::vector<int> domainNum,
                                                 std::vector<vtkDataSet*> meshes);
+  protected:
+    template <typename Helper>
+    void ExchangeMesh(Helper *bhf, int vtktype,
+                      std::vector<int> domainNum, 
+                      std::vector<vtkDataSet*> meshes,
+                      std::vector<vtkDataSet*> &out);
 };
 
 

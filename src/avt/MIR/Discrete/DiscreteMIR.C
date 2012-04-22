@@ -208,6 +208,7 @@ DiscreteMIR::DiscreteMIR()
     DX = DY = DZ = 5;
     NX = NY = NZ = 1;
 
+    origCoordType = VTK_FLOAT;
     xspacing = NULL;
     yspacing = NULL;
     zspacing = NULL;
@@ -1260,6 +1261,8 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
 //  Creation:    October 17, 2008
 //
 //  Modifications:
+//    Brad Whitlock, Wed Apr 11 21:50:54 PDT 2012
+//    Double coordinates.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -1411,21 +1414,46 @@ DiscreteMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     int npoints = origNPoints + newNPoints;
     if (outPts == NULL)
     {
-        outPts = vtkPoints::New();
+        outPts = vtkPoints::New(origCoordType);
         outPts->SetNumberOfPoints(npoints);
-        float *pts_buff = (float *) outPts->GetVoidPointer(0);
-        int outIndex = 0;
-        for (int i=0; i<origNPoints; i++)
+        if(origCoordType == VTK_FLOAT)
         {
-            pts_buff[outIndex++] = origXCoords[i];
-            pts_buff[outIndex++] = origYCoords[i];
-            pts_buff[outIndex++] = origZCoords[i];
+            float *pts_buff = (float *) outPts->GetVoidPointer(0);
+            int outIndex = 0;
+            for (int i=0; i<origNPoints; i++)
+            {
+                *pts_buff++ = static_cast<float>(origXCoords[i]);
+                *pts_buff++ = static_cast<float>(origYCoords[i]);
+                *pts_buff++ = static_cast<float>(origZCoords[i]);
+            }
+            for (int i=0; i<newNPoints; i++)
+            {
+                *pts_buff++ = static_cast<float>(coordsList[i].x);
+                *pts_buff++ = static_cast<float>(coordsList[i].y);
+                *pts_buff++ = static_cast<float>(coordsList[i].z);
+            }
         }
-        for (int i=0; i<newNPoints; i++)
+        else if(origCoordType == VTK_DOUBLE)
         {
-            pts_buff[outIndex++] = coordsList[i].x;
-            pts_buff[outIndex++] = coordsList[i].y;
-            pts_buff[outIndex++] = coordsList[i].z;
+            double *pts_buff = (double *) outPts->GetVoidPointer(0);
+            for (int i=0; i<origNPoints; i++)
+            {
+                *pts_buff++ = origXCoords[i];
+                *pts_buff++ = origYCoords[i];
+                *pts_buff++ = origZCoords[i];
+            }
+            for (int i=0; i<newNPoints; i++)
+            {
+                *pts_buff++ = coordsList[i].x;
+                *pts_buff++ = coordsList[i].y;
+                *pts_buff++ = coordsList[i].z;
+            }
+        }
+        else
+        {
+            outPts->Delete();
+            rv->Delete();
+            EXCEPTION0(ImproperUseException);
         }
     }
     rv->SetPoints(outPts);
@@ -1721,7 +1749,11 @@ DiscreteMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
 //  John C. Anderson, Sat Nov  1 17:17:41 2008
 //  Save off the x, y, z spacings for use elsewhere.
 //
+//  Brad Whitlock, Wed Apr 11 21:44:23 PDT 2012
+//  Double coordinates.
+//
 // ****************************************************************************
+
 void
 DiscreteMIR::SetUpCoords()
 {
@@ -1741,21 +1773,21 @@ DiscreteMIR::SetUpCoords()
         vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) mesh;
         vtkDataArray *xc = rgrid->GetXCoordinates();
         int nx = xc->GetNumberOfTuples();
-        xspacing = new float[nx];
+        xspacing = new double[nx];
         for (i = 0 ; i < nx ; i++)
         {
             xspacing[i] = xc->GetTuple1(i);
         }
         vtkDataArray *yc = rgrid->GetYCoordinates();
         int ny = yc->GetNumberOfTuples();
-        yspacing = new float[ny];
+        yspacing = new double[ny];
         for (i = 0 ; i < ny ; i++)
         {
             yspacing[i] = yc->GetTuple1(i);
         }
         vtkDataArray *zc = rgrid->GetZCoordinates();
         int nz = zc->GetNumberOfTuples();
-        zspacing = new float[nz];
+        zspacing = new double[nz];
         for (i = 0 ; i < nz ; i++)
         {
             zspacing[i] = zc->GetTuple1(i);
@@ -1775,16 +1807,35 @@ DiscreteMIR::SetUpCoords()
                 }
             }
         }
+        origCoordType = rgrid->GetXCoordinates()->GetDataType();
     }
     else
     {
         vtkPointSet *ps = (vtkPointSet *) mesh;
-        float *ptr = (float *) ps->GetPoints()->GetVoidPointer(0);
-        for (int n=0; n<nPoints; n++)
+        origCoordType = ps->GetPoints()->GetDataType();
+        if(origCoordType == VTK_FLOAT)
         {
-            origXCoords[n] = *ptr++;
-            origYCoords[n] = *ptr++;
-            origZCoords[n] = *ptr++;
+            const float *ptr = (float *) ps->GetPoints()->GetVoidPointer(0);
+            for (int n=0; n<nPoints; n++)
+            {
+                origXCoords[n] = static_cast<double>(*ptr++);
+                origYCoords[n] = static_cast<double>(*ptr++);
+                origZCoords[n] = static_cast<double>(*ptr++);
+            }
+        }
+        else if(origCoordType == VTK_DOUBLE)
+        {
+            const double *ptr = (double *) ps->GetPoints()->GetVoidPointer(0);
+            for (int n=0; n<nPoints; n++)
+            {
+                origXCoords[n] = *ptr++;
+                origYCoords[n] = *ptr++;
+                origZCoords[n] = *ptr++;
+            }
+        }
+        else
+        {
+            EXCEPTION0(ImproperUseException);
         }
     }
 

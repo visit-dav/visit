@@ -117,8 +117,8 @@ avtCylindricalRadiusExpression::~avtCylindricalRadiusExpression()
 vtkDataArray *
 avtCylindricalRadiusExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int npts = in_ds->GetNumberOfPoints();
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkIdType npts = in_ds->GetNumberOfPoints();
+    vtkDataArray *rv = CreateArrayFromMesh(in_ds);
     rv->SetNumberOfComponents(1);
     rv->SetNumberOfTuples(npts);
     
@@ -129,7 +129,7 @@ avtCylindricalRadiusExpression::DeriveVariable(vtkDataSet *in_ds)
     avtVector ax_vec(axisVector);
     ax_vec.normalize();
     
-    for (int i = 0 ; i < npts ; i++)
+    for (vtkIdType i = 0 ; i < npts ; i++)
     {
         double pt[3];
         in_ds->GetPoint(i, pt);
@@ -144,7 +144,7 @@ avtCylindricalRadiusExpression::DeriveVariable(vtkDataSet *in_ds)
         
         // find the orthogonal component
         avtVector proj = pt_vec * sin(ang);
-        float r = proj.norm();
+        double r = proj.norm();
         rv->SetComponent(i, 0, r);
     }
 
@@ -167,8 +167,8 @@ avtCylindricalRadiusExpression::DeriveVariable(vtkDataSet *in_ds)
 //
 // ****************************************************************************
 void
-avtCylindricalRadiusExpression::ProcessArguments
-(ArgsExpr *args, ExprPipelineState *state)
+avtCylindricalRadiusExpression::ProcessArguments(
+    ArgsExpr *args, ExprPipelineState *state)
 {
     axisVector[0] = 0;
     axisVector[1] = 0;

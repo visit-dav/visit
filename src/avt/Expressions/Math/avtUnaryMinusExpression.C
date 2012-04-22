@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtUnaryMinusExpression.C                         //
+//                             avtUnaryMinusExpression.C                     //
 // ************************************************************************* //
 
 #include <avtUnaryMinusExpression.h>
@@ -113,7 +113,7 @@ avtUnaryMinusExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int j = 0 ; j < ncomponents ; j++)
         {
-            float val = in->GetComponent(i, j);
+            double val = in->GetComponent(i, j);
             out->SetComponent(i, j, -val);
         }
     }

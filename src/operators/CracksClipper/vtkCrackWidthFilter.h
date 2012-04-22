@@ -108,7 +108,7 @@ class vtkCrackWidthFilter : public vtkDataSetToDataSetFilter
     vtkSlicer *Slicer;
     vtkMassProperties *MassProp;
 
-    double  CrackWidthForCell(vtkCell *cell, int cellId, const double *center,
+    double  CrackWidthForCell(vtkCell *cell, vtkIdType cellId, const double *center,
            const double delta, const double *dir,
            const double zvol, const double L1L2);
 

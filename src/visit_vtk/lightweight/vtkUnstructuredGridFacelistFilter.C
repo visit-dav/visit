@@ -3009,7 +3009,6 @@ AddTriQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
 void
 AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
 {
-    vtkIdList *pt_ids = cell->GetPointIds();
     int nFaces = cell->GetNumberOfFaces();
     vtkIdType nodes[4];
     for (int i = 0 ; i < nFaces ; i++)

@@ -37,26 +37,16 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtDisplacementExpression.C                         //
+//                       avtDisplacementExpression.C                         //
 // ************************************************************************* //
 
 #include <avtDisplacementExpression.h>
-#include <vtkVisItUtility.h>
 #include <math.h>
 
-#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkFloatArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkPointSet.h>
-#include <vtkCell.h>
-#include <vtkCellType.h>
 #include <vtkPointData.h>
-#include <vtkPointLocator.h>
-
-#include <vtkMath.h>
 
 #include <ExpressionException.h>
 
@@ -98,6 +88,10 @@ avtDisplacementExpression::~avtDisplacementExpression()
 //  Programmer: Thomas R. Treadway
 //  Creation:   Tue Nov 28 14:28:33 PST 2006
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 4 11:50:12 PDT 2012
+//    Set return data type same as input data type.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -124,7 +118,7 @@ avtDisplacementExpression::DeriveVariable (vtkDataSet *in_ds)
             "could not extract the data array for: %s", varnames[1]);
         EXCEPTION2(ExpressionException, outputVariableName, msg);
     }
-    vtkFloatArray *out = vtkFloatArray::New();
+    vtkDataArray *out = coord_data->NewInstance();
     out->SetNumberOfComponents(3);
     out->SetNumberOfTuples(nPoints);
     for (int i = 0; i < nPoints; i++)

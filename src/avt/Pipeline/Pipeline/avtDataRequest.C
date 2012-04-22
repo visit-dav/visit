@@ -1487,24 +1487,19 @@ avtDataRequest::GetAllDataSelections() const
 //  Programmer: Mark C. Miller 
 //  Creation:   March 23, 2005 
 //
+//  Modifications:
+//    Brad Whitlock, Thu Apr 12 15:18:01 PDT 2012
+//    Use AllAdmissibleDataTypes().
+//
 // ****************************************************************************
 
 void
 avtDataRequest::InitAdmissibleDataTypes()
 {
     admissibleDataTypes.clear();
-    admissibleDataTypes[VTK_BIT]            = true;
-    admissibleDataTypes[VTK_CHAR]           = true;
-    admissibleDataTypes[VTK_UNSIGNED_CHAR]  = true;
-    admissibleDataTypes[VTK_SHORT]          = true;
-    admissibleDataTypes[VTK_UNSIGNED_SHORT] = true;
-    admissibleDataTypes[VTK_INT]            = true;
-    admissibleDataTypes[VTK_UNSIGNED_INT]   = true;
-    admissibleDataTypes[VTK_LONG]           = true;
-    admissibleDataTypes[VTK_UNSIGNED_LONG]  = true;
-    admissibleDataTypes[VTK_FLOAT]          = true;
-    admissibleDataTypes[VTK_DOUBLE]         = true;
-    admissibleDataTypes[VTK_ID_TYPE]        = true;
+    std::vector<int> alltypes(AllAdmissibleDataTypes());
+    for(size_t i = 0; i < alltypes.size(); ++i)
+        admissibleDataTypes[alltypes[i]] = true;
 }
 
 // ****************************************************************************
@@ -1523,14 +1518,14 @@ avtDataRequest::InitAdmissibleDataTypes()
 // ****************************************************************************
 
 void
-avtDataRequest::UpdateAdmissibleDataTypes(vector<int> admissibleTypes)
+avtDataRequest::UpdateAdmissibleDataTypes(const vector<int> &admissibleTypes)
 {
     std::map<int,bool>::iterator it;
     for (it = admissibleDataTypes.begin();
          it != admissibleDataTypes.end(); it++)
     {
         bool isAnAdmissibleType = false;
-        for (int i = 0; i < admissibleTypes.size(); i++)
+        for (size_t i = 0; i < admissibleTypes.size(); i++)
         {
             if (admissibleTypes[i] == it->first)
             {
@@ -1541,6 +1536,66 @@ avtDataRequest::UpdateAdmissibleDataTypes(vector<int> admissibleTypes)
         if (isAnAdmissibleType == false)
             it->second = false;
     }
+}
+
+void
+avtDataRequest::UpdateAdmissibleDataTypes(int dt1)
+{
+    std::vector<int> vec;
+    vec.push_back(dt1);
+    UpdateAdmissibleDataTypes(vec);
+}
+
+void
+avtDataRequest::UpdateAdmissibleDataTypes(int dt1, int dt2)
+{
+    std::vector<int> vec;
+    vec.push_back(dt1);
+    vec.push_back(dt2);
+    UpdateAdmissibleDataTypes(vec);
+}
+
+void
+avtDataRequest::UpdateAdmissibleDataTypes(int dt1, int dt2, int dt3)
+{
+    std::vector<int> vec;
+    vec.push_back(dt1);
+    vec.push_back(dt2);
+    vec.push_back(dt3);
+    UpdateAdmissibleDataTypes(vec);
+}
+
+// ****************************************************************************
+// Method: avtDataRequest::AllAdmissibleDataTypes
+//
+// Purpose: 
+//   Return a vector containing all possible admissible types.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 12 15:18:17 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::vector<int>
+avtDataRequest::AllAdmissibleDataTypes()
+{
+    std::vector<int> types;
+    types.push_back(VTK_BIT);
+    types.push_back(VTK_CHAR);
+    types.push_back(VTK_SIGNED_CHAR);
+    types.push_back(VTK_UNSIGNED_CHAR);
+    types.push_back(VTK_SHORT);
+    types.push_back(VTK_UNSIGNED_SHORT);
+    types.push_back(VTK_INT);
+    types.push_back(VTK_UNSIGNED_INT);
+    types.push_back(VTK_LONG);
+    types.push_back(VTK_UNSIGNED_LONG);
+    types.push_back(VTK_FLOAT);
+    types.push_back(VTK_DOUBLE);
+    types.push_back(VTK_ID_TYPE);
+    return types;
 }
 
 // ****************************************************************************

@@ -37,12 +37,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtRelativeDifferenceExpression.C                    //
+//                      avtRelativeDifferenceExpression.C                    //
 // ************************************************************************* //
 
 #include <avtRelativeDifferenceExpression.h>
 
-#include <vtkDataArray.h>
 #include <vtkDataArray.h>
 
 #include <ExpressionException.h>
@@ -103,26 +102,30 @@ avtRelativeDifferenceExpression::~avtRelativeDifferenceExpression()
 //  Programmer: Hank Childs
 //  Creation:   December 28, 2004
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 4 12:15:10 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
-avtRelativeDifferenceExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
-                                vtkDataArray *out, int ncomponents,int ntuples)
+avtRelativeDifferenceExpression::DoOperation(vtkDataArray *in1, 
+    vtkDataArray *in2, vtkDataArray *out, int ncomponents,int ntuples)
 {
-    int in1ncomps = in1->GetNumberOfComponents();
-    int in2ncomps = in2->GetNumberOfComponents();
+    vtkIdType in1ncomps = in1->GetNumberOfComponents();
+    vtkIdType in2ncomps = in2->GetNumberOfComponents();
     if (in1ncomps != 1 || in2ncomps != 1)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "Can only take relative difference of "
-                                        "scalars.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+            "Can only take relative difference of scalars.");
     }
 
-    int ntups = out->GetNumberOfTuples();
-    for (int i = 0 ; i < ntups ; i++)
+    vtkIdType ntups = out->GetNumberOfTuples();
+    for (vtkIdType i = 0 ; i < ntups ; i++)
     {
-        float val1 = in1->GetComponent(i, 0);
-        float val2 = in2->GetComponent(i, 0);
-        float outval = 0.;
+        double val1 = in1->GetComponent(i, 0);
+        double val2 = in2->GetComponent(i, 0);
+        double outval = 0.;
         if (val1 != 0. || val2 != 0.)
             outval = (val1-val2) / (fabs(val1) + fabs(val2));
         out->SetComponent(i, 0, outval);

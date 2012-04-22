@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtModuloExpression.C                           //
+//                               avtModuloExpression.C                       //
 // ************************************************************************* //
 
 #include <avtModuloExpression.h>
@@ -106,20 +106,20 @@ avtModuloExpression::~avtModuloExpression()
  
 void
 avtModuloExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
-                                  vtkDataArray *out, int ncomponents,
-                                  int ntuples)
+                                 vtkDataArray *out, int ncomponents,
+                                 int ntuples)
 {
-    int in1ncomps = in1->GetNumberOfComponents();
-    int in2ncomps = in2->GetNumberOfComponents();
+    vtkIdType in1ncomps = in1->GetNumberOfComponents();
+    vtkIdType in2ncomps = in2->GetNumberOfComponents();
     if (in2ncomps == 1)
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            for (int j = 0 ; j < in1ncomps ; j++)
+            for (vtkIdType j = 0 ; j < in1ncomps ; j++)
             {
-                float val1 = in1->GetComponent(i, j);
+                double val1 = in1->GetComponent(i, j);
                 int v1 = (int) val1;
-                float val2 = in2->GetComponent(i, j);
+                double val2 = in2->GetComponent(i, j);
                 int v2 = (int) val2;
                 int output = (v2 <= 0 ? 1 : v1 % v2);
                 out->SetComponent(i, j, output);
@@ -128,8 +128,9 @@ avtModuloExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "Don't know how to perform modulo "
-                                        "operation with a vector variable.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Don't know how to perform modulo "
+                   "operation with a vector variable.");
     }
 }
 

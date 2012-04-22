@@ -50,6 +50,7 @@
 
 
 class vtkCellData;
+class vtkDataArray;
 class vtkPointData;
 class vtkPolyData;
 
@@ -73,44 +74,47 @@ class vtkPolyData;
 //    Refactored the surface-independent part into a new vtkDataSetFromVolume.
 //    Left the part dealing with triangles and polydata here.
 //
+//    Brad Whitlock, Tue Mar  6 11:19:45 PST 2012
+//    Change int to vtkIdType. Change ConstructPolyData methods so they can
+//    support more input coordinate types than just float.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkSurfaceFromVolume : public vtkDataSetFromVolume
 {
-
+  public:
 class TriangleList
 {
   public:
                    TriangleList();
     virtual       ~TriangleList();
  
-    void           AddTriangle(int, int, int, int);
+    void           AddTriangle(vtkIdType, vtkIdType, vtkIdType, vtkIdType);
  
-    int            GetTotalNumberOfTriangles(void) const;
-    int            GetNumberOfLists(void) const;
-    int            GetList(int, const int *&) const;
+    vtkIdType      GetTotalNumberOfTriangles(void) const;
+    vtkIdType      GetNumberOfLists(void) const;
+    int            GetList(int, const vtkIdType *&) const;
  
   protected:
-    int          **list;
-    int            currentList;
-    int            currentTriangle;
-    int            listSize;
-    int            trianglesPerList;
+    vtkIdType    **list;
+    vtkIdType      currentList;
+    vtkIdType      currentTriangle;
+    vtkIdType      listSize;
+    vtkIdType      trianglesPerList;
 };
 
-  public:
                       vtkSurfaceFromVolume(int ptSizeGuess)
                            : vtkDataSetFromVolume(ptSizeGuess), tris()
                            { ; };
     virtual          ~vtkSurfaceFromVolume() { ; };
 
     void              ConstructPolyData(vtkPointData *, vtkCellData *,
-                                        vtkPolyData *, float *);
+                                        vtkPolyData *, vtkPoints *);
     void              ConstructPolyData(vtkPointData *, vtkCellData *,
-                                        vtkPolyData *, int *, float *, float *,
-                                        float *);
+                                        vtkPolyData *, int *, 
+                                        vtkDataArray *, vtkDataArray *, vtkDataArray *);
 
-    void              AddTriangle(int zone, int v0, int v1, int v2)
+    void              AddTriangle(vtkIdType zone, vtkIdType v0, vtkIdType v1, vtkIdType v2)
                             { tris.AddTriangle(zone, v0, v1, v2); };
 
   protected:
