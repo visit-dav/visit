@@ -81,7 +81,7 @@ class IVP_API avtIVPVTKOffsetField: public avtIVPVTKField
     virtual avtVector operator()( const double &t, const avtVector &p ) const;
     virtual Result    operator()(const double& t,
                                  const avtVector &pt,
-     avtVector &retV) const;
+                                 avtVector &retV) const;
 
     virtual avtVector FindValue( vtkDataArray* vectorData ) const;
     virtual Result    FindValue(vtkDataArray* vectorData, avtVector &vel) const;

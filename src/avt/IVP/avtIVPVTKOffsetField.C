@@ -152,7 +152,7 @@ avtIVPVTKOffsetField::operator()( const double &t, const avtVector &p ) const
 
         if( !FindCell( t, p ) ) {
             // ghost cells on the base mesh may be required to avoid this failure
-     debug5 <<"avtIVPVTKOffsetField::operator() - UNABLE TO FIND CELL!" 
+            debug5 <<"avtIVPVTKOffsetField::operator() - UNABLE TO FIND CELL!" 
                    <<std::endl;
             return zeros;
         }
