@@ -286,6 +286,10 @@ avtCGNSFileFormat::GetFileHandle()
 //   Brad Whitlock, Wed Apr 16 10:15:21 PDT 2008
 //   Made it use cgnsFileName.
 //
+//   Kathleen Biagas, Tue Apr 24 12:23:03 PDT 2012
+//   Added call to FreeUpResources to prevent crash when opening many files
+//   in a virtual database.
+//
 // ****************************************************************************
 
 void
@@ -434,6 +438,8 @@ avtCGNSFileFormat::ReadTimes()
         timesRead = true;
         debug4 << mName << "End" << endl;
     }
+    // make sure file handles are closed
+    FreeUpResources();
 }
 
 // ****************************************************************************
