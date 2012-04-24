@@ -1278,13 +1278,13 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
                 continue;
             for (int z = extents[4] ; z <= extents[5] ; z++)
             {
-                int offset = z*realNX*realNY;
+                int zoffset = z*realNX*realNY;
                 for (int y = extents[2] ; y <= extents[3] ; y++)
                 {
-                    offset += y*realNX;
+                    int yzoffset = zoffset + y*realNX;
                     for (int x = extents[0] ; x <= extents[1] ; x++)
                     {
-                        int valIDX = offset + x;
+                        int valIDX = yzoffset + x;
                         double *p = (double *) recvmessages[procId[j]];
                         for (k = 0 ; k < nComps ; k++)
                             vals[idx + nComps*valIDX + k] = *p++;
