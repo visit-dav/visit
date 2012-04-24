@@ -110,6 +110,7 @@ Revolve
 Slice
 Smooth
 SphereSlice
+Stagger
 SurfaceNormal
 ThreeSlice
 Threshold
