@@ -26,6 +26,7 @@ SET(LIBV_SOURCES
 PseudocolorViewerPluginInfo.C
 avtPseudocolorPlot.C
 avtPseudocolorFilter.C
+avtStaggeringFilter.C
 ${COMMON_SOURCES}
 )
 
@@ -33,6 +34,7 @@ SET(LIBE_SOURCES
 PseudocolorEnginePluginInfo.C
 avtPseudocolorPlot.C
 avtPseudocolorFilter.C
+avtStaggeringFilter.C
 ${COMMON_SOURCES}
 )
 

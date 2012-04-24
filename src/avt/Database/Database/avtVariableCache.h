@@ -53,7 +53,7 @@
 
 class   avtCachableItem;
 class   vtkObject;
-
+class   vtkInformationDoubleVectorKey;
 
 #define HASH_SIZE 25
 
@@ -148,6 +148,12 @@ class DATABASE_API avtVariableCache
     static const char     *DATASET_NAME;
     static const char     *DATA_SPECIFICATION;
 
+    // VTK keys for transmitting offset information                                                                                                           
+    static vtkInformationDoubleVectorKey* OFFSET_3();
+    static vtkInformationDoubleVectorKey* OFFSET_3_COMPONENT_0();
+    static vtkInformationDoubleVectorKey* OFFSET_3_COMPONENT_1();
+    static vtkInformationDoubleVectorKey* OFFSET_3_COMPONENT_2();
+  
     vtkObject             *GetVTKObject(const char *name, const char *type,
                                         int ts, int domain, const char *mat);
     void                   CacheVTKObject(const char *name, const char *type,

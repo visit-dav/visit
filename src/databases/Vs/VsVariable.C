@@ -34,7 +34,6 @@ VsVariable::VsVariable(VsH5Dataset* data):
   registry->add(this);
 
   this->nodeOffsetAtt = NULL;
-  this->nodeOffsetMeshName = "";
   this->nodeOffset.resize(3);
   for (size_t i = 0; i < 3; ++i) {
     this->nodeOffset[i] = 0;
@@ -126,7 +125,6 @@ void VsVariable::write() {
   VsLog::debugLog() << "    indexOrder = " << indexOrder << std::endl;
   VsLog::debugLog() << "    centering = " << centering << std::endl;
   VsLog::debugLog() << "    meshName = " << meshName << std::endl;
-  VsLog::debugLog() << "    nodeOffsetMeshName = " << nodeOffsetMeshName << std::endl;
   VsLog::debugLog() << "    nodeOffset = ";
   for (size_t i = 0; i < nodeOffset.size(); ++i) {
     VsLog::debugLog() << nodeOffset[i] << " ";
@@ -170,8 +168,6 @@ bool VsVariable::initialize() {
   std::string meshName;
   meshNameAtt->getStringValue(&meshName);
   this->meshName = makeCanonicalName(dataset->getPath(), meshName);
-  // if no offsets
-  this->nodeOffsetMeshName = this->meshName;
 
   //Does mesh exist?
   this->meshMeta = registry->getMesh(this->meshName);
@@ -237,17 +233,6 @@ bool VsVariable::initialize() {
                       << nodeOffset[1] << " " 
                       << nodeOffset[2] << std::endl;
 
-    if (this->hasNodeOffset()) {
-      // create a new mesh whose name contains the offsets 
-      std::ostringstream oss;
-      for (size_t i = 0; i < this->nodeOffset.size(); ++i) {
-        oss << "_" << this->nodeOffset[i];
-      }
-      this->nodeOffsetMeshName += "$_withNodeOffset" + oss.str();
-    }
-
-    VsLog::debugLog() << "VsVariable::initialize() node offset mesh is " 
-                      << this->nodeOffsetMeshName << std::endl;
   }
 
   //Get user-specified labels for components
@@ -386,19 +371,10 @@ std::vector<double> VsVariable::getNodeOffset() const
 
 bool VsVariable::hasNodeOffset() const
 {
-  double sum = 0;
   for (size_t i = 0; i < this->nodeOffset.size(); ++i) {
-    sum += std::abs(this->nodeOffset[i]);
+    if (this->nodeOffset[i] != 0) {
+      return true;
+    }
   }
-  if (sum == 0) {
-    return false;
-  }
-  else {
-    return true;
-  }
-}
-
-std::string VsVariable::getNodeOffsetMeshName() const
-{
-  return this->nodeOffsetMeshName;
+  return false;
 }

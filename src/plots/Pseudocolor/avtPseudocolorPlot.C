@@ -47,6 +47,7 @@
 #include <avtColorTables.h>
 #include <avtExtents.h>
 #include <avtLookupTable.h>
+#include <avtStaggeringFilter.h>
 #include <avtPseudocolorFilter.h>
 #include <avtShiftCenteringFilter.h>
 #include <avtVariableLegend.h>
@@ -114,6 +115,7 @@ avtPseudocolorPlot::avtPseudocolorPlot()
 
     filter = NULL;
     pcfilter = NULL;
+    staggeringFilter = NULL;
     colorTableIsFullyOpaque = true;
 
     //
@@ -154,6 +156,12 @@ avtPseudocolorPlot::~avtPseudocolorPlot()
     {
         delete filter;
         filter = NULL;
+    }
+ 
+    if (staggeringFilter != NULL)
+    {
+        delete staggeringFilter;
+        staggeringFilter = NULL;
     }
 
     if (pcfilter != NULL)
@@ -280,6 +288,15 @@ avtDataObject_p
 avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 {
     avtDataObject_p dob = input; 
+
+    if (staggeringFilter != NULL) {
+      delete staggeringFilter;
+      staggeringFilter = NULL;
+    }
+    staggeringFilter = new avtStaggeringFilter();
+    staggeringFilter->SetInput(dob);
+    dob = staggeringFilter->GetOutput();
+  
     if (input->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         if (pcfilter != NULL)
@@ -1057,7 +1074,9 @@ void
 avtPseudocolorPlot::ReleaseData(void)
 {
     avtSurfaceDataPlot::ReleaseData();
- 
+    if (staggeringFilter != NULL) {
+        staggeringFilter->ReleaseData();
+    }
     if (filter != NULL)
     {
         filter->ReleaseData();

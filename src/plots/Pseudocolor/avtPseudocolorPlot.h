@@ -53,7 +53,7 @@ class     avtPseudocolorFilter;
 class     avtShiftCenteringFilter;
 class     avtVariablePointGlyphMapper;
 class     avtVariableLegend;
-
+class     avtStaggeringFilter;
 
 // ****************************************************************************
 //  Class:  avtPseudocolorPlot
@@ -168,6 +168,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     avtLegend_p                 varLegendRefPtr;
     PseudocolorAttributes       atts;
     avtPseudocolorFilter       *pcfilter;
+    avtStaggeringFilter        *staggeringFilter;
     avtShiftCenteringFilter    *filter;
     bool                        colorsInitialized;
     int                         topoDim;

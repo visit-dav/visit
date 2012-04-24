@@ -32,6 +32,7 @@
 #include <vtkVisItUtility.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkIntArray.h>
+#include <vtkInformation.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkStructuredGrid.h>
@@ -42,6 +43,7 @@
 // VisIt includes
 #include <avtDatabaseMetaData.h>
 #include <avtMeshMetaData.h>
+#include <avtVariableCache.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
@@ -395,21 +397,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
 
     // Save the name in a temporary variable as it gets mucked with if
     // searching for a MD mesh.
-    std::string nodeOffsetMeshName = name;
-
-    // nodeOffsetMeshName can be mangled, ie contain nodeOffset 
-    // info encoded in the string
-    std::string meshName; // base mesh name, ie the mesh stored in the file
-    std::vector<double> nodeOffset;
-    this->fillInMeshNameAndNodeOffset(nodeOffsetMeshName, 
-                                      meshName, nodeOffset);
-    
-    VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
-                      << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "called with virtual node offset mesh name: " << nodeOffsetMeshName 
-                      << ", unmangled (base) mesh name is: " << meshName 
-                      << " nodeOffset = " << nodeOffset[0] << " " 
-                      << nodeOffset[1] << " " << nodeOffset[2] << std::endl;
+    std::string meshName = name;
 
     // Roopa: Check if this mesh name is a transformed mesh name. If
     // so, use the original mesh name to get data associated
@@ -505,8 +493,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Trying to load & return structured mesh" << std::endl;
         return getStructuredMesh(static_cast<VsStructuredMesh*>(meta),
-                                 haveDataSelections, mins, maxs, strides,
-                                 nodeOffset);
+                                 haveDataSelections, mins, maxs, strides);
       }
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
@@ -1101,8 +1088,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
                                                bool haveDataSelections,
                                                int* mins, int* maxs,
-                                               int* strides, 
-                                               const std::vector<double>& nodeOffset)
+                                               int* strides)
 {
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
@@ -1310,8 +1296,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
                         << " Adding " << numPoints << " with isFortranOrder = " 
                         << isFortranOrder << ", type is double.\n";
 
-      this->setStructuredMeshCoords(gdims, dblDataPtr, nodeOffset,
-                                      isFortranOrder, vpoints);
+      this->setStructuredMeshCoords(gdims, dblDataPtr, isFortranOrder, vpoints);
       delete [] dblDataPtr;
     }
     else if (isFloat) {
@@ -1324,8 +1309,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
                         << " Adding " << numPoints << " with isFortranOrder = " 
                         << isFortranOrder << ", type is float.\n";
 
-      this->setStructuredMeshCoords(gdims, fltDataPtr, nodeOffset,
-                                      isFortranOrder, vpoints);
+      this->setStructuredMeshCoords(gdims, fltDataPtr, isFortranOrder, vpoints);
       delete [] fltDataPtr;
     }
 
@@ -1443,6 +1427,18 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
 
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Returning data." << std::endl;
+
+
+    //Attach offset information to dataset
+    //debug5 <<"avtVsFileFormat::getStructuredMesh() - attaching node offset as field data." <<std::endl;
+    //vtkDoubleArray* offsetArray = vtkDoubleArray::New();
+    //offsetArray->SetNumberOfTuples(3);
+    //offsetArray->SetValue(0, 0.1);
+    //offsetArray->SetValue(1, 0.2);
+    //offsetArray->SetValue(2, 0.3);
+    //offsetArray->SetName("nodeOffset");
+    //sgrid->GetFieldData()->AddArray(offsetArray);
+    //offsetArray->Delete();
 
     return sgrid;
 }
@@ -1565,13 +1561,13 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
       // To do so set the location in memory where each cordinate
       // componenet will be stored.
-
-      int srcMins[1];
-      int srcMaxs[1];
-      int srcStrides[1];
-
+      
+      int srcMins[1] = {0};
+      int srcMaxs[1] = {0};
+      int srcStrides[1] = {0};
+      
       if( haveDataSelections )
-      {
+      {     
         srcMins[0] = mins[0];
         srcMaxs[0] = numNodes;
         srcStrides[0] = strides[0];
@@ -2377,7 +2373,6 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const std::string& requestedNa
 
     // Have the variable now get the mesh.
     std::string meshName = varMeta->getMeshName();
-    std::string nodeOffsetMeshName = varMeta->getNodeOffsetMeshName();
     VsMesh* meshMeta = varMeta->getMesh();
 
     if (meshMeta == NULL) {
@@ -2388,7 +2383,7 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const std::string& requestedNa
 
     vtkDataSet* meshData = NULL;
     try {
-      meshData = GetMesh(domain, nodeOffsetMeshName.c_str());
+      meshData = GetMesh(domain, meshName.c_str());
     } catch (...) {
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Caught exception from GetMesh().  Returning NULL."
@@ -2638,9 +2633,9 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     bool isFortranOrder = false;
     bool isCompMajor = false;
     bool isZonal = false;
-
     bool parallelRead = true;
-
+    bool hasOffset = false;
+    std::vector<double> offset(3, 0);
     std::string indexOrder;
 
     size_t numTopologicalDims;
@@ -2669,15 +2664,19 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       if (meta->isZonal())
         isZonal = true;
 
+      if (meta->hasNodeOffset()) {
+        hasOffset = true;
+        offset = meta->getNodeOffset();
+      }
+
       indexOrder = meta->getIndexOrder();
       isCompMajor  = meta->isCompMajor();
 
       std::string meshName = meta->getMeshName();
-      std::string nodeOffsetMeshName = meta->getNodeOffsetMeshName();
       VsMesh* meshMetaPtr = registry->getMesh(meshName);
 
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Mesh for variable is '" << nodeOffsetMeshName << "'." << std::endl;
+                        << "Mesh for variable is '" << meshName << "'." << std::endl;
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Getting metadata for mesh." << std::endl;
 
@@ -2893,6 +2892,13 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Declaring vtkIntArray." << std::endl;
       rv = vtkIntArray::New();
+    }
+
+    //Attach offset information to array
+    if (hasOffset) {
+      vtkInformation* info = rv->GetInformation();
+      info->Set(avtVariableCache::OFFSET_3(), offset[0], offset[1], offset[2]);
+      VsLog::debugLog() <<"avtVsFileFormat is attaching nodeOffset information to dataset: " <<requestedName <<std::endl;
     }
 
     rv->SetNumberOfTuples(numVariables);
@@ -3232,15 +3238,9 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
         continue;
       }
 
-      // Name of the mesh of the var
-      std::string meshName = vMeta->getMeshName();
-      std::string nodeOffsetMeshName = vMeta->getNodeOffsetMeshName();
+      // Get the mesh information for this variable
       VsMesh* meshMeta = vMeta->getMesh();
-      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" 
-                        << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Var lives on mesh " << meshName 
-                        << ", virtual node offset mesh name is:" 
-                        << nodeOffsetMeshName << ".\n";
+      std::string meshName = vMeta->getMeshName();
 
       // If this variable lives on a mesh with a transform, we register
       // against BOTH meshes (with different names, of course)
@@ -3347,7 +3347,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
                               << "Adding variable component "
                               << componentName << "." << std::endl;
             avtScalarMetaData* smd =
-              new avtScalarMetaData(componentName, nodeOffsetMeshName.c_str(), 
+              new avtScalarMetaData(componentName, meshName.c_str(), 
                                     centering);
             smd->hasUnits = false;
             md->Add(smd);
@@ -3373,10 +3373,10 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
                           << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Adding single-component variable "
                           << *it << " attached to mesh " 
-                          << nodeOffsetMeshName << " with centering " 
+                          << meshName << " with centering " 
                           << centering << std::endl;
         avtScalarMetaData* smd =
-          new avtScalarMetaData(*it, nodeOffsetMeshName.c_str(), 
+          new avtScalarMetaData(*it, meshName.c_str(), 
                                 centering);
         smd->hasUnits = false;
         md->Add(smd);
@@ -3682,36 +3682,6 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         vmd->SetNumberCells( numCells );
         setAxisLabels(vmd);
         md->Add(vmd);
-
-        // Check if there is a virtual node offset mesh with the 
-        // same attributes, if so add to the metadata 
-        for (size_t i = 0; i < this->nodeOffsetMeshes.size(); ++i) {
-          size_t iend = this->nodeOffsetMeshes[i].find('$');
-          size_t ibeg = 0;
-          if (this->nodeOffsetMeshes[i][0] == '/') ibeg = 1;
-          // Filter out the leading '/'
-          std::string nodeOffsetMeshName = this->nodeOffsetMeshes[i].substr(ibeg);
-          std::string meshBaseName = this->nodeOffsetMeshes[i].substr(ibeg, 
-                                                                      iend-ibeg);
-          VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
-                            << __FUNCTION__ << "  " << __LINE__
-                            << " Checking whether virtual node offset mesh " 
-                            << nodeOffsetMeshName << " with base name "
-                            << meshBaseName << " == " << *it << std::endl;
-          if (meshBaseName == *it) {
-            VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
-                              << __FUNCTION__ << "  " << __LINE__
-                              << " Adding virtual node offset mesh " 
-                              << nodeOffsetMeshName << std::endl;
-            avtMeshMetaData* vmd2 =
-              new avtMeshMetaData(nodeOffsetMeshName.c_str(), 1, 1, 1, 0,
-                                  spatialDims, topologicalDims, meshType);
-            vmd2->SetBounds( bounds );
-            vmd2->SetNumberCells( numCells );
-            setAxisLabels(vmd2);
-            md->Add(vmd2);
-          }
-        }
       }
     }
 
@@ -4209,10 +4179,6 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
                       << "Decompose_domains is defined.  Exiting code block."
                       << std::endl;
 #endif
-
-    // Vars whose mesh name contains te character '$' are deemed 
-    // attached to a virtual mesh, which is staggered. 
-    buildNodeOffsetMeshList();
 
     RegisterMeshes(md);
     RegisterMdMeshes(md);
@@ -4736,100 +4702,6 @@ avtVsFileFormat::fillInMaskNodeArray(const std::vector<int>& gdims,
 }
 
 // *****************************************************************************
-//  Method: avtVsFileFormat::fillInMeshNameAndNodeOffset
-//
-//  Purpose:
-//      Fill in the mesh name and node offset vector from the
-//      the mangled mesh name
-//
-//  Programmer: Alex Pletzer
-//  Creation:   October, 2011
-//
-//  Modifications:
-//
-void avtVsFileFormat::fillInMeshNameAndNodeOffset(const std::string& mangledName,
-                                             std::string& meshName, 
-                                             std::vector<double>& nodeOffset) const
-{
-  // Initialize
-  meshName.resize(0);
-  nodeOffset.resize(3);
-  for (size_t i = 0; i < nodeOffset.size(); ++i) {
-    nodeOffset[i] = 0;
-  }
-
-  // Get the unmangled mesh name
-  size_t idelim = mangledName.find('$');
-  if (idelim != std::string::npos) {
-    meshName.assign(mangledName, 0, idelim);
-  }
-  else {
-    // No mangling
-    meshName = mangledName;
-    return;
-  }
-
-  // Extract the node offsets from the sub-string
-  size_t is = mangledName.find("withNodeOffset");
-  is = mangledName.find('_', is);
-  size_t ie = mangledName.find('_', is + 1);
-  for (size_t i = 0; i < nodeOffset.size(); ++i) {
-    std::istringstream iss(mangledName.substr(is + 1, 
-                                              ie - is -1));
-    iss >> nodeOffset[i];
-    is = ie + 1;
-    ie = mangledName.find('_', is + 1);
-  }
-}
-
-// *****************************************************************************
-//  Method: avtVsFileFormat::createNodeOffsetMeshList
-//
-//  Purpose:
-//      Create the list of virtual node offset mesh names
-//
-//  Programmer: Alex Pletzer
-//  Creation:   October, 2011
-//
-//  Modifications:
-//
-void avtVsFileFormat::buildNodeOffsetMeshList()
-{
-  // Initialize
-  this->nodeOffsetMeshes.resize(0);
-
-  // Iterate over variables, add the mesh names containing $ to the
-  // list
-  std::vector<std::string> names;
-  registry->getAllVariableNames(names);
-  for (size_t i = 0; i < names.size(); ++i) {
-    VsVariable* var = registry->getVariable(names[i]);
-    std::string nodeOffsetMeshName = var->getNodeOffsetMeshName();
-    // How we know it's a virtual file
-    if (nodeOffsetMeshName.find('$') != std::string::npos) {
-      // Check if nodeOffsetMeshName is already stored
-      bool inList = false;
-      for (size_t j = 0; j < this->nodeOffsetMeshes.size(); ++j) {
-        if (nodeOffsetMeshName == this->nodeOffsetMeshes[j]) {
-          inList = true;
-          break;
-        }
-      }
-      if (!inList) {
-        // Add to list
-
-        VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" 
-                          << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << " Adding " << nodeOffsetMeshName
-                          << " to virtual node offset mesh list\n";
-
-        this->nodeOffsetMeshes.push_back(nodeOffsetMeshName);
-      }
-    }
-  }
-}
-
-// *****************************************************************************
 //  Method: avtVsFileFormat::setStructuredMeshCoords
 //
 //  Purpose:
@@ -4843,7 +4715,6 @@ void avtVsFileFormat::buildNodeOffsetMeshList()
 template <typename TYPE>
 void avtVsFileFormat::setStructuredMeshCoords(const std::vector<int>& gdims,
                                               const TYPE* dataPtr,
-                                              const std::vector<double>& nodeOffset,
                                               bool isFortranOrder,
                                               vtkPoints* vpoints)
 {
@@ -4875,17 +4746,6 @@ void avtVsFileFormat::setStructuredMeshCoords(const std::vector<int>& gdims,
       xyz[j] = dataPtr[3*k + j];
     }
 
-    // Apply node offsets
-    for (size_t j1 = 0; j1 < 3; ++j1) {
-      // Must be inside the domain, no offset if hitting the boundary
-      if (index[j1] < gdims[j1] - 1) {
-        int kPlus = k + mulSizes[j1];
-        for (size_t j2 = 0; j2 < 3; ++j2) {
-          xyz[j2] += nodeOffset[j1]*(dataPtr[3*kPlus + j2] - dataPtr[3*k + j2]);
-        }
-      }
-    }
-    
     // Set the node coordinates. Note: vpoints wants Fortran ordering, regardless
     // of whether isFortranOrder == true or not.
     int kF = index[0] + gdims[0]*(index[1] + gdims[1]*index[2]);
