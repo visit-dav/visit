@@ -54,6 +54,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include "avtPODICAlgorithm.h"
 #include "avtCommDSOnDemandICAlgorithm.h"
 #include "avtMasterSlaveICAlgorithm.h"
+#include "avtVariableCache.h"
 #include <math.h>
 #include <visitstream.h>
 
@@ -61,6 +62,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkLineSource.h>
 #include <vtkPlaneSource.h>
 #include <vtkPlane.h>
@@ -83,6 +85,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 #include <avtIVPVTKField.h>
+#include <avtIVPVTKOffsetField.h>
 #include <avtIVPVTKTimeVaryingField.h>
 #include <avtIVPDopri5.h>
 #include <avtIVPAdamsBashforth.h>
@@ -2007,6 +2010,56 @@ avtPICSFilter::GetFieldForDomain( const DomainType &domain, vtkDataSet *ds )
 {
     avtCellLocator_p locator = SetupLocator( domain, ds );
 
+    //vtkDoubleArray* offsetArray = (vtkDoubleArray*)ds->GetFieldData()->GetArray("nodeOffset");
+
+    std::vector<avtVector> offsets(3);
+    bool haveOffsets = false;
+    vtkDataArray* velData = ds->GetPointData()->GetVectors();
+    if (!velData) {
+      velData = ds->GetCellData()->GetVectors();
+    }
+    if (velData) {
+      vtkInformation* info = velData->GetInformation();
+      if (info->Has(avtVariableCache::OFFSET_3_COMPONENT_0())) {
+        double* vals = info->Get(avtVariableCache::OFFSET_3_COMPONENT_0());
+        offsets[0].x = vals[0];
+        offsets[0].y = vals[1];
+        offsets[0].z = vals[2];
+
+        if ((vals[0] != 0) ||
+            (vals[1] != 0) ||
+            (vals[2] != 0)) {
+          haveOffsets = true;
+        }
+      }
+
+      if (info->Has(avtVariableCache::OFFSET_3_COMPONENT_1())) {
+        double* vals = info->Get(avtVariableCache::OFFSET_3_COMPONENT_1());
+        offsets[1].x = vals[0];
+        offsets[1].y = vals[1];
+        offsets[1].z = vals[2];
+
+        if ((vals[0] !=0) ||
+            (vals[1] !=0) ||
+            (vals[2] !=0)) {
+          haveOffsets = true;
+        }
+      } 
+
+      if (info->Has(avtVariableCache::OFFSET_3_COMPONENT_2())) {
+        double* vals = info->Get(avtVariableCache::OFFSET_3_COMPONENT_2());
+        offsets[2].x = vals[0];
+        offsets[2].y = vals[1];
+        offsets[2].z = vals[2];
+
+        if ((vals[0] !=0) ||
+            (vals[1] !=0) ||
+            (vals[2] !=0)) {
+          haveOffsets = true;
+        }
+      }
+    }
+
     if (doPathlines)
     {
         if (integrationDirection == VTK_INTEGRATE_BACKWARD)
@@ -2035,8 +2088,18 @@ avtPICSFilter::GetFieldForDomain( const DomainType &domain, vtkDataSet *ds )
       else if( fieldType == STREAMLINE_FIELD_FLASH )
         return new avtIVPFlashField(ds, *locator, fieldConstant );
 
-      else
+      else if (haveOffsets) {
+        debug5 <<"avtPICSFilter::GetFieldForDomain() - using offset field interpolator." <<std::endl;
+        avtIVPVTKOffsetField* field = new avtIVPVTKOffsetField(ds, *locator);
+        debug5 <<"avtPICSFilter::GetFieldForDomain() - offsets[0] = " <<offsets[0].x <<", " <<offsets[0].y <<", " <<offsets[0].z <<std::endl;
+        debug5 <<"avtPICSFilter::GetFieldForDomain() - offsets[1] = " <<offsets[1].x <<", " <<offsets[1].y <<", " <<offsets[1].z <<std::endl;
+        debug5 <<"avtPICSFilter::GetFieldForDomain() - offsets[2] = " <<offsets[2].x <<", " <<offsets[2].y <<", " <<offsets[2].z <<std::endl;
+        field->SetNodeOffsets( offsets );
+        return field;
+      } else {
+        debug5 <<"avtPICSFilter::GetFieldForDomain() - no offsets present, using regular interpolator." <<std::endl;
         return new avtIVPVTKField(ds, *locator);
+      }
     }
 }
 

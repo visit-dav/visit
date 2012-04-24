@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtVectorComposeExpression.h>
+#include <avtVariableCache.h>
 
 #include <math.h>
 
@@ -48,6 +49,8 @@
 #include <vtkPointData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkInformationDoubleVectorKey.h>
 
 #include <ExpressionException.h>
 
@@ -211,6 +214,37 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
         }
     }
 
+    // As we proceed to build the vector out of components,
+    // we make a list of offsets for each component 
+    // so that we can attach that list to the resulting vector dataset
+    // In the future, we need a generic way to merge vtkInformationObjects here
+    std::vector<avtVector> offsets(3);
+    vtkInformation* data1Info = data1->GetInformation();
+    if (data1Info->Has(avtVariableCache::OFFSET_3())) {
+      double* vals = data1Info->Get(avtVariableCache::OFFSET_3());
+      offsets[0].x = vals[0];
+      offsets[0].y = vals[1];
+      offsets[0].z = vals[2];
+    }
+
+    vtkInformation* data2Info =data2->GetInformation();
+    if (data2Info->Has(avtVariableCache::OFFSET_3())) {
+      double* vals = data2Info->Get(avtVariableCache::OFFSET_3());
+      offsets[1].x = vals[0];
+      offsets[1].y = vals[1];
+      offsets[1].z = vals[2];
+    }
+  
+    if (numinputs == 3) {
+      vtkInformation* data3Info = data3->GetInformation();
+      if (data3Info->Has(avtVariableCache::OFFSET_3())) {
+        double* vals = data3Info->Get(avtVariableCache::OFFSET_3());
+        offsets[2].x = vals[0];
+        offsets[2].y = vals[1];
+        offsets[2].z = vals[2];
+      }
+    }
+
     vtkIdType nvals1 = data1->GetNumberOfTuples();
     vtkIdType nvals2 = data2->GetNumberOfTuples();
     vtkIdType nvals3 = 1;
@@ -346,7 +380,15 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
         }
     }
 
+    //If offset information existed on the input dataset, set it on the output
+    if ((offsets[0].x != 0) || (offsets[0].y != 0) || (offsets[0].z != 0) ||
+        (offsets[1].x != 0) || (offsets[1].y != 0) || (offsets[1].z != 0) ||
+        (offsets[2].x != 0) || (offsets[2].y != 0) || (offsets[2].z != 0)) {
+      vtkInformation* dvInfo = dv->GetInformation();
+      dvInfo->Set(avtVariableCache::OFFSET_3_COMPONENT_0(), offsets[0].x, offsets[0].y, offsets[0].z);
+      dvInfo->Set(avtVariableCache::OFFSET_3_COMPONENT_1(), offsets[1].x, offsets[1].y, offsets[1].z);
+      dvInfo->Set(avtVariableCache::OFFSET_3_COMPONENT_2(), offsets[2].x, offsets[2].y, offsets[2].z);
+    }
+
     return dv;
 }
-
-

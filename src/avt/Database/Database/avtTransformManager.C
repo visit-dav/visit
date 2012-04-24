@@ -45,6 +45,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkShortArray.h>
 #include <vtkUnsignedShortArray.h>
+#include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkLongArray.h>
@@ -354,7 +355,14 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
 
     if (newArr)
         newArr->SetName(oldArr->GetName());
-
+  
+    vtkInformation* info = oldArr->GetInformation();
+    if (info && info->Has(avtVariableCache::OFFSET_3())) {
+        double* vals = info->Get(avtVariableCache::OFFSET_3());
+        vtkInformation* newInfo = newArr->GetInformation();
+        newInfo->Set(avtVariableCache::OFFSET_3(), vals[0], vals[1], vals[2]);
+    }
+  
     return newArr;
 }
 

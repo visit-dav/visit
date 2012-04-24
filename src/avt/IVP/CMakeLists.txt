@@ -61,6 +61,7 @@ avtIVPM3DC1Integrator.C
 avtIVPNIMRODField.C
 avtIVPFlashField.C
 avtIVPVTKField.C
+avtIVPVTKOffsetField.C
 avtIVPVTKTimeVaryingField.C
 avtPoincareIC.C
 avtStateRecorderIntegralCurve.C

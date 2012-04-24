@@ -89,14 +89,6 @@ public:
    */
   bool hasNodeOffset() const;
 
-  /**
-   * Get the mesh name mangled with the node offsets
-   * @return meshName if there are no node offset, or 
-   *         meshName_withNodeOffset_<offset0>_<offset1>_<offset2>
-   *         if there are offsets
-   */
-  std::string getNodeOffsetMeshName() const;
-
 protected:
   VsVariable(VsH5Dataset* data);
   
@@ -131,9 +123,6 @@ protected:
 
   /** node offsets with respect to base node */
   std::vector<double> nodeOffset;
-
-  /** The name with the node offset mangled */
-  std::string nodeOffsetMeshName;
 
 };
 
