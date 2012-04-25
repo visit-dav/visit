@@ -2525,6 +2525,9 @@ if (-x "$visitlibdir/python")
     }
 }
 
+#Set R_HOME in case R has been installed it will be in this location..
+$ENV{R_HOME} = "$visitlibdir/r_support/R/";
+
 # Add /usr/local/lib to the shared library path.  This was added for the
 # c++ library on some sun systems, but it may have broader applicability.
 # Note that we can assume that LD_LIBRARY_PATH is not empty, since it was

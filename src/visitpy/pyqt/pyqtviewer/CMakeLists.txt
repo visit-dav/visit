@@ -41,6 +41,7 @@
 set(pyqtviewer_include_paths ${CMAKE_CURRENT_SOURCE_DIR}
                     ${VISIT_PYTHON_DIR}/include
                     ${VISIT_SIP_DIR}/include
+                    ${VISIT_SIP_DIR}/include/python${PYTHON_VERSION}
                     ${QT_QTCORE_INCLUDE_DIR} 
                     ${QT_QTGUI_INCLUDE_DIR} 
                     ${QT_QTOPENGL_INCLUDE_DIR} 
@@ -93,7 +94,7 @@ SET(pyqtviewer_sources
                  ${CMAKE_CURRENT_BINARY_DIR}/sippyqt_pyqtviewerPyQtViewer.cpp
                  ${CMAKE_CURRENT_BINARY_DIR}/sippyqt_pyqtviewercmodule.cpp)
 
-SET(PYQT_QT_VERSION "Qt_${QT_VERSION_MAJOR}_${QT_VERSION_MINOR}_${QT_VERSION_PATCH}")
+SET(PYQT_QT_VERSION "Qt_${QT_VERSION_MAJOR}_${QT_VERSION_MINOR}_0") #${QT_VERSION_PATCH}
 
 #TODO: deal with mac and windows..
 #SET(PYQT_QT_DEVICE "WS_X11")
@@ -113,5 +114,6 @@ ADD_DEFINITIONS("-fvisibility=default")
 set(CMAKE_SHARED_MODULE_PREFIX)
 include_directories(${pyqtviewer_include_paths})
 ADD_LIBRARY(${SIP_LIBRARY} MODULE ${pyqtviewer_sources})
+SET_TARGET_PROPERTIES(${SIP_LIBRARY} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
 TARGET_LINK_LIBRARIES(${SIP_LIBRARY} ${pyqtviewer_link_libs})
 VISIT_INSTALL_TARGETS(${SIP_LIBRARY})
