@@ -25,8 +25,5 @@
       <Field name="DisplayMonth" label="Display Month" type="enum" subtype="Month" enabler="computeMaxes:MONTHLY">
         January
       </Field>
-      <Field name="RCodeDir" label="R Code Directory" type="string">
-        ./
-      </Field>
     </Attribute>
   </Plugin>
