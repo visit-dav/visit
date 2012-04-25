@@ -151,6 +151,7 @@ if [[ "$USE_SYSTEM_PYTHON" == "yes" ]]; then
     echo "VISIT_OPTION_DEFAULT(PYTHON_INCLUDE_PATH $PYTHON_INCLUDE_PATH)" >> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY ${PYTHON_LIBRARY_DIR}/${PYTHON_LIBRARY})" >> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY_DIR $PYTHON_LIBRARY_DIR)" >> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(PYTHON_VERSION $PYTHON_COMPATIBILITY_VERSION)" >> $HOSTCONF
 else
     echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
 fi
@@ -192,7 +193,7 @@ function bv_python_dry_run
 function apply_python_osx104_patch
 {
    info "Patching Python: fix _environ issue for OS X 10.4"
-   patch -p0 << \EOF
+   patch -f -p0 << \EOF
 diff -c Modules.orig/posixmodule.c Modules/posixmodule.c
 *** Modules.orig/posixmodule.c  Mon May  3 12:17:59 2010
 --- Modules/posixmodule.c       Mon May  3 12:19:31 2010
@@ -366,7 +367,7 @@ function build_python
 function apply_python_pil_patch
 {
    info "Patching PIL: Add /usr/lib64/ to lib search path."
-   patch -p0 << \EOF
+   patch -f -p0 << \EOF
 diff -c Imaging-1.1.6.orig/setup.py Imaging-1.1.6/setup.py
 *** Imaging-1.1.6.orig/setup.py Sun Dec  3 03:37:29 2006
 --- Imaging-1.1.6/setup.py      Tue Dec 14 13:39:39 2010

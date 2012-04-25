@@ -773,6 +773,7 @@ for arg in "${arguments[@]}" ; do
             cxxflags) CXX_OPT_FLAGS="${arg}";;
             cc) C_COMPILER="${arg}";;
             cxx) CXX_COMPILER="${arg}";;
+            log-file) LOG_FILE="${arg}";;
             makeflags) MAKE_OPT_FLAGS="${arg}";;
             prefix) VISIT_INSTALL_PREFIX="${arg}";;
             group) GROUP="${arg}";;
@@ -863,6 +864,7 @@ for arg in "${arguments[@]}" ; do
         --cxxflags) next_arg="cxxflags";;
         --cc) next_arg="cc";;
         --cxx) next_arg="cxx";;
+        --log-file) next_arg="log-file";;
         --console) GRAPHICAL="no"; ON_GRAPHICAL="off";;
         --debug) set -vx;;
         --download-only) DOWNLOAD_ONLY="yes";;
@@ -1392,23 +1394,6 @@ fi
 export VISITDIR=${VISITDIR:-$(pwd)}
 cd "$START_DIR"
 
-#
-# Now make sure that we have everything we need to build VisIt, so we can bail
-# out early if we are headed for failure.
-#
-check_files
-if [[ $? != 0 ]] ; then
-   error "Stopping build because necessary files aren't available."
-fi
-
-#
-# Exit if we were told to only download the files.
-#
-if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
-    info "Successfully downloaded the specified files."
-    exit 0
-fi
-
 #initialize module variables, since all of VisIt's variables should be set by now..
 initialize_module_variables
 #
@@ -1428,6 +1413,24 @@ if [[ "$USE_SYSTEM_QT" != "yes" && "$DO_QT" == "yes" ]]; then
             error "Qt4 Open Source Edition License Declined. Bailing out."
         fi
     fi
+fi
+
+#
+#
+# Now make sure that we have everything we need to build VisIt, so we can bail
+# out early if we are headed for failure.
+#
+check_files
+if [[ $? != 0 ]] ; then
+   error "Stopping build because necessary files aren't available."
+fi
+
+#
+# Exit if we were told to only download the files.
+#
+if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
+    info "Successfully downloaded the specified files."
+    exit 0
 fi
 
 if [[ $DO_MANGLED_LIBRARIES == "yes" ]]; then
