@@ -143,8 +143,11 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
     ENDIF(QT_MAC_USE_COCOA)
   ENDIF(APPLE)
 
-  # Since Qt was found, add install targets for its libraries.
-  FOREACH(QTLIB
+  IF(VISIT_QT_SKIP_INSTALL)
+    MESSAGE(STATUS "Skipping installation of Qt headers and libraries..")
+  ELSE (VISIT_QT_SKIP_INSTALL)
+    # Since Qt was found, add install targets for its libraries.
+    FOREACH(QTLIB
           QT_QT3SUPPORT
           QT_QTASSISTANT
           QT_QAXCONTAINER
@@ -170,44 +173,45 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
           QT_QTXMLPATTERNS
           QT_PHONON
           QT_QTSCRIPT
-  )
-    IF(${${QTLIB}_FOUND})
-      IF(EXISTS ${${QTLIB}_LIBRARY_RELEASE})
-         THIRD_PARTY_INSTALL_LIBRARY(${${QTLIB}_LIBRARY_RELEASE})
-      ENDIF(EXISTS ${${QTLIB}_LIBRARY_RELEASE})
-    ENDIF(${${QTLIB}_FOUND})
-  ENDFOREACH(QTLIB)
-
-  # Add install targets for Qt headers too
-  FOREACH(H ${QT_INCLUDES})
-    IF(${H} MATCHES "/include/Qt")
-      INSTALL(DIRECTORY ${H}
-              DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt/include
-              FILE_PERMISSIONS OWNER_WRITE OWNER_READ
-                               GROUP_WRITE GROUP_READ
-                               WORLD_READ
-              DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                                    GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                                    WORLD_READ WORLD_EXECUTE
-              PATTERN ".svn" EXCLUDE
-      )
-    ENDIF(${H} MATCHES "/include/Qt")
-  ENDFOREACH(H)
-
-  # Install moc, too
-  IF(NOT WIN32)
-    INSTALL(PROGRAMS ${QT_BIN}/moc
-            DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-            PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                        GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                        WORLD_READ WORLD_EXECUTE
     )
-  ELSE(NOT WIN32)
-    INSTALL(PROGRAMS ${QT_MOC_EXECUTABLE}
-            DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-            PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                        GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                        WORLD_READ WORLD_EXECUTE
-    )
-  ENDIF(NOT WIN32)
+        IF(${${QTLIB}_FOUND})
+            IF(EXISTS ${${QTLIB}_LIBRARY_RELEASE})
+                THIRD_PARTY_INSTALL_LIBRARY(${${QTLIB}_LIBRARY_RELEASE})
+            ENDIF(EXISTS ${${QTLIB}_LIBRARY_RELEASE})
+        ENDIF(${${QTLIB}_FOUND})
+    ENDFOREACH(QTLIB)
+
+    # Add install targets for Qt headers too
+    FOREACH(H ${QT_INCLUDES})
+        IF(${H} MATCHES "/include/Qt")
+        INSTALL(DIRECTORY ${H}
+                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt/include
+                FILE_PERMISSIONS OWNER_WRITE OWNER_READ
+                                   GROUP_WRITE GROUP_READ
+                                   WORLD_READ
+                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                        GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                        WORLD_READ WORLD_EXECUTE
+                PATTERN ".svn" EXCLUDE
+        )
+        ENDIF(${H} MATCHES "/include/Qt")
+    ENDFOREACH(H)
+
+    # Install moc, too
+    IF(NOT WIN32)
+        INSTALL(PROGRAMS ${QT_MOC_EXECUTABLE} #${QT_BIN}/moc
+                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                            GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                            WORLD_READ WORLD_EXECUTE
+        )
+    ELSE(NOT WIN32)
+        INSTALL(PROGRAMS ${QT_MOC_EXECUTABLE}
+                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                            GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                            WORLD_READ WORLD_EXECUTE
+        )
+    ENDIF(NOT WIN32)
+  ENDIF(VISIT_QT_SKIP_INSTALL)
 ENDIF(NOT "${QT_BIN}" MATCHES "OFF")

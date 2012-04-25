@@ -114,75 +114,79 @@ ELSE(APPLE)
     ENDIF(WIN32)
 ENDIF(APPLE)
 
-FOREACH(VTKLIB MapReduceMPI
-    mpistubs
-    vtkCommon
-    vtkCommonPythonD
-    vtkDICOMParser
-    vtkFiltering
-    vtkFilteringPythonD
-    vtkGenericFiltering
-    vtkGenericFilteringPythonD
-    vtkGraphics
-    vtkGraphicsPythonD
-    vtkHybrid
-    vtkHybridPythonD
-    vtkIO
-    vtkIOPythonD
-    vtkImaging
-    vtkImagingPythonD
-    vtkPythonCore
-    vtkRendering
-    vtkRenderingPythonD
-    vtkVolumeRendering
-    vtkVolumeRenderingPythonD
-    vtkWidgets
-    vtkWidgetsPythonD
-    vtkalglib
-    vtkexpat
-    vtkfreetype
-    vtkftgl
-    vtkjpeg
-    vtklibxml2
-    vtkpng
-    vtkproj4
-    vtksqlite
-    vtksys
-    vtktiff
-    vtkverdict
-    vtkzlib
-)
-    IF(WIN32)
-        SET(LIBNAME ${VTK_RUNTIME_DIRS}/${VTKLIB}.${SO_EXT})
-        IF(EXISTS ${LIBNAME})
-            THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
-        ENDIF(EXISTS ${LIBNAME})
-        SET(LIBNAME ${VTK_LIBRARY_DIRS}/${VTKLIB}.lib)
-        IF(EXISTS ${LIBNAME})
-            THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
-        ENDIF(EXISTS ${LIBNAME})
-    ELSE(WIN32)
-        SET(LIBNAME ${VTK_LIBRARY_DIRS}/lib${VTKLIB}.${SO_EXT})
-        IF(EXISTS ${LIBNAME})
-            THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
-        ENDIF(EXISTS ${LIBNAME})
-    ENDIF(WIN32)
-ENDFOREACH(VTKLIB)  
+IF(VISIT_VTK_SKIP_INSTALL)
+    MESSAGE(STATUS "Skipping installation of VTK libraries")
+ELSE(VISIT_VTK_SKIP_INSTALL)
+    FOREACH(VTKLIB MapReduceMPI
+        mpistubs
+        vtkCommon
+        vtkCommonPythonD
+        vtkDICOMParser
+        vtkFiltering
+        vtkFilteringPythonD
+        vtkGenericFiltering
+        vtkGenericFilteringPythonD
+        vtkGraphics
+        vtkGraphicsPythonD
+        vtkHybrid
+        vtkHybridPythonD
+        vtkIO
+        vtkIOPythonD
+        vtkImaging
+        vtkImagingPythonD
+        vtkPythonCore
+        vtkRendering
+        vtkRenderingPythonD
+        vtkVolumeRendering
+        vtkVolumeRenderingPythonD
+        vtkWidgets
+        vtkWidgetsPythonD
+        vtkalglib
+        vtkexpat
+        vtkfreetype
+        vtkftgl
+        vtkjpeg
+        vtklibxml2
+        vtkpng
+        vtkproj4
+        vtksqlite
+        vtksys
+        vtktiff
+        vtkverdict
+        vtkzlib
+    )
+        IF(WIN32)
+            SET(LIBNAME ${VTK_RUNTIME_DIRS}/${VTKLIB}.${SO_EXT})
+            IF(EXISTS ${LIBNAME})
+                THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
+            ENDIF(EXISTS ${LIBNAME})
+            SET(LIBNAME ${VTK_LIBRARY_DIRS}/${VTKLIB}.lib)
+            IF(EXISTS ${LIBNAME})
+                THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
+            ENDIF(EXISTS ${LIBNAME})
+        ELSE(WIN32)
+            SET(LIBNAME ${VTK_LIBRARY_DIRS}/lib${VTKLIB}.${SO_EXT})
+            IF(EXISTS ${LIBNAME})
+                THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
+            ENDIF(EXISTS ${LIBNAME})
+        ENDIF(WIN32)
+    ENDFOREACH(VTKLIB)  
 
-# Add install targets for VTK headers too -- but just the vtk-5.0 dir.
-# The VTK_INCLUDE_DIRS may contain stuff like /usr/include or the
-# Python directory and we just want VTK here.
-FOREACH(X ${VTK_INCLUDE_DIRS})
-    IF(EXISTS ${X}/vtkActor.h)
-        #MESSAGE("Install ${X} to ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk")
-        INSTALL(DIRECTORY ${X}
-            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk
-            FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
-            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-            PATTERN ".svn" EXCLUDE
-        )
-    ENDIF(EXISTS ${X}/vtkActor.h)
-ENDFOREACH(X)
+    # Add install targets for VTK headers too -- but just the vtk-5.0 dir.
+    # The VTK_INCLUDE_DIRS may contain stuff like /usr/include or the
+    # Python directory and we just want VTK here.
+    FOREACH(X ${VTK_INCLUDE_DIRS})
+        IF(EXISTS ${X}/vtkActor.h)
+            #MESSAGE("Install ${X} to ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk")
+            INSTALL(DIRECTORY ${X}
+                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk
+                FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
+                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                PATTERN ".svn" EXCLUDE
+            )
+        ENDIF(EXISTS ${X}/vtkActor.h)
+    ENDFOREACH(X)
+ENDIF(VISIT_VTK_SKIP_INSTALL)
 
 # check for python wrappers
 IF (NOT WIN32)
@@ -196,37 +200,43 @@ IF(EXISTS ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
     MESSAGE(STATUS "Found VTK Python Wrappers - ${VTK_PY_WRAPPERS_DIR}")
     FILE(GLOB VTK_PY_EGG ${VTK_PY_WRAPPERS_DIR}/site-packages/*.egg*)
     FILE(GLOB VTK_PY_MODULE ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
-    INSTALL(FILES ${VTK_PY_EGG}
-            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
-            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-           )
 
-    INSTALL(DIRECTORY ${VTK_PY_MODULE}
-            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
-            FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
-            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-            PATTERN ".svn" EXCLUDE
-           )
-#
-# On OSX we need to patch the lib names in the vtk python wrappers.
-#
-# Obtain a list of all '.so' libs from the module source directory and
-# use these names to create an install rule that executes 'osxfixup'.
-# Yes - VTK generates '.so's here instead of 'dylib's ...
-#
-    IF(APPLE)
-        FILE(GLOB vtkpylibs ${VTK_PY_MODULE}/*so)
-        FOREACH(vtkpylib ${vtkpylibs})
-            GET_FILENAME_COMPONENT(libname ${vtkpylib} NAME)
-            INSTALL(CODE
-                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                     COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib 
-                     \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/site-packages/vtk/${libname}\"
-                     OUTPUT_VARIABLE OSXOUT)
-                     MESSAGE(STATUS \"\${OSXOUT}\")
-                     ")
-        ENDFOREACH(vtkpylib ${vtkpylibs})
-    ENDIF(APPLE)
+    IF(VISIT_VTK_SKIP_INSTALL)
+        MESSAGE(STATUS "Skipping installation of VTK Python bindings")
+    ELSE(VISIT_VTK_SKIP_INSTALL)
+        INSTALL(FILES ${VTK_PY_EGG}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
+                PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+            )
+
+        INSTALL(DIRECTORY ${VTK_PY_MODULE}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
+                FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
+                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                PATTERN ".svn" EXCLUDE
+            )
+
+        #
+        # On OSX we need to patch the lib names in the vtk python wrappers.
+        #
+        # Obtain a list of all '.so' libs from the module source directory and
+        # use these names to create an install rule that executes 'osxfixup'.
+        # Yes - VTK generates '.so's here instead of 'dylib's ...
+        #
+        IF(APPLE)
+            FILE(GLOB vtkpylibs ${VTK_PY_MODULE}/*so)
+            FOREACH(vtkpylib ${vtkpylibs})
+                GET_FILENAME_COMPONENT(libname ${vtkpylib} NAME)
+                INSTALL(CODE
+                        "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_OSX_USE_RPATH}
+                        \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/site-packages/vtk/${libname}\"
+                        OUTPUT_VARIABLE OSXOUT)
+                        MESSAGE(STATUS \"\${OSXOUT}\")
+                        ")
+            ENDFOREACH(vtkpylib ${vtkpylibs})
+        ENDIF(APPLE)
+    ENDIF(VISIT_VTK_SKIP_INSTALL)
 
     SET(VTK_PYTHON_WRAPPERS_FOUND TRUE)
 ELSE(EXISTS ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)

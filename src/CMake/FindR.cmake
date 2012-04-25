@@ -47,6 +47,30 @@ IF (WIN32)
   #SET_UP_THIRD_PARTY(R "lib/${VISIT_MSVC_VERSION};lib" include R Rblase Rlapack)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(R lib include R Rblas Rlapack)
+  MESSAGE(STATUS "Installing R directory ${VISIT_INSTALLED_VERSION_LIB}")
+
+    #copy to dev branch..
+    FILE(COPY ${VISIT_R_DIR}
+          DESTINATION ${CMAKE_BINARY_DIR}/lib/r_support/
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                     WORLD_READ             WORLD_EXECUTE
+    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                          GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                          WORLD_READ             WORLD_EXECUTE)
+
+  #set up installation..
+  INSTALL(DIRECTORY ${VISIT_R_DIR}
+          DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/r_support/
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                     WORLD_READ             WORLD_EXECUTE
+    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                          GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                          WORLD_READ             WORLD_EXECUTE
+    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel)
+
+
 ENDIF (WIN32)
 
 SET(HAVE_LIB_R 1)
