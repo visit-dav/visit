@@ -194,7 +194,7 @@ function build_visit
             #modify cmake to find library
             cd "mangled_$VISIT_DIR"
             mangle_file "$CMAKE_ROOT"/Modules/FindVTK.cmake CMake/FindMTK.cmake
-patch -p0 <<\EOF
+patch -f -p0 <<\EOF
 *** CMake/FindVisItMTK_tmp.cmake    2012-02-29 18:56:18.770322939 -0800
 --- CMake/FindVisItMTK.cmake    2012-02-29 19:11:10.950323153 -0800
 ***************

@@ -1480,6 +1480,12 @@ function mangle_libraries
     fi
 
     if [[ -d "$mangled_dir" ]]; then
+
+        #check if we have completely mangled the library before..
+        if [[ -e "$mangled_dir/done_mangling_library" ]]; then
+            info "library was mangled earlier, skipping (please exit if this is not true)"
+            return 0
+        fi
         info "Found pre-existing mangled directory $mangled_dir, removing"
         rm -fR "$mangled_dir"
     fi
@@ -1515,5 +1521,6 @@ function mangle_libraries
             fi
         fi
     done
+    touch "$mangled_dir"/done_mangling_library
     return 0
 }

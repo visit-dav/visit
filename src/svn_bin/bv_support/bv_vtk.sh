@@ -114,7 +114,7 @@ function apply_vtk_580_patch_2
 {
 #apparently R enables this file to be compiled and causes vtk
 #to fail..
-patch -p0 <<\EOF
+patch -f -p0 <<\EOF
 *** visit-vtk-5.8/Charts/vtkOpenGLContextDevice2D.cxx   2012-02-29 16:38:47.599905018 -0800
 --- visit-vtk-5.8/Charts/vtkOpenGLContextDevice2D_tmp.cxx   2012-02-29 16:33:33.699604797 -0800
 ***************
@@ -131,7 +131,7 @@ EOF
 
 function apply_vtk_580_patch_1
 {
-    patch -p0 <<\EOF
+    patch -f -p0 <<\EOF
 diff -c a/IO/CMakeLists.txt visit-vtk-5.8/IO/CMakeLists.txt
 *** a/IO/CMakeLists.txt
 --- visit-vtk-5.8/IO/CMakeLists.txt

@@ -113,11 +113,11 @@ function build_R
         if [[ "$RFLAG_ARCH" == "x86_64" ]]; then
             RFLAG="64"
         fi
-        ./configure FFLAGS="-m$RFLAG" CFLAGS="-std=gnu99 -g -O2" CXXFLAGS="-std=gnu99 -g -O2" --without-jpeglib --disable-R-framework --enable-R-shlib --disable-openmp --without-cairo --without-ICU --without-libpng --without-system-xz --without-recommended-packages --without-aqua --without-tcltk --without-readline --prefix="$R_INSTALL_DIR"
+        ./configure FFLAGS="-m$RFLAG" CFLAGS="-std=gnu99 -g -O2" CXXFLAGS="-std=gnu99 -g -O2" --without-jpeglib --disable-R-framework --enable-R-shlib --disable-openmp --without-cairo --without-ICU --without-libpng --without-system-xz --without-aqua --without-tcltk --without-readline --prefix="$R_INSTALL_DIR"
     else
         env LIBnn=lib ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
             CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-            --without-readline --enable-R-shlib --without-recommended-packages \
+            --without-readline --enable-R-shlib \
             --prefix="$R_INSTALL_DIR"
         if [[ $? != 0 ]] ; then
             warn "R configure failed.  Giving up"

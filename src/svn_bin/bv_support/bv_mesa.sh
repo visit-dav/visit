@@ -95,7 +95,7 @@ function bv_mesa_dry_run
 
 function apply_mesa_75_patch_1
 {
-   patch -p0 <<\EOF
+   patch -f -p0 <<\EOF
 diff -c a/src/mesa/main/config.h Mesa-7.5/src/mesa/main/config.h
 *** a/src/mesa/main/config.h
 --- Mesa-7.5/src/mesa/main/config.h
@@ -131,7 +131,7 @@ EOF
 
 function apply_mesa_75_patch_2
 {
-    patch -p0 <<\EOF
+    patch -f -p0 <<\EOF
 diff -c a/configure.ac Mesa-7.5/configure.ac
 *** a/configure.ac
 --- Mesa-7.5/configure.ac
@@ -158,7 +158,7 @@ EOF
 
 function apply_mesa_75_patch_3
 {
-    patch -p0 <<\EOF
+    patch -f -p0 <<\EOF
 diff -c a/progs/Makefile Mesa-7.5/progs/Makefile
 *** a/progs/Makefile
 --- Mesa-7.5/progs/Makefile
@@ -235,7 +235,7 @@ EOF
 
 function apply_mesa_75_patch_4
 {
-    patch -p0 <<\EOF
+    patch -f -p0 <<\EOF
 diff -c a/src/mesa/main/compiler.h Mesa-7.5/src/mesa/main/compiler.h
 *** a/src/mesa/main/compiler.h
 --- Mesa-7.5/src/mesa/main/compiler.h
@@ -274,7 +274,7 @@ EOF
 
 function apply_mesa_782_patch_1
 {
-   patch -p0 <<\EOF
+   patch -f -p0 <<\EOF
 diff -c a/src/mesa/drivers/osmesa/osmesa.c Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c
 *** a/src/mesa/drivers/osmesa/osmesa.c
 --- Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c
@@ -315,7 +315,7 @@ EOF
 
 function apply_mesa_782_patch_2
 {
-   patch -p1 <<\EOF
+   patch -f -p1 <<\EOF
 From cc32ff741c5d32a66531a586b1f9268b94846c58 Mon Sep 17 00:00:00 2001
 From: Tom Fogal <tfogal@alumni.unh.edu>
 Date: Sun, 26 Sep 2010 18:57:59 -0600
@@ -407,7 +407,7 @@ EOF
 
 function apply_mesa_7102_patch_1
 {
-   patch -p0 <<\EOF
+   patch -f -p0 <<\EOF
 diff -c a/src/mesa/main/APIspec.py Mesa-7.10.2/src/mesa/main/APIspec.py
 *** a/src/mesa/main/APIspec.py
 --- Mesa-7.10.2/src/mesa/main/APIspec.py
@@ -445,7 +445,7 @@ EOF
 
 function apply_mesa_7102_patch_2
 {
-   patch -p0 <<\EOF
+   patch -f -p0 <<\EOF
 diff -c a/src/mesa/main/APIspecutil.py Mesa-7.10.2/src/mesa/main/APIspecutil.py
 *** a/src/mesa/main/APIspecutil.py
 --- Mesa-7.10.2/src/mesa/main/APIspecutil.py
@@ -541,7 +541,7 @@ EOF
 
 function apply_mesa_7102_patch_3
 {
-   patch -p0 <<\EOF
+   patch -f -p0 <<\EOF
 diff -c a/src/mesa/main/es_generator.py Mesa-7.10.2/src/mesa/main/es_generator.py
 *** a/src/mesa/main/es_generator.py
 --- Mesa-7.10.2/src/mesa/main/es_generator.py

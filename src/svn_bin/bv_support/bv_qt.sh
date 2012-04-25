@@ -189,7 +189,7 @@ return 0
 
 function apply_qt_461_patch_1
 {
-   patch -p0 <<\EOF
+   patch -f -p0 <<\EOF
 diff -c a/src/gui/itemviews/qlistview.cpp qt-everywhere-opensource-src-4.6.1/src/gui/itemviews/qlistview.cpp
 *** a/src/gui/itemviews/qlistview.cpp
 --- qt-everywhere-opensource-src-4.6.1/src/gui/itemviews/qlistview.cpp
@@ -222,7 +222,7 @@ EOF
 
 function apply_qt_461_patch_2
 {
-   patch -p0 <<\EOF
+   patch -f -p0 <<\EOF
 diff -c a/src/corelib/kernel/qmetaobject.cp qt-everywhere-opensource-src-4.6.1/src/corelib/kernel/qmetaobject.cpp
 *** a/src/corelib/kernel/qmetaobject.cpp
 --- qt-everywhere-opensource-src-4.6.1/src/corelib/kernel/qmetaobject.cpp
@@ -255,7 +255,7 @@ EOF
 
 function apply_qt_461_patch_3
 {
-   patch -p0 <<\EOF
+   patch -f -p0 <<\EOF
 diff -c a/src/corelib/statemachine/qabstractstate_p.h qt-everywhere-opensource-src-4.6.1/src/corelib/statemachine/qabstractstate_p.h
 *** a/src/corelib/statemachine/qabstractstate_p.h
 --- qt-everywhere-opensource-src-4.6.1/src/corelib/statemachine/qabstractstate_p.h
@@ -287,7 +287,7 @@ EOF
 
 function apply_qt_461_patch_4
 {
-   patch -p0 <<\EOF
+   patch -f -p0 <<\EOF
 diff -c a/src/plugins/graphicssystems/trace/qgraphicssystem_trace.cpp qt-everywhere-opensource-src-4.6.1/src/plugins/graphicssystems/trace/qgraphicssystem_trace.cpp
 *** a/src/plugins/graphicssystems/trace/qgraphicssystem_trace.cpp
 --- qt-everywhere-opensource-src-4.6.1/src/plugins/graphicssystems/trace/qgraphicssystem_trace.cpp

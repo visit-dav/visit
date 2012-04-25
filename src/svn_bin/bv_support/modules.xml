@@ -37,7 +37,44 @@
             <lib name="pyside"/>
         </optional>
 
+
         <!-- thirdparty flag -->
+        <group name="required" comment="All required libraries">
+            <lib name="cmake"/> <!-- cmake is here -->
+            <lib name="python"/>
+            <lib name="mesa"/>
+            <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="mesa"/> -->
+            <lib name="qt"/>
+        </group>
+
+        <group name="optional" comment="All optional libraries">
+            <lib name="szip"/>
+            <lib name="hdf5"/>
+            <lib name="mili"/>
+            <lib name="icet"/>
+            <lib name="hdf4"/>
+            <lib name="netcdf"/>
+            <lib name="cgns"/>
+            <lib name="gdal"/>
+            <lib name="exodus"/>
+            <lib name="tcmalloc"/>
+            <lib name="boxlib"/>
+            <lib name="cfitsio"/>
+            <lib name="mdsplus"/>
+            <lib name="h5part"/>
+            <lib name="fastbit"/>
+            <lib name="ccmio"/>
+            <lib name="silo"/>
+            <lib name="itaps"/>
+            <lib name="advio"/>
+            <lib name="xdmf"/>
+            <lib name="mxml"/>
+            <lib name="adios"/>
+            <lib name="visus"/>
+            <lib name="pyside"/>
+        </group>
+
+
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries">
             <lib name="no-qt" />
             <lib name="no-cmake"/>
@@ -134,6 +171,22 @@
         </optional>
 
         <!-- thirdparty flag -->
+        <group name="required" comment="All required libraries">
+            <lib name="cmake"/>
+            <lib name="python"/>
+            <lib name="mesa"/>
+            <lib name="R"/>
+            <lib name="vtk"/>
+            <lib name="qt"/>
+        </group>
+
+        <group name="optional" comment="All optional libraries">
+            <lib name="netcdf"/>
+            <lib name="hdf5"/>
+            <lib name="icet"/>
+        </group>
+
+
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries">
             <lib name="no-qt" />
             <lib name="no-cmake"/>
