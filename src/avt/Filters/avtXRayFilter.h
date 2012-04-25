@@ -190,7 +190,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     void                            IntegrateLines(int, int, int *, double *,
                                         T *, T *);
     template <typename T>
-    void                            CollectImages(int, vtkDataArray *);
+    void                            CollectImages(int, vtkDataArray *&);
     void                            FillImageArray(int iBin,  
                                                    vtkDataArray *&imageArray);
 

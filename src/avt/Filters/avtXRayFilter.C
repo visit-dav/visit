@@ -463,8 +463,6 @@ avtXRayFilter::SetDivideEmisByAbsorb(bool flag)
 void
 avtXRayFilter::Execute(void)
 {
-    avtDataset_p input = GetTypedInput();
-
     //
     // Process the pixels in multiple iterations.
     //
@@ -2289,7 +2287,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 
 template <typename T>
 void
-avtXRayFilter::CollectImages(int root, vtkDataArray *image)
+avtXRayFilter::CollectImages(int root, vtkDataArray *&image)
 {
 #ifdef PARALLEL
     int nProcs = PAR_Size();
@@ -2628,13 +2626,12 @@ FillImageArray_Impl(int iBin, int nB, int nIF, int *sizes, vtkDataArray **iF, vt
     for (int i = 0; i < nIF; ++i)
     {
         Accessor currentImageFragment(iF[i]);
-        for (int j = 0; j < sizes[i]; j++)
+        for (int j = 0; j < sizes[i]; ++j)
         {
             ibuf.SetTuple1(currentImageFragment.GetTuple1(j*nB+iBin));
             ibuf++;
         }
     }
-    
 }
 
 void
