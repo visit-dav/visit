@@ -51,6 +51,8 @@
 #include <vtkFloatArray.h>
 #include <string.h>
 #include <DebugStream.h>
+#include <InstallationFunctions.h>
+#include <string>
 
 
 // ****************************************************************************
@@ -163,7 +165,11 @@ avtExtremeValueAnalysisFilter::Execute()
     }
     else if (atts.GetComputeMaxes() == ExtremeValueAnalysisAttributes::YEARLY)
         f->computeMaxes = avtRExtremesFilter::YEARLY;
-    f->codeDir = atts.GetRCodeDir();
+    //f->codeDir = atts.GetRCodeDir();
+    std::string varchdir = GetVisItArchitectureDirectory();
+    std::string vlibdir = varchdir + VISIT_SLASH_CHAR + "lib" + VISIT_SLASH_CHAR + "r_support";
+    std::string vlibrdir  = vlibdir  + VISIT_SLASH_CHAR + "Rscripts" + VISIT_SLASH_CHAR;
+    f->codeDir = vlibrdir;
 
     f->SetInput(GetInput());
     
