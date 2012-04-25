@@ -51,6 +51,9 @@
 #  Cyrus Harrison, Thu Sep 29 15:57:46 PDT 2011
 #  Added PySide.
 #
+#  Cyrus Harrison, Tue Apr 24 23:12:25 MDT 2012
+#  Added visit_utils
+#
 #****************************************************************************/
 
 SET(COMMON_SOURCES
@@ -271,6 +274,8 @@ ENDIF(VISIT_STATIC)
 # For distutils setup of the pure python parts of the visit module
 #
 ADD_SUBDIRECTORY(visitmodule)
+ADD_SUBDIRECTORY(visit_utils)
+
 
 IF(VISIT_PYTHON_FILTERS)
     ADD_SUBDIRECTORY(pyavt)
