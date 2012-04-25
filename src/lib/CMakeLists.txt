@@ -84,6 +84,20 @@ FOREACH(LIB ${MESA_LIB})
     ENDIF (NOT WIN32)
 ENDFOREACH(LIB in ${MESA_LIB})
 
+FOREACH(LIB ${R_LIB})
+    IF (NOT WIN32)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
+                                ${CMAKE_CURRENT_BINARY_DIR}/${LIB})
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                                ${VISIT_R_DIR}/lib/${LIB}
+                                ${CMAKE_CURRENT_BINARY_DIR}/${LIB})
+    ELSE (NOT WIN32)
+        FILE(COPY        ${VISIT_R_DIR}/lib/${LIB}
+             DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    ENDIF (NOT WIN32)
+ENDFOREACH(LIB in ${MESA_LIB})
+
+
 IF (NOT WIN32)
     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
                             ${CMAKE_CURRENT_BINARY_DIR}/python)
