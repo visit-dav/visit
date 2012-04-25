@@ -32,6 +32,7 @@
 function fixup_dylib
 {
     # if $1 is a symlink, return
+    rpath_enable="$2"
     if test -h $1 ; then
         echo "Skipping $1 because it is a symlink"
         return 0
@@ -42,13 +43,25 @@ function fixup_dylib
     thisLibrary=$(otool -D $1 | tail -n 1)
     s=$(echo $thisLibrary | grep ".framework")
     if [[ $s != "" ]] ; then
+        framework_prefix=${s/\.framework*/} #remove everything from framework and forward..
+        framework_name=${framework_prefix/*\/} #remove all the words before framework (we are now left with framework name)
+        framework_suffix=${s/*\.framework\//} #append the rest
+        framework_path="${framework_name}.framework/${framework_suffix}"
         # Framework
-        thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
-        thisLibraryName1=$(echo "$1" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib//g")
-        thisLibraryName2=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib//g")
+        if [[ "$rpath_enable" == "ON" ]]; then
+            thisLibraryFixed= "@rpath/${framework_path}" #$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@rpath\/lib/g")
+        else
+            thisLibraryFixed="@executable_path/../lib/${framework_path}" #$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
+        fi
+        thisLibraryName1=$(echo "$1" | sed "s/^\/[A-Za-z0-9_. \/-]*\.framework//g")  #$(echo "$1" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib//g")
+        thisLibraryName2=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\.framework//g") #$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib//g")
     else
         # Library
-        thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+        if [[ "$rpath_enable" == "ON" ]]; then
+            thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@rpath\/lib/g")
+        else
+            thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+        fi
         thisLibraryName1=$(echo "$1" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/lib/g")
         thisLibraryName2=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/lib/g")
     fi
@@ -61,13 +74,25 @@ function fixup_dylib
 #    echo "sharedLibs = $sharedLibs"
     command=""
     for library in $sharedLibs ; do
-        s=$(echo $library | fgrep -v "/usr/lib" | fgrep -v "/usr/local/lib")
+        s=$(echo $library | fgrep -v "/usr/lib" | fgrep -v "/usr/local/lib" | fgrep -v "/Library/Frameworks/" | fgrep -v "/Network/Library/Frameworks/" | fgrep -v "/System/Library/Frameworks/")
         if [[ $s != "" ]] ; then
             framework=$(echo $library | grep ".framework")
             if [[ $framework != "" ]] ; then
-                newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
+                framework_prefix=${framework/\.framework*/} #remove everything from framework and forward..
+                framework_name=${framework_prefix/*\/} #remove all the words before framework (we are now left with framework name)
+                framework_suffix=${framework/*\.framework\//} #append the rest
+                framework_path="${framework_name}.framework/${framework_suffix}"
+                if [[ "$rpath_enable" == "ON" ]]; then
+                    newlibrary="@rpath/${framework_path}"
+                else
+                    newlibrary="@executable_path/../lib/${framework_path}"
+                fi
             else
-                newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+                if [[ "$rpath_enable" == "ON" ]]; then
+                    newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@rpath\/lib/g")
+                else
+                    newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+                fi
             fi
 #            echo "$library -> $newlibrary"
             command="$command -change $library $newlibrary"
@@ -77,6 +102,11 @@ function fixup_dylib
     echo "Making dylib execute relative: $1"
     if [[ "$command" != "" ]] ; then
         install_name_tool $command $1
+        if [[ "$rpath_enable" == "ON" ]]; then
+            install_name_tool -add_rpath "@executable_path/../lib/" "$1"
+            install_name_tool -add_rpath "/usr/local/lib/" "$1"
+            install_name_tool -add_rpath "/usr/lib/" "$1"
+        fi
     fi
     install_name_tool -id $thisLibraryFixed $1
     
@@ -91,6 +121,7 @@ function fixup_dylib
 #
 function fixup_exe
 {
+    rpath_enable="$2"
     # if $1 is a symlink, return
     if test -h $1 ; then
         echo "Skipping $1 because it is a symlink"
@@ -100,20 +131,36 @@ function fixup_exe
     # Get the name of this library from otool since it might not match quite 
     # what's in $1 because of version number differences.
     thisLibrary=$(otool -D $1 | tail -n 1 | sed "s/\://g")
-    thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/bin/@executable_path\/..\/bin/g")
+    if [[ "$rpath_enable" == "ON" ]]; then
+        thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/bin/@rpath\/bin/g")
+    else
+        thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/bin/@executable_path\/..\/bin/g")
+    fi
 #    echo "thisLibrary = $thisLibrary"
 #    echo "thisLibraryFixed = $thisLibraryFixed"
 
     sharedLibs=$(otool -L $1 | grep -v ":" | grep "/" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
     command=""
     for library in $sharedLibs ; do
-        s=$(echo $library | grep -v "/usr/lib" | grep -v "/usr/local/lib" | grep -v "/usr/X11R6" | grep -v "/opt/local/lib" | grep -v "/opt/local/Library")
+        s=$(echo $library | grep -v "/usr/lib" | grep -v "/usr/local/lib" | grep -v "/usr/X11R6" | grep -v "/opt/local/lib" | grep -v "/opt/local/Library"  | grep -v "/Library/Frameworks/" | grep -v "/Network/Library/Frameworks/" | grep -v "/System/Library/Frameworks/")
         if [[ $s != "" ]] ; then
             framework=$(echo $library | grep ".framework")
             if [[ $framework != "" ]] ; then
-                newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
+                framework_prefix=${framework/\.framework*/} #remove everything from framework and forward..
+                framework_name=${framework_prefix/*\/} #remove all the words before framework (we are now left with framework name)
+                framework_suffix=${framework/*\.framework\//} #append the rest
+                framework_path="${framework_name}.framework/${framework_suffix}"
+                if [[ "$rpath_enable" == "ON" ]]; then
+                    newlibrary="@rpath/${framework_path}"
+                else
+                    newlibrary="@executable_path/../lib/${framework_path}"
+                fi
             else
-                newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+                if [[ "$rpath_enable" == "ON" ]]; then
+                    newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@rpath\/lib/g")
+                else
+                    newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+                fi
             fi
 #            echo "$library -> $newlibrary"
             command="$command -change $library $newlibrary"
@@ -123,6 +170,11 @@ function fixup_exe
     if [[ "$command" != "" ]] ; then
         echo "Making executable execute relative $1"
         install_name_tool $command $1
+        if [[ "$rpath_enable" == "ON" ]]; then
+            install_name_tool -add_rpath "@executable_path/../lib/" "$1"
+            install_name_tool -add_rpath "/usr/local/lib/" "$1"
+            install_name_tool -add_rpath "/usr/lib/" "$1"
+        fi
     else
         echo "Skipping $1"
     fi
@@ -138,7 +190,7 @@ function fixup_exe
 function fixup_bundle
 {
     # First, fixup the program
-    fixup_exe "$1/$2.app/Contents/MacOS/$2"
+    fixup_exe "$1/$2.app/Contents/MacOS/$2" "$3"
 
     # Also, add some symlinks that we need
  
@@ -168,9 +220,9 @@ function fixup_bundle
 
 # main
 if [[ $1 == "-exe" ]] ; then
-    fixup_exe "$2"
+    fixup_exe "$3" "$2"
 elif [[ $1 == "-bundle" ]] ; then
-    fixup_bundle "$2" "$3" 
+    fixup_bundle "$3" "$4" "$2"
 else
-    fixup_dylib "$2"
+    fixup_dylib "$3" "$2"
 fi
