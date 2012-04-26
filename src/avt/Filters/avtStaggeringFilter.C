@@ -263,3 +263,64 @@ avtStaggeringFilter::ModifyContract(avtContract_p contract)
 {
   return contract;
 }
+
+// ****************************************************************************
+// Method: avtStaggeringFilter::PostExecute
+//
+// Purpose:
+//   Override the original data extents since we want the filters downstream
+//   to think that the dataset without the missing data elements is the "original"
+//   dataset.
+//
+// Programmer: Marc Durant
+// Creation:   April 26, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtStaggeringFilter::PostExecute(void)
+{
+    // Call the base class's PostExecute. Set the spatial dimension to zero to
+    // bypass a check in avtDataObjectToDatasetFilter::PostExecute that causes
+    // all unstructured meshes with tdim<sdim to become polydata. We don't want
+    // that so work around it by setting tdim==sdim. Then we do the PostExecute
+    // and restore the old value.
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    int sdim = outAtts.GetSpatialDimension();
+    int tdim = outAtts.GetTopologicalDimension();
+    if (tdim < sdim && sdim >= 2) {
+        outAtts.SetTopologicalDimension(sdim);
+    }
+    avtDataTreeIterator::PostExecute();
+    if (tdim < sdim && sdim >= 2) {
+        outAtts.SetTopologicalDimension(tdim);
+    }
+}
+
+// ****************************************************************************
+//  Method:  avtStaggeringFilter::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Marc Durant
+//  Creation:    April 26, 2012
+//
+// ****************************************************************************
+
+bool
+avtStaggeringFilter::FilterUnderstandsTransformedRectMesh()
+{
+    //A little tricky, because technically we don't handle transformed meshes,
+    //but we also don't want to force a rect->unstructured transition
+    //Final solution is don't add the filter if it's not needed.
+    //Short-term solution is to return true so we don't mess up filters downstream
+    return true;
+}

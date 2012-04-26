@@ -75,8 +75,10 @@ class avtStaggeringFilter : public avtDataTreeIterator
     virtual void              UpdateDataObjectInfo(void);
     virtual avtContract_p
                               ModifyContract(avtContract_p);
-};
+    virtual void              PostExecute(void);
+    virtual bool              FilterUnderstandsTransformedRectMesh();
 
+};
 
 #endif
 

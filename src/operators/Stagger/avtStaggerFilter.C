@@ -289,5 +289,3 @@ avtStaggerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
   
   return in_ds;
 }
-
-
