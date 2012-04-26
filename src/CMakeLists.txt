@@ -1963,23 +1963,23 @@ ADD_SUBDIRECTORY(svn_bin)
 #-----------------------------------------------------------------------------
 # Add the "data" directory if it exists
 #-----------------------------------------------------------------------------
-IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
-    IF(WIN32)
-        # Don't want the data dir files to be added to the main VISIT 
-        # solution file, so 'EXCLUDE_FROM_ALL' here, and create a new 
-        # PROJECT in data/CMakeLists.txt
-        SET(V_EX "EXCLUDE_FROM_ALL")
-     ENDIF(WIN32)
-    IF(VISIT_OUT_OF_SOURCE_BUILD)
-        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../data 
-                         ${CMAKE_CURRENT_BINARY_DIR}/data 
-                         ${V_EX})
-    ELSE(VISIT_OUT_OF_SOURCE_BUILD)
-        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../data 
-                         ${VISIT_SOURCE_DIR}/../data 
-                         ${V_EX})
-    ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
-ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
+#IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
+#    IF(WIN32)
+#        # Don't want the data dir files to be added to the main VISIT 
+#        # solution file, so 'EXCLUDE_FROM_ALL' here, and create a new 
+#        # PROJECT in data/CMakeLists.txt
+#        SET(V_EX "EXCLUDE_FROM_ALL")
+#     ENDIF(WIN32)
+#    IF(VISIT_OUT_OF_SOURCE_BUILD)
+#        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../data 
+#                         ${CMAKE_CURRENT_BINARY_DIR}/data 
+#                         ${V_EX})
+#    ELSE(VISIT_OUT_OF_SOURCE_BUILD)
+#        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../data 
+#                         ${VISIT_SOURCE_DIR}/../data 
+#                         ${V_EX})
+#    ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
+#ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
 
 #-----------------------------------------------------------------------------
 # Create library dependencies file

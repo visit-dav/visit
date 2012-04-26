@@ -105,6 +105,7 @@ avtSerialICAlgorithm.C
 avtShiftCenteringFilter.C
 avtSimilarityTransformFilter.C
 avtSmoothPolyDataFilter.C
+avtStaggeringFilter.C
 avtStreamlineFilter.C
 avtStreamlinePolyDataFilter.C
 avtSummationFilter.C
