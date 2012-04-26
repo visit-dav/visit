@@ -44,6 +44,7 @@
 
 #include <avtCommonDataFunctions.h>
 
+#include <DebugStream.h>
 #include <TimingsManager.h>
 
 bool avtDataObjectToDatasetFilter::vtkDebugMode = false;
@@ -154,6 +155,10 @@ avtDataObjectToDatasetFilter::OutputSetActiveVariable(const char *varname)
 //    Cyrus Harrison, Sat Aug 11 19:48:30 PDT 2007
 //    Add support for vtk-debug mode.
 //
+//    Kathleen Biagas, Thu Apr 26 13:57:42 PDT 2012
+//    Add debug statement to aid in debugging new filters that inadvertently
+//    trigger the transformation.
+//
 // ****************************************************************************
 
 void
@@ -166,6 +171,8 @@ avtDataObjectToDatasetFilter::PostExecute(void)
     if ((atts.GetSpatialDimension()==3 && atts.GetTopologicalDimension()<3) ||
         (atts.GetSpatialDimension()==2 && atts.GetTopologicalDimension()<2))
     {
+        debug3 << "avtDataObjectToDatastFilter converting ugrids to polydata "
+               << "in postex." << endl;
         int t0 = visitTimer->StartTimer();
         tree->Traverse(CConvertUnstructuredGridToPolyData, NULL, dummy);
         visitTimer->StopTimer(t0, "converting ugrids to polydata in postex");
