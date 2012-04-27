@@ -43,7 +43,7 @@
 #ifndef AVT_STAGGERING_FILTER_H
 #define AVT_STAGGERING_FILTER_H
 
-
+#include <filters_exports.h>
 #include <avtDataTreeIterator.h>
 
 #include <string>
@@ -60,7 +60,7 @@
 //
 // ****************************************************************************
 
-class avtStaggeringFilter : public avtDataTreeIterator
+class AVTFILTERS_API avtStaggeringFilter : public avtDataTreeIterator
 {
   public:
                               avtStaggeringFilter();
