@@ -4394,8 +4394,8 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
             continue;
 
         int n_cell_vars = ds->GetCellData()->GetNumberOfArrays();
-        // If we don't make a copy of the cell data and then go mucking with
-        // the order of the arrays, we may process some twice and not others.
+        // We make a copy of the cell data so that we can manipulate
+        // the order of the arrays without processing some twice
         vtkCellData *inCD = vtkCellData::New();
         inCD->ShallowCopy(ds->GetCellData());
         for (int j = 0 ; j < n_cell_vars ; j++)
