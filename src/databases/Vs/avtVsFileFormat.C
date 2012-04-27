@@ -395,8 +395,8 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
                       << "Entering function." << std::endl;
     LoadData();
 
-    // Save the name in a temporary variable as it gets mucked with if
-    // searching for a MD mesh.
+    // Save the original name in a temporary variable
+    // so that we can do some string manipulation on it
     std::string meshName = name;
 
     // Roopa: Check if this mesh name is a transformed mesh name. If
@@ -2286,8 +2286,8 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const std::string& requestedNa
                       << "Entering function." << std::endl;
     LoadData();
 
-    // Save the name in a temporary variable as it gets mucked with if
-    // searching for a component.
+    // Save the original name in a temporary variable
+    // so that we can do some string manipulation on it
     std::string name = requestedName;
 
     ///TODO: This method piggybacks on getVar and getMesh -
@@ -2507,8 +2507,8 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
                       << "Entering function." << std::endl;
     LoadData();
 
-    // Save the name in a temporary variable as it gets mucked with if
-    // searching for a component.
+    // Save the original name in a temporary variable
+    // so that we can do some string manipulation on it
     std::string name = requestedName;
 
     // Check if this var name is a transformed var name. If

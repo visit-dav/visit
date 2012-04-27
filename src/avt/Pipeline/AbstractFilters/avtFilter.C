@@ -648,7 +648,7 @@ avtFilter::GetMetaData(void)
 //  Method: avtFilter::GetGeneralContract
 //
 //  Purpose:
-//      Gets a pipeline that the load balancer knows not to muck with.
+//      Gets a pipeline that the load balancer knows not to mess with.
 //
 //  Programmer: Hank Childs
 //  Creation:   June 6, 2001

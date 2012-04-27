@@ -163,7 +163,7 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Add new coloring methods, length, time and ID.
 //
 //   Sean Ahern, Wed Sep  3 16:19:27 EDT 2008
-//   Mucked with the layout to make it a bit more consistent.
+//   Tweaked the layout to make it a bit more consistent.
 //
 //   Dave Pugmire, Tue Oct 7 08:17:22 EDT 2008
 //   Changed 'Termination Criteria' to 'Termination Criterion'

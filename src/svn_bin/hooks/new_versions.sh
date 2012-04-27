@@ -9,7 +9,7 @@
 # To make things more manageable, one can edit hooks locally and then scp them
 # to NERSC.  I tend to do this to my ${HOME}, and then from a shell logged into
 # NERSC I copy them to the hooks directory.  When working this way, the
-# permissions can sometimes get mucked up -- a pain to fix when you don't have
+# permissions can sometimes get mangled -- a pain to fix when you don't have
 # a real shell.  This script ensures files get copied and work appropriately.
 #####
 
