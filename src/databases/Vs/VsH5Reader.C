@@ -63,7 +63,7 @@ VsH5Reader::VsH5Reader(const std::string& nm, VsRegistry* r) {
 
   registry = r;
   
-  // Read metadata
+  // Read raw hdf5 metadata
   fileData = VsFilter::readFile(registry, nm);
   if (!fileData) {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -71,7 +71,7 @@ VsH5Reader::VsH5Reader(const std::string& nm, VsRegistry* r) {
     EXCEPTION1(InvalidFilesException, nm.c_str());
   }
 
-  //debugging output
+  //debugging output of raw hdf5 objects
   registry->writeAllGroups();
   registry->writeAllDatasets();
   
@@ -82,6 +82,10 @@ VsH5Reader::VsH5Reader(const std::string& nm, VsRegistry* r) {
   //Build MD objects
   registry->buildMDMeshes();
   registry->buildMDVars();
+
+  //Register "transformed" meshes, and then variables
+  registry->buildTransformedMeshes();
+  registry->buildTransformedVariables();
   
   //debugging output
   registry->writeAllMeshes();

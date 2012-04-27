@@ -44,6 +44,62 @@ VsMesh::~VsMesh() {
   registry->remove(this);
 }
 
+bool VsMesh::hasTransform() {
+  std::string transformName = getTransformName();
+  if ((transformName == VsSchema::zrphiTransformKey) && (numSpatialDims == 3)) {
+    return true;
+  } else if ((transformName == VsSchema::zrphiTransformKey_deprecated) && (numSpatialDims == 3)) {
+    return true;
+  }
+
+  return false;
+}
+
+std::string VsMesh::getTransformName() {
+  //Look for the vsTransform attribute
+  //and either retrieve the value or leave the name empty
+  std::string transformName;
+  VsH5Attribute* transformNameAtt = getAttribute(VsSchema::transformKey);
+  if (transformNameAtt) {
+    transformNameAtt->getStringValue(&transformName);
+  }
+  
+  //Make sure this is a recognized value
+  //All other methods use the return value of this method as a go/no-go test
+  //So this is the best place to catch bad values
+  if ((transformName != VsSchema::zrphiTransformKey) &&
+      (transformName != VsSchema::zrphiTransformKey_deprecated)) {
+    VsLog::errorLog() <<"VsMesh::getTransformName() - Unrecognized value for key "
+    << VsSchema::transformKey << " - " <<transformName <<std::endl;
+    transformName = "";
+  }
+  
+  return transformName;
+}
+
+std::string VsMesh::getTransformedMeshName() {
+  //Look for the vsTransformName key
+  std::string transformedMeshName;
+  VsH5Attribute* transformedMeshNameAtt = getAttribute(VsSchema::transformedMeshKey);
+  if (transformedMeshNameAtt) {
+    transformedMeshNameAtt->getStringValue(&transformedMeshName);
+    if (!transformedMeshName.empty()) {
+      //We want to make the tranformed mesh appear at the same file level
+      //as the original mesh.
+      //So, when we calculate the canonical name, use the PATH, not the FULL NAME
+      transformedMeshName = makeCanonicalName(getPath(), transformedMeshName);
+    }
+  }
+  
+  // if we didn't find a user supplied name, create a name
+  if (transformedMeshName.empty()) {
+    transformedMeshName = getFullName() + "_transform";
+    transformedMeshName = makeCanonicalName(transformedMeshName);
+  }
+  
+  return transformedMeshName;
+}
+
 bool VsMesh::isFortranOrder() {
   return ((indexOrder == VsSchema::compMinorFKey) ||
           (indexOrder == VsSchema::compMajorFKey));

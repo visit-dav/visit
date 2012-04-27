@@ -396,7 +396,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
     LoadData();
 
     // Save the original name in a temporary variable
-    // so that we can do some string manipulation on it
+    // so that we can do some string manipulations on it
     std::string meshName = name;
 
     // Roopa: Check if this mesh name is a transformed mesh name. If
@@ -528,17 +528,16 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
     // Variable with mesh
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" 
                       << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Looking for Variable-With-Mesh named " << name 
+                      << "Looking for Variable-With-Mesh named " << meshName 
                       << ".\n";
-    VsVariableWithMesh* vmMeta = registry->getVariableWithMesh(name);
+    VsVariableWithMesh* vmMeta = registry->getVariableWithMesh(meshName);
 
     if (vmMeta != NULL)
     {
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
 
         << "Found Variable With Mesh. Loading data and returning." << std::endl;
-      return getPointMesh(vmMeta,
-                          haveDataSelections, mins, maxs, strides);
+      return getPointMesh(vmMeta, haveDataSelections, mins, maxs, strides, transform);
     }
 
     // Curve
@@ -777,7 +776,7 @@ vtkDataSet*
 avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
                                     bool haveDataSelections,
                                     int* mins, int* maxs, int* strides,
-        bool transform)
+                                    bool transform)
 {
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
@@ -1428,7 +1427,9 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Returning data." << std::endl;
 
-
+    //This is the "alternate" way to attach information to a dataset in the VisIt pipeline.
+    //It works for meshes, where the vtkInformation approach works for data
+    //Kept for historical purposes
     //Attach offset information to dataset
     //debug5 <<"avtVsFileFormat::getStructuredMesh() - attaching node offset as field data." <<std::endl;
     //vtkDoubleArray* offsetArray = vtkDoubleArray::New();
@@ -1560,8 +1561,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       // using the generic reader.
 
       // To do so set the location in memory where each cordinate
-      // componenet will be stored.
-      
+      // component will be stored.
       int srcMins[1] = {0};
       int srcMaxs[1] = {0};
       int srcStrides[1] = {0};
@@ -2068,7 +2068,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
 vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
                                           bool haveDataSelections,
-                                          int* mins, int* maxs, int* strides)
+                                          int* mins, int* maxs, int* strides,
+                                          bool transform)
 {
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
@@ -2204,7 +2205,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     }
 
     // The above stores the value in the correct location but make
-    // sure the remaing value are all zero.
+    // sure the remaining values are all zero.
     for (int i=numSpatialDims; i<3; ++i)
     {
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -2226,6 +2227,59 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
         {
           *fltDataPtr = 0;
           fltDataPtr += 3;
+        }
+      }
+    }
+  
+    //If a transform is requested, do it
+    //Note that we only have a 3d transform available right now
+    if (transform && (numSpatialDims == 3)) {
+      VsLog::debugLog() <<"Creating transformed point mesh." <<std::endl;
+      if (isDouble) {
+        double* dblDataPtr = (double*)dataPtr;
+        
+        for (int i = 0; i < numNodes[0]; i++) {
+          int baseIndex = i * 3;
+          //Get original values
+          double zValue = dblDataPtr[baseIndex];
+          double rValue = dblDataPtr[baseIndex + 1];
+          double phiValue = dblDataPtr[baseIndex + 2];
+
+          //Calculate transform (remember, Z = Z)
+          double xValue = rValue * cos(phiValue);
+          double yValue = rValue * sin(phiValue);
+          
+          //Debugging output
+          //VsLog::debugLog() <<"Transforming point " <<i <<" z = " <<zValue <<" r = " <<rValue <<" phi = " <<phiValue <<std::endl;
+          //VsLog::debugLog() <<"Transforming point " <<i <<" x = " <<xValue <<" y = " <<yValue <<" z = "   <<zValue   <<std::endl;
+          
+          //Replace old values with new values
+          dblDataPtr[baseIndex] = xValue;
+          dblDataPtr[baseIndex+1] = yValue;
+          dblDataPtr[baseIndex+2] = zValue;
+        }
+      } else if (isFloat) {
+        float* fltDataPtr = (float*)dataPtr;
+        
+        for (int i = 0; i < numNodes[0]; i++) {
+          int baseIndex = i * 3;
+          //Get original values
+          float zValue = fltDataPtr[baseIndex];
+          float rValue = fltDataPtr[baseIndex + 1];
+          float phiValue = fltDataPtr[baseIndex + 2];
+          
+          //Calculate transform (remember, Z = Z)
+          float xValue = rValue * cos(phiValue);
+          float yValue = rValue * sin(phiValue);
+          
+          //Debugging output
+          //VsLog::debugLog() <<"Transforming point " <<i <<" z = " <<zValue <<" r = " <<rValue <<" phi = " <<phiValue <<std::endl;
+          //VsLog::debugLog() <<"Transforming point " <<i <<" x = " <<xValue <<" y = " <<yValue <<" z = "   <<zValue   <<std::endl;
+          
+          //Replace old values with new values
+          fltDataPtr[baseIndex] = xValue;
+          fltDataPtr[baseIndex+1] = yValue;
+          fltDataPtr[baseIndex+2] = zValue;
         }
       }
     }
@@ -2511,18 +2565,6 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     // so that we can do some string manipulation on it
     std::string name = requestedName;
 
-    // Check if this var name is a transformed var name. If
-    // so, use the original var name to get data associated
-    bool transform = false;
-    std::string origVarName = registry->getOriginalVarName(name);
-    if (!origVarName.empty()) {
-      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Original var for the transformed var " << name << " is "
-                        << origVarName << std::endl;
-      transform = true;
-      name = origVarName;
-    }
-  
     bool haveDataSelections;
     int mins[3], maxs[3], strides[3];
 
@@ -2553,6 +2595,21 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
                         << "Found a component, which refers to variable "
                         << name << " and index " << componentIndex << std::endl;
       isAComponent = true;
+    }
+
+    // Check if this var name is a transformed var name. If
+    // so, use the original var name to get data associated
+    bool transform = false;
+    std::string origVarName = registry->getOriginalVarName(name);
+    if (!origVarName.empty()) {
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Original var for the transformed var " << name << " is "
+                        << origVarName << std::endl;
+      transform = true;
+      name = origVarName;
+    } else {
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Unable to find an original var for the possible transform name " <<name <<std::endl;
     }
 
     // The goal in all of the metadata loading is to fill one of
@@ -2898,12 +2955,13 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     if (hasOffset) {
       vtkInformation* info = rv->GetInformation();
       info->Set(avtVariableCache::OFFSET_3(), offset[0], offset[1], offset[2]);
-      VsLog::debugLog() <<"avtVsFileFormat is attaching nodeOffset information to dataset: " <<requestedName <<std::endl;
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                        <<"Attaching nodeOffset information to dataset: " <<requestedName <<std::endl;
     }
 
     rv->SetNumberOfTuples(numVariables);
 
-    // Perform if needed permutation of index as VTK expect Fortran order
+    // If in C order, perform permutation of index as VTK expect Fortran order
 
     // The index tuple is initially all zeros
     size_t* indices = new size_t[numTopologicalDims];
@@ -3238,24 +3296,23 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
         continue;
       }
 
-      // Get the mesh information for this variable
-      VsMesh* meshMeta = vMeta->getMesh();
+      // Name of the mesh of the var
       std::string meshName = vMeta->getMeshName();
-
-      // If this variable lives on a mesh with a transform, we register
-      // against BOTH meshes (with different names, of course)
+      VsMesh* meshMeta = vMeta->getMesh();
+      
+      // Name of the transformed mesh (if it exists)
       bool hasTransform = false;
       std::string transformMeshName = "";
       VsRectilinearMesh* rectMesh = static_cast<VsRectilinearMesh*> (meshMeta);
-      if (rectMesh && rectMesh->hasTransform()) {
-        hasTransform = true;
-        transformMeshName = rectMesh->getTransformedMeshName();
+      if (meshMeta && meshMeta->hasTransform()) {
+        transformMeshName = meshMeta->getTransformedMeshName();
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
-                          << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "Variable lives on a mesh with a transform: "
-                          <<transformMeshName
-                          << std::endl;
+          << __FUNCTION__ << "  " << __LINE__ << "  "
+          << "Variable lives on a mesh with a transform: "
+          <<transformMeshName
+          << std::endl;
       }
+      
       
       // Centering of the variable
       // Default is node centered data
@@ -3344,21 +3401,22 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
 
           if (!componentName.empty()) {
             VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                              << "Adding variable component "
-                              << componentName << "." << std::endl;
-            avtScalarMetaData* smd =
-              new avtScalarMetaData(componentName, meshName.c_str(), 
-                                    centering);
+                              << "Adding variable component " << componentName << "." << std::endl;
+            avtScalarMetaData* smd = new avtScalarMetaData(componentName, meshName.c_str(), centering);
             smd->hasUnits = false;
             md->Add(smd);
             
-            if (hasTransform) {
-              std::string transformVarName = componentName + "_transform";
-              registry->registerTransformedVarName(transformVarName, componentName);
-              avtScalarMetaData* smd_transformed =
-                           new avtScalarMetaData(transformVarName.c_str(), transformMeshName.c_str(), centering);
-              smd_transformed->hasUnits = false;
-              md->Add(smd_transformed);
+            if (vMeta->hasTransform()) {
+              std::string transformVarName = vMeta->getFullTransformedName();
+              std::string transformComponentName = registry->getComponentName(transformVarName, i);
+              if (!transformComponentName.empty()) {
+                VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                << "Registering transformed component: " <<transformVarName <<std::endl;
+                avtScalarMetaData* smd_transformed =
+                           new avtScalarMetaData(transformComponentName.c_str(), transformMeshName.c_str(), centering);
+                smd_transformed->hasUnits = false;
+                md->Add(smd_transformed);
+              }
             }
             
           } else {
@@ -3376,16 +3434,16 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
                           << meshName << " with centering " 
                           << centering << std::endl;
         avtScalarMetaData* smd =
-          new avtScalarMetaData(*it, meshName.c_str(), 
-                                centering);
+          new avtScalarMetaData(*it, meshName.c_str(), centering);
         smd->hasUnits = false;
         md->Add(smd);
 
-        if (hasTransform) {
-          std::string transformVarName = *it + "_transform";
-          registry->registerTransformedVarName(transformVarName, *it);
+        if (vMeta->hasTransform()) {
+          std::string transformVarName = vMeta->getFullTransformedName();
           avtScalarMetaData* smd_transformed =
-          new avtScalarMetaData(transformVarName.c_str(), transformMeshName.c_str(), centering);
+            new avtScalarMetaData(transformVarName.c_str(), transformMeshName.c_str(), centering);
+          VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                            << "Registering transformed variable: " <<transformVarName <<std::endl;
           smd_transformed->hasUnits = false;
           md->Add(smd_transformed);
         }
@@ -3543,29 +3601,26 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                             << "Adding rectilinear mesh" << *it << ".  "
                             << "transformedMeshName = " << transformedMeshName
                             << "." << std::endl;
-          registry->registerTransformedMeshName(transformedMeshName, rectMesh->getFullName());
 
           int topologicalDims = meta->getNumTopologicalDims();
-          // Add a note for this interesting case.  It is legal, but
-          // since it's a new feature we want to keep an eye on it
+          // Add a note for this interesting case.  It is legal, but since it's a new feature
+          // we want to keep an eye on it
           if (topologicalDims > spatialDims) {
-            VsLog::errorLog()
-              << __CLASS__ << "(" <<instanceCounter << ")" << __FUNCTION__ << "  " << __LINE__ << "  "
-              << "ERROR - num topological dims (" << topologicalDims
-              << ") > num spatial dims (" << spatialDims << ")" <<std::endl;
+            VsLog::errorLog() <<__CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                              <<"ERROR - num topological dims (" << topologicalDims
+                              <<") > num spatial dims (" << spatialDims <<")" <<std::endl;
             topologicalDims = spatialDims;
           } else if (spatialDims != topologicalDims) {
-            VsLog::debugLog()
-              <<__CLASS__ << "(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-              <<"Interesting - num topological dims (" << topologicalDims
-              <<") != num spatial dims (" << spatialDims << ")" <<std::endl;
+            VsLog::debugLog() <<__CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                              <<"Interesting - num topological dims (" << topologicalDims
+                              <<") != num spatial dims (" << spatialDims <<")" <<std::endl;
           }
 
           avtMeshMetaData* vmd =
             new avtMeshMetaData(transformedMeshName, 1, 1, 1, 0,
                                 spatialDims, topologicalDims, meshType);
           vmd->SetBounds( bounds );
-          vmd->SetNumberCells( numCells );
+          vmd->SetNumberCells( numCells );                                                                                                                      
           setAxisLabels(vmd);
           md->Add(vmd);
         }
@@ -3682,6 +3737,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         vmd->SetNumberCells( numCells );
         setAxisLabels(vmd);
         md->Add(vmd);
+
       }
     }
 
@@ -3765,8 +3821,7 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
           
           if (!compName.empty()) {
             VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                              << "Adding variable component " << compName
-                              << "." << std::endl;
+                              << "Adding variable component " << compName << "." << std::endl;
             avtScalarMetaData* smd = new avtScalarMetaData(compName.c_str(),
               mesh.c_str(), centering);
             smd->hasUnits = false;
@@ -3952,12 +4007,25 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
         if (!compName.empty()) {
           //register with VisIt
           VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                            << "Adding variable component " << compName
-                            << "." << std::endl;
-          avtScalarMetaData* smd = new avtScalarMetaData(compName.c_str(),
-            it->c_str(), AVT_NODECENT);
+                            << "Adding variable component " << compName << "." << std::endl;
+          avtScalarMetaData* smd = new avtScalarMetaData(compName.c_str(), it->c_str(), AVT_NODECENT);
           smd->hasUnits = false;
           md->Add(smd);
+
+          // Register the transformed var (if this variable has a transform)
+          if (vMeta->hasTransform()) {
+            std::string transformMeshName = vMeta->getTransformedMeshName();
+            std::string transformVarName = vMeta->getFullTransformedName();
+            std::string transformComponentName = registry->getComponentName(transformVarName, i);
+            VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                              << __FUNCTION__ << "  " << __LINE__ << "  "
+                              << "Registering a transformed component: "
+                              <<transformComponentName << std::endl;
+            avtScalarMetaData* smd_transformed =
+                new avtScalarMetaData(transformComponentName.c_str(), transformMeshName.c_str(), AVT_NODECENT);
+            smd_transformed->hasUnits = false;
+            md->Add(smd_transformed);
+          }        
         } else {
           VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                             << "Unable to get component name for variable "
@@ -3979,11 +4047,25 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
                         << "Adding point mesh for this variable." << std::endl;
       avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
           1, 1, 1, 0, spatialDims, 0, AVT_POINT_MESH);
-
       vmd->SetBounds( bounds );
       vmd->SetNumberCells( numCells );
       setAxisLabels(vmd);
       md->Add(vmd);
+      
+      // Register the transformed mesh (if this variable has a transform)
+      if (vMeta->hasTransform()) {
+        std::string transformMeshName = vMeta->getTransformedMeshName();
+        VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
+                          << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Variable lives on a mesh with a transform: "
+                          <<transformMeshName
+                          << std::endl;
+        avtMeshMetaData* vmd_transform = new avtMeshMetaData(transformMeshName.c_str(),
+                                                             1, 1, 1, 0, spatialDims, 0, AVT_POINT_MESH);
+        vmd_transform->SetBounds(bounds);
+        setAxisLabels(vmd_transform);
+        md->Add(vmd_transform);
+      }
     }
 
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "

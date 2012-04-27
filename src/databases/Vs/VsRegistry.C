@@ -556,7 +556,47 @@ void VsRegistry::buildMDMeshes() {
   VsLog::debugLog() <<"VsRegistry::buildMDMeshes() - Exiting." <<std::endl;
 }
 
-/*********** VARIBLES ***********/
+/*********** TRANSFORMED VARIABLES ****************************/
+void VsRegistry::buildTransformedVariables() {
+  std::map<std::string, VsVariable*>::const_iterator it;
+  for (it = allVariables.begin(); it != allVariables.end(); ++it) {
+    VsLog::debugLog() <<"VsRegistry::buildTransformedVariables() - Creating transform names for Variable " <<it->first <<std::endl;
+    it->second->createTransformedVariable();
+  }
+
+  std::map<std::string, VsVariableWithMesh*>::const_iterator it2;
+  for (it2 = allVariablesWithMesh.begin(); it2 != allVariablesWithMesh.end(); ++it2) {
+    VsLog::debugLog() <<"VsRegistry::buildTransformedVariables() - Creating transform names for Variable with Mesh " <<it2->first <<std::endl;
+    it2->second->createTransformedVariableAndMesh();
+  }
+}
+
+/*********** TRANSFORMED MESHES *******************************/
+void VsRegistry::buildTransformedMeshes() {
+  //go through all meshes looking for "vsTransform" flags
+  VsLog::debugLog() <<"VsRegistry::buildTransformedMeshes() - Entering." <<std::endl;
+  
+  // Roopa: Check if there is a transformation specified for this
+  // mesh. If so, register the transformed mesh here
+  std::map<std::string, VsMesh*>::const_iterator it;
+  for (it = allMeshes.begin(); it != allMeshes.end(); it++) {
+    VsLog::debugLog() <<"VsRegistry::buildTransformedMeshes() - examining mesh " <<(*it).first <<std::endl;
+    VsMesh* mesh = (*it).second;
+    if (!mesh) {
+      VsLog::errorLog() <<"VsRegistry::buildTransformedMeshes() - mesh is NULL?" <<std::endl;
+      continue;
+    }
+    if (mesh->hasTransform()) {
+      std::string transformedMeshName = mesh->getTransformedMeshName();
+      VsLog::debugLog() <<"VsRegistry::buildTransformedMeshes() - mesh " <<(*it).first <<" has transformed mesh " <<transformedMeshName <<std::endl;
+      registerTransformedMeshName(transformedMeshName, mesh->getFullName());
+    }
+  }
+  
+  VsLog::debugLog() <<"VsRegistry::buildTransformedMeshes() - Returning." <<std::endl;
+}
+
+/*********** VARIABLES ***********/
 void VsRegistry::add(VsVariable* variable) {  
   //check for duplicate long name
   VsVariable* foundVariable = this->getVariable(variable->getFullName());
@@ -846,7 +886,7 @@ bool VsRegistry::registerTransformedMeshName(std::string transformedName, std::s
                         << oName << std::endl;
       return false;
     } else {
-      VsLog::debugLog() << "VsRegistry::registerTransformedMeshName() - recieved duplicate registration for " 
+      VsLog::debugLog() << "VsRegistry::registerTransformedMeshName() - received duplicate registration for " 
                         << origName << std::endl;
       VsLog::debugLog() << "VsRegistry::registerTransformedMeshName() - but all info matches, so it should be ok"
                         << std::endl;
@@ -914,7 +954,7 @@ void VsRegistry::addExpression(const std::string& name,
 }
 
 /**
- * VsRegistry::buildbuildExpressions()
+ * VsRegistry::buildExpressions()
  * 
  * A "VsVars" group represents a set of names and values
  * Each attribute in the group represents one expression
@@ -981,7 +1021,7 @@ void VsRegistry::createComponents() {
 
   std::map<std::string, VsVariableWithMesh*>::const_iterator it3;
   for (it3 = allVariablesWithMesh.begin(); it3 != allVariablesWithMesh.end(); ++it3) {
-    VsLog::debugLog() <<"VsRegistry::createComponents() - Creating components for Variable With Mesh" <<it3->first <<std::endl;
+    VsLog::debugLog() <<"VsRegistry::createComponents() - Creating components for Variable With Mesh " <<it3->first <<std::endl;
     it3->second->createComponents();
   }
   
@@ -1019,7 +1059,7 @@ bool VsRegistry::registerComponentInfo(const std::string& componentName,
       VsLog::debugLog() <<"ERROR VsH5Reader::registerComponentInfo() - " <<componentName <<" is already registered to component " <<temp <<" index " <<tempIndex <<std::endl;
       return false;
     } else {
-      VsLog::debugLog() <<"VsH5Reader::registerComponentInfo() - recieved duplicate registration for " <<varName <<" and index " <<componentNumber <<std::endl;
+      VsLog::debugLog() <<"VsH5Reader::registerComponentInfo() - received duplicate registration for " <<varName <<" and index " <<componentNumber <<std::endl;
       VsLog::debugLog() <<"VsH5Reader::registerComponentInfo() - but all info matches, so it should be ok" <<std::endl;
       return true;
     }

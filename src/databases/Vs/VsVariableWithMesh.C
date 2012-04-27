@@ -50,6 +50,74 @@ bool VsVariableWithMesh::isCompMajor() {
       (indexOrder == VsSchema::compMajorFKey));
 }
 
+std::string VsVariableWithMesh::getFullTransformedName() {
+  return getFullName() + "_transform";
+}
+
+bool VsVariableWithMesh::hasTransform() {
+  return (!getTransformName().empty());
+}
+
+std::string VsVariableWithMesh::getTransformName() {
+  //Look for the vsTransform attribute
+  //and either retrieve the value or leave the name empty
+  std::string transformName;
+  VsH5Attribute* transformNameAtt = getAttribute(VsSchema::transformKey);
+  if (transformNameAtt) {
+    transformNameAtt->getStringValue(&transformName);
+  }
+  
+  //Make sure this is a recognized value
+  //All other methods use the return value of this method as a go/no-go test
+  //So this is the best place to catch bad values
+  if ((transformName != VsSchema::zrphiTransformKey) &&
+      (transformName != VsSchema::zrphiTransformKey_deprecated)) {
+    VsLog::errorLog() <<"VsVariableWithMesh::getTransformName() - Unrecognized value for key "
+    << VsSchema::transformKey << " - " <<transformName <<std::endl;
+    transformName = "";
+  }
+  
+  return transformName;
+}
+
+std::string VsVariableWithMesh::getTransformedMeshName() {
+  //Look for the vsTransformName key
+  std::string transformedMeshName;
+  VsH5Attribute* transformedMeshNameAtt = getAttribute(VsSchema::transformedMeshKey);
+  if (transformedMeshNameAtt) {
+    transformedMeshNameAtt->getStringValue(&transformedMeshName);
+    if (!transformedMeshName.empty()) {
+      //We want to make the tranformed mesh appear at the same file level
+      //as the original mesh.
+      //So, when we calculate the canonical name, use the PATH, not the FULL NAME
+      transformedMeshName = makeCanonicalName(getPath(), transformedMeshName);
+    }
+  }
+  
+  // if we didn't find a user supplied name, create a name
+  if (transformedMeshName.empty()) {
+    transformedMeshName = getFullName() + "_transform";
+    transformedMeshName = makeCanonicalName(transformedMeshName);
+  }
+  
+  return transformedMeshName;
+}
+
+void VsVariableWithMesh::createTransformedVariableAndMesh() {
+  VsLog::debugLog() <<"VsVariableWithMesh::createTransformedVariableAndMesh() - Creating transformed var name." <<std::endl;
+  
+  // Does this variable have a transformation?
+  if (hasTransform()) {
+    VsLog::debugLog()<<"VsVariableWithMesh::createTransformedVariableAndMesh() - registering transformed variable: " + getFullTransformedName() <<std::endl;
+    registry->registerTransformedVarName(getFullTransformedName(), getFullName());
+    
+    //And register the transformed mesh name to match
+    registry->registerTransformedMeshName(getFullTransformedName(), getFullName());
+  }
+  
+  VsLog::debugLog() <<"VsVariableWithMesh::createTransformedVariable() - returning." <<std::endl;
+}
+
 // Get dims
 std::vector<int> VsVariableWithMesh::getDims()
 {
@@ -316,8 +384,14 @@ void VsVariableWithMesh::createComponents() {
   
   size_t numComps = getNumComps();
   
+  //We should only create component names if we have more than one component
+  //But i'm going to leave it as-is for now...
+  bool transformExists = hasTransform();
   for (size_t i = 0; i < numComps; ++i) {
     registry->registerComponent(getFullName(), i, getLabel(i));
+    if (transformExists) {
+      registry->registerComponent(getFullTransformedName(), i, getLabel(i));
+    }
   }
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "

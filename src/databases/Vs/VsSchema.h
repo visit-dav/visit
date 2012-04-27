@@ -46,7 +46,13 @@ struct VsSchema {
   static std::string compMinorCKey;
   static std::string compMajorFKey;
   static std::string compMinorFKey;
-
+  
+  // Transforms
+  static std::string transformKey;
+  static std::string transformedMeshKey;  
+  static std::string zrphiTransformKey;
+  static std::string zrphiTransformKey_deprecated;
+  
   struct Uniform {
     static std::string key;
     static std::string key_deprecated;
@@ -71,11 +77,6 @@ struct VsSchema {
     
     static std::string axis2Key;
     static std::string axis2DefaultName;
-
-    static std::string transformKey;
-    static std::string transformedMeshKey;
-
-    static std::string zrphiTransformKey;
   };
 
   struct Unstructured {
