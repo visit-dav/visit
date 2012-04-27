@@ -2501,13 +2501,14 @@ class MakeMovie:
             # Make sure that plots are all drawn.
             DrawPlots()
 
-            # Reset the view but preserve the viewpoint.
+            # Reset the view but preserve the viewpoint and image zoom.
             if self.adjustview:
                 v0 = GetView3D()
                 ResetView()
                 v1 = GetView3D()
                 v1.viewNormal = v0.viewNormal
                 v1.viewUp = v0.viewUp
+                v1.imageZoom = v0.imageZoom
                 SetView3D(v1)
 
             # Iterate over all of the frames and save them out.
