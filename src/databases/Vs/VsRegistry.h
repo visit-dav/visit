@@ -113,6 +113,10 @@ public:
   int numMDVariables();
   VsVariable* findSubordinateMDVar(const std::string& name);
   
+  //Transformed meshes
+  void buildTransformedMeshes();
+  void buildTransformedVariables();
+  
   //VsVars
   void buildExpressions(VsH5Group* group);
   void addExpression(const std::string& name, const std::string& value);

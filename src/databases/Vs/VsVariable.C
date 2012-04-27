@@ -77,6 +77,10 @@ VsMesh* VsVariable::getMesh() {
   return meshMeta;
 }
 
+bool VsVariable::hasTransform() {
+  return meshMeta && meshMeta->hasTransform();
+}
+
 // Get hdf5 type
 hid_t VsVariable::getType() {
   return dataset->getType();
@@ -99,6 +103,11 @@ hid_t VsVariable::getId() {
 // Get path
 std::string VsVariable::getPath() {
   return dataset->getPath();
+}
+
+// Get transformed name
+std::string VsVariable::getFullTransformedName() {
+  return getFullName() + "_transform";
 }
 
 // Get full name
@@ -348,18 +357,38 @@ dimwarn:
   
 }
 
+void VsVariable::createTransformedVariable() {
+  VsLog::debugLog() <<"VsVariable::createTransformedVariable() - Creating transformed var name." <<std::endl;
+
+  // Does this variable have a transformation?
+  bool hasTransform = getMesh() && getMesh()->hasTransform();
+
+  if (hasTransform) {
+    VsLog::debugLog()<<"VsVariable::createTransformedVariable() - registering transformed variable: " + getFullTransformedName() <<std::endl;
+    registry->registerTransformedVarName(getFullTransformedName(), getFullName());
+  }
+
+  VsLog::debugLog() <<"VsVariable::createTransformedVariable() - returning." <<std::endl;
+}
+
 void VsVariable::createComponents() {
   //Name & register components
   VsLog::debugLog() <<"VsVariable::createComponents() - Creating component names." <<std::endl;
   
   // Number of component of the var                                                                                                         
   size_t numComps = getNumComps();
+
+  // Does this variable have a transformation?
+  bool transformExists = this->hasTransform();
   
   //Note that single-component variables just use the base variable name
   //I.E. instead of a singleton named "var_0", we just call it "var"
   if (numComps > 1) {
     for (size_t i = 0; i < numComps; ++i) {
       registry->registerComponent(getFullName(), i, getLabel(i));
+      if (transformExists) {
+        registry->registerComponent(getFullTransformedName(), i, getLabel(i));
+      }
     }
   }
 }

@@ -38,6 +38,9 @@ public:
   std::string getMeshName();
   VsMesh* getMesh();
 
+  /** Does this variable have a transformed version? */
+  bool hasTransform();
+
   /** Get hdf5 type */
   hid_t getType();
 
@@ -73,6 +76,11 @@ public:
   /** Public method to initialize object.
    * Returns NULL on error.*/
   static VsVariable* buildObject(VsH5Dataset* dataset);
+ 
+  /** Get the transformed name */
+  std::string getFullTransformedName();
+
+  void createTransformedVariable();
 
   void createComponents();
   size_t getNumComps();

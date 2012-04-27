@@ -61,6 +61,10 @@ public:
   void setMDMesh(VsMDMesh* mdMesh, int dNumber);
   int getDomainNumber();
   VsMDMesh* getMDMesh();
+
+  virtual bool hasTransform();
+  virtual std::string getTransformName();
+  virtual std::string getTransformedMeshName();
   
 protected:
   VsMesh(VsH5Object* object);

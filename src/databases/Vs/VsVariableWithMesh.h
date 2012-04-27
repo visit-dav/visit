@@ -35,7 +35,16 @@ public:
 
   /** Retrieve the entire list of spatial indices */
   std::vector<int> getSpatialIndices();
-
+  
+  /** Handles tranformation attributes for the "mesh" part of this object */
+  virtual bool hasTransform();
+  std::string getTransformName();
+  std::string getTransformedMeshName();
+  
+  /** Handles transformation attributes for the "variable" part of this object */
+  std::string getFullTransformedName();
+  void createTransformedVariableAndMesh();
+  
   /** Supply debugging output */
   void write();
   

@@ -25,12 +25,6 @@ public:
   std::string getAxisDatasetName(int axisNumber);
   VsH5Dataset* getAxisDataset(int axisNumber);
 
-  // Roopa: These two methods are used to access the vsTransform and
-  // vsTransformedMesh fields
-  bool hasTransform();
-  std::string getTransformName();
-  std::string getTransformedMeshName();
-  
   virtual bool isRectilinearMesh() { return true; }
   static VsRectilinearMesh* buildRectilinearMesh(VsH5Group* group);
   
