@@ -1,11 +1,32 @@
 <?xml version="1.0"?>
-  <Attribute name="ColorControlPointList" codefile="ColorControlPointList.code" purpose="This class contains a list of ColorControlPoint objects." exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="controlPoints" type="attVector" subtype="ColorControlPoint"></Field>
-    <Field name="smoothingFlag" type="bool">true</Field>
-    <Field name="equalSpacingFlag" type="bool">false</Field>
-    <Field name="discreteFlag" type="bool">false</Field>
-    <Field name="externalFlag" type="bool">false</Field>
-    <Function name="GetColors" user="true" member="true"></Function>
-    <Function name="SetFromNode" user="false" member="true"></Function>
-    <Function name="CompactCreateNode" user="true" member="true"></Function>
+  <Attribute name="ColorControlPointList" purpose="This class contains a list of ColorControlPoint objects." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ColorControlPointList.code">
+    <Enum name="SmoothingMethod">
+      None
+      Linear
+      CubicSpline
+    </Enum>
+    <Field name="controlPoints" label="controlPoints" type="attVector" subtype="ColorControlPoint">
+    </Field>
+    <Field name="smoothing" label="smoothing" type="enum" subtype="SmoothingMethod">
+      Linear
+    </Field>
+    <Field name="equalSpacingFlag" label="equalSpacingFlag" type="bool">
+      false
+    </Field>
+    <Field name="discreteFlag" label="discreteFlag" type="bool">
+      false
+    </Field>
+    <Field name="externalFlag" label="externalFlag" type="bool">
+      false
+    </Field>
+    <Function name="EvalCubicSpline" user="true" member="true" access="private">
+    </Function>
+    <Function name="GetColorsCubicSpline" user="true" member="true" access="private">
+    </Function>
+    <Function name="GetColors" user="true" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="CompactCreateNode" user="true" member="true">
+    </Function>
   </Attribute>

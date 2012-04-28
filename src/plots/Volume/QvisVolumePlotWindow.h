@@ -216,7 +216,7 @@ private slots:
     void opacityMinProcessText();
     void opacityMaxToggled(bool val);
     void opacityMaxProcessText();
-    void smoothToggled(bool val);
+    void smoothingMethodChanged(int val);
     void smoothDataToggled(bool val);
     void equalSpacingToggled(bool val);
     void alphaValuesChanged();
@@ -242,7 +242,7 @@ private:
     // 1D transfer function widgets
     QWidget                  *tfParent1D;
     QGroupBox                *colorWidgetGroup;
-    QCheckBox                *smoothCheckBox;
+    QComboBox                *smoothingMethod;
     QCheckBox                *equalCheckBox;
     QvisSpectrumBar          *spectrumBar;
     QvisColorSelectionWidget *colorSelect;

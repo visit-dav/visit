@@ -100,6 +100,9 @@ class QvisColorGridWidget;
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
 //
+//   Brad Whitlock, Fri Apr 27 15:03:10 PDT 2012
+//   Add smoothing method instead of a check box for it.
+//
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -151,7 +154,7 @@ private slots:
     void alignControlPoints();
     void controlPointMoved(int index, float position);
     void selectedColor(const QColor &color);
-    void smoothToggled(bool val);
+    void smoothingMethodChanged(int val);
     void equalSpacingToggled(bool val);
     void addColorTable();
     void deleteColorTable();
@@ -179,19 +182,17 @@ private:
     QPushButton              *deleteButton;
     QPushButton              *exportButton;
     QLineEdit                *nameLineEdit;
-    QListWidget                 *nameListBox;
+    QListWidget              *nameListBox;
 
     QGroupBox                *colorWidgetGroup;
 
     QSpinBox                 *colorNumColors;
     QButtonGroup             *colorTableTypeGroup;
 
-    QCheckBox                *smoothCheckBox;
+    QComboBox                *smoothingMethod;
     QCheckBox                *equalCheckBox;
     QvisSpectrumBar          *spectrumBar;
     QvisColorSelectionWidget *colorSelect;
-//    QPushButton              *addPointButton;
-//    QPushButton              *rmPointButton;
     QPushButton              *alignPointButton;
     QCheckBox                *showIndexHintsCheckBox;
 

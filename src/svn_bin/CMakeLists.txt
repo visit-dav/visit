@@ -50,12 +50,20 @@
 #  Brad Whitlock, Wed Oct 12 09:24:00 PDT 2011
 #  Move host-related files to hosts subdirectory.
 #
+#  Brad Whitlock, Fri Apr 27 17:44:07 PDT 2012
+#  Install a resources directory too.
+#
 #*****************************************************************************
 
 ## find all host profiles to install using a glob
 FILE(GLOB HPROF_FILES "${CMAKE_CURRENT_SOURCE_DIR}/hosts/host_*.xml")
 ## find all ini files to install using a glob
 FILE(GLOB INI_FILES   "${CMAKE_CURRENT_SOURCE_DIR}/hosts/visit-*.ini")
+
+## find all resource files to install using a glob
+FILE(GLOB CT_FILES1   "${CMAKE_CURRENT_SOURCE_DIR}/resources/ct/*.ct")
+FILE(GLOB CT_FILES2  "${CMAKE_CURRENT_SOURCE_DIR}/resources/ct/*.txt")
+SET(CT_FILES ${CT_FILES1} ${CT_FILES2})
 
 IF(APPLE)
     LIST(APPEND INI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/hosts/default_configs.dat)
@@ -67,10 +75,12 @@ IF(WIN32)
     SET(INI_DEST   ${VISIT_INSTALLED_VERSION_BIN})
     SET(HPROF_DEST ${VISIT_INSTALLED_VERSION_BIN}/allhosts)
     SET(LPROF_DEST ${VISIT_INSTALLED_VERSION_BIN}/hosts)
+    SET(CT_DEST    ${VISIT_INSTALLED_VERSION_BIN}/resources/ct)
 ELSE(WIN32)
     SET(INI_DEST   ${VISIT_VERSION}/.visit)
     SET(HPROF_DEST ${VISIT_VERSION}/.visit/allhosts)
     SET(LPROF_DEST ${VISIT_VERSION}/.visit/hosts)
+    SET(CT_DEST    ${VISIT_VERSION}/.visit/resources/ct)
 ENDIF(WIN32)
 
 # Install the visit config files
@@ -82,6 +92,12 @@ INSTALL(FILES ${INI_FILES}
 # Install the host profile files
 INSTALL(FILES ${HPROF_FILES}
         DESTINATION ${HPROF_DEST}
+        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+)
+
+# Install the color table files
+INSTALL(FILES ${CT_FILES}
+        DESTINATION ${CT_DEST}
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
 )
 

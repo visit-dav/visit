@@ -179,11 +179,11 @@ private:
 QvisSpectrumBar::QvisSpectrumBar(QWidget *parent) : QWidget(parent)
 {
     orientation = HorizontalTop;
-    b_smoothing = true;
-    b_equalSpacing = false;
-    b_sliding = false;
-    b_continuousUpdate = false;
-    b_suppressUpdates = false;
+    m_smoothing = Linear;
+    m_equalSpacing = false;
+    m_sliding = false;
+    m_continuousUpdate = false;
+    m_suppressUpdates = false;
     margin = 4;
     paging_mode = NO_PAGING;
 
@@ -289,7 +289,7 @@ QvisSpectrumBar::sizePolicy() const
 bool
 QvisSpectrumBar::equalSpacing() const
 {
-    return b_equalSpacing;
+    return m_equalSpacing;
 }
 
 // ****************************************************************************
@@ -303,13 +303,15 @@ QvisSpectrumBar::equalSpacing() const
 // Creation:   Wed Jan 3 10:26:53 PDT 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 27 15:18:17 PDT 2012
+//   Change smoothing type.
+//
 // ****************************************************************************
 
-bool
+QvisSpectrumBar::SmoothingMethod
 QvisSpectrumBar::smoothing() const
 {
-    return b_smoothing;
+    return m_smoothing;
 }
 
 // ****************************************************************************
@@ -329,7 +331,7 @@ QvisSpectrumBar::smoothing() const
 bool
 QvisSpectrumBar::continuousUpdate() const
 {
-    return b_continuousUpdate;
+    return m_continuousUpdate;
 }
 
 // ****************************************************************************
@@ -450,9 +452,9 @@ QvisSpectrumBar::activeControlPoint() const
 void
 QvisSpectrumBar::setEqualSpacing(bool val)
 {
-    if(val != b_equalSpacing)
+    if(val != m_equalSpacing)
     {
-        b_equalSpacing = val;
+        m_equalSpacing = val;
         update();
     }
 }
@@ -476,16 +478,19 @@ QvisSpectrumBar::setEqualSpacing(bool val)
 //   Brad Whitlock, Mon Jun  2 11:20:48 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Fri Apr 27 15:18:45 PDT 2012
+//   Change smoothing type.
+//
 // ****************************************************************************
 
 void
-QvisSpectrumBar::setSmoothing(bool val)
+QvisSpectrumBar::setSmoothing(QvisSpectrumBar::SmoothingMethod val)
 {
-    if(val != b_smoothing)
+    if(val != m_smoothing)
     {
-        b_smoothing = val;
+        m_smoothing = val;
 
-        if(isVisible() && !b_suppressUpdates)
+        if(isVisible() && !m_suppressUpdates)
         {
             update(spectrumArea.x(), spectrumArea.y(), spectrumArea.width(),
                    spectrumArea.height());
@@ -513,7 +518,7 @@ QvisSpectrumBar::setSmoothing(bool val)
 void
 QvisSpectrumBar::setContinuousUpdate(bool val)
 {
-    b_continuousUpdate = val;
+    m_continuousUpdate = val;
 }
 
 // ****************************************************************************
@@ -534,7 +539,7 @@ QvisSpectrumBar::setContinuousUpdate(bool val)
 bool
 QvisSpectrumBar::suppressUpdates() const
 {
-    return b_suppressUpdates;
+    return m_suppressUpdates;
 }
 
 // ****************************************************************************
@@ -557,7 +562,7 @@ QvisSpectrumBar::suppressUpdates() const
 void
 QvisSpectrumBar::setSuppressUpdates(bool val)
 {
-    b_suppressUpdates = val;
+    m_suppressUpdates = val;
 }
 
 // ****************************************************************************
@@ -1609,6 +1614,137 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
         delete [] interpolatedColors;
     }
 }
+// ****************************************************************************
+// Method: QvisSpectrumBar::evalCubicSpline
+//
+// Purpose: 
+//   Interpolates color control points using cubic spline.
+//
+// Arguments:
+//   t    : The x value along the curve.
+//   allX : All of the x values for the points that define the curve.
+//   allY : All of the y values for the points that define the curve.
+//   n    : The number of points.
+//
+// Returns:    The new y value.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 27 14:02:56 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+#define EVAL_MIN(A,B) (((A)<(B))?(A):(B))
+#define EVAL_MAX(A,B) (((A)>(B))?(A):(B))
+
+float
+QvisSpectrumBar::evalCubicSpline(float t, const float *allX, const float *allY, int n) const
+{
+    if(t <= allX[0]) 
+        return allY[0];
+    if(t >= allX[n-1])
+        return allY[n-1];
+    int i = 0;
+    for(i = 0; i < n; ++i)
+        if(allX[i] >= t)
+            break;
+    int idx[4];
+    idx[0] = EVAL_MAX(i-2, 0);
+    idx[1] = EVAL_MAX(i-1, 0);
+    idx[2] = i;
+    idx[3] = EVAL_MIN(i+1, n-1);
+    float X[4], Y[4];
+    for(int j = 0; j < 4; ++j)
+    {
+        X[j] = allX[idx[j]];
+        Y[j] = allY[idx[j]];
+    }
+    float dx = (X[2] - X[1]);
+    float invdx = 1. / dx;
+    float dy1   = (Y[2] + (Y[0] * -1.)) * (1. / (X[2] - X[0]));
+    float dy2   = (Y[2] + (Y[1] * -1.)) * invdx;
+    float dy3   = (Y[3] + (Y[1] * -1.)) * (1. / (X[3] - X[1]));
+    float ddy2  = (dy2 + (dy1 * -1)) * invdx;
+    float ddy3  = (dy3 + (dy2 * -1)) * invdx;
+    float dddy3 = (ddy3 + (ddy2 * -1)) * invdx;
+    float u = (t - X[1]);
+    return (Y[1] + dy1*u + ddy2*u*u + dddy3*u*u*(u-dx));
+}
+
+// ****************************************************************************
+// Method: QvisSpectrumBar::getColorsCubicSpline
+//
+// Purpose: 
+//   Gets the colors using cubic spline interpolation.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 27 14:02:56 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+inline unsigned char
+ClampColor2(float val)
+{
+    if (val < 0.f)
+        return 0;
+    if (val > 1.f)
+        return 255;
+    return static_cast<unsigned char>((val * 255.f) + 0.5f);
+}
+
+void
+QvisSpectrumBar::getColorsCubicSpline(unsigned char *rgba, int ncolors) const
+{
+    int npoints = controlPoints->NumControlPoints();
+    float *x = new float[npoints];
+    float *r = new float[npoints];
+    float *g = new float[npoints];
+    float *b = new float[npoints];
+    float *a = new float[npoints];
+    for(int i = 0; i < npoints; ++i)
+    {
+        const ControlPoint &cpt = controlPoints->operator[](i);
+        if(m_equalSpacing)
+        {
+            float t = float(i) / float(npoints-1);
+            x[i] = t;
+        }
+        else
+            x[i] = cpt.position;
+
+        r[i] = cpt.color[0];
+        g[i] = cpt.color[1];
+        b[i] = cpt.color[2];
+        a[i] = cpt.color[3];
+    }
+
+    int idx = 0;
+    for(int i = 0; i < ncolors; ++i, idx += 4)
+    {
+        float t = float(i) / float(ncolors-1);
+        rgba[idx  ] = ClampColor2(evalCubicSpline(t, x, r, npoints));
+        rgba[idx+1] = ClampColor2(evalCubicSpline(t, x, g, npoints));
+        rgba[idx+2] = ClampColor2(evalCubicSpline(t, x, b, npoints));
+        rgba[idx+3] = ClampColor2(evalCubicSpline(t, x, a, npoints));
+    }
+
+    delete [] x;
+    delete [] r;
+    delete [] g;
+    delete [] b;
+    delete [] a;
+}
 
 // ****************************************************************************
 // Method: QvisSpectrumBar::getRawColors
@@ -1642,6 +1778,9 @@ QvisSpectrumBar::drawSpectrum(QPainter &paint)
 //   Fixed what appeared to cause the bug where we'd get bad values
 //   when there are too dense a set of control points.
 //
+//   Brad Whitlock, Fri Apr 27 15:19:42 PDT 2012
+//   Change how smoothing works a little and add support for cubic spline.
+//
 // ****************************************************************************
 
 unsigned char *
@@ -1659,6 +1798,12 @@ QvisSpectrumBar::getRawColors(int range)
     // Allocate memory for the array to be returned.
     int arrayLength = range * 4;
     row = new unsigned char[arrayLength];
+
+    if(smoothing() == CubicSpline)
+    {
+        getColorsCubicSpline(row, range);
+        return row;
+    }
 
     /*******************************************
      * Phase I -- If the widget is non-editable
@@ -1688,7 +1833,7 @@ QvisSpectrumBar::getRawColors(int range)
      *             allocate storage.
      ******************************************/
     npoints = this->controlPoints->NumControlPoints();
-    if(equalSpacing() || !smoothing())
+    if(equalSpacing() || smoothing() == None)
         oldpts = new ControlPoint[npoints + 1];
     else
         oldpts = new ControlPoint[npoints];
@@ -1701,7 +1846,7 @@ QvisSpectrumBar::getRawColors(int range)
     /*******************************************
      * Phase III -- Process the control points. 
      ******************************************/
-    if(equalSpacing() || !smoothing())
+    if(equalSpacing() || smoothing() == None)
     {
         ++npoints;
         newpts = new ControlPoint[npoints];
@@ -1714,7 +1859,7 @@ QvisSpectrumBar::getRawColors(int range)
                 ci = (i <(npoints - 2)) ? i :(npoints - 2);
                 newpts[i].position = (float)i /(float)(npoints - 1);
 
-                if(!smoothing())
+                if(smoothing() == None)
                 {
                     memcpy((char *)newpts[i].color,
                           (char *)oldpts[ci].color, 4 * sizeof(float));
@@ -1769,7 +1914,7 @@ QvisSpectrumBar::getRawColors(int range)
     for(ci = 0; ci < npoints - 1; ci++)
     {
         float delta_r, delta_g, delta_b, delta_a;
-        float r_sum, g_sum, b_sum, a_sum;
+        float r_sum, g_sum, m_sum, a_sum;
         int   color_start_i, color_end_i, color_range;
 
         // Initialize some variables.
@@ -1796,7 +1941,7 @@ QvisSpectrumBar::getRawColors(int range)
             }
 
             // Figure out some deltas.
-            if(smoothing())
+            if(smoothing() != None)
             {
                 delta_r = (float)(c2->color[0]-c1->color[0])/(float)(color_range-1);
                 delta_g = (float)(c2->color[1]-c1->color[1])/(float)(color_range-1);
@@ -1809,7 +1954,7 @@ QvisSpectrumBar::getRawColors(int range)
             // Initialize sums.
             r_sum = c1->color[0];
             g_sum = c1->color[1];
-            b_sum = c1->color[2];
+            m_sum = c1->color[2];
             a_sum = c1->color[3];
 
             // Interpolate color1 to color2.
@@ -1820,14 +1965,14 @@ QvisSpectrumBar::getRawColors(int range)
                 {
                     row[c++] = (unsigned char)(r_sum * 255);
                     row[c++] = (unsigned char)(g_sum * 255);
-                    row[c++] = (unsigned char)(b_sum * 255);
+                    row[c++] = (unsigned char)(m_sum * 255);
                     row[c++] = (unsigned char)(a_sum * 255);
                 }
 
                 // Add the color deltas.
                 r_sum += delta_r;
                 g_sum += delta_g;
-                b_sum += delta_b;
+                m_sum += delta_b;
                 a_sum += delta_a;
             }
 
@@ -2210,7 +2355,7 @@ QvisSpectrumBar::mousePressEvent(QMouseEvent *e)
         // Emit a signal containing the index of the new control point.
         emit activeControlPointChanged(new_sel);
     }
-    else if(new_sel == -1 && controlPoints->CanBeEdited() && !b_equalSpacing)
+    else if(new_sel == -1 && controlPoints->CanBeEdited() && !m_equalSpacing)
     {
         // The trough: check to see what side of the current control point we're on.
         new_sel = controlPoints->Rank(controlPoints->NumControlPoints() - 1);
@@ -2267,11 +2412,11 @@ void
 QvisSpectrumBar::mouseMoveEvent(QMouseEvent *e)
 {
     // If the widget is doing paging events, ignore mouse motion.
-    if(paging_mode != NO_PAGING || !controlPoints->CanBeEdited() || b_equalSpacing)
+    if(paging_mode != NO_PAGING || !controlPoints->CanBeEdited() || m_equalSpacing)
         return;
 
     // Indicate that the mouse is sliding a control point.
-    b_sliding = true;
+    m_sliding = true;
 
     int   current_sel;
     float fpos;
@@ -2340,9 +2485,9 @@ QvisSpectrumBar::mouseReleaseEvent(QMouseEvent *)
         paging_mode = NO_PAGING;
     }
 
-    if(b_sliding)
+    if(m_sliding)
     {
-        b_sliding = false;
+        m_sliding = false;
 
         if(!continuousUpdate())
         {
@@ -2431,7 +2576,7 @@ QvisSpectrumBar::moveControlPointRedraw(int index, float pos, bool redrawSpectru
     controlPoints->SetPosition(index, pos);
 
     // If we're suppressing updates, delete the pixmaps and return.
-    if(b_suppressUpdates)
+    if(m_suppressUpdates)
     {
         return;
     }
@@ -2485,7 +2630,7 @@ QvisSpectrumBar::moveControlPoint(int changeType)
     float increment, page_increment;
 
     // Return if we cannot modify the control point.
-    if(!controlPoints->CanBeEdited() || b_equalSpacing)
+    if(!controlPoints->CanBeEdited() || m_equalSpacing)
         return;
 
     // Get the index of the highest ranking control point.

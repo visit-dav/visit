@@ -144,7 +144,9 @@ ColorTableManager::Export(const std::string &ctName,
 // Creation:   Thu Jul 3 18:24:52 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 27 17:36:00 PDT 2012
+//   Look in a system place too.
+//
 // ****************************************************************************
 
 bool
@@ -154,8 +156,11 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
     // Read the user's home VisIt directory and import all of the color tables.
     //
     ctAtts = cta;
-    return ReadAndProcessDirectory(GetUserVisItDirectory(), ImportHelper,
-                                   (void*)this, false);
+    bool r1 = ReadAndProcessDirectory(GetSystemVisItColorTableDirectory(), ImportHelper,
+                                      (void*)this, false);
+    bool r2 = ReadAndProcessDirectory(GetUserVisItDirectory(), ImportHelper,
+                                      (void*)this, false);
+    return r1 || r2;
 }
 
 // ****************************************************************************

@@ -79,6 +79,9 @@ class QTimer;
 //   Removed the background pixmap; drawing with a real alpha
 //   was expensive, and it was easy to fake it.
 //
+//   Brad Whitlock, Fri Apr 27 15:15:58 PDT 2012
+//   Change smoothing from bool to enum. I also added more smoothing methods.
+//
 // ****************************************************************************
 
 class GUI_API QvisSpectrumBar : public QWidget
@@ -89,6 +92,13 @@ public:
                   HorizontalBottom,
                   VerticalLeft,
                   VerticalRight} ControlOrientation;
+
+    enum SmoothingMethod
+    {
+        None,
+        Linear,
+        CubicSpline
+    };
 
     QvisSpectrumBar(QWidget *parent);
     virtual ~QvisSpectrumBar();
@@ -109,7 +119,7 @@ public:
     void   setContinuousUpdate(bool val);
     void   setControlPointColor(int index, const QColor &color);
     void   setControlPointPosition(int index, float position);
-    bool   smoothing() const;
+    SmoothingMethod smoothing() const;
 
     unsigned char *getRawColors(int range);
     void   setRawColors(unsigned char *colors, int ncolors);
@@ -117,7 +127,7 @@ public:
 public slots:
     void   alignControlPoints();
     void   setEqualSpacing(bool val);
-    void   setSmoothing(bool val);
+    void   setSmoothing(SmoothingMethod val);
     void   removeControlPoint();
     void   setEditMode(bool val);
 signals:
@@ -156,6 +166,10 @@ protected:
 
     void   moveControlPoint(int changeType);
     void   moveControlPointRedraw(int index, float pos, bool redrawSpectrum);
+
+    float  evalCubicSpline(float t, const float *allX, const float *allY, int n) const;
+    void   getColorsCubicSpline(unsigned char *rgba, int ncolors) const;
+
 private slots:
     void   handlePaging();
 private:
@@ -166,11 +180,11 @@ private:
     QRect              spectrumArea;
     QRect              controlsArea;
     QRect              slider;
-    bool               b_smoothing;
-    bool               b_equalSpacing;
-    bool               b_sliding;
-    bool               b_continuousUpdate;
-    bool               b_suppressUpdates;
+    SmoothingMethod    m_smoothing;
+    bool               m_equalSpacing;
+    bool               m_sliding;
+    bool               m_continuousUpdate;
+    bool               m_suppressUpdates;
     int                paging_mode;
 
     ControlPointList   *controlPoints;

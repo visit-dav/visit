@@ -45,6 +45,7 @@
 class QAction;
 class QActionGroup;
 class QMenu;
+class ColorTableAttributes;
 
 // ****************************************************************************
 // Class: QvisColorTableButton
@@ -68,6 +69,9 @@ class QMenu;
 //   Brad Whitlock, Fri May  9 11:20:10 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Wed Apr 25 16:06:56 PDT 2012
+//   Add color table icons.
+//
 // ****************************************************************************
 
 class WINUTIL_API QvisColorTableButton : public QPushButton
@@ -89,6 +93,7 @@ public:
     static void clearAllColorTables();
     static void addColorTable(const QString &ctName);
     static void updateColorTableButtons();
+    static void setColorTableAttributes(ColorTableAttributes *cAtts);
 signals:
     void selectedColorTable(bool useDefault, const QString &ctName);
 private slots:
@@ -97,6 +102,8 @@ private slots:
 private:
     static int  getColorTableIndex(const QString &ctName);
     static void regeneratePopupMenu();
+    static QIcon getIcon(const QString &);
+    static QIcon makeIcon(const QString &);
 
     QString                        colorTable;
 
@@ -108,6 +115,7 @@ private:
 
     static int                     numColorTableNames;
     static QString                *colorTableNames;
+    static ColorTableAttributes   *colorTableAtts;
 };
 
 #endif

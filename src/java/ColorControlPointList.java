@@ -59,12 +59,18 @@ public class ColorControlPointList extends AttributeSubject
 {
     private static int ColorControlPointList_numAdditionalAtts = 5;
 
+    // Enum values
+    public final static int SMOOTHINGMETHOD_NONE = 0;
+    public final static int SMOOTHINGMETHOD_LINEAR = 1;
+    public final static int SMOOTHINGMETHOD_CUBICSPLINE = 2;
+
+
     public ColorControlPointList()
     {
         super(ColorControlPointList_numAdditionalAtts);
 
         controlPoints = new Vector();
-        smoothingFlag = true;
+        smoothing = SMOOTHINGMETHOD_LINEAR;
         equalSpacingFlag = false;
         discreteFlag = false;
         externalFlag = false;
@@ -75,7 +81,7 @@ public class ColorControlPointList extends AttributeSubject
         super(ColorControlPointList_numAdditionalAtts + nMoreFields);
 
         controlPoints = new Vector();
-        smoothingFlag = true;
+        smoothing = SMOOTHINGMETHOD_LINEAR;
         equalSpacingFlag = false;
         discreteFlag = false;
         externalFlag = false;
@@ -95,7 +101,7 @@ public class ColorControlPointList extends AttributeSubject
             controlPoints.addElement(new ColorControlPoint(oldObj));
         }
 
-        smoothingFlag = obj.smoothingFlag;
+        smoothing = obj.smoothing;
         equalSpacingFlag = obj.equalSpacingFlag;
         discreteFlag = obj.discreteFlag;
         externalFlag = obj.externalFlag;
@@ -128,16 +134,16 @@ public class ColorControlPointList extends AttributeSubject
         }
         // Create the return value
         return (controlPoints_equal &&
-                (smoothingFlag == obj.smoothingFlag) &&
+                (smoothing == obj.smoothing) &&
                 (equalSpacingFlag == obj.equalSpacingFlag) &&
                 (discreteFlag == obj.discreteFlag) &&
                 (externalFlag == obj.externalFlag));
     }
 
     // Property setting methods
-    public void SetSmoothingFlag(boolean smoothingFlag_)
+    public void SetSmoothing(int smoothing_)
     {
-        smoothingFlag = smoothingFlag_;
+        smoothing = smoothing_;
         Select(1);
     }
 
@@ -161,7 +167,7 @@ public class ColorControlPointList extends AttributeSubject
 
     // Property getting methods
     public Vector  GetControlPoints() { return controlPoints; }
-    public boolean GetSmoothingFlag() { return smoothingFlag; }
+    public int     GetSmoothing() { return smoothing; }
     public boolean GetEqualSpacingFlag() { return equalSpacingFlag; }
     public boolean GetDiscreteFlag() { return discreteFlag; }
     public boolean GetExternalFlag() { return externalFlag; }
@@ -179,7 +185,7 @@ public class ColorControlPointList extends AttributeSubject
             }
         }
         if(WriteSelect(1, buf))
-            buf.WriteBool(smoothingFlag);
+            buf.WriteInt(smoothing);
         if(WriteSelect(2, buf))
             buf.WriteBool(equalSpacingFlag);
         if(WriteSelect(3, buf))
@@ -206,7 +212,7 @@ public class ColorControlPointList extends AttributeSubject
             Select(0);
             break;
         case 1:
-            SetSmoothingFlag(buf.ReadBool());
+            SetSmoothing(buf.ReadInt());
             break;
         case 2:
             SetEqualSpacingFlag(buf.ReadBool());
@@ -233,7 +239,14 @@ public class ColorControlPointList extends AttributeSubject
             str = str + "\n";
         }
         str = str + "}\n";
-        str = str + boolToString("smoothingFlag", smoothingFlag, indent) + "\n";
+        str = str + indent + "smoothing = ";
+        if(smoothing == SMOOTHINGMETHOD_NONE)
+            str = str + "SMOOTHINGMETHOD_NONE";
+        if(smoothing == SMOOTHINGMETHOD_LINEAR)
+            str = str + "SMOOTHINGMETHOD_LINEAR";
+        if(smoothing == SMOOTHINGMETHOD_CUBICSPLINE)
+            str = str + "SMOOTHINGMETHOD_CUBICSPLINE";
+        str = str + "\n";
         str = str + boolToString("equalSpacingFlag", equalSpacingFlag, indent) + "\n";
         str = str + boolToString("discreteFlag", discreteFlag, indent) + "\n";
         str = str + boolToString("externalFlag", externalFlag, indent) + "\n";
@@ -276,7 +289,7 @@ public class ColorControlPointList extends AttributeSubject
 
     // Attributes
     private Vector  controlPoints; // vector of ColorControlPoint objects
-    private boolean smoothingFlag;
+    private int     smoothing;
     private boolean equalSpacingFlag;
     private boolean discreteFlag;
     private boolean externalFlag;

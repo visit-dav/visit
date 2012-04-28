@@ -173,6 +173,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
 //
+//   Brad Whitlock, Fri Apr 27 15:07:13 PDT 2012
+//   I changed smoothing method to a combo box.
+//
 // ****************************************************************************
 
 void
@@ -279,11 +282,15 @@ QvisColorTableWindow::CreateWindowContents()
     seLayout->addWidget(alignPointButton);
     seLayout->addStretch(10);
 
-    smoothCheckBox = new QCheckBox(tr("Smooth"), colorWidgetGroup);
-    smoothCheckBox->setChecked(true);
-    connect(smoothCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(smoothToggled(bool)));
-    seLayout->addWidget(smoothCheckBox);
+    QLabel *smoothLabel = new QLabel(tr("Smoothing"), colorWidgetGroup);
+    seLayout->addWidget(smoothLabel);
+    smoothingMethod = new QComboBox(colorWidgetGroup);
+    smoothingMethod->addItem(tr("None"));
+    smoothingMethod->addItem(tr("Linear"));
+    smoothingMethod->addItem(tr("Cubic Spline"));
+    connect(smoothingMethod, SIGNAL(activated(int)),
+            this, SLOT(smoothingMethodChanged(int)));
+    seLayout->addWidget(smoothingMethod);
 
     equalCheckBox = new QCheckBox(tr("Equal"), colorWidgetGroup);
     connect(equalCheckBox, SIGNAL(toggled(bool)),
@@ -632,7 +639,7 @@ QvisColorTableWindow::UpdateEditor()
         {
             UpdateDiscreteSettings();
 
-            smoothCheckBox->hide();
+            smoothingMethod->hide();
             equalCheckBox->hide();
             spectrumBar->hide();
             alignPointButton->hide();
@@ -644,7 +651,7 @@ QvisColorTableWindow::UpdateEditor()
         {
             UpdateColorControlPoints();
 
-            smoothCheckBox->show();
+            smoothingMethod->show();
             equalCheckBox->show();
             spectrumBar->show();
             alignPointButton->show();
@@ -785,7 +792,10 @@ QvisColorTableWindow::GetActiveColorControlPoints()
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
-//   
+//
+//   Brad Whitlock, Fri Apr 27 15:09:27 PDT 2012
+//   I added more smoothing types.
+//
 // ****************************************************************************
 
 void
@@ -859,16 +869,28 @@ QvisColorTableWindow::UpdateColorControlPoints()
 
         // Set the smoothing and equal spacing flags in the spectrumbar.
         spectrumBar->setEqualSpacing(cpts.GetEqualSpacingFlag());
-        spectrumBar->setSmoothing(cpts.GetSmoothingFlag());
+        switch(cpts.GetSmoothing())
+        {
+        case ColorControlPointList::None:
+            spectrumBar->setSmoothing(QvisSpectrumBar::None);
+            break;
+        default:
+        case ColorControlPointList::Linear:
+            spectrumBar->setSmoothing(QvisSpectrumBar::Linear);
+            break;
+        case ColorControlPointList::CubicSpline:
+            spectrumBar->setSmoothing(QvisSpectrumBar::CubicSpline);
+            break;
+        }
 
         spectrumBar->blockSignals(false);
         spectrumBar->setSuppressUpdates(false);
         spectrumBar->update();
 
-        // Update the equalSpacing and smoothing toggle buttons.
-        smoothCheckBox->blockSignals(true);
-        smoothCheckBox->setChecked(cpts.GetSmoothingFlag());
-        smoothCheckBox->blockSignals(false);
+        // Update equalSpacing and smoothingMethod.
+        smoothingMethod->blockSignals(true);
+        smoothingMethod->setCurrentIndex((int)cpts.GetSmoothing());
+        smoothingMethod->blockSignals(false);
 
         equalCheckBox->blockSignals(true);
         equalCheckBox->setChecked(cpts.GetEqualSpacingFlag());
@@ -1204,6 +1226,9 @@ QvisColorTableWindow::GetNextColor()
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
 //
+//   Brad Whitlock, Fri Apr 27 15:12:21 PDT 2012
+//   Added other smoothing types.
+//
 // ****************************************************************************
 
 void
@@ -1218,7 +1243,20 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
         // Store the widget's control points.
         ColorControlPointList cpts;
         cpts.ClearControlPoints();
-        cpts.SetSmoothingFlag(spectrumBar->smoothing());
+        switch(spectrumBar->smoothing())
+        {
+        case QvisSpectrumBar::None:
+            cpts.SetSmoothing(ColorControlPointList::None);
+            break;
+        default:
+        case QvisSpectrumBar::Linear:
+            cpts.SetSmoothing(ColorControlPointList::Linear);
+            break;
+        case QvisSpectrumBar::CubicSpline:
+            cpts.SetSmoothing(ColorControlPointList::CubicSpline);
+            break;
+        }
+
         cpts.SetEqualSpacingFlag(spectrumBar->equalSpacing());
         for(i = 0; i < spectrumBar->numControlPoints(); ++i)
         {
@@ -1465,28 +1503,30 @@ QvisColorTableWindow::selectedColor(const QColor &color)
 }
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::smoothToggled
+// Method: QvisColorTableWindow::smoothingMethodChanged
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the window's smooth
-//   toggle is clicked.
+//   combobox is activated.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 11 15:38:06 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 27 15:14:20 PDT 2012
+//   Added more types of smoothing.
+//
 // ****************************************************************************
 
 void
-QvisColorTableWindow::smoothToggled(bool)
+QvisColorTableWindow::smoothingMethodChanged(int val)
 {
     // Get a pointer to the active color table's control points.
     ColorControlPointList *ccpl = GetActiveColorControlPoints();
 
     if(ccpl)
     {
-        ccpl->SetSmoothingFlag(!ccpl->GetSmoothingFlag());
+        ccpl->SetSmoothing(ColorControlPointList::SmoothingMethod(val));
         colorAtts->SelectColorTables();
         Apply();
     }
@@ -1558,6 +1598,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Fri Apr 27 15:15:12 PDT 2012
+//   Add other smoothing types.
+//
 // ****************************************************************************
 
 void
@@ -1588,7 +1631,7 @@ QvisColorTableWindow::addColorTable()
             cpts.AddControlPoints(ColorControlPoint(0.5, 0,255,0,255));
             cpts.AddControlPoints(ColorControlPoint(0.75, 0,255,255,255));
             cpts.AddControlPoints(ColorControlPoint(1., 0,0,255,255));
-            cpts.SetSmoothingFlag(true);
+            cpts.SetSmoothing(ColorControlPointList::Linear);
             cpts.SetEqualSpacingFlag(false);
             cpts.SetDiscreteFlag(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);

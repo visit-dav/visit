@@ -377,23 +377,23 @@ VolumeAttributes::GetOpacities(unsigned char *alphas)
     }
 }
 
-Function: SetSmoothingFlag
-Declaration: void SetSmoothingFlag(bool val);
+Function: SetSmoothing
+Declaration: void SetSmoothing(ColorControlPointList::SmoothingMethod val);
 Definition:
 void
-VolumeAttributes::SetSmoothingFlag(bool val)
+VolumeAttributes::SetSmoothing(ColorControlPointList::SmoothingMethod val)
 {
-    colorControlPoints.SetSmoothingFlag(val);
+    colorControlPoints.SetSmoothing(val);
     Select(2, (void *)&colorControlPoints);
 }
 
-Function: GetSmoothingFlag
-Declaration: bool GetSmoothingFlag() const;
+Function: GetSmoothing
+Declaration: ColorControlPointList::SmoothingMethod GetSmoothing() const;
 Definition:
-bool
-VolumeAttributes::GetSmoothingFlag() const
+ColorControlPointList::SmoothingMethod
+VolumeAttributes::GetSmoothing() const
 {
-    return colorControlPoints.GetSmoothingFlag();
+    return colorControlPoints.GetSmoothing();
 }
 
 Function: SetEqualSpacingFlag
