@@ -113,6 +113,7 @@ ColorTableObserver::Update(Subject *)
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables))
     {
         // Clear all of the color tables.
+        QvisColorTableButton::setColorTableAttributes(colorAtts);
         QvisColorTableButton::clearAllColorTables();
 
         int nNames = colorAtts->GetNames().size();

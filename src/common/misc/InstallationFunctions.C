@@ -423,6 +423,63 @@ GetSystemVisItHostsDirectory()
     return retVal;
 }
 
+// ****************************************************************************
+// Method: GetSystemVisItResourcesDirectory
+//
+// Purpose: 
+//   Get the installation directory's resources subdirectory.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 27 17:31:12 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+GetSystemVisItResourcesDirectory()
+{
+    const char *d = GetDefaultConfigFile("resources", "VISITHOME");
+    std::string retVal(d);
+    delete [] d;
+    return retVal;
+}
+
+// ****************************************************************************
+// Method: GetSystemVisItColorTableDirectory
+//
+// Purpose: 
+//   Get the installation directory's resources subdirectory.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 27 17:31:12 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+
+std::string
+GetSystemVisItColorTableDirectory()
+{
+    std::string retval(GetSystemVisItResourcesDirectory());
+    retval += VISIT_SLASH_STRING;
+    retval += "ct";
+    return retval;
+}
+
 #if defined(_WIN32)
 // ***************************************************************************
 //
@@ -944,7 +1001,7 @@ ReadInstallationInfo(std::string &distName, std::string &configName, std::string
             if(lastSlash != -1)
             {
                 arch = arch.substr(lastSlash+1, arch.length() - lastSlash - 1);
-                for(int i = 0; i < NARCH; ++i)
+                for(size_t i = 0; i < NARCH; ++i)
                 {
                     if(arch == archNames[i])
                     {

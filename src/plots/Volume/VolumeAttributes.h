@@ -285,8 +285,8 @@ public:
     void SetDefaultColorControlPoints();
     void GetGaussianOpacities(unsigned char *alphas) const;
     void GetOpacities(unsigned char *alphas);
-    void SetSmoothingFlag(bool val);
-    bool GetSmoothingFlag() const;
+    void SetSmoothing(ColorControlPointList::SmoothingMethod val);
+    ColorControlPointList::SmoothingMethod GetSmoothing() const;
     void SetEqualSpacingFlag(bool val);
     bool GetEqualSpacingFlag() const;
     bool AnyNonTransferFunctionMembersAreDifferent(const VolumeAttributes &) const;

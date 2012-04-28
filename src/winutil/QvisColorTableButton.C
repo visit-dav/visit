@@ -42,6 +42,14 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QMenu>
+#include <QPainter>
+#include <QPixmap>
+
+#include <ColorTableAttributes.h>
+#include <ColorControlPointList.h>
+
+#define ICON_NX 32
+#define ICON_NY 16
 
 //
 // Static members.
@@ -54,6 +62,7 @@ QvisColorTableButton::ColorTableButtonVector QvisColorTableButton::buttons;
 int         QvisColorTableButton::numColorTableNames = 0;
 QString    *QvisColorTableButton::colorTableNames = 0;
 bool        QvisColorTableButton::popupHasEntries = false;
+ColorTableAttributes *QvisColorTableButton::colorTableAtts = NULL;
 
 // ****************************************************************************
 // Method: QvisColorTableButton::QvisColorTableButton
@@ -98,6 +107,7 @@ QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
     connect(this, SIGNAL(pressed()), this, SLOT(popupPressed()));
 
     setText(colorTable);
+    setIconSize(QSize(ICON_NX,ICON_NY));
 }
 
 // ****************************************************************************
@@ -230,6 +240,7 @@ QvisColorTableButton::useDefaultColorTable()
     colorTable = QString("Default");
     setText(colorTable);
     setToolTip(colorTable);
+    setIcon(QIcon());
 }
 
 // ****************************************************************************
@@ -261,12 +272,14 @@ QvisColorTableButton::setColorTable(const QString &ctName)
         colorTable = ctName;
         setText(colorTable);
         setToolTip(colorTable);
+        setIcon(getIcon(ctName));
     }
     else
     {
         QString def("Default");
         setText(def);
         setToolTip(def);
+        setIcon(QIcon());
     }
 }
 
@@ -392,11 +405,13 @@ QvisColorTableButton::colorTableSelected(QAction *action)
         emit selectedColorTable(true, def);
         setText(def);
         setToolTip(def);
+        setIcon(QIcon());
     }
     else
     {
         emit selectedColorTable(false, colorTableNames[index - 1]);
         setText(colorTableNames[index-1]);
+        setIcon(getIcon(colorTableNames[index - 1]));
         setToolTip(colorTableNames[index-1]);
     }
 }
@@ -486,6 +501,8 @@ QvisColorTableButton::updateColorTableButtons()
             buttons[i]->setText("Default");
             buttons[i]->setColorTable("Default");
         }
+        else
+            buttons[i]->setIcon(getIcon(buttons[i]->text()));
     }
 }
 
@@ -541,6 +558,9 @@ QvisColorTableButton::getColorTableIndex(const QString &ctName)
 //   Brad Whitlock, Fri May  9 11:21:28 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Wed Apr 25 13:32:01 PDT 2012
+//   Add pixmaps of the color table.
+//
 // ****************************************************************************
 
 void
@@ -554,11 +574,95 @@ QvisColorTableButton::regeneratePopupMenu()
 
     colorTableMenuActionGroup->addAction(colorTableMenu->addAction("Default"));
     colorTableMenu->addSeparator();
-    
+
     // Add an item for each color table.
     for(int i = 0; i < numColorTableNames; ++i)
-        colorTableMenuActionGroup->addAction(colorTableMenu->addAction(colorTableNames[i]));
+    {
+        QAction *action = colorTableMenu->addAction(makeIcon(colorTableNames[i]), colorTableNames[i]);
+        colorTableMenuActionGroup->addAction(action);
+    }
 
     // Indicate that we've added choices to the menu.
     popupHasEntries = true;
+}
+
+// ****************************************************************************
+// Method: QvisColorTableButton::getIcon
+//
+// Purpose: 
+//   This method gets the existing icon or makes one if necessary.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 25 16:04:54 PDT 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+QIcon
+QvisColorTableButton::getIcon(const QString &ctName)
+{
+    QList<QAction*> a = colorTableMenuActionGroup->actions();
+    for(int i = 0; i < a.size(); ++i)
+        if(a[i]->text() == ctName)
+            return a[i]->icon();
+
+    return makeIcon(ctName);
+}
+
+// ****************************************************************************
+// Method: QvisColorTableButton::makeIcon
+//
+// Purpose: 
+//   This method makes an icon from the color table definition.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 25 16:04:54 PDT 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+QIcon
+QvisColorTableButton::makeIcon(const QString &ctName)
+{
+    QIcon icon;
+    const ColorControlPointList *cTable = NULL;
+    if(colorTableAtts != NULL)
+        cTable = colorTableAtts->GetColorControlPoints(ctName.toStdString());
+    if(cTable != NULL)
+    {
+        QPixmap pix(ICON_NX, ICON_NY);
+        unsigned char rgb[ICON_NX*3];
+        cTable->GetColors(rgb, ICON_NX);
+        QPainter paint(&pix);
+        for(int ii = 0; ii < ICON_NX; ++ii)
+        {
+            paint.setPen(QPen(QColor((int)rgb[3*ii+0], (int)rgb[3*ii+1], (int)rgb[3*ii+2])));
+            paint.drawLine(ii, 0, ii, ICON_NY-1);
+        }
+
+        icon = QIcon(pix);
+    }
+
+    return icon;
+}
+
+// ****************************************************************************
+// Method: QvisColorTableButton::setColorTableAttributes
+//
+// Purpose: 
+//   This method sets the color table attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 25 16:04:54 PDT 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableButton::setColorTableAttributes(ColorTableAttributes *cAtts)
+{
+    colorTableAtts = cAtts;
 }

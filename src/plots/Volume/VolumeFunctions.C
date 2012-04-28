@@ -124,7 +124,6 @@ VolumeGetRange(vtkDataArray *s, float &min, float &max)
 
     min = +FLT_MAX;
     max = -FLT_MAX;
-    int nScalars = s->GetNumberOfTuples();
     if(s->GetDataType() == VTK_FLOAT)
          VolumeGetRange_Impl<avtDirectAccessor<float> >(s, min, max);
     else
@@ -1047,8 +1046,6 @@ VolumeCalculateGradient_SPH(vtkDataSet *ds, vtkDataArray *opac,
         connectedVertices->Reset();
 
         GetConnectedVertices(outDS, index, connectedVertices);
-        //Get the number of points around this point
-        int nPtsAround = connectedVertices->GetNumberOfIds();
 
         //If the user provides a compact support variable, use it for 'h', otherwise calculate an 'h'.
         if (calcHS)

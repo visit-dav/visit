@@ -374,6 +374,9 @@ QvisVolumePlotWindow::Create1DTransferFunctionGroup(int maxWidth)
 //   Added support for getting alphas from color table instead of
 //   set via freeform/gaussian editor.
 //
+//   Brad Whitlock, Fri Apr 27 15:58:26 PDT 2012
+//   I added different smoothing methods.
+//
 // ****************************************************************************
 
 void
@@ -422,11 +425,15 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     seLayout->addSpacing(5);
     seLayout->addStretch(10);
 
-    smoothCheckBox = new QCheckBox(tr("Smooth"), colorWidgetGroup);
-    smoothCheckBox->setChecked(true);
-    connect(smoothCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(smoothToggled(bool)));
-    seLayout->addWidget(smoothCheckBox);
+    QLabel *smoothLabel = new QLabel(tr("Smoothing"), colorWidgetGroup);
+    seLayout->addWidget(smoothLabel);
+    smoothingMethod = new QComboBox(colorWidgetGroup);
+    smoothingMethod->addItem(tr("None"));
+    smoothingMethod->addItem(tr("Linear"));
+    smoothingMethod->addItem(tr("Cubic Spline"));
+    connect(smoothingMethod, SIGNAL(activated(int)),
+            this, SLOT(smoothingMethodChanged(int)));
+    seLayout->addWidget(smoothingMethod);
 
     equalCheckBox = new QCheckBox(tr("Equal"), colorWidgetGroup);
     connect(equalCheckBox, SIGNAL(toggled(bool)),
@@ -1722,6 +1729,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
 //   set via freeform/gaussian editor.  Make sure to pass the color
 //   table's alphas to the spectrum bar.
 //
+//   Brad Whitlock, Fri Apr 27 16:01:54 PDT 2012
+//   Add more smoothing types.
+//
 // ****************************************************************************
 
 void
@@ -1731,9 +1741,9 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
     int   i;
 
     // Set the smoothing checkbox's checked state.
-    smoothCheckBox->blockSignals(true);
-    smoothCheckBox->setChecked(volumeAtts->GetSmoothingFlag());
-    smoothCheckBox->blockSignals(false);
+    smoothingMethod->blockSignals(true);
+    smoothingMethod->setCurrentIndex((int)volumeAtts->GetSmoothing());
+    smoothingMethod->blockSignals(false);
 
     // Set the equal checkbox's checked state.
     equalCheckBox->blockSignals(true);
@@ -1744,7 +1754,19 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
     spectrumBar->blockSignals(true);
 
     // Set the spectrum bar's equal and smoothing flags.
-    spectrumBar->setSmoothing(volumeAtts->GetSmoothingFlag());
+    switch(volumeAtts->GetSmoothing())
+    {
+    case ColorControlPointList::None:
+        spectrumBar->setSmoothing(QvisSpectrumBar::None);
+        break;
+    default:
+    case ColorControlPointList::Linear:
+        spectrumBar->setSmoothing(QvisSpectrumBar::Linear);
+        break;
+    case ColorControlPointList::CubicSpline:
+        spectrumBar->setSmoothing(QvisSpectrumBar::CubicSpline);
+        break;
+    }
     spectrumBar->setEqualSpacing(volumeAtts->GetEqualSpacingFlag());
 
     if(spectrumBar->numControlPoints() == cpts.GetNumControlPoints())
@@ -2111,12 +2133,15 @@ QvisVolumePlotWindow::Update2DTransferFunction()
 //   curve shape power, and an optional max-grad-mag-value clamp useful both
 //   as an extra tweak and for making animations not have erratic lighting.
 //
+//   Brad Whitlock, Fri Apr 27 16:03:53 PDT 2012
+//   Add more smoothing types.
+//
 // ****************************************************************************
 
 void
 QvisVolumePlotWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
+    bool doAll = (which_widget == -1);
     QString msg, temp;
     int i;
 
@@ -2143,7 +2168,19 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
             cpts.AddControlPoints(pt);
         }
         cpts.SetEqualSpacingFlag(spectrumBar->equalSpacing());
-        cpts.SetSmoothingFlag(spectrumBar->smoothing());
+        switch(spectrumBar->smoothing())
+        {
+        case QvisSpectrumBar::None:
+            cpts.SetSmoothing(ColorControlPointList::None);
+            break;
+        default:
+        case QvisSpectrumBar::Linear:
+            cpts.SetSmoothing(ColorControlPointList::Linear);
+            break;
+        case QvisSpectrumBar::CubicSpline:
+            cpts.SetSmoothing(ColorControlPointList::CubicSpline);
+            break;
+        }
         volumeAtts->SetColorControlPoints(cpts);
 
         if (showColorsInAlphaWidget)
@@ -3177,24 +3214,26 @@ QvisVolumePlotWindow::opacityMaxProcessText()
 }
 
 // ****************************************************************************
-// Method: QvisVolumePlotWindow::smoothToggled
+// Method: QvisVolumePlotWindow::smoothingMethodChanged
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the window's smooth
-//   toggle is clicked.
+//   combobox is activated.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 28 15:38:06 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 27 16:04:53 PDT 2012
+//   work with different smoothing types.
+//
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::smoothToggled(bool val)
+QvisVolumePlotWindow::smoothingMethodChanged(int val)
 {
     GetCurrentValues(0);
-    volumeAtts->SetSmoothingFlag(val);
+    volumeAtts->SetSmoothing(ColorControlPointList::SmoothingMethod(val));
     Apply();
 }
 

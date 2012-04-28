@@ -39,6 +39,7 @@
 #ifndef COLORCONTROLPOINTLIST_H
 #define COLORCONTROLPOINTLIST_H
 #include <state_exports.h>
+#include <string>
 #include <AttributeSubject.h>
 
 class ColorControlPoint;
@@ -61,6 +62,13 @@ class ColorControlPoint;
 class STATE_API ColorControlPointList : public AttributeSubject
 {
 public:
+    enum SmoothingMethod
+    {
+        None,
+        Linear,
+        CubicSpline
+    };
+
     // These constructors are for objects of this class
     ColorControlPointList();
     ColorControlPointList(const ColorControlPointList &obj);
@@ -89,7 +97,7 @@ public:
     void SelectControlPoints();
 
     // Property setting methods
-    void SetSmoothingFlag(bool smoothingFlag_);
+    void SetSmoothing(SmoothingMethod smoothing_);
     void SetEqualSpacingFlag(bool equalSpacingFlag_);
     void SetDiscreteFlag(bool discreteFlag_);
     void SetExternalFlag(bool externalFlag_);
@@ -97,7 +105,7 @@ public:
     // Property getting methods
     const AttributeGroupVector &GetControlPoints() const;
           AttributeGroupVector &GetControlPoints();
-    bool GetSmoothingFlag() const;
+    SmoothingMethod GetSmoothing() const;
     bool GetEqualSpacingFlag() const;
     bool GetDiscreteFlag() const;
     bool GetExternalFlag() const;
@@ -118,6 +126,12 @@ public:
     ColorControlPoint &operator [] (int i);
     const ColorControlPoint &operator [] (int i) const;
 
+    // Enum conversion functions
+    static std::string SmoothingMethod_ToString(SmoothingMethod);
+    static bool SmoothingMethod_FromString(const std::string &, SmoothingMethod &);
+protected:
+    static std::string SmoothingMethod_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -126,13 +140,15 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
+    float EvalCubicSpline(float t, const float *allX, const float *allY, int n) const;
+    void GetColorsCubicSpline(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     void GetColors(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     bool CompactCreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
 
     // IDs that can be used to identify fields in case statements
     enum {
         ID_controlPoints = 0,
-        ID_smoothingFlag,
+        ID_smoothing,
         ID_equalSpacingFlag,
         ID_discreteFlag,
         ID_externalFlag,
@@ -143,7 +159,7 @@ protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
 private:
     AttributeGroupVector controlPoints;
-    bool                 smoothingFlag;
+    int                  smoothing;
     bool                 equalSpacingFlag;
     bool                 discreteFlag;
     bool                 externalFlag;
@@ -152,6 +168,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORCONTROLPOINTLIST_TMFS "a*bbbb"
+#define COLORCONTROLPOINTLIST_TMFS "a*ibbb"
 
 #endif

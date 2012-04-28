@@ -40,6 +40,44 @@
 #include <DataNode.h>
 #include <ColorControlPoint.h>
 
+//
+// Enum conversion methods for ColorControlPointList::SmoothingMethod
+//
+
+static const char *SmoothingMethod_strings[] = {
+"None", "Linear", "CubicSpline"
+};
+
+std::string
+ColorControlPointList::SmoothingMethod_ToString(ColorControlPointList::SmoothingMethod t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return SmoothingMethod_strings[index];
+}
+
+std::string
+ColorControlPointList::SmoothingMethod_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return SmoothingMethod_strings[index];
+}
+
+bool
+ColorControlPointList::SmoothingMethod_FromString(const std::string &s, ColorControlPointList::SmoothingMethod &val)
+{
+    val = ColorControlPointList::None;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == SmoothingMethod_strings[i])
+        {
+            val = (SmoothingMethod)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: ColorControlPointList::ColorControlPointList
 //
@@ -57,7 +95,7 @@
 
 void ColorControlPointList::Init()
 {
-    smoothingFlag = true;
+    smoothing = Linear;
     equalSpacingFlag = false;
     discreteFlag = false;
     externalFlag = false;
@@ -99,7 +137,7 @@ void ColorControlPointList::Copy(const ColorControlPointList &obj)
         controlPoints.push_back(newColorControlPoint);
     }
 
-    smoothingFlag = obj.smoothingFlag;
+    smoothing = obj.smoothing;
     equalSpacingFlag = obj.equalSpacingFlag;
     discreteFlag = obj.discreteFlag;
     externalFlag = obj.externalFlag;
@@ -274,7 +312,7 @@ ColorControlPointList::operator == (const ColorControlPointList &obj) const
 
     // Create the return value
     return (controlPoints_equal &&
-            (smoothingFlag == obj.smoothingFlag) &&
+            (smoothing == obj.smoothing) &&
             (equalSpacingFlag == obj.equalSpacingFlag) &&
             (discreteFlag == obj.discreteFlag) &&
             (externalFlag == obj.externalFlag));
@@ -422,7 +460,7 @@ void
 ColorControlPointList::SelectAll()
 {
     Select(ID_controlPoints,    (void *)&controlPoints);
-    Select(ID_smoothingFlag,    (void *)&smoothingFlag);
+    Select(ID_smoothing,        (void *)&smoothing);
     Select(ID_equalSpacingFlag, (void *)&equalSpacingFlag);
     Select(ID_discreteFlag,     (void *)&discreteFlag);
     Select(ID_externalFlag,     (void *)&externalFlag);
@@ -486,10 +524,10 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
             controlPoints[i]->CreateNode(node, completeSave, true);
     }
 
-    if(completeSave || !FieldsEqual(ID_smoothingFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_smoothing, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("smoothingFlag", smoothingFlag));
+        node->AddNode(new DataNode("smoothing", SmoothingMethod_ToString(smoothing)));
     }
 
     if(completeSave || !FieldsEqual(ID_equalSpacingFlag, &defaultObject))
@@ -534,6 +572,9 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
 // Modifications:
 //   Brad Whitlock, Tue Oct 21 16:22:31 PST 2003
 //   I added support for reading in colors and positions in their compact form.
+//
+//   Brad Whitlock, Fri Apr 27 11:26:48 PDT 2012
+//   Support different smoothings.
 //
 // ****************************************************************************
 
@@ -597,8 +638,26 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
         }
     }
 
+    // Legacy support.
     if((node = searchNode->GetNode("smoothingFlag")) != 0)
-        SetSmoothingFlag(node->AsBool());
+        SetSmoothing(node->AsBool()?Linear:None);
+
+    if((node = searchNode->GetNode("smoothing")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetSmoothing(SmoothingMethod(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            SmoothingMethod value;
+            if(SmoothingMethod_FromString(node->AsString(), value))
+                SetSmoothing(value);
+        }
+    }
     if((node = searchNode->GetNode("equalSpacingFlag")) != 0)
         SetEqualSpacingFlag(node->AsBool());
     if((node = searchNode->GetNode("discreteFlag")) != 0)
@@ -611,10 +670,10 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-ColorControlPointList::SetSmoothingFlag(bool smoothingFlag_)
+ColorControlPointList::SetSmoothing(ColorControlPointList::SmoothingMethod smoothing_)
 {
-    smoothingFlag = smoothingFlag_;
-    Select(ID_smoothingFlag, (void *)&smoothingFlag);
+    smoothing = smoothing_;
+    Select(ID_smoothing, (void *)&smoothing);
 }
 
 void
@@ -654,10 +713,10 @@ ColorControlPointList::GetControlPoints()
     return controlPoints;
 }
 
-bool
-ColorControlPointList::GetSmoothingFlag() const
+ColorControlPointList::SmoothingMethod
+ColorControlPointList::GetSmoothing() const
 {
-    return smoothingFlag;
+    return SmoothingMethod(smoothing);
 }
 
 bool
@@ -910,7 +969,7 @@ ColorControlPointList::GetFieldName(int index) const
     switch (index)
     {
     case ID_controlPoints:    return "controlPoints";
-    case ID_smoothingFlag:    return "smoothingFlag";
+    case ID_smoothing:        return "smoothing";
     case ID_equalSpacingFlag: return "equalSpacingFlag";
     case ID_discreteFlag:     return "discreteFlag";
     case ID_externalFlag:     return "externalFlag";
@@ -939,7 +998,7 @@ ColorControlPointList::GetFieldType(int index) const
     switch (index)
     {
     case ID_controlPoints:    return FieldType_attVector;
-    case ID_smoothingFlag:    return FieldType_bool;
+    case ID_smoothing:        return FieldType_enum;
     case ID_equalSpacingFlag: return FieldType_bool;
     case ID_discreteFlag:     return FieldType_bool;
     case ID_externalFlag:     return FieldType_bool;
@@ -968,7 +1027,7 @@ ColorControlPointList::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_controlPoints:    return "attVector";
-    case ID_smoothingFlag:    return "bool";
+    case ID_smoothing:        return "enum";
     case ID_equalSpacingFlag: return "bool";
     case ID_discreteFlag:     return "bool";
     case ID_externalFlag:     return "bool";
@@ -1012,9 +1071,9 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = controlPoints_equal;
         }
         break;
-    case ID_smoothingFlag:
+    case ID_smoothing:
         {  // new scope
-        retval = (smoothingFlag == obj.smoothingFlag);
+        retval = (smoothing == obj.smoothing);
         }
         break;
     case ID_equalSpacingFlag:
@@ -1043,6 +1102,141 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
+// Method: ColorControlPointList::EvalCubicSpline
+//
+// Purpose: 
+//   Interpolates color control points using cubic spline.
+//
+// Arguments:
+//   t    : The x value along the curve.
+//   allX : All of the x values for the points that define the curve.
+//   allY : All of the y values for the points that define the curve.
+//   n    : The number of points.
+//
+// Returns:    The new y value.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 27 14:02:56 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+#define EVAL_MIN(A,B) (((A)<(B))?(A):(B))
+#define EVAL_MAX(A,B) (((A)>(B))?(A):(B))
+
+float
+ColorControlPointList::EvalCubicSpline(float t, const float *allX, const float *allY, int n) const
+{
+    if(t <= allX[0]) 
+        return allY[0];
+    if(t >= allX[n-1])
+        return allY[n-1];
+    int i = 0;
+    for(i = 0; i < n; ++i)
+        if(allX[i] >= t)
+            break;
+    int idx[4];
+    idx[0] = EVAL_MAX(i-2, 0);
+    idx[1] = EVAL_MAX(i-1, 0);
+    idx[2] = i;
+    idx[3] = EVAL_MIN(i+1, n-1);
+    float X[4], Y[4];
+    for(int j = 0; j < 4; ++j)
+    {
+        X[j] = allX[idx[j]];
+        Y[j] = allY[idx[j]];
+    }
+    float dx = (X[2] - X[1]);
+    float invdx = 1. / dx;
+    float dy1   = (Y[2] + (Y[0] * -1.)) * (1. / (X[2] - X[0]));
+    float dy2   = (Y[2] + (Y[1] * -1.)) * invdx;
+    float dy3   = (Y[3] + (Y[1] * -1.)) * (1. / (X[3] - X[1]));
+    float ddy2  = (dy2 + (dy1 * -1)) * invdx;
+    float ddy3  = (dy3 + (dy2 * -1)) * invdx;
+    float dddy3 = (ddy3 + (ddy2 * -1)) * invdx;
+    float u = (t - X[1]);
+    return (Y[1] + dy1*u + ddy2*u*u + dddy3*u*u*(u-dx));
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::GetColorsCubicSpline
+//
+// Purpose: 
+//   Gets the colors using cubic spline interpolation.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 27 14:02:56 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+inline unsigned char
+ClampColor(float val)
+{
+    if (val < 0.f)
+        return 0;
+    if (val > 1.f)
+        return 255;
+    return static_cast<unsigned char>((val * 255.f) + 0.5f);
+}
+
+void
+ColorControlPointList::GetColorsCubicSpline(unsigned char *rgb,
+                                            int ncolors,
+                                            unsigned char *alpha) const
+{
+    int npoints = GetNumControlPoints();
+    float *x = new float[npoints];
+    float *r = new float[npoints];
+    float *g = new float[npoints];
+    float *b = new float[npoints];
+    float *a = new float[npoints];
+    for(int i = 0; i < npoints; ++i)
+    {
+        const ColorControlPoint &cpt = this->operator[](i);
+        if(GetEqualSpacingFlag())
+        {
+            float t = float(i) / float(npoints-1);
+            x[i] = t;
+        }
+        else
+            x[i] = cpt.GetPosition();
+
+        r[i] = float(cpt.GetColors()[0]) / 255.f;
+        g[i] = float(cpt.GetColors()[1]) / 255.f;
+        b[i] = float(cpt.GetColors()[2]) / 255.f;
+        a[i] = float(cpt.GetColors()[3]) / 255.f;
+    }
+
+    int idx = 0;
+    for(int i = 0; i < ncolors; ++i, idx += 3)
+    {
+        float t = float(i) / float(ncolors-1);
+        rgb[idx  ] = ClampColor(EvalCubicSpline(t, x, r, npoints));
+        rgb[idx+1] = ClampColor(EvalCubicSpline(t, x, g, npoints));
+        rgb[idx+2] = ClampColor(EvalCubicSpline(t, x, b, npoints));
+        if(alpha != NULL)
+            alpha[i] = ClampColor(EvalCubicSpline(t, x, a, npoints));
+    }
+
+    delete [] x;
+    delete [] r;
+    delete [] g;
+    delete [] b;
+    delete [] a;
+}
+
+// ****************************************************************************
 // Method: ColorControlPointList::GetColors
 //
 // Purpose: 
@@ -1052,6 +1246,7 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // Arguments:
 //   rgb     : The array in which to return the sampled colors.
 //   ncolors : The number of colors we expect to return in the array.
+//   alpha   : An optional array in which to return the sampled colors' alphas.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Nov 21 14:58:48 PST 2002
@@ -1065,6 +1260,9 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   Jeremy Meredith, Fri Feb 20 15:06:36 EST 2009
 //   Added optional alpha channel support (can set to NULL if not wanted).
 //
+//   Brad Whitlock, Fri Apr 27 14:04:13 PDT 2012
+//   Added cubic spline method.
+//
 // ****************************************************************************
 
 void
@@ -1072,6 +1270,12 @@ ColorControlPointList::GetColors(unsigned char *rgb,
                                  int ncolors,
                                  unsigned char *alpha) const
 {
+    if(GetSmoothing() == CubicSpline && !GetDiscreteFlag())
+    {
+        GetColorsCubicSpline(rgb, ncolors, alpha);
+        return;
+    }
+
     int i, ci, c = 0;
     float *newPts_pos = NULL;
     float *newPts_r = NULL;
@@ -1104,7 +1308,7 @@ ColorControlPointList::GetColors(unsigned char *rgb,
      *******************************************/
     int npoints = GetNumControlPoints();
     bool equal  = GetEqualSpacingFlag();
-    bool smooth = GetSmoothingFlag();
+    bool smooth = GetSmoothing() == Linear;
     bool discrete = GetDiscreteFlag();
 
     /*******************************************
@@ -1396,6 +1600,9 @@ ColorControlPointList::GetColors(unsigned char *rgb,
 //   Brad Whitlock, Wed Dec 17 12:23:35 PDT 2003
 //   I added the completeSave argument.
 //
+//   Brad Whitlock, Fri Apr 27 11:28:11 PDT 2012
+//   Change smoothingFlag to smoothing and make it an enum.
+//
 // ****************************************************************************
 
 bool
@@ -1435,10 +1642,10 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
         addToParent = true;
     }
 
-    if(completeSave || !FieldsEqual(ID_smoothingFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_smoothing, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("smoothingFlag", smoothingFlag));
+        node->AddNode(new DataNode("smoothing", SmoothingMethod_ToString(smoothing)));
     }
 
     if(completeSave || !FieldsEqual(ID_equalSpacingFlag, &defaultObject))

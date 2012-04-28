@@ -230,9 +230,9 @@
       </Function>
       <Function name="GetOpacities" user="true" member="true">
       </Function>
-      <Function name="SetSmoothingFlag" user="true" member="true">
+      <Function name="SetSmoothing" user="true" member="true">
       </Function>
-      <Function name="GetSmoothingFlag" user="true" member="true">
+      <Function name="GetSmoothing" user="true" member="true">
       </Function>
       <Function name="SetEqualSpacingFlag" user="true" member="true">
       </Function>

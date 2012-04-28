@@ -488,6 +488,9 @@ ColorTableAttributes::CreateSubAttributeGroup(int)
 //   Hank Childs, Thu Jul  1 14:20:26 PDT 2010
 //   Write out opacities.
 //
+//   Brad Whitlock, Fri Apr 27 14:16:01 PDT 2012
+//   Change smoothing.
+//
 // ****************************************************************************
 
 bool
@@ -516,8 +519,8 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
             ctNode->AddNode(new DataNode("ctName", names[i]));
             if(!ccpl.FieldsEqual(ColorControlPointList::ID_equalSpacingFlag, &defaultObject))
                 ctNode->AddNode(new DataNode("equal", ccpl.GetEqualSpacingFlag()));
-            if(!ccpl.FieldsEqual(ColorControlPointList::ID_smoothingFlag, &defaultObject))
-                ctNode->AddNode(new DataNode("smooth", ccpl.GetSmoothingFlag()));
+            if(!ccpl.FieldsEqual(ColorControlPointList::ID_smoothing, &defaultObject))
+                ctNode->AddNode(new DataNode("smoothing", ccpl.GetSmoothing()));
             if(!ccpl.FieldsEqual(ColorControlPointList::ID_discreteFlag, &defaultObject))
                 ctNode->AddNode(new DataNode("discrete", ccpl.GetDiscreteFlag()));
 
@@ -608,9 +611,13 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
                     DataNode *tmpNode;
                     if((tmpNode = node->GetNode("equal")) != 0)
                         ccpl.SetEqualSpacingFlag(tmpNode->AsBool());
-                    // Try and set the smooth flag.
+                    // Try and set the smooth flag. (old way)
                     if((tmpNode = node->GetNode("smooth")) != 0)
-                        ccpl.SetSmoothingFlag(tmpNode->AsBool());
+                        ccpl.SetSmoothing(tmpNode->AsBool()?ColorControlPointList::Linear:ColorControlPointList::None);
+                    // (new way)
+                    if((tmpNode = node->GetNode("smoothing")) != 0)
+                        ccpl.SetSmoothing(static_cast<ColorControlPointList::SmoothingMethod>(tmpNode->AsInt()));
+
                     if((tmpNode = node->GetNode("discrete")) != 0)
                         ccpl.SetDiscreteFlag(tmpNode->AsBool());
 

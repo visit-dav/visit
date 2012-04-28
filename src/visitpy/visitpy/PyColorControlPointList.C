@@ -90,11 +90,25 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
         if(index == 0)
             str += "#controlPoints does not contain any ColorControlPoint objects.\n";
     }
-    if(atts->GetSmoothingFlag())
-        SNPRINTF(tmpStr, 1000, "%ssmoothingFlag = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%ssmoothingFlag = 0\n", prefix);
-    str += tmpStr;
+    const char *smoothing_names = "None, Linear, CubicSpline";
+    switch (atts->GetSmoothing())
+    {
+      case ColorControlPointList::None:
+          SNPRINTF(tmpStr, 1000, "%ssmoothing = %sNone  # %s\n", prefix, prefix, smoothing_names);
+          str += tmpStr;
+          break;
+      case ColorControlPointList::Linear:
+          SNPRINTF(tmpStr, 1000, "%ssmoothing = %sLinear  # %s\n", prefix, prefix, smoothing_names);
+          str += tmpStr;
+          break;
+      case ColorControlPointList::CubicSpline:
+          SNPRINTF(tmpStr, 1000, "%ssmoothing = %sCubicSpline  # %s\n", prefix, prefix, smoothing_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     if(atts->GetEqualSpacingFlag())
         SNPRINTF(tmpStr, 1000, "%sequalSpacingFlag = 1\n", prefix);
     else
@@ -238,7 +252,7 @@ ColorControlPointList_ClearControlPoints(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ColorControlPointList_SetSmoothingFlag(PyObject *self, PyObject *args)
+ColorControlPointList_SetSmoothing(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
 
@@ -246,18 +260,27 @@ ColorControlPointList_SetSmoothingFlag(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the smoothingFlag in the object.
-    obj->data->SetSmoothingFlag(ival != 0);
+    // Set the smoothing in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetSmoothing(ColorControlPointList::SmoothingMethod(ival));
+    else
+    {
+        fprintf(stderr, "An invalid smoothing value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "None, Linear, CubicSpline.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ColorControlPointList_GetSmoothingFlag(PyObject *self, PyObject *args)
+ColorControlPointList_GetSmoothing(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetSmoothingFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetSmoothing()));
     return retval;
 }
 
@@ -342,8 +365,8 @@ PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
     {"AddControlPoints", ColorControlPointList_AddControlPoints, METH_VARARGS},
     {"RemoveControlPoints", ColorControlPointList_RemoveControlPoints, METH_VARARGS},
     {"ClearControlPoints", ColorControlPointList_ClearControlPoints, METH_VARARGS},
-    {"SetSmoothingFlag", ColorControlPointList_SetSmoothingFlag, METH_VARARGS},
-    {"GetSmoothingFlag", ColorControlPointList_GetSmoothingFlag, METH_VARARGS},
+    {"SetSmoothing", ColorControlPointList_SetSmoothing, METH_VARARGS},
+    {"GetSmoothing", ColorControlPointList_GetSmoothing, METH_VARARGS},
     {"SetEqualSpacingFlag", ColorControlPointList_SetEqualSpacingFlag, METH_VARARGS},
     {"GetEqualSpacingFlag", ColorControlPointList_GetEqualSpacingFlag, METH_VARARGS},
     {"SetDiscreteFlag", ColorControlPointList_SetDiscreteFlag, METH_VARARGS},
@@ -380,8 +403,15 @@ PyColorControlPointList_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "controlPoints") == 0)
         return ColorControlPointList_GetControlPoints(self, NULL);
-    if(strcmp(name, "smoothingFlag") == 0)
-        return ColorControlPointList_GetSmoothingFlag(self, NULL);
+    if(strcmp(name, "smoothing") == 0)
+        return ColorControlPointList_GetSmoothing(self, NULL);
+    if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(ColorControlPointList::None));
+    if(strcmp(name, "Linear") == 0)
+        return PyInt_FromLong(long(ColorControlPointList::Linear));
+    if(strcmp(name, "CubicSpline") == 0)
+        return PyInt_FromLong(long(ColorControlPointList::CubicSpline));
+
     if(strcmp(name, "equalSpacingFlag") == 0)
         return ColorControlPointList_GetEqualSpacingFlag(self, NULL);
     if(strcmp(name, "discreteFlag") == 0)
@@ -402,8 +432,8 @@ PyColorControlPointList_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "smoothingFlag") == 0)
-        obj = ColorControlPointList_SetSmoothingFlag(self, tuple);
+    if(strcmp(name, "smoothing") == 0 /* for now */ || strcmp(name, "smoothingFlag") == 0)
+        obj = ColorControlPointList_SetSmoothing(self, tuple);
     else if(strcmp(name, "equalSpacingFlag") == 0)
         obj = ColorControlPointList_SetEqualSpacingFlag(self, tuple);
     else if(strcmp(name, "discreteFlag") == 0)

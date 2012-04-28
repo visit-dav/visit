@@ -2777,16 +2777,16 @@ VolumeAttributes::GetOpacities(unsigned char *alphas)
 }
 
 void
-VolumeAttributes::SetSmoothingFlag(bool val)
+VolumeAttributes::SetSmoothing(ColorControlPointList::SmoothingMethod val)
 {
-    colorControlPoints.SetSmoothingFlag(val);
+    colorControlPoints.SetSmoothing(val);
     Select(2, (void *)&colorControlPoints);
 }
 
-bool
-VolumeAttributes::GetSmoothingFlag() const
+ColorControlPointList::SmoothingMethod
+VolumeAttributes::GetSmoothing() const
 {
-    return colorControlPoints.GetSmoothingFlag();
+    return colorControlPoints.GetSmoothing();
 }
 
 void
