@@ -169,13 +169,13 @@ vtkVisItScalarTree::BuildTree()
     {
         this->levels = this->MaxLevel;
         this->bucketSize = (vtkIdType)ceil(double (nCells) /
-                     pow((double)BranchingFactor, levels));
+                     pow((double)BranchingFactor, double(levels)));
     }
     else
         this->bucketSize = BranchingFactor;
     
     // Size of a full tree is a geometric series: (b^(n+1)-1) / (b-1)
-    this->treeSize = (vtkIdType)((pow((double)BranchingFactor, levels + 1) - 1)
+    this->treeSize = (vtkIdType)((pow(double(BranchingFactor), double(levels + 1)) - 1)
                         / (BranchingFactor - 1));
 
     this->tree = new ScalarRange[this->treeSize];
@@ -183,7 +183,7 @@ vtkVisItScalarTree::BuildTree()
     //
     // First, fill up the leaves of the tree.
     //
-    this->leafOffset = this->treeSize - (vtkIdType)pow((double)this->BranchingFactor, this->levels);
+    this->leafOffset = this->treeSize - (vtkIdType)pow(double(this->BranchingFactor), double(this->levels));
     vtkIdList *lst = vtkIdList::New();
     for (vtkIdType t = 0 ; t < this->treeSize ; t++)
     {
@@ -286,14 +286,14 @@ vtkVisItScalarTree::BuildTree()
         // The first index of each level is ((b ^ lev) - 1) / (b - 1)
         //
         vtkIdType offset;
-        offset = (vtkIdType)((pow((double)this->BranchingFactor, lev) - 1) /
+        offset = (vtkIdType)((pow(double(this->BranchingFactor), double(lev)) - 1) /
                  (this->BranchingFactor - 1));
 
-        vtkIdType len = (vtkIdType)pow((double)this->BranchingFactor, lev);
+        vtkIdType len = (vtkIdType)pow(double(this->BranchingFactor), double(lev));
 
 
         vtkIdType cRow;
-        cRow = (vtkIdType)((pow((double)this->BranchingFactor, lev + 1) - 1)
+        cRow = (vtkIdType)((pow(double(this->BranchingFactor), double(lev + 1)) - 1)
                          / (this->BranchingFactor - 1));
         
         for (vtkIdType i = 0; i < len; ++i)
