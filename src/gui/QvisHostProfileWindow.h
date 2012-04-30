@@ -59,8 +59,6 @@ class QListWidgetItem;
 class QCheckBox;
 class QButtonGroup;
 class QRadioButton;
-class QSyntaxHighlighter;
-class QTextEdit;
 
 // ****************************************************************************
 //  Class: QvisHostProfileWindow
@@ -257,16 +255,11 @@ private:
     QPushButton *delHost;
     QPushButton *copyHost;
 
-    QWidget    *hostGroup;
-    QWidget    *hostProfileGroup;
+    QTabWidget *machineTabs;
     QWidget    *machineSettingsGroup;
     QWidget    *launchProfilesGroup;
-    QWidget    *customScriptGroup;
-
-    QWidget    *CreateHostListGroup();
     QWidget    *CreateMachineSettingsGroup();
     QWidget    *CreateLaunchProfilesGroup();
-    QWidget    *CreateCustomScriptGroup();
 
     // Launch Profiles
     QListWidget *profileList;
@@ -359,10 +352,6 @@ private:
     QSpinBox     *maxNodes;
     QCheckBox    *maxProcessorsCheckBox;
     QSpinBox     *maxProcessors;
-
-    QCheckBox          *useScript;
-    QTextEdit          *scriptEditor;
-    QSyntaxHighlighter *scriptHighlighter;
 
     // other stuff
     int          profileCounter;
