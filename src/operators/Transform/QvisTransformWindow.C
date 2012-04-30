@@ -717,6 +717,9 @@ QvisTransformWindow::UpdateWindow(bool doAll)
 //    Brad Whitlock, Wed Aug 13 21:34:35 PDT 2008
 //    Qt 4.
 //
+//    Gunther H. Weber, Mon Apr 30 16:32:24 PDT 2012
+//    Copy all matrix elements (fourth row and fourth column were missing).
+//
 // ****************************************************************************
 
 void
@@ -870,14 +873,22 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
         atts->SetM00(m00->displayText().trimmed().toFloat());
         atts->SetM01(m01->displayText().trimmed().toFloat());
         atts->SetM02(m02->displayText().trimmed().toFloat());
+        atts->SetM03(m03->displayText().trimmed().toFloat());
 
         atts->SetM10(m10->displayText().trimmed().toFloat());
         atts->SetM11(m11->displayText().trimmed().toFloat());
         atts->SetM12(m12->displayText().trimmed().toFloat());
+        atts->SetM13(m13->displayText().trimmed().toFloat());
 
         atts->SetM20(m20->displayText().trimmed().toFloat());
         atts->SetM21(m21->displayText().trimmed().toFloat());
         atts->SetM22(m22->displayText().trimmed().toFloat());
+        atts->SetM23(m23->displayText().trimmed().toFloat());
+
+        atts->SetM30(m30->displayText().trimmed().toFloat());
+        atts->SetM31(m31->displayText().trimmed().toFloat());
+        atts->SetM32(m32->displayText().trimmed().toFloat());
+        atts->SetM33(m33->displayText().trimmed().toFloat());
     }
 }
 
