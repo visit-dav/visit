@@ -1,12 +1,12 @@
-#/usr/common/graphics/installs/visit_3rdparty/cmake/2.8.3/linux-x86_64_gcc-4.5/bin/cmake
+#/usr/common/graphics/installs/visit_3rdparty/cmake/2.8.3/linux-x86_64_gcc-4.6/bin/cmake
 ##
-## ../visit_svn/2.1RC_trunk/src/svn_bin/build_visit generated host.cmake
+## build_visit generated host.cmake
 ## created: Mon Nov 15 17:10:11 PST 2010
 ## system: Linux hopper02 2.6.27.48-0.12-default #1 SMP 2010-09-20 11:03:26 -0400 x86_64 x86_64 x86_64 GNU/Linux
 ## by: ghweber
 
 ##
-## Set the VISITHOME environment variable.
+## Set the VISITHOME and VISITARCH variables.
 ##
 SET(VISITHOME /usr/common/graphics/installs/visit_3rdparty)
 SET(VISITARCH linux-x86_64_gcc-4.6)
@@ -25,9 +25,9 @@ VISIT_OPTION_DEFAULT(VISIT_TUVOK OFF)
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-m64 -fPIC -DVIZSCHEMA_DECOMPOSE_DOMAINS" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-m64 -fPIC -fvisibility=hidden -DVIZSCHEMA_DECOMPOSE_DOMAINS" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS "-I/opt/cray/mpt/default/xt/gemini/mpich2-gnu/46/include" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-m64 -fPIC -DVIZSCHEMA_DECOMPOSE_DOMAINS")
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-m64 -fPIC -fvisibility=hidden -DVIZSCHEMA_DECOMPOSE_DOMAINS")
 #SET(VISIT_EXE_LINKER_FLAGS "-Wl,--rpath,/opt/gcc/4.3.3/snos/lib64")
 # Get these via CC -v
 VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/opt/cray/mpt/default/xt/gemini/mpich2-gnu/46/include" TYPE STRING)
@@ -50,7 +50,7 @@ VISIT_OPTION_DEFAULT(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE ON)
 ##############################################################
 ##
 ##
-## Specify the location of the python include and libraries.
+## Specify the location of the python includes and libraries.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
@@ -60,9 +60,14 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 
 ##
-## Specify the location of the vtk include files and libraries.
+## R
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_R_DIR ${VISITHOME}/R/2.13.2/${VISITARCH}/lib/R)
+
+##
+## VTK
+##
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk-r/5.8.0/${VISITARCH})
 
 ##
 ## Specify the Qt4 binary dir. 
