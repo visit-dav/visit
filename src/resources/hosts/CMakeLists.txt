@@ -37,37 +37,17 @@
 #
 #
 # Modifications:
-#  Cyrus Harrison, Mon Dec 20 09:26:12 PST 2010
-#  Use glob to find all host profiles & ini files we want to install
-#  from svn_bin.
-#
-#  Gunther H. Weber, Tue Sep 20 13:11:08 PDT 2011
-#  Support installation of global host profiles on "make install". Set
-#  VISIT_INSTALL_PROFILES_TO_HOSTS to "nersc", "ornl" etc. to create
-#  a global "hosts" directory in the VisIt install and copy over the
-#  corresponding host profiles.
-#
-#  Brad Whitlock, Wed Oct 12 09:24:00 PDT 2011
-#  Move host-related files to hosts subdirectory.
-#
-#  Brad Whitlock, Fri Apr 27 17:44:07 PDT 2012
-#  Install a resources directory too.
 #
 #*****************************************************************************
 
 ## find all host profiles to install using a glob
-FILE(GLOB HPROF_FILES "${CMAKE_CURRENT_SOURCE_DIR}/hosts/host_*.xml")
+FILE(GLOB HPROF_FILES "${CMAKE_CURRENT_SOURCE_DIR}/host_*.xml")
 ## find all ini files to install using a glob
-FILE(GLOB INI_FILES   "${CMAKE_CURRENT_SOURCE_DIR}/hosts/visit-*.ini")
-
-## find all resource files to install using a glob
-FILE(GLOB CT_FILES1   "${CMAKE_CURRENT_SOURCE_DIR}/resources/ct/*.ct")
-FILE(GLOB CT_FILES2  "${CMAKE_CURRENT_SOURCE_DIR}/resources/ct/*.txt")
-SET(CT_FILES ${CT_FILES1} ${CT_FILES2})
+FILE(GLOB INI_FILES   "${CMAKE_CURRENT_SOURCE_DIR}/visit-*.ini")
 
 IF(APPLE)
-    LIST(APPEND INI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/hosts/default_configs.dat)
-    LIST(APPEND INI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/hosts/networks.dat)
+    LIST(APPEND INI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/default_configs.dat)
+    LIST(APPEND INI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/networks.dat)
 ENDIF (APPLE)
 
 ## provide proper install structure windows vs other:
@@ -75,12 +55,10 @@ IF(WIN32)
     SET(INI_DEST   ${VISIT_INSTALLED_VERSION_BIN})
     SET(HPROF_DEST ${VISIT_INSTALLED_VERSION_BIN}/allhosts)
     SET(LPROF_DEST ${VISIT_INSTALLED_VERSION_BIN}/hosts)
-    SET(CT_DEST    ${VISIT_INSTALLED_VERSION_BIN}/resources/ct)
 ELSE(WIN32)
     SET(INI_DEST   ${VISIT_VERSION}/.visit)
     SET(HPROF_DEST ${VISIT_VERSION}/.visit/allhosts)
     SET(LPROF_DEST ${VISIT_VERSION}/.visit/hosts)
-    SET(CT_DEST    ${VISIT_VERSION}/.visit/resources/ct)
 ENDIF(WIN32)
 
 # Install the visit config files
@@ -95,16 +73,10 @@ INSTALL(FILES ${HPROF_FILES}
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
 )
 
-# Install the color table files
-INSTALL(FILES ${CT_FILES}
-        DESTINATION ${CT_DEST}
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-)
-
 # Install local host profiles if specified
 IF (VISIT_INSTALL_PROFILES_TO_HOSTS)
     FILE(GLOB LPROF_FILES
-         "${CMAKE_CURRENT_SOURCE_DIR}/hosts/host_${VISIT_INSTALL_PROFILES_TO_HOSTS}_*.xml")
+         "${CMAKE_CURRENT_SOURCE_DIR}/host_${VISIT_INSTALL_PROFILES_TO_HOSTS}_*.xml")
     INSTALL(FILES ${LPROF_FILES}
             DESTINATION ${LPROF_DEST}
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ

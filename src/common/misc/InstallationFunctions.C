@@ -439,16 +439,19 @@ GetSystemVisItHostsDirectory()
 // Creation:   Fri Apr 27 17:31:12 PDT 2012
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 30 11:27:32 PDT 2012
+//   Base the directory name off of the architecture directory so it can be
+//   peer to bin and lib.
+//
 // ****************************************************************************
 
 std::string
 GetSystemVisItResourcesDirectory()
 {
-    const char *d = GetDefaultConfigFile("resources", "VISITHOME");
-    std::string retVal(d);
-    delete [] d;
-    return retVal;
+    std::string retval(GetVisItArchitectureDirectory());
+    retval += VISIT_SLASH_STRING;
+    retval += "resources";
+    return retval;
 }
 
 // ****************************************************************************
@@ -476,7 +479,7 @@ GetSystemVisItColorTableDirectory()
 {
     std::string retval(GetSystemVisItResourcesDirectory());
     retval += VISIT_SLASH_STRING;
-    retval += "ct";
+    retval += "colortables";
     return retval;
 }
 
