@@ -621,6 +621,8 @@ IF(WIN32)
         CACHE PATH "VisIt plugins install directory" FORCE)
     SET(VISIT_INSTALLED_VERSION_ARCHIVES ${CMAKE_INSTALL_PREFIX}/lib 
         CACHE PATH "3rd party I/O archives install directory" FORCE)
+    SET(VISIT_INSTALLED_VERSION_RESOURCES ${CMAKE_INSTALL_PREFIX}/resources
+        CACHE PATH "VisIt resources install directory" FORCE)
 ELSE(WIN32)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/DetermineVisItArchitecture.cmake)
     DETERMINE_VISIT_ARCHITECTURE(VISIT_INSTALL_PLATFORM)
@@ -638,6 +640,8 @@ ELSE(WIN32)
         CACHE PATH "VisIt plugins install directory" FORCE)
     SET(VISIT_INSTALLED_VERSION_ARCHIVES ${VISIT_INSTALLED_VERSION}/archives 
         CACHE PATH "3rd party I/O archives install directory" FORCE)
+    SET(VISIT_INSTALLED_VERSION_RESOURCES ${VISIT_INSTALLED_VERSION}/resources
+        CACHE PATH "VisIt resources install directory" FORCE)
 
     IF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
         SET(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
@@ -1958,7 +1962,7 @@ ADD_SUBDIRECTORY(bin)
 ADD_SUBDIRECTORY(lib)
 ADD_SUBDIRECTORY(include)
 ADD_SUBDIRECTORY(help)
-ADD_SUBDIRECTORY(svn_bin)
+ADD_SUBDIRECTORY(resources)
 
 #-----------------------------------------------------------------------------
 # Add the "data" directory if it exists
