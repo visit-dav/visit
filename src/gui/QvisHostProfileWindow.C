@@ -41,7 +41,6 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QFont>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
@@ -52,10 +51,7 @@
 #include <QSpinBox>
 #include <QStringList>
 #include <QTabWidget>
-#include <QTextEdit>
 #include <QWidget>
-
-#include <QvisPythonSyntaxHighlighter.h>
 
 #include <snprintf.h>
 
@@ -154,86 +150,42 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Rename New/Copy/Delete to New Host/Copy Host/Delete Host.
 //   This removes ambiguity with profile controls.
 //
-//   Brad Whitlock, Tue Apr 24 22:36:35 PDT 2012
-//   Use group boxes instead of tabs. Add custom script.
-//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::CreateWindowContents()
 {
     QGridLayout *mainLayout = new QGridLayout(NULL);
-    mainLayout->setSpacing(5);
     topLayout->addLayout(mainLayout);
     topLayout->setStretchFactor(mainLayout, 100);
 
-    QGroupBox *hSettings = new QGroupBox(tr("Hosts"), central);
-    mainLayout->addWidget(hSettings, 0,0);
-    QVBoxLayout *hLayout = new QVBoxLayout(hSettings);
-    hLayout->setMargin(0);
-    hLayout->setSpacing(HOST_PROFILE_SPACING);
-    hostGroup = CreateHostListGroup();
-    hLayout->addWidget(hostGroup);
-
-    QGroupBox *hpSettings = new QGroupBox(tr("Host Profiles"), central);
-    mainLayout->addWidget(hpSettings, 0,1);
-    QGridLayout *hpLayout = new QGridLayout(hpSettings);
-    hpLayout->setMargin(5);
-    hpLayout->setSpacing(HOST_PROFILE_SPACING);
-    hostProfileGroup = hpSettings;
-
-    QGroupBox *mSettings = new QGroupBox(tr("Host Settings"), hpSettings);
-    hpLayout->addWidget(mSettings, 0,0);
-    QVBoxLayout *mLayout = new QVBoxLayout(mSettings);
-    mLayout->setMargin(0);
-    mLayout->setSpacing(HOST_PROFILE_SPACING);
-    machineSettingsGroup = CreateMachineSettingsGroup();
-    mLayout->addWidget(machineSettingsGroup);
-
-    QGroupBox *pSettings = new QGroupBox(tr("Launch Profiles"), hpSettings);
-    hpLayout->addWidget(pSettings, 0,1);
-    QVBoxLayout *pLayout = new QVBoxLayout(pSettings);
-    pLayout->setMargin(0);
-    pLayout->setSpacing(HOST_PROFILE_SPACING);
-    launchProfilesGroup = CreateLaunchProfilesGroup();
-    pLayout->addWidget(launchProfilesGroup);
-#if 1
-    QGroupBox *cslSettings = new QGroupBox(tr("Custom Launch Script"), hpSettings);
-    hpLayout->addWidget(cslSettings, 1,0, 1,2);
-    QVBoxLayout *cslLayout = new QVBoxLayout(cslSettings);
-    cslLayout->setMargin(0);
-    cslLayout->setSpacing(HOST_PROFILE_SPACING);
-    customScriptGroup = CreateCustomScriptGroup();
-    cslLayout->addWidget(customScriptGroup);
-#endif
-}
-
-QWidget *
-QvisHostProfileWindow::CreateHostListGroup()
-{
-    QWidget *currentGroup = new QWidget();
-    QGridLayout *layout = new QGridLayout(currentGroup);
-    layout->setMargin(5);
-
-    addHost = new QPushButton(tr("New Host"), currentGroup);
-    layout->addWidget(addHost, 0,0);
-    connect(addHost, SIGNAL(clicked()), this, SLOT(addMachineProfile()));
-
-    delHost = new QPushButton(tr("Delete Host"), currentGroup);
-    layout->addWidget(delHost, 1,0);
-    connect(delHost, SIGNAL(clicked()), this, SLOT(delMachineProfile()));
-
-    copyHost = new QPushButton(tr("Copy Host"), currentGroup);
-    layout->addWidget(copyHost, 2,0);
-    connect(copyHost, SIGNAL(clicked()), this, SLOT(copyMachineProfile()));
-
-    hostList = new QListWidget(currentGroup);
+    mainLayout->addWidget(new QLabel(tr("Hosts")), 0,0, 1,3);
+    hostList = new QListWidget(central);
     hostList->setSortingEnabled(true);
-    layout->addWidget(hostList, 3,0);
+    mainLayout->addWidget(hostList, 1,0, 1,3);
     connect(hostList, SIGNAL(itemSelectionChanged()),
             this, SLOT(currentHostChanged()));
 
-    return currentGroup;
+    addHost = new QPushButton(tr("New Host"), central);
+    mainLayout->addWidget(addHost, 2,0);
+    connect(addHost, SIGNAL(clicked()), this, SLOT(addMachineProfile()));
+
+    delHost = new QPushButton(tr("Delete Host"), central);
+    mainLayout->addWidget(delHost, 2,1);
+    connect(delHost, SIGNAL(clicked()), this, SLOT(delMachineProfile()));
+
+    copyHost = new QPushButton(tr("Copy Host"), central);
+    mainLayout->addWidget(copyHost, 2,2);
+    connect(copyHost, SIGNAL(clicked()), this, SLOT(copyMachineProfile()));
+
+    machineTabs = new QTabWidget(central);
+    mainLayout->addWidget(machineTabs, 0,3, 3,1);
+
+    machineSettingsGroup = CreateMachineSettingsGroup();
+    machineTabs->addTab(machineSettingsGroup, tr("Host Settings"));
+
+    launchProfilesGroup = CreateLaunchProfilesGroup();
+    machineTabs->addTab(launchProfilesGroup, tr("Launch Profiles"));
 }
 
 // ****************************************************************************
@@ -401,10 +353,8 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     clientHostNameMethod->addButton(chnParseFromSSHClient,1);
     clientHostNameMethod->addButton(chnSpecifyManually,2);
     clientHostNameMethodLabel =
-        new QLabel(tr("Determine local host using:"),
+        new QLabel(tr("Method used to determine local host name when not tunneling:"),
                    connectionGroup);
-    clientHostNameMethodLabel->setToolTip(tr("Method used to determine local "
-        "host name when not ssh tunneling."));
     cLayout->addWidget(clientHostNameMethodLabel,
                                   cRow, 0, 1, 4);
     cRow++;
@@ -445,30 +395,6 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     return currentGroup;
 }
 
-QWidget *
-QvisHostProfileWindow::CreateCustomScriptGroup()
-{
-    QWidget *currentGroup = new QWidget();
-
-    QGridLayout *layout = new QGridLayout(currentGroup);
-    layout->setMargin(5);
-
-    useScript = new QCheckBox(tr("Use Custom Launch Script"), currentGroup);
-    layout->addWidget(useScript, 0,0);
-
-    QFont monospaced("Courier");
-    scriptEditor = new QTextEdit(currentGroup);
-    scriptEditor->setReadOnly(false);
-    scriptEditor->setFont(monospaced);
-    scriptEditor->setWordWrapMode(QTextOption::NoWrap);
-    layout->addWidget(scriptEditor, 1,0, 2, 4);
-
-    // hook up a python syntax highlighter
-    scriptHighlighter = new QvisPythonSyntaxHighlighter(scriptEditor->document());
-
-    return currentGroup;
-}
-
 // ****************************************************************************
 // Method:  QvisHostProfileWindow::CreateLaunchProfilesGroup
 //
@@ -496,30 +422,34 @@ QvisHostProfileWindow::CreateLaunchProfilesGroup()
 {
     QWidget *currentGroup = new QWidget();
 
+    int row = 0;
     QGridLayout *layout = new QGridLayout(currentGroup);
     layout->setMargin(5);
 
     profileList = new QListWidget(currentGroup);
-    layout->addWidget(profileList, 0,1, 4,1);
+    layout->addWidget(profileList, row,0, 1,4);
     connect(profileList, SIGNAL(itemSelectionChanged()),
             this, SLOT(currentLaunchChanged()));
+    row++;
 
     addProfile = new QPushButton(tr("New Profile"), currentGroup);
-    layout->addWidget(addProfile, 0,0);
+    layout->addWidget(addProfile, row,0);
     connect(addProfile, SIGNAL(clicked()), this, SLOT(addLaunchProfile()));
     delProfile = new QPushButton(tr("Delete Profile"), currentGroup);
     connect(delProfile, SIGNAL(clicked()), this, SLOT(delLaunchProfile()));
-    layout->addWidget(delProfile, 1,0);
+    layout->addWidget(delProfile, row,1);
     copyProfile = new QPushButton(tr("Copy Profile"), currentGroup);
     connect(copyProfile, SIGNAL(clicked()), this, SLOT(copyLaunchProfile()));
-    layout->addWidget(copyProfile, 2,0);
+    layout->addWidget(copyProfile, row,2);
     makeDefaultProfile = new QPushButton(tr("Make Default"),
                                          currentGroup);
     connect(makeDefaultProfile, SIGNAL(clicked()), this, SLOT(makeDefaultLaunchProfile()));
-    layout->addWidget(makeDefaultProfile, 3,0);
+    layout->addWidget(makeDefaultProfile, row,3);
+    row += 2;
 
     profileTabs = new QTabWidget(central);
-    layout->addWidget(profileTabs, 4,0, 1,2);
+    layout->addWidget(profileTabs, row,0, 1,4);
+    row++;
 
     basicSettingsGroup = CreateBasicSettingsGroup();
     profileTabs->addTab(basicSettingsGroup, tr("Settings"));
@@ -1091,8 +1021,7 @@ QvisHostProfileWindow::UpdateMachineProfile()
 
     if (currentMachine == NULL)
     {
-        hostProfileGroup->setEnabled(false);
-
+        machineTabs->setEnabled(false);
         hostName->setText("");
         hostName->setText(GetViewerProxy()->GetLocalHostName().c_str());
         hostAliases->setText("");
@@ -1121,7 +1050,7 @@ QvisHostProfileWindow::UpdateMachineProfile()
         // Replace any localhost machine names.
         ReplaceLocalHost();
     
-        hostProfileGroup->setEnabled(true);
+        machineTabs->setEnabled(true);
 
         // Update the contents of the machine settings tab
 
@@ -1585,8 +1514,7 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     makeDefaultProfile->setEnabled(launchEnabled && hostEnabled &&
                currentMachine->GetActiveLaunchProfile() != currentLaunch);
 
-    hostProfileGroup->setEnabled(hostEnabled);
-    launchProfilesGroup->setEnabled(hostEnabled);
+    machineTabs->setEnabled(hostEnabled);
     hostNameLabel->setEnabled(hostEnabled);
     hostName->setEnabled(hostEnabled);
     hostAliasesLabel->setEnabled(hostEnabled);
