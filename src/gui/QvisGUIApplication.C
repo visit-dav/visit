@@ -616,6 +616,9 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
 //   Brad Whitlock, Fri Aug  6 16:54:29 PDT 2010
 //   Added Selections to windowNames.
 //
+//   Brad Whitlock, Tue May  1 10:06:12 PDT 2012
+//   Call GetVisItResourcesDirectory to get the translations directory.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -762,13 +765,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
 
     // Make VisIt translation aware.
     QTranslator *translator = new QTranslator(0);
-#if defined(_WIN32)
-    QString transPath(GetVisItArchitectureDirectory().c_str());
-    transPath += "\\translations\\";
-#else
-    QString transPath(GetVisItArchitectureDirectory().c_str());
-    transPath += "/bin/translations/";
-#endif
+    QString transPath(GetVisItResourcesDirectory(VISIT_RESOURCES_TRANSLATIONS).c_str());
     if(applicationLocale == "default")
         applicationLocale = QLocale::system().name();
     QString transFile(QString("visit_") + applicationLocale);

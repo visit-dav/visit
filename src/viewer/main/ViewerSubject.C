@@ -472,6 +472,9 @@ ViewerSubject::Connect(int *argc, char ***argv)
 //   Brad Whitlock, Thu Apr 22 16:53:34 PST 2010
 //   Use a signal to schedule HeavyInitialization.
 //
+//   Brad Whitlock, Tue May  1 10:06:12 PDT 2012
+//   Call GetVisItResourcesDirectory to get the translations directory.
+//
 // ****************************************************************************
 
 void
@@ -481,13 +484,7 @@ ViewerSubject::Initialize()
 
     // Make VisIt translation aware.
     QTranslator *translator = new QTranslator(0);
-#if defined(_WIN32)
-    QString transPath(GetVisItArchitectureDirectory().c_str());
-    transPath += "\\translations\\";
-#else
-    QString transPath(GetVisItArchitectureDirectory().c_str());
-    transPath += "/bin/translations/";
-#endif
+    QString transPath(GetVisItResourcesDirectory(VISIT_RESOURCES_TRANSLATIONS).c_str());
     QString applicationLocale(GetViewerProperties()->GetApplicationLocale().c_str());
     if(applicationLocale == "default")
         applicationLocale = QLocale::system().name();

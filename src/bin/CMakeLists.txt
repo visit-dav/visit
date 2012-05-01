@@ -69,7 +69,7 @@
 # Copy necessary bin files & directories to the build dir.
 #----------------------------------------------------------------------------
 
-SET(VISIT_BIN_DIRECTORIES movietemplates shaders translations)
+SET(VISIT_BIN_DIRECTORIES movietemplates shaders)
 
 SET(VISIT_BIN_FILES
         Doxyfile
@@ -178,7 +178,7 @@ ELSE (NOT WIN32)
 ENDIF(NOT WIN32)
 
 
-INSTALL(DIRECTORY movietemplates translations
+INSTALL(DIRECTORY movietemplates
     DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
     FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
                      GROUP_READ GROUP_WRITE 

@@ -424,38 +424,7 @@ GetSystemVisItHostsDirectory()
 }
 
 // ****************************************************************************
-// Method: GetSystemVisItResourcesDirectory
-//
-// Purpose: 
-//   Get the installation directory's resources subdirectory.
-//
-// Arguments:
-//
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Apr 27 17:31:12 PDT 2012
-//
-// Modifications:
-//   Brad Whitlock, Mon Apr 30 11:27:32 PDT 2012
-//   Base the directory name off of the architecture directory so it can be
-//   peer to bin and lib.
-//
-// ****************************************************************************
-
-std::string
-GetSystemVisItResourcesDirectory()
-{
-    std::string retval(GetVisItArchitectureDirectory());
-    retval += VISIT_SLASH_STRING;
-    retval += "resources";
-    return retval;
-}
-
-// ****************************************************************************
-// Method: GetSystemVisItColorTableDirectory
+// Method: GetVisItResourcesDirectory
 //
 // Purpose: 
 //   Get the installation directory's resources subdirectory.
@@ -473,13 +442,24 @@ GetSystemVisItResourcesDirectory()
 //   
 // ****************************************************************************
 
-
 std::string
-GetSystemVisItColorTableDirectory()
+GetVisItResourcesDirectory(VisItResourceDirectoryType t)
 {
-    std::string retval(GetSystemVisItResourcesDirectory());
+    std::string retval(GetVisItArchitectureDirectory());
     retval += VISIT_SLASH_STRING;
-    retval += "colortables";
+    retval += "resources";
+
+    if(t != VISIT_RESOURCES)
+    {
+        retval += VISIT_SLASH_STRING;
+        if(t == VISIT_RESOURCES_COLORTABLES)
+            retval += "colortables";
+        else if(t == VISIT_RESOURCES_TRANSLATIONS)
+            retval += "translations";
+        else if(t == VISIT_RESOURCES_MOVIETEMPLATES)
+            retval += "movietemplates";
+    }
+
     return retval;
 }
 
