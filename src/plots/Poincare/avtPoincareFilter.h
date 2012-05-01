@@ -126,6 +126,11 @@ class avtPoincareFilter : public avtStreamlineFilter
     void SetOPointMaxIterations( int val ) { OPointMaxIterations = val; }
     void SetShowXPoints( bool val ) { showXPoints = val; }
     void SetXPointMaxIterations( int val ) { XPointMaxIterations = val; }
+
+    void SetPerformOLineAnalysis( bool val ) { performOLineAnalysis = val; }
+    void SetOLineToroidalWinding( int val ) { OLineToroidalWinding = val; }
+    void SetOLineAxisFileName( std::string val ) { OLineAxisFileName = val; }
+
     void SetShowChaotic( bool val ) { showChaotic = val; }
     void SetShowIslands( bool val ) { showIslands = val; }
     void SetShowLines( bool val )   { showLines = val; }
@@ -233,6 +238,10 @@ class avtPoincareFilter : public avtStreamlineFilter
 
     unsigned int OPointMaxIterations;
     unsigned int XPointMaxIterations;
+
+    bool performOLineAnalysis;
+    int  OLineToroidalWinding;
+    std::string OLineAxisFileName;
 
 //     class ICHelper
 //     {

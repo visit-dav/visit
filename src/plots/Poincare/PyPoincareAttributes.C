@@ -487,6 +487,15 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sXPointMaxIterations = %d\n", prefix, atts->GetXPointMaxIterations());
     str += tmpStr;
+    if(atts->GetPerformOLineAnalysis())
+        SNPRINTF(tmpStr, 1000, "%sperformOLineAnalysis = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sperformOLineAnalysis = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sOLineToroidalWinding = %d\n", prefix, atts->GetOLineToroidalWinding());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sOLineAxisFileName = \"%s\"\n", prefix, atts->GetOLineAxisFileName().c_str());
+    str += tmpStr;
     if(atts->GetShowChaotic())
         SNPRINTF(tmpStr, 1000, "%sshowChaotic = 1\n", prefix);
     else
@@ -1972,6 +1981,78 @@ PoincareAttributes_GetXPointMaxIterations(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PoincareAttributes_SetPerformOLineAnalysis(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the performOLineAnalysis in the object.
+    obj->data->SetPerformOLineAnalysis(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetPerformOLineAnalysis(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetPerformOLineAnalysis()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetOLineToroidalWinding(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the OLineToroidalWinding in the object.
+    obj->data->SetOLineToroidalWinding((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetOLineToroidalWinding(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOLineToroidalWinding()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetOLineAxisFileName(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the OLineAxisFileName in the object.
+    obj->data->SetOLineAxisFileName(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetOLineAxisFileName(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetOLineAxisFileName().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
 PoincareAttributes_SetShowChaotic(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -2525,6 +2606,12 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetShowXPoints", PoincareAttributes_GetShowXPoints, METH_VARARGS},
     {"SetXPointMaxIterations", PoincareAttributes_SetXPointMaxIterations, METH_VARARGS},
     {"GetXPointMaxIterations", PoincareAttributes_GetXPointMaxIterations, METH_VARARGS},
+    {"SetPerformOLineAnalysis", PoincareAttributes_SetPerformOLineAnalysis, METH_VARARGS},
+    {"GetPerformOLineAnalysis", PoincareAttributes_GetPerformOLineAnalysis, METH_VARARGS},
+    {"SetOLineToroidalWinding", PoincareAttributes_SetOLineToroidalWinding, METH_VARARGS},
+    {"GetOLineToroidalWinding", PoincareAttributes_GetOLineToroidalWinding, METH_VARARGS},
+    {"SetOLineAxisFileName", PoincareAttributes_SetOLineAxisFileName, METH_VARARGS},
+    {"GetOLineAxisFileName", PoincareAttributes_GetOLineAxisFileName, METH_VARARGS},
     {"SetShowChaotic", PoincareAttributes_SetShowChaotic, METH_VARARGS},
     {"GetShowChaotic", PoincareAttributes_GetShowChaotic, METH_VARARGS},
     {"SetShowIslands", PoincareAttributes_SetShowIslands, METH_VARARGS},
@@ -2783,6 +2870,12 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetShowXPoints(self, NULL);
     if(strcmp(name, "XPointMaxIterations") == 0)
         return PoincareAttributes_GetXPointMaxIterations(self, NULL);
+    if(strcmp(name, "performOLineAnalysis") == 0)
+        return PoincareAttributes_GetPerformOLineAnalysis(self, NULL);
+    if(strcmp(name, "OLineToroidalWinding") == 0)
+        return PoincareAttributes_GetOLineToroidalWinding(self, NULL);
+    if(strcmp(name, "OLineAxisFileName") == 0)
+        return PoincareAttributes_GetOLineAxisFileName(self, NULL);
     if(strcmp(name, "showChaotic") == 0)
         return PoincareAttributes_GetShowChaotic(self, NULL);
     if(strcmp(name, "showIslands") == 0)
@@ -2950,6 +3043,12 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetShowXPoints(self, tuple);
     else if(strcmp(name, "XPointMaxIterations") == 0)
         obj = PoincareAttributes_SetXPointMaxIterations(self, tuple);
+    else if(strcmp(name, "performOLineAnalysis") == 0)
+        obj = PoincareAttributes_SetPerformOLineAnalysis(self, tuple);
+    else if(strcmp(name, "OLineToroidalWinding") == 0)
+        obj = PoincareAttributes_SetOLineToroidalWinding(self, tuple);
+    else if(strcmp(name, "OLineAxisFileName") == 0)
+        obj = PoincareAttributes_SetOLineAxisFileName(self, tuple);
     else if(strcmp(name, "showChaotic") == 0)
         obj = PoincareAttributes_SetShowChaotic(self, tuple);
     else if(strcmp(name, "showIslands") == 0)

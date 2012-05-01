@@ -235,6 +235,15 @@
       <Field name="XPointMaxIterations" label="Maximum Iterations" type="int">
         2
       </Field>
+      <Field name="performOLineAnalysis" label="Perform O-Line Analysis" type="bool">
+        false
+      </Field>
+      <Field name="OLineToroidalWinding" label="O-Line Toroidal Winding" type="int">
+        0
+      </Field>
+      <Field name="OLineAxisFileName" label="O-Line Axis File Name" type="string">
+        ""
+      </Field>
       <Field name="showChaotic" label="Show Chaotic Fieldlines" type="bool">
         false
       </Field>
