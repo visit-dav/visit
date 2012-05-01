@@ -405,7 +405,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
             
             pIdx++;
         }
-        
+
         lines->InsertNextCell(line);
         line->Delete();
         idx++;
