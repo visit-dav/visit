@@ -77,9 +77,6 @@ class Slice3MovieTemplate(VisItMovieTemplate):
         VisItMovieTemplate.__init__(self, mm, tr)
         self.ts = 0
 
-    def __del__(self):
-        VisItMovieTemplate.__del__(self)
-
     ###########################################################################
     # Function: SetTimeState
     #
@@ -143,7 +140,7 @@ class Slice3MovieTemplate(VisItMovieTemplate):
         # Set the axis names
         annot.axes3D.xAxis.title.title = options["XAXIS_TEXT"]
         annot.axes3D.yAxis.title.title = options["YAXIS_TEXT"]
-        annot.axes3D.zAxis.title.title = options["YAXIS_TEXT"]
+        annot.axes3D.zAxis.title.title = options["ZAXIS_TEXT"]
         annot.axes3D.xAxis.title.userTitle = 1
         annot.axes3D.yAxis.title.userTitle = 1
         annot.axes3D.zAxis.title.userTitle = 1
@@ -167,14 +164,14 @@ class Slice3MovieTemplate(VisItMovieTemplate):
         classification.text = options["CLASSIFICATION_TEXT"]
         classification.useForegroundForTextColor = 0
         classification.textColor = options["CLASSIFICATION_TEXTCOLOR"]
-        classification.position = (0.83, 0.97)
-        classification.width = 0.15
+        classification.position = (0.80, 0.97)
+        classification.height = 0.02
         classification.fontBold = 1
 
         title = CreateAnnotationObject("Text2D")
         title.text = options["TITLE"]
-        title.position = (0.01, 0.97)
-        title.width = 0.01 * len(title.text) # for now...
+        title.position = (0.01, 0.955)
+        title.height = 0.03
         title.fontBold = 1
 
         # Determine the time states at which we'll begin slice sequences.

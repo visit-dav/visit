@@ -80,15 +80,15 @@ class MovieTemplateReader(XMLParser):
         self.attributes = {"name" : "", "type" : None, "length" : 0}
 
         self.viewport_data = {}
-	self.sequence_data = {}
-	self.generic_data = {}
+        self.sequence_data = {}
+        self.generic_data = {}
         self.viewport_name = ""
         self.sequence_name = ""
 
-	self.READ_GENERIC = 0
-	self.READ_VIEWPORT = 1
-	self.READ_SEQUENCE = 2
-	self.readMode = self.READ_GENERIC
+        self.READ_GENERIC = 0
+        self.READ_VIEWPORT = 1
+        self.READ_SEQUENCE = 2
+        self.readMode = self.READ_GENERIC
 
         self.line = ""
         self.fieldName = ""
@@ -121,16 +121,16 @@ class MovieTemplateReader(XMLParser):
         self.fieldLength = 0
 
         #print "<%s name=\"%s\">" % (name, attrs_getValue(attrs, "name"))
-	if name == "Object":
+        if name == "Object":
             if attrs_getValue(attrs, "name") == "VIEWPORTS":
                 self.readMode = self.READ_VIEWPORT
                 self.objectIndent = 1
-	    elif attrs_getValue(attrs, "name") == "SEQUENCEDATA":
+            elif attrs_getValue(attrs, "name") == "SEQUENCEDATA":
                 self.readMode = self.READ_SEQUENCE
                 self.objectIndent = 1
             else:
                 self.objectIndent = self.objectIndent + 1
-	    
+    
         if name == "Object":
             objName = attrs_getValue(attrs, "name")
             if self.readMode == self.READ_VIEWPORT:
@@ -143,7 +143,7 @@ class MovieTemplateReader(XMLParser):
             try:
                 #print "length=", attrs_getValue(attrs,"length")
                 self.fieldLength = int(attrs_getValue(attrs,"length"))
-	    except:
+            except:
                 self.fieldLength = 0
 
     ###########################################################################
@@ -435,25 +435,6 @@ class VisItMovieTemplate:
         for i in range(1,17):
             windowName = "Window %d" % i
             self.windowSequences[windowName] = i
-
-    ###########################################################################
-    # Method: __del__
-    #
-    # Purpose:
-    #   Destructor.
-    #
-    # Arguments:
-    #   self : This object reference.
-    #
-    # Programmer: Brad Whitlock
-    # Creation:   Tue Nov 14 13:48:13 PST 2006
-    #
-    # Modifications:
-    #
-    ###########################################################################
-
-    def __del__(self):
-        pass
 
     ###########################################################################
     # Logging and communication methods.
@@ -2519,6 +2500,31 @@ class VisItMovieTemplate:
         ret = self.IterateCallbackAndSaveFrames(cb_data, filebase, formats, percents, msg)
         SetView3D(currentView)
         return ret
+
+    ###########################################################################
+    # Method: DeleteAllAnnotationObjects
+    #
+    # Purpose:
+    #   Delete all of the annotation objects
+    #
+    # Arguments:
+    #   self : This object reference.
+    #
+    # Programmer: Brad Whitlock
+    # Creation:   Tue May  1 11:38:38 PDT 2012
+    #
+    # Modifications:
+    #
+    ###########################################################################
+
+    def DeleteAllAnnotationObjects(self):
+        names = GetAnnotationObjectNames()
+        for name in names:
+            try:
+                obj = GetAnnotationObject(name)
+                obj.Delete()
+            except:
+                pass
 
 #
 # Function to instantiate VisItMovieTemplate from makemovie.py

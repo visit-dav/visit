@@ -735,6 +735,30 @@
         <source>LineSampler</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>ExtremeValueAnalysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FTLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lagrangian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ModelFit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stagger</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ToroidalPoloidalProjection</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PlotNames</name>
@@ -896,15 +920,35 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Dual grid and stitch cells</source>
+        <source>DualGridAndStitchCells</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Dual grid</source>
+        <source>DualGrid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Stitch cells</source>
+        <source>StitchCells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add case number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only process listed domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only process level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Level</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1985,10 +2029,6 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Smooth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Equal</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2018,6 +2058,22 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Alpha</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cubic Spline</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2671,10 +2727,6 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Number of Bins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Specify range</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2716,6 +2768,26 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Value for Bins With No Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bin based on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of bins</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3027,14 +3099,6 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Number of processors:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Number of nodes:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Load balancing:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3116,6 +3180,26 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Disconnect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nodes:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Processors:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The number of processors using GPUs is affected using the controls of the GPU Acceleration tab in the Host Profiles window.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Processors using GPUs:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain assignment:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3304,6 +3388,18 @@ The time slice I want will change as I change the time slider</source>
         <source>The expressions loaded from %1 contained expressions having the same names as expressions already in the expression list. You may want to edit some of your expression names so they are unique.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Standard Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python Expression Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>unnamed%1</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisExternalSurfaceWindow</name>
@@ -3313,6 +3409,77 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <source>Find external edges for 2D datasets</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisExtremeValueAnalysisWindow</name>
+    <message>
+        <source>Compute Maxes:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Monthly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Annually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display Month</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>January</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>February</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>March</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>April</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>May</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>June</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>July</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>August</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>September</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>October</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>November</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>December</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>R Code Directory</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3339,6 +3506,73 @@ The time slice I want will change as I change the time slider</source>
     <name>QvisFFTWindow</name>
     <message>
         <source>Dummy attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisFTLEWindow</name>
+    <message>
+        <source>Integration Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FTLE Direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Backward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat flow as: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unsteady state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Steady state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Where to evaluate FTLE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>At the native resolution of the mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On a regular grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Regular Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resolution</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start at DataSet Extent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Subset Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>End at DataSet Extent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Subset End</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4166,6 +4400,10 @@ version of VisIt?</source>
         <source>Setup Host Profiles and Configuration</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>VisIt %1 [%2]</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisGlobalLineoutWindow</name>
@@ -4374,6 +4612,23 @@ by Lineout Operator</source>
         <source>No data</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All values are %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1% of values are %2
+%3% of values are %4</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisHistogramLimits</name>
@@ -4383,6 +4638,14 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>max</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4675,10 +4938,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>These options are for hardware accelerating the scalable rendering feature on a parallel cluster. In other modes, VisIt will automatically use hardware acceleration. This tab only needs to be modified for parallel clusters that have graphics cards.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Use cluster&apos;s graphics cards</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4719,18 +4978,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>New</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Copy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Host Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4763,15 +5010,7 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>GPU Accel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Additional arguments</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Launch (parallel) engine using job control system</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4803,7 +5042,67 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>X arguments:</source>
+        <source>New Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Machine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum processors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New Profile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Profile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy Profile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GPU Acceleration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Launch parallel engine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Launch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>These options are for hardware accelerating the scalable rendering feature on a compute cluster. In other modes, VisIt will automatically use hardware acceleration. This tab only needs to be modified for compute clusters that have graphics cards.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X server arguments</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5264,6 +5563,49 @@ by Lineout Operator</source>
     </message>
 </context>
 <context>
+    <name>QvisLagrangianWindow</name>
+    <message>
+        <source>Seed Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X Axis Sample</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ArcLength</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vorticity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y Axis Sample</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QvisLegendAttributesInterface</name>
     <message>
         <source>Let VisIt manage legend position</source>
@@ -5543,23 +5885,11 @@ by Lineout Operator</source>
 <context>
     <name>QvisLineSamplerWindow</name>
     <message>
-        <source>Coordinate system</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Cartesian</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Cylindrical</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Array configuration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Manual</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5572,14 +5902,6 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Number of channels</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toroidal angle (degrees) between arrays</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Array projection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5596,10 +5918,6 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Parallel/Grid: Offset between channels</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Divergent: Angle (degrees) between channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5624,22 +5942,6 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Z</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Poloidal angle (degrees)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Poloidal plane R-tilt (degrees)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Poloidal plane Z-tilt (degrees)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toroidal angle (degrees)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5671,14 +5973,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>1D plot time scaling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Beam shape</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Point</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5692,18 +5986,10 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Cone</source>
-        <translation type="unfinished">Cone</translation>
+        <translation type="obsolete">Cone</translation>
     </message>
     <message>
         <source>Cylinder radius</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cone divergence (degrees)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Beam Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5723,47 +6009,7 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Radial sample arc (degrees)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Channel sampling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>SingleChannelSampling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>SummationChannelSampling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toroidal sampling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>SingleToroidalSampling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>SummationToroidalSampling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toroidal sampling angle (degrees)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Time sampling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>CurrentTimeStep</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MultipleTimeSteps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5779,10 +6025,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Read configuration file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Add Channel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5795,7 +6037,357 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Open configuration file</source>
+        <source>Main</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cylindrical (R,Phi,Z)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manual List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Boundary</source>
+        <translation type="unfinished">Frontière</translation>
+    </message>
+    <message>
+        <source>Data File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wall File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read wall configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coordinate layout R, Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set the instance when applying to multiple 
+plots in a single window. I.e. if you want to
+compare different samplings, set the instance
+to A for the first, and B for the second. These
+settings will allow the attributes to be
+propagated to plots in other windows when
+using the &quot;Apply to all windows&quot; option.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Instance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>E</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal angle between arrays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of divergent channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative angle between channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of parallel channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Offset between channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of channels per column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Offset between rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array origin (R,Z)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal plane R-tilt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal plane Z-tilt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flip toroidal angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> R, Z, Phi, and Poloidal Angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read channel configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample volume</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cylinder sample profile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integrate along the channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample toroidally as time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integrate toroidally</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal angle sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal sample angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Current Time Step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiple Time Steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do not apply to all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D plot viewing parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display time using</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cycle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc viewing parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divergent: Angle between channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal start angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal stop angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal sampling angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of channel list arrays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open channel configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open wall configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coordinate layout X, Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y distance between arrays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array origin (X,Y,Z)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y axis rotation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y plane X-tilt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y plane Z-tilt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y axis offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> X, Y, Z, and Y Rotation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample Y axis as time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y axis sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y sample distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array origin (R,Phi,Z)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6281,7 +6873,11 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Setup Host Profiles and Configuration . . .</source>
+        <source>Launch CLI . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host profiles and Configuration Setup . . .</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6736,6 +7332,85 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisModelFitWindow</name>
+    <message>
+        <source>Models</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Model</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Input Space:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>0-1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Probability</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Calculation Space:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance Selections:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Euclidean</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manhattan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Define Models</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>-</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7568,10 +8243,6 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Output Display Options</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Mesh Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7600,10 +8271,6 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Time Pick Options</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Do Time Curve with next pick</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7616,8 +8283,16 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Spreadsheet Options</source>
+        <source>Output Display</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spreadsheet</source>
+        <translation type="unfinished">Feuille de calcul</translation>
     </message>
 </context>
 <context>
@@ -7807,6 +8482,18 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>Apply subset selections to all plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Apply to</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Active Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All Windows</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9437,6 +10124,22 @@ same window.</source>
         <source>end point</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Multi resolution for 2d AMR data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smallest cell</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>As shadows only work with VisIt&apos;s software rendering mode, software rendering is now being enabled.  If you turn off shadows at a later time, you must manually disable software rendering.  You do this by setting &quot;Use scalable rendering&quot; to &quot;Auto&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>As depth cueing only work with VisIt&apos;s software rendering mode, software rendering is now being enabled.  If you turn off depth cueing at a later time, you must manually disable software rendering.  You do this by setting &quot;Use scalable rendering&quot; to &quot;Auto&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisReplicateWindow</name>
@@ -10523,6 +11226,26 @@ atoms at unit cell boundaries.</source>
         <source>Plot</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Relate cells using</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain and cell numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global cell numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Locations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisSelectionsWindow</name>
@@ -10726,7 +11449,23 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Variable display is not supported when the selection does not have any variables.</source>
+        <source>Relate cells using</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain and cell numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global cell numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The selection was not created because the id variable was not set.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10816,10 +11555,6 @@ Coordinates plot.</source>
 <context>
     <name>QvisSetupHostProfilesAndConfigWindow</name>
     <message>
-        <source>To finish the VisIt install on this Mac select any computing centers whose resources you are using to configure host profiles automatically for their machines.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Select computing centers used</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10853,6 +11588,10 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>Host profiles and configuration files have been installed and will be available after VisIt is restarted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To finish the VisIt install on this computer select any computing centers whose resources you are using to configure host profiles automatically for their machines.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11245,6 +11984,21 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>The value of formatString was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisStaggerWindow</name>
+    <message>
+        <source>X offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z offset</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11903,10 +12657,6 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Unused</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>M3D-C1 2D Integrator (M3D-C1 2D fields only)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12080,6 +12830,18 @@ Coordinates plot.</source>
     </message>
     <message>
         <source>Correlation distance minimum distnace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Runge-Kutta 4 (Single-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling stride:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12561,10 +13323,6 @@ Coordinates plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Width</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Height</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12912,6 +13670,29 @@ not cycles or times.</source>
     </message>
     <message>
         <source>hitpercent</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisToroidalPoloidalProjectionWindow</name>
+    <message>
+        <source>Centroid Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Centroid (R,phi,Z)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project to XY plane</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13920,6 +14701,22 @@ not cycles or times.</source>
         <source>The value for the low gradient lighting max clamp was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cubic Spline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample data onto regular grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compact support variable</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisWellBorePlotWindow</name>
@@ -14708,6 +15505,13 @@ not cycles or times.</source>
     </message>
     <message>
         <source>Step back one frame</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ToggleAllowPopupAction</name>
+    <message>
+        <source>Allow Popup</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
