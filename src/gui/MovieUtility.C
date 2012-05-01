@@ -49,7 +49,6 @@ static void UpperCase(const std::string &src, std::string &dest)
     std::string tmp(src);
     for(size_t i = 0; i < tmp.size(); ++i)
     {
-        char c = tmp[i];
         if(tmp[i] >= 'a' && tmp[i] <= 'z')
             tmp[i] -= 'a' - 'A';
     }
@@ -112,7 +111,6 @@ static void
 AddMovieTemplateCB(void *cbdata, const std::string &filename, bool isDir,
     bool canAccess, long size)
 {
-    std::vector<std::string> *templateFiles = (std::vector<std::string> *)cbdata;
     if(!isDir && canAccess)
     {
         std::string ext(filename.substr(filename.size() - 3, filename.size()-1));
@@ -140,24 +138,21 @@ AddMovieTemplateCB(void *cbdata, const std::string &filename, bool isDir,
 // Creation:   Tue Nov 14 10:47:31 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue May  1 10:41:19 PDT 2012
+//   Change how we get the movie template directory.
+//
 // ****************************************************************************
 
 MovieTemplateFileList
 GetVisItMovieTemplates()
 {
-#if defined(_WIN32)
-    std::string templateDir(GetVisItArchitectureDirectory() + "\\movietemplates");
-#else
-    std::string templateDir(GetVisItArchitectureDirectory() + "/bin/movietemplates");
-#endif
-
     // Get the names of the VisIt template files in the installed version.
     MovieTemplateFileList fileList;
     void *cb_data[2];
     cb_data[0] = (void *)&fileList;
     cb_data[1] = (void *)0;
     std::vector<std::string> templateFiles;
+    std::string templateDir(GetVisItResourcesDirectory(VISIT_RESOURCES_MOVIETEMPLATES));
     debug1 << "GetVisItMovieTemplates: Trying to read system movie templates from " 
            << templateDir.c_str() << endl;
     ReadAndProcessDirectory(templateDir, AddMovieTemplateCB, (void *)cb_data, true);
@@ -186,16 +181,18 @@ GetVisItMovieTemplates()
 //   Brad Whitlock, Thu Dec 21 17:16:03 PST 2006
 //   I made it use the architecture directory.
 //
+//   Brad Whitlock, Tue May  1 10:41:19 PDT 2012
+//   Change how we get the movie template directory.
+//
 // ****************************************************************************
 
 std::string
 GetVisItMovieTemplateBaseClass()
 {
-#if defined(_WIN32)
-    std::string templateFile(GetVisItArchitectureDirectory() + "\\movietemplates\\visitmovietemplate.py");
-#else
-    std::string templateFile(GetVisItArchitectureDirectory() + "/bin/movietemplates/visitmovietemplate.py");
-#endif
+    std::string templateFile(GetVisItResourcesDirectory(VISIT_RESOURCES_MOVIETEMPLATES));
+    templateFile += VISIT_SLASH_STRING;
+    templateFile += "visitmovietemplate.py";
+
     debug1 << "GetVisItMovieTemplateBaseClass = " << templateFile.c_str() << endl;
     return templateFile;
 }

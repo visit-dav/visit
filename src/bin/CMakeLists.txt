@@ -63,13 +63,16 @@
 #  I changed the installation location of visitdiff.py to the same location
 #  that makemovie.py and makemoviemain.py get installed.
 #
+#  Brad Whitlock, Tue May  1 12:01:49 PDT 2012
+#  I moved some directories up into resources.
+#
 #****************************************************************************/
 
 #-----------------------------------------------------------------------------
 # Copy necessary bin files & directories to the build dir.
 #----------------------------------------------------------------------------
 
-SET(VISIT_BIN_DIRECTORIES movietemplates shaders)
+SET(VISIT_BIN_DIRECTORIES shaders)
 
 SET(VISIT_BIN_FILES
         Doxyfile
@@ -177,14 +180,3 @@ ELSE (NOT WIN32)
     ENDFOREACH (CFG)
 ENDIF(NOT WIN32)
 
-
-INSTALL(DIRECTORY movietemplates
-    DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-    FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
-                     GROUP_READ GROUP_WRITE 
-                     WORLD_READ
-    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                          GROUP_READ GROUP_WRITE GROUP_EXECUTE 
-                          WORLD_READ             WORLD_EXECUTE
-    PATTERN ".svn" EXCLUDE
-)

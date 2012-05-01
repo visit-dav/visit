@@ -47,9 +47,21 @@
 # Treat "hosts" specially.
 ADD_SUBDIRECTORY(hosts)
 
+# Directories that we want installed wholesale to the "resources" directory.
+SET(RESOURCE_DIRECTORIES colortables movietemplates translations)
+
+# Copy the resources directory into the out of source build
+FOREACH(ITEM ${RESOURCE_DIRECTORIES})
+    GET_FILENAME_COMPONENT(ITM_RP ${CMAKE_CURRENT_SOURCE_DIR}/${ITEM}
+                           REALPATH)
+    FILE(COPY ${ITM_RP}
+         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+         PATTERN ".svn" EXCLUDE)
+ENDFOREACH(ITEM)
+
 # Install these directories in their entirety to the installed "resources" 
 # directory.
-INSTALL(DIRECTORY colortables translations
+INSTALL(DIRECTORY ${RESOURCE_DIRECTORIES}
     DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}
     FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
                      GROUP_READ GROUP_WRITE 
