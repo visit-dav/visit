@@ -81,6 +81,8 @@ public:
     analysisState = FieldlineProperties::UNKNOWN_STATE;
     analysisMethod = FieldlineProperties::DEFAULT_METHOD;
 
+    searchState = FieldlineProperties::UNKNOWN_SEARCH;
+
     source = FieldlineProperties::UNKNOWN_TYPE;
     
     iteration = 0;
@@ -104,26 +106,32 @@ public:
     
     maxPunctures      = 0;
     nPuncturesNeeded  = 0;
+
+    parentOPointIC = 0;
+    childOPointIC = 0;
   };
 
 enum FieldlineType { UNKNOWN_TYPE  = 0,
 
-                     ORIGINAL_SEED = 1,
+                     PERIODIC = 0x0010,
+                     RATIONAL = 0x0010,
 
-                     PERIODIC = 10,
-                     RATIONAL = 10,
-                     O_POINT  = 11,
-                     X_POINT  = 12,
+                     O_POINT  = 0x0011,
+                     X_POINT  = 0x0012,
+
                      
-                     QUASI_PERIODIC = 20,
-                     IRRATIONAL     = 20,
-                     FLUX_SURFACE   = 21,
+                     QUASI_PERIODIC = 0x0060,
+                     IRRATIONAL     = 0x0060,
 
-                     ISLAND_PRIMARY_CHAIN = 22,
-                     ISLAND_SECONDARY_CHAIN = 23,
+                     FLUX_SURFACE   = 0x0021,
 
-                     ISLAND_PRIMARY_SECONDARY_AXIS = 24,
-                     ISLAND_SECONDARY_SECONDARY_AXIS = 25,
+                     ISLAND_CHAIN                    = 0x0040,
+
+                     ISLAND_PRIMARY_CHAIN            = 0x0040,
+                     ISLAND_SECONDARY_CHAIN          = 0x0042,
+
+                     ISLAND_PRIMARY_SECONDARY_AXIS   = 0x0041,
+                     ISLAND_SECONDARY_SECONDARY_AXIS = 0x0043,
                      
                      CHAOTIC = 30 };
   
@@ -134,24 +142,32 @@ enum AnalysisMethod { DEFAULT_METHOD,
 
 enum AnalysisState { UNKNOWN_STATE = 0,
 
+                     COMPLETED  = 2,
+                     TERMINATED = 3,
+                     
                      OVERRIDE = 5,
+
+                     DELETE   = 7,
 
                      ADDING_POINTS = 10,
 
-                     O_POINT_SEED = 22,
-                     X_POINT_SEED = 23,
+                     ADD_O_POINTS = 15,
+                     ADD_X_POINTS = 16,
 
-                     COMPLETED  = 30,
-                     TERMINATED = 40,
-                     
-                     DELETE     = 99,
+                     ADD_WIDTH_POINT };
 
-                     ADD          = 50,
-                     ADD_O_POINTS = 51,
-                     ADD_X_POINTS = 52 };
+enum SearchingState { UNKNOWN_SEARCH = 0,
 
-////// Code for rational surface search
-enum SearchingState { ORIGINAL_RATIONAL = 100,
+                      ////// Code for island width search
+                      ISLAND_O_POINT,
+
+                      ISLAND_PCA_SEARCH,
+                      ISLAND_WIDTH_SEARCH,
+                      ISLAND_WIDTH_COMPLETED,
+                      ////// Code for island width search
+                      
+                      ////// Code for rational surface search
+                      ORIGINAL_RATIONAL = 100,
                       SEARCHING_SEED,
                       WAITING_SEED,
                       FINISHED_SEED,
@@ -164,10 +180,11 @@ enum SearchingState { ORIGINAL_RATIONAL = 100,
                       MINIMIZING_X3,
                       BRACKETING_A      = 120, //Used to bracket the minimum
                       BRACKETING_B,
-                      BRACKETING_C };
+                      BRACKETING_C
+                      ////// Code for rational surface search
+};
 
 
-////// Code for rational surface search
 
 public:
 
@@ -227,8 +244,25 @@ public:
   unsigned int maxPunctures;
   unsigned int nPuncturesNeeded;
 
-  std::vector< avtVector > OPoints;
-  bool seedOPoints;
+  // Seeds for islands
+  avtVector lastSeedPoint;
+  std::vector< avtVector > seedPoints;
+
+  ////// Code for island width search
+  bool pastFirstSearchFailure;
+  double islandWidth;
+  double searchBaseDelta;
+  double searchDelta;
+  double searchIncrement;
+  double searchMagnitude;
+  avtVector searchNormal;
+  avtPoincareIC* parentOPointIC;
+  avtPoincareIC* childOPointIC;
+
+  unsigned int baseToroidalWinding;
+  unsigned int basePoloidalWinding;
+
+  ////// Code for island width search
 
   ////// Code for rational surface search
   // The rational points bounding the location of the minimization action
