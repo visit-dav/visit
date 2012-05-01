@@ -44,5 +44,18 @@
 #
 #*****************************************************************************
 
-ADD_SUBDIRECTORY(colortables)
+# Treat "hosts" specially.
 ADD_SUBDIRECTORY(hosts)
+
+# Install these directories in their entirety to the installed "resources" 
+# directory.
+INSTALL(DIRECTORY colortables translations
+    DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
+                     GROUP_READ GROUP_WRITE 
+                     WORLD_READ
+    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                          GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                          WORLD_READ             WORLD_EXECUTE
+    PATTERN ".svn" EXCLUDE
+)

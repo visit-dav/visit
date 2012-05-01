@@ -156,7 +156,8 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
     // Read the user's home VisIt directory and import all of the color tables.
     //
     ctAtts = cta;
-    bool r1 = ReadAndProcessDirectory(GetSystemVisItColorTableDirectory(), ImportHelper,
+    std::string ctdir(GetVisItResourcesDirectory(VISIT_RESOURCES_COLORTABLES));
+    bool r1 = ReadAndProcessDirectory(ctdir, ImportHelper,
                                       (void*)this, false);
     bool r2 = ReadAndProcessDirectory(GetUserVisItDirectory(), ImportHelper,
                                       (void*)this, false);
