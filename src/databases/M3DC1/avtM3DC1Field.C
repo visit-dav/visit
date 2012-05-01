@@ -147,15 +147,13 @@ avtM3DC1Field::~avtM3DC1Field()
 bool avtM3DC1Field::IsInside(const double& t, const avtVector& x) const
 {
   double xin[3];
-  double *xieta = new double[element_dimension];
+  double xieta[3];
 
   xin[0] = x[0];
   xin[1] = x[1];
   xin[2] = x[2];
 
   int el = get_tri_coords2D(xin, xieta);
-
-  delete [] xieta;
 
   return (bool) ( el >= 0 );
 }
@@ -531,7 +529,7 @@ avtM3DC1Field::operator()( const double &t, const avtVector &p ) const
   double pt[3] = { p[0], p[1], p[2] };
 
   /* Find the element containing the point; get local coords xi,eta */
-  double *xieta = new double[element_dimension];
+  double xieta[3];
   int    element;
 
   avtVector vec;
@@ -549,8 +547,6 @@ avtM3DC1Field::operator()( const double &t, const avtVector &p ) const
     // The B value is in cylindrical coordiantes
     vec = avtVector( B[0], B[1], B[2] );
   }
-
-  delete [] xieta;
 
   return vec;
 }
