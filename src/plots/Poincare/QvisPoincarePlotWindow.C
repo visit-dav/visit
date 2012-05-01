@@ -58,6 +58,8 @@
 #include <QvisLineStyleWidget.h>
 #include <QvisVariableButton.h>
 #include <QvisPointControl.h>
+#include <QPushButton>
+#include <QFileDialog>
 
 #include <stdio.h>
 #include <string>
@@ -418,7 +420,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
    // Create the analysis group box.
     QGroupBox *analysisGroup = new QGroupBox(secondTab);
     analysisGroup->setTitle(tr("Analysis"));
-    mainLayout->addWidget(analysisGroup, 1, 0, 5, 3, Qt::AlignTop);
+    mainLayout->addWidget(analysisGroup, 1, 0, 3, 3, Qt::AlignTop);
 
     QGridLayout *analysisLayout = new QGridLayout(analysisGroup);
     analysisLayout->setMargin(5);
@@ -446,35 +448,35 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
     overridePoloidalWindingLabel =
       new QLabel(tr("Override poloidal winding"), secondTab);
-    analysisLayout->addWidget(overridePoloidalWindingLabel, 2, 0);
+    analysisLayout->addWidget(overridePoloidalWindingLabel, 1, 2);
     overridePoloidalWinding = new QSpinBox(secondTab);
     overridePoloidalWinding->setMinimum(0);
     overridePoloidalWinding->setMaximum(1000);
     connect(overridePoloidalWinding, SIGNAL(valueChanged(int)),
             this, SLOT(overridePoloidalWindingChanged(int)));
-    analysisLayout->addWidget(overridePoloidalWinding, 2, 1);
+    analysisLayout->addWidget(overridePoloidalWinding, 1, 3);
 
     windingPairConfidenceLabel =
       new QLabel(tr("Winding pair confidence"), secondTab);
-    analysisLayout->addWidget(windingPairConfidenceLabel, 3, 0);
+    analysisLayout->addWidget(windingPairConfidenceLabel, 2, 0);
     windingPairConfidence = new QLineEdit(secondTab);
     connect(windingPairConfidence, SIGNAL(returnPressed()),
             this, SLOT(windingPairConfidenceProcessText()));
-    analysisLayout->addWidget(windingPairConfidence, 3, 1);
+    analysisLayout->addWidget(windingPairConfidence, 2, 1);
 
 
     rationalSurfaceFactorLabel =
       new QLabel(tr("Rational surface factor"), secondTab);
-    analysisLayout->addWidget(rationalSurfaceFactorLabel, 4, 0);
+    analysisLayout->addWidget(rationalSurfaceFactorLabel, 2, 2);
     rationalSurfaceFactor = new QLineEdit(secondTab);
     connect(rationalSurfaceFactor, SIGNAL(returnPressed()),
             this, SLOT(rationalSurfaceFactorProcessText()));
-    analysisLayout->addWidget(rationalSurfaceFactor, 4, 1);
+    analysisLayout->addWidget(rationalSurfaceFactor, 2, 3);
 
-   // Create the O/X Point group box.
+    // Create the O/X Point group box.
     QGroupBox *criticalPointGroup = new QGroupBox(secondTab);
     criticalPointGroup->setTitle(tr("Critical Points"));
-    mainLayout->addWidget(criticalPointGroup, 5, 0, 1, 3, Qt::AlignTop);
+    mainLayout->addWidget(criticalPointGroup, 3, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *criticalPointLayout = new QGridLayout(criticalPointGroup);
     criticalPointLayout->setMargin(5);
@@ -486,7 +488,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     criticalPointLayout->addWidget(showOPoints, 0, 0);
 
     OPointMaxIterationsLabel =
-      new QLabel(tr(" Maximum iterations"), criticalPointGroup);
+      new QLabel(tr("Maximum iterations"), criticalPointGroup);
     OPointMaxIterations = new QSpinBox(criticalPointGroup);
     OPointMaxIterations->setRange(0, 10);
     connect(OPointMaxIterations, SIGNAL(valueChanged(int)), 
@@ -494,8 +496,43 @@ QvisPoincarePlotWindow::CreateWindowContents()
     criticalPointLayout->addWidget( OPointMaxIterationsLabel, 0, 2);
     criticalPointLayout->addWidget( OPointMaxIterations, 0, 3);
 
-//    criticalPointGroup->hide();
 
+    // Create the O Line analysis group box.
+    QGroupBox *OLineAnalysisGroup = new QGroupBox(secondTab);
+    OLineAnalysisGroup->setTitle(tr("O-Line Analysis"));
+    mainLayout->addWidget(OLineAnalysisGroup, 4, 0, 1, 3, Qt::AlignTop);
+
+    QGridLayout *OLineAnalysisLayout = new QGridLayout(OLineAnalysisGroup);
+    OLineAnalysisLayout->setMargin(5);
+    OLineAnalysisLayout->setSpacing(10);
+
+    performOLineAnalysis = new QCheckBox(tr("Perform O-Line analysis"),
+                                OLineAnalysisGroup);
+    connect(performOLineAnalysis, SIGNAL(toggled(bool)),
+            this, SLOT(performOLineAnalysisChanged(bool)));
+    OLineAnalysisLayout->addWidget(performOLineAnalysis, 0, 0);
+
+    OLineToroidalWindingLabel =
+      new QLabel(tr("O-Line toroidal windings"), OLineAnalysisGroup);
+    OLineToroidalWinding = new QSpinBox(OLineAnalysisGroup);
+    OLineToroidalWinding->setRange(0, 999);
+    connect(OLineToroidalWinding, SIGNAL(valueChanged(int)), 
+            this, SLOT(OLineToroidalWindingChanged(int)));
+    OLineAnalysisLayout->addWidget( OLineToroidalWindingLabel, 0, 2);
+    OLineAnalysisLayout->addWidget( OLineToroidalWinding, 0, 3);
+
+
+    OLineAxisFileDialogButton = new QPushButton(secondTab);
+    OLineAxisFileDialogButton->setText("O-Line Axis Point File");
+    connect(OLineAxisFileDialogButton, SIGNAL(clicked()),
+            this, SLOT(OLineAxisFileDialogButtonClicked()));
+    OLineAnalysisLayout->addWidget(OLineAxisFileDialogButton, 2, 0);
+
+
+    OLineAxisFileName = new QLineEdit(secondTab);
+    connect(OLineAxisFileName, SIGNAL(returnPressed()),
+            this, SLOT(OLineAxisFileNameProcessText()));
+    OLineAnalysisLayout->addWidget(OLineAxisFileName, 2, 1, 1, 3);
 
     // Create the overlaps group box.
     QGroupBox *overlapsGroup = new QGroupBox(secondTab);
@@ -1258,6 +1295,19 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             OPointMaxIterations->setValue(atts->GetOPointMaxIterations());
             OPointMaxIterations->blockSignals(false);
             break;
+          case PoincareAttributes::ID_performOLineAnalysis:
+            performOLineAnalysis->blockSignals(true);
+            performOLineAnalysis->setChecked(atts->GetPerformOLineAnalysis());
+            performOLineAnalysis->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_OLineToroidalWinding:
+            OLineToroidalWinding->blockSignals(true);
+            OLineToroidalWinding->setValue(atts->GetOLineToroidalWinding());
+            OLineToroidalWinding->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_OLineAxisFileName:
+            OLineAxisFileName->setText(QString(atts->GetOLineAxisFileName().c_str()));
+            break;
           case PoincareAttributes::ID_showIslands:
             showIslands->blockSignals(true);
             showIslands->setChecked(atts->GetShowIslands());
@@ -1578,6 +1628,21 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
             atts->SetMax(atts->GetMax());
         }
     }
+
+    // Do O-Line Axis File Name
+    if(which_widget == PoincareAttributes::ID_OLineAxisFileName || doAll)
+    {
+        QString val = OLineAxisFileName->text();
+        if( val.length() )
+            atts->SetOLineAxisFileName(val.toStdString());
+        else
+        {
+            ResettingError(tr("OLineAxisFileName"),
+                           QString(atts->GetOLineAxisFileName().c_str()));
+            atts->SetOLineAxisFileName(atts->GetOLineAxisFileName());
+        }
+    }
+
     if (doAll)
     {
         atts->SetPointSize(pointControl->GetPointSize());
@@ -2256,6 +2321,44 @@ void
 QvisPoincarePlotWindow::OPointMaxIterationsChanged(int val)
 {
     atts->SetOPointMaxIterations(val);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::performOLineAnalysisChanged(bool val)
+{
+    atts->SetPerformOLineAnalysis(val);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::OLineToroidalWindingChanged(int val)
+{
+    atts->SetOLineToroidalWinding(val);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::OLineAxisFileNameProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_OLineAxisFileName);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::OLineAxisFileDialogButtonClicked()
+{
+    QString fileName =
+        QFileDialog::getOpenFileName(this, tr("Open O-Line Axis Point File"),
+                                 "",
+                                 tr(""));
+
+    OLineAxisFileName->setText(fileName);
+
+    GetCurrentValues(PoincareAttributes::ID_OLineAxisFileName);
     Apply();
 }
 

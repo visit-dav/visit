@@ -201,6 +201,10 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            showOPoints != obj.showOPoints ||
            OPointMaxIterations != obj.OPointMaxIterations ||
 
+           performOLineAnalysis != obj.performOLineAnalysis ||
+           OLineToroidalWinding != obj.OLineToroidalWinding ||
+           OLineAxisFileName != obj.OLineAxisFileName ||
+
            showXPoints != obj.showXPoints ||
            XPointMaxIterations != obj.XPointMaxIterations ||
 
