@@ -10,15 +10,21 @@
 # Creation:   Thu Nov 16 11:46:31 PDT 2006
 #
 # Modifications:
+#   Brad Whitlock, Wed Apr 16 16:44:26 PDT 2008
+#   Add the current time to the movie template so we eventually know all of
+#   the times.
 #
 ###############################################################################
 
 def Sequence1Frames_set_timeslider(i, cbdata):
-    ts = cbdata
+    ts = cbdata[0]
     ret = SetTimeSliderState(i)
     Query("Time")
     time = GetQueryOutputValue()
     ts.text = "Time = %1.5f" % time
+    # Add the time to the movie template
+    cmt = cbdata[1]
+    cmt.databaseTimes = cmt.databaseTimes + [time]
     return ret
 
 ###############################################################################
@@ -33,8 +39,11 @@ def Sequence1Frames_set_timeslider(i, cbdata):
 # Creation:   Thu Nov 16 11:46:31 PDT 2006
 #
 # Modifications:
-#   Brad Whitlock, Thu Nov 11 15:33:13 PST 2010
-#   We now have to DrawPlots after setting operator options.
+#   Brad Whitlock, Wed Apr 16 16:45:24 PDT 2008
+#   Changed calculation of t so that it can be non-uniform.
+#
+#   Brad Whitlock, Thu Nov 11 15:21:21 PST 2010
+#   We have to DrawPlots after setting operator options now.
 #
 ###############################################################################
 
@@ -44,7 +53,9 @@ def Sequence2Frames_clip_cb(i, cbdata):
     xmin = cbdata[2]
     xmax = cbdata[3]
     vc = cbdata[4]
-    t = float(i) / float(nts-1)
+    allTimes = cbdata[5]
+    dT = allTimes[-1] - allTimes[0]
+    t = (allTimes[i] - allTimes[0]) / dT
     newX = t * (xmax - xmin) + xmin
     clip.plane1Origin = (newX, 0, 0)
     ret = SetOperatorOptions(clip)
@@ -53,7 +64,7 @@ def Sequence2Frames_clip_cb(i, cbdata):
     return ret
 
 ###############################################################################
-# Class: OverlayCurveOnReflectedPlotsMovieTemplate
+# Class: OverlayCurveMovieTemplate
 #
 # Purpose:
 #   This is movie template class creates a movie of a FilledBoundary plot
@@ -63,16 +74,15 @@ def Sequence2Frames_clip_cb(i, cbdata):
 # Creation:   Thu Nov 16 11:46:31 PDT 2006
 #
 # Modifications:
+#   Brad Whitlock, Wed Apr 16 16:45:49 PDT 2008
+#   Added databaseTimes member.
 #
 ###############################################################################
 
-class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
+class OverlayCurveMovieTemplate(VisItMovieTemplate):
     def __init__(self, mm, tr):
         VisItMovieTemplate.__init__(self, mm, tr)
-        self.timeSlider = ""
-
-    def __del__(self):
-        VisItMovieTemplate.__del__(self)
+        self.databaseTimes = []
 
     ###########################################################################
     # Function: Sequence1Frames
@@ -84,61 +94,30 @@ class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
     # Creation:   Thu Nov 16 11:46:31 PDT 2006
     #
     # Modifications:
-    #   Brad Whitlock, Thu Nov 11 15:44:20 PST 2010
-    #   I fixed some deprectated annotations and made reflect work again.
+    #   Brad Whitlock, Wed Apr 16 16:46:27 PDT 2008
+    #   Pass self to the sequence1 callback.
+    #
+    #   Brad Whitlock, Tue Apr 22 15:52:52 PDT 2008
+    #   Turn off the query output.
     #
     ###########################################################################
 
     def Sequence1Frames(self, formats, percents):
-        self.Debug(1, "OverlayCurveOnReflectedPlotsMovieTemplate.Sequence1Frames: begin")
+        self.Debug(1, "OverlayCurveMovieTemplate.Sequence1Frames: begin")
         options = self.sequence_data["SEQUENCE_1"]
 
         # Set up the plots.
         DeleteAllPlots()
-        OpenDatabase(options["DATABASE1"])
-        if options["PLOT_TYPE1"] == 0:
-            if AddPlot("FilledBoundary", options["PLOT_VAR1"]) == 0:
+        OpenDatabase(options["DATABASE"])
+        if options["PLOT_TYPE"] == 0:
+            if AddPlot("FilledBoundary", options["PLOT_VAR"]) == 0:
                 raise self.error("The FilledBoundary plot could not be created for "
                             "sequence 1.")
-        elif options["PLOT_TYPE1"] == 1:
-            if AddPlot("Boundary", options["PLOT_VAR1"]) == 0:
-                raise self.error("The Boundary plot could not be created for "
-                            "sequence 1.")
         else:
-            if AddPlot("Pseudocolor", options["PLOT_VAR1"]) == 0:
+            if AddPlot("Pseudocolor", options["PLOT_VAR"]) == 0:
                 raise self.error("The Pseudocolor plot could not be created for "
                             "sequence 1.")
-        # Create plot 2
-        OpenDatabase(options["DATABASE2"])
-        if options["PLOT_TYPE2"] == 0:
-            if AddPlot("FilledBoundary", options["PLOT_VAR2"]) == 0:
-                raise self.error("The FilledBoundary plot could not be created for "
-                            "sequence 1.")
-        elif options["PLOT_TYPE2"] == 1:
-            if AddPlot("Boundary", options["PLOT_VAR2"]) == 0:
-                raise self.error("The Boundary plot could not be created for "
-                            "sequence 1.")
-        else:
-            if AddPlot("Pseudocolor", options["PLOT_VAR2"]) == 0:
-                raise self.error("The Pseudocolor plot could not be created for "
-                            "sequence 1.")
-        SetActivePlots(1)
-        AddOperator("Reflect")
-        refl = ReflectAttributes()
-        refl.reflections = (0,0,1,0,0,0,0,0)
-        SetOperatorOptions(refl)
         DrawPlots()
-        ResetView()
-
-        # If the databases are not the same then create a database correlation
-        # so we can get a new time slider to use. In any case, keep track
-        # of the time slider that we'll be using.
-        self.timeSlider = options["DATABASE1"]
-        if options["DATABASE1"] != options["DATABASE2"]:
-            dbs = (options["DATABASE1"], options["DATABASE2"])
-            if CreateDatabaseCorrelation("DB1DB2", dbs, 1) == 1:
-                self.timeSlider = "DB1DB2"
-                SetActiveTimeSlider(self.timeSlider)
 
         # Set the background color.
         annot = GetAnnotationAttributes()
@@ -169,26 +148,28 @@ class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
         classification.text = options["CLASSIFICATION_TEXT"]
         classification.useForegroundForTextColor = 0
         classification.textColor = options["CLASSIFICATION_TEXTCOLOR"]
-        classification.position = (0.83, 0.97)
-        classification.width = 0.15
+        classification.position = (0.80, 0.97)
+        classification.height = 0.02
         classification.fontBold = 1
 
         title = CreateAnnotationObject("Text2D")
         title.text = options["TITLE"]
-        title.position = (0.01, 0.97)
-        title.width = 0.01 * len(title.text) # for now...
+        title.position = (0.01, 0.955)
+        title.height = 0.03
         title.fontBold = 1
 
         # Save the frames.
-        cb_data = (TimeSliderGetNStates(), Sequence1Frames_set_timeslider, ts)
+        SuppressQueryOutputOn()
+        cb_data = (TimeSliderGetNStates(), Sequence1Frames_set_timeslider, (ts, self))
         ret = self.IterateCallbackAndSaveFrames(cb_data, "seq1", formats, percents, "Generating sequence 1 frames")
+        SuppressQueryOutputOff()
 
         DeleteAllPlots()
         ts.Delete()
         classification.Delete()
         title.Delete()
 
-        self.Debug(1, "OverlayCurveOnReflectedPlotsMovieTemplate.Sequence1Frames: end")
+        self.Debug(1, "OverlayCurveMovieTemplate.Sequence1Frames: end")
         return (ret, "seq1", GetAnnotationAttributes().backgroundColor)
 
     ###########################################################################
@@ -201,23 +182,33 @@ class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
     # Creation:   Thu Nov 16 11:46:31 PDT 2006
     #
     # Modifications:
+    #   Brad Whitlock, Wed Apr 16 16:47:11 PDT 2008
+    #   Pass the databaseTimes to the sequence 2 callback.
+    #
+    #   Brad Whitlock, Thu Nov 11 15:25:51 PST 2010
+    #   Fix annotation function calls that were deprecated.
     #
     ###########################################################################
 
     def Sequence2Frames(self, formats, percents):
-        self.Debug(1, "OverlayCurveOnReflectedPlotsMovieTemplate.Sequence2Frames: begin")
+        self.Debug(1, "OverlayCurveMovieTemplate.Sequence2Frames: begin")
         options = self.sequence_data["SEQUENCE_2"]
 
-        # Determine the number of time steps in the first sequence's time 
-        # slider so we can know how to advance the Clip operator.
-        dbc = GetDatabaseCorrelation(self.timeSlider)
-        nts = dbc.numStates
+        # Determine the number of time steps in the first sequence's database.
+        options1 = self.sequence_data["SEQUENCE_1"]
+        OpenDatabase(options1["DATABASE"])
+        nts = TimeSliderGetNStates()
+        CloseDatabase(options1["DATABASE"])
         DeleteAllPlots()
+        self.DeleteAllAnnotationObjects()
 
         # Set up the Curve plot.
         OpenDatabase(options["CURVE_DATABASE"])
         AddPlot("Curve", options["CURVE_VARIABLE"])
         DrawPlots()
+        cAtts = CurveAttributes(1)
+        cAtts.showLabels = 0
+        SetPlotOptions(cAtts)
         ResetView()
         vc = GetViewCurve()
         vc.viewportCoords = (0.1, 0.95, 0.15, 1.)
@@ -225,6 +216,7 @@ class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
         # Get the Curve plot extents
         Query("SpatialExtents")
         extents = GetQueryOutputValue()
+        self.Debug(5, "extents=" + str(extents))
         AddOperator("Clip")
         clip = ClipAttributes()
         clip.funcType = clip.Plane
@@ -254,19 +246,22 @@ class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
 
         title = CreateAnnotationObject("Text2D")
         title.text = options["CURVE_TITLE"]
-        title.position = (0.11, 0.90)
-        title.width = 0.01 * len(title.text) # for now...
+        title.position = (0.11, 0.88)
+        title.height = 0.1
         title.fontBold = 1
 
         # Save the frames. This will be done by some other thing so the 
         # will have the viewport names worked in.
-        cb_data = (nts, Sequence2Frames_clip_cb, (nts, clip, extents[0], extents[1], vc))
+        cb_data = (nts, Sequence2Frames_clip_cb, (nts, clip, extents[0], extents[1], vc, self.databaseTimes))
         ret = self.IterateCallbackAndSaveFrames(cb_data, "seq2", formats, percents, "Generating sequence 2 frames")
 
         title.Delete()
         DeleteAllPlots()
 
-        self.Debug(1, "OverlayCurveOnReflectedPlotsMovieTemplate.Sequence2Frames: end")
+        # Reset the database times
+        self.databaseTimes = []
+
+        self.Debug(1, "OverlayCurveMovieTemplate.Sequence2Frames: end")
         return (ret, "seq2", GetAnnotationAttributes().backgroundColor)
 
     ###########################################################################
@@ -293,4 +288,4 @@ class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
 
 # Public
 def InstantiateMovieTemplate(moviemaker, templateReader):
-    return OverlayCurveOnReflectedPlotsMovieTemplate(moviemaker, templateReader)
+    return OverlayCurveMovieTemplate(moviemaker, templateReader)
