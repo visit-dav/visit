@@ -513,6 +513,9 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
 //    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
 //    Added timings for each phase of ghost zone communication.
 //
+//    Jeremy Meredith, Wed May  2 17:23:18 EDT 2012
+//    Record total global alltoall communication in num items and num kbytes.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -654,8 +657,22 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
     delete [] sendcount;
     delete [] recvcount;
     delete [] tmp_ptr;
+
+    // record how many bytes were exchanged globally
+    long global_items_exchanged = total_send;
+    SumLongAcrossAllProcessors(global_items_exchanged);
+    long global_bytes_exchanged = (global_items_exchanged * sizeof(T) + 512) / 1024;
+#else
+    long global_items_exchanged = 0;
+    long global_bytes_exchanged = 0;
 #endif
-    visitTimer->StopTimer(timer_CommunicateGhost, "Ghost Zone Generation phase 3: Communicate");
+    char msg[256];
+    sprintf(msg, "Ghost Zone Generation phase 3: Communicate "
+            "(global %ld items, %ld kB)",
+            global_items_exchanged,
+            global_bytes_exchanged);
+
+    visitTimer->StopTimer(timer_CommunicateGhost, msg);
 }
 
 // ****************************************************************************
