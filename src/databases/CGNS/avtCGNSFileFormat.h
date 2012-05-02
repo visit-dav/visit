@@ -44,7 +44,12 @@
 #define AVT_CGNS_FILE_FORMAT_H
 
 #include <avtMTMDFileFormat.h>
-
+#include <cgnslib.h>
+#if CGNS_VERSION <= 3000
+#define cgsize_t int
+#else
+#include <cgnstypes.h>
+#endif
 #include <vector>
 #include <vectortypes.h>
 #include <map>
@@ -130,7 +135,7 @@ protected:
 
     int                    GetFileHandle();
     void                   ReadTimes();
-    bool                   GetCoords(int base, int zone, const int *zsize,
+    bool                   GetCoords(int base, int zone, const cgsize_t *zsize,
                                      bool structured, float **coords,
                                      int *ncoords);
     void                   AddReferenceStateExpressions(avtDatabaseMetaData *md,
@@ -148,9 +153,9 @@ protected:
     void                   InitializeMaps(int timeState);
 
     vtkDataSet *           GetCurvilinearMesh(int, int, const char *,
-                                              const int *);
+                                              const cgsize_t *);
     vtkDataSet *           GetUnstructuredMesh(int, int, const char *,
-                                               const int *);
+                                               const cgsize_t *);
 
     void PrintVarInfo(ostream &out, const VarInfo &var, const char *indent);
     void PrintStringVarInfoMap(ostream &out, const StringVarInfoMap &vars, const char *indent);
