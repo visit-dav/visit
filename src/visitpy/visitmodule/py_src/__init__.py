@@ -43,13 +43,18 @@
 #
 #
 # Modifications:
-#
+#  Cyrus Harrison, Wed May  2 14:07:07 PDT 2012
+#  Avoid creating pyc files when importing the visit module
 #
 ###############################################################################
+import sys
+__system_bytecode_setting = sys.dont_write_bytecode
+sys.dont_write_bytecode = True
 
 #
 # note: the frontend is responsible for loading the actual visit module
 #
+
 from frontend import *
 from evalfuncs import *
 
@@ -60,7 +65,7 @@ try:
 except ImportError:
     pass
 
-
+sys.dont_write_bytecode = __system_bytecode_setting
 
 
 
