@@ -37,10 +37,12 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             Avtpoincarefilter.C                           //
+//                             avtPoincareFilter.C                           //
 // ************************************************************************* //
 
 #include <avtPoincareFilter.h>
+
+#include <avtCallback.h>
 
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
@@ -61,6 +63,8 @@
 #include <avtExtents.h>
 #include <avtPoincareIC.h>
 #include <utility>
+
+#include <sys/stat.h>
 
 #include "FieldlineAnalyzerLib.h"
 
@@ -381,6 +385,48 @@ avtPoincareFilter::GetIntegralCurvePoints(std::vector<avtIntegralCurve *> &ics)
 void
 avtPoincareFilter::Execute()
 {
+    if( performOLineAnalysis )
+    {
+        struct stat fileAtt;
+
+        //Use the stat function to get the file information
+        if (stat(OLineAxisFileName.c_str(), &fileAtt) != 0)
+        {
+          std::string msg("Trying to perform O-line analysis but the O-line axis file is not valid.");
+
+          avtCallback::IssueWarning(msg.c_str());
+          EXCEPTION1(ImproperUseException, msg);
+        }
+        else
+        {
+          FILE *fp = fopen( OLineAxisFileName.c_str(), "r" );
+
+          if( fp == NULL )
+          {
+            std::string msg("Trying to perform O-line analysis but the O-line axis file can not be openned.");
+            
+            avtCallback::IssueWarning(msg.c_str());
+            EXCEPTION1(ImproperUseException, msg);
+          }
+
+          while( !feof(fp) )
+          {
+            Point nextPt;
+
+            if( fscanf( fp, "%lf %lf %lf", &nextPt.x, &nextPt.y, &nextPt.z ) != 3 &&
+                feof(fp) == 0)
+            {
+              std::string msg("Trying to perform O-line analysis but the O-line axis file can not be read.");
+              
+              avtCallback::IssueWarning(msg.c_str());
+              EXCEPTION1(ImproperUseException, msg);
+            }
+          }
+
+          fclose (fp);
+        }
+    }
+
     avtStreamlineFilter::Execute();
 
     std::vector<avtIntegralCurve *> ics;
@@ -394,6 +440,7 @@ avtPoincareFilter::Execute()
 #endif
     SetOutputDataTree(dt);
 }
+
 
 // ****************************************************************************
 //  Method: avtPoincareFilter::ContinueExecute

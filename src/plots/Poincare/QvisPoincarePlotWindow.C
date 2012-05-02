@@ -515,7 +515,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     OLineToroidalWindingLabel =
       new QLabel(tr("O-Line toroidal windings"), OLineAnalysisGroup);
     OLineToroidalWinding = new QSpinBox(OLineAnalysisGroup);
-    OLineToroidalWinding->setRange(0, 999);
+    OLineToroidalWinding->setRange(1, 999);
     connect(OLineToroidalWinding, SIGNAL(valueChanged(int)), 
             this, SLOT(OLineToroidalWindingChanged(int)));
     OLineAnalysisLayout->addWidget( OLineToroidalWindingLabel, 0, 2);
@@ -1632,6 +1632,8 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
     // Do O-Line Axis File Name
     if(which_widget == PoincareAttributes::ID_OLineAxisFileName || doAll)
     {
+      if( atts->GetPerformOLineAnalysis() )
+      {
         QString val = OLineAxisFileName->text();
         if( val.length() )
             atts->SetOLineAxisFileName(val.toStdString());
@@ -1641,6 +1643,7 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
                            QString(atts->GetOLineAxisFileName().c_str()));
             atts->SetOLineAxisFileName(atts->GetOLineAxisFileName());
         }
+      }
     }
 
     if (doAll)
