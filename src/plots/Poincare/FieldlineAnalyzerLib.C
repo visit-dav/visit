@@ -2333,9 +2333,10 @@ FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
 
 //  fclose( fp );
 
-  std::cerr << "phiTotal " << phiTotal << "  "
-            << "number of rotations " << phiTotal/(2.0*M_PI)
-            << std::endl;
+  if( verboseFlag )
+    std::cerr << "phiTotal " << phiTotal << "  "
+              << "number of rotations " << phiTotal/(2.0*M_PI)
+              << std::endl;
 
   // At this point all of the poloidal and toroidal puncture points
   // have been found.
@@ -2365,20 +2366,28 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
 
     FILE *fp = fopen( OLineAxisFileName.c_str(), "r" );
 
-//     if( toroidalBase == 2.0 )
-//       fp = fopen( "oline_2_1_island.txt", "r" );
-//     else if( toroidalBase == 12.0 )
-//       fp = fopen( "oline_6_7_island.txt", "r" );
-//     else if( toroidalBase == 14.0 )
-//       fp = fopen( "oline_7_8_island.txt", "r" );
+    if( fp == NULL )
+    {
+      std::cerr << "Trying to perform O-line analysis but the O-line axis file can not be openned." << std::endl;
 
-    while ( ! feof(fp) )
+      return Point(0,0,0);
+    }
+
+    while( !feof(fp) )
     {
       currPt = nextPt;
       currPhi = nextPhi;
 
-      if( fscanf (fp, "%lf %lf %lf", &nextPt.x, &nextPt.y, &nextPt.z ) != 3 )
-        break;
+      if( fscanf( fp, "%lf %lf %lf", &nextPt.x, &nextPt.y, &nextPt.z ) != 3 &&
+          feof(fp) == 0 )
+      {
+        std::cerr << "Trying to perform O-line analysis but the O-line axis file can not be read." << std::endl;
+
+        OLineAxisPts.clear();
+        OLineAxisPhiAngles.clear();
+
+        return Point(0,0,0);
+      }
 
       OLineAxisPts.push_back( nextPt );
 
@@ -2402,12 +2411,6 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
         phiBase += dPhi;
         phiTotal += dPhi;
       }
-
-//       if( phiBase > toroidalBase * 2.0 * M_PI )
-//      phiBase -= toroidalBase * 2.0 * M_PI;
-      
-//       else if( phiBase < -toroidalBase * 2.0 * M_PI )
-//      phiBase += toroidalBase * 2.0 * M_PI;
       
       OLineAxisPhiAngles.push_back( phiBase );
     }
@@ -2432,8 +2435,6 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
 
   Point axisPt( 0, 0, 0 );
 
-//  std::cerr << "start OLineAxisIndex " << OLineAxisIndex;
-
   for( unsigned int i=1; i<OLineAxisPts.size(); ++i )
   {
     if( (phiTest >= 0 &&
@@ -2449,14 +2450,6 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
       
       axisPt = OLineAxisPts[OLineAxisIndex-1] + (OLineAxisPts[OLineAxisIndex]-OLineAxisPts[OLineAxisIndex-1]) * t;
 
-//       std::cerr << t << "  "
-//              << atan2(axisPt.y, axisPt.x) << "  "
-//              << phiTest << "   "
-//              << OLineAxisPhiAngles[OLineAxisIndex-1] + (OLineAxisPhiAngles[OLineAxisIndex]-OLineAxisPhiAngles[OLineAxisIndex-1]) * t
-//              << std::endl;
-      
-//       std::cerr << "  end OLineAxisIndex " << OLineAxisIndex << std::endl;
-      
       return axisPt;
     }
     
