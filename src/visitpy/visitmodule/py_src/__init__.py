@@ -43,8 +43,11 @@
 #
 #
 # Modifications:
-#  Cyrus Harrison, Wed May  2 14:07:07 PDT 2012
-#  Avoid creating pyc files when importing the visit module
+#   Brad Whitlock, Tue May  1 16:49:40 PDT 2012
+#   Add writescript.
+#
+#   Cyrus Harrison, Wed May  2 14:07:07 PDT 2012
+#   Avoid creating pyc files when importing the visit module
 #
 ###############################################################################
 import sys
@@ -57,6 +60,7 @@ sys.dont_write_bytecode = True
 
 from frontend import *
 from evalfuncs import *
+from writescript import *
 
 try:
     import pyside_hook

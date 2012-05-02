@@ -275,6 +275,51 @@ SILRestriction_SetName(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: SILRestriction_MapsOut
+//
+// Purpose:
+//   Return a tuple of subsets for the specified set.
+//
+// Notes:
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May  2 13:12:05 PDT 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static PyObject *
+SILRestriction_MapsOut(PyObject *self, PyObject *args)
+{
+    int setNumber;
+    if(!PyArg_ParseTuple(args, "i", &setNumber))
+        return NULL;
+
+    PyObject *retval = NULL;
+    TRY
+    {
+        PySILRestrictionObject *obj = (PySILRestrictionObject *)self;
+        avtSILRestriction_p silr = *(obj->silr);
+        const std::vector<int> &subsets = silr->GetSILSet(setNumber)->GetMapsOut();
+        retval = PyTuple_New(int(subsets.size()));
+        for(size_t i = 0; i < subsets.size(); ++i)
+            PyTuple_SET_ITEM(retval, i, PyInt_FromLong(subsets[i]));
+    }
+    CATCH2(VisItException, e)
+    {
+        //TODO set PyError
+        // VisItErrorFunc(e.Message().c_str());
+        CATCH_RETURN2(1, NULL);
+
+        retval = PyTuple_New(0);
+    }
+    ENDTRY
+
+    return retval;
+}
+
+// ****************************************************************************
 // Function: SILRestriction_SetsInCategory
 //
 // Purpose:
@@ -752,6 +797,7 @@ SILRestriction_EnableCorrectnessChecking(PyObject *self, PyObject *args)
 
 static struct PyMethodDef SILRestriction_methods[] = {
     {"Categories",       SILRestriction_Categories, METH_VARARGS},
+    {"MapsOut",          SILRestriction_MapsOut, METH_VARARGS},
     {"NumCategories",    SILRestriction_NumCategories, METH_VARARGS},
     {"NumSets",          SILRestriction_NumSets, METH_VARARGS},
     {"SetIndex",         SILRestriction_SetIndex, METH_VARARGS},
