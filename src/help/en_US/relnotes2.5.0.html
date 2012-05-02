@@ -86,6 +86,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Selections have been enhanced so they offer multiple ways to index cells in a mesh. For example, it is now possible to identify cells using their domain and local cell number, global cell number, or by a user-specified variable such as a particle ID. The domain and local cell number and global cell number indexing schemes are useful for domain-decomposed data whose mesh connectivity does not change. The variable indexing scheme is good for domain-decomposed data and situations where mesh connectivity changes across domains and time. You can specify the type of indexing to use when you create a new selection and you can alter the selection's properties in the Selections window.</li>
   <li>William T. Jones extended libsim so it supports ghost nodes. Thanks William!</li>
   <li>Libsim was enhanced to provide a function that lets you set the MPI communicator that VisIt should use. Pass an address to the communicator to <i>VisItSetMPICommunicator(void*)</i> if you want to make VisIt use a user-defined communicator. Passing NULL will make VisIt use its copy of the world communicator.</li>
+  <li>The VisIt Python Interface now provides a function called <i>WriteScript</i> that tries to write the current state of VisIt as a Python program that can be executed later.</li>
 </ul>
 
 <a name="GUI_Changes"></a>
