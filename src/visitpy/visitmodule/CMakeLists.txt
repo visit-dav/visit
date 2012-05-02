@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Brad Whitlock, Tue May  1 17:02:34 PDT 2012
+#   Add writescript.py
 #
 #****************************************************************************/
 
@@ -46,6 +48,7 @@ PYTHON_ADD_DISTUTILS_SETUP(visitmodule_py_setup
                            py_src/frontend.py
                            py_src/pyside_support.py
                            py_src/evalfuncs.py
+                           py_src/writescript.py
                            )
 
 
