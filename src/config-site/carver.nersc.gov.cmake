@@ -1,57 +1,39 @@
-#/usr/common/graphics/installs/visit_3rdparty/cmake/2.8.3/linux-x86_64_gcc-4.4/bin/cmake
+#/usr/common/graphics/installs/visit_3rdparty/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake
 ##
-## build_vist generated host.conf
-## created: Mon Dec  8 17:15:07 PST 2008
-## system: Linux nid04111 2.6.16.54-0.2.8_1.0000.3800.0-ss #1 SMP Tue Oct 21 16:10:08 PDT 2008 x86_64 x86_64 x86_64 GNU/Linux
+## /global/common/shared/graphics/installs/visit_svn/trunk/src/svn_bin/build_visit generated host.cmake
+## created: Mon Apr 30 17:36:59 PDT 2012
+## system: Linux cvrsvc01 2.6.18-238.12.1.el5.nersc #1 SMP Mon Jul 11 16:15:58 PDT 2011 x86_64 x86_64 x86_64 GNU/Linux
 ## by: ghweber
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
 SET(VISITHOME /usr/common/graphics/installs/visit_3rdparty)
-SET(VISITARCH linux-x86_64_gcc-4.4)
-VISIT_OPTION_DEFAULT(VISIT_TUVOK OFF)
-#SET(VISIT_VERBOSE_MAKEFILE TRUE)
+SET(VISITARCH linux-x86_64_gcc-4.1)
+
+SET(VISIT_INSTALL_PROFILES_TO_HOSTS "nersc")
 VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /usr/common/graphics/visit)
 VISIT_OPTION_DEFAULT(VISIT_INSTALL_THIRD_PARTY ON)
+#VISIT_OPTION_DEFAULT(VISIT_VERBOSE_MAKEFILE TRUE)
 
 ##
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-march=barcelona -fPIC -DVIZSCHEMA_DECOMPOSE_DOMAINS" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS "-I/opt/mpt/default/xt/mpich2-gnu/include" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-march=barcelona -fPIC -DVIZSCHEMA_DECOMPOSE_DOMAINS -Wno-deprecated" TYPE STRING)
-# Get these via CC -v
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/opt/mpt/default/xt/mpich2-gnu/include" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/mpt/default/xt/mpich2-gnu/lib -L/opt/mpt/default/xt/pmi/lib -L/opt/mpt/default/xt/util/lib -L/opt/xt-pe/default/lib -L/opt/cray/stat/default/lib" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/mpt/default/xt/mpich2-gnu/lib;/opt/mpt/default/xt/pmi/lib;/opt/mpt/default/xt/util/lib;/opt/xt-pe/default/lib;/opt/cray/stat/default/lib" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich pmi alpslli alpsutil portals pthread rt)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
-# Options for static MPI libraries
-#VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS /opt/mpt/default/xt/mpich2-gnu/lib/libmpich.a /opt/mpt/default/xt/pmi/lib/libpmi.a /opt/mpt/default/xt/util/lib/libalpslli.a /opt/mpt/default/xt/util/lib/libalpsutil.a /opt/xt-service/default/lib/snos64/libportals.a pthread rt)
-#VISIT_OPTION_DEFAULT(VISIT_NOLINK_MPI_WITH_LIBRARIES ON)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-m64 -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-m64 -fPIC -fvisibility=hidden" TYPE STRING)
 
 ##
-## Specify the location of the python include and libraries.
+## Parallel Options
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
-##
-## Specify the location of the mesa include files and libraries.
-##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
-
-##
-## Specify the location of the vtk include files and libraries.
-##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
-
-##
-## Specify the Qt4 binary dir. 
-##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS "-DOMPI_SKIP_MPICXX -I/usr/common/usg/openmpi/1.4.5/gcc/include")
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-DOMPI_SKIP_MPICXX -I/usr/common/usg/openmpi/1.4.5/gcc/include")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS "/usr/common/usg/openmpi/1.4.5/gcc/lib/libmpi.so")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/usr/common/usg/openmpi/1.4.5/gnu/lib")
 
 ##############################################################
 ##
@@ -64,6 +46,28 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
 ## Libraries with LIBDEP settings that depend on other
 ## Library's LIBDEP settings must come after them.
 ##############################################################
+##
+##
+## Specify the location of the python.
+##
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr/common/graphics/installs/visit_3rdparty/python/2.6.4/linux-x86_64_gcc-4.1)
+
+##
+## Mesa
+##
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
+
+##
+## VTK
+##
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
+
+##
+## Specify the Qt4 binary dir. 
+## (qmake is used to locate & setup Qt4 dependencies)
+##
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
+
 
 ##
 ## SZIP
@@ -84,7 +88,7 @@ VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
 ##
 ## HDF4
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.6/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0/${VISITARCH}/lib vtkjpeg TYPE STRING)
 
 ##
@@ -113,7 +117,7 @@ VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NET
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/2011.04.28/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/0.1.8/${VISITARCH})
 
 ##
 ## CFITSIO
@@ -170,6 +174,7 @@ VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
 ## Xdmf
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
 ##
 ##
+
